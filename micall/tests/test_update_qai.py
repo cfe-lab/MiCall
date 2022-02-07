@@ -251,3 +251,95 @@ def test_build_review_decisions_sequencing_different_project():
                                        regions)
 
     assert decisions == expected_decisions
+
+
+# noinspection DuplicatedCode
+def test_build_review_decisions_no_reads():
+    coverage_file = StringIO(dedent("""\
+    sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+    """))
+    collated_counts_file = StringIO(dedent("""\
+    sample,type,count,filtered_count,seed_dist,other_dist,other_seed
+    2140A-HIV_S17,raw,20000
+    """))
+    cascade_file = StringIO(dedent("""\
+    sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
+    2140A-HIV_S17,10000,0,0,10000,10000,10000
+    """))
+    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
+    with sample_sheet_path.open() as sample_sheet_file:
+        sample_sheet = sample_sheet_parser(sample_sheet_file)
+
+    sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]
+
+    project_regions = [{'id': 'HIV project region id',
+                        'project_name': 'HIVB',
+                        'seed_region_names': 'HIV1-seed',
+                        'coordinate_region_name': 'HIV1B-gag'}]
+    regions = [{'id': 'HIV seed region id', 'name': 'HIV1-B-FR-K03455-seed'}]
+
+    expected_decisions = [{'sequencing_id': 'HIVid',
+                           'sample_name': '2140A-HIV_S17',
+                           'raw_reads': 20000,
+                           'mapped_reads': 0}]
+
+    decisions = build_review_decisions(coverage_file,
+                                       collated_counts_file,
+                                       cascade_file,
+                                       sample_sheet,
+                                       sequencings,
+                                       project_regions,
+                                       regions)
+
+    assert decisions == expected_decisions
+
+
+# noinspection DuplicatedCode
+def test_build_review_decisions_more_counts():
+    coverage_file = StringIO(dedent("""\
+    sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+    2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,100,10,-2,3
+    """))
+    collated_counts_file = StringIO(dedent("""\
+    sample,type,count,filtered_count,seed_dist,other_dist,other_seed
+    2140A-HIV_S17,raw,200
+    2140A-HIV_S17,prelim HIV1-B-FR-K03455-seed,200,200
+    2140A-HIV_S17,remap-1 HIV1-B-FR-K03455-seed,200
+    2140A-HIV_S17,remap-final HIV1-B-FR-K03455-seed,200
+    2140A-HIV_S17,unmapped,0
+    """))
+    cascade_file = StringIO(dedent("""\
+    sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
+    2140A-HIV_S17,100,0,0,100,100,100
+    """))
+    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
+    with sample_sheet_path.open() as sample_sheet_file:
+        sample_sheet = sample_sheet_parser(sample_sheet_file)
+
+    sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]
+
+    project_regions = [{'id': 'HIV project region id',
+                        'project_name': 'HIVB',
+                        'seed_region_names': 'HIV1-seed',
+                        'coordinate_region_name': 'HIV1B-gag'}]
+    regions = [{'id': 'HIV seed region id', 'name': 'HIV1-B-FR-K03455-seed'}]
+
+    expected_decisions = [{'sequencing_id': 'HIVid',
+                           'project_region_id': 'HIV project region id',
+                           'seed_region_id': 'HIV seed region id',
+                           'sample_name': '2140A-HIV_S17',
+                           'score': 3,
+                           'min_coverage': 100,
+                           'min_coverage_pos': 10,
+                           'raw_reads': 200,
+                           'mapped_reads': 200}]
+
+    decisions = build_review_decisions(coverage_file,
+                                       collated_counts_file,
+                                       cascade_file,
+                                       sample_sheet,
+                                       sequencings,
+                                       project_regions,
+                                       regions)
+
+    assert decisions == expected_decisions
