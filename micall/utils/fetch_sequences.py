@@ -35,7 +35,6 @@ def main():
     unchecked_ref_names = set(project_config.getAllReferences().keys())
     unchecked_ref_names.update(set(project_config.getAllGenotypeReferences().keys()))
     error_count += check_hcv_seeds(project_config, unchecked_ref_names)
-    error_count += check_hcv_genotypes(project_config, unchecked_ref_names)
     error_count += check_hcv_coordinates(project_config, unchecked_ref_names)
     error_count += check_hiv_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_coordinates(project_config, unchecked_ref_names)
@@ -358,28 +357,6 @@ This script contains a complete list of the reference accession numbers.
     return error_count
 
 
-def check_hcv_genotypes(project_config, unchecked_ref_names: set):
-    accession_numbers = {'HCV1A': 'NC_004102',
-                         'HCV1B': 'AJ238799',
-                         'HCV2': 'AB047639',
-                         'HCV3': 'GU814263',
-                         'HCV4': 'GU814265',
-                         'HCV5': 'AF064490',
-                         'HCV6': 'Y12083',
-                         # EF108306.2 is available, but only extends 5' and 3'.
-                         'HCV7': 'EF108306.1'}
-    source_nuc_sequences = {
-        genotype: fetch_by_accession(accession_number)
-        for genotype, accession_number in accession_numbers.items()}
-
-    report, error_count = compare_config(accession_numbers.keys(),
-                                         project_config,
-                                         source_nuc_sequences)
-    print(report)
-    unchecked_ref_names.difference_update(accession_numbers.keys())
-    return error_count
-
-
 def check_hcv_coordinates(project_config, unchecked_ref_names: set):
     print("""\
 Most HCV coordinate references were listed in the FDA guidance:
@@ -404,6 +381,12 @@ This script contains a complete list of the reference accession numbers.
     # That is the original H77 accession number for HCV1A. NC_004102 is the
     # curated and annotated version that was derived from the AF009606 entry.
     # All the other genotypes can be found by their regular accession numbers.
+
+    report, errors_genotype = compare_config(accession_numbers.keys(),
+                                             project_config,
+                                             source_nuc_sequences)
+    unchecked_ref_names.difference_update(accession_numbers.keys())
+    print(report)
 
     hcv_project = project_config.config['projects']['HCV']
     ref_names = {project_region['coordinate_region']
@@ -441,7 +424,7 @@ This script contains a complete list of the reference accession numbers.
                                          project_config,
                                          source_sequences)
     print(report)
-    return error_count + length_errors
+    return error_count + length_errors + errors_genotype
 
 
 def check_hla_seeds(project_config, unchecked_ref_names: set):
