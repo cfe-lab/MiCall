@@ -1,7 +1,9 @@
 import pickle
 from unittest import TestCase
 
-from micall.drivers.sample import Sample
+import pytest
+
+from micall.drivers.sample import Sample, exclude_extra_seeds
 
 
 class SampleTest(TestCase):
@@ -154,3 +156,19 @@ class SampleTest(TestCase):
         data = pickle.dumps(sample)
 
         self.assertNotEqual(b'', data)
+
+
+@pytest.mark.parametrize(
+    'project_code,excluded,expected',
+    [('HIVGHA', (), ()),
+     (None, (), ["HIV1-CRF02_AG-GH-AB286855-seed",
+                 "HIV1-CRF06_CPX-GH-AB286851-seed"]),
+     ('HIV', (), ["HIV1-CRF02_AG-GH-AB286855-seed",
+                  "HIV1-CRF06_CPX-GH-AB286851-seed"]),
+     ('HIV', ["HLA-B-seed"], ["HIV1-CRF02_AG-GH-AB286855-seed",
+                              "HIV1-CRF06_CPX-GH-AB286851-seed",
+                              "HLA-B-seed"])])
+def test_exclude_extra_seeds(project_code, excluded, expected):
+    all_excluded = exclude_extra_seeds(excluded, project_code)
+
+    assert all_excluded == expected

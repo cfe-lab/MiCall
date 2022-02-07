@@ -12,6 +12,7 @@ from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
+from micall.core.project_config import ProjectConfig
 from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
@@ -20,6 +21,16 @@ from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VA
 from micall.utils.driver_utils import makedirs
 
 logger = logging.getLogger(__name__)
+
+
+def exclude_extra_seeds(excluded_seeds: typing.Sequence[str],
+                        project_code: str = None) -> typing.Sequence[str]:
+    if project_code == 'HIVGHA':
+        return excluded_seeds
+    projects = ProjectConfig.loadDefault()
+    hivgha_seeds = projects.getProjectSeeds('HIVGHA')
+    hiv_seeds = projects.getProjectSeeds('HIV')
+    return sorted((hivgha_seeds - hiv_seeds) | set(excluded_seeds))
 
 
 class Sample:
@@ -126,6 +137,8 @@ class Sample:
         use_gzip = force_gzip or self.fastq1.endswith('.gz')
 
         sample_info = self.load_sample_info()
+        excluded_seeds = exclude_extra_seeds(excluded_seeds,
+                                             sample_info.get('project'))
 
         with open(self.read_summary_csv, 'w') as read_summary:
             trim((self.fastq1, self.fastq2),

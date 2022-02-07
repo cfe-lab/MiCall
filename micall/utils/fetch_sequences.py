@@ -20,6 +20,7 @@ from micall.resistance.asi_algorithm import WILD_TYPES_PATH
 from micall.utils.translation import translate
 
 try:
+    # noinspection PyPackageRequirements
     import requests
 except ImportError:
     # Allow tests to run without requests module
@@ -38,6 +39,7 @@ def main():
     error_count += check_hcv_coordinates(project_config, unchecked_ref_names)
     error_count += check_hiv_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_coordinates(project_config, unchecked_ref_names)
+    error_count += check_hivgha_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_wild_types(project_config)
     error_count += check_hla_seeds(project_config, unchecked_ref_names)
     error_count += check_hla_coordinates(project_config, unchecked_ref_names)
@@ -92,6 +94,27 @@ See the project_seeds_from_compendium.py script for full details.
                                          project_config,
                                          source_sequences,
                                          name_part=3)
+    print(report)
+    return error_count
+
+
+def check_hivgha_seeds(project_config, unchecked_ref_names: set):
+    print("HIVGHA project uses the same seeds as HIV, plus two chimeric seeds.")
+    source_names = ["HIV1-CRF02_AG-GH-AB286855-seed",
+                    "HIV1-CRF06_CPX-GH-AB286851-seed"]
+    source_sequences = {}
+    for source_name in source_names:
+        parts = source_name.split('-')
+        accession_number = parts[3]
+        source_sequences[source_name] = fetch_by_accession(accession_number)
+
+    ref_names = set(project_config.getProjectSeeds('HIVGHA'))
+    ref_names -= set(project_config.getProjectSeeds('HIV'))
+    unchecked_ref_names.difference_update(ref_names)
+
+    report, error_count = compare_config(ref_names,
+                                         project_config,
+                                         source_sequences)
     print(report)
     return error_count
 
