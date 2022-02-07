@@ -161,12 +161,12 @@ class SampleTest(TestCase):
 @pytest.mark.parametrize(
     'project_code,excluded,expected',
     [('HIVGHA', (), ()),
-     (None, (), ["HIV1-CRF06_CPX-GH-AB286851-seed",
-                 "HIV1-CRF30_0206-GH-AB286854-seed"]),
-     ('HIV', (), ["HIV1-CRF06_CPX-GH-AB286851-seed",
-                  "HIV1-CRF30_0206-GH-AB286854-seed"]),
-     ('HIV', ["HLA-B-seed"], ["HIV1-CRF06_CPX-GH-AB286851-seed",
-                              "HIV1-CRF30_0206-GH-AB286854-seed",
+     (None, (), ["HIV1-CRF02_AG-GH-AB286855-seed",
+                 "HIV1-CRF06_CPX-GH-AB286851-seed"]),
+     ('HIV', (), ["HIV1-CRF02_AG-GH-AB286855-seed",
+                  "HIV1-CRF06_CPX-GH-AB286851-seed"]),
+     ('HIV', ["HLA-B-seed"], ["HIV1-CRF02_AG-GH-AB286855-seed",
+                              "HIV1-CRF06_CPX-GH-AB286851-seed",
                               "HLA-B-seed"])])
 def test_exclude_extra_seeds(project_code, excluded, expected):
     all_excluded = exclude_extra_seeds(excluded, project_code)
