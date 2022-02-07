@@ -98,14 +98,14 @@ See the project_seeds_from_compendium.py script for full details.
 
 
 def check_hivgha_seeds(project_config, unchecked_ref_names: set):
-    print("HIVGHA project uses the same seeds as HIV, plus three chimeric seeds.")
-    ref_names = ["HIV1-CRF02_AG-GH-AB286855-seed",
-                 "HIV1-CRF06_CPX-GH-AB286851-seed"]
+    print("HIVGHA project uses the same seeds as HIV, plus two chimeric seeds.")
+    source_names = ["HIV1-CRF02_AG-GH-AB286855-seed",
+                    "HIV1-CRF06_CPX-GH-AB286851-seed"]
     source_sequences = {}
-    for ref_name in ref_names:
-        parts = ref_name.split('-')
+    for source_name in source_names:
+        parts = source_name.split('-')
         accession_number = parts[3]
-        source_sequences[ref_name] = fetch_by_accession(accession_number)
+        source_sequences[source_name] = fetch_by_accession(accession_number)
 
     ref_names = set(project_config.getProjectSeeds('HIVGHA'))
     ref_names -= set(project_config.getProjectSeeds('HIV'))
