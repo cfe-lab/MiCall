@@ -29,8 +29,11 @@ def exclude_extra_seeds(excluded_seeds: typing.Sequence[str],
         return excluded_seeds
     projects = ProjectConfig.loadDefault()
     hivgha_seeds = projects.getProjectSeeds('HIVGHA')
-    hiv_seeds = projects.getProjectSeeds('HIV')
-    return sorted((hivgha_seeds - hiv_seeds) | set(excluded_seeds))
+    extra_exclusions = {seed
+                        for seed in hivgha_seeds
+                        # Exclude any circulating recombinant forms (CRF).
+                        if seed.startswith('HIV1-CRF')}
+    return sorted(extra_exclusions | set(excluded_seeds))
 
 
 class Sample:

@@ -39,7 +39,6 @@ def main():
     error_count += check_hcv_coordinates(project_config, unchecked_ref_names)
     error_count += check_hiv_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_coordinates(project_config, unchecked_ref_names)
-    error_count += check_hivgha_seeds(project_config, unchecked_ref_names)
     error_count += check_hiv_wild_types(project_config)
     error_count += check_hla_seeds(project_config, unchecked_ref_names)
     error_count += check_hla_coordinates(project_config, unchecked_ref_names)
@@ -74,6 +73,9 @@ Recombinant references are excluded (names start with a digit).
 The HIV1-CON-XX-Consensus-seed is a special case: the consensus of consensuses,
 downloaded from the same page with the Consensus/Ancestral alignment type.
 See the project_seeds_from_compendium.py script for full details.
+More special cases were added for the HIVGHA project to include circulating
+recombinant forms common in Ghana. The CRF references are excluded in the
+pipeline for all but the HIVGHA project code.
 """)
     sequences = fetch_alignment_sequences(2004,
                                           'CON',  # Consensus/Ancestral
@@ -87,6 +89,15 @@ See the project_seeds_from_compendium.py script for full details.
     consensus_accession = 'Consensus'
     assert consensus_accession not in source_sequences, sorted(source_sequences.keys())
     source_sequences[consensus_accession] = consensus
+
+    ghana_source_names = ["HIV1-CRF02_AG-GH-AB286855-seed",
+                          "HIV1-CRF06_CPX-GH-AB286851-seed"]
+    for source_name in ghana_source_names:
+        parts = source_name.split('-')
+        accession_number = parts[3]
+        assert source_name not in source_sequences, sorted(source_sequences.keys())
+        source_sequences[accession_number] = fetch_by_accession(accession_number)
+
     ref_names = project_config.getProjectSeeds('HIV')
     unchecked_ref_names.difference_update(ref_names)
 
@@ -94,27 +105,6 @@ See the project_seeds_from_compendium.py script for full details.
                                          project_config,
                                          source_sequences,
                                          name_part=3)
-    print(report)
-    return error_count
-
-
-def check_hivgha_seeds(project_config, unchecked_ref_names: set):
-    print("HIVGHA project uses the same seeds as HIV, plus two chimeric seeds.")
-    source_names = ["HIV1-CRF02_AG-GH-AB286855-seed",
-                    "HIV1-CRF06_CPX-GH-AB286851-seed"]
-    source_sequences = {}
-    for source_name in source_names:
-        parts = source_name.split('-')
-        accession_number = parts[3]
-        source_sequences[source_name] = fetch_by_accession(accession_number)
-
-    ref_names = set(project_config.getProjectSeeds('HIVGHA'))
-    ref_names -= set(project_config.getProjectSeeds('HIV'))
-    unchecked_ref_names.difference_update(ref_names)
-
-    report, error_count = compare_config(ref_names,
-                                         project_config,
-                                         source_sequences)
     print(report)
     return error_count
 

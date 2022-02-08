@@ -29,8 +29,8 @@ def make_blast_db(projects_json, refs_fasta):
         for name, region in projects['regions'].items():
             if region['seed_group'] is None:
                 continue
-            if region['seed_group'] == 'HIVGHA-seed':
-                # Exclude this project, because they're recombinant.
+            if name.startswith('HIV1-CRF'):
+                # Exclude circulating recombinant forms (CRF).
                 continue
             if name == 'HIV1-CON-XX-Consensus-seed':
                 # Only used by G2P alignment.
