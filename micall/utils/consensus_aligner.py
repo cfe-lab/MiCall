@@ -1,8 +1,10 @@
+import csv
 import typing
 from dataclasses import dataclass, replace
 from enum import IntEnum
 from itertools import count
 from operator import attrgetter
+from os import linesep
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -196,7 +198,7 @@ def clip_seed_aminos(seed_aminos: typing.List[SeedAmino],
 
 
 class ConsensusAligner:
-    def __init__(self, projects: ProjectConfig):
+    def __init__(self, projects: ProjectConfig, alignments_writer=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -208,6 +210,8 @@ class ConsensusAligner:
 
         # consensus nucleotide positions that were inserts
         self.inserts: typing.Set[int] = set()
+
+        self.alignments_writer = alignments_writer
 
     def start_contig(self,
                      coordinate_name: str = None,
@@ -426,6 +430,18 @@ class ConsensusAligner:
                                                  start_pos,
                                                  translations)
             self.amino_alignments.extend(amino_sections)
+
+        for alignment in self.amino_alignments:
+            row = {"action": alignment.action,
+                   "query_start": alignment.query_start,
+                   "query_end": alignment.query_end,
+                   "ref_start": alignment.ref_start,
+                   "ref_end": alignment.ref_end,
+                   "aligned_query": alignment.aligned_query,
+                   "aligned_ref": alignment.aligned_ref,
+                   "reading_frame": alignment.reading_frame,
+                   "ref_amino_start": alignment.ref_amino_start}
+            self.alignments_writer.writerow(row)
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''

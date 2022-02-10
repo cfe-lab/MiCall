@@ -227,7 +227,7 @@ class Sample:
                 open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
                 open(self.conseq_all_csv, "w") as conseq_all_csv, \
                 open(self.conseq_stitched_csv, "w") as conseq_stitched_csv, \
-                open(self.minimap_hits_csv, "w") as minimap_hits_csv:
+                open(self.alignments_csv, "w") as alignments_csv:
 
             if not use_denovo:
                 for f in (amino_detail_csv, nuc_detail_csv):
@@ -252,7 +252,7 @@ class Sample:
                        contigs_csv=contigs_csv,
                        conseq_all_csv=conseq_all_csv,
                        conseq_stitched_csv=conseq_stitched_csv,
-                       minimap_hits_csv=minimap_hits_csv)
+                       alignments_csv=alignments_csv)
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -264,8 +264,7 @@ class Sample:
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
-        with open(self.genome_coverage_csv) as genome_coverage_csv, \
-                open(self.minimap_hits_csv) as minimap_hits_csv:
+        with open(self.genome_coverage_csv) as genome_coverage_csv:
             if not use_denovo:
                 minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
