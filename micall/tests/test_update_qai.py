@@ -1,15 +1,23 @@
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
+import pytest
+from unittest.mock import patch
 
-from micall.monitor.update_qai import build_conseqs, build_review_decisions
+from micall.monitor.update_qai import build_conseqs, build_review_decisions, upload_review_to_qai
 from micall.utils.sample_sheet_parser import sample_sheet_parser
+import micall.monitor.qai_helper
 
 
-def test_build_conseqs():
+@pytest.fixture
+def sample_sheet():
     sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
     with sample_sheet_path.open() as sample_sheet_file:
         sample_sheet = sample_sheet_parser(sample_sheet_file)
+    return sample_sheet
+
+
+def test_build_conseqs(sample_sheet):
     conseq_csv = StringIO(dedent("""\
         sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
         2140A-HIV_S17,HIV1-B-FR-K03455-seed,15,MAX,2252,CCTCAGGTC
@@ -46,10 +54,7 @@ def test_build_conseqs():
     assert conseqs == expected_conseqs
 
 
-def test_build_conseqs_multi_project():
-    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
-    with sample_sheet_path.open() as sample_sheet_file:
-        sample_sheet = sample_sheet_parser(sample_sheet_file)
+def test_build_conseqs_multi_project(sample_sheet):
     conseq_csv = StringIO(dedent("""\
         sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
         2100A-HCV-1337B-V3LOOP-PWND-HIV_S12,HCV-1a,15,MAX,6603,AGGAATACG
@@ -160,7 +165,7 @@ Disablecontamcheck:2100A_HCV:FALSE;1337B_BOGUS:FALSE,
 
 
 # noinspection DuplicatedCode
-def test_build_review_decisions():
+def test_build_review_decisions(sample_sheet):
     coverage_file = StringIO(dedent("""\
     sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
     2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,150,1,-3,4
@@ -173,9 +178,6 @@ def test_build_review_decisions():
     sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
     2140A-HIV_S17,10000,0,0,10000,10000,10000
     """))
-    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
-    with sample_sheet_path.open() as sample_sheet_file:
-        sample_sheet = sample_sheet_parser(sample_sheet_file)
 
     sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]
 
@@ -207,7 +209,7 @@ def test_build_review_decisions():
 
 
 # noinspection DuplicatedCode
-def test_build_review_decisions_sequencing_different_project():
+def test_build_review_decisions_sequencing_different_project(sample_sheet):
     coverage_file = StringIO(dedent("""\
     sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
     2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,150,1,-3,4
@@ -220,9 +222,6 @@ def test_build_review_decisions_sequencing_different_project():
     sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
     2140A-HIV_S17,10000,0,0,10000,10000,10000
     """))
-    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
-    with sample_sheet_path.open() as sample_sheet_file:
-        sample_sheet = sample_sheet_parser(sample_sheet_file)
 
     sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVGHA', 'id': 'HIVid'}]
 
@@ -254,7 +253,7 @@ def test_build_review_decisions_sequencing_different_project():
 
 
 # noinspection DuplicatedCode
-def test_build_review_decisions_no_reads():
+def test_build_review_decisions_no_reads(sample_sheet):
     coverage_file = StringIO(dedent("""\
     sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
     """))
@@ -266,9 +265,6 @@ def test_build_review_decisions_no_reads():
     sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
     2140A-HIV_S17,10000,0,0,10000,10000,10000
     """))
-    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
-    with sample_sheet_path.open() as sample_sheet_file:
-        sample_sheet = sample_sheet_parser(sample_sheet_file)
 
     sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]
 
@@ -295,7 +291,7 @@ def test_build_review_decisions_no_reads():
 
 
 # noinspection DuplicatedCode
-def test_build_review_decisions_more_counts():
+def test_build_review_decisions_more_counts(sample_sheet):
     coverage_file = StringIO(dedent("""\
     sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
     2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,100,10,-2,3
@@ -312,9 +308,6 @@ def test_build_review_decisions_more_counts():
     sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
     2140A-HIV_S17,100,0,0,100,100,100
     """))
-    sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
-    with sample_sheet_path.open() as sample_sheet_file:
-        sample_sheet = sample_sheet_parser(sample_sheet_file)
 
     sequencings = [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]
 
@@ -343,3 +336,52 @@ def test_build_review_decisions_more_counts():
                                        regions)
 
     assert decisions == expected_decisions
+
+
+def return_json_side_effect(input):
+    if input.split('=')[0] == "/lab_miseq_project_regions?pipeline":
+        return [{'id': 'HIV project region id',
+                        'project_name': 'HIVB',
+                        'seed_region_names': 'HIV1-seed',
+                        'coordinate_region_name': 'HIV1B-gag'}]
+    else:
+        return None
+
+
+def test_upload_review_to_qai():
+    run = {'id': 'runid', 'sequencing_summary': [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]}
+    expected_regions = [{'id': 'HIV project region id',
+                         'project_name': 'HIVB',
+                         'seed_region_names': 'HIV1-seed',
+                         'coordinate_region_name': 'HIV1B-gag'}]
+    session = micall.monitor.qai_helper.Session()
+    with patch('micall.monitor.qai_helper.Session.get_json') as mock_get_json:
+        mock_get_json.side_effect = return_json_side_effect
+        regions = session.get_json("/lab_miseq_project_regions?pipeline=7.14")
+        regions2 = session.get_json("/lab_miseq_project_regions?pipeline=7.15")
+
+    assert regions == expected_regions
+    assert regions2 == expected_regions
+
+
+def test_upload_unknown_pipeline():
+    run = {'id': 'runid', 'sequencing_summary': [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]}
+    coverage_file = StringIO()
+    collated_counts_file = StringIO()
+    cascade_file = StringIO()
+    sample_sheet = {}
+    conseqs = []
+    session = micall.monitor.qai_helper.Session()
+    pipeline_version = "unknown"
+
+    with patch('micall.monitor.qai_helper.Session.get_json') as mock_get_json:
+        mock_get_json.return_value = []
+        with pytest.raises(RuntimeError):
+            upload_review_to_qai(coverage_file,
+                                 collated_counts_file,
+                                 cascade_file,
+                                 run,
+                                 sample_sheet,
+                                 conseqs,
+                                 session,
+                                 pipeline_version)
