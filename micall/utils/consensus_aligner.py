@@ -397,19 +397,19 @@ class ConsensusAligner:
                 amino_alignment.find_reading_frame(amino_ref,
                                                    start_pos,
                                                    translations)
-
-            for amino_alignment in amino_sections:
-                row = {"action": CigarActions(amino_alignment.action).name,
-                       "query_start": amino_alignment.query_start,
-                       "query_end": amino_alignment.query_end,
-                       "ref_start": amino_alignment.ref_start,
-                       "ref_end": amino_alignment.ref_end,
-                       "aligned_query": amino_alignment.aligned_query,
-                       "aligned_ref": amino_alignment.aligned_ref,
-                       "reading_frame": amino_alignment.reading_frame,
-                       "ref_amino_start": amino_alignment.ref_amino_start,
-                       "coordinate_name": self.coordinate_name}
-                self.unmerged_alignments_writer.writerow(row)
+            if self.unmerged_alignments_writer is not None:
+                for amino_alignment in amino_sections:
+                    row = {"action": CigarActions(amino_alignment.action).name,
+                           "query_start": amino_alignment.query_start,
+                           "query_end": amino_alignment.query_end,
+                           "ref_start": amino_alignment.ref_start,
+                           "ref_end": amino_alignment.ref_end,
+                           "aligned_query": amino_alignment.aligned_query,
+                           "aligned_ref": amino_alignment.aligned_ref,
+                           "reading_frame": amino_alignment.reading_frame,
+                           "ref_amino_start": amino_alignment.ref_amino_start,
+                           "coordinate_name": self.coordinate_name}
+                    self.unmerged_alignments_writer.writerow(row)
 
             for i in range(len(amino_sections)-2, 0, -1):
                 amino_alignment = amino_sections[i]
@@ -445,18 +445,19 @@ class ConsensusAligner:
                                                  translations)
             self.amino_alignments.extend(amino_sections)
 
-        for alignment in self.amino_alignments:
-            row = {"action": CigarActions(alignment.action).name,
-                   "query_start": alignment.query_start,
-                   "query_end": alignment.query_end,
-                   "ref_start": alignment.ref_start,
-                   "ref_end": alignment.ref_end,
-                   "aligned_query": alignment.aligned_query,
-                   "aligned_ref": alignment.aligned_ref,
-                   "reading_frame": alignment.reading_frame,
-                   "ref_amino_start": alignment.ref_amino_start,
-                   "coordinate_name": self.coordinate_name}
-            self.alignments_writer.writerow(row)
+        if self.alignments_writer is not None:
+            for alignment in self.amino_alignments:
+                row = {"action": CigarActions(alignment.action).name,
+                       "query_start": alignment.query_start,
+                       "query_end": alignment.query_end,
+                       "ref_start": alignment.ref_start,
+                       "ref_end": alignment.ref_end,
+                       "aligned_query": alignment.aligned_query,
+                       "aligned_ref": alignment.aligned_ref,
+                       "reading_frame": alignment.reading_frame,
+                       "ref_amino_start": alignment.ref_amino_start,
+                       "coordinate_name": self.coordinate_name}
+                self.alignments_writer.writerow(row)
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''
