@@ -4,7 +4,6 @@ from dataclasses import dataclass, replace
 from enum import IntEnum
 from itertools import count
 from operator import attrgetter
-from os import linesep
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -432,7 +431,7 @@ class ConsensusAligner:
             self.amino_alignments.extend(amino_sections)
 
         for alignment in self.amino_alignments:
-            row = {"action": alignment.action,
+            row = {"action": CigarActions(alignment.action).name,
                    "query_start": alignment.query_start,
                    "query_end": alignment.query_end,
                    "ref_start": alignment.ref_start,
@@ -440,7 +439,8 @@ class ConsensusAligner:
                    "aligned_query": alignment.aligned_query,
                    "aligned_ref": alignment.aligned_ref,
                    "reading_frame": alignment.reading_frame,
-                   "ref_amino_start": alignment.ref_amino_start}
+                   "ref_amino_start": alignment.ref_amino_start,
+                   "coordinate_name": self.coordinate_name}
             self.alignments_writer.writerow(row)
 
     def clear(self):
