@@ -825,7 +825,7 @@ class SequenceReport(object):
         self.minimap_hits_writer.writeheader()
 
     def write_alignments_header(self, alignments_file):
-        columns = ["coordinate_name"
+        columns = ["coordinate_name",
                    "action",
                    "query_start",
                    "query_end",
