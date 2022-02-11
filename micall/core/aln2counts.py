@@ -390,7 +390,7 @@ class SequenceReport(object):
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
         self.conseq_stitched_writer = None
-        self.alignments_writer = None
+        self.alignments_writer = self.unmerged_alignments_writer = None
 
     @property
     def has_detail_counts(self):
@@ -595,7 +595,9 @@ class SequenceReport(object):
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
         if self.consensus_aligner.consensus is not None:
-            self.consensus_aligner = ConsensusAligner(self.projects, self.alignments_writer)
+            self.consensus_aligner = ConsensusAligner(self.projects,
+                                                      self.alignments_writer,
+                                                      self.unmerged_alignments_writer)
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -824,7 +826,8 @@ class SequenceReport(object):
                                                   lineterminator=os.linesep)
         self.minimap_hits_writer.writeheader()
 
-    def write_alignments_header(self, alignments_file):
+    @staticmethod
+    def _create_alignments_writer(alignments_file):
         columns = ["coordinate_name",
                    "action",
                    "query_start",
@@ -835,8 +838,17 @@ class SequenceReport(object):
                    "ref_amino_start",
                    "aligned_query",
                    "aligned_ref"]
-        self.alignments_writer = csv.DictWriter(alignments_file, columns, lineterminator=os.linesep)
+        return csv.DictWriter(alignments_file,
+                              columns,
+                              lineterminator=os.linesep)
+
+    def write_alignments_header(self, alignments_file):
+        self.alignments_writer = self._create_alignments_writer(alignments_file)
         self.alignments_writer.writeheader()
+
+    def write_unmerged_alignments_header(self, alignments_file):
+        self.unmerged_alignments_writer = self._create_alignments_writer(alignments_file)
+        self.unmerged_alignments_writer.writeheader()
 
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
@@ -1752,7 +1764,8 @@ def aln2counts(aligned_csv,
                conseq_all_csv=None,
                conseq_stitched_csv=None,
                minimap_hits_csv=None,
-               alignments_csv=None):
+               alignments_csv=None,
+               unmerged_alignments_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1788,6 +1801,7 @@ def aln2counts(aligned_csv,
         consensus sequences.
     @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     @param alignments_csv: Open file handle to write alignments.
+    @param unmerged_alignments_csv: Open file handle to write alignments.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1847,6 +1861,8 @@ def aln2counts(aligned_csv,
             report.write_minimap_hits_header(minimap_hits_csv)
         if alignments_csv is not None:
             report.write_alignments_header(alignments_csv)
+        if unmerged_alignments_csv is not None:
+            report.write_unmerged_alignments_header(unmerged_alignments_csv)
 
         report.process_reads(aligned_csv,
                              coverage_summary,

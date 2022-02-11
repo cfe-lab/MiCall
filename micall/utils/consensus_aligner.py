@@ -197,7 +197,7 @@ def clip_seed_aminos(seed_aminos: typing.List[SeedAmino],
 
 
 class ConsensusAligner:
-    def __init__(self, projects: ProjectConfig, alignments_writer=None):
+    def __init__(self, projects: ProjectConfig, alignments_writer=None, unmerged_alignments_writer=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -211,6 +211,7 @@ class ConsensusAligner:
         self.inserts: typing.Set[int] = set()
 
         self.alignments_writer = alignments_writer
+        self.unmerged_alignments_writer = unmerged_alignments_writer
 
     def start_contig(self,
                      coordinate_name: str = None,
@@ -396,6 +397,20 @@ class ConsensusAligner:
                 amino_alignment.find_reading_frame(amino_ref,
                                                    start_pos,
                                                    translations)
+
+            for alignment in amino_sections:
+                row = {"action": CigarActions(alignment.action).name,
+                       "query_start": alignment.query_start,
+                       "query_end": alignment.query_end,
+                       "ref_start": alignment.ref_start,
+                       "ref_end": alignment.ref_end,
+                       "aligned_query": alignment.aligned_query,
+                       "aligned_ref": alignment.aligned_ref,
+                       "reading_frame": alignment.reading_frame,
+                       "ref_amino_start": alignment.ref_amino_start,
+                       "coordinate_name": self.coordinate_name}
+                self.unmerged_alignments_writer.writerow(row)
+
             for i in range(len(amino_sections)-2, 0, -1):
                 amino_alignment = amino_sections[i]
                 if amino_alignment.action == CigarActions.MATCH:
