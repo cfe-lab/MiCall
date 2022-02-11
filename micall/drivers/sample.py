@@ -209,6 +209,12 @@ class Sample:
             contigs_path = self.contigs_csv
         else:
             contigs_path = os.devnull
+        try:  # open outside with block to avoid limit on statically nested blocks
+            alignments_csv = open(self.alignments_csv, "w")
+            unmerged_alignments_csv = open(self.unmerged_alignments_csv, "w")
+        except OSError:
+            logger.error("Could not open alignments files, exiting")
+            raise
         with open(self.aligned_csv) as aligned_csv, \
                 open(self.g2p_aligned_csv) as g2p_aligned_csv, \
                 open(self.clipping_csv) as clipping_csv, \
@@ -227,7 +233,7 @@ class Sample:
                 open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
                 open(self.conseq_all_csv, "w") as conseq_all_csv, \
                 open(self.conseq_stitched_csv, "w") as conseq_stitched_csv, \
-                open(self.alignments_csv, "w") as alignments_csv:
+                open(self.minimap_hits_csv, "w") as minimap_hits_csv:
 
             if not use_denovo:
                 for f in (amino_detail_csv, nuc_detail_csv):
@@ -252,7 +258,12 @@ class Sample:
                        contigs_csv=contigs_csv,
                        conseq_all_csv=conseq_all_csv,
                        conseq_stitched_csv=conseq_stitched_csv,
-                       alignments_csv=alignments_csv)
+                       minimap_hits_csv=minimap_hits_csv,
+                       alignments_csv=alignments_csv,
+                       unmerged_alignments_csv=unmerged_alignments_csv)
+
+        alignments_csv.close()
+        unmerged_alignments_csv.close()
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -264,7 +275,8 @@ class Sample:
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
-        with open(self.genome_coverage_csv) as genome_coverage_csv:
+        with open(self.genome_coverage_csv) as genome_coverage_csv, \
+                open(self.minimap_hits_csv) as minimap_hits_csv:
             if not use_denovo:
                 minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
