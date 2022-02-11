@@ -1167,7 +1167,15 @@ class SequenceReport(object):
         report_nucleotides: typing.List[ReportNucleotide]
         for region, report_nucleotides in sorted(reports.items()):
             try:
-                gene = landmark_reader.get_gene(self.seed, region)
+                for seed_landmarks in self.landmarks:
+                    if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
+                        coordinate_name = seed_landmarks['coordinates']
+                        break
+                else:
+                    coordinate_name = None
+                    if self.seed is not None and self.seed != '':
+                        logger.warning(f'No coordinate reference found for entry: {self.seed}')
+                gene = landmark_reader.get_gene(coordinate_name, region)
                 genome_start_pos = gene['start']
             except ValueError:
                 genome_start_pos = 1
