@@ -197,7 +197,11 @@ def clip_seed_aminos(seed_aminos: typing.List[SeedAmino],
 
 
 class ConsensusAligner:
-    def __init__(self, projects: ProjectConfig, alignments_writer=None, unmerged_alignments_writer=None):
+    def __init__(self,
+                 projects: ProjectConfig,
+                 alignments_writer=None,
+                 unmerged_alignments_writer=None,
+                 intermediate_alignments_writer=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -212,6 +216,7 @@ class ConsensusAligner:
 
         self.alignments_writer = alignments_writer
         self.unmerged_alignments_writer = unmerged_alignments_writer
+        self.intermediate_alignments_writer = intermediate_alignments_writer
 
     def start_contig(self,
                      coordinate_name: str = None,
@@ -411,6 +416,54 @@ class ConsensusAligner:
                            "coordinate_name": self.coordinate_name}
                     self.unmerged_alignments_writer.writerow(row)
 
+            for i in range(len(amino_sections)-2, 0, -1):
+                amino_alignment = amino_sections[i]
+                if amino_alignment.action == CigarActions.MATCH:
+                    continue
+                size = max(amino_alignment.ref_end-amino_alignment.ref_start,
+                           amino_alignment.query_end-amino_alignment.query_start)
+                prev_alignment = amino_sections[i-1]
+                next_alignment = amino_sections[i+1]
+                can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
+                    prev_alignment.amino_size,
+                    next_alignment.amino_size))
+                has_frame_shift = (prev_alignment.reading_frame !=
+                                   next_alignment.reading_frame)
+                has_big_gap = MAXIMUM_AMINO_GAP < size // 3
+                if can_align and (has_frame_shift or has_big_gap):
+                    # Both neighbours are big enough, so we have a choice.
+                    # Either there's a frame shift or a big gap, so keep
+                    # dividing around this indel.
+                    continue
+                # Merge the two sections on either side of this indel.
+                amino_sections.pop(i+1)
+                amino_sections.pop(i)
+                new_alignment = AminoAlignment(prev_alignment.query_start,
+                                               next_alignment.query_end,
+                                               prev_alignment.ref_start,
+                                               next_alignment.ref_end,
+                                               CigarActions.MATCH,
+                                               prev_alignment.reading_frame)
+                amino_sections[i-1] = new_alignment
+                new_alignment.find_reading_frame(amino_ref,
+                                                 start_pos,
+                                                 translations)
+
+            if self.intermediate_alignments_writer is not None:
+                for alignment in self.amino_alignments:
+                    row = {"action": CigarActions(alignment.action).name,
+                           "query_start": alignment.query_start,
+                           "query_end": alignment.query_end,
+                           "ref_start": alignment.ref_start,
+                           "ref_end": alignment.ref_end,
+                           "aligned_query": alignment.aligned_query,
+                           "aligned_ref": alignment.aligned_ref,
+                           "reading_frame": alignment.reading_frame,
+                           "ref_amino_start": alignment.ref_amino_start,
+                           "coordinate_name": self.coordinate_name}
+                    self.intermediate_alignments_writer.writerow(row)
+
+            # try a second pass over all alignments
             for i in range(len(amino_sections)-2, 0, -1):
                 amino_alignment = amino_sections[i]
                 if amino_alignment.action == CigarActions.MATCH:

@@ -391,6 +391,7 @@ class SequenceReport(object):
         self.conseq_all_writer = None
         self.conseq_stitched_writer = None
         self.alignments_writer = self.unmerged_alignments_writer = None
+        self.intermediate_alignments_writer = None
 
     @property
     def has_detail_counts(self):
@@ -597,7 +598,8 @@ class SequenceReport(object):
         if self.consensus_aligner.consensus is not None:
             self.consensus_aligner = ConsensusAligner(self.projects,
                                                       self.alignments_writer,
-                                                      self.unmerged_alignments_writer)
+                                                      self.unmerged_alignments_writer,
+                                                      self.intermediate_alignments_writer)
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -849,6 +851,10 @@ class SequenceReport(object):
     def write_unmerged_alignments_header(self, alignments_file):
         self.unmerged_alignments_writer = self._create_alignments_writer(alignments_file)
         self.unmerged_alignments_writer.writeheader()
+
+    def write_intermediate_alignments_header(self, alignments_file):
+        self.intermediate_alignments_writer = self._create_alignments_writer(alignments_file)
+        self.intermediate_alignments_writer.writeheader()
 
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
@@ -1773,7 +1779,8 @@ def aln2counts(aligned_csv,
                conseq_stitched_csv=None,
                minimap_hits_csv=None,
                alignments_csv=None,
-               unmerged_alignments_csv=None):
+               unmerged_alignments_csv=None,
+               intermediate_alignments_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1871,6 +1878,8 @@ def aln2counts(aligned_csv,
             report.write_alignments_header(alignments_csv)
         if unmerged_alignments_csv is not None:
             report.write_unmerged_alignments_header(unmerged_alignments_csv)
+        if intermediate_alignments_csv is not None:
+            report.write_intermediate_alignments_header(intermediate_alignments_csv)
 
         report.process_reads(aligned_csv,
                              coverage_summary,
