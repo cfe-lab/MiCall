@@ -402,78 +402,18 @@ class ConsensusAligner:
                 amino_alignment.find_reading_frame(amino_ref,
                                                    start_pos,
                                                    translations)
+
             if self.unmerged_alignments_writer is not None:
                 self.write_alignments_file(amino_sections, self.unmerged_alignments_writer)
 
-            for i in range(len(amino_sections)-2, 0, -1):
-                amino_alignment = amino_sections[i]
-                if amino_alignment.action == CigarActions.MATCH:
-                    continue
-                size = max(amino_alignment.ref_end-amino_alignment.ref_start,
-                           amino_alignment.query_end-amino_alignment.query_start)
-                prev_alignment = amino_sections[i-1]
-                next_alignment = amino_sections[i+1]
-                can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
-                    prev_alignment.amino_size,
-                    next_alignment.amino_size))
-                has_frame_shift = (prev_alignment.reading_frame !=
-                                   next_alignment.reading_frame)
-                has_big_gap = MAXIMUM_AMINO_GAP < size // 3
-                if can_align and (has_frame_shift or has_big_gap):
-                    # Both neighbours are big enough, so we have a choice.
-                    # Either there's a frame shift or a big gap, so keep
-                    # dividing around this indel.
-                    continue
-                # Merge the two sections on either side of this indel.
-                amino_sections.pop(i+1)
-                amino_sections.pop(i)
-                new_alignment = AminoAlignment(prev_alignment.query_start,
-                                               next_alignment.query_end,
-                                               prev_alignment.ref_start,
-                                               next_alignment.ref_end,
-                                               CigarActions.MATCH,
-                                               prev_alignment.reading_frame)
-                amino_sections[i-1] = new_alignment
-                new_alignment.find_reading_frame(amino_ref,
-                                                 start_pos,
-                                                 translations)
+            amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
 
             if self.intermediate_alignments_writer is not None:
                 self.write_alignments_file(amino_sections, self.intermediate_alignments_writer)
 
             # try a second pass over all alignments
-            for i in range(len(amino_sections)-2, 0, -1):
-                amino_alignment = amino_sections[i]
-                if amino_alignment.action == CigarActions.MATCH:
-                    continue
-                size = max(amino_alignment.ref_end-amino_alignment.ref_start,
-                           amino_alignment.query_end-amino_alignment.query_start)
-                prev_alignment = amino_sections[i-1]
-                next_alignment = amino_sections[i+1]
-                can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
-                    prev_alignment.amino_size,
-                    next_alignment.amino_size))
-                has_frame_shift = (prev_alignment.reading_frame !=
-                                   next_alignment.reading_frame)
-                has_big_gap = MAXIMUM_AMINO_GAP < size // 3
-                if can_align and (has_frame_shift or has_big_gap):
-                    # Both neighbours are big enough, so we have a choice.
-                    # Either there's a frame shift or a big gap, so keep
-                    # dividing around this indel.
-                    continue
-                # Merge the two sections on either side of this indel.
-                amino_sections.pop(i+1)
-                amino_sections.pop(i)
-                new_alignment = AminoAlignment(prev_alignment.query_start,
-                                               next_alignment.query_end,
-                                               prev_alignment.ref_start,
-                                               next_alignment.ref_end,
-                                               CigarActions.MATCH,
-                                               prev_alignment.reading_frame)
-                amino_sections[i-1] = new_alignment
-                new_alignment.find_reading_frame(amino_ref,
-                                                 start_pos,
-                                                 translations)
+            amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
+
             self.amino_alignments.extend(amino_sections)
 
         if self.alignments_writer is not None:
@@ -499,6 +439,41 @@ class ConsensusAligner:
                    "ref_amino_start": alignment.ref_amino_start,
                    "coordinate_name": self.coordinate_name}
             alignments_writer.writerow(row)
+
+    def combine_alignments(self, amino_sections, amino_ref, start_pos, translations):
+        for i in range(len(amino_sections) - 2, 0, -1):
+            amino_alignment = amino_sections[i]
+            if amino_alignment.action == CigarActions.MATCH:
+                continue
+            size = max(amino_alignment.ref_end - amino_alignment.ref_start,
+                       amino_alignment.query_end - amino_alignment.query_start)
+            prev_alignment = amino_sections[i - 1]
+            next_alignment = amino_sections[i + 1]
+            can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
+                prev_alignment.amino_size,
+                next_alignment.amino_size))
+            has_frame_shift = (prev_alignment.reading_frame !=
+                               next_alignment.reading_frame)
+            has_big_gap = MAXIMUM_AMINO_GAP < size // 3
+            if can_align and (has_frame_shift or has_big_gap):
+                # Both neighbours are big enough, so we have a choice.
+                # Either there's a frame shift or a big gap, so keep
+                # dividing around this indel.
+                continue
+            # Merge the two sections on either side of this indel.
+            amino_sections.pop(i + 1)
+            amino_sections.pop(i)
+            new_alignment = AminoAlignment(prev_alignment.query_start,
+                                           next_alignment.query_end,
+                                           prev_alignment.ref_start,
+                                           next_alignment.ref_end,
+                                           CigarActions.MATCH,
+                                           prev_alignment.reading_frame)
+            amino_sections[i - 1] = new_alignment
+            new_alignment.find_reading_frame(amino_ref,
+                                             start_pos,
+                                             translations)
+        return amino_sections
 
     def report_region(
             self,
