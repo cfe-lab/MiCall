@@ -1,4 +1,3 @@
-import csv
 import typing
 from dataclasses import dataclass, replace
 from enum import IntEnum
@@ -411,7 +410,7 @@ class ConsensusAligner:
             if self.intermediate_alignments_writer is not None:
                 self.write_alignments_file(amino_sections, self.intermediate_alignments_writer)
 
-            # try a second pass over all alignments
+            # do a second pass to combine alignments
             amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
 
             self.amino_alignments.extend(amino_sections)
@@ -440,7 +439,8 @@ class ConsensusAligner:
                    "coordinate_name": self.coordinate_name}
             alignments_writer.writerow(row)
 
-    def combine_alignments(self, amino_sections, amino_ref, start_pos, translations):
+    @staticmethod
+    def combine_alignments(amino_sections, amino_ref, start_pos, translations):
         for i in range(len(amino_sections) - 2, 0, -1):
             amino_alignment = amino_sections[i]
             if amino_alignment.action == CigarActions.MATCH:

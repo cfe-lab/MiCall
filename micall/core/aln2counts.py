@@ -114,6 +114,12 @@ def parse_args():
     parser.add_argument('--alignments_csv',
                         type=argparse.FileType('w'),
                         help='CSV of amino alignments')
+    parser.add_argument('--alignments_unmerged_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of unmerged amino alignments')
+    parser.add_argument('--alignments_intermediate_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of intermediate amino alignments')
     return parser.parse_args()
 
 
@@ -1779,8 +1785,8 @@ def aln2counts(aligned_csv,
                conseq_stitched_csv=None,
                minimap_hits_csv=None,
                alignments_csv=None,
-               unmerged_alignments_csv=None,
-               intermediate_alignments_csv=None):
+               alignments_unmerged_csv=None,
+               alignments_intermediate_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1816,7 +1822,8 @@ def aln2counts(aligned_csv,
         consensus sequences.
     @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     @param alignments_csv: Open file handle to write alignments.
-    @param unmerged_alignments_csv: Open file handle to write alignments.
+    @param alignments_unmerged_csv: Open file handle to write unmerged alignments.
+    @param alignments_intermediate_csv: Open file handle to write intermediate alignments.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1876,10 +1883,10 @@ def aln2counts(aligned_csv,
             report.write_minimap_hits_header(minimap_hits_csv)
         if alignments_csv is not None:
             report.write_alignments_header(alignments_csv)
-        if unmerged_alignments_csv is not None:
-            report.write_unmerged_alignments_header(unmerged_alignments_csv)
-        if intermediate_alignments_csv is not None:
-            report.write_intermediate_alignments_header(intermediate_alignments_csv)
+        if alignments_unmerged_csv is not None:
+            report.write_unmerged_alignments_header(alignments_unmerged_csv)
+        if alignments_intermediate_csv is not None:
+            report.write_intermediate_alignments_header(alignments_intermediate_csv)
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -1922,7 +1929,9 @@ def main():
                conseq_all_csv=args.conseq_all_csv,
                conseq_stitched_csv=args.conseq_stitched_csv,
                minimap_hits_csv=args.minimap_hits_csv,
-               alignments_csv=args.alignments_csv)
+               alignments_csv=args.alignments_csv,
+               alignments_unmerged_csv=args.alignments_unmerged_csv,
+               alignments_intermediate_csv=args.alignments_intermediate_csv)
 
 
 if __name__ == '__main__':

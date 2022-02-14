@@ -210,8 +210,10 @@ class Sample:
         else:
             contigs_path = os.devnull
         try:  # open outside with block to avoid limit on statically nested blocks
-            alignments_csv = open(self.alignments_csv, "w")
-            unmerged_alignments_csv = open(self.unmerged_alignments_csv, "w")
+            alignments_csv = open(self.alignments_csv, 'w')
+            alignments_unmerged_csv = open(self.alignments_unmerged_csv, 'w')
+            alignments_intermediate_csv = open(self.alignments_intermediate_csv, 'w')
+
         except OSError:
             logger.error("Could not open alignments files, exiting")
             raise
@@ -260,10 +262,12 @@ class Sample:
                        conseq_stitched_csv=conseq_stitched_csv,
                        minimap_hits_csv=minimap_hits_csv,
                        alignments_csv=alignments_csv,
-                       unmerged_alignments_csv=unmerged_alignments_csv)
+                       alignments_unmerged_csv=alignments_unmerged_csv,
+                       alignments_intermediate_csv=alignments_intermediate_csv)
 
         alignments_csv.close()
-        unmerged_alignments_csv.close()
+        alignments_unmerged_csv.close()
+        alignments_intermediate_csv.close()
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
