@@ -200,7 +200,8 @@ class ConsensusAligner:
                  projects: ProjectConfig,
                  alignments_writer=None,
                  unmerged_alignments_writer=None,
-                 intermediate_alignments_writer=None):
+                 intermediate_alignments_writer=None,
+                 overall_alignments_writer=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -216,6 +217,7 @@ class ConsensusAligner:
         self.alignments_writer = alignments_writer
         self.unmerged_alignments_writer = unmerged_alignments_writer
         self.intermediate_alignments_writer = intermediate_alignments_writer
+        self.overall_alignments_writer = overall_alignments_writer
 
     def start_contig(self,
                      coordinate_name: str = None,
@@ -258,6 +260,17 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
+
+        if self.overall_alignments_writer is not None:
+            for alignment in self.alignments:
+                row = {"coordinate_name": self.coordinate_name,
+                       "query_start": alignment.q_st,
+                       "query_end": alignment.q_en,
+                       "consensus_offset": self.consensus_offset,
+                       "ref_start": alignment.r_st,
+                       "ref_end": alignment.r_en,
+                       "cigar_str": alignment.cigar_str}
+                self.overall_alignments_writer.writerow(row)
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15

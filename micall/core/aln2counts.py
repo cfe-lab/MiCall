@@ -120,6 +120,9 @@ def parse_args():
     parser.add_argument('--alignments_intermediate_csv',
                         type=argparse.FileType('w'),
                         help='CSV of intermediate amino alignments')
+    parser.add_argument('--alignments_overall_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of overall amino alignments')
     return parser.parse_args()
 
 
@@ -397,7 +400,7 @@ class SequenceReport(object):
         self.conseq_all_writer = None
         self.conseq_stitched_writer = None
         self.alignments_writer = self.unmerged_alignments_writer = None
-        self.intermediate_alignments_writer = None
+        self.intermediate_alignments_writer = self.overall_alignments_writer = None
 
     @property
     def has_detail_counts(self):
@@ -605,7 +608,8 @@ class SequenceReport(object):
             self.consensus_aligner = ConsensusAligner(self.projects,
                                                       self.alignments_writer,
                                                       self.unmerged_alignments_writer,
-                                                      self.intermediate_alignments_writer)
+                                                      self.intermediate_alignments_writer,
+                                                      self.overall_alignments_writer)
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -852,15 +856,30 @@ class SequenceReport(object):
 
     def write_alignments_header(self, alignments_file):
         self.alignments_writer = self._create_alignments_writer(alignments_file)
+        self.consensus_aligner.alignments_writer = self.alignments_writer
         self.alignments_writer.writeheader()
 
     def write_unmerged_alignments_header(self, alignments_file):
         self.unmerged_alignments_writer = self._create_alignments_writer(alignments_file)
+        self.consensus_aligner.unmerged_alignments_writer = self.unmerged_alignments_writer
         self.unmerged_alignments_writer.writeheader()
 
     def write_intermediate_alignments_header(self, alignments_file):
         self.intermediate_alignments_writer = self._create_alignments_writer(alignments_file)
+        self.consensus_aligner.intermediate_alignments_writer = self.intermediate_alignments_writer
         self.intermediate_alignments_writer.writeheader()
+
+    def write_overall_alignments_header(self, alignments_file):
+        columns = ["coordinate_name",
+                   "query_start",
+                   "query_end",
+                   "consensus_offset",
+                   "ref_start",
+                   "ref_end",
+                   "cigar_str"]
+        self.overall_alignments_writer = csv.DictWriter(alignments_file, columns, lineterminator=os.linesep)
+        self.consensus_aligner.overall_alignments_writer = self.overall_alignments_writer
+        self.overall_alignments_writer.writeheader()
 
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
@@ -1786,7 +1805,8 @@ def aln2counts(aligned_csv,
                minimap_hits_csv=None,
                alignments_csv=None,
                alignments_unmerged_csv=None,
-               alignments_intermediate_csv=None):
+               alignments_intermediate_csv=None,
+               alignments_overall_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1824,6 +1844,7 @@ def aln2counts(aligned_csv,
     @param alignments_csv: Open file handle to write alignments.
     @param alignments_unmerged_csv: Open file handle to write unmerged alignments.
     @param alignments_intermediate_csv: Open file handle to write intermediate alignments.
+    @param alignments_overall_csv: Open file handle to write overall alignments.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1887,6 +1908,8 @@ def aln2counts(aligned_csv,
             report.write_unmerged_alignments_header(alignments_unmerged_csv)
         if alignments_intermediate_csv is not None:
             report.write_intermediate_alignments_header(alignments_intermediate_csv)
+        if alignments_overall_csv is not None:
+            report.write_overall_alignments_header(alignments_overall_csv)
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -1931,7 +1954,8 @@ def main():
                minimap_hits_csv=args.minimap_hits_csv,
                alignments_csv=args.alignments_csv,
                alignments_unmerged_csv=args.alignments_unmerged_csv,
-               alignments_intermediate_csv=args.alignments_intermediate_csv)
+               alignments_intermediate_csv=args.alignments_intermediate_csv,
+               alignments_overall_csv=args.alignments_overall_csv)
 
 
 if __name__ == '__main__':

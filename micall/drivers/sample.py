@@ -213,7 +213,7 @@ class Sample:
             alignments_csv = open(self.alignments_csv, 'w')
             alignments_unmerged_csv = open(self.alignments_unmerged_csv, 'w')
             alignments_intermediate_csv = open(self.alignments_intermediate_csv, 'w')
-
+            alignments_overall_csv = open(self.alignments_overall_csv, 'w')
         except OSError:
             logger.error("Could not open alignments files, exiting")
             raise
@@ -263,11 +263,13 @@ class Sample:
                        minimap_hits_csv=minimap_hits_csv,
                        alignments_csv=alignments_csv,
                        alignments_unmerged_csv=alignments_unmerged_csv,
-                       alignments_intermediate_csv=alignments_intermediate_csv)
+                       alignments_intermediate_csv=alignments_intermediate_csv,
+                       alignments_overall_csv=alignments_overall_csv)
 
         alignments_csv.close()
         alignments_unmerged_csv.close()
         alignments_intermediate_csv.close()
+        alignments_overall_csv.close()
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
