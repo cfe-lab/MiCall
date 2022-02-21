@@ -7,7 +7,7 @@ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
 numpy==1.22.2
 scipy==1.8.0
 matplotlib==3.5.1
-cutadapt==3.5
+cutadapt==3.6
 python-Levenshtein==0.12.2
 PyYAML==6.0
 reportlab==3.6.6
