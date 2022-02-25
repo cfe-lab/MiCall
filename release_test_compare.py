@@ -453,7 +453,7 @@ def compare_consensus(sample: Sample,
                 if region.split('-')[-1] == 'NS5b':
                     target_nucs = [nuc for nuc, row in target_details]
                     last_codon = ''
-                    for nuc in target_nucs[-3:-1]:
+                    for nuc in target_nucs[-3:]:
                         last_codon = last_codon + nuc
                     if translate(last_codon) == '*':
                         target_details = target_details[:-3]
