@@ -457,27 +457,6 @@ def compare_consensus(sample: Sample,
                         last_codon = last_codon + nuc
                     if translate(last_codon) == '*':
                         target_details = target_details[:-3]
-                elif region in ("SARS-CoV-2-nsp1",
-                                "SARS-CoV-2-nsp10",
-                                "SARS-CoV-2-nsp12",
-                                "SARS-CoV-2-nsp13",
-                                "SARS-CoV-2-nsp14",
-                                "SARS-CoV-2-nsp15",
-                                "SARS-CoV-2-nsp16",
-                                "SARS-CoV-2-nsp2",
-                                "SARS-CoV-2-nsp3",
-                                "SARS-CoV-2-nsp4",
-                                "SARS-CoV-2-nsp5",
-                                "SARS-CoV-2-nsp6",
-                                "SARS-CoV-2-nsp7",
-                                "SARS-CoV-2-nsp8",
-                                "SARS-CoV-2-nsp9"):
-                    # this assumes that the regions are whole
-                    target_details = target_details[:-3]
-                elif region == "SARS-CoV-2-ORF1ab":
-                    # check that the regions is whole
-                    if len(target_details) == 21290:
-                        target_details = target_details[:-4405]
             for source_item, target_item in zip_longest(source_details,
                                                         target_details,
                                                         fillvalue=('', dummy_row)):
