@@ -399,8 +399,8 @@ class SequenceReport(object):
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
         self.conseq_stitched_writer = None
-        self.alignments_writer = self.unmerged_alignments_writer = None
-        self.intermediate_alignments_writer = self.overall_alignments_writer = None
+        self.alignments_csv = self.unmerged_alignments_csv = None
+        self.intermediate_alignments_csv = self.overall_alignments_csv = None
 
     @property
     def has_detail_counts(self):
@@ -570,6 +570,7 @@ class SequenceReport(object):
                 self.write_failure(self.fail_writer)
             if self.has_detail_counts:
                 self.combine_reports()
+            self.insert_writer.ref_insertions.clear()
         if self.nuc_detail_writer is not None and self.nuc_writer is not None:
             self.write_nuc_counts(self.nuc_writer)
         if self.amino_detail_writer is not None and self.amino_writer is not None:
@@ -606,10 +607,10 @@ class SequenceReport(object):
         self.consensus = {}  # {coord_name: consensus_amino_seq}
         if self.consensus_aligner.consensus is not None:
             self.consensus_aligner = ConsensusAligner(self.projects,
-                                                      self.alignments_writer,
-                                                      self.unmerged_alignments_writer,
-                                                      self.intermediate_alignments_writer,
-                                                      self.overall_alignments_writer)
+                                                      self.alignments_csv,
+                                                      self.unmerged_alignments_csv,
+                                                      self.intermediate_alignments_csv,
+                                                      self.overall_alignments_csv)
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -764,7 +765,6 @@ class SequenceReport(object):
 
         self.reports.clear()
         self.report_nucleotides.clear()
-        self.insert_writer.ref_insertions.clear()
 
     def write_amino_report(self,
                            amino_writer: DictWriter,
@@ -1745,7 +1745,7 @@ class InsertionWriter(object):
                 region_start = region_info['start']
             except ValueError:
                 if self.seed is not None and self.seed != '':
-                    logger.warning(f"No coordinate reference found for seed name {self.seed}.")
+                    logger.warning(f"No coordinate reference found for seed name {self.seed}, region {region}.")
                 region_start = 1
             if self.ref_insertions[region] is not None:
                 for ref_pos in self.ref_insertions[region]:
@@ -1888,14 +1888,10 @@ def aln2counts(aligned_csv,
             report.write_genome_coverage_header(genome_coverage_csv)
         if minimap_hits_csv is not None:
             report.write_minimap_hits_header(minimap_hits_csv)
-        if alignments_csv is not None:
-            report.write_alignments_header(alignments_csv)
-        if alignments_unmerged_csv is not None:
-            report.write_unmerged_alignments_header(alignments_unmerged_csv)
-        if alignments_intermediate_csv is not None:
-            report.write_intermediate_alignments_header(alignments_intermediate_csv)
-        if alignments_overall_csv is not None:
-            report.write_overall_alignments_header(alignments_overall_csv)
+        report.alignments_csv = alignments_csv
+        report.unmerged_alignments_csv = alignments_unmerged_csv
+        report.intermediate_alignments_csv = alignments_intermediate_csv
+        report.overall_alignments_csv = alignments_overall_csv
 
         report.process_reads(aligned_csv,
                              coverage_summary,

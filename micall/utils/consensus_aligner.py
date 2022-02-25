@@ -3,6 +3,8 @@ from dataclasses import dataclass, replace
 from enum import IntEnum
 from itertools import count
 from operator import attrgetter
+import csv
+import os
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -198,10 +200,10 @@ def clip_seed_aminos(seed_aminos: typing.List[SeedAmino],
 class ConsensusAligner:
     def __init__(self,
                  projects: ProjectConfig,
-                 alignments_writer=None,
-                 unmerged_alignments_writer=None,
-                 intermediate_alignments_writer=None,
-                 overall_alignments_writer=None):
+                 alignments_file=None,
+                 unmerged_alignments_file=None,
+                 intermediate_alignments_file=None,
+                 overall_alignments_file=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -214,10 +216,51 @@ class ConsensusAligner:
         # consensus nucleotide positions that were inserts
         self.inserts: typing.Set[int] = set()
 
-        self.alignments_writer = alignments_writer
-        self.unmerged_alignments_writer = unmerged_alignments_writer
-        self.intermediate_alignments_writer = intermediate_alignments_writer
-        self.overall_alignments_writer = overall_alignments_writer
+        if alignments_file is not None:
+            self.alignments_writer = self._create_alignments_writer(alignments_file)
+        else:
+            self.alignments_writer = None
+
+        if unmerged_alignments_file is not None:
+            self.unmerged_alignments_writer = self._create_alignments_writer(unmerged_alignments_file)
+        else:
+            self.unmerged_alignments_writer = None
+
+        if intermediate_alignments_file is not None:
+            self.intermediate_alignments_writer = self._create_alignments_writer(intermediate_alignments_file)
+        else:
+            self.intermediate_alignments_writer = None
+
+        if overall_alignments_file is not None:
+            columns = ["coordinate_name",
+                       "query_start",
+                       "query_end",
+                       "consensus_offset",
+                       "ref_start",
+                       "ref_end",
+                       "cigar_str"]
+            self.overall_alignments_writer = \
+                self._create_alignments_writer(overall_alignments_file, different_columns=columns)
+        else:
+            self.overall_alignments_writer = None
+
+    @staticmethod
+    def _create_alignments_writer(alignments_file, different_columns = None):
+        columns = different_columns or ["coordinate_name",
+                                        "action",
+                                        "query_start",
+                                        "query_end",
+                                        "ref_start",
+                                        "ref_end",
+                                        "reading_frame",
+                                        "ref_amino_start",
+                                        "aligned_query",
+                                        "aligned_ref"]
+        writer = csv.DictWriter(alignments_file, columns, lineterminator=os.linesep)
+        pos = alignments_file.tell()
+        if pos == 0:
+            writer.writeheader()
+        return writer
 
     def start_contig(self,
                      coordinate_name: str = None,
