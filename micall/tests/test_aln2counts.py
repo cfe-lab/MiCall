@@ -38,6 +38,32 @@ class SequenceReportTest(unittest.TestCase):
 
         self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
 
+    def testAminoAlingmentsHeaders(self):
+        expected_text = """\
+coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+ref_amino_start,aligned_query,aligned_ref
+"""
+
+        alignments_file1 = StringIO()
+        self.report.write_alignments_header(alignments_file1)
+        alignments_file2 = StringIO()
+        self.report.write_unmerged_alignments_header(alignments_file2)
+        alignments_file3 = StringIO()
+        self.report.write_intermediate_alignments_header(alignments_file3)
+
+        self.assertMultiLineEqual(expected_text, alignments_file1.getvalue())
+        self.assertMultiLineEqual(expected_text, alignments_file2.getvalue())
+        self.assertMultiLineEqual(expected_text, alignments_file3.getvalue())
+
+    def testOverallAlignmentsHeader(self):
+        expected_text = """\
+coordinate_name,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_str
+"""
+        alignments_file = StringIO()
+        self.report.write_overall_alignments_header(alignments_file)
+
+        self.assertMultiLineEqual(expected_text, alignments_file.getvalue())
+
     def testConsensusFromTwoReads(self):
         """ The second read is out voted by the first one.
         CCC -> P
