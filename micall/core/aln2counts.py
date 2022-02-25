@@ -618,11 +618,10 @@ class SequenceReport(object):
         if is_partial:
             coordinate_name = None
         else:
-            for seed_landmarks in self.landmarks:
-                if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
-                    coordinate_name = seed_landmarks['coordinates']
-                    break
-            else:
+            landmark_reader = LandmarkReader(self.landmarks)
+            try:
+                coordinate_name = landmark_reader.get_coordinates(self.seed)
+            except ValueError:
                 coordinate_name = None
 
         self.consensus_aligner.start_contig(coordinate_name,
@@ -1198,18 +1197,13 @@ class SequenceReport(object):
         report_nucleotides: typing.List[ReportNucleotide]
         for region, report_nucleotides in sorted(reports.items()):
             try:
-                for seed_landmarks in self.landmarks:
-                    if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
-                        coordinate_name = seed_landmarks['coordinates']
-                        break
-                else:
-                    coordinate_name = None
-                    if self.seed is not None and self.seed != '':
-                        logger.warning(f'No coordinate reference found for entry: {self.seed}')
+                coordinate_name = landmark_reader.get_coordinates(self.seed)
                 gene = landmark_reader.get_gene(coordinate_name, region)
                 genome_start_pos = gene['start']
             except ValueError:
                 genome_start_pos = 1
+                if self.seed is not None and self.seed != '':
+                    logger.warning(f"No coordinates found for seed name {self.seed} and region {region}.")
             for report_nucleotide in report_nucleotides:
                 self.write_counts(seed,
                                   region,
@@ -1278,14 +1272,11 @@ class SequenceReport(object):
             nuc_dict = {}
             insertions_dict = {}
             consumed_positions = set()
-            for seed_landmarks in self.landmarks:
-                if re.fullmatch(seed_landmarks['seed_pattern'], entry):
-                    coordinate_name = seed_landmarks['coordinates']
-                    break
-            else:
-                coordinate_name = None
+            try:
+                coordinate_name = landmark_reader.get_coordinates(entry)
+            except ValueError:
                 if entry is not None and entry != '':
-                    logger.warning(f'No coordinate reference found for entry: {entry}')
+                    logger.warning(f"No coordinate reference found for seed name {entry}.")
                 continue
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
@@ -1749,17 +1740,12 @@ class InsertionWriter(object):
         landmark_reader = LandmarkReader(landmarks)
         for region in self.ref_insertions:
             try:
-                for seed_landmarks in landmarks:
-                    if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
-                        coordinate_name = seed_landmarks['coordinates']
-                        break
-                else:
-                    coordinate_name = None
-                    if self.seed is not None and self.seed != '':
-                        logger.warning(f'No coordinate reference found for entry: {self.seed}')
+                coordinate_name = landmark_reader.get_coordinates(self.seed)
                 region_info = landmark_reader.get_gene(coordinate_name, region)
                 region_start = region_info['start']
             except ValueError:
+                if self.seed is not None and self.seed != '':
+                    logger.warning(f"No coordinate reference found for seed name {self.seed}.")
                 region_start = 1
             if self.ref_insertions[region] is not None:
                 for ref_pos in self.ref_insertions[region]:
