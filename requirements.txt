@@ -10,7 +10,7 @@ matplotlib==3.5.1
 cutadapt==3.7
 python-Levenshtein==0.12.2
 PyYAML==6.0
-reportlab==3.6.6
+reportlab==3.6.7
 pysam==0.18.0
 git+https://github.com/cfe-lab/genetracks.git@v0.2.dev0
 mappy==2.24
