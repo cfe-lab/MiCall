@@ -1,8 +1,9 @@
 import math
 import typing
+from io import StringIO
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
-from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions
+from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
@@ -730,3 +731,73 @@ def test_report_region_with_repeated_nucleotide(projects):
     nuc_consensus = ''.join(report_nucleotide.seed_nucleotide.get_consensus('MAX')
                             for report_nucleotide in report_nucleotides)
     assert nuc_consensus == seed_seq[13441:13500]
+
+
+# noinspection DuplicatedCode
+def test_alignments_file(projects):
+    alignments_file = StringIO()
+    unmerged_alignments_file = StringIO()
+    intermediate_alignments_file = StringIO()
+    _ = ConsensusAligner(projects,
+                         alignments_file=alignments_file,
+                         unmerged_alignments_file= unmerged_alignments_file,
+                         intermediate_alignments_file=intermediate_alignments_file)
+    expected_text = """\
+coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+ref_amino_start,aligned_query,aligned_ref
+"""
+
+    assert alignments_file.getvalue() == expected_text
+    assert unmerged_alignments_file.getvalue() == expected_text
+    assert intermediate_alignments_file.getvalue() == expected_text
+
+# noinspection DuplicatedCode
+def test_overall_alignments_file(projects):
+    overall_alignments_file = StringIO()
+    _ = ConsensusAligner(projects, overall_alignments_file=overall_alignments_file)
+    expected_text = """\
+coordinate_name,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_str
+"""
+
+    assert overall_alignments_file.getvalue() == expected_text
+
+
+# noinspection DuplicatedCode
+def test_write_alignment(projects):
+    alignments_file = StringIO()
+    aligner = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner.coordinate_name = "test"
+    amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10)]
+
+    expected_text = """\
+coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+ref_amino_start,aligned_query,aligned_ref
+test,MATCH,0,10,20,30,1,10,ATA,ACA
+"""
+
+    aligner.write_alignments_file(amino_alignments, aligner.alignments_writer)
+
+    assert alignments_file.getvalue() == expected_text
+
+
+# noinspection DuplicatedCode
+def test_write_multiple_alignments(projects):
+    alignments_file = StringIO()
+    aligner = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner.coordinate_name = "test"
+    amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10)]
+    aligner.write_alignments_file(amino_alignments, aligner.alignments_writer)
+    aligner2 = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner2.coordinate_name = "2ndtest"
+    amino_alignments2 = [AminoAlignment(0, 20, 40, 60, 0, 2, aligned_query="ABC", aligned_ref="DEF", ref_amino_start=4)]
+    aligner2.write_alignments_file(amino_alignments2, aligner2.alignments_writer)
+
+    expected_text = """\
+coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+ref_amino_start,aligned_query,aligned_ref
+test,MATCH,0,10,20,30,1,10,ATA,ACA
+2ndtest,MATCH,0,20,40,60,2,4,ABC,DEF
+"""
+
+    assert alignments_file.getvalue() == expected_text
+

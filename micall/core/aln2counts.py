@@ -837,49 +837,6 @@ class SequenceReport(object):
                                                   lineterminator=os.linesep)
         self.minimap_hits_writer.writeheader()
 
-    @staticmethod
-    def _create_alignments_writer(alignments_file):
-        columns = ["coordinate_name",
-                   "action",
-                   "query_start",
-                   "query_end",
-                   "ref_start",
-                   "ref_end",
-                   "reading_frame",
-                   "ref_amino_start",
-                   "aligned_query",
-                   "aligned_ref"]
-        return csv.DictWriter(alignments_file,
-                              columns,
-                              lineterminator=os.linesep)
-
-    def write_alignments_header(self, alignments_file):
-        self.alignments_writer = self._create_alignments_writer(alignments_file)
-        self.consensus_aligner.alignments_writer = self.alignments_writer
-        self.alignments_writer.writeheader()
-
-    def write_unmerged_alignments_header(self, alignments_file):
-        self.unmerged_alignments_writer = self._create_alignments_writer(alignments_file)
-        self.consensus_aligner.unmerged_alignments_writer = self.unmerged_alignments_writer
-        self.unmerged_alignments_writer.writeheader()
-
-    def write_intermediate_alignments_header(self, alignments_file):
-        self.intermediate_alignments_writer = self._create_alignments_writer(alignments_file)
-        self.consensus_aligner.intermediate_alignments_writer = self.intermediate_alignments_writer
-        self.intermediate_alignments_writer.writeheader()
-
-    def write_overall_alignments_header(self, alignments_file):
-        columns = ["coordinate_name",
-                   "query_start",
-                   "query_end",
-                   "consensus_offset",
-                   "ref_start",
-                   "ref_end",
-                   "cigar_str"]
-        self.overall_alignments_writer = csv.DictWriter(alignments_file, columns, lineterminator=os.linesep)
-        self.consensus_aligner.overall_alignments_writer = self.overall_alignments_writer
-        self.overall_alignments_writer.writeheader()
-
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
                    'coordinates',
