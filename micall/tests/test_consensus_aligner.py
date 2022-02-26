@@ -740,7 +740,7 @@ def test_alignments_file(projects):
     intermediate_alignments_file = StringIO()
     _ = ConsensusAligner(projects,
                          alignments_file=alignments_file,
-                         unmerged_alignments_file= unmerged_alignments_file,
+                         unmerged_alignments_file=unmerged_alignments_file,
                          intermediate_alignments_file=intermediate_alignments_file)
     expected_text = """\
 coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
@@ -750,6 +750,7 @@ ref_amino_start,aligned_query,aligned_ref
     assert alignments_file.getvalue() == expected_text
     assert unmerged_alignments_file.getvalue() == expected_text
     assert intermediate_alignments_file.getvalue() == expected_text
+
 
 # noinspection DuplicatedCode
 def test_overall_alignments_file(projects):
@@ -800,4 +801,3 @@ test,MATCH,0,10,20,30,1,10,ATA,ACA
 """
 
     assert alignments_file.getvalue() == expected_text
-
