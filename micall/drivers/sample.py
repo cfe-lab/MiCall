@@ -19,8 +19,29 @@ from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def open_files(**filemode):
+    files_opened = {}
+    for name, file_mode in filemode.items():
+        if file_mode is None:
+            files_opened[name] = None
+        else:
+            file = file_mode[0]
+            mode = file_mode[1]
+            files_opened[name] = open(file, mode)
+    try:
+        yield files_opened
+    finally:
+        for file in files_opened.values():
+            if file is None:
+                pass
+            else:
+                file.close()
 
 
 def exclude_extra_seeds(excluded_seeds: typing.Sequence[str],
@@ -205,71 +226,53 @@ class Sample:
                     clipping_csv=clipping_csv)
 
         logger.info('Running aln2counts on %s.', self)
-        if use_denovo:
-            contigs_path = self.contigs_csv
-        else:
-            contigs_path = os.devnull
-        try:  # open outside with block to avoid limit on statically nested blocks
-            alignments_csv = open(self.alignments_csv, 'w')
-            alignments_unmerged_csv = open(self.alignments_unmerged_csv, 'w')
-            alignments_intermediate_csv = open(self.alignments_intermediate_csv, 'w')
-            alignments_overall_csv = open(self.alignments_overall_csv, 'w')
-        except OSError:
-            logger.error("Could not open alignments files, exiting")
-            raise
-        with open(self.aligned_csv) as aligned_csv, \
-                open(self.g2p_aligned_csv) as g2p_aligned_csv, \
-                open(self.clipping_csv) as clipping_csv, \
-                open(self.conseq_ins_csv) as conseq_ins_csv, \
-                open(self.remap_conseq_csv) as remap_conseq_csv, \
-                open(contigs_path) as contigs_csv, \
-                open(self.nuc_csv, 'w') as nuc_csv, \
-                open(self.nuc_detail_csv, 'w') as nuc_detail_csv, \
-                open(self.amino_csv, 'w') as amino_csv, \
-                open(self.amino_detail_csv, 'w') as amino_detail_csv, \
-                open(self.insertions_csv, 'w') as insertions_csv, \
-                open(self.conseq_csv, 'w') as conseq_csv, \
-                open(self.conseq_region_csv, 'w') as conseq_region_csv, \
-                open(self.failed_align_csv, 'w') as failed_align_csv, \
-                open(self.coverage_summary_csv, 'w') as coverage_summary_csv, \
-                open(self.genome_coverage_csv, 'w') as genome_coverage_csv, \
-                open(self.conseq_all_csv, "w") as conseq_all_csv, \
-                open(self.conseq_stitched_csv, "w") as conseq_stitched_csv, \
-                open(self.minimap_hits_csv, "w") as minimap_hits_csv:
+        with open_files(aligned_csv=(self.aligned_csv, 'r'),
+                        g2p_aligned_csv=(self.g2p_aligned_csv, 'r'),
+                        clipping_csv=(self.clipping_csv, 'r'),
+                        nuc_csv=(self.nuc_csv, 'w'),
+                        conseq_ins_csv=(self.conseq_ins_csv, 'r'),
+                        remap_conseq_csv=(self.remap_conseq_csv, 'r'),
+                        contigs_csv=(self.contigs_csv, 'r') if use_denovo else None,
+                        nuc_detail_csv=(self.nuc_details_csv, 'w') if use_denovo else None,
+                        amino_csv=(self.amino_csv, 'w'),
+                        amino_detail_csv=(self.amino_details_csv, 'w') if use_denovo else None,
+                        insertions_csv=(self.insertions_csv, 'w'),
+                        conseq_csv=(self.conseq_csv, 'w'),
+                        conseq_region_csv=(self.conseq_region_csv, 'w'),
+                        failed_align_csv=(self.failed_align_csv, 'w'),
+                        coverage_summary_csv=(self.coverage_summary_csv, 'w'),
+                        genome_coverage_csv=(self.genome_coverage_csv, 'w'),
+                        conseq_all_csv=(self.conseq_all_csv, 'w'),
+                        conseq_stitched_csv=(self.conseq_stitched_csv, 'w'),
+                        minimap_hits_csv=(self.minimap_hits_csv, 'w'),
+                        alignments_csv=(self.alignment_csv, 'w'),
+                        alignments_unmerged_csv=(self.alignments_unmerged_csv, 'w'),
+                        alignments_intermediate_csv=(self.alignments_intermediate_csv, 'w'),
+                        alignments_overall_csv=(self.alignments_overall_csv, 'w')) as opened_files:
 
-            if not use_denovo:
-                for f in (amino_detail_csv, nuc_detail_csv):
-                    f.close()
-                    os.remove(f.name)
-                amino_detail_csv = nuc_detail_csv = None
-            aln2counts(aligned_csv,
-                       nuc_csv,
-                       amino_csv,
-                       insertions_csv,
-                       conseq_csv,
-                       failed_align_csv,
-                       coverage_summary_csv=coverage_summary_csv,
-                       clipping_csv=clipping_csv,
-                       conseq_ins_csv=conseq_ins_csv,
-                       g2p_aligned_csv=g2p_aligned_csv,
-                       remap_conseq_csv=remap_conseq_csv,
-                       conseq_region_csv=conseq_region_csv,
-                       amino_detail_csv=amino_detail_csv,
-                       nuc_detail_csv=nuc_detail_csv,
-                       genome_coverage_csv=genome_coverage_csv,
-                       contigs_csv=contigs_csv,
-                       conseq_all_csv=conseq_all_csv,
-                       conseq_stitched_csv=conseq_stitched_csv,
-                       minimap_hits_csv=minimap_hits_csv,
-                       alignments_csv=alignments_csv,
-                       alignments_unmerged_csv=alignments_unmerged_csv,
-                       alignments_intermediate_csv=alignments_intermediate_csv,
-                       alignments_overall_csv=alignments_overall_csv)
-
-        alignments_csv.close()
-        alignments_unmerged_csv.close()
-        alignments_intermediate_csv.close()
-        alignments_overall_csv.close()
+            aln2counts(opened_files['aligned_csv'],
+                       opened_files['nuc_csv'],
+                       opened_files['amino_csv'],
+                       opened_files['insertions_csv'],
+                       opened_files['conseq_csv'],
+                       opened_files['failed_align_csv'],
+                       coverage_summary_csv=opened_files['coverage_summary_csv'],
+                       clipping_csv=opened_files['clipping_csv'],
+                       conseq_ins_csv=opened_files['conseq_ins_csv'],
+                       g2p_aligned_csv=opened_files['g2p_aligned_csv'],
+                       remap_conseq_csv=opened_files['remap_conseq_csv'],
+                       conseq_region_csv=opened_files['conseq_region_csv'],
+                       amino_detail_csv=opened_files['amino_detail_csv'],
+                       nuc_detail_csv=opened_files['nuc_detail_csv'],
+                       genome_coverage_csv=opened_files['genome_coverage_csv'],
+                       contigs_csv=opened_files['contigs_csv'],
+                       conseq_all_csv=opened_files['conseq_all_csv'],
+                       conseq_stitched_csv=opened_files['conseq_stitched_csv'],
+                       minimap_hits_csv=opened_files['minimap_hits_csv'],
+                       alignments_csv=opened_files['alignments_csv'],
+                       alignments_unmerged_csv=opened_files['alignments_unmerged_csv'],
+                       alignments_intermediate_csv=opened_files['alignments_intermediate_csv'],
+                       alignments_overall_csv=opened_files['alignments_overall_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
