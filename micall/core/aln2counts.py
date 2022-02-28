@@ -1154,13 +1154,18 @@ class SequenceReport(object):
         report_nucleotides: typing.List[ReportNucleotide]
         for region, report_nucleotides in sorted(reports.items()):
             try:
-                coordinate_name = landmark_reader.get_coordinates(self.seed)
+                coordinate_name = landmark_reader.get_coordinates(seed)
                 gene = landmark_reader.get_gene(coordinate_name, region)
                 genome_start_pos = gene['start']
             except ValueError:
-                genome_start_pos = 1
-                if self.seed is not None and self.seed != '':
-                    logger.warning(f"No coordinates found for seed name {self.seed} and region {region}.")
+                try:
+                    coordinate_name = landmark_reader.get_coordinates(self.seed)
+                    gene = landmark_reader.get_gene(coordinate_name, region)
+                    genome_start_pos = gene['start']
+                except ValueError:
+                    genome_start_pos = 1
+                    if seed is not None and seed != '':
+                        logger.warning(f"No coordinates found for seed name {seed} and region {region}.")
             for report_nucleotide in report_nucleotides:
                 self.write_counts(seed,
                                   region,
