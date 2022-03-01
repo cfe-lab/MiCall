@@ -57,7 +57,7 @@ def open_files(**files):
                     filenames.append(filename)
                     pass
         if len(filenames) > 0:
-            logger.warning(f"The following files could not be closed: {filenames}")
+            logger.error(f"The following files could not be closed: {filenames}")
             raise IOError
 
 
