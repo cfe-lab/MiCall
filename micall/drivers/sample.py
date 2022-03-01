@@ -25,23 +25,40 @@ logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def open_files(**filemode):
+def open_files(**files):
+    """ Context manager that will open files and close them at the end.
+
+    @param files: keyworded files to be opened. The keyword corresponds to the key of the output dictionary of opened
+        file handles. The input arguments should be tuples of the path of the file to be opened, and the mode to open
+        it: (path, mode).
+
+    Yields: A dictionary of opened files, {keyword: file handle}
+    """
     files_opened = {}
-    for name, file_mode in filemode.items():
-        if file_mode is None:
-            files_opened[name] = None
-        else:
-            file = file_mode[0]
-            mode = file_mode[1]
-            files_opened[name] = open(file, mode)
     try:
+        for name, file_info in files.items():
+            if file_info is None:
+                files_opened[name] = None
+            else:
+                file = file_info[0]
+                mode = file_info[1]
+                files_opened[name] = open(file, mode)
+            # Could add support for open file handles in the future by checking if file_info is an instance of TextIO
         yield files_opened
     finally:
-        for file in files_opened.values():
+        filenames = []
+        for filename, file in files_opened.items():
             if file is None:
                 pass
             else:
-                file.close()
+                try:
+                    file.close()
+                except IOError:
+                    filenames.append(filename)
+                    pass
+        if len(filenames) > 0:
+            logger.warning(f"The following files could not be closed: {filenames}")
+            raise IOError
 
 
 def exclude_extra_seeds(excluded_seeds: typing.Sequence[str],
