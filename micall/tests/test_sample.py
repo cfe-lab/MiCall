@@ -232,8 +232,8 @@ def test_context_manager_fail_to_close(mock_open, tmp_path, caplog):
         ('micall.drivers.sample',
          logging.ERROR,
          "The following files could not be closed: ['testfile1', 'testfile2']")]
-    mock_open.return_value.close.side_effect = IOError
-    with pytest.raises(IOError):
+    mock_open.return_value.close.side_effect = OSError
+    with pytest.raises(OSError):
         with open_files(testfile1=file_info1, testfile2=file_info2) as _:
             pass
     assert mock_open.return_value.close.call_count == 2

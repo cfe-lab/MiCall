@@ -53,7 +53,7 @@ def open_files(**files):
             else:
                 try:
                     file.close()
-                except IOError:
+                except (IOError, OSError):
                     filenames.append(filename)
                     pass
         if len(filenames) > 0:
