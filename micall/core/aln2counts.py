@@ -731,6 +731,12 @@ class SequenceReport(object):
         self.write_amino_report(amino_detail_writer, self.reports, self.detail_seed)
 
     def combine_reports(self):
+        is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
+                      self.seed.endswith(REVERSED_CONTIG_SUFFIX))
+        if is_partial:
+            assert len(self.reports) == 0
+            assert len(self.report_nucleotides) == 0
+            return
         if self.contigs is None:
             group_ref = self.seed
         elif self.detail_seed == G2P_SEED_NAME:
@@ -1233,11 +1239,7 @@ class SequenceReport(object):
             nuc_dict = {}
             insertions_dict = {}
             consumed_positions = set()
-            try:
-                coordinate_name = landmark_reader.get_coordinates(entry)
-            except ValueError:
-                logger.error(f"No coordinate reference found for seed name {entry}.")
-                raise
+            coordinate_name = landmark_reader.get_coordinates(entry)
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
                 key=lambda item: landmark_reader.get_gene(
