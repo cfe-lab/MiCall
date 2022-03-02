@@ -1163,9 +1163,8 @@ class SequenceReport(object):
                     gene = landmark_reader.get_gene(coordinate_name, region)
                     genome_start_pos = gene['start']
                 except ValueError:
-                    genome_start_pos = 1
-                    if seed is not None and seed != '':
-                        logger.warning(f"No coordinates found for seed name {seed} and region {region}.")
+                    logger.error(f"No coordinates found for seed names {seed}, {self.seed} and region {region}.")
+                    raise
             for report_nucleotide in report_nucleotides:
                 self.write_counts(seed,
                                   region,
@@ -1237,9 +1236,8 @@ class SequenceReport(object):
             try:
                 coordinate_name = landmark_reader.get_coordinates(entry)
             except ValueError:
-                if entry is not None and entry != '':
-                    logger.warning(f"No coordinate reference found for seed name {entry}.")
-                continue
+                logger.error(f"No coordinate reference found for seed name {entry}.")
+                raise
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
                 key=lambda item: landmark_reader.get_gene(
@@ -1706,9 +1704,8 @@ class InsertionWriter(object):
                 region_info = landmark_reader.get_gene(coordinate_name, region)
                 region_start = region_info['start']
             except ValueError:
-                if self.seed is not None and self.seed != '':
-                    logger.warning(f"No coordinate reference found for seed name {self.seed}, region {region}.")
-                region_start = 1
+                logger.warning(f"No coordinate reference found for seed name {self.seed}, region {region}.")
+                continue
             if self.ref_insertions[region] is not None:
                 for ref_pos in self.ref_insertions[region]:
                     insertions = list(self.ref_insertions[region][ref_pos].items())
@@ -1810,7 +1807,6 @@ def aln2counts(aligned_csv,
                                 consensus_min_coverage=CONSENSUS_MIN_COVERAGE)
         report.write_amino_header(amino_csv)
         report.write_consensus_header(conseq_csv)
-        report.write_consensus_regions_header(conseq_region_csv)
         report.write_failure_header(failed_align_csv)
         report.write_nuc_header(nuc_csv)
         if coverage_summary_csv is None:
@@ -1836,6 +1832,8 @@ def aln2counts(aligned_csv,
 
         if conseq_all_csv is not None:
             report.write_consensus_all_header(conseq_all_csv)
+        if conseq_region_csv is not None:
+            report.write_consensus_regions_header(conseq_region_csv)
         if conseq_stitched_csv is not None:
             report.write_consensus_stitched_header(conseq_stitched_csv)
         if clipping_csv is not None:
