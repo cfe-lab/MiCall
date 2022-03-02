@@ -1,9 +1,14 @@
+import io
 import pickle
 from unittest import TestCase
 
 import pytest
+import os
+from unittest.mock import patch, DEFAULT
+import logging
+from io import StringIO
 
-from micall.drivers.sample import Sample, exclude_extra_seeds
+from micall.drivers.sample import Sample, exclude_extra_seeds, open_files
 
 
 class SampleTest(TestCase):
@@ -172,3 +177,64 @@ def test_exclude_extra_seeds(project_code, excluded, expected):
     all_excluded = exclude_extra_seeds(excluded, project_code)
 
     assert all_excluded == expected
+
+
+def test_context_manager(tmp_path):
+    file_path = os.path.join(tmp_path, 'testfile.csv')
+    file_info = (file_path, 'w')
+    with open_files(testfile=file_info) as opened_files:
+        file = opened_files['testfile']
+        assert isinstance(file, io.TextIOBase)
+
+    assert file.closed
+
+
+def test_context_manager_write(tmp_path):
+    file_path = os.path.join(tmp_path, 'testfile.csv')
+    file_info = (file_path, 'w')
+    with open_files(testfile=file_info) as opened_files:
+        file = opened_files['testfile']
+        file.write("Testing...")
+
+    with open(file_path, 'r') as file_read:
+        assert file_read.read() == "Testing..."
+
+
+def mock_side_effect(_, mode):
+    if mode == 'r':
+        raise FileNotFoundError
+    else:
+        return DEFAULT
+
+
+@patch('builtins.open')
+def test_context_manager_fail_to_open(mock_open, tmp_path):
+    # Check that the already opened files are closed if one fails to open.
+    file_path1 = os.path.join(tmp_path, 'testfile.csv')
+    file_path2 = os.path.join(tmp_path, 'testfile2.csv')
+    file_info1 = (file_path1, 'w')
+    file_info2 = (file_path2, 'r')
+    mock_open.side_effect = mock_side_effect
+    with pytest.raises(FileNotFoundError):
+        with open_files(testfile1=file_info1, testfile2=file_info2) as _:
+            pass
+    assert mock_open.return_value.close.call_count == 1
+
+
+@patch('builtins.open')
+def test_context_manager_fail_to_close(mock_open, tmp_path, caplog):
+    # Check that the file manager tries to close the other files if one fails to close.
+    file_path1 = os.path.join(tmp_path, 'testfile.csv')
+    file_path2 = os.path.join(tmp_path, 'testfile2.csv')
+    file_info1 = (file_path1, 'w')
+    file_info2 = (file_path2, 'w')
+    expected_log = [
+        ('micall.drivers.sample',
+         logging.ERROR,
+         "The following files could not be closed: ['testfile1', 'testfile2']")]
+    mock_open.return_value.close.side_effect = OSError
+    with pytest.raises(OSError):
+        with open_files(testfile1=file_info1, testfile2=file_info2) as _:
+            pass
+    assert mock_open.return_value.close.call_count == 2
+    assert caplog.record_tuples == expected_log

@@ -3,6 +3,8 @@ from dataclasses import dataclass, replace
 from enum import IntEnum
 from itertools import count
 from operator import attrgetter
+import csv
+import os
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -162,7 +164,12 @@ class AlignmentWrapper(Alignment):
 
 
 class ConsensusAligner:
-    def __init__(self, projects: ProjectConfig):
+    def __init__(self,
+                 projects: ProjectConfig,
+                 alignments_file=None,
+                 unmerged_alignments_file=None,
+                 intermediate_alignments_file=None,
+                 overall_alignments_file=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -174,6 +181,52 @@ class ConsensusAligner:
 
         # consensus nucleotide positions that were inserts
         self.inserts: typing.Set[int] = set()
+
+        if alignments_file is not None:
+            self.alignments_writer = self._create_alignments_writer(alignments_file)
+        else:
+            self.alignments_writer = None
+
+        if unmerged_alignments_file is not None:
+            self.unmerged_alignments_writer = self._create_alignments_writer(unmerged_alignments_file)
+        else:
+            self.unmerged_alignments_writer = None
+
+        if intermediate_alignments_file is not None:
+            self.intermediate_alignments_writer = self._create_alignments_writer(intermediate_alignments_file)
+        else:
+            self.intermediate_alignments_writer = None
+
+        if overall_alignments_file is not None:
+            columns = ["coordinate_name",
+                       "query_start",
+                       "query_end",
+                       "consensus_offset",
+                       "ref_start",
+                       "ref_end",
+                       "cigar_str"]
+            self.overall_alignments_writer = \
+                self._create_alignments_writer(overall_alignments_file, different_columns=columns)
+        else:
+            self.overall_alignments_writer = None
+
+    @staticmethod
+    def _create_alignments_writer(alignments_file, different_columns = None):
+        columns = different_columns or ["coordinate_name",
+                                        "action",
+                                        "query_start",
+                                        "query_end",
+                                        "ref_start",
+                                        "ref_end",
+                                        "reading_frame",
+                                        "ref_amino_start",
+                                        "aligned_query",
+                                        "aligned_ref"]
+        writer = csv.DictWriter(alignments_file, columns, lineterminator=os.linesep)
+        pos = alignments_file.tell()
+        if pos == 0:
+            writer.writeheader()
+        return writer
 
     def start_contig(self,
                      coordinate_name: str = None,
@@ -216,6 +269,17 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
+
+        if self.overall_alignments_writer is not None:
+            for alignment in self.alignments:
+                row = {"coordinate_name": self.coordinate_name,
+                       "query_start": alignment.q_st,
+                       "query_end": alignment.q_en,
+                       "consensus_offset": self.consensus_offset,
+                       "ref_start": alignment.r_st,
+                       "ref_end": alignment.r_en,
+                       "cigar_str": alignment.cigar_str}
+                self.overall_alignments_writer.writerow(row)
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -359,39 +423,22 @@ class ConsensusAligner:
                 amino_alignment.find_reading_frame(amino_ref,
                                                    start_pos,
                                                    translations)
-            for i in range(len(amino_sections)-2, 0, -1):
-                amino_alignment = amino_sections[i]
-                if amino_alignment.action == CigarActions.MATCH:
-                    continue
-                size = max(amino_alignment.ref_end-amino_alignment.ref_start,
-                           amino_alignment.query_end-amino_alignment.query_start)
-                prev_alignment = amino_sections[i-1]
-                next_alignment = amino_sections[i+1]
-                can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
-                    prev_alignment.amino_size,
-                    next_alignment.amino_size))
-                has_frame_shift = (prev_alignment.reading_frame !=
-                                   next_alignment.reading_frame)
-                has_big_gap = MAXIMUM_AMINO_GAP < size // 3
-                if can_align and (has_frame_shift or has_big_gap):
-                    # Both neighbours are big enough, so we have a choice.
-                    # Either there's a frame shift or a big gap, so keep
-                    # dividing around this indel.
-                    continue
-                # Merge the two sections on either side of this indel.
-                amino_sections.pop(i+1)
-                amino_sections.pop(i)
-                new_alignment = AminoAlignment(prev_alignment.query_start,
-                                               next_alignment.query_end,
-                                               prev_alignment.ref_start,
-                                               next_alignment.ref_end,
-                                               CigarActions.MATCH,
-                                               prev_alignment.reading_frame)
-                amino_sections[i-1] = new_alignment
-                new_alignment.find_reading_frame(amino_ref,
-                                                 start_pos,
-                                                 translations)
+
+            if self.unmerged_alignments_writer is not None:
+                self.write_alignments_file(amino_sections, self.unmerged_alignments_writer)
+
+            amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
+
+            if self.intermediate_alignments_writer is not None:
+                self.write_alignments_file(amino_sections, self.intermediate_alignments_writer)
+
+            # do a second pass to combine alignments
+            amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
+
             self.amino_alignments.extend(amino_sections)
+
+        if self.alignments_writer is not None:
+            self.write_alignments_file(self.amino_alignments, self.alignments_writer)
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''
@@ -399,6 +446,56 @@ class ConsensusAligner:
         self.alignments.clear()
         self.seed_nucs.clear()
         self.inserts.clear()
+
+    def write_alignments_file(self, amino_alignments, alignments_writer):
+        for alignment in amino_alignments:
+            row = {"action": CigarActions(alignment.action).name,
+                   "query_start": alignment.query_start,
+                   "query_end": alignment.query_end,
+                   "ref_start": alignment.ref_start,
+                   "ref_end": alignment.ref_end,
+                   "aligned_query": alignment.aligned_query,
+                   "aligned_ref": alignment.aligned_ref,
+                   "reading_frame": alignment.reading_frame,
+                   "ref_amino_start": alignment.ref_amino_start,
+                   "coordinate_name": self.coordinate_name}
+            alignments_writer.writerow(row)
+
+    @staticmethod
+    def combine_alignments(amino_sections, amino_ref, start_pos, translations):
+        for i in range(len(amino_sections) - 2, 0, -1):
+            amino_alignment = amino_sections[i]
+            if amino_alignment.action == CigarActions.MATCH:
+                continue
+            size = max(amino_alignment.ref_end - amino_alignment.ref_start,
+                       amino_alignment.query_end - amino_alignment.query_start)
+            prev_alignment = amino_sections[i - 1]
+            next_alignment = amino_sections[i + 1]
+            can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
+                prev_alignment.amino_size,
+                next_alignment.amino_size))
+            has_frame_shift = (prev_alignment.reading_frame !=
+                               next_alignment.reading_frame)
+            has_big_gap = MAXIMUM_AMINO_GAP < size // 3
+            if can_align and (has_frame_shift or has_big_gap):
+                # Both neighbours are big enough, so we have a choice.
+                # Either there's a frame shift or a big gap, so keep
+                # dividing around this indel.
+                continue
+            # Merge the two sections on either side of this indel.
+            amino_sections.pop(i + 1)
+            amino_sections.pop(i)
+            new_alignment = AminoAlignment(prev_alignment.query_start,
+                                           next_alignment.query_end,
+                                           prev_alignment.ref_start,
+                                           next_alignment.ref_end,
+                                           CigarActions.MATCH,
+                                           prev_alignment.reading_frame)
+            amino_sections[i - 1] = new_alignment
+            new_alignment.find_reading_frame(amino_ref,
+                                             start_pos,
+                                             translations)
+        return amino_sections
 
     def report_region(
             self,

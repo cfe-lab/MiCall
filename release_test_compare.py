@@ -19,8 +19,9 @@ import Levenshtein
 
 from micall.utils.primer_tracker import PrimerTracker
 from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
+from micall.utils.translation import translate
 
-MICALL_VERSION = '7.14'
+MICALL_VERSION = '7.15'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
@@ -283,11 +284,11 @@ def map_coverage(coverage_scores):
                                            score.get('seed'),
                                            score.get('which.key.pos'))
                        for score in coverage_scores}
-    if MICALL_VERSION == '7.14':
+    if MICALL_VERSION == '7.15':
         filtered_scores = {
             (project, region): scores
             for (project, region), scores in filtered_scores.items()
-            if project not in ('NFLHIVDNA', 'SARSCOV2')}
+            if project not in ('HIVB', 'HIVGHA') and region not in ('HIVB-tat', 'SARS-CoV-2-nsp11')}
 
     return filtered_scores
 
@@ -421,6 +422,18 @@ def compare_consensus(sample: Sample,
     cutoff = MAX_CUTOFF
     for key in keys:
         seed, region = key
+        if MICALL_VERSION == '7.15' and region in ('HIV1B-tat',
+                                                   'SARS-CoV-2-nsp11',
+                                                   "SARS-CoV-2-TRS-B-1",
+                                                   "SARS-CoV-2-TRS-B-2",
+                                                   "SARS-CoV-2-TRS-B-3",
+                                                   "SARS-CoV-2-TRS-B-4",
+                                                   "SARS-CoV-2-TRS-B-5",
+                                                   "SARS-CoV-2-TRS-B-6",
+                                                   "SARS-CoV-2-TRS-B-7",
+                                                   "SARS-CoV-2-TRS-B-8",
+                                                   "SARS-CoV-2-TRS-B-9"):
+            continue
         primer_tracker = primer_trackers.get(seed)
         source_details = source_seqs.get(key)
         target_details = target_seqs.get(key)
@@ -436,6 +449,14 @@ def compare_consensus(sample: Sample,
             has_big_change = False
             dummy_row = {'refseq.nuc.pos': '-1',
                          'coverage': '0'}
+            if MICALL_VERSION == '7.15':
+                if region.split('-')[-1] == 'NS5b':
+                    target_nucs = [nuc for nuc, row in target_details]
+                    last_codon = ''
+                    for nuc in target_nucs[-3:]:
+                        last_codon = last_codon + nuc
+                    if translate(last_codon) == '*':
+                        target_details = target_details[:-3]
             for source_item, target_item in zip_longest(source_details,
                                                         target_details,
                                                         fillvalue=('', dummy_row)):
@@ -456,16 +477,10 @@ def compare_consensus(sample: Sample,
                         target_consensus = target_consensus.lower()
                     if not has_big_change and 'x' in (source_consensus,
                                                       target_consensus):
-                        pos = int(target_row['query.nuc.pos'])
-                        is_ignored = primer_tracker and primer_tracker.is_ignored(pos)
-                        is_dropping = target_consensus == 'x'
-                        if MICALL_VERSION == '7.14' and is_ignored and is_dropping:
-                            pass
-                        else:
-                            old_coverage = int(source_row['coverage'])
-                            new_coverage = int(target_row['coverage'])
-                            has_big_change = (old_coverage < new_coverage/2 or
-                                              new_coverage < old_coverage/2)
+                        old_coverage = int(source_row['coverage'])
+                        new_coverage = int(target_row['coverage'])
+                        has_big_change = (old_coverage < new_coverage/2 or
+                                          new_coverage < old_coverage/2)
 
                 source_nucs.append(source_consensus)
                 target_nucs.append(target_consensus)
