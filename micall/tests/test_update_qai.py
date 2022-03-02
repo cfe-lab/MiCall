@@ -338,30 +338,67 @@ def test_build_review_decisions_more_counts(sample_sheet):
     assert decisions == expected_decisions
 
 
-def return_json_side_effect(input):
-    if input.split('=')[0] == "/lab_miseq_project_regions?pipeline":
+def return_json_side_effect(url):
+    if url.split('=')[0] == "/lab_miseq_project_regions?pipeline":
         return [{'id': 'HIV project region id',
                         'project_name': 'HIVB',
                         'seed_region_names': 'HIV1-seed',
                         'coordinate_region_name': 'HIV1B-gag'}]
+    elif url == "/lab_miseq_regions":
+        return [{'id': 'HIV seed region id', 'name': 'HIV1-B-FR-K03455-seed'}]
+    elif url == "/lab_miseq_pipelines?version=7.15":
+        return [{'id': 'pipelineID'}]
     else:
         return None
 
 
-def test_upload_review_to_qai():
-    run = {'id': 'runid', 'sequencing_summary': [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]}
-    expected_regions = [{'id': 'HIV project region id',
-                         'project_name': 'HIVB',
-                         'seed_region_names': 'HIV1-seed',
-                         'coordinate_region_name': 'HIV1B-gag'}]
-    session = micall.monitor.qai_helper.Session()
-    with patch('micall.monitor.qai_helper.Session.get_json') as mock_get_json:
-        mock_get_json.side_effect = return_json_side_effect
-        regions = session.get_json("/lab_miseq_project_regions?pipeline=7.14")
-        regions2 = session.get_json("/lab_miseq_project_regions?pipeline=7.15")
+# noinspection DuplicatedCode
+def test_upload_review_to_qai(sample_sheet):
+    coverage_file = StringIO(dedent("""\
+    sample,project,region,seed,q.cut,min.coverage,which.key.pos,off.score,on.score
+    2140A-HIV_S17,HIVB,HIV1B-gag,HIV1-B-FR-K03455-seed,15,100,10,-2,3
+    """))
+    collated_counts_file = StringIO(dedent("""\
+    sample,type,count,filtered_count,seed_dist,other_dist,other_seed
+    2140A-HIV_S17,raw,200
+    2140A-HIV_S17,prelim HIV1-B-FR-K03455-seed,200,200
+    2140A-HIV_S17,remap-1 HIV1-B-FR-K03455-seed,200
+    2140A-HIV_S17,remap-final HIV1-B-FR-K03455-seed,200
+    2140A-HIV_S17,unmapped,0
+    """))
+    cascade_file = StringIO(dedent("""\
+    sample,demultiplexed,v3loop,g2p,prelim_map,remap,aligned
+    2140A-HIV_S17,100,0,0,100,100,100
+    """))
+    run = {'id': 'test_run_id', 'sequencing_summary': [{'tag': 'N505-N702', 'target_project': 'HIVB', 'id': 'HIVid'}]}
+    conseqs = []
 
-    assert regions == expected_regions
-    assert regions2 == expected_regions
+    expected_decision = {'sequencing_id': 'HIVid',
+                         'project_region_id': 'HIV project region id',
+                         'seed_region_id': 'HIV seed region id',
+                         'sample_name': '2140A-HIV_S17',
+                         'score': 3,
+                         'min_coverage': 100,
+                         'min_coverage_pos': 10,
+                         'raw_reads': 200,
+                         'mapped_reads': 200}
+
+    with patch('micall.monitor.qai_helper.Session') as mock_session:
+        mock_session.get_json.side_effect = return_json_side_effect
+        upload_review_to_qai(coverage_file,
+                             collated_counts_file,
+                             cascade_file,
+                             run,
+                             sample_sheet,
+                             conseqs,
+                             mock_session,
+                             pipeline_version='7.15')
+
+        mock_session.post_json.assert_called_once_with("/lab_miseq_reviews",
+                                                       {'runid': 'test_run_id',
+                                                        'pipeline_id': 'pipelineID',
+                                                        'lab_miseq_review_decisions': [expected_decision],
+                                                        'lab_miseq_conseqs': conseqs})
 
 
 def test_upload_unknown_pipeline():
@@ -376,7 +413,7 @@ def test_upload_unknown_pipeline():
 
     with patch('micall.monitor.qai_helper.Session.get_json') as mock_get_json:
         mock_get_json.return_value = []
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError) as exception:
             upload_review_to_qai(coverage_file,
                                  collated_counts_file,
                                  cascade_file,
@@ -385,3 +422,4 @@ def test_upload_unknown_pipeline():
                                  conseqs,
                                  session,
                                  pipeline_version)
+        assert str(exception.value) == f"Unknown pipeline: {pipeline_version}"
