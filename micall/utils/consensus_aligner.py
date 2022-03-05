@@ -214,7 +214,7 @@ class ConsensusAligner:
             self.overall_alignments_writer = None
 
     @staticmethod
-    def _create_alignments_writer(alignments_file, different_columns = None):
+    def _create_alignments_writer(alignments_file, different_columns=None):
         columns = different_columns or ["coordinate_name",
                                         "action",
                                         "query_start",

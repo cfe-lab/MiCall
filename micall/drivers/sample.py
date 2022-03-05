@@ -262,7 +262,7 @@ class Sample:
                         conseq_all_csv=(self.conseq_all_csv, 'w'),
                         conseq_stitched_csv=(self.conseq_stitched_csv, 'w') if use_denovo else None,
                         minimap_hits_csv=(self.minimap_hits_csv, 'w'),
-                        alignments_csv=(self.alignment_csv, 'w'),
+                        alignments_csv=(self.alignments_csv, 'w'),
                         alignments_unmerged_csv=(self.alignments_unmerged_csv, 'w'),
                         alignments_intermediate_csv=(self.alignments_intermediate_csv, 'w'),
                         alignments_overall_csv=(self.alignments_overall_csv, 'w')) as opened_files:
