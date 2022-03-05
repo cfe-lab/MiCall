@@ -789,7 +789,7 @@ class ConsensusAligner:
                 coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                 prev_consensus_nuc_index = seed_amino.consensus_nuc_index
             if skip_position is not None and coord_index == (skip_position - start_pos) // 3 and \
-                    amino_alignment.ref_start < skip_position - 1 < amino_alignment.ref_end:
+                    amino_alignment.ref_start < skip_position - 1 <= amino_alignment.ref_end:
                 conseq_pos = coord2conseq.get((skip_position - 1 - start_pos) // 3)
                 if conseq_pos is not None:
                     if has_skipped_nucleotide:
