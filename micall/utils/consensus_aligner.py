@@ -378,7 +378,11 @@ class ConsensusAligner:
                     if action != CigarActions.DELETE:
                         amino_alignment.query_start += start_shift
                         amino_alignment.query_end -= end_shift
-                    amino_sections.append(amino_alignment)
+                    alignment_size = amino_alignment.ref_end - amino_alignment.ref_start
+                    if action == CigarActions.MATCH and alignment_size <= 0:
+                        pass
+                    else:
+                        amino_sections.append(amino_alignment)
                 query_progress = query_end
             if repeat_pos is not None:
                 for i, amino_alignment in enumerate(amino_sections):
@@ -741,9 +745,6 @@ class ConsensusAligner:
                               for seed_amino in region_seed_aminos}
         prev_conseq_index = None
         prev_consensus_nuc_index = None
-        if len(coord2conseq) == 0:
-            logger.warning(f"Empty match? Start pos {start_pos}, coordinates {self.coordinate_name}")
-            return
         max_conseq_index = max(coord2conseq.values())
         for coord_index in range(len(amino_ref)):
             conseq_index = coord2conseq.get(coord_index)
