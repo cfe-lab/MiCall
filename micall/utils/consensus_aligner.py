@@ -5,6 +5,7 @@ from itertools import count
 from operator import attrgetter
 import csv
 import os
+import logging
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -14,6 +15,8 @@ from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, 
 
 # A section between reading frame shifts must be at least this long to be split.
 from micall.utils.translation import translate
+
+logger = logging.getLogger(__name__)
 
 MINIMUM_READING_FRAME_SHIFT = 30
 # Minimum aminos in a section between reading frame shifts to be split.
@@ -211,7 +214,7 @@ class ConsensusAligner:
             self.overall_alignments_writer = None
 
     @staticmethod
-    def _create_alignments_writer(alignments_file, different_columns = None):
+    def _create_alignments_writer(alignments_file, different_columns=None):
         columns = different_columns or ["coordinate_name",
                                         "action",
                                         "query_start",
@@ -369,12 +372,17 @@ class ConsensusAligner:
                                       query_progress -
                                       amino_alignment.query_start -
                                       self.consensus_offset)
-                    amino_alignment.ref_start += start_shift
-                    amino_alignment.query_start += start_shift
                     end_shift = max(0, amino_alignment.ref_end - end_pos)
+                    amino_alignment.ref_start += start_shift
                     amino_alignment.ref_end -= end_shift
-                    amino_alignment.query_end -= end_shift
-                    amino_sections.append(amino_alignment)
+                    if action != CigarActions.DELETE:
+                        amino_alignment.query_start += start_shift
+                        amino_alignment.query_end -= end_shift
+                    alignment_size = amino_alignment.ref_end - amino_alignment.ref_start
+                    if action == CigarActions.MATCH and alignment_size <= 0:
+                        pass
+                    else:
+                        amino_sections.append(amino_alignment)
                 query_progress = query_end
             if repeat_pos is not None:
                 for i, amino_alignment in enumerate(amino_sections):
@@ -555,9 +563,13 @@ class ConsensusAligner:
         return seed_amino.nucleotides[consensus_nuc_index % 3]
 
     def get_deletion_coverage(self, consensus_nuc_index):
-        prev_nuc = self.get_seed_nuc(consensus_nuc_index)
-        next_nuc = self.get_seed_nuc(consensus_nuc_index + 1)
-        coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+        try:
+            prev_nuc = self.get_seed_nuc(consensus_nuc_index)
+            next_nuc = self.get_seed_nuc(consensus_nuc_index + 1)
+            coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+        except IndexError:
+            coverage = 0
+            logger.warning(f"Could not get deletion coverage for consensus index {consensus_nuc_index}")
         return coverage
 
     def build_amino_report(self,
@@ -782,15 +794,18 @@ class ConsensusAligner:
                 coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                 prev_consensus_nuc_index = seed_amino.consensus_nuc_index
             if skip_position is not None and coord_index == (skip_position - start_pos) // 3 and \
-                    amino_alignment.ref_start <= skip_position - 1 <= amino_alignment.ref_end:
-                conseq_pos = coord2conseq[(skip_position - 1 - start_pos) // 3]
-                if has_skipped_nucleotide:
-                    skipped_nuc = \
-                        self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
+                    amino_alignment.ref_start < skip_position - 1 <= amino_alignment.ref_end:
+                conseq_pos = coord2conseq.get((skip_position - 1 - start_pos) // 3)
+                if conseq_pos is not None:
+                    if has_skipped_nucleotide:
+                        skipped_nuc = \
+                            self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
+                    else:
+                        skipped_nuc = SeedNucleotide()
+                        coverage = self.get_deletion_coverage(conseq_pos)
+                        skipped_nuc.count_nucleotides('-', coverage)
                 else:
                     skipped_nuc = SeedNucleotide()
-                    coverage = self.get_deletion_coverage(conseq_pos)
-                    skipped_nuc.count_nucleotides('-', coverage)
             else:
                 skipped_nuc = None
             self.update_report_amino(coord_index,

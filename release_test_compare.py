@@ -455,7 +455,11 @@ def compare_consensus(sample: Sample,
                     last_codon = ''
                     for nuc in target_nucs[-3:]:
                         last_codon = last_codon + nuc
-                    if translate(last_codon) == '*':
+                    try:
+                        last_amino = translate(last_codon)
+                    except KeyError:
+                        last_amino = 'X'
+                    if last_amino == '*':
                         target_details = target_details[:-3]
             for source_item, target_item in zip_longest(source_details,
                                                         target_details,
