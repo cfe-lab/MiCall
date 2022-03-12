@@ -123,6 +123,9 @@ def parse_args():
     parser.add_argument('--alignments_overall_csv',
                         type=argparse.FileType('w'),
                         help='CSV of overall amino alignments')
+    parser.add_argument('--concordance_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing concordance measures of the regions')
     return parser.parse_args()
 
 
@@ -401,6 +404,7 @@ class SequenceReport(object):
         self.conseq_stitched_writer = None
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
+        self.concordance_writer = None
 
     @property
     def has_detail_counts(self):
@@ -580,6 +584,8 @@ class SequenceReport(object):
             self.write_whole_genome_consensus_from_nuc(self.conseq_stitched_writer)
         if self.conseq_region_writer is not None:
             self.write_consensus_regions(self.conseq_region_writer)
+        if self.concordance_writer is not None:
+            self.write_coordinate_concordance(self.concordance_writer)
 
     def read(self,
              aligned_reads,
@@ -842,6 +848,13 @@ class SequenceReport(object):
                                                    'ref_end'],
                                                   lineterminator=os.linesep)
         self.minimap_hits_writer.writeheader()
+
+    def write_concordance_header(self, concordance_file):
+        columns = ['reference', 'region', 'concordance', 'region_covered']
+        self.concordance_writer = csv.DictWriter(concordance_file,
+                                                 columns,
+                                                 lineterminator=os.linesep)
+        self.concordance_writer.writeheader()
 
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
@@ -1380,6 +1393,31 @@ class SequenceReport(object):
                         is_nucleotide=True,
                     )
 
+    def write_coordinate_concordance(self, concordance_writer):
+        concordance_writer = concordance_writer or self.concordance_writer
+        landmark_reader = LandmarkReader(self.landmarks)
+        for coordinates in self.combined_report_nucleotides:
+            coordinate_name = landmark_reader.get_coordinates(coordinates)
+            for region, region_nucleotides in self.combined_report_nucleotides[coordinates].items():
+                if self.projects.isAmino(region):
+                    region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
+                    region_start = region_info['start']
+                    region_end = region_info['end']
+                    region_length = region_end - region_start + 1
+                    region_concordance = 0
+                    region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
+                    for pos, nuc in enumerate(region_nucleotides):
+                        nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
+                        ref_nuc = region_reference[pos]
+                        if nuc_consensus == ref_nuc:
+                            region_concordance += 1
+                    region_concordance /= region_length
+                    row = {'region': region,
+                           'reference': coordinate_name,
+                           'concordance': region_concordance,
+                           'region_covered': 0}
+                    concordance_writer.writerow(row)
+
     @staticmethod
     def _create_failure_writer(fail_file):
         return csv.DictWriter(fail_file,
@@ -1753,7 +1791,8 @@ def aln2counts(aligned_csv,
                alignments_csv=None,
                alignments_unmerged_csv=None,
                alignments_intermediate_csv=None,
-               alignments_overall_csv=None):
+               alignments_overall_csv=None,
+               concordance_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1792,6 +1831,7 @@ def aln2counts(aligned_csv,
     @param alignments_unmerged_csv: Open file handle to write unmerged alignments.
     @param alignments_intermediate_csv: Open file handle to write intermediate alignments.
     @param alignments_overall_csv: Open file handle to write overall alignments.
+    @param concordance_csv: Open file handle to write concordance measures for the regions.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1850,6 +1890,8 @@ def aln2counts(aligned_csv,
             report.write_genome_coverage_header(genome_coverage_csv)
         if minimap_hits_csv is not None:
             report.write_minimap_hits_header(minimap_hits_csv)
+        if concordance_csv is not None:
+            report.write_concordance_header(concordance_csv)
         report.alignments_csv = alignments_csv
         report.unmerged_alignments_csv = alignments_unmerged_csv
         report.intermediate_alignments_csv = alignments_intermediate_csv
@@ -1899,7 +1941,8 @@ def main():
                alignments_csv=args.alignments_csv,
                alignments_unmerged_csv=args.alignments_unmerged_csv,
                alignments_intermediate_csv=args.alignments_intermediate_csv,
-               alignments_overall_csv=args.alignments_overall_csv)
+               alignments_overall_csv=args.alignments_overall_csv,
+               concordance_csv=args.concordance_csv)
 
 
 if __name__ == '__main__':
