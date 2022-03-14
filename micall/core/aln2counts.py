@@ -570,6 +570,8 @@ class SequenceReport(object):
             elif self.amino_writer is not None:
                 self.write_amino_counts(self.amino_writer,
                                         coverage_summary=coverage_summary)
+            if self.concordance_writer is not None and not self.has_detail_counts:
+                self.write_coordinate_concordance(self.concordance_writer)
             if self.fail_writer is not None:
                 self.write_failure(self.fail_writer)
             if self.has_detail_counts:
@@ -584,8 +586,8 @@ class SequenceReport(object):
             self.write_whole_genome_consensus_from_nuc(self.conseq_stitched_writer)
         if self.conseq_region_writer is not None:
             self.write_consensus_regions(self.conseq_region_writer)
-        if self.concordance_writer is not None:
-            self.write_coordinate_concordance(self.concordance_writer)
+        if self.concordance_writer is not None and self.has_detail_counts:
+            self.write_coordinate_concordance(self.concordance_writer, use_combined_reports=True)
 
     def read(self,
              aligned_reads,
@@ -1393,38 +1395,46 @@ class SequenceReport(object):
                         is_nucleotide=True,
                     )
 
-    def write_coordinate_concordance(self, concordance_writer):
+    def write_coordinate_concordance(self, concordance_writer, use_combined_reports=False):
         concordance_writer = concordance_writer or self.concordance_writer
         landmark_reader = LandmarkReader(self.landmarks)
-        for coordinates in self.combined_report_nucleotides:
-            coordinate_name = landmark_reader.get_coordinates(coordinates)
-            for region, region_nucleotides in self.combined_report_nucleotides[coordinates].items():
-                if self.projects.isAmino(region):
-                    region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
-                    region_start = region_info['start']
-                    region_end = region_info['end']
-                    region_length = region_end - region_start + 1
+        if use_combined_reports:
+            for coordinates, report_nucleotides in self.combined_report_nucleotides.items():
+                coordinate_name = landmark_reader.get_coordinates(coordinates)
+                self.process_concordance(concordance_writer, coordinate_name, report_nucleotides, landmark_reader)
+        else:
+            report_nucleotides = self.report_nucleotides
+            coordinate_name = landmark_reader.get_coordinates(self.seed)
+            self.process_concordance(concordance_writer, coordinate_name, report_nucleotides, landmark_reader)
+
+    def process_concordance(self, concordance_writer, coordinate_name, report_nucleotides, landmark_reader):
+        for region, region_nucleotides in report_nucleotides.items():
+            if self.projects.isAmino(region):
+                region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
+                region_start = region_info['start']
+                region_end = region_info['end']
+                region_length = region_end - region_start + 1
+                region_concordance = 0
+                region_coverage = 0
+                region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
+                for pos, nuc in enumerate(region_nucleotides):
+                    nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
+                    ref_nuc = region_reference[pos]
+                    nuc_coverage = nuc.seed_nucleotide.get_coverage()
+                    if nuc_coverage > self.consensus_min_coverage:
+                        if nuc_consensus == ref_nuc:
+                            region_concordance += 1
+                        region_coverage += 1
+                try:
+                    region_concordance /= region_coverage
+                except ZeroDivisionError:
                     region_concordance = 0
-                    region_coverage = 0
-                    region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
-                    for pos, nuc in enumerate(region_nucleotides):
-                        nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
-                        ref_nuc = region_reference[pos]
-                        nuc_coverage = nuc.seed_nucleotide.get_coverage()
-                        if nuc_coverage > self.consensus_min_coverage:
-                            if nuc_consensus == ref_nuc:
-                                region_concordance += 1
-                            region_coverage += 1
-                    try:
-                        region_concordance /= region_coverage
-                    except ZeroDivisionError:
-                        region_concordance = 0
-                    region_coverage /= region_length
-                    row = {'region': region,
-                           'reference': coordinate_name,
-                           'concordance': region_concordance,
-                           'region_covered': region_coverage}
-                    concordance_writer.writerow(row)
+                region_coverage /= region_length
+                row = {'region': region,
+                       'reference': coordinate_name,
+                       'concordance': region_concordance,
+                       'region_covered': region_coverage}
+                concordance_writer.writerow(row)
 
     @staticmethod
     def _create_failure_writer(fail_file):
