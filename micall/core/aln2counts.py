@@ -1405,17 +1405,25 @@ class SequenceReport(object):
                     region_end = region_info['end']
                     region_length = region_end - region_start + 1
                     region_concordance = 0
+                    region_coverage = 0
                     region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
                     for pos, nuc in enumerate(region_nucleotides):
                         nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
                         ref_nuc = region_reference[pos]
-                        if nuc_consensus == ref_nuc:
-                            region_concordance += 1
-                    region_concordance /= region_length
+                        nuc_coverage = nuc.seed_nucleotide.get_coverage()
+                        if nuc_coverage > self.consensus_min_coverage:
+                            if nuc_consensus == ref_nuc:
+                                region_concordance += 1
+                            region_coverage += 1
+                    try:
+                        region_concordance /= region_coverage
+                    except ZeroDivisionError:
+                        region_concordance = 0
+                    region_coverage /= region_length
                     row = {'region': region,
                            'reference': coordinate_name,
                            'concordance': region_concordance,
-                           'region_covered': 0}
+                           'region_covered': region_coverage}
                     concordance_writer.writerow(row)
 
     @staticmethod
