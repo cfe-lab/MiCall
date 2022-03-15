@@ -9,7 +9,7 @@ from pathlib import Path
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
-from micall.core.coverage_plots import coverage_plot
+from micall.core.coverage_plots import coverage_plot, plot_concordance
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
 from micall.core.project_config import ProjectConfig
@@ -266,7 +266,8 @@ class Sample:
                         alignments_unmerged_csv=(self.alignments_unmerged_csv, 'w'),
                         alignments_intermediate_csv=(self.alignments_intermediate_csv, 'w'),
                         alignments_overall_csv=(self.alignments_overall_csv, 'w'),
-                        concordance_csv=(self.concordance_csv, 'w')) as opened_files:
+                        concordance_csv=(self.concordance_csv, 'w'),
+                        concordance_detailed_csv=(self.concordance_detailed_csv, 'w')) as opened_files:
 
             aln2counts(opened_files['aligned_csv'],
                        opened_files['nuc_csv'],
@@ -291,7 +292,8 @@ class Sample:
                        alignments_unmerged_csv=opened_files['alignments_unmerged_csv'],
                        alignments_intermediate_csv=opened_files['alignments_intermediate_csv'],
                        alignments_overall_csv=opened_files['alignments_overall_csv'],
-                       concordance_csv=opened_files['concordance_csv'])
+                       concordance_csv=opened_files['concordance_csv'],
+                       concordance_detailed_csv=opened_files['concordance_detailed_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -310,6 +312,9 @@ class Sample:
             plot_genome_coverage(genome_coverage_csv,
                                  minimap_hits_csv,
                                  self.genome_coverage_svg)
+
+        with open(self.concordance_detailed_csv) as concordance_detailed_csv:
+            plot_concordance(concordance_detailed_csv, plot_path=self.coverage_maps)
 
         logger.info('Running cascade_report on %s.', self)
         with open(self.g2p_summary_csv) as g2p_summary_csv, \

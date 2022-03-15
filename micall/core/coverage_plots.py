@@ -208,6 +208,35 @@ def coverage_plot(amino_csv,
     return paths  # locations of image files
 
 
+def plot_concordance(concordance_csv, plot_path=None, filetype='png'):
+    if plot_path is None:
+        plot_path, _ = os.path.split(concordance_csv.name)
+    reader = DictReader(concordance_csv)
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    paths = []
+    for (reference, region), group in itertools.groupby(reader, itemgetter('reference',
+                                                                      'region')):
+        positions = []
+        concordance_counts = []
+        coverage = []
+        for row in group:
+            positions.append(float(row['position']))
+            concordance_counts.append(100*float(row['concordance']))
+            coverage.append(100*float(row['coverage']))
+        plt.step(positions, concordance_counts, linewidth=2, where='mid', label='concordance', zorder=100)
+        plt.step(positions, coverage, linewidth=2, where='mid', label='coverage', zorder=99)
+        plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True)
+        plt.xlim([0, max(positions)])
+        plt.ylim([0, 110])
+        plt.xlabel('Region coordinates', fontsize=9)
+        plt.ylabel('Concordance', fontsize=9)
+        figname_parts = [reference, region, filetype]
+        paths.append(save_figure(plot_path, figname_parts))
+        plt.cla()  # clear the axis, but don't remove the axis itself.
+    plt.close(fig)
+    return paths
+
+
 def save_figure(coverage_maps_path, figname_parts):
     """ Write the current figure to a file.
 

@@ -1451,9 +1451,9 @@ class SequenceReport(object):
                        'reference': coordinate_name}
                 for pos, nuc in enumerate(region_nucleotides):
                     if pos % step_size == 0 and pos != 0 and print_details:
-                        row['concordance'] = running_concordance
+                        row['concordance'] = running_concordance/step_size
                         row['position'] = pos - step_size/2
-                        row['coverage'] = running_coverage
+                        row['coverage'] = running_coverage/step_size
                         running_concordance = 0
                         running_coverage = 0
                         detailed_concordance_writer.writerow(row)
