@@ -404,7 +404,7 @@ class SequenceReport(object):
         self.conseq_stitched_writer = None
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
-        self.concordance_writer = None
+        self.concordance_writer = self.detailed_concordance_writer = None
 
     @property
     def has_detail_counts(self):
@@ -571,7 +571,7 @@ class SequenceReport(object):
                 self.write_amino_counts(self.amino_writer,
                                         coverage_summary=coverage_summary)
             if self.concordance_writer is not None and not self.has_detail_counts:
-                self.write_coordinate_concordance(self.concordance_writer)
+                self.write_coordinate_concordance(self.concordance_writer, self.detailed_concordance_writer)
             if self.fail_writer is not None:
                 self.write_failure(self.fail_writer)
             if self.has_detail_counts:
@@ -587,7 +587,9 @@ class SequenceReport(object):
         if self.conseq_region_writer is not None:
             self.write_consensus_regions(self.conseq_region_writer)
         if self.concordance_writer is not None and self.has_detail_counts:
-            self.write_coordinate_concordance(self.concordance_writer, use_combined_reports=True)
+            self.write_coordinate_concordance(self.concordance_writer,
+                                              self.detailed_concordance_writer,
+                                              use_combined_reports=True)
 
     def read(self,
              aligned_reads,
@@ -851,12 +853,19 @@ class SequenceReport(object):
                                                   lineterminator=os.linesep)
         self.minimap_hits_writer.writeheader()
 
-    def write_concordance_header(self, concordance_file):
-        columns = ['reference', 'region', 'concordance', 'region_covered']
-        self.concordance_writer = csv.DictWriter(concordance_file,
-                                                 columns,
-                                                 lineterminator=os.linesep)
-        self.concordance_writer.writeheader()
+    def write_concordance_header(self, concordance_file, is_detailed=False):
+        columns = ['reference', 'region', 'concordance', 'coverage']
+        if is_detailed:
+            columns.append('position')
+            self.detailed_concordance_writer = csv.DictWriter(concordance_file,
+                                                              columns,
+                                                              lineterminator=os.linesep)
+            self.detailed_concordance_writer.writeheader()
+        else:
+            self.concordance_writer = csv.DictWriter(concordance_file,
+                                                     columns,
+                                                     lineterminator=os.linesep)
+            self.concordance_writer.writeheader()
 
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
@@ -1395,19 +1404,38 @@ class SequenceReport(object):
                         is_nucleotide=True,
                     )
 
-    def write_coordinate_concordance(self, concordance_writer, use_combined_reports=False):
+    def write_coordinate_concordance(self, concordance_writer, detailed_concordance_writer, use_combined_reports=False):
         concordance_writer = concordance_writer or self.concordance_writer
+        detailed_concordance_writer = detailed_concordance_writer or self.detailed_concordance_writer
         landmark_reader = LandmarkReader(self.landmarks)
         if use_combined_reports:
             for coordinates, report_nucleotides in self.combined_report_nucleotides.items():
                 coordinate_name = landmark_reader.get_coordinates(coordinates)
-                self.process_concordance(concordance_writer, coordinate_name, report_nucleotides, landmark_reader)
+                self.process_concordance(concordance_writer,
+                                         detailed_concordance_writer,
+                                         coordinate_name,
+                                         report_nucleotides,
+                                         landmark_reader)
         else:
             report_nucleotides = self.report_nucleotides
             coordinate_name = landmark_reader.get_coordinates(self.seed)
-            self.process_concordance(concordance_writer, coordinate_name, report_nucleotides, landmark_reader)
+            self.process_concordance(concordance_writer,
+                                     detailed_concordance_writer,
+                                     coordinate_name,
+                                     report_nucleotides,
+                                     landmark_reader)
 
-    def process_concordance(self, concordance_writer, coordinate_name, report_nucleotides, landmark_reader):
+    def process_concordance(self,
+                            concordance_writer,
+                            detailed_concordance_writer,
+                            coordinate_name,
+                            report_nucleotides,
+                            landmark_reader):
+        step_size = 10
+        if detailed_concordance_writer is not None:
+            print_details = True
+        else:
+            print_details = False
         for region, region_nucleotides in report_nucleotides.items():
             if self.projects.isAmino(region):
                 region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
@@ -1416,15 +1444,28 @@ class SequenceReport(object):
                 region_length = region_end - region_start + 1
                 region_concordance = 0
                 region_coverage = 0
+                running_concordance = 0
+                running_coverage = 0
                 region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
+                row = {'region': region,
+                       'reference': coordinate_name}
                 for pos, nuc in enumerate(region_nucleotides):
+                    if pos % step_size == 0 and pos != 0 and print_details:
+                        row['concordance'] = running_concordance
+                        row['position'] = pos - step_size/2
+                        row['coverage'] = running_coverage
+                        running_concordance = 0
+                        running_coverage = 0
+                        detailed_concordance_writer.writerow(row)
                     nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
                     ref_nuc = region_reference[pos]
                     nuc_coverage = nuc.seed_nucleotide.get_coverage()
                     if nuc_coverage > self.consensus_min_coverage:
                         if nuc_consensus == ref_nuc:
                             region_concordance += 1
+                            running_concordance += 1
                         region_coverage += 1
+                        running_coverage += 1
                 try:
                     region_concordance /= region_coverage
                 except ZeroDivisionError:
@@ -1433,7 +1474,7 @@ class SequenceReport(object):
                 row = {'region': region,
                        'reference': coordinate_name,
                        'concordance': region_concordance,
-                       'region_covered': region_coverage}
+                       'coverage': region_coverage}
                 concordance_writer.writerow(row)
 
     @staticmethod
@@ -1810,7 +1851,8 @@ def aln2counts(aligned_csv,
                alignments_unmerged_csv=None,
                alignments_intermediate_csv=None,
                alignments_overall_csv=None,
-               concordance_csv=None):
+               concordance_csv=None,
+               concordance_detailed_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1850,6 +1892,7 @@ def aln2counts(aligned_csv,
     @param alignments_intermediate_csv: Open file handle to write intermediate alignments.
     @param alignments_overall_csv: Open file handle to write overall alignments.
     @param concordance_csv: Open file handle to write concordance measures for the regions.
+    @param concordance_detailed_csv: Open file handle to write detailed concordance measures for the regions.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1910,6 +1953,8 @@ def aln2counts(aligned_csv,
             report.write_minimap_hits_header(minimap_hits_csv)
         if concordance_csv is not None:
             report.write_concordance_header(concordance_csv)
+        if concordance_detailed_csv is not None:
+            report.write_concordance_header(concordance_detailed_csv, is_detailed=True)
         report.alignments_csv = alignments_csv
         report.unmerged_alignments_csv = alignments_unmerged_csv
         report.intermediate_alignments_csv = alignments_intermediate_csv
