@@ -267,7 +267,8 @@ class Sample:
                         alignments_intermediate_csv=(self.alignments_intermediate_csv, 'w'),
                         alignments_overall_csv=(self.alignments_overall_csv, 'w'),
                         concordance_csv=(self.concordance_csv, 'w'),
-                        concordance_detailed_csv=(self.concordance_detailed_csv, 'w')) as opened_files:
+                        concordance_detailed_csv=(self.concordance_detailed_csv, 'w'),
+                        concordance_seed_csv=(self.concordance_seed_csv, 'w')) as opened_files:
 
             aln2counts(opened_files['aligned_csv'],
                        opened_files['nuc_csv'],
@@ -293,7 +294,8 @@ class Sample:
                        alignments_intermediate_csv=opened_files['alignments_intermediate_csv'],
                        alignments_overall_csv=opened_files['alignments_overall_csv'],
                        concordance_csv=opened_files['concordance_csv'],
-                       concordance_detailed_csv=opened_files['concordance_detailed_csv'])
+                       concordance_detailed_csv=opened_files['concordance_detailed_csv'],
+                       concordance_seed_csv=opened_files['concordance_seed_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)

@@ -360,7 +360,7 @@ class SequenceReport(object):
         self.reports: typing.Dict[
             str,  # coordinate_name
             typing.List[ReportAmino]] = defaultdict(list)
-        self.inserts = self.consensus = self.seed = self.insert_nucs = None
+        self.inserts = self.consensus = self.seed = self.insert_nucs = self.detail_seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
         self.consensus_aligner = ConsensusAligner(projects)
@@ -405,6 +405,7 @@ class SequenceReport(object):
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
         self.concordance_writer = self.detailed_concordance_writer = None
+        self.seed_concordance_csv = None
 
     @property
     def has_detail_counts(self):
@@ -615,15 +616,19 @@ class SequenceReport(object):
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
+
+        # populates these dictionaries, generates amino acid counts
+        self._count_reads(aligned_reads)
+
         if self.consensus_aligner.consensus is not None:
             self.consensus_aligner = ConsensusAligner(self.projects,
                                                       self.alignments_csv,
                                                       self.unmerged_alignments_csv,
                                                       self.intermediate_alignments_csv,
-                                                      self.overall_alignments_csv)
+                                                      self.overall_alignments_csv,
+                                                      self.seed_concordance_csv,
+                                                      self.detail_seed)
 
-        # populates these dictionaries, generates amino acid counts
-        self._count_reads(aligned_reads)
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
                       self.seed.endswith(REVERSED_CONTIG_SUFFIX))
         if is_partial:
@@ -664,6 +669,9 @@ class SequenceReport(object):
             if coordinate_name in excluded_regions:
                 continue
             self._map_to_coordinate_ref(coordinate_name)
+
+        self.consensus_aligner.determine_seed_concordance(self.seed)
+
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -1863,7 +1871,8 @@ def aln2counts(aligned_csv,
                alignments_intermediate_csv=None,
                alignments_overall_csv=None,
                concordance_csv=None,
-               concordance_detailed_csv=None):
+               concordance_detailed_csv=None,
+               concordance_seed_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1904,6 +1913,7 @@ def aln2counts(aligned_csv,
     @param alignments_overall_csv: Open file handle to write overall alignments.
     @param concordance_csv: Open file handle to write concordance measures for the regions.
     @param concordance_detailed_csv: Open file handle to write detailed concordance measures for the regions.
+    @param concordance_seed_csv: Open file handle to write detailed concordance measures for the seeds.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1970,6 +1980,7 @@ def aln2counts(aligned_csv,
         report.unmerged_alignments_csv = alignments_unmerged_csv
         report.intermediate_alignments_csv = alignments_intermediate_csv
         report.overall_alignments_csv = alignments_overall_csv
+        report.seed_concordance_csv = concordance_seed_csv
 
         report.process_reads(aligned_csv,
                              coverage_summary,

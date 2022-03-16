@@ -172,7 +172,9 @@ class ConsensusAligner:
                  alignments_file=None,
                  unmerged_alignments_file=None,
                  intermediate_alignments_file=None,
-                 overall_alignments_file=None):
+                 overall_alignments_file=None,
+                 concordance_file=None,
+                 contig_name=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -181,6 +183,7 @@ class ConsensusAligner:
         self.reading_frames: typing.List[typing.List[SeedAmino]] = []
         self.seed_nucs: typing.List[SeedNucleotide] = []
         self.amino_alignments: typing.List[AminoAlignment] = []
+        self.contig_name = contig_name
 
         # consensus nucleotide positions that were inserts
         self.inserts: typing.Set[int] = set()
@@ -202,6 +205,7 @@ class ConsensusAligner:
 
         if overall_alignments_file is not None:
             columns = ["coordinate_name",
+                       "contig name",
                        "query_start",
                        "query_end",
                        "consensus_offset",
@@ -213,9 +217,19 @@ class ConsensusAligner:
         else:
             self.overall_alignments_writer = None
 
+        if concordance_file is not None:
+            columns = ["seed_name",
+                       "contig name",
+                       "position",
+                       "concordance"]
+            self.concordance_writer = self._create_alignments_writer(concordance_file, different_columns=columns)
+        else:
+            self.concordance_writer = None
+
     @staticmethod
     def _create_alignments_writer(alignments_file, different_columns=None):
         columns = different_columns or ["coordinate_name",
+                                        "contig name",
                                         "action",
                                         "query_start",
                                         "query_end",
@@ -276,6 +290,7 @@ class ConsensusAligner:
         if self.overall_alignments_writer is not None:
             for alignment in self.alignments:
                 row = {"coordinate_name": self.coordinate_name,
+                       "contig name": self.contig_name,
                        "query_start": alignment.q_st,
                        "query_end": alignment.q_en,
                        "consensus_offset": self.consensus_offset,
@@ -458,6 +473,7 @@ class ConsensusAligner:
     def write_alignments_file(self, amino_alignments, alignments_writer):
         for alignment in amino_alignments:
             row = {"action": CigarActions(alignment.action).name,
+                   "contig name": self.contig_name,
                    "query_start": alignment.query_start,
                    "query_end": alignment.query_end,
                    "ref_start": alignment.ref_start,
@@ -878,6 +894,35 @@ class ConsensusAligner:
                         report_nuc.seed_nucleotide.add(seed_nuc)
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
+
+    def determine_seed_concordance(self, seed_name):
+        if self.concordance_writer is None:
+            return
+        seed_ref = self.projects.getReference(seed_name)
+        seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
+        seed_alignments = list(seed_aligner.map(self.consensus))
+        query_matches = [0] * len(self.consensus)
+        window_size = 10
+        row = {'seed_name': seed_name,
+               'contig name': self.contig_name}
+
+        for alignment in seed_alignments:
+            for cigar_index, (size, action) in enumerate(alignment.cigar):
+                if action != CigarActions.MATCH:
+                    continue
+                ref_start = alignment.r_st
+                query_start = alignment.q_st
+                for pos in range(0, size):
+                    ref_pos = ref_start + pos
+                    query_pos = query_start + pos
+                    if self.consensus[query_pos] == seed_ref[ref_pos]:
+                        query_matches[query_pos] = 1
+
+        for pos in range(int(window_size / 2), int(len(self.consensus) - window_size / 2 + 1)):
+            concordance = sum(query_matches[int(pos - window_size / 2):int(pos + window_size / 2)])
+            row['position'] = pos
+            row['concordance'] = concordance / window_size
+            self.concordance_writer.writerow(row)
 
 
 @dataclass
