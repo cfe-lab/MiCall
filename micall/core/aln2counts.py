@@ -1444,28 +1444,39 @@ class SequenceReport(object):
                 region_length = region_end - region_start + 1
                 region_concordance = 0
                 region_coverage = 0
-                running_concordance = 0
-                running_coverage = 0
+                running_concordance = []
+                running_coverage =[]
                 region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
                 row = {'region': region,
                        'reference': coordinate_name}
                 for pos, nuc in enumerate(region_nucleotides):
-                    if pos % step_size == 0 and pos != 0 and print_details:
-                        row['concordance'] = running_concordance/step_size
-                        row['position'] = pos - step_size/2
-                        row['coverage'] = running_coverage/step_size
-                        running_concordance = 0
-                        running_coverage = 0
-                        detailed_concordance_writer.writerow(row)
                     nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
                     ref_nuc = region_reference[pos]
                     nuc_coverage = nuc.seed_nucleotide.get_coverage()
-                    if nuc_coverage > self.consensus_min_coverage:
-                        if nuc_consensus == ref_nuc:
-                            region_concordance += 1
-                            running_concordance += 1
+                    has_coverage = (nuc_coverage > self.consensus_min_coverage)
+                    is_concordant = (nuc_consensus == ref_nuc)
+                    if has_coverage and is_concordant:
+                        region_concordance += 1
                         region_coverage += 1
-                        running_coverage += 1
+                        if print_details:
+                            running_concordance.append(1)
+                            running_coverage.append(1)
+                    elif has_coverage and nuc_consensus != '-':
+                        region_coverage += 1
+                        if print_details:
+                            running_concordance.append(0)
+                            running_coverage.append(1)
+                    elif print_details:
+                        running_concordance.append(0)
+                        running_coverage.append(0)
+                    if step_size-1 <= pos <= region_length-step_size:
+                        row['concordance'] = sum(running_concordance) / step_size
+                        row['position'] = pos + 1 - step_size / 2
+                        row['coverage'] = sum(running_coverage) / step_size
+                        running_concordance.pop(0)
+                        running_coverage.pop(0)
+                        detailed_concordance_writer.writerow(row)
+
                 try:
                     region_concordance /= region_coverage
                 except ZeroDivisionError:
