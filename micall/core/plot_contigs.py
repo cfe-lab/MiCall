@@ -399,10 +399,6 @@ def build_contig(reader,
                  position_offset,
                  blast_rows,
                  use_concordance=False):
-    if use_concordance:
-        relevant_field = 'concordance'
-    else:
-        relevant_field = 'coverage'
     contig_matcher = ContigMatcher(contig_name)
     blast_ranges = []  # [[start, end, blast_num]]
     blast_starts = defaultdict(set)  # {start: {blast_num}}
@@ -432,7 +428,10 @@ def build_contig(reader,
         else:
             pos_field = 'query_nuc_pos'
         for contig_row in contig_rows:
-            for field_name in (pos_field, relevant_field, 'dels'):
+            field_names = (pos_field, 'coverage', 'dels')
+            if use_concordance:
+                field_names += ('concordance',)
+            for field_name in field_names:
                 field_text = contig_row[field_name]
                 if field_name != 'concordance':
                     field_value = None if field_text == '' else int(field_text)
@@ -442,6 +441,7 @@ def build_contig(reader,
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
         coverage = [0] * (end - start + 1)
+        concordance = [0] * (end - start + 1)
         pos = 0
         for contig_row in contig_rows:
             pos = contig_row[pos_field]
@@ -451,10 +451,10 @@ def build_contig(reader,
                 if insertion_size:
                     insertion_ranges.append((pos, pos+insertion_size-1))
                     insertion_size = 0
-                if contig_row[relevant_field] is not None:
-                    coverage[pos - start] = (contig_row[relevant_field])
-                    if not use_concordance:
-                        coverage[pos - start] -= contig_row['dels']
+                if contig_row['coverage'] is not None:
+                    coverage[pos - start] = (contig_row['coverage']) - contig_row['dels']
+                if contig_row['concordance'] is not None:
+                    concordance[pos - start] = (contig_row['concordance'])
                 contig_pos = int(contig_row['query_nuc_pos'])
                 while event_positions and event_positions[-1] <= contig_pos:
                     event_pos = event_positions.pop()
@@ -511,10 +511,16 @@ def build_contig(reader,
         if max(coverage) <= 0:
             track_label = contig_name
         else:
-            f.add(ShadedCoverage(start + position_offset,
-                                 end + position_offset,
-                                 coverage),
-                  gap=-4)
+            if not use_concordance:
+                f.add(ShadedCoverage(start + position_offset,
+                                     end + position_offset,
+                                     coverage),
+                      gap=-4)
+            elif max(concordance)>0:
+                f.add(ShadedCoverage(start + position_offset,
+                                     end + position_offset,
+                                     concordance),
+                      gap=-4)
             track_label = f"{contig_name} - depth {max(coverage)}"
         subtracks.append(Track(1,
                                max_position,
