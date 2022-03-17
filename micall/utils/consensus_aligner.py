@@ -918,6 +918,16 @@ class ConsensusAligner:
                     query_pos = query_start + pos
                     if self.consensus[query_pos] == seed_ref[ref_pos]:
                         query_matches[query_pos] = 1
+            if self.overall_alignments_writer is not None:
+                alignment_row = {"coordinate_name": 'SEED' + seed_name,
+                                 "contig": self.contig_name,
+                                 "query_start": alignment.q_st,
+                                 "query_end": alignment.q_en,
+                                 "consensus_offset": 0,
+                                 "ref_start": alignment.r_st,
+                                 "ref_end": alignment.r_en,
+                                 "cigar_str": alignment.cigar_str}
+                self.overall_alignments_writer.writerow(alignment_row)
 
         for pos in range(int(window_size / 2), int(len(self.consensus) - window_size / 2 + 1)):
             concordance = sum(query_matches[int(pos - window_size / 2):int(pos + window_size / 2)])
