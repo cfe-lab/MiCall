@@ -908,18 +908,24 @@ class ConsensusAligner:
         concordance_list = [0] * len(self.consensus)
 
         for alignment in seed_alignments:
+            ref_progress = alignment.r_st
+            query_progress = alignment.q_st
             for cigar_index, (size, action) in enumerate(alignment.cigar):
-                if action != CigarActions.MATCH:
-                    continue
-                ref_start = alignment.r_st
-                query_start = alignment.q_st
-                for pos in range(0, size):
-                    ref_pos = ref_start + pos
-                    query_pos = query_start + pos
-                    if self.consensus[query_pos] == seed_ref[ref_pos]:
-                        query_matches[query_pos] = 1
+                if action == CigarActions.INSERT:
+                    query_progress += size
+                elif action == CigarActions.DELETE:
+                    ref_progress += size
+                else:
+                    assert action == CigarActions.MATCH
+                    for pos in range(0, size):
+                        ref_pos = ref_progress + pos
+                        query_pos = query_progress + pos
+                        if self.consensus[query_pos] == seed_ref[ref_pos]:
+                            query_matches[query_pos] = 1
+                    ref_progress += size
+                    query_progress += size
             if self.overall_alignments_writer is not None:
-                alignment_row = {"coordinate_name": 'SEED' + seed_name,
+                alignment_row = {"coordinate_name": 'SEED-' + seed_name,
                                  "contig": self.contig_name,
                                  "query_start": alignment.q_st,
                                  "query_end": alignment.q_en,
