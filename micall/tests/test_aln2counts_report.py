@@ -2092,13 +2092,13 @@ def test_contig_coverage_report_past_reference_end(projects, sequence_report):
     seq = ref[-100:] + 'CGTAC'
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     expected_tail = """\
-1-my-contig,HIV1-B-FR-K03455-seed,99,9718,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,100,9719,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,101,9720,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,102,9721,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,103,9722,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,104,9723,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,105,9724,0,1,U
+1-my-contig,HIV1-B-FR-K03455-seed,99,9718,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,100,9719,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,101,9720,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,102,9721,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,103,9722,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,104,9723,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,105,9724,0,1,0,U
 """
 
     report_file = StringIO()
@@ -2122,14 +2122,14 @@ def test_contig_coverage_report_past_reference_start(projects, sequence_report):
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     # link is (M)apped, (U)nmapped, or (I)nserted
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,-4,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,2,-3,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,3,-2,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,4,-1,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,5,0,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,6,1,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,2,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,-4,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,2,-3,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,3,-2,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,4,-1,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,5,0,0,1,0,U
+1-my-contig,HIV1-B-FR-K03455-seed,6,1,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,2,0,1,0,M
 """
 
     report_file = StringIO()
@@ -2153,10 +2153,10 @@ def test_contig_coverage_report_offset_reads(projects, sequence_report):
     seed_nucs = ([SeedNucleotide()] * 50 +
                  [SeedNucleotide(Counter({'C': 1}))] * len(seq))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,51,51,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,52,52,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,53,53,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,51,51,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,52,52,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,53,53,0,1,0,M
 """
 
     report_file = StringIO()
@@ -2187,13 +2187,13 @@ R1-seed,1,R1-seed,CCCCCC
 """)
 
     expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-R1-seed-partial,,1,1,0,5,M
-1-R1-seed-partial,,2,2,0,5,M
-1-R1-seed-partial,,3,3,0,5,M
-1-R1-seed-partial,,4,4,0,5,M
-1-R1-seed-partial,,5,5,0,5,M
-1-R1-seed-partial,,6,6,0,5,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-R1-seed-partial,,1,1,0,5,0,M
+1-R1-seed-partial,,2,2,0,5,0,M
+1-R1-seed-partial,,3,3,0,5,0,M
+1-R1-seed-partial,,4,4,0,5,0,M
+1-R1-seed-partial,,5,5,0,5,0,M
+1-R1-seed-partial,,6,6,0,5,0,M
 """
 
     report_file = StringIO()
@@ -2221,13 +2221,13 @@ R1-seed,1,R1-seed,CCCCCC
 """)
 
     expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-R1-seed-reversed,,1,1,0,5,M
-1-R1-seed-reversed,,2,2,0,5,M
-1-R1-seed-reversed,,3,3,0,5,M
-1-R1-seed-reversed,,4,4,0,5,M
-1-R1-seed-reversed,,5,5,0,5,M
-1-R1-seed-reversed,,6,6,0,5,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-R1-seed-reversed,,1,1,0,5,0,M
+1-R1-seed-reversed,,2,2,0,5,0,M
+1-R1-seed-reversed,,3,3,0,5,0,M
+1-R1-seed-reversed,,4,4,0,5,0,M
+1-R1-seed-reversed,,5,5,0,5,0,M
+1-R1-seed-reversed,,6,6,0,5,0,M
 """
 
     report_file = StringIO()
@@ -2267,40 +2267,40 @@ R1-seed,1,R1-seed,TTTAGG
 """)
 
     expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1_3-R1-seed,R1-seed,1,1,0,5,M
-1_3-R1-seed,R1-seed,2,2,0,5,M
-1_3-R1-seed,R1-seed,3,3,0,5,M
-1_3-R1-seed,R1-seed,4,4,0,7,M
-1_3-R1-seed,R1-seed,5,5,0,7,M
-1_3-R1-seed,R1-seed,6,6,0,7,M
-1_3-R1-seed,R1-seed,7,7,0,2,M
-1_3-R1-seed,R1-seed,8,8,0,2,M
-1_3-R1-seed,R1-seed,9,9,0,2,M
-contig-1-R1-seed,R1-seed,1,1,,,M
-contig-1-R1-seed,R1-seed,2,2,,,M
-contig-1-R1-seed,R1-seed,3,3,,,M
-contig-1-R1-seed,R1-seed,4,4,,,M
-contig-1-R1-seed,R1-seed,5,5,,,M
-contig-1-R1-seed,R1-seed,6,6,,,M
-contig-3-R1-seed,R1-seed,1,4,,,M
-contig-3-R1-seed,R1-seed,2,5,,,M
-contig-3-R1-seed,R1-seed,3,6,,,M
-contig-3-R1-seed,R1-seed,4,7,,,M
-contig-3-R1-seed,R1-seed,5,8,,,M
-contig-3-R1-seed,R1-seed,6,9,,,M
-2-R2-seed,R2-seed,1,7,0,4,M
-2-R2-seed,R2-seed,2,8,0,4,M
-2-R2-seed,R2-seed,3,9,0,4,M
-2-R2-seed,R2-seed,4,10,0,4,M
-2-R2-seed,R2-seed,5,11,0,4,M
-2-R2-seed,R2-seed,6,12,0,4,M
-contig-2-R2-seed,R2-seed,1,7,,,M
-contig-2-R2-seed,R2-seed,2,8,,,M
-contig-2-R2-seed,R2-seed,3,9,,,M
-contig-2-R2-seed,R2-seed,4,10,,,M
-contig-2-R2-seed,R2-seed,5,11,,,M
-contig-2-R2-seed,R2-seed,6,12,,,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1_3-R1-seed,R1-seed,1,1,0,5,0,M
+1_3-R1-seed,R1-seed,2,2,0,5,0,M
+1_3-R1-seed,R1-seed,3,3,0,5,0,M
+1_3-R1-seed,R1-seed,4,4,0,7,0,M
+1_3-R1-seed,R1-seed,5,5,0,7,0,M
+1_3-R1-seed,R1-seed,6,6,0,7,0,M
+1_3-R1-seed,R1-seed,7,7,0,2,0,M
+1_3-R1-seed,R1-seed,8,8,0,2,0,M
+1_3-R1-seed,R1-seed,9,9,0,2,0,M
+contig-1-R1-seed,R1-seed,1,1,,,0,M
+contig-1-R1-seed,R1-seed,2,2,,,0,M
+contig-1-R1-seed,R1-seed,3,3,,,0,M
+contig-1-R1-seed,R1-seed,4,4,,,0,M
+contig-1-R1-seed,R1-seed,5,5,,,0,M
+contig-1-R1-seed,R1-seed,6,6,,,0,M
+contig-3-R1-seed,R1-seed,1,4,,,0,M
+contig-3-R1-seed,R1-seed,2,5,,,0,M
+contig-3-R1-seed,R1-seed,3,6,,,0,M
+contig-3-R1-seed,R1-seed,4,7,,,0,M
+contig-3-R1-seed,R1-seed,5,8,,,0,M
+contig-3-R1-seed,R1-seed,6,9,,,0,M
+2-R2-seed,R2-seed,1,7,0,4,0,M
+2-R2-seed,R2-seed,2,8,0,4,0,M
+2-R2-seed,R2-seed,3,9,0,4,0,M
+2-R2-seed,R2-seed,4,10,0,4,0,M
+2-R2-seed,R2-seed,5,11,0,4,0,M
+2-R2-seed,R2-seed,6,12,0,4,0,M
+contig-2-R2-seed,R2-seed,1,7,,,0,M
+contig-2-R2-seed,R2-seed,2,8,,,0,M
+contig-2-R2-seed,R2-seed,3,9,,,0,M
+contig-2-R2-seed,R2-seed,4,10,,,0,M
+contig-2-R2-seed,R2-seed,5,11,,,0,M
+contig-2-R2-seed,R2-seed,6,12,,,0,M
 """
 
     report_file = StringIO()
@@ -2350,16 +2350,16 @@ def test_write_sequence_coverage_counts_with_coverage(projects,
     seed_nucs[2] = SeedNucleotide(Counter({'G': 4}))
     seed_nucs[98] = SeedNucleotide(Counter({'T': 5}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,4,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,4,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,0,M
 """
     expected_tail = """\
-1-my-contig,HIV1-B-FR-K03455-seed,98,1048,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,99,1049,0,5,M
-1-my-contig,HIV1-B-FR-K03455-seed,100,1050,0,1,M
+1-my-contig,HIV1-B-FR-K03455-seed,98,1048,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,99,1049,0,5,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,100,1050,0,1,0,M
 """
 
     report_file = StringIO()
@@ -2385,21 +2385,21 @@ def test_write_sequence_coverage_counts_with_deletion(projects, sequence_report)
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     seed_nucs[12] = SeedNucleotide(Counter({'G': 4}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,11,116,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,12,117,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,13,118,0,4,M
-1-my-contig,HIV1-B-FR-K03455-seed,14,119,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,11,116,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,12,117,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,13,118,0,4,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,14,119,0,1,0,M
 """
 
     report_file = StringIO()
@@ -2425,17 +2425,17 @@ def test_write_sequence_coverage_counts_with_some_deletions(projects,
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     seed_nucs[5] = SeedNucleotide(Counter({'G': 4, '-': 2}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,6,106,2,6,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,2,6,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,0,M
 """
 
     report_file = StringIO()
@@ -2459,23 +2459,23 @@ def test_write_sequence_coverage_counts_with_insert(projects, sequence_report):
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     seed_nucs[12] = SeedNucleotide(Counter({'T': 4}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,11,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,12,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,13,,0,4,I
-1-my-contig,HIV1-B-FR-K03455-seed,14,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,15,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,16,111,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,0,M
+1-my-contig,HIV1-B-FR-K03455-seed,11,,0,1,0,I
+1-my-contig,HIV1-B-FR-K03455-seed,12,,0,1,0,I
+1-my-contig,HIV1-B-FR-K03455-seed,13,,0,4,0,I
+1-my-contig,HIV1-B-FR-K03455-seed,14,,0,1,0,I
+1-my-contig,HIV1-B-FR-K03455-seed,15,,0,1,0,I
+1-my-contig,HIV1-B-FR-K03455-seed,16,111,0,1,0,M
 """
 
     report_file = StringIO()

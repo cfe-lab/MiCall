@@ -674,7 +674,6 @@ class SequenceReport(object):
 
         self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed)
 
-
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
             pos = int(row['pos'])
@@ -1001,7 +1000,7 @@ class SequenceReport(object):
                     else:
                         try:
                             concordance = self.seed_concordance[offset_seq_pos]
-                        except IndexError:
+                        except (IndexError, TypeError):
                             concordance = 0
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
@@ -1461,7 +1460,7 @@ class SequenceReport(object):
                 region_concordance = 0
                 region_coverage = 0
                 running_concordance = []
-                running_coverage =[]
+                running_coverage = []
                 region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
                 row = {'region': region,
                        'reference': coordinate_name}

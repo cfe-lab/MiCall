@@ -453,7 +453,7 @@ def build_contig(reader,
                     insertion_size = 0
                 if contig_row['coverage'] is not None:
                     coverage[pos - start] = (contig_row['coverage']) - contig_row['dels']
-                if contig_row['concordance'] is not None:
+                if use_concordance and contig_row['concordance'] is not None:
                     concordance[pos - start] = (contig_row['concordance'])
                 contig_pos = int(contig_row['query_nuc_pos'])
                 while event_positions and event_positions[-1] <= contig_pos:
@@ -516,7 +516,7 @@ def build_contig(reader,
                                      end + position_offset,
                                      coverage),
                       gap=-4)
-            elif max(concordance)>0:
+            elif max(concordance) > 0:
                 f.add(ShadedCoverage(start + position_offset,
                                      end + position_offset,
                                      concordance),
