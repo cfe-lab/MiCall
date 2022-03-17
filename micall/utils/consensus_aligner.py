@@ -3,6 +3,9 @@ from dataclasses import dataclass, replace
 from enum import IntEnum
 from itertools import count
 from operator import attrgetter
+import csv
+import os
+import logging
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -12,6 +15,8 @@ from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, 
 
 # A section between reading frame shifts must be at least this long to be split.
 from micall.utils.translation import translate
+
+logger = logging.getLogger(__name__)
 
 MINIMUM_READING_FRAME_SHIFT = 30
 # Minimum aminos in a section between reading frame shifts to be split.
@@ -161,42 +166,13 @@ class AlignmentWrapper(Alignment):
                 f'{self.q_st}, {self.q_en})')
 
 
-def clip_seed_aminos(seed_aminos: typing.List[SeedAmino],
-                     region_start_consensus_amino_index: int,
-                     region_end_consensus_amino_index: int,
-                     start_codon_nuc_index: int,
-                     end_codon_nuc_index: int):
-    """ Extract a section of seed aminos for counting.
-
-    Handles boundary codons by clipping as needed.
-    :param seed_aminos: source seed aminos to copy
-    :param region_start_consensus_amino_index: first seed amino to copy
-    :param region_end_consensus_amino_index: one past the last one to copy
-    :param start_codon_nuc_index: first codon index within the first seed amino
-        that should be copied
-    :param end_codon_nuc_index: last codon index to copy within the last codon
-    """
-    assert 0 <= region_start_consensus_amino_index
-    assert 0 <= region_end_consensus_amino_index
-    assert 0 <= start_codon_nuc_index
-    assert 0 <= end_codon_nuc_index
-    result = seed_aminos[region_start_consensus_amino_index:
-                         region_end_consensus_amino_index]
-    if start_codon_nuc_index != 0:
-        old_start_amino = result[0]
-        start_amino = SeedAmino(old_start_amino.consensus_nuc_index)
-        start_amino.add(old_start_amino, start_nuc=start_codon_nuc_index)
-        result[0] = start_amino
-    if end_codon_nuc_index != 2:
-        old_end_amino = result[-1]
-        end_amino = SeedAmino(old_end_amino.consensus_nuc_index)
-        end_amino.add(old_end_amino, end_nuc=end_codon_nuc_index)
-        result[-1] = end_amino
-    return result
-
-
 class ConsensusAligner:
-    def __init__(self, projects: ProjectConfig):
+    def __init__(self,
+                 projects: ProjectConfig,
+                 alignments_file=None,
+                 unmerged_alignments_file=None,
+                 intermediate_alignments_file=None,
+                 overall_alignments_file=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -208,6 +184,52 @@ class ConsensusAligner:
 
         # consensus nucleotide positions that were inserts
         self.inserts: typing.Set[int] = set()
+
+        if alignments_file is not None:
+            self.alignments_writer = self._create_alignments_writer(alignments_file)
+        else:
+            self.alignments_writer = None
+
+        if unmerged_alignments_file is not None:
+            self.unmerged_alignments_writer = self._create_alignments_writer(unmerged_alignments_file)
+        else:
+            self.unmerged_alignments_writer = None
+
+        if intermediate_alignments_file is not None:
+            self.intermediate_alignments_writer = self._create_alignments_writer(intermediate_alignments_file)
+        else:
+            self.intermediate_alignments_writer = None
+
+        if overall_alignments_file is not None:
+            columns = ["coordinate_name",
+                       "query_start",
+                       "query_end",
+                       "consensus_offset",
+                       "ref_start",
+                       "ref_end",
+                       "cigar_str"]
+            self.overall_alignments_writer = \
+                self._create_alignments_writer(overall_alignments_file, different_columns=columns)
+        else:
+            self.overall_alignments_writer = None
+
+    @staticmethod
+    def _create_alignments_writer(alignments_file, different_columns=None):
+        columns = different_columns or ["coordinate_name",
+                                        "action",
+                                        "query_start",
+                                        "query_end",
+                                        "ref_start",
+                                        "ref_end",
+                                        "reading_frame",
+                                        "ref_amino_start",
+                                        "aligned_query",
+                                        "aligned_ref"]
+        writer = csv.DictWriter(alignments_file, columns, lineterminator=os.linesep)
+        pos = alignments_file.tell()
+        if pos == 0:
+            writer.writeheader()
+        return writer
 
     def start_contig(self,
                      coordinate_name: str = None,
@@ -235,7 +257,10 @@ class ConsensusAligner:
         if not coordinate_name:
             return
         self.coordinate_name = coordinate_name
-        coordinate_seq = self.projects.getReference(coordinate_name)
+        try:
+            coordinate_seq = self.projects.getGenotypeReference(coordinate_name)
+        except KeyError:
+            coordinate_seq = self.projects.getReference(coordinate_name)
         aligner = Aligner(seq=coordinate_seq, preset='map-ont')
         self.alignments = list(aligner.map(self.consensus))
         if self.alignments or 10_000 < len(self.consensus):
@@ -247,6 +272,17 @@ class ConsensusAligner:
                            for alignment in self.alignments
                            if alignment.is_primary]
         self.alignments.sort(key=attrgetter('q_st'))
+
+        if self.overall_alignments_writer is not None:
+            for alignment in self.alignments:
+                row = {"coordinate_name": self.coordinate_name,
+                       "query_start": alignment.q_st,
+                       "query_end": alignment.q_en,
+                       "consensus_offset": self.consensus_offset,
+                       "ref_start": alignment.r_st,
+                       "ref_end": alignment.r_en,
+                       "cigar_str": alignment.cigar_str}
+                self.overall_alignments_writer.writerow(row)
 
     def align_gotoh(self, coordinate_seq, consensus):
         gap_open_penalty = 15
@@ -336,12 +372,17 @@ class ConsensusAligner:
                                       query_progress -
                                       amino_alignment.query_start -
                                       self.consensus_offset)
-                    amino_alignment.ref_start += start_shift
-                    amino_alignment.query_start += start_shift
                     end_shift = max(0, amino_alignment.ref_end - end_pos)
+                    amino_alignment.ref_start += start_shift
                     amino_alignment.ref_end -= end_shift
-                    amino_alignment.query_end -= end_shift
-                    amino_sections.append(amino_alignment)
+                    if action != CigarActions.DELETE:
+                        amino_alignment.query_start += start_shift
+                        amino_alignment.query_end -= end_shift
+                    alignment_size = amino_alignment.ref_end - amino_alignment.ref_start
+                    if action == CigarActions.MATCH and alignment_size <= 0:
+                        pass
+                    else:
+                        amino_sections.append(amino_alignment)
                 query_progress = query_end
             if repeat_pos is not None:
                 for i, amino_alignment in enumerate(amino_sections):
@@ -390,39 +431,22 @@ class ConsensusAligner:
                 amino_alignment.find_reading_frame(amino_ref,
                                                    start_pos,
                                                    translations)
-            for i in range(len(amino_sections)-2, 0, -1):
-                amino_alignment = amino_sections[i]
-                if amino_alignment.action == CigarActions.MATCH:
-                    continue
-                size = max(amino_alignment.ref_end-amino_alignment.ref_start,
-                           amino_alignment.query_end-amino_alignment.query_start)
-                prev_alignment = amino_sections[i-1]
-                next_alignment = amino_sections[i+1]
-                can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
-                    prev_alignment.amino_size,
-                    next_alignment.amino_size))
-                has_frame_shift = (prev_alignment.reading_frame !=
-                                   next_alignment.reading_frame)
-                has_big_gap = MAXIMUM_AMINO_GAP < size // 3
-                if can_align and (has_frame_shift or has_big_gap):
-                    # Both neighbours are big enough, so we have a choice.
-                    # Either there's a frame shift or a big gap, so keep
-                    # dividing around this indel.
-                    continue
-                # Merge the two sections on either side of this indel.
-                amino_sections.pop(i+1)
-                amino_sections.pop(i)
-                new_alignment = AminoAlignment(prev_alignment.query_start,
-                                               next_alignment.query_end,
-                                               prev_alignment.ref_start,
-                                               next_alignment.ref_end,
-                                               CigarActions.MATCH,
-                                               prev_alignment.reading_frame)
-                amino_sections[i-1] = new_alignment
-                new_alignment.find_reading_frame(amino_ref,
-                                                 start_pos,
-                                                 translations)
+
+            if self.unmerged_alignments_writer is not None:
+                self.write_alignments_file(amino_sections, self.unmerged_alignments_writer)
+
+            amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
+
+            if self.intermediate_alignments_writer is not None:
+                self.write_alignments_file(amino_sections, self.intermediate_alignments_writer)
+
+            # do a second pass to combine alignments
+            amino_sections = self.combine_alignments(amino_sections, amino_ref, start_pos, translations)
+
             self.amino_alignments.extend(amino_sections)
+
+        if self.alignments_writer is not None:
+            self.write_alignments_file(self.amino_alignments, self.alignments_writer)
 
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''
@@ -430,6 +454,56 @@ class ConsensusAligner:
         self.alignments.clear()
         self.seed_nucs.clear()
         self.inserts.clear()
+
+    def write_alignments_file(self, amino_alignments, alignments_writer):
+        for alignment in amino_alignments:
+            row = {"action": CigarActions(alignment.action).name,
+                   "query_start": alignment.query_start,
+                   "query_end": alignment.query_end,
+                   "ref_start": alignment.ref_start,
+                   "ref_end": alignment.ref_end,
+                   "aligned_query": alignment.aligned_query,
+                   "aligned_ref": alignment.aligned_ref,
+                   "reading_frame": alignment.reading_frame,
+                   "ref_amino_start": alignment.ref_amino_start,
+                   "coordinate_name": self.coordinate_name}
+            alignments_writer.writerow(row)
+
+    @staticmethod
+    def combine_alignments(amino_sections, amino_ref, start_pos, translations):
+        for i in range(len(amino_sections) - 2, 0, -1):
+            amino_alignment = amino_sections[i]
+            if amino_alignment.action == CigarActions.MATCH:
+                continue
+            size = max(amino_alignment.ref_end - amino_alignment.ref_start,
+                       amino_alignment.query_end - amino_alignment.query_start)
+            prev_alignment = amino_sections[i - 1]
+            next_alignment = amino_sections[i + 1]
+            can_align = (MINIMUM_AMINO_ALIGNMENT <= min(
+                prev_alignment.amino_size,
+                next_alignment.amino_size))
+            has_frame_shift = (prev_alignment.reading_frame !=
+                               next_alignment.reading_frame)
+            has_big_gap = MAXIMUM_AMINO_GAP < size // 3
+            if can_align and (has_frame_shift or has_big_gap):
+                # Both neighbours are big enough, so we have a choice.
+                # Either there's a frame shift or a big gap, so keep
+                # dividing around this indel.
+                continue
+            # Merge the two sections on either side of this indel.
+            amino_sections.pop(i + 1)
+            amino_sections.pop(i)
+            new_alignment = AminoAlignment(prev_alignment.query_start,
+                                           next_alignment.query_end,
+                                           prev_alignment.ref_start,
+                                           next_alignment.ref_end,
+                                           CigarActions.MATCH,
+                                           prev_alignment.reading_frame)
+            amino_sections[i - 1] = new_alignment
+            new_alignment.find_reading_frame(amino_ref,
+                                             start_pos,
+                                             translations)
+        return amino_sections
 
     def report_region(
             self,
@@ -489,9 +563,13 @@ class ConsensusAligner:
         return seed_amino.nucleotides[consensus_nuc_index % 3]
 
     def get_deletion_coverage(self, consensus_nuc_index):
-        prev_nuc = self.get_seed_nuc(consensus_nuc_index)
-        next_nuc = self.get_seed_nuc(consensus_nuc_index + 1)
-        coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+        try:
+            prev_nuc = self.get_seed_nuc(consensus_nuc_index)
+            next_nuc = self.get_seed_nuc(consensus_nuc_index + 1)
+            coverage = min(prev_nuc.get_coverage(), next_nuc.get_coverage())
+        except IndexError:
+            coverage = 0
+            logger.warning(f"Could not get deletion coverage for consensus index {consensus_nuc_index}")
         return coverage
 
     def build_amino_report(self,
@@ -716,15 +794,18 @@ class ConsensusAligner:
                 coordinate_inserts.remove(seed_amino.consensus_nuc_index)
                 prev_consensus_nuc_index = seed_amino.consensus_nuc_index
             if skip_position is not None and coord_index == (skip_position - start_pos) // 3 and \
-                    amino_alignment.ref_start <= skip_position - 1 <= amino_alignment.ref_end:
-                conseq_pos = coord2conseq[(skip_position - 1 - start_pos) // 3]
-                if has_skipped_nucleotide:
-                    skipped_nuc = \
-                        self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
+                    amino_alignment.ref_start < skip_position - 1 <= amino_alignment.ref_end:
+                conseq_pos = coord2conseq.get((skip_position - 1 - start_pos) // 3)
+                if conseq_pos is not None:
+                    if has_skipped_nucleotide:
+                        skipped_nuc = \
+                            self.reading_frames[amino_alignment.reading_frame][conseq_pos + 1].nucleotides[0]
+                    else:
+                        skipped_nuc = SeedNucleotide()
+                        coverage = self.get_deletion_coverage(conseq_pos)
+                        skipped_nuc.count_nucleotides('-', coverage)
                 else:
                     skipped_nuc = SeedNucleotide()
-                    coverage = self.get_deletion_coverage(conseq_pos)
-                    skipped_nuc.count_nucleotides('-', coverage)
             else:
                 skipped_nuc = None
             self.update_report_amino(coord_index,

@@ -111,6 +111,18 @@ def parse_args():
     parser.add_argument('--minimap_hits_csv',
                         type=argparse.FileType('w'),
                         help='CSV of minimap2 match locations')
+    parser.add_argument('--alignments_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of amino alignments')
+    parser.add_argument('--alignments_unmerged_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of unmerged amino alignments')
+    parser.add_argument('--alignments_intermediate_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of intermediate amino alignments')
+    parser.add_argument('--alignments_overall_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV of overall amino alignments')
     return parser.parse_args()
 
 
@@ -387,6 +399,8 @@ class SequenceReport(object):
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
         self.conseq_stitched_writer = None
+        self.alignments_csv = self.unmerged_alignments_csv = None
+        self.intermediate_alignments_csv = self.overall_alignments_csv = None
 
     @property
     def has_detail_counts(self):
@@ -556,6 +570,7 @@ class SequenceReport(object):
                 self.write_failure(self.fail_writer)
             if self.has_detail_counts:
                 self.combine_reports()
+            self.insert_writer.ref_insertions.clear()
         if self.nuc_detail_writer is not None and self.nuc_writer is not None:
             self.write_nuc_counts(self.nuc_writer)
         if self.amino_detail_writer is not None and self.amino_writer is not None:
@@ -591,7 +606,11 @@ class SequenceReport(object):
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
         if self.consensus_aligner.consensus is not None:
-            self.consensus_aligner = ConsensusAligner(self.projects)
+            self.consensus_aligner = ConsensusAligner(self.projects,
+                                                      self.alignments_csv,
+                                                      self.unmerged_alignments_csv,
+                                                      self.intermediate_alignments_csv,
+                                                      self.overall_alignments_csv)
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -600,11 +619,10 @@ class SequenceReport(object):
         if is_partial:
             coordinate_name = None
         else:
-            for seed_landmarks in self.landmarks:
-                if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
-                    coordinate_name = seed_landmarks['coordinates']
-                    break
-            else:
+            landmark_reader = LandmarkReader(self.landmarks)
+            try:
+                coordinate_name = landmark_reader.get_coordinates(self.seed)
+            except ValueError:
                 coordinate_name = None
 
         self.consensus_aligner.start_contig(coordinate_name,
@@ -713,6 +731,12 @@ class SequenceReport(object):
         self.write_amino_report(amino_detail_writer, self.reports, self.detail_seed)
 
     def combine_reports(self):
+        is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
+                      self.seed.endswith(REVERSED_CONTIG_SUFFIX))
+        if is_partial:
+            assert len(self.reports) == 0
+            assert len(self.report_nucleotides) == 0
+            return
         if self.contigs is None:
             group_ref = self.seed
         elif self.detail_seed == G2P_SEED_NAME:
@@ -747,7 +771,6 @@ class SequenceReport(object):
 
         self.reports.clear()
         self.report_nucleotides.clear()
-        self.insert_writer.ref_insertions.clear()
 
     def write_amino_report(self,
                            amino_writer: DictWriter,
@@ -1137,10 +1160,17 @@ class SequenceReport(object):
         report_nucleotides: typing.List[ReportNucleotide]
         for region, report_nucleotides in sorted(reports.items()):
             try:
-                gene = landmark_reader.get_gene(self.seed, region)
+                coordinate_name = landmark_reader.get_coordinates(seed)
+                gene = landmark_reader.get_gene(coordinate_name, region)
                 genome_start_pos = gene['start']
             except ValueError:
-                genome_start_pos = 1
+                try:
+                    coordinate_name = landmark_reader.get_coordinates(self.seed)
+                    gene = landmark_reader.get_gene(coordinate_name, region)
+                    genome_start_pos = gene['start']
+                except ValueError:
+                    logger.error(f"No coordinates found for seed names {seed}, {self.seed} and region {region}.")
+                    raise
             for report_nucleotide in report_nucleotides:
                 self.write_counts(seed,
                                   region,
@@ -1209,15 +1239,7 @@ class SequenceReport(object):
             nuc_dict = {}
             insertions_dict = {}
             consumed_positions = set()
-            for seed_landmarks in self.landmarks:
-                if re.fullmatch(seed_landmarks['seed_pattern'], entry):
-                    coordinate_name = seed_landmarks['coordinates']
-                    break
-            else:
-                coordinate_name = None
-                if entry is not None and entry != '':
-                    logger.warning(f'No coordinate reference found for entry: {entry}')
-                continue
+            coordinate_name = landmark_reader.get_coordinates(entry)
             sorted_regions: list = sorted(
                 self.combined_report_nucleotides[entry].items(),
                 key=lambda item: landmark_reader.get_gene(
@@ -1680,18 +1702,12 @@ class InsertionWriter(object):
         landmark_reader = LandmarkReader(landmarks)
         for region in self.ref_insertions:
             try:
-                for seed_landmarks in landmarks:
-                    if re.fullmatch(seed_landmarks['seed_pattern'], self.seed):
-                        coordinate_name = seed_landmarks['coordinates']
-                        break
-                else:
-                    coordinate_name = None
-                    if self.seed is not None and self.seed != '':
-                        logger.warning(f'No coordinate reference found for entry: {self.seed}')
+                coordinate_name = landmark_reader.get_coordinates(self.seed)
                 region_info = landmark_reader.get_gene(coordinate_name, region)
                 region_start = region_info['start']
             except ValueError:
-                region_start = 1
+                logger.warning(f"No coordinate reference found for seed name {self.seed}, region {region}.")
+                continue
             if self.ref_insertions[region] is not None:
                 for ref_pos in self.ref_insertions[region]:
                     insertions = list(self.ref_insertions[region][ref_pos].items())
@@ -1733,7 +1749,11 @@ def aln2counts(aligned_csv,
                contigs_csv=None,
                conseq_all_csv=None,
                conseq_stitched_csv=None,
-               minimap_hits_csv=None):
+               minimap_hits_csv=None,
+               alignments_csv=None,
+               alignments_unmerged_csv=None,
+               alignments_intermediate_csv=None,
+               alignments_overall_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1768,6 +1788,10 @@ def aln2counts(aligned_csv,
     @param conseq_stitched_csv: Open file handle to write stitched whole genome
         consensus sequences.
     @param minimap_hits_csv: Open file handle to write minimap2 match locations.
+    @param alignments_csv: Open file handle to write alignments.
+    @param alignments_unmerged_csv: Open file handle to write unmerged alignments.
+    @param alignments_intermediate_csv: Open file handle to write intermediate alignments.
+    @param alignments_overall_csv: Open file handle to write overall alignments.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1785,7 +1809,6 @@ def aln2counts(aligned_csv,
                                 consensus_min_coverage=CONSENSUS_MIN_COVERAGE)
         report.write_amino_header(amino_csv)
         report.write_consensus_header(conseq_csv)
-        report.write_consensus_regions_header(conseq_region_csv)
         report.write_failure_header(failed_align_csv)
         report.write_nuc_header(nuc_csv)
         if coverage_summary_csv is None:
@@ -1811,6 +1834,8 @@ def aln2counts(aligned_csv,
 
         if conseq_all_csv is not None:
             report.write_consensus_all_header(conseq_all_csv)
+        if conseq_region_csv is not None:
+            report.write_consensus_regions_header(conseq_region_csv)
         if conseq_stitched_csv is not None:
             report.write_consensus_stitched_header(conseq_stitched_csv)
         if clipping_csv is not None:
@@ -1825,6 +1850,10 @@ def aln2counts(aligned_csv,
             report.write_genome_coverage_header(genome_coverage_csv)
         if minimap_hits_csv is not None:
             report.write_minimap_hits_header(minimap_hits_csv)
+        report.alignments_csv = alignments_csv
+        report.unmerged_alignments_csv = alignments_unmerged_csv
+        report.intermediate_alignments_csv = alignments_intermediate_csv
+        report.overall_alignments_csv = alignments_overall_csv
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -1866,7 +1895,11 @@ def main():
                contigs_csv=args.contigs_csv,
                conseq_all_csv=args.conseq_all_csv,
                conseq_stitched_csv=args.conseq_stitched_csv,
-               minimap_hits_csv=args.minimap_hits_csv)
+               minimap_hits_csv=args.minimap_hits_csv,
+               alignments_csv=args.alignments_csv,
+               alignments_unmerged_csv=args.alignments_unmerged_csv,
+               alignments_intermediate_csv=args.alignments_intermediate_csv,
+               alignments_overall_csv=args.alignments_overall_csv)
 
 
 if __name__ == '__main__':

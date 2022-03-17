@@ -20,6 +20,7 @@ from micall.resistance.asi_algorithm import WILD_TYPES_PATH
 from micall.utils.translation import translate
 
 try:
+    # noinspection PyPackageRequirements
     import requests
 except ImportError:
     # Allow tests to run without requests module
@@ -33,6 +34,7 @@ def main():
     scoring_config = ProjectConfig.loadScoring()
     error_count = 0
     unchecked_ref_names = set(project_config.getAllReferences().keys())
+    unchecked_ref_names.update(set(project_config.getAllGenotypeReferences().keys()))
     error_count += check_hcv_seeds(project_config, unchecked_ref_names)
     error_count += check_hcv_coordinates(project_config, unchecked_ref_names)
     error_count += check_hiv_seeds(project_config, unchecked_ref_names)
@@ -71,6 +73,9 @@ Recombinant references are excluded (names start with a digit).
 The HIV1-CON-XX-Consensus-seed is a special case: the consensus of consensuses,
 downloaded from the same page with the Consensus/Ancestral alignment type.
 See the project_seeds_from_compendium.py script for full details.
+More special cases were added for the HIVGHA project to include circulating
+recombinant forms common in Ghana. The CRF references are excluded in the
+pipeline for all but the HIVGHA project code.
 """)
     sequences = fetch_alignment_sequences(2004,
                                           'CON',  # Consensus/Ancestral
@@ -84,6 +89,15 @@ See the project_seeds_from_compendium.py script for full details.
     consensus_accession = 'Consensus'
     assert consensus_accession not in source_sequences, sorted(source_sequences.keys())
     source_sequences[consensus_accession] = consensus
+
+    ghana_source_names = ["HIV1-CRF02_AG-GH-AB286855-seed",
+                          "HIV1-CRF06_CPX-GH-AB286851-seed"]
+    for source_name in ghana_source_names:
+        parts = source_name.split('-')
+        accession_number = parts[3]
+        assert source_name not in source_sequences, sorted(source_sequences.keys())
+        source_sequences[accession_number] = fetch_by_accession(accession_number)
+
     ref_names = project_config.getProjectSeeds('HIV')
     unchecked_ref_names.difference_update(ref_names)
 
@@ -381,6 +395,12 @@ This script contains a complete list of the reference accession numbers.
     # curated and annotated version that was derived from the AF009606 entry.
     # All the other genotypes can be found by their regular accession numbers.
 
+    report, errors_genotype = compare_config(accession_numbers.keys(),
+                                             project_config,
+                                             source_nuc_sequences)
+    unchecked_ref_names.difference_update(accession_numbers.keys())
+    print(report)
+
     hcv_project = project_config.config['projects']['HCV']
     ref_names = {project_region['coordinate_region']
                  for project_region in hcv_project['regions']}
@@ -400,7 +420,7 @@ This script contains a complete list of the reference accession numbers.
         coordinate_seq = source_nuc_sequences[genotype]
         ref_positions = genotype_ref_positions[genotype]
         nuc_seq_ref_trimmed = extract_region(landmark_reader,
-                                             seed_name,
+                                             genotype,
                                              coordinate_seq,
                                              ref_name,
                                              ref_positions)
@@ -417,7 +437,7 @@ This script contains a complete list of the reference accession numbers.
                                          project_config,
                                          source_sequences)
     print(report)
-    return error_count + length_errors
+    return error_count + length_errors + errors_genotype
 
 
 def check_hla_seeds(project_config, unchecked_ref_names: set):
@@ -731,7 +751,10 @@ def compare_config(ref_names,
             try:
                 project_sequence = project_config.getReference(ref_name)
             except KeyError:
-                project_sequence = ''
+                try:
+                    project_sequence = project_config.getGenotypeReference(ref_name)
+                except KeyError:
+                    project_sequence = ''
         if name_part is None:
             source_name = ref_name
         else:

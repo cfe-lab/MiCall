@@ -71,6 +71,10 @@ class ProjectConfig(object):
         reference = self.config['regions'][region_name]['reference']
         return ''.join(reference)
 
+    def getGenotypeReference(self, region_name):
+        reference = self.config['genotype_references'][region_name]['reference']
+        return ''.join(reference)
+
     def isAmino(self, region_name):
         return not self.config['regions'][region_name]['is_nucleotide']
 
@@ -92,6 +96,10 @@ class ProjectConfig(object):
     def getAllReferences(self):
         return {name: self.getReference(name)
                 for name in self.config['regions']}
+
+    def getAllGenotypeReferences(self):
+        return {name: self.getGenotypeReference(name)
+                for name in self.config['genotype_references']}
 
     def getMaxVariants(self, coordinate_region):
         """ Find the maximum number of variants to report for a coordinate

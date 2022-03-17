@@ -337,7 +337,10 @@ def map_references(contig_ref_name: str,
                    coordinates_name: str,
                    projects: ProjectConfig) -> typing.Mapping[int, int]:
     ref_seq = projects.getReference(contig_ref_name)
-    coordinates_seq = projects.getReference(coordinates_name)
+    try:
+        coordinates_seq = projects.getGenotypeReference(coordinates_name)
+    except KeyError:
+        coordinates_seq = projects.getReference(coordinates_name)
     aligned_coordinates, aligned_ref, _ = align_nucs(coordinates_seq, ref_seq)
     mapped_positions = {}
     coordinate_pos = ref_pos = 0

@@ -45,8 +45,6 @@ From: centos:7
     micall/monitor /opt/micall/micall/monitor
     micall/utils   /opt/micall/micall/utils
 
-    ## Gotoh
-    micall/alignment /opt/micall/alignment
     requirements.txt /opt/micall/
     requirements-basespace.txt /opt/micall/
 

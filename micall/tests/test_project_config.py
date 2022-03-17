@@ -36,6 +36,15 @@ class ProjectConfigurationTest(unittest.TestCase):
       ],
       "seed_group": null
     }
+  },
+  "genotype_references": {
+    "R1-geno": {
+      "is_nucleotide": true,
+      "reference": [
+        "ACTGAAAG",
+        "GGGGGGG"
+      ]
+    }
   }
 }
 """)
@@ -269,6 +278,15 @@ ACTGAAAGGG
         seed_ref = self.config.getReference(seed_name)
 
         self.assertSequenceEqual(expected_ref, seed_ref)
+
+    def testGetGenotypeReference(self):
+        self.config.load(self.defaultJsonIO)
+        genotype_name = 'R1-geno'
+        expected_ref = 'ACTGAAAGGGGGGGG'
+
+        genotype_ref = self.config.getGenotypeReference(genotype_name)
+
+        self.assertSequenceEqual(expected_ref, genotype_ref)
 
     def testGetCoordinateReferences(self):
         self.config.load(self.defaultJsonIO)
