@@ -205,7 +205,7 @@ class ConsensusAligner:
 
         if overall_alignments_file is not None:
             columns = ["coordinate_name",
-                       "contig name",
+                       "contig",
                        "query_start",
                        "query_end",
                        "consensus_offset",
@@ -219,7 +219,7 @@ class ConsensusAligner:
 
         if concordance_file is not None:
             columns = ["seed_name",
-                       "contig name",
+                       "contig",
                        "position",
                        "concordance"]
             self.concordance_writer = self._create_alignments_writer(concordance_file, different_columns=columns)
@@ -229,7 +229,7 @@ class ConsensusAligner:
     @staticmethod
     def _create_alignments_writer(alignments_file, different_columns=None):
         columns = different_columns or ["coordinate_name",
-                                        "contig name",
+                                        "contig",
                                         "action",
                                         "query_start",
                                         "query_end",
@@ -290,7 +290,7 @@ class ConsensusAligner:
         if self.overall_alignments_writer is not None:
             for alignment in self.alignments:
                 row = {"coordinate_name": self.coordinate_name,
-                       "contig name": self.contig_name,
+                       "contig": self.contig_name,
                        "query_start": alignment.q_st,
                        "query_end": alignment.q_en,
                        "consensus_offset": self.consensus_offset,
@@ -473,7 +473,7 @@ class ConsensusAligner:
     def write_alignments_file(self, amino_alignments, alignments_writer):
         for alignment in amino_alignments:
             row = {"action": CigarActions(alignment.action).name,
-                   "contig name": self.contig_name,
+                   "contig": self.contig_name,
                    "query_start": alignment.query_start,
                    "query_end": alignment.query_end,
                    "ref_start": alignment.ref_start,
@@ -904,7 +904,8 @@ class ConsensusAligner:
         query_matches = [0] * len(self.consensus)
         window_size = 10
         row = {'seed_name': seed_name,
-               'contig name': self.contig_name}
+               'contig': self.contig_name}
+        concordance_list = [0] * len(self.consensus)
 
         for alignment in seed_alignments:
             for cigar_index, (size, action) in enumerate(alignment.cigar):
@@ -922,7 +923,10 @@ class ConsensusAligner:
             concordance = sum(query_matches[int(pos - window_size / 2):int(pos + window_size / 2)])
             row['position'] = pos
             row['concordance'] = concordance / window_size
+            concordance_list[pos] = concordance / window_size
             self.concordance_writer.writerow(row)
+
+        return concordance_list
 
 
 @dataclass

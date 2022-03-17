@@ -406,6 +406,7 @@ class SequenceReport(object):
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
         self.concordance_writer = self.detailed_concordance_writer = None
         self.seed_concordance_csv = None
+        self.seed_concordance = []
 
     @property
     def has_detail_counts(self):
@@ -616,6 +617,7 @@ class SequenceReport(object):
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
+        self.seed_concordance = []
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -670,7 +672,7 @@ class SequenceReport(object):
                 continue
             self._map_to_coordinate_ref(coordinate_name)
 
-        self.consensus_aligner.determine_seed_concordance(self.seed)
+        self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed)
 
 
     def read_clipping(self, clipping_csv):
@@ -882,6 +884,7 @@ class SequenceReport(object):
                    'refseq_nuc_pos',
                    'dels',
                    'coverage',
+                   'concordance',
                    'link']
         self.genome_coverage_writer = csv.DictWriter(genome_coverage_file,
                                                      columns,
@@ -996,12 +999,17 @@ class SequenceReport(object):
                     if 0 < skipped_source:
                         skipped_source -= 1
                     else:
+                        try:
+                            concordance = self.seed_concordance[offset_seq_pos]
+                        except IndexError:
+                            concordance = 0
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
                                    query_nuc_pos=offset_seq_pos,
                                    refseq_nuc_pos=ref_pos_display,
                                    dels=dels,
                                    coverage=coverage,
+                                   concordance=concordance,
                                    link=link)
                         self.genome_coverage_writer.writerow(row)
 

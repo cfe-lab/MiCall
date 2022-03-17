@@ -10,7 +10,7 @@ from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
 from micall.core.coverage_plots import coverage_plot, plot_concordance
-from micall.core.plot_contigs import plot_genome_coverage
+from micall.core.plot_contigs import plot_genome_coverage, plot_genome_concordance
 from micall.core.prelim_map import prelim_map
 from micall.core.project_config import ProjectConfig
 from micall.core.remap import remap, map_to_contigs
@@ -314,6 +314,14 @@ class Sample:
             plot_genome_coverage(genome_coverage_csv,
                                  minimap_hits_csv,
                                  self.genome_coverage_svg)
+
+        with open(self.genome_coverage_csv) as genome_coverage_csv, \
+                open(self.minimap_hits_csv) as minimap_hits_csv:
+            if not use_denovo:
+                minimap_hits_csv = None
+            plot_genome_concordance(genome_coverage_csv,
+                                    minimap_hits_csv,
+                                    self.genome_concordance_svg)
 
         with open(self.concordance_detailed_csv) as concordance_detailed_csv:
             plot_concordance(concordance_detailed_csv, plot_path=self.coverage_maps)

@@ -210,7 +210,14 @@ def plot_genome_coverage(genome_coverage_csv,
     f.show(w=970).saveSvg(genome_coverage_svg_path)
 
 
-def build_coverage_figure(genome_coverage_csv, blast_csv=None):
+def plot_genome_concordance(genome_coverage_csv,
+                            blast_csv,
+                            genome_concordance_svg_path):
+    f = build_coverage_figure(genome_coverage_csv, blast_csv, use_concordance=True)
+    f.show(w=970).saveSvg(genome_concordance_svg_path)
+
+
+def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=False):
     min_position, max_position = 1, 500
     coordinate_depths = Counter()
     contig_depths = Counter()
@@ -321,12 +328,21 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
         for contig_name in sorted_contig_names:
             genome_coverage_csv.seek(0)
             reader = DictReader(genome_coverage_csv)
-            build_contig(reader,
-                         f,
-                         contig_name,
-                         max_position,
-                         position_offset,
-                         blast_rows)
+            if use_concordance:
+                build_contig(reader,
+                             f,
+                             contig_name,
+                             max_position,
+                             position_offset,
+                             blast_rows,
+                             use_concordance=True)
+            else:
+                build_contig(reader,
+                             f,
+                             contig_name,
+                             max_position,
+                             position_offset,
+                             blast_rows)
 
     if not f.elements:
         f.add(Track(1, max_position, label='No contigs found.', color='none'))
@@ -381,7 +397,12 @@ def build_contig(reader,
                  contig_name,
                  max_position,
                  position_offset,
-                 blast_rows):
+                 blast_rows,
+                 use_concordance=False):
+    if use_concordance:
+        relevant_field = 'concordance'
+    else:
+        relevant_field = 'coverage'
     contig_matcher = ContigMatcher(contig_name)
     blast_ranges = []  # [[start, end, blast_num]]
     blast_starts = defaultdict(set)  # {start: {blast_num}}
@@ -411,9 +432,12 @@ def build_contig(reader,
         else:
             pos_field = 'query_nuc_pos'
         for contig_row in contig_rows:
-            for field_name in (pos_field, 'coverage', 'dels'):
+            for field_name in (pos_field, relevant_field, 'dels'):
                 field_text = contig_row[field_name]
-                field_value = None if field_text == '' else int(field_text)
+                if field_name != 'concordance':
+                    field_value = None if field_text == '' else int(field_text)
+                else:
+                    field_value = None if field_text == '' else 100*float(field_text)
                 contig_row[field_name] = field_value
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
@@ -427,9 +451,10 @@ def build_contig(reader,
                 if insertion_size:
                     insertion_ranges.append((pos, pos+insertion_size-1))
                     insertion_size = 0
-                if contig_row['coverage'] is not None:
-                    coverage[pos - start] = (contig_row['coverage'] -
-                                             contig_row['dels'])
+                if contig_row[relevant_field] is not None:
+                    coverage[pos - start] = (contig_row[relevant_field])
+                    if not use_concordance:
+                        coverage[pos - start] -= contig_row['dels']
                 contig_pos = int(contig_row['query_nuc_pos'])
                 while event_positions and event_positions[-1] <= contig_pos:
                     event_pos = event_positions.pop()
