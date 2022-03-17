@@ -743,7 +743,7 @@ def test_alignments_file(projects):
                          unmerged_alignments_file=unmerged_alignments_file,
                          intermediate_alignments_file=intermediate_alignments_file)
     expected_text = """\
-coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+coordinate_name,contig,action,query_start,query_end,ref_start,ref_end,reading_frame,\
 ref_amino_start,aligned_query,aligned_ref
 """
 
@@ -757,7 +757,7 @@ def test_overall_alignments_file(projects):
     overall_alignments_file = StringIO()
     _ = ConsensusAligner(projects, overall_alignments_file=overall_alignments_file)
     expected_text = """\
-coordinate_name,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_str
+coordinate_name,contig,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_str
 """
 
     assert overall_alignments_file.getvalue() == expected_text
@@ -766,14 +766,14 @@ coordinate_name,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_s
 # noinspection DuplicatedCode
 def test_write_alignment(projects):
     alignments_file = StringIO()
-    aligner = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner = ConsensusAligner(projects, alignments_file=alignments_file, contig_name='test_contig')
     aligner.coordinate_name = "test"
     amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10)]
 
     expected_text = """\
-coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+coordinate_name,contig,action,query_start,query_end,ref_start,ref_end,reading_frame,\
 ref_amino_start,aligned_query,aligned_ref
-test,MATCH,0,10,20,30,1,10,ATA,ACA
+test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
 """
 
     aligner.write_alignments_file(amino_alignments, aligner.alignments_writer)
@@ -784,20 +784,20 @@ test,MATCH,0,10,20,30,1,10,ATA,ACA
 # noinspection DuplicatedCode
 def test_write_multiple_alignments(projects):
     alignments_file = StringIO()
-    aligner = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner = ConsensusAligner(projects, alignments_file=alignments_file, contig_name='test_contig')
     aligner.coordinate_name = "test"
     amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10)]
     aligner.write_alignments_file(amino_alignments, aligner.alignments_writer)
-    aligner2 = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner2 = ConsensusAligner(projects, alignments_file=alignments_file, contig_name='test_contig_2')
     aligner2.coordinate_name = "2ndtest"
     amino_alignments2 = [AminoAlignment(0, 20, 40, 60, 0, 2, aligned_query="ABC", aligned_ref="DEF", ref_amino_start=4)]
     aligner2.write_alignments_file(amino_alignments2, aligner2.alignments_writer)
 
     expected_text = """\
-coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+coordinate_name,contig,action,query_start,query_end,ref_start,ref_end,reading_frame,\
 ref_amino_start,aligned_query,aligned_ref
-test,MATCH,0,10,20,30,1,10,ATA,ACA
-2ndtest,MATCH,0,20,40,60,2,4,ABC,DEF
+test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
+2ndtest,test_contig_2,MATCH,0,20,40,60,2,4,ABC,DEF
 """
 
     assert alignments_file.getvalue() == expected_text
