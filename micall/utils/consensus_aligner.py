@@ -905,7 +905,7 @@ class ConsensusAligner:
         window_size = 10
         row = {'seed_name': seed_name,
                'contig': self.contig_name}
-        concordance_list = [0] * len(self.consensus)
+        concordance_list = [0] * (len(self.consensus)+self.consensus_offset)
 
         for alignment in seed_alignments:
             ref_progress = alignment.r_st
@@ -929,7 +929,7 @@ class ConsensusAligner:
                                  "contig": self.contig_name,
                                  "query_start": alignment.q_st,
                                  "query_end": alignment.q_en,
-                                 "consensus_offset": 0,
+                                 "consensus_offset": self.consensus_offset,
                                  "ref_start": alignment.r_st,
                                  "ref_end": alignment.r_en,
                                  "cigar_str": alignment.cigar_str}
@@ -937,9 +937,9 @@ class ConsensusAligner:
 
         for pos in range(int(window_size / 2), int(len(self.consensus) - window_size / 2 + 1)):
             concordance = sum(query_matches[int(pos - window_size / 2):int(pos + window_size / 2)])
-            row['position'] = pos
+            row['position'] = pos + self.consensus_offset
             row['concordance'] = concordance / window_size
-            concordance_list[pos] = concordance / window_size
+            concordance_list[pos+self.consensus_offset] = concordance / window_size
             self.concordance_writer.writerow(row)
 
         return concordance_list
