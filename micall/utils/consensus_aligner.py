@@ -1006,8 +1006,7 @@ class ConsensusAligner:
                         query_progress += size
                         ref_progress += size
                         if amino_alignment.has_query_overlap(query_start, query_end):
-                            start_shift = max(0,
-                                              query_start - amino_alignment.query_start - self.consensus_offset)
+                            start_shift = max(0, query_start - amino_alignment.query_start)
                             end_shift = max(0, amino_alignment.query_end - query_end)
                             amino_alignment.ref_start += start_shift
                             amino_alignment.ref_end -= end_shift
@@ -1015,7 +1014,7 @@ class ConsensusAligner:
                             amino_alignment.query_end -= end_shift
                             match_size = amino_alignment.ref_end - amino_alignment.ref_start
                             for pos in range(0, match_size):
-                                query_nuc = self.consensus[amino_alignment.query_start + self.consensus_offset + pos]
+                                query_nuc = self.consensus[amino_alignment.query_start - self.consensus_offset + pos]
                                 seed_nuc = seed_ref[amino_alignment.ref_start + pos]
                                 if query_nuc == seed_nuc:
                                     nuc_agreements[pos] = 1
