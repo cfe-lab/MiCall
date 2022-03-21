@@ -527,7 +527,8 @@ class SequenceReport(object):
                                              report_aminos,
                                              repeated_ref_pos,
                                              skipped_ref_pos,
-                                             amino_ref)
+                                             amino_ref,
+                                             coordinate_name)
         self.consensus[coordinate_name] = self.consensus_aligner.amino_consensus
         self.inserts[coordinate_name] = self.consensus_aligner.inserts
 
@@ -629,6 +630,7 @@ class SequenceReport(object):
                                                       self.intermediate_alignments_csv,
                                                       self.overall_alignments_csv,
                                                       self.seed_concordance_csv,
+                                                      self.seed_region_concordance_csv,
                                                       self.detail_seed)
 
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
@@ -672,7 +674,7 @@ class SequenceReport(object):
                 continue
             self._map_to_coordinate_ref(coordinate_name)
 
-        self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed)
+        self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed, self.projects)
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -1879,7 +1881,8 @@ def aln2counts(aligned_csv,
                alignments_overall_csv=None,
                concordance_csv=None,
                concordance_detailed_csv=None,
-               concordance_seed_csv=None):
+               concordance_seed_csv=None,
+               concordance_seed_region_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1921,6 +1924,7 @@ def aln2counts(aligned_csv,
     @param concordance_csv: Open file handle to write concordance measures for the regions.
     @param concordance_detailed_csv: Open file handle to write detailed concordance measures for the regions.
     @param concordance_seed_csv: Open file handle to write detailed concordance measures for the seeds.
+    @param concordance_seed_csv: Open file handle to write concordance measures for individual regions for each seed.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1988,6 +1992,7 @@ def aln2counts(aligned_csv,
         report.intermediate_alignments_csv = alignments_intermediate_csv
         report.overall_alignments_csv = alignments_overall_csv
         report.seed_concordance_csv = concordance_seed_csv
+        report.seed_region_concordance_csv = concordance_seed_region_csv
 
         report.process_reads(aligned_csv,
                              coverage_summary,

@@ -6,6 +6,7 @@ from operator import attrgetter
 import csv
 import os
 import logging
+from collections import defaultdict
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -174,6 +175,7 @@ class ConsensusAligner:
                  intermediate_alignments_file=None,
                  overall_alignments_file=None,
                  concordance_file=None,
+                 region_concordance_file=None,
                  contig_name=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
@@ -225,6 +227,20 @@ class ConsensusAligner:
             self.concordance_writer = self._create_alignments_writer(concordance_file, different_columns=columns)
         else:
             self.concordance_writer = None
+
+        if region_concordance_file is not None:
+            columns = ["seed_name",
+                       "contig",
+                       "region",
+                       "concordance",
+                       "coverage"]
+            self.region_concordance_writer = self._create_alignments_writer(region_concordance_file,
+                                                                            different_columns=columns)
+        else:
+            self.region_concordance_writer = None
+
+        # {region_start: {query_start: , query_end: , region_aligned: }
+        self.alignment_info = defaultdict(lambda: defaultdict())
 
     @staticmethod
     def _create_alignments_writer(alignments_file, different_columns=None):
@@ -346,7 +362,8 @@ class ConsensusAligner:
                               end_pos: int,
                               repeat_pos: typing.Optional[int],
                               skip_pos: typing.Optional[int],
-                              amino_ref: str):
+                              amino_ref: str,
+                              region_name: str = None):
         translations = {
             reading_frame: translate(
                 '-'*(reading_frame + self.consensus_offset) +
@@ -463,6 +480,13 @@ class ConsensusAligner:
         if self.alignments_writer is not None:
             self.write_alignments_file(self.amino_alignments, self.alignments_writer)
 
+        if len(self.amino_alignments) > 0:
+            region_aligned = (self.amino_alignments[-1].ref_end - 1 - self.amino_alignments[0].ref_start ) / \
+                              (end_pos - start_pos)
+            self.alignment_info[region_name]['query_start'] = self.amino_alignments[0].query_start
+            self.alignment_info[region_name]['query_end'] = self.amino_alignments[-1].query_end
+            self.alignment_info[region_name]['region_aligned'] = region_aligned
+
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -529,7 +553,8 @@ class ConsensusAligner:
             report_aminos: typing.List[ReportAmino] = None,
             repeat_position: int = None,
             skip_position: int = None,
-            amino_ref: str = None):
+            amino_ref: str = None,
+            region_name: str = None):
         """ Add read counts to report counts for a section of the reference.
 
         :param start_pos: 1-based position of first nucleotide to report in
@@ -546,6 +571,7 @@ class ConsensusAligner:
             1-based position in reference coordinates, but only in report_aminos.
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
+        :param region_name: name of the region to be reported
         """
         self.inserts = set()
         if not self.alignments:
@@ -572,7 +598,8 @@ class ConsensusAligner:
                                     report_aminos,
                                     repeat_position,
                                     skip_position,
-                                    amino_ref)
+                                    amino_ref,
+                                    region_name)
 
     def get_seed_nuc(self, consensus_nuc_index: int):
         seed_amino = self.reading_frames[0][consensus_nuc_index // 3]
@@ -595,7 +622,8 @@ class ConsensusAligner:
                            report_aminos: typing.List[ReportAmino] = None,
                            repeat_position: int = None,
                            skip_position: int = None,
-                           amino_ref: str = None):
+                           amino_ref: str = None,
+                           region_name: str = None):
         """ Add read counts to report counts for a section of the reference.
         
         Used for regions that translate to amino acids.
@@ -614,12 +642,14 @@ class ConsensusAligner:
             1-based position in reference coordinates, but only in report_aminos.
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
+        :param region_name: name of the region to be built
         """
         self.find_amino_alignments(start_pos,
                                    end_pos,
                                    repeat_position,
                                    skip_position,
-                                   amino_ref)
+                                   amino_ref,
+                                   region_name)
         has_skipped_nucleotide = False
         if skip_position is not None:
             reading_frame1 = reading_frame2 = None
@@ -895,7 +925,7 @@ class ConsensusAligner:
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
 
-    def determine_seed_concordance(self, seed_name):
+    def determine_seed_concordance(self, seed_name, projects):
         if self.concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
@@ -942,6 +972,64 @@ class ConsensusAligner:
             concordance_list[pos+self.consensus_offset] = concordance / window_size
             self.concordance_writer.writerow(row)
 
+        if self.region_concordance_writer is None:
+            return concordance_list
+
+        regions = projects.getCoordinateReferences(seed_name)
+        for region in regions:
+            alignment_info = self.alignment_info[region]
+            try:
+                query_start = alignment_info['query_start']
+                query_end = alignment_info['query_end']
+                region_aligned = alignment_info['region_aligned']
+            except KeyError:
+                continue
+            length_aligned = query_end - query_start
+            nuc_agreements = [0] * length_aligned
+            nuc_covered = [0] * length_aligned
+            for alignment in seed_alignments:
+                ref_progress = alignment.r_st
+                query_progress = alignment.q_st + self.consensus_offset
+                for cigar_index, (size, action) in enumerate(alignment.cigar):
+                    if action == CigarActions.INSERT:
+                        query_progress += size
+                    elif action == CigarActions.DELETE:
+                        ref_progress += size
+                    else:
+                        assert action == CigarActions.MATCH
+                        amino_alignment = AminoAlignment(query_progress,
+                                                         query_progress + size,
+                                                         ref_progress,
+                                                         ref_progress + size,
+                                                         action,
+                                                         0)
+                        query_progress += size
+                        ref_progress += size
+                        if amino_alignment.has_query_overlap(query_start, query_end):
+                            start_shift = max(0,
+                                              query_start - amino_alignment.query_start - self.consensus_offset)
+                            end_shift = max(0, amino_alignment.query_end - query_end)
+                            amino_alignment.ref_start += start_shift
+                            amino_alignment.ref_end -= end_shift
+                            amino_alignment.query_start += start_shift
+                            amino_alignment.query_end -= end_shift
+                            match_size = amino_alignment.ref_end - amino_alignment.ref_start
+                            for pos in range(0, match_size):
+                                query_nuc = self.consensus[amino_alignment.query_start + self.consensus_offset + pos]
+                                seed_nuc = seed_ref[amino_alignment.ref_start + pos]
+                                if query_nuc == seed_nuc:
+                                    nuc_agreements[pos] = 1
+                                nuc_covered[pos] = 1
+            covered_aligned = sum(nuc_covered) / length_aligned
+            total_covered = covered_aligned * region_aligned
+            total_concordance = sum(nuc_agreements) / length_aligned
+            region_row = {'seed_name': seed_name,
+                          'region': region,
+                          'contig': self.contig_name,
+                          'concordance': total_concordance,
+                          'coverage': total_covered}
+            self.region_concordance_writer.writerow(region_row)
+
         return concordance_list
 
 
@@ -964,6 +1052,11 @@ class AminoAlignment:
     def has_overlap(self, start_pos: int, end_pos: int) -> bool:
         before_end = self.ref_start < end_pos
         after_start = start_pos <= self.ref_end
+        return before_end == after_start
+
+    def has_query_overlap(self, start_pos: int, end_pos: int) -> bool:
+        before_end = self.query_start < end_pos
+        after_start = start_pos <= self.query_end
         return before_end == after_start
 
     def find_reading_frame(self, amino_ref, start_pos, translations):
