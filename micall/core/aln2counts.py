@@ -405,7 +405,7 @@ class SequenceReport(object):
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
         self.concordance_writer = self.detailed_concordance_writer = None
-        self.seed_concordance_csv = None
+        self.seed_concordance_csv = self.seed_region_concordance_csv = None
         self.seed_concordance = []
 
     @property
