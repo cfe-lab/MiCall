@@ -58,7 +58,7 @@ class SmoothCoverage(Coverage):
         return self.color
 
 
-class ShadedCoverage(Coverage):
+class ShadedCoverage(SmoothCoverage):
     def __init__(self, a, b, ys, height=10, color='blue', opacity='1.0'):
         super().__init__(a, b, ys, height, color, opacity)
         # noinspection PyUnresolvedReferences
