@@ -932,7 +932,7 @@ class ConsensusAligner:
         seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
         seed_alignments = list(seed_aligner.map(self.consensus))
         query_matches = [0] * len(self.consensus)
-        window_size = 10
+        window_size = 20
         row = {'seed_name': seed_name,
                'contig': self.contig_name}
         concordance_list = [0] * (len(self.consensus)+self.consensus_offset)

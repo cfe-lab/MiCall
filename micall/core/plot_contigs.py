@@ -84,7 +84,7 @@ class ConcordanceLine(SmoothCoverage):
 
     def draw(self, x=0, y=0, xscale=1.0):
         d = draw.Group(transform="translate({} {})".format(x, y))
-        p = draw.Path(stroke=self.color, stroke_width=2, fill='none')
+        p = draw.Path(stroke=self.color, stroke_width=1, fill='none')
         yscale = self.h / 100
         for num, y in enumerate(self.ys):
             if num == 0:
