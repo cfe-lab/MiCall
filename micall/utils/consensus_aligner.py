@@ -1021,7 +1021,10 @@ class ConsensusAligner:
                                 nuc_covered[pos] = 1
             covered_aligned = sum(nuc_covered) / length_aligned
             total_covered = covered_aligned * region_aligned
-            concordance_covered = sum(nuc_agreements) / sum(nuc_covered)
+            try:
+                concordance_covered = sum(nuc_agreements) / sum(nuc_covered)
+            except ZeroDivisionError:
+                concordance_covered = 0
             region_row = {'seed_name': seed_name,
                           'region': region,
                           'contig': self.contig_name,
