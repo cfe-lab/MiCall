@@ -1021,11 +1021,11 @@ class ConsensusAligner:
                                 nuc_covered[pos] = 1
             covered_aligned = sum(nuc_covered) / length_aligned
             total_covered = covered_aligned * region_aligned
-            total_concordance = sum(nuc_agreements) / length_aligned
+            concordance_covered = sum(nuc_agreements) / sum(nuc_covered)
             region_row = {'seed_name': seed_name,
                           'region': region,
                           'contig': self.contig_name,
-                          'concordance': total_concordance,
+                          'concordance': concordance_covered,
                           'coverage': total_covered}
             self.region_concordance_writer.writerow(region_row)
 
