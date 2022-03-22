@@ -58,7 +58,7 @@ class SmoothCoverage(Coverage):
         return self.color
 
 
-class ShadedCoverage(SmoothCoverage):
+class ShadedCoverage(Coverage):
     def __init__(self, a, b, ys, height=10, color='blue', opacity='1.0'):
         super().__init__(a, b, ys, height, color, opacity)
         # noinspection PyUnresolvedReferences
@@ -70,6 +70,37 @@ class ShadedCoverage(SmoothCoverage):
         rgba = self.cm(self.normalize(log_coverage))
 
         return colors.to_hex(rgba)
+
+
+class ConcordanceLine(SmoothCoverage):
+    def __init__(self, a, b, ys):
+        self.a = a
+        self.b = b
+        self.ys = ys
+        height = 10
+        color = 'red'
+        opacity = '1.0'
+        super(SmoothCoverage, self).__init__(a, b, ys, height, color, opacity)
+
+    def draw(self, x=0, y=0, xscale=1.0):
+        d = draw.Group(transform="translate({} {})".format(x, y))
+        p = draw.Path(stroke=self.color, stroke_width=2, fill='none')
+        yscale = self.h / 100
+        for num, y in enumerate(self.ys):
+            if num == 0:
+                p.M(self.a*xscale, self.h//2-1 + y*yscale)
+            else:
+                p.L((self.a+num)*xscale, self.h//2-1 + y*yscale)
+        d.append(p)
+        r = draw.Rectangle(self.a*xscale,
+                           self.h//2-1,
+                           (self.b-self.a)*xscale,
+                           self.h,
+                           fill=self.color,
+                           fill_opacity='0.3',
+                           shape_rendering='crispEdges')
+        d.append(r)
+        return d
 
 
 class Arrow(Element):
@@ -517,9 +548,9 @@ def build_contig(reader,
                                      coverage),
                       gap=-4)
             elif max(concordance) > 0:
-                f.add(ShadedCoverage(start + position_offset,
-                                     end + position_offset,
-                                     concordance),
+                f.add(ConcordanceLine(start + position_offset,
+                                      end + position_offset,
+                                      concordance),
                       gap=-4)
             track_label = f"{contig_name} - depth {max(coverage)}"
         subtracks.append(Track(1,
