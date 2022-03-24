@@ -1001,7 +1001,7 @@ class SequenceReport(object):
                         skipped_source -= 1
                     else:
                         try:
-                            concordance = self.seed_concordance[offset_seq_pos]
+                            concordance = self.seed_concordance[offset_seq_pos - 1]
                         except (IndexError, TypeError):
                             concordance = 0
                         row = dict(contig=contig_name,
