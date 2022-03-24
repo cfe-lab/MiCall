@@ -1421,7 +1421,10 @@ class SequenceReport(object):
                         is_nucleotide=True,
                     )
 
-    def write_coordinate_concordance(self, concordance_writer, detailed_concordance_writer, use_combined_reports=False):
+    def write_coordinate_concordance(self,
+                                     concordance_writer,
+                                     detailed_concordance_writer=None,
+                                     use_combined_reports=False):
         concordance_writer = concordance_writer or self.concordance_writer
         detailed_concordance_writer = detailed_concordance_writer or self.detailed_concordance_writer
         landmark_reader = LandmarkReader(self.landmarks)

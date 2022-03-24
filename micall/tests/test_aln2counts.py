@@ -2289,6 +2289,99 @@ R2,GCCATTAAA
 
         self.assertEqual(expected_reads, reads)
 
+    def testCombinedCoordinateConcordance(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTAGGTAG")
+        expected_file = """\
+reference,region,concordance,coverage
+R1A-seed,R1A,1.0,1.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(concordance_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.combine_reports()
+        self.report.write_coordinate_concordance(self.report.concordance_writer, use_combined_reports=True)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testReportCoordinateConcordance(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTAGGTAG")
+        expected_file = """\
+reference,region,concordance,coverage
+R1A-seed,R1A,1.0,1.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(concordance_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testCoordinateConcordanceNoCoverage(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTT")
+        expected_file = """\
+reference,region,concordance,coverage
+R1A-seed,R1A,1.0,0.5
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(concordance_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testCoordinateConcordanceDifferentNucs(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTGGGTAG")
+        # 1 different nuc here:                                 ^
+        expected_file = """\
+reference,region,concordance,coverage
+R1A-seed,R1A,0.9166666666666666,1.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(concordance_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testCoordinateConcordanceDifferentNucsAndLessCoverage(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTGGG")
+        # 1 different nuc here:                                 ^
+        expected_file = """\
+reference,region,concordance,coverage
+R1A-seed,R1A,0.8888888888888888,0.75
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(concordance_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testCoordinateConcordanceDeletion(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTT---TAG")
+        expected_file = """\
+reference,region,concordance,coverage
+R1A-seed,R1A,1.0,0.75
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(concordance_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
 
 class InsertionWriterTest(unittest.TestCase):
     def setUp(self):

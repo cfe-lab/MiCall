@@ -56,6 +56,15 @@ def create_sequence_report():
     }
   ]
 },
+"R1A": {
+  "max_variants": 10,
+  "regions": [
+    {
+      "coordinate_region": "R1A",
+      "seed_region_names": ["R1A-seed"]
+    }
+  ]
+},
 "R2": {
   "max_variants": 10,
   "regions": [
@@ -126,6 +135,18 @@ def create_sequence_report():
   "is_nucleotide": false,
   "reference": [
     "KFR"
+  ]
+},
+"R1A-seed": {
+  "is_nucleotide": true,
+  "reference": [
+    "AAATTTAGGTAG"
+  ]
+},
+"R1A": {
+  "is_nucleotide": false,
+  "reference": [
+    "KFR*"
   ]
 },
 "R2-seed": {
@@ -230,6 +251,11 @@ def create_sequence_report():
   landmarks:
     # Extra 3 positions for stop codon to get dropped.
     - {name: R1, start: 1, end: 12, colour: steelblue}
+- seed_pattern: R1A-.*
+  coordinates: R1A-seed
+  landmarks:
+    # Extra 3 positions for stop codon to get dropped.
+    - {name: R1A, start: 1, end: 12, colour: steelblue}
 - seed_pattern: R2-.*
   coordinates: R2-seed
   landmarks:
