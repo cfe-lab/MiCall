@@ -485,7 +485,7 @@ def build_contig(reader,
                 if contig_row['coverage'] is not None:
                     coverage[pos - start] = (contig_row['coverage']) - contig_row['dels']
                 if use_concordance and contig_row['concordance'] is not None:
-                    concordance[pos - start] = (contig_row['concordance'])
+                    concordance[pos - start] = contig_row['concordance']
                 contig_pos = int(contig_row['query_nuc_pos'])
                 while event_positions and event_positions[-1] <= contig_pos:
                     event_pos = event_positions.pop()
