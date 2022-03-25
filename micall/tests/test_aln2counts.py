@@ -2294,6 +2294,7 @@ R2,GCCATTAAA
         expected_file = """\
 reference,region,concordance,coverage
 R1A-seed,R1A,1.0,1.0
+R1A-seed,R1A_second,0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2310,6 +2311,7 @@ R1A-seed,R1A,1.0,1.0
         expected_file = """\
 reference,region,concordance,coverage
 R1A-seed,R1A,1.0,1.0
+R1A-seed,R1A_second,0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2320,11 +2322,12 @@ R1A-seed,R1A,1.0,1.0
         self.report.write_coordinate_concordance(self.report.concordance_writer)
         self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
 
-    def testCoordinateConcordanceNoCoverage(self):
+    def testCoordinateConcordanceCoverage(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTT")
         expected_file = """\
 reference,region,concordance,coverage
 R1A-seed,R1A,1.0,0.5
+R1A-seed,R1A_second,0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2335,12 +2338,13 @@ R1A-seed,R1A,1.0,0.5
         self.report.write_coordinate_concordance(self.report.concordance_writer)
         self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
 
-    def testCoordinateConcordanceDifferentNucs(self):
+    def testCoordinateConcordanceMismatch(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTGGGTAG")
         # 1 different nuc here:                                 ^
         expected_file = """\
 reference,region,concordance,coverage
 R1A-seed,R1A,0.9166666666666666,1.0
+R1A-seed,R1A_second,0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2351,12 +2355,13 @@ R1A-seed,R1A,0.9166666666666666,1.0
         self.report.write_coordinate_concordance(self.report.concordance_writer)
         self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
 
-    def testCoordinateConcordanceDifferentNucsAndLessCoverage(self):
+    def testCoordinateConcordanceMismatchCoverage(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTGGG")
         # 1 different nuc here:                                 ^
         expected_file = """\
 reference,region,concordance,coverage
 R1A-seed,R1A,0.8888888888888888,0.75
+R1A-seed,R1A_second,0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2372,6 +2377,7 @@ R1A-seed,R1A,0.8888888888888888,0.75
         expected_file = """\
 reference,region,concordance,coverage
 R1A-seed,R1A,1.0,0.75
+R1A-seed,R1A_second,0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2380,6 +2386,129 @@ R1A-seed,R1A,1.0,0.75
         self.report.write_nuc_header(StringIO())
         self.report.write_nuc_counts()
         self.report.write_coordinate_concordance(self.report.concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testDetailedCombinedCoordinateConcordance(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGGTAG")
+        expected_file = """\
+reference,region,concordance,coverage,position
+R1A-seed,R1A_second,1.0,1.0,10.0
+R1A-seed,R1A_second,1.0,1.0,11.0
+R1A-seed,R1A_second,1.0,1.0,12.0
+R1A-seed,R1A_second,1.0,1.0,13.0
+R1A-seed,R1A_second,1.0,1.0,14.0
+R1A-seed,R1A_second,1.0,1.0,15.0
+R1A-seed,R1A_second,1.0,1.0,16.0
+R1A-seed,R1A_second,1.0,1.0,17.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(StringIO())
+        self.report.write_concordance_header(concordance_file, is_detailed=True)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.combine_reports()
+        self.report.write_coordinate_concordance(self.report.concordance_writer,
+                                                 self.report.detailed_concordance_writer,
+                                                 use_combined_reports=True)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testDetailedCoordinateConcordance(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGGTAG")
+        expected_file = """\
+reference,region,concordance,coverage,position
+R1A-seed,R1A_second,1.0,1.0,10.0
+R1A-seed,R1A_second,1.0,1.0,11.0
+R1A-seed,R1A_second,1.0,1.0,12.0
+R1A-seed,R1A_second,1.0,1.0,13.0
+R1A-seed,R1A_second,1.0,1.0,14.0
+R1A-seed,R1A_second,1.0,1.0,15.0
+R1A-seed,R1A_second,1.0,1.0,16.0
+R1A-seed,R1A_second,1.0,1.0,17.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(StringIO())
+        self.report.write_concordance_header(concordance_file, is_detailed=True)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer,
+                                                 self.report.detailed_concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testDetailedCoordinateConcordanceCoverage(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGG")
+        expected_file = """\
+reference,region,concordance,coverage,position
+R1A-seed,R1A_second,1.0,1.0,10.0
+R1A-seed,R1A_second,1.0,1.0,11.0
+R1A-seed,R1A_second,1.0,1.0,12.0
+R1A-seed,R1A_second,1.0,1.0,13.0
+R1A-seed,R1A_second,1.0,1.0,14.0
+R1A-seed,R1A_second,0.95,0.95,15.0
+R1A-seed,R1A_second,0.9,0.9,16.0
+R1A-seed,R1A_second,0.85,0.85,17.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(StringIO())
+        self.report.write_concordance_header(concordance_file, is_detailed=True)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer,
+                                                 self.report.detailed_concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testDetailedCoordinateConcordanceMismatch(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGCCCTCTGGTCACTCTGTGGTAG")
+        # mismatch:                                             ^    ^         ^
+        expected_file = """\
+reference,region,concordance,coverage,position
+R1A-seed,R1A_second,0.9,1.0,10.0
+R1A-seed,R1A_second,0.85,1.0,11.0
+R1A-seed,R1A_second,0.85,1.0,12.0
+R1A-seed,R1A_second,0.85,1.0,13.0
+R1A-seed,R1A_second,0.85,1.0,14.0
+R1A-seed,R1A_second,0.85,1.0,15.0
+R1A-seed,R1A_second,0.9,1.0,16.0
+R1A-seed,R1A_second,0.9,1.0,17.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(StringIO())
+        self.report.write_concordance_header(concordance_file, is_detailed=True)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer,
+                                                 self.report.detailed_concordance_writer)
+        self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
+
+    def testDetailedCoordinateConcordanceDeletion(self):
+        aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTT---TAG")
+        expected_file = """\
+reference,region,concordance,coverage,position
+R1A-seed,R1A_second,1.0,1.0,10.0
+R1A-seed,R1A_second,1.0,1.0,11.0
+R1A-seed,R1A_second,0.95,0.95,12.0
+R1A-seed,R1A_second,0.9,0.9,13.0
+R1A-seed,R1A_second,0.85,0.85,14.0
+R1A-seed,R1A_second,0.85,0.85,15.0
+R1A-seed,R1A_second,0.85,0.85,16.0
+R1A-seed,R1A_second,0.85,0.85,17.0
+"""
+
+        self.report.read(aligned_reads)
+        concordance_file = StringIO()
+        self.report.write_concordance_header(StringIO())
+        self.report.write_concordance_header(concordance_file, is_detailed=True)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_coordinate_concordance(self.report.concordance_writer,
+                                                 self.report.detailed_concordance_writer)
         self.assertMultiLineEqual(expected_file, concordance_file.getvalue())
 
 
