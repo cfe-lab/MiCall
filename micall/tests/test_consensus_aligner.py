@@ -801,3 +801,32 @@ test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
 """
 
     assert alignments_file.getvalue() == expected_text
+
+
+# noinspection DuplicatedCode
+def test_alignment_info(projects):
+    aligner = ConsensusAligner(projects)
+    amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10),
+                        AminoAlignment(20, 40, 50, 71, 0, 2, aligned_query="ABC", aligned_ref="DEF", ref_amino_start=4)]
+    aligner.amino_alignments = amino_alignments
+    expected_info = {'test-region': {'query_start': 0, 'query_end': 40, 'region_aligned': 0.5}}
+
+    aligner.store_alignment_info(100, 'test-region')
+    assert aligner.alignment_info.items() == expected_info.items()
+
+
+# noinspection DuplicatedCode
+def test_count_seed_concordance(projects):
+    aligner = ConsensusAligner(projects, concordance_file=StringIO())
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 1.0}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATAAGCA"
+    # changed nucs:                   ^^
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+
+    expected_concordance_list = [0.0]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] + [0.0]*9
+
+    concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
+
+    assert concordance_list == expected_concordance_list
