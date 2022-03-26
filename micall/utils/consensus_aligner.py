@@ -935,7 +935,7 @@ class ConsensusAligner:
         seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
         seed_alignments = list(seed_aligner.map(self.consensus))
 
-        concordance_list = self.count_seed_matches(seed_name, seed_ref, seed_alignments)
+        concordance_list = self.count_seed_matches(seed_name, seed_alignments, seed_ref)
 
         if self.region_concordance_writer is None:
             return concordance_list

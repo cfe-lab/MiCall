@@ -819,7 +819,7 @@ def test_alignment_info(projects):
 def test_count_seed_concordance(projects):
     aligner = ConsensusAligner(projects, concordance_file=StringIO())
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
-    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 1.0}}
+    #aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 1.0}}
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATAAGCA"
     # changed nucs:                   ^^
@@ -830,3 +830,70 @@ def test_count_seed_concordance(projects):
     concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
 
     assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_seed_concordance_short_match(projects):
+    aligner = ConsensusAligner(projects, concordance_file=StringIO())
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATTT"
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+
+    expected_concordance_list = [0.0]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4] + [0.0]*9
+
+    concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_seed_concordance_two_matches(projects):
+    aligner = ConsensusAligner(projects, concordance_file=StringIO())
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATTT"
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATTT"
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[[12, CigarActions.MATCH]]),
+                       AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[[15, CigarActions.MATCH]])]
+
+    expected_concordance_list = [0.0]*10 + [0.85]*11 + [0.0]*9
+
+    concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_seed_concordance_with_insertion(projects):
+    aligner = ConsensusAligner(projects, concordance_file=StringIO())
+    aligner.consensus = "AGATTTCGACCCTGATTCAGAAGATTTGCA"
+    # insertion:                  ^^^
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATTT"
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
+                                                                                 [3, CigarActions.INSERT],
+                                                                                 [18, CigarActions.MATCH]])]
+
+    expected_concordance_list = [0.0]*10 + [0.85]*10 + [0.9] + [0.0]*9
+
+    concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
+
+    assert concordance_list == expected_concordance_list
+
+# noinspection DuplicatedCode
+def test_count_seed_concordance_with_deletion(projects):
+    aligner = ConsensusAligner(projects, concordance_file=StringIO())
+    aligner.consensus = "AGATTTCGATTCAGAAGATTTGCA"
+    # deletion behind this pos:  ^
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATTT"
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
+                                                                                 [3, CigarActions.DELETE],
+                                                                                 [15, CigarActions.MATCH]])]
+
+    expected_concordance_list = [0.0]*10 + [1.0]*5 + [0.0]*9
+
+    concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
+
+    assert concordance_list == expected_concordance_list
+
