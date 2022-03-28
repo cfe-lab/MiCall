@@ -817,19 +817,31 @@ def test_alignment_info(projects):
 
 # noinspection DuplicatedCode
 def test_count_seed_concordance(projects):
-    aligner = ConsensusAligner(projects, concordance_file=StringIO())
+    concordance_file = StringIO()
+    aligner = ConsensusAligner(projects, concordance_file=concordance_file, contig_name='test-contig')
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
-    #aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 1.0}}
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATAAGCA"
     # changed nucs:                   ^^
     seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
 
     expected_concordance_list = [0.0]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] + [0.0]*9
+    expected_file = """\
+seed_name,contig,position,concordance
+test-seed,test-contig,10,1.0
+test-seed,test-contig,11,1.0
+test-seed,test-contig,12,1.0
+test-seed,test-contig,13,0.95
+test-seed,test-contig,14,0.9
+test-seed,test-contig,15,0.9
+test-seed,test-contig,16,0.9
+test-seed,test-contig,17,0.9
+"""
 
     concordance_list = aligner.count_seed_matches(seed_name, seed_alignments, seed_ref)
 
     assert concordance_list == expected_concordance_list
+    assert concordance_file.getvalue() == expected_file
 
 
 # noinspection DuplicatedCode
@@ -897,3 +909,177 @@ def test_count_seed_concordance_with_deletion(projects):
 
     assert concordance_list == expected_concordance_list
 
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 1.0}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,1.0,1.0
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_mismatch(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGACCCCCCGCATGA"
+    # mismatch:                            ^^^^^^
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 30, 'region_aligned': 1.0}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,0.8,1.0
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_coord_not_aligned(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 0.5}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,1.0,0.5
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_seed_not_aligned(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 30, 'region_aligned': 1}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,1.0,0.5
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_larger_match(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 15, 'region_aligned': 1}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,1.0,1.0
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_insertion(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGACCCTGATTCAGAAGATTTGCA"
+    # insert here:                ^^^
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 30, 'region_aligned': 1}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
+                                                                                 [3,CigarActions.INSERT],
+                                                                                 [18, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,1.0,0.9
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_deletion(projects):
+    region_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               concordance_file=StringIO(),
+                               region_concordance_file=region_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATTCAGAAGATTTGCATGA"
+    # deletion after this nuc:   ^
+    aligner.alignment_info = {'test-region': {'query_start': 0, 'query_end': 27, 'region_aligned': 1}}
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=27, cigar=[[9, CigarActions.MATCH],
+                                                                                 [3,CigarActions.DELETE],
+                                                                                 [18, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,concordance,coverage
+test-seed,test-contig,test-region,1.0,1.0
+"""
+
+    aligner.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
+
+    assert region_concordance_file.getvalue() == expected_file
