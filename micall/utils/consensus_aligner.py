@@ -223,7 +223,7 @@ class ConsensusAligner:
             columns = ["seed_name",
                        "contig",
                        "position",
-                       "concordance"]
+                       "%concordance"]
             self.concordance_writer = self._create_alignments_writer(concordance_file, different_columns=columns)
         else:
             self.concordance_writer = None
@@ -232,8 +232,8 @@ class ConsensusAligner:
             columns = ["seed_name",
                        "contig",
                        "region",
-                       "concordance",
-                       "coverage"]
+                       "%concordance",
+                       "%covered"]
             self.region_concordance_writer = self._create_alignments_writer(region_concordance_file,
                                                                             different_columns=columns)
         else:
@@ -985,7 +985,7 @@ class ConsensusAligner:
             concordance = sum(query_matches[pos - half_window_size:pos + half_window_size])
             normalized_concordance = concordance / (2 * half_window_size)
             row['position'] = position
-            row['concordance'] = normalized_concordance
+            row['%concordance'] = normalized_concordance
             concordance_list[position] = normalized_concordance
             self.concordance_writer.writerow(row)
 
@@ -1044,8 +1044,8 @@ class ConsensusAligner:
         region_row = {'seed_name': seed_name,
                       'region': region,
                       'contig': self.contig_name,
-                      'concordance': concordance_covered,
-                      'coverage': total_covered}
+                      '%concordance': concordance_covered,
+                      '%covered': total_covered}
         self.region_concordance_writer.writerow(region_row)
 
 

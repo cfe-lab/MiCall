@@ -865,7 +865,7 @@ class SequenceReport(object):
         self.minimap_hits_writer.writeheader()
 
     def write_concordance_header(self, concordance_file, is_detailed=False):
-        columns = ['reference', 'region', 'concordance', 'coverage']
+        columns = ['reference', 'region', '%concordance', '%covered']
         if is_detailed:
             columns.append('position')
             self.detailed_concordance_writer = csv.DictWriter(concordance_file,
@@ -1490,9 +1490,9 @@ class SequenceReport(object):
                         running_concordance.append(0)
                         running_coverage.append(0)
                     if window_size-1 <= pos and print_details:
-                        row['concordance'] = sum(running_concordance) / window_size
+                        row['%concordance'] = sum(running_concordance) / window_size
                         row['position'] = pos + 1 - window_size / 2
-                        row['coverage'] = sum(running_coverage) / window_size
+                        row['%covered'] = sum(running_coverage) / window_size
                         running_concordance.pop(0)
                         running_coverage.pop(0)
                         detailed_concordance_writer.writerow(row)
@@ -1504,8 +1504,8 @@ class SequenceReport(object):
                 region_coverage /= region_length
                 row = {'region': region,
                        'reference': coordinate_name,
-                       'concordance': region_concordance,
-                       'coverage': region_coverage}
+                       '%concordance': region_concordance,
+                       '%covered': region_coverage}
                 concordance_writer.writerow(row)
 
     @staticmethod

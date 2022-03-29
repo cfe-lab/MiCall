@@ -221,8 +221,8 @@ def plot_concordance(concordance_csv, plot_path=None, filetype='png'):
         coverage = []
         for row in group:
             positions.append(float(row['position']))
-            concordance_counts.append(100*float(row['concordance']))
-            coverage.append(100*float(row['coverage']))
+            concordance_counts.append(100*float(row['%concordance']))
+            coverage.append(100*float(row['%covered']))
         plt.step(positions,
                  concordance_counts,
                  linewidth=2,
@@ -230,7 +230,7 @@ def plot_concordance(concordance_csv, plot_path=None, filetype='png'):
                  label='% concordance',
                  zorder=100,
                  color='red')
-        plt.step(positions, coverage, linewidth=2, where='mid', label='% with coverage', zorder=99, color='blue')
+        plt.step(positions, coverage, linewidth=2, where='mid', label='% covered', zorder=99, color='blue')
         plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True)
         plt.xlim([0, max(positions)+min(positions)])
         plt.ylim([0, 110])
