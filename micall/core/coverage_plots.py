@@ -208,7 +208,7 @@ def coverage_plot(amino_csv,
     return paths  # locations of image files
 
 
-def plot_concordance(concordance_csv, plot_path=None, filetype='png'):
+def plot_concordance(concordance_csv, plot_path=None, filetype='png', concordance_prefix=None):
     if plot_path is None:
         plot_path, _ = os.path.split(concordance_csv.name)
     reader = DictReader(concordance_csv)
@@ -223,6 +223,8 @@ def plot_concordance(concordance_csv, plot_path=None, filetype='png'):
             positions.append(float(row['position']))
             concordance_counts.append(100*float(row['%concordance']))
             coverage.append(100*float(row['%covered']))
+        if sum(coverage) == 0:
+            continue
         plt.step(positions,
                  concordance_counts,
                  linewidth=2,
@@ -238,6 +240,8 @@ def plot_concordance(concordance_csv, plot_path=None, filetype='png'):
         plt.ylabel('Concordance', fontsize=9)
         plt.tight_layout()
         figname_parts = ['concordance', reference, region, filetype]
+        if concordance_prefix:
+            figname_parts.insert(0, concordance_prefix)
         paths.append(save_figure(plot_path, figname_parts))
         plt.cla()  # clear the axis, but don't remove the axis itself.
     plt.close(fig)

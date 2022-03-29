@@ -1451,7 +1451,7 @@ class SequenceReport(object):
                             coordinate_name,
                             report_nucleotides,
                             landmark_reader):
-        window_size = 20
+        half_window_size = 10
         if detailed_concordance_writer is not None:
             print_details = True
         else:
@@ -1489,9 +1489,10 @@ class SequenceReport(object):
                     elif print_details:
                         running_concordance.append(0)
                         running_coverage.append(0)
+                    window_size = 2*half_window_size
                     if window_size-1 <= pos and print_details:
                         row['%concordance'] = sum(running_concordance) / window_size
-                        row['position'] = pos + 1 - window_size / 2
+                        row['position'] = pos + 1 - half_window_size
                         row['%covered'] = sum(running_coverage) / window_size
                         running_concordance.pop(0)
                         running_coverage.pop(0)

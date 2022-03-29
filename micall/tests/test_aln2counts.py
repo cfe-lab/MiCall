@@ -2392,14 +2392,14 @@ R1A-seed,R1A_second,0,0.0
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGGTAG")
         expected_file = """\
 reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10.0
-R1A-seed,R1A_second,1.0,1.0,11.0
-R1A-seed,R1A_second,1.0,1.0,12.0
-R1A-seed,R1A_second,1.0,1.0,13.0
-R1A-seed,R1A_second,1.0,1.0,14.0
-R1A-seed,R1A_second,1.0,1.0,15.0
-R1A-seed,R1A_second,1.0,1.0,16.0
-R1A-seed,R1A_second,1.0,1.0,17.0
+R1A-seed,R1A_second,1.0,1.0,10
+R1A-seed,R1A_second,1.0,1.0,11
+R1A-seed,R1A_second,1.0,1.0,12
+R1A-seed,R1A_second,1.0,1.0,13
+R1A-seed,R1A_second,1.0,1.0,14
+R1A-seed,R1A_second,1.0,1.0,15
+R1A-seed,R1A_second,1.0,1.0,16
+R1A-seed,R1A_second,1.0,1.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2418,14 +2418,14 @@ R1A-seed,R1A_second,1.0,1.0,17.0
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGGTAG")
         expected_file = """\
 reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10.0
-R1A-seed,R1A_second,1.0,1.0,11.0
-R1A-seed,R1A_second,1.0,1.0,12.0
-R1A-seed,R1A_second,1.0,1.0,13.0
-R1A-seed,R1A_second,1.0,1.0,14.0
-R1A-seed,R1A_second,1.0,1.0,15.0
-R1A-seed,R1A_second,1.0,1.0,16.0
-R1A-seed,R1A_second,1.0,1.0,17.0
+R1A-seed,R1A_second,1.0,1.0,10
+R1A-seed,R1A_second,1.0,1.0,11
+R1A-seed,R1A_second,1.0,1.0,12
+R1A-seed,R1A_second,1.0,1.0,13
+R1A-seed,R1A_second,1.0,1.0,14
+R1A-seed,R1A_second,1.0,1.0,15
+R1A-seed,R1A_second,1.0,1.0,16
+R1A-seed,R1A_second,1.0,1.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2442,14 +2442,14 @@ R1A-seed,R1A_second,1.0,1.0,17.0
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGG")
         expected_file = """\
 reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10.0
-R1A-seed,R1A_second,1.0,1.0,11.0
-R1A-seed,R1A_second,1.0,1.0,12.0
-R1A-seed,R1A_second,1.0,1.0,13.0
-R1A-seed,R1A_second,1.0,1.0,14.0
-R1A-seed,R1A_second,0.95,0.95,15.0
-R1A-seed,R1A_second,0.9,0.9,16.0
-R1A-seed,R1A_second,0.85,0.85,17.0
+R1A-seed,R1A_second,1.0,1.0,10
+R1A-seed,R1A_second,1.0,1.0,11
+R1A-seed,R1A_second,1.0,1.0,12
+R1A-seed,R1A_second,1.0,1.0,13
+R1A-seed,R1A_second,1.0,1.0,14
+R1A-seed,R1A_second,0.95,0.95,15
+R1A-seed,R1A_second,0.9,0.9,16
+R1A-seed,R1A_second,0.85,0.85,17
 """
 
         self.report.read(aligned_reads)
@@ -2467,14 +2467,14 @@ R1A-seed,R1A_second,0.85,0.85,17.0
         # mismatch:                                             ^    ^         ^
         expected_file = """\
 reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,0.9,1.0,10.0
-R1A-seed,R1A_second,0.85,1.0,11.0
-R1A-seed,R1A_second,0.85,1.0,12.0
-R1A-seed,R1A_second,0.85,1.0,13.0
-R1A-seed,R1A_second,0.85,1.0,14.0
-R1A-seed,R1A_second,0.85,1.0,15.0
-R1A-seed,R1A_second,0.9,1.0,16.0
-R1A-seed,R1A_second,0.9,1.0,17.0
+R1A-seed,R1A_second,0.9,1.0,10
+R1A-seed,R1A_second,0.85,1.0,11
+R1A-seed,R1A_second,0.85,1.0,12
+R1A-seed,R1A_second,0.85,1.0,13
+R1A-seed,R1A_second,0.85,1.0,14
+R1A-seed,R1A_second,0.85,1.0,15
+R1A-seed,R1A_second,0.9,1.0,16
+R1A-seed,R1A_second,0.9,1.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2491,14 +2491,14 @@ R1A-seed,R1A_second,0.9,1.0,17.0
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTT---TAG")
         expected_file = """\
 reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10.0
-R1A-seed,R1A_second,1.0,1.0,11.0
-R1A-seed,R1A_second,0.95,0.95,12.0
-R1A-seed,R1A_second,0.9,0.9,13.0
-R1A-seed,R1A_second,0.85,0.85,14.0
-R1A-seed,R1A_second,0.85,0.85,15.0
-R1A-seed,R1A_second,0.85,0.85,16.0
-R1A-seed,R1A_second,0.85,0.85,17.0
+R1A-seed,R1A_second,1.0,1.0,10
+R1A-seed,R1A_second,1.0,1.0,11
+R1A-seed,R1A_second,0.95,0.95,12
+R1A-seed,R1A_second,0.9,0.9,13
+R1A-seed,R1A_second,0.85,0.85,14
+R1A-seed,R1A_second,0.85,0.85,15
+R1A-seed,R1A_second,0.85,0.85,16
+R1A-seed,R1A_second,0.85,0.85,17
 """
 
         self.report.read(aligned_reads)

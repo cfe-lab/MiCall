@@ -326,7 +326,7 @@ class Sample:
                                     self.genome_concordance_svg)
 
         with open(self.concordance_detailed_csv) as concordance_detailed_csv:
-            plot_concordance(concordance_detailed_csv, plot_path=self.coverage_maps)
+            plot_concordance(concordance_detailed_csv, plot_path=self.coverage_maps, concordance_prefix=self.name)
 
         logger.info('Running cascade_report on %s.', self)
         with open(self.g2p_summary_csv) as g2p_summary_csv, \
