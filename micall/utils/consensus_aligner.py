@@ -991,6 +991,40 @@ class ConsensusAligner:
 
         return concordance_list
 
+    def count_coord_matches(self, half_window_size=10):
+        coord_alignments = self.alignments
+        try:
+            coord_ref = self.projects.getGenotypeReference(self.coordinate_name)
+        except KeyError:
+            coord_ref = self.projects.getReference(self.coordinate_name)
+        query_matches = [0] * len(coord_ref)
+        concordance_list = [0.0] * len(coord_ref)
+
+        for alignment in coord_alignments:
+            ref_progress = alignment.r_st
+            query_progress = alignment.q_st
+            for cigar_index, (size, action) in enumerate(alignment.cigar):
+                if action == CigarActions.INSERT:
+                    query_progress += size
+                elif action == CigarActions.DELETE:
+                    ref_progress += size
+                else:
+                    assert action == CigarActions.MATCH
+                    for pos in range(0, size):
+                        ref_pos = ref_progress + pos
+                        query_pos = query_progress + pos
+                        if self.consensus[query_pos] == coord_ref[ref_pos]:
+                            query_matches[ref_pos] = 1
+                    ref_progress += size
+                    query_progress += size
+
+        for pos in range(half_window_size, len(coord_ref) - half_window_size + 1):
+            concordance = sum(query_matches[pos - half_window_size:pos + half_window_size])
+            normalized_concordance = concordance / (2 * half_window_size)
+            concordance_list[pos] = normalized_concordance
+
+        return concordance_list
+
     def count_region_seed_concordance(self, region, seed_name, seed_alignments, seed_ref):
         alignment_info = self.alignment_info[region]
         try:

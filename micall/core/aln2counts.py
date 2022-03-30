@@ -407,6 +407,7 @@ class SequenceReport(object):
         self.concordance_writer = self.detailed_concordance_writer = None
         self.seed_concordance_csv = self.seed_region_concordance_csv = None
         self.seed_concordance = []
+        self.coord_concordance = []
 
     @property
     def has_detail_counts(self):
@@ -619,6 +620,7 @@ class SequenceReport(object):
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
         self.seed_concordance = []
+        self.coord_concordance = []
 
         # populates these dictionaries, generates amino acid counts
         self._count_reads(aligned_reads)
@@ -675,6 +677,7 @@ class SequenceReport(object):
             self._map_to_coordinate_ref(coordinate_name)
 
         self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed, self.projects)
+        self.coord_concordance = self.consensus_aligner.count_coord_matches()
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -973,7 +976,20 @@ class SequenceReport(object):
                 cigar = [(bead.end - bead.start, action)]
             for length, action in cigar:
                 if action == CigarActions.DELETE:
+                    offset_seq_pos = seq_pos + consensus_offset
                     ref_pos += length
+                    try:
+                        concordance = self.coord_concordance[ref_pos]
+                    except (IndexError, TypeError):
+                        concordance = 0
+                    row = dict(contig=contig_name,
+                               coordinates=coordinate_name,
+                               query_nuc_pos=offset_seq_pos,
+                               refseq_nuc_pos=ref_pos,
+                               dels=0,
+                               coverage=0,
+                               concordance=concordance,
+                               link='D')
                     continue
                 for _ in range(length):
                     if action == CigarActions.INSERT:
@@ -1001,7 +1017,8 @@ class SequenceReport(object):
                         skipped_source -= 1
                     else:
                         try:
-                            concordance = self.seed_concordance[offset_seq_pos - 1]
+                            # concordance = self.seed_concordance[offset_seq_pos - 1]
+                            concordance = self.coord_concordance[ref_pos]
                         except (IndexError, TypeError):
                             concordance = 0
                         row = dict(contig=contig_name,
@@ -1928,7 +1945,8 @@ def aln2counts(aligned_csv,
     @param concordance_csv: Open file handle to write concordance measures for the regions.
     @param concordance_detailed_csv: Open file handle to write detailed concordance measures for the regions.
     @param concordance_seed_csv: Open file handle to write detailed concordance measures for the seeds.
-    @param concordance_seed_csv: Open file handle to write concordance measures for individual regions for each seed.
+    @param concordance_seed_region_csv: Open file handle to write concordance measures for individual regions
+                                        for each seed.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
