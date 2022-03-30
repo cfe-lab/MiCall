@@ -255,7 +255,10 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
     contig_groups = defaultdict(set)  # {coordinates_name: {contig_name}}
     reader = DictReader(genome_coverage_csv)
     for row in reader:
-        query_nuc_pos = int(row['query_nuc_pos'])
+        if row['query_nuc_pos']:
+            query_nuc_pos = int(row['query_nuc_pos'])
+        else:
+            query_nuc_pos = min_position
         if row['refseq_nuc_pos']:
             refseq_nuc_pos = int(row['refseq_nuc_pos'])
         else:
@@ -475,6 +478,7 @@ def build_contig(reader,
         concordance = [0] * (end - start + 1)
         pos = 0
         for contig_row in contig_rows:
+            link = contig_row.get('link')
             pos = contig_row[pos_field]
             if pos is None:
                 insertion_size += 1
@@ -486,14 +490,14 @@ def build_contig(reader,
                     coverage[pos - start] = (contig_row['coverage']) - contig_row['dels']
                 if use_concordance and contig_row['concordance'] is not None:
                     concordance[pos - start] = contig_row['concordance']
-                contig_pos = int(contig_row['query_nuc_pos'])
-                while event_positions and event_positions[-1] <= contig_pos:
-                    event_pos = event_positions.pop()
-                    for blast_num in blast_starts[event_pos]:
-                        blast_ranges[blast_num-1][0] = pos
-                    for blast_num in blast_ends[event_pos]:
-                        blast_ranges[blast_num-1][1] = pos
-            link = contig_row.get('link')
+                if link != 'D':
+                    contig_pos = int(contig_row['query_nuc_pos'])
+                    while event_positions and event_positions[-1] <= contig_pos:
+                        event_pos = event_positions.pop()
+                        for blast_num in blast_starts[event_pos]:
+                            blast_ranges[blast_num-1][0] = pos
+                        for blast_num in blast_ends[event_pos]:
+                            blast_ranges[blast_num-1][1] = pos
             if link == 'U':
                 # Position is unmatched, add to list.
                 if not unmatched_ranges or unmatched_ranges[-1][-1] != pos-1:

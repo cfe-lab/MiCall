@@ -976,20 +976,21 @@ class SequenceReport(object):
                 cigar = [(bead.end - bead.start, action)]
             for length, action in cigar:
                 if action == CigarActions.DELETE:
-                    offset_seq_pos = seq_pos + consensus_offset
+                    for pos in range(ref_pos+1, ref_pos+length+1):
+                        try:
+                            concordance = self.coord_concordance[ref_pos]
+                        except (IndexError, TypeError):
+                            concordance = 0.0
+                        row = dict(contig=contig_name,
+                                   coordinates=coordinate_name,
+                                   query_nuc_pos=None,
+                                   refseq_nuc_pos=pos,
+                                   dels=0,
+                                   coverage=0,
+                                   concordance=concordance,
+                                   link='D')
+                        self.genome_coverage_writer.writerow(row)
                     ref_pos += length
-                    try:
-                        concordance = self.coord_concordance[ref_pos]
-                    except (IndexError, TypeError):
-                        concordance = 0
-                    row = dict(contig=contig_name,
-                               coordinates=coordinate_name,
-                               query_nuc_pos=offset_seq_pos,
-                               refseq_nuc_pos=ref_pos,
-                               dels=0,
-                               coverage=0,
-                               concordance=concordance,
-                               link='D')
                     continue
                 for _ in range(length):
                     if action == CigarActions.INSERT:
@@ -1020,7 +1021,7 @@ class SequenceReport(object):
                             # concordance = self.seed_concordance[offset_seq_pos - 1]
                             concordance = self.coord_concordance[ref_pos]
                         except (IndexError, TypeError):
-                            concordance = 0
+                            concordance = 0.0
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
                                    query_nuc_pos=offset_seq_pos,
