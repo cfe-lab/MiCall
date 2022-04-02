@@ -1100,7 +1100,7 @@ class ConsensusAligner:
                         for pos in range(0, match_size):
                             query_nuc = self.consensus[amino_alignment.query_start - self.consensus_offset + pos]
                             seed_nuc = seed_ref[amino_alignment.ref_start + pos]
-                            offset_pos = pos + amino_alignment.query_start - start_pos
+                            offset_pos = pos + amino_alignment.ref_start - start_pos
                             if query_nuc == seed_nuc:
                                 nuc_agreements[offset_pos] = 1
                             nuc_covered[offset_pos] = 1
