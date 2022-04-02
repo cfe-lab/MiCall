@@ -3007,6 +3007,7 @@ def test_collate_denovo_results(raw_data_with_two_samples, default_config, mock_
 
     expected_cascade_path = version_folder / "denovo" / "cascade.csv"
     expected_done_path = version_folder / "denovo" / "doneprocessing"
+    proviral_path = version_folder / "denovo" / "hivseqinr_results"
 
     main_scratch_path = version_folder / "scratch"
     main_scratch_path.mkdir()
@@ -3029,6 +3030,7 @@ def test_collate_denovo_results(raw_data_with_two_samples, default_config, mock_
     assert expected_cascade_path.exists()
     assert expected_done_path.exists()
     assert main_scratch_path.exists()
+    assert not proviral_path.exists()
 
 
 def test_collate_mixed_hcv_results(raw_data_with_two_samples, default_config, mock_open_kive):
