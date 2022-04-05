@@ -58,10 +58,6 @@ def determine_region_positions(seed_ref, region_ref):
         if aligned_query[pos] != '-':
             seed_pos += 1
 
-    if start_pos == 0 or end_pos == len(seed_ref) - 1:
-        # probably, alignment hanging off the end
-        return -1, -1
-
     return start_pos, end_pos
 
 
