@@ -976,6 +976,8 @@ class ConsensusAligner:
 
         regions = projects.getCoordinateReferences(seed_name)
         for region in regions:
+            if not self.projects.isAmino(region):
+                continue
             region_ref = self.projects.getReference(region)
             # self.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
             self.new_region_seed_concordance(region, region_ref, seed_name, seed_alignments, seed_ref)
