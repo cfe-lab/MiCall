@@ -13,12 +13,11 @@ from mappy import Alignment, Aligner
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
-
-# A section between reading frame shifts must be at least this long to be split.
 from micall.utils.translation import translate
 
 logger = logging.getLogger(__name__)
 
+# A section between reading frame shifts must be at least this long to be split.
 MINIMUM_READING_FRAME_SHIFT = 30
 # Minimum aminos in a section between reading frame shifts to be split.
 MINIMUM_AMINO_ALIGNMENT = 10
@@ -29,36 +28,6 @@ CigarActions = IntEnum(
     'CigarActions',
     'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED',
     start=0)
-
-
-def determine_region_positions(seed_ref, region_ref):
-    # end is exclusive. 0 based positions
-    max_score = 0
-    reading_frame = -1
-    for frame in range(3):
-        translated_seed = translate(seed_ref, offset=frame)
-        aref, aquery, score = align_aminos(region_ref, translated_seed)
-        if score > max_score:
-            max_score = score
-            aligned_ref = aref
-            aligned_query = aquery
-            reading_frame = frame
-
-    if reading_frame == -1:
-        return -1, -1
-
-    start_pos = -1
-    end_pos = -1
-    seed_pos = 0
-    for pos in range(len(aligned_query)):
-        if aligned_ref[pos] != '-' and start_pos == -1 and aligned_query[pos] != '-':
-            start_pos = seed_pos * 3 - reading_frame
-        if aligned_ref[pos] != '-' and aligned_query[pos] != '-':
-            end_pos = (seed_pos + 1) * 3 - reading_frame
-        if aligned_query[pos] != '-':
-            seed_pos += 1
-
-    return start_pos, end_pos
 
 
 def align_aminos(reference: str,
@@ -958,7 +927,7 @@ class ConsensusAligner:
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
 
-    def determine_seed_concordance(self, seed_name, projects):
+    def determine_seed_concordance(self, seed_name, projects, seed_coordinates, excluded_regions, included_regions=None):
         if self.concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
@@ -972,11 +941,18 @@ class ConsensusAligner:
 
         regions = projects.getCoordinateReferences(seed_name)
         for region in regions:
-            if not self.projects.isAmino(region):
+            if not self.projects.isAmino(region) or region in excluded_regions:
                 continue
-            region_ref = self.projects.getReference(region)
+            if included_regions and region not in included_regions:
+                continue
+            coordinates = seed_coordinates[seed_name][region]
+            try:
+                start_pos = coordinates['start']
+                end_pos = coordinates['end']
+            except KeyError:
+                continue
             # self.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
-            self.new_region_seed_concordance(region, region_ref, seed_name, seed_alignments, seed_ref)
+            self.new_region_seed_concordance(region, seed_name, seed_alignments, seed_ref, start_pos, end_pos)
 
         return concordance_list
 
@@ -1059,13 +1035,7 @@ class ConsensusAligner:
 
         return concordance_list
 
-    def new_region_seed_concordance(self, region, region_ref, seed_name, seed_alignments, seed_ref):
-
-        start_pos, end_pos = determine_region_positions(seed_ref, region_ref)
-
-        if start_pos == -1:
-            return
-
+    def new_region_seed_concordance(self, region, seed_name, seed_alignments, seed_ref, start_pos, end_pos):
         length_aligned = end_pos - start_pos
         nuc_agreements = [0] * length_aligned
         nuc_covered = [0] * length_aligned

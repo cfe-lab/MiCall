@@ -369,6 +369,10 @@ class SequenceReport(object):
                               'landmark_references.yaml')
             landmarks_yaml = landmarks_path.read_text()
         self.landmarks = yaml.safe_load(landmarks_yaml)
+        seed_region_coordinates_path = (Path(__file__).parent.parent / 'data' /
+                                        'seed_coordinates.yaml')
+        seed_regions_yaml = seed_region_coordinates_path.read_text()
+        self.seed_region_coordinates  = yaml.safe_load(seed_regions_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
         self.consensus_builder = ConsensusBuilder(self.conseq_mixture_cutoffs,
@@ -676,7 +680,11 @@ class SequenceReport(object):
                 continue
             self._map_to_coordinate_ref(coordinate_name)
 
-        self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed, self.projects)
+        self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed,
+                                                                                  self.projects,
+                                                                                  self.seed_region_coordinates,
+                                                                                  excluded_regions,
+                                                                                  included_regions)
         self.coord_concordance = self.consensus_aligner.count_coord_matches()
 
     def read_clipping(self, clipping_csv):
