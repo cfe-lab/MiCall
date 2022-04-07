@@ -1093,7 +1093,7 @@ def collate_samples(run_info: RunInfo):
                  'cascade.csv',
                  'merge_lengths.csv',
                  'concordance.csv',
-                 'concordance_seed_region.csv']
+                 'concordance_seed.csv']
     if run_info.is_denovo:
         filenames += ['conseq_stitched.csv', 'conseq_region.csv']
     for filename in filenames:

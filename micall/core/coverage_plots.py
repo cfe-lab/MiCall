@@ -8,10 +8,13 @@ import errno
 import itertools
 from operator import itemgetter
 import tarfile
+import yaml
+from pathlib import Path
 
 from matplotlib.ticker import FuncFormatter
 
 from micall.core import project_config, aln2counts
+from micall.data.landmark_reader import LandmarkReader
 
 # NOTE: this must be performed BEFORE pyplot is imported
 # http://stackoverflow.com/a/3054314/4794
@@ -208,17 +211,50 @@ def coverage_plot(amino_csv,
     return paths  # locations of image files
 
 
-def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordance_prefix=None):
+def concordance_plot(concordance_csv,
+                     concordance_seed_csv=None,
+                     plot_path=None,
+                     filetype='png',
+                     concordance_prefix=None):
     if plot_path is None:
         plot_path, _ = os.path.split(concordance_csv.name)
     reader = DictReader(concordance_csv)
-    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    fig, ax = plt.subplots(figsize=(4, 5), dpi=100)
     paths = []
+    landmarks_path = (Path(__file__).parent.parent / 'data' /
+                      'landmark_references.yaml')
+    landmarks_yaml = landmarks_path.read_text()
+    landmarks = yaml.safe_load(landmarks_yaml)
+    landmark_reader = LandmarkReader(landmarks)
+
+    seed_concordance_dict = {}
+    if concordance_seed_csv is not None:
+        seed_reader = DictReader(concordance_seed_csv)
+        for (seed, contig), group in itertools.groupby(seed_reader, itemgetter('seed_name', 'contig')):
+            coordinate_ref = landmark_reader.get_coordinates(seed)
+            try:
+                region_dict = seed_concordance_dict[coordinate_ref]
+            except KeyError:
+                region_dict = {}
+                seed_concordance_dict[coordinate_ref] = region_dict
+            for row in group:
+                region = row['region']
+                try:
+                    contig_dict = region_dict[region]
+                except KeyError:
+                    contig_dict = {}
+                    region_dict[region] = contig_dict
+                contig_dict[contig] = (float(row['%concordance']), float(row['%covered']))
+
     for (reference, region), group in itertools.groupby(reader,
                                                         itemgetter('reference', 'region')):
         positions = []
         concordance_counts = []
         coverage = []
+        try:
+            seed_concordances = seed_concordance_dict[reference][region]
+        except KeyError:
+            seed_concordances = None
         for row in group:
             positions.append(float(row['position']))
             concordance_counts.append(100*float(row['%concordance']))
@@ -238,7 +274,13 @@ def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordanc
         plt.ylim([0, 110])
         plt.xlabel('Region coordinates', fontsize=9)
         plt.ylabel('Concordance', fontsize=9)
-        plt.tight_layout()
+        if seed_concordances is not None:
+            for num, contig in enumerate(seed_concordances):
+                plt.figtext(0.2, 0.4, "Seed concordance for each contig:", fontsize=8)
+                text = f"Contig {contig}: concordance {seed_concordances[contig][0]:.2f}, " \
+                       f"covered {seed_concordances[contig][1]:.2f}"
+                plt.figtext(0.2, 0.37-0.03*num, text, fontsize=6)
+        plt.subplots_adjust(bottom=0.55, top=0.95, left=0.2)
         figname_parts = ['concordance', reference, region, filetype]
         if concordance_prefix:
             figname_parts.insert(0, concordance_prefix)
