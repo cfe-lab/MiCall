@@ -537,8 +537,7 @@ class SequenceReport(object):
                                              report_aminos,
                                              repeated_ref_pos,
                                              skipped_ref_pos,
-                                             amino_ref,
-                                             coordinate_name)
+                                             amino_ref)
         self.consensus[coordinate_name] = self.consensus_aligner.amino_consensus
         self.inserts[coordinate_name] = self.consensus_aligner.inserts
 

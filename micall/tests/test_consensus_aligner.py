@@ -805,18 +805,6 @@ test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
 
 
 # noinspection DuplicatedCode
-def test_alignment_info(projects):
-    aligner = ConsensusAligner(projects)
-    amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10),
-                        AminoAlignment(20, 40, 50, 71, 0, 2, aligned_query="ABC", aligned_ref="DEF", ref_amino_start=4)]
-    aligner.amino_alignments = amino_alignments
-    expected_info = {'test-region': {'query_start': 0, 'query_end': 40, 'region_aligned': 0.5}}
-
-    aligner.store_alignment_info(100, 'test-region')
-    assert aligner.alignment_info.items() == expected_info.items()
-
-
-# noinspection DuplicatedCode
 def test_count_coord_concordance(projects):
     aligner = ConsensusAligner(projects)
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"

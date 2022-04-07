@@ -6,7 +6,6 @@ from operator import attrgetter
 import csv
 import os
 import logging
-from collections import defaultdict
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -228,9 +227,6 @@ class ConsensusAligner:
         else:
             self.seed_concordance_writer = None
 
-        # {region_start: {query_start: , query_end: , region_aligned: }
-        self.alignment_info = defaultdict(lambda: defaultdict())
-
     @staticmethod
     def _create_alignments_writer(alignments_file, different_columns=None):
         columns = different_columns or ["coordinate_name",
@@ -351,8 +347,7 @@ class ConsensusAligner:
                               end_pos: int,
                               repeat_pos: typing.Optional[int],
                               skip_pos: typing.Optional[int],
-                              amino_ref: str,
-                              region_name: str = None):
+                              amino_ref: str):
         translations = {
             reading_frame: translate(
                 '-'*(reading_frame + self.consensus_offset) +
@@ -469,9 +464,6 @@ class ConsensusAligner:
         if self.alignments_writer is not None:
             self.write_alignments_file(self.amino_alignments, self.alignments_writer)
 
-        if len(self.amino_alignments) > 0 and region_name is not None:
-            self.store_alignment_info(end_pos-start_pos, region_name)
-
     def clear(self):
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
@@ -493,13 +485,6 @@ class ConsensusAligner:
                    "ref_amino_start": alignment.ref_amino_start,
                    "coordinate_name": self.coordinate_name}
             alignments_writer.writerow(row)
-
-    def store_alignment_info(self, region_length, region_name):
-        region_aligned = (self.amino_alignments[-1].ref_end - 1 - self.amino_alignments[0].ref_start) / \
-                         region_length
-        self.alignment_info[region_name]['query_start'] = self.amino_alignments[0].query_start
-        self.alignment_info[region_name]['query_end'] = self.amino_alignments[-1].query_end
-        self.alignment_info[region_name]['region_aligned'] = region_aligned
 
     @staticmethod
     def combine_alignments(amino_sections, amino_ref, start_pos, translations):
@@ -545,8 +530,7 @@ class ConsensusAligner:
             report_aminos: typing.List[ReportAmino] = None,
             repeat_position: int = None,
             skip_position: int = None,
-            amino_ref: str = None,
-            region_name: str = None):
+            amino_ref: str = None):
         """ Add read counts to report counts for a section of the reference.
 
         :param start_pos: 1-based position of first nucleotide to report in
@@ -563,7 +547,6 @@ class ConsensusAligner:
             1-based position in reference coordinates, but only in report_aminos.
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
-        :param region_name: name of the region to be reported
         """
         self.inserts = set()
         if not self.alignments:
@@ -590,8 +573,7 @@ class ConsensusAligner:
                                     report_aminos,
                                     repeat_position,
                                     skip_position,
-                                    amino_ref,
-                                    region_name)
+                                    amino_ref)
 
     def get_seed_nuc(self, consensus_nuc_index: int):
         seed_amino = self.reading_frames[0][consensus_nuc_index // 3]
@@ -614,8 +596,7 @@ class ConsensusAligner:
                            report_aminos: typing.List[ReportAmino] = None,
                            repeat_position: int = None,
                            skip_position: int = None,
-                           amino_ref: str = None,
-                           region_name: str = None):
+                           amino_ref: str = None):
         """ Add read counts to report counts for a section of the reference.
         
         Used for regions that translate to amino acids.
@@ -634,14 +615,12 @@ class ConsensusAligner:
             1-based position in reference coordinates, but only in report_aminos.
         :param amino_ref: amino acid sequence to align with, or None if only
             nucleotides are reported.
-        :param region_name: name of the region to be built
         """
         self.find_amino_alignments(start_pos,
                                    end_pos,
                                    repeat_position,
                                    skip_position,
-                                   amino_ref,
-                                   region_name)
+                                   amino_ref)
         has_skipped_nucleotide = False
         if skip_position is not None:
             reading_frame1 = reading_frame2 = None
