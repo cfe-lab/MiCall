@@ -1022,11 +1022,6 @@ class AminoAlignment:
         after_start = start_pos <= self.ref_end
         return before_end == after_start
 
-    def has_query_overlap(self, start_pos: int, end_pos: int) -> bool:
-        before_end = self.query_start < end_pos
-        after_start = start_pos <= self.query_end
-        return before_end == after_start
-
     def find_reading_frame(self, amino_ref, start_pos, translations):
         ref_amino_start = (self.ref_start - start_pos + 1) // 3
         ref_amino_end = (self.ref_end - start_pos + 3) // 3

@@ -356,21 +356,13 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
         for contig_name in sorted_contig_names:
             genome_coverage_csv.seek(0)
             reader = DictReader(genome_coverage_csv)
-            if use_concordance:
-                build_contig(reader,
-                             f,
-                             contig_name,
-                             max_position,
-                             position_offset,
-                             blast_rows,
-                             use_concordance=True)
-            else:
-                build_contig(reader,
-                             f,
-                             contig_name,
-                             max_position,
-                             position_offset,
-                             blast_rows)
+            build_contig(reader,
+                         f,
+                         contig_name,
+                         max_position,
+                         position_offset,
+                         blast_rows,
+                         use_concordance=use_concordance)
 
     if not f.elements:
         f.add(Track(1, max_position, label='No contigs found.', color='none'))
@@ -457,15 +449,14 @@ def build_contig(reader,
             pos_field = 'query_nuc_pos'
         for contig_row in contig_rows:
             field_names = (pos_field, 'coverage', 'dels')
-            if use_concordance:
-                field_names += ('concordance',)
             for field_name in field_names:
                 field_text = contig_row[field_name]
-                if field_name != 'concordance':
-                    field_value = None if field_text == '' else int(field_text)
-                else:
-                    field_value = None if field_text == '' else 100*float(field_text)
+                field_value = None if field_text == '' else int(field_text)
                 contig_row[field_name] = field_value
+            if use_concordance:
+                field_text = contig_row['concordance']
+                field_value = None if field_text == '' else 100 * float(field_text)
+                contig_row['concordance'] = field_value
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
         coverage = [0] * (end - start + 1)
