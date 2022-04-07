@@ -76,6 +76,10 @@ Individual files are described after the list of steps.
   * in - conseq_ins.csv
   * nuc.csv - downloaded - nucleotide counts at each position
   * amino.csv - downloaded - amino counts at each position
+  * concordance.csv - downloaded - concordance measures for all regions, 
+    relative to the coordinate reference, cumulative
+  * concordance_seed.csv - downloaded - concordance measures for all regions, 
+    relative to the seed reference, for each contig
   * conseq.csv - downloaded - consensus sequence, minimum coverage (read depth) 100
   * conseq_all.csv - downloaded - consensus for all seeds (whole and region-wise), no minimum coverage
   * conseq_region.csv - downloaded - consensus for all regions
@@ -86,6 +90,8 @@ Individual files are described after the list of steps.
   * nuc_detail.csv - nucleotide counts split up by contig
   * amino_detail.csv - amino counts split up by contig
   * genome_coverage.csv - coverage counts in full-genome coordinates
+  * concordance_detailed.csv - coordinate concordance for each contig, averaged over a window size of 20,
+    for each genome position
 * `coverage_plots`: convert amino counts to a coverage graph for each gene
     region.
   * in - amino.csv
@@ -95,6 +101,11 @@ Individual files are described after the list of steps.
 * `plot_genome_coverage`: convert [genome coverage] to a graph
   * in - genome_coverage.csv
   * genome_coverage.svg
+  * genome_concordance.svg, if `use_concordance` is set
+* `concordance_plot`: convert concordance counts to a concordance graph for each gene
+    region.
+  * in - concordance_detailed.csv
+  * output in coverage_maps.tar as well
 * `cascade_report`: summarize how many reads made it through each step of the
     pipeline.
 * `resistance`: Use the Stanford HIVdb algorithm rules to call a sample's resistance

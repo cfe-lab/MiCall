@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument('concordance_csv',
                         nargs='?',
                         help='CSV containing coordinate reference concordance measures for each region')
-    parser.add_argument('concordance_seed_region_csv',
+    parser.add_argument('concordance_seed_csv',
                         nargs='?',
                         help='CSV containing seed concordance measures for each region')
 
@@ -130,7 +130,7 @@ def load_sample(args):
                     genome_concordance_svg=args.genome_concordance_svg,
                     read_entropy_csv=args.read_entropy_csv,
                     concordance_csv=args.concordance_csv,
-                    concordance_seed_region=args.concordance_seed_region_csv,
+                    concordance_seed=args.concordance_seed_csv,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample

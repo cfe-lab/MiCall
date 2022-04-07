@@ -173,8 +173,7 @@ class ConsensusAligner:
                  unmerged_alignments_file=None,
                  intermediate_alignments_file=None,
                  overall_alignments_file=None,
-                 concordance_file=None,
-                 region_concordance_file=None,
+                 seed_concordance_file=None,
                  contig_name=None):
         self.projects = projects
         self.coordinate_name = self.consensus = self.amino_consensus = ''
@@ -218,25 +217,16 @@ class ConsensusAligner:
         else:
             self.overall_alignments_writer = None
 
-        if concordance_file is not None:
-            columns = ["seed_name",
-                       "contig",
-                       "position",
-                       "%concordance"]
-            self.concordance_writer = self._create_alignments_writer(concordance_file, different_columns=columns)
-        else:
-            self.concordance_writer = None
-
-        if region_concordance_file is not None:
+        if seed_concordance_file is not None:
             columns = ["seed_name",
                        "contig",
                        "region",
                        "%concordance",
                        "%covered"]
-            self.region_concordance_writer = self._create_alignments_writer(region_concordance_file,
-                                                                            different_columns=columns)
+            self.seed_concordance_writer = self._create_alignments_writer(seed_concordance_file,
+                                                                          different_columns=columns)
         else:
-            self.region_concordance_writer = None
+            self.seed_concordance_writer = None
 
         # {region_start: {query_start: , query_end: , region_aligned: }
         self.alignment_info = defaultdict(lambda: defaultdict())
@@ -927,17 +917,12 @@ class ConsensusAligner:
                     ref_nuc_index += 1
                     consensus_nuc_index += 1
 
-    def determine_seed_concordance(self, seed_name, projects, seed_coordinates, excluded_regions, included_regions=None):
-        if self.concordance_writer is None:
+    def seed_concordance(self, seed_name, projects, seed_coordinates, excluded_regions, included_regions=None):
+        if self.seed_concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
         seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
         seed_alignments = list(seed_aligner.map(self.consensus))
-
-        concordance_list = self.count_seed_matches(seed_name, seed_alignments, seed_ref)
-
-        if self.region_concordance_writer is None:
-            return concordance_list
 
         regions = projects.getCoordinateReferences(seed_name)
         for region in regions:
@@ -951,57 +936,9 @@ class ConsensusAligner:
                 end_pos = coordinates['end']
             except KeyError:
                 continue
-            # self.count_region_seed_concordance(region, seed_name, seed_alignments, seed_ref)
-            self.new_region_seed_concordance(region, seed_name, seed_alignments, seed_ref, start_pos, end_pos)
+            self.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, start_pos, end_pos)
 
-        return concordance_list
-
-    def count_seed_matches(self, seed_name, seed_alignments, seed_ref, half_window_size=10):
-        query_matches = [0] * len(self.consensus)
-        row = {'seed_name': seed_name,
-               'contig': self.contig_name}
-        concordance_list = [0.0] * (len(self.consensus) + self.consensus_offset)
-
-        for alignment in seed_alignments:
-            ref_progress = alignment.r_st
-            query_progress = alignment.q_st
-            for cigar_index, (size, action) in enumerate(alignment.cigar):
-                if action == CigarActions.INSERT:
-                    query_progress += size
-                elif action == CigarActions.DELETE:
-                    ref_progress += size
-                else:
-                    assert action == CigarActions.MATCH
-                    for pos in range(0, size):
-                        ref_pos = ref_progress + pos
-                        query_pos = query_progress + pos
-                        if self.consensus[query_pos] == seed_ref[ref_pos]:
-                            query_matches[query_pos] = 1
-                    ref_progress += size
-                    query_progress += size
-            if self.overall_alignments_writer is not None:
-                alignment_row = {"coordinate_name": 'SEED-' + seed_name,
-                                 "contig": self.contig_name,
-                                 "query_start": alignment.q_st,
-                                 "query_end": alignment.q_en,
-                                 "consensus_offset": self.consensus_offset,
-                                 "ref_start": alignment.r_st,
-                                 "ref_end": alignment.r_en,
-                                 "cigar_str": alignment.cigar_str}
-                self.overall_alignments_writer.writerow(alignment_row)
-
-        for pos in range(half_window_size, len(self.consensus) - half_window_size + 1):
-            position = pos + self.consensus_offset
-            concordance = sum(query_matches[pos - half_window_size:pos + half_window_size])
-            normalized_concordance = concordance / (2 * half_window_size)
-            row['position'] = position
-            row['%concordance'] = normalized_concordance
-            concordance_list[position] = normalized_concordance
-            self.concordance_writer.writerow(row)
-
-        return concordance_list
-
-    def count_coord_matches(self, half_window_size=10):
+    def coord_concordance(self, half_window_size=10):
         coord_alignments = self.alignments
         try:
             coord_ref = self.projects.getGenotypeReference(self.coordinate_name)
@@ -1035,7 +972,7 @@ class ConsensusAligner:
 
         return concordance_list
 
-    def new_region_seed_concordance(self, region, seed_name, seed_alignments, seed_ref, start_pos, end_pos):
+    def region_seed_concordance(self, region, seed_name, seed_alignments, seed_ref, start_pos, end_pos):
         length_aligned = end_pos - start_pos
         nuc_agreements = [0] * length_aligned
         nuc_covered = [0] * length_aligned
@@ -1082,64 +1019,7 @@ class ConsensusAligner:
                       'contig': self.contig_name,
                       '%concordance': concordance_covered,
                       '%covered': covered}
-        self.region_concordance_writer.writerow(region_row)
-
-    def count_region_seed_concordance(self, region, seed_name, seed_alignments, seed_ref):
-        alignment_info = self.alignment_info[region]
-        try:
-            query_start = alignment_info['query_start']
-            query_end = alignment_info['query_end']
-            region_aligned = alignment_info['region_aligned']
-        except KeyError:
-            return
-        length_aligned = query_end - query_start
-        nuc_agreements = [0] * length_aligned
-        nuc_covered = [0] * length_aligned
-        for alignment in seed_alignments:
-            ref_progress = alignment.r_st
-            query_progress = alignment.q_st + self.consensus_offset
-            for cigar_index, (size, action) in enumerate(alignment.cigar):
-                if action == CigarActions.INSERT:
-                    query_progress += size
-                elif action == CigarActions.DELETE:
-                    ref_progress += size
-                else:
-                    assert action == CigarActions.MATCH
-                    amino_alignment = AminoAlignment(query_progress,
-                                                     query_progress + size,
-                                                     ref_progress,
-                                                     ref_progress + size,
-                                                     action,
-                                                     0)
-                    query_progress += size
-                    ref_progress += size
-                    if amino_alignment.has_query_overlap(query_start, query_end):
-                        start_shift = max(0, query_start - amino_alignment.query_start)
-                        end_shift = max(0, amino_alignment.query_end - query_end)
-                        amino_alignment.ref_start += start_shift
-                        amino_alignment.ref_end -= end_shift
-                        amino_alignment.query_start += start_shift
-                        amino_alignment.query_end -= end_shift
-                        match_size = amino_alignment.ref_end - amino_alignment.ref_start
-                        for pos in range(0, match_size):
-                            query_nuc = self.consensus[amino_alignment.query_start - self.consensus_offset + pos]
-                            seed_nuc = seed_ref[amino_alignment.ref_start + pos]
-                            offset_pos = pos + amino_alignment.query_start - query_start
-                            if query_nuc == seed_nuc:
-                                nuc_agreements[offset_pos] = 1
-                            nuc_covered[offset_pos] = 1
-        covered_aligned = sum(nuc_covered) / length_aligned
-        total_covered = covered_aligned * region_aligned
-        try:
-            concordance_covered = sum(nuc_agreements) / sum(nuc_covered)
-        except ZeroDivisionError:
-            concordance_covered = 0
-        region_row = {'seed_name': seed_name,
-                      'region': region,
-                      'contig': self.contig_name,
-                      '%concordance': concordance_covered,
-                      '%covered': total_covered}
-        self.region_concordance_writer.writerow(region_row)
+        self.seed_concordance_writer.writerow(region_row)
 
 
 @dataclass

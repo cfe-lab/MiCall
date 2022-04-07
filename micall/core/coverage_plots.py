@@ -208,7 +208,7 @@ def coverage_plot(amino_csv,
     return paths  # locations of image files
 
 
-def plot_concordance(concordance_csv, plot_path=None, filetype='png', concordance_prefix=None):
+def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordance_prefix=None):
     if plot_path is None:
         plot_path, _ = os.path.split(concordance_csv.name)
     reader = DictReader(concordance_csv)

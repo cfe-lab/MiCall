@@ -236,16 +236,10 @@ class ContigMatcher:
 
 def plot_genome_coverage(genome_coverage_csv,
                          blast_csv,
-                         genome_coverage_svg_path):
-    f = build_coverage_figure(genome_coverage_csv, blast_csv)
+                         genome_coverage_svg_path,
+                         use_concordance=False):
+    f = build_coverage_figure(genome_coverage_csv, blast_csv, use_concordance)
     f.show(w=970).saveSvg(genome_coverage_svg_path)
-
-
-def plot_genome_concordance(genome_coverage_csv,
-                            blast_csv,
-                            genome_concordance_svg_path):
-    f = build_coverage_figure(genome_coverage_csv, blast_csv, use_concordance=True)
-    f.show(w=970).saveSvg(genome_concordance_svg_path)
 
 
 def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=False):

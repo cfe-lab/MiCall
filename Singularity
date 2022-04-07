@@ -19,7 +19,7 @@ From: centos:7
         failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv failed_align_csv coverage_scores_csv coverage_maps_tar \
         aligned_csv g2p_aligned_csv genome_coverage_csv genome_coverage_svg \
-        genome_concordance_svg concordance_csv concordance_region_seed_csv
+        genome_concordance_svg concordance_csv concordance_seed_csv
     KIVE_THREADS 1
     KIVE_MEMORY 6000
 
@@ -193,7 +193,7 @@ From: centos:7
         conseq_all_csv conseq_region_csv conseq_stitched_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg genome_concordance_svg contigs_csv \
-        read_entropy_csv concordance_csv concordance_seed_region_csv
+        read_entropy_csv concordance_csv concordance_seed_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
 

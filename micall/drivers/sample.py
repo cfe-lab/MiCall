@@ -9,8 +9,8 @@ from pathlib import Path
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
-from micall.core.coverage_plots import coverage_plot, plot_concordance
-from micall.core.plot_contigs import plot_genome_coverage, plot_genome_concordance
+from micall.core.coverage_plots import coverage_plot, concordance_plot
+from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
 from micall.core.project_config import ProjectConfig
 from micall.core.remap import remap, map_to_contigs
@@ -268,8 +268,7 @@ class Sample:
                         alignments_overall_csv=(self.alignments_overall_csv, 'w'),
                         concordance_csv=(self.concordance_csv, 'w'),
                         concordance_detailed_csv=(self.concordance_detailed_csv, 'w'),
-                        concordance_seed_csv=(self.concordance_seed_csv, 'w'),
-                        concordance_seed_region_csv=(self.concordance_seed_region_csv, 'w')) as opened_files:
+                        concordance_seed_csv=(self.concordance_seed_csv, 'w')) as opened_files:
 
             aln2counts(opened_files['aligned_csv'],
                        opened_files['nuc_csv'],
@@ -296,8 +295,7 @@ class Sample:
                        alignments_overall_csv=opened_files['alignments_overall_csv'],
                        concordance_csv=opened_files['concordance_csv'],
                        concordance_detailed_csv=opened_files['concordance_detailed_csv'],
-                       concordance_seed_csv=opened_files['concordance_seed_csv'],
-                       concordance_seed_region_csv=opened_files['concordance_seed_region_csv'])
+                       concordance_seed_csv=opened_files['concordance_seed_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
         os.makedirs(self.coverage_maps)
@@ -321,12 +319,13 @@ class Sample:
                 open(self.minimap_hits_csv) as minimap_hits_csv:
             if not use_denovo:
                 minimap_hits_csv = None
-            plot_genome_concordance(genome_coverage_csv,
-                                    minimap_hits_csv,
-                                    self.genome_concordance_svg)
+            plot_genome_coverage(genome_coverage_csv,
+                                 minimap_hits_csv,
+                                 self.genome_concordance_svg,
+                                 use_concordance=True)
 
         with open(self.concordance_detailed_csv) as concordance_detailed_csv:
-            plot_concordance(concordance_detailed_csv, plot_path=self.coverage_maps, concordance_prefix=self.name)
+            concordance_plot(concordance_detailed_csv, plot_path=self.coverage_maps, concordance_prefix=self.name)
 
         logger.info('Running cascade_report on %s.', self)
         with open(self.g2p_summary_csv) as g2p_summary_csv, \

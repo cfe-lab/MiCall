@@ -126,6 +126,12 @@ def parse_args():
     parser.add_argument('--concordance_csv',
                         type=argparse.FileType('w'),
                         help='CSV containing concordance measures of the regions')
+    parser.add_argument('--concordance_detailed_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing concordance along the entire coordinate reference')
+    parser.add_argument('--concordance_seed_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing concordance measures of the regions for each seed')
     return parser.parse_args()
 
 
@@ -372,7 +378,7 @@ class SequenceReport(object):
         seed_region_coordinates_path = (Path(__file__).parent.parent / 'data' /
                                         'seed_coordinates.yaml')
         seed_regions_yaml = seed_region_coordinates_path.read_text()
-        self.seed_region_coordinates  = yaml.safe_load(seed_regions_yaml)
+        self.seed_region_coordinates = yaml.safe_load(seed_regions_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
         self.consensus_builder = ConsensusBuilder(self.conseq_mixture_cutoffs,
@@ -409,8 +415,7 @@ class SequenceReport(object):
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
         self.concordance_writer = self.detailed_concordance_writer = None
-        self.seed_concordance_csv = self.seed_region_concordance_csv = None
-        self.seed_concordance = []
+        self.seed_concordance_csv = None
         self.coord_concordance = []
 
     @property
@@ -623,7 +628,6 @@ class SequenceReport(object):
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
-        self.seed_concordance = []
         self.coord_concordance = []
 
         # populates these dictionaries, generates amino acid counts
@@ -636,7 +640,6 @@ class SequenceReport(object):
                                                       self.intermediate_alignments_csv,
                                                       self.overall_alignments_csv,
                                                       self.seed_concordance_csv,
-                                                      self.seed_region_concordance_csv,
                                                       self.detail_seed)
 
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
@@ -680,12 +683,9 @@ class SequenceReport(object):
                 continue
             self._map_to_coordinate_ref(coordinate_name)
 
-        self.seed_concordance = self.consensus_aligner.determine_seed_concordance(self.seed,
-                                                                                  self.projects,
-                                                                                  self.seed_region_coordinates,
-                                                                                  excluded_regions,
-                                                                                  included_regions)
-        self.coord_concordance = self.consensus_aligner.count_coord_matches()
+        self.consensus_aligner.seed_concordance(self.seed, self.projects, self.seed_region_coordinates,
+                                                excluded_regions, included_regions)
+        self.coord_concordance = self.consensus_aligner.coord_concordance()
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -1026,7 +1026,6 @@ class SequenceReport(object):
                         skipped_source -= 1
                     else:
                         try:
-                            # concordance = self.seed_concordance[offset_seq_pos - 1]
                             concordance = self.coord_concordance[ref_pos]
                         except (IndexError, TypeError):
                             concordance = 0.0
@@ -1911,8 +1910,7 @@ def aln2counts(aligned_csv,
                alignments_overall_csv=None,
                concordance_csv=None,
                concordance_detailed_csv=None,
-               concordance_seed_csv=None,
-               concordance_seed_region_csv=None):
+               concordance_seed_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1953,9 +1951,7 @@ def aln2counts(aligned_csv,
     @param alignments_overall_csv: Open file handle to write overall alignments.
     @param concordance_csv: Open file handle to write concordance measures for the regions.
     @param concordance_detailed_csv: Open file handle to write detailed concordance measures for the regions.
-    @param concordance_seed_csv: Open file handle to write detailed concordance measures for the seeds.
-    @param concordance_seed_region_csv: Open file handle to write concordance measures for individual regions
-                                        for each seed.
+    @param concordance_seed_csv: Open file handle to write concordance measures for the regions for each seed.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -2023,7 +2019,6 @@ def aln2counts(aligned_csv,
         report.intermediate_alignments_csv = alignments_intermediate_csv
         report.overall_alignments_csv = alignments_overall_csv
         report.seed_concordance_csv = concordance_seed_csv
-        report.seed_region_concordance_csv = concordance_seed_region_csv
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -2070,7 +2065,9 @@ def main():
                alignments_unmerged_csv=args.alignments_unmerged_csv,
                alignments_intermediate_csv=args.alignments_intermediate_csv,
                alignments_overall_csv=args.alignments_overall_csv,
-               concordance_csv=args.concordance_csv)
+               concordance_csv=args.concordance_csv,
+               concordance_detailed_csv=args.concordance_detailed_csv,
+               concordance_seed_csv=args.concordance_seed_csv)
 
 
 if __name__ == '__main__':
