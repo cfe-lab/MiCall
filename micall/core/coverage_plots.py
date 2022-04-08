@@ -246,6 +246,8 @@ def concordance_plot(concordance_csv,
                     region_dict[region] = contig_dict
                 contig_dict[contig] = (float(row['%concordance']), float(row['%covered']))
 
+    num_contigs = 0
+    plt.figtext(0.2, 0.4, "Seed concordance for each contig:", fontsize=8)
     for (reference, region), group in itertools.groupby(reader,
                                                         itemgetter('reference', 'region')):
         positions = []
@@ -275,11 +277,11 @@ def concordance_plot(concordance_csv,
         plt.xlabel('Region coordinates', fontsize=9)
         plt.ylabel('Concordance', fontsize=9)
         if seed_concordances is not None:
-            for num, contig in enumerate(seed_concordances):
-                plt.figtext(0.2, 0.4, "Seed concordance for each contig:", fontsize=8)
+            for contig in seed_concordances:
                 text = f"Contig {contig}: concordance {seed_concordances[contig][0]:.2f}, " \
                        f"covered {seed_concordances[contig][1]:.2f}"
-                plt.figtext(0.2, 0.37-0.03*num, text, fontsize=6)
+                plt.figtext(0.2, 0.37-0.03*num_contigs, text, fontsize=6)
+                num_contigs += 1
         plt.subplots_adjust(bottom=0.55, top=0.95, left=0.2)
         figname_parts = ['concordance', reference, region, filetype]
         if concordance_prefix:
