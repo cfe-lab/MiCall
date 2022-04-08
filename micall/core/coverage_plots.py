@@ -21,6 +21,7 @@ from micall.data.landmark_reader import LandmarkReader
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt, patches  # noqa
+from matplotlib.artist import Artist
 
 MAX_COVERAGE = 1000000
 FONT_SIZE = 8
@@ -246,8 +247,6 @@ def concordance_plot(concordance_csv,
                     region_dict[region] = contig_dict
                 contig_dict[contig] = (float(row['%concordance']), float(row['%covered']))
 
-    num_contigs = 0
-    plt.figtext(0.2, 0.4, "Seed concordance for each contig:", fontsize=8)
     for (reference, region), group in itertools.groupby(reader,
                                                         itemgetter('reference', 'region')):
         positions = []
@@ -277,17 +276,18 @@ def concordance_plot(concordance_csv,
         plt.xlabel('Region coordinates', fontsize=9)
         plt.ylabel('Concordance', fontsize=9)
         if seed_concordances is not None:
-            for contig in seed_concordances:
+            plt.figtext(0.1, 0.4, "Seed concordance for each contig:", fontsize=8)
+            for num, contig in enumerate(seed_concordances):
                 text = f"Contig {contig}: concordance {seed_concordances[contig][0]:.2f}, " \
                        f"covered {seed_concordances[contig][1]:.2f}"
-                plt.figtext(0.2, 0.37-0.03*num_contigs, text, fontsize=6)
-                num_contigs += 1
+                plt.figtext(0.1, 0.37-0.03*num, text, fontsize=6)
         plt.subplots_adjust(bottom=0.55, top=0.95, left=0.2)
         figname_parts = ['concordance', reference, region, filetype]
         if concordance_prefix:
             figname_parts.insert(0, concordance_prefix)
         paths.append(save_figure(plot_path, figname_parts))
         plt.cla()  # clear the axis, but don't remove the axis itself.
+        fig.texts = []  # remove figure text
     plt.close(fig)
     return paths
 
