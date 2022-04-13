@@ -20,9 +20,13 @@ jobs:
         run: |
           sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
           cd ~/bin
-          echo Try installing kmc with apt
-          sudo apt-get install kmc
+          echo Get kmc from release
+          # Original sources: http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
+          # http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+          wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.15.5/kmc
+          wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.15.5/kmc_dump
           echo Finished kmc installation
+          chmod +x kmc kmc_dump
           wget -q https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
           tar -xf samtools-1.3.1.tar.bz2 --no-same-owner --bzip2
           cd samtools-1.3.1
