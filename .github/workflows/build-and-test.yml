@@ -19,17 +19,10 @@ jobs:
       - name: Install IVA assembler dependencies
         run: |
           sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
-          echo Changing directory
           cd ~/bin
-          echo Starting wget
-          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
-          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
-          echo Finished wget
-          # Server doesn't support HTTPS, so check for changed files.
-          echo "\
-            db1935884aec2d23d4d623ff85eb4eae8d7a946c9ee0c33ea1818215c40d3099  kmc
-            34a97db2dab5fdae0276d2589c940142813e9cd87ae10e5e2dd37ed3545b4436  kmc_dump" | sha256sum --check
-          chmod +x kmc kmc_dump
+          echo Try installing kmc with apt
+          sudo apt-get install kmc
+          echo Finished kmc installation
           wget -q https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
           tar -xf samtools-1.3.1.tar.bz2 --no-same-owner --bzip2
           cd samtools-1.3.1
