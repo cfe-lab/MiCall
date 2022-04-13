@@ -18,7 +18,9 @@ jobs:
 
       - name: Install IVA assembler dependencies
         run: |
+          echo Starting apt-get install
           sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
+          echo Done with apt-get install
           cd ~/bin
           wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
           wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
