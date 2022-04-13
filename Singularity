@@ -96,8 +96,8 @@ From: centos:7
     echo ===== Installing IVA dependencies ===== >/dev/null
     yum install -q -y tcsh ncurses-devel zlib-devel
     cd /bin
-    wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
-    wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
+    wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.15.5/kmc
+    wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.15.5/kmc_dump
     chmod +x kmc kmc_dump
     cd /opt
     wget -q https://sourceforge.net/projects/mummer/files/mummer/3.23/MUMmer3.23.tar.gz

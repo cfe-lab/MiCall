@@ -95,7 +95,7 @@ If the seed extended to at least three quarters of the seed stop length, it's a
 success and IVA will move on to the next step. If not, it records the failed
 seed and starts again with the next most common k-mer as a new seed.
 
-[KMC]: https://sun.aei.polsl.pl/REFRESH/index.php?page=projects&project=kmc&subpage=about
+[KMC]: https://github.com/refresh-bio/KMC
 
 
 ## Extending with Read Pairs

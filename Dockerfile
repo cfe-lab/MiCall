@@ -57,8 +57,8 @@ ENV PATH $PATH:/opt/bowtie2
 ## Installing IVA dependencies
 RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     cd /bin && \
-    wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc && \
-    wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump && \
+    wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.15.5/kmc && \
+    wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.15.5/kmc_dump && \
     chmod +x kmc kmc_dump && \
     cd /opt && \
     wget -q https://sourceforge.net/projects/mummer/files/mummer/3.23/MUMmer3.23.tar.gz && \
