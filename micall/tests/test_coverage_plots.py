@@ -102,13 +102,13 @@ R1-and-R2,R1,R1-seed,15,5,1,-1,1
     @patch('matplotlib.pyplot.savefig')
     def test_concordance_plot(self, savefig_mock):
         concordance_detailed_csv = StringIO("""\
-reference,region,%concordance,%covered,position
+reference,region,pct_concordance,pct_covered,position
 R1A-seed,R1A,0,0,10
-R1A-seed,R1B,0.5,1.0,5
-R1A-seed,R1A_second,1.0,1.0,10
-R1A-seed,R1A_second,1.0,1.0,11
-R1A-seed,R1A_second,0.95,0.95,12
-R1A-seed,R1A_second,0.9,0.9,13
+R1A-seed,R1B,50,100,5
+R1A-seed,R1A_second,100,100,10
+R1A-seed,R1A_second,100,100,11
+R1A-seed,R1A_second,95,95,12
+R1A-seed,R1A_second,90,90,13
 """)
 
         expected_calls = [call('test/path/testsample.concordance.R1A-seed.R1B.png'),

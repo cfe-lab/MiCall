@@ -217,16 +217,16 @@ def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordanc
     for (reference, region), group in itertools.groupby(reader,
                                                         itemgetter('reference', 'region')):
         positions = []
-        concordance_counts = []
+        concordance = []
         coverage = []
         for row in group:
-            positions.append(float(row['position']))
-            concordance_counts.append(100*float(row['%concordance']))
-            coverage.append(100*float(row['%covered']))
+            positions.append(int(row['position'])/3)
+            concordance.append(float(row['pct_concordance']))
+            coverage.append(float(row['pct_covered']))
         if sum(coverage) == 0:
             continue
         plt.step(positions,
-                 concordance_counts,
+                 concordance,
                  linewidth=2,
                  where='mid',
                  label='% concordance',
@@ -234,10 +234,11 @@ def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordanc
                  color='red')
         plt.step(positions, coverage, linewidth=2, where='mid', label='% covered', zorder=99, color='blue')
         plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True)
-        plt.xlim([0, max(positions)+min(positions)])
+        window_size = min(positions)  # positions go from window_size to region_length - window_size
+        plt.xlim([0, max(positions)+window_size])
         plt.ylim([0, 110])
-        plt.xlabel('Region coordinates', fontsize=9)
-        plt.ylabel('Concordance', fontsize=9)
+        plt.xlabel('Reference coordinates (AA)', fontsize=9)
+        plt.ylabel('20-base window average', fontsize=9)
         plt.tight_layout()
         figname_parts = ['concordance', reference, region, filetype]
         if concordance_prefix:

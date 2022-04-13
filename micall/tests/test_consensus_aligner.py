@@ -827,7 +827,8 @@ def test_count_coord_concordance_short_match(projects):
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
     coord_ref = "AGATTTCGATGATTCAGAAGATTTGCATTT"
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
-
+    # as the averaging window (size 20) slides along the reference, the concordance decreases from 15/20 = 0.75
+    # in 1 base intervals (1/20 = 0.05) down to 5 bases of the match left in the window (5/20 = 0.25)
     expected_concordance_list = [0.0]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25] + [0.0]*9
 
     with patch('micall.core.project_config.ProjectConfig.getGenotypeReference') as mock_get_reference:
@@ -878,7 +879,6 @@ def test_count_coord_concordance_with_deletion(projects):
     aligner = ConsensusAligner(projects)
     aligner.consensus = "AGATTTCGATTCAGAAGATTTGCA"
     # deletion behind this pos:  ^
-    seed_name = 'test-seed'
     coord_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
                                                                                     [3, CigarActions.DELETE],
@@ -906,8 +906,8 @@ def test_count_seed_region_concordance(projects):
     seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
 
     expected_file = """\
-seed_name,contig,region,%concordance,%covered
-test-seed,test-contig,test-region,1.0,1.0
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,100.0
 """
 
     aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 27)
@@ -929,8 +929,8 @@ def test_count_seed_region_concordance_mismatch(projects):
     seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
 
     expected_file = """\
-seed_name,contig,region,%concordance,%covered
-test-seed,test-contig,test-region,0.8,1.0
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,80.0,100.0
 """
 
     aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 30)
@@ -951,8 +951,8 @@ def test_count_seed_region_concordance_seed_not_aligned(projects):
     seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
 
     expected_file = """\
-seed_name,contig,region,%concordance,%covered
-test-seed,test-contig,test-region,1.0,0.5
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,50.0
 """
 
     aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 30)
@@ -973,8 +973,8 @@ def test_count_seed_region_concordance_larger_match(projects):
     seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
 
     expected_file = """\
-seed_name,contig,region,%concordance,%covered
-test-seed,test-contig,test-region,1.0,1.0
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,100.0
 """
 
     aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 15)
@@ -998,8 +998,8 @@ def test_count_seed_region_concordance_insertion(projects):
                                                                                  [18, CigarActions.MATCH]])]
 
     expected_file = """\
-seed_name,contig,region,%concordance,%covered
-test-seed,test-contig,test-region,1.0,1.0
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,100.0
 """
 
     aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 27)
@@ -1023,8 +1023,8 @@ def test_count_seed_region_concordance_deletion(projects):
                                                                                  [18, CigarActions.MATCH]])]
 
     expected_file = """\
-seed_name,contig,region,%concordance,%covered
-test-seed,test-contig,test-region,1.0,0.9
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,90.0
 """
 
     aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 30)

@@ -875,7 +875,7 @@ class SequenceReport(object):
         self.minimap_hits_writer.writeheader()
 
     def write_concordance_header(self, concordance_file, is_detailed=False):
-        columns = ['reference', 'region', '%concordance', '%covered']
+        columns = ['reference', 'region', 'pct_concordance', 'pct_covered']
         if is_detailed:
             columns.append('position')
             self.detailed_concordance_writer = csv.DictWriter(concordance_file,
@@ -1515,22 +1515,22 @@ class SequenceReport(object):
                         running_coverage.append(0)
                     window_size = 2*half_window_size
                     if window_size-1 <= pos and print_details:
-                        row['%concordance'] = sum(running_concordance) / window_size
+                        row['pct_concordance'] = 100 * sum(running_concordance) / window_size
                         row['position'] = pos + 1 - half_window_size
-                        row['%covered'] = sum(running_coverage) / window_size
+                        row['pct_covered'] = 100 * sum(running_coverage) / window_size
                         running_concordance.pop(0)
                         running_coverage.pop(0)
                         detailed_concordance_writer.writerow(row)
 
                 try:
-                    region_concordance /= region_coverage
+                    region_concordance = 100 * region_concordance / region_coverage
                 except ZeroDivisionError:
-                    region_concordance = 0
-                region_coverage /= region_length
-                row = {'region': region,
-                       'reference': coordinate_name,
-                       '%concordance': region_concordance,
-                       '%covered': region_coverage}
+                    region_concordance = 0.0
+                region_coverage = 100 * region_coverage / region_length
+                row = dict(region=region,
+                           reference=coordinate_name,
+                           pct_concordance=region_concordance,
+                           pct_covered=region_coverage)
                 concordance_writer.writerow(row)
 
     @staticmethod

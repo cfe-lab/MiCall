@@ -220,8 +220,8 @@ class ConsensusAligner:
             columns = ["seed_name",
                        "contig",
                        "region",
-                       "%concordance",
-                       "%covered"]
+                       "pct_concordance",
+                       "pct_covered"]
             self.seed_concordance_writer = self._create_alignments_writer(seed_concordance_file,
                                                                           different_columns=columns)
         else:
@@ -988,16 +988,16 @@ class ConsensusAligner:
                             if query_nuc == seed_nuc:
                                 nuc_agreements[offset_pos] = 1
                             nuc_covered[offset_pos] = 1
-        covered = sum(nuc_covered) / length_aligned
+        covered = 100 * sum(nuc_covered) / length_aligned
         try:
-            concordance_covered = sum(nuc_agreements) / sum(nuc_covered)
+            concordance_covered = 100 * sum(nuc_agreements) / sum(nuc_covered)
         except ZeroDivisionError:
-            concordance_covered = 0
-        region_row = {'seed_name': seed_name,
-                      'region': region,
-                      'contig': self.contig_name,
-                      '%concordance': concordance_covered,
-                      '%covered': covered}
+            concordance_covered = 0.0
+        region_row = dict(seed_name=seed_name,
+                          region=region,
+                          contig=self.contig_name,
+                          pct_concordance=concordance_covered,
+                          pct_covered=covered)
         self.seed_concordance_writer.writerow(region_row)
 
 

@@ -573,12 +573,16 @@ def add_partial_banner(f, position_offset, max_position):
     f.add(Multitrack(subtracks))
 
 
-def summarize_figure(figure: Figure):
+def summarize_figure(figure: Figure, is_concordance=False):
     """ Summarize the contents of a figure to text.
 
     Useful for testing.
     """
     figure.show()  # Test that all the display math works.
+    if is_concordance:
+        coverage_or_concordance = 'Concordance '
+    else:
+        coverage_or_concordance = 'Coverage '
 
     summary = StringIO()
     for padding, track in figure.elements:
@@ -592,12 +596,12 @@ def summarize_figure(figure: Figure):
                 summary.write(', ')
             ys = getattr(span, 'ys', None)
             if ys is not None:
-                summary.write('Coverage ')
+                summary.write(coverage_or_concordance)
                 summary.write(', '.join(map(str, ys)))
                 continue
             coverage_groups = getattr(span, 'coverage_groups', None)
             if coverage_groups is not None:
-                summary.write('Coverage ')
+                summary.write(coverage_or_concordance)
                 for j, (y, count) in enumerate(coverage_groups):
                     if j:
                         summary.write(', ')

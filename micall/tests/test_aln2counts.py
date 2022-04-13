@@ -2292,9 +2292,9 @@ R2,GCCATTAAA
     def testCombinedCoordinateConcordance(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTAGGTAG")
         expected_file = """\
-reference,region,%concordance,%covered
-R1A-seed,R1A,1.0,1.0
-R1A-seed,R1A_second,0,0.0
+reference,region,pct_concordance,pct_covered
+R1A-seed,R1A,100.0,100.0
+R1A-seed,R1A_second,0.0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2309,9 +2309,9 @@ R1A-seed,R1A_second,0,0.0
     def testReportCoordinateConcordance(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTAGGTAG")
         expected_file = """\
-reference,region,%concordance,%covered
-R1A-seed,R1A,1.0,1.0
-R1A-seed,R1A_second,0,0.0
+reference,region,pct_concordance,pct_covered
+R1A-seed,R1A,100.0,100.0
+R1A-seed,R1A_second,0.0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2325,9 +2325,9 @@ R1A-seed,R1A_second,0,0.0
     def testCoordinateConcordanceCoverage(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTT")
         expected_file = """\
-reference,region,%concordance,%covered
-R1A-seed,R1A,1.0,0.5
-R1A-seed,R1A_second,0,0.0
+reference,region,pct_concordance,pct_covered
+R1A-seed,R1A,100.0,50.0
+R1A-seed,R1A_second,0.0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2342,9 +2342,9 @@ R1A-seed,R1A_second,0,0.0
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTGGGTAG")
         # 1 different nuc here:                                 ^
         expected_file = """\
-reference,region,%concordance,%covered
-R1A-seed,R1A,0.9166666666666666,1.0
-R1A-seed,R1A_second,0,0.0
+reference,region,pct_concordance,pct_covered
+R1A-seed,R1A,91.66666666666667,100.0
+R1A-seed,R1A_second,0.0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2359,9 +2359,9 @@ R1A-seed,R1A_second,0,0.0
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTTGGG")
         # 1 different nuc here:                                 ^
         expected_file = """\
-reference,region,%concordance,%covered
-R1A-seed,R1A,0.8888888888888888,0.75
-R1A-seed,R1A_second,0,0.0
+reference,region,pct_concordance,pct_covered
+R1A-seed,R1A,88.88888888888889,75.0
+R1A-seed,R1A_second,0.0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2375,9 +2375,9 @@ R1A-seed,R1A_second,0,0.0
     def testCoordinateConcordanceDeletion(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,0,AAATTT---TAG")
         expected_file = """\
-reference,region,%concordance,%covered
-R1A-seed,R1A,1.0,0.75
-R1A-seed,R1A_second,0,0.0
+reference,region,pct_concordance,pct_covered
+R1A-seed,R1A,100.0,75.0
+R1A-seed,R1A_second,0.0,0.0
 """
 
         self.report.read(aligned_reads)
@@ -2391,15 +2391,15 @@ R1A-seed,R1A_second,0,0.0
     def testDetailedCombinedCoordinateConcordance(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGGTAG")
         expected_file = """\
-reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10
-R1A-seed,R1A_second,1.0,1.0,11
-R1A-seed,R1A_second,1.0,1.0,12
-R1A-seed,R1A_second,1.0,1.0,13
-R1A-seed,R1A_second,1.0,1.0,14
-R1A-seed,R1A_second,1.0,1.0,15
-R1A-seed,R1A_second,1.0,1.0,16
-R1A-seed,R1A_second,1.0,1.0,17
+reference,region,pct_concordance,pct_covered,position
+R1A-seed,R1A_second,100.0,100.0,10
+R1A-seed,R1A_second,100.0,100.0,11
+R1A-seed,R1A_second,100.0,100.0,12
+R1A-seed,R1A_second,100.0,100.0,13
+R1A-seed,R1A_second,100.0,100.0,14
+R1A-seed,R1A_second,100.0,100.0,15
+R1A-seed,R1A_second,100.0,100.0,16
+R1A-seed,R1A_second,100.0,100.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2417,15 +2417,15 @@ R1A-seed,R1A_second,1.0,1.0,17
     def testDetailedCoordinateConcordance(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGGTAG")
         expected_file = """\
-reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10
-R1A-seed,R1A_second,1.0,1.0,11
-R1A-seed,R1A_second,1.0,1.0,12
-R1A-seed,R1A_second,1.0,1.0,13
-R1A-seed,R1A_second,1.0,1.0,14
-R1A-seed,R1A_second,1.0,1.0,15
-R1A-seed,R1A_second,1.0,1.0,16
-R1A-seed,R1A_second,1.0,1.0,17
+reference,region,pct_concordance,pct_covered,position
+R1A-seed,R1A_second,100.0,100.0,10
+R1A-seed,R1A_second,100.0,100.0,11
+R1A-seed,R1A_second,100.0,100.0,12
+R1A-seed,R1A_second,100.0,100.0,13
+R1A-seed,R1A_second,100.0,100.0,14
+R1A-seed,R1A_second,100.0,100.0,15
+R1A-seed,R1A_second,100.0,100.0,16
+R1A-seed,R1A_second,100.0,100.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2441,15 +2441,15 @@ R1A-seed,R1A_second,1.0,1.0,17
     def testDetailedCoordinateConcordanceCoverage(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTTTGG")
         expected_file = """\
-reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10
-R1A-seed,R1A_second,1.0,1.0,11
-R1A-seed,R1A_second,1.0,1.0,12
-R1A-seed,R1A_second,1.0,1.0,13
-R1A-seed,R1A_second,1.0,1.0,14
-R1A-seed,R1A_second,0.95,0.95,15
-R1A-seed,R1A_second,0.9,0.9,16
-R1A-seed,R1A_second,0.85,0.85,17
+reference,region,pct_concordance,pct_covered,position
+R1A-seed,R1A_second,100.0,100.0,10
+R1A-seed,R1A_second,100.0,100.0,11
+R1A-seed,R1A_second,100.0,100.0,12
+R1A-seed,R1A_second,100.0,100.0,13
+R1A-seed,R1A_second,100.0,100.0,14
+R1A-seed,R1A_second,95.0,95.0,15
+R1A-seed,R1A_second,90.0,90.0,16
+R1A-seed,R1A_second,85.0,85.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2466,15 +2466,15 @@ R1A-seed,R1A_second,0.85,0.85,17
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGCCCTCTGGTCACTCTGTGGTAG")
         # mismatch:                                             ^    ^         ^
         expected_file = """\
-reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,0.9,1.0,10
-R1A-seed,R1A_second,0.85,1.0,11
-R1A-seed,R1A_second,0.85,1.0,12
-R1A-seed,R1A_second,0.85,1.0,13
-R1A-seed,R1A_second,0.85,1.0,14
-R1A-seed,R1A_second,0.85,1.0,15
-R1A-seed,R1A_second,0.9,1.0,16
-R1A-seed,R1A_second,0.9,1.0,17
+reference,region,pct_concordance,pct_covered,position
+R1A-seed,R1A_second,90.0,100.0,10
+R1A-seed,R1A_second,85.0,100.0,11
+R1A-seed,R1A_second,85.0,100.0,12
+R1A-seed,R1A_second,85.0,100.0,13
+R1A-seed,R1A_second,85.0,100.0,14
+R1A-seed,R1A_second,85.0,100.0,15
+R1A-seed,R1A_second,90.0,100.0,16
+R1A-seed,R1A_second,90.0,100.0,17
 """
 
         self.report.read(aligned_reads)
@@ -2490,15 +2490,15 @@ R1A-seed,R1A_second,0.9,1.0,17
     def testDetailedCoordinateConcordanceDeletion(self):
         aligned_reads = prepare_reads("R1A-seed,15,0,10,12,CCGAGACCTCAGGTCACTCTT---TAG")
         expected_file = """\
-reference,region,%concordance,%covered,position
-R1A-seed,R1A_second,1.0,1.0,10
-R1A-seed,R1A_second,1.0,1.0,11
-R1A-seed,R1A_second,0.95,0.95,12
-R1A-seed,R1A_second,0.9,0.9,13
-R1A-seed,R1A_second,0.85,0.85,14
-R1A-seed,R1A_second,0.85,0.85,15
-R1A-seed,R1A_second,0.85,0.85,16
-R1A-seed,R1A_second,0.85,0.85,17
+reference,region,pct_concordance,pct_covered,position
+R1A-seed,R1A_second,100.0,100.0,10
+R1A-seed,R1A_second,100.0,100.0,11
+R1A-seed,R1A_second,95.0,95.0,12
+R1A-seed,R1A_second,90.0,90.0,13
+R1A-seed,R1A_second,85.0,85.0,14
+R1A-seed,R1A_second,85.0,85.0,15
+R1A-seed,R1A_second,85.0,85.0,16
+R1A-seed,R1A_second,85.0,85.0,17
 """
 
         self.report.read(aligned_reads)

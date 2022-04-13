@@ -1212,13 +1212,13 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
-Coverage 0.0, 25.0, 50.0, 100.0, 30.0, 0.0
+Concordance 0.0, 25.0, 50.0, 100.0, 30.0, 0.0
 [1-6], 1-HCV-1a - depth 7(1-9646)
 """
 
     figure = build_coverage_figure(genome_coverage_csv, use_concordance=True)
 
-    assert expected_figure == summarize_figure(figure)
+    assert expected_figure == summarize_figure(figure, is_concordance=True)
 
 
 def test_plot_genome_concordance_insertion():
@@ -1241,13 +1241,13 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
-Coverage 0.0, 25.0, 50.0, 100.0, 80.0, 80.0, 70.0, 70.0, 70.0
+Concordance 0.0, 25.0, 50.0, 100.0, 80.0, 80.0, 70.0, 70.0, 70.0
 [1-9], 1-HCV-1a - depth 8(1-9646), lightgreen{4-6}
 """
 
     figure = build_coverage_figure(genome_coverage_csv, use_concordance=True)
 
-    assert expected_figure == summarize_figure(figure)
+    assert expected_figure == summarize_figure(figure, is_concordance=True)
 
 
 def test_plot_genome_concordance_deletion():
@@ -1270,10 +1270,10 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance,li
 5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
-Coverage 0.0, 25.0, 50.0, 80.0, 90.0, 80.0, 70.0, 80.0, 80.0, 70.0, 70.0, 70.0
+Concordance 0.0, 25.0, 50.0, 80.0, 90.0, 80.0, 70.0, 80.0, 80.0, 70.0, 70.0, 70.0
 [1-4], [8-12], 1-HCV-1a - depth 8(1-9646)
 """
 
     figure = build_coverage_figure(genome_coverage_csv, use_concordance=True)
 
-    assert expected_figure == summarize_figure(figure)
+    assert expected_figure == summarize_figure(figure, is_concordance=True)
