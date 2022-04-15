@@ -985,15 +985,15 @@ class SequenceReport(object):
                 if action == CigarActions.DELETE:
                     for pos in range(ref_pos+1, ref_pos+length+1):
                         try:
-                            concordance = self.coord_concordance[ref_pos]
+                            concordance = self.coord_concordance[pos - 1]
                         except (IndexError, TypeError):
-                            concordance = 0.0
+                            concordance = None
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
                                    query_nuc_pos=None,
                                    refseq_nuc_pos=pos,
-                                   dels=0,
-                                   coverage=0,
+                                   dels=None,
+                                   coverage=None,
                                    concordance=concordance,
                                    link='D')
                         self.genome_coverage_writer.writerow(row)
@@ -1024,10 +1024,13 @@ class SequenceReport(object):
                     if 0 < skipped_source:
                         skipped_source -= 1
                     else:
-                        try:
-                            concordance = self.coord_concordance[ref_pos]
-                        except (IndexError, TypeError):
-                            concordance = 0.0
+                        if action != CigarActions.INSERT:
+                            try:
+                                concordance = self.coord_concordance[ref_pos - 1]
+                            except (IndexError, TypeError):
+                                concordance = None
+                        else:
+                            concordance = None
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
                                    query_nuc_pos=offset_seq_pos,

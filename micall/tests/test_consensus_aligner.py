@@ -812,7 +812,7 @@ def test_count_coord_concordance(projects):
     # changed nucs:                    ^^
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
 
-    expected_concordance_list = [0.0]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] + [0.0]*9
+    expected_concordance_list = [None]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] + [None]*9
 
     with patch('micall.core.project_config.ProjectConfig.getGenotypeReference') as mock_get_reference:
         mock_get_reference.return_value = coord_ref
@@ -829,7 +829,7 @@ def test_count_coord_concordance_short_match(projects):
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
     # as the averaging window (size 20) slides along the reference, the concordance decreases from 15/20 = 0.75
     # in 1 base intervals (1/20 = 0.05) down to 5 bases of the match left in the window (5/20 = 0.25)
-    expected_concordance_list = [0.0]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25] + [0.0]*9
+    expected_concordance_list = [None]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25] + [None]*9
 
     with patch('micall.core.project_config.ProjectConfig.getGenotypeReference') as mock_get_reference:
         mock_get_reference.return_value = coord_ref
@@ -846,7 +846,7 @@ def test_count_coord_concordance_two_matches(projects):
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[[12, CigarActions.MATCH]]),
                           AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[[15, CigarActions.MATCH]])]
 
-    expected_concordance_list = [0.0]*10 + [0.85]*11 + [0.0]*9
+    expected_concordance_list = [None]*10 + [0.85]*11 + [None]*9
 
     with patch('micall.core.project_config.ProjectConfig.getGenotypeReference') as mock_get_reference:
         mock_get_reference.return_value = coord_ref
@@ -865,7 +865,7 @@ def test_count_coord_concordance_with_insertion(projects):
                                                                                     [3, CigarActions.INSERT],
                                                                                     [18, CigarActions.MATCH]])]
 
-    expected_concordance_list = [0.0]*10 + [1.0]*8 + [0.0]*9
+    expected_concordance_list = [None]*10 + [1.0]*8 + [None]*9
 
     with patch('micall.core.project_config.ProjectConfig.getGenotypeReference') as mock_get_reference:
         mock_get_reference.return_value = coord_ref
@@ -884,7 +884,7 @@ def test_count_coord_concordance_with_deletion(projects):
                                                                                     [3, CigarActions.DELETE],
                                                                                     [15, CigarActions.MATCH]])]
 
-    expected_concordance_list = [0.0]*10 + [0.85]*8 + [0.0]*9
+    expected_concordance_list = [None]*10 + [0.85]*8 + [None]*9
 
     with patch('micall.core.project_config.ProjectConfig.getGenotypeReference') as mock_get_reference:
         mock_get_reference.return_value = coord_ref
