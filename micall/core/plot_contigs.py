@@ -25,7 +25,7 @@ class SmoothCoverage(Coverage):
         groups = []
         group_y = None
         group_size = 0
-        for y in ys + [0]:
+        for y in ys + [-1]:
             if group_size != 0 and not group_y*0.9 <= y <= group_y*1.1:
                 groups.append((group_y, group_size))
                 group_size = 0
@@ -80,17 +80,24 @@ class ConcordanceLine(SmoothCoverage):
         height = 10
         color = 'red'
         opacity = '1.0'
-        super(SmoothCoverage, self).__init__(a, b, ys, height, color, opacity)
+        super(ConcordanceLine, self).__init__(a, b, ys, height, color, opacity)
 
     def draw(self, x=0, y=0, xscale=1.0):
+        a = self.a * xscale
+        x = x * xscale
         d = draw.Group(transform="translate({} {})".format(x, y))
         p = draw.Path(stroke=self.color, stroke_width=1, fill='none')
         yscale = self.h / 100
-        for num, y in enumerate(self.ys):
-            if num == 0:
-                p.M(self.a*xscale, self.h//2-1 + y*yscale)
+        pos = 0
+        for y, count in self.coverage_groups:
+            if pos == 0:
+                p.M(a, self.h//2-1 + y*yscale)
+                pos += count
             else:
-                p.L((self.a+num)*xscale, self.h//2-1 + y*yscale)
+                # place points at the beginning and end of the group
+                p.L(a + (pos * xscale), self.h // 2 - 1 + y * yscale)
+                pos += count
+                p.L(a + (pos * xscale), self.h // 2 - 1 + y * yscale)
         d.append(p)
         r = draw.Rectangle(self.a*xscale,
                            self.h//2-1,
