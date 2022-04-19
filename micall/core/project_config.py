@@ -75,6 +75,15 @@ class ProjectConfig(object):
         reference = self.config['genotype_references'][region_name]['reference']
         return ''.join(reference)
 
+    def getNucReference(self, reference_name, region_start, region_end):
+        try:
+            reference = self.config['genotype_references'][reference_name]['reference']
+        except KeyError:
+            reference = self.config['regions'][reference_name]['reference']
+        reference_full = ''.join(reference)
+        region_sequence = reference_full[region_start-1:region_end]
+        return region_sequence
+
     def isAmino(self, region_name):
         return not self.config['regions'][region_name]['is_nucleotide']
 

@@ -1,7 +1,7 @@
 from unittest.mock import patch, call
 from unittest import TestCase
 from io import StringIO
-from micall.core.coverage_plots import coverage_plot
+from micall.core.coverage_plots import coverage_plot, concordance_plot
 from micall.core.project_config import ProjectConfig
 
 
@@ -98,3 +98,22 @@ R1-and-R2,R1,R1-seed,15,5,1,-1,1
 
         self.assertEqual(expected_calls, savefig_mock.mock_calls)
         self.assertEqual(expected_scores, scores_csv.getvalue())
+
+    @patch('matplotlib.pyplot.savefig')
+    def test_concordance_plot(self, savefig_mock):
+        concordance_detailed_csv = StringIO("""\
+reference,region,pct_concordance,pct_covered,position
+R1A-seed,R1A,0,0,10
+R1A-seed,R1B,50,100,5
+R1A-seed,R1A_second,100,100,10
+R1A-seed,R1A_second,100,100,11
+R1A-seed,R1A_second,95,95,12
+R1A-seed,R1A_second,90,90,13
+""")
+
+        expected_calls = [call('test/path/testsample.concordance.R1A-seed.R1B.png'),
+                          call('test/path/testsample.concordance.R1A-seed.R1A_second.png')]
+
+        concordance_plot(concordance_detailed_csv, plot_path="test/path", concordance_prefix='testsample')
+
+        self.assertEqual(expected_calls, savefig_mock.mock_calls)

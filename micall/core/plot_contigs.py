@@ -25,7 +25,7 @@ class SmoothCoverage(Coverage):
         groups = []
         group_y = None
         group_size = 0
-        for y in ys + [0]:
+        for y in ys + [-1]:
             if group_size != 0 and not group_y*0.9 <= y <= group_y*1.1:
                 groups.append((group_y, group_size))
                 group_size = 0
@@ -70,6 +70,44 @@ class ShadedCoverage(SmoothCoverage):
         rgba = self.cm(self.normalize(log_coverage))
 
         return colors.to_hex(rgba)
+
+
+class ConcordanceLine(SmoothCoverage):
+    def __init__(self, a, b, ys):
+        self.a = a
+        self.b = b
+        self.ys = ys
+        height = 10
+        color = 'red'
+        opacity = '1.0'
+        super(ConcordanceLine, self).__init__(a, b, ys, height, color, opacity)
+
+    def draw(self, x=0, y=0, xscale=1.0):
+        a = self.a * xscale
+        x = x * xscale
+        d = draw.Group(transform="translate({} {})".format(x, y))
+        p = draw.Path(stroke=self.color, stroke_width=1, fill='none')
+        yscale = self.h / 100
+        pos = 0
+        for y, count in self.coverage_groups:
+            if pos == 0:
+                p.M(a, self.h//2-1 + y*yscale)
+                pos += count
+            else:
+                # place points at the beginning and end of the group
+                p.L(a + (pos * xscale), self.h // 2 - 1 + y * yscale)
+                pos += count
+                p.L(a + (pos * xscale), self.h // 2 - 1 + y * yscale)
+        d.append(p)
+        r = draw.Rectangle(self.a*xscale,
+                           self.h//2-1,
+                           (self.b-self.a)*xscale,
+                           self.h,
+                           fill=self.color,
+                           fill_opacity='0.3',
+                           shape_rendering='crispEdges')
+        d.append(r)
+        return d
 
 
 class Arrow(Element):
@@ -205,19 +243,23 @@ class ContigMatcher:
 
 def plot_genome_coverage(genome_coverage_csv,
                          blast_csv,
-                         genome_coverage_svg_path):
-    f = build_coverage_figure(genome_coverage_csv, blast_csv)
+                         genome_coverage_svg_path,
+                         use_concordance=False):
+    f = build_coverage_figure(genome_coverage_csv, blast_csv, use_concordance)
     f.show(w=970).saveSvg(genome_coverage_svg_path)
 
 
-def build_coverage_figure(genome_coverage_csv, blast_csv=None):
+def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=False):
     min_position, max_position = 1, 500
     coordinate_depths = Counter()
     contig_depths = Counter()
     contig_groups = defaultdict(set)  # {coordinates_name: {contig_name}}
     reader = DictReader(genome_coverage_csv)
     for row in reader:
-        query_nuc_pos = int(row['query_nuc_pos'])
+        if row['query_nuc_pos']:
+            query_nuc_pos = int(row['query_nuc_pos'])
+        else:
+            query_nuc_pos = min_position
         if row['refseq_nuc_pos']:
             refseq_nuc_pos = int(row['refseq_nuc_pos'])
         else:
@@ -326,7 +368,8 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None):
                          contig_name,
                          max_position,
                          position_offset,
-                         blast_rows)
+                         blast_rows,
+                         use_concordance=use_concordance)
 
     if not f.elements:
         f.add(Track(1, max_position, label='No contigs found.', color='none'))
@@ -381,7 +424,8 @@ def build_contig(reader,
                  contig_name,
                  max_position,
                  position_offset,
-                 blast_rows):
+                 blast_rows,
+                 use_concordance=False):
     contig_matcher = ContigMatcher(contig_name)
     blast_ranges = []  # [[start, end, blast_num]]
     blast_starts = defaultdict(set)  # {start: {blast_num}}
@@ -411,15 +455,22 @@ def build_contig(reader,
         else:
             pos_field = 'query_nuc_pos'
         for contig_row in contig_rows:
-            for field_name in (pos_field, 'coverage', 'dels'):
+            field_names = (pos_field, 'coverage', 'dels')
+            for field_name in field_names:
                 field_text = contig_row[field_name]
                 field_value = None if field_text == '' else int(field_text)
                 contig_row[field_name] = field_value
+            if use_concordance:
+                field_text = contig_row['concordance']
+                field_value = None if field_text == '' else 100 * float(field_text)
+                contig_row['concordance'] = field_value
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
         coverage = [0] * (end - start + 1)
+        concordance = [0] * (end - start + 1)
         pos = 0
         for contig_row in contig_rows:
+            link = contig_row.get('link')
             pos = contig_row[pos_field]
             if pos is None:
                 insertion_size += 1
@@ -428,16 +479,17 @@ def build_contig(reader,
                     insertion_ranges.append((pos, pos+insertion_size-1))
                     insertion_size = 0
                 if contig_row['coverage'] is not None:
-                    coverage[pos - start] = (contig_row['coverage'] -
-                                             contig_row['dels'])
-                contig_pos = int(contig_row['query_nuc_pos'])
-                while event_positions and event_positions[-1] <= contig_pos:
-                    event_pos = event_positions.pop()
-                    for blast_num in blast_starts[event_pos]:
-                        blast_ranges[blast_num-1][0] = pos
-                    for blast_num in blast_ends[event_pos]:
-                        blast_ranges[blast_num-1][1] = pos
-            link = contig_row.get('link')
+                    coverage[pos - start] = (contig_row['coverage']) - contig_row['dels']
+                if use_concordance and contig_row['concordance'] is not None:
+                    concordance[pos - start] = contig_row['concordance']
+                if link != 'D':
+                    contig_pos = int(contig_row['query_nuc_pos'])
+                    while event_positions and event_positions[-1] <= contig_pos:
+                        event_pos = event_positions.pop()
+                        for blast_num in blast_starts[event_pos]:
+                            blast_ranges[blast_num-1][0] = pos
+                        for blast_num in blast_ends[event_pos]:
+                            blast_ranges[blast_num-1][1] = pos
             if link == 'U':
                 # Position is unmatched, add to list.
                 if not unmatched_ranges or unmatched_ranges[-1][-1] != pos-1:
@@ -486,10 +538,16 @@ def build_contig(reader,
         if max(coverage) <= 0:
             track_label = contig_name
         else:
-            f.add(ShadedCoverage(start + position_offset,
-                                 end + position_offset,
-                                 coverage),
-                  gap=-4)
+            if not use_concordance:
+                f.add(ShadedCoverage(start + position_offset,
+                                     end + position_offset,
+                                     coverage),
+                      gap=-4)
+            elif max(concordance) > 0:
+                f.add(ConcordanceLine(start + position_offset,
+                                      end + position_offset,
+                                      concordance),
+                      gap=-4)
             track_label = f"{contig_name} - depth {max(coverage)}"
         subtracks.append(Track(1,
                                max_position,
@@ -522,12 +580,16 @@ def add_partial_banner(f, position_offset, max_position):
     f.add(Multitrack(subtracks))
 
 
-def summarize_figure(figure: Figure):
+def summarize_figure(figure: Figure, is_concordance=False):
     """ Summarize the contents of a figure to text.
 
     Useful for testing.
     """
     figure.show()  # Test that all the display math works.
+    if is_concordance:
+        coverage_or_concordance = 'Concordance '
+    else:
+        coverage_or_concordance = 'Coverage '
 
     summary = StringIO()
     for padding, track in figure.elements:
@@ -541,12 +603,12 @@ def summarize_figure(figure: Figure):
                 summary.write(', ')
             ys = getattr(span, 'ys', None)
             if ys is not None:
-                summary.write('Coverage ')
+                summary.write(coverage_or_concordance)
                 summary.write(', '.join(map(str, ys)))
                 continue
             coverage_groups = getattr(span, 'coverage_groups', None)
             if coverage_groups is not None:
-                summary.write('Coverage ')
+                summary.write(coverage_or_concordance)
                 for j, (y, count) in enumerate(coverage_groups):
                     if j:
                         summary.write(', ')

@@ -1,0 +1,5640 @@
+HCV-1a:
+  HCV1A-H77-Core:
+    end: 914
+    start: 341
+  HCV1A-H77-E1:
+    end: 1490
+    start: 914
+  HCV1A-H77-E2:
+    end: 2579
+    start: 1490
+  HCV1A-H77-NS2:
+    end: 3419
+    start: 2768
+  HCV1A-H77-NS3:
+    end: 5312
+    start: 3419
+  HCV1A-H77-NS4a:
+    end: 5474
+    start: 5312
+  HCV1A-H77-NS4b:
+    end: 6257
+    start: 5474
+  HCV1A-H77-NS5a:
+    end: 7601
+    start: 6257
+  HCV1A-H77-NS5b:
+    end: 9377
+    start: 7601
+  HCV1A-H77-p7:
+    end: 2768
+    start: 2579
+HCV-1b:
+  HCV1B-Con1-Core:
+    end: 890
+    start: 317
+  HCV1B-Con1-E1:
+    end: 1466
+    start: 890
+  HCV1B-Con1-E2:
+    end: 2555
+    start: 1466
+  HCV1B-Con1-NS2:
+    end: 3395
+    start: 2744
+  HCV1B-Con1-NS3:
+    end: 5288
+    start: 3395
+  HCV1B-Con1-NS4a:
+    end: 5450
+    start: 5288
+  HCV1B-Con1-NS4b:
+    end: 6233
+    start: 5450
+  HCV1B-Con1-NS5a:
+    end: 7574
+    start: 6233
+  HCV1B-Con1-NS5b:
+    end: 9350
+    start: 7574
+  HCV1B-Con1-p7:
+    end: 2744
+    start: 2555
+HCV-1c:
+  HCV1A-H77-Core:
+    end: 914
+    start: 341
+  HCV1A-H77-E1:
+    end: 1490
+    start: 920
+  HCV1A-H77-E2:
+    end: 2579
+    start: 1490
+  HCV1A-H77-NS2:
+    end: 3419
+    start: 2768
+  HCV1A-H77-NS3:
+    end: 5312
+    start: 3419
+  HCV1A-H77-NS4a:
+    end: 5474
+    start: 5312
+  HCV1A-H77-NS4b:
+    end: 6257
+    start: 5474
+  HCV1A-H77-NS5a:
+    end: 7601
+    start: 6257
+  HCV1A-H77-NS5b:
+    end: 9377
+    start: 7601
+  HCV1A-H77-p7:
+    end: 2768
+    start: 2579
+HCV-1e:
+  HCV1A-H77-Core:
+    end: 914
+    start: 341
+  HCV1A-H77-E1:
+    end: 1490
+    start: 914
+  HCV1A-H77-E2:
+    end: 2591
+    start: 1490
+  HCV1A-H77-NS2:
+    end: 3431
+    start: 2780
+  HCV1A-H77-NS3:
+    end: 5324
+    start: 3431
+  HCV1A-H77-NS4a:
+    end: 5486
+    start: 5324
+  HCV1A-H77-NS4b:
+    end: 6269
+    start: 5486
+  HCV1A-H77-NS5a:
+    end: 7613
+    start: 6269
+  HCV1A-H77-NS5b:
+    end: 9389
+    start: 7613
+  HCV1A-H77-p7:
+    end: 2780
+    start: 2591
+HCV-1g:
+  HCV1A-H77-Core:
+    end: 886
+    start: 313
+  HCV1A-H77-E1:
+    end: 1462
+    start: 886
+  HCV1A-H77-E2:
+    end: 2563
+    start: 1462
+  HCV1A-H77-NS2:
+    end: 3403
+    start: 2752
+  HCV1A-H77-NS3:
+    end: 5296
+    start: 3403
+  HCV1A-H77-NS4a:
+    end: 5458
+    start: 5296
+  HCV1A-H77-NS4b:
+    end: 6241
+    start: 5458
+  HCV1A-H77-NS5a:
+    end: 7585
+    start: 6241
+  HCV1A-H77-NS5b:
+    end: 9361
+    start: 7585
+  HCV1A-H77-p7:
+    end: 2752
+    start: 2563
+HCV-2a:
+  HCV2-JFH-1-Core:
+    end: 913
+    start: 340
+  HCV2-JFH-1-E1:
+    end: 1492
+    start: 913
+  HCV2-JFH-1-E2:
+    end: 2593
+    start: 1495
+  HCV2-JFH-1-NS2:
+    end: 3433
+    start: 2782
+  HCV2-JFH-1-NS3:
+    end: 5326
+    start: 3433
+  HCV2-JFH-1-NS4a:
+    end: 5488
+    start: 5326
+  HCV2-JFH-1-NS4b:
+    end: 6271
+    start: 5488
+  HCV2-JFH-1-NS5a:
+    end: 7669
+    start: 6271
+  HCV2-JFH-1-NS5b:
+    end: 9445
+    start: 7669
+  HCV2-JFH-1-p7:
+    end: 2782
+    start: 2593
+HCV-2b:
+  HCV2-JFH-1-Core:
+    end: 914
+    start: 341
+  HCV2-JFH-1-E1:
+    end: 1490
+    start: 914
+  HCV2-JFH-1-E2:
+    end: 2591
+    start: 1490
+  HCV2-JFH-1-NS2:
+    end: 3431
+    start: 2780
+  HCV2-JFH-1-NS3:
+    end: 5324
+    start: 3431
+  HCV2-JFH-1-NS4a:
+    end: 5486
+    start: 5324
+  HCV2-JFH-1-NS4b:
+    end: 6269
+    start: 5486
+  HCV2-JFH-1-NS5a:
+    end: 7667
+    start: 6269
+  HCV2-JFH-1-NS5b:
+    end: 9443
+    start: 7667
+  HCV2-JFH-1-p7:
+    end: 2780
+    start: 2591
+HCV-2c:
+  HCV2-JFH-1-Core:
+    end: 913
+    start: 340
+  HCV2-JFH-1-E1:
+    end: 1489
+    start: 913
+  HCV2-JFH-1-E2:
+    end: 2590
+    start: 1489
+  HCV2-JFH-1-NS2:
+    end: 3430
+    start: 2779
+  HCV2-JFH-1-NS3:
+    end: 5323
+    start: 3430
+  HCV2-JFH-1-NS4a:
+    end: 5485
+    start: 5323
+  HCV2-JFH-1-NS4b:
+    end: 6268
+    start: 5485
+  HCV2-JFH-1-NS5a:
+    end: 7678
+    start: 6268
+  HCV2-JFH-1-NS5b:
+    end: 9454
+    start: 7678
+  HCV2-JFH-1-p7:
+    end: 2779
+    start: 2590
+HCV-2i:
+  HCV2-JFH-1-Core:
+    end: 886
+    start: 313
+  HCV2-JFH-1-E1:
+    end: 1462
+    start: 886
+  HCV2-JFH-1-E2:
+    end: 2563
+    start: 1462
+  HCV2-JFH-1-NS2:
+    end: 3403
+    start: 2752
+  HCV2-JFH-1-NS3:
+    end: 5296
+    start: 3403
+  HCV2-JFH-1-NS4a:
+    end: 5458
+    start: 5296
+  HCV2-JFH-1-NS4b:
+    end: 6241
+    start: 5458
+  HCV2-JFH-1-NS5a:
+    end: 7636
+    start: 6241
+  HCV2-JFH-1-NS5b:
+    end: 9370
+    start: 7636
+  HCV2-JFH-1-p7:
+    end: 2752
+    start: 2563
+HCV-2j:
+  HCV2-JFH-1-Core:
+    end: 833
+    start: 260
+  HCV2-JFH-1-E1:
+    end: 1409
+    start: 833
+  HCV2-JFH-1-E2:
+    end: 2510
+    start: 1409
+  HCV2-JFH-1-NS2:
+    end: 3350
+    start: 2699
+  HCV2-JFH-1-NS3:
+    end: 5243
+    start: 3350
+  HCV2-JFH-1-NS4a:
+    end: 5405
+    start: 5243
+  HCV2-JFH-1-NS4b:
+    end: 6188
+    start: 5405
+  HCV2-JFH-1-NS5a:
+    end: 7586
+    start: 6188
+  HCV2-JFH-1-NS5b:
+    end: 9362
+    start: 7586
+  HCV2-JFH-1-p7:
+    end: 2699
+    start: 2510
+HCV-2k:
+  HCV2-JFH-1-Core:
+    end: 914
+    start: 341
+  HCV2-JFH-1-E1:
+    end: 1490
+    start: 914
+  HCV2-JFH-1-E2:
+    end: 2591
+    start: 1493
+  HCV2-JFH-1-NS2:
+    end: 3431
+    start: 2780
+  HCV2-JFH-1-NS3:
+    end: 5324
+    start: 3431
+  HCV2-JFH-1-NS4a:
+    end: 5486
+    start: 5324
+  HCV2-JFH-1-NS4b:
+    end: 6269
+    start: 5486
+  HCV2-JFH-1-NS5a:
+    end: 7667
+    start: 6269
+  HCV2-JFH-1-NS5b:
+    end: 9443
+    start: 7667
+  HCV2-JFH-1-p7:
+    end: 2780
+    start: 2591
+HCV-2q:
+  HCV2-JFH-1-Core:
+    end: 886
+    start: 313
+  HCV2-JFH-1-E1:
+    end: 1462
+    start: 886
+  HCV2-JFH-1-E2:
+    end: 2563
+    start: 1462
+  HCV2-JFH-1-NS2:
+    end: 3403
+    start: 2752
+  HCV2-JFH-1-NS3:
+    end: 5296
+    start: 3403
+  HCV2-JFH-1-NS4a:
+    end: 5458
+    start: 5296
+  HCV2-JFH-1-NS4b:
+    end: 6241
+    start: 5458
+  HCV2-JFH-1-NS5a:
+    end: 7639
+    start: 6241
+  HCV2-JFH-1-NS5b:
+    end: 9397
+    start: 7639
+  HCV2-JFH-1-p7:
+    end: 2752
+    start: 2563
+HCV-3a:
+  HCV3-S52-Core:
+    end: 871
+    start: 298
+  HCV3-S52-E1:
+    end: 1447
+    start: 871
+  HCV3-S52-E2:
+    end: 2554
+    start: 1447
+  HCV3-S52-NS2:
+    end: 3394
+    start: 2743
+  HCV3-S52-NS3:
+    end: 5287
+    start: 3394
+  HCV3-S52-NS4a:
+    end: 5449
+    start: 5287
+  HCV3-S52-NS4b:
+    end: 6232
+    start: 5449
+  HCV3-S52-NS5a:
+    end: 7588
+    start: 6232
+  HCV3-S52-NS5b:
+    end: 9364
+    start: 7588
+  HCV3-S52-p7:
+    end: 2743
+    start: 2554
+HCV-3b:
+  HCV3-S52-Core:
+    end: 912
+    start: 339
+  HCV3-S52-E1:
+    end: 1491
+    start: 912
+  HCV3-S52-E2:
+    end: 2601
+    start: 1491
+  HCV3-S52-NS2:
+    end: 3441
+    start: 2790
+  HCV3-S52-NS3:
+    end: 5334
+    start: 3441
+  HCV3-S52-NS4a:
+    end: 5496
+    start: 5334
+  HCV3-S52-NS4b:
+    end: 6279
+    start: 5496
+  HCV3-S52-NS5a:
+    end: 7635
+    start: 6279
+  HCV3-S52-NS5b:
+    end: 9411
+    start: 7635
+  HCV3-S52-p7:
+    end: 2790
+    start: 2601
+HCV-3i:
+  HCV3-S52-Core:
+    end: 913
+    start: 340
+  HCV3-S52-E1:
+    end: 1489
+    start: 913
+  HCV3-S52-E2:
+    end: 2596
+    start: 1489
+  HCV3-S52-NS2:
+    end: 3436
+    start: 2785
+  HCV3-S52-NS3:
+    end: 5329
+    start: 3436
+  HCV3-S52-NS4a:
+    end: 5491
+    start: 5329
+  HCV3-S52-NS4b:
+    end: 6274
+    start: 5491
+  HCV3-S52-NS5a:
+    end: 7630
+    start: 6274
+  HCV3-S52-NS5b:
+    end: 9406
+    start: 7630
+  HCV3-S52-p7:
+    end: 2785
+    start: 2596
+HCV-3k:
+  HCV3-S52-Core:
+    end: 912
+    start: 339
+  HCV3-S52-E1:
+    end: 1488
+    start: 912
+  HCV3-S52-E2:
+    end: 2592
+    start: 1491
+  HCV3-S52-NS2:
+    end: 3432
+    start: 2781
+  HCV3-S52-NS3:
+    end: 5325
+    start: 3432
+  HCV3-S52-NS4a:
+    end: 5487
+    start: 5325
+  HCV3-S52-NS4b:
+    end: 6270
+    start: 5487
+  HCV3-S52-NS5a:
+    end: 7623
+    start: 6270
+  HCV3-S52-NS5b:
+    end: 9399
+    start: 7623
+  HCV3-S52-p7:
+    end: 2781
+    start: 2592
+HCV-4a:
+  HCV4-ED43-Core:
+    end: 852
+    start: 279
+  HCV4-ED43-E1:
+    end: 1428
+    start: 852
+  HCV4-ED43-E2:
+    end: 2517
+    start: 1428
+  HCV4-ED43-NS2:
+    end: 3357
+    start: 2706
+  HCV4-ED43-NS3:
+    end: 5250
+    start: 3357
+  HCV4-ED43-NS4a:
+    end: 5412
+    start: 5250
+  HCV4-ED43-NS4b:
+    end: 6195
+    start: 5412
+  HCV4-ED43-NS5a:
+    end: 7530
+    start: 6195
+  HCV4-ED43-NS5b:
+    end: 9306
+    start: 7530
+  HCV4-ED43-p7:
+    end: 2706
+    start: 2517
+HCV-4b:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2578
+    start: 1492
+  HCV4-ED43-NS2:
+    end: 3418
+    start: 2767
+  HCV4-ED43-NS3:
+    end: 5311
+    start: 3418
+  HCV4-ED43-NS4a:
+    end: 5473
+    start: 5311
+  HCV4-ED43-NS4b:
+    end: 6256
+    start: 5473
+  HCV4-ED43-NS5a:
+    end: 7600
+    start: 6256
+  HCV4-ED43-NS5b:
+    end: 9376
+    start: 7600
+  HCV4-ED43-p7:
+    end: 2767
+    start: 2578
+HCV-4c:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2578
+    start: 1489
+  HCV4-ED43-NS2:
+    end: 3418
+    start: 2767
+  HCV4-ED43-NS3:
+    end: 5311
+    start: 3418
+  HCV4-ED43-NS4a:
+    end: 5473
+    start: 5311
+  HCV4-ED43-NS4b:
+    end: 6256
+    start: 5473
+  HCV4-ED43-NS5a:
+    end: 7585
+    start: 6256
+  HCV4-ED43-NS5b:
+    end: 9409
+    start: 7633
+  HCV4-ED43-p7:
+    end: 2767
+    start: 2578
+HCV-4d:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 916
+  HCV4-ED43-E2:
+    end: 2575
+    start: 1489
+  HCV4-ED43-NS2:
+    end: 3415
+    start: 2764
+  HCV4-ED43-NS3:
+    end: 5308
+    start: 3415
+  HCV4-ED43-NS4a:
+    end: 5470
+    start: 5308
+  HCV4-ED43-NS4b:
+    end: 6253
+    start: 5470
+  HCV4-ED43-NS5a:
+    end: 7585
+    start: 6253
+  HCV4-ED43-NS5b:
+    end: 9361
+    start: 7585
+  HCV4-ED43-p7:
+    end: 2764
+    start: 2575
+HCV-4f:
+  HCV4-ED43-Core:
+    end: 848
+    start: 275
+  HCV4-ED43-E1:
+    end: 1424
+    start: 848
+  HCV4-ED43-E2:
+    end: 2519
+    start: 1424
+  HCV4-ED43-NS2:
+    end: 3359
+    start: 2708
+  HCV4-ED43-NS3:
+    end: 5252
+    start: 3359
+  HCV4-ED43-NS4a:
+    end: 5414
+    start: 5252
+  HCV4-ED43-NS4b:
+    end: 6197
+    start: 5414
+  HCV4-ED43-NS5a:
+    end: 7529
+    start: 6197
+  HCV4-ED43-NS5b:
+    end: 9179
+    start: 7529
+  HCV4-ED43-p7:
+    end: 2708
+    start: 2519
+HCV-4g:
+  HCV4-ED43-Core:
+    end: 914
+    start: 341
+  HCV4-ED43-E1:
+    end: 1490
+    start: 917
+  HCV4-ED43-E2:
+    end: 2570
+    start: 1493
+  HCV4-ED43-NS2:
+    end: 3410
+    start: 2759
+  HCV4-ED43-NS3:
+    end: 5303
+    start: 3410
+  HCV4-ED43-NS4a:
+    end: 5465
+    start: 5303
+  HCV4-ED43-NS4b:
+    end: 6248
+    start: 5465
+  HCV4-ED43-NS5a:
+    end: 7592
+    start: 6248
+  HCV4-ED43-NS5b:
+    end: 9368
+    start: 7592
+  HCV4-ED43-p7:
+    end: 2759
+    start: 2570
+HCV-4k:
+  HCV4-ED43-Core:
+    end: 914
+    start: 341
+  HCV4-ED43-E1:
+    end: 1490
+    start: 917
+  HCV4-ED43-E2:
+    end: 2579
+    start: 1490
+  HCV4-ED43-NS2:
+    end: 3419
+    start: 2768
+  HCV4-ED43-NS3:
+    end: 5312
+    start: 3419
+  HCV4-ED43-NS4a:
+    end: 5474
+    start: 5312
+  HCV4-ED43-NS4b:
+    end: 6257
+    start: 5474
+  HCV4-ED43-NS5a:
+    end: 7601
+    start: 6257
+  HCV4-ED43-NS5b:
+    end: 9377
+    start: 7601
+  HCV4-ED43-p7:
+    end: 2768
+    start: 2579
+HCV-4l:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2575
+    start: 1489
+  HCV4-ED43-NS2:
+    end: 3415
+    start: 2767
+  HCV4-ED43-NS3:
+    end: 5308
+    start: 3415
+  HCV4-ED43-NS4a:
+    end: 5470
+    start: 5308
+  HCV4-ED43-NS4b:
+    end: 6253
+    start: 5470
+  HCV4-ED43-NS5a:
+    end: 7585
+    start: 6253
+  HCV4-ED43-NS5b:
+    end: 9361
+    start: 7585
+  HCV4-ED43-p7:
+    end: 2764
+    start: 2575
+HCV-4m:
+  HCV4-ED43-Core:
+    end: 914
+    start: 341
+  HCV4-ED43-E1:
+    end: 1490
+    start: 914
+  HCV4-ED43-E2:
+    end: 2576
+    start: 1490
+  HCV4-ED43-NS2:
+    end: 3416
+    start: 2765
+  HCV4-ED43-NS3:
+    end: 5309
+    start: 3416
+  HCV4-ED43-NS4a:
+    end: 5471
+    start: 5309
+  HCV4-ED43-NS4b:
+    end: 6254
+    start: 5471
+  HCV4-ED43-NS5a:
+    end: 7586
+    start: 6254
+  HCV4-ED43-NS5b:
+    end: 9362
+    start: 7586
+  HCV4-ED43-p7:
+    end: 2765
+    start: 2576
+HCV-4n:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2581
+    start: 1492
+  HCV4-ED43-NS2:
+    end: 3421
+    start: 2770
+  HCV4-ED43-NS3:
+    end: 5314
+    start: 3421
+  HCV4-ED43-NS4a:
+    end: 5476
+    start: 5314
+  HCV4-ED43-NS4b:
+    end: 6259
+    start: 5476
+  HCV4-ED43-NS5a:
+    end: 7591
+    start: 6259
+  HCV4-ED43-NS5b:
+    end: 9367
+    start: 7591
+  HCV4-ED43-p7:
+    end: 2770
+    start: 2581
+HCV-4o:
+  HCV4-ED43-Core:
+    end: 914
+    start: 341
+  HCV4-ED43-E1:
+    end: 1490
+    start: 914
+  HCV4-ED43-E2:
+    end: 2579
+    start: 1490
+  HCV4-ED43-NS2:
+    end: 3419
+    start: 2768
+  HCV4-ED43-NS3:
+    end: 5312
+    start: 3419
+  HCV4-ED43-NS4a:
+    end: 5474
+    start: 5312
+  HCV4-ED43-NS4b:
+    end: 6257
+    start: 5474
+  HCV4-ED43-NS5a:
+    end: 7583
+    start: 6257
+  HCV4-ED43-NS5b:
+    end: 9359
+    start: 7583
+  HCV4-ED43-p7:
+    end: 2768
+    start: 2579
+HCV-4p:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2578
+    start: 1489
+  HCV4-ED43-NS2:
+    end: 3418
+    start: 2767
+  HCV4-ED43-NS3:
+    end: 5311
+    start: 3418
+  HCV4-ED43-NS4a:
+    end: 5473
+    start: 5311
+  HCV4-ED43-NS4b:
+    end: 6256
+    start: 5473
+  HCV4-ED43-NS5a:
+    end: 7588
+    start: 6256
+  HCV4-ED43-NS5b:
+    end: 9364
+    start: 7588
+  HCV4-ED43-p7:
+    end: 2767
+    start: 2578
+HCV-4q:
+  HCV4-ED43-Core:
+    end: 914
+    start: 341
+  HCV4-ED43-E1:
+    end: 1490
+    start: 914
+  HCV4-ED43-E2:
+    end: 2576
+    start: 1490
+  HCV4-ED43-NS2:
+    end: 3416
+    start: 2765
+  HCV4-ED43-NS3:
+    end: 5309
+    start: 3416
+  HCV4-ED43-NS4a:
+    end: 5471
+    start: 5309
+  HCV4-ED43-NS4b:
+    end: 6254
+    start: 5471
+  HCV4-ED43-NS5a:
+    end: 7598
+    start: 6257
+  HCV4-ED43-NS5b:
+    end: 9374
+    start: 7598
+  HCV4-ED43-p7:
+    end: 2765
+    start: 2576
+HCV-4r:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2578
+    start: 1489
+  HCV4-ED43-NS2:
+    end: 3418
+    start: 2767
+  HCV4-ED43-NS3:
+    end: 5311
+    start: 3418
+  HCV4-ED43-NS4a:
+    end: 5473
+    start: 5311
+  HCV4-ED43-NS4b:
+    end: 6256
+    start: 5473
+  HCV4-ED43-NS5a:
+    end: 7600
+    start: 6256
+  HCV4-ED43-NS5b:
+    end: 9376
+    start: 7600
+  HCV4-ED43-p7:
+    end: 2767
+    start: 2578
+HCV-4t:
+  HCV4-ED43-Core:
+    end: 913
+    start: 340
+  HCV4-ED43-E1:
+    end: 1489
+    start: 913
+  HCV4-ED43-E2:
+    end: 2578
+    start: 1492
+  HCV4-ED43-NS2:
+    end: 3418
+    start: 2767
+  HCV4-ED43-NS3:
+    end: 5311
+    start: 3418
+  HCV4-ED43-NS4a:
+    end: 5473
+    start: 5311
+  HCV4-ED43-NS4b:
+    end: 6256
+    start: 5473
+  HCV4-ED43-NS5a:
+    end: 7588
+    start: 6256
+  HCV4-ED43-NS5b:
+    end: 9364
+    start: 7588
+  HCV4-ED43-p7:
+    end: 2767
+    start: 2578
+HCV-4v:
+  HCV4-ED43-Core:
+    end: 829
+    start: 256
+  HCV4-ED43-E1:
+    end: 1405
+    start: 829
+  HCV4-ED43-E2:
+    end: 2491
+    start: 1405
+  HCV4-ED43-NS2:
+    end: 3331
+    start: 2680
+  HCV4-ED43-NS3:
+    end: 5224
+    start: 3331
+  HCV4-ED43-NS4a:
+    end: 5386
+    start: 5224
+  HCV4-ED43-NS4b:
+    end: 6169
+    start: 5386
+  HCV4-ED43-NS5a:
+    end: 7504
+    start: 6169
+  HCV4-ED43-NS5b:
+    end: 9172
+    start: 7504
+  HCV4-ED43-p7:
+    end: 2680
+    start: 2491
+HCV-5a:
+  HCV5-SA13-Core:
+    end: 852
+    start: 279
+  HCV5-SA13-E1:
+    end: 1428
+    start: 852
+  HCV5-SA13-E2:
+    end: 2520
+    start: 1428
+  HCV5-SA13-NS2:
+    end: 3360
+    start: 2709
+  HCV5-SA13-NS3:
+    end: 5253
+    start: 3360
+  HCV5-SA13-NS4a:
+    end: 5415
+    start: 5253
+  HCV5-SA13-NS4b:
+    end: 6198
+    start: 5415
+  HCV5-SA13-NS5a:
+    end: 7548
+    start: 6198
+  HCV5-SA13-NS5b:
+    end: 9324
+    start: 7548
+  HCV5-SA13-p7:
+    end: 2709
+    start: 2520
+HCV-6a:
+  HCV6-EUHK2-Core:
+    end: 868
+    start: 295
+  HCV6-EUHK2-E1:
+    end: 1444
+    start: 868
+  HCV6-EUHK2-E2:
+    end: 2548
+    start: 1444
+  HCV6-EUHK2-NS2:
+    end: 3388
+    start: 2737
+  HCV6-EUHK2-NS3:
+    end: 5281
+    start: 3388
+  HCV6-EUHK2-NS4a:
+    end: 5443
+    start: 5281
+  HCV6-EUHK2-NS4b:
+    end: 6226
+    start: 5443
+  HCV6-EUHK2-NS5a:
+    end: 7579
+    start: 6226
+  HCV6-EUHK2-NS5b:
+    end: 9355
+    start: 7579
+  HCV6-EUHK2-p7:
+    end: 2737
+    start: 2548
+HCV-6b:
+  HCV6-EUHK2-Core:
+    end: 915
+    start: 342
+  HCV6-EUHK2-E1:
+    end: 1491
+    start: 915
+  HCV6-EUHK2-E2:
+    end: 2595
+    start: 1491
+  HCV6-EUHK2-NS2:
+    end: 3435
+    start: 2787
+  HCV6-EUHK2-NS3:
+    end: 5328
+    start: 3435
+  HCV6-EUHK2-NS4a:
+    end: 5490
+    start: 5328
+  HCV6-EUHK2-NS4b:
+    end: 6273
+    start: 5490
+  HCV6-EUHK2-NS5a:
+    end: 7626
+    start: 6273
+  HCV6-EUHK2-NS5b:
+    end: 9402
+    start: 7626
+  HCV6-EUHK2-p7:
+    end: 2784
+    start: 2595
+HCV-6c:
+  HCV6-EUHK2-Core:
+    end: 912
+    start: 339
+  HCV6-EUHK2-E1:
+    end: 1488
+    start: 912
+  HCV6-EUHK2-E2:
+    end: 2577
+    start: 1491
+  HCV6-EUHK2-NS2:
+    end: 3417
+    start: 2769
+  HCV6-EUHK2-NS3:
+    end: 5310
+    start: 3417
+  HCV6-EUHK2-NS4a:
+    end: 5472
+    start: 5310
+  HCV6-EUHK2-NS4b:
+    end: 6255
+    start: 5472
+  HCV6-EUHK2-NS5a:
+    end: 7608
+    start: 6255
+  HCV6-EUHK2-NS5b:
+    end: 9387
+    start: 7611
+  HCV6-EUHK2-p7:
+    end: 2766
+    start: 2577
+HCV-6d:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2570
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3410
+    start: 2759
+  HCV6-EUHK2-NS3:
+    end: 5303
+    start: 3410
+  HCV6-EUHK2-NS4a:
+    end: 5465
+    start: 5303
+  HCV6-EUHK2-NS4b:
+    end: 6248
+    start: 5465
+  HCV6-EUHK2-NS5a:
+    end: 7601
+    start: 6248
+  HCV6-EUHK2-NS5b:
+    end: 9380
+    start: 7604
+  HCV6-EUHK2-p7:
+    end: 2759
+    start: 2570
+HCV-6e:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2588
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3428
+    start: 2780
+  HCV6-EUHK2-NS3:
+    end: 5321
+    start: 3428
+  HCV6-EUHK2-NS4a:
+    end: 5483
+    start: 5321
+  HCV6-EUHK2-NS4b:
+    end: 6266
+    start: 5483
+  HCV6-EUHK2-NS5a:
+    end: 7616
+    start: 6266
+  HCV6-EUHK2-NS5b:
+    end: 9407
+    start: 7631
+  HCV6-EUHK2-p7:
+    end: 2777
+    start: 2588
+HCV-6f:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2576
+    start: 1487
+  HCV6-EUHK2-NS2:
+    end: 3416
+    start: 2768
+  HCV6-EUHK2-NS3:
+    end: 5309
+    start: 3416
+  HCV6-EUHK2-NS4a:
+    end: 5471
+    start: 5309
+  HCV6-EUHK2-NS4b:
+    end: 6254
+    start: 5471
+  HCV6-EUHK2-NS5a:
+    end: 7607
+    start: 6254
+  HCV6-EUHK2-NS5b:
+    end: 9395
+    start: 7619
+  HCV6-EUHK2-p7:
+    end: 2765
+    start: 2576
+HCV-6g:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2588
+    start: 1487
+  HCV6-EUHK2-NS2:
+    end: 3428
+    start: 2780
+  HCV6-EUHK2-NS3:
+    end: 5321
+    start: 3428
+  HCV6-EUHK2-NS4a:
+    end: 5483
+    start: 5321
+  HCV6-EUHK2-NS4b:
+    end: 6266
+    start: 5483
+  HCV6-EUHK2-NS5a:
+    end: 7628
+    start: 6266
+  HCV6-EUHK2-NS5b:
+    end: 9407
+    start: 7631
+  HCV6-EUHK2-p7:
+    end: 2777
+    start: 2588
+HCV-6h:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2579
+    start: 1487
+  HCV6-EUHK2-NS2:
+    end: 3419
+    start: 2768
+  HCV6-EUHK2-NS3:
+    end: 5312
+    start: 3419
+  HCV6-EUHK2-NS4a:
+    end: 5474
+    start: 5312
+  HCV6-EUHK2-NS4b:
+    end: 6257
+    start: 5474
+  HCV6-EUHK2-NS5a:
+    end: 7607
+    start: 6257
+  HCV6-EUHK2-NS5b:
+    end: 9386
+    start: 7610
+  HCV6-EUHK2-p7:
+    end: 2768
+    start: 2579
+HCV-6i:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2582
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3422
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5315
+    start: 3422
+  HCV6-EUHK2-NS4a:
+    end: 5477
+    start: 5315
+  HCV6-EUHK2-NS4b:
+    end: 6260
+    start: 5477
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6260
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2771
+    start: 2582
+HCV-6j:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2582
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3422
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5315
+    start: 3422
+  HCV6-EUHK2-NS4a:
+    end: 5477
+    start: 5315
+  HCV6-EUHK2-NS4b:
+    end: 6260
+    start: 5477
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6260
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2771
+    start: 2582
+HCV-6k:
+  HCV6-EUHK2-Core:
+    end: 914
+    start: 341
+  HCV6-EUHK2-E1:
+    end: 1490
+    start: 914
+  HCV6-EUHK2-E2:
+    end: 2582
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3422
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5315
+    start: 3422
+  HCV6-EUHK2-NS4a:
+    end: 5477
+    start: 5315
+  HCV6-EUHK2-NS4b:
+    end: 6260
+    start: 5477
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6260
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2771
+    start: 2582
+HCV-6l:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2582
+    start: 1487
+  HCV6-EUHK2-NS2:
+    end: 3422
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5315
+    start: 3422
+  HCV6-EUHK2-NS4a:
+    end: 5477
+    start: 5315
+  HCV6-EUHK2-NS4b:
+    end: 6260
+    start: 5477
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6260
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2771
+    start: 2582
+HCV-6m:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2582
+    start: 1487
+  HCV6-EUHK2-NS2:
+    end: 3422
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5315
+    start: 3422
+  HCV6-EUHK2-NS4a:
+    end: 5477
+    start: 5315
+  HCV6-EUHK2-NS4b:
+    end: 6260
+    start: 5477
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6260
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2771
+    start: 2582
+HCV-6n:
+  HCV6-EUHK2-Core:
+    end: 915
+    start: 342
+  HCV6-EUHK2-E1:
+    end: 1491
+    start: 915
+  HCV6-EUHK2-E2:
+    end: 2583
+    start: 1494
+  HCV6-EUHK2-NS2:
+    end: 3423
+    start: 2775
+  HCV6-EUHK2-NS3:
+    end: 5316
+    start: 3423
+  HCV6-EUHK2-NS4a:
+    end: 5478
+    start: 5316
+  HCV6-EUHK2-NS4b:
+    end: 6261
+    start: 5478
+  HCV6-EUHK2-NS5a:
+    end: 7611
+    start: 6261
+  HCV6-EUHK2-NS5b:
+    end: 9390
+    start: 7614
+  HCV6-EUHK2-p7:
+    end: 2772
+    start: 2583
+HCV-6o:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2579
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3419
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5312
+    start: 3419
+  HCV6-EUHK2-NS4a:
+    end: 5474
+    start: 5312
+  HCV6-EUHK2-NS4b:
+    end: 6257
+    start: 5474
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6257
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2768
+    start: 2579
+HCV-6p:
+  HCV6-EUHK2-Core:
+    end: 912
+    start: 339
+  HCV6-EUHK2-E1:
+    end: 1488
+    start: 912
+  HCV6-EUHK2-E2:
+    end: 2580
+    start: 1491
+  HCV6-EUHK2-NS2:
+    end: 3420
+    start: 2772
+  HCV6-EUHK2-NS3:
+    end: 5313
+    start: 3420
+  HCV6-EUHK2-NS4a:
+    end: 5475
+    start: 5313
+  HCV6-EUHK2-NS4b:
+    end: 6258
+    start: 5475
+  HCV6-EUHK2-NS5a:
+    end: 7611
+    start: 6258
+  HCV6-EUHK2-NS5b:
+    end: 9390
+    start: 7614
+  HCV6-EUHK2-p7:
+    end: 2769
+    start: 2580
+HCV-6q:
+  HCV6-EUHK2-Core:
+    end: 912
+    start: 339
+  HCV6-EUHK2-E1:
+    end: 1488
+    start: 912
+  HCV6-EUHK2-E2:
+    end: 2580
+    start: 1491
+  HCV6-EUHK2-NS2:
+    end: 3420
+    start: 2769
+  HCV6-EUHK2-NS3:
+    end: 5313
+    start: 3420
+  HCV6-EUHK2-NS4a:
+    end: 5475
+    start: 5313
+  HCV6-EUHK2-NS4b:
+    end: 6258
+    start: 5475
+  HCV6-EUHK2-NS5a:
+    end: 7611
+    start: 6258
+  HCV6-EUHK2-NS5b:
+    end: 9387
+    start: 7611
+  HCV6-EUHK2-p7:
+    end: 2769
+    start: 2580
+HCV-6r:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2579
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3419
+    start: 2771
+  HCV6-EUHK2-NS3:
+    end: 5312
+    start: 3419
+  HCV6-EUHK2-NS4a:
+    end: 5474
+    start: 5312
+  HCV6-EUHK2-NS4b:
+    end: 6257
+    start: 5474
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6257
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2768
+    start: 2579
+HCV-6s:
+  HCV6-EUHK2-Core:
+    end: 911
+    start: 338
+  HCV6-EUHK2-E1:
+    end: 1487
+    start: 911
+  HCV6-EUHK2-E2:
+    end: 2582
+    start: 1490
+  HCV6-EUHK2-NS2:
+    end: 3422
+    start: 2774
+  HCV6-EUHK2-NS3:
+    end: 5315
+    start: 3422
+  HCV6-EUHK2-NS4a:
+    end: 5477
+    start: 5315
+  HCV6-EUHK2-NS4b:
+    end: 6260
+    start: 5477
+  HCV6-EUHK2-NS5a:
+    end: 7610
+    start: 6260
+  HCV6-EUHK2-NS5b:
+    end: 9389
+    start: 7613
+  HCV6-EUHK2-p7:
+    end: 2771
+    start: 2582
+HCV-6t:
+  HCV6-EUHK2-Core:
+    end: 886
+    start: 313
+  HCV6-EUHK2-E1:
+    end: 1462
+    start: 886
+  HCV6-EUHK2-E2:
+    end: 2554
+    start: 1465
+  HCV6-EUHK2-NS2:
+    end: 3394
+    start: 2743
+  HCV6-EUHK2-NS3:
+    end: 5287
+    start: 3394
+  HCV6-EUHK2-NS4a:
+    end: 5449
+    start: 5287
+  HCV6-EUHK2-NS4b:
+    end: 6232
+    start: 5449
+  HCV6-EUHK2-NS5a:
+    end: 7585
+    start: 6232
+  HCV6-EUHK2-NS5b:
+    end: 9364
+    start: 7588
+  HCV6-EUHK2-p7:
+    end: 2743
+    start: 2554
+HCV-6u:
+  HCV6-EUHK2-Core:
+    end: 880
+    start: 307
+  HCV6-EUHK2-E1:
+    end: 1456
+    start: 880
+  HCV6-EUHK2-E2:
+    end: 2566
+    start: 1459
+  HCV6-EUHK2-NS2:
+    end: 3406
+    start: 2755
+  HCV6-EUHK2-NS3:
+    end: 5299
+    start: 3406
+  HCV6-EUHK2-NS4a:
+    end: 5461
+    start: 5299
+  HCV6-EUHK2-NS4b:
+    end: 6244
+    start: 5461
+  HCV6-EUHK2-NS5a:
+    end: 7597
+    start: 6244
+  HCV6-EUHK2-NS5b:
+    end: 9376
+    start: 7600
+  HCV6-EUHK2-p7:
+    end: 2755
+    start: 2566
+HCV-6v:
+  HCV6-EUHK2-Core:
+    end: 880
+    start: 307
+  HCV6-EUHK2-E1:
+    end: 1456
+    start: 880
+  HCV6-EUHK2-E2:
+    end: 2551
+    start: 1459
+  HCV6-EUHK2-NS2:
+    end: 3391
+    start: 2740
+  HCV6-EUHK2-NS3:
+    end: 5284
+    start: 3391
+  HCV6-EUHK2-NS4a:
+    end: 5446
+    start: 5284
+  HCV6-EUHK2-NS4b:
+    end: 6229
+    start: 5446
+  HCV6-EUHK2-NS5a:
+    end: 7582
+    start: 6229
+  HCV6-EUHK2-NS5b:
+    end: 9358
+    start: 7582
+  HCV6-EUHK2-p7:
+    end: 2740
+    start: 2551
+HCV-6w:
+  HCV6-EUHK2-Core:
+    end: 638
+    start: 65
+  HCV6-EUHK2-E1:
+    end: 1214
+    start: 638
+  HCV6-EUHK2-E2:
+    end: 2318
+    start: 1217
+  HCV6-EUHK2-NS2:
+    end: 3158
+    start: 2510
+  HCV6-EUHK2-NS3:
+    end: 5051
+    start: 3158
+  HCV6-EUHK2-NS4a:
+    end: 5213
+    start: 5051
+  HCV6-EUHK2-NS4b:
+    end: 5996
+    start: 5213
+  HCV6-EUHK2-NS5a:
+    end: 7346
+    start: 5996
+  HCV6-EUHK2-NS5b:
+    end: 9125
+    start: 7349
+  HCV6-EUHK2-p7:
+    end: 2507
+    start: 2318
+HCV-7a:
+  HCV7-QC69-Core:
+    end: 881
+    start: 308
+  HCV7-QC69-E1:
+    end: 1457
+    start: 881
+  HCV7-QC69-E2:
+    end: 2558
+    start: 1457
+  HCV7-QC69-NS2:
+    end: 3398
+    start: 2747
+  HCV7-QC69-NS3:
+    end: 5291
+    start: 3398
+  HCV7-QC69-NS4a:
+    end: 5453
+    start: 5291
+  HCV7-QC69-NS4b:
+    end: 6236
+    start: 5453
+  HCV7-QC69-NS5a:
+    end: 7574
+    start: 6236
+  HCV7-QC69-NS5b:
+    end: 9350
+    start: 7574
+  HCV7-QC69-p7:
+    end: 2747
+    start: 2558
+HIV1-A1-CD-AM000053-seed:
+  GP120:
+    end: 7753
+    start: 6235
+  GP41:
+    end: 8815
+    start: 7756
+  HIV1B-gag:
+    end: 2288
+    start: 791
+  HIV1B-nef:
+    end: 9437
+    start: 8816
+  HIV1B-tat:
+    end: 6044
+    start: 5825
+  HIV1B-vif:
+    end: 5615
+    start: 5036
+  HIV1B-vpr:
+    end: 5845
+    start: 5554
+  HIV1B-vpu:
+    end: 6309
+    start: 6063
+  INT:
+    end: 5092
+    start: 4225
+  PR:
+    end: 2545
+    start: 2248
+  RT:
+    end: 4225
+    start: 2545
+HIV1-A1-CM-KP718928-seed:
+  GP120:
+    end: 7198
+    start: 5704
+  GP41:
+    end: 8257
+    start: 7198
+  HIV1B-gag:
+    end: 1754
+    start: 257
+  HIV1B-nef:
+    end: 8873
+    start: 8258
+  HIV1B-tat:
+    end: 5510
+    start: 5291
+  HIV1B-vif:
+    end: 5081
+    start: 4502
+  HIV1B-vpr:
+    end: 5311
+    start: 5020
+  HIV1B-vpu:
+    end: 5787
+    start: 5547
+  INT:
+    end: 4558
+    start: 3691
+  PR:
+    end: 2011
+    start: 1714
+  RT:
+    end: 3691
+    start: 2011
+HIV1-A1-CY-JF683783-seed:
+  GP120:
+    end: 6974
+    start: 5444
+  GP41:
+    end: 8033
+    start: 6974
+  HIV1B-gag:
+    end: 1503
+    start: 0
+  HIV1B-nef:
+    end: 8166
+    start: 8034
+  HIV1B-tat:
+    end: 5259
+    start: 5040
+  HIV1B-vif:
+    end: 4830
+    start: 4251
+  HIV1B-vpr:
+    end: 5060
+    start: 4769
+  HIV1B-vpu:
+    end: 5527
+    start: 5281
+  INT:
+    end: 4307
+    start: 3440
+  PR:
+    end: 1760
+    start: 1463
+  RT:
+    end: 3440
+    start: 1760
+HIV1-A1-IN-KT152839-seed:
+  GP120:
+    end: 7668
+    start: 6099
+  GP41:
+    end: 8727
+    start: 7668
+  HIV1B-gag:
+    end: 2155
+    start: 667
+  HIV1B-nef:
+    end: 9343
+    start: 8728
+  HIV1B-tat:
+    end: 5911
+    start: 5692
+  HIV1B-vif:
+    end: 5482
+    start: 4903
+  HIV1B-vpr:
+    end: 5712
+    start: 5421
+  HIV1B-vpu:
+    end: 6182
+    start: 5936
+  INT:
+    end: 4959
+    start: 4092
+  PR:
+    end: 2412
+    start: 2115
+  RT:
+    end: 4092
+    start: 2412
+HIV1-A1-KE-KF716474-seed:
+  GP120:
+    end: 7134
+    start: 5610
+  GP41:
+    end: 8193
+    start: 7134
+  HIV1B-gag:
+    end: 1660
+    start: 166
+  HIV1B-nef:
+    end: 8809
+    start: 8194
+  HIV1B-tat:
+    end: 5416
+    start: 5197
+  HIV1B-vif:
+    end: 4987
+    start: 4408
+  HIV1B-vpr:
+    end: 5217
+    start: 4926
+  HIV1B-vpu:
+    end: 5684
+    start: 5438
+  INT:
+    end: 4464
+    start: 3597
+  PR:
+    end: 1917
+    start: 1620
+  RT:
+    end: 3597
+    start: 1917
+HIV1-A1-RU-JX500694-seed:
+  GP120:
+    end: 7284
+    start: 5760
+  GP41:
+    end: 8343
+    start: 7284
+  HIV1B-gag:
+    end: 1816
+    start: 331
+  HIV1B-nef:
+    end: 8974
+    start: 8344
+  HIV1B-tat:
+    end: 5572
+    start: 5353
+  HIV1B-vif:
+    end: 5143
+    start: 4564
+  HIV1B-vpr:
+    end: 5373
+    start: 5082
+  HIV1B-vpu:
+    end: 5834
+    start: 5588
+  INT:
+    end: 4620
+    start: 3753
+  PR:
+    end: 2073
+    start: 1776
+  RT:
+    end: 3753
+    start: 2073
+HIV1-A1-RW-KF716472-seed:
+  GP120:
+    end: 7141
+    start: 5593
+  GP41:
+    end: 8200
+    start: 7141
+  HIV1B-gag:
+    end: 1643
+    start: 143
+  HIV1B-nef:
+    end: 8831
+    start: 8201
+  HIV1B-tat:
+    end: 5399
+    start: 5180
+  HIV1B-vif:
+    end: 4970
+    start: 4391
+  HIV1B-vpr:
+    end: 5200
+    start: 4909
+  HIV1B-vpu:
+    end: 5667
+    start: 5421
+  INT:
+    end: 4447
+    start: 3580
+  PR:
+    end: 1900
+    start: 1603
+  RT:
+    end: 3580
+    start: 1900
+HIV1-A1-SN-AY521629-seed:
+  GP120:
+    end: 6961
+    start: 5443
+  GP41:
+    end: 7987
+    start: 6961
+  HIV1B-gag:
+    end: 1490
+    start: 2
+  HIV1B-nef:
+    end: 8600
+    start: 7988
+  HIV1B-tat:
+    end: 5249
+    start: 5030
+  HIV1B-vif:
+    end: 4817
+    start: 4238
+  HIV1B-vpr:
+    end: 5050
+    start: 4756
+  HIV1B-vpu:
+    end: 5517
+    start: 5271
+  INT:
+    end: 4294
+    start: 3427
+  PR:
+    end: 1747
+    start: 1450
+  RT:
+    end: 3427
+    start: 1747
+HIV1-A1-UG-KF716486-seed:
+  GP120:
+    end: 7088
+    start: 5582
+  GP41:
+    end: 8147
+    start: 7088
+  HIV1B-gag:
+    end: 1641
+    start: 138
+  HIV1B-nef:
+    end: 8763
+    start: 8148
+  HIV1B-tat:
+    end: 5397
+    start: 5178
+  HIV1B-vif:
+    end: 4968
+    start: 4389
+  HIV1B-vpr:
+    end: 5198
+    start: 4907
+  HIV1B-vpu:
+    end: 5665
+    start: 5419
+  INT:
+    end: 4445
+    start: 3578
+  PR:
+    end: 1898
+    start: 1601
+  RT:
+    end: 3578
+    start: 1898
+HIV1-A1-ZA-KT183312-seed:
+  GP120:
+    end: 6989
+    start: 5450
+  GP41:
+    end: 8048
+    start: 6989
+  HIV1B-gag:
+    end: 1509
+    start: 0
+  HIV1B-nef:
+    end: 8688
+    start: 8049
+  HIV1B-tat:
+    end: 5265
+    start: 5049
+  HIV1B-vif:
+    end: 4836
+    start: 4257
+  HIV1B-vpr:
+    end: 5069
+    start: 4775
+  HIV1B-vpu:
+    end: 5533
+    start: 5287
+  INT:
+    end: 4313
+    start: 3446
+  PR:
+    end: 1766
+    start: 1469
+  RT:
+    end: 3446
+    start: 1766
+HIV1-A2-CD-AF286238-seed:
+  GP120:
+    end: 7067
+    start: 5573
+  GP41:
+    end: 8126
+    start: 7067
+  HIV1B-gag:
+    end: 1630
+    start: 136
+  HIV1B-nef:
+    end: 8778
+    start: 8127
+  HIV1B-tat:
+    end: 5388
+    start: 5169
+  HIV1B-vif:
+    end: 4959
+    start: 4380
+  HIV1B-vpr:
+    end: 5189
+    start: 4898
+  HIV1B-vpu:
+    end: 5656
+    start: 5410
+  INT:
+    end: 4436
+    start: 3587
+  PR:
+    end: 1887
+    start: 1590
+  RT:
+    end: 3567
+    start: 1887
+HIV1-A2-CM-GU201516-seed:
+  GP120:
+    end: 6962
+    start: 5441
+  GP41:
+    end: 8021
+    start: 6962
+  HIV1B-gag:
+    end: 1491
+    start: 0
+  HIV1B-nef:
+    end: 8634
+    start: 8019
+  HIV1B-tat:
+    end: 5247
+    start: 5028
+  HIV1B-vif:
+    end: 4818
+    start: 4239
+  HIV1B-vpr:
+    end: 5048
+    start: 4757
+  HIV1B-vpu:
+    end: 5515
+    start: 5269
+  INT:
+    end: 4295
+    start: 3428
+  PR:
+    end: 1748
+    start: 1451
+  RT:
+    end: 3428
+    start: 1748
+HIV1-A2-CY-AF286237-seed:
+  GP120:
+    end: 7129
+    start: 5599
+  GP41:
+    end: 8188
+    start: 7129
+  HIV1B-gag:
+    end: 1649
+    start: 158
+  HIV1B-nef:
+    end: 8843
+    start: 8189
+  HIV1B-tat:
+    end: 5405
+    start: 5186
+  HIV1B-vif:
+    end: 4976
+    start: 4397
+  HIV1B-vpr:
+    end: 5206
+    start: 4915
+  HIV1B-vpu:
+    end: 5673
+    start: 5427
+  INT:
+    end: 4453
+    start: 3586
+  PR:
+    end: 1906
+    start: 1609
+  RT:
+    end: 3586
+    start: 1906
+HIV1-B-BR-KJ849801-seed:
+  GP120:
+    end: 7376
+    start: 5795
+  GP41:
+    end: 8414
+    start: 7376
+  HIV1B-gag:
+    end: 1864
+    start: 358
+  HIV1B-nef:
+    end: 9066
+    start: 8415
+  HIV1B-tat:
+    end: 5620
+    start: 5401
+  HIV1B-vif:
+    end: 5191
+    start: 4612
+  HIV1B-vpr:
+    end: 5421
+    start: 5130
+  HIV1B-vpu:
+    end: 5878
+    start: 5632
+  INT:
+    end: 4668
+    start: 3801
+  PR:
+    end: 2121
+    start: 1824
+  RT:
+    end: 3801
+    start: 2121
+HIV1-B-CA-JF320424-seed:
+  GP120:
+    end: 7204
+    start: 5662
+  GP41:
+    end: 8242
+    start: 7204
+  HIV1B-gag:
+    end: 1719
+    start: 210
+  HIV1B-nef:
+    end: 8864
+    start: 8243
+  HIV1B-tat:
+    end: 5478
+    start: 5259
+  HIV1B-vif:
+    end: 5046
+    start: 4467
+  HIV1B-vpr:
+    end: 5279
+    start: 4985
+  HIV1B-vpu:
+    end: 5751
+    start: 5490
+  INT:
+    end: 4523
+    start: 3656
+  PR:
+    end: 1976
+    start: 1679
+  RT:
+    end: 3656
+    start: 1976
+HIV1-B-CH-KC797225-seed:
+  GP120:
+    end: 7300
+    start: 5689
+  GP41:
+    end: 8338
+    start: 7300
+  HIV1B-gag:
+    end: 1761
+    start: 249
+  HIV1B-nef:
+    end: 8982
+    start: 8340
+  HIV1B-tat:
+    end: 5505
+    start: 5286
+  HIV1B-vif:
+    end: 5076
+    start: 4509
+  HIV1B-vpr:
+    end: 5306
+    start: 5027
+  HIV1B-vpu:
+    end: 5763
+    start: 5517
+  INT:
+    end: 4565
+    start: 3698
+  PR:
+    end: 2018
+    start: 1721
+  RT:
+    end: 3698
+    start: 2018
+HIV1-B-CN-KP109511-seed:
+  GP120:
+    end: 7150
+    start: 5602
+  GP41:
+    end: 8191
+    start: 7153
+  HIV1B-gag:
+    end: 1671
+    start: 153
+  HIV1B-nef:
+    end: 8813
+    start: 8192
+  HIV1B-tat:
+    end: 5427
+    start: 5208
+  HIV1B-vif:
+    end: 4998
+    start: 4419
+  HIV1B-vpr:
+    end: 5228
+    start: 4937
+  HIV1B-vpu:
+    end: 5685
+    start: 5439
+  INT:
+    end: 4475
+    start: 3608
+  PR:
+    end: 1928
+    start: 1631
+  RT:
+    end: 3608
+    start: 1928
+HIV1-B-CU-KR914676-seed:
+  GP120:
+    end: 6965
+    start: 5435
+  GP41:
+    end: 8003
+    start: 6965
+  HIV1B-gag:
+    end: 1503
+    start: 0
+  HIV1B-nef:
+    end: 8316
+    start: 8004
+  HIV1B-tat:
+    end: 5260
+    start: 5041
+  HIV1B-vif:
+    end: 4830
+    start: 4251
+  HIV1B-vpr:
+    end: 5045
+    start: 4769
+  HIV1B-vpu:
+    end: 5521
+    start: 5272
+  INT:
+    end: 4307
+    start: 3440
+  PR:
+    end: 1760
+    start: 1463
+  RT:
+    end: 3440
+    start: 1760
+HIV1-B-ES-KT276255-seed:
+  GP120:
+    end: 7239
+    start: 5685
+  GP41:
+    end: 8280
+    start: 7239
+  HIV1B-gag:
+    end: 1754
+    start: 230
+  HIV1B-nef:
+    end: 8902
+    start: 8281
+  HIV1B-tat:
+    end: 5510
+    start: 5291
+  HIV1B-vif:
+    end: 5075
+    start: 4502
+  HIV1B-vpr:
+    end: 5311
+    start: 5020
+  HIV1B-vpu:
+    end: 5768
+    start: 5522
+  INT:
+    end: 4558
+    start: 3691
+  PR:
+    end: 2011
+    start: 1714
+  RT:
+    end: 3691
+    start: 2011
+HIV1-B-FR-K03455-seed:
+  GP120:
+    end: 7757
+    start: 6224
+  GP41:
+    end: 8795
+    start: 7757
+  HIV1B-gag:
+    end: 2292
+    start: 789
+  HIV1B-nef:
+    end: 9417
+    start: 8796
+  HIV1B-tat:
+    end: 6049
+    start: 5830
+  HIV1B-vif:
+    end: 5619
+    start: 5040
+  HIV1B-vpr:
+    end: 5834
+    start: 5558
+  HIV1B-vpu:
+    end: 6310
+    start: 6061
+  INT:
+    end: 5096
+    start: 4229
+  PR:
+    end: 2549
+    start: 2252
+  RT:
+    end: 4229
+    start: 2549
+HIV1-B-FR-KF716496-seed:
+  GP120:
+    end: 6954
+    start: 5469
+  GP41:
+    end: 7992
+    start: 6954
+  HIV1B-gag:
+    end: 1538
+    start: 38
+  HIV1B-nef:
+    end: 8665
+    start: 8050
+  HIV1B-tat:
+    end: 5294
+    start: 5075
+  HIV1B-vif:
+    end: 4865
+    start: 4286
+  HIV1B-vpr:
+    end: 5095
+    start: 4804
+  HIV1B-vpu:
+    end: 5543
+    start: 5306
+  INT:
+    end: 4342
+    start: 3475
+  PR:
+    end: 1795
+    start: 1498
+  RT:
+    end: 3475
+    start: 1795
+HIV1-B-HT-EU839602-seed:
+  GP120:
+    end: 6981
+    start: 5430
+  GP41:
+    end: 8019
+    start: 6981
+  HIV1B-gag:
+    end: 1491
+    start: 0
+  HIV1B-nef:
+    end: 8398
+    start: 8020
+  HIV1B-tat:
+    end: 5255
+    start: 5036
+  HIV1B-vif:
+    end: 4820
+    start: 4241
+  HIV1B-vpr:
+    end: 5056
+    start: 4759
+  HIV1B-vpu:
+    end: 5513
+    start: 5267
+  INT:
+    end: 4297
+    start: 3430
+  PR:
+    end: 1750
+    start: 1453
+  RT:
+    end: 3430
+    start: 1750
+HIV1-B-JP-KF716498-seed:
+  GP120:
+    end: 7167
+    start: 5613
+  GP41:
+    end: 8208
+    start: 7167
+  HIV1B-gag:
+    end: 1679
+    start: 167
+  HIV1B-nef:
+    end: 8836
+    start: 8209
+  HIV1B-tat:
+    end: 5438
+    start: 5219
+  HIV1B-vif:
+    end: 5009
+    start: 4427
+  HIV1B-vpr:
+    end: 5239
+    start: 4948
+  HIV1B-vpu:
+    end: 5696
+    start: 5450
+  INT:
+    end: 4483
+    start: 3616
+  PR:
+    end: 1936
+    start: 1639
+  RT:
+    end: 3616
+    start: 1936
+HIV1-B-KR-KJ140263-seed:
+  GP120:
+    end: 7420
+    start: 5887
+  GP41:
+    end: 8461
+    start: 7423
+  HIV1B-gag:
+    end: 1956
+    start: 453
+  HIV1B-nef:
+    end: 9083
+    start: 8462
+  HIV1B-tat:
+    end: 5712
+    start: 5493
+  HIV1B-vif:
+    end: 5283
+    start: 4704
+  HIV1B-vpr:
+    end: 5513
+    start: 5222
+  HIV1B-vpu:
+    end: 5970
+    start: 5724
+  INT:
+    end: 4760
+    start: 3893
+  PR:
+    end: 2213
+    start: 1916
+  RT:
+    end: 3893
+    start: 2213
+HIV1-B-RU-JX500708-seed:
+  GP120:
+    end: 7285
+    start: 5794
+  GP41:
+    end: 8323
+    start: 7285
+  HIV1B-gag:
+    end: 1863
+    start: 333
+  HIV1B-nef:
+    end: 8945
+    start: 8324
+  HIV1B-tat:
+    end: 5619
+    start: 5400
+  HIV1B-vif:
+    end: 5190
+    start: 4611
+  HIV1B-vpr:
+    end: 5420
+    start: 5129
+  HIV1B-vpu:
+    end: 5868
+    start: 5631
+  INT:
+    end: 4667
+    start: 3800
+  PR:
+    end: 2120
+    start: 1823
+  RT:
+    end: 3800
+    start: 2120
+HIV1-B-SE-KP411828-seed:
+  GP120:
+    end: 6997
+    start: 5440
+  GP41:
+    end: 8035
+    start: 6997
+  HIV1B-gag:
+    end: 1509
+    start: 0
+  HIV1B-nef:
+    end: 8657
+    start: 8036
+  HIV1B-tat:
+    end: 5265
+    start: 5046
+  HIV1B-vif:
+    end: 4836
+    start: 4257
+  HIV1B-vpr:
+    end: 5066
+    start: 4775
+  HIV1B-vpu:
+    end: 5523
+    start: 5277
+  INT:
+    end: 4313
+    start: 3446
+  PR:
+    end: 1766
+    start: 1469
+  RT:
+    end: 3446
+    start: 1766
+HIV1-B-TH-KP109514-seed:
+  GP120:
+    end: 7111
+    start: 5545
+  GP41:
+    end: 8146
+    start: 7108
+  HIV1B-gag:
+    end: 1614
+    start: 99
+  HIV1B-nef:
+    end: 8724
+    start: 8109
+  HIV1B-tat:
+    end: 5370
+    start: 5151
+  HIV1B-vif:
+    end: 4941
+    start: 4362
+  HIV1B-vpr:
+    end: 5171
+    start: 4880
+  HIV1B-vpu:
+    end: 5628
+    start: 5382
+  INT:
+    end: 4418
+    start: 3551
+  PR:
+    end: 1871
+    start: 1574
+  RT:
+    end: 3551
+    start: 1871
+HIV1-B-US-KT284371-seed:
+  GP120:
+    end: 7663
+    start: 6109
+  GP41:
+    end: 8701
+    start: 7663
+  HIV1B-gag:
+    end: 2172
+    start: 663
+  HIV1B-nef:
+    end: 9323
+    start: 8702
+  HIV1B-tat:
+    end: 5928
+    start: 5709
+  HIV1B-vif:
+    end: 5499
+    start: 4920
+  HIV1B-vpr:
+    end: 5729
+    start: 5438
+  HIV1B-vpu:
+    end: 6183
+    start: 5937
+  INT:
+    end: 4976
+    start: 4109
+  PR:
+    end: 2429
+    start: 2132
+  RT:
+    end: 4109
+    start: 2429
+HIV1-B-ZA-KP109515-seed:
+  GP120:
+    end: 7030
+    start: 5533
+  GP41:
+    end: 8068
+    start: 7030
+  HIV1B-gag:
+    end: 1590
+    start: 96
+  HIV1B-nef:
+    end: 8690
+    start: 8069
+  HIV1B-tat:
+    end: 5346
+    start: 5127
+  HIV1B-vif:
+    end: 4917
+    start: 4338
+  HIV1B-vpr:
+    end: 5147
+    start: 4856
+  HIV1B-vpu:
+    end: 5604
+    start: 5358
+  INT:
+    end: 4394
+    start: 3527
+  PR:
+    end: 1847
+    start: 1550
+  RT:
+    end: 3527
+    start: 1847
+HIV1-C-BR-JX140663-seed:
+  GP120:
+    end: 7179
+    start: 5577
+  GP41:
+    end: 8238
+    start: 7179
+  HIV1B-gag:
+    end: 1624
+    start: 151
+  HIV1B-nef:
+    end: 8863
+    start: 8239
+  HIV1B-tat:
+    end: 5380
+    start: 5161
+  HIV1B-vif:
+    end: 4951
+    start: 4372
+  HIV1B-vpr:
+    end: 5181
+    start: 4890
+  HIV1B-vpu:
+    end: 5660
+    start: 5414
+  INT:
+    end: 4428
+    start: 3561
+  PR:
+    end: 1881
+    start: 1584
+  RT:
+    end: 3561
+    start: 1881
+HIV1-C-BW-AF443115-seed:
+  GP120:
+    end: 7092
+    start: 5598
+  GP41:
+    end: 8148
+    start: 7089
+  HIV1B-gag:
+    end: 1663
+    start: 166
+  HIV1B-nef:
+    end: 8773
+    start: 8149
+  HIV1B-tat:
+    end: 5404
+    start: 5185
+  HIV1B-vif:
+    end: 4990
+    start: 4411
+  HIV1B-vpr:
+    end: 5205
+    start: 4929
+  HIV1B-vpu:
+    end: 5681
+    start: 5438
+  INT:
+    end: 4467
+    start: 3600
+  PR:
+    end: 1920
+    start: 1623
+  RT:
+    end: 3600
+    start: 1920
+HIV1-C-CN-KC870038-seed:
+  GP120:
+    end: 7127
+    start: 5579
+  GP41:
+    end: 8174
+    start: 7127
+  HIV1B-gag:
+    end: 1645
+    start: 157
+  HIV1B-nef:
+    end: 8793
+    start: 8175
+  HIV1B-tat:
+    end: 5404
+    start: 5185
+  HIV1B-vif:
+    end: 4975
+    start: 4393
+  HIV1B-vpr:
+    end: 5205
+    start: 4914
+  HIV1B-vpu:
+    end: 5662
+    start: 5416
+  INT:
+    end: 4449
+    start: 3582
+  PR:
+    end: 1902
+    start: 1605
+  RT:
+    end: 3582
+    start: 1902
+HIV1-C-CY-JF683803-seed:
+  GP120:
+    end: 6992
+    start: 5468
+  GP41:
+    end: 8054
+    start: 6992
+  HIV1B-gag:
+    end: 1515
+    start: 0
+  HIV1B-nef:
+    end: 8214
+    start: 8082
+  HIV1B-tat:
+    end: 5271
+    start: 5052
+  HIV1B-vif:
+    end: 4842
+    start: 4263
+  HIV1B-vpr:
+    end: 5072
+    start: 4781
+  HIV1B-vpu:
+    end: 5551
+    start: 5305
+  INT:
+    end: 4319
+    start: 3452
+  PR:
+    end: 1772
+    start: 1475
+  RT:
+    end: 3452
+    start: 1772
+HIV1-C-ES-KT276258-seed:
+  GP120:
+    end: 7126
+    start: 5662
+  GP41:
+    end: 8185
+    start: 7126
+  HIV1B-gag:
+    end: 1706
+    start: 233
+  HIV1B-nef:
+    end: 8795
+    start: 8186
+  HIV1B-tat:
+    end: 5465
+    start: 5246
+  HIV1B-vif:
+    end: 5033
+    start: 4454
+  HIV1B-vpr:
+    end: 5266
+    start: 4972
+  HIV1B-vpu:
+    end: 5745
+    start: 5499
+  INT:
+    end: 4510
+    start: 3643
+  PR:
+    end: 1963
+    start: 1666
+  RT:
+    end: 3643
+    start: 1963
+HIV1-C-ET-AY713417-seed:
+  GP120:
+    end: 6965
+    start: 5447
+  GP41:
+    end: 8021
+    start: 6962
+  HIV1B-gag:
+    end: 1494
+    start: 0
+  HIV1B-nef:
+    end: 8646
+    start: 8022
+  HIV1B-tat:
+    end: 5250
+    start: 5031
+  HIV1B-vif:
+    end: 4821
+    start: 4242
+  HIV1B-vpr:
+    end: 5051
+    start: 4760
+  HIV1B-vpu:
+    end: 5530
+    start: 5284
+  INT:
+    end: 4298
+    start: 3431
+  PR:
+    end: 1751
+    start: 1454
+  RT:
+    end: 3431
+    start: 1751
+HIV1-C-IN-KC156210-seed:
+  GP120:
+    end: 7789
+    start: 6199
+  GP41:
+    end: 8851
+    start: 7792
+  HIV1B-gag:
+    end: 2268
+    start: 789
+  HIV1B-nef:
+    end: 9476
+    start: 8852
+  HIV1B-tat:
+    end: 6024
+    start: 5805
+  HIV1B-vif:
+    end: 5595
+    start: 5016
+  HIV1B-vpr:
+    end: 5825
+    start: 5534
+  HIV1B-vpu:
+    end: 6282
+    start: 6036
+  INT:
+    end: 5072
+    start: 4205
+  PR:
+    end: 2525
+    start: 2228
+  RT:
+    end: 4205
+    start: 2525
+HIV1-C-KE-KT022371-seed:
+  GP120:
+    end: 6894
+    start: 5418
+  GP41:
+    end: 7959
+    start: 6900
+  HIV1B-gag:
+    end: 1468
+    start: 1
+  HIV1B-nef:
+    end: 8584
+    start: 7960
+  HIV1B-tat:
+    end: 5224
+    start: 5005
+  HIV1B-vif:
+    end: 4795
+    start: 4216
+  HIV1B-vpr:
+    end: 5025
+    start: 4734
+  HIV1B-vpu:
+    end: 5501
+    start: 5255
+  INT:
+    end: 4272
+    start: 3405
+  PR:
+    end: 1725
+    start: 1428
+  RT:
+    end: 3405
+    start: 1725
+HIV1-C-MW-KC156214-seed:
+  GP120:
+    end: 7718
+    start: 6215
+  GP41:
+    end: 8777
+    start: 7718
+  HIV1B-gag:
+    end: 2272
+    start: 790
+  HIV1B-nef:
+    end: 9402
+    start: 8778
+  HIV1B-tat:
+    end: 6028
+    start: 5809
+  HIV1B-vif:
+    end: 5599
+    start: 5020
+  HIV1B-vpr:
+    end: 5829
+    start: 5538
+  HIV1B-vpu:
+    end: 6298
+    start: 6052
+  INT:
+    end: 5076
+    start: 4209
+  PR:
+    end: 2529
+    start: 2232
+  RT:
+    end: 4209
+    start: 2529
+HIV1-C-SE-KP411835-seed:
+  GP120:
+    end: 6989
+    start: 5486
+  GP41:
+    end: 8024
+    start: 6986
+  HIV1B-gag:
+    end: 1524
+    start: 0
+  HIV1B-nef:
+    end: 8649
+    start: 8025
+  HIV1B-tat:
+    end: 5289
+    start: 5061
+  HIV1B-vif:
+    end: 4851
+    start: 4272
+  HIV1B-vpr:
+    end: 5081
+    start: 4790
+  HIV1B-vpu:
+    end: 5569
+    start: 5323
+  INT:
+    end: 4328
+    start: 3461
+  PR:
+    end: 1781
+    start: 1484
+  RT:
+    end: 3461
+    start: 1781
+HIV1-C-TZ-KC156220-seed:
+  GP120:
+    end: 7708
+    start: 6229
+  GP41:
+    end: 8767
+    start: 7708
+  HIV1B-gag:
+    end: 2266
+    start: 790
+  HIV1B-nef:
+    end: 9392
+    start: 8768
+  HIV1B-tat:
+    end: 6022
+    start: 5803
+  HIV1B-vif:
+    end: 5593
+    start: 5014
+  HIV1B-vpr:
+    end: 5823
+    start: 5532
+  HIV1B-vpu:
+    end: 6312
+    start: 6066
+  INT:
+    end: 5070
+    start: 4203
+  PR:
+    end: 2523
+    start: 2226
+  RT:
+    end: 4203
+    start: 2523
+HIV1-C-US-KF526226-seed:
+  GP120:
+    end: 7105
+    start: 5596
+  GP41:
+    end: 8162
+    start: 7151
+  HIV1B-gag:
+    end: 1643
+    start: 119
+  HIV1B-nef:
+    end: 8817
+    start: 8163
+  HIV1B-tat:
+    end: 5399
+    start: 5180
+  HIV1B-vif:
+    end: 4970
+    start: 4391
+  HIV1B-vpr:
+    end: 5200
+    start: 4909
+  HIV1B-vpu:
+    end: 5679
+    start: 5433
+  INT:
+    end: 4447
+    start: 3580
+  PR:
+    end: 1900
+    start: 1603
+  RT:
+    end: 3580
+    start: 1900
+HIV1-C-YE-AY795906-seed:
+  GP120:
+    end: 6949
+    start: 5419
+  GP41:
+    end: 8008
+    start: 6949
+  HIV1B-gag:
+    end: 1467
+    start: 0
+  HIV1B-nef:
+    end: 8669
+    start: 8009
+  HIV1B-tat:
+    end: 5223
+    start: 5004
+  HIV1B-vif:
+    end: 4794
+    start: 4215
+  HIV1B-vpr:
+    end: 5024
+    start: 4733
+  HIV1B-vpu:
+    end: 5502
+    start: 5256
+  INT:
+    end: 4271
+    start: 3404
+  PR:
+    end: 1724
+    start: 1427
+  RT:
+    end: 3404
+    start: 1724
+HIV1-C-ZA-KP109517-seed:
+  GP120:
+    end: 7066
+    start: 5557
+  GP41:
+    end: 8125
+    start: 7066
+  HIV1B-gag:
+    end: 1601
+    start: 101
+  HIV1B-nef:
+    end: 8754
+    start: 8127
+  HIV1B-tat:
+    end: 5360
+    start: 5138
+  HIV1B-vif:
+    end: 4928
+    start: 4349
+  HIV1B-vpr:
+    end: 5158
+    start: 4867
+  HIV1B-vpu:
+    end: 5640
+    start: 5394
+  INT:
+    end: 4405
+    start: 3538
+  PR:
+    end: 1858
+    start: 1561
+  RT:
+    end: 3538
+    start: 1858
+HIV1-C-ZM-KF716467-seed:
+  GP120:
+    end: 7127
+    start: 5594
+  GP41:
+    end: 8186
+    start: 7127
+  HIV1B-gag:
+    end: 1641
+    start: 144
+  HIV1B-nef:
+    end: 8805
+    start: 8187
+  HIV1B-tat:
+    end: 5397
+    start: 5178
+  HIV1B-vif:
+    end: 4968
+    start: 4389
+  HIV1B-vpr:
+    end: 5198
+    start: 4907
+  HIV1B-vpu:
+    end: 5677
+    start: 5431
+  INT:
+    end: 4445
+    start: 3578
+  PR:
+    end: 1898
+    start: 1601
+  RT:
+    end: 3578
+    start: 1898
+HIV1-CON-XX-Consensus-seed:
+  V3LOOP:
+    end: 960
+    start: 855
+HIV1-CPZ-CD-U42720-seed:
+  GP120: {}
+  GP41:
+    end: 8254
+    start: 7189
+  HIV1B-gag:
+    end: 1731
+    start: 153
+  HIV1B-nef:
+    end: 8856
+    start: 8256
+  HIV1B-tat:
+    end: 5487
+    start: 5262
+  HIV1B-vif:
+    end: 5076
+    start: 4479
+  HIV1B-vpr:
+    end: 5306
+    start: 5015
+  HIV1B-vpu: {}
+  INT:
+    end: 4535
+    start: 3668
+  PR:
+    end: 1988
+    start: 1691
+  RT:
+    end: 3668
+    start: 1988
+HIV1-CPZ-CM-DQ373064-seed:
+  GP120:
+    end: 7268
+    start: 5789
+  GP41:
+    end: 8327
+    start: 7268
+  HIV1B-gag:
+    end: 1847
+    start: 335
+  HIV1B-nef:
+    end: 8949
+    start: 8328
+  HIV1B-tat:
+    end: 5603
+    start: 5384
+  HIV1B-vif:
+    end: 5174
+    start: 4595
+  HIV1B-vpr:
+    end: 5404
+    start: 5113
+  HIV1B-vpu: {}
+  INT:
+    end: 4651
+    start: 3784
+  PR:
+    end: 2104
+    start: 1807
+  RT:
+    end: 3784
+    start: 2104
+HIV1-CPZ-CM-FR686511-seed:
+  GP120:
+    end: 7839
+    start: 6306
+  GP41:
+    end: 8913
+    start: 7851
+  HIV1B-gag:
+    end: 2376
+    start: 831
+  HIV1B-nef:
+    end: 9550
+    start: 8914
+  HIV1B-tat:
+    end: 6135
+    start: 5916
+  HIV1B-vif:
+    end: 5706
+    start: 5124
+  HIV1B-vpr:
+    end: 5936
+    start: 5645
+  HIV1B-vpu: {}
+  INT:
+    end: 5180
+    start: 4313
+  PR:
+    end: 2633
+    start: 2336
+  RT:
+    end: 4313
+    start: 2633
+HIV1-CPZ-TZ-JN091691-seed:
+  GP120: {}
+  GP41:
+    end: 8974
+    start: 7855
+  HIV1B-gag:
+    end: 2405
+    start: 812
+  HIV1B-nef:
+    end: 9569
+    start: 8969
+  HIV1B-tat:
+    end: 6150
+    start: 5937
+  HIV1B-vif:
+    end: 5750
+    start: 5153
+  HIV1B-vpr:
+    end: 5980
+    start: 5689
+  HIV1B-vpu: {}
+  INT:
+    end: 5209
+    start: 4342
+  PR:
+    end: 2662
+    start: 2365
+  RT:
+    end: 4342
+    start: 2662
+HIV1-CPZ-US-AF103818-seed:
+  GP120:
+    end: 7759
+    start: 6313
+  GP41:
+    end: 8824
+    start: 7762
+  HIV1B-gag:
+    end: 2352
+    start: 831
+  HIV1B-nef:
+    end: 9456
+    start: 8823
+  HIV1B-tat:
+    end: 6123
+    start: 5901
+  HIV1B-vif:
+    end: 5679
+    start: 5100
+  HIV1B-vpr:
+    end: 5909
+    start: 5618
+  HIV1B-vpu: {}
+  INT:
+    end: 5156
+    start: 4289
+  PR:
+    end: 2609
+    start: 2312
+  RT:
+    end: 4289
+    start: 2609
+HIV1-CRF02_AG-GH-AB286855-seed:
+  GP120:
+    end: 7798
+    start: 6256
+  GP41:
+    end: 8857
+    start: 7798
+  HIV1B-gag:
+    end: 2316
+    start: 825
+  HIV1B-nef:
+    end: 9485
+    start: 8858
+  HIV1B-tat:
+    end: 6072
+    start: 5853
+  HIV1B-vif:
+    end: 5643
+    start: 5064
+  HIV1B-vpr:
+    end: 5873
+    start: 5582
+  HIV1B-vpu:
+    end: 6339
+    start: 6093
+  INT:
+    end: 5120
+    start: 4253
+  PR:
+    end: 2573
+    start: 2276
+  RT:
+    end: 4253
+    start: 2573
+HIV1-CRF06_CPX-GH-AB286851-seed:
+  GP120:
+    end: 7882
+    start: 6310
+  GP41:
+    end: 8920
+    start: 7882
+  HIV1B-gag:
+    end: 2369
+    start: 821
+  HIV1B-nef:
+    end: 9563
+    start: 8921
+  HIV1B-tat:
+    end: 6125
+    start: 5906
+  HIV1B-vif:
+    end: 5696
+    start: 5117
+  HIV1B-vpr:
+    end: 5926
+    start: 5635
+  HIV1B-vpu:
+    end: 6393
+    start: 6147
+  INT:
+    end: 5173
+    start: 4306
+  PR:
+    end: 2626
+    start: 2329
+  RT:
+    end: 4306
+    start: 2626
+HIV1-D-CM-JX140670-seed:
+  GP120:
+    end: 7095
+    start: 5607
+  GP41:
+    end: 8133
+    start: 7095
+  HIV1B-gag:
+    end: 1667
+    start: 155
+  HIV1B-nef:
+    end: 8767
+    start: 8134
+  HIV1B-tat:
+    end: 5423
+    start: 5204
+  HIV1B-vif:
+    end: 4994
+    start: 4415
+  HIV1B-vpr:
+    end: 5224
+    start: 4933
+  HIV1B-vpu:
+    end: 5684
+    start: 5435
+  INT:
+    end: 4471
+    start: 3604
+  PR:
+    end: 1924
+    start: 1627
+  RT:
+    end: 3604
+    start: 1924
+HIV1-D-CY-FJ388945-seed:
+  GP120:
+    end: 6967
+    start: 5440
+  GP41:
+    end: 8008
+    start: 6967
+  HIV1B-gag:
+    end: 1500
+    start: 0
+  HIV1B-nef:
+    end: 8141
+    start: 8009
+  HIV1B-tat:
+    end: 5256
+    start: 5037
+  HIV1B-vif:
+    end: 4827
+    start: 4248
+  HIV1B-vpr:
+    end: 5057
+    start: 4766
+  HIV1B-vpu:
+    end: 5514
+    start: 5268
+  INT:
+    end: 4304
+    start: 3437
+  PR:
+    end: 1757
+    start: 1460
+  RT:
+    end: 3437
+    start: 1757
+HIV1-D-KE-KF716476-seed:
+  GP120:
+    end: 7087
+    start: 5581
+  GP41:
+    end: 8125
+    start: 7087
+  HIV1B-gag:
+    end: 1642
+    start: 139
+  HIV1B-nef:
+    end: 8747
+    start: 8126
+  HIV1B-tat:
+    end: 5398
+    start: 5179
+  HIV1B-vif:
+    end: 4969
+    start: 4390
+  HIV1B-vpr:
+    end: 5199
+    start: 4908
+  HIV1B-vpu: {}
+  INT:
+    end: 4446
+    start: 3579
+  PR:
+    end: 1899
+    start: 1602
+  RT:
+    end: 3579
+    start: 1899
+HIV1-D-KR-DQ054367-seed:
+  GP120:
+    end: 7670
+    start: 6188
+  GP41:
+    end: 8708
+    start: 7670
+  HIV1B-gag:
+    end: 2251
+    start: 748
+  HIV1B-nef:
+    end: 9318
+    start: 8709
+  HIV1B-tat:
+    end: 6007
+    start: 5788
+  HIV1B-vif:
+    end: 5578
+    start: 4999
+  HIV1B-vpr:
+    end: 5808
+    start: 5517
+  HIV1B-vpu:
+    end: 6262
+    start: 6019
+  INT:
+    end: 5055
+    start: 4188
+  PR:
+    end: 2508
+    start: 2211
+  RT:
+    end: 4188
+    start: 2508
+HIV1-D-SN-AB485648-seed:
+  GP120:
+    end: 7755
+    start: 6249
+  GP41:
+    end: 8793
+    start: 7755
+  HIV1B-gag:
+    end: 2309
+    start: 788
+  HIV1B-nef:
+    end: 9418
+    start: 8794
+  HIV1B-tat:
+    end: 6065
+    start: 5846
+  HIV1B-vif:
+    end: 5636
+    start: 5057
+  HIV1B-vpr:
+    end: 5866
+    start: 5575
+  HIV1B-vpu:
+    end: 6323
+    start: 6077
+  INT:
+    end: 5113
+    start: 4246
+  PR:
+    end: 2566
+    start: 2269
+  RT:
+    end: 4246
+    start: 2566
+HIV1-D-TZ-AY253311-seed:
+  GP120:
+    end: 6945
+    start: 5433
+  GP41:
+    end: 7983
+    start: 6945
+  HIV1B-gag:
+    end: 1493
+    start: 2
+  HIV1B-nef:
+    end: 8608
+    start: 7984
+  HIV1B-tat:
+    end: 5249
+    start: 5030
+  HIV1B-vif:
+    end: 4820
+    start: 4241
+  HIV1B-vpr:
+    end: 5050
+    start: 4759
+  HIV1B-vpu:
+    end: 5507
+    start: 5261
+  INT:
+    end: 4297
+    start: 3430
+  PR:
+    end: 1750
+    start: 1453
+  RT:
+    end: 3430
+    start: 1750
+HIV1-D-UG-KF716479-seed:
+  GP120:
+    end: 7067
+    start: 5561
+  GP41:
+    end: 8105
+    start: 7067
+  HIV1B-gag:
+    end: 1630
+    start: 127
+  HIV1B-nef:
+    end: 8727
+    start: 8106
+  HIV1B-tat:
+    end: 5386
+    start: 5167
+  HIV1B-vif:
+    end: 4957
+    start: 4378
+  HIV1B-vpr:
+    end: 5187
+    start: 4896
+  HIV1B-vpu:
+    end: 5644
+    start: 5398
+  INT:
+    end: 4434
+    start: 3567
+  PR:
+    end: 1887
+    start: 1590
+  RT:
+    end: 3567
+    start: 1887
+HIV1-D-UG-KF716480-seed:
+  GP120:
+    end: 7111
+    start: 5584
+  GP41:
+    end: 8149
+    start: 7111
+  HIV1B-gag:
+    end: 1647
+    start: 144
+  HIV1B-nef:
+    end: 8774
+    start: 8150
+  HIV1B-tat:
+    end: 5403
+    start: 5184
+  HIV1B-vif:
+    end: 4974
+    start: 4395
+  HIV1B-vpr:
+    end: 5204
+    start: 4913
+  HIV1B-vpu:
+    end: 5658
+    start: 5412
+  INT:
+    end: 4451
+    start: 3584
+  PR:
+    end: 1904
+    start: 1607
+  RT:
+    end: 3584
+    start: 1904
+HIV1-D-YE-AY795907-seed:
+  GP120:
+    end: 6937
+    start: 5443
+  GP41:
+    end: 7975
+    start: 6937
+  HIV1B-gag:
+    end: 1503
+    start: 0
+  HIV1B-nef:
+    end: 8591
+    start: 7976
+  HIV1B-tat:
+    end: 5259
+    start: 5040
+  HIV1B-vif:
+    end: 4830
+    start: 4251
+  HIV1B-vpr:
+    end: 5060
+    start: 4769
+  HIV1B-vpu:
+    end: 5520
+    start: 5271
+  INT:
+    end: 4307
+    start: 3440
+  PR:
+    end: 1760
+    start: 1463
+  RT:
+    end: 3440
+    start: 1760
+HIV1-D-ZA-EF633445-seed:
+  GP120:
+    end: 7111
+    start: 5581
+  GP41:
+    end: 8149
+    start: 7111
+  HIV1B-gag:
+    end: 1638
+    start: 135
+  HIV1B-nef:
+    end: 8774
+    start: 8150
+  HIV1B-tat:
+    end: 5397
+    start: 5178
+  HIV1B-vif:
+    end: 4968
+    start: 4386
+  HIV1B-vpr:
+    end: 5198
+    start: 4907
+  HIV1B-vpu:
+    end: 5655
+    start: 5409
+  INT:
+    end: 4442
+    start: 3575
+  PR:
+    end: 1895
+    start: 1598
+  RT:
+    end: 3575
+    start: 1895
+HIV1-F1-AO-FJ900266-seed:
+  GP120:
+    end: 6924
+    start: 5445
+  GP41:
+    end: 7968
+    start: 6930
+  HIV1B-gag:
+    end: 1503
+    start: 0
+  HIV1B-nef:
+    end: 8257
+    start: 7969
+  HIV1B-tat:
+    end: 5259
+    start: 5040
+  HIV1B-vif:
+    end: 4830
+    start: 4251
+  HIV1B-vpr:
+    end: 5060
+    start: 4769
+  HIV1B-vpu:
+    end: 5528
+    start: 5282
+  INT:
+    end: 4307
+    start: 3440
+  PR:
+    end: 1760
+    start: 1463
+  RT:
+    end: 3440
+    start: 1760
+HIV1-F1-AR-DQ189088-seed:
+  GP120:
+    end: 7027
+    start: 5527
+  GP41:
+    end: 8065
+    start: 7027
+  HIV1B-gag:
+    end: 1586
+    start: 98
+  HIV1B-nef:
+    end: 8336
+    start: 8066
+  HIV1B-tat:
+    end: 5342
+    start: 5123
+  HIV1B-vif:
+    end: 4913
+    start: 4334
+  HIV1B-vpr:
+    end: 5143
+    start: 4852
+  HIV1B-vpu:
+    end: 5610
+    start: 5364
+  INT:
+    end: 4390
+    start: 3523
+  PR:
+    end: 1843
+    start: 1546
+  RT:
+    end: 3523
+    start: 1843
+HIV1-F1-BR-FJ771010-seed:
+  GP120:
+    end: 7523
+    start: 6014
+  GP41:
+    end: 8564
+    start: 7526
+  HIV1B-gag:
+    end: 2073
+    start: 552
+  HIV1B-nef:
+    end: 9216
+    start: 8565
+  HIV1B-tat:
+    end: 5829
+    start: 5610
+  HIV1B-vif:
+    end: 5400
+    start: 4821
+  HIV1B-vpr:
+    end: 5630
+    start: 5339
+  HIV1B-vpu:
+    end: 6097
+    start: 5851
+  INT:
+    end: 4877
+    start: 4010
+  PR:
+    end: 2330
+    start: 2033
+  RT:
+    end: 4010
+    start: 2330
+HIV1-F1-BR-KJ849782-seed:
+  GP120:
+    end: 7173
+    start: 5685
+  GP41:
+    end: 8211
+    start: 7173
+  HIV1B-gag:
+    end: 1759
+    start: 259
+  HIV1B-nef:
+    end: 8824
+    start: 8212
+  HIV1B-tat:
+    end: 5503
+    start: 5284
+  HIV1B-vif:
+    end: 5086
+    start: 4507
+  HIV1B-vpr:
+    end: 5304
+    start: 5025
+  HIV1B-vpu:
+    end: 5768
+    start: 5522
+  INT:
+    end: 4563
+    start: 3696
+  PR:
+    end: 2016
+    start: 1719
+  RT:
+    end: 3696
+    start: 2016
+HIV1-F1-BR-KJ849791-seed:
+  GP120:
+    end: 7142
+    start: 5639
+  GP41:
+    end: 8183
+    start: 7145
+  HIV1B-gag:
+    end: 1765
+    start: 259
+  HIV1B-nef:
+    end: 8493
+    start: 8184
+  HIV1B-tat:
+    end: 5454
+    start: 5235
+  HIV1B-vif:
+    end: 5095
+    start: 4513
+  HIV1B-vpr: {}
+  HIV1B-vpu:
+    end: 5722
+    start: 5476
+  INT:
+    end: 4569
+    start: 3702
+  PR:
+    end: 2022
+    start: 1725
+  RT:
+    end: 3702
+    start: 2022
+HIV1-F1-CY-JF683771-seed:
+  GP120:
+    end: 6923
+    start: 5423
+  GP41:
+    end: 7961
+    start: 6923
+  HIV1B-gag:
+    end: 1485
+    start: 0
+  HIV1B-nef:
+    end: 8094
+    start: 7962
+  HIV1B-tat:
+    end: 5241
+    start: 5022
+  HIV1B-vif:
+    end: 4812
+    start: 4233
+  HIV1B-vpr:
+    end: 5042
+    start: 4751
+  HIV1B-vpu:
+    end: 5506
+    start: 5260
+  INT:
+    end: 4289
+    start: 3422
+  PR:
+    end: 1742
+    start: 1445
+  RT:
+    end: 3422
+    start: 1742
+HIV1-F1-ES-FJ670516-seed:
+  GP120:
+    end: 7170
+    start: 5685
+  GP41:
+    end: 8214
+    start: 7176
+  HIV1B-gag:
+    end: 1744
+    start: 247
+  HIV1B-nef:
+    end: 8836
+    start: 8215
+  HIV1B-tat:
+    end: 5500
+    start: 5281
+  HIV1B-vif:
+    end: 5071
+    start: 4492
+  HIV1B-vpr:
+    end: 5301
+    start: 5010
+  HIV1B-vpu:
+    end: 5768
+    start: 5522
+  INT:
+    end: 4548
+    start: 3681
+  PR:
+    end: 2001
+    start: 1704
+  RT:
+    end: 3681
+    start: 2001
+HIV1-F1-ES-KJ883138-seed:
+  GP120:
+    end: 7154
+    start: 5651
+  GP41:
+    end: 8192
+    start: 7154
+  HIV1B-gag:
+    end: 1716
+    start: 228
+  HIV1B-nef:
+    end: 8844
+    start: 8193
+  HIV1B-tat:
+    end: 5472
+    start: 5253
+  HIV1B-vif:
+    end: 5043
+    start: 4464
+  HIV1B-vpr:
+    end: 5273
+    start: 4982
+  HIV1B-vpu:
+    end: 5734
+    start: 5491
+  INT:
+    end: 4520
+    start: 3653
+  PR:
+    end: 1973
+    start: 1676
+  RT:
+    end: 3653
+    start: 1973
+HIV1-F1-RO-AB485658-seed:
+  GP120:
+    end: 7811
+    start: 6257
+  GP41:
+    end: 8849
+    start: 7811
+  HIV1B-gag:
+    end: 2316
+    start: 828
+  HIV1B-nef:
+    end: 9489
+    start: 8850
+  HIV1B-tat:
+    end: 6072
+    start: 5853
+  HIV1B-vif:
+    end: 5643
+    start: 5064
+  HIV1B-vpr:
+    end: 5873
+    start: 5582
+  HIV1B-vpu:
+    end: 6340
+    start: 6094
+  INT:
+    end: 5120
+    start: 4253
+  PR:
+    end: 2573
+    start: 2276
+  RT:
+    end: 4253
+    start: 2573
+HIV1-F1-RU-GQ290462-seed:
+  GP120:
+    end: 7243
+    start: 5692
+  GP41:
+    end: 8281
+    start: 7243
+  HIV1B-gag:
+    end: 1751
+    start: 245
+  HIV1B-nef:
+    end: 8935
+    start: 8287
+  HIV1B-tat:
+    end: 5507
+    start: 5288
+  HIV1B-vif:
+    end: 5078
+    start: 4499
+  HIV1B-vpr:
+    end: 5308
+    start: 5017
+  HIV1B-vpu:
+    end: 5775
+    start: 5529
+  INT:
+    end: 4555
+    start: 3688
+  PR:
+    end: 2008
+    start: 1711
+  RT:
+    end: 3688
+    start: 2008
+HIV1-F2-CM-AY371158-seed:
+  GP120:
+    end: 6916
+    start: 5416
+  GP41:
+    end: 7954
+    start: 6916
+  HIV1B-gag:
+    end: 1482
+    start: 0
+  HIV1B-nef:
+    end: 8348
+    start: 7955
+  HIV1B-tat:
+    end: 5241
+    start: 5022
+  HIV1B-vif:
+    end: 4812
+    start: 4230
+  HIV1B-vpr:
+    end: 5042
+    start: 4751
+  HIV1B-vpu:
+    end: 5499
+    start: 5253
+  INT:
+    end: 4286
+    start: 3419
+  PR:
+    end: 1739
+    start: 1442
+  RT:
+    end: 3419
+    start: 1739
+HIV1-F2-CM-JX140672-seed:
+  GP120:
+    end: 7017
+    start: 5487
+  GP41:
+    end: 8055
+    start: 7017
+  HIV1B-gag:
+    end: 1556
+    start: 44
+  HIV1B-nef:
+    end: 8695
+    start: 8056
+  HIV1B-tat:
+    end: 5315
+    start: 5096
+  HIV1B-vif:
+    end: 4886
+    start: 4304
+  HIV1B-vpr:
+    end: 5116
+    start: 4825
+  HIV1B-vpu:
+    end: 5570
+    start: 5324
+  INT:
+    end: 4360
+    start: 3493
+  PR:
+    end: 1813
+    start: 1516
+  RT:
+    end: 3493
+    start: 1813
+HIV1-F2-CM-JX140673-seed:
+  GP120:
+    end: 7078
+    start: 5572
+  GP41:
+    end: 8116
+    start: 7078
+  HIV1B-gag:
+    end: 1639
+    start: 154
+  HIV1B-nef:
+    end: 8738
+    start: 8117
+  HIV1B-tat:
+    end: 5398
+    start: 5179
+  HIV1B-vif:
+    end: 4969
+    start: 4387
+  HIV1B-vpr:
+    end: 5199
+    start: 4908
+  HIV1B-vpu:
+    end: 5655
+    start: 5409
+  INT:
+    end: 4443
+    start: 3576
+  PR:
+    end: 1896
+    start: 1599
+  RT:
+    end: 3576
+    start: 1896
+HIV1-G-CM-JX140676-seed:
+  GP120:
+    end: 7120
+    start: 5614
+  GP41:
+    end: 8158
+    start: 7120
+  HIV1B-gag:
+    end: 1673
+    start: 173
+  HIV1B-nef:
+    end: 8798
+    start: 8159
+  HIV1B-tat:
+    end: 5429
+    start: 5210
+  HIV1B-vif:
+    end: 5000
+    start: 4421
+  HIV1B-vpr:
+    end: 5230
+    start: 4939
+  HIV1B-vpu:
+    end: 5697
+    start: 5451
+  INT:
+    end: 4477
+    start: 3610
+  PR:
+    end: 1930
+    start: 1633
+  RT:
+    end: 3610
+    start: 1930
+HIV1-G-CM-KP109502-seed:
+  GP120:
+    end: 7127
+    start: 5564
+  GP41:
+    end: 8186
+    start: 7127
+  HIV1B-gag:
+    end: 1623
+    start: 123
+  HIV1B-nef:
+    end: 8811
+    start: 8187
+  HIV1B-tat:
+    end: 5379
+    start: 5160
+  HIV1B-vif:
+    end: 4950
+    start: 4371
+  HIV1B-vpr:
+    end: 5180
+    start: 4889
+  HIV1B-vpu:
+    end: 5647
+    start: 5401
+  INT:
+    end: 4427
+    start: 3560
+  PR:
+    end: 1880
+    start: 1583
+  RT:
+    end: 3560
+    start: 1880
+HIV1-G-CM-KP718923-seed:
+  GP120:
+    end: 7116
+    start: 5628
+  GP41:
+    end: 8175
+    start: 7116
+  HIV1B-gag:
+    end: 1684
+    start: 193
+  HIV1B-nef:
+    end: 8800
+    start: 8176
+  HIV1B-tat:
+    end: 5443
+    start: 5224
+  HIV1B-vif:
+    end: 5014
+    start: 4432
+  HIV1B-vpr:
+    end: 5244
+    start: 4953
+  HIV1B-vpu:
+    end: 5711
+    start: 5465
+  INT:
+    end: 4488
+    start: 3621
+  PR:
+    end: 1941
+    start: 1644
+  RT:
+    end: 3621
+    start: 1941
+HIV1-G-CN-JN106043-seed:
+  GP120:
+    end: 6987
+    start: 5469
+  GP41:
+    end: 8049
+    start: 6990
+  HIV1B-gag:
+    end: 1532
+    start: 26
+  HIV1B-nef:
+    end: 8673
+    start: 8049
+  HIV1B-tat:
+    end: 5291
+    start: 5072
+  HIV1B-vif:
+    end: 4859
+    start: 4280
+  HIV1B-vpr:
+    end: 5092
+    start: 4798
+  HIV1B-vpu:
+    end: 5552
+    start: 5306
+  INT:
+    end: 4336
+    start: 3469
+  PR:
+    end: 1789
+    start: 1492
+  RT:
+    end: 3469
+    start: 1789
+HIV1-G-ES-GU362882-seed:
+  GP120:
+    end: 7237
+    start: 5716
+  GP41:
+    end: 8293
+    start: 7234
+  HIV1B-gag:
+    end: 1775
+    start: 266
+  HIV1B-nef:
+    end: 8921
+    start: 8294
+  HIV1B-tat:
+    end: 5531
+    start: 5312
+  HIV1B-vif:
+    end: 5102
+    start: 4523
+  HIV1B-vpr:
+    end: 5332
+    start: 5041
+  HIV1B-vpu:
+    end: 5799
+    start: 5553
+  INT:
+    end: 4579
+    start: 3712
+  PR:
+    end: 2032
+    start: 1735
+  RT:
+    end: 3712
+    start: 2032
+HIV1-G-ES-KT276261-seed:
+  GP120:
+    end: 7271
+    start: 5696
+  GP41:
+    end: 8333
+    start: 7274
+  HIV1B-gag:
+    end: 1758
+    start: 252
+  HIV1B-nef:
+    end: 8979
+    start: 8334
+  HIV1B-tat:
+    end: 5517
+    start: 5298
+  HIV1B-vif:
+    end: 5085
+    start: 4506
+  HIV1B-vpr:
+    end: 5318
+    start: 5024
+  HIV1B-vpu:
+    end: 5779
+    start: 5533
+  INT:
+    end: 4562
+    start: 3695
+  PR:
+    end: 2015
+    start: 1718
+  RT:
+    end: 3695
+    start: 2015
+HIV1-G-GH-AB287004-seed:
+  GP120:
+    end: 7803
+    start: 6273
+  GP41:
+    end: 8862
+    start: 7803
+  HIV1B-gag:
+    end: 2332
+    start: 832
+  HIV1B-nef:
+    end: 9487
+    start: 8863
+  HIV1B-tat:
+    end: 6088
+    start: 5869
+  HIV1B-vif:
+    end: 5659
+    start: 5080
+  HIV1B-vpr:
+    end: 5889
+    start: 5598
+  HIV1B-vpu:
+    end: 6356
+    start: 6110
+  INT:
+    end: 5136
+    start: 4269
+  PR:
+    end: 2589
+    start: 2292
+  RT:
+    end: 4269
+    start: 2589
+HIV1-G-KE-KF716477-seed:
+  GP120:
+    end: 7127
+    start: 5609
+  GP41:
+    end: 8168
+    start: 7130
+  HIV1B-gag:
+    end: 1667
+    start: 173
+  HIV1B-nef:
+    end: 8826
+    start: 8169
+  HIV1B-tat:
+    end: 5423
+    start: 5204
+  HIV1B-vif:
+    end: 4994
+    start: 4415
+  HIV1B-vpr:
+    end: 5224
+    start: 4933
+  HIV1B-vpu:
+    end: 5692
+    start: 5446
+  INT:
+    end: 4471
+    start: 3604
+  PR:
+    end: 1924
+    start: 1627
+  RT:
+    end: 3604
+    start: 1924
+HIV1-G-NG-JN248593-seed:
+  GP120:
+    end: 6933
+    start: 5424
+  GP41:
+    end: 7995
+    start: 6936
+  HIV1B-gag:
+    end: 1484
+    start: 2
+  HIV1B-nef:
+    end: 8608
+    start: 7996
+  HIV1B-tat:
+    end: 5240
+    start: 5021
+  HIV1B-vif:
+    end: 4811
+    start: 4232
+  HIV1B-vpr:
+    end: 5041
+    start: 4750
+  HIV1B-vpu:
+    end: 5507
+    start: 5261
+  INT:
+    end: 4288
+    start: 3421
+  PR:
+    end: 1741
+    start: 1444
+  RT:
+    end: 3421
+    start: 1741
+HIV1-G-PT-FR846409-seed:
+  GP120:
+    end: 7736
+    start: 6173
+  GP41:
+    end: 8792
+    start: 7733
+  HIV1B-gag:
+    end: 2232
+    start: 738
+  HIV1B-nef:
+    end: 9432
+    start: 8793
+  HIV1B-tat:
+    end: 5988
+    start: 5769
+  HIV1B-vif:
+    end: 5559
+    start: 4980
+  HIV1B-vpr:
+    end: 5789
+    start: 5498
+  HIV1B-vpu:
+    end: 6256
+    start: 6010
+  INT:
+    end: 5036
+    start: 4169
+  PR:
+    end: 2489
+    start: 2192
+  RT:
+    end: 4169
+    start: 2489
+HIV1-GOR-CM-FJ424866-seed:
+  GP120:
+    end: 7309
+    start: 5767
+  GP41:
+    end: 8383
+    start: 7315
+  HIV1B-gag:
+    end: 1829
+    start: 350
+  HIV1B-nef:
+    end: 9017
+    start: 8384
+  HIV1B-tat:
+    end: 5591
+    start: 5372
+  HIV1B-vif:
+    end: 5156
+    start: 4577
+  HIV1B-vpr:
+    end: 5392
+    start: 5095
+  HIV1B-vpu: {}
+  INT:
+    end: 4633
+    start: 3766
+  PR:
+    end: 2086
+    start: 1789
+  RT:
+    end: 3766
+    start: 2086
+HIV1-GOR-CM-KP004990-seed:
+  GP120:
+    end: 7174
+    start: 5590
+  GP41:
+    end: 8257
+    start: 7189
+  HIV1B-gag:
+    end: 1633
+    start: 151
+  HIV1B-nef:
+    end: 8894
+    start: 8261
+  HIV1B-tat:
+    end: 5395
+    start: 5176
+  HIV1B-vif:
+    end: 4960
+    start: 4381
+  HIV1B-vpr:
+    end: 5196
+    start: 4899
+  HIV1B-vpu: {}
+  INT:
+    end: 4437
+    start: 3570
+  PR:
+    end: 1890
+    start: 1593
+  RT:
+    end: 3570
+    start: 1890
+HIV1-GOR-CM-KP004991-seed:
+  GP120:
+    end: 7292
+    start: 5699
+  GP41:
+    end: 8366
+    start: 7298
+  HIV1B-gag:
+    end: 1762
+    start: 256
+  HIV1B-nef:
+    end: 9003
+    start: 8367
+  HIV1B-tat:
+    end: 5527
+    start: 5311
+  HIV1B-vif:
+    end: 5089
+    start: 4510
+  HIV1B-vpr:
+    end: 5331
+    start: 5028
+  HIV1B-vpu: {}
+  INT:
+    end: 4566
+    start: 3699
+  PR:
+    end: 2019
+    start: 1722
+  RT:
+    end: 3699
+    start: 2019
+HIV1-H-BE-AF190127-seed:
+  GP120:
+    end: 7156
+    start: 5605
+  GP41:
+    end: 8194
+    start: 7156
+  HIV1B-gag:
+    end: 1681
+    start: 175
+  HIV1B-nef:
+    end: 8820
+    start: 8196
+  HIV1B-tat:
+    end: 5437
+    start: 5218
+  HIV1B-vif:
+    end: 5008
+    start: 4429
+  HIV1B-vpr:
+    end: 5238
+    start: 4947
+  HIV1B-vpu: {}
+  INT:
+    end: 4485
+    start: 3618
+  PR:
+    end: 1938
+    start: 1641
+  RT:
+    end: 3618
+    start: 1938
+HIV1-H-BE-AF190128-seed:
+  GP120:
+    end: 7071
+    start: 5529
+  GP41:
+    end: 8109
+    start: 7071
+  HIV1B-gag:
+    end: 1616
+    start: 116
+  HIV1B-nef:
+    end: 8735
+    start: 8111
+  HIV1B-tat:
+    end: 5372
+    start: 5153
+  HIV1B-vif:
+    end: 4943
+    start: 4364
+  HIV1B-vpr:
+    end: 5173
+    start: 4882
+  HIV1B-vpu:
+    end: 5615
+    start: 5378
+  INT:
+    end: 4420
+    start: 3553
+  PR:
+    end: 1873
+    start: 1576
+  RT:
+    end: 3553
+    start: 1873
+HIV1-H-CF-AF005496-seed:
+  GP120:
+    end: 7076
+    start: 5567
+  GP41:
+    end: 8114
+    start: 7076
+  HIV1B-gag:
+    end: 1639
+    start: 136
+  HIV1B-nef:
+    end: 8737
+    start: 8116
+  HIV1B-tat:
+    end: 5395
+    start: 5176
+  HIV1B-vif:
+    end: 4966
+    start: 4387
+  HIV1B-vpr:
+    end: 5196
+    start: 4905
+  HIV1B-vpu:
+    end: 5650
+    start: 5407
+  INT:
+    end: 4443
+    start: 3576
+  PR:
+    end: 1896
+    start: 1599
+  RT:
+    end: 3576
+    start: 1896
+HIV1-H-GB-FJ711703-seed:
+  GP120:
+    end: 7265
+    start: 5735
+  GP41:
+    end: 8303
+    start: 7265
+  HIV1B-gag:
+    end: 1810
+    start: 310
+  HIV1B-nef:
+    end: 8929
+    start: 8305
+  HIV1B-tat:
+    end: 5566
+    start: 5347
+  HIV1B-vif:
+    end: 5137
+    start: 4558
+  HIV1B-vpr:
+    end: 5367
+    start: 5076
+  HIV1B-vpu:
+    end: 5818
+    start: 5575
+  INT:
+    end: 4614
+    start: 3747
+  PR:
+    end: 2067
+    start: 1770
+  RT:
+    end: 3747
+    start: 2067
+HIV1-J-CD-EF614151-seed:
+  GP120:
+    end: 6957
+    start: 5427
+  GP41:
+    end: 7998
+    start: 6960
+  HIV1B-gag:
+    end: 1487
+    start: 2
+  HIV1B-nef:
+    end: 8582
+    start: 7949
+  HIV1B-tat:
+    end: 5242
+    start: 5023
+  HIV1B-vif:
+    end: 4813
+    start: 4234
+  HIV1B-vpr:
+    end: 5043
+    start: 4752
+  HIV1B-vpu:
+    end: 5510
+    start: 5264
+  INT:
+    end: 4290
+    start: 3423
+  PR:
+    end: 1744
+    start: 1447
+  RT:
+    end: 3423
+    start: 1743
+HIV1-J-SE-AF082394-seed:
+  GP120:
+    end: 7064
+    start: 5546
+  GP41:
+    end: 8102
+    start: 7064
+  HIV1B-gag:
+    end: 1606
+    start: 112
+  HIV1B-nef:
+    end: 8715
+    start: 8103
+  HIV1B-tat:
+    end: 5362
+    start: 5143
+  HIV1B-vif:
+    end: 4933
+    start: 4354
+  HIV1B-vpr:
+    end: 5163
+    start: 4872
+  HIV1B-vpu:
+    end: 5629
+    start: 5383
+  INT:
+    end: 4410
+    start: 3543
+  PR:
+    end: 1863
+    start: 1566
+  RT:
+    end: 3543
+    start: 1863
+HIV1-J-SE-AF082395-seed:
+  GP120:
+    end: 7071
+    start: 5547
+  GP41:
+    end: 8109
+    start: 7071
+  HIV1B-gag:
+    end: 1607
+    start: 113
+  HIV1B-nef:
+    end: 8725
+    start: 8110
+  HIV1B-tat:
+    end: 5363
+    start: 5144
+  HIV1B-vif:
+    end: 4934
+    start: 4355
+  HIV1B-vpr:
+    end: 5164
+    start: 4873
+  HIV1B-vpu:
+    end: 5630
+    start: 5384
+  INT:
+    end: 4411
+    start: 3544
+  PR:
+    end: 1864
+    start: 1567
+  RT:
+    end: 3544
+    start: 1864
+HIV1-K-CD-AJ249235-seed:
+  GP120:
+    end: 6940
+    start: 5422
+  GP41:
+    end: 7978
+    start: 6940
+  HIV1B-gag:
+    end: 1488
+    start: 0
+  HIV1B-nef:
+    end: 8600
+    start: 7979
+  HIV1B-tat:
+    end: 5240
+    start: 5021
+  HIV1B-vif:
+    end: 4811
+    start: 4232
+  HIV1B-vpr:
+    end: 5041
+    start: 4750
+  HIV1B-vpu:
+    end: 5505
+    start: 5259
+  INT:
+    end: 4254
+    start: 3426
+  PR:
+    end: 1745
+    start: 1448
+  RT:
+    end: 3425
+    start: 1745
+HIV1-K-CM-AJ249239-seed:
+  GP120:
+    end: 6917
+    start: 5426
+  GP41:
+    end: 7955
+    start: 6917
+  HIV1B-gag:
+    end: 1488
+    start: 0
+  HIV1B-nef:
+    end: 8604
+    start: 7956
+  HIV1B-tat:
+    end: 5244
+    start: 5025
+  HIV1B-vif:
+    end: 4815
+    start: 4236
+  HIV1B-vpr:
+    end: 5045
+    start: 4754
+  HIV1B-vpu:
+    end: 5509
+    start: 5263
+  INT:
+    end: 4292
+    start: 3425
+  PR:
+    end: 1745
+    start: 1448
+  RT:
+    end: 3425
+    start: 1745
+HIV1-N-CM-AY532635-seed:
+  GP120:
+    end: 7178
+    start: 5696
+  GP41:
+    end: 8249
+    start: 7181
+  HIV1B-gag:
+    end: 1798
+    start: 259
+  HIV1B-nef:
+    end: 8892
+    start: 8250
+  HIV1B-tat:
+    end: 5551
+    start: 5332
+  HIV1B-vif:
+    end: 5125
+    start: 4546
+  HIV1B-vpr:
+    end: 5352
+    start: 5064
+  HIV1B-vpu: {}
+  INT:
+    end: 4602
+    start: 3735
+  PR:
+    end: 2055
+    start: 1758
+  RT:
+    end: 3735
+    start: 2055
+HIV1-N-CM-DQ017382-seed:
+  GP120:
+    end: 7156
+    start: 5707
+  GP41:
+    end: 8221
+    start: 7159
+  HIV1B-gag:
+    end: 1797
+    start: 261
+  HIV1B-nef:
+    end: 8861
+    start: 8222
+  HIV1B-tat:
+    end: 5550
+    start: 5331
+  HIV1B-vif:
+    end: 5124
+    start: 4545
+  HIV1B-vpr:
+    end: 5351
+    start: 5063
+  HIV1B-vpu: {}
+  INT:
+    end: 4601
+    start: 3734
+  PR:
+    end: 2054
+    start: 1757
+  RT:
+    end: 3734
+    start: 2054
+HIV1-N-CM-GQ324959-seed:
+  GP120:
+    end: 7150
+    start: 5692
+  GP41:
+    end: 8215
+    start: 7153
+  HIV1B-gag:
+    end: 1782
+    start: 258
+  HIV1B-nef:
+    end: 8615
+    start: 8216
+  HIV1B-tat:
+    end: 5535
+    start: 5316
+  HIV1B-vif:
+    end: 5109
+    start: 4530
+  HIV1B-vpr:
+    end: 5336
+    start: 5048
+  HIV1B-vpu: {}
+  INT:
+    end: 4586
+    start: 3719
+  PR:
+    end: 2039
+    start: 1742
+  RT:
+    end: 3719
+    start: 2039
+HIV1-N-CM-GQ324962-seed:
+  GP120:
+    end: 7202
+    start: 5684
+  GP41:
+    end: 8267
+    start: 7205
+  HIV1B-gag:
+    end: 1795
+    start: 259
+  HIV1B-nef:
+    end: 8544
+    start: 8268
+  HIV1B-tat:
+    end: 5548
+    start: 5329
+  HIV1B-vif:
+    end: 5122
+    start: 4543
+  HIV1B-vpr:
+    end: 5349
+    start: 5061
+  HIV1B-vpu: {}
+  INT:
+    end: 4599
+    start: 3732
+  PR:
+    end: 2052
+    start: 1755
+  RT:
+    end: 3732
+    start: 2052
+HIV1-N-FR-JN572926-seed:
+  GP120:
+    end: 7084
+    start: 5602
+  GP41:
+    end: 8149
+    start: 7087
+  HIV1B-gag:
+    end: 1693
+    start: 154
+  HIV1B-nef:
+    end: 8786
+    start: 8150
+  HIV1B-tat:
+    end: 5446
+    start: 5227
+  HIV1B-vif:
+    end: 5020
+    start: 4441
+  HIV1B-vpr:
+    end: 5247
+    start: 4959
+  HIV1B-vpu: {}
+  INT:
+    end: 4497
+    start: 3630
+  PR:
+    end: 1950
+    start: 1653
+  RT:
+    end: 3630
+    start: 1950
+HIV1-O-BE-L20587-seed:
+  GP120:
+    end: 7798
+    start: 6277
+  GP41:
+    end: 8863
+    start: 7810
+  HIV1B-gag:
+    end: 2346
+    start: 840
+  HIV1B-nef:
+    end: 9506
+    start: 8864
+  HIV1B-tat:
+    end: 6099
+    start: 5886
+  HIV1B-vif:
+    end: 5673
+    start: 5094
+  HIV1B-vpr:
+    end: 5906
+    start: 5612
+  HIV1B-vpu: {}
+  INT:
+    end: 5150
+    start: 4283
+  PR:
+    end: 2603
+    start: 2306
+  RT:
+    end: 4283
+    start: 2603
+HIV1-O-CM-AY169802-seed:
+  GP120:
+    end: 7287
+    start: 5727
+  GP41:
+    end: 8367
+    start: 7305
+  HIV1B-gag:
+    end: 1778
+    start: 272
+  HIV1B-nef:
+    end: 9010
+    start: 8368
+  HIV1B-tat:
+    end: 5540
+    start: 5327
+  HIV1B-vif:
+    end: 5105
+    start: 4526
+  HIV1B-vpr:
+    end: 5347
+    start: 5044
+  HIV1B-vpu: {}
+  INT:
+    end: 4582
+    start: 3715
+  PR:
+    end: 2035
+    start: 1738
+  RT:
+    end: 3715
+    start: 2035
+HIV1-O-CM-AY169804-seed:
+  GP120:
+    end: 7321
+    start: 5725
+  GP41:
+    end: 8392
+    start: 7336
+  HIV1B-gag:
+    end: 1782
+    start: 276
+  HIV1B-nef:
+    end: 9029
+    start: 8393
+  HIV1B-tat:
+    end: 5547
+    start: 5331
+  HIV1B-vif:
+    end: 5109
+    start: 4530
+  HIV1B-vpr:
+    end: 5351
+    start: 5048
+  HIV1B-vpu: {}
+  INT:
+    end: 4586
+    start: 3719
+  PR:
+    end: 2039
+    start: 1742
+  RT:
+    end: 3719
+    start: 2039
+HIV1-O-CM-AY169807-seed:
+  GP120:
+    end: 7316
+    start: 5723
+  GP41:
+    end: 8381
+    start: 7328
+  HIV1B-gag:
+    end: 1777
+    start: 271
+  HIV1B-nef:
+    end: 9021
+    start: 8382
+  HIV1B-tat:
+    end: 5545
+    start: 5326
+  HIV1B-vif:
+    end: 5104
+    start: 4525
+  HIV1B-vpr:
+    end: 5346
+    start: 5043
+  HIV1B-vpu: {}
+  INT:
+    end: 4581
+    start: 3714
+  PR:
+    end: 2034
+    start: 1737
+  RT:
+    end: 3714
+    start: 2034
+HIV1-O-CM-AY169808-seed:
+  GP120:
+    end: 7246
+    start: 5713
+  GP41:
+    end: 8326
+    start: 7258
+  HIV1B-gag:
+    end: 1779
+    start: 273
+  HIV1B-nef:
+    end: 8957
+    start: 8327
+  HIV1B-tat:
+    end: 5541
+    start: 5328
+  HIV1B-vif:
+    end: 5106
+    start: 4527
+  HIV1B-vpr:
+    end: 5348
+    start: 5045
+  HIV1B-vpu: {}
+  INT:
+    end: 4583
+    start: 3716
+  PR:
+    end: 2036
+    start: 1739
+  RT:
+    end: 3716
+    start: 2036
+HIV1-O-CM-AY169815-seed:
+  GP120:
+    end: 7265
+    start: 5711
+  GP41:
+    end: 8339
+    start: 7277
+  HIV1B-gag:
+    end: 1777
+    start: 271
+  HIV1B-nef:
+    end: 8976
+    start: 8340
+  HIV1B-tat:
+    end: 5539
+    start: 5326
+  HIV1B-vif:
+    end: 5104
+    start: 4525
+  HIV1B-vpr:
+    end: 5346
+    start: 5043
+  HIV1B-vpu: {}
+  INT:
+    end: 4581
+    start: 3714
+  PR:
+    end: 2034
+    start: 1737
+  RT:
+    end: 3714
+    start: 2034
+HIV1-O-FR-AF407418-seed:
+  GP120:
+    end: 7361
+    start: 5795
+  GP41:
+    end: 8429
+    start: 7373
+  HIV1B-gag:
+    end: 1858
+    start: 349
+  HIV1B-nef:
+    end: 9078
+    start: 8454
+  HIV1B-tat:
+    end: 5623
+    start: 5407
+  HIV1B-vif:
+    end: 5185
+    start: 4606
+  HIV1B-vpr:
+    end: 5427
+    start: 5124
+  HIV1B-vpu: {}
+  INT:
+    end: 4662
+    start: 3795
+  PR:
+    end: 2115
+    start: 1818
+  RT:
+    end: 3795
+    start: 2115
+HIV1-O-GA-JX245015-seed:
+  GP120:
+    end: 7021
+    start: 5449
+  GP41:
+    end: 8101
+    start: 7033
+  HIV1B-gag:
+    end: 1503
+    start: 0
+  HIV1B-nef:
+    end: 8744
+    start: 8102
+  HIV1B-tat:
+    end: 5271
+    start: 5052
+  HIV1B-vif:
+    end: 4830
+    start: 4251
+  HIV1B-vpr:
+    end: 5072
+    start: 4769
+  HIV1B-vpu: {}
+  INT:
+    end: 4307
+    start: 3440
+  PR:
+    end: 1760
+    start: 1463
+  RT:
+    end: 3440
+    start: 1760
+HIV1-O-SN-AJ302646-seed:
+  GP120:
+    end: 7848
+    start: 6282
+  GP41:
+    end: 8931
+    start: 7860
+  HIV1B-gag:
+    end: 2345
+    start: 842
+  HIV1B-nef:
+    end: 9568
+    start: 8932
+  HIV1B-tat:
+    end: 6110
+    start: 5894
+  HIV1B-vif:
+    end: 5672
+    start: 5093
+  HIV1B-vpr:
+    end: 5914
+    start: 5611
+  HIV1B-vpu: {}
+  INT:
+    end: 5149
+    start: 4282
+  PR:
+    end: 2602
+    start: 2305
+  RT:
+    end: 4282
+    start: 2602
+HIV1-O-US-JN571034-seed:
+  GP120:
+    end: 7722
+    start: 6186
+  GP41:
+    end: 8787
+    start: 7734
+  HIV1B-gag:
+    end: 2267
+    start: 761
+  HIV1B-nef: {}
+  HIV1B-tat:
+    end: 6020
+    start: 5807
+  HIV1B-vif:
+    end: 5594
+    start: 5015
+  HIV1B-vpr:
+    end: 5827
+    start: 5533
+  HIV1B-vpu: {}
+  INT:
+    end: 5071
+    start: 4204
+  PR:
+    end: 2524
+    start: 2227
+  RT:
+    end: 4204
+    start: 2524
+HIV1-P-CM-HQ179987-seed:
+  GP120:
+    end: 7291
+    start: 5710
+  GP41:
+    end: 8368
+    start: 7306
+  HIV1B-gag:
+    end: 1763
+    start: 275
+  HIV1B-nef:
+    end: 9023
+    start: 8369
+  HIV1B-tat:
+    end: 5525
+    start: 5306
+  HIV1B-vif:
+    end: 5090
+    start: 4511
+  HIV1B-vpr:
+    end: 5326
+    start: 5029
+  HIV1B-vpu: {}
+  INT:
+    end: 4567
+    start: 3700
+  PR:
+    end: 2020
+    start: 1723
+  RT:
+    end: 3700
+    start: 2020
+HIV1-P-FR-GU111555-seed:
+  GP120:
+    end: 7831
+    start: 6274
+  GP41:
+    end: 8914
+    start: 7846
+  HIV1B-gag:
+    end: 2327
+    start: 833
+  HIV1B-nef:
+    end: 9543
+    start: 8913
+  HIV1B-tat:
+    end: 6089
+    start: 5870
+  HIV1B-vif:
+    end: 5654
+    start: 5075
+  HIV1B-vpr:
+    end: 5890
+    start: 5593
+  HIV1B-vpu: {}
+  INT:
+    end: 5131
+    start: 4264
+  PR:
+    end: 2584
+    start: 2287
+  RT:
+    end: 4264
+    start: 2584
+HLA-B-seed:
+  HLA-B-exon2:
+    end: 470
+    start: 200
+  HLA-B-exon3:
+    end: 992
+    start: 716
+SARS-CoV-2-seed:
+  SARS-CoV-2-E:
+    end: 26472
+    start: 26244
+  SARS-CoV-2-M:
+    end: 27191
+    start: 26522
+  SARS-CoV-2-N:
+    end: 29533
+    start: 28273
+  SARS-CoV-2-ORF10:
+    end: 29674
+    start: 29557
+  SARS-CoV-2-ORF1ab:
+    end: 21373
+    start: 265
+  SARS-CoV-2-ORF3a:
+    end: 26220
+    start: 25392
+  SARS-CoV-2-ORF6:
+    end: 27387
+    start: 27201
+  SARS-CoV-2-ORF7a:
+    end: 27759
+    start: 27393
+  SARS-CoV-2-ORF7b:
+    end: 27887
+    start: 27755
+  SARS-CoV-2-ORF8:
+    end: 28259
+    start: 27893
+  SARS-CoV-2-S:
+    end: 25384
+    start: 21562
+  SARS-CoV-2-nsp1:
+    end: 805
+    start: 265
+  SARS-CoV-2-nsp10:
+    end: 13441
+    start: 13024
+  SARS-CoV-2-nsp11:
+    end: 13480
+    start: 13441
+  SARS-CoV-2-nsp12:
+    end: 16236
+    start: 13440
+  SARS-CoV-2-nsp13:
+    end: 18039
+    start: 16236
+  SARS-CoV-2-nsp14:
+    end: 19620
+    start: 18039
+  SARS-CoV-2-nsp15:
+    end: 20658
+    start: 19620
+  SARS-CoV-2-nsp16:
+    end: 21552
+    start: 20658
+  SARS-CoV-2-nsp2:
+    end: 2719
+    start: 805
+  SARS-CoV-2-nsp3:
+    end: 8554
+    start: 2719
+  SARS-CoV-2-nsp4:
+    end: 10054
+    start: 8554
+  SARS-CoV-2-nsp5:
+    end: 10972
+    start: 10054
+  SARS-CoV-2-nsp6:
+    end: 11842
+    start: 10972
+  SARS-CoV-2-nsp7:
+    end: 12091
+    start: 11842
+  SARS-CoV-2-nsp8:
+    end: 12685
+    start: 12091
+  SARS-CoV-2-nsp9:
+    end: 13024
+    start: 12685

@@ -4,6 +4,7 @@ from io import StringIO
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
 from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
+from micall.core.project_config import ProjectConfig
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
@@ -743,7 +744,7 @@ def test_alignments_file(projects):
                          unmerged_alignments_file=unmerged_alignments_file,
                          intermediate_alignments_file=intermediate_alignments_file)
     expected_text = """\
-coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+coordinate_name,contig,action,query_start,query_end,ref_start,ref_end,reading_frame,\
 ref_amino_start,aligned_query,aligned_ref
 """
 
@@ -757,7 +758,7 @@ def test_overall_alignments_file(projects):
     overall_alignments_file = StringIO()
     _ = ConsensusAligner(projects, overall_alignments_file=overall_alignments_file)
     expected_text = """\
-coordinate_name,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_str
+coordinate_name,contig,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_str
 """
 
     assert overall_alignments_file.getvalue() == expected_text
@@ -766,14 +767,14 @@ coordinate_name,query_start,query_end,consensus_offset,ref_start,ref_end,cigar_s
 # noinspection DuplicatedCode
 def test_write_alignment(projects):
     alignments_file = StringIO()
-    aligner = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner = ConsensusAligner(projects, alignments_file=alignments_file, contig_name='test_contig')
     aligner.coordinate_name = "test"
     amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10)]
 
     expected_text = """\
-coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+coordinate_name,contig,action,query_start,query_end,ref_start,ref_end,reading_frame,\
 ref_amino_start,aligned_query,aligned_ref
-test,MATCH,0,10,20,30,1,10,ATA,ACA
+test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
 """
 
     aligner.write_alignments_file(amino_alignments, aligner.alignments_writer)
@@ -784,20 +785,258 @@ test,MATCH,0,10,20,30,1,10,ATA,ACA
 # noinspection DuplicatedCode
 def test_write_multiple_alignments(projects):
     alignments_file = StringIO()
-    aligner = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner = ConsensusAligner(projects, alignments_file=alignments_file, contig_name='test_contig')
     aligner.coordinate_name = "test"
     amino_alignments = [AminoAlignment(0, 10, 20, 30, 0, 1, aligned_query="ATA", aligned_ref="ACA", ref_amino_start=10)]
     aligner.write_alignments_file(amino_alignments, aligner.alignments_writer)
-    aligner2 = ConsensusAligner(projects, alignments_file=alignments_file)
+    aligner2 = ConsensusAligner(projects, alignments_file=alignments_file, contig_name='test_contig_2')
     aligner2.coordinate_name = "2ndtest"
     amino_alignments2 = [AminoAlignment(0, 20, 40, 60, 0, 2, aligned_query="ABC", aligned_ref="DEF", ref_amino_start=4)]
     aligner2.write_alignments_file(amino_alignments2, aligner2.alignments_writer)
 
     expected_text = """\
-coordinate_name,action,query_start,query_end,ref_start,ref_end,reading_frame,\
+coordinate_name,contig,action,query_start,query_end,ref_start,ref_end,reading_frame,\
 ref_amino_start,aligned_query,aligned_ref
-test,MATCH,0,10,20,30,1,10,ATA,ACA
-2ndtest,MATCH,0,20,40,60,2,4,ABC,DEF
+test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
+2ndtest,test_contig_2,MATCH,0,20,40,60,2,4,ABC,DEF
 """
 
     assert alignments_file.getvalue() == expected_text
+
+
+# noinspection DuplicatedCode
+def test_count_coord_concordance():
+    projects = ProjectConfig()
+    projects.load(StringIO("""\
+    {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATAAGCA"]}}}
+    """))
+    aligner = ConsensusAligner(projects)
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    # changed nucs:                            ^^
+    aligner.coordinate_name = 'test-region'
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+
+    expected_concordance_list = [None]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] + [None]*9
+
+    concordance_list = aligner.coord_concordance()
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_coord_concordance_short_match():
+    projects = ProjectConfig()
+    projects.load(StringIO("""\
+    {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCATTT"]}}}
+    """))
+    aligner = ConsensusAligner(projects)
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    aligner.coordinate_name = 'test-region'
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+    # as the averaging window (size 20) slides along the reference, the concordance decreases from 15/20 = 0.75
+    # in 1 base intervals (1/20 = 0.05) down to 5 bases of the match left in the window (5/20 = 0.25)
+    expected_concordance_list = [None]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25] + [None]*9
+
+    concordance_list = aligner.coord_concordance()
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_coord_concordance_two_matches():
+    projects = ProjectConfig()
+    projects.load(StringIO("""\
+    {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCATTT"]}}}
+    """))
+    aligner = ConsensusAligner(projects)
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATTT"
+    aligner.coordinate_name = 'test-region'
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[[12, CigarActions.MATCH]]),
+                          AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[[15, CigarActions.MATCH]])]
+
+    expected_concordance_list = [None]*10 + [0.85]*11 + [None]*9
+
+    concordance_list = aligner.coord_concordance()
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_coord_concordance_with_insertion():
+    projects = ProjectConfig()
+    projects.load(StringIO("""\
+    {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCA"]}}}
+    """))
+    aligner = ConsensusAligner(projects)
+    aligner.consensus = "AGATTTCGACCCTGATTCAGAAGATTTGCA"
+    # insertion:                  ^^^
+    aligner.coordinate_name = 'test-region'
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
+                                                                                    [3, CigarActions.INSERT],
+                                                                                    [18, CigarActions.MATCH]])]
+
+    expected_concordance_list = [None]*10 + [1.0]*8 + [None]*9
+
+    concordance_list = aligner.coord_concordance()
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_coord_concordance_with_deletion():
+    projects = ProjectConfig()
+    projects.load(StringIO("""\
+    {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCA"]}}}
+    """))
+    aligner = ConsensusAligner(projects)
+    aligner.consensus = "AGATTTCGATTCAGAAGATTTGCA"
+    # deletion behind this pos:  ^
+    aligner.coordinate_name = 'test-region'
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
+                                                                                    [3, CigarActions.DELETE],
+                                                                                    [15, CigarActions.MATCH]])]
+
+    expected_concordance_list = [None]*10 + [0.85]*8 + [None]*9
+
+    concordance_list = aligner.coord_concordance()
+
+    assert concordance_list == expected_concordance_list
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance(projects):
+    seed_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               seed_concordance_file=seed_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,100.0
+"""
+
+    aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 27)
+
+    assert seed_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_mismatch(projects):
+    seed_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               seed_concordance_file=seed_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGACCCCCCGCATGA"
+    # mismatch:                            ^^^^^^
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,80.0,100.0
+"""
+
+    aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 30)
+
+    assert seed_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_seed_not_aligned(projects):
+    seed_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               seed_concordance_file=seed_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,50.0
+"""
+
+    aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 30)
+
+    assert seed_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_larger_match(projects):
+    seed_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               seed_concordance_file=seed_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,100.0
+"""
+
+    aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 15)
+
+    assert seed_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_insertion(projects):
+    seed_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               seed_concordance_file=seed_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGACCCTGATTCAGAAGATTTGCA"
+    # insert here:                ^^^
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
+                                                                                 [3, CigarActions.INSERT],
+                                                                                 [18, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,100.0
+"""
+
+    aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 27)
+
+    assert seed_concordance_file.getvalue() == expected_file
+
+
+# noinspection DuplicatedCode
+def test_count_seed_region_concordance_deletion(projects):
+    seed_concordance_file = StringIO()
+    aligner = ConsensusAligner(projects,
+                               seed_concordance_file=seed_concordance_file,
+                               contig_name='test-contig')
+    aligner.consensus = "AGATTTCGATTCAGAAGATTTGCATGA"
+    # deletion after this nuc:   ^
+    seed_name = 'test-seed'
+    seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
+    region = 'test-region'
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=27, cigar=[[9, CigarActions.MATCH],
+                                                                                 [3, CigarActions.DELETE],
+                                                                                 [18, CigarActions.MATCH]])]
+
+    expected_file = """\
+seed_name,contig,region,pct_concordance,pct_covered
+test-seed,test-contig,test-region,100.0,90.0
+"""
+
+    aligner.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, 0, 30)
+
+    assert seed_concordance_file.getvalue() == expected_file

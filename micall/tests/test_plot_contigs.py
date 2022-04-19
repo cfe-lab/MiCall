@@ -586,6 +586,36 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_deletion():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance,link
+1-HCV-1a,HCV1A,1,1,0,0,5,0,M
+1-HCV-1a,HCV1A,2,2,0,0,5,0.25,M
+1-HCV-1a,HCV1A,3,3,0,0,5,0.5,M
+1-HCV-1a,HCV1A,4,4,0,0,7,0.8,M
+1-HCV-1a,HCV1A,,5,,,,0.9,D
+1-HCV-1a,HCV1A,,6,,,,0.8,D
+1-HCV-1a,HCV1A,,7,,,,0.7,D
+1-HCV-1a,HCV1A,5,8,0,0,7,0.8,M
+1-HCV-1a,HCV1A,6,9,0,0,7,0.8,M
+1-HCV-1a,HCV1A,7,10,0,0,8,0.7,M
+1-HCV-1a,HCV1A,8,11,0,0,8,0.7,M
+1-HCV-1a,HCV1A,9,12,0,0,8,0.7,M
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Coverage 5x3, 7, 0x3, 7x2, 8x3
+[1-4], [8-12], 1-HCV-1a - depth 8(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
+
 def test_plot_genome_coverage_unmapped():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,link
@@ -1196,3 +1226,84 @@ def test_match_g2p_fake_contig():
     assert contig_matcher.ref == contig_name
     assert contig_matcher.num is None
     assert contig_matcher.name == contig_name
+
+
+def test_plot_genome_concordance():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance
+1-HCV-1a,HCV1A,1,1,0,0,5,0
+1-HCV-1a,HCV1A,2,2,0,0,5,0.25
+1-HCV-1a,HCV1A,3,3,0,0,7,0.5
+1-HCV-1a,HCV1A,4,4,0,0,5,1
+1-HCV-1a,HCV1A,5,5,0,0,5,0.3
+1-HCV-1a,HCV1A,6,6,0,0,5,0
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Concordance 0.0, 25.0, 50.0, 100.0, 30.0, 0.0
+[1-6], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, use_concordance=True)
+
+    assert expected_figure == summarize_figure(figure, is_concordance=True)
+
+
+def test_plot_genome_concordance_insertion():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance
+1-HCV-1a,HCV1A,1,1,0,0,5,0
+1-HCV-1a,HCV1A,2,2,0,0,5,0.25
+1-HCV-1a,HCV1A,3,3,0,0,5,0.5
+1-HCV-1a,HCV1A,4,,0,0,6,0.3
+1-HCV-1a,HCV1A,5,,0,0,6,0
+1-HCV-1a,HCV1A,6,,0,0,6,0.7
+1-HCV-1a,HCV1A,7,4,0,0,7,1.0
+1-HCV-1a,HCV1A,8,5,0,0,7,0.8
+1-HCV-1a,HCV1A,9,6,0,0,7,0.8
+1-HCV-1a,HCV1A,10,7,0,0,8,0.7
+1-HCV-1a,HCV1A,11,8,0,0,8,0.7
+1-HCV-1a,HCV1A,12,9,0,0,8,0.7
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Concordance 0.0, 25.0, 50.0, 100.0, 80.0x2, 70.0x3
+[1-9], 1-HCV-1a - depth 8(1-9646), lightgreen{4-6}
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, use_concordance=True)
+
+    assert expected_figure == summarize_figure(figure, is_concordance=True)
+
+
+def test_plot_genome_concordance_deletion():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance,link
+1-HCV-1a,HCV1A,1,1,0,0,5,0,M
+1-HCV-1a,HCV1A,2,2,0,0,5,0.25,M
+1-HCV-1a,HCV1A,3,3,0,0,5,0.5,M
+1-HCV-1a,HCV1A,4,4,0,0,7,0.8,M
+1-HCV-1a,HCV1A,,5,,,,0.9,D
+1-HCV-1a,HCV1A,,6,,,,0.8,D
+1-HCV-1a,HCV1A,,7,,,,0.7,D
+1-HCV-1a,HCV1A,5,8,0,0,7,0.8,M
+1-HCV-1a,HCV1A,6,9,0,0,7,0.8,M
+1-HCV-1a,HCV1A,7,10,0,0,8,0.7,M
+1-HCV-1a,HCV1A,8,11,0,0,8,0.7,M
+1-HCV-1a,HCV1A,9,12,0,0,8,0.7,M
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Concordance 0.0, 25.0, 50.0, 80.0, 90.0, 80.0, 70.0, 80.0x2, 70.0x3
+[1-4], [8-12], 1-HCV-1a - depth 8(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, use_concordance=True)
+
+    assert expected_figure == summarize_figure(figure, is_concordance=True)
