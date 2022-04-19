@@ -709,9 +709,9 @@ class KiveWatcher:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / (archive_name + '.tar')
             try:
-                sample_target_path = output_path / sample_name
-                sample_target_path.mkdir(exist_ok=True)
                 with tarfile.open(source_path) as f:
+                    sample_target_path = output_path / sample_name
+                    sample_target_path.mkdir(exist_ok=True)
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
                         target_path = sample_target_path / filename
