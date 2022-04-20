@@ -53,10 +53,10 @@ def parse_args():
                         help='CSV containing consensus sequences')
     parser.add_argument('conseq_all_csv',
                         help='CSV containing consensus sequences with low coverage')
-    parser.add_argument('conseq_region_csv',
-                        help='CSV containing consensus sequences, split by region')
-    parser.add_argument('conseq_stitched_csv',
-                        help='CSV containing stitched whole genome consensus sequences')
+    parser.add_argument('concordance_csv',
+                        help='CSV containing coordinate reference concordance measures for each region')
+    parser.add_argument('concordance_seed_csv',
+                        help='CSV containing seed concordance measures for each region')
     parser.add_argument('failed_align_csv',
                         help='CSV containing any consensus that failed to align')
     parser.add_argument('coverage_scores_csv',
@@ -86,12 +86,12 @@ def parse_args():
     parser.add_argument('read_entropy_csv',
                         nargs='?',
                         help='CSV containing read pair length counts')
-    parser.add_argument('concordance_csv',
+    parser.add_argument('conseq_region_csv',
                         nargs='?',
-                        help='CSV containing coordinate reference concordance measures for each region')
-    parser.add_argument('concordance_seed_csv',
+                        help='CSV containing consensus sequences, split by region')
+    parser.add_argument('conseq_stitched_csv',
                         nargs='?',
-                        help='CSV containing seed concordance measures for each region')
+                        help='CSV containing stitched whole genome consensus sequences')
 
     return parser.parse_args()
 
