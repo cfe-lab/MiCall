@@ -35,7 +35,7 @@ MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
                       'conseq_all_csv',
-                      'conseq_stitched.csv'
+                      'conseq_stitched_csv',
                       'conseq_region_csv',
                       'concordance_csv',
                       'concordance_seed_csv',

@@ -130,7 +130,7 @@ def load_sample(args):
                     genome_concordance_svg=args.genome_concordance_svg,
                     read_entropy_csv=args.read_entropy_csv,
                     concordance_csv=args.concordance_csv,
-                    concordance_seed=args.concordance_seed_csv,
+                    concordance_seed_csv=args.concordance_seed_csv,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample
