@@ -2,6 +2,7 @@ import os
 import csv
 from collections import defaultdict
 import argparse
+from numpy import std
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt   # noqa
@@ -14,7 +15,8 @@ def plot_histo(fig, counts, xlabel, fig_path, min_number=10):
     plt.xlabel(xlabel)
     plt.ylabel('Frequency')
     average = sum(counts) / len(counts)
-    plt.figtext(0.2, 0.9, f"Average: {average:.2f}")
+    standarddev = std(counts)
+    plt.figtext(0.2, 0.9, f"Average: {average:.2f}, Standard deviation {standarddev:.2f}")
     plt.savefig(fig_path)
     plt.cla()
     fig.texts = []  # remove figure text
