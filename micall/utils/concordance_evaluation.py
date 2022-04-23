@@ -77,41 +77,41 @@ def main():
         except FileNotFoundError:
             print(f"No concordance files found in {folder}")
 
-        for coord, regions in all_coord_concordances.items():
-            for region, counts in regions.items():
-                xlabel = 'Concordance'
-                fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_concordance.png')
-                plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
+    for coord, regions in all_coord_concordances.items():
+        for region, counts in regions.items():
+            xlabel = 'Concordance'
+            fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_concordance.png')
+            plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
 
-        for coord, regions in all_coord_coverages.items():
-            for region, counts in regions.items():
-                xlabel = '% Covered'
-                fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_covered.png')
-                plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
+    for coord, regions in all_coord_coverages.items():
+        for region, counts in regions.items():
+            xlabel = '% Covered'
+            fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_covered.png')
+            plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
 
-        for coord, regions in all_coord_covconc.items():
-            for region, counts in regions.items():
-                xlabel = '% Covered and Concordant'
-                fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_coveredconcordant.png')
-                plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
+    for coord, regions in all_coord_covconc.items():
+        for region, counts in regions.items():
+            xlabel = '% Covered and Concordant'
+            fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_coveredconcordant.png')
+            plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
 
-        for seed, regions in all_seed_concordances.items():
-            for region, counts in regions.items():
-                xlabel = 'Concordance'
-                fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_concordance.png')
-                plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
+    for seed, regions in all_seed_concordances.items():
+        for region, counts in regions.items():
+            xlabel = 'Concordance'
+            fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_concordance.png')
+            plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
 
-        for seed, regions in all_seed_coverages.items():
-            for region, counts in regions.items():
-                xlabel = '% Covered'
-                fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_covered.png')
-                plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
+    for seed, regions in all_seed_coverages.items():
+        for region, counts in regions.items():
+            xlabel = '% Covered'
+            fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_covered.png')
+            plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
 
-        for seed, regions in all_seed_covconc.items():
-            for region, counts in regions.items():
-                xlabel = '% Covered and Concordant'
-                fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_coveredconcordant.png')
-                plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
+    for seed, regions in all_seed_covconc.items():
+        for region, counts in regions.items():
+            xlabel = '% Covered and Concordant'
+            fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_coveredconcordant.png')
+            plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
 
 
 if __name__ == '__main__':
