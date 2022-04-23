@@ -3,7 +3,6 @@ import csv
 from collections import defaultdict
 import argparse
 from numpy import std
-import csv
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt   # noqa
@@ -106,10 +105,10 @@ def main():
                                std_covconc=std_covconc)
                     writer.writerow(row)
 
-        with open(os.path.join(args.results_folder, 'concordance_stats_seed.csv'), 'w') as stats_seed_csv:
-            columns_seed = ['seed', 'region', 'average_concordance', 'std_concordance',
-                            'average_covered', 'std_covered', 'average_covconc', 'std_covconc']
-            writer = csv.DictWriter(stats_seed_csv, columns_seed, lineterminator=os.linesep)
+    with open(os.path.join(args.results_folder, 'concordance_stats_seed.csv'), 'w') as stats_seed_csv:
+        columns_seed = ['seed', 'region', 'average_concordance', 'std_concordance',
+                        'average_covered', 'std_covered', 'average_covconc', 'std_covconc']
+        writer = csv.DictWriter(stats_seed_csv, columns_seed, lineterminator=os.linesep)
         for seed, regions in all_seed_stats.items():
             for region, stats in regions.items():
                 counts = stats['concordance']
