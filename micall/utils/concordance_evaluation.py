@@ -80,6 +80,7 @@ def main():
         columns = ['reference', 'region', 'average_concordance', 'std_concordance',
                    'average_covered', 'std_covered', 'average_covconc', 'std_covconc']
         writer = csv.DictWriter(stats_csv, columns, lineterminator=os.linesep)
+        writer.writeheader()
         for coord, regions in all_coord_stats.items():
             for region, stats in regions.items():
                 counts = stats['concordance']
@@ -109,6 +110,7 @@ def main():
         columns_seed = ['seed', 'region', 'average_concordance', 'std_concordance',
                         'average_covered', 'std_covered', 'average_covconc', 'std_covconc']
         writer = csv.DictWriter(stats_seed_csv, columns_seed, lineterminator=os.linesep)
+        writer.writeheader()
         for seed, regions in all_seed_stats.items():
             for region, stats in regions.items():
                 counts = stats['concordance']
