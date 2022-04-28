@@ -2,7 +2,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 from collections import namedtuple, defaultdict
-from concurrent.futures.process import ProcessPoolExecutor
+from concurrent.futures.process import ProcessPoolExecutor, BrokenProcessPool
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
@@ -65,6 +65,9 @@ def parse_args():
                         help='Main RAWDATA folder with results from previous version.')
     parser.add_argument('target_folder',
                         help='Testing RAWDATA folder to compare with.')
+    parser.add_argument('--workers',
+                        default=50,
+                        help='Number of parallel workers to process the samples.')
     return parser.parse_args()
 
 
@@ -655,11 +658,14 @@ def main():
                               Scenarios.VPR_FRAME_SHIFT_FIXED |
                               Scenarios.CONSENSUS_EXTENDED |
                               Scenarios.REMAP_COUNTS_CHANGED)
-        results = pool.map(partial(compare_sample,
-                                   scenarios_reported=scenarios_reported,
-                                   use_denovo=args.denovo),
-                           samples,
-                           chunksize=50)
+        try:
+            results = pool.map(partial(compare_sample,
+                                       scenarios_reported=scenarios_reported,
+                                       use_denovo=args.denovo),
+                               samples,
+                               chunksize=args.workers)
+        except BrokenProcessPool:
+            print("Broken Process Pool - probably the memory usage is too high. Try again with fewer workers!")
         scenario_summaries = defaultdict(list)
         i = 0
         all_consensus_distances = []
