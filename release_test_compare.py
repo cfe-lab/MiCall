@@ -67,6 +67,7 @@ def parse_args():
                         help='Testing RAWDATA folder to compare with.')
     parser.add_argument('--workers',
                         default=50,
+                        type=int,
                         help='Number of parallel workers to process the samples.')
     return parser.parse_args()
 
