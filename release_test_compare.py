@@ -666,6 +666,7 @@ def main():
                                chunksize=args.workers)
         except BrokenProcessPool:
             print("Broken Process Pool - probably the memory usage is too high. Try again with fewer workers!")
+            raise
         scenario_summaries = defaultdict(list)
         i = 0
         all_consensus_distances = []
