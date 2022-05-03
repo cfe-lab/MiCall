@@ -455,9 +455,20 @@ def compare_consensus(sample: Sample,
                          'coverage': '0'}
             if MICALL_VERSION == '7.15':
                 if region.split('-')[-1] == 'NS5b':
-                    target_nucs = [nuc for nuc, row in target_details]
+                    NS5b_nucs = [nuc for nuc, row in target_details]
+                    old_nucs = [nuc for nuc, row in source_details]
+                    first_pos_new = int(target_details[0][1]['refseq.nuc.pos'])
+                    first_pos_old = int(source_details[0][1]['refseq.nuc.pos'])
+                    print(f"{sample.name}, old: {first_pos_old}, new {first_pos_new}")
+                    if first_pos_old < first_pos_new:
+                        for pos in range(first_pos_new - first_pos_old):
+                            if old_nucs[pos] == 'x':
+                                source_details = source_details[1:]
+                            else:
+                                print(f"breaking at pos {pos}")
+                                break
                     last_codon = ''
-                    for nuc in target_nucs[-3:]:
+                    for nuc in NS5b_nucs[-3:]:
                         last_codon = last_codon + nuc
                     try:
                         last_amino = translate(last_codon)
