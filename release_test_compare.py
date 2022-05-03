@@ -456,8 +456,8 @@ def compare_consensus(sample: Sample,
             if MICALL_VERSION == '7.15':
                 if region.split('-')[-1] == 'NS5b':
                     NS5b_nucs = [nuc for nuc, row in target_details]
-                    new_positions = [row['refseq.nuc.pos'] for nuc, row in target_details]
-                    old_positions = [row['refseq.nuc.pos'] for nuc, row in target_details]
+                    new_positions = [int(row['refseq.nuc.pos']) for nuc, row in target_details]
+                    old_positions = [int(row['refseq.nuc.pos']) for nuc, row in source_details]
                     for position in old_positions:
                         if position not in new_positions:
                             target_details.insert(position-1, ('x', {'refseq.nuc.pos': position, 'coverage': '0'}))
