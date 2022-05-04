@@ -292,7 +292,7 @@ def map_coverage(coverage_scores):
         filtered_scores = {
             (project, region): scores
             for (project, region), scores in filtered_scores.items()
-            if project not in ('HIVB', 'HIVGHA') and region not in ('HIVB-tat', 'SARS-CoV-2-nsp11')}
+            if project not in ('HIVB', 'HIVGHA') and region not in ('HIV1B-tat', 'SARS-CoV-2-nsp11')}
 
     return filtered_scores
 
@@ -335,6 +335,11 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
                 MICALL_VERSION == '7.11'):
             # One sample failed in 7.10.
             pass
+        elif target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+            project, region = key
+            if project != 'HIVGHA':
+                # these two seeds only belong to the HIVGHA project code
+                continue
         elif source_compare != target_compare:
             project, region = key
             message = '{}:{} coverage: {} {} {} => {}'.format(
