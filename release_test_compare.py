@@ -335,7 +335,7 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
                 MICALL_VERSION == '7.11'):
             # One sample failed in 7.10.
             continue
-        elif MICALL_VERSION == '7.15' and key(0) == 'HIVGHA':
+        elif MICALL_VERSION == '7.15' and key[0] == 'HIVGHA':
             # ignore HIVGHA project code
             continue
         elif MICALL_VERSION == '7.15' and target_seed is None:
@@ -452,7 +452,7 @@ def compare_consensus(sample: Sample,
                           "SARS-CoV-2-TRS-B-9"):
                 continue
             if seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
-                # handled below
+                # ignore new HIVGHA seeds
                 continue
         primer_tracker = primer_trackers.get(seed)
         source_details = source_seqs.get(key)
