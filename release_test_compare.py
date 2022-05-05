@@ -292,7 +292,7 @@ def map_coverage(coverage_scores):
         filtered_scores = {
             (project, region): scores
             for (project, region), scores in filtered_scores.items()
-            if project not in ('HIVB', 'HIVGHA') and region not in ('HIV1B-tat', 'SARS-CoV-2-nsp11')}
+            if project != 'HIVB' and region not in ('HIV1B-tat', 'SARS-CoV-2-nsp11')}
 
     return filtered_scores
 
@@ -334,15 +334,20 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
                 sample.name.startswith('90308A') and
                 MICALL_VERSION == '7.11'):
             # One sample failed in 7.10.
-            pass
+            continue
+        elif MICALL_VERSION == '7.15' and key(0) == 'HIVGHA':
+            # ignore HIVGHA project code
+            continue
         elif MICALL_VERSION == '7.15' and target_seed is None:
             project, region = key
             hivgha_result = target_scores.get(('HIVGHA', region))
             if hivgha_result is not None:
-                hivgha_seed = hivgha_result(1)
-                if hivgha_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                # retrieve HIVGHA project code results for comparison
+                (target_score, target_seed, target_key_pos) = hivgha_result
+                if target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                    # ignore samples that switched to the new HIVGHA seeds
                     continue
-        elif source_compare != target_compare:
+        if source_compare != target_compare:
             project, region = key
             message = '{}:{} coverage: {} {} {} => {}'.format(
                 run_name,
@@ -453,9 +458,11 @@ def compare_consensus(sample: Sample,
         source_details = source_seqs.get(key)
         target_details = target_seqs.get(key)
         if MICALL_VERSION == '7.15' and target_details is None:
-            # match up with new HIVGHA seeds
+            # ignore samples that map to the new HIVGHA seeds
             target_details = target_seqs.get(('HIV1-CRF02_AG-GH-AB286855-seed', region)) or \
                 target_seqs.get(('HIV1-CRF06_CPX-GH-AB286851-seed', region))
+            if target_details is not None:
+                continue
         source_nucs = []
         target_nucs = []
         if source_details is None:
@@ -586,6 +593,11 @@ def filter_consensus_sequences(files, use_denovo):
         coverage_scores = [row
                            for row in coverage_scores
                            if row['project'] != 'SARSCOV2']
+
+    if MICALL_VERSION == '7.15':
+        coverage_scores = [row
+                           for row in coverage_scores
+                           if row['project'] != 'HIVB']
 
     covered_regions = {(row.get('seed'), row.get('region'))
                        for row in coverage_scores
