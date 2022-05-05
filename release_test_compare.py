@@ -335,11 +335,13 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
                 MICALL_VERSION == '7.11'):
             # One sample failed in 7.10.
             pass
-        elif target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+        elif MICALL_VERSION == '7.15' and target_seed is None:
             project, region = key
-            if project != 'HIVGHA':
-                # these two seeds only belong to the HIVGHA project code
-                continue
+            hivgha_result = target_scores.get(('HIVGHA', region))
+            if hivgha_result is not None:
+                hivgha_seed = hivgha_result(1)
+                if hivgha_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                    continue
         elif source_compare != target_compare:
             project, region = key
             message = '{}:{} coverage: {} {} {} => {}'.format(
@@ -431,21 +433,29 @@ def compare_consensus(sample: Sample,
     cutoff = MAX_CUTOFF
     for key in keys:
         seed, region = key
-        if MICALL_VERSION == '7.15' and region in ('HIV1B-tat',
-                                                   'SARS-CoV-2-nsp11',
-                                                   "SARS-CoV-2-TRS-B-1",
-                                                   "SARS-CoV-2-TRS-B-2",
-                                                   "SARS-CoV-2-TRS-B-3",
-                                                   "SARS-CoV-2-TRS-B-4",
-                                                   "SARS-CoV-2-TRS-B-5",
-                                                   "SARS-CoV-2-TRS-B-6",
-                                                   "SARS-CoV-2-TRS-B-7",
-                                                   "SARS-CoV-2-TRS-B-8",
-                                                   "SARS-CoV-2-TRS-B-9"):
-            continue
+        if MICALL_VERSION == '7.15':
+            if region in ('HIV1B-tat',
+                          'SARS-CoV-2-nsp11',
+                          "SARS-CoV-2-TRS-B-1",
+                          "SARS-CoV-2-TRS-B-2",
+                          "SARS-CoV-2-TRS-B-3",
+                          "SARS-CoV-2-TRS-B-4",
+                          "SARS-CoV-2-TRS-B-5",
+                          "SARS-CoV-2-TRS-B-6",
+                          "SARS-CoV-2-TRS-B-7",
+                          "SARS-CoV-2-TRS-B-8",
+                          "SARS-CoV-2-TRS-B-9"):
+                continue
+            if seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                # handled below
+                continue
         primer_tracker = primer_trackers.get(seed)
         source_details = source_seqs.get(key)
         target_details = target_seqs.get(key)
+        if MICALL_VERSION == '7.15' and target_details is None:
+            # match up with new HIVGHA seeds
+            target_details = target_seqs.get(('HIV1-CRF02_AG-GH-AB286855-seed', region)) or \
+                target_seqs.get(('HIV1-CRF06_CPX-GH-AB286851-seed', region))
         source_nucs = []
         target_nucs = []
         if source_details is None:
