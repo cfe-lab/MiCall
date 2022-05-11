@@ -330,23 +330,19 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
          target_key_pos) = target_scores.get(key, ('-', None, None))
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
-        if (source_compare == '-' and
-                sample.name.startswith('90308A') and
-                MICALL_VERSION == '7.11'):
-            # One sample failed in 7.10.
-            continue
-        elif MICALL_VERSION == '7.15' and key[0] == 'HIVGHA':
-            # ignore HIVGHA project code
-            continue
-        elif MICALL_VERSION == '7.15' and target_seed is None:
-            project, region = key
-            hivgha_result = target_scores.get(('HIVGHA', region))
-            if hivgha_result is not None:
-                # retrieve HIVGHA project code results for comparison
-                (target_score, target_seed, target_key_pos) = hivgha_result
-                if target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
-                    # ignore samples that switched to the new HIVGHA seeds
-                    continue
+        if MICALL_VERSION == '7.15':
+            if key[0] == 'HIVGHA':
+                # ignore HIVGHA project code
+                continue
+            elif target_seed is None:
+                project, region = key
+                hivgha_result = target_scores.get(('HIVGHA', region))
+                if hivgha_result is not None:
+                    # retrieve HIVGHA project code results for comparison
+                    (target_score, target_seed, target_key_pos) = hivgha_result
+                    if target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                        # ignore samples that switched to the new HIVGHA seeds
+                        continue
         if source_compare != target_compare:
             project, region = key
             message = '{}:{} coverage: {} {} {} => {}'.format(
@@ -588,11 +584,6 @@ def filter_consensus_sequences(files, use_denovo):
     coverage_scores = files.coverage_scores
     if not (region_consensus and coverage_scores):
         return {}
-
-    if MICALL_VERSION == '7.14':
-        coverage_scores = [row
-                           for row in coverage_scores
-                           if row['project'] != 'SARSCOV2']
 
     if MICALL_VERSION == '7.15':
         coverage_scores = [row
