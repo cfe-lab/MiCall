@@ -2012,7 +2012,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,1862,9,0,0,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 1542
+    expected_size = 1558
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
