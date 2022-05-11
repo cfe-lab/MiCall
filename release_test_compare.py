@@ -20,6 +20,7 @@ import Levenshtein
 from micall.utils.primer_tracker import PrimerTracker
 from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
+from micall_docker import get_available_memory
 
 MICALL_VERSION = '7.15'
 
@@ -53,7 +54,7 @@ class Scenarios(IntEnum):
 differ = Differ()
 
 
-def parse_args():
+def parse_args(default_max_active):
     # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Compare sample results for testing a new release.',
@@ -66,7 +67,7 @@ def parse_args():
     parser.add_argument('target_folder',
                         help='Testing RAWDATA folder to compare with.')
     parser.add_argument('--workers',
-                        default=50,
+                        default=default_max_active,
                         type=int,
                         help='Number of parallel workers to process the samples.')
     return parser.parse_args()
@@ -671,7 +672,11 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
 
 def main():
     print('Starting.')
-    args = parse_args()
+    available_memory = get_available_memory()
+    recommended_memory = int((1 << 30) * 1.5)  # 1.5GB
+    default_max_active = max(1, available_memory // recommended_memory)
+    args = parse_args(default_max_active)
+
     with ProcessPoolExecutor() as pool:
         runs = find_runs(args.source_folder, args.target_folder, args.denovo)
         runs = report_source_versions(runs)
