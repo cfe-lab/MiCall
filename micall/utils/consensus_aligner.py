@@ -739,7 +739,7 @@ class ConsensusAligner:
 
     def count_insertion(self, amino_alignment, start_pos, end_pos):
         ref_nuc_index = amino_alignment.ref_start
-        consensus_nuc_index = amino_alignment.query_start - 1
+        consensus_nuc_index = amino_alignment.query_start
         section_size = (amino_alignment.query_end - amino_alignment.query_start) // 3
         for _ in range(section_size):
             if start_pos - 1 <= ref_nuc_index < end_pos:
