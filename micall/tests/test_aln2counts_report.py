@@ -1430,7 +1430,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
 
 
 def test_merge_extra_counts_insertion(projects, default_sequence_report):
-    """ Check that an insertion is correctly handled by merge_extra_counts """
+    """ Check that an insertion after a deletion is correctly handled by merge_extra_counts """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     read_seq = seed_seq[789:888] + seed_seq[900:999] + 'TTTTTTTTTTTT' + seed_seq[999:1200]
@@ -1482,26 +1482,26 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
 
 
 def test_merge_extra_counts_insertion_vpr(projects, default_sequence_report):
-    """ Check that an insertion is correctly handled by merge_extra_counts """
+    """ Check that an insertion in vpr is correctly handled by merge_extra_counts """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     read_seq = seed_seq[5558:5800] + 'AAAAAAAAA' + seed_seq[5800:5850]
     # vpr, insertion behind skip pos (5772)
     aligned_reads = prepare_reads(f"""\
-HIV1-B-FR-K03455-seed,15,0,10,1,{read_seq}
+HIV1-B-FR-K03455-seed,15,0,10,0,{read_seq}
 """)
 # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
 # A,C,G,T,N,del,ins,clip,v3_overlap,coverage
     expected_insertion = """\
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,239,5797,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,241,240,5798,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,242,241,5799,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,242,5800,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,253,243,5801,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,239,5797,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,240,5798,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,241,241,5799,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,242,5800,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,243,5801,0,0,0,10,0,0,0,0,0,10"""
     expected_amino_insertion = """\
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,237,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,236,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
 
     nuc_csv = StringIO()
     amino_csv = StringIO()
@@ -1515,6 +1515,42 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0
     insertion_report = '\n'.join(report_lines[320:325])
     amino_report_lines = amino_csv.getvalue().splitlines()
     amino_report = '\n'.join(amino_report_lines[105:108])
+    assert insertion_report == expected_insertion
+    assert amino_report == expected_amino_insertion
+
+
+def test_merge_extra_counts_insertion_nsp12(projects, default_sequence_report):
+    """ Check that an insertion after the duplicated position is correctly handled by merge_extra_counts """
+    seed_name = 'SARS-CoV-2-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[13441:13600] + 'AAAAAAAAA' + seed_seq[13600:13700]
+    # nsp12, insertion behind repeated pos (13468)
+    aligned_reads = prepare_reads(f"""\
+SARS-CoV-2-seed,15,0,10,0,{read_seq}
+""")
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,157,157,13598,0,0,10,0,0,0,0,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,158,158,13599,0,0,0,10,0,0,10,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,168,159,13600,10,0,0,0,0,0,0,0,0,10"""
+    expected_amino_insertion = """\
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,153,52,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,156,53,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,168,54,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    insertion_report = '\n'.join(report_lines[455:458])
+    amino_report_lines = amino_csv.getvalue().splitlines()
+    amino_report = '\n'.join(amino_report_lines[151:154])
     assert insertion_report == expected_insertion
     assert amino_report == expected_amino_insertion
 
