@@ -1399,7 +1399,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 # noinspection DuplicatedCode
 def test_nuc_large_insertion_not_multiple_of_three(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
-    for translated regions, even if it is out of frame"""
+    for translated regions, even if it not a multiple of three long"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,\
 ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
@@ -1427,6 +1427,57 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
     key_lines = report_lines[50:57]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
+
+
+def test_merge_extra_counts_insertion(projects, default_sequence_report):
+    """ Check that an insertion is correctly handled by merge_extra_counts """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[789:888] + seed_seq[900:999] + 'TTTTTTTTTTTT' + seed_seq[999:1200]
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,10,1,{read_seq}
+""")
+    # deletion of 6 ^ behind the A
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_deletion = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,100,99,888,0,0,0,10,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,100,889,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,101,890,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,102,891,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,103,892,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,104,893,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,105,894,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,106,895,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,107,896,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,108,897,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,109,898,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,110,899,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,111,900,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,101,112,901,10,0,0,0,0,0,0,0,0,10"""
+    expected_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,208,997,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,198,209,998,0,10,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,199,210,999,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,211,1000,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,213,212,1001,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    report = nuc_csv.getvalue()
+    report_lines = report.splitlines()
+    deletion_lines = report_lines[99:113]
+    insertion_lines = report_lines[208:214]
+    deletion_report = '\n'.join(deletion_lines)
+    insertion_report = '\n'.join(insertion_lines)
+    assert deletion_report == expected_deletion
+    assert insertion_report == expected_insertion
 
 
 # noinspection DuplicatedCode
