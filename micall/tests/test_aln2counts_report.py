@@ -1437,26 +1437,21 @@ def test_merge_extra_counts_insertion(projects, default_sequence_report):
     aligned_reads = prepare_reads(f"""\
 HIV1-B-FR-K03455-seed,15,0,10,1,{read_seq}
 """)
-    # deletion of 6 ^ behind the A
-    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
-    #                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,
+    # partial,del,ins,clip,v3_overlap,coverage
     expected_deletion = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,100,99,888,0,0,0,10,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,100,889,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,101,890,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,102,891,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,103,892,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,104,893,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,105,894,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,106,895,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,107,896,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,108,897,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,109,898,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,110,899,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,111,900,0,0,0,0,0,10,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,101,112,901,10,0,0,0,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,98,33,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,101,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10"""
+    expected_insertion_amino = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,194,69,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,70,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,71,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+    # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,
+    # A,C,G,T,N,del,ins,clip,v3_overlap,coverage
     expected_insertion = """\
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,208,997,10,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,198,209,998,0,10,0,0,0,0,0,0,0,10
@@ -1466,18 +1461,62 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,213,212,1001,0,0,10,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
 
     nuc_csv = StringIO()
+    amino_csv = StringIO()
     default_sequence_report.read(aligned_reads)
     default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
     default_sequence_report.write_insertions(default_sequence_report.insert_writer)
     default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
-    report = nuc_csv.getvalue()
-    report_lines = report.splitlines()
-    deletion_lines = report_lines[99:113]
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    amino_lines = amino_csv.getvalue().splitlines()
+    deletion_lines = amino_lines[33:39]
+    amino_insertion_lines = amino_lines[69:72]
     insertion_lines = report_lines[208:214]
     deletion_report = '\n'.join(deletion_lines)
+    amino_insertion_report = '\n'.join(amino_insertion_lines)
     insertion_report = '\n'.join(insertion_lines)
     assert deletion_report == expected_deletion
     assert insertion_report == expected_insertion
+    assert amino_insertion_report == expected_insertion_amino
+
+
+def test_merge_extra_counts_insertion_vpr(projects, default_sequence_report):
+    """ Check that an insertion is correctly handled by merge_extra_counts """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[5558:5800] + 'AAAAAAAAA' + seed_seq[5800:5850]
+    # vpr, insertion behind skip pos (5772)
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,10,1,{read_seq}
+""")
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,239,5797,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,241,240,5798,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,242,241,5799,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,242,5800,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,253,243,5801,0,0,0,10,0,0,0,0,0,10"""
+    expected_amino_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,237,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    insertion_report = '\n'.join(report_lines[320:325])
+    amino_report_lines = amino_csv.getvalue().splitlines()
+    amino_report = '\n'.join(amino_report_lines[105:108])
+    assert insertion_report == expected_insertion
+    assert amino_report == expected_amino_insertion
 
 
 # noinspection DuplicatedCode

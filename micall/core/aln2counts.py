@@ -1127,8 +1127,13 @@ class SequenceReport(object):
             region_info = landmark_reader.get_gene(
                 coordinate_name,
                 region)
+            region_start = region_info.get('start')
             repeated_pos = region_info.get('duplicated_pos')
+            if repeated_pos is not None:
+                repeated_pos = repeated_pos - region_start + 1
             skipped_pos = region_info.get('skipped_pos')
+            if skipped_pos is not None:
+                skipped_pos = skipped_pos - region_start + 1
             report_aminos = self.reports[region]
             first_amino_index = None
             last_amino_index = None
@@ -1160,7 +1165,7 @@ class SequenceReport(object):
                 for i, report_amino in enumerate(report_aminos):
                     seed_amino = report_amino.seed_amino
                     if i < first_amino_index:
-                        consensus_nuc_index = (i - first_amino_index) * 3 #this might be wrong
+                        consensus_nuc_index = (i - first_amino_index) * 3
                     elif i > last_amino_index:
                         consensus_nuc_index = (i - last_amino_index) * 3 + \
                                               last_consensus_nuc_index_amino
