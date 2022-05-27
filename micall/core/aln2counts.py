@@ -1121,7 +1121,14 @@ class SequenceReport(object):
                 break
 
     def merge_extra_counts(self):
+        landmark_reader = LandmarkReader(self.landmarks)
         for region, report_nucleotides in self.report_nucleotides.items():
+            coordinate_name = landmark_reader.get_coordinates(self.seed)
+            region_info = landmark_reader.get_gene(
+                coordinate_name,
+                region)
+            repeated_pos = region_info.get('duplicated_pos')
+            skipped_pos = region_info.get('skipped_pos')
             report_aminos = self.reports[region]
             first_amino_index = None
             last_amino_index = None
@@ -1150,11 +1157,10 @@ class SequenceReport(object):
             seed_clipping = self.clipping_counts[seed_name]
             seed_insertion_counts = self.conseq_insertion_counts[seed_name]
             if first_amino_index is not None:
-                report_nuc_index = 0
                 for i, report_amino in enumerate(report_aminos):
                     seed_amino = report_amino.seed_amino
                     if i < first_amino_index:
-                        consensus_nuc_index = (i - first_amino_index) * 3
+                        consensus_nuc_index = (i - first_amino_index) * 3 #this might be wrong
                     elif i > last_amino_index:
                         consensus_nuc_index = (i - last_amino_index) * 3 + \
                                               last_consensus_nuc_index_amino
@@ -1164,45 +1170,34 @@ class SequenceReport(object):
                         if consensus_nuc_index is None:
                             continue
                     for j, seed_nuc in enumerate(seed_amino.nucleotides):
-                        if len(report_nucleotides) <= report_nuc_index:
-                            break
-                        report_nuc = report_nucleotides[report_nuc_index]
                         query_pos = j + consensus_nuc_index + 1
                         seed_nuc.clip_count = seed_clipping[query_pos]
                         seed_nuc.insertion_count = seed_insertion_counts[query_pos]
                         insertion_counts = self.insert_writer.insert_pos_counts[
                             (self.seed, region)]
+                        ref_nuc_pos = (report_amino.position - 1) * 3 + j + 1
+                        if skipped_pos is not None and ref_nuc_pos >= skipped_pos:
+                            ref_nuc_pos += 1
+                        elif repeated_pos is not None and ref_nuc_pos > repeated_pos:
+                            ref_nuc_pos -= 1
                         seed_nuc.insertion_count += (
-                            insertion_counts[report_nuc.position])
-                        report_nuc.seed_nucleotide.insertion_count += (
-                            insertion_counts[report_nuc.position])
-                        if (report_nuc.seed_nucleotide.consensus_index in
-                                (None, seed_nuc.consensus_index)):
-                            report_nuc.seed_nucleotide.clip_count = \
-                                seed_clipping[query_pos]
-                            report_nuc.seed_nucleotide.insertion_count += \
-                                seed_insertion_counts[query_pos]
-                            report_nuc_index += 1
-            elif first_nuc_index is not None:
-                report_nuc_index = 0
+                            insertion_counts[ref_nuc_pos])
+            if first_nuc_index is not None:
                 for i, report_nuc in enumerate(report_nucleotides):
                     seed_nuc = report_nuc.seed_nucleotide
                     if i < first_nuc_index:
-                        consensus_nuc_index = i - first_nuc_index
+                        consensus_nuc_index = first_nuc_index - i - 1
                     elif i > last_nuc_index:
                         consensus_nuc_index = i - last_nuc_index + last_consensus_nuc_index
                     else:
                         consensus_nuc_index = seed_nuc.consensus_index
                         if consensus_nuc_index is None:
                             continue
-                    if len(report_nucleotides) <= report_nuc_index:
-                        break
                     query_pos = consensus_nuc_index + 1
                     insertion_counts = self.insert_writer.insert_pos_counts[(self.seed, region)]
                     seed_nuc.insertion_count += insertion_counts[report_nuc.position]
                     seed_nuc.insertion_count += seed_insertion_counts[query_pos]
                     seed_nuc.clip_count = seed_clipping[query_pos]
-                    report_nuc_index += 1
 
     def write_nuc_detail_counts(self, nuc_detail_writer=None):
         nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer
