@@ -1519,6 +1519,44 @@ HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0
     assert amino_report == expected_amino_insertion
 
 
+def test_merge_extra_counts_insertion_vpr_noskip(projects, default_sequence_report):
+    """ Check that an insertion in vpr without the skip pos is correctly handled by merge_extra_counts """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[5558:5771] + seed_seq[5772:5800] + 'AAAAAAAAA' + seed_seq[5800:5850]
+    # vpr, insertion behind skip pos (5772)
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,10,0,{read_seq}
+""")
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,239,5797,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,240,5798,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,241,5799,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,250,242,5800,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,243,5801,0,0,0,10,0,0,0,0,0,10"""
+    expected_amino_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,235,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,250,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    insertion_report = '\n'.join(report_lines[320:325])
+    amino_report_lines = amino_csv.getvalue().splitlines()
+    amino_report = '\n'.join(amino_report_lines[105:108])
+    assert insertion_report == expected_insertion
+    assert amino_report == expected_amino_insertion
+
+
 def test_merge_extra_counts_insertion_nsp12(projects, default_sequence_report):
     """ Check that an insertion after the duplicated position is correctly handled by merge_extra_counts """
     seed_name = 'SARS-CoV-2-seed'
