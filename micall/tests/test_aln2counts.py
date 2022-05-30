@@ -711,6 +711,38 @@ R1-seed,R1,15,7,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
 
         assert self.report_file.getvalue() == expected_text
 
+    def testSoftClippingAminoReportMoreOffset(self):
+        """ Combine the soft clipping data with the read counts.
+        """
+        # refname,qcut,rank,count,offset,seq
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,9,5,TTTAGG
+""")
+        clipping = StringIO("""\
+refname,pos,count
+R1-seed,3,9
+R1-seed,4,9
+R1-seed,5,9
+R1-seed,11,9
+""")
+
+        expected_text = """\
+seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,\
+A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,coverage
+R1-seed,R1,15,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0
+R1-seed,R1,15,6,2,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
+R1-seed,R1,15,9,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,9,0,9
+"""
+
+        self.report.read_clipping(clipping)
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()
+        self.report.write_amino_counts()
+
+        assert self.report_file.getvalue() == expected_text
+
     def testMultiplePrefixSoftClippingAminoReport(self):
         """ Combine the soft clipping data with the read counts.
         """

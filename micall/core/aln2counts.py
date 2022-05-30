@@ -1139,13 +1139,17 @@ class SequenceReport(object):
             last_amino_index = None
             first_nuc_index = None
             last_nuc_index = None
+            first_consensus_nuc_index_amino = None
             last_consensus_nuc_index_amino = None
+            first_consensus_nuc_index =None
             last_consensus_nuc_index = None
             for i, report_amino in enumerate(report_aminos):
                 seed_amino = report_amino.seed_amino
                 if seed_amino.consensus_nuc_index is not None:
                     if first_amino_index is None:
                         first_amino_index = i
+                    if first_consensus_nuc_index_amino is None:
+                        first_consensus_nuc_index_amino = seed_amino.consensus_nuc_index
                     last_amino_index = i
                     last_consensus_nuc_index_amino = seed_amino.consensus_nuc_index
             for i, report_nucleotide in enumerate(report_nucleotides):
@@ -1153,6 +1157,8 @@ class SequenceReport(object):
                 if seed_nucleotide.consensus_index is not None:
                     if first_nuc_index is None:
                         first_nuc_index = i
+                    if first_consensus_nuc_index is None:
+                        first_consensus_nuc_index = seed_nucleotide.consensus_index
                     last_nuc_index = i
                     last_consensus_nuc_index = seed_nucleotide.consensus_index
             if not self.has_detail_counts:
@@ -1165,7 +1171,8 @@ class SequenceReport(object):
                 for i, report_amino in enumerate(report_aminos):
                     seed_amino = report_amino.seed_amino
                     if i < first_amino_index:
-                        consensus_nuc_index = (i - first_amino_index) * 3
+                        consensus_nuc_index = (i - first_amino_index) * 3 + \
+                                              first_consensus_nuc_index_amino
                     elif i > last_amino_index:
                         consensus_nuc_index = (i - last_amino_index) * 3 + \
                                               last_consensus_nuc_index_amino
@@ -1191,7 +1198,7 @@ class SequenceReport(object):
                 for i, report_nuc in enumerate(report_nucleotides):
                     seed_nuc = report_nuc.seed_nucleotide
                     if i < first_nuc_index:
-                        consensus_nuc_index = first_nuc_index - i - 1
+                        consensus_nuc_index = i - first_nuc_index + first_consensus_nuc_index
                     elif i > last_nuc_index:
                         consensus_nuc_index = i - last_nuc_index + last_consensus_nuc_index
                     else:
