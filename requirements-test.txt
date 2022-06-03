@@ -3,7 +3,7 @@
 -r requirements.txt
 -r requirements-watcher.txt
 pytest==7.1.2
-coverage==6.3.2
+coverage==6.4.1
 pandas==1.4.2
 seaborn==0.11.2
 ete3
