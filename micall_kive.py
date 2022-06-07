@@ -53,10 +53,10 @@ def parse_args():
                         help='CSV containing consensus sequences')
     parser.add_argument('conseq_all_csv',
                         help='CSV containing consensus sequences with low coverage')
-    parser.add_argument('conseq_region_csv',
-                        help='CSV containing consensus sequences, split by region')
-    parser.add_argument('conseq_stitched_csv',
-                        help='CSV containing stitched whole genome consensus sequences')
+    parser.add_argument('concordance_csv',
+                        help='CSV containing coordinate reference concordance measures for each region')
+    parser.add_argument('concordance_seed_csv',
+                        help='CSV containing seed concordance measures for each region')
     parser.add_argument('failed_align_csv',
                         help='CSV containing any consensus that failed to align')
     parser.add_argument('coverage_scores_csv',
@@ -73,6 +73,9 @@ def parse_args():
     parser.add_argument('genome_coverage_svg',
                         nargs='?',
                         help='SVG diagram of coverage in full-genome coordinates')
+    parser.add_argument('genome_concordance_svg',
+                        nargs='?',
+                        help='SVG diagram of concordance in full-genome coordinates')
     parser.add_argument('--denovo',
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
@@ -83,6 +86,12 @@ def parse_args():
     parser.add_argument('read_entropy_csv',
                         nargs='?',
                         help='CSV containing read pair length counts')
+    parser.add_argument('conseq_region_csv',
+                        nargs='?',
+                        help='CSV containing consensus sequences, split by region')
+    parser.add_argument('conseq_stitched_csv',
+                        nargs='?',
+                        help='CSV containing stitched whole genome consensus sequences')
 
     return parser.parse_args()
 
@@ -118,7 +127,10 @@ def load_sample(args):
                     contigs_csv=args.contigs_csv,
                     genome_coverage_csv=args.genome_coverage_csv,
                     genome_coverage_svg=args.genome_coverage_svg,
+                    genome_concordance_svg=args.genome_concordance_svg,
                     read_entropy_csv=args.read_entropy_csv,
+                    concordance_csv=args.concordance_csv,
+                    concordance_seed_csv=args.concordance_seed_csv,
                     scratch_path=scratch_path)
     sample.name = None  # Since the file names are messy in Kive.
     return sample

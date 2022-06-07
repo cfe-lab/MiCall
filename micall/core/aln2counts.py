@@ -123,6 +123,15 @@ def parse_args():
     parser.add_argument('--alignments_overall_csv',
                         type=argparse.FileType('w'),
                         help='CSV of overall amino alignments')
+    parser.add_argument('--concordance_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing concordance measures of the regions')
+    parser.add_argument('--concordance_detailed_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing concordance along the entire coordinate reference')
+    parser.add_argument('--concordance_seed_csv',
+                        type=argparse.FileType('w'),
+                        help='CSV containing concordance measures of the regions for each seed')
     return parser.parse_args()
 
 
@@ -357,7 +366,7 @@ class SequenceReport(object):
         self.reports: typing.Dict[
             str,  # coordinate_name
             typing.List[ReportAmino]] = defaultdict(list)
-        self.inserts = self.consensus = self.seed = self.insert_nucs = None
+        self.inserts = self.consensus = self.seed = self.insert_nucs = self.detail_seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
         self.consensus_aligner = ConsensusAligner(projects)
@@ -366,6 +375,10 @@ class SequenceReport(object):
                               'landmark_references.yaml')
             landmarks_yaml = landmarks_path.read_text()
         self.landmarks = yaml.safe_load(landmarks_yaml)
+        seed_region_coordinates_path = (Path(__file__).parent.parent / 'data' /
+                                        'seed_coordinates.yaml')
+        seed_regions_yaml = seed_region_coordinates_path.read_text()
+        self.seed_region_coordinates = yaml.safe_load(seed_regions_yaml)
         self.coordinate_refs = self.remap_conseqs = None
 
         self.consensus_builder = ConsensusBuilder(self.conseq_mixture_cutoffs,
@@ -401,6 +414,9 @@ class SequenceReport(object):
         self.conseq_stitched_writer = None
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
+        self.concordance_writer = self.detailed_concordance_writer = None
+        self.seed_concordance_csv = None
+        self.coord_concordance = []
 
     @property
     def has_detail_counts(self):
@@ -566,6 +582,8 @@ class SequenceReport(object):
             elif self.amino_writer is not None:
                 self.write_amino_counts(self.amino_writer,
                                         coverage_summary=coverage_summary)
+            if self.concordance_writer is not None and not self.has_detail_counts:
+                self.write_coordinate_concordance(self.concordance_writer, self.detailed_concordance_writer)
             if self.fail_writer is not None:
                 self.write_failure(self.fail_writer)
             if self.has_detail_counts:
@@ -580,6 +598,10 @@ class SequenceReport(object):
             self.write_whole_genome_consensus_from_nuc(self.conseq_stitched_writer)
         if self.conseq_region_writer is not None:
             self.write_consensus_regions(self.conseq_region_writer)
+        if self.concordance_writer is not None and self.has_detail_counts:
+            self.write_coordinate_concordance(self.concordance_writer,
+                                              self.detailed_concordance_writer,
+                                              use_combined_reports=True)
 
     def read(self,
              aligned_reads,
@@ -605,15 +627,20 @@ class SequenceReport(object):
         self.inserts = {}  # {coord_name: set([consensus_index])}
         self.insert_nucs = {}  # {coord_name: {position: insertion counts}}
         self.consensus = {}  # {coord_name: consensus_amino_seq}
+        self.coord_concordance = []
+
+        # populates these dictionaries, generates amino acid counts
+        self._count_reads(aligned_reads)
+
         if self.consensus_aligner.consensus is not None:
             self.consensus_aligner = ConsensusAligner(self.projects,
                                                       self.alignments_csv,
                                                       self.unmerged_alignments_csv,
                                                       self.intermediate_alignments_csv,
-                                                      self.overall_alignments_csv)
+                                                      self.overall_alignments_csv,
+                                                      self.seed_concordance_csv,
+                                                      self.detail_seed)
 
-        # populates these dictionaries, generates amino acid counts
-        self._count_reads(aligned_reads)
         is_partial = (self.seed.endswith(PARTIAL_CONTIG_SUFFIX) or
                       self.seed.endswith(REVERSED_CONTIG_SUFFIX))
         if is_partial:
@@ -654,6 +681,10 @@ class SequenceReport(object):
             if coordinate_name in excluded_regions:
                 continue
             self._map_to_coordinate_ref(coordinate_name)
+
+        self.consensus_aligner.seed_concordance(self.seed, self.projects, self.seed_region_coordinates,
+                                                excluded_regions, included_regions)
+        self.coord_concordance = self.consensus_aligner.coord_concordance()
 
     def read_clipping(self, clipping_csv):
         for row in csv.DictReader(clipping_csv):
@@ -843,6 +874,20 @@ class SequenceReport(object):
                                                   lineterminator=os.linesep)
         self.minimap_hits_writer.writeheader()
 
+    def write_concordance_header(self, concordance_file, is_detailed=False):
+        columns = ['reference', 'region', 'pct_concordance', 'pct_covered']
+        if is_detailed:
+            columns.append('position')
+            self.detailed_concordance_writer = csv.DictWriter(concordance_file,
+                                                              columns,
+                                                              lineterminator=os.linesep)
+            self.detailed_concordance_writer.writeheader()
+        else:
+            self.concordance_writer = csv.DictWriter(concordance_file,
+                                                     columns,
+                                                     lineterminator=os.linesep)
+            self.concordance_writer.writeheader()
+
     def write_genome_coverage_header(self, genome_coverage_file):
         columns = ['contig',
                    'coordinates',
@@ -850,6 +895,7 @@ class SequenceReport(object):
                    'refseq_nuc_pos',
                    'dels',
                    'coverage',
+                   'concordance',
                    'link']
         self.genome_coverage_writer = csv.DictWriter(genome_coverage_file,
                                                      columns,
@@ -937,6 +983,20 @@ class SequenceReport(object):
                 cigar = [(bead.end - bead.start, action)]
             for length, action in cigar:
                 if action == CigarActions.DELETE:
+                    for pos in range(ref_pos+1, ref_pos+length+1):
+                        try:
+                            concordance = self.coord_concordance[pos - 1]
+                        except (IndexError, TypeError):
+                            concordance = None
+                        row = dict(contig=contig_name,
+                                   coordinates=coordinate_name,
+                                   query_nuc_pos=None,
+                                   refseq_nuc_pos=pos,
+                                   dels=None,
+                                   coverage=None,
+                                   concordance=concordance,
+                                   link='D')
+                        self.genome_coverage_writer.writerow(row)
                     ref_pos += length
                     continue
                 for _ in range(length):
@@ -964,12 +1024,20 @@ class SequenceReport(object):
                     if 0 < skipped_source:
                         skipped_source -= 1
                     else:
+                        if action != CigarActions.INSERT:
+                            try:
+                                concordance = self.coord_concordance[ref_pos - 1]
+                            except (IndexError, TypeError):
+                                concordance = None
+                        else:
+                            concordance = None
                         row = dict(contig=contig_name,
                                    coordinates=coordinate_name,
                                    query_nuc_pos=offset_seq_pos,
                                    refseq_nuc_pos=ref_pos_display,
                                    dels=dels,
                                    coverage=coverage,
+                                   concordance=concordance,
                                    link=link)
                         self.genome_coverage_writer.writerow(row)
 
@@ -1053,19 +1121,35 @@ class SequenceReport(object):
                 break
 
     def merge_extra_counts(self):
+        landmark_reader = LandmarkReader(self.landmarks)
         for region, report_nucleotides in self.report_nucleotides.items():
+            coordinate_name = landmark_reader.get_coordinates(self.seed)
+            region_info = landmark_reader.get_gene(
+                coordinate_name,
+                region)
+            region_start = region_info.get('start')
+            repeated_pos = region_info.get('duplicated_pos')
+            if repeated_pos is not None:
+                repeated_pos = repeated_pos - region_start + 1
+            skipped_pos = region_info.get('skipped_pos')
+            if skipped_pos is not None:
+                skipped_pos = skipped_pos - region_start + 1
             report_aminos = self.reports[region]
             first_amino_index = None
             last_amino_index = None
             first_nuc_index = None
             last_nuc_index = None
+            first_consensus_nuc_index_amino = None
             last_consensus_nuc_index_amino = None
+            first_consensus_nuc_index =None
             last_consensus_nuc_index = None
             for i, report_amino in enumerate(report_aminos):
                 seed_amino = report_amino.seed_amino
                 if seed_amino.consensus_nuc_index is not None:
                     if first_amino_index is None:
                         first_amino_index = i
+                    if first_consensus_nuc_index_amino is None:
+                        first_consensus_nuc_index_amino = seed_amino.consensus_nuc_index
                     last_amino_index = i
                     last_consensus_nuc_index_amino = seed_amino.consensus_nuc_index
             for i, report_nucleotide in enumerate(report_nucleotides):
@@ -1073,6 +1157,8 @@ class SequenceReport(object):
                 if seed_nucleotide.consensus_index is not None:
                     if first_nuc_index is None:
                         first_nuc_index = i
+                    if first_consensus_nuc_index is None:
+                        first_consensus_nuc_index = seed_nucleotide.consensus_index
                     last_nuc_index = i
                     last_consensus_nuc_index = seed_nucleotide.consensus_index
             if not self.has_detail_counts:
@@ -1082,11 +1168,11 @@ class SequenceReport(object):
             seed_clipping = self.clipping_counts[seed_name]
             seed_insertion_counts = self.conseq_insertion_counts[seed_name]
             if first_amino_index is not None:
-                report_nuc_index = 0
                 for i, report_amino in enumerate(report_aminos):
                     seed_amino = report_amino.seed_amino
                     if i < first_amino_index:
-                        consensus_nuc_index = (i - first_amino_index) * 3
+                        consensus_nuc_index = (i - first_amino_index) * 3 + \
+                                              first_consensus_nuc_index_amino
                     elif i > last_amino_index:
                         consensus_nuc_index = (i - last_amino_index) * 3 + \
                                               last_consensus_nuc_index_amino
@@ -1096,45 +1182,34 @@ class SequenceReport(object):
                         if consensus_nuc_index is None:
                             continue
                     for j, seed_nuc in enumerate(seed_amino.nucleotides):
-                        if len(report_nucleotides) <= report_nuc_index:
-                            break
-                        report_nuc = report_nucleotides[report_nuc_index]
                         query_pos = j + consensus_nuc_index + 1
                         seed_nuc.clip_count = seed_clipping[query_pos]
                         seed_nuc.insertion_count = seed_insertion_counts[query_pos]
                         insertion_counts = self.insert_writer.insert_pos_counts[
                             (self.seed, region)]
+                        ref_nuc_pos = (report_amino.position - 1) * 3 + j + 1
+                        if skipped_pos is not None and ref_nuc_pos >= skipped_pos:
+                            ref_nuc_pos += 1
+                        elif repeated_pos is not None and ref_nuc_pos > repeated_pos:
+                            ref_nuc_pos -= 1
                         seed_nuc.insertion_count += (
-                            insertion_counts[report_nuc.position])
-                        report_nuc.seed_nucleotide.insertion_count += (
-                            insertion_counts[report_nuc.position])
-                        if (report_nuc.seed_nucleotide.consensus_index in
-                                (None, seed_nuc.consensus_index)):
-                            report_nuc.seed_nucleotide.clip_count = \
-                                seed_clipping[query_pos]
-                            report_nuc.seed_nucleotide.insertion_count += \
-                                seed_insertion_counts[query_pos]
-                            report_nuc_index += 1
-            elif first_nuc_index is not None:
-                report_nuc_index = 0
+                            insertion_counts[ref_nuc_pos])
+            if first_nuc_index is not None:
                 for i, report_nuc in enumerate(report_nucleotides):
                     seed_nuc = report_nuc.seed_nucleotide
                     if i < first_nuc_index:
-                        consensus_nuc_index = i - first_nuc_index
+                        consensus_nuc_index = i - first_nuc_index + first_consensus_nuc_index
                     elif i > last_nuc_index:
                         consensus_nuc_index = i - last_nuc_index + last_consensus_nuc_index
                     else:
                         consensus_nuc_index = seed_nuc.consensus_index
                         if consensus_nuc_index is None:
                             continue
-                    if len(report_nucleotides) <= report_nuc_index:
-                        break
                     query_pos = consensus_nuc_index + 1
                     insertion_counts = self.insert_writer.insert_pos_counts[(self.seed, region)]
                     seed_nuc.insertion_count += insertion_counts[report_nuc.position]
                     seed_nuc.insertion_count += seed_insertion_counts[query_pos]
                     seed_nuc.clip_count = seed_clipping[query_pos]
-                    report_nuc_index += 1
 
     def write_nuc_detail_counts(self, nuc_detail_writer=None):
         nuc_detail_writer = nuc_detail_writer or self.nuc_detail_writer
@@ -1379,6 +1454,94 @@ class SequenceReport(object):
                         },
                         is_nucleotide=True,
                     )
+
+    def write_coordinate_concordance(self,
+                                     concordance_writer,
+                                     detailed_concordance_writer=None,
+                                     use_combined_reports=False):
+        concordance_writer = concordance_writer or self.concordance_writer
+        detailed_concordance_writer = detailed_concordance_writer or self.detailed_concordance_writer
+        landmark_reader = LandmarkReader(self.landmarks)
+        if use_combined_reports:
+            for coordinates, report_nucleotides in self.combined_report_nucleotides.items():
+                coordinate_name = landmark_reader.get_coordinates(coordinates)
+                self.process_concordance(concordance_writer,
+                                         detailed_concordance_writer,
+                                         coordinate_name,
+                                         report_nucleotides,
+                                         landmark_reader)
+        else:
+            report_nucleotides = self.report_nucleotides
+            coordinate_name = landmark_reader.get_coordinates(self.seed)
+            self.process_concordance(concordance_writer,
+                                     detailed_concordance_writer,
+                                     coordinate_name,
+                                     report_nucleotides,
+                                     landmark_reader)
+
+    def process_concordance(self,
+                            concordance_writer,
+                            detailed_concordance_writer,
+                            coordinate_name,
+                            report_nucleotides,
+                            landmark_reader):
+        half_window_size = 10
+        if detailed_concordance_writer is not None:
+            print_details = True
+        else:
+            print_details = False
+        for region, region_nucleotides in report_nucleotides.items():
+            if self.projects.isAmino(region):
+                region_info = landmark_reader.get_gene(coordinate_name, region, drop_stop_codon=False)
+                region_start = region_info['start']
+                region_end = region_info['end']
+                region_length = region_end - region_start + 1
+                region_concordance = 0
+                region_coverage = 0
+                running_concordance = []
+                running_coverage = []
+                region_reference = self.projects.getNucReference(coordinate_name, region_start, region_end)
+                row = {'region': region,
+                       'reference': coordinate_name}
+                for pos, nuc in enumerate(region_nucleotides):
+                    nuc_consensus = nuc.seed_nucleotide.get_consensus(MAX_CUTOFF)
+                    ref_nuc = region_reference[pos]
+                    nuc_coverage = nuc.seed_nucleotide.get_coverage()
+                    has_coverage = (nuc_coverage > self.consensus_min_coverage)
+                    is_concordant = (nuc_consensus == ref_nuc)
+                    if has_coverage and is_concordant:
+                        region_concordance += 1
+                        region_coverage += 1
+                        if print_details:
+                            running_concordance.append(1)
+                            running_coverage.append(1)
+                    elif has_coverage and nuc_consensus != '-':
+                        region_coverage += 1
+                        if print_details:
+                            running_concordance.append(0)
+                            running_coverage.append(1)
+                    elif print_details:
+                        running_concordance.append(0)
+                        running_coverage.append(0)
+                    window_size = 2*half_window_size
+                    if window_size-1 <= pos and print_details:
+                        row['pct_concordance'] = 100 * sum(running_concordance) / window_size
+                        row['position'] = pos + 1 - half_window_size
+                        row['pct_covered'] = 100 * sum(running_coverage) / window_size
+                        running_concordance.pop(0)
+                        running_coverage.pop(0)
+                        detailed_concordance_writer.writerow(row)
+
+                try:
+                    region_concordance = 100 * region_concordance / region_coverage
+                except ZeroDivisionError:
+                    region_concordance = 0.0
+                region_coverage = 100 * region_coverage / region_length
+                row = dict(region=region,
+                           reference=coordinate_name,
+                           pct_concordance=region_concordance,
+                           pct_covered=region_coverage)
+                concordance_writer.writerow(row)
 
     @staticmethod
     def _create_failure_writer(fail_file):
@@ -1753,7 +1916,10 @@ def aln2counts(aligned_csv,
                alignments_csv=None,
                alignments_unmerged_csv=None,
                alignments_intermediate_csv=None,
-               alignments_overall_csv=None):
+               alignments_overall_csv=None,
+               concordance_csv=None,
+               concordance_detailed_csv=None,
+               concordance_seed_csv=None):
     """
     Analyze aligned reads for nucleotide and amino acid frequencies.
     Generate consensus sequences.
@@ -1792,6 +1958,9 @@ def aln2counts(aligned_csv,
     @param alignments_unmerged_csv: Open file handle to write unmerged alignments.
     @param alignments_intermediate_csv: Open file handle to write intermediate alignments.
     @param alignments_overall_csv: Open file handle to write overall alignments.
+    @param concordance_csv: Open file handle to write concordance measures for the regions.
+    @param concordance_detailed_csv: Open file handle to write detailed concordance measures for the regions.
+    @param concordance_seed_csv: Open file handle to write concordance measures for the regions for each seed.
     """
     # load project information
     projects = ProjectConfig.loadDefault()
@@ -1850,10 +2019,15 @@ def aln2counts(aligned_csv,
             report.write_genome_coverage_header(genome_coverage_csv)
         if minimap_hits_csv is not None:
             report.write_minimap_hits_header(minimap_hits_csv)
+        if concordance_csv is not None:
+            report.write_concordance_header(concordance_csv)
+        if concordance_detailed_csv is not None:
+            report.write_concordance_header(concordance_detailed_csv, is_detailed=True)
         report.alignments_csv = alignments_csv
         report.unmerged_alignments_csv = alignments_unmerged_csv
         report.intermediate_alignments_csv = alignments_intermediate_csv
         report.overall_alignments_csv = alignments_overall_csv
+        report.seed_concordance_csv = concordance_seed_csv
 
         report.process_reads(aligned_csv,
                              coverage_summary,
@@ -1899,7 +2073,10 @@ def main():
                alignments_csv=args.alignments_csv,
                alignments_unmerged_csv=args.alignments_unmerged_csv,
                alignments_intermediate_csv=args.alignments_intermediate_csv,
-               alignments_overall_csv=args.alignments_overall_csv)
+               alignments_overall_csv=args.alignments_overall_csv,
+               concordance_csv=args.concordance_csv,
+               concordance_detailed_csv=args.concordance_detailed_csv,
+               concordance_seed_csv=args.concordance_seed_csv)
 
 
 if __name__ == '__main__':

@@ -1149,8 +1149,6 @@ def collate_samples(run_info: RunInfo):
                  'amino.csv',
                  'conseq.csv',
                  'conseq_all.csv',
-                 'conseq_stitched.csv',
-                 'conseq_region.csv',
                  'failed_align.csv',
                  'coverage_scores.csv',
                  'g2p.csv',
@@ -1161,7 +1159,11 @@ def collate_samples(run_info: RunInfo):
                  'resistance_fail.csv',
                  'resistance_consensus.csv',
                  'cascade.csv',
-                 'merge_lengths.csv']
+                 'merge_lengths.csv',
+                 'concordance.csv',
+                 'concordance_seed.csv']
+    if run_info.is_denovo:
+        filenames += ['conseq_stitched.csv', 'conseq_region.csv']
     for filename in filenames:
         out_path = run_info.output_path
         with open(os.path.join(out_path, filename), 'w') as fout:
@@ -1207,6 +1209,10 @@ def collate_samples(run_info: RunInfo):
             safe_file_move(sample_info.genome_coverage_svg,
                            os.path.join(genome_coverage_path,
                                         sample_info.name + '_genome_coverage.svg'))
+        if os.path.exists(sample_info.genome_concordance_svg):
+            safe_file_move(sample_info.genome_concordance_svg,
+                           os.path.join(genome_coverage_path,
+                                        sample_info.name + '_genome_concordance.svg'))
         if os.path.exists(sample_info.merge_lengths_svg):
             safe_file_move(sample_info.merge_lengths_svg,
                            os.path.join(merge_lengths_path,

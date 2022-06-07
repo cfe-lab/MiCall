@@ -56,6 +56,19 @@ def create_sequence_report():
     }
   ]
 },
+"R1A": {
+  "max_variants": 10,
+  "regions": [
+    {
+      "coordinate_region": "R1A",
+      "seed_region_names": ["R1A-seed"]
+    },
+    {
+      "coordinate_region": "R1A_second",
+      "seed_region_names": ["R1A-seed"]
+    }
+  ]
+},
 "R2": {
   "max_variants": 10,
   "regions": [
@@ -126,6 +139,24 @@ def create_sequence_report():
   "is_nucleotide": false,
   "reference": [
     "KFR"
+  ]
+},
+"R1A-seed": {
+  "is_nucleotide": true,
+  "reference": [
+    "AAATTTAGGTAGCCGAGACCTCAGGTCACTCTTTGGTAG"
+  ]
+},
+"R1A": {
+  "is_nucleotide": false,
+  "reference": [
+    "KFR*"
+  ]
+},
+"R1A_second": {
+  "is_nucleotide": false,
+  "reference": [
+    "PRPQVTLW*"
   ]
 },
 "R2-seed": {
@@ -230,6 +261,11 @@ def create_sequence_report():
   landmarks:
     # Extra 3 positions for stop codon to get dropped.
     - {name: R1, start: 1, end: 12, colour: steelblue}
+- seed_pattern: R1A-.*
+  coordinates: R1A-seed
+  landmarks:
+    - {name: R1A, start: 1, end: 12, colour: steelblue}
+    - {name: R1A_second, start: 13, end: 39, colour: pink}
 - seed_pattern: R2-.*
   coordinates: R2-seed
   landmarks:
@@ -1297,6 +1333,37 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 
 
 # noinspection DuplicatedCode
+def test_nuc_large_majority_insertion_offset(default_sequence_report):
+    """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
+    for translated regions, with a different consensus offset"""
+    aligned_reads = prepare_reads("""\
+HIV1-B-FR-K03455-seed,15,0,10,30,\
+ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATTCGGTTAAGG\
+CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
+""")
+    # this is the ref genome from pos 789 to 889 (0 based), with an insertion here:
+    #                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    expected_text = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,82,52,841,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,83,53,842,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,84,54,843,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,118,55,844,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,119,56,845,0,0,0,10,0,0,0,0,0,10"""
+
+    nuc_file = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_file)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calculates ins counts
+    report = nuc_file.getvalue()
+    report_lines = report.splitlines()
+    key_lines = report_lines[52:57]
+    key_report = '\n'.join(key_lines)
+    assert key_report == expected_text
+
+
+# noinspection DuplicatedCode
 def test_nuc_large_majority_insertion_frameshift(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
     for translated regions, even if it is out of frame"""
@@ -1332,7 +1399,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
 # noinspection DuplicatedCode
 def test_nuc_large_insertion_not_multiple_of_three(default_sequence_report):
     """ Check that a large (>30) insertion relative to the reference is correctly inserted into the nuc.csv file
-    for translated regions, even if it is out of frame"""
+    for translated regions, even if it not a multiple of three long"""
     aligned_reads = prepare_reads("""\
 HIV1-B-FR-K03455-seed,15,0,10,1,\
 ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAATTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTAATTCGGTTAAGG\
@@ -1360,6 +1427,170 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
     key_lines = report_lines[50:57]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
+
+
+def test_merge_extra_counts_insertion(projects, default_sequence_report):
+    """ Check that an insertion after a deletion is correctly handled by merge_extra_counts """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[789:888] + seed_seq[900:999] + 'TTTTTTTTTTTT' + seed_seq[999:1200]
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,10,1,{read_seq}
+""")
+    # seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,
+    # partial,del,ins,clip,v3_overlap,coverage
+    expected_deletion = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,98,33,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,101,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10"""
+    expected_insertion_amino = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,194,69,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,70,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,71,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+    # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,
+    # A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,208,997,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,198,209,998,0,10,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,199,210,999,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,211,1000,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,213,212,1001,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    amino_lines = amino_csv.getvalue().splitlines()
+    deletion_lines = amino_lines[33:39]
+    amino_insertion_lines = amino_lines[69:72]
+    insertion_lines = report_lines[208:214]
+    deletion_report = '\n'.join(deletion_lines)
+    amino_insertion_report = '\n'.join(amino_insertion_lines)
+    insertion_report = '\n'.join(insertion_lines)
+    assert deletion_report == expected_deletion
+    assert insertion_report == expected_insertion
+    assert amino_insertion_report == expected_insertion_amino
+
+
+def test_merge_extra_counts_insertion_vpr(projects, default_sequence_report):
+    """ Check that an insertion in vpr is correctly handled by merge_extra_counts """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[5558:5800] + 'AAAAAAAAA' + seed_seq[5800:5850]
+    # vpr, insertion behind skip pos (5772)
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,10,0,{read_seq}
+""")
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,239,5797,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,240,5798,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,241,241,5799,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,242,5800,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,243,5801,0,0,0,10,0,0,0,0,0,10"""
+    expected_amino_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,236,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    insertion_report = '\n'.join(report_lines[320:325])
+    amino_report_lines = amino_csv.getvalue().splitlines()
+    amino_report = '\n'.join(amino_report_lines[105:108])
+    assert insertion_report == expected_insertion
+    assert amino_report == expected_amino_insertion
+
+
+def test_merge_extra_counts_insertion_vpr_noskip(projects, default_sequence_report):
+    """ Check that an insertion in vpr without the skip pos is correctly handled by merge_extra_counts """
+    seed_name = 'HIV1-B-FR-K03455-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[5558:5771] + seed_seq[5772:5800] + 'AAAAAAAAA' + seed_seq[5800:5850]
+    # vpr, insertion behind skip pos (5772)
+    aligned_reads = prepare_reads(f"""\
+HIV1-B-FR-K03455-seed,15,0,10,0,{read_seq}
+""")
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,239,5797,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,240,5798,0,0,10,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,241,5799,10,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,250,242,5800,10,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,243,5801,0,0,0,10,0,0,0,0,0,10"""
+    expected_amino_insertion = """\
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,235,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,250,81,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    insertion_report = '\n'.join(report_lines[320:325])
+    amino_report_lines = amino_csv.getvalue().splitlines()
+    amino_report = '\n'.join(amino_report_lines[105:108])
+    assert insertion_report == expected_insertion
+    assert amino_report == expected_amino_insertion
+
+
+def test_merge_extra_counts_insertion_nsp12(projects, default_sequence_report):
+    """ Check that an insertion after the duplicated position is correctly handled by merge_extra_counts """
+    seed_name = 'SARS-CoV-2-seed'
+    seed_seq = projects.getReference(seed_name)
+    read_seq = seed_seq[13441:13600] + 'AAAAAAAAA' + seed_seq[13600:13700]
+    # nsp12, insertion behind repeated pos (13468)
+    aligned_reads = prepare_reads(f"""\
+SARS-CoV-2-seed,15,0,10,0,{read_seq}
+""")
+# seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    expected_insertion = """\
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,157,157,13598,0,0,10,0,0,0,0,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,158,158,13599,0,0,0,10,0,0,10,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,168,159,13600,10,0,0,0,0,0,0,0,0,10"""
+    expected_amino_insertion = """\
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,153,52,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,156,53,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,10
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,168,54,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10"""
+
+    nuc_csv = StringIO()
+    amino_csv = StringIO()
+    default_sequence_report.read(aligned_reads)
+    default_sequence_report.write_nuc_header(nuc_csv)
+    default_sequence_report.write_amino_header(amino_csv)
+    default_sequence_report.write_insertions(default_sequence_report.insert_writer)
+    default_sequence_report.write_nuc_counts()  # calls merge_extra_counts
+    default_sequence_report.write_amino_counts()
+    report_lines = nuc_csv.getvalue().splitlines()
+    insertion_report = '\n'.join(report_lines[455:458])
+    amino_report_lines = amino_csv.getvalue().splitlines()
+    amino_report = '\n'.join(amino_report_lines[151:154])
+    assert insertion_report == expected_insertion
+    assert amino_report == expected_amino_insertion
 
 
 # noinspection DuplicatedCode
@@ -1976,7 +2207,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,1862,9,0,0,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 1542
+    expected_size = 1558
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
@@ -2092,13 +2323,13 @@ def test_contig_coverage_report_past_reference_end(projects, sequence_report):
     seq = ref[-100:] + 'CGTAC'
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     expected_tail = """\
-1-my-contig,HIV1-B-FR-K03455-seed,99,9718,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,100,9719,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,101,9720,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,102,9721,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,103,9722,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,104,9723,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,105,9724,0,1,U
+1-my-contig,HIV1-B-FR-K03455-seed,99,9718,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,100,9719,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,101,9720,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,102,9721,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,103,9722,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,104,9723,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,105,9724,0,1,,U
 """
 
     report_file = StringIO()
@@ -2122,14 +2353,14 @@ def test_contig_coverage_report_past_reference_start(projects, sequence_report):
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     # link is (M)apped, (U)nmapped, or (I)nserted
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,-4,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,2,-3,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,3,-2,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,4,-1,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,5,0,0,1,U
-1-my-contig,HIV1-B-FR-K03455-seed,6,1,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,2,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,-4,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,2,-3,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,3,-2,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,4,-1,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,5,0,0,1,,U
+1-my-contig,HIV1-B-FR-K03455-seed,6,1,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,2,0,1,,M
 """
 
     report_file = StringIO()
@@ -2153,10 +2384,10 @@ def test_contig_coverage_report_offset_reads(projects, sequence_report):
     seed_nucs = ([SeedNucleotide()] * 50 +
                  [SeedNucleotide(Counter({'C': 1}))] * len(seq))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,51,51,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,52,52,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,53,53,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,51,51,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,52,52,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,53,53,0,1,,M
 """
 
     report_file = StringIO()
@@ -2187,13 +2418,13 @@ R1-seed,1,R1-seed,CCCCCC
 """)
 
     expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-R1-seed-partial,,1,1,0,5,M
-1-R1-seed-partial,,2,2,0,5,M
-1-R1-seed-partial,,3,3,0,5,M
-1-R1-seed-partial,,4,4,0,5,M
-1-R1-seed-partial,,5,5,0,5,M
-1-R1-seed-partial,,6,6,0,5,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-R1-seed-partial,,1,1,0,5,,M
+1-R1-seed-partial,,2,2,0,5,,M
+1-R1-seed-partial,,3,3,0,5,,M
+1-R1-seed-partial,,4,4,0,5,,M
+1-R1-seed-partial,,5,5,0,5,,M
+1-R1-seed-partial,,6,6,0,5,,M
 """
 
     report_file = StringIO()
@@ -2221,13 +2452,13 @@ R1-seed,1,R1-seed,CCCCCC
 """)
 
     expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-R1-seed-reversed,,1,1,0,5,M
-1-R1-seed-reversed,,2,2,0,5,M
-1-R1-seed-reversed,,3,3,0,5,M
-1-R1-seed-reversed,,4,4,0,5,M
-1-R1-seed-reversed,,5,5,0,5,M
-1-R1-seed-reversed,,6,6,0,5,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-R1-seed-reversed,,1,1,0,5,,M
+1-R1-seed-reversed,,2,2,0,5,,M
+1-R1-seed-reversed,,3,3,0,5,,M
+1-R1-seed-reversed,,4,4,0,5,,M
+1-R1-seed-reversed,,5,5,0,5,,M
+1-R1-seed-reversed,,6,6,0,5,,M
 """
 
     report_file = StringIO()
@@ -2267,40 +2498,40 @@ R1-seed,1,R1-seed,TTTAGG
 """)
 
     expected_text = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1_3-R1-seed,R1-seed,1,1,0,5,M
-1_3-R1-seed,R1-seed,2,2,0,5,M
-1_3-R1-seed,R1-seed,3,3,0,5,M
-1_3-R1-seed,R1-seed,4,4,0,7,M
-1_3-R1-seed,R1-seed,5,5,0,7,M
-1_3-R1-seed,R1-seed,6,6,0,7,M
-1_3-R1-seed,R1-seed,7,7,0,2,M
-1_3-R1-seed,R1-seed,8,8,0,2,M
-1_3-R1-seed,R1-seed,9,9,0,2,M
-contig-1-R1-seed,R1-seed,1,1,,,M
-contig-1-R1-seed,R1-seed,2,2,,,M
-contig-1-R1-seed,R1-seed,3,3,,,M
-contig-1-R1-seed,R1-seed,4,4,,,M
-contig-1-R1-seed,R1-seed,5,5,,,M
-contig-1-R1-seed,R1-seed,6,6,,,M
-contig-3-R1-seed,R1-seed,1,4,,,M
-contig-3-R1-seed,R1-seed,2,5,,,M
-contig-3-R1-seed,R1-seed,3,6,,,M
-contig-3-R1-seed,R1-seed,4,7,,,M
-contig-3-R1-seed,R1-seed,5,8,,,M
-contig-3-R1-seed,R1-seed,6,9,,,M
-2-R2-seed,R2-seed,1,7,0,4,M
-2-R2-seed,R2-seed,2,8,0,4,M
-2-R2-seed,R2-seed,3,9,0,4,M
-2-R2-seed,R2-seed,4,10,0,4,M
-2-R2-seed,R2-seed,5,11,0,4,M
-2-R2-seed,R2-seed,6,12,0,4,M
-contig-2-R2-seed,R2-seed,1,7,,,M
-contig-2-R2-seed,R2-seed,2,8,,,M
-contig-2-R2-seed,R2-seed,3,9,,,M
-contig-2-R2-seed,R2-seed,4,10,,,M
-contig-2-R2-seed,R2-seed,5,11,,,M
-contig-2-R2-seed,R2-seed,6,12,,,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1_3-R1-seed,R1-seed,1,1,0,5,,M
+1_3-R1-seed,R1-seed,2,2,0,5,,M
+1_3-R1-seed,R1-seed,3,3,0,5,,M
+1_3-R1-seed,R1-seed,4,4,0,7,,M
+1_3-R1-seed,R1-seed,5,5,0,7,,M
+1_3-R1-seed,R1-seed,6,6,0,7,,M
+1_3-R1-seed,R1-seed,7,7,0,2,,M
+1_3-R1-seed,R1-seed,8,8,0,2,,M
+1_3-R1-seed,R1-seed,9,9,0,2,,M
+contig-1-R1-seed,R1-seed,1,1,,,,M
+contig-1-R1-seed,R1-seed,2,2,,,,M
+contig-1-R1-seed,R1-seed,3,3,,,,M
+contig-1-R1-seed,R1-seed,4,4,,,,M
+contig-1-R1-seed,R1-seed,5,5,,,,M
+contig-1-R1-seed,R1-seed,6,6,,,,M
+contig-3-R1-seed,R1-seed,1,4,,,,M
+contig-3-R1-seed,R1-seed,2,5,,,,M
+contig-3-R1-seed,R1-seed,3,6,,,,M
+contig-3-R1-seed,R1-seed,4,7,,,,M
+contig-3-R1-seed,R1-seed,5,8,,,,M
+contig-3-R1-seed,R1-seed,6,9,,,,M
+2-R2-seed,R2-seed,1,7,0,4,,M
+2-R2-seed,R2-seed,2,8,0,4,,M
+2-R2-seed,R2-seed,3,9,0,4,,M
+2-R2-seed,R2-seed,4,10,0,4,,M
+2-R2-seed,R2-seed,5,11,0,4,,M
+2-R2-seed,R2-seed,6,12,0,4,,M
+contig-2-R2-seed,R2-seed,1,7,,,,M
+contig-2-R2-seed,R2-seed,2,8,,,,M
+contig-2-R2-seed,R2-seed,3,9,,,,M
+contig-2-R2-seed,R2-seed,4,10,,,,M
+contig-2-R2-seed,R2-seed,5,11,,,,M
+contig-2-R2-seed,R2-seed,6,12,,,,M
 """
 
     report_file = StringIO()
@@ -2350,16 +2581,16 @@ def test_write_sequence_coverage_counts_with_coverage(projects,
     seed_nucs[2] = SeedNucleotide(Counter({'G': 4}))
     seed_nucs[98] = SeedNucleotide(Counter({'T': 5}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,4,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,4,,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,,M
 """
     expected_tail = """\
-1-my-contig,HIV1-B-FR-K03455-seed,98,1048,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,99,1049,0,5,M
-1-my-contig,HIV1-B-FR-K03455-seed,100,1050,0,1,M
+1-my-contig,HIV1-B-FR-K03455-seed,98,1048,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,99,1049,0,5,,M
+1-my-contig,HIV1-B-FR-K03455-seed,100,1050,0,1,,M
 """
 
     report_file = StringIO()
@@ -2385,21 +2616,26 @@ def test_write_sequence_coverage_counts_with_deletion(projects, sequence_report)
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     seed_nucs[12] = SeedNucleotide(Counter({'G': 4}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,11,116,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,12,117,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,13,118,0,4,M
-1-my-contig,HIV1-B-FR-K03455-seed,14,119,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,,111,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,112,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,113,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,114,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,115,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,11,116,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,12,117,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,13,118,0,4,,M
+1-my-contig,HIV1-B-FR-K03455-seed,14,119,0,1,,M
 """
 
     report_file = StringIO()
@@ -2425,17 +2661,17 @@ def test_write_sequence_coverage_counts_with_some_deletions(projects,
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     seed_nucs[5] = SeedNucleotide(Counter({'G': 4, '-': 2}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,6,106,2,6,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,2,6,,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,,M
 """
 
     report_file = StringIO()
@@ -2459,23 +2695,23 @@ def test_write_sequence_coverage_counts_with_insert(projects, sequence_report):
     seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
     seed_nucs[12] = SeedNucleotide(Counter({'T': 4}))
     expected_head = """\
-contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
-1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,M
-1-my-contig,HIV1-B-FR-K03455-seed,11,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,12,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,13,,0,4,I
-1-my-contig,HIV1-B-FR-K03455-seed,14,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,15,,0,1,I
-1-my-contig,HIV1-B-FR-K03455-seed,16,111,0,1,M
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,11,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,12,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,13,,0,4,,I
+1-my-contig,HIV1-B-FR-K03455-seed,14,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,15,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,16,111,0,1,,M
 """
 
     report_file = StringIO()
@@ -2489,6 +2725,64 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,link
     report_text = report_file.getvalue()
     head = report_text[:len(expected_head)]
     assert head == expected_head
+
+
+# noinspection DuplicatedCode
+def test_write_sequence_coverage_counts_with_concordance(projects, sequence_report):
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    seq = ref[100:110] + 'ACTGA' + ref[110:160] + ref[180:250]
+    seed_nucs = [SeedNucleotide(Counter({'C': 1}))] * len(seq)
+    seed_nucs[12] = SeedNucleotide(Counter({'T': 4}))
+    expected_head = """\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
+1-my-contig,HIV1-B-FR-K03455-seed,1,101,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,2,102,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,3,103,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,4,104,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,5,105,0,1,,M
+1-my-contig,HIV1-B-FR-K03455-seed,6,106,0,1,0.95,M
+1-my-contig,HIV1-B-FR-K03455-seed,7,107,0,1,0.9,M
+1-my-contig,HIV1-B-FR-K03455-seed,8,108,0,1,0.85,M
+1-my-contig,HIV1-B-FR-K03455-seed,9,109,0,1,0.8,M
+1-my-contig,HIV1-B-FR-K03455-seed,10,110,0,1,0.7,M
+1-my-contig,HIV1-B-FR-K03455-seed,11,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,12,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,13,,0,4,,I
+1-my-contig,HIV1-B-FR-K03455-seed,14,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,15,,0,1,,I
+1-my-contig,HIV1-B-FR-K03455-seed,16,111,0,1,0.7,M
+1-my-contig,HIV1-B-FR-K03455-seed,17,112,0,1,0.7,M
+1-my-contig,HIV1-B-FR-K03455-seed,18,113,0,1,0.7,M
+1-my-contig,HIV1-B-FR-K03455-seed,19,114,0,1,0.7,M
+1-my-contig,HIV1-B-FR-K03455-seed,20,115,0,1,0.7,M
+"""
+
+    expected_middle = """\
+1-my-contig,HIV1-B-FR-K03455-seed,64,159,0,1,0.6,M
+1-my-contig,HIV1-B-FR-K03455-seed,65,160,0,1,0.55,M
+1-my-contig,HIV1-B-FR-K03455-seed,,161,,,0.5,D
+1-my-contig,HIV1-B-FR-K03455-seed,,162,,,0.45,D
+1-my-contig,HIV1-B-FR-K03455-seed,,163,,,0.4,D
+1-my-contig,HIV1-B-FR-K03455-seed,,164,,,0.35,D
+1-my-contig,HIV1-B-FR-K03455-seed,,165,,,0.3,D
+"""
+
+    report_file = StringIO()
+    sequence_report.projects = projects
+    sequence_report.coord_concordance = [None] * 105 + [0.95, 0.9, 0.85, 0.8] + [0.7] * 45 + [0.6] * 5 + \
+                                        [0.55, 0.5, 0.45, 0.4, 0.35, 0.3]
+    sequence_report.write_genome_coverage_header(report_file)
+    sequence_report.write_sequence_coverage_counts('1-my-contig',
+                                                   hxb2_name,
+                                                   seq,
+                                                   seed_nucs=seed_nucs)
+
+    report_text = report_file.getvalue()
+    head = report_text[:len(expected_head)]
+    middle = "".join(report_text.splitlines(keepends=True)[64:71])
+    assert head == expected_head
+    assert middle == expected_middle
 
 
 # noinspection DuplicatedCode

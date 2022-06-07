@@ -35,8 +35,10 @@ MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
                       'conseq_all_csv',
-                      'conseq_stitched.csv'
+                      'conseq_stitched_csv',
                       'conseq_region_csv',
+                      'concordance_csv',
+                      'concordance_seed_csv',
                       'insertions_csv',
                       'failed_csv',
                       'nuc_csv',
@@ -63,6 +65,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'assembly_fasta',
                       'genome_coverage_csv',
                       'genome_coverage_svg',
+                      'genome_concordance_svg',
                       'read_entropy_csv',
                       'outcome_summary_csv',  # proviral outputs
                       'conseqs_primers_csv',
@@ -709,9 +712,9 @@ class KiveWatcher:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / (archive_name + '.tar')
             try:
-                sample_target_path = output_path / sample_name
-                sample_target_path.mkdir(exist_ok=True)
                 with tarfile.open(source_path) as f:
+                    sample_target_path = output_path / sample_name
+                    sample_target_path.mkdir(exist_ok=True)
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
                         target_path = sample_target_path / filename
@@ -751,6 +754,12 @@ class KiveWatcher:
             target_path = plots_path / f"{sample_name}_genome_coverage.svg"
             try:
                 os.rename(str(source_path), str(target_path))
+            except FileNotFoundError:
+                pass
+            concordance_path = scratch_path / sample_name / 'genome_concordance.svg'
+            target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
+            try:
+                os.rename(str(concordance_path), str(target_concordance_path))
             except FileNotFoundError:
                 pass
         remove_empty_directory(plots_path)

@@ -2,7 +2,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 from collections import namedtuple, defaultdict
-from concurrent.futures.process import ProcessPoolExecutor
+from concurrent.futures.process import ProcessPoolExecutor, BrokenProcessPool
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
@@ -20,6 +20,7 @@ import Levenshtein
 from micall.utils.primer_tracker import PrimerTracker
 from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
+from micall_docker import get_available_memory
 
 MICALL_VERSION = '7.15'
 
@@ -53,7 +54,7 @@ class Scenarios(IntEnum):
 differ = Differ()
 
 
-def parse_args():
+def parse_args(default_max_active):
     # noinspection PyTypeChecker
     parser = ArgumentParser(
         description='Compare sample results for testing a new release.',
@@ -65,6 +66,10 @@ def parse_args():
                         help='Main RAWDATA folder with results from previous version.')
     parser.add_argument('target_folder',
                         help='Testing RAWDATA folder to compare with.')
+    parser.add_argument('--workers',
+                        default=default_max_active,
+                        type=int,
+                        help='Number of parallel workers to process the samples.')
     return parser.parse_args()
 
 
@@ -288,7 +293,7 @@ def map_coverage(coverage_scores):
         filtered_scores = {
             (project, region): scores
             for (project, region), scores in filtered_scores.items()
-            if project not in ('HIVB', 'HIVGHA') and region not in ('HIVB-tat', 'SARS-CoV-2-nsp11')}
+            if project != 'HIVB' and region not in ('HIV1B-tat', 'SARS-CoV-2-nsp11')}
 
     return filtered_scores
 
@@ -326,12 +331,20 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
          target_key_pos) = target_scores.get(key, ('-', None, None))
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
-        if (source_compare == '-' and
-                sample.name.startswith('90308A') and
-                MICALL_VERSION == '7.11'):
-            # One sample failed in 7.10.
-            pass
-        elif source_compare != target_compare:
+        if MICALL_VERSION == '7.15':
+            if key[0] == 'HIVGHA':
+                # ignore HIVGHA project code
+                continue
+            elif target_seed is None:
+                project, region = key
+                hivgha_result = target_scores.get(('HIVGHA', region))
+                if hivgha_result is not None:
+                    # retrieve HIVGHA project code results for comparison
+                    (target_score, target_seed, target_key_pos) = hivgha_result
+                    if target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                        # ignore samples that switched to the new HIVGHA seeds
+                        continue
+        if source_compare != target_compare:
             project, region = key
             message = '{}:{} coverage: {} {} {} => {}'.format(
                 run_name,
@@ -422,21 +435,31 @@ def compare_consensus(sample: Sample,
     cutoff = MAX_CUTOFF
     for key in keys:
         seed, region = key
-        if MICALL_VERSION == '7.15' and region in ('HIV1B-tat',
-                                                   'SARS-CoV-2-nsp11',
-                                                   "SARS-CoV-2-TRS-B-1",
-                                                   "SARS-CoV-2-TRS-B-2",
-                                                   "SARS-CoV-2-TRS-B-3",
-                                                   "SARS-CoV-2-TRS-B-4",
-                                                   "SARS-CoV-2-TRS-B-5",
-                                                   "SARS-CoV-2-TRS-B-6",
-                                                   "SARS-CoV-2-TRS-B-7",
-                                                   "SARS-CoV-2-TRS-B-8",
-                                                   "SARS-CoV-2-TRS-B-9"):
-            continue
+        if MICALL_VERSION == '7.15':
+            if region in ('HIV1B-tat',
+                          'SARS-CoV-2-nsp11',
+                          "SARS-CoV-2-TRS-B-1",
+                          "SARS-CoV-2-TRS-B-2",
+                          "SARS-CoV-2-TRS-B-3",
+                          "SARS-CoV-2-TRS-B-4",
+                          "SARS-CoV-2-TRS-B-5",
+                          "SARS-CoV-2-TRS-B-6",
+                          "SARS-CoV-2-TRS-B-7",
+                          "SARS-CoV-2-TRS-B-8",
+                          "SARS-CoV-2-TRS-B-9"):
+                continue
+            if seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
+                # ignore new HIVGHA seeds
+                continue
         primer_tracker = primer_trackers.get(seed)
         source_details = source_seqs.get(key)
         target_details = target_seqs.get(key)
+        if MICALL_VERSION == '7.15' and target_details is None:
+            # ignore samples that map to the new HIVGHA seeds
+            target_details = target_seqs.get(('HIV1-CRF02_AG-GH-AB286855-seed', region)) or \
+                target_seqs.get(('HIV1-CRF06_CPX-GH-AB286851-seed', region))
+            if target_details is not None:
+                continue
         source_nucs = []
         target_nucs = []
         if source_details is None:
@@ -451,9 +474,14 @@ def compare_consensus(sample: Sample,
                          'coverage': '0'}
             if MICALL_VERSION == '7.15':
                 if region.split('-')[-1] == 'NS5b':
-                    target_nucs = [nuc for nuc, row in target_details]
+                    NS5b_nucs = [nuc for nuc, row in target_details]
+                    new_positions = [int(row['refseq.nuc.pos']) for nuc, row in target_details]
+                    old_positions = [int(row['refseq.nuc.pos']) for nuc, row in source_details]
+                    for position in old_positions:
+                        if position not in new_positions:
+                            target_details.insert(position-1, ('x', {'refseq.nuc.pos': position, 'coverage': '0'}))
                     last_codon = ''
-                    for nuc in target_nucs[-3:]:
+                    for nuc in NS5b_nucs[-3:]:
                         last_codon = last_codon + nuc
                     try:
                         last_amino = translate(last_codon)
@@ -558,10 +586,10 @@ def filter_consensus_sequences(files, use_denovo):
     if not (region_consensus and coverage_scores):
         return {}
 
-    if MICALL_VERSION == '7.14':
+    if MICALL_VERSION == '7.15':
         coverage_scores = [row
                            for row in coverage_scores
-                           if row['project'] != 'SARSCOV2']
+                           if row['project'] != 'HIVB']
 
     covered_regions = {(row.get('seed'), row.get('region'))
                        for row in coverage_scores
@@ -644,7 +672,11 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
 
 def main():
     print('Starting.')
-    args = parse_args()
+    available_memory = get_available_memory()
+    recommended_memory = int((1 << 30) * 1.5)  # 1.5GB
+    default_max_active = max(1, available_memory // recommended_memory)
+    args = parse_args(default_max_active)
+
     with ProcessPoolExecutor() as pool:
         runs = find_runs(args.source_folder, args.target_folder, args.denovo)
         runs = report_source_versions(runs)
@@ -655,11 +687,16 @@ def main():
                               Scenarios.VPR_FRAME_SHIFT_FIXED |
                               Scenarios.CONSENSUS_EXTENDED |
                               Scenarios.REMAP_COUNTS_CHANGED)
-        results = pool.map(partial(compare_sample,
-                                   scenarios_reported=scenarios_reported,
-                                   use_denovo=args.denovo),
-                           samples,
-                           chunksize=50)
+        try:
+            results = pool.map(partial(compare_sample,
+                                       scenarios_reported=scenarios_reported,
+                                       use_denovo=args.denovo),
+                               samples,
+                               chunksize=args.workers)
+        except BrokenProcessPool:
+            print("Broken Process Pool - probably the memory usage is too high. Try again with fewer workers!")
+            print("Current number of workers: {args.workers}")
+            raise
         scenario_summaries = defaultdict(list)
         i = 0
         all_consensus_distances = []
