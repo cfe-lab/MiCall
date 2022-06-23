@@ -215,17 +215,6 @@ Individual files are described after the list of steps.
   * match - the fraction of the contig that matched in BLAST, negative for
     reverse-complemented matches
   * contig - the nucleotide sequence of the assembled contig
-* coord_ins.csv - insertions in consensus sequence, relative to coordinate
-    reference.
-  * seed - seed reference the reads mapped to
-  * region - coordinate reference for reporting against, usually a gene
-  * qcut - minimum Phred quality score to include a nucleotide
-  * left - the one-based position within the consensus sequence of the first
-    nucleotide in the insertion
-  * insert - the insertion sequence of amino acids
-  * count - the number of times the insertion occurred
-  * before - the one-based position within the coordinate reference that it
-    was inserted before
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed
