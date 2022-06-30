@@ -274,15 +274,16 @@ Individual files are described after the list of steps.
   * final - the final decision: blank if valid is 0, X4 if X4pct >= 2, otherwise
     R5
 * genome_coverage.csv
-  * query_name - the name of the contig that appears in amino_detail.csv and
+  * contig - the name of the contig that appears in amino_detail.csv and
     nuc_detail.csv, or the name of the seed reference used for mapping
-  * ref_name - the name of the coordinate reference the query was aligned to
-  * query_nuc_pos - the nucleotide position within the contig or the remap
+  * coordinates - the name of the coordinate reference the query was aligned to
+  * query_nuc_pos - the one-based nucleotide position within the contig or the remap
     consensus
-  * ref_nuc_position - the nucleotide position within the reference
+  * refseq_nuc_pos - the one-based nucleotide position within the reference
   * dels - number of deletions reported at this position
   * coverage - number of reads that aligned to this position, including
     deletions
+  * link - type of link between the contig position and the reference position: 'M' for a match, 'D' for a deletion, 'I' for an insertion, and 'U' for unknown (a section of the contig that didn't map to the reference)
 * insertions.csv
   * seed - the name of the contig
   * mixture_cutoff - to be included in a mixture, a variant must make
