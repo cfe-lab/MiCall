@@ -274,8 +274,9 @@ def read_aminos(amino_rows,
             is_report_required = False
         else:
             std_length = get_std_length(region, genotype, algorithms)
-            while len(aminos) < std_length:
-                aminos.append({})
+            if not region.endswith('NS5b'):
+                while len(aminos) < std_length:
+                    aminos.append({})
             asi_algorithm = algorithms.get(genotype)
             key_positions = asi_algorithm.get_gene_positions(region)
             if not region.endswith('NS5b'):
