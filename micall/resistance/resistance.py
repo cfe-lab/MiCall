@@ -274,9 +274,8 @@ def read_aminos(amino_rows,
             is_report_required = False
         else:
             std_length = get_std_length(region, genotype, algorithms)
-            if not region.endswith('NS5b'):
-                while len(aminos) < std_length:
-                    aminos.append({})
+            while len(aminos) < std_length:
+                aminos.append({})
             asi_algorithm = algorithms.get(genotype)
             key_positions = asi_algorithm.get_gene_positions(region)
             if not region.endswith('NS5b'):
@@ -521,7 +520,15 @@ def create_consensus_writer(resistance_consensus_csv):
 def interpret(asi, amino_seq, region):
     ref_seq = asi.stds[region]
     # TODO: Make this more general instead of only applying to missing MIDI.
-    is_missing_midi = region.endswith('-NS5b') and len(amino_seq) < len(ref_seq)
+    is_missing_midi = False
+    if region.endswith('-NS5b'):
+        pos = 0
+        # starting at the end of the amino list, find the first amino that is not empty
+        for pos, amino in enumerate(reversed(amino_seq)):
+            if amino != {}:
+                break
+        if len(amino_seq) - pos == 336:
+            is_missing_midi = True
 
     if is_missing_midi:
         amino_seq += [{}] * (len(ref_seq) - len(amino_seq))
