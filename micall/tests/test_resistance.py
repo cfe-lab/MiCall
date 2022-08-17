@@ -1723,7 +1723,7 @@ NRTI,M41L,0.3,,RT,HIV1B-seed,RT,9.0
 
     def test_hcv(self):
         aminos = [AminoList('HCV6-EUHK2-NS5b',
-                            [{'T': 1.0}] * 591,
+                            [{'T': 1.0}] * 592,
                             '6',
                             'HCV-6a')]
         resistance_csv = StringIO()
@@ -1825,7 +1825,7 @@ drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
 
     def test_hcv_mostly_low_coverage(self):
         aminos = [AminoList('HCV1B-Con1-NS5b',
-                            [{'T': 1.0}] + [{}] * 319 + [{'I': 1.0}] + [{}] * 200,
+                            [{'T': 1.0}] + [{}] * 319 + [{'I': 1.0}] + [{}] * 271,
                             '1B',
                             'HCV-1b')]
         self.check_low_coverage_reports(aminos)
