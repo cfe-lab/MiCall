@@ -196,7 +196,12 @@ Individual files are described after the list of steps.
   * seed-offset - offset of the seed relative to the reference
   * region-offset - offset of the seed relative to the region
 * conseq_region.csv: same columns as conseq.csv
-* conseq_stitched.csv
+* conseq_stitched.csv: our best guess at a whole genome consensus, stitched
+  together from the individual regions' consensus sequences, at different mixture levels.
+  Insertions are included and gaps are not filled. In areas where multiple 
+  regions overlap, we prioritize translated regions (because the amino acid alignment is 
+  more precise), and we prioritize information from the centre of the region over information 
+  from the edge of the region (again because the alignment in the centre is more reliable).
   * seed - reference name
   * q-cutoff - minimum quality score
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
