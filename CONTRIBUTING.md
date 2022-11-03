@@ -147,9 +147,10 @@ similar steps to setting up a development workstation. Follow these steps:
 2. Check if the kiveapi package needs a new release by looking for new commits.
     Make sure you tested with the latest version.
 3. Determine what version number should be used next.
-4. Copy the previous pipeline on QAI/lab_miseq_pipelines to make a new version.
-    Use the `projects_dump.py` script and compare `projects.json` to check that
-    the projects match.
+4. Use the `projects_dump.py` script for the previous version and compare
+    `projects.json` to check that the projects match, or that the differences
+    were intended. Test the `projects_upload.py` script with your updated project
+    files in your local test QAI.
 5. Check the history of the HIV and HCV rules files in the `micall/resistance`
     folder. If they have changed, create a new display file in the `docs` folder
     and upgrade the version numbers in the `genreport.yaml` file and
@@ -174,7 +175,9 @@ similar steps to setting up a development workstation. Follow these steps:
 8. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
 8. Upload the pipeline definitions to QAI, using the `projects_upload.py`
-    script.
+    script. There is no need to create the new pipeline version in QAI beforehand,
+    the script will do this for you - just remember to update the `Order by` field
+    afterwards.
 8. Stop the micall_watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
