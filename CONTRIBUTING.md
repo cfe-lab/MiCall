@@ -44,7 +44,7 @@ local agent. You can also set the `BASESPACE_AGENT_ID` environment variable so
 you don't have to supply it every time. You can get the agent id from the Form
 Builder page on BaseSpace.
 
-    sudo /media/sf_MiCall/docker_build.py -a abcde12345
+    sudo python3 /media/sf_MiCall/docker_build.py -a abcde12345
 
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
 
@@ -224,7 +224,9 @@ similar steps to setting up a development workstation. Follow these steps:
     repository. You might have to log in to docker before running this.
 
         cd /media/sf_micall
-        sudo python3 docker_build.py -t vX.Y
+        sudo python3 docker_build.py -t vX.Y -a [agentid]
+
+    The agent ID is not required, but useful if you want to test the image.
 
 16. Edit the `callbacks.js` in the form builder, and add the `:vX.Y` tag to the
     `containerImageId` field.
@@ -235,12 +237,16 @@ similar steps to setting up a development workstation. Follow these steps:
     version of docker that comes with the basespace virtual machine
     [can't log in] to docker hub, so you'll have to save it to a tar file and
     load that into your host system's version of docker.
+    If the docker push fails with mysterious error messages (access to the resource
+    is denied), try `docker logout` and `docker login` again, and make sure you are
+    on the owner team of cfelab on [docker hub].
 
         ssh basespace@localhost -p2222
         cd /media/sf_micall
         sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y cfelab/micall:vX.Y
+        sudo su
         sudo docker save cfelab/micall:vX.Y >micall-vX.Y.tar
-        exit
+        exit (twice)
         sudo docker load <micall-vX.Y.tar
         sudo docker push cfelab/micall:vX.Y
         rm micall-vX.Y.tar
@@ -259,3 +265,4 @@ similar steps to setting up a development workstation. Follow these steps:
 [parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall_watcher.py
 [Zenodo]: https://doi.org/10.5281/zenodo.2644171
 [can't log in]: https://www.docker.com/blog/registry-v1-api-deprecation/
+[docker hub]: https://hub.docker.com/orgs/cfelab/members
