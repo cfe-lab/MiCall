@@ -391,7 +391,8 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
 
             # PROVIRAL
             if pipeline_group == PipelineType.PROVIRAL:
-                upload_proviral_tables(session, result_folder, run)
+                # upload_proviral_tables(session, result_folder, run)
+                pass
             # DENOVO
             elif pipeline_group in (PipelineType.DENOVO_MAIN,
                                     PipelineType.DENOVO_MIDI,
