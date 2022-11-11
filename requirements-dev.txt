@@ -2,4 +2,4 @@
 -r requirements-test.txt
 -r requirements-watcher.txt
 # Used for plotting profiling results.
-gprof2dot==2021.2.21
+gprof2dot==2022.7.29
