@@ -6,7 +6,7 @@ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment
 git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
 numpy==1.23.4
 scipy==1.9.3
-matplotlib==3.5.2
+matplotlib==3.6.2
 cutadapt==3.7
 python-Levenshtein==0.20.8
 PyYAML==6.0
