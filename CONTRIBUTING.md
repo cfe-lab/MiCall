@@ -33,9 +33,15 @@ We have tested with Python 3.8.
 ### BaseSpace
 Set up the [native apps virtual machine][bsvm], and configure a shared folder
 called MiCall that points to the source code. To get the shared folder working,
-you'll probably need to update the VBox guest additions and add the basespace
-user to the `vboxsf` group. Make sure you have a developer account on
-illumina.com.
+you'll probably need to [update the VBox guest additions][vbox guest] and add the 
+basespace user to the `vboxsf` group. Then, run
+
+    sudo mount -t vboxsf MiCall /media/sf_MiCall
+
+Make sure you have a developer account on illumina.com. The first time you run
+this, you will have to log in to your account using
+
+    sudo docker login docker.illumina.com
 
 Use the `docker_build.py` script to build a Docker image and push it to
 BaseSpace. If you add `-t vX.Y`, it will add a tag to the Docker image. If you
@@ -47,6 +53,7 @@ Builder page on BaseSpace.
     sudo python3 /media/sf_MiCall/docker_build.py -a abcde12345
 
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
+[vbox guest]: https://linuxize.com/post/how-to-install-virtualbox-guest-additions-in-ubuntu/
 
 ### Test data
 If you want to run `micall_watcher.py`, you have to set up data folders for raw
@@ -219,38 +226,52 @@ similar steps to setting up a development workstation. Follow these steps:
     If the log doesn't help, look in `/var/log/messages` on CentOS or
     `/var/log/syslog` on Ubuntu.
 
-14. Launch the basespace virtual machine, and build a new Docker image
-    from GitHub. Tag it with the release number, and push it to the Illumina
-    repository. You might have to log in to docker before running this.
+14. Launch the basespace virtual machine (see BaseSpace section above), and build 
+    a new Docker image from GitHub. Tag it with the release number.
 
         cd /media/sf_micall
-        sudo python3 docker_build.py -t vX.Y -a [agentid]
+        sudo python3 docker_build.py -t vX.Y --nopush
 
-    The agent ID is not required, but useful if you want to test the image.
+    The script is able to push the docker image to the illumina repo and launch 
+    spacedock as well, but that is currently broken because of the old docker version 
+    in the VM. If this is ever updated, or we build our own VM, you won't have to do these
+    steps manually anymore and can remove the `--nopush`.
 
-16. Edit the `callbacks.js` in the form builder, and add the `:vX.Y` tag to the
-    `containerImageId` field.
-17. Activate the new revisions in the form builder and the report builder.
-17. Submit the new revision of the MiCall app for review, and ask our contact
-    at Illumina to set the price to zero for the list of test users.
-17. Tag the same docker image and push it to docker hub. Unfortunately, the old
+15. Tag the same docker image and push it to docker hub and illumina.
+    Unfortunately, the old
     version of docker that comes with the basespace virtual machine
-    [can't log in] to docker hub, so you'll have to save it to a tar file and
-    load that into your host system's version of docker.
+    [can't log in] to docker hub or illumina, so you'll have to save it to a tar file and
+    load that into your host system's version of docker. Before pushing it anywhere, 
+    check that the docker image works by running the microtests.
     If the docker push fails with mysterious error messages (access to the resource
     is denied), try `docker logout` and `docker login` again, and make sure you are
     on the owner team of cfelab on [docker hub].
 
         ssh basespace@localhost -p2222
-        cd /media/sf_micall
-        sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y cfelab/micall:vX.Y
         sudo su
+        cd /media/sf_micall
         sudo docker save cfelab/micall:vX.Y >micall-vX.Y.tar
         exit (twice)
         sudo docker load <micall-vX.Y.tar
+        sudo docker login docker.illumina.com
+        sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y cfelab/micall:vX.Y
         sudo docker push cfelab/micall:vX.Y
         rm micall-vX.Y.tar
 
+16. Duplicate the MiCall form in the revisions section of the form builder, then
+    edit the `callbacks.js` in the form builder itself, and add the `:vX.Y` tag to the
+    `containerImageId` field. In My Apps, create a new version of the App with the new 
+    version number. Record the new agent ID (click the arrow on the bottom right of the 
+    form builder).
+17. Launch the spacedock version by running this in your basespace VM:
+
+        sudo spacedock -a [agent ID] -m https://mission.basespace.illumina.com
+
+18. Check that the new MiCall version works as expected by processing some of the
+    microtests in BaseSpace.
+17. Activate the new revisions in the form builder and the report builder.
+17. Submit the new revision of the MiCall app for review, and ask our contact
+    at Illumina to set the price to zero for the list of test users.
 18. Send an e-mail to users describing the major changes in the release.
 19. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
