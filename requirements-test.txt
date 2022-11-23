@@ -4,7 +4,7 @@
 -r requirements-watcher.txt
 pytest==7.2.0
 coverage==6.5.0
-pandas==1.5.1
+pandas==1.5.2
 seaborn==0.12.1
 ete3
 
