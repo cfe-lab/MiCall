@@ -5,7 +5,7 @@
 pytest==7.2.0
 coverage==6.5.0
 pandas==1.5.2
-seaborn==0.12.1
+seaborn==0.12.2
 ete3
 
 # For reading HCV rules from an Excel file.
