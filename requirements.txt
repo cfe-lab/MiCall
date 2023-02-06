@@ -4,7 +4,7 @@ git+https://github.com/cfe-lab/iva.git@v1.1.1
 biopython==1.80
 git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh
 git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
-numpy==1.24.1
+numpy==1.24.2
 scipy==1.10.0
 matplotlib==3.6.3
 cutadapt==3.7
