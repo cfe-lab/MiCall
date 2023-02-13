@@ -1,7 +1,7 @@
 # Requirements for running the bare pipeline under Kive or BaseSpace
 pytz==2022.7.1
 git+https://github.com/cfe-lab/iva.git@v1.1.1
-biopython==1.80
+biopython==1.81
 git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh
 git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
 numpy==1.24.1
