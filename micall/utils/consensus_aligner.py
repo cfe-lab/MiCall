@@ -395,7 +395,7 @@ class ConsensusAligner:
                         amino_alignment.query_start += start_shift
                         amino_alignment.query_end -= end_shift
                     alignment_size = amino_alignment.ref_end - amino_alignment.ref_start
-                    if action == CigarActions.MATCH and alignment_size <= 0:
+                    if action == CigarActions.MATCH and alignment_size <= 2:
                         pass
                     else:
                         amino_sections.append(amino_alignment)
