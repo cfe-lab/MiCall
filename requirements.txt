@@ -14,4 +14,4 @@ reportlab==3.6.12
 pysam==0.20.0
 git+https://github.com/cfe-lab/genetracks.git@v0.2.dev0
 mappy==2.17
-drawSvg==1.9.0
+drawsvg==2.0.0

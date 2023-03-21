@@ -4,10 +4,10 @@ from pathlib import Path
 from turtle import Turtle
 
 # noinspection PyPep8Naming
-import drawSvg as draw
+import drawsvg as draw
 import pytest
 from PIL import Image
-from drawSvg import Drawing, Line, Lines, Circle, Text, Rectangle
+from drawsvg import Drawing, Line, Lines, Circle, Text, Rectangle
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 from micall.core.plot_contigs import summarize_figure, build_coverage_figure, \

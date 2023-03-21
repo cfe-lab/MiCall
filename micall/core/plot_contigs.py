@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 from genetracks import Figure, Track, Multitrack, Coverage
 # noinspection PyPep8Naming
-import drawSvg as draw
+import drawsvg as draw
 from genetracks.elements import Element
 from matplotlib import cm, colors
 from matplotlib.colors import Normalize
