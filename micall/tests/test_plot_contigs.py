@@ -99,9 +99,9 @@ class SvgDiffer:
 
         if not self.mismatch_found:
             return
-        text_actual = svg_actual.asSvg()
+        text_actual = svg_actual.as_svg()
         (self.work_dir / (name+'_actual.svg')).write_text(text_actual)
-        text_expected = svg_expected.asSvg()
+        text_expected = svg_expected.as_svg()
         (self.work_dir / (name+'_expected.svg')).write_text(text_expected)
         with (self.work_dir / (name+'_diff.png')) as f:
             png_diff.save(f)
@@ -110,7 +110,7 @@ class SvgDiffer:
 
 def drawing_to_image(drawing: Drawing) -> Image:
     png = drawing.rasterize()
-    png_bytes = BytesIO(png.pngData)
+    png_bytes = BytesIO(png.png_data)
     image = Image.open(png_bytes)
     return image
 
