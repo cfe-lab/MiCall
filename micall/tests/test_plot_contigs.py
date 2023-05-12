@@ -991,6 +991,7 @@ contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
 NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
 NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
 1--1.1->9
+1--1.1->6
 Coverage 5x2, 7, 5x3
 [1-6], 1-HCV-1a - depth 7(1-9646)
 [1-6], contig-1-HCV-1a(1-9646)
