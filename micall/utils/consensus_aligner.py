@@ -395,7 +395,7 @@ class ConsensusAligner:
                         amino_alignment.query_start += start_shift
                         amino_alignment.query_end -= end_shift
                     alignment_size = amino_alignment.ref_end - amino_alignment.ref_start
-                    if action == CigarActions.MATCH and alignment_size <= 2:
+                    if action == CigarActions.MATCH and alignment_size <= 0:
                         pass
                     else:
                         amino_sections.append(amino_alignment)
@@ -757,6 +757,9 @@ class ConsensusAligner:
                     has_skipped_nucleotide):
         region_seed_aminos = self.reading_frames[amino_alignment.reading_frame]
         coord2conseq = amino_alignment.map_amino_sequences()
+        if not coord2conseq:
+            # coord2conseq is empty (alignment was too small / at region boundary) - there is nothing to do
+            return
 
         coordinate_inserts = {seed_amino.consensus_nuc_index
                               for seed_amino in region_seed_aminos}
