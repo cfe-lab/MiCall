@@ -511,6 +511,9 @@ def build_contig(reader,
 
         arrows = []
         for arrow_start, arrow_end, blast_num in blast_ranges:
+            if arrow_end is None:
+                # Special case where an alignment ends with an insertion: ignore that insertion
+                continue
             arrows.append(Arrow(arrow_start+position_offset,
                                 arrow_end+position_offset,
                                 elevation=-1,
