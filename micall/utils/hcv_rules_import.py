@@ -245,7 +245,9 @@ class WorksheetReader:
             return
         header_row = wild_type_row - 1
         drug_row = wild_type_row - 2
-        for cell_range in ws.merged_cells:
+        merged_cells = sorted(ws.merged_cells,
+                              key=lambda cr: (cr.min_row, cr.min_col))
+        for cell_range in merged_cells:
             if cell_range.min_row != drug_row:
                 continue
             cell = ws.cell(cell_range.min_row, cell_range.min_col)
@@ -620,7 +622,7 @@ class RulesWriter:
             return
 
         match = re.match(r'([^(]*?) *(\(GT([^_]+).*\))? *'
-                         r'(\[Conflicting WT\])?(\[Use in algorithm\])?$',
+                         r'(\[Conflicting WT])?(\[Use in algorithm])?$',
                          mutation,
                          flags=re.IGNORECASE)
         if match is None:
