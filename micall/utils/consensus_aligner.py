@@ -927,7 +927,7 @@ class ConsensusAligner:
         except KeyError:
             coord_ref = self.projects.getReference(self.coordinate_name)
         query_matches = [0] * len(self.consensus)
-        concordance_list: typing.List[typing.Any] = [None] * len(coord_ref)
+        concordance_list: typing.List[typing.Any] = [None] * len(self.consensus)
 
         for alignment in coord_alignments:
             ref_progress = alignment.r_st
