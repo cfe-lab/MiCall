@@ -2760,18 +2760,17 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage,concordance,link
 
     expected_middle = """\
 1-my-contig,HIV1-B-FR-K03455-seed,64,159,0,1,0.6,M
-1-my-contig,HIV1-B-FR-K03455-seed,65,160,0,1,0.55,M
-1-my-contig,HIV1-B-FR-K03455-seed,,161,,,0.5,D
-1-my-contig,HIV1-B-FR-K03455-seed,,162,,,0.45,D
-1-my-contig,HIV1-B-FR-K03455-seed,,163,,,0.4,D
-1-my-contig,HIV1-B-FR-K03455-seed,,164,,,0.35,D
-1-my-contig,HIV1-B-FR-K03455-seed,,165,,,0.3,D
+1-my-contig,HIV1-B-FR-K03455-seed,65,160,0,1,0.6,M
+1-my-contig,HIV1-B-FR-K03455-seed,,161,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,162,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,163,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,164,,,,D
+1-my-contig,HIV1-B-FR-K03455-seed,,165,,,,D
 """
 
     report_file = StringIO()
     sequence_report.projects = projects
-    sequence_report.coord_concordance = [None] * 105 + [0.95, 0.9, 0.85, 0.8] + [0.7] * 45 + [0.6] * 5 + \
-                                        [0.55, 0.5, 0.45, 0.4, 0.35, 0.3]
+    sequence_report.coord_concordance = [None] * 5 + [0.95, 0.9, 0.85, 0.8, 0.7] + [None] * 5 + [0.7] * 45 + [0.6] * 5
     sequence_report.write_genome_coverage_header(report_file)
     sequence_report.write_sequence_coverage_counts('1-my-contig',
                                                    hxb2_name,
