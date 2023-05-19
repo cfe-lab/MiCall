@@ -834,7 +834,7 @@ def test_count_coord_concordance_short_match():
     aligner.coordinate_name = 'test-region'
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
     # as the averaging window (size 20) slides along the query, the concordance decreases from 15/20 = 0.75
-    # in 1 base intervals (1/20 = 0.05) down to 8 bases of the match left in the window (8/20 = 0.25)
+    # in 1 base intervals (1/20 = 0.05) down to 8 bases of the match left in the window (8/20 = 0.4)
     expected_concordance_list = [None]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4] + [None]*9
 
     concordance_list = aligner.coord_concordance()
