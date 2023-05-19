@@ -830,7 +830,8 @@ def test_count_coord_concordance_short_match():
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCATTT"]}}}
     """))
     aligner = ConsensusAligner(projects)
-    aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
+    aligner.consensus = "AGATTTCGATGATTCTCTTCTAAACGT"
+    # last match position:             ^
     aligner.coordinate_name = 'test-region'
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
     # as the averaging window (size 20) slides along the query, the concordance decreases from 15/20 = 0.75
@@ -874,7 +875,8 @@ def test_count_coord_concordance_with_insertion():
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
                                                                                     [3, CigarActions.INSERT],
                                                                                     [18, CigarActions.MATCH]])]
-    # the insertion decreases the concordance. the last concordance window only includes two of the inserted bases
+    # the insertion decreases the concordance to 17/20 = 0.85
+    # the last concordance window only includes two out of the three of the inserted bases: 18/20 = 0.9
     expected_concordance_list = [None]*10 + [0.85]*10 + [0.9] + [None]*9
 
     concordance_list = aligner.coord_concordance()
