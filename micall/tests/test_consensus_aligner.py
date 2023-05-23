@@ -804,8 +804,27 @@ test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
     assert alignments_file.getvalue() == expected_text
 
 
-# noinspection DuplicatedCode
 def test_count_coord_concordance():
+    projects = ProjectConfig()
+    projects.load(StringIO("""\
+    {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATAAGCA"]}}}
+    """))
+    aligner = ConsensusAligner(projects)
+    aligner.consensus = "AGATTTCGATGATTCAGAAGATAAGCA"
+    aligner.coordinate_name = 'test-region'
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+
+    expected_concordance_list = [1.0]*len(aligner.consensus)
+
+    concordance_list = aligner.coord_concordance()
+
+    assert len(concordance_list) == len(expected_concordance_list)
+    for i, concordance in enumerate(concordance_list):
+        assert abs((concordance - expected_concordance_list[i])) < 0.01
+
+
+# noinspection DuplicatedCode
+def test_count_coord_concordance_mismatch():
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATAAGCA"]}}}
@@ -816,11 +835,16 @@ def test_count_coord_concordance():
     aligner.coordinate_name = 'test-region'
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
 
-    expected_concordance_list = [None]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] + [None]*9
+    # At the end of the consensus, the size of the averaging window for the concordance decreases from 20 to 11.
+    # The concordance therefore decreases from 18/20 to 9/11
+    expected_concordance_list = [1.0]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] +\
+                                [17/19, 16/18, 15/17, 14/16, 13/15, 12/14, 11/13, 10/12, 9/11]
 
     concordance_list = aligner.coord_concordance()
 
-    assert concordance_list == expected_concordance_list
+    assert len(concordance_list) == len(expected_concordance_list)
+    for i, concordance in enumerate(concordance_list):
+        assert abs((concordance - expected_concordance_list[i])) < 0.01
 
 
 # noinspection DuplicatedCode
@@ -834,13 +858,23 @@ def test_count_coord_concordance_short_match():
     # last match position:             ^
     aligner.coordinate_name = 'test-region'
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
-    # as the averaging window (size 20) slides along the query, the concordance decreases from 15/20 = 0.75
-    # in 1 base intervals (1/20 = 0.05) down to 8 bases of the match left in the window (8/20 = 0.4)
-    expected_concordance_list = [None]*10 + [0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4] + [None]*9
+    # We start out with 100% match for the first 6 positions
+    expected_concordance_list = [1.0] * 6
+    # After that, the averaging window (whose size is still increasing) starts to slide past the match:
+    # 15 matches / 16 positions to 15 matches / 19 positions
+    expected_concordance_list += [15/16, 15/17, 15/18, 15/19]
+    # We then reach the full size of the averaging window (20), and the concordance decreases from 15/20
+    # in 1 base intervals down to 8 bases of the match left in the window (8/20).
+    expected_concordance_list += [15/20, 14/20, 13/20, 12/20, 11/20, 10/20, 9/20, 8/20]
+    # After that, the averaging window starts to become smaller: 7/19 to 1/13,
+    # until no more bases of the match are left in the window.
+    expected_concordance_list += [7/19, 6/18, 5/17, 4/16, 3/15, 2/14, 1/13, 0, 0]
 
     concordance_list = aligner.coord_concordance()
 
-    assert concordance_list == expected_concordance_list
+    assert len(concordance_list) == len(expected_concordance_list)
+    for i, concordance in enumerate(concordance_list):
+        assert abs((concordance - expected_concordance_list[i])) < 0.01
 
 
 # noinspection DuplicatedCode
@@ -855,11 +889,14 @@ def test_count_coord_concordance_two_matches():
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[[12, CigarActions.MATCH]]),
                           AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[[15, CigarActions.MATCH]])]
 
-    expected_concordance_list = [None]*10 + [0.85]*11 + [None]*9
+    expected_concordance_list = [1.0] * 3 + [12/13, 12/14, 12/15, 13/16, 14/17, 15/18, 16/19] + [17/20]*11 + \
+                                [16/19, 15/18, 15/17, 15/16] + [1.0]*5
 
     concordance_list = aligner.coord_concordance()
 
-    assert concordance_list == expected_concordance_list
+    assert len(concordance_list) == len(expected_concordance_list)
+    for i, concordance in enumerate(concordance_list):
+        assert abs((concordance - expected_concordance_list[i])) < 0.01
 
 
 # noinspection DuplicatedCode
@@ -875,9 +912,12 @@ def test_count_coord_concordance_with_insertion():
     aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
                                                                                     [3, CigarActions.INSERT],
                                                                                     [18, CigarActions.MATCH]])]
-    # the insertion decreases the concordance to 17/20 = 0.85
-    # the last concordance window only includes two out of the three of the inserted bases: 18/20 = 0.9
-    expected_concordance_list = [None]*10 + [0.85]*10 + [0.9] + [None]*9
+    # the window size increases from 10 to 20, while the averaging window slides over the insertion
+    expected_concordance_list = [9/10, 9/11, 9/12, 10/13, 11/14, 12/15, 13/16, 14/17, 15/18, 16/19]
+    # for 10 positions in the middle, the insertion is included in the full window size fo 20
+    expected_concordance_list += [17/20]*10
+    # the averaging window then slides over the insertion and starts becoming smaller
+    expected_concordance_list += [18/20, 18/19] + [1.0]*8
 
     concordance_list = aligner.coord_concordance()
 
@@ -898,7 +938,7 @@ def test_count_coord_concordance_with_deletion():
                                                                                     [3, CigarActions.DELETE],
                                                                                     [15, CigarActions.MATCH]])]
     # the deletion does not decrease the concordance
-    expected_concordance_list = [None]*10 + [1.0]*5 + [None]*9
+    expected_concordance_list = [1.0]*len(aligner.consensus)
 
     concordance_list = aligner.coord_concordance()
 

@@ -953,6 +953,21 @@ class ConsensusAligner:
             concordance = sum(query_matches[pos - half_window_size:pos + half_window_size])
             normalized_concordance = concordance / (2 * half_window_size)
             concordance_list[pos] = normalized_concordance
+        # This fills the concordance everywhere except the positions within a half_window_size
+        # of the start and end of the consensus.
+        # We will do these next, with a window size decreasing from 2x half_window_size to half_window_size
+
+        if len(self.consensus) >= half_window_size:
+            # fill in the start
+            for pos in range(0, half_window_size):
+                concordance = sum(query_matches[0:pos + half_window_size])
+                normalized_concordance = concordance / (pos + half_window_size)
+                concordance_list[pos] = normalized_concordance
+            # fill in the end
+            for pos in range(len(self.consensus) - half_window_size + 1, len(self.consensus)):
+                concordance = sum(query_matches[pos-half_window_size:])
+                normalized_concordance = concordance / (len(self.consensus) - pos + half_window_size)
+                concordance_list[pos] = normalized_concordance
 
         return concordance_list
 
