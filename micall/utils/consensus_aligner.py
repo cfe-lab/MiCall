@@ -949,9 +949,11 @@ class ConsensusAligner:
                     ref_progress += size
                     query_progress += size
 
-        for pos in range(half_window_size, len(self.consensus) - half_window_size + 1):
-            concordance = sum(query_matches[pos - half_window_size:pos + half_window_size])
-            normalized_concordance = concordance / (2 * half_window_size)
+        for pos in range(0, len(self.consensus)):
+            start = max(0, pos - half_window_size)
+            end = min(len(self.consensus), pos + half_window_size)
+            concordance = sum(query_matches[start:end])
+            normalized_concordance = concordance / (end-start)
             concordance_list[pos] = normalized_concordance
 
         return concordance_list
