@@ -1,6 +1,7 @@
 import math
 import typing
 from io import StringIO
+from pytest import approx
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
 from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
@@ -805,6 +806,7 @@ test,test_contig,MATCH,0,10,20,30,1,10,ATA,ACA
 
 
 def test_count_coord_concordance():
+    """Check the concordance for a 27 base consensus with a 27 base match."""
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATAAGCA"]}}}
@@ -818,13 +820,12 @@ def test_count_coord_concordance():
 
     concordance_list = aligner.coord_concordance()
 
-    assert len(concordance_list) == len(expected_concordance_list)
-    for i, concordance in enumerate(concordance_list):
-        assert abs((concordance - expected_concordance_list[i])) < 0.01
+    assert concordance_list == approx(expected_concordance_list)
 
 
 # noinspection DuplicatedCode
 def test_count_coord_concordance_mismatch():
+    """Check the concordance for a 27 base consensus with a 27 base match, but two nucleotides mismatch."""
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATAAGCA"]}}}
@@ -837,18 +838,17 @@ def test_count_coord_concordance_mismatch():
 
     # At the end of the consensus, the size of the averaging window for the concordance decreases from 20 to 11.
     # The concordance therefore decreases from 18/20 to 9/11
-    expected_concordance_list = [1.0]*10 + [1.0, 1.0, 1.0, 0.95, 0.9, 0.9, 0.9, 0.9] +\
+    expected_concordance_list = [1.0]*13 + [19/20, 18/20, 18/20, 18/20, 18/20] +\
                                 [17/19, 16/18, 15/17, 14/16, 13/15, 12/14, 11/13, 10/12, 9/11]
 
     concordance_list = aligner.coord_concordance()
 
-    assert len(concordance_list) == len(expected_concordance_list)
-    for i, concordance in enumerate(concordance_list):
-        assert abs((concordance - expected_concordance_list[i])) < 0.01
+    assert concordance_list == approx(expected_concordance_list)
 
 
 # noinspection DuplicatedCode
 def test_count_coord_concordance_short_match():
+    """Check the concordance for a 27 base consensus with a 15 base match."""
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCATTT"]}}}
@@ -872,13 +872,12 @@ def test_count_coord_concordance_short_match():
 
     concordance_list = aligner.coord_concordance()
 
-    assert len(concordance_list) == len(expected_concordance_list)
-    for i, concordance in enumerate(concordance_list):
-        assert abs((concordance - expected_concordance_list[i])) < 0.01
+    assert concordance_list == approx(expected_concordance_list)
 
 
 # noinspection DuplicatedCode
 def test_count_coord_concordance_two_matches():
+    """Check the concordance for a 30 base consensus with two matches and a gap."""
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCATTT"]}}}
@@ -894,13 +893,12 @@ def test_count_coord_concordance_two_matches():
 
     concordance_list = aligner.coord_concordance()
 
-    assert len(concordance_list) == len(expected_concordance_list)
-    for i, concordance in enumerate(concordance_list):
-        assert abs((concordance - expected_concordance_list[i])) < 0.01
+    assert concordance_list == approx(expected_concordance_list)
 
 
 # noinspection DuplicatedCode
 def test_count_coord_concordance_with_insertion():
+    """Check the concordance for a 30 base consensus with a 27 base match and an insertion of three."""
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCA"]}}}
@@ -921,11 +919,12 @@ def test_count_coord_concordance_with_insertion():
 
     concordance_list = aligner.coord_concordance()
 
-    assert concordance_list == expected_concordance_list
+    assert concordance_list == approx(expected_concordance_list)
 
 
 # noinspection DuplicatedCode
 def test_count_coord_concordance_with_deletion():
+    """Check the concordance for a 24 base consensus with a 27 base match and a deletion of three."""
     projects = ProjectConfig()
     projects.load(StringIO("""\
     {"genotype_references": {"test-region": {"is_nucleotide": true,"reference": ["AGATTTCGATGATTCAGAAGATTTGCA"]}}}
@@ -942,7 +941,7 @@ def test_count_coord_concordance_with_deletion():
 
     concordance_list = aligner.coord_concordance()
 
-    assert concordance_list == expected_concordance_list
+    assert concordance_list == approx(expected_concordance_list)
 
 
 # noinspection DuplicatedCode
