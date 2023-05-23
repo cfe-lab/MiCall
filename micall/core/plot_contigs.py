@@ -650,11 +650,15 @@ def main():
                         type=FileType())
     parser.add_argument('genome_coverage_svg',
                         help='SVG file to plot coverage counts for each contig')
+    parser.add_argument('--concordance',
+                        help='Make concordance plot instead of coverage',
+                        action='store_true')
     args = parser.parse_args()
 
     plot_genome_coverage(args.genome_coverage_csv,
                          args.blast,
-                         args.genome_coverage_svg)
+                         args.genome_coverage_svg,
+                         args.concordance)
     print('Wrote', args.genome_coverage_svg)
 
 
