@@ -62,8 +62,8 @@ class SvgDiffer:
         self.mismatch_found = False
         png_diff.putdata([self.diff_pixel(actual_pixel, expected_pixel)
                           for actual_pixel, expected_pixel in zip(
-                            png_actual_padded.getdata(),
-                            png_expected_padded.getdata())])
+                png_actual_padded.getdata(),
+                png_expected_padded.getdata())])
 
         # Display image when in live turtle mode.
         display_image = getattr(Turtle, 'display_image', None)
@@ -74,24 +74,24 @@ class SvgDiffer:
                 w = t.screen.cv.cget('width')
                 # noinspection PyUnresolvedReferences
                 h = t.screen.cv.cget('height')
-                ox, oy = w/2, h/2
+                ox, oy = w / 2, h / 2
                 text_height = 20
                 t.penup()
                 t.goto(-ox, oy)
                 t.right(90)
                 t.forward(text_height)
                 t.write(f'Actual')
-                display_image(ox+t.xcor(), oy-t.ycor(),
+                display_image(ox + t.xcor(), oy - t.ycor(),
                               image=encode_image(png_actual))
                 t.forward(png_actual.height)
                 t.forward(text_height)
                 t.write(f'Diff')
-                display_image(ox+t.xcor(), oy-t.ycor(),
+                display_image(ox + t.xcor(), oy - t.ycor(),
                               image=encode_image(png_diff))
                 t.forward(png_diff.height)
                 t.forward(text_height)
                 t.write('Expected')
-                display_image(ox+t.xcor(), oy-t.ycor(),
+                display_image(ox + t.xcor(), oy - t.ycor(),
                               image=encode_image(png_expected))
                 t.forward(png_expected.height)
             except Exception as ex:
@@ -100,10 +100,10 @@ class SvgDiffer:
         if not self.mismatch_found:
             return
         text_actual = svg_actual.asSvg()
-        (self.work_dir / (name+'_actual.svg')).write_text(text_actual)
+        (self.work_dir / (name + '_actual.svg')).write_text(text_actual)
         text_expected = svg_expected.asSvg()
-        (self.work_dir / (name+'_expected.svg')).write_text(text_expected)
-        with (self.work_dir / (name+'_diff.png')) as f:
+        (self.work_dir / (name + '_expected.svg')).write_text(text_expected)
+        with (self.work_dir / (name + '_diff.png')) as f:
             png_diff.save(f)
         assert text_actual == text_expected
 
@@ -413,7 +413,7 @@ contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
 """)
     genome_coverage_csv.seek(0, 2)  # EOF
     for i in range(1010):
-        genome_coverage_csv.write(f'1-HCV-1a-partial,,{i+1},,0,0,5\n')
+        genome_coverage_csv.write(f'1-HCV-1a-partial,,{i + 1},,0,0,5\n')
     genome_coverage_csv.seek(0)
     expected_figure = """\
 [1-500], [1001-1010], Partial Blast Results(1-1010)
@@ -586,6 +586,39 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_insertion_at_end():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-HCV-1a,HCV1A,1,1,0,5
+1-HCV-1a,HCV1A,2,2,0,5
+1-HCV-1a,HCV1A,3,3,0,7
+1-HCV-1a,HCV1A,4,4,0,5
+1-HCV-1a,HCV1A,5,5,0,5
+1-HCV-1a,HCV1A,6,6,0,5
+contig-1-HCV-1a,HCV1A,1,1,0,,5
+contig-1-HCV-1a,HCV1A,2,2,0,,5
+contig-1-HCV-1a,HCV1A,3,3,0,,5
+contig-1-HCV-1a,HCV1A,4,4,0,,6
+contig-1-HCV-1a,HCV1A,5,5,0,,6
+contig-1-HCV-1a,HCV1A,6,6,0,,6
+contig-1-HCV-1a,HCV1A,7,,,,
+contig-1-HCV-1a,HCV1A,8,,,,
+contig-1-HCV-1a,HCV1A,9,,,,
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Coverage 5x2, 7, 5x3
+[1-6], 1-HCV-1a - depth 7(1-9646)
+[1-6], contig-1-HCV-1a(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
 def test_plot_genome_coverage_deletion():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage,concordance,link
@@ -613,7 +646,6 @@ Coverage 5x3, 7, 0x3, 7x2, 8x3
     figure = build_coverage_figure(genome_coverage_csv)
 
     assert expected_figure == summarize_figure(figure)
-
 
 
 def test_plot_genome_coverage_unmapped():
@@ -794,6 +826,38 @@ Coverage 5x2, 7, 5x3
     assert summarize_figure(figure) == expected_figure
 
 
+def test_plot_genome_coverage_blast_start_past_end():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV1A,1,8001,0,0,5
+1-HCV-1a,HCV1A,2,8002,0,0,5
+1-HCV-1a,HCV1A,3,8003,0,0,7
+1-HCV-1a,HCV1A,4,8004,0,0,5
+1-HCV-1a,HCV1A,5,8005,0,0,5
+1-HCV-1a,HCV1A,6,8006,0,0,5
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1g,30,0.33,90,1,2,5001,5002
+1,HCV-1a,40,0.33,100,5,10,7010,7005
+1,HCV-1a,50,0.5,100,1,3,8001,8003
+1,HCV-1a,60,0.4,100,7,10,6000,6003
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+6000--1.3->6003, 7005<-1.2--7010, 8001--1.1->8003
+8001--1.1->8003, 8005--1.2->8006, 8006--1.3->8006
+Coverage 5x2, 7, 5x3
+[8001-8006], 1-HCV-1a - depth 7(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert summarize_figure(figure) == expected_figure
+
+
 def test_plot_genome_coverage_blast_past_start():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
@@ -928,14 +992,56 @@ Coverage 5x2, 7, 5x3
     assert summarize_figure(figure) == expected_figure
 
 
+def test_plot_genome_coverage_blast_insertion_at_end():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
+1-HCV-1a,HCV1A,1,1,0,5
+1-HCV-1a,HCV1A,2,2,0,5
+1-HCV-1a,HCV1A,3,3,0,7
+1-HCV-1a,HCV1A,4,4,0,5
+1-HCV-1a,HCV1A,5,5,0,5
+1-HCV-1a,HCV1A,6,6,0,5
+1-HCV-1a,HCV1A,7,,0,5
+1-HCV-1a,HCV1A,8,,0,5
+1-HCV-1a,HCV1A,9,,0,5
+contig-1-HCV-1a,HCV1A,1,1,0,,5
+contig-1-HCV-1a,HCV1A,2,2,0,,5
+contig-1-HCV-1a,HCV1A,3,3,0,,5
+contig-1-HCV-1a,HCV1A,4,4,0,,6
+contig-1-HCV-1a,HCV1A,5,5,0,,6
+contig-1-HCV-1a,HCV1A,6,6,0,,6
+contig-1-HCV-1a,HCV1A,7,,,,
+contig-1-HCV-1a,HCV1A,8,,,,
+contig-1-HCV-1a,HCV1A,9,,,,
+""")
+    blast_csv = StringIO("""\
+contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
+1,HCV-1a,30,0.9,90,1,9,1,9
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+1--1.1->9
+1--1.1->6
+Coverage 5x2, 7, 5x3
+[1-6], 1-HCV-1a - depth 7(1-9646)
+[1-6], contig-1-HCV-1a(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv, blast_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
     expected_svg.append(Line(0, 20, 168, 20, stroke='black'))
-    expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Circle(175 / 2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('1.2',
                              11,
-                             175/2, 20,
+                             175 / 2, 20,
                              text_anchor='middle',
                              dy="0.35em"))
     expected_svg.append(Lines(175, 20,
@@ -953,10 +1059,10 @@ def test_arrow(svg_differ):
 def test_arrow_bottom(svg_differ):
     f, expected_svg = start_drawing(200, 55)
     expected_svg.append(Line(0, 10, 168, 10, stroke='black'))
-    expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Circle(175 / 2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('1.2',
                              11,
-                             175/2, 20,
+                             175 / 2, 20,
                              text_anchor='middle',
                              dy="0.35em"))
     expected_svg.append(Lines(175, 10,
@@ -974,10 +1080,10 @@ def test_arrow_bottom(svg_differ):
 def test_reverse_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
     expected_svg.append(Line(7, 10, 175, 10, stroke='black'))
-    expected_svg.append(Circle(175/2, 20, 10, stroke='black', fill='ivory'))
+    expected_svg.append(Circle(175 / 2, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('X',
                              11,
-                             175/2, 20,
+                             175 / 2, 20,
                              text_anchor='middle',
                              dy="0.35em"))
     expected_svg.append(Lines(0, 10,
@@ -1081,13 +1187,13 @@ def test_tiny_arrow_at_edge(svg_differ):
 
 def start_drawing(width, height):
     expected_svg = Drawing(width, height, origin=(0, 0))
-    expected_svg.append(Rectangle(0, height-15,
+    expected_svg.append(Rectangle(0, height - 15,
                                   200, 10,
                                   stroke='lightgrey',
                                   fill='lightgrey'))
     expected_svg.append(Text('Header',
                              10,
-                             width/2, height-15,
+                             width / 2, height - 15,
                              font_family='monospace',
                              text_anchor='middle'))
     f = Figure()
