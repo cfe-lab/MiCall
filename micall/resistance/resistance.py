@@ -299,8 +299,15 @@ def read_aminos(amino_rows,
 
 
 def get_algorithm_regions(algorithm):
-    return ('INT' if region == 'IN' else region
-            for region in algorithm.gene_def)
+    regions = []
+    for region in algorithm.gene_def:
+        if region == 'IN':
+            regions.append('INT')
+        elif region == 'CA':
+            continue
+        else:
+            regions.append(region)
+    return regions
 
 
 def create_empty_aminos(region, genotype, seed, algorithms):
