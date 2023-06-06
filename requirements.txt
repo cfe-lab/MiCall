@@ -3,7 +3,7 @@ pytz==2023.3
 git+https://github.com/cfe-lab/iva.git@v1.1.1
 biopython==1.81
 git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh
-git+https://github.com/cfe-lab/pyvdrm.git@400148b85e26eb5a2ed810cb577c203c07468755
+git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2
 numpy==1.24.3
 scipy==1.10.1
 matplotlib==3.7.1
