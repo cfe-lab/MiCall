@@ -1038,7 +1038,7 @@ def test_empty(svg_differ):
     f, expected_svg = start_drawing(200, 25)
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_empty')
 
 
 # noinspection DuplicatedCode
@@ -1080,7 +1080,7 @@ def test_arrow_bottom(svg_differ):
     f.add(Arrow(0, 175, h=20, elevation=-1, label='1.2'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_bottom')
 
 
 # noinspection DuplicatedCode
@@ -1101,7 +1101,7 @@ def test_reverse_arrow(svg_differ):
     f.add(Arrow(175, 0, h=20, elevation=-1, label='X'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_reverse_arrow')
 
 
 # noinspection DuplicatedCode
@@ -1124,7 +1124,7 @@ def test_scaled_arrow(svg_differ):
     f.add(Arrow(0, 200, h=20, elevation=-1, label='2.3'))
     svg = f.show(w=100)
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_scaled_arrow')
 
 
 # noinspection DuplicatedCode
@@ -1146,7 +1146,7 @@ def test_small_arrow(svg_differ):
     f.add(Arrow(100, 132, h=20, elevation=-1, label='2.3'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_small_arrow')
 
 
 # noinspection DuplicatedCode
@@ -1167,7 +1167,7 @@ def test_tiny_arrow(svg_differ):
     f.add(Arrow(100, 104, h=20, elevation=-1, label='2.3'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_tiny_arrow')
 
 
 # noinspection DuplicatedCode
@@ -1189,7 +1189,7 @@ def test_tiny_arrow_at_edge(svg_differ):
     f.add(ArrowGroup([Arrow(195, 200, h=20, elevation=-1, label='2.3')]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_tiny_arrow_at_edge')
 
 
 def start_drawing(width, height):
@@ -1247,7 +1247,7 @@ def test_arrow_group_unordered(svg_differ):
                       Arrow(1, 200, label='X', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_unordered')
 
 
 # noinspection DuplicatedCode
@@ -1265,7 +1265,7 @@ def test_arrow_group_overlap(svg_differ):
                       Arrow(1, 300, label='Y', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_overlap')
 
 
 # noinspection DuplicatedCode
@@ -1283,7 +1283,7 @@ def test_arrow_group_reverse_overlap(svg_differ):
                       Arrow(400, 250, label='Y', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_reverse_overlap')
 
 
 # noinspection DuplicatedCode
@@ -1301,7 +1301,7 @@ def test_arrow_group_small_neighbour(svg_differ):
                       Arrow(301, 315, elevation=-1, label='1.2', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_small_neighbour')
 
 
 def test_draw_coverage(svg_differ):
