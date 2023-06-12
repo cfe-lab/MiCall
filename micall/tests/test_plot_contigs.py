@@ -934,6 +934,7 @@ def test_empty(svg_differ):
 
     svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
 
+
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
