@@ -25,7 +25,7 @@ MIDI_START_POS = 231
 MIDI_END_POS = 561
 
 # Rules configuration - remember to update version numbers in genreport.yaml.
-HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_9.0.xml')
+HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_9.4.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 
 NOTHING_MAPPED_MESSAGE = 'nothing mapped'
@@ -299,8 +299,15 @@ def read_aminos(amino_rows,
 
 
 def get_algorithm_regions(algorithm):
-    return ('INT' if region == 'IN' else region
-            for region in algorithm.gene_def)
+    regions = []
+    for region in algorithm.gene_def:
+        if region == 'IN':
+            regions.append('INT')
+        elif region == 'CA':
+            continue
+        else:
+            regions.append(region)
+    return regions
 
 
 def create_empty_aminos(region, genotype, seed, algorithms):

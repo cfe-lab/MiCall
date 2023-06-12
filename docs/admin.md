@@ -204,3 +204,17 @@ As in the above case, when you are ready to process the run you previously stopp
 you can remove the fake `errorprocessing` flag you created for that run, and MiCall Watcher
 will then restart those processing tasks on its next hourly scan.  Kive will be able 
 reuse the progress already made when you stopped them.
+
+### Purging Old Files
+The RAW_DATA drive occasionally gets full, and we go through purging extra files
+from old runs. One of the biggest sets of files is BCL files that you can find
+in a run under `Data/Intensities/BaeCalls/L001/*/*.bcl`.
+
+You can see how much space they take within a run folder:
+
+    find -name "*.bcl" -print0 | du -ch --files0-from -
+
+We usually keep the last year's worth of BCL files around, so to delete all the
+BCL files from before May 2022, we ran this command in the runs folder:
+
+    find */Data/Intensities/BaseCalls/L001 -name "*.bcl" -not -newer 220527_M04401_0226_000000000-K5YRD/SampleSheet.csv -print -delete

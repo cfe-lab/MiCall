@@ -55,8 +55,8 @@ class AsiAlgorithmTest(TestCase):
                           ('SQV/r', 10.0, 2, 'Susceptible'),
                           ('TPV/r', -5.0, 1, 'Susceptible')]
         expected_mutation_comments = [
-            'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
-            'contributes reduced susceptibility to each PI except DRV and TPV.']
+            'L24I is a non-polymorphic mutation selected by IDV and LPV. '
+            'It contributes reduced susceptibility to ATV and LPV.']
 
         result = self.asi.interpret(aa_seq, 'PR')
 
@@ -74,9 +74,8 @@ class AsiAlgorithmTest(TestCase):
                           ('EVG', 15.0, 3, 'Low-Level Resistance'),
                           ('RAL', 15.0, 3, 'Low-Level Resistance')]
         expected_mutation_comments = [
-            'H51Y is a rare non-polymorphic accessory mutation selected in '
-            'patients receiving RAL and EVG and in vitro by DTG. H51Y '
-            'minimally reduces EVG and possibly CAB susceptibility.']
+            'H51Y is an uncommon nonpolymorphic accessory mutation selected in vitro by EVG, DTG, and CAB. '
+            'Alone, it has minimal if any effect on INSTI susceptibility.']
 
         result = self.asi.interpret(aa_seq, 'IN')
 
@@ -104,8 +103,10 @@ class AsiAlgorithmTest(TestCase):
         aa_seq = [[amino] for amino in self.asi.stds['PR']]
         aa_seq[23] = ['D']
         expected_mutation_comments = [
-            'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
-            'contributes reduced susceptibility to each PI except DRV and TPV. '
+            'L24I is a non-polymorphic mutation selected by IDV and LPV. '
+            'It contributes reduced susceptibility to ATV and LPV. '
+            'L24F/M are uncommon non-polymorphic PI-selected mutations. '
+            'L24F has a susceptibility profile similar to L24I. '
             'L24D is a highly unusual mutation at this position.']
 
         result = self.asi.interpret(aa_seq, 'PR')
@@ -125,8 +126,8 @@ class AsiAlgorithmTest(TestCase):
                           ('SQV/r', 10.0, 2, 'Susceptible'),
                           ('TPV/r', -5.0, 1, 'Susceptible')]
         expected_mutation_comments = [
-            'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
-            'contributes reduced susceptibility to each PI except DRV and TPV.']
+            'L24I is a non-polymorphic mutation selected by IDV and LPV. '
+            'It contributes reduced susceptibility to ATV and LPV.']
 
         result = self.asi.interpret(aa_seq, 'PR')
 
@@ -149,8 +150,8 @@ class AsiAlgorithmTest(TestCase):
                           ('SQV/r', 10.0, 2, 'Susceptible'),
                           ('TPV/r', -5.0, 1, 'Susceptible')]
         expected_mutation_comments = [
-            'L24I is a non-polymorphic mutation selected by IDV and LPV. It '
-            'contributes reduced susceptibility to each PI except DRV and TPV.']
+            'L24I is a non-polymorphic mutation selected by IDV and LPV. '
+            'It contributes reduced susceptibility to ATV and LPV.']
 
         self.asi.interpret(aa_seq1, 'RT')
         result = self.asi.interpret(aa_seq2, 'PR')
