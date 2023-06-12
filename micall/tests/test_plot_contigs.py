@@ -99,9 +99,9 @@ class SvgDiffer:
 
         if not self.mismatch_found:
             return
-        text_actual = svg_actual.as_svg()
+        text_actual = svg_actual.as_svg(context=draw.Context(invert_y=True))
         (self.work_dir / (name+'_actual.svg')).write_text(text_actual)
-        text_expected = svg_expected.as_svg()
+        text_expected = svg_expected.as_svg(context=draw.Context(invert_y=True))
         (self.work_dir / (name+'_expected.svg')).write_text(text_expected)
         with (self.work_dir / (name+'_diff.png')) as f:
             png_diff.save(f)
@@ -109,7 +109,7 @@ class SvgDiffer:
 
 
 def drawing_to_image(drawing: Drawing) -> Image:
-    png = drawing.rasterize()
+    png = drawing.rasterize(context=draw.Context(invert_y=True))
     png_bytes = BytesIO(png.png_data)
     image = Image.open(png_bytes)
     return image
@@ -928,6 +928,12 @@ Coverage 5x2, 7, 5x3
     assert summarize_figure(figure) == expected_figure
 
 
+def test_empty(svg_differ):
+    f, expected_svg = start_drawing(200, 25)
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
@@ -993,7 +999,7 @@ def test_reverse_arrow(svg_differ):
 
 # noinspection DuplicatedCode
 def test_scaled_arrow(svg_differ):
-    expected_svg = Drawing(100, 35, origin=(0, 0))
+    expected_svg = Drawing(100, 35, origin=(0, 0), context=draw.Context(invert_y=True))
     expected_svg.append(Line(0, 10, 93, 10, stroke='black'))
     expected_svg.append(Circle(50, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('2.3',
@@ -1059,7 +1065,7 @@ def test_tiny_arrow(svg_differ):
 
 # noinspection DuplicatedCode
 def test_tiny_arrow_at_edge(svg_differ):
-    expected_svg = Drawing(210, 35, origin=(0, 0))
+    expected_svg = Drawing(210, 35, origin=(0, 0), context=draw.Context(invert_y=True))
     expected_svg.append(Circle(197.5, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('2.3',
                              11,
@@ -1080,7 +1086,7 @@ def test_tiny_arrow_at_edge(svg_differ):
 
 
 def start_drawing(width, height):
-    expected_svg = Drawing(width, height, origin=(0, 0))
+    expected_svg = Drawing(width, height, origin=(0, 0), context=draw.Context(invert_y=True))
     expected_svg.append(Rectangle(0, height-15,
                                   200, 10,
                                   stroke='lightgrey',

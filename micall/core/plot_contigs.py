@@ -246,7 +246,7 @@ def plot_genome_coverage(genome_coverage_csv,
                          genome_coverage_svg_path,
                          use_concordance=False):
     f = build_coverage_figure(genome_coverage_csv, blast_csv, use_concordance)
-    f.show(w=970).saveSvg(genome_coverage_svg_path)
+    f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
 
 
 def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=False):
