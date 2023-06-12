@@ -83,7 +83,7 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
-## Install dependencies for genetracks/drawSvg
+## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
 
 COPY requirements.txt requirements-basespace.txt /opt/micall/

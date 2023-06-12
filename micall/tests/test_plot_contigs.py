@@ -4,10 +4,10 @@ from pathlib import Path
 from turtle import Turtle
 
 # noinspection PyPep8Naming
-import drawSvg as draw
+import drawsvg as draw
 import pytest
 from PIL import Image
-from drawSvg import Drawing, Line, Lines, Circle, Text, Rectangle
+from drawsvg import Drawing, Line, Lines, Circle, Text, Rectangle
 from genetracks import Figure, Track, Multitrack, Label, Coverage
 
 from micall.core.plot_contigs import summarize_figure, build_coverage_figure, \
@@ -99,18 +99,18 @@ class SvgDiffer:
 
         if not self.mismatch_found:
             return
-        text_actual = svg_actual.asSvg()
-        (self.work_dir / (name + '_actual.svg')).write_text(text_actual)
-        text_expected = svg_expected.asSvg()
-        (self.work_dir / (name + '_expected.svg')).write_text(text_expected)
-        with (self.work_dir / (name + '_diff.png')) as f:
+        text_actual = svg_actual.as_svg(context=draw.Context(invert_y=True))
+        (self.work_dir / (name+'_actual.svg')).write_text(text_actual)
+        text_expected = svg_expected.as_svg(context=draw.Context(invert_y=True))
+        (self.work_dir / (name+'_expected.svg')).write_text(text_expected)
+        with (self.work_dir / (name+'_diff.png')) as f:
             png_diff.save(f)
         assert text_actual == text_expected
 
 
 def drawing_to_image(drawing: Drawing) -> Image:
-    png = drawing.rasterize()
-    png_bytes = BytesIO(png.pngData)
+    png = drawing.rasterize(context=draw.Context(invert_y=True))
+    png_bytes = BytesIO(png.png_data)
     image = Image.open(png_bytes)
     return image
 
@@ -1034,6 +1034,13 @@ Coverage 5x2, 7, 5x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_empty(svg_differ):
+    f, expected_svg = start_drawing(200, 25)
+    svg = f.show()
+
+    svg_differ.assert_equal(svg, expected_svg, 'test_empty')
+
+
 # noinspection DuplicatedCode
 def test_arrow(svg_differ):
     f, expected_svg = start_drawing(200, 55)
@@ -1073,7 +1080,7 @@ def test_arrow_bottom(svg_differ):
     f.add(Arrow(0, 175, h=20, elevation=-1, label='1.2'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_bottom')
 
 
 # noinspection DuplicatedCode
@@ -1094,12 +1101,12 @@ def test_reverse_arrow(svg_differ):
     f.add(Arrow(175, 0, h=20, elevation=-1, label='X'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_reverse_arrow')
 
 
 # noinspection DuplicatedCode
 def test_scaled_arrow(svg_differ):
-    expected_svg = Drawing(100, 35, origin=(0, 0))
+    expected_svg = Drawing(100, 35, origin=(0, 0), context=draw.Context(invert_y=True))
     expected_svg.append(Line(0, 10, 93, 10, stroke='black'))
     expected_svg.append(Circle(50, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('2.3',
@@ -1117,7 +1124,7 @@ def test_scaled_arrow(svg_differ):
     f.add(Arrow(0, 200, h=20, elevation=-1, label='2.3'))
     svg = f.show(w=100)
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_scaled_arrow')
 
 
 # noinspection DuplicatedCode
@@ -1139,7 +1146,7 @@ def test_small_arrow(svg_differ):
     f.add(Arrow(100, 132, h=20, elevation=-1, label='2.3'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_small_arrow')
 
 
 # noinspection DuplicatedCode
@@ -1160,12 +1167,12 @@ def test_tiny_arrow(svg_differ):
     f.add(Arrow(100, 104, h=20, elevation=-1, label='2.3'))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_tiny_arrow')
 
 
 # noinspection DuplicatedCode
 def test_tiny_arrow_at_edge(svg_differ):
-    expected_svg = Drawing(210, 35, origin=(0, 0))
+    expected_svg = Drawing(210, 35, origin=(0, 0), context=draw.Context(invert_y=True))
     expected_svg.append(Circle(197.5, 20, 10, stroke='black', fill='ivory'))
     expected_svg.append(Text('2.3',
                              11,
@@ -1182,12 +1189,12 @@ def test_tiny_arrow_at_edge(svg_differ):
     f.add(ArrowGroup([Arrow(195, 200, h=20, elevation=-1, label='2.3')]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow')
+    svg_differ.assert_equal(svg, expected_svg, 'test_tiny_arrow_at_edge')
 
 
 def start_drawing(width, height):
-    expected_svg = Drawing(width, height, origin=(0, 0))
-    expected_svg.append(Rectangle(0, height - 15,
+    expected_svg = Drawing(width, height, origin=(0, 0), context=draw.Context(invert_y=True))
+    expected_svg.append(Rectangle(0, height-15,
                                   200, 10,
                                   stroke='lightgrey',
                                   fill='lightgrey'))
@@ -1240,7 +1247,7 @@ def test_arrow_group_unordered(svg_differ):
                       Arrow(1, 200, label='X', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_unordered')
 
 
 # noinspection DuplicatedCode
@@ -1258,7 +1265,7 @@ def test_arrow_group_overlap(svg_differ):
                       Arrow(1, 300, label='Y', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_overlap')
 
 
 # noinspection DuplicatedCode
@@ -1276,7 +1283,7 @@ def test_arrow_group_reverse_overlap(svg_differ):
                       Arrow(400, 250, label='Y', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_reverse_overlap')
 
 
 # noinspection DuplicatedCode
@@ -1294,7 +1301,7 @@ def test_arrow_group_small_neighbour(svg_differ):
                       Arrow(301, 315, elevation=-1, label='1.2', h=h)]))
     svg = f.show()
 
-    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group')
+    svg_differ.assert_equal(svg, expected_svg, 'test_arrow_group_small_neighbour')
 
 
 def test_draw_coverage(svg_differ):

@@ -132,7 +132,7 @@ From: centos:7
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
-    # Install dependencies for genetracks/drawSvg
+    # Install dependencies for genetracks/drawsvg
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
 
     yum groupremove -q -y 'development tools'
