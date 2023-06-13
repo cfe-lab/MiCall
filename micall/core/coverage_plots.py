@@ -186,7 +186,11 @@ def coverage_plot(amino_csv,
             plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=96)
             plt.step(x, y_insertions, where='mid', label='insertions', marker='x', linestyle='None', zorder=95)
             plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
-            plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True, ncol=2)
+            plt.legend(loc='upper left',
+                       fontsize=FONT_SIZE,
+                       fancybox=True,
+                       bbox_to_anchor=(1.05, 1),
+                       borderaxespad=0.)
             figname_parts.insert(-1, 'details')
             paths.append(save_figure(coverage_maps_path, figname_parts))
             plt.cla()  # clear the axis, but don't remove the axis itself.
@@ -255,7 +259,7 @@ def save_figure(coverage_maps_path, figname_parts):
     """
     figname = '.'.join(figname_parts)
     dest = os.path.join(coverage_maps_path, figname)
-    plt.savefig(dest)  # write image to file
+    plt.savefig(dest, bbox_inches="tight")  # write image to file
     return dest
 
 
