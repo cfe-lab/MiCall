@@ -73,7 +73,6 @@ def coverage_plot(amino_csv,
         partial_counts = Counter()
         insertion_counts = Counter()
         clipping_counts = Counter()
-        v3_overlap_counts = Counter()
         qcut = None
         for row in group:
             pos = int(row['refseq.aa.pos'])
@@ -87,7 +86,6 @@ def coverage_plot(amino_csv,
             partial_counts[pos] = int(row['partial'])
             insertion_counts[pos] = int(row['ins'])
             clipping_counts[pos] = int(row['clip'])
-            v3_overlap_counts[pos] = int(row['v3_overlap'])
             qcut = row['q-cutoff']
         # use region to retrieve coordinate reference
         for project_region in projects.getProjectRegions(
@@ -106,7 +104,6 @@ def coverage_plot(amino_csv,
             y_partials = [partial_counts[pos] for pos in x]
             y_insertions = [insertion_counts[pos] for pos in x]
             y_clipping = [clipping_counts[pos] for pos in x]
-            y_v3_overlap = [v3_overlap_counts[pos] for pos in x]
 
             key_positions = project_region['key_positions']
             if not key_positions:
@@ -189,7 +186,6 @@ def coverage_plot(amino_csv,
             plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=96)
             plt.step(x, y_insertions, where='mid', label='insertions', zorder=95)
             plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
-            plt.step(x, y_v3_overlap, where='mid', label='V3 overlap', zorder=93)
             plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True, ncol=2)
             figname_parts.insert(-1, 'details')
             paths.append(save_figure(coverage_maps_path, figname_parts))
