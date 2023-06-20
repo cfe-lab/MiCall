@@ -107,12 +107,10 @@ def coverage_plot(amino_csv,
             y_clipping = [clipping_counts[pos] for pos in x]
 
             key_positions = project_region['key_positions']
-            has_key_positions = True
             has_labeled_key_pos = False
             if not key_positions:
                 key_positions.append(dict(start_pos=1,
                                           end_pos=region_length))
-                has_key_positions = False
             for key_pos in key_positions:
                 start = key_pos['start_pos']
                 end = key_pos['end_pos']
@@ -125,20 +123,19 @@ def coverage_plot(amino_csv,
                         min_coverage_pos = pos
                 start -= 0.5
                 end += 0.5
-                if has_key_positions:
-                    if has_labeled_key_pos:
-                        label = None
-                    else:
-                        label = 'key positions'
-                        has_labeled_key_pos = True
-                    ax.add_patch(patches.Rectangle(xy=(start, MAX_COVERAGE),
-                                                   width=end - start,
-                                                   height=MAX_COVERAGE*0.3,
-                                                   fc='black',
-                                                   ec='grey',
-                                                   zorder=50,
-                                                   alpha=.5,
-                                                   label=label))
+                if has_labeled_key_pos:
+                    label = None
+                else:
+                    label = 'key positions'
+                    has_labeled_key_pos = True
+                ax.add_patch(patches.Rectangle(xy=(start, 50),
+                                               width=end - start,
+                                               height=150,
+                                               fc='black',
+                                               ec='grey',
+                                               zorder=50,
+                                               alpha=.3,
+                                               label=label))
             if min_coverage <= project_region['min_coverage1']:
                 coverage_score_on = 1
             elif min_coverage <= project_region['min_coverage2']:
@@ -159,7 +156,7 @@ def coverage_plot(amino_csv,
             plt.step(x, y_coverage, linewidth=2, where='mid', label='coverage', zorder=100)
             left_margin = -region_length / 50.0
             plt.xlim([left_margin, region_length])
-            plt.ylim([0.5, MAX_COVERAGE*1.3])
+            plt.ylim([0.5, MAX_COVERAGE])
             plt.yscale('log')
             ax.yaxis.set_major_formatter(axis_formatter)
             plt.tick_params(axis='both', labelsize=FONT_SIZE)
