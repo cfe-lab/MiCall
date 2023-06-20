@@ -192,10 +192,12 @@ def coverage_plot(amino_csv,
                 figname_parts.insert(0, coverage_maps_prefix)
             paths.append(save_figure(coverage_maps_path, figname_parts))
             plt.step(x, y_deletions, where='mid', label='deletions', marker='x', linestyle='None', zorder=99)
-            plt.step(x, y_stops, where='mid', label='stop codons', marker='x', linestyle='None', zorder=98)
-            plt.step(x, y_partials, where='mid', label='partial dels', marker='x', linestyle='None', zorder=97)
+            plt.step(x, y_stops, where='mid', label='stop codons', marker='^', linestyle='None',
+                     markerfacecolor='None', zorder=98)
+            plt.step(x, y_partials, where='mid', label='partial dels', marker='+', linestyle='None', zorder=97)
             plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=96)
-            plt.step(x, y_insertions, where='mid', label='insertions', marker='x', linestyle='None', zorder=95)
+            plt.step(x, y_insertions, where='mid', label='insertions', marker='o', linestyle='None',
+                     markerfacecolor='None', zorder=95)
             plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
             plt.legend(loc='upper left',
                        fontsize=FONT_SIZE,
