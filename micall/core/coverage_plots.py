@@ -96,6 +96,7 @@ def coverage_plot(amino_csv,
             project_name = project_region['project_name']
             region_length = project_region['coordinate_region_length']
             plot_width = max(4, region_length / 75)
+            plot_width = min(plot_width, 10)
             fig, ax = plt.subplots(figsize=(plot_width, 3), dpi=100)
             x = range(1, region_length+1)
             y_coverage = [coverage_counts[pos] for pos in x]
