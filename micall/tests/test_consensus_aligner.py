@@ -408,6 +408,36 @@ def test_start_contig_deletion_minimap2(projects):
     assert aligner.algorithm == 'minimap2'
 
 
+def test_start_contig_big_deletion_minimap2(projects):
+    seed_name = 'HCV-1a'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[340:920] + seed_seq[3000:9000]
+    expected_alignment = [AlignmentWrapper(ctg='N/A',
+                                           ctg_len=len(seed_seq),
+                                           r_st=340,
+                                           r_en=920,
+                                           q_st=0,
+                                           q_en=580,
+                                           mapq=60,
+                                           cigar=[[580, CigarActions.MATCH]],
+                                           NM=0),
+                          AlignmentWrapper(ctg='N/A',
+                                           ctg_len=len(seed_seq),
+                                           r_st=3000,
+                                           r_en=9000,
+                                           q_st=580,
+                                           q_en=6580,
+                                           mapq=60,
+                                           cigar=[[6000, CigarActions.MATCH]],
+                                           NM=0)]
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, *expected_alignment)
+    assert aligner.algorithm == 'minimap2'
+
+
 def test_start_contig_deletion_gotoh(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
