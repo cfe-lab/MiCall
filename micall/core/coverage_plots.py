@@ -63,7 +63,6 @@ def coverage_plot(amino_csv,
 
     axis_formatter = FuncFormatter(lambda y, p: format(int(y), ','))
     # noinspection PyTypeChecker
-    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
     for (seed, region), group in itertools.groupby(reader, itemgetter('seed',
                                                                       'region')):
         coverage_counts = Counter()
@@ -73,7 +72,6 @@ def coverage_plot(amino_csv,
         partial_counts = Counter()
         insertion_counts = Counter()
         clipping_counts = Counter()
-        v3_overlap_counts = Counter()
         qcut = None
         for row in group:
             pos = int(row['refseq.aa.pos'])
@@ -87,7 +85,6 @@ def coverage_plot(amino_csv,
             partial_counts[pos] = int(row['partial'])
             insertion_counts[pos] = int(row['ins'])
             clipping_counts[pos] = int(row['clip'])
-            v3_overlap_counts[pos] = int(row['v3_overlap'])
             qcut = row['q-cutoff']
         # use region to retrieve coordinate reference
         for project_region in projects.getProjectRegions(
@@ -98,6 +95,9 @@ def coverage_plot(amino_csv,
             min_coverage_pos = None
             project_name = project_region['project_name']
             region_length = project_region['coordinate_region_length']
+            plot_width = max(4, region_length / 75)
+            plot_width = min(plot_width, 10)
+            fig, ax = plt.subplots(figsize=(plot_width, 3), dpi=100)
             x = range(1, region_length+1)
             y_coverage = [coverage_counts[pos] for pos in x]
             y_stops = [stop_counts[pos] for pos in x]
@@ -106,9 +106,9 @@ def coverage_plot(amino_csv,
             y_partials = [partial_counts[pos] for pos in x]
             y_insertions = [insertion_counts[pos] for pos in x]
             y_clipping = [clipping_counts[pos] for pos in x]
-            y_v3_overlap = [v3_overlap_counts[pos] for pos in x]
 
             key_positions = project_region['key_positions']
+            has_labeled_key_pos = False
             if not key_positions:
                 key_positions.append(dict(start_pos=1,
                                           end_pos=region_length))
@@ -124,13 +124,19 @@ def coverage_plot(amino_csv,
                         min_coverage_pos = pos
                 start -= 0.5
                 end += 0.5
+                if has_labeled_key_pos:
+                    label = None
+                else:
+                    label = 'key positions'
+                    has_labeled_key_pos = True
                 ax.add_patch(patches.Rectangle(xy=(start, 50),
-                                               width=end-start,
+                                               width=end - start,
                                                height=150,
                                                fc='black',
                                                ec='grey',
                                                zorder=50,
-                                               alpha=.5))
+                                               alpha=.3,
+                                               label=label))
             if min_coverage <= project_region['min_coverage1']:
                 coverage_score_on = 1
             elif min_coverage <= project_region['min_coverage2']:
@@ -149,29 +155,29 @@ def coverage_plot(amino_csv,
             else:
                 coverage_score_off = -3
             plt.step(x, y_coverage, linewidth=2, where='mid', label='coverage', zorder=100)
-            left_margin = -region_length / 25.0
+            left_margin = -region_length / 50.0
             plt.xlim([left_margin, region_length])
             plt.ylim([0.5, MAX_COVERAGE])
             plt.yscale('log')
             ax.yaxis.set_major_formatter(axis_formatter)
             plt.tick_params(axis='both', labelsize=FONT_SIZE)
-            ax.add_patch(patches.Rectangle(xy=(left_margin*0.5, 0),
-                                           width=-left_margin*0.4,
+            ax.add_patch(patches.Rectangle(xy=(left_margin*0.1, 0),
+                                           width=left_margin*0.8,
                                            height=10,
                                            fc='black',
                                            ec='black'))
-            ax.add_patch(patches.Rectangle(xy=(left_margin*0.5, 10),
-                                           width=-left_margin*0.4,
+            ax.add_patch(patches.Rectangle(xy=(left_margin*0.1, 10),
+                                           width=left_margin*0.8,
                                            height=40,
                                            fc='red',
                                            ec='red'))
-            ax.add_patch(patches.Rectangle(xy=(left_margin*0.5, 50),
-                                           width=-left_margin*0.4,
+            ax.add_patch(patches.Rectangle(xy=(left_margin*0.1, 50),
+                                           width=left_margin*0.8,
                                            height=50,
                                            fc='yellow',
                                            ec='yellow'))
-            ax.add_patch(patches.Rectangle(xy=(left_margin*0.5, 100),
-                                           width=-left_margin*0.4,
+            ax.add_patch(patches.Rectangle(xy=(left_margin*0.1, 100),
+                                           width=left_margin*0.8,
                                            height=MAX_COVERAGE-100,
                                            fc='lightgreen',
                                            ec='lightgreen'))
@@ -183,17 +189,23 @@ def coverage_plot(amino_csv,
             if coverage_maps_prefix:
                 figname_parts.insert(0, coverage_maps_prefix)
             paths.append(save_figure(coverage_maps_path, figname_parts))
-            plt.step(x, y_deletions, where='mid', label='deletions', zorder=99)
-            plt.step(x, y_stops, where='mid', label='stop codons', zorder=98)
-            plt.step(x, y_partials, where='mid', label='partial dels', zorder=97)
+            plt.step(x, y_deletions, where='mid', label='deletions', marker='x', linestyle='None', zorder=99)
+            plt.step(x, y_stops, where='mid', label='stop codons', marker='^', linestyle='None',
+                     markerfacecolor='None', zorder=98)
+            plt.step(x, y_partials, where='mid', label='partial dels', marker='+', linestyle='None', zorder=97)
             plt.step(x, y_clipping, where='mid', label='soft clipped', zorder=96)
-            plt.step(x, y_insertions, where='mid', label='insertions', zorder=95)
+            plt.step(x, y_insertions, where='mid', label='insertions', marker='o', linestyle='None',
+                     markerfacecolor='None', zorder=95)
             plt.step(x, y_low_quality, where='mid', label='low quality', zorder=94)
-            plt.step(x, y_v3_overlap, where='mid', label='V3 overlap', zorder=93)
-            plt.legend(loc='best', fontsize=FONT_SIZE, fancybox=True, ncol=2)
+            plt.legend(loc='upper left',
+                       fontsize=FONT_SIZE,
+                       fancybox=True,
+                       bbox_to_anchor=(1.05, 1),
+                       borderaxespad=0.)
             figname_parts.insert(-1, 'details')
             paths.append(save_figure(coverage_maps_path, figname_parts))
             plt.cla()  # clear the axis, but don't remove the axis itself.
+            plt.close(fig)
             row = {'project': project_name,
                    'region': region,
                    'seed': seed,
@@ -204,7 +216,6 @@ def coverage_plot(amino_csv,
                    'on.score': coverage_score_on}
             writer.writerow(row)
 
-    plt.close(fig)
     return paths  # locations of image files
 
 
@@ -259,7 +270,7 @@ def save_figure(coverage_maps_path, figname_parts):
     """
     figname = '.'.join(figname_parts)
     dest = os.path.join(coverage_maps_path, figname)
-    plt.savefig(dest)  # write image to file
+    plt.savefig(dest, bbox_inches="tight")  # write image to file
     return dest
 
 
