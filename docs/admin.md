@@ -112,10 +112,8 @@ Here's an example configuration, in `/etc/systemd/system/micall_watcher.service`
     ExecStart=/usr/local/share/venv-micall/bin/python3.6 \
         /usr/local/share/MiCall/micall_watcher.py \
         --pipeline_version=8.0 --raw_data=/data/raw \
-        --kive_server=bigbox --kive_user=micall_uploads \
         --micall_filter_quality_pipeline_id=100 --micall_main_pipeline_id=101 \
-        --micall_resistance_pipeline_id=102 \
-        --qai_server=smallbox --qai_user=micall_uploads
+        --micall_resistance_pipeline_id=102
     EnvironmentFile=/etc/micall/micall.conf
     User=micall
     
@@ -141,8 +139,13 @@ command options, but they add a `MICALL_` prefix, if it's not already there.
 
     # This is an example of /etc/micall/micall.conf
     # You can add comment lines that start with #
+    MICALL_KIVE_SERVER=https://example.com
+    MICALL_KIVE_USER=badexample
     MICALL_KIVE_PASSWORD=badexample
-    MICALL_QAI_PASSWORD=worse
+
+    MICALL_QAI_SERVER=https://example.com
+    MICALL_QAI_USER=badexample
+    MICALL_QAI_PASSWORD=badexample
 
 Don't put the environment variables directly in the `.service` file, because
 its contents are visible to all users with `systemctl show micall_watcher`.
