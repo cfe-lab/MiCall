@@ -12,7 +12,7 @@ python-Levenshtein==0.20.9
 PyYAML==6.0
 reportlab==3.6.12
 pysam==0.20.0
-git+https://github.com/cfe-lab/genetracks.git@858c0b3d255bac3c6f684d17a5aa1f47c2ed908a
+git+https://github.com/cfe-lab/genetracks.git@27f996ebaffb27488a846ac36d6a40efc64f84f9
 mappy==2.17
 drawsvg==2.1.1
 cairosvg==2.7.0
