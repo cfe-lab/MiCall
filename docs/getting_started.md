@@ -52,7 +52,7 @@ Docker will clean up after itself if you use the `--rm` option.
 
     sudo docker run --rm -e COLUMNS=$COLUMNS cfelab/micall:vX.Y folder --help
 
-If you forget to clean up, you can see a list of all the left over containers,
+If you forget to clean up, you can see a list of all the left-over containers,
 then either remove a container by name, or use the prune command to remove all
 the exited containers.
 
@@ -71,4 +71,4 @@ the exited containers.
 
 [admin]: admin.md
 [Docker]: https://docs.docker.com/get-started/
-[Docker Hub tags]: https://hub.docker.com/repository/docker/cfelab/micall
+[Docker Hub tags]: https://hub.docker.com/r/cfelab/micall/tags
