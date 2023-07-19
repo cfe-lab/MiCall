@@ -284,11 +284,13 @@ Individual files are described after the list of steps.
   * coordinates - the name of the coordinate reference the query was aligned to
   * query_nuc_pos - the one-based nucleotide position within the contig or the remap
     consensus
-  * refseq_nuc_pos - the one-based nucleotide position within the reference
+  * refseq_nuc_pos - the one-based nucleotide position within the reference, used for display - please note that this 
+  is *NOT* the reference position that corresponds to the query positions in the alignment.
   * dels - number of deletions reported at this position
   * coverage - number of reads that aligned to this position, including
     deletions
-  * link - type of link between the contig position and the reference position: 'M' for a match, 'D' for a deletion, 'I' for an insertion, and 'U' for unknown (a section of the contig that didn't map to the reference)
+  * link - type of link between the contig position and the reference position: 'M' for a match, 'D' for a deletion, 
+  'I' for an insertion, and 'U' for unknown (a section of the contig that didn't map to the reference)
 * insertions.csv
   * seed - the name of the contig
   * mixture_cutoff - to be included in a mixture, a variant must make

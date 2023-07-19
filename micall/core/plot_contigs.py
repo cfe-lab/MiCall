@@ -466,6 +466,11 @@ def build_contig(reader,
                 contig_row['concordance'] = field_value
         start = contig_rows[0][pos_field]
         end = contig_rows[-1][pos_field]
+        new_final_pos = -1
+        while end is None:
+            # this can happen if the match ends with an insertion. Backtrack to the last position that was not None
+            new_final_pos -= 1
+            end = contig_rows[new_final_pos][pos_field]
         coverage = [0] * (end - start + 1)
         concordance = [0] * (end - start + 1)
         pos = 0
@@ -500,9 +505,9 @@ def build_contig(reader,
             # Use up any events that went past the end of the contig.
             event_pos = event_positions.pop()
             for blast_num in blast_starts[event_pos]:
-                blast_ranges[blast_num - 1][0] = pos
+                blast_ranges[blast_num - 1][0] = end
             for blast_num in blast_ends[event_pos]:
-                blast_ranges[blast_num - 1][1] = pos
+                blast_ranges[blast_num - 1][1] = end
 
         arrows = []
         for arrow_start, arrow_end, blast_num in blast_ranges:
@@ -650,11 +655,15 @@ def main():
                         type=FileType())
     parser.add_argument('genome_coverage_svg',
                         help='SVG file to plot coverage counts for each contig')
+    parser.add_argument('--concordance',
+                        help='Make concordance plot instead of coverage',
+                        action='store_true')
     args = parser.parse_args()
 
     plot_genome_coverage(args.genome_coverage_csv,
                          args.blast,
-                         args.genome_coverage_svg)
+                         args.genome_coverage_svg,
+                         args.concordance)
     print('Wrote', args.genome_coverage_svg)
 
 

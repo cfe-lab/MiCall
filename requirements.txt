@@ -1,18 +1,18 @@
 # Requirements for running the bare pipeline under Kive or BaseSpace
-pytz==2022.7.1
+pytz==2023.3
 git+https://github.com/cfe-lab/iva.git@v1.1.1
 biopython==1.81
 git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh
 git+https://github.com/cfe-lab/pyvdrm.git@v0.3.1
-numpy==1.24.2
-scipy==1.10.0
-matplotlib==3.6.3
+numpy==1.24.3
+scipy==1.10.1
+matplotlib==3.7.1
 cutadapt==3.7
-python-Levenshtein==0.20.9
+python-Levenshtein==0.21.0
 PyYAML==6.0
-reportlab==3.6.12
-pysam==0.20.0
-git+https://github.com/cfe-lab/genetracks.git@27f996ebaffb27488a846ac36d6a40efc64f84f9
+reportlab==3.6.13
+pysam==0.21.0
+git+https://github.com/cfe-lab/genetracks.git@v0.2.dev0
 mappy==2.17
 drawsvg==2.1.1
 cairosvg==2.7.0
