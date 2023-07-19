@@ -3160,3 +3160,42 @@ E22222,10,20,30
     KiveWatcher.extract_csv(source2, target, 'ignored', source_count=1)
 
     assert target.getvalue() == expected_target
+
+def test_launch_main_good_pipeline_id(mock_open_kive, default_config):
+    mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.app_urls = {
+        default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
+    kive_watcher.app_args = {
+        default_config.micall_filter_quality_pipeline_id: dict(
+            quality_csv='/containerargs/103')}
+
+    inputs = {'quality_csv': {'url': '/datasets/104', 'id': 104}}
+    run_batch = {'url': '/batches/101'}
+    kive_watcher.find_or_launch_run(pipeline_id=42,
+                                    inputs=inputs,
+                                    run_name='MiCall filter quality on 140101_M01234',
+                                    run_batch=run_batch)
+
+def test_launch_main_bad_pipeline_id(mock_open_kive, default_config):
+    mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.app_urls = {
+        default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
+    kive_watcher.app_args = {
+        default_config.micall_filter_quality_pipeline_id: dict(
+            quality_csv='/containerargs/103')}
+
+    inputs = {'quality_csv': {'bad_argument': 777, 'id': 104}}
+    run_batch = {'url': '/batches/101'}
+    pipeline_id = 42
+
+    with pytest.raises(ValueError) as excinfo:
+        kive_watcher.find_or_launch_run(pipeline_id=pipeline_id,
+                                        inputs=inputs,
+                                        run_name='MiCall filter quality on 140101_M01234',
+                                        run_batch=run_batch)
+
+    assert f'The specified app with id {pipeline_id}' \
+            ' appears to expect a different set of inputs' \
+            in str(excinfo.value)
