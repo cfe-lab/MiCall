@@ -74,7 +74,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'contigs_primers_csv',
                       'table_precursor_csv',
                       'proviral_landscape_csv',
-                      'hivseqinr_results_tar']
+                      'detailed_results_tar']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
