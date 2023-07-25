@@ -781,7 +781,7 @@ class KiveWatcher:
             run = self.run_proviral_pipeline(
                 sample_watcher,
                 folder_watcher,
-                'Proviral HIVSeqinR')
+                'Proviral HIVIntact')
             return run
         if pipeline_type == PipelineType.RESISTANCE:
             run = self.run_resistance_pipeline(
