@@ -3033,6 +3033,50 @@ def test_collate_denovo_results(raw_data_with_two_samples, default_config, mock_
     assert not proviral_path.exists()
 
 
+def test_collate_proviral_results(raw_data_with_two_samples, default_config, mock_open_kive):
+    run_folder = raw_data_with_two_samples / "MiSeq/runs/140101_M01234"
+    base_calls = run_folder / "Data/Intensities/BaseCalls"
+    results_path = run_folder / "Results"
+    results_path.mkdir(parents=True)
+    version_folder: Path = results_path / 'version_0-dev'
+    version_folder.mkdir()
+
+    sample1_scratch = version_folder / "scratch_proviral" / "2120A-PR_S14"
+    sample1_scratch.mkdir(parents=True)
+    (sample1_scratch / "outcome_summary.csv").write_text("col1,col2\nvalue1,value2\n")
+    (sample1_scratch / "table_precursor.csv").write_text("col1,col2\n")
+    sample2_scratch = version_folder / "scratch_proviral" / "2110A-V3LOOP_S13"
+    sample2_scratch.mkdir(parents=True)
+    (sample2_scratch / "outcome_summary.csv").write_text("col1,col2\nvalue3,value4\n")
+    (sample2_scratch / "table_precursor.csv").write_text("col1,col2\n")
+
+    expected_outcome_path = version_folder / "proviral" / "outcome_summary.csv"
+    expected_precursor_path = version_folder / "proviral" / "table_precursor.csv"
+    expected_outcome_text = "sample,col1,col2\n2120A-PR_S14,value1,value2\n2110A-V3LOOP_S13,value3,value4\n"
+
+    main_scratch_path = version_folder / "scratch"
+    main_scratch_path.mkdir()
+
+    kive_watcher = KiveWatcher(default_config)
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2120A',
+                    ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                    ('PR', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
+
+    kive_watcher.collate_folder(folder_watcher, PipelineType.PROVIRAL)
+
+    assert expected_outcome_path.exists()
+    assert expected_precursor_path.exists()
+    outcome_text = expected_outcome_path.read_text()
+    assert outcome_text == expected_outcome_text
+
 def test_collate_mixed_hcv_results(raw_data_with_two_samples, default_config, mock_open_kive):
     run_folder = raw_data_with_two_samples / "MiSeq/runs/140101_M01234"
     base_calls = run_folder / "Data/Intensities/BaseCalls"
