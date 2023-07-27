@@ -59,7 +59,7 @@ def parse_args(argv=None):
         help='folder to scan for raw data files, containing MiSeq/runs')
     parser.add_argument(
         '--pipeline_version',
-        default='0-dev',
+        default=os.environ.get('MICALL_PIPELINE_VERSION', '0-dev'),
         help='version suffix for batch names and folder names')
     parser.add_argument(
         '--kive_server',
