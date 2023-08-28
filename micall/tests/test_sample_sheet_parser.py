@@ -730,7 +730,6 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
         ss = sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEqual(ss["Experiment Name"], "10-Jul-2014")
 
-    @unittest.expectedFailure
     def test_underscores_in_sample_name(self):
         """
         Extracts the correct project code having multiple options.
