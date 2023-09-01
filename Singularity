@@ -9,7 +9,7 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Added a stitched consensus, updated to HIVdb 9.0, added noncoding regions.
+    Change Notes: Fix alignment bugs, and updated to HIVdb 9.4.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
