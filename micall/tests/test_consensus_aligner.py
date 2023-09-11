@@ -26,7 +26,7 @@ def fixed_random_seed(seed):
 
 def mutate_sequence(rate, seq):
     def mutate(x):
-        if random.random() > rate:
+        if random.random() >= rate:
             return x
 
         while True:
@@ -34,7 +34,7 @@ def mutate_sequence(rate, seq):
             if y != x: return y
 
     with fixed_random_seed(42):
-        return ''.join(mutate(x) for x in seq)
+        return ''.join(map(mutate, seq))
 
 
 def assert_alignments(aligner: ConsensusAligner,
