@@ -8,6 +8,7 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
 
 PRIMER_SETS = {'HIVB': 'HIV1-B-FR-K03455-seed',
+               'HIV-AD': 'HIV1-B-FR-K03455-seed',
                'HIVGHA': 'HIV1-B-FR-K03455-seed'}
 
 
