@@ -322,6 +322,10 @@ Individual files are described after the list of steps.
     contig that the reads were mapped to
   * refseq.nuc.pos - the 1-based index of the base in the coordinate reference
     for a single gene region on non-coding region, named in the region column
+  * genome.pos - the absolute 1-based index of a nucleotide (in other words,
+    relative to the beginning of the entire reference sequence). This is the same
+    as refseq.nuc.pos, but not specific to a single gene or
+    non-coding region.
   * A,C,G,T - counts for the nucleotides at this position
   * N - count of reads with Phred quality score below the cutoff
   * del - count of reads with a deletion at this position
