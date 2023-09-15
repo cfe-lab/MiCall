@@ -196,7 +196,12 @@ Individual files are described after the list of steps.
   * seed-offset - offset of the seed relative to the reference
   * region-offset - offset of the seed relative to the region
 * conseq_region.csv: same columns as conseq.csv
-* conseq_stitched.csv
+* conseq_stitched.csv: our best guess at a whole genome consensus, stitched
+  together from the individual regions' consensus sequences, at different mixture levels.
+  Insertions are included and gaps are not filled. In areas where multiple 
+  regions overlap, we prioritize translated regions (because the amino acid alignment is 
+  more precise), and we prioritize information from the centre of the region over information 
+  from the edge of the region (again because the alignment in the centre is more reliable).
   * seed - reference name
   * q-cutoff - minimum quality score
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
@@ -215,17 +220,6 @@ Individual files are described after the list of steps.
   * match - the fraction of the contig that matched in BLAST, negative for
     reverse-complemented matches
   * contig - the nucleotide sequence of the assembled contig
-* coord_ins.csv - insertions in consensus sequence, relative to coordinate
-    reference.
-  * seed - seed reference the reads mapped to
-  * region - coordinate reference for reporting against, usually a gene
-  * qcut - minimum Phred quality score to include a nucleotide
-  * left - the one-based position within the consensus sequence of the first
-    nucleotide in the insertion
-  * insert - the insertion sequence of amino acids
-  * count - the number of times the insertion occurred
-  * before - the one-based position within the coordinate reference that it
-    was inserted before
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed
@@ -285,15 +279,18 @@ Individual files are described after the list of steps.
   * final - the final decision: blank if valid is 0, X4 if X4pct >= 2, otherwise
     R5
 * genome_coverage.csv
-  * query_name - the name of the contig that appears in amino_detail.csv and
+  * contig - the name of the contig that appears in amino_detail.csv and
     nuc_detail.csv, or the name of the seed reference used for mapping
-  * ref_name - the name of the coordinate reference the query was aligned to
-  * query_nuc_pos - the nucleotide position within the contig or the remap
+  * coordinates - the name of the coordinate reference the query was aligned to
+  * query_nuc_pos - the one-based nucleotide position within the contig or the remap
     consensus
-  * ref_nuc_position - the nucleotide position within the reference
+  * refseq_nuc_pos - the one-based nucleotide position within the reference, used for display - please note that this 
+  is *NOT* the reference position that corresponds to the query positions in the alignment.
   * dels - number of deletions reported at this position
   * coverage - number of reads that aligned to this position, including
     deletions
+  * link - type of link between the contig position and the reference position: 'M' for a match, 'D' for a deletion, 
+  'I' for an insertion, and 'U' for unknown (a section of the contig that didn't map to the reference)
 * insertions.csv
   * seed - the name of the contig
   * mixture_cutoff - to be included in a mixture, a variant must make

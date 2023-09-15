@@ -39,7 +39,7 @@ RUN wget -qO rustup.sh https://sh.rustup.rs && \
     /rustup.sh -y -q && \
     . /root/.cargo/env && \
     rm rustup.sh && \
-    cargo install --root / --git https://github.com/jeff-k/merge-mates.git
+    cargo install --root / --git https://github.com/jeff-k/merge-mates.git --rev 2fec61363f645e2008a4adff553d098beae21469
 
 ## Installing blast
 RUN apt-get update -qq --fix-missing && \
@@ -83,7 +83,7 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
-## Install dependencies for genetracks/drawSvg
+## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
 
 COPY requirements.txt requirements-basespace.txt /opt/micall/

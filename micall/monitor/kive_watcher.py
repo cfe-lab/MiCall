@@ -71,6 +71,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseqs_primers_csv',
                       'contigs_primers_csv',
                       'table_precursor_csv',
+                      'proviral_landscape_csv',
                       'hivseqinr_results_tar']
 
 # noinspection PyArgumentList

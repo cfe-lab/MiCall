@@ -757,6 +757,9 @@ class ConsensusAligner:
                     has_skipped_nucleotide):
         region_seed_aminos = self.reading_frames[amino_alignment.reading_frame]
         coord2conseq = amino_alignment.map_amino_sequences()
+        if not coord2conseq:
+            # coord2conseq is empty (alignment was too small / at region boundary) - there is nothing to do
+            return
 
         coordinate_inserts = {seed_amino.consensus_nuc_index
                               for seed_amino in region_seed_aminos}
@@ -923,8 +926,8 @@ class ConsensusAligner:
             coord_ref = self.projects.getGenotypeReference(self.coordinate_name)
         except KeyError:
             coord_ref = self.projects.getReference(self.coordinate_name)
-        query_matches = [0] * len(coord_ref)
-        concordance_list: typing.List[typing.Any] = [None] * len(coord_ref)
+        query_matches = [0] * len(self.consensus)
+        concordance_list: typing.List[typing.Any] = [None] * len(self.consensus)
 
         for alignment in coord_alignments:
             ref_progress = alignment.r_st
@@ -940,13 +943,17 @@ class ConsensusAligner:
                         ref_pos = ref_progress + pos
                         query_pos = query_progress + pos
                         if self.consensus[query_pos] == coord_ref[ref_pos]:
-                            query_matches[ref_pos] = 1
+                            query_matches[query_pos] = 1
+                        else:
+                            query_matches[query_pos] = 0
                     ref_progress += size
                     query_progress += size
 
-        for pos in range(half_window_size, len(coord_ref) - half_window_size + 1):
-            concordance = sum(query_matches[pos - half_window_size:pos + half_window_size])
-            normalized_concordance = concordance / (2 * half_window_size)
+        for pos in range(0, len(self.consensus)):
+            start = max(0, pos - half_window_size)
+            end = min(len(self.consensus), pos + half_window_size)
+            concordance = sum(query_matches[start:end])
+            normalized_concordance = concordance / (end-start)
             concordance_list[pos] = normalized_concordance
 
         return concordance_list

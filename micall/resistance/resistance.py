@@ -17,9 +17,15 @@ from micall.core.aln2counts import AMINO_ALPHABET
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100
 REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
+LAST_MAIN_POS = 336  # last position to take from main file if midi is missing
+NS3_END_POS = 181  # positions to check for coverage
+NS5A_END_POS = 101
+NS5B_MAIN_END_POS = 228
+MIDI_START_POS = 231
+MIDI_END_POS = 561
 
 # Rules configuration - remember to update version numbers in genreport.yaml.
-HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_9.0.xml')
+HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_9.4.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 
 NOTHING_MAPPED_MESSAGE = 'nothing mapped'
@@ -103,11 +109,11 @@ def create_fail_writer(fail_csv):
 def check_coverage(region, rows, start_pos=1, end_pos=None):
     if end_pos is None:
         if region.endswith('-NS3'):
-            end_pos = 181
+            end_pos = NS3_END_POS
         elif region.endswith('-NS5a'):
-            end_pos = 101
+            end_pos = NS5A_END_POS
         elif region.endswith('-NS5b'):
-            end_pos = 228
+            end_pos = NS5B_MAIN_END_POS
         else:
             return
     start_coverage = 0
@@ -143,8 +149,8 @@ def combine_aminos(amino_csv, midi_amino_csv, failures: dict):
     """
     is_midi = True
     midi_rows = {}  # {genotype: [row]}
-    midi_start = 231
-    midi_end = 561
+    midi_start = MIDI_START_POS
+    midi_end = MIDI_END_POS
     is_midi_separate = midi_amino_csv.name != amino_csv.name
     if is_midi_separate:
         for (seed, region), rows in groupby(DictReader(midi_amino_csv),
@@ -159,7 +165,7 @@ def combine_aminos(amino_csv, midi_amino_csv, failures: dict):
                 continue
             midi_rows[get_genotype(seed)] = [row
                                              for row in rows
-                                             if 226 < int(row['refseq.aa.pos'])]
+                                             if (NS5B_MAIN_END_POS - 2) < int(row['refseq.aa.pos'])]
     is_midi = False
     for (seed, region), rows in groupby(DictReader(amino_csv),
                                         itemgetter('seed', 'region')):
@@ -226,11 +232,11 @@ def combine_midi_rows(main_rows, midi_rows, seed):
         main_row = main_row_map.get(pos)
         midi_row = midi_row_map.get(pos)
         if midi_row is None:
-            if pos <= 336:
+            if pos <= LAST_MAIN_POS:
                 yield main_row
         elif main_row is None:
             yield midi_row
-        elif (pos <= 336 and
+        elif (pos <= LAST_MAIN_POS and
               int(main_row['coverage']) > int(midi_row['coverage'])):
             yield main_row
         else:
@@ -281,7 +287,7 @@ def read_aminos(amino_rows,
             if not region.endswith('NS5b'):
                 is_report_required = all(aminos[pos-1] for pos in key_positions)
             else:
-                whole_genome_positions = {pos for pos in key_positions if pos < 231}
+                whole_genome_positions = {pos for pos in key_positions if pos < MIDI_START_POS}
                 midi_positions = key_positions - whole_genome_positions
                 is_report_required = (
                     all(pos <= len(aminos) and aminos[pos-1]
@@ -293,8 +299,15 @@ def read_aminos(amino_rows,
 
 
 def get_algorithm_regions(algorithm):
-    return ('INT' if region == 'IN' else region
-            for region in algorithm.gene_def)
+    regions = []
+    for region in algorithm.gene_def:
+        if region == 'IN':
+            regions.append('INT')
+        elif region == 'CA':
+            continue
+        else:
+            regions.append(region)
+    return regions
 
 
 def create_empty_aminos(region, genotype, seed, algorithms):
@@ -520,7 +533,15 @@ def create_consensus_writer(resistance_consensus_csv):
 def interpret(asi, amino_seq, region):
     ref_seq = asi.stds[region]
     # TODO: Make this more general instead of only applying to missing MIDI.
-    is_missing_midi = region.endswith('-NS5b') and len(amino_seq) < len(ref_seq)
+    is_missing_midi = False
+    if region.endswith('-NS5b'):
+        pos = 0
+        # starting at the end of the amino list, find the first amino that is not empty
+        for pos, amino in enumerate(reversed(amino_seq)):
+            if amino != {}:
+                break
+        if len(amino_seq) - pos <= LAST_MAIN_POS:
+            is_missing_midi = True
 
     if is_missing_midi:
         amino_seq += [{}] * (len(ref_seq) - len(amino_seq))

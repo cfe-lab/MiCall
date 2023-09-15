@@ -9,7 +9,7 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Added a stitched consensus, updated to HIVdb 9.0, added noncoding regions.
+    Change Notes: Fix alignment bugs, and updated to HIVdb 9.4.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
@@ -81,7 +81,7 @@ From: centos:7
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
     yum install -q -y rust cargo
-    cargo install --quiet --root / --git https://github.com/jeff-k/merge-mates.git
+    cargo install --quiet --root / --git https://github.com/jeff-k/merge-mates.git --rev 2fec61363f645e2008a4adff553d098beae21469
 
     ## Miniconda (Python 2) (Don't use this)
     #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
@@ -132,7 +132,7 @@ From: centos:7
     ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
     python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
-    # Install dependencies for genetracks/drawSvg
+    # Install dependencies for genetracks/drawsvg
     yum install -q -y cairo-devel cairo cairo-tools zlib-devel
 
     yum groupremove -q -y 'development tools'

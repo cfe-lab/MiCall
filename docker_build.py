@@ -18,6 +18,8 @@ def parse_args():
     parser.add_argument('-t',
                         '--tag',
                         help='Docker tag to apply (vX.Y.Z)')
+    parser.add_argument('--nopush',
+                        action='store_true')
     return parser.parse_args()
 
 
@@ -52,6 +54,10 @@ def main():
             raise PermissionError(
                 'Docker build failed. Do you have root permission?') from ex
         raise
+    if args.nopush:
+        print("Rerun without --nopush to attemp to push the docker image to illumina and launch spacedock")
+        print("Currently the docker push does not work in the VM because the docker version is so old.")
+        exit()
     check_call(['docker', 'push', repository_name])
     if args.agent_id is None:
         print('Docker image pushed. Include an agent id to launch spacedock.')
