@@ -16,6 +16,15 @@ jobs:
         with:
           go-version: '^1.15.6'
 
+      - name: Install Haploflow
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git ronn
+          cd /opt/
+          git clone https://github.com/hzi-bifo/Haploflow
+          cd /opt/Haploflow && sh build.sh
+          sudo ln -s /opt/Haploflow/build/haploflow ~/bin/haploflow
+
       - name: Install IVA assembler dependencies
         run: |
           sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
