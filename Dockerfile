@@ -83,6 +83,13 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
+## Installing Haploflow
+RUN apt-get install -y build-essential sudo git ronn \
+    cd /opt/ &&
+    git clone https://github.com/hzi-bifo/Haploflow \
+    cd /opt/Haploflow && sh build.sh \
+    ln -s /opt/Haploflow/build/haploflow /bin/haploflow
+
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
 
