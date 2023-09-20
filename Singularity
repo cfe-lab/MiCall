@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: centos:7
+From: python:3.8
 
 %help
     MiCall maps all the reads from a sample against a set of reference
@@ -53,48 +53,28 @@ From: centos:7
 
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
-    yum update -q -y
-
-    yum groupinstall -q -y 'development tools'
-    yum install -q -y epel-release
-    yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel \
-        libffi-devel sqlite-devel
-
-    echo ===== Installing Python ===== >/dev/null
-    wget -q https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz
-    tar xJf Python*
-    rm Python*.xz
-    cd Python*
-    ./configure --enable-optimizations
-    make altinstall
-    cd ..
-    rm -rf Python*
-    ln -s /usr/local/bin/python3.8 /usr/local/bin/python3
+    apt-get update -q
+    apt-get install -q -y unzip wget
 
     echo ===== Installing blast ===== >/dev/null
-    cd /root
-    # Saved our own copy, because download was slow from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
-    wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.12.dev28/ncbi-blast-2.6.0+-1.x86_64.rpm
-    yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
-    rm ncbi-blast-2.6.0+-1.x86_64.rpm
-    python3 /opt/micall/micall/blast_db/make_blast_db.py
+    apt-get install -q -y ncbi-blast+
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
-    yum install -q -y rust cargo
+    wget -qO rustup.sh https://sh.rustup.rs
+    chmod +x /rustup.sh
+    /rustup.sh -y -q
+    . /root/.cargo/env
+    rm rustup.sh
     cargo install --quiet --root / --git https://github.com/jeff-k/merge-mates.git --rev 2fec61363f645e2008a4adff553d098beae21469
-
-    ## Miniconda (Python 2) (Don't use this)
-    #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-    #bash miniconda.sh -b -p /opt/miniconda
 
     echo ===== Installing bowtie2 ===== >/dev/null
     wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip
-    unzip -qq bowtie2.zip -d /opt/
+    unzip bowtie2.zip -d /opt/
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
 
     echo ===== Installing IVA dependencies ===== >/dev/null
-    yum install -q -y tcsh ncurses-devel zlib-devel
+    apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev
     cd /bin
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
@@ -123,31 +103,14 @@ From: centos:7
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
     echo ===== Installing Python packages ===== >/dev/null
-    # Also trigger matplotlib to build its font cache.
-    wget -q https://bootstrap.pypa.io/get-pip.py
-    python3 get-pip.py
-    rm get-pip.py
-    cd /opt
-    pip install --quiet -r /opt/micall/requirements.txt
-    ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
-    python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-
     # Install dependencies for genetracks/drawsvg
-    yum install -q -y cairo-devel cairo cairo-tools zlib-devel
-
-    yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget unzip
-    yum autoremove -q -y
-    yum clean all
-
-    rm -rf /var/cache/yum
-
-    ## CAUTION! This changes the default python command to python3!
-    ## This breaks many things, including yum!
-    ## To switch back to python2, use this command:
-    # sudo alternatives --set python /usr/bin/python2
-    alternatives --install /usr/bin/python python /usr/bin/python2 50
-    alternatives --install /usr/bin/python python /usr/local/bin/python3 60
+    apt-get install -q -y libcairo2-dev
+    # Also trigger matplotlib to build its font cache.
+    cd /opt
+    pip install --upgrade pip
+    pip install -r /opt/micall/requirements-basespace.txt
+    python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+    python /opt/micall/micall/blast_db/make_blast_db.py
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
