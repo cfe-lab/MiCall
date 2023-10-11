@@ -4,7 +4,6 @@ from collections import defaultdict
 import logging
 import os
 from csv import DictReader
-import typing
 from typing import Union
 
 from micall.core.trim_fastqs import trim
@@ -64,14 +63,14 @@ class MicallDD(DD):
 
             # noinspection PyBroadException
             try:
-                aln2counts(aligned_csv,
-                           # TODO: maybe redirect to os.devnull instead.
+                aln2counts(# Inputs #
+                           aligned_csv,
                            nuc_csv,
                            amino_csv,
                            insertions_csv,
                            conseq_csv,
                            failed_align_csv,
-                           # --- #
+                           # Outputs #
                            nuc_detail_csv=nuc_detail_csv,
                            conseq_stitched_csv=stitched_csv,
                            )
@@ -79,7 +78,6 @@ class MicallDD(DD):
                 exception = None
             except Exception as ex:
                 logger.warning(f'Read counting failed: {ex!r}.', exc_info=True)
-                print(f'Read counting failed: {ex!r}.')
                 exception = ex
 
             stitched_csv.seek(0)
@@ -102,13 +100,13 @@ class MicallDD(DD):
 
         simple_count = len(stitched_csv.readlines()) - 1
 
-        logger.debug('Result: %d simplified reads from %d selected reads.',
-                     simple_count,
-                     read_count)
+        logger.debug('Result: %d stitched sequences from %d selected reads.',
+                     simple_count, read_count)
 
         expected_substring = os.environ.get(SUBSEQ_ENV_VARNAME, None)
         if expected_substring is None:
             raise RuntimeError(f"Expected ${SUBSEQ_ENV_VARNAME!r} environment variable to be set for the {'subseq'!r} test")
+
         stitched_csv.seek(0)
         success = any((expected_substring in line) for line in stitched_csv)
 
