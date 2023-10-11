@@ -4,6 +4,8 @@ from collections import defaultdict
 import logging
 import os
 from csv import DictReader
+import typing
+from typing import Union
 
 from micall.core.trim_fastqs import trim
 from micall.utils.dd import DD
@@ -38,8 +40,6 @@ class MicallDD(DD):
         super(MicallDD, self).__init__()
         self.filename = filename
         self.simple = simple
-        base, ext = os.path.splitext(simple)
-        self.best = base + '_best' + ext
         self.get_result = getattr(self, 'check_' + test_name)
         self.reads = read_aligned(self.filename)
 
@@ -52,19 +52,26 @@ class MicallDD(DD):
             return open(os.path.join(workdir, filename), 'w+')
 
         with open(self.simple, 'r') as aligned_csv, \
-             writer('stitched.csv') as output:
+             writer('nuc.csv') as nuc_csv, \
+             writer('amino.csv') as amino_csv, \
+             writer('insertions.csv') as insertions_csv, \
+             writer('conseq.csv') as conseq_csv, \
+             writer('failed_align.csv') as failed_align_csv, \
+             writer('nuc_detail.csv') as nuc_detail_csv, \
+             writer('stitched.csv') as stitched_csv:
+
             # noinspection PyBroadException
             try:
                 aln2counts(aligned_csv,
                            # TODO: maybe redirect to os.devnull instead.
-                           writer('nuc.csv'),
-                           writer('amino.csv'),
-                           writer('insertions.csv'),
-                           writer('conseq.csv'),
-                           writer('failed_align.csv'),
+                           nuc_csv,
+                           amino_csv,
+                           insertions_csv,
+                           conseq_csv,
+                           failed_align_csv,
                            # --- #
-                           conseq_stitched_csv=output,
-                           nuc_detail_csv=writer("nuc_detail.csv"),
+                           nuc_detail_csv=nuc_detail_csv,
+                           conseq_stitched_csv=stitched_csv,
                            )
 
                 exception = None
@@ -73,18 +80,25 @@ class MicallDD(DD):
                 print(f'Read counting failed: {ex!r}.')
                 exception = ex
 
-            output.seek(0)
-            result = self.get_result(output, read_count, exception)
+            stitched_csv.seek(0)
+            result = self.get_result(stitched_csv, read_count, exception)
             if result == DD.FAIL:
-                os.rename(self.simple, self.best)
+                save_best(aligned_csv)
+                save_best(nuc_csv)
+                save_best(amino_csv)
+                save_best(insertions_csv)
+                save_best(conseq_csv)
+                save_best(failed_align_csv)
+                save_best(stitched_csv)
+
             return result
 
     @staticmethod
-    def check_subseq(output, read_count, exception):
+    def check_subseq(stitched_csv, read_count, exception):
         if exception is not None:
             return DD.UNRESOLVED
 
-        simple_count = len(output.readlines()) - 1
+        simple_count = len(stitched_csv.readlines()) - 1
 
         logger.debug('Result: %d simplified reads from %d selected reads.',
                      simple_count,
@@ -93,8 +107,8 @@ class MicallDD(DD):
         expected_substring = os.environ.get('MICALL_DD_SUBSEQ', None)
         if expected_substring is None:
             raise RuntimeError(f"Expected ${'MICALL_DD_SUBSEQ'!r} environment value to be set for the {'subseq'!r} test")
-        output.seek(0)
-        success = any((expected_substring in line) for line in output)
+        stitched_csv.seek(0)
+        success = any((expected_substring in line) for line in stitched_csv)
 
         return DD.FAIL if success else DD.PASS
 
@@ -117,6 +131,17 @@ class MicallDD(DD):
         return '[' + ', '.join(str(block[0]) if block[0] == block[1]
                                else '{}-{}'.format(*block)
                                for block in blocks) + ']'
+
+
+def save_best(file: Union[str, '_io.TextIOWrapper']):
+    """ Save the current best version of a file.
+    """
+
+    filename = file if type(file) is str else file.name
+    base, ext = os.path.splitext(filename)
+    best = base + '_best' + ext
+
+    os.rename(filename, best)
 
 
 def read_aligned(filename):
