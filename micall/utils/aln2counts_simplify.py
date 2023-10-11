@@ -3,6 +3,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from collections import defaultdict
 import logging
 import os
+import re
 from csv import DictReader
 from typing import Union
 
@@ -43,6 +44,12 @@ class MicallDD(DD):
         self.simple = simple
         self.get_result = getattr(self, 'check_' + test_name)
         self.reads = read_aligned(self.filename)
+
+        expected_subsequence = os.environ.get(SUBSEQ_ENV_VARNAME, None)
+        if expected_subsequence is None:
+            raise RuntimeError(f"Expected ${SUBSEQ_ENV_VARNAME!r} environment variable to be set for the {'subseq'!r} test")
+
+        self.expected_subsequence_re = re.compile(expected_subsequence)
 
     def _test(self, read_indexes):
         read_count = len(read_indexes)
@@ -93,8 +100,7 @@ class MicallDD(DD):
 
             return result
 
-    @staticmethod
-    def check_subseq(stitched_csv, read_count, exception):
+    def check_subseq(self, stitched_csv, read_count, exception):
         if exception is not None:
             return DD.UNRESOLVED
 
@@ -103,12 +109,8 @@ class MicallDD(DD):
         logger.debug('Result: %d stitched sequences from %d selected reads.',
                      simple_count, read_count)
 
-        expected_substring = os.environ.get(SUBSEQ_ENV_VARNAME, None)
-        if expected_substring is None:
-            raise RuntimeError(f"Expected ${SUBSEQ_ENV_VARNAME!r} environment variable to be set for the {'subseq'!r} test")
-
         stitched_csv.seek(0)
-        success = any((expected_substring in line) for line in stitched_csv)
+        success = self.expected_subsequence_re.search(stitched_csv.read())
 
         return DD.FAIL if success else DD.PASS
 
