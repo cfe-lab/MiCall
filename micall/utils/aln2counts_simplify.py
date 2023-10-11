@@ -69,8 +69,8 @@ class MicallDD(DD):
 
                 exception = None
             except Exception as ex:
-                logger.warning(f'Assembly failed: {ex!r}.', exc_info=True)
-                print(f'Assembly failed: {ex!r}.')
+                logger.warning(f'Read counting failed: {ex!r}.', exc_info=True)
+                print(f'Read counting failed: {ex!r}.')
                 exception = ex
 
             output.seek(0)
