@@ -105,6 +105,19 @@ class MicallDD(DD):
             for line in selected_reads:
                 f.write(line)
 
+    def coerce(self, c):
+        if c is None:
+            return 'None'
+        blocks = []  # [[first, last]] indexes for all contiguous blocks
+        for i in c:
+            if (not blocks) or blocks[-1][-1] != i-1:
+                blocks.append([i, i])
+            else:
+                blocks[-1][-1] = i
+        return '[' + ', '.join(str(block[0]) if block[0] == block[1]
+                               else '{}-{}'.format(*block)
+                               for block in blocks) + ']'
+
 
 def read_aligned(filename):
     """ Load all the reads from an aligned reads file into a dictionary.
