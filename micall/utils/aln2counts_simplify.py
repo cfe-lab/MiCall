@@ -13,6 +13,8 @@ from micall.core.aln2counts import aln2counts
 
 logger = logging.getLogger(__name__)
 
+ALIGNED_CSV_HEADER = 'refname,qcut,rank,count,offset,seq'
+SUBSEQ_ENV_VARNAME = 'MICALL_DD_SUBSEQ'
 
 def parse_args(argv):
     parser = ArgumentParser(
@@ -104,9 +106,9 @@ class MicallDD(DD):
                      simple_count,
                      read_count)
 
-        expected_substring = os.environ.get('MICALL_DD_SUBSEQ', None)
+        expected_substring = os.environ.get(SUBSEQ_ENV_VARNAME, None)
         if expected_substring is None:
-            raise RuntimeError(f"Expected ${'MICALL_DD_SUBSEQ'!r} environment value to be set for the {'subseq'!r} test")
+            raise RuntimeError(f"Expected ${SUBSEQ_ENV_VARNAME!r} environment variable to be set for the {'subseq'!r} test")
         stitched_csv.seek(0)
         success = any((expected_substring in line) for line in stitched_csv)
 
@@ -115,7 +117,8 @@ class MicallDD(DD):
     def write_simple_aligned(self, filename, read_indexes):
         selected_reads = (self.reads[i] for i in read_indexes)
         with open(filename, 'w') as f:
-            f.write('refname,qcut,rank,count,offset,seq\n')
+            f.write(ALIGNED_CSV_HEADER)
+            f.write('\n')
             for line in selected_reads:
                 f.write(line)
 
@@ -155,7 +158,7 @@ def read_aligned(filename):
         header = next(f)
 
         # Sanity check that may detect instances where an incorrect file has been passed as input.
-        if header.strip() != 'refname,qcut,rank,count,offset,seq':
+        if header.strip() != ALIGNED_CSV_HEADER.strip():
             raise ValueError(f'Aligned reads file {filename!r} does not start with a known header')
 
         return f.readlines()
