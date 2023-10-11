@@ -47,7 +47,7 @@ class MicallDD(DD):
 
         expected_subsequence = os.environ.get(SUBSEQ_ENV_VARNAME, None)
         if expected_subsequence is None:
-            raise RuntimeError(f"Expected ${SUBSEQ_ENV_VARNAME!r} environment variable to be set for the {'subseq'!r} test")
+            raise RuntimeError(f"Expected ${SUBSEQ_ENV_VARNAME!r} environment variable to be set for the 'subseq' test")
 
         self.expected_subsequence_re = re.compile(expected_subsequence)
 
