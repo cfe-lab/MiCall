@@ -173,23 +173,74 @@ def get_insertion_info(left, report_aminos, report_nucleotides):
     return insert_behind, insertion_coverage
 
 
+
+def build_consensus_table(nuc_dict, region_nucleotides, region_start):
+    """Builds a consensus table with pairs of existing and new nucleotides that share a consensus index."""
+
+    consensus_nucleotides = defaultdict(lambda: {'left': None, 'right': None})
+
+    for nuc_index, nuclotide in enumerate(region_nucleotides):
+        position = region_start + nuc_index - 1
+        existing_nucleotide = nuc_dict.get(position, None)
+        new_nucleotide = nuclotide.seed_nucleotide
+
+        if existing_nucleotide and existing_nucleotide.consensus_index is not None:
+            consensus_nucleotides[existing_nucleotide.consensus_index]['left'] = existing_nucleotide
+        if new_nucleotide.consensus_index is not None:
+            consensus_nucleotides[new_nucleotide.consensus_index]['right'] = new_nucleotide
+
+    return consensus_nucleotides
+
+
+def resolve_nucleotide_conflict(left, right, nuc_index, overlap_midpoint, is_amino):
+    """Resolves a conflict between two nucleotides based on the regions overlap midpoint."""
+
+    if left and right:
+        # we prefer the next region after the middle of the overlap with the previous translated region for an amino nucleotide
+        if nuc_index >= overlap_midpoint and is_amino:
+            return right
+        else:
+            return left
+    elif left:
+        return left
+    elif right:
+        return right
+
+
 def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start, prev_region_end, is_amino, region_name):
     assert region_start is not None
     mismatch = False
     overlap_midpoint = int((prev_region_end - region_start + 1) / 2)
     if overlap_midpoint < 0:
         overlap_midpoint = 0
+
+    consensus_nucleotides = build_consensus_table(nuc_dict, region_nucleotides, region_start)
+    previous_consensus_index = None
+
     for nuc_index, nucleotide in enumerate(region_nucleotides):
         position = region_start + nuc_index - 1
-        if position not in nuc_dict:
-            # if we have not seen this position before, add it
-            nuc_dict[position] = nucleotide.seed_nucleotide
-        else:
-            if is_amino and nuc_index >= overlap_midpoint:
-                # after the middle of the overlap with the previous translated region, we use this region
-                nuc_dict[position] = nucleotide.seed_nucleotide
-            if nuc_dict[position].counts != nucleotide.seed_nucleotide.counts:
-                mismatch = True
+        existing_nucleotide = nuc_dict.get(position, None)
+
+        def consensus_nucleotide():
+            if previous_consensus_index is not None:
+                left = consensus_nucleotides[previous_consensus_index + 1]['left']
+                right = consensus_nucleotides[previous_consensus_index + 1]['right']
+                return resolve_nucleotide_conflict(left, right,
+                                                   nuc_index, overlap_midpoint,
+                                                   is_amino)
+
+        def region_nucleotide():
+            return resolve_nucleotide_conflict(existing_nucleotide,
+                                               nucleotide.seed_nucleotide,
+                                               nuc_index, overlap_midpoint,
+                                               is_amino)
+
+        nuc_dict[position] = consensus_nucleotide() or region_nucleotide()
+        if existing_nucleotide and existing_nucleotide.counts != nuc_dict[position].counts:
+            mismatch = True
+
+        previous_consensus_index = nuc_dict[position].consensus_index
+
     if mismatch:
         logger.debug(f"Disagreement in counts for region {region_name}")
 
