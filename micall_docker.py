@@ -13,9 +13,10 @@ import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
 import typing
+import tempfile
 
 from micall.core.filter_quality import report_bad_cycles
-from micall.core.trim_fastqs import TrimSteps
+from micall.core.trim_fastqs import TrimSteps, trim
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup, load_git_version
@@ -298,6 +299,33 @@ if you want to write the outputs to "/host/output/path/":
         /data /results
 """
 
+MERGE_SAMPLES_DESCRIPTION = """\
+Combine and filter the FASTQ files from two samples into a single output file.
+
+This command will process the paired FASTQ files from two samples specified by
+the command-line arguments. Each sample should have a forward and reverse FASTQ
+file. The command will combine the reads from both samples and create a single
+FASTQ file. During the process, it also perfors censoring, i.e. filters out
+and drops reads that have poor quality.
+
+Input paths specified by these arguments will be taken as relative to the "base"
+path specified by "--run_folder" (default "/data"), or can be specified as
+absolute paths themselves. The output FASTQ file will be written to the path
+specified by the optional "results_folder" path (default "micall-results"),
+which will be taken as relative to the path specified by "--run_folder" if it
+is not an absolute path.
+
+As this typically will be run in a Dockerized setting, you should ensure your
+bind mounts are appropriately set; also note that any input/output paths will
+be handled as if they are *inside* the container.
+
+For example: if you built your container as "micall:v0.1.2-3", your input FASTQ files are
+on your host machine as "/path/on/host/" as "1234A_forward.fastq",
+"1234A_reverse.fastq", "1234B_forward.fastq", and "1234B_reverse.fastq", and
+you want_forward.fastq 1234A_reverse.fastq 1234B_forward.fastq 1234B_reverse.fastq \\
+        /data /results
+"""
+
 
 def get_parser(default_max_active):
     parser = ArgumentParser(
@@ -313,6 +341,9 @@ def get_parser(default_max_active):
                 add_hcv_sample_parser(subparsers,
                                       default_max_active,
                                       default_folder),
+                add_merge_samples_parser(subparsers,
+                                                default_max_active,
+                                                default_folder),
                 add_basespace_parser(subparsers, default_max_active)]
     for command_parser in commands:
         command_parser.add_argument(
@@ -547,6 +578,83 @@ def add_hcv_sample_parser(subparsers, default_max_active, default_results_folder
     return hcv_sample_parser
 
 
+def add_merge_samples_parser(subparsers, default_max_active, default_results_folder):
+    # ####
+    # The "combine reads from two samples" subcommand.
+    # ####
+    # First, the inputs.
+    merge_samples_parser = subparsers.add_parser(
+        "merge_samples",
+        description=MERGE_SAMPLES_DESCRIPTION,
+        help="Combine and filter FASTQ files from two samples",
+        formatter_class=MiCallFormatter,
+    )
+    merge_samples_parser.add_argument(
+        "fastq1_a",
+        help="FASTQ file containing forward reads of sample A (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    merge_samples_parser.add_argument(
+        "fastq2_a",
+        help="FASTQ file containing reverse reads of sample A (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    merge_samples_parser.add_argument(
+        "fastq1_b",
+        help="FASTQ file containing forward reads of sample B (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    merge_samples_parser.add_argument(
+        "fastq2_b",
+        help="FASTQ file containing reverse reads of sample B (either an absolute path or relative"
+             " to the bind-mounted input directory)"
+    )
+    merge_samples_parser.add_argument(
+        "fastq1_result",
+        help="Resulting combined FASTQ file containing forward reads"
+             " (either an absolute path or relative to the bind-mounted input directory)",
+    )
+    merge_samples_parser.add_argument(
+        "fastq2_result",
+        help="Resulting combined FASTQ file containing reverse reads"
+             " (either an absolute path or relative to the bind-mounted input directory)",
+    )
+    merge_samples_parser.add_argument(
+        "--bad_cycles_a_csv",
+        help="list of tiles and cycles rejected for poor quality in sample A (either an absolute "
+             "path or relative to the bind-mounted input directory)",
+    )
+    merge_samples_parser.add_argument(
+        "--bad_cycles_b_csv",
+        help="list of tiles and cycles rejected for poor quality in sample B (either an absolute "
+             "path or relative to the bind-mounted input directory)",
+    )
+
+    merge_samples_parser.add_argument('--unzipped', '-u',
+                                        action='store_true',
+                                        help='Set if the original FASTQ files are not compressed')
+
+    # Optionally customize your input and output directories.
+    merge_samples_parser.add_argument(
+        "--run_folder",
+        help="Directory to look for input files in (if Dockerized, this is the "
+             "path *inside* the container; point a bind mount here).  If input "
+             "file paths are not specified as absolute paths, they will be taken "
+             "as being relative to this path.",
+        default="/data"
+    )
+    merge_samples_parser.add_argument(
+        "results_folder",
+        nargs="?",
+        help="(Optional) directory to write outputs to (if Dockerized, this is "
+             "the path *inside* the container; point a bind mount here).  If "
+             "this path is not absolute, it will be taken as relative to "
+             "--run_folder.",
+        default=default_results_folder,
+    )
+    merge_samples_parser.set_defaults(func=merge_samples)
+    return merge_samples_parser
+
 def basespace_run(args):
     resolved_args = MiCallArgs(args)
     run_info = load_samples(resolved_args.run_folder)
@@ -625,6 +733,46 @@ def single_sample(args):
     sample_groups.append(sample_group)
 
     process_run(run_info, args)
+
+
+def merge_samples(args):
+    resolved_args = MiCallArgs(args)
+
+    def concatenate_files(input_file1, input_file2, output_file):
+        with open(input_file1, 'rb') as src1, \
+             open(input_file2, 'rb') as src2, \
+             open(output_file, 'wb') as dst:
+
+            shutil.copyfileobj(src1, dst)
+            shutil.copyfileobj(src2, dst)
+
+    with tempfile.NamedTemporaryFile() as trimmed_fastq1_a, \
+         tempfile.NamedTemporaryFile() as trimmed_fastq2_a, \
+         tempfile.NamedTemporaryFile() as trimmed_fastq1_b, \
+         tempfile.NamedTemporaryFile() as trimmed_fastq2_b:
+
+        logger.info('Processing reads of Sample A.')
+
+        trim((args.fastq1_a, args.fastq2_a),
+             resolved_args.bad_cycles_a_csv,
+             (trimmed_fastq1_a.name, trimmed_fastq2_a.name),
+             use_gzip=not args.unzipped)
+
+        logger.info('Processing reads of Sample B.')
+
+        trim((args.fastq1_b, args.fastq2_b),
+             resolved_args.bad_cycles_b_csv,
+             (trimmed_fastq1_b.name, trimmed_fastq2_b.name),
+             use_gzip=not args.unzipped)
+
+        logger.info('Merging resuling reads files.')
+
+        concatenate_files(trimmed_fastq1_a.name, trimmed_fastq1_b.name,
+                          args.fastq1_result)
+        concatenate_files(trimmed_fastq2_a.name, trimmed_fastq2_b.name,
+                          args.fastq2_result)
+
+    logger.info('Done.')
 
 
 def hcv_sample(args):
