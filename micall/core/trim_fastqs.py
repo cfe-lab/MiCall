@@ -88,8 +88,9 @@ def trim(original_fastq_filenames: typing.Sequence[str],
 
     censored_filenames = [filename + '.censored.fastq'
                           for filename in trimmed_fastq_filenames]
-    if (TrimSteps.censor in skip) or not os.path.exists(bad_cycles_filename):
+    if (TrimSteps.censor in skip) or bad_cycles_filename is None or not os.path.exists(bad_cycles_filename):
         bad_cycles = []
+        logger.debug(f"Assuming no bad cycles for {original_fastq_filenames}")
     else:
         with open(bad_cycles_filename, 'r') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
