@@ -212,4 +212,9 @@ From: centos:7
     KIVE_MEMORY 200
 
 %apprun merge_fastqs
-    PYTHONPATH=/opt/micall python -m micall.core.merge_fastqs "$@"
+    PYTHONPATH=/opt/micall \
+    	python -m micall.core.merge_fastqs \
+                "$1" "$2" "$3" "$4" \
+                --bad_cycles_a_csv "$5" \
+                --bad_cycles_b_csv "$6" \
+                "$7" "$8"
