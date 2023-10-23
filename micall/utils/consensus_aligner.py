@@ -276,7 +276,7 @@ class ConsensusAligner:
             coordinate_seq = self.projects.getGenotypeReference(coordinate_name)
         except KeyError:
             coordinate_seq = self.projects.getReference(coordinate_name)
-        aligner = Aligner(seq=coordinate_seq, preset='map-ont')
+        aligner = Aligner(seq=coordinate_seq, bw=500, bw_long=500, preset='map-ont')
         self.alignments = list(aligner.map(self.consensus))
         if self.alignments or 10_000 < len(self.consensus):
             self.algorithm = 'minimap2'
@@ -903,7 +903,7 @@ class ConsensusAligner:
         if self.seed_concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
-        seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
+        seed_aligner = Aligner(seq=seed_ref, bw=500, bw_long=500, preset='map-ont')
         seed_alignments = list(seed_aligner.map(self.consensus))
 
         regions = projects.getCoordinateReferences(seed_name)
