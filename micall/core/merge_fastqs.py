@@ -42,7 +42,7 @@ def merge_fastqs(args):
              (trimmed_fastq1_b.name, trimmed_fastq2_b.name),
              use_gzip=not args.unzipped)
 
-        logger.info('Merging resuling reads files.')
+        logger.info('Merging resulting reads files.')
 
         os.makedirs(os.path.dirname(args.fastq1_result), exist_ok=True)
         os.makedirs(os.path.dirname(args.fastq2_result), exist_ok=True)
