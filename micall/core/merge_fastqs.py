@@ -2,6 +2,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 import shutil
 import sys
+import os
 import tempfile
 
 from micall.core.trim_fastqs import TrimSteps, trim
@@ -42,6 +43,9 @@ def merge_fastqs(args):
              use_gzip=not args.unzipped)
 
         logger.info('Merging resuling reads files.')
+
+        os.makedirs(os.path.dirname(args.fastq1_result), exist_ok=True)
+        os.makedirs(os.path.dirname(args.fastq2_result), exist_ok=True)
 
         concatenate_files(trimmed_fastq1_a.name, trimmed_fastq1_b.name,
                           args.fastq1_result)
