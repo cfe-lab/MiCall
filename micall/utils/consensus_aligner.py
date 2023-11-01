@@ -23,9 +23,10 @@ MINIMUM_AMINO_ALIGNMENT = 10
 # Most codons in an insertion or deletion that is still aligned in amino acids.
 MAXIMUM_AMINO_GAP = 10
 
+# Mapping as defined in https://samtools.github.io/hts-specs/SAMv1.pdf, page 8
 CigarActions = IntEnum(
     'CigarActions',
-    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED',
+    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED PADDING SEQ_MATCH MISMATCH',
     start=0)
 
 
