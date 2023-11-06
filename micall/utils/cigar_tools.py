@@ -327,6 +327,12 @@ class CigarHit:
 
 
     def overlaps(self, other) -> bool:
+        """
+        Checks if this CIGAR hit overlaps with the other CIGAR hit,
+        in either reference or query space.
+        NOTE: only applicable if these hits come from the same reference and query.
+        """
+
         def intervals_overlap(x, y):
             """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
             return x[0] <= y[1] and x[1] >= y[0]
