@@ -133,20 +133,40 @@ def find_overlapping_contig(self, aligned_contigs):
                default=None)
 
 
-def calculate_concordance(left: str, right: str) -> Iterable[float]:
-    window_size = 10
-    scores = deque([0] * window_size, maxlen=window_size)
-    scores_sum = 0
-    result = []
+def calculate_concordance(left: str, right: str) -> List[float]:
+    """
+    Calculate concordance for two given sequences using a sliding window method.
+
+    The function compares the two strings from both left to right and then right to left,
+    calculating for each position the ratio of matching characters in a window around the
+    current position (10 characters to the left and right).
+
+    It's required that the input strings are of the same length.
+
+    :param left: string representing first sequence
+    :param right: string representing second sequence
+    :return: list representing concordance ratio for each position
+    """
+
+    result = [0] * len(left)
 
     assert len(left) == len(right), "Can only calculate concordance for same sized sequences"
 
-    for (a, b) in zip(left, right):
-        current = a == b
-        scores_sum -= scores.popleft()
-        scores_sum += (a == b)
-        scores.append(current)
-        result.append(scores_sum / window_size)
+    def slide(left, right):
+        window_size = 10
+        scores = deque([0] * window_size, maxlen=window_size)
+        scores_sum = 0
+
+        for i, (a, b) in enumerate(zip(left, right)):
+            current = a == b
+            scores_sum -= scores.popleft()
+            scores_sum += current
+            scores.append(current)
+            result[i] += scores_sum / window_size
+
+    # Slide forward, then in reverse, adding the scores at each position.
+    slide(left, right)
+    slide(reversed(left), reversed(right))
 
     return result
 
