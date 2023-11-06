@@ -199,13 +199,14 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
     stitched = yield from (x for x in aligned if not isinstance(x, AlignedContig))
     aligned = [x for x in aligned if isinstance(x, AlignedContig)]
 
+    # Going left-to-right through aligned contigs.
+    aligned = list(sorted(aligned, key=lambda x: x.alignment.r_st))
     while aligned:
-        # Going left-to-right through aligned parts.
-        current = min(aligned, key=lambda x: x.alignment.r_st)
-        aligned.remove(current)
+        current = aligned.pop(0)
 
         # Filter out all contigs that are contained within the current one.
         # TODO: actually filter out if covered by multiple contigs
+        # TODO: split contigs that have big gaps in them first, otherwise they will cover too much.
         aligned = [x for x in aligned if not \
                    interval_contains((current.alignment.r_st, current.alignment.r_ei),
                                      (x.alignment.r_st, x.alignment.r_ei))]
@@ -216,7 +217,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
             yield current
             continue
 
-        # Get overlaping regions
+        # Replace two contigs by their stitched version, then loop with it.
         new_contig = stitch_2_contigs(current, overlapping_contig)
         aligned.remove(overlapping_contig)
-        aligned.append(new_contig)
+        aligned.insert(0, new_contig)
