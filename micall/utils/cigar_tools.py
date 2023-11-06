@@ -176,6 +176,8 @@ class Cigar(list):
             operation = CigarActions(operation)
         if not isinstance(num, int) or not isinstance(operation, CigarActions):
             raise ValueError(f"Invalid CIGAR list: {item!r} is not a number/operation tuple.")
+        if num < 0:
+            raise ValueError(f"Invalid CIGAR list: number of operations is negative.")
 
         # Normalization
         if num == 0:
