@@ -106,12 +106,18 @@ def interval_contains(x, y):
     return x[0] <= y[0] and x[1] >= y[1]
 
 
+def intervals_overlap(x, y):
+    """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
+    return x[0] <= y[1] and x[1] >= y[0]
+
+
 def find_all_overlapping_contigs(self, aligned_contigs):
     for other in aligned_contigs:
         if self.contig.ref_name != other.contig.ref_name:
             continue
 
-        if self.alignment.overlaps(other.alignment):
+        if intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
+                             (other.alignment.r_st, other.alignment.r_ei)):
             yield other
 
 
