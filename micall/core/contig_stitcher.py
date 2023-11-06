@@ -29,7 +29,7 @@ class GenotypedContig(Contig):
 
     def __add__(self, other):
         if self.ref_name != other.ref_name:
-            raise ValueError("Cannot concatenate contigs that do not belong the they same reference")
+            raise ValueError("Cannot concatenate contigs that do not belong the same reference")
 
         assert self.ref_seq == other.ref_seq, "References that are named the same must be the same sequence"
 
