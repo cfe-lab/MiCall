@@ -99,13 +99,13 @@ class CoordinateMapping:
         return r if q is None else q
 
 
-    def translate_coordinates(self, reference_offset: int, query_offset: int) -> 'CoordinateMapping':
+    def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
         ret = CoordinateMapping()
 
-        ret.ref_to_query_d = {k + reference_offset: v + query_offset for (k, v) in self.ref_to_query_d.items()}
-        ret.query_to_ref_d = {k + query_offset: v + reference_offset for (k, v) in self.query_to_ref_d.items()}
-        ret.ref_to_op_d = {k + reference_offset: v for (k, v) in self.ref_to_op_d.items()}
-        ret.query_to_op_d = {k + query_offset: v for (k, v) in self.query_to_op_d.items()}
+        ret.ref_to_query_d = {k + reference_delta: v + query_delta for (k, v) in self.ref_to_query_d.items()}
+        ret.query_to_ref_d = {k + query_delta: v + reference_delta for (k, v) in self.query_to_ref_d.items()}
+        ret.ref_to_op_d = {k + reference_delta: v for (k, v) in self.ref_to_op_d.items()}
+        ret.query_to_op_d = {k + query_delta: v for (k, v) in self.query_to_op_d.items()}
 
         return ret
 
@@ -430,11 +430,19 @@ class CigarHit:
 
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
-        return self.cigar.coordinate_mapping.translate_coordinates(self.r_st, self.q_st)
+        return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
 
 
     def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
         return self.cigar.to_msa(reference_seq[self.r_st:], query_seq[self.q_st:])
+
+
+    def translate(self, reference_delta: int, query_delta: int) -> 'CigarHit':
+        return CigarHit(cigar=self.cigar,
+                        r_st=self.r_st + reference_delta,
+                        r_ei=self.r_ei + reference_delta,
+                        q_st=self.q_st + query_delta,
+                        q_ei=self.q_ei + query_delta)
 
 
     def __repr__(self):
