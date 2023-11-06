@@ -4,11 +4,8 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import List, Tuple, Iterable, Optional
-from collections import OrderedDict
+from typing import Tuple, Iterable, Optional
 from dataclasses import dataclass
-import itertools
-import copy
 from functools import cached_property
 
 from micall.utils.consensus_aligner import CigarActions

@@ -1,18 +1,6 @@
-import argparse
-import logging
-import os
 from typing import Iterable, Optional, Tuple, List
-from collections import Counter, deque
-from csv import DictWriter, DictReader
+from collections import deque
 from dataclasses import dataclass
-from datetime import datetime
-from glob import glob
-from io import StringIO
-from itertools import chain
-from operator import itemgetter
-from shutil import rmtree
-from subprocess import run, PIPE, CalledProcessError, STDOUT
-from tempfile import mkdtemp
 from mappy import Aligner
 from functools import cached_property
 from gotoh import align_it
