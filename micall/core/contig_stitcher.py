@@ -3,15 +3,21 @@ from collections import deque
 from dataclasses import dataclass
 from mappy import Aligner
 from functools import cached_property
+from itertools import accumulate
 from gotoh import align_it
 
-from micall.utils.cigar_tools import connect_cigar_hits, CigarHit
+from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
+from micall.utils.consensus_aligner import CigarActions
 
 
 @dataclass
 class Contig:
     name: str
     seq: str
+
+    @property
+    def contig(self):
+        return self
 
 
 @dataclass
@@ -20,9 +26,23 @@ class GenotypedContig(Contig):
     ref_seq: str
     matched_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
 
-    @property
-    def contig(self):
+
+    def __add__(self, other):
+        if self.ref_name != other.ref_name:
+            raise ValueError("Cannot concatenate contigs that do not belong the they same reference")
+
+        assert self.ref_seq == other.ref_seq, "References that are named the same must be the same sequence"
+
+        return GenotypedContig(name=f'{self.name}+{other.name}',
+                               seq=self.seq + other.seq,
+                               ref_name=self.ref_name,
+                               ref_seq=self.ref_seq,
+                               matched_fraction=None)
+
+
+    def narrow_query_to_alignment(self) -> 'GenotypedContig':
         return self
+
 
 @dataclass
 class AlignedContig:
@@ -44,36 +64,58 @@ class AlignedContig:
 
     @cached_property
     def seq(self):
-        seq_left, ref_seq_left = self.msa
-        return ''.join((c for c in ref_seq_left if c != '-'))
+        ref_msa, query_msa = self.msa
+        return ''.join((c for c in query_msa if c != '-'))
+
+
+    def narrow_query_to_alignment(self) -> 'AlignedContig':
+        seq = self.contig.seq[self.alignment.q_st:self.alignment.q_ei + 1]
+        contig = GenotypedContig(name=self.contig.name,
+                                 seq=seq,
+                                 ref_name=self.contig.ref_name,
+                                 ref_seq=self.contig.ref_seq,
+                                 matched_fraction=None)
+
+        alignment = self.alignment.translate(0, -1 * self.alignment.q_st)
+        return AlignedContig(contig, alignment)
 
 
 class FrankensteinContig(AlignedContig):
-    """ Assembled of parts that were not even aligned together,
+    """
+    Assembled of parts that were not even aligned together,
     and of some parts that were not aligned at all.
-    Yet its .seq string looks like a real contig. """
+    Yet its self.seq string looks like a real contig.
+    """
 
     def __init__(self, parts: List[GenotypedContig]):
+        assert len(parts) > 0, "Empty Frankenstei do not exist"
+
+        # Flatten any possible Frankenstein parts
         self.parts = [subpart for part in parts for subpart in
                       (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
-        name = '+'.join(map(lambda acontig: acontig.contig.name, self.parts))
-        ref = self.parts[0].contig
-        contig = GenotypedContig(name=name, seq=self.seq,
-                                 ref_name=ref.ref_name,
-                                 ref_seq=ref.ref_seq,
-                                 matched_fraction=ref.matched_fraction)
+        # In the remainder of this function we will try to construct alignment
+        # that spans over all parts, and its MSA is the sum of all parts MSAs.
+        narrowed_parts = [part.narrow_query_to_alignment() for part in self.parts]
 
-        alignment = connect_cigar_hits([part.alignment for part in self.parts
-                                        if isinstance(part, AlignedContig)])
+        # Overall contig is just sum of parts contigs.
+        contigs = [part.contig for part in narrowed_parts]
+        contig = sum(contigs[1:], start=contigs[0])
+
+        # Adjust alignment offsets
+        offsets = [0] + list(accumulate(len(contig.seq) for contig in contigs[:-1]))
+        def adjust(offset, alignment):
+            return alignment.translate(reference_delta=0, query_delta=offset)
+
+        aligned_parts = [adjust(offset, part.alignment) for (offset, part)
+                         in zip(offsets, narrowed_parts)
+                         if isinstance(part, AlignedContig)]
+
+        # Combine all aligned parts to produce overall alignment.
+        # It will only be reasonable if the ends are aligned.
+        alignment = connect_cigar_hits(aligned_parts)
 
         super().__init__(contig, alignment)
-
-
-    @cached_property
-    def seq(self):
-        return ''.join(map(lambda part: part.seq, self.parts))
-
 
 
 def align_to_reference(contig: GenotypedContig):
@@ -87,7 +129,7 @@ def align_to_reference(contig: GenotypedContig):
     return AlignedContig(contig=contig, alignment=single_cigar_hit)
 
 
-def align_equal(seq1, seq2) -> Tuple[str, str]:
+def align_equal(seq1: str, seq2: str) -> Tuple[str, str]:
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
@@ -190,7 +232,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
     aligned = list(map(align_to_reference, contigs))
 
     # Contigs that did not align do not need any more processing
-    stitched = yield from (x for x in aligned if not isinstance(x, AlignedContig))
+    yield from (x for x in aligned if not isinstance(x, AlignedContig))
     aligned = [x for x in aligned if isinstance(x, AlignedContig)]
 
     # Going left-to-right through aligned contigs.

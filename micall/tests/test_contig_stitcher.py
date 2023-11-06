@@ -65,5 +65,44 @@ def test_3():
         ]
 
     result = list(stitch_contigs(contigs))
-    assert 100 == sum(len(x.seq) for x in result)
+    assert len(result) == 1
+
+    result = result[0]
+
+    assert 100 == len(result.seq)
+    assert result.seq == 'A' * 50 + 'C' * 50
+    assert result.contig.name == 'a+overlap(a,b)+b'
+
+
+def test_4():
+    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 50 + 'C' * 20,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 20 + 'C' * 50,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='c',
+                        seq='C' * 20 + 'T' * 50,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    result = list(stitch_contigs(contigs))
+    assert len(result) == 2
+
+    assert 100 == len(result[0].seq)
+    assert result[0].seq == 'A' * 50 + 'C' * 50
     assert result[0].contig.name == 'a+overlap(a,b)+b'
+
+    assert result[1].contig == contigs[2]
