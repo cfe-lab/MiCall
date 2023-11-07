@@ -250,7 +250,7 @@ def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
                                             if not isinstance(x[2], Exception)])
 def test_cigar_hit_ref_cut_add_prop(hit, cut_point):
     left, right = hit.cut_reference(cut_point)
-    assert left + right == hit == right + left
+    assert left + right == hit
 
 
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [

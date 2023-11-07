@@ -350,24 +350,16 @@ class CigarHit:
         if self.overlaps(other):
             raise ValueError("Cannot combine overlapping CIGAR hits")
 
-        if (self.r_st, self.r_ei) < (other.r_st, other.r_ei):
-            # Note: in cases where one CigarHit is empty, comparing only by a single coordiate is not sufficient.
-            left = self
-            right = other
-        else:
-            left = other
-            right = self
-
-        cigar = left.cigar \
-            + Cigar.coerce([(right.r_st - left.r_ei - 1, CigarActions.DELETE)]) \
-            + Cigar.coerce([(right.q_st - left.q_ei - 1, CigarActions.INSERT)]) \
-            + right.cigar
+        cigar = self.cigar \
+            + Cigar.coerce([(other.r_st - self.r_ei - 1, CigarActions.DELETE)]) \
+            + Cigar.coerce([(other.q_st - self.q_ei - 1, CigarActions.INSERT)]) \
+            + other.cigar
 
         return CigarHit(cigar=cigar,
-                        r_st=left.r_st,
-                        r_ei=right.r_ei,
-                        q_st=left.q_st,
-                        q_ei=right.q_ei,
+                        r_st=self.r_st,
+                        r_ei=other.r_ei,
+                        q_st=self.q_st,
+                        q_ei=other.q_ei,
                         )
 
 
