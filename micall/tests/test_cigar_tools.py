@@ -1,5 +1,6 @@
 import pytest
 from typing import List, Tuple
+from math import floor
 
 from micall.utils.consensus_aligner import CigarActions
 from micall.utils.cigar_tools import Cigar, CigarHit
@@ -139,7 +140,11 @@ def test_invalid_cigar_string():
 
 
 cigar_hit_ref_cut_cases = [
-    # Trivial cases
+    # # Trivial cases
+    (CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4), 2.5,
+     [CigarHit('2M', r_st=1, r_ei=2, q_st=1, q_ei=2),
+      CigarHit('2M', r_st=3, r_ei=4, q_st=3, q_ei=4)]),
+
     (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 3.5,
      [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
       CigarHit('6M', r_st=4, r_ei=9, q_st=4, q_ei=9)]),
@@ -251,6 +256,32 @@ def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
 def test_cigar_hit_ref_cut_add_prop(hit, cut_point):
     left, right = hit.cut_reference(cut_point)
     assert left + right == hit
+
+
+@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
+                                            if not isinstance(x[2], Exception)])
+def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
+    percentage = cut_point - floor(cut_point)
+
+    for cut_point in range(hit.r_st, hit.r_ei + 2):
+        left, right = hit.cut_reference(cut_point - percentage)
+        assert left + right == hit
+
+
+@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
+                                            if not isinstance(x[2], Exception)])
+def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
+    percentage = cut_point - floor(cut_point)
+
+    for ax_cut in range(hit.r_st, hit.r_ei + 2):
+        a, x = hit.cut_reference(ax_cut - percentage)
+
+        for bc_cut in range(a.r_ei + 1, hit.r_ei + 2):
+            if x.r_len == 0: continue
+
+            b, c = x.cut_reference(bc_cut - percentage)
+
+            assert (a + b) + c == a + (b + c)
 
 
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [
