@@ -1,5 +1,11 @@
 import pytest
 from micall.core.contig_stitcher import stitch_contigs, GenotypedContig
+from micall.tests.utils import MockAligner
+
+
+@pytest.fixture(autouse=True)
+def mock_mappy_aligner(monkeypatch):
+    monkeypatch.setattr('micall.core.contig_stitcher.Aligner', MockAligner)
 
 
 def test_1():
