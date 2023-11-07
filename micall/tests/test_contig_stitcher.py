@@ -221,3 +221,31 @@ def test_stitching_of_zero_contigs():
     contigs = []
     result = list(stitch_contigs(contigs))
     assert result == contigs
+
+
+def test_correct_stitching_of_two_partially_overlapping_different_organism_contigs():
+    # Scenario: Two partially overlapping contigs, but which come from different organism,
+    # are not stitched into a single sequence.
+
+    ref_seq = 'A' * 100 + 'C' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 50 + 'C' * 20,
+                        ref_name='testref-1',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 20 + 'C' * 50,
+                        ref_name='testref-2',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    result = list(stitch_contigs(contigs))
+    assert len(result) == 2
+
+    assert sorted(map(lambda x: x.seq, contigs)) \
+        == sorted(map(lambda x: x.seq, result))

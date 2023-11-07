@@ -4,9 +4,10 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import Tuple, Iterable, Optional
+from typing import Container, Tuple, Iterable, Optional
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import chain, dropwhile
 
 from micall.utils.consensus_aligner import CigarActions
 
@@ -130,7 +131,7 @@ class Cigar(list):
     """
 
 
-    def __init__(self, cigar_lst):
+    def __init__(self, cigar_lst: Iterable[Tuple[int, CigarActions]]):
         super().__init__([])
         for x in cigar_lst: self.append(x)
 
@@ -237,6 +238,16 @@ class Cigar(list):
     def slice_operations(self, start_inclusive, end_noninclusive) -> 'Cigar':
         return Cigar([(1, op) for op in self.iterate_operations()]
                      [start_inclusive:end_noninclusive])
+
+
+    def lstrip(self, actions: Container[CigarActions]) -> 'Cigar':
+        """ Return a copy of the Cigar with leading actions removed. """
+        return Cigar(dropwhile(lambda tupl: tupl[1] in actions, self))
+
+
+    def rstrip(self, actions: Container[CigarActions]) -> 'Cigar':
+        """ Return a copy of the Cigar with trailing actions removed. """
+        return Cigar(reversed(list(dropwhile(lambda tupl: tupl[1] in actions, reversed(self)))))
 
 
     @cached_property
@@ -426,6 +437,32 @@ class CigarHit:
                             ceil(query_cut_point), self.q_ei)
 
         return left, right
+
+
+    def lstrip(self, actions: Container[CigarActions]) -> 'CigarHit':
+        """ Return a copy of the CigarHit with leading actions removed. """
+
+        cigar = self.cigar.lstrip(actions)
+        reference_delta = cigar.ref_length - self.cigar.ref_length
+        query_delta = cigar.query_length - self.cigar.query_length
+        return CigarHit(cigar,
+                        r_st=self.r_st,
+                        r_ei=self.r_ei + reference_delta,
+                        q_st=self.q_st,
+                        q_ei=self.q_ei + query_delta)
+
+
+    def rstrip(self, actions: Container[CigarActions]) -> 'CigarHit':
+        """ Return a copy of the CigarHit with trailing actions removed. """
+
+        cigar = self.cigar.rstrip(actions)
+        reference_delta = cigar.ref_length - self.cigar.ref_length
+        query_delta = cigar.query_length - self.cigar.query_length
+        return CigarHit(cigar,
+                        r_st=self.r_st,
+                        r_ei=self.r_ei + reference_delta,
+                        q_st=self.q_st,
+                        q_ei=self.q_ei + query_delta)
 
 
     @cached_property

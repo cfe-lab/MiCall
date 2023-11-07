@@ -1,9 +1,10 @@
 import pytest
 from typing import List, Tuple
 from math import floor
+import itertools
 
 from micall.utils.consensus_aligner import CigarActions
-from micall.utils.cigar_tools import Cigar, CigarHit
+from micall.utils.cigar_tools import Cigar, CigarHit, parse_cigar_operation, CIGAR_OP_MAPPING
 
 
 cigar_mapping_cases: List[Tuple[Cigar, 'mapping', 'closest_mapping']] = [
@@ -282,6 +283,42 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
             b, c = x.cut_reference(bc_cut - percentage)
 
             assert (a + b) + c == a + (b + c)
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+def test_cigar_hit_lstrip_is_stringlike(hit):
+    all_chars = CIGAR_OP_MAPPING.keys()
+
+    actions_of = lambda s: (x for x in s if x in all_chars)
+
+    for r in range(len(all_chars) + 1):
+        for char_set in itertools.combinations(all_chars, r):
+            actions = set(map(parse_cigar_operation, char_set))
+            chars = ''.join(char_set)
+
+            p = lambda x: ''.join(actions_of(str(x.cigar)))
+            g = lambda x: x.lstrip(actions)
+            h = lambda x: x.lstrip(chars)
+
+            assert p(g(hit)) == h(p(hit))
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+def test_cigar_hit_rstrip_is_stringlike(hit):
+    all_chars = CIGAR_OP_MAPPING.keys()
+
+    actions_of = lambda s: (x for x in s if x in all_chars)
+
+    for r in range(len(all_chars) + 1):
+        for char_set in itertools.combinations(all_chars, r):
+            actions = set(map(parse_cigar_operation, char_set))
+            chars = ''.join(char_set)
+
+            p = lambda x: ''.join(actions_of(str(x.cigar)))
+            g = lambda x: x.rstrip(actions)
+            h = lambda x: x.rstrip(chars)
+
+            assert p(g(hit)) == h(p(hit))
 
 
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [
