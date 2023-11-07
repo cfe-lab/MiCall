@@ -15,10 +15,6 @@ class Contig:
     name: str
     seq: str
 
-    @property
-    def contig(self):
-        return self
-
 
 @dataclass
 class GenotypedContig(Contig):
@@ -44,10 +40,22 @@ class GenotypedContig(Contig):
         return self
 
 
-@dataclass
-class AlignedContig:
-    contig: GenotypedContig
-    alignment: CigarHit
+class AlignedContig(GenotypedContig):
+
+    def __init__(self, contig: GenotypedContig, alignment: CigarHit):
+        self.alignment = alignment
+        self.contig = contig
+
+        ref_msa, query_msa = self.alignment.to_msa(self.contig.ref_seq, self.contig.seq)
+        seq = ''.join((c for c in query_msa if c != '-'))
+
+        super().__init__(
+            seq = seq,
+            name = contig.name,
+            ref_name = contig.ref_name,
+            ref_seq = contig.ref_seq,
+            matched_fraction = contig.matched_fraction)
+
 
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
         """ Cuts this alignment in two parts with cut_point between them. """
@@ -55,17 +63,6 @@ class AlignedContig:
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
         return (AlignedContig(self.contig, alignment_left),
                 AlignedContig(self.contig, alignment_right))
-
-
-    @cached_property
-    def msa(self):
-        return self.alignment.to_msa(self.contig.ref_seq, self.contig.seq)
-
-
-    @cached_property
-    def seq(self):
-        ref_msa, query_msa = self.msa
-        return ''.join((c for c in query_msa if c != '-'))
 
 
     def narrow_query_to_alignment(self) -> 'AlignedContig':
@@ -99,7 +96,7 @@ class FrankensteinContig(AlignedContig):
         narrowed_parts = [part.narrow_query_to_alignment() for part in self.parts]
 
         # Overall contig is just sum of parts contigs.
-        contigs = [part.contig for part in narrowed_parts]
+        contigs = [part.contig if isinstance(part, AlignedContig) else part for part in narrowed_parts]
         contig = sum(contigs[1:], start=contigs[0])
 
         # Adjust alignment offsets
@@ -155,7 +152,7 @@ def intervals_overlap(x, y):
 
 def find_all_overlapping_contigs(self, aligned_contigs):
     for other in aligned_contigs:
-        if self.contig.ref_name != other.contig.ref_name:
+        if self.ref_name != other.ref_name:
             continue
 
         if intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
@@ -222,9 +219,9 @@ def stitch_2_contigs(left, right):
     overlap_seq = ''.join(c for c in aligned_left_part + aligned_right_part if c != '-')
 
     # Return something that can be fed back into the loop.
-    overlap_contig = GenotypedContig(name=f'overlap({left.contig.name},{right.contig.name})',
-                                     seq=overlap_seq, ref_name=left.contig.ref_name,
-                                     ref_seq=left.contig.ref_seq, matched_fraction=None)
+    overlap_contig = GenotypedContig(name=f'overlap({left.name},{right.name})',
+                                     seq=overlap_seq, ref_name=left.ref_name,
+                                     ref_seq=left.ref_seq, matched_fraction=None)
     return FrankensteinContig([left_remainder, overlap_contig, right_remainder])
 
 
