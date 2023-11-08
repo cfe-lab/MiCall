@@ -31,10 +31,10 @@ class MockAligner:
     def map(self, seq):
         max_matches = self.max_matches
         returned = set()
-        for length in range(len(seq), self.min_length - 2, -1):
-            for start in range(len(seq) - length):
+        for length in range(len(seq), self.min_length - 1, -1):
+            for start in range(len(seq) - length + 1):
                 end = start + length
-                substring = seq[start:end+1]
+                substring = seq[start:end]
                 if substring not in self.seq:
                     continue
 
@@ -43,7 +43,7 @@ class MockAligner:
                 r_st = self.seq.index(substring)
                 r_en = r_st + len(substring)
                 q_st = start
-                q_en = end + 1
+                q_en = end
                 cigar = [[q_en - q_st, CigarActions.MATCH]]
                 cigar_str = f'{(q_en - q_st)}M'
                 al = MockAlignment(is_rev, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
