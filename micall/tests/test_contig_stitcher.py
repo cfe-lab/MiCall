@@ -1,3 +1,4 @@
+
 import pytest
 from micall.core.contig_stitcher import stitch_contigs, GenotypedContig
 from micall.tests.utils import MockAligner
@@ -96,7 +97,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs():
 
     assert 100 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 50
-    assert result.contig.name == 'a+overlap(a,b)+b'
+    assert result.query.name == 'a+overlap(a,b)+b'
 
 
 def test_correct_processing_of_two_overlapping_and_one_separate_contig():
@@ -130,9 +131,9 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig():
 
     assert 100 == len(result[0].seq)
     assert result[0].seq == 'A' * 50 + 'C' * 50
-    assert result[0].contig.name == 'a+overlap(a,b)+b'
+    assert result[0].query.name == 'a+overlap(a,b)+b'
 
-    assert result[1].contig == contigs[2]
+    assert result[1].query == contigs[2]
 
 
 def test_stitching_of_all_overlapping_contigs_into_one_sequence():
@@ -168,7 +169,7 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence():
 
     assert 200 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 100 + 'T' * 50
-    assert result.contig.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result.query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
 
 
 def test_stitching_with_empty_contigs():
@@ -212,7 +213,7 @@ def test_stitching_of_identical_contigs():
 
     result = list(stitch_contigs(contigs))
     assert len(result) == 1
-    assert result[0].contig == contig
+    assert result[0].query == contig
 
 
 def test_stitching_of_zero_contigs():
@@ -293,13 +294,13 @@ def test_correct_processing_complex_nogaps():
 
     assert 170 == len(result[0].seq)
     assert result[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert result[0].contig.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
-    assert result[0].contig.ref_name == 'testref-1'
+    assert result[0].query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result[0].query.ref_name == 'testref-1'
 
     assert 170 == len(result[1].seq)
     assert result[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert result[1].contig.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
-    assert result[1].contig.ref_name == 'testref-2'
+    assert result[1].query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result[1].query.ref_name == 'testref-2'
 
-    assert result[2].contig == contigs[3]
-    assert result[3].contig == contigs[7]
+    assert result[2].query == contigs[3]
+    assert result[3].query == contigs[7]

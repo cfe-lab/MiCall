@@ -23,58 +23,51 @@ class GenotypedContig(Contig):
     matched_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
 
 
-    def __add__(self, other):
-        if self.ref_name != other.ref_name:
-            raise ValueError("Cannot concatenate contigs that do not belong the same reference")
-
-        assert self.ref_seq == other.ref_seq, "References that are named the same must be the same sequence"
-
-        return GenotypedContig(name=f'{self.name}+{other.name}',
-                               seq=self.seq + other.seq,
-                               ref_name=self.ref_name,
-                               ref_seq=self.ref_seq,
-                               matched_fraction=None)
-
-
-    def narrow_query_to_alignment(self) -> 'GenotypedContig':
-        return self
-
-
 class AlignedContig(GenotypedContig):
 
-    def __init__(self, contig: GenotypedContig, alignment: CigarHit):
+    def __init__(self, query: GenotypedContig, alignment: CigarHit):
         self.alignment = alignment
-        self.contig = contig
+        self.query = query
 
-        ref_msa, query_msa = self.alignment.to_msa(self.contig.ref_seq, self.contig.seq)
+        ref_msa, query_msa = self.alignment.to_msa(self.query.ref_seq, self.query.seq)
         seq = ''.join((c for c in query_msa if c != '-'))
 
         super().__init__(
             seq = seq,
-            name = contig.name,
-            ref_name = contig.ref_name,
-            ref_seq = contig.ref_seq,
-            matched_fraction = contig.matched_fraction)
+            name = query.name,
+            ref_name = query.ref_name,
+            ref_seq = query.ref_seq,
+            matched_fraction = query.matched_fraction)
 
 
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        return (AlignedContig(self.contig, alignment_left),
-                AlignedContig(self.contig, alignment_right))
+        return (AlignedContig(self.query, alignment_left),
+                AlignedContig(self.query, alignment_right))
 
 
-    def narrow_query_to_alignment(self) -> 'AlignedContig':
-        seq = self.contig.seq[self.alignment.q_st:self.alignment.q_ei + 1]
-        contig = GenotypedContig(name=self.contig.name,
-                                 seq=seq,
-                                 ref_name=self.contig.ref_name,
-                                 ref_seq=self.contig.ref_seq,
-                                 matched_fraction=None)
+    def overlaps(self, other) -> bool:
+        def intervals_overlap(x, y):
+            return x[0] <= y[1] and x[1] >= y[0]
 
-        alignment = self.alignment.translate(0, -1 * self.alignment.q_st)
-        return AlignedContig(contig, alignment)
+        if self.ref_name != other.ref_name:
+            return False
+
+        return intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
+                                 (other.alignment.r_st, other.alignment.r_ei))
+
+
+    def contains(self, other) -> bool:
+        def interval_contains(x, y):
+            return x[0] <= y[0] and x[1] >= y[1]
+
+        if self.ref_name != other.ref_name:
+            return False
+
+        return interval_contains((self.alignment.r_st, self.alignment.r_ei),
+                                 (other.alignment.r_st, other.alignment.r_ei))
 
 
 class SyntheticContig(AlignedContig):
@@ -96,18 +89,19 @@ class FrankensteinContig(AlignedContig):
             raise ValueError("Empty Frankenstei do not exist")
 
         # Flatten any possible Frankenstein parts
+        # This is entirely optional, but may be useful for debugging
         self.parts = [subpart for part in parts for subpart in
                       (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
         aligned = reduce(FrankensteinContig.munge, self.parts)
 
-        super().__init__(aligned.contig, aligned.alignment)
+        super().__init__(aligned.query, aligned.alignment)
 
 
     @staticmethod
-    def munge(left: 'AlignedContig', right: 'AlignedContig') -> 'AlignedContig':
-        left_query_seq = left.contig.seq[0:left.alignment.q_ei + 1]
-        right_query_seq = right.contig.seq[right.alignment.q_st:]
+    def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
+        left_query_seq = left.query.seq[0:left.alignment.q_ei + 1]
+        right_query_seq = right.query.seq[right.alignment.q_st:]
         query_seq = left_query_seq + right_query_seq
 
         left_alignment = left.alignment
@@ -133,7 +127,7 @@ def align_to_reference(contig: GenotypedContig):
 
     hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
     single_cigar_hit = connect_cigar_hits(hits_array)
-    return AlignedContig(contig=contig, alignment=single_cigar_hit)
+    return AlignedContig(query=contig, alignment=single_cigar_hit)
 
 
 def align_equal(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -150,37 +144,9 @@ def align_equal(seq1: str, seq2: str) -> Tuple[str, str]:
     return aseq1, aseq2
 
 
-def interval_contains(x, y):
-    """ Check if interval (x0, x1) contains interval (y0, y1). """
-    return x[0] <= y[0] and x[1] >= y[1]
-
-
-def intervals_overlap(x, y):
-    """ Check if two intervals [x0, x1] and [y0, y1] overlap. """
-    return x[0] <= y[1] and x[1] >= y[0]
-
-
-def contig_overlaps(self, other):
-    if self.ref_name != other.ref_name:
-        return False
-
-    if intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
-                         (other.alignment.r_st, other.alignment.r_ei)):
-        return True
-
-
-def contig_contains(self, other):
-    if self.ref_name != other.ref_name:
-        return False
-
-    if interval_contains((self.alignment.r_st, self.alignment.r_ei),
-                         (other.alignment.r_st, other.alignment.r_ei)):
-        return True
-
-
 def find_all_overlapping_contigs(self, aligned_contigs):
     for other in aligned_contigs:
-        if contig_overlaps(self, other):
+        if self.overlaps(other):
             yield other
 
 
@@ -268,8 +234,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
         # Filter out all contigs that are contained within the current one.
         # TODO: actually filter out if covered by multiple contigs
         # TODO: split contigs that have big gaps in them first, otherwise they will cover too much.
-        aligned = [x for x in aligned if not \
-                   contig_contains(current, x)]
+        aligned = [x for x in aligned if not current.contains(x)]
 
         # Find overlap. If there isn't one - we are done with the current contig.
         overlapping_contig = find_overlapping_contig(current, aligned)
