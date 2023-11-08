@@ -60,6 +60,14 @@ class CoordinateMapping:
                 self.query_to_op_d[query_index] = op_index
 
 
+    def reference_coordinates(self):
+        return self.ref_to_query_d.keys()
+
+
+    def query_coordinates(self):
+        return self.query_to_ref_d.keys()
+
+
     def ref_to_query(self, index) -> Optional[int]:
         return self.ref_to_query_d.get(index, None)
 

@@ -62,7 +62,7 @@ def test_cigar_to_coordinate_mapping(cigar_str, expected_mapping):
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
     assert expected_mapping == mapping.ref_to_query_d
-    assert expected_mapping == {i: mapping.ref_to_query(i) for i in mapping.ref_to_query_d}
+    assert expected_mapping == {i: mapping.ref_to_query(i) for i in mapping.reference_coordinates()}
 
 
 @pytest.mark.parametrize("cigar_str", [x[0] for x in cigar_mapping_cases])
@@ -87,7 +87,8 @@ def test_cigar_to_closest_coordinate_mapping(cigar_str, expected_closest_mapping
 
     else:
         fullrange = {i: mapping.ref_to_closest_query(i) \
-                     for i in range(min(mapping.ref_to_query_d), 1 + max(mapping.ref_to_query_d))}
+                     for i in range(min(mapping.reference_coordinates()),
+                                    1 + max(mapping.reference_coordinates()))}
         assert expected_closest_mapping == fullrange
 
 
@@ -102,7 +103,7 @@ def test_cigar_hit_to_coordinate_mapping(cigar_str, expected_mapping):
     assert mapping.ref_to_query(0) == None
     assert mapping.query_to_ref(0) == None
     assert expected_mapping \
-        == {i: mapping.ref_to_query(i) for i in mapping.ref_to_query_d}
+        == {i: mapping.ref_to_query(i) for i in mapping.reference_coordinates()}
 
 
 @pytest.mark.parametrize("cigar_str, expected_closest_mapping", [(x[0], x[2]) for x in cigar_mapping_cases])
@@ -119,7 +120,8 @@ def test_cigar_hit_to_coordinate_closest_mapping(cigar_str, expected_closest_map
         # Coordinates are translated by q_st and r_st.
         expected_closest_mapping = {k + hit.r_st: v + hit.q_st for (k, v) in expected_closest_mapping.items()}
         fullrange = {i: mapping.ref_to_closest_query(i) \
-                     for i in range(min(mapping.ref_to_query_d), 1 + max(mapping.ref_to_query_d))}
+                     for i in range(min(mapping.reference_coordinates()),
+                                    1 + max(mapping.reference_coordinates()))}
         assert expected_closest_mapping == fullrange
 
 
