@@ -3,7 +3,7 @@ from collections import deque
 from dataclasses import dataclass
 from mappy import Aligner
 from functools import cached_property, reduce
-from itertools import accumulate
+from itertools import accumulate, takewhile
 from gotoh import align_it
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
@@ -77,6 +77,10 @@ class SyntheticContig(AlignedContig):
         super().__init__(query, alignment)
 
 
+    def cut_reference(self, cut_point: float):
+        raise NotImplementedError("SyntheticContigs cannot be cut because they are not properly aligned")
+
+
 class FrankensteinContig(AlignedContig):
     """
     Assembled of parts that were not even aligned together,
@@ -89,13 +93,30 @@ class FrankensteinContig(AlignedContig):
             raise ValueError("Empty Frankenstei do not exist")
 
         # Flatten any possible Frankenstein parts
-        # This is entirely optional, but may be useful for debugging
         self.parts = [subpart for part in parts for subpart in
                       (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
         aligned = reduce(FrankensteinContig.munge, self.parts)
 
         super().__init__(aligned.query, aligned.alignment)
+
+
+    def cut_reference(self, cut_point: float) -> 'FrankensteinContig':
+        # The cut_reference version of super() works here.
+        # But it loses information about parts,
+        # and does not check if the cut is legal
+        # i.e. whether it slices a SyntheticContig.
+
+        # Search for the part that needs to be cut:
+        left_parts = list(takewhile(lambda part: cut_point >= part.alignment.r_ei + 1, self.parts))
+        target_part = self.parts[len(left_parts)]
+        right_parts = self.parts[len(left_parts) + 1:]
+
+        target_part_left, target_part_right = target_part.cut_reference(cut_point)
+        left = FrankensteinContig(left_parts + [target_part_left])
+        right = FrankensteinContig([target_part_right] + right_parts)
+
+        return (left, right)
 
 
     @staticmethod
