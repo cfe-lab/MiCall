@@ -318,22 +318,22 @@ class CigarHit:
     def __post_init__(self):
         self.cigar = Cigar.coerce(self.cigar)
 
-        if self.r_len != self.cigar.ref_length:
+        if self.ref_length != self.cigar.ref_length:
             raise ValueError(f"CIGAR string maps {self.cigar.ref_length}"
-                             f" reference positions, but CIGAR hit range is {self.r_len}")
+                             f" reference positions, but CIGAR hit range is {self.ref_length}")
 
-        if self.q_len != self.cigar.query_length:
+        if self.query_length != self.cigar.query_length:
             raise ValueError(f"CIGAR string maps {self.cigar.query_length}"
-                             f" query positions, but CIGAR hit range is {self.q_len}")
+                             f" query positions, but CIGAR hit range is {self.query_length}")
 
 
     @property
-    def r_len(self):
+    def ref_length(self):
         return self.r_ei + 1 - self.r_st
 
 
     @property
-    def q_len(self):
+    def query_length(self):
         return self.q_ei + 1 - self.q_st
 
 
@@ -424,7 +424,7 @@ class CigarHit:
         if float(cut_point).is_integer():
             raise ValueError("Cut accepts fractions, not integers")
 
-        if self.r_len == 0 or \
+        if self.ref_length == 0 or \
            not (self.r_st - 1 < cut_point < self.r_ei + 1):
             raise IndexError("Cut point out of reference bounds")
 

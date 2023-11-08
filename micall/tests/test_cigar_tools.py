@@ -278,7 +278,7 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
         a, x = hit.cut_reference(ax_cut - percentage)
 
         for bc_cut in range(a.r_ei + 1, hit.r_ei + 2):
-            if x.r_len == 0: continue
+            if x.ref_length == 0: continue
 
             b, c = x.cut_reference(bc_cut - percentage)
 
