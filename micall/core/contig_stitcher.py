@@ -206,7 +206,7 @@ def calculate_concordance(left: str, right: str) -> List[float]:
             scores_sum -= scores.popleft()
             scores_sum += current
             scores.append(current)
-            result[i] += scores_sum / window_size
+            result[i] += (scores_sum / window_size) / 2
 
     # Slide forward, then in reverse, adding the scores at each position.
     slide(left, right)
