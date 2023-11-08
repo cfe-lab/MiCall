@@ -337,6 +337,16 @@ class CigarHit:
         return self.q_ei + 1 - self.q_st
 
 
+    @staticmethod
+    def from_default_alignment(r_st, r_ei, q_st, q_ei):
+        ref_length = r_ei - r_st + 1
+        query_length = q_ei - q_st + 1
+        cigar = Cigar.coerce([[ref_length, CigarActions.DELETE],
+                              [query_length, CigarActions.INSERT]])
+
+        return CigarHit(cigar, r_st=r_st, r_ei=r_ei, q_st=q_st, q_ei=q_ei)
+
+
     def overlaps(self, other) -> bool:
         """
         Checks if this CIGAR hit overlaps with the other CIGAR hit,
@@ -362,8 +372,7 @@ class CigarHit:
             raise ValueError("Cannot combine overlapping CIGAR hits")
 
         cigar = self.cigar \
-            + Cigar.coerce([(other.r_st - self.r_ei - 1, CigarActions.DELETE)]) \
-            + Cigar.coerce([(other.q_st - self.q_ei - 1, CigarActions.INSERT)]) \
+            + CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1).cigar \
             + other.cigar
 
         return CigarHit(cigar=cigar,
