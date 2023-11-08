@@ -201,19 +201,18 @@ def test_stitching_of_identical_contigs():
     # Scenario: The function correctly handles and avoids duplication when identical contigs are stitched together.
 
     ref_seq = 'A' * 100
-    contig = \
-        GenotypedContig(name='a',
+    contigs = [
+        GenotypedContig(name=name,
                         seq='ACTGACTG' * 100,
                         ref_name='testref',
                         ref_seq='ACTGACTG' * 100,
                         matched_fraction=1.0,
                         )
-
-    contigs = [contig, contig, contig]
+        for name in ["a", "b", "c"]]
 
     result = list(stitch_contigs(contigs))
     assert len(result) == 1
-    assert result[0].query == contig
+    assert result[0].query == contigs[2]
 
 
 def test_stitching_of_zero_contigs():
