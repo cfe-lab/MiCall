@@ -2,7 +2,7 @@ from typing import Iterable, Optional, Tuple, List
 from collections import deque
 from dataclasses import dataclass
 from mappy import Aligner
-from functools import cached_property
+from functools import cached_property, reduce
 from itertools import accumulate
 from gotoh import align_it
 
@@ -77,6 +77,13 @@ class AlignedContig(GenotypedContig):
         return AlignedContig(contig, alignment)
 
 
+class SyntheticContig(AlignedContig):
+    def __init__(self, query: GenotypedContig, r_st: int, r_ei: int):
+        alignment = CigarHit.from_default_alignment(r_st=r_st, r_ei=r_ei,
+                                                    q_st=0, q_ei=len(query.seq)-1)
+        super().__init__(query, alignment)
+
+
 class FrankensteinContig(AlignedContig):
     """
     Assembled of parts that were not even aligned together,
@@ -85,34 +92,37 @@ class FrankensteinContig(AlignedContig):
     """
 
     def __init__(self, parts: List[GenotypedContig]):
-        assert len(parts) > 0, "Empty Frankenstei do not exist"
+        if len(parts) == 0:
+            raise ValueError("Empty Frankenstei do not exist")
 
         # Flatten any possible Frankenstein parts
         self.parts = [subpart for part in parts for subpart in
                       (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
-        # In the remainder of this function we will try to construct alignment
-        # that spans over all parts, and its MSA is the sum of all parts MSAs.
-        narrowed_parts = [part.narrow_query_to_alignment() for part in self.parts]
+        aligned = reduce(FrankensteinContig.munge, self.parts)
 
-        # Overall contig is just sum of parts contigs.
-        contigs = [part.contig if isinstance(part, AlignedContig) else part for part in narrowed_parts]
-        contig = sum(contigs[1:], start=contigs[0])
+        super().__init__(aligned.contig, aligned.alignment)
 
-        # Adjust alignment offsets
-        offsets = [0] + list(accumulate(len(contig.seq) for contig in contigs[:-1]))
-        def adjust(offset, alignment):
-            return alignment.translate(reference_delta=0, query_delta=offset)
 
-        aligned_parts = [adjust(offset, part.alignment) for (offset, part)
-                         in zip(offsets, narrowed_parts)
-                         if isinstance(part, AlignedContig)]
+    @staticmethod
+    def munge(left: 'AlignedContig', right: 'AlignedContig') -> 'AlignedContig':
+        left_query_seq = left.contig.seq[0:left.alignment.q_ei + 1]
+        right_query_seq = right.contig.seq[right.alignment.q_st:]
+        query_seq = left_query_seq + right_query_seq
 
-        # Combine all aligned parts to produce overall alignment.
-        # It will only be reasonable if the ends are aligned.
-        alignment = connect_cigar_hits(aligned_parts)
+        left_alignment = left.alignment
+        right_alignment = \
+            right.alignment.translate(
+                query_delta=(-1 * right.alignment.q_st + len(left_query_seq)),
+                reference_delta=0)
+        alignment = left_alignment + right_alignment
 
-        super().__init__(contig, alignment)
+        query = GenotypedContig(seq=query_seq,
+                                name=f'{left.name}+{right.name}',
+                                ref_name=left.ref_name,
+                                ref_seq=left.ref_seq,
+                                matched_fraction=None)
+        return AlignedContig(query, alignment)
 
 
 def align_to_reference(contig: GenotypedContig):
@@ -233,9 +243,13 @@ def stitch_2_contigs(left, right):
     overlap_seq = ''.join(c for c in aligned_left_part + aligned_right_part if c != '-')
 
     # Return something that can be fed back into the loop.
-    overlap_contig = GenotypedContig(name=f'overlap({left.name},{right.name})',
-                                     seq=overlap_seq, ref_name=left.ref_name,
-                                     ref_seq=left.ref_seq, matched_fraction=None)
+    overlap_query = GenotypedContig(name=f'overlap({left.name},{right.name})',
+                                    seq=overlap_seq, ref_name=left.ref_name,
+                                    ref_seq=left.ref_seq, matched_fraction=None)
+    overlap_contig = SyntheticContig(overlap_query,
+                                     r_st=left_overlap.alignment.r_st,
+                                     r_ei=right_overlap.alignment.r_ei)
+
     return FrankensteinContig([left_remainder, overlap_contig, right_remainder])
 
 
