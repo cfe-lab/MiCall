@@ -249,3 +249,57 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
 
     assert sorted(map(lambda x: x.seq, contigs)) \
         == sorted(map(lambda x: x.seq, result))
+
+
+def test_correct_processing_complex_nogaps():
+    # Scenario: There are two reference organisms.
+    # Each with 4 contigs.
+    # For each, three overlapping contigs are stitched together, the non-overlapping is kept separate.
+    # This seems like the most general scenario if no gaps or complete goverage is involved.
+
+    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
+
+    contigs = [[
+        GenotypedContig(name='a',
+                        seq='A' * 50 + 'C' * 20,
+                        ref_name=ref_name,
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 20 + 'C' * 50,
+                        ref_name=ref_name,
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='c',
+                        seq='C' * 70 + 'T' * 20,
+                        ref_name=ref_name,
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='d',
+                        seq='T' * 20 + 'G' * 50,
+                        ref_name=ref_name,
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ] for ref_name in ['testref-1', 'testref-2']]
+
+    contigs = sum(contigs, start=[])
+
+    result = list(stitch_contigs(contigs))
+    assert len(result) == 4
+
+    assert 170 == len(result[0].seq)
+    assert result[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
+    assert result[0].contig.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result[0].contig.ref_name == 'testref-1'
+
+    assert 170 == len(result[1].seq)
+    assert result[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
+    assert result[1].contig.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result[1].contig.ref_name == 'testref-2'
+
+    assert result[2].contig == contigs[3]
+    assert result[3].contig == contigs[7]

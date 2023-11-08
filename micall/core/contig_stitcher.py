@@ -150,13 +150,27 @@ def intervals_overlap(x, y):
     return x[0] <= y[1] and x[1] >= y[0]
 
 
+def contig_overlaps(self, other):
+    if self.ref_name != other.ref_name:
+        return False
+
+    if intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
+                         (other.alignment.r_st, other.alignment.r_ei)):
+        return True
+
+
+def contig_contains(self, other):
+    if self.ref_name != other.ref_name:
+        return False
+
+    if interval_contains((self.alignment.r_st, self.alignment.r_ei),
+                         (other.alignment.r_st, other.alignment.r_ei)):
+        return True
+
+
 def find_all_overlapping_contigs(self, aligned_contigs):
     for other in aligned_contigs:
-        if self.ref_name != other.ref_name:
-            continue
-
-        if intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
-                             (other.alignment.r_st, other.alignment.r_ei)):
+        if contig_overlaps(self, other):
             yield other
 
 
@@ -241,8 +255,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
         # TODO: actually filter out if covered by multiple contigs
         # TODO: split contigs that have big gaps in them first, otherwise they will cover too much.
         aligned = [x for x in aligned if not \
-                   interval_contains((current.alignment.r_st, current.alignment.r_ei),
-                                     (x.alignment.r_st, x.alignment.r_ei))]
+                   contig_contains(current, x)]
 
         # Find overlap. If there isn't one - we are done with the current contig.
         overlapping_contig = find_overlapping_contig(current, aligned)
