@@ -391,6 +391,11 @@ class CigarHit:
                         )
 
 
+    @property
+    def epsilon(self):
+        return 1 / (self.query_length + self.ref_length + 100)
+
+
     def _slice(self, r_st, r_ei, q_st, q_ei) -> 'CigarHit':
         mapping = self.coordinate_mapping
 
@@ -426,7 +431,7 @@ class CigarHit:
 
         if float(query_cut_point).is_integer():
             # Disambiguate to the right.
-            query_cut_point += 0.1 / (self.r_st + self.r_ei + self.q_st + self.q_ei)
+            query_cut_point += self.epsilon
 
         return query_cut_point
 
