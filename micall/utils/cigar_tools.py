@@ -4,7 +4,7 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import Container, Tuple, Iterable, Optional
+from typing import Container, Tuple, Iterable, Optional, Set
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain, dropwhile
@@ -60,12 +60,12 @@ class CoordinateMapping:
                 self.query_to_op_d[query_index] = op_index
 
 
-    def reference_coordinates(self):
-        return self.ref_to_query_d.keys()
+    def reference_coordinates(self) -> Set[int]:
+        return set(self.ref_to_query_d.keys())
 
 
-    def query_coordinates(self):
-        return self.query_to_ref_d.keys()
+    def query_coordinates(self) -> Set[int]:
+        return set(self.query_to_ref_d.keys())
 
 
     def ref_to_query(self, index) -> Optional[int]:
