@@ -262,7 +262,7 @@ class Cigar(list):
     def coordinate_mapping(self) -> CoordinateMapping:
         """
         Convert a CIGAR string to coordinate mapping representing a reference-to-query and query-to-reference coordinate mappings.
-        TODO: describe the domains and holes.
+        TODO(vitalik): describe the domains and holes.
 
         :param cigar: a CIGAR string.
 
@@ -368,6 +368,32 @@ class CigarHit:
 
         return intervals_overlap((self.r_st, self.r_ei), (other.r_st, other.r_ei)) \
             or intervals_overlap((self.q_st, self.q_ei), (other.q_st, other.q_ei))
+
+
+    def gaps(self) -> Iterable['CigarHit']:
+        # TODO(vitalik): memoize whatever possible.
+
+        covered_coordinates = self.coordinate_mapping.reference_coordinates()
+        all_coordinates = range(self.r_st, self.r_ei + 1)
+
+        def make_gap(r_st, r_en):
+            r_ei = r_en - 1
+            left, midright = self.cut_reference(r_st - 0.5)
+            middle, right = midright.cut_reference(r_ei + 0.5)
+            return middle
+
+        gap_start = None
+        for coord in all_coordinates:
+            if coord in covered_coordinates:
+                if gap_start is not None:
+                    yield make_gap(gap_start, coord)
+                    gap_start = None
+            else:
+                if gap_start is None:
+                    gap_start = coord
+
+        if gap_start is not None:
+            yield make_gap(gap_start, coord)
 
 
     def __add__(self, other):

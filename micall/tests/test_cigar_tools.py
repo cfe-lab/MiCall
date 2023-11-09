@@ -323,6 +323,19 @@ def test_cigar_hit_rstrip_is_stringlike(hit):
             assert p(g(hit)) == h(p(hit))
 
 
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
+                                 if not isinstance(x[2], Exception)])
+def test_cigar_hit_gaps_no_m_or_i(hit):
+    gaps = list(hit.gaps())
+
+    if 'D' in str(hit.cigar):
+        assert len(gaps) > 0
+
+    for gap in gaps:
+        assert 'M' not in str(gap.cigar)
+        assert 'I' not in str(gap.cigar)
+
+
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [
     ('ACTG',   'ACTG',   '4M',     'ACTG',   'ACTG'),
     ('ACTG',   '',       '4D',     'ACTG',   '----'),
