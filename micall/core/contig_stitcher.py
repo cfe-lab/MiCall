@@ -22,6 +22,16 @@ class GenotypedContig(Contig):
     ref_seq: str
     matched_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
 
+    def align_to_reference(self):
+        aligner = Aligner(seq=self.ref_seq, preset='map-ont')
+        alignments = list(aligner.map(self.seq))
+        if not alignments:
+            return self
+
+        hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
+        single_cigar_hit = connect_cigar_hits(hits_array)
+        return AlignedContig(query=self, alignment=single_cigar_hit)
+
 
 class AlignedContig(GenotypedContig):
 
@@ -138,17 +148,6 @@ class FrankensteinContig(AlignedContig):
                                 ref_seq=left.ref_seq,
                                 matched_fraction=None)
         return AlignedContig(query, alignment)
-
-
-def align_to_reference(contig: GenotypedContig):
-    aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
-    alignments = list(aligner.map(contig.seq))
-    if not alignments:
-        return contig
-
-    hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
-    single_cigar_hit = connect_cigar_hits(hits_array)
-    return AlignedContig(query=contig, alignment=single_cigar_hit)
 
 
 def align_equal(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -280,7 +279,7 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
 
 
 def stitch_contigs(contigs: Iterable[GenotypedContig]):
-    maybe_aligned = list(map(align_to_reference, contigs))
+    maybe_aligned = list(map(GenotypedContig.align_to_reference, contigs))
 
     # Contigs that did not align do not need any more processing
     yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
