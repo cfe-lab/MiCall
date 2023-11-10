@@ -1,6 +1,6 @@
 
 import pytest
-from micall.core.contig_stitcher import stitch_contigs, GenotypedContig
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig
 from micall.tests.utils import MockAligner
 
 
@@ -303,3 +303,108 @@ def test_correct_processing_complex_nogaps():
 
     assert result[2].query == contigs[3]
     assert result[3].query == contigs[7]
+
+
+def test_stitching_when_one_contig_completely_covered_by_another():
+    # Scenario: If one contig is completely covered by another contig,
+    # the completely covered contig must be dropped.
+
+    ref_seq = 'A' * 100 + 'C' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 20 + 'C' * 20,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 50 + 'C' * 50,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    result = list(stitch_contigs(contigs))
+    assert len(result) == 1
+
+    # Test to ensure that the final result contains the contig 'b' and
+    # does not contain the completely covered contig 'a'.
+    assert result[0].query.name == 'b'
+    assert result[0].query == contigs[1]
+
+
+def test_stitching_contig_with_big_noncovered_gap():
+    # Scenario: One contig has a big gap, which is however not covered by anything else.
+
+    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq= 'A' * 50 + 'T' * 50, # mind the C gap
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    result = list(stitch_contigs(contigs))
+
+    assert sorted(map(lambda x: x.seq, contigs)) \
+        == sorted(map(lambda x: x.seq, result))
+
+
+def test_stitching_contig_with_big_noncovered_gap_2():
+    # Scenario: One contig has a big gap, which is however not covered by anything else.
+
+    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 50 + 'T' * 50, # mind the C gap
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='B',
+                        seq='G' * 50,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    result = list(stitch_contigs(contigs))
+
+    assert sorted(map(lambda x: x.seq, contigs)) \
+        == sorted(map(lambda x: x.seq, result))
+
+
+def test_stitching_contig_with_big_covered_gap():
+    # Scenario: If one contig has a big gap covered by another contig.
+
+    ref_seq = 'G' * 100 + 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='G' * 50 + 'A' * 50 + 'T' * 100, # mind the gap
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 50,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    contigs = [x.align_to_reference() for x in contigs]
+    assert len(list(contigs[0].gaps())) == 1
+    assert len(list(contigs[1].gaps())) == 0
+
+    result = list(split_contigs_with_gaps(contigs))
+    assert len(result) == 3
+    assert all(list(contig.gaps()) == [] for contig in result)

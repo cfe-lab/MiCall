@@ -5,6 +5,8 @@ from mappy import Aligner
 from functools import cached_property, reduce
 from itertools import accumulate, takewhile
 from gotoh import align_it
+from queue import LifoQueue
+from math import floor
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.consensus_aligner import CigarActions
@@ -80,6 +82,10 @@ class AlignedContig(GenotypedContig):
                                  (other.alignment.r_st, other.alignment.r_ei))
 
 
+    def gaps(self) -> Iterable[CigarHit]:
+        return self.alignment.gaps()
+
+
 class SyntheticContig(AlignedContig):
     def __init__(self, query: GenotypedContig, r_st: int, r_ei: int):
         alignment = CigarHit.from_default_alignment(r_st=r_st, r_ei=r_ei,
@@ -98,7 +104,7 @@ class FrankensteinContig(AlignedContig):
     Yet its self.seq string looks like a real contig.
     """
 
-    def __init__(self, parts: List[GenotypedContig]):
+    def __init__(self, parts: List[AlignedContig]):
         if len(parts) == 0:
             raise ValueError("Empty Frankenstei do not exist")
 
@@ -278,6 +284,49 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
     return contigs
 
 
+def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
+    def covered_by(gap, contig):
+        # TODO(vitalik): implement the more precise check
+        possible_reference_coordinates = set(range(gap.r_st, gap.r_ei + 1))
+        return possible_reference_coordinates \
+                .issubset(contig.alignment.coordinate_mapping.reference_coordinates())
+
+    def covered(contig, gap):
+        return any(covered_by(gap, other) for other in contigs
+                   if other != contig)
+
+    def gap_boundaries(gap):
+        midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2
+        left_slice, right_slice = contig.cut_reference(floor(midpoint) + 0.5)
+        left_closest_query = left_slice.alignment.coordinate_mapping.ref_to_closest_query(midpoint)
+        right_closest_query = right_slice.alignment.coordinate_mapping.ref_to_closest_query(midpoint)
+        left_closest_ref = left_slice.alignment.coordinate_mapping.query_to_ref(left_closest_query)
+        right_closest_ref = right_slice.alignment.coordinate_mapping.query_to_ref(right_closest_query)
+        return (left_closest_ref, right_closest_ref)
+
+    def try_split(contig):
+        for gap in contig.gaps():
+            if covered(contig, gap):
+                left_closest_ref, right_closest_ref = gap_boundaries(gap)
+                left_part, left_gap = contig.cut_reference(left_closest_ref + contig.alignment.epsilon)
+                right_gap, right_part = contig.cut_reference(right_closest_ref - contig.alignment.epsilon)
+
+                contigs.remove(contig)
+                contigs.append(left_part)
+                contigs.append(right_part)
+                process_queue.put(right_part)
+                return
+
+    process_queue = LifoQueue()
+    for contig in contigs: process_queue.put(contig)
+
+    while not process_queue.empty():
+        contig = process_queue.get()
+        try_split(contig)
+
+    return contigs
+
+
 def stitch_contigs(contigs: Iterable[GenotypedContig]):
     maybe_aligned = list(map(GenotypedContig.align_to_reference, contigs))
 
@@ -285,6 +334,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
     yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
     aligned = [x for x in maybe_aligned if isinstance(x, AlignedContig)]
 
+    aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
 
     yield from combine_overlaps(aligned)
