@@ -408,3 +408,33 @@ def test_stitching_contig_with_big_covered_gap():
     result = list(split_contigs_with_gaps(contigs))
     assert len(result) == 3
     assert all(list(contig.gaps()) == [] for contig in result)
+
+
+def test_stitching_contig_with_small_covered_gap():
+    # Scenario: If one contig has a small gap covered by another contig.
+
+    ref_seq = 'G' * 100 + 'A' * 9 + 'C' * 100 + 'T' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='G' * 100 + 'A' * 0 + 'C' * 100, # mind the gap
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 9 + 'C' * 100 + 'T' * 100,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.5,
+                        ),
+        ]
+
+    contigs = [x.align_to_reference() for x in contigs]
+    assert len(list(contigs[0].gaps())) == 1
+    assert len(list(contigs[1].gaps())) == 0
+
+    result = list(split_contigs_with_gaps(contigs))
+
+    assert sorted(map(lambda x: x.seq, contigs)) \
+        == sorted(map(lambda x: x.seq, result))

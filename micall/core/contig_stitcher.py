@@ -303,8 +303,14 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
         right_closest_ref = right_slice.alignment.coordinate_mapping.query_to_ref(right_closest_query)
         return (left_closest_ref, right_closest_ref)
 
+    def significant(gap):
+        return gap.ref_length > 100
+
     def try_split(contig):
         for gap in contig.gaps():
+            if not significant(gap):
+                continue
+
             if covered(contig, gap):
                 left_closest_ref, right_closest_ref = gap_boundaries(gap)
                 left_part, left_gap = contig.cut_reference(left_closest_ref + contig.alignment.epsilon)
