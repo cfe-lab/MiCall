@@ -150,7 +150,7 @@ def test_invalid_cigar_string():
 
 
 cigar_hit_ref_cut_cases = [
-    # # Trivial cases
+    # Trivial cases
     (CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4), 2.5,
      [CigarHit('2M', r_st=1, r_ei=2, q_st=1, q_ei=2),
       CigarHit('2M', r_st=3, r_ei=4, q_st=3, q_ei=4)]),
@@ -183,6 +183,34 @@ cigar_hit_ref_cut_cases = [
     (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 13.5 or 27/2,
      [CigarHit('9M9I4M', r_st=1, r_ei=13, q_st=1, q_ei=22),
       CigarHit('5M', r_st=14, r_ei=18, q_st=23, q_ei=27)]),
+
+    (CigarHit('5M6I', r_st=1, r_ei=5, q_st=1, q_ei=11), 3.5,
+     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
+      CigarHit('2M6I', r_st=4, r_ei=5, q_st=4, q_ei=11)]),
+
+    (CigarHit('6I5M', r_st=1, r_ei=5, q_st=1, q_ei=11), 3.5,
+     [CigarHit('6I3M', r_st=1, r_ei=3, q_st=1, q_ei=9),
+      CigarHit('2M', r_st=4, r_ei=5, q_st=10, q_ei=11)]),
+
+    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5), 3.5,
+     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
+      CigarHit('2M6D', r_st=4, r_ei=11, q_st=4, q_ei=5)]),
+
+    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5), 3.5,
+     [CigarHit('3D', r_st=1, r_ei=3, q_st=1, q_ei=0),
+      CigarHit('3D5M', r_st=4, r_ei=11, q_st=1, q_ei=5)]),
+
+    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5), 7.5,
+     [CigarHit('5M2D', r_st=1, r_ei=7, q_st=1, q_ei=5),
+      CigarHit('4D', r_st=8, r_ei=11, q_st=6, q_ei=5)]),
+
+    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5), 7.5,
+     [CigarHit('6D1M', r_st=1, r_ei=7, q_st=1, q_ei=1),
+      CigarHit('4M', r_st=8, r_ei=11, q_st=2, q_ei=5)]),
+
+    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5), 6.5,
+     [CigarHit('6D', r_st=1, r_ei=6, q_st=1, q_ei=0),
+      CigarHit('5M', r_st=7, r_ei=11, q_st=1, q_ei=5)]),
 
     # Ambigous cases
     (CigarHit('9M9D9M', r_st=1, r_ei=27, q_st=1, q_ei=18), 13.5 or 27/2,
@@ -279,6 +307,18 @@ def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
 
 
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
+                                            if not isinstance(x[2], Exception)
+                                            and not 'N' in str(x[0].cigar)])
+def test_cigar_hit_strip_combines_with_add(hit, cut_point):
+    left, right = hit.cut_reference(cut_point)
+
+    left = left.rstrip_query()
+    right = right.lstrip_query()
+
+    assert left + right == hit
+
+
+@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
                                             if not isinstance(x[2], Exception)])
 def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
     percentage = cut_point - floor(cut_point)
@@ -292,42 +332,6 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
             b, c = x.cut_reference(bc_cut - percentage)
 
             assert (a + b) + c == a + (b + c)
-
-
-@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
-def test_cigar_hit_lstrip_is_stringlike(hit):
-    all_chars = CIGAR_OP_MAPPING.keys()
-
-    actions_of = lambda s: (x for x in s if x in all_chars)
-
-    for r in range(len(all_chars) + 1):
-        for char_set in itertools.combinations(all_chars, r):
-            actions = set(map(parse_cigar_operation, char_set))
-            chars = ''.join(char_set)
-
-            p = lambda x: ''.join(actions_of(str(x.cigar)))
-            g = lambda x: x.lstrip(actions)
-            h = lambda x: x.lstrip(chars)
-
-            assert p(g(hit)) == h(p(hit))
-
-
-@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
-def test_cigar_hit_rstrip_is_stringlike(hit):
-    all_chars = CIGAR_OP_MAPPING.keys()
-
-    actions_of = lambda s: (x for x in s if x in all_chars)
-
-    for r in range(len(all_chars) + 1):
-        for char_set in itertools.combinations(all_chars, r):
-            actions = set(map(parse_cigar_operation, char_set))
-            chars = ''.join(char_set)
-
-            p = lambda x: ''.join(actions_of(str(x.cigar)))
-            g = lambda x: x.rstrip(actions)
-            h = lambda x: x.rstrip(chars)
-
-            assert p(g(hit)) == h(p(hit))
 
 
 @pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases

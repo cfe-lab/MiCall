@@ -268,16 +268,6 @@ class Cigar(list):
                      [start_inclusive:end_noninclusive])
 
 
-    def lstrip(self, actions: Container[CigarActions]) -> 'Cigar':
-        """ Return a copy of the Cigar with leading actions removed. """
-        return Cigar(dropwhile(lambda tupl: tupl[1] in actions, self))
-
-
-    def rstrip(self, actions: Container[CigarActions]) -> 'Cigar':
-        """ Return a copy of the Cigar with trailing actions removed. """
-        return Cigar(reversed(list(dropwhile(lambda tupl: tupl[1] in actions, reversed(self)))))
-
-
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
         """
@@ -507,30 +497,32 @@ class CigarHit:
         return left, right
 
 
-    def lstrip(self, actions: Container[CigarActions]) -> 'CigarHit':
-        """ Return a copy of the CigarHit with leading actions removed. """
+    def lstrip_query(self) -> 'CigarHit':
+        """ Return a copy of the CigarHit with leading (unmatched) query elements removed. """
 
-        cigar = self.cigar.lstrip(actions)
-        reference_delta = cigar.ref_length - self.cigar.ref_length
-        query_delta = cigar.query_length - self.cigar.query_length
-        return CigarHit(cigar,
-                        r_st=self.r_st,
-                        r_ei=self.r_ei + reference_delta,
-                        q_st=self.q_st,
-                        q_ei=self.q_ei + query_delta)
+        if self.query_length == 0:
+            return self
+
+        boundary_ref = self.coordinate_mapping.find_closest_ref(self.r_st - 1)
+        closest_query = self.coordinate_mapping.ref_to_closest_query(boundary_ref)
+        closest_ref = self.coordinate_mapping.query_to_ref(closest_query)
+
+        remainder, stripped = self.cut_reference(closest_ref - self.epsilon)
+        return stripped
 
 
-    def rstrip(self, actions: Container[CigarActions]) -> 'CigarHit':
-        """ Return a copy of the CigarHit with trailing actions removed. """
+    def rstrip_query(self) -> 'CigarHit':
+        """ Return a copy of the CigarHit with trailing (unmatched) query elements removed. """
 
-        cigar = self.cigar.rstrip(actions)
-        reference_delta = cigar.ref_length - self.cigar.ref_length
-        query_delta = cigar.query_length - self.cigar.query_length
-        return CigarHit(cigar,
-                        r_st=self.r_st,
-                        r_ei=self.r_ei + reference_delta,
-                        q_st=self.q_st,
-                        q_ei=self.q_ei + query_delta)
+        if self.query_length == 0:
+            return self
+
+        boundary_ref = self.coordinate_mapping.find_closest_ref(self.r_ei + 1)
+        closest_query = self.coordinate_mapping.ref_to_closest_query(boundary_ref)
+        closest_ref = self.coordinate_mapping.query_to_ref(closest_query)
+
+        stripped, remainder = self.cut_reference(closest_ref + self.epsilon)
+        return stripped
 
 
     @cached_property
