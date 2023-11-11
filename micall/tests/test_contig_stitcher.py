@@ -4,12 +4,12 @@ from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs,
 from micall.tests.utils import MockAligner
 
 
-@pytest.fixture(autouse=True)
-def mock_mappy_aligner(monkeypatch):
+@pytest.fixture()
+def exact_aligner(monkeypatch):
     monkeypatch.setattr('micall.core.contig_stitcher.Aligner', MockAligner)
 
 
-def test_identical_stitching_of_one_contig():
+def test_identical_stitching_of_one_contig(exact_aligner):
     # Scenario: When stitching one contig, it remains the same.
 
     contigs = [
@@ -26,7 +26,7 @@ def test_identical_stitching_of_one_contig():
         == sorted(map(lambda x: x.seq, result))
 
 
-def test_separate_stitching_of_non_overlapping_contigs():
+def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
     # Scenario: When stitching multiple non-overlapping contigs, the order doesn't matter.
 
     ref_seq = 'A' * 100
@@ -70,7 +70,7 @@ def test_separate_stitching_of_non_overlapping_contigs():
         == sorted(map(lambda x: x.seq, result))
 
 
-def test_correct_stitching_of_two_partially_overlapping_contigs():
+def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
     # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence.
 
     ref_seq = 'A' * 100 + 'C' * 100
@@ -100,7 +100,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs():
     assert result.query.name == 'a+overlap(a,b)+b'
 
 
-def test_correct_processing_of_two_overlapping_and_one_separate_contig():
+def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner):
     # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
@@ -136,7 +136,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig():
     assert result[1].query == contigs[2]
 
 
-def test_stitching_of_all_overlapping_contigs_into_one_sequence():
+def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
     # Scenario: All contigs have some overlapping parts, resulting in one continuous sequence after stitching.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
@@ -172,7 +172,7 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence():
     assert result.query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
 
 
-def test_stitching_with_empty_contigs():
+def test_stitching_with_empty_contigs(exact_aligner):
     # Scenario: The function is able to handle and ignore empty contigs.
 
     ref_seq = 'A' * 100
@@ -197,7 +197,7 @@ def test_stitching_with_empty_contigs():
         == sorted(map(lambda x: x.seq, result))
 
 
-def test_stitching_of_identical_contigs():
+def test_stitching_of_identical_contigs(exact_aligner):
     # Scenario: The function correctly handles and avoids duplication when identical contigs are stitched together.
 
     ref_seq = 'A' * 100
@@ -215,7 +215,7 @@ def test_stitching_of_identical_contigs():
     assert result[0].query == contigs[2]
 
 
-def test_stitching_of_zero_contigs():
+def test_stitching_of_zero_contigs(exact_aligner):
     # Scenario: The function does not crash if no contigs given.
 
     contigs = []
@@ -223,7 +223,7 @@ def test_stitching_of_zero_contigs():
     assert result == contigs
 
 
-def test_correct_stitching_of_two_partially_overlapping_different_organism_contigs():
+def test_correct_stitching_of_two_partially_overlapping_different_organism_contigs(exact_aligner):
     # Scenario: Two partially overlapping contigs, but which come from different organism,
     # are not stitched into a single sequence.
 
@@ -251,7 +251,7 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
         == sorted(map(lambda x: x.seq, result))
 
 
-def test_correct_processing_complex_nogaps():
+def test_correct_processing_complex_nogaps(exact_aligner):
     # Scenario: There are two reference organisms.
     # Each with 4 contigs.
     # For each, three overlapping contigs are stitched together, the non-overlapping is kept separate.
@@ -305,7 +305,7 @@ def test_correct_processing_complex_nogaps():
     assert result[3].query == contigs[7]
 
 
-def test_stitching_when_one_contig_completely_covered_by_another():
+def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
     # Scenario: If one contig is completely covered by another contig,
     # the completely covered contig must be dropped.
 
@@ -335,7 +335,7 @@ def test_stitching_when_one_contig_completely_covered_by_another():
     assert result[0].query == contigs[1]
 
 
-def test_stitching_contig_with_big_noncovered_gap():
+def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
     # Scenario: One contig has a big gap, which is however not covered by anything else.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
@@ -355,7 +355,7 @@ def test_stitching_contig_with_big_noncovered_gap():
         == sorted(map(lambda x: x.seq, result))
 
 
-def test_stitching_contig_with_big_noncovered_gap_2():
+def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
     # Scenario: One contig has a big gap, which is however not covered by anything else.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
@@ -381,7 +381,7 @@ def test_stitching_contig_with_big_noncovered_gap_2():
         == sorted(map(lambda x: x.seq, result))
 
 
-def test_stitching_contig_with_big_covered_gap():
+def test_stitching_contig_with_big_covered_gap(exact_aligner):
     # Scenario: If one contig has a big gap covered by another contig.
 
     ref_seq = 'G' * 100 + 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
@@ -410,7 +410,7 @@ def test_stitching_contig_with_big_covered_gap():
     assert all(list(contig.gaps()) == [] for contig in result)
 
 
-def test_stitching_contig_with_small_covered_gap():
+def test_stitching_contig_with_small_covered_gap(exact_aligner):
     # Scenario: If one contig has a small gap covered by another contig.
 
     ref_seq = 'G' * 100 + 'A' * 9 + 'C' * 100 + 'T' * 100
