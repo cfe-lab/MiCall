@@ -60,6 +60,16 @@ class AlignedContig(GenotypedContig):
                 AlignedContig(self.query, alignment_right))
 
 
+    def lstrip_query(self) -> 'AlignedContig':
+        alignment = self.alignment.lstrip_query()
+        return AlignedContig(self.query, alignment)
+
+
+    def rstrip_query(self) -> 'AlignedContig':
+        alignment = self.alignment.rstrip_query()
+        return AlignedContig(self.query, alignment)
+
+
     def overlaps(self, other) -> bool:
         def intervals_overlap(x, y):
             return x[0] <= y[1] and x[1] >= y[0]
@@ -285,38 +295,33 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
 
 
 def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
-    def covered_by(gap, contig):
+    def covered_by(gap, other):
         # TODO(vitalik): implement the more precise check
         return gap.coordinate_mapping.all_reference_coordinates() \
-                .issubset(contig.alignment.coordinate_mapping.mapped_reference_coordinates())
+                .issubset(other.alignment.coordinate_mapping.mapped_reference_coordinates())
 
     def covered(contig, gap):
         return any(covered_by(gap, other) for other in contigs
                    if other != contig)
 
-    def gap_boundaries(gap):
-        midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2
-        left_slice, right_slice = contig.cut_reference(floor(midpoint) + 0.5)
-        left_midpoint_ref = left_slice.alignment.coordinate_mapping.find_closest_ref(midpoint)
-        left_closest_query = left_slice.alignment.coordinate_mapping.ref_to_closest_query(left_midpoint_ref)
-        right_midpoint_ref = right_slice.alignment.coordinate_mapping.find_closest_ref(midpoint)
-        right_closest_query = right_slice.alignment.coordinate_mapping.ref_to_closest_query(right_midpoint_ref)
-        left_closest_ref = left_slice.alignment.coordinate_mapping.query_to_ref(left_closest_query)
-        right_closest_ref = right_slice.alignment.coordinate_mapping.query_to_ref(right_closest_query)
-        return (left_closest_ref, right_closest_ref)
-
     def significant(gap):
-        return gap.ref_length > 100
+        return gap.ref_length > 5
 
     def try_split(contig):
         for gap in contig.gaps():
             if not significant(gap):
+                # Really we do not want to split on every little deletion
+                # because that would mean that we would need to stitch
+                # overlaps around them.
+                # And we are likely to lose quality with every stitching operation.
+                # By skipping we assert that this gap is aligner's fault.
                 continue
 
             if covered(contig, gap):
-                left_closest_ref, right_closest_ref = gap_boundaries(gap)
-                left_part, left_gap = contig.cut_reference(left_closest_ref + contig.alignment.epsilon)
-                right_gap, right_part = contig.cut_reference(right_closest_ref - contig.alignment.epsilon)
+                midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + contig.alignment.epsilon
+                left_part, right_part = contig.cut_reference(midpoint)
+                left_part = left_part.rstrip_query()
+                right_part = right_part.lstrip_query()
 
                 contigs.remove(contig)
                 contigs.append(left_part)
