@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from math import floor, ceil
+from contextlib import contextmanager
+import random
 
 from micall.utils.consensus_aligner import CigarActions
 
@@ -54,3 +56,13 @@ class MockAligner:
                     max_matches -= 1
                     if max_matches < 1:
                         return
+
+
+@contextmanager
+def fixed_random_seed(seed):
+    original_state = random.getstate()
+    random.seed(seed)
+    try:
+        yield
+    finally:
+        random.setstate(original_state)
