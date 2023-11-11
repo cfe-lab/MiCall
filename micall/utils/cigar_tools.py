@@ -60,12 +60,20 @@ class CoordinateMapping:
                 self.query_to_op_d[query_index] = op_index
 
 
-    def reference_coordinates(self) -> Set[int]:
+    def mapped_reference_coordinates(self) -> Set[int]:
         return set(self.ref_to_query_d.keys())
 
 
-    def query_coordinates(self) -> Set[int]:
+    def all_reference_coordinates(self) -> Set[int]:
+        return set(self.ref_to_op_d.keys())
+
+
+    def mapped_query_coordinates(self) -> Set[int]:
         return set(self.query_to_ref_d.keys())
+
+
+    def all_query_coordinates(self) -> Set[int]:
+        return set(self.query_to_op_d.keys())
 
 
     def ref_to_query(self, index) -> Optional[int]:
@@ -373,8 +381,8 @@ class CigarHit:
     def gaps(self) -> Iterable['CigarHit']:
         # TODO(vitalik): memoize whatever possible.
 
-        covered_coordinates = self.coordinate_mapping.reference_coordinates()
-        all_coordinates = range(self.r_st, self.r_ei + 1)
+        covered_coordinates = self.coordinate_mapping.mapped_reference_coordinates()
+        all_coordinates = self.coordinate_mapping.all_reference_coordinates()
 
         def make_gap(r_st, r_en):
             r_ei = r_en - 1

@@ -287,9 +287,8 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
 def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
     def covered_by(gap, contig):
         # TODO(vitalik): implement the more precise check
-        possible_reference_coordinates = set(range(gap.r_st, gap.r_ei + 1))
-        return possible_reference_coordinates \
-                .issubset(contig.alignment.coordinate_mapping.reference_coordinates())
+        return gap.coordinate_mapping.all_reference_coordinates() \
+                .issubset(contig.alignment.coordinate_mapping.mapped_reference_coordinates())
 
     def covered(contig, gap):
         return any(covered_by(gap, other) for other in contigs
