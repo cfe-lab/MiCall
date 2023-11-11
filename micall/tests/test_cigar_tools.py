@@ -51,8 +51,8 @@ cigar_mapping_cases: List[Tuple[Cigar, 'mapping', 'closest_mapping']] = [
                {0: 0, 1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8: 5}),
 
     # Edge cases
-    ('', {}, ValueError()),
-    ('12I', {}, ValueError()),
+    ('', {}, {}),
+    ('12I', {}, {}),
     ('12D', {}, ValueError()),
 ]
 
@@ -82,14 +82,16 @@ def test_cigar_to_coordinate_bijection_property(cigar_str):
 def test_cigar_to_closest_coordinate_mapping(cigar_str, expected_closest_mapping):
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
-    if isinstance(expected_closest_mapping, Exception):
-        with pytest.raises(type(expected_closest_mapping)):
-            mapping.ref_to_closest_query(0)
-
-    else:
+    def test():
         fullrange = {i: mapping.ref_to_closest_query(i)
                      for i in mapping.all_reference_coordinates()}
         assert expected_closest_mapping == fullrange
+
+    if isinstance(expected_closest_mapping, Exception):
+        with pytest.raises(type(expected_closest_mapping)):
+            test()
+    else:
+        test()
 
 
 @pytest.mark.parametrize("cigar_str, expected_mapping", [(x[0], x[1]) for x in cigar_mapping_cases])
@@ -113,16 +115,17 @@ def test_cigar_hit_to_coordinate_closest_mapping(cigar_str, expected_closest_map
     hit = CigarHit(cigar, r_st=5, r_ei=(5 + cigar.ref_length - 1), q_st=7, q_ei=(7 + cigar.query_length - 1))
     mapping = hit.coordinate_mapping
 
-    if isinstance(expected_closest_mapping, Exception):
-        with pytest.raises(type(expected_closest_mapping)):
-            mapping.ref_to_closest_query(0)
-
-    else:
+    def test(expected):
         # Coordinates are translated by q_st and r_st.
-        expected_closest_mapping = {k + hit.r_st: v + hit.q_st for (k, v) in expected_closest_mapping.items()}
         fullrange = {i: mapping.ref_to_closest_query(i)
                      for i in mapping.all_reference_coordinates()}
-        assert expected_closest_mapping == fullrange
+        assert expected == fullrange
+
+    if isinstance(expected_closest_mapping, Exception):
+        with pytest.raises(type(expected_closest_mapping)):
+            test(expected_closest_mapping)
+    else:
+        test({k + hit.r_st: v + hit.q_st for (k, v) in expected_closest_mapping.items()})
 
 
 def test_invalid_operation_in_cigar_string():

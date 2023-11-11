@@ -47,17 +47,16 @@ class CoordinateMapping:
     def extend(self,
                ref_index: Optional[int],
                query_index: Optional[int],
-               op_index: Optional[int]):
+               op_index: int):
 
         if ref_index is not None and query_index is not None:
             self.ref_to_query_d[ref_index] = query_index
             self.query_to_ref_d[query_index] = ref_index
 
-        if op_index is not None:
-            if ref_index is not None:
-                self.ref_to_op_d[ref_index] = op_index
-            if query_index is not None:
-                self.query_to_op_d[query_index] = op_index
+        if ref_index is not None:
+            self.ref_to_op_d[ref_index] = op_index
+        if query_index is not None:
+            self.query_to_op_d[query_index] = op_index
 
 
     def mapped_reference_coordinates(self) -> Set[int]:
@@ -84,19 +83,6 @@ class CoordinateMapping:
         return self.query_to_ref_d.get(index, None)
 
 
-    @staticmethod
-    def _find_closest_key(mapping: dict, index: int) -> int:
-        return min(mapping, key=lambda k: abs(mapping[k] - index))
-
-
-    def ref_to_closest_query(self, index) -> int:
-        return CoordinateMapping._find_closest_key(self.query_to_ref_d, index)
-
-
-    def query_to_closest_ref(self, index) -> int:
-        return CoordinateMapping._find_closest_key(self.ref_to_query_d, index)
-
-
     def ref_to_leftsup_query(self, index) -> Optional[int]:
         left_neihbourhood = (k for (k, v) in self.query_to_ref_d.items() if v <= index)
         return max(left_neihbourhood, default=None)
@@ -105,6 +91,32 @@ class CoordinateMapping:
     def ref_to_rightinf_query(self, index) -> Optional[int]:
         right_neihbourhood = (k for (k, v) in self.query_to_ref_d.items() if index <= v)
         return min(right_neihbourhood, default=None)
+
+
+    @staticmethod
+    def _find_closest(collection, value) -> int:
+        return min(collection, key=lambda x: abs(x - value))
+
+
+    @staticmethod
+    def _find_closest_key(mapping: dict, index: int) -> int:
+        return min(mapping, key=lambda k: abs(mapping[k] - index))
+
+
+    def find_closest_ref(self, index) -> int:
+        return CoordinateMapping._find_closest(self.all_reference_coordinates(), index)
+
+
+    def find_closest_query(self, index) -> int:
+        return CoordinateMapping._find_closest(self.all_query_coordinates(), index)
+
+
+    def ref_to_closest_query(self, index) -> int:
+        return CoordinateMapping._find_closest_key(self.query_to_op_d, self.ref_to_op_d[index])
+
+
+    def query_to_closest_ref(self, index) -> int:
+        return CoordinateMapping._find_closest_key(self.ref_to_op_d, self.query_to_op_d[index])
 
 
     def ref_or_query_to_op(self, ref_index: int, query_index: int, conflict):

@@ -297,8 +297,10 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
     def gap_boundaries(gap):
         midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2
         left_slice, right_slice = contig.cut_reference(floor(midpoint) + 0.5)
-        left_closest_query = left_slice.alignment.coordinate_mapping.ref_to_closest_query(midpoint)
-        right_closest_query = right_slice.alignment.coordinate_mapping.ref_to_closest_query(midpoint)
+        left_midpoint_ref = left_slice.alignment.coordinate_mapping.find_closest_ref(midpoint)
+        left_closest_query = left_slice.alignment.coordinate_mapping.ref_to_closest_query(left_midpoint_ref)
+        right_midpoint_ref = right_slice.alignment.coordinate_mapping.find_closest_ref(midpoint)
+        right_closest_query = right_slice.alignment.coordinate_mapping.ref_to_closest_query(right_midpoint_ref)
         left_closest_ref = left_slice.alignment.coordinate_mapping.query_to_ref(left_closest_query)
         right_closest_ref = right_slice.alignment.coordinate_mapping.query_to_ref(right_closest_query)
         return (left_closest_ref, right_closest_ref)
