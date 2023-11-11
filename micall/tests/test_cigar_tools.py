@@ -52,6 +52,10 @@ cigar_mapping_cases: List[Tuple[Cigar, 'mapping', 'closest_mapping']] = [
 
     # Edge cases
     ('', {}, {}),
+    ('3I3D',   {},
+               {0: 2, 1: 2, 2: 2}),
+    ('3D3I',   {},
+               {0: 0, 1: 0, 2: 0}),
     ('12I', {}, {}),
     ('12D', {}, ValueError()),
 ]
