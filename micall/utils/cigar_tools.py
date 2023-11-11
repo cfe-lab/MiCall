@@ -8,6 +8,7 @@ from typing import Container, Tuple, Iterable, Optional, Set
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain, dropwhile
+from fractions import Fraction
 
 from micall.utils.consensus_aligner import CigarActions
 
@@ -429,7 +430,7 @@ class CigarHit:
 
     @property
     def epsilon(self):
-        return 1 / (self.query_length + self.ref_length + 100)
+        return Fraction(1, self.query_length + self.ref_length + 100)
 
 
     def _slice(self, r_st, r_ei, q_st, q_ei) -> 'CigarHit':
@@ -457,9 +458,9 @@ class CigarHit:
         right_query_cut_point = mapping.ref_to_rightinf_query(ceil(cut_point))
 
         if left_query_cut_point is None:
-            return self.q_st - 0.1
+            return self.q_st - 0.5
         if right_query_cut_point is None:
-            return self.q_ei + 0.1
+            return self.q_ei + 0.5
 
         lerp = lambda start, end, t: (1 - t) * start + t * end
         query_cut_point = lerp(left_query_cut_point, right_query_cut_point,
@@ -479,7 +480,8 @@ class CigarHit:
         and that no element is lost.
         """
 
-        if float(cut_point).is_integer():
+        cut_point = Fraction(cut_point)
+        if cut_point.denominator == 1:
             raise ValueError("Cut accepts fractions, not integers")
 
         if self.ref_length == 0 or \
