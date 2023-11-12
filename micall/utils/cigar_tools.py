@@ -4,7 +4,7 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import Container, Tuple, Iterable, Optional, Set
+from typing import Container, Tuple, Iterable, Optional, Set, Dict
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain, dropwhile
@@ -37,12 +37,59 @@ def cigar_operation_to_str(op: CigarActions) -> str:
     return [k for (k, v) in CIGAR_OP_MAPPING.items() if v == op][0]
 
 
+class PartialDict(dict):
+    def __init__(self):
+        super().__init__()
+        self.domain = set()   # superset of self.keys()
+        self.codomain = set() # superset of self.values()
+
+
+    def extend(self, key: Optional[int], value: Optional[int]):
+        if key is not None and value is not None:
+            self[key] = value
+
+        if key is not None:
+            self.domain.add(key)
+
+        if value is not None:
+            self.codomain.add(value)
+
+
+    def closest_key(self, index) -> int:
+        return min(self.keys(), key=lambda x: abs(x - index))
+
+
+    def left_supremum(self, value) -> Optional[int]:
+        left_neihbourhood = (k for k in self.keys() if self[k] <= value)
+        return max(left_neihbourhood, default=None)
+
+
+    def right_infimum(self, value) -> Optional[int]:
+        right_neihbourhood = (k for k in self.keys() if value <= self[k])
+        return min(right_neihbourhood, default=None)
+
+
+    def translate(self, domain_delta: int, codomain_delta: int) -> 'PartialDict':
+        ret = PartialDict()
+
+        for k, v in self.items():
+            ret.extend(k + domain_delta, v + codomain_delta)
+
+        for k in self.domain:
+            ret.extend(k + domain_delta, None)
+
+        for v in self.codomain:
+            ret.extend(None, v + codomain_delta)
+
+        return ret
+
+
 class CoordinateMapping:
     def __init__(self):
-        self.query_to_ref_d = {}
-        self.ref_to_query_d = {}
-        self.ref_to_op_d = {}
-        self.query_to_op_d = {}
+        self.query_to_ref = PartialDict()
+        self.ref_to_query = PartialDict()
+        self.ref_to_op = PartialDict()
+        self.query_to_op = PartialDict()
 
 
     def extend(self,
@@ -50,53 +97,10 @@ class CoordinateMapping:
                query_index: Optional[int],
                op_index: int):
 
-        if ref_index is not None and query_index is not None:
-            self.ref_to_query_d[ref_index] = query_index
-            self.query_to_ref_d[query_index] = ref_index
-
-        if ref_index is not None:
-            self.ref_to_op_d[ref_index] = op_index
-        if query_index is not None:
-            self.query_to_op_d[query_index] = op_index
-
-
-    def mapped_reference_coordinates(self) -> Set[int]:
-        return set(self.ref_to_query_d.keys())
-
-
-    def all_reference_coordinates(self) -> Set[int]:
-        return set(self.ref_to_op_d.keys())
-
-
-    def mapped_query_coordinates(self) -> Set[int]:
-        return set(self.query_to_ref_d.keys())
-
-
-    def all_query_coordinates(self) -> Set[int]:
-        return set(self.query_to_op_d.keys())
-
-
-    def ref_to_query(self, index) -> Optional[int]:
-        return self.ref_to_query_d.get(index, None)
-
-
-    def query_to_ref(self, index) -> Optional[int]:
-        return self.query_to_ref_d.get(index, None)
-
-
-    def ref_to_leftsup_query(self, index) -> Optional[int]:
-        left_neihbourhood = (k for (k, v) in self.query_to_ref_d.items() if v <= index)
-        return max(left_neihbourhood, default=None)
-
-
-    def ref_to_rightinf_query(self, index) -> Optional[int]:
-        right_neihbourhood = (k for (k, v) in self.query_to_ref_d.items() if index <= v)
-        return min(right_neihbourhood, default=None)
-
-
-    @staticmethod
-    def _find_closest(collection, value) -> int:
-        return min(collection, key=lambda x: abs(x - value))
+        self.ref_to_query.extend(ref_index, query_index)
+        self.query_to_ref.extend(query_index, ref_index)
+        self.ref_to_op.extend(ref_index, op_index)
+        self.query_to_op.extend(query_index, op_index)
 
 
     @staticmethod
@@ -104,25 +108,17 @@ class CoordinateMapping:
         return min(mapping, key=lambda k: abs(mapping[k] - index))
 
 
-    def find_closest_ref(self, index) -> int:
-        return CoordinateMapping._find_closest(self.all_reference_coordinates(), index)
-
-
-    def find_closest_query(self, index) -> int:
-        return CoordinateMapping._find_closest(self.all_query_coordinates(), index)
-
-
     def ref_to_closest_query(self, index) -> int:
-        return CoordinateMapping._find_closest_key(self.query_to_op_d, self.ref_to_op_d[index])
+        return CoordinateMapping._find_closest_key(self.query_to_op, self.ref_to_op[index])
 
 
     def query_to_closest_ref(self, index) -> int:
-        return CoordinateMapping._find_closest_key(self.ref_to_op_d, self.query_to_op_d[index])
+        return CoordinateMapping._find_closest_key(self.ref_to_op, self.query_to_op[index])
 
 
     def ref_or_query_to_op(self, ref_index: int, query_index: int, conflict):
-        r = self.ref_to_op_d.get(ref_index, None)
-        q = self.query_to_op_d.get(query_index, None)
+        r = self.ref_to_op.get(ref_index, None)
+        q = self.query_to_op.get(query_index, None)
         if r is not None and q is not None:
             return conflict(r, q)
 
@@ -132,10 +128,10 @@ class CoordinateMapping:
     def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
         ret = CoordinateMapping()
 
-        ret.ref_to_query_d = {k + reference_delta: v + query_delta for (k, v) in self.ref_to_query_d.items()}
-        ret.query_to_ref_d = {k + query_delta: v + reference_delta for (k, v) in self.query_to_ref_d.items()}
-        ret.ref_to_op_d = {k + reference_delta: v for (k, v) in self.ref_to_op_d.items()}
-        ret.query_to_op_d = {k + query_delta: v for (k, v) in self.query_to_op_d.items()}
+        ret.ref_to_query = self.ref_to_query.translate(reference_delta, query_delta)
+        ret.query_to_ref = self.query_to_ref.translate(query_delta, reference_delta)
+        ret.ref_to_op = self.ref_to_op.translate(reference_delta, 0)
+        ret.query_to_op = self.query_to_op.translate(query_delta, 0)
 
         return ret
 
@@ -384,8 +380,8 @@ class CigarHit:
     def gaps(self) -> Iterable['CigarHit']:
         # TODO(vitalik): memoize whatever possible.
 
-        covered_coordinates = self.coordinate_mapping.mapped_reference_coordinates()
-        all_coordinates = self.coordinate_mapping.all_reference_coordinates()
+        covered_coordinates = self.coordinate_mapping.ref_to_query.keys()
+        all_coordinates = self.coordinate_mapping.ref_to_query.domain
 
         def make_gap(r_st, r_en):
             r_ei = r_en - 1
@@ -454,8 +450,9 @@ class CigarHit:
     def _ref_cut_to_query_cut(self, cut_point: float):
         mapping = self.coordinate_mapping
 
-        left_query_cut_point = mapping.ref_to_leftsup_query(floor(cut_point))
-        right_query_cut_point = mapping.ref_to_rightinf_query(ceil(cut_point))
+        # TODO(vitalik): fix this to use ref_to_query
+        left_query_cut_point = mapping.query_to_ref.left_supremum(floor(cut_point))
+        right_query_cut_point = mapping.query_to_ref.right_infimum(ceil(cut_point))
 
         if left_query_cut_point is None:
             return self.q_st - 0.5
@@ -505,10 +502,7 @@ class CigarHit:
         if self.query_length == 0:
             return self
 
-        boundary_ref = self.coordinate_mapping.find_closest_ref(self.r_st - 1)
-        closest_query = self.coordinate_mapping.ref_to_closest_query(boundary_ref)
-        closest_ref = self.coordinate_mapping.query_to_ref(closest_query)
-
+        closest_ref = self.coordinate_mapping.ref_to_query.closest_key(self.r_st - 1)
         remainder, stripped = self.cut_reference(closest_ref - self.epsilon)
         return stripped
 
@@ -519,10 +513,7 @@ class CigarHit:
         if self.query_length == 0:
             return self
 
-        boundary_ref = self.coordinate_mapping.find_closest_ref(self.r_ei + 1)
-        closest_query = self.coordinate_mapping.ref_to_closest_query(boundary_ref)
-        closest_ref = self.coordinate_mapping.query_to_ref(closest_query)
-
+        closest_ref = self.coordinate_mapping.ref_to_query.closest_key(self.r_ei + 1)
         stripped, remainder = self.cut_reference(closest_ref + self.epsilon)
         return stripped
 

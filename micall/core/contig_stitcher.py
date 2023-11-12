@@ -297,8 +297,8 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
 def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
     def covered_by(gap, other):
         # Check if any 1 reference coordinate in gap is mapped in other.
-        gap_coords = gap.coordinate_mapping.all_reference_coordinates()
-        cover_coords = other.alignment.coordinate_mapping.mapped_reference_coordinates()
+        gap_coords = gap.coordinate_mapping.ref_to_query.domain
+        cover_coords = set(other.alignment.coordinate_mapping.ref_to_query.keys())
         return not gap_coords.isdisjoint(cover_coords)
 
     def covered(contig, gap):

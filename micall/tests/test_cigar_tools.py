@@ -65,9 +65,9 @@ cigar_mapping_cases: List[Tuple[Cigar, 'mapping', 'closest_mapping']] = [
 def test_cigar_to_coordinate_mapping(cigar_str, expected_mapping):
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
-    assert expected_mapping == mapping.ref_to_query_d
-    assert expected_mapping == {i: mapping.ref_to_query(i)
-                                for i in mapping.mapped_reference_coordinates()}
+    assert expected_mapping == mapping.ref_to_query
+    assert expected_mapping == {i: mapping.ref_to_query[i]
+                                for i in mapping.ref_to_query.keys()}
 
 
 @pytest.mark.parametrize("cigar_str", [x[0] for x in cigar_mapping_cases])
@@ -76,10 +76,10 @@ def test_cigar_to_coordinate_bijection_property(cigar_str):
 
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
-    assert mapping.query_to_ref_d == inverse(mapping.ref_to_query_d)
-    assert mapping.ref_to_query_d == inverse(mapping.query_to_ref_d)
-    assert mapping.ref_to_query_d == inverse(inverse(mapping.ref_to_query_d))
-    assert mapping.query_to_ref_d == inverse(inverse(mapping.query_to_ref_d))
+    assert mapping.query_to_ref == inverse(mapping.ref_to_query)
+    assert mapping.ref_to_query == inverse(mapping.query_to_ref)
+    assert mapping.ref_to_query == inverse(inverse(mapping.ref_to_query))
+    assert mapping.query_to_ref == inverse(inverse(mapping.query_to_ref))
 
 
 @pytest.mark.parametrize("cigar_str, expected_closest_mapping", [(x[0], x[2]) for x in cigar_mapping_cases])
@@ -88,7 +88,7 @@ def test_cigar_to_closest_coordinate_mapping(cigar_str, expected_closest_mapping
 
     def test():
         fullrange = {i: mapping.ref_to_closest_query(i)
-                     for i in mapping.all_reference_coordinates()}
+                     for i in mapping.ref_to_query.domain}
         assert expected_closest_mapping == fullrange
 
     if isinstance(expected_closest_mapping, Exception):
@@ -106,11 +106,11 @@ def test_cigar_hit_to_coordinate_mapping(cigar_str, expected_mapping):
 
     # Coordinates are translated by q_st and r_st.
     expected_mapping = {k + hit.r_st: v + hit.q_st for (k, v) in expected_mapping.items()}
-    assert mapping.ref_to_query(0) == None
-    assert mapping.query_to_ref(0) == None
+    assert mapping.ref_to_query.get(0, None) == None
+    assert mapping.query_to_ref.get(0, None) == None
     assert expected_mapping \
-        == {i: mapping.ref_to_query(i)
-            for i in mapping.mapped_reference_coordinates()}
+        == {i: mapping.ref_to_query[i]
+            for i in mapping.ref_to_query.keys()}
 
 
 @pytest.mark.parametrize("cigar_str, expected_closest_mapping", [(x[0], x[2]) for x in cigar_mapping_cases])
@@ -122,7 +122,7 @@ def test_cigar_hit_to_coordinate_closest_mapping(cigar_str, expected_closest_map
     def test(expected):
         # Coordinates are translated by q_st and r_st.
         fullrange = {i: mapping.ref_to_closest_query(i)
-                     for i in mapping.all_reference_coordinates()}
+                     for i in mapping.ref_to_query.domain}
         assert expected == fullrange
 
     if isinstance(expected_closest_mapping, Exception):
