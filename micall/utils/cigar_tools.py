@@ -6,38 +6,14 @@ from math import ceil, floor
 import re
 from typing import Container, Tuple, Iterable, Optional, Set, Dict
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cached_property, reduce
 from itertools import chain, dropwhile
 from fractions import Fraction
 
 from micall.utils.consensus_aligner import CigarActions
 
 
-CIGAR_OP_MAPPING = {
-    'M': CigarActions.MATCH,
-    'I': CigarActions.INSERT,
-    'D': CigarActions.DELETE,
-    'N': CigarActions.SKIPPED,
-    'S': CigarActions.SOFT_CLIPPED,
-    'H': CigarActions.HARD_CLIPPED,
-    'P': CigarActions.PADDING,
-    '=': CigarActions.SEQ_MATCH,
-    'X': CigarActions.MISMATCH,
-}
-
-
-def parse_cigar_operation(operation: str) -> CigarActions:
-    if operation in CIGAR_OP_MAPPING:
-        return CIGAR_OP_MAPPING[operation]
-    else:
-        raise ValueError(f"Unexpected CIGAR action: {operation}.")
-
-
-def cigar_operation_to_str(op: CigarActions) -> str:
-    return [k for (k, v) in CIGAR_OP_MAPPING.items() if v == op][0]
-
-
-class PartialDict(dict):
+class IntDict(dict):
     def __init__(self):
         super().__init__()
         self.domain = set()   # superset of self.keys()
@@ -67,8 +43,8 @@ class PartialDict(dict):
         return min((v for (k, v) in self.items() if k >= index), default=None)
 
 
-    def translate(self, domain_delta: int, codomain_delta: int) -> 'PartialDict':
-        ret = PartialDict()
+    def translate(self, domain_delta: int, codomain_delta: int) -> 'IntDict':
+        ret = IntDict()
 
         for k, v in self.items():
             ret.extend(k + domain_delta, v + codomain_delta)
@@ -85,10 +61,10 @@ class PartialDict(dict):
 @dataclass
 class CoordinateMapping:
     def __init__(self):
-        self.query_to_ref = PartialDict()
-        self.ref_to_query = PartialDict()
-        self.ref_to_op = PartialDict()
-        self.query_to_op = PartialDict()
+        self.query_to_ref = IntDict()
+        self.ref_to_query = IntDict()
+        self.ref_to_op = IntDict()
+        self.query_to_op = IntDict()
 
 
     def extend(self,
@@ -169,6 +145,32 @@ class Cigar(list):
         raise TypeError(f"Cannot coerce {obj!r} to CIGAR string.")
 
 
+    OP_MAPPING = {
+        'M': CigarActions.MATCH,
+        'I': CigarActions.INSERT,
+        'D': CigarActions.DELETE,
+        'N': CigarActions.SKIPPED,
+        'S': CigarActions.SOFT_CLIPPED,
+        'H': CigarActions.HARD_CLIPPED,
+        'P': CigarActions.PADDING,
+        '=': CigarActions.SEQ_MATCH,
+        'X': CigarActions.MISMATCH,
+    }
+
+
+    @staticmethod
+    def parse_operation(operation: str) -> CigarActions:
+        if operation in Cigar.OP_MAPPING:
+            return Cigar.OP_MAPPING[operation]
+        else:
+            raise ValueError(f"Unexpected CIGAR action: {operation}.")
+
+
+    @staticmethod
+    def operation_to_str(op: CigarActions) -> str:
+        return [k for (k, v) in Cigar.OP_MAPPING.items() if v == op][0]
+
+
     @staticmethod
     def parse(string):
         data = []
@@ -176,7 +178,7 @@ class Cigar(list):
             match = re.match(r'([0-9]+)([^0-9])', string)
             if match:
                 num, operation = match.groups()
-                data.append([int(num), parse_cigar_operation(operation)])
+                data.append([int(num), Cigar.parse_operation(operation)])
                 string = string[match.end():]
             else:
                 raise ValueError(f"Invalid CIGAR string. Invalid part: {string[:20]}")
@@ -317,7 +319,7 @@ class Cigar(list):
 
     def __str__(self):
         """ Inverse of Cigar.parse """
-        return ''.join('{}{}'.format(num, cigar_operation_to_str(op)) for num, op in self)
+        return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self)
 
 
 @dataclass
@@ -376,6 +378,17 @@ class CigarHit:
             or intervals_overlap((self.q_st, self.q_ei), (other.q_st, other.q_ei))
 
 
+    def touches(self, other) -> bool:
+        """
+        Checks if this CIGAR hit touches the other CIGAR hit,
+        in both reference and query space.
+        NOTE: only applicable if these hits come from the same reference and query.
+        """
+
+        return self.r_ei + 1 == other.r_st \
+           and self.q_ei + 1 == other.q_st
+
+
     def gaps(self) -> Iterable['CigarHit']:
         # TODO(vitalik): memoize whatever possible.
 
@@ -404,6 +417,22 @@ class CigarHit:
 
     def __add__(self, other):
         """
+        Only adds CigarHits that are touching.
+        The addition is simply a concatenation of two Cigar strings, and adjustment of hit coordinates.
+        """
+
+        if not self.touches(other):
+            raise ValueError("Cannot combine CIGAR hits that do not touch in both reference and query coordinates")
+
+        return CigarHit(cigar=self.cigar + other.cigar,
+                        r_st=self.r_st,
+                        r_ei=other.r_ei,
+                        q_st=self.q_st,
+                        q_ei=other.q_ei,
+                        )
+
+    def connect(self, other):
+        """
         Inserts deletions/insertions between self and other,
         then ajusts boundaries appropriately.
         """
@@ -411,16 +440,8 @@ class CigarHit:
         if self.overlaps(other):
             raise ValueError("Cannot combine overlapping CIGAR hits")
 
-        cigar = self.cigar \
-            + CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1).cigar \
-            + other.cigar
-
-        return CigarHit(cigar=cigar,
-                        r_st=self.r_st,
-                        r_ei=other.r_ei,
-                        q_st=self.q_st,
-                        q_ei=other.q_ei,
-                        )
+        filler = CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1)
+        return self + filler + other
 
 
     @property
@@ -556,4 +577,4 @@ def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> CigarHit:
     sorted_parts = sorted(accumulator, key=lambda p: p.r_st)
 
     # Collect all intervals back together, connecting them with CigarActions.DELETE.
-    return sum(sorted_parts[1:], start=sorted_parts[0])
+    return reduce(CigarHit.connect, sorted_parts)

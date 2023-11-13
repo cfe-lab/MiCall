@@ -4,7 +4,7 @@ from math import floor
 import itertools
 
 from micall.utils.consensus_aligner import CigarActions
-from micall.utils.cigar_tools import Cigar, CigarHit, parse_cigar_operation, CIGAR_OP_MAPPING
+from micall.utils.cigar_tools import Cigar, CigarHit
 
 
 cigar_mapping_cases = [
@@ -331,6 +331,17 @@ def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
 
 
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
+                                            if not isinstance(x[2], Exception)])
+def test_cigar_hit_strip_combines_with_connect(hit, cut_point):
+    left, right = hit.cut_reference(cut_point)
+
+    left = left.rstrip_query()
+    right = right.lstrip_query()
+
+    assert left.connect(right).coordinate_mapping == hit.coordinate_mapping
+
+
+@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
                                             if not isinstance(x[2], Exception)
                                             and not 'N' in str(x[0].cigar)])
 def test_cigar_hit_strip_combines_with_add(hit, cut_point):
@@ -339,7 +350,8 @@ def test_cigar_hit_strip_combines_with_add(hit, cut_point):
     left = left.rstrip_query()
     right = right.lstrip_query()
 
-    assert (left + right).coordinate_mapping == hit.coordinate_mapping
+    if left.touches(right):
+        assert left + right == hit
 
 
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
