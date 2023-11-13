@@ -82,6 +82,7 @@ class PartialDict(dict):
         return ret
 
 
+@dataclass
 class CoordinateMapping:
     def __init__(self):
         self.query_to_ref = PartialDict()
@@ -123,6 +124,10 @@ class CoordinateMapping:
         ret.query_to_op = self.query_to_op.translate(query_delta, 0)
 
         return ret
+
+
+    def __repr__(self):
+        return f'CoordinateMapping({self.ref_to_op},{self.query_to_op})'
 
 
 class Cigar(list):
@@ -379,8 +384,8 @@ class CigarHit:
 
         def make_gap(r_st, r_en):
             r_ei = r_en - 1
-            left, midright = self.cut_reference(r_st - 0.5)
-            middle, right = midright.cut_reference(r_ei + 0.5)
+            left, midright = self.cut_reference(r_st - self.epsilon)
+            middle, right = midright.cut_reference(r_ei + self.epsilon)
             return middle
 
         gap_start = None

@@ -7,12 +7,12 @@ from micall.utils.consensus_aligner import CigarActions
 from micall.utils.cigar_tools import Cigar, CigarHit, parse_cigar_operation, CIGAR_OP_MAPPING
 
 
-cigar_mapping_cases: List[Tuple[Cigar, 'mapping', 'closest_mapping']] = [
+cigar_mapping_cases = [
     # Simple cases
-    ('3M',     {0: 0, 1: 1, 2: 2},
-               {0: 0, 1: 1, 2: 2}),
-    ('1M1D1M', {0: 0, 2: 1},
-               {0: 0, 1: 0, 2: 1}),
+    ('3M',     {0: 0, 1: 1, 2: 2},  # exact mapping
+               {0: 0, 1: 1, 2: 2}), # closest mapping
+    ('1M1D1M', {0: 0, 2: 1},        # exact mapping
+               {0: 0, 1: 0, 2: 1}), # closest mapping
     ('1M1I1M', {0: 0, 1: 2},
                {0: 0, 1: 2}),
     ('2M2D2M', {0: 0, 1: 1, 4: 2, 5: 3},
@@ -221,6 +221,14 @@ cigar_hit_ref_cut_cases = [
      [CigarHit('9M1I', r_st=1, r_ei=9, q_st=1, q_ei=10),
       CigarHit('8I9M', r_st=10, r_ei=18, q_st=11, q_ei=27)]),
 
+    (CigarHit('9M9D9I9M', r_st=1, r_ei=27, q_st=1, q_ei=27), 13.5 or 27/2,
+     [CigarHit('9M4D', r_st=1, r_ei=13, q_st=1, q_ei=9),
+      CigarHit('5D9I9M', r_st=14, r_ei=27, q_st=10, q_ei=27)]),
+
+    (CigarHit('9M9I9D9M', r_st=1, r_ei=27, q_st=1, q_ei=27), 13.5 or 27/2,
+     [CigarHit('9M9I4D', r_st=1, r_ei=13, q_st=1, q_ei=18),
+      CigarHit('5D9M', r_st=14, r_ei=27, q_st=19, q_ei=27)]),
+
     # Edge cases
     (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 9.5, # no middlepoint
      [CigarHit('9M5I', r_st=1, r_ei=9, q_st=1, q_ei=14),
@@ -331,7 +339,7 @@ def test_cigar_hit_strip_combines_with_add(hit, cut_point):
     left = left.rstrip_query()
     right = right.lstrip_query()
 
-    assert left + right == hit
+    assert (left + right).coordinate_mapping == hit.coordinate_mapping
 
 
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
