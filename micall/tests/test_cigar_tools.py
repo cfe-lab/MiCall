@@ -254,6 +254,22 @@ cigar_hit_ref_cut_cases = [
      [CigarHit('', r_st=0, r_ei=-1, q_st=0, q_ei=-1),
       CigarHit('9D', r_st=0, r_ei=8, q_st=0, q_ei=-1)]),
 
+    (CigarHit('1M7I1M', r_st=1, r_ei=2, q_st=1, q_ei=9), 1.5,
+     [CigarHit('1M4I', r_st=1, r_ei=1, q_st=1, q_ei=5),
+      CigarHit('3I1M', r_st=2, r_ei=2, q_st=6, q_ei=9)]),
+
+    (CigarHit('1M6I1M', r_st=1, r_ei=2, q_st=1, q_ei=8), 1.5,
+     [CigarHit('1M3I', r_st=1, r_ei=1, q_st=1, q_ei=4),
+      CigarHit('3I1M', r_st=2, r_ei=2, q_st=5, q_ei=8)]),
+
+    (CigarHit('1M7I1M', r_st=1, r_ei=2, q_st=1, q_ei=9), 1.999,
+     [CigarHit('1M7I', r_st=1, r_ei=1, q_st=1, q_ei=8),
+      CigarHit('1M', r_st=2, r_ei=2, q_st=9, q_ei=9)]),
+
+    (CigarHit('1M7I1M', r_st=1, r_ei=2, q_st=1, q_ei=9), 1.001,
+     [CigarHit('1M', r_st=1, r_ei=1, q_st=1, q_ei=1),
+      CigarHit('7I1M', r_st=2, r_ei=2, q_st=2, q_ei=9)]),
+
     (CigarHit('2=1X2N1N2=1H2S', r_st=1, r_ei=8, q_st=1, q_ei=7), 3.5,
      [CigarHit('2=1X', r_st=1, r_ei=3, q_st=1, q_ei=3),
       CigarHit('3N2=1H2S', r_st=4, r_ei=8, q_st=4, q_ei=7)]),

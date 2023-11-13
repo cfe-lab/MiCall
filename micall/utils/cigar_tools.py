@@ -59,14 +59,12 @@ class PartialDict(dict):
         return min(self.keys(), key=lambda x: abs(x - index))
 
 
-    def left_supremum(self, value) -> Optional[int]:
-        left_neihbourhood = (k for k in self.keys() if self[k] <= value)
-        return max(left_neihbourhood, default=None)
+    def left_max(self, index) -> Optional[int]:
+        return max((v for (k, v) in self.items() if k <= index), default=None)
 
 
-    def right_infimum(self, value) -> Optional[int]:
-        right_neihbourhood = (k for k in self.keys() if value <= self[k])
-        return min(right_neihbourhood, default=None)
+    def right_min(self, index) -> Optional[int]:
+        return min((v for (k, v) in self.items() if k >= index), default=None)
 
 
     def translate(self, domain_delta: int, codomain_delta: int) -> 'PartialDict':
@@ -114,15 +112,6 @@ class CoordinateMapping:
 
     def query_to_closest_ref(self, index) -> int:
         return CoordinateMapping._find_closest_key(self.ref_to_op, self.query_to_op[index])
-
-
-    def ref_or_query_to_op(self, ref_index: int, query_index: int, conflict):
-        r = self.ref_to_op.get(ref_index, None)
-        q = self.query_to_op.get(query_index, None)
-        if r is not None and q is not None:
-            return conflict(r, q)
-
-        return r if q is None else q
 
 
     def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
@@ -244,6 +233,11 @@ class Cigar(list):
 
             else:
                 yield (operation, None, None)
+
+
+    @cached_property
+    def op_length(self):
+        return sum(1 for x in self.iterate_operations())
 
 
     @cached_property
@@ -429,15 +423,32 @@ class CigarHit:
         return Fraction(1, self.query_length + self.ref_length + 100)
 
 
-    def _slice(self, r_st, r_ei, q_st, q_ei) -> 'CigarHit':
+    def _ref_cut_to_op_cut(self, cut_point: float):
         mapping = self.coordinate_mapping
 
-        o_st = mapping.ref_or_query_to_op(r_st, q_st, min)
-        o_ei = mapping.ref_or_query_to_op(r_ei, q_ei, max)
-        if o_st is None or o_ei is None:
-            cigar = Cigar([])
-        else:
-            cigar = self.cigar.slice_operations(o_st, o_ei + 1)
+        left_op_cut_point = mapping.ref_to_op.left_max(floor(cut_point))
+        right_op_cut_point = mapping.ref_to_op.right_min(ceil(cut_point))
+
+        if left_op_cut_point is None:
+            left_op_cut_point = -1
+        if right_op_cut_point is None:
+            right_op_cut_point = self.cigar.op_length
+
+        lerp = lambda start, end, t: (1 - t) * start + t * end
+        op_cut_point = lerp(left_op_cut_point, right_op_cut_point,
+                            cut_point - floor(cut_point))
+
+        if float(op_cut_point).is_integer():
+            # Disambiguate to the right.
+            op_cut_point += self.epsilon
+
+        return op_cut_point
+
+
+    def _slice(self, r_st, q_st, o_st, o_ei):
+        cigar = self.cigar.slice_operations(o_st, o_ei + 1)
+        r_ei = r_st + cigar.ref_length - 1
+        q_ei = q_st + cigar.query_length - 1
 
         return CigarHit(cigar=cigar,
                         r_st = r_st,
@@ -445,29 +456,6 @@ class CigarHit:
                         q_st = q_st,
                         q_ei = q_ei,
                         )
-
-
-    def _ref_cut_to_query_cut(self, cut_point: float):
-        mapping = self.coordinate_mapping
-
-        # TODO(vitalik): fix this to use ref_to_query
-        left_query_cut_point = mapping.query_to_ref.left_supremum(floor(cut_point))
-        right_query_cut_point = mapping.query_to_ref.right_infimum(ceil(cut_point))
-
-        if left_query_cut_point is None:
-            return self.q_st - 0.5
-        if right_query_cut_point is None:
-            return self.q_ei + 0.5
-
-        lerp = lambda start, end, t: (1 - t) * start + t * end
-        query_cut_point = lerp(left_query_cut_point, right_query_cut_point,
-                               cut_point - floor(cut_point))
-
-        if float(query_cut_point).is_integer():
-            # Disambiguate to the right.
-            query_cut_point += self.epsilon
-
-        return query_cut_point
 
 
     def cut_reference(self, cut_point: float) -> 'CigarHit':
@@ -485,13 +473,9 @@ class CigarHit:
            not (self.r_st - 1 < cut_point < self.r_ei + 1):
             raise IndexError("Cut point out of reference bounds")
 
-        query_cut_point = self._ref_cut_to_query_cut(cut_point)
-        assert (self.q_st - 1 <= query_cut_point <= self.q_ei + 1)
-
-        left = self._slice(self.r_st, floor(cut_point),
-                           self.q_st, floor(query_cut_point))
-        right = self._slice(ceil(cut_point), self.r_ei,
-                            ceil(query_cut_point), self.q_ei)
+        op_cut_point = self._ref_cut_to_op_cut(cut_point)
+        left = self._slice(self.r_st, self.q_st, 0, floor(op_cut_point))
+        right = self._slice(left.r_ei + 1, left.q_ei + 1, ceil(op_cut_point), self.cigar.op_length)
 
         return left, right
 
