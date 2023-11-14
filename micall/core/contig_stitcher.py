@@ -273,21 +273,68 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         contigs.insert(0, new_contig)
 
 
+def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    """
+    Merge overlapping and adjacent intervals.
+    Note that intervals are inclusive.
+
+    :param intervals: A list of intervals [start, end] where 'start' and 'end' are integers.
+    :eturn: A list of merged intervals.
+    """
+
+    if not intervals:
+        return []
+
+    # Sort intervals by their starting values
+    sorted_intervals = sorted(intervals, key=lambda x: x[0])
+
+    merged_intervals = [sorted_intervals[0]]
+    for current in sorted_intervals[1:]:
+        current_start, current_end = current
+        last_start, last_end = merged_intervals[-1]
+        if current_start <= last_end + 1:
+            # Extend the last interval if there is an overlap or if they are adjacent
+            merged_intervals[-1] = (min(last_start, current_start), max(last_end, current_end))
+        else:
+            # Add the current interval if there is no overlap
+            merged_intervals.append(current)
+
+    return merged_intervals
+
+
+def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]:
+    """
+    Find and return the first contig that is completely covered by other contigs.
+
+    :param contigs: List of all aligned contigs to be considered.
+    :return: An AlignedContig if there is one completely covered by others, None otherwise.
+    """
+
+    def calculate_cumulative_coverage(contigs) -> List[Tuple[int, int]]:
+        intervals = [(contig.alignment.r_st, contig.alignment.r_ei) for contig in contigs]
+        merged_intervals = merge_intervals(intervals)
+        return merged_intervals
+
+    for current in contigs:
+        current_interval = (current.alignment.r_st, current.alignment.r_ei)
+
+        # Create a map of cumulative coverage for contigs
+        other_contigs = [x for x in contigs if x != current and x.ref_name == current.ref_name]
+        cumulative_coverage = calculate_cumulative_coverage(other_contigs)
+
+        # Check if the current contig is covered by the cumulative coverage intervals
+        if any((cover_interval[0] <= current_interval[0] and cover_interval[1] >= current_interval[1])
+               for cover_interval in cumulative_coverage):
+            return current
+
+
 def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]:
     """ Filter out all contigs that are contained within other contigs. """
 
-    # TODO: filter out if covered by multiple contigs
-    # TODO: split contigs that have big gaps in them first, otherwise they will cover too much.
-
-    def find_most_covered(contigs) -> Optional[AlignedContig]:
-        for current in contigs:
-            if any(x for x in contigs if x != current and x.contains(current)):
-                return current
-
     while contigs:
-        most_covered = find_most_covered(contigs)
-        if most_covered:
-            contigs.remove(most_covered)
+        covered = find_covered_contig(contigs)
+        if covered:
+            contigs.remove(covered)
         else:
             break
 
