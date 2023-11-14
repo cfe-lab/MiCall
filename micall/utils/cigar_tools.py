@@ -328,6 +328,37 @@ class Cigar(list):
                      [start_inclusive:end_noninclusive])
 
 
+    def lstrip_query(self) -> 'Cigar':
+        """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
+
+        if self.query_length == 0:
+            return self
+
+        min_q = min(self.coordinate_mapping.query_to_ref.keys(), default=0)
+        min_op = self.coordinate_mapping.query_to_op[min_q]
+
+        ops = [(1, op) for i, (op, ref_pointer, query_pointer)
+               in enumerate(self.iterate_operations_with_pointers())
+               if ref_pointer is None or i >= min_op]
+        return Cigar.coerce(ops)
+
+
+    def rstrip_query(self) -> 'Cigar':
+        """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
+
+        if self.query_length == 0:
+            return self
+
+        max_q = max(self.coordinate_mapping.query_to_ref.keys(),
+                    default=len(self.coordinate_mapping.query_to_op) - 1)
+        max_op = self.coordinate_mapping.query_to_op[max_q]
+
+        ops = [(1, op) for i, (op, ref_pointer, query_pointer)
+               in enumerate(self.iterate_operations_with_pointers())
+               if ref_pointer is None or i <= max_op]
+        return Cigar.coerce(ops)
+
+
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
         """
@@ -580,23 +611,17 @@ class CigarHit:
     def lstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with leading (unmatched) query elements removed. """
 
-        if len(self.coordinate_mapping.ref_to_query) == 0:
-            return self
-
-        closest_ref = self.coordinate_mapping.ref_to_query.closest_key(self.r_st - 1)
-        remainder, stripped = self.cut_reference(closest_ref - self.epsilon)
-        return stripped
+        cigar = self.cigar.lstrip_query()
+        return CigarHit(cigar, r_st=self.r_ei - cigar.ref_length + 1, r_ei=self.r_ei,
+                               q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
 
 
     def rstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with trailing (unmatched) query elements removed. """
 
-        if len(self.coordinate_mapping.ref_to_query) == 0:
-            return self
-
-        closest_ref = self.coordinate_mapping.ref_to_query.closest_key(self.r_ei + 1)
-        stripped, remainder = self.cut_reference(closest_ref + self.epsilon)
-        return stripped
+        cigar = self.cigar.rstrip_query()
+        return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
+                               q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
 
 
     @cached_property

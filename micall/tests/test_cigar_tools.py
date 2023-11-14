@@ -330,7 +330,7 @@ def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
         assert left + right == hit
 
 
-@pytest.mark.parametrize('hit, expected', [
+lstrip_cases = [
     (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9),
      CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9)),
 
@@ -340,31 +340,87 @@ def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
     (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5),
      CigarHit('5M', r_st=7, r_ei=11, q_st=1, q_ei=5)),
 
-    (CigarHit('4I6D5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('5M', r_st=7, r_ei=11, q_st=5, q_ei=9)),
-
     (CigarHit('6D4I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('5M', r_st=7, r_ei=11, q_st=5, q_ei=9)),
+     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
+
+    (CigarHit('3D3D4I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
+
+    (CigarHit('3D2I3D2I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
+
+    (CigarHit('4I6D5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
 
     (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
      CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),
-])
+]
+
+@pytest.mark.parametrize('hit, expected', lstrip_cases)
 def test_cigar_hit_lstrip(hit, expected):
     assert expected == hit.lstrip_query()
 
 
-@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
-                                            if not isinstance(x[2], Exception)])
-def test_cigar_hit_strip_combines_with_connect(hit, cut_point):
-    left, right = hit.cut_reference(cut_point)
+rstrip_cases = [
+    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9),
+     CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9)),
 
-    left = left.rstrip_query()
-    right = right.lstrip_query()
+    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5),
+     CigarHit('5M', r_st=1, r_ei=5, q_st=1, q_ei=5)),
 
-    assert left.connect(right).coordinate_mapping == hit.coordinate_mapping
+    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5),
+     CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5)),
+
+    (CigarHit('5M4I6D', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
+
+    (CigarHit('5M4I3D3D', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
+
+    (CigarHit('5M2I3D2I3D', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
+
+    (CigarHit('5M6D4I', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
+
+    (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
+     CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),
+]
+
+@pytest.mark.parametrize('hit, expected', rstrip_cases)
+def test_cigar_hit_rstrip(hit, expected):
+    assert expected == hit.rstrip_query()
 
 
-@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+strip_prop_cases_all = [x[0] for x in cigar_hit_ref_cut_cases] \
+                     + [x[0] for x in lstrip_cases] \
+                     + [x[0] for x in rstrip_cases]
+
+
+@pytest.mark.parametrize('hit', strip_prop_cases_all)
+def test_cigar_hit_strip_combines_with_connect(hit):
+    for cut_point in range(hit.r_st - 1, hit.r_ei):
+        left, right = hit.cut_reference(cut_point + hit.epsilon)
+
+        left = left.rstrip_query()
+        right = right.lstrip_query()
+
+        assert left.connect(right).coordinate_mapping == hit.coordinate_mapping
+
+
+@pytest.mark.parametrize('hit', strip_prop_cases_all)
+def test_cigar_hit_strip_combines_with_add(hit):
+    for cut_point in range(hit.r_st - 1, hit.r_ei):
+        left, right = hit.cut_reference(cut_point + hit.epsilon)
+
+        left = left.rstrip_query()
+        right = right.lstrip_query()
+
+        if left.touches(right):
+            assert left + right == hit
+
+
+@pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strip_never_crashes(hit):
     hit.rstrip_query().lstrip_query()
     hit.lstrip_query().rstrip_query()
@@ -372,7 +428,7 @@ def test_cigar_hit_strip_never_crashes(hit):
     hit.rstrip_query().rstrip_query()
 
 
-@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+@pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strip_is_idempotent(hit):
     h1 = hit.rstrip_query()
     assert h1 == h1.rstrip_query() == h1.rstrip_query().rstrip_query()
@@ -387,23 +443,10 @@ def test_cigar_hit_strip_is_idempotent(hit):
     assert h1 == h1.rstrip_query() == h1.lstrip_query()
 
 
-@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+@pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strips_are_commutative(hit):
     assert hit.rstrip_query().lstrip_query() \
         == hit.lstrip_query().rstrip_query()
-
-
-@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
-                                            if not isinstance(x[2], Exception)
-                                            and not 'N' in str(x[0].cigar)])
-def test_cigar_hit_strip_combines_with_add(hit, cut_point):
-    left, right = hit.cut_reference(cut_point)
-
-    left = left.rstrip_query()
-    right = right.lstrip_query()
-
-    if left.touches(right):
-        assert left + right == hit
 
 
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
