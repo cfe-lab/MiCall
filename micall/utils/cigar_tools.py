@@ -105,19 +105,6 @@ class CoordinateMapping:
         self.query_to_op.extend(query_index, op_index)
 
 
-    @staticmethod
-    def _find_closest_key(mapping: dict, index: int) -> int:
-        return min(mapping, key=lambda k: abs(mapping[k] - index))
-
-
-    def ref_to_closest_query(self, index) -> int:
-        return CoordinateMapping._find_closest_key(self.query_to_op, self.ref_to_op[index])
-
-
-    def query_to_closest_ref(self, index) -> int:
-        return CoordinateMapping._find_closest_key(self.ref_to_op, self.query_to_op[index])
-
-
     def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
         """
         Generate a new CoordinateMapping with shifted coordinate spaces.
