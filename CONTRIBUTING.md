@@ -12,6 +12,21 @@ you planning to submit your own fix in a pull request?
 [issues]: https://github.com/cfe-lab/MiCall/issues
 
 ## Development
+
+The easiest way to start developing MiCall is by using DevContainers.
+
+1. **Open Project**: Open the MiCall project folder in your editor, which should prompt to "Reopen in Container" or similar — click this to initialize the DevContainer environment.
+
+2. **Dependency Installation**: The DevContainer configuration will handle the installation of required dependencies within the Docker container, so you don't have to install them manually.
+
+3. **Interpreter Selection**:
+    - Watch out for dependency errors after setup. If they occur, manually switch to the correct Python interpreter version `3.8`, as the container includes two versions.
+    - This is an issue that we are tracking [here](https://github.com/cfe-lab/MiCall/issues/1033).
+
+4. **Verification**: Run `pytest` within the DevContainer to ensure all tests pass, confirming the environment is correctly configured.
+
+### Local install
+
 To see how all the tools should be installed, follow the steps in `Dockerfile`
 and `dev.dockerfile`. If you prefer, you can run your development environment
 under docker, as described in `dev.dockerfile`. The same installation steps are
