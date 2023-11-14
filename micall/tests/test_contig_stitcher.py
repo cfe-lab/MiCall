@@ -522,6 +522,32 @@ def test_partial_align_consensus_multiple_sequences(exact_aligner):
 
     contigs = [
         GenotypedContig(name='a',
+                        seq='A' * 20,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.3,
+                        ),
+        GenotypedContig(name='b',
+                        seq='T' * 20,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[0].seq + contigs[1].seq
+    assert results[0].name == 'a+b'
+
+
+def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
+    # Scenario: Multiple contigs partially align to the same reference sequence, and a consensus sequence is being stitched from them.
+
+    ref_seq='A' * 20 + 'C' * 20 + 'T' * 20
+
+    contigs = [
+        GenotypedContig(name='a',
                         seq='T' * 10 + 'A' * 5 + 'C' * 20 + 'A' * 10,
                         ref_name='testref',
                         ref_seq=ref_seq,

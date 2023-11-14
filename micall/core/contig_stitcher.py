@@ -176,7 +176,7 @@ class FrankensteinContig(AlignedContig):
             right.alignment.translate(
                 query_delta=(-1 * right.alignment.q_st + len(left_query_seq)),
                 reference_delta=0)
-        alignment = left_alignment + right_alignment
+        alignment = left_alignment.connect(right_alignment)
 
         query = GenotypedContig(seq=query_seq,
                                 name=f'{left.name}+{right.name}',
