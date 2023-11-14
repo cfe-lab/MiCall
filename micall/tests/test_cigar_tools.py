@@ -4,7 +4,7 @@ from math import floor
 import itertools
 
 from micall.utils.consensus_aligner import CigarActions
-from micall.utils.cigar_tools import Cigar, CigarHit
+from micall.utils.cigar_tools import Cigar, CigarHit, connect_cigar_hits
 
 
 cigar_mapping_cases = [
@@ -406,3 +406,82 @@ def test_cigar_to_msa(reference_seq, query_seq, cigar, expected_reference, expec
 def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
     with pytest.raises(ValueError):
         Cigar.coerce(cigar).to_msa(reference_seq, query_seq)
+
+
+connect_cigar_hits_cases = [
+    # Non-overlapping hits should be connected with deletions/insertions
+    (
+        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
+         CigarHit('4M', r_st=10, r_ei=13, q_st=8, q_ei=11)],
+        CigarHit('4M5D3I4M', r_st=1, r_ei=13, q_st=1, q_ei=11)
+    ),
+    # Overlapping hits should ignore later ones
+    (
+        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
+         CigarHit('5M', r_st=3, r_ei=7, q_st=3, q_ei=7)],
+        CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4)
+    ),
+    # Touching hits should be simply concatenated
+    (
+        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
+         CigarHit('4M', r_st=5, r_ei=8, q_st=5, q_ei=8)],
+        CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8)
+    ),
+    # Hits that touch at only one boundary should combine just fine
+    (
+        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
+         CigarHit('6M', r_st=4, r_ei=9, q_st=6, q_ei=11)],
+        CigarHit('3M2I6M', r_st=1, r_ei=9, q_st=1, q_ei=11)
+    ),
+    # Hits that are subsets of earlier hits should be ignored
+    (
+        [CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8),
+         CigarHit('3M', r_st=3, r_ei=5, q_st=3, q_ei=5)],
+        CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8)
+    ),
+    # Hits that are out of order should be connected if no overlap
+    (
+        [CigarHit('3M', r_st=10, r_ei=12, q_st=6, q_ei=8),
+         CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3)],
+        CigarHit('3M6D2I3M', r_st=1, r_ei=12, q_st=1, q_ei=8)
+    ),
+    # Hits that overlap by a single base should prioritize the first hit and not combine
+    (
+        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
+         CigarHit('3M', r_st=3, r_ei=5, q_st=3, q_ei=5)],
+        CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3)
+    ),
+    # Non-overlapping hits in the query space but overlapping in reference space
+    (
+        [CigarHit('5M', r_st=1, r_ei=5, q_st=1, q_ei=5),
+         CigarHit('1M', r_st=3, r_ei=3, q_st=10, q_ei=10)],
+        CigarHit('5M', r_st=1, r_ei=5, q_st=1, q_ei=5)
+    ),
+    # Combining more than two hits
+    (
+        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
+         CigarHit('3M', r_st=7, r_ei=9, q_st=7, q_ei=9),
+         CigarHit('3M', r_st=12, r_ei=14, q_st=16, q_ei=18)],
+        CigarHit('3M3D3I3M2D6I3M', r_st=1, r_ei=14, q_st=1, q_ei=18)
+    ),
+    # Combining hits including hard-clipping, which should be ignored in alignments
+    (
+        [CigarHit('2H5M1H', r_st=1, r_ei=5, q_st=3, q_ei=7),
+         CigarHit('2H5M1H', r_st=11, r_ei=15, q_st=13, q_ei=17)],
+        CigarHit('2H5M1H5D5I2H5M1H', r_st=1, r_ei=15, q_st=3, q_ei=17)
+    ),
+    # An empty list of hits should raise a ValueError
+    (
+        [],
+        ValueError("Expected a non-empty list of cigar hits")
+    ),
+]
+
+@pytest.mark.parametrize('hits, expected_result', connect_cigar_hits_cases)
+def test_connect_cigar_hits(hits, expected_result):
+    if isinstance(expected_result, Exception):
+        with pytest.raises(type(expected_result)):
+            connect_cigar_hits(hits)
+    else:
+        result = connect_cigar_hits(hits)
+        assert expected_result == result
