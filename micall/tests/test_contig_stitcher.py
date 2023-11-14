@@ -563,8 +563,8 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
 
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
-    assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'A' * 9 + 'T' * 5 + 'A' * 10 + 'G' * 10
-    assert results[0].seq == contigs[0].seq[:-1] + contigs[1].seq[20:]
+    assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10
+    assert results[0].seq == contigs[0].seq[:-10] + contigs[1].seq[20:]
     assert results[0].name == 'left(a)+overlap(a,b)+right(b)'
 
 

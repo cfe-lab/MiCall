@@ -257,7 +257,7 @@ def stitch_2_contigs(left, right):
     right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
 
     # Align overlapping parts, then recombine based on concordance.
-    aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
+    aligned_left, aligned_right = align_queries(left_overlap.aligned_seq, right_overlap.aligned_seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
     max_concordance_index = max(range(len(concordance)),
                                 key=lambda i: concordance[i])
