@@ -4,7 +4,7 @@ from math import floor
 import itertools
 
 from micall.utils.consensus_aligner import CigarActions
-from micall.utils.cigar_tools import Cigar, CigarHit, connect_cigar_hits
+from micall.utils.cigar_tools import Cigar, CigarHit, connect_cigar_hits, CoordinateMapping
 
 
 cigar_mapping_cases = [
@@ -381,6 +381,17 @@ def test_cigar_hit_gaps_no_m_or_i(hit):
     for gap in gaps:
         assert 'M' not in str(gap.cigar)
         assert 'I' not in str(gap.cigar)
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
+                                 if not isinstance(x[2], Exception)])
+def test_cigar_hit_gaps_lengths(hit):
+    gaps = list(hit.gaps())
+
+    for gap in gaps:
+        assert gap.query_length == 0
+        assert gap.ref_length > 0
+        assert gap.coordinate_mapping == CoordinateMapping()
 
 
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [
