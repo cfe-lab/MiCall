@@ -218,7 +218,7 @@ def calculate_concordance(left: str, right: str) -> List[float]:
 
     The function compares the two strings from both left to right and then right to left,
     calculating for each position the ratio of matching characters in a window around the
-    current position (10 characters to the left and right).
+    current position.
 
     It's required that the input strings are of the same length.
 
