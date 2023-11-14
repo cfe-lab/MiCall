@@ -1,5 +1,5 @@
 from typing import Iterable, Optional, Tuple, List
-from collections import deque
+from collections import deque, defaultdict
 from dataclasses import dataclass
 from math import ceil
 from mappy import Aligner
@@ -61,18 +61,20 @@ class GenotypedContig(Contig):
 class AlignedContig(GenotypedContig):
 
     def __init__(self, query: GenotypedContig, alignment: CigarHit):
-        self.alignment = alignment
         self.query = query
-
-        ref_msa, query_msa = self.alignment.to_msa(self.query.ref_seq, self.query.seq)
-        seq = ''.join((c for c in query_msa if c != '-'))
-
+        self.alignment = alignment
         super().__init__(
-            seq = seq,
+            seq = query.seq,
             name = query.name,
             ref_name = query.ref_name,
             ref_seq = query.ref_seq,
             matched_fraction = query.matched_fraction)
+
+
+    @cached_property
+    def aligned_seq(self):
+        ref_msa, query_msa = self.alignment.to_msa(self.query.ref_seq, self.query.seq)
+        return ''.join((c for c in query_msa if c != '-'))
 
 
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
@@ -165,8 +167,8 @@ class FrankensteinContig(AlignedContig):
 
     @staticmethod
     def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
-        left_query_seq = left.query.seq[0:left.alignment.q_ei + 1]
-        right_query_seq = right.query.seq[right.alignment.q_st:]
+        left_query_seq = left.seq[0:left.alignment.q_ei + 1]
+        right_query_seq = right.seq[right.alignment.q_st:]
         query_seq = left_query_seq + right_query_seq
 
         left_alignment = left.alignment
@@ -417,3 +419,20 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
     aligned = drop_completely_covered(aligned)
     aligned = combine_overlaps(aligned)
     yield from aligned
+
+
+def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
+    contigs = list(stitch_contigs(contigs))
+    consensus_parts = defaultdict(list) # ref_name -> List[AlignedContig]
+
+    for contig in contigs:
+        if isinstance(contig, AlignedContig):
+            consensus_parts[contig.ref_name].append(contig)
+        else:
+            yield contig
+
+    def combine(contigs):
+        contigs = sorted(contigs, key=lambda x: x.alignment.r_st)
+        return FrankensteinContig(contigs)
+
+    yield from map(combine, consensus_parts.values())

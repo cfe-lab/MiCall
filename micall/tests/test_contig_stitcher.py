@@ -1,6 +1,6 @@
 
 import pytest
-from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus
 from micall.tests.utils import MockAligner
 
 
@@ -21,9 +21,9 @@ def test_identical_stitching_of_one_contig(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
+    results = list(stitch_contigs(contigs))
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
 
 def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
@@ -46,11 +46,11 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
+    results = list(stitch_contigs(contigs))
 
     # No claims about the output order, so wrap into set()
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
     contigs = [
         GenotypedContig(name='b',
@@ -67,11 +67,11 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
+    results = list(stitch_contigs(contigs))
 
     # No claims about the output order, so wrap into set()
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
 
 def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
@@ -94,10 +94,10 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 1
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
 
-    result = result[0]
+    result = results[0]
 
     assert 100 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 50
@@ -130,14 +130,14 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 2
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 2
 
-    assert 100 == len(result[0].seq)
-    assert result[0].seq == 'A' * 50 + 'C' * 50
-    assert result[0].query.name == 'left(a)+overlap(a,b)+right(b)'
+    assert 100 == len(results[0].seq)
+    assert results[0].seq == 'A' * 50 + 'C' * 50
+    assert results[0].query.name == 'left(a)+overlap(a,b)+right(b)'
 
-    assert result[1].query == contigs[2]
+    assert results[1].query == contigs[2]
 
 
 def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
@@ -166,10 +166,10 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 1
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
 
-    result = result[0]
+    result = results[0]
 
     assert 200 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 100 + 'T' * 50
@@ -196,9 +196,9 @@ def test_stitching_with_empty_contigs(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
+    results = list(stitch_contigs(contigs))
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
 
 def test_stitching_of_identical_contigs(exact_aligner):
@@ -214,17 +214,17 @@ def test_stitching_of_identical_contigs(exact_aligner):
                         )
         for name in ["a", "b", "c"]]
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 1
-    assert result[0].query == contigs[2]
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+    assert results[0].query == contigs[2]
 
 
 def test_stitching_of_zero_contigs(exact_aligner):
     # Scenario: The function does not crash if no contigs given.
 
     contigs = []
-    result = list(stitch_contigs(contigs))
-    assert result == contigs
+    results = list(stitch_contigs(contigs))
+    assert results == contigs
 
 
 def test_correct_stitching_of_two_partially_overlapping_different_organism_contigs(exact_aligner):
@@ -248,11 +248,11 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 2
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 2
 
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
 
 def test_correct_processing_complex_nogaps(exact_aligner):
@@ -291,21 +291,21 @@ def test_correct_processing_complex_nogaps(exact_aligner):
 
     contigs = sum(contigs, start=[])
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 4
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 4
 
-    assert 170 == len(result[0].seq)
-    assert result[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert result[0].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
-    assert result[0].query.ref_name == 'testref-1'
+    assert 170 == len(results[0].seq)
+    assert results[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
+    assert results[0].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
+    assert results[0].query.ref_name == 'testref-1'
 
-    assert 170 == len(result[1].seq)
-    assert result[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert result[1].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
-    assert result[1].query.ref_name == 'testref-2'
+    assert 170 == len(results[1].seq)
+    assert results[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
+    assert results[1].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
+    assert results[1].query.ref_name == 'testref-2'
 
-    assert result[2].query == contigs[3]
-    assert result[3].query == contigs[7]
+    assert results[2].query == contigs[3]
+    assert results[3].query == contigs[7]
 
 
 def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
@@ -329,13 +329,13 @@ def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
-    assert len(result) == 1
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
 
     # Test to ensure that the final result contains the contig 'b' and
     # does not contain the completely covered contig 'a'.
-    assert result[0].query.name == 'b'
-    assert result[0].query == contigs[1]
+    assert results[0].query.name == 'b'
+    assert results[0].query == contigs[1]
 
 
 def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
@@ -352,10 +352,10 @@ def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
+    results = list(stitch_contigs(contigs))
 
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
 
 def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
@@ -378,10 +378,10 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
                         ),
         ]
 
-    result = list(stitch_contigs(contigs))
+    results = list(stitch_contigs(contigs))
 
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
 
 def test_stitching_contig_with_big_covered_gap(exact_aligner):
@@ -408,9 +408,9 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
     assert len(list(contigs[0].gaps())) == 1
     assert len(list(contigs[1].gaps())) == 0
 
-    result = list(split_contigs_with_gaps(contigs))
-    assert len(result) == 3
-    assert all(list(contig.gaps()) == [] for contig in result)
+    results = list(split_contigs_with_gaps(contigs))
+    assert len(results) == 3
+    assert all(list(contig.gaps()) == [] for contig in results)
 
 
 def test_stitching_contig_with_small_covered_gap(exact_aligner):
@@ -437,11 +437,109 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
     assert len(list(contigs[0].gaps())) == 1
     assert len(list(contigs[1].gaps())) == 0
 
-    result = list(split_contigs_with_gaps(contigs))
+    results = list(split_contigs_with_gaps(contigs))
+
+    assert all(x.seq == x.aligned_seq for x in results)
 
     assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, result))
+        == set(map(lambda x: x.seq, results))
 
+
+def test_stitching_partial_align(exact_aligner):
+    # Scenario: A single contig has a sequence that partially aligns to the reference sequence.
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='T' * 10 + 'C' * 20 + 'A' * 10,
+                        ref_name='testref',
+                        ref_seq='A' * 20 + 'C' * 20 + 'T' * 20,
+                        matched_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == len(contigs)
+    for result in results:
+        assert any(result.seq in contig.seq for contig in contigs)
+
+    assert all(x.seq != x.aligned_seq for x in results)
+
+    assert set(map(lambda x: x.seq, contigs)) \
+        != set(map(lambda x: x.aligned_seq, results))
+
+
+def test_partial_align_consensus(exact_aligner):
+    # Scenario: A single contig partially aligns to the reference sequence, and a consensus sequence is being stitched.
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='T' * 10 + 'C' * 20 + 'A' * 10,
+                        ref_name='testref',
+                        ref_seq='A' * 20 + 'C' * 20 + 'T' * 20,
+                        matched_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == len(contigs)
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, results))
+
+
+def test_stitching_partial_align_multiple_sequences(exact_aligner):
+    # Scenario: Multiple contigs have sequences that partially align to the same reference sequence.
+
+    ref_seq='A' * 20 + 'C' * 20 + 'T' * 20
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='T' * 10 + 'C' * 20 + 'A' * 10,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.3,
+                        ),
+        GenotypedContig(name='b',
+                        seq='C' * 20 + 'A' * 10 + 'G' * 10,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+    for result in results:
+        assert any(result.seq in contig.seq for contig in contigs)
+
+    assert set(map(lambda x: x.seq, contigs)) \
+        != set(map(lambda x: x.aligned_seq, results))
+
+
+def test_partial_align_consensus_multiple_sequences(exact_aligner):
+    # Scenario: Multiple contigs partially align to the same reference sequence, and a consensus sequence is being stitched from them.
+
+    ref_seq='A' * 20 + 'C' * 20 + 'T' * 20
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='T' * 10 + 'A' * 5 + 'C' * 20 + 'A' * 10,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.3,
+                        ),
+        GenotypedContig(name='b',
+                        seq='C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10,
+                        ref_name='testref',
+                        ref_seq=ref_seq,
+                        matched_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'A' * 9 + 'T' * 5 + 'A' * 10 + 'G' * 10
+    assert results[0].seq == contigs[0].seq[:-1] + contigs[1].seq[20:]
+    assert results[0].name == 'left(a)+overlap(a,b)+right(b)'
 
 
 #  _   _       _ _     _            _
