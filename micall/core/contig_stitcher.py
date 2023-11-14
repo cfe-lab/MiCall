@@ -1,6 +1,7 @@
 from typing import Iterable, Optional, Tuple, List
 from collections import deque
 from dataclasses import dataclass
+from math import ceil
 from mappy import Aligner
 from functools import cached_property, reduce
 from itertools import accumulate, takewhile
@@ -35,6 +36,28 @@ class GenotypedContig(Contig):
         return AlignedContig(query=self, alignment=single_cigar_hit)
 
 
+    def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
+        """
+        Cuts this alignment in two parts with cut_point between them.
+        Reference sequence is kept untouched.
+        """
+
+        cut_point = max(0, cut_point)
+        left = GenotypedContig(name=self.name, # TODO(vitalik): make it f'left({self.name})'
+                               seq=self.seq[:ceil(cut_point)],
+                               ref_seq=self.ref_seq,
+                               ref_name=self.ref_name,
+                               matched_fraction=None)
+        right = GenotypedContig(name=self.name, # TODO(vitalik): make it f'right({self.name})'
+                                seq=self.seq[ceil(cut_point):],
+                                ref_seq=self.ref_seq,
+                                ref_name=self.ref_name,
+                                matched_fraction=None)
+
+        return (left, right)
+
+
+@dataclass
 class AlignedContig(GenotypedContig):
 
     def __init__(self, query: GenotypedContig, alignment: CigarHit):
@@ -56,18 +79,24 @@ class AlignedContig(GenotypedContig):
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        return (AlignedContig(self.query, alignment_left),
-                AlignedContig(self.query, alignment_right))
+        query_left, query_right = self.query.cut_query(alignment_left.q_ei + 0.5)
+        alignment_right = alignment_right.translate(0, -1 * alignment_right.q_st)
+
+        return (AlignedContig(query_left, alignment_left),
+                AlignedContig(query_right, alignment_right))
 
 
     def lstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.lstrip_query()
-        return AlignedContig(self.query, alignment)
+        q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
+        alignment = alignment.translate(0, -1 * alignment.q_st)
+        return AlignedContig(query, alignment)
 
 
     def rstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.rstrip_query()
-        return AlignedContig(self.query, alignment)
+        query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
+        return AlignedContig(query, alignment)
 
 
     def overlaps(self, other) -> bool:
