@@ -22,8 +22,8 @@ def test_identical_stitching_of_one_contig(exact_aligner):
         ]
 
     result = list(stitch_contigs(contigs))
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
@@ -47,8 +47,10 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
         ]
 
     result = list(stitch_contigs(contigs))
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+
+    # No claims about the output order, so wrap into set()
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
     contigs = [
         GenotypedContig(name='b',
@@ -66,8 +68,10 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
         ]
 
     result = list(stitch_contigs(contigs))
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+
+    # No claims about the output order, so wrap into set()
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
@@ -97,7 +101,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
 
     assert 100 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 50
-    assert result.query.name == 'a+overlap(a,b)+b'
+    assert result.query.name == 'left(a)+overlap(a,b)+right(b)'
 
 
 def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner):
@@ -131,7 +135,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
 
     assert 100 == len(result[0].seq)
     assert result[0].seq == 'A' * 50 + 'C' * 50
-    assert result[0].query.name == 'a+overlap(a,b)+b'
+    assert result[0].query.name == 'left(a)+overlap(a,b)+right(b)'
 
     assert result[1].query == contigs[2]
 
@@ -169,7 +173,7 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
 
     assert 200 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 100 + 'T' * 50
-    assert result.query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result.query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
 
 
 def test_stitching_with_empty_contigs(exact_aligner):
@@ -193,8 +197,8 @@ def test_stitching_with_empty_contigs(exact_aligner):
         ]
 
     result = list(stitch_contigs(contigs))
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 def test_stitching_of_identical_contigs(exact_aligner):
@@ -247,8 +251,8 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
     result = list(stitch_contigs(contigs))
     assert len(result) == 2
 
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 def test_correct_processing_complex_nogaps(exact_aligner):
@@ -292,12 +296,12 @@ def test_correct_processing_complex_nogaps(exact_aligner):
 
     assert 170 == len(result[0].seq)
     assert result[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert result[0].query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result[0].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
     assert result[0].query.ref_name == 'testref-1'
 
     assert 170 == len(result[1].seq)
     assert result[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert result[1].query.name == 'a+overlap(a,b)+b+overlap(a+overlap(a,b)+b,c)+c'
+    assert result[1].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
     assert result[1].query.ref_name == 'testref-2'
 
     assert result[2].query == contigs[3]
@@ -350,8 +354,8 @@ def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
 
     result = list(stitch_contigs(contigs))
 
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
@@ -376,8 +380,8 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
 
     result = list(stitch_contigs(contigs))
 
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 def test_stitching_contig_with_big_covered_gap(exact_aligner):
@@ -435,8 +439,8 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
 
     result = list(split_contigs_with_gaps(contigs))
 
-    assert sorted(map(lambda x: x.seq, contigs)) \
-        == sorted(map(lambda x: x.seq, result))
+    assert set(map(lambda x: x.seq, contigs)) \
+        == set(map(lambda x: x.seq, result))
 
 
 

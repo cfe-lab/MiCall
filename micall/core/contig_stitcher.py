@@ -43,12 +43,12 @@ class GenotypedContig(Contig):
         """
 
         cut_point = max(0, cut_point)
-        left = GenotypedContig(name=self.name, # TODO(vitalik): make it f'left({self.name})'
+        left = GenotypedContig(name=f'left({self.name})',
                                seq=self.seq[:ceil(cut_point)],
                                ref_seq=self.ref_seq,
                                ref_name=self.ref_name,
                                matched_fraction=None)
-        right = GenotypedContig(name=self.name, # TODO(vitalik): make it f'right({self.name})'
+        right = GenotypedContig(name=f'right({self.name})',
                                 seq=self.seq[ceil(cut_point):],
                                 ref_seq=self.ref_seq,
                                 ref_name=self.ref_name,
@@ -107,17 +107,6 @@ class AlignedContig(GenotypedContig):
             return False
 
         return intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
-                                 (other.alignment.r_st, other.alignment.r_ei))
-
-
-    def contains(self, other) -> bool:
-        def interval_contains(x, y):
-            return x[0] <= y[0] and x[1] >= y[1]
-
-        if self.ref_name != other.ref_name:
-            return False
-
-        return interval_contains((self.alignment.r_st, self.alignment.r_ei),
                                  (other.alignment.r_st, other.alignment.r_ei))
 
 
@@ -195,7 +184,7 @@ class FrankensteinContig(AlignedContig):
         return AlignedContig(query, alignment)
 
 
-def align_equal(seq1: str, seq2: str) -> Tuple[str, str]:
+def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
@@ -217,7 +206,7 @@ def find_all_overlapping_contigs(self, aligned_contigs):
 
 def find_overlapping_contig(self, aligned_contigs):
     every = find_all_overlapping_contigs(self, aligned_contigs)
-    return max(every, key=lambda other: other.alignment.r_ei - other.alignment.r_st if other else 0,
+    return max(every, key=lambda other: other.alignment.ref_length if other else 0,
                default=None)
 
 
@@ -236,12 +225,13 @@ def calculate_concordance(left: str, right: str) -> List[float]:
     :return: list representing concordance ratio for each position
     """
 
+    if len(left) != len(right):
+        raise ValueError("Can only calculate concordance for same sized sequences")
+
     result = [0] * len(left)
 
-    assert len(left) == len(right), "Can only calculate concordance for same sized sequences"
-
     def slide(left, right):
-        window_size = 10
+        window_size = 30
         scores = deque([0] * window_size, maxlen=window_size)
         scores_sum = 0
 
@@ -265,7 +255,7 @@ def stitch_2_contigs(left, right):
     right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
 
     # Align overlapping parts, then recombine based on concordance.
-    aligned_left, aligned_right = align_equal(left_overlap.seq, right_overlap.seq)
+    aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
     max_concordance_index = max(range(len(concordance)),
                                 key=lambda i: concordance[i])
@@ -416,7 +406,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
     return contigs
 
 
-def stitch_contigs(contigs: Iterable[GenotypedContig]):
+def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig]:
     maybe_aligned = list(map(GenotypedContig.align_to_reference, contigs))
 
     # Contigs that did not align do not need any more processing
@@ -425,5 +415,5 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]):
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
-
-    yield from combine_overlaps(aligned)
+    aligned = combine_overlaps(aligned)
+    yield from aligned
