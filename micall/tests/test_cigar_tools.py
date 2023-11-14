@@ -341,6 +341,35 @@ def test_cigar_hit_strip_combines_with_connect(hit, cut_point):
     assert left.connect(right).coordinate_mapping == hit.coordinate_mapping
 
 
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+def test_cigar_hit_strip_never_crashes(hit):
+    hit.rstrip_query().lstrip_query()
+    hit.lstrip_query().rstrip_query()
+    hit.lstrip_query().lstrip_query()
+    hit.rstrip_query().rstrip_query()
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+def test_cigar_hit_strip_is_idempotent(hit):
+    h1 = hit.rstrip_query()
+    assert h1 == h1.rstrip_query() == h1.rstrip_query().rstrip_query()
+
+    h1 = hit.lstrip_query()
+    assert h1 == h1.lstrip_query() == h1.lstrip_query().lstrip_query()
+
+    h1 = hit.lstrip_query().rstrip_query()
+    assert h1 == h1.lstrip_query() == h1.rstrip_query()
+
+    h1 = hit.rstrip_query().lstrip_query()
+    assert h1 == h1.rstrip_query() == h1.lstrip_query()
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases])
+def test_cigar_hit_strips_are_commutative(hit):
+    assert hit.rstrip_query().lstrip_query() \
+        == hit.lstrip_query().rstrip_query()
+
+
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
                                             if not isinstance(x[2], Exception)
                                             and not 'N' in str(x[0].cigar)])

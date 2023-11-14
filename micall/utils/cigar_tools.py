@@ -580,7 +580,7 @@ class CigarHit:
     def lstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with leading (unmatched) query elements removed. """
 
-        if self.query_length == 0:
+        if len(self.coordinate_mapping.ref_to_query) == 0:
             return self
 
         closest_ref = self.coordinate_mapping.ref_to_query.closest_key(self.r_st - 1)
@@ -591,7 +591,7 @@ class CigarHit:
     def rstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with trailing (unmatched) query elements removed. """
 
-        if self.query_length == 0:
+        if len(self.coordinate_mapping.ref_to_query) == 0:
             return self
 
         closest_ref = self.coordinate_mapping.ref_to_query.closest_key(self.r_ei + 1)
