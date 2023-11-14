@@ -14,10 +14,19 @@ from micall.utils.consensus_aligner import CigarActions
 
 
 class IntDict(dict):
+    """
+    An extension of the basic Python dictionary designed for integer-to-integer mappings.
+
+    The IntDict maintains not just key-value pairs (as in a normal dictionary) but also
+    tracks additional sets called `domain` and `codomain`. These sets act as supersets
+    to the keys and values respectively, even including integers that might not be used
+    directly in mappings but are within the range of interest for the domain and codomain.
+    """
+
     def __init__(self):
         super().__init__()
-        self.domain = set()   # superset of self.keys()
-        self.codomain = set() # superset of self.values()
+        self.domain: Set[int] = set()   # superset of self.keys()
+        self.codomain: Set[int] = set() # superset of self.values()
 
 
     def extend(self, key: Optional[int], value: Optional[int]):
@@ -44,6 +53,13 @@ class IntDict(dict):
 
 
     def translate(self, domain_delta: int, codomain_delta: int) -> 'IntDict':
+        """
+        Generates a new IntDict by shifting the entire mapping -- keys and values
+        are incremented by domain_delta and codomain_delta, respectively.
+        This shift operation preserves the inherent ordering and relative spacing within the mapping,
+        effectively repositioning the dataset within the integer space.
+        """
+
         ret = IntDict()
 
         for k, v in self.items():
@@ -60,6 +76,17 @@ class IntDict(dict):
 
 @dataclass
 class CoordinateMapping:
+    """
+    Manages bidirectional mappings between reference and query coordinates, as well as operation indices.
+
+    A CoordinateMapping object contains mappings which represent the relationships and positions between
+    elements of a reference sequence, a query sequence, and the corresponding operations as defined in a
+    CIGAR string.
+
+    The mapping enables conversion from reference to query coordinates and vice versa. It also manages the
+    association of these coordinates with their respective operations in the alignment process.
+    """
+
     def __init__(self):
         self.query_to_ref = IntDict()
         self.ref_to_query = IntDict()
@@ -92,6 +119,15 @@ class CoordinateMapping:
 
 
     def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
+        """
+        Generate a new CoordinateMapping with shifted coordinate spaces.
+
+        This method creates a new mapping where each original coordinate in
+        the reference and query sequences is shifted. This allows for adapting
+        the CoordinateMapping to account for changes or offsets in sequence positions,
+        such as when sequences are trimmed or extended.
+        """
+
         ret = CoordinateMapping()
 
         ret.ref_to_query = self.ref_to_query.translate(reference_delta, query_delta)
@@ -108,23 +144,22 @@ class CoordinateMapping:
 
 class Cigar(list):
     """
-    A CIGAR string represents a read alignment against a reference sequence.
-    It is a run-length encoded sequence of alignment operations listed below:
+    Represents an alignment between a query sequence and a reference sequence using the
+    Compact Idiosyncratic Gapped Alignment Report (CIGAR) string format.
 
-       M: Alignment match (can be a sequence match or mismatch)
-       D: Deletion from the reference
-       I: Insertion to the reference
-       S: Soft clip on the read (ignored region, not aligned but present in the read)
-       H: Hard clip on the read (ignored region, not present in the read)
-       N: Skipped region from the reference
-       P: Padding (silent deletion from padded reference, not applicable for our case)
-       =: Sequence match
-       X: Sequence mismatch
+    A CIGAR string is a sequence of operation codes ('M', 'I', 'D', etc.) each preceded by
+    the number of bases or residues to which the operation applies. The primary use of a
+    CIGAR string is to detail areas of alignment and gaps (insertions or deletions) between
+    the two sequences.
 
-    CIGAR strings are defined in the SAM specification
-    (https://samtools.github.io/hts-specs/SAMv1.pdf).
+    Instances of this class should be created by calling the Cigar.coerce method.
+    Examples:
+        Cigar.coerce("10M1I5M1D")
+        Cigar.coerce([(10, CigarActions.MATCH), (1, CigarActions.INSERT), ...])
+        Cigar.coerce(existing_cigar_object)
+
+    CIGAR strings are defined in the SAM specification (https://samtools.github.io/hts-specs/SAMv1.pdf).
     """
-
 
     def __init__(self, cigar_lst: Iterable[Tuple[int, CigarActions]]):
         super().__init__([])
@@ -146,15 +181,15 @@ class Cigar(list):
 
 
     OP_MAPPING = {
-        'M': CigarActions.MATCH,
-        'I': CigarActions.INSERT,
-        'D': CigarActions.DELETE,
-        'N': CigarActions.SKIPPED,
-        'S': CigarActions.SOFT_CLIPPED,
-        'H': CigarActions.HARD_CLIPPED,
-        'P': CigarActions.PADDING,
-        '=': CigarActions.SEQ_MATCH,
-        'X': CigarActions.MISMATCH,
+        'M': CigarActions.MATCH,        # Alignment match (can be a sequence match or mismatch)
+        'I': CigarActions.INSERT,       # Insertion to the reference
+        'D': CigarActions.DELETE,       # Deletion from the reference
+        'N': CigarActions.SKIPPED,      # Skipped region from the reference
+        'S': CigarActions.SOFT_CLIPPED, # Soft clip on the read (ignored region, not aligned but present in the read)
+        'H': CigarActions.HARD_CLIPPED, # Hard clip on the read (ignored region, not present in the read)
+        'P': CigarActions.PADDING,      # Padding (silent deletion from padded reference, not applicable for our case)
+        '=': CigarActions.SEQ_MATCH,    # Sequence match
+        'X': CigarActions.MISMATCH,     # Sequence mismatch
     }
 
 
@@ -172,7 +207,14 @@ class Cigar(list):
 
 
     @staticmethod
-    def parse(string):
+    def parse(string) -> 'Cigar':
+        """
+        Parses a CIGAR string into a Cigar object.
+
+        :param string: A CIGAR string with the format '(\\d+[MIDNSHPX=])+', where each operation code
+                       is preceded by a number indicating how many times the operation should be applied.
+        """
+
         data = []
         while string:
             match = re.match(r'([0-9]+)([^0-9])', string)
@@ -187,6 +229,11 @@ class Cigar(list):
 
 
     def append(self, item: Tuple[int, CigarActions]):
+        """
+        Appends an operation to the CIGAR sequence, checking for type correctness
+        and performing normalization by merging consecutive identical operations.
+        """
+
         # Type checking
         if not isinstance(item, list) and not isinstance(item, tuple):
             raise ValueError(f"Invalid CIGAR list: {item!r} is not a tuple.")
@@ -215,12 +262,30 @@ class Cigar(list):
 
 
     def iterate_operations(self) -> Iterable[CigarActions]:
+        """
+        Yields each operation in the CIGAR sequence as a `CigarActions` enum.
+        The resulting sequence is a decoded version of the initial run-length encoded sequence.
+        """
+
         for num, operation in self:
             for _ in range(num):
                 yield operation
 
 
     def iterate_operations_with_pointers(self) -> Iterable[Tuple[CigarActions, Optional[int], Optional[int]]]:
+        """
+        Iterates over the operations while tracking the reference and
+        query sequence positions affected by each operation.
+
+        Example:
+            For a Cigar instance representing "1M1I1M", this method would yield:
+            (CigarActions.MATCH, 0, 0), (CigarActions.INSERT, None, 1), (CigarActions.MATCH, 1, 2)
+
+        :return: Tuple of type (CigarActions, reference_pointer, query_pointer) for each operation in the
+            CIGAR sequence. Pointers can be None if the operation does not map to a sequence
+            position (e.g., insertions, deletions).
+        """
+
         ref_pointer = 0
         query_pointer = 0
 
@@ -262,6 +327,16 @@ class Cigar(list):
 
 
     def slice_operations(self, start_inclusive, end_noninclusive) -> 'Cigar':
+        """
+        Creates a new Cigar object by slicing the current one from start_inclusive to
+        end_noninclusive. Note that slicing is done at the level of individual operations,
+        not at the level of counts within operations.
+
+        Example:
+            Given a Cigar instance representing "10M5D5M", slicing from 2 to 11 would result in a new
+            Cigar object representing "8M1D".
+        """
+
         return Cigar([(1, op) for op in self.iterate_operations()]
                      [start_inclusive:end_noninclusive])
 
@@ -269,8 +344,7 @@ class Cigar(list):
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
         """
-        Convert a CIGAR string to coordinate mapping representing a reference-to-query and query-to-reference coordinate mappings.
-        TODO(vitalik): describe the domains and holes.
+        Convert this CIGAR string to coordinate mapping representing a reference-to-query and query-to-reference coordinate mappings.
 
         :param cigar: a CIGAR string.
 
@@ -289,6 +363,12 @@ class Cigar(list):
 
 
     def to_msa(self, reference_seq, query_seq) -> Tuple[str, str]:
+        """
+        Constructs a multiple sequence alignment (MSA) representation for this Cigar, using the original reference
+        and query sequences. It aligns the sequences according to the CIGAR operations, introducing gaps ('-')
+        as necessary to reflect insertions or deletions.
+        """
+
         reference_msa = ''
         query_msa = ''
 
@@ -355,6 +435,11 @@ class CigarHit:
 
     @staticmethod
     def from_default_alignment(r_st, r_ei, q_st, q_ei):
+        """
+        A convenience method that creates a CigarHit instance representing a default alignment,
+        where there are only deletions in the reference sequence and only insertions in the query.
+        """
+
         ref_length = r_ei - r_st + 1
         query_length = q_ei - q_st + 1
         cigar = Cigar.coerce([[ref_length, CigarActions.DELETE],
@@ -365,9 +450,9 @@ class CigarHit:
 
     def overlaps(self, other) -> bool:
         """
-        Checks if this CIGAR hit overlaps with the other CIGAR hit,
-        in either reference or query space.
-        NOTE: only applicable if these hits come from the same reference and query.
+        Determines whether this CigarHit overlaps with another in terms of reference or query coordinates.
+        Two hits are considered overlapping if their alignment ranges on the reference or query sequence overlap.
+        Note: Assumes that both CigarHit instances pertain to the same pair of reference and query sequences.
         """
 
         def intervals_overlap(x, y):
@@ -380,9 +465,8 @@ class CigarHit:
 
     def touches(self, other) -> bool:
         """
-        Checks if this CIGAR hit touches the other CIGAR hit,
-        in both reference and query space.
-        NOTE: only applicable if these hits come from the same reference and query.
+        Checks if the end of this CigarHit is immediately adjacent to the start of another one.
+        Note: Assumes that both CigarHit instances pertain to the same pair of reference and query sequences.
         """
 
         return self.r_ei + 1 == other.r_st \
@@ -428,8 +512,8 @@ class CigarHit:
                         r_st=self.r_st,
                         r_ei=other.r_ei,
                         q_st=self.q_st,
-                        q_ei=other.q_ei,
-                        )
+                        q_ei=other.q_ei)
+
 
     def connect(self, other):
         """
@@ -484,11 +568,11 @@ class CigarHit:
                         )
 
 
-    def cut_reference(self, cut_point: float) -> 'CigarHit':
+    def cut_reference(self, cut_point: float) -> Tuple['CigarHit', 'CigarHit']:
         """
-        Splits alignment in two parts such that cut_point is in between.
-        Guarantees that the two parts do not share any elements,
-        and that no element is lost.
+        Splits this CigarHit into two non-overlapping parts using a fractional cut point in the reference space.
+        Resulting parts of CigarHits are touching at cut point.
+        The two parts do not share any elements, and no element is "lost".
         """
 
         cut_point = Fraction(cut_point)
@@ -530,10 +614,20 @@ class CigarHit:
 
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
+        """
+        Convert this alignment to coordinate mapping representing a reference-to-query and query-to-reference coordinate mappings.
+        """
+
         return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
 
 
     def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
+        """
+        Constructs a multiple sequence alignment (MSA) representation for this CigarHit, using the original reference
+        and query sequences. It aligns the sequences according to the CIGAR operations, introducing gaps ('-')
+        as necessary to reflect insertions or deletions.
+        """
+
         return self.cigar.to_msa(reference_seq[self.r_st:], query_seq[self.q_st:])
 
 
