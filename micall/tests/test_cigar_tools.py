@@ -330,6 +330,29 @@ def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
         assert left + right == hit
 
 
+@pytest.mark.parametrize('hit, expected', [
+    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9),
+     CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9)),
+
+    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5),
+     CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5)),
+
+    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5),
+     CigarHit('5M', r_st=7, r_ei=11, q_st=1, q_ei=5)),
+
+    (CigarHit('4I6D5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('5M', r_st=7, r_ei=11, q_st=5, q_ei=9)),
+
+    (CigarHit('6D4I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
+     CigarHit('5M', r_st=7, r_ei=11, q_st=5, q_ei=9)),
+
+    (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
+     CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),
+])
+def test_cigar_hit_lstrip(hit, expected):
+    assert expected == hit.lstrip_query()
+
+
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
                                             if not isinstance(x[2], Exception)])
 def test_cigar_hit_strip_combines_with_connect(hit, cut_point):
