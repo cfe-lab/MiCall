@@ -25,17 +25,6 @@ class GenotypedContig(Contig):
     ref_seq: str
     matched_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
 
-    def align_to_reference(self):
-        aligner = Aligner(seq=self.ref_seq, preset='map-ont')
-        alignments = list(aligner.map(self.seq))
-        if not alignments:
-            return self
-
-        hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
-        single_cigar_hit = connect_cigar_hits(hits_array)
-        return AlignedContig(query=self, alignment=single_cigar_hit)
-
-
     def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
         """
         Cuts this alignment in two parts with cut_point between them.
@@ -59,6 +48,8 @@ class GenotypedContig(Contig):
 
 @dataclass
 class AlignedContig(GenotypedContig):
+    query: GenotypedContig
+    alignment: CigarHit
 
     def __init__(self, query: GenotypedContig, alignment: CigarHit):
         self.query = query
@@ -171,6 +162,17 @@ class FrankensteinContig(AlignedContig):
         alignment = left_alignment.connect(right_alignment)
 
         return AlignedContig(query, alignment)
+
+
+def align_to_reference(contig):
+    aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
+    alignments = list(aligner.map(contig.seq))
+    if not alignments:
+        return contig
+
+    hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
+    single_cigar_hit = connect_cigar_hits(hits_array)
+    return AlignedContig(query=contig, alignment=single_cigar_hit)
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -376,7 +378,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
                 continue
 
             if covered(contig, gap):
-                midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + contig.alignment.epsilon
+                midpoint = gap.r_st + (gap.r_ei - gap.r_st) // 2 + contig.alignment.epsilon
                 left_part, right_part = contig.cut_reference(midpoint)
                 left_part = left_part.rstrip_query()
                 right_part = right_part.lstrip_query()
@@ -398,7 +400,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
 
 
 def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig]:
-    maybe_aligned = list(map(GenotypedContig.align_to_reference, contigs))
+    maybe_aligned = list(map(align_to_reference, contigs))
 
     # Contigs that did not align do not need any more processing
     yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
