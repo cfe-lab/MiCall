@@ -74,7 +74,6 @@ class IntDict(dict):
         return ret
 
 
-@dataclass
 class CoordinateMapping:
     """
     Manages bidirectional mappings between reference and query coordinates, as well as operation indices.
@@ -88,8 +87,8 @@ class CoordinateMapping:
     """
 
     def __init__(self):
-        self.query_to_ref = IntDict()
         self.ref_to_query = IntDict()
+        self.query_to_ref = IntDict()
         self.ref_to_op = IntDict()
         self.query_to_op = IntDict()
 
@@ -123,6 +122,11 @@ class CoordinateMapping:
         ret.query_to_op = self.query_to_op.translate(query_delta, 0)
 
         return ret
+
+
+    def __eq__(self, other):
+        return (self.ref_to_op, self.query_to_op) \
+            == (other.ref_to_op, other.query_to_op)
 
 
     def __repr__(self):

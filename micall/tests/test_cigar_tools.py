@@ -229,6 +229,14 @@ cigar_hit_ref_cut_cases = [
      [CigarHit('9M9I4D', r_st=1, r_ei=13, q_st=1, q_ei=18),
       CigarHit('5D9M', r_st=14, r_ei=27, q_st=19, q_ei=27)]),
 
+    (CigarHit('1M1I1D1M', r_st=1, r_ei=3, q_st=1, q_ei=3), 1.5, # same as previous 2 cases but smaller
+     [CigarHit('1M1I', r_st=1, r_ei=1, q_st=1, q_ei=2),
+      CigarHit('1D1M', r_st=2, r_ei=3, q_st=3, q_ei=3)]),
+
+    (CigarHit('1M1D1I1M', r_st=1, r_ei=3, q_st=1, q_ei=3), 1.5, # same as previous 2 cases but smaller
+     [CigarHit('1M', r_st=1, r_ei=1, q_st=1, q_ei=1),
+      CigarHit('1D1I1M', r_st=2, r_ei=3, q_st=2, q_ei=3)]),
+
     # Edge cases
     (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 9.5, # no middlepoint
      [CigarHit('9M5I', r_st=1, r_ei=9, q_st=1, q_ei=14),
@@ -417,7 +425,8 @@ def test_cigar_hit_strip_combines_with_connect(hit):
         left = left.rstrip_query()
         right = right.lstrip_query()
 
-        assert left.connect(right).coordinate_mapping == hit.coordinate_mapping
+        assert left.connect(right).coordinate_mapping.ref_to_query \
+            == hit.coordinate_mapping.ref_to_query
 
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
@@ -498,7 +507,7 @@ def test_cigar_hit_gaps_lengths(hit):
     for gap in gaps:
         assert gap.query_length == 0
         assert gap.ref_length > 0
-        assert gap.coordinate_mapping == CoordinateMapping()
+        assert gap.coordinate_mapping.ref_to_query == {}
 
 
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [
