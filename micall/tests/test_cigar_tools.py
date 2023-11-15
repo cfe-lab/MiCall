@@ -352,6 +352,12 @@ lstrip_cases = [
     (CigarHit('4I6D5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
      CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
 
+    (CigarHit('6D4I', r_st=1, r_ei=6, q_st=1, q_ei=4),
+     CigarHit('4I', r_st=7, r_ei=6, q_st=1, q_ei=4)),
+
+    (CigarHit('4I6D', r_st=1, r_ei=6, q_st=1, q_ei=4),
+     CigarHit('4I6D', r_st=1, r_ei=6, q_st=1, q_ei=4)),
+
     (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
      CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),
 ]
@@ -382,6 +388,12 @@ rstrip_cases = [
 
     (CigarHit('5M6D4I', r_st=1, r_ei=11, q_st=1, q_ei=9),
      CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
+
+    (CigarHit('6D4I', r_st=1, r_ei=6, q_st=1, q_ei=4),
+     CigarHit('6D4I', r_st=1, r_ei=6, q_st=1, q_ei=4)),
+
+    (CigarHit('4I6D', r_st=1, r_ei=6, q_st=1, q_ei=4),
+     CigarHit('4I', r_st=1, r_ei=0, q_st=1, q_ei=4)),
 
     (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
      CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),

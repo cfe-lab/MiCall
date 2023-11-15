@@ -406,12 +406,12 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
         ]
 
     contigs = [x.align_to_reference() for x in contigs]
-    assert len(list(contigs[0].gaps())) == 1
-    assert len(list(contigs[1].gaps())) == 0
+    assert len(list(contigs[0].alignment.gaps())) == 1
+    assert len(list(contigs[1].alignment.gaps())) == 0
 
     results = list(split_contigs_with_gaps(contigs))
     assert len(results) == 3
-    assert all(list(contig.gaps()) == [] for contig in results)
+    assert all(list(contig.alignment.gaps()) == [] for contig in results)
 
 
 def test_stitching_contig_with_small_covered_gap(exact_aligner):
@@ -435,8 +435,8 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
         ]
 
     contigs = [x.align_to_reference() for x in contigs]
-    assert len(list(contigs[0].gaps())) == 1
-    assert len(list(contigs[1].gaps())) == 0
+    assert len(list(contigs[0].alignment.gaps())) == 1
+    assert len(list(contigs[1].alignment.gaps())) == 0
 
     results = list(split_contigs_with_gaps(contigs))
 

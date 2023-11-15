@@ -112,16 +112,11 @@ class AlignedContig(GenotypedContig):
                                  (other.alignment.r_st, other.alignment.r_ei))
 
 
-    def gaps(self) -> Iterable[CigarHit]:
-        return self.alignment.gaps()
-
-
 class SyntheticContig(AlignedContig):
     def __init__(self, query: GenotypedContig, r_st: int, r_ei: int):
         alignment = CigarHit.from_default_alignment(r_st=r_st, r_ei=r_ei,
                                                     q_st=0, q_ei=len(query.seq)-1)
         super().__init__(query, alignment)
-
 
     def cut_reference(self, cut_point: float):
         raise NotImplementedError("SyntheticContigs cannot be cut because they are not properly aligned")
@@ -375,7 +370,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
         return gap.ref_length > 5
 
     def try_split(contig):
-        for gap in contig.gaps():
+        for gap in contig.alignment.gaps():
             if not significant(gap):
                 # Really we do not want to split on every little deletion
                 # because that would mean that we would need to stitch
