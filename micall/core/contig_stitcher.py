@@ -167,22 +167,20 @@ class FrankensteinContig(AlignedContig):
 
     @staticmethod
     def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
-        left_query_seq = left.seq[0:left.alignment.q_ei + 1]
-        right_query_seq = right.seq[right.alignment.q_st:]
-        query_seq = left_query_seq + right_query_seq
-
-        left_alignment = left.alignment
-        right_alignment = \
-            right.alignment.translate(
-                query_delta=(-1 * right.alignment.q_st + len(left_query_seq)),
-                reference_delta=0)
-        alignment = left_alignment.connect(right_alignment)
-
+        query_seq = left.rstrip_query().seq + right.lstrip_query().seq
         query = GenotypedContig(seq=query_seq,
                                 name=f'{left.name}+{right.name}',
                                 ref_name=left.ref_name,
                                 ref_seq=left.ref_seq,
                                 matched_fraction=None)
+
+        left_alignment = left.alignment
+        right_alignment = \
+            right.alignment.translate(
+                query_delta=(-1 * right.alignment.q_st + left.alignment.q_ei + 1),
+                reference_delta=0)
+        alignment = left_alignment.connect(right_alignment)
+
         return AlignedContig(query, alignment)
 
 
