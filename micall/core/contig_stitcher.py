@@ -98,13 +98,28 @@ class AlignedContig(GenotypedContig):
 
 
 class SyntheticContig(AlignedContig):
+    """
+    Contig that is not really aligned, but its boundaries are known.
+    It is created as a result of overlaps between the real contigs.
+    """
+    # TODO(vitalik): maybe it is worth to realign overlaps to get rid of this special-case class.
+
     def __init__(self, query: GenotypedContig, r_st: int, r_ei: int):
         alignment = CigarHit.from_default_alignment(r_st=r_st, r_ei=r_ei,
                                                     q_st=0, q_ei=len(query.seq)-1)
         super().__init__(query, alignment)
 
+
     def cut_reference(self, cut_point: float):
         raise NotImplementedError("SyntheticContigs cannot be cut because they are not properly aligned")
+
+
+    def lstrip_query(self):
+        return self
+
+
+    def rstrip_query(self):
+        return self
 
 
 class FrankensteinContig(AlignedContig):
@@ -128,21 +143,25 @@ class FrankensteinContig(AlignedContig):
 
 
     def cut_reference(self, cut_point: float) -> 'FrankensteinContig':
-        # The cut_reference version of super() works here.
-        # But it loses information about parts,
-        # and does not check if the cut is legal
-        # i.e. whether it slices a SyntheticContig.
-
-        # Search for the part that needs to be cut:
+        # Search for the part that needs to be cut
         left_parts = list(takewhile(lambda part: cut_point >= part.alignment.r_ei + 1, self.parts))
         target_part = self.parts[len(left_parts)]
         right_parts = self.parts[len(left_parts) + 1:]
 
+        # Cut the target part and add its pieces to left and right.
         target_part_left, target_part_right = target_part.cut_reference(cut_point)
         left = FrankensteinContig(left_parts + [target_part_left])
         right = FrankensteinContig([target_part_right] + right_parts)
 
         return (left, right)
+
+
+    def lstrip_query(self):
+        return FrankensteinContig([self.parts[0].lstrip_query()] + self.parts[1:])
+
+
+    def rstrip_query(self):
+        return FrankensteinContig(self.parts[:-1] + [self.parts[-1].rstrip_query()])
 
 
     @staticmethod
