@@ -440,7 +440,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
 
     results = list(split_contigs_with_gaps(contigs))
 
-    assert all(x.seq == x.aligned_seq for x in results)
+    assert all(x.seq == x.lstrip_query().rstrip_query().seq for x in results)
 
     assert set(map(lambda x: x.seq, contigs)) \
         == set(map(lambda x: x.seq, results))
@@ -463,10 +463,10 @@ def test_stitching_partial_align(exact_aligner):
     for result in results:
         assert any(result.seq in contig.seq for contig in contigs)
 
-    assert all(x.seq != x.aligned_seq for x in results)
+    assert all(x.seq != x.lstrip_query().rstrip_query().seq for x in results)
 
     assert set(map(lambda x: x.seq, contigs)) \
-        != set(map(lambda x: x.aligned_seq, results))
+        != set(map(lambda x: x.lstrip_query().rstrip_query().seq, results))
 
 
 def test_partial_align_consensus(exact_aligner):
@@ -513,7 +513,7 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner):
         assert any(result.seq in contig.seq for contig in contigs)
 
     assert set(map(lambda x: x.seq, contigs)) \
-        != set(map(lambda x: x.aligned_seq, results))
+        != set(map(lambda x: x.lstrip_query().rstrip_query().seq, results))
 
 
 def test_partial_align_consensus_multiple_sequences(exact_aligner):

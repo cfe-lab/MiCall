@@ -71,12 +71,6 @@ class AlignedContig(GenotypedContig):
             matched_fraction = query.matched_fraction)
 
 
-    @cached_property
-    def aligned_seq(self):
-        ref_msa, query_msa = self.alignment.to_msa(self.query.ref_seq, self.query.seq)
-        return ''.join((c for c in query_msa if c != '-'))
-
-
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
         """ Cuts this alignment in two parts with cut_point between them. """
 
