@@ -15,15 +15,17 @@ you planning to submit your own fix in a pull request?
 
 The easiest way to start developing MiCall is by using DevContainers.
 
-1. **Open Project**: Open the MiCall project folder in your editor, which should prompt to "Reopen in Container" or similar — click this to initialize the DevContainer environment.
+1. **Open Project**:
+    - If you're using Visual Studio Code on your local machine, open the MiCall project folder and select the "Reopen in Container" prompt to initialize the DevContainer environment. Make sure you have the necessary DevContainer extension installed beforehand, available [here](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+    - For a web-based development environment, you can develop directly on GitHub using GitHub Codespaces by navigating to the MiCall repository on GitHub and selecting "Code" > "Open with Codespaces" to launch a pre-configured environment.
 
-2. **Dependency Installation**: The DevContainer configuration will handle the installation of required dependencies within the Docker container, so you don't have to install them manually.
+2. **Dependency Installation**: All required dependencies will be automatically installed whether you are using a local DevContainer or GitHub Codespace.
 
 3. **Interpreter Selection**:
-    - Watch out for dependency errors after setup. If they occur, manually switch to the correct Python interpreter version `3.8`, as the container includes two versions.
-    - This is an issue that we are tracking [here](https://github.com/cfe-lab/MiCall/issues/1033).
+    - Following the setup, if you encounter dependency errors, manually select the Python interpreter version `3.8`. This is necessary because the container includes multiple Python versions, and the default selection might not be appropriate.
+    - This issue is tracked and further details can be found [here](https://github.com/cfe-lab/MiCall/issues/1033).
 
-4. **Verification**: Run `pytest` within the DevContainer to ensure all tests pass, confirming the environment is correctly configured.
+4. **Verification**: To ensure that the environment is correctly configured, execute `pytest` within the DevContainer or Codespace. All tests should pass, indicating that the setup is successful.
 
 ### Local install
 
