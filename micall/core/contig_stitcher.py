@@ -185,18 +185,34 @@ class FrankensteinContig(AlignedContig):
         return AlignedContig(query, alignment)
 
 
-def align_to_reference(contig):
+def align_to_reference(contig) -> Iterable[GenotypedContig]:
     if contig.ref_seq is None:
-        return contig
+        yield contig
+        return
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
     if not alignments:
-        return contig
+        yield contig
+        return
 
     hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
-    single_cigar_hit = connect_cigar_hits(hits_array)
-    return AlignedContig(query=contig, alignment=single_cigar_hit)
+    connected = connect_cigar_hits(hits_array)
+    if len(connected) == 1:
+        yield AlignedContig(query=contig, alignment=connected[0])
+        return
+
+    for single_hit in connected:
+        query = GenotypedContig(name=f'part({contig.name})',
+                                seq=contig.seq,
+                                ref_name=contig.ref_name,
+                                ref_seq=contig.ref_seq,
+                                match_fraction=contig.match_fraction)
+        yield AlignedContig(query=query, alignment=single_hit)
+
+
+def align_all_to_reference(contigs):
+    return [contig for parts in map(align_to_reference, contigs) for contig in parts]
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -425,7 +441,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
 
 
 def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig]:
-    maybe_aligned = list(map(align_to_reference, contigs))
+    maybe_aligned = align_all_to_reference(contigs)
 
     # Contigs that did not align do not need any more processing
     yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))

@@ -4,7 +4,7 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import Container, Tuple, Iterable, Optional, Set, Dict
+from typing import Container, Tuple, Iterable, Optional, Set, Dict, List
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from itertools import chain, dropwhile
@@ -677,7 +677,7 @@ class CigarHit:
         return f'CigarHit({str(self.cigar)!r}, r_st={self.r_st!r}, r_ei={self.r_ei!r}, q_st={self.q_st!r}, q_ei={self.q_ei!r})'
 
 
-def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> CigarHit:
+def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> List[CigarHit]:
     """
     This function exists to deal with the fact that mappy does not always
     connect big gaps, and returns surrounding parts as two separate alignment hits.
@@ -704,5 +704,19 @@ def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> CigarHit:
     # Sort by interval start positions.
     sorted_parts = sorted(accumulator, key=lambda p: p.r_st)
 
+    # Segregate independent matches.
+    sorted_groups = []
+
+    def find_group(hit):
+        for group in sorted_groups:
+            if hit.q_st > group[-1].q_st:
+                group.append(hit)
+                return
+
+        sorted_groups.append([hit])
+
+    for hit in sorted_parts:
+        find_group(hit)
+
     # Collect all intervals back together, connecting them with CigarActions.DELETE.
-    return reduce(CigarHit.connect, sorted_parts)
+    return [reduce(CigarHit.connect, group) for group in sorted_groups]

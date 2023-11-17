@@ -1,7 +1,7 @@
 
 import pytest
 import random
-from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_to_reference
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference
 from micall.tests.utils import MockAligner, fixed_random_seed
 
 
@@ -405,7 +405,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
                         ),
         ]
 
-    contigs = list(map(align_to_reference, contigs))
+    contigs = align_all_to_reference(contigs)
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
@@ -434,7 +434,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
                         ),
         ]
 
-    contigs = list(map(align_to_reference, contigs))
+    contigs = align_all_to_reference(contigs)
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
