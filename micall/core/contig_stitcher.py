@@ -23,7 +23,7 @@ class Contig:
 class GenotypedContig(Contig):
     ref_name: str
     ref_seq: Optional[str]          # None in cases where the reference organism is unknown.
-    match_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
+    match_fraction: float           # Approximated overall concordance between `seq` and `ref_seq`. It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
 
     def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
         """
@@ -32,16 +32,17 @@ class GenotypedContig(Contig):
         """
 
         cut_point = max(0, cut_point)
+        match_fraction = self.match_fraction
         left = GenotypedContig(name=f'left({self.name})',
                                seq=self.seq[:ceil(cut_point)],
                                ref_seq=self.ref_seq,
                                ref_name=self.ref_name,
-                               match_fraction=None)
+                               match_fraction=match_fraction)
         right = GenotypedContig(name=f'right({self.name})',
                                 seq=self.seq[ceil(cut_point):],
                                 ref_seq=self.ref_seq,
                                 ref_name=self.ref_name,
-                                match_fraction=None)
+                                match_fraction=match_fraction)
 
         return (left, right)
 
@@ -167,11 +168,12 @@ class FrankensteinContig(AlignedContig):
     @staticmethod
     def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
         query_seq = left.rstrip_query().seq + right.lstrip_query().seq
+        match_fraction = min(left.match_fraction, right.match_fraction)
         query = GenotypedContig(seq=query_seq,
                                 name=f'{left.name}+{right.name}',
                                 ref_name=left.ref_name,
                                 ref_seq=left.ref_seq,
-                                match_fraction=None)
+                                match_fraction=match_fraction)
 
         left_alignment = left.alignment
         right_alignment = \
@@ -279,9 +281,10 @@ def stitch_2_contigs(left, right):
     overlap_seq = ''.join(c for c in aligned_left_part + aligned_right_part if c != '-')
 
     # Return something that can be fed back into the loop.
+    match_fraction = min(left.match_fraction, right.match_fraction)
     overlap_query = GenotypedContig(name=f'overlap({left.name},{right.name})',
                                     seq=overlap_seq, ref_name=left.ref_name,
-                                    ref_seq=left.ref_seq, match_fraction=None)
+                                    ref_seq=left.ref_seq, match_fraction=match_fraction)
     overlap_contig = SyntheticContig(overlap_query,
                                      r_st=left_overlap.alignment.r_st,
                                      r_ei=right_overlap.alignment.r_ei)
