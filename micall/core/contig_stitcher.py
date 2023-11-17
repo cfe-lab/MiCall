@@ -22,8 +22,8 @@ class Contig:
 @dataclass
 class GenotypedContig(Contig):
     ref_name: str
-    ref_seq: str
-    matched_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
+    ref_seq: Optional[str]          # None in cases where the reference organism is unknown.
+    match_fraction: Optional[float] # Approximated overall concordance between `seq` and `ref_seq`.
 
     def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
         """
@@ -36,12 +36,12 @@ class GenotypedContig(Contig):
                                seq=self.seq[:ceil(cut_point)],
                                ref_seq=self.ref_seq,
                                ref_name=self.ref_name,
-                               matched_fraction=None)
+                               match_fraction=None)
         right = GenotypedContig(name=f'right({self.name})',
                                 seq=self.seq[ceil(cut_point):],
                                 ref_seq=self.ref_seq,
                                 ref_name=self.ref_name,
-                                matched_fraction=None)
+                                match_fraction=None)
 
         return (left, right)
 
@@ -59,7 +59,7 @@ class AlignedContig(GenotypedContig):
             name = query.name,
             ref_name = query.ref_name,
             ref_seq = query.ref_seq,
-            matched_fraction = query.matched_fraction)
+            match_fraction = query.match_fraction)
 
 
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
@@ -171,7 +171,7 @@ class FrankensteinContig(AlignedContig):
                                 name=f'{left.name}+{right.name}',
                                 ref_name=left.ref_name,
                                 ref_seq=left.ref_seq,
-                                matched_fraction=None)
+                                match_fraction=None)
 
         left_alignment = left.alignment
         right_alignment = \
@@ -184,6 +184,9 @@ class FrankensteinContig(AlignedContig):
 
 
 def align_to_reference(contig):
+    if contig.ref_seq is None:
+        return contig
+
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
     if not alignments:
@@ -278,7 +281,7 @@ def stitch_2_contigs(left, right):
     # Return something that can be fed back into the loop.
     overlap_query = GenotypedContig(name=f'overlap({left.name},{right.name})',
                                     seq=overlap_seq, ref_name=left.ref_name,
-                                    ref_seq=left.ref_seq, matched_fraction=None)
+                                    ref_seq=left.ref_seq, match_fraction=None)
     overlap_contig = SyntheticContig(overlap_query,
                                      r_st=left_overlap.alignment.r_st,
                                      r_ei=right_overlap.alignment.r_ei)

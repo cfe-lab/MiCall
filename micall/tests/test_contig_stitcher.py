@@ -18,7 +18,7 @@ def test_identical_stitching_of_one_contig(exact_aligner):
                         seq='ACTGACTG' * 100,
                         ref_name='testref',
                         ref_seq='ACTGACTG' * 100,
-                        matched_fraction=1.0,
+                        match_fraction=1.0,
                         ),
         ]
 
@@ -37,13 +37,13 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
                         seq=ref_seq,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='C' * 100,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -58,13 +58,13 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
                         seq='C' * 100,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='a',
                         seq=ref_seq,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -85,13 +85,13 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
                         seq='A' * 50 + 'C' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 20 + 'C' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -115,19 +115,19 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
                         seq='A' * 50 + 'C' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 20 + 'C' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='c',
                         seq='C' * 20 + 'T' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -151,19 +151,19 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
                         seq='A' * 50 + 'C' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 20 + 'C' * 100 + 'T' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='c',
                         seq='C' * 20 + 'T' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -187,13 +187,13 @@ def test_stitching_with_empty_contigs(exact_aligner):
                         seq=ref_seq,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='',
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -211,7 +211,7 @@ def test_stitching_of_identical_contigs(exact_aligner):
                         seq='ACTGACTG' * 100,
                         ref_name='testref',
                         ref_seq='ACTGACTG' * 100,
-                        matched_fraction=1.0,
+                        match_fraction=1.0,
                         )
         for name in ["a", "b", "c"]]
 
@@ -239,13 +239,13 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
                         seq='A' * 50 + 'C' * 20,
                         ref_name='testref-1',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 20 + 'C' * 50,
                         ref_name='testref-2',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -268,25 +268,25 @@ def test_correct_processing_complex_nogaps(exact_aligner):
                         seq='A' * 50 + 'C' * 20,
                         ref_name=ref_name,
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 20 + 'C' * 50,
                         ref_name=ref_name,
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='c',
                         seq='C' * 70 + 'T' * 20,
                         ref_name=ref_name,
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='d',
                         seq='T' * 20 + 'G' * 50,
                         ref_name=ref_name,
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ] for ref_name in ['testref-1', 'testref-2']]
 
@@ -320,13 +320,13 @@ def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
                         seq='A' * 20 + 'C' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 50 + 'C' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -349,7 +349,7 @@ def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
                         seq= 'A' * 50 + 'T' * 50, # mind the C gap
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -369,13 +369,13 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
                         seq='A' * 50 + 'T' * 50, # mind the C gap
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='B',
                         seq='G' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -395,13 +395,13 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
                         seq='G' * 50 + 'A' * 50 + 'T' * 100, # mind the gap
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 50,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -424,13 +424,13 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
                         seq='G' * 100 + 'A' * 0 + 'C' * 100, # mind the gap
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
                         seq='A' * 9 + 'C' * 100 + 'T' * 100,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.5,
+                        match_fraction=0.5,
                         ),
         ]
 
@@ -454,7 +454,7 @@ def test_stitching_partial_align(exact_aligner):
                         seq='T' * 10 + 'C' * 20 + 'A' * 10,
                         ref_name='testref',
                         ref_seq='A' * 20 + 'C' * 20 + 'T' * 20,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         ]
 
@@ -477,7 +477,7 @@ def test_partial_align_consensus(exact_aligner):
                         seq='T' * 10 + 'C' * 20 + 'A' * 10,
                         ref_name='testref',
                         ref_seq='A' * 20 + 'C' * 20 + 'T' * 20,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         ]
 
@@ -497,13 +497,13 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner):
                         seq='T' * 10 + 'C' * 20 + 'A' * 10,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
                         seq='C' * 20 + 'A' * 10 + 'G' * 10,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         ]
 
@@ -526,13 +526,13 @@ def test_partial_align_consensus_multiple_sequences(exact_aligner):
                         seq='A' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
                         seq='T' * 20,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         ]
 
@@ -552,13 +552,13 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
                         seq='T' * 10 + 'A' * 5 + 'C' * 20 + 'A' * 10,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
                         seq='C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10,
                         ref_name='testref',
                         ref_seq=ref_seq,
-                        matched_fraction=0.3,
+                        match_fraction=0.3,
                         ),
         ]
 

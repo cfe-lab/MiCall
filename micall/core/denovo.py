@@ -19,6 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
+from micall.core.contig_stitcher import GenotypedContig
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -26,6 +27,32 @@ DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
                                 'blast_db',
                                 'refs.fasta')
 logger = logging.getLogger(__name__)
+
+
+def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> typing.Iterable[GenotypedContig]:
+    projects = ProjectConfig.loadDefault()
+
+    for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
+        (ref_name, match_fraction) = genotypes.get(record.name, ('unknown', 0))
+        seq = record.seq
+        if match_fraction < 0:
+            seq = seq.reverse_complement()
+            match_fraction *= -1
+
+        group_ref = group_refs.get(ref_name)
+        try:
+            ref_seq = projects.getGenotypeReference(ref_name)
+        except KeyError:
+            try:
+                ref_seq = projects.getReference(ref_name)
+            except:
+                ref_seq = None
+
+        yield GenotypedContig(name=record.name,
+                              seq=seq,
+                              ref_name=ref_name,
+                              ref_seq=ref_seq,
+                              match_fraction=match_fraction)
 
 
 def write_contig_refs(contigs_fasta_path,
@@ -55,19 +82,16 @@ def write_contig_refs(contigs_fasta_path,
     genotypes = genotype(contigs_fasta_path,
                          blast_csv=blast_csv,
                          group_refs=group_refs)
-    genotype_count = 0
-    for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
-        (ref_name, match_fraction) = genotypes.get(record.name, ('unknown', 0))
-        seq = record.seq
-        if match_fraction < 0:
-            seq = seq.reverse_complement()
-            match_fraction *= -1
-        writer.writerow(dict(ref=ref_name,
-                             match=match_fraction,
-                             group_ref=group_refs.get(ref_name),
-                             contig=seq))
-        genotype_count += 1
-    return genotype_count
+
+    contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
+
+    for contig in contigs:
+        writer.writerow(dict(ref=contig.ref_name,
+                             match=contig.match_fraction,
+                             group_ref=group_refs.get(contig.ref_name),
+                             contig=contig.seq))
+
+    return len(contigs)
 
 
 def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
