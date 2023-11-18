@@ -179,8 +179,7 @@ class ResultsFolder:
         if self.is_denovo:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
                                 '1-HIV1-B-FR-K03455-seed',
-                                '2-HCV-1a',
-                                '3-HIV1-B-FR-K03455-seed'}
+                                '2-HCV-1a'}
         else:
             expected_regions = {'HIV1-CON-XX-Consensus-seed',
                                 'HCV-1a',
@@ -247,7 +246,7 @@ class ResultsFolder:
     def check_2130(self):
         conseq_rows = list(self.read_file('2130A-HCV_S15', 'conseq.csv'))
         regions = set(map(itemgetter('region'), conseq_rows))
-        expected_regions = ({'1-HCV-2a', '2-HCV-2a'}
+        expected_regions = ({'1-HCV-2a'}
                             if self.is_denovo
                             else {'HCV-2a'})
         assert regions == expected_regions, regions
@@ -255,7 +254,7 @@ class ResultsFolder:
     def check_2130midi(self):
         conseq_rows = list(self.read_file('2130AMIDI-MidHCV_S16', 'conseq.csv'))
         regions = set(map(itemgetter('region'), conseq_rows))
-        expected_regions = ({'1-HCV-2a', '2-HCV-2a'}
+        expected_regions = ({'1-HCV-2a'}
                             if self.is_denovo
                             else {'HCV-2a'})
         assert regions == expected_regions, regions

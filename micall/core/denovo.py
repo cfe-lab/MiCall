@@ -19,7 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -41,17 +41,18 @@ def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> ty
 
         group_ref = group_refs.get(ref_name)
         try:
-            ref_seq = projects.getGenotypeReference(ref_name)
+            ref_seq = projects.getGenotypeReference(group_ref)
         except KeyError:
             try:
-                ref_seq = projects.getReference(ref_name)
+                ref_seq = projects.getReference(group_ref)
             except:
                 ref_seq = None
 
         yield GenotypedContig(name=record.name,
-                              seq=seq,
+                              seq=str(seq),
                               ref_name=ref_name,
-                              ref_seq=ref_seq,
+                              group_ref=group_ref,
+                              ref_seq=str(ref_seq),
                               match_fraction=match_fraction)
 
 
@@ -84,11 +85,12 @@ def write_contig_refs(contigs_fasta_path,
                          group_refs=group_refs)
 
     contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
+    contigs = list(stitch_consensus(contigs))
 
     for contig in contigs:
         writer.writerow(dict(ref=contig.ref_name,
                              match=contig.match_fraction,
-                             group_ref=group_refs.get(contig.ref_name),
+                             group_ref=contig.group_ref,
                              contig=contig.seq))
 
     return len(contigs)

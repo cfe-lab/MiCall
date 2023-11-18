@@ -22,7 +22,8 @@ class Contig:
 @dataclass
 class GenotypedContig(Contig):
     ref_name: str
-    ref_seq: Optional[str]          # None in cases where the reference organism is unknown.
+    group_ref: str
+    ref_seq: Optional[str]          # The sequence of self.group_ref. None in cases where the reference organism is unknown.
     match_fraction: float           # Approximated overall concordance between `seq` and `ref_seq`. It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
 
     def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
@@ -37,11 +38,13 @@ class GenotypedContig(Contig):
                                seq=self.seq[:ceil(cut_point)],
                                ref_seq=self.ref_seq,
                                ref_name=self.ref_name,
+                               group_ref=self.group_ref,
                                match_fraction=match_fraction)
         right = GenotypedContig(name=f'right({self.name})',
                                 seq=self.seq[ceil(cut_point):],
                                 ref_seq=self.ref_seq,
                                 ref_name=self.ref_name,
+                                group_ref=self.group_ref,
                                 match_fraction=match_fraction)
 
         return (left, right)
@@ -59,6 +62,7 @@ class AlignedContig(GenotypedContig):
             seq = query.seq,
             name = query.name,
             ref_name = query.ref_name,
+            group_ref = query.group_ref,
             ref_seq = query.ref_seq,
             match_fraction = query.match_fraction)
 
@@ -91,7 +95,7 @@ class AlignedContig(GenotypedContig):
         def intervals_overlap(x, y):
             return x[0] <= y[1] and x[1] >= y[0]
 
-        if self.ref_name != other.ref_name:
+        if self.group_ref != other.group_ref:
             return False
 
         return intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
@@ -169,9 +173,11 @@ class FrankensteinContig(AlignedContig):
     def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
         query_seq = left.rstrip_query().seq + right.lstrip_query().seq
         match_fraction = min(left.match_fraction, right.match_fraction)
+        ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
         query = GenotypedContig(seq=query_seq,
                                 name=f'{left.name}+{right.name}',
-                                ref_name=left.ref_name,
+                                ref_name=ref_name,
+                                group_ref=left.group_ref,
                                 ref_seq=left.ref_seq,
                                 match_fraction=match_fraction)
 
@@ -206,6 +212,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         query = GenotypedContig(name=f'part({contig.name})',
                                 seq=contig.seq,
                                 ref_name=contig.ref_name,
+                                group_ref=contig.group_ref,
                                 ref_seq=contig.ref_seq,
                                 match_fraction=contig.match_fraction)
         yield AlignedContig(query=query, alignment=single_hit)
@@ -298,8 +305,10 @@ def stitch_2_contigs(left, right):
 
     # Return something that can be fed back into the loop.
     match_fraction = min(left.match_fraction, right.match_fraction)
+    ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
     overlap_query = GenotypedContig(name=f'overlap({left.name},{right.name})',
-                                    seq=overlap_seq, ref_name=left.ref_name,
+                                    ref_name=ref_name,
+                                    seq=overlap_seq, group_ref=left.group_ref,
                                     ref_seq=left.ref_seq, match_fraction=match_fraction)
     overlap_contig = SyntheticContig(overlap_query,
                                      r_st=left_overlap.alignment.r_st,
@@ -372,7 +381,7 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]
         current_interval = (current.alignment.r_st, current.alignment.r_ei)
 
         # Create a map of cumulative coverage for contigs
-        other_contigs = [x for x in contigs if x != current and x.ref_name == current.ref_name]
+        other_contigs = [x for x in contigs if x != current and x.group_ref == current.group_ref]
         cumulative_coverage = calculate_cumulative_coverage(other_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
@@ -455,11 +464,11 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
 
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(stitch_contigs(contigs))
-    consensus_parts = defaultdict(list) # ref_name -> List[AlignedContig]
+    consensus_parts = defaultdict(list) # group_ref -> List[AlignedContig]
 
     for contig in contigs:
         if isinstance(contig, AlignedContig):
-            consensus_parts[contig.ref_name].append(contig)
+            consensus_parts[contig.group_ref].append(contig)
         else:
             yield contig
 
