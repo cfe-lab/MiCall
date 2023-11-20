@@ -297,8 +297,7 @@ def stitch_2_contigs(left, right):
     # Align overlapping parts, then recombine based on concordance.
     aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
-    max_concordance_index = max(range(len(concordance)),
-                                key=lambda i: concordance[i])
+    max_concordance_index = max(range(len(concordance)), key=lambda i: concordance[i])
     aligned_left_part = aligned_left[:max_concordance_index]
     aligned_right_part = aligned_right[max_concordance_index:]
     overlap_seq = ''.join(c for c in aligned_left_part + aligned_right_part if c != '-')

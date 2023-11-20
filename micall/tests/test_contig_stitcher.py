@@ -1,6 +1,6 @@
 
-import pytest
 import random
+import pytest
 from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference
 from micall.tests.utils import MockAligner, fixed_random_seed
 
@@ -24,8 +24,8 @@ def test_identical_stitching_of_one_contig(exact_aligner):
         ]
 
     results = list(stitch_contigs(contigs))
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert len(results) == 1
+    assert results[0].seq == contigs[0].seq
 
 
 def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
@@ -53,8 +53,8 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
     results = list(stitch_contigs(contigs))
 
     # No claims about the output order, so wrap into set()
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in  results }
 
     contigs = [
         GenotypedContig(name='b',
@@ -76,8 +76,8 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
     results = list(stitch_contigs(contigs))
 
     # No claims about the output order, so wrap into set()
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
@@ -213,14 +213,13 @@ def test_stitching_with_empty_contigs(exact_aligner):
         ]
 
     results = list(stitch_contigs(contigs))
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_stitching_of_identical_contigs(exact_aligner):
     # Scenario: The function correctly handles and avoids duplication when identical contigs are stitched together.
 
-    ref_seq = 'A' * 100
     contigs = [
         GenotypedContig(name=name,
                         seq='ACTGACTG' * 100,
@@ -270,8 +269,8 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
     results = list(stitch_contigs(contigs))
     assert len(results) == 2
 
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_correct_processing_complex_nogaps(exact_aligner):
@@ -380,8 +379,8 @@ def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
 
     results = list(stitch_contigs(contigs))
 
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
@@ -408,8 +407,8 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
 
     results = list(stitch_contigs(contigs))
 
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_stitching_contig_with_big_covered_gap(exact_aligner):
@@ -473,8 +472,8 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
 
     assert all(x.seq == x.lstrip_query().rstrip_query().seq for x in results)
 
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_stitching_partial_align(exact_aligner):
@@ -497,8 +496,8 @@ def test_stitching_partial_align(exact_aligner):
 
     assert all(x.seq != x.lstrip_query().rstrip_query().seq for x in results)
 
-    assert set(map(lambda x: x.seq, contigs)) \
-        != set(map(lambda x: x.lstrip_query().rstrip_query().seq, results))
+    assert { contig.seq for contig in contigs } \
+        != { contig.lstrip_query().rstrip_query().seq for contig in results }
 
 
 def test_partial_align_consensus(exact_aligner):
@@ -516,8 +515,8 @@ def test_partial_align_consensus(exact_aligner):
 
     results = list(stitch_consensus(contigs))
     assert len(results) == len(contigs)
-    assert set(map(lambda x: x.seq, contigs)) \
-        == set(map(lambda x: x.seq, results))
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
 
 
 def test_stitching_partial_align_multiple_sequences(exact_aligner):
@@ -547,8 +546,8 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner):
     for result in results:
         assert any(result.seq in contig.seq for contig in contigs)
 
-    assert set(map(lambda x: x.seq, contigs)) \
-        != set(map(lambda x: x.lstrip_query().rstrip_query().seq, results))
+    assert { contig.seq for contig in contigs } \
+        != { contig.lstrip_query().rstrip_query().seq for contig in results }
 
 
 def test_partial_align_consensus_multiple_sequences(exact_aligner):
