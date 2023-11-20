@@ -147,7 +147,7 @@ class Cigar(tuple):
     """
 
     def __new__(cls, cigar_lst: Iterable[Tuple[int, CigarActions]]):
-        return super(Cigar, cls).__new__(cls, Cigar.normalize(cigar_lst))
+        return super(Cigar, cls).__new__(cls, Cigar.normalize(cigar_lst)) # type: ignore
 
 
     @staticmethod
@@ -370,7 +370,7 @@ class Cigar(tuple):
             match = re.match(r'([0-9]+)([^0-9])', string)
             if match:
                 num, operation = match.groups()
-                data.append([int(num), Cigar.parse_operation(operation)])
+                data.append((int(num), Cigar.parse_operation(operation)))
                 string = string[match.end():]
             else:
                 raise ValueError(f"Invalid CIGAR string. Invalid part: {string[:20]}")
@@ -573,7 +573,7 @@ class CigarHit:
         return Fraction(1, self.cigar.op_length * 3 + 1)
 
 
-    def _ref_cut_to_op_cut(self, cut_point: float):
+    def _ref_cut_to_op_cut(self, cut_point):
         mapping = self.coordinate_mapping
 
         left_op_cut_point = mapping.ref_to_op.left_max(floor(cut_point))
@@ -615,17 +615,17 @@ class CigarHit:
         The two parts do not share any elements, and no element is "lost".
         """
 
-        cut_point = Fraction(cut_point)
-        if cut_point.denominator == 1:
+        fcut_point: Fraction = Fraction(cut_point)
+        if fcut_point.denominator == 1:
             raise ValueError("Cut accepts fractions, not integers")
 
         if self.ref_length == 0 or \
-           not (self.r_st - 1 < cut_point < self.r_ei + 1):
+           not (self.r_st - 1 < fcut_point < self.r_ei + 1):
             raise IndexError("Cut point out of reference bounds")
 
-        op_cut_point = self._ref_cut_to_op_cut(cut_point)
-        left = self._slice(self.r_st, self.q_st, 0, floor(op_cut_point))
-        right = self._slice(left.r_ei + 1, left.q_ei + 1, ceil(op_cut_point), self.cigar.op_length)
+        op_fcut_point = self._ref_cut_to_op_cut(fcut_point)
+        left = self._slice(self.r_st, self.q_st, 0, floor(op_fcut_point))
+        right = self._slice(left.r_ei + 1, left.q_ei + 1, ceil(op_fcut_point), self.cigar.op_length)
 
         return left, right
 
@@ -677,7 +677,7 @@ class CigarHit:
         return f'CigarHit({str(self.cigar)!r}, r_st={self.r_st!r}, r_ei={self.r_ei!r}, q_st={self.q_st!r}, q_ei={self.q_ei!r})'
 
 
-def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> List[CigarHit]:
+def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     """
     This function exists to deal with the fact that mappy does not always
     connect big gaps, and returns surrounding parts as two separate alignment hits.
@@ -688,10 +688,10 @@ def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> List[CigarHit]:
     that overlap with previously found alignments.
     """
 
-    if not len(cigar_hits) > 0:
+    if len(cigar_hits) == 0:
         raise ValueError("Expected a non-empty list of cigar hits")
 
-    accumulator = []
+    accumulator: List[CigarHit] = []
 
     # Collect non-overlaping parts.
     # Earlier matches have priority over ones that come after.
@@ -705,7 +705,7 @@ def connect_cigar_hits(cigar_hits: Iterable[CigarHit]) -> List[CigarHit]:
     sorted_parts = sorted(accumulator, key=lambda p: p.r_st)
 
     # Segregate independent matches.
-    sorted_groups = []
+    sorted_groups: List[List[CigarHit]] = []
 
     def find_group(hit):
         for group in sorted_groups:

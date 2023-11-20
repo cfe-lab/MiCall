@@ -139,15 +139,16 @@ class FrankensteinContig(AlignedContig):
             raise ValueError("Empty Frankenstei do not exist")
 
         # Flatten any possible Frankenstein parts
-        self.parts = [subpart for part in parts for subpart in
-                      (part.parts if isinstance(part, FrankensteinContig) else [part])]
+        self.parts: List[AlignedContig] = \
+            [subpart for part in parts for subpart in
+             (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
         aligned = reduce(FrankensteinContig.munge, self.parts)
 
         super().__init__(aligned.query, aligned.alignment)
 
 
-    def cut_reference(self, cut_point: float) -> 'FrankensteinContig':
+    def cut_reference(self, cut_point: float) -> Tuple['FrankensteinContig', 'FrankensteinContig']:
         # Search for the part that needs to be cut
         left_parts = list(takewhile(lambda part: cut_point >= part.alignment.r_ei + 1, self.parts))
         target_part = self.parts[len(left_parts)]
@@ -266,7 +267,7 @@ def calculate_concordance(left: str, right: str) -> List[float]:
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    result = [0] * len(left)
+    result: List[float] = [0] * len(left)
 
     def slide(left, right):
         window_size = 30
@@ -388,6 +389,8 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]
                for cover_interval in cumulative_coverage):
             return current
 
+    return None
+
 
 def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]:
     """ Filter out all contigs that are contained within other contigs. """
@@ -402,7 +405,7 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
     return contigs
 
 
-def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
+def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]:
     def covered_by(gap, other):
         # Check if any 1 reference coordinate in gap is mapped in other.
         gap_coords = gap.coordinate_mapping.ref_to_query.domain
@@ -438,7 +441,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> Iterable[AlignedCon
                 process_queue.put(right_part)
                 return
 
-    process_queue = LifoQueue()
+    process_queue: LifoQueue = LifoQueue()
     for contig in contigs: process_queue.put(contig)
 
     while not process_queue.empty():
@@ -453,12 +456,12 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
 
     # Contigs that did not align do not need any more processing
     yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
-    aligned = [x for x in maybe_aligned if isinstance(x, AlignedContig)]
+    aligned: List[AlignedContig] = \
+        [x for x in maybe_aligned if isinstance(x, AlignedContig)]
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
-    aligned = combine_overlaps(aligned)
-    yield from aligned
+    yield from combine_overlaps(aligned)
 
 
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
