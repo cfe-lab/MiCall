@@ -395,6 +395,7 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]
 def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]:
     """ Filter out all contigs that are contained within other contigs. """
 
+    contigs = contigs[:]
     while contigs:
         covered = find_covered_contig(contigs)
         if covered:
