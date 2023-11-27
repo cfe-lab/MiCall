@@ -341,7 +341,7 @@ def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     Note that intervals are inclusive.
 
     :param intervals: A list of intervals [start, end] where 'start' and 'end' are integers.
-    :eturn: A list of merged intervals.
+    :return: A list of merged intervals.
     """
 
     if not intervals:
