@@ -8,9 +8,15 @@ from itertools import accumulate, takewhile
 from gotoh import align_it
 from queue import LifoQueue
 from math import floor
+import logging
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.consensus_aligner import CigarActions
+from micall.utils.structured_logger import register_structured_logger
+
+
+logger = logging.getLogger(__name__)
+register_structured_logger(logger)
 
 
 @dataclass
@@ -194,22 +200,39 @@ class FrankensteinContig(AlignedContig):
 
 def align_to_reference(contig) -> Iterable[GenotypedContig]:
     if contig.ref_seq is None:
+        logger.info("Contig %r not aligned - no reference.", contig.name,
+                    extra={"action": "alignment", "type": "noref", "contig": contig})
         yield contig
         return
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
     if not alignments:
+        logger.info("Contig %r not aligned - backend choice.", contig.name,
+                    extra={"action": "alignment", "type": "zerohits", "contig": contig})
         yield contig
         return
 
     hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
     connected = connect_cigar_hits(hits_array)
+
+    logger.info("Contig %r aligned in %s parts.", contig.name, len(connected),
+                extra={"action": "alignment", "type": "hitnumber",
+                       "contig": contig, "n": len(connected)})
+
+    def logpart(i, part):
+        logger.info("Part %r of contig %s aligned as [%s, %s]->[%s, %s].",
+                    i, contig.name, part.q_st, part.q_ei, part.r_st, part.r_ei,
+                    extra={"action": "alignment", "type": "hit",
+                           "contig": contig, "part": part, "i": i})
+
     if len(connected) == 1:
+        logpart(0, connected[0])
         yield AlignedContig(query=contig, alignment=connected[0])
         return
 
-    for single_hit in connected:
+    for i, single_hit in enumerate(connected):
+        logpart(i, single_hit)
         query = GenotypedContig(name=f'part({contig.name})',
                                 seq=contig.seq,
                                 ref_name=contig.ref_name,
@@ -326,6 +349,8 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         # Find overlap. If there isn't one - we are done with the current contig.
         overlapping_contig = find_overlapping_contig(current, contigs)
         if not overlapping_contig:
+            logger.info("Nothing overlaps with %r.",
+                        current.name, extra={"action": "nooverlap", "contig": current})
             yield current
             continue
 
@@ -333,6 +358,13 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         new_contig = stitch_2_contigs(current, overlapping_contig)
         contigs.remove(overlapping_contig)
         contigs.insert(0, new_contig)
+
+        logger.info("Stitching %r with %r results in %r at [%s,%s]->[%s,%s].",
+                    current.name, overlapping_contig.name,
+                    new_contig.name, new_contig.alignment.q_st, new_contig.alignment.q_ei,
+                    new_contig.alignment.r_st, new_contig.alignment.r_ei,
+                    extra={"action": "stitch", "result": new_contig,
+                           "left": current, "right": overlapping_contig})
 
 
 def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
@@ -400,6 +432,8 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
         covered = find_covered_contig(contigs)
         if covered:
             contigs.remove(covered)
+            logger.info("Droped contig %r as it is completely covered by other contigs.",
+                        covered.name, extra={"action": "drop", "contig": covered})
         else:
             break
 
@@ -440,6 +474,17 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 contigs.append(left_part)
                 contigs.append(right_part)
                 process_queue.put(right_part)
+
+                logger.info("Split contig %r around its gap at [%s, %s]->[%s, %s]. "
+                            "Left part: %r at [%s, %s]->[%s, %s], "
+                            "right part: %r at [%s, %s]->[%s, %s].",
+                            contig.name, gap.q_st, gap.q_ei, gap.r_st, gap.r_ei,
+                            left_part.name, left_part.alignment.q_st, left_part.alignment.q_ei,
+                            left_part.alignment.r_st, left_part.alignment.r_ei,
+                            right_part.name, right_part.alignment.q_st, right_part.alignment.q_ei,
+                            right_part.alignment.r_st, right_part.alignment.r_ei,
+                            extra={"action": "splitgap", "contig": contig,
+                                   "gap": gap, "left": left_part, "right": right_part})
                 return
 
     process_queue: LifoQueue = LifoQueue()
@@ -453,6 +498,12 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
 
 
 def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig]:
+    contigs = list(contigs)
+    for contig in contigs:
+        logger.info("Introduced contig %r of ref %r, group_ref %r, and length %s.",
+                    contig.name, contig.ref_name, contig.group_ref, len(contig.seq),
+                    extra={"action": "intro", "contig": contig})
+
     maybe_aligned = align_all_to_reference(contigs)
 
     # Contigs that did not align do not need any more processing
