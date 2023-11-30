@@ -221,7 +221,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
                        "contig": contig, "n": len(connected)})
 
     def logpart(i, part):
-        logger.info("Part %r of contig %s aligned as [%s, %s]->[%s, %s].",
+        logger.info("Part %r of contig %r aligned as [%s, %s]->[%s, %s].",
                     i, contig.name, part.q_st, part.q_ei, part.r_st, part.r_ei,
                     extra={"action": "alignment", "type": "hit",
                            "contig": contig, "part": part, "i": i})
@@ -233,7 +233,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
 
     for i, single_hit in enumerate(connected):
         logpart(i, single_hit)
-        query = GenotypedContig(name=f'part({contig.name})',
+        query = GenotypedContig(name=f'part({i}, {contig.name})',
                                 seq=contig.seq,
                                 ref_name=contig.ref_name,
                                 group_ref=contig.group_ref,
