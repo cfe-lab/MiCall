@@ -225,6 +225,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
                     i, contig.name, part.q_st, part.q_ei, part.r_st, part.r_ei,
                     extra={"action": "alignment", "type": "hit",
                            "contig": contig, "part": part, "i": i})
+        logger.debug("Part %r of contig %r aligned as %s.", i, contig.name, part)
 
     if len(connected) == 1:
         logpart(0, connected[0])
@@ -326,6 +327,12 @@ def stitch_2_contigs(left, right):
     aligned_right_part = aligned_right[max_concordance_index:]
     overlap_seq = ''.join(c for c in aligned_left_part + aligned_right_part if c != '-')
 
+    average_concordance = sum(concordance) / (len(concordance) or 1)
+    logger.debug("Average concordance between overlapping parts of %r and %r is %s (full is %s).",
+                 left.name, right.name, average_concordance, concordance,
+                 extra={"action": "concordance", "left": left, "right": right,
+                        "value": concordance, "avg": average_concordance})
+
     # Return something that can be fed back into the loop.
     match_fraction = min(left.match_fraction, right.match_fraction)
     ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
@@ -365,6 +372,9 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
                     new_contig.alignment.r_st, new_contig.alignment.r_ei,
                     extra={"action": "stitch", "result": new_contig,
                            "left": current, "right": overlapping_contig})
+        logger.debug("Stitching %r with %r results in %r at %s.",
+                     current.name, overlapping_contig.name,
+                     new_contig.name, new_contig.alignment)
 
 
 def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
@@ -462,6 +472,8 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 # overlaps around them.
                 # And we are likely to lose quality with every stitching operation.
                 # By skipping we assert that this gap is aligner's fault.
+                logger.debug("Ignored insignificant gap of %r, %s.", contig.name, gap,
+                             extra={"action": "ignoregap", "contig": contig, "gap": gap})
                 continue
 
             if covered(contig, gap):

@@ -677,6 +677,10 @@ class CigarHit:
         return f'CigarHit({str(self.cigar)!r}, r_st={self.r_st!r}, r_ei={self.r_ei!r}, q_st={self.q_st!r}, q_ei={self.q_ei!r})'
 
 
+    def __str__(self):
+        return f'{str(self.cigar)}@[{self.q_st},{self.q_ei}]->[{self.r_st},{self.r_ei}]'
+
+
 def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     """
     This function exists to deal with the fact that mappy does not always
