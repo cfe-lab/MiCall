@@ -18,7 +18,6 @@ from micall.utils.structured_logger import register_structured_logger
 logger = logging.getLogger(__name__)
 register_structured_logger(logger)
 
-
 @dataclass
 class Contig:
     name: str

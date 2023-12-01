@@ -1,9 +1,12 @@
 
 import random
 import pytest
+import logging
 from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference
 from micall.tests.utils import MockAligner, fixed_random_seed
+from micall.utils.structured_logger import iterate_messages
 
+logging.basicConfig(level=logging.DEBUG)
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
@@ -605,6 +608,71 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
     assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10
     assert results[0].seq == contigs[0].seq[:-10] + contigs[1].seq[20:]
     assert results[0].name == 'left(a)+overlap(a,b)+right(b)'
+
+
+def test_correct_processing_complex_logs(exact_aligner):
+    # Scenario: There are two reference organisms.
+    # Each with 4 contigs.
+    # For each, three overlapping contigs are stitched together, the non-overlapping is kept separate.
+    # Tested before, but this time we check the logs
+
+    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
+
+    contigs = [[
+        GenotypedContig(name='a',
+                        seq='A' * 50 + 'C' * 20,
+                        ref_name=ref_name,
+                        group_ref=ref_name,
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 20 + 'C' * 50,
+                        ref_name=ref_name,
+                        group_ref=ref_name,
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='c',
+                        seq='C' * 70 + 'T' * 20,
+                        ref_name=ref_name,
+                        group_ref=ref_name,
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='d',
+                        seq='T' * 20 + 'G' * 50,
+                        ref_name=ref_name,
+                        group_ref=ref_name,
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        ] for ref_name in ['testref-1', 'testref-2']]
+
+    contigs = sum(contigs, start=[])
+
+    logger = logging.getLogger("micall.core.contig_stitcher")
+    logger.setLevel(logging.DEBUG)
+
+    messages = list(iterate_messages())
+    assert len(messages) == 0
+
+    list(stitch_contigs(contigs))
+
+    messages = list(iterate_messages())
+    assert len(messages) == 48
+    assert all(name == "micall.core.contig_stitcher" for name, m in messages)
+
+    info_messages = [m for name, m in messages if m.levelname == 'INFO']
+    debug_messages = [m for name, m in messages if m.levelname == 'DEBUG']
+    assert len(info_messages) == 32
+    assert len(debug_messages) == len(messages) - len(info_messages)
+
+    info_actions = [(m.action + ':' + (m.type if hasattr(m, 'type') else '')) for m in info_messages]
+    assert info_actions == \
+        ['intro:'] * 8 + \
+        ['alignment:hitnumber', 'alignment:hit'] * 8 + \
+        ['stitch:'] * 2 + ['nooverlap:'] + ['stitch:'] * 2 + ['nooverlap:'] * 3
 
 
 #  _   _       _ _     _            _
