@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List
+from typing import Iterable, Optional, Tuple, List, Dict
 from collections import deque, defaultdict
 from dataclasses import dataclass
 from math import ceil
@@ -528,9 +528,11 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
     yield from combine_overlaps(aligned)
 
 
+GroupRef = str
+
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(stitch_contigs(contigs))
-    consensus_parts = defaultdict(list) # group_ref -> List[AlignedContig]
+    consensus_parts: Dict[GroupRef, List[AlignedContig]] = defaultdict(list)
 
     for contig in contigs:
         if isinstance(contig, AlignedContig):
