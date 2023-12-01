@@ -125,7 +125,8 @@ class CoordinateMapping:
         return f'CoordinateMapping({self.ref_to_op},{self.query_to_op})'
 
 
-class Cigar(tuple):
+@dataclass(frozen=True)
+class Cigar:
     """
     Represents an alignment between a query sequence and a reference sequence using the
     Compact Idiosyncratic Gapped Alignment Report (CIGAR) string format.
@@ -146,8 +147,10 @@ class Cigar(tuple):
     CIGAR strings are defined in the SAM specification (https://samtools.github.io/hts-specs/SAMv1.pdf).
     """
 
-    def __new__(cls, cigar_lst: Iterable[Tuple[int, CigarActions]]):
-        return super(Cigar, cls).__new__(cls, Cigar.normalize(cigar_lst)) # type: ignore
+    data: List[Tuple[int, CigarActions]]
+
+    def __post_init__(self):
+        self.__dict__['data'] = list(Cigar.normalize(self.data))
 
 
     @staticmethod
@@ -170,7 +173,7 @@ class Cigar(tuple):
         The resulting sequence is a decoded version of the initial run-length encoded sequence.
         """
 
-        for num, operation in self:
+        for num, operation in self.data:
             for _ in range(num):
                 yield operation
 
@@ -419,13 +422,17 @@ class Cigar(tuple):
         if last_item: yield (last_item[0], last_item[1])
 
 
+    def __add__(self, other: 'Cigar'):
+        return Cigar(self.data + other.data)
+
+
     def __repr__(self):
         return f'Cigar({str(self)!r})'
 
 
     def __str__(self):
         """ Inverse of Cigar.parse """
-        return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self)
+        return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self.data)
 
 
 @dataclass
