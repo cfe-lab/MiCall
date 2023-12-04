@@ -2,6 +2,7 @@ import pytest
 from typing import List, Tuple
 from math import floor
 import itertools
+import re
 
 from micall.utils.consensus_aligner import CigarActions
 from micall.utils.cigar_tools import Cigar, CigarHit, connect_cigar_hits, CoordinateMapping
@@ -149,172 +150,153 @@ def test_invalid_cigar_string():
         Cigar.coerce('3') # Not enough Ms
 
 
+CIGAR_REGEX = re.compile(r"(.*)@([0-9]+),([0-9]+)")
+def parsed_hit(string):
+    match = CIGAR_REGEX.match(string)
+    assert match, f"Cannot parse {string}"
+    cigar_str, r_st, q_st = match.groups()
+    cigar = Cigar.coerce(cigar_str)
+    r_ei = int(r_st) + cigar.ref_length - 1
+    q_ei = int(q_st) + cigar.query_length - 1
+    return CigarHit(cigar, int(r_st), int(r_ei), int(q_st), int(q_ei))
+
+
 cigar_hit_ref_cut_cases = [
     # Trivial cases
-    (CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4), 2.5,
-     [CigarHit('2M', r_st=1, r_ei=2, q_st=1, q_ei=2),
-      CigarHit('2M', r_st=3, r_ei=4, q_st=3, q_ei=4)]),
+    ('4M@1,1', 2.5,
+     ['2M@1,1', '2M@3,3']),
 
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 3.5,
-     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-      CigarHit('6M', r_st=4, r_ei=9, q_st=4, q_ei=9)]),
+    ('9M@1,1', 3.5,
+     ['3M@1,1', '6M@4,4']),
 
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 4.5,
-     [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
-      CigarHit('5M', r_st=5, r_ei=9, q_st=5, q_ei=9)]),
+    ('9M@1,1', 4.5,
+     ['4M@1,1', '5M@5,5']),
 
-    (CigarHit('9M', r_st=0, r_ei=8, q_st=0, q_ei=8), 3.5,
-     [CigarHit('4M', r_st=0, r_ei=3, q_st=0, q_ei=3),
-      CigarHit('5M', r_st=4, r_ei=8, q_st=4, q_ei=8)]),
+    ('9M@0,0', 3.5,
+     ['4M@0,0', '5M@4,4']),
 
     # Simple cases
-    (CigarHit('9M9D9M', r_st=1, r_ei=27, q_st=1, q_ei=18), 3.5,
-     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-      CigarHit('6M9D9M', r_st=4, r_ei=27, q_st=4, q_ei=18)]),
+    ('9M9D9M@1,1', 3.5,
+     ['3M@1,1', '6M9D9M@4,4']),
 
-    (CigarHit('9M9D9M', r_st=1, r_ei=27, q_st=1, q_ei=18), 20.5,
-     [CigarHit('9M9D2M', r_st=1, r_ei=20, q_st=1, q_ei=11),
-      CigarHit('7M', r_st=21, r_ei=27, q_st=12, q_ei=18)]),
+    ('9M9D9M@1,1', 20.5,
+     ['9M9D2M@1,1', '7M@21,12']),
 
-    (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 3.5,
-     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-      CigarHit('6M9I9M', r_st=4, r_ei=18, q_st=4, q_ei=27)]),
+    ('9M9I9M@1,1', 3.5,
+     ['3M@1,1', '6M9I9M@4,4']),
 
-    (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 13.5 or 27/2,
-     [CigarHit('9M9I4M', r_st=1, r_ei=13, q_st=1, q_ei=22),
-      CigarHit('5M', r_st=14, r_ei=18, q_st=23, q_ei=27)]),
+    ('9M9I9M@1,1', 13.5 or 27/2,
+     ['9M9I4M@1,1', '5M@14,23']),
 
-    (CigarHit('5M6I', r_st=1, r_ei=5, q_st=1, q_ei=11), 3.5,
-     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-      CigarHit('2M6I', r_st=4, r_ei=5, q_st=4, q_ei=11)]),
+    ('5M6I@1,1', 3.5,
+     ['3M@1,1', '2M6I@4,4']),
 
-    (CigarHit('6I5M', r_st=1, r_ei=5, q_st=1, q_ei=11), 3.5,
-     [CigarHit('6I3M', r_st=1, r_ei=3, q_st=1, q_ei=9),
-      CigarHit('2M', r_st=4, r_ei=5, q_st=10, q_ei=11)]),
+    ('6I5M@1,1', 3.5,
+     ['6I3M@1,1', '2M@4,10']),
 
-    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5), 3.5,
-     [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-      CigarHit('2M6D', r_st=4, r_ei=11, q_st=4, q_ei=5)]),
+    ('5M6D@1,1', 3.5,
+     ['3M@1,1', '2M6D@4,4']),
 
-    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5), 3.5,
-     [CigarHit('3D', r_st=1, r_ei=3, q_st=1, q_ei=0),
-      CigarHit('3D5M', r_st=4, r_ei=11, q_st=1, q_ei=5)]),
+    ('6D5M@1,1', 3.5,
+     ['3D@1,1', '3D5M@4,1']),
 
-    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5), 7.5,
-     [CigarHit('5M2D', r_st=1, r_ei=7, q_st=1, q_ei=5),
-      CigarHit('4D', r_st=8, r_ei=11, q_st=6, q_ei=5)]),
+    ('5M6D@1,1', 7.5,
+     ['5M2D@1,1', '4D@8,6']),
 
-    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5), 7.5,
-     [CigarHit('6D1M', r_st=1, r_ei=7, q_st=1, q_ei=1),
-      CigarHit('4M', r_st=8, r_ei=11, q_st=2, q_ei=5)]),
+    ('6D5M@1,1', 7.5,
+     ['6D1M@1,1', '4M@8,2']),
 
-    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5), 6.5,
-     [CigarHit('6D', r_st=1, r_ei=6, q_st=1, q_ei=0),
-      CigarHit('5M', r_st=7, r_ei=11, q_st=1, q_ei=5)]),
+    ('6D5M@1,1', 6.5,
+     ['6D@1,1', '5M@7,1']),
 
     # Ambigous cases
-    (CigarHit('9M9D9M', r_st=1, r_ei=27, q_st=1, q_ei=18), 13.5 or 27/2,
-     [CigarHit('9M4D', r_st=1, r_ei=13, q_st=1, q_ei=9),
-      CigarHit('5D9M', r_st=14, r_ei=27, q_st=10, q_ei=18)]),
+    ('9M9D9M@1,1', 13.5 or 27/2,
+     ['9M4D@1,1', '5D9M@14,10']),
 
-    (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 9.2,
-     [CigarHit('9M1I', r_st=1, r_ei=9, q_st=1, q_ei=10),
-      CigarHit('8I9M', r_st=10, r_ei=18, q_st=11, q_ei=27)]),
+    ('9M9I9M@1,1', 9.2,
+     ['9M1I@1,1', '8I9M@10,11']),
 
-    (CigarHit('9M9D9I9M', r_st=1, r_ei=27, q_st=1, q_ei=27), 13.5 or 27/2,
-     [CigarHit('9M4D', r_st=1, r_ei=13, q_st=1, q_ei=9),
-      CigarHit('5D9I9M', r_st=14, r_ei=27, q_st=10, q_ei=27)]),
+    ('9M9D9I9M@1,1', 13.5 or 27/2,
+     ['9M4D@1,1', '5D9I9M@14,10']),
 
-    (CigarHit('9M9I9D9M', r_st=1, r_ei=27, q_st=1, q_ei=27), 13.5 or 27/2,
-     [CigarHit('9M9I4D', r_st=1, r_ei=13, q_st=1, q_ei=18),
-      CigarHit('5D9M', r_st=14, r_ei=27, q_st=19, q_ei=27)]),
+    ('9M9I9D9M@1,1', 13.5 or 27/2,
+     ['9M9I4D@1,1', '5D9M@14,19']),
 
-    (CigarHit('1M1I1D1M', r_st=1, r_ei=3, q_st=1, q_ei=3), 1.5, # same as previous 2 cases but smaller
-     [CigarHit('1M1I', r_st=1, r_ei=1, q_st=1, q_ei=2),
-      CigarHit('1D1M', r_st=2, r_ei=3, q_st=3, q_ei=3)]),
+    ('1M1I1D1M@1,1', 1.5, # same as previous 2 cases but smaller
+     ['1M1I@1,1', '1D1M@2,3']),
 
-    (CigarHit('1M1D1I1M', r_st=1, r_ei=3, q_st=1, q_ei=3), 1.5, # same as previous 2 cases but smaller
-     [CigarHit('1M', r_st=1, r_ei=1, q_st=1, q_ei=1),
-      CigarHit('1D1I1M', r_st=2, r_ei=3, q_st=2, q_ei=3)]),
+    ('1M1D1I1M@1,1', 1.5, # same as previous 2 cases but smaller
+     ['1M@1,1', '1D1I1M@2,2']),
 
     # Edge cases
-    (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 9.5, # no middlepoint
-     [CigarHit('9M5I', r_st=1, r_ei=9, q_st=1, q_ei=14),
-      CigarHit('4I9M', r_st=10, r_ei=18, q_st=15, q_ei=27)]),
+    ('9M9I9M@1,1', 9.5, # no middlepoint
+     ['9M5I@1,1', '4I9M@10,15']),
 
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 8.5, # one is singleton
-     [CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8),
-      CigarHit('1M', r_st=9, r_ei=9, q_st=9, q_ei=9)]),
+    ('9M@1,1', 8.5,
+     ['8M@1,1', '1M@9,9']),
 
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 9.5, # one is empty
-     [CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9),
-      CigarHit('', r_st=10, r_ei=9, q_st=10, q_ei=9)]),
+    ('9M@1,1', 9.5,
+     ['9M@1,1', '@10,10']),
 
-    (CigarHit('7M', r_st=3, r_ei=9, q_st=3, q_ei=9), 2.5, # one is empty
-     [CigarHit('', r_st=3, r_ei=2, q_st=3, q_ei=2),
-      CigarHit('7M', r_st=3, r_ei=9, q_st=3, q_ei=9)]),
+    ('7M@3,3', 2.5,
+     ['@3,3', '7M@3,3']),
 
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 0.5, # one is empty around 0
-     [CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
-      CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9)]),
+    ('9M@1,1', 0.5,
+     ['@1,1', '9M@1,1']),
 
-    (CigarHit('9M', r_st=0, r_ei=8, q_st=0, q_ei=8), -0.5, # another one is empty and negative
-     [CigarHit('', r_st=0, r_ei=-1, q_st=0, q_ei=-1),
-      CigarHit('9M', r_st=0, r_ei=8, q_st=0, q_ei=8)]),
+    ('9M@0,0', -0.5,
+     ['@0,0', '9M@0,0']),
 
-    (CigarHit('9D', r_st=1, r_ei=9, q_st=1, q_ei=0), 3.5,
-     [CigarHit('3D', r_st=1, r_ei=3, q_st=1, q_ei=0),
-      CigarHit('6D', r_st=4, r_ei=9, q_st=1, q_ei=0)]),
+    ('9D@1,1', 3.5,
+     ['3D@1,1', '6D@4,1']),
 
-    (CigarHit('9D', r_st=0, r_ei=8, q_st=0, q_ei=-1), -0.5,
-     [CigarHit('', r_st=0, r_ei=-1, q_st=0, q_ei=-1),
-      CigarHit('9D', r_st=0, r_ei=8, q_st=0, q_ei=-1)]),
+    ('9D@0,0', -0.5,
+     ['@0,0', '9D@0,0']),
 
-    (CigarHit('1M7I1M', r_st=1, r_ei=2, q_st=1, q_ei=9), 1.5,
-     [CigarHit('1M4I', r_st=1, r_ei=1, q_st=1, q_ei=5),
-      CigarHit('3I1M', r_st=2, r_ei=2, q_st=6, q_ei=9)]),
+    ('1M7I1M@1,1', 1.5,
+     ['1M4I@1,1', '3I1M@2,6']),
 
-    (CigarHit('1M6I1M', r_st=1, r_ei=2, q_st=1, q_ei=8), 1.5,
-     [CigarHit('1M3I', r_st=1, r_ei=1, q_st=1, q_ei=4),
-      CigarHit('3I1M', r_st=2, r_ei=2, q_st=5, q_ei=8)]),
+    ('1M6I1M@1,1', 1.5,
+     ['1M3I@1,1', '3I1M@2,5']),
 
-    (CigarHit('1M7I1M', r_st=1, r_ei=2, q_st=1, q_ei=9), 1.999,
-     [CigarHit('1M7I', r_st=1, r_ei=1, q_st=1, q_ei=8),
-      CigarHit('1M', r_st=2, r_ei=2, q_st=9, q_ei=9)]),
+    ('1M7I1M@1,1', 1.999,
+     ['1M7I@1,1', '1M@2,9']),
 
-    (CigarHit('1M7I1M', r_st=1, r_ei=2, q_st=1, q_ei=9), 1.001,
-     [CigarHit('1M', r_st=1, r_ei=1, q_st=1, q_ei=1),
-      CigarHit('7I1M', r_st=2, r_ei=2, q_st=2, q_ei=9)]),
+    ('1M7I1M@1,1', 1.001,
+     ['1M@1,1', '7I1M@2,2']),
 
-    (CigarHit('2=1X2N1N2=1H2S', r_st=1, r_ei=8, q_st=1, q_ei=7), 3.5,
-     [CigarHit('2=1X', r_st=1, r_ei=3, q_st=1, q_ei=3),
-      CigarHit('3N2=1H2S', r_st=4, r_ei=8, q_st=4, q_ei=7)]),
+    ('2=1X2N1N2=1H2S@1,1', 3.5,
+     ['2=1X@1,1', '3N2=1H2S@4,4']),
 
     # Negative cases
-    (CigarHit('9M9I9M', r_st=1, r_ei=18, q_st=1, q_ei=27), 20.5,
+    ('9M9I9M@1,1', 20.5,
      IndexError("20.5 is bigger than reference (18)")),
 
-    (CigarHit('', r_st=2, r_ei=1, q_st=2, q_ei=1), 2.5,
+    ('@2,2', 2.5,
      IndexError("Empty string cannot be cut")),
 
-    (CigarHit('', r_st=2, r_ei=1, q_st=2, q_ei=1), 1.5,
+    ('@2,2', 1.5,
      IndexError("Empty string cannot be cut")),
 
-    (CigarHit('9I', r_st=1, r_ei=0, q_st=1, q_ei=9), 3.5,
+    ('9I@1,1', 3.5,
      IndexError("Out of reference bounds")),
 
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9), 4,
+    ('9M@1,1', 4,
      ValueError("Cut point must not be an integer")),
 
 ]
 
+
 @pytest.mark.parametrize('hit, cut_point, expected_result', cigar_hit_ref_cut_cases)
 def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
+    hit = parsed_hit(hit)
+
     if isinstance(expected_result, Exception):
         with pytest.raises(type(expected_result)):
             hit.cut_reference(cut_point)
 
     else:
+        expected_result = list(map(parsed_hit, expected_result))
         expected_left, expected_right = expected_result
         left, right = hit.cut_reference(cut_point)
         assert expected_left == left
@@ -324,91 +306,59 @@ def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
                                             if not isinstance(x[2], Exception)])
 def test_cigar_hit_ref_cut_add_prop(hit, cut_point):
+    hit = parsed_hit(hit)
     left, right = hit.cut_reference(cut_point)
     assert left + right == hit
 
 
-@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
-                                            if not isinstance(x[2], Exception)])
+@pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in
+                                            [x for x in cigar_hit_ref_cut_cases
+                                             if not isinstance(x[2], Exception)]])
 def test_cigar_hit_ref_cut_add_prop_exhaustive(hit, cut_point):
+    hit = parsed_hit(hit)
     percentage = cut_point - floor(cut_point)
 
     for cut_point in range(hit.r_st, hit.r_ei + 2):
         left, right = hit.cut_reference(cut_point - percentage)
         assert left + right == hit
 
-
 lstrip_cases = [
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9),
-     CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9)),
-
-    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5),
-     CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5)),
-
-    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5),
-     CigarHit('5M', r_st=7, r_ei=11, q_st=1, q_ei=5)),
-
-    (CigarHit('6D4I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
-
-    (CigarHit('3D3D4I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
-
-    (CigarHit('3D2I3D2I5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
-
-    (CigarHit('4I6D5M', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('4I5M', r_st=7, r_ei=11, q_st=1, q_ei=9)),
-
-    (CigarHit('6D4I', r_st=1, r_ei=6, q_st=1, q_ei=4),
-     CigarHit('4I', r_st=7, r_ei=6, q_st=1, q_ei=4)),
-
-    (CigarHit('4I6D', r_st=1, r_ei=6, q_st=1, q_ei=4),
-     CigarHit('4I6D', r_st=1, r_ei=6, q_st=1, q_ei=4)),
-
-    (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
-     CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),
+    ('9M@1,1', '9M@1,1'),
+    ('5M6D@1,1', '5M6D@1,1'),
+    ('6D5M@1,1', '5M@7,1'),
+    ('6D4I5M@1,1', '4I5M@7,1'),
+    ('3D3D4I5M@1,1', '4I5M@7,1'),
+    ('3D2I3D2I5M@1,1', '4I5M@7,1'),
+    ('4I6D5M@1,1', '4I5M@7,1'),
+    ('6D4I@1,1', '4I@7,1'),
+    ('4I6D@1,1', '4I6D@1,1'),
+    ('@1,1', '@1,1'),
 ]
 
 @pytest.mark.parametrize('hit, expected', lstrip_cases)
 def test_cigar_hit_lstrip(hit, expected):
+    hit = parsed_hit(hit)
+    expected = parsed_hit(expected)
     assert expected == hit.lstrip_query()
 
 
 rstrip_cases = [
-    (CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9),
-     CigarHit('9M', r_st=1, r_ei=9, q_st=1, q_ei=9)),
-
-    (CigarHit('5M6D', r_st=1, r_ei=11, q_st=1, q_ei=5),
-     CigarHit('5M', r_st=1, r_ei=5, q_st=1, q_ei=5)),
-
-    (CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5),
-     CigarHit('6D5M', r_st=1, r_ei=11, q_st=1, q_ei=5)),
-
-    (CigarHit('5M4I6D', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
-
-    (CigarHit('5M4I3D3D', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
-
-    (CigarHit('5M2I3D2I3D', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
-
-    (CigarHit('5M6D4I', r_st=1, r_ei=11, q_st=1, q_ei=9),
-     CigarHit('5M4I', r_st=1, r_ei=5, q_st=1, q_ei=9)),
-
-    (CigarHit('6D4I', r_st=1, r_ei=6, q_st=1, q_ei=4),
-     CigarHit('6D4I', r_st=1, r_ei=6, q_st=1, q_ei=4)),
-
-    (CigarHit('4I6D', r_st=1, r_ei=6, q_st=1, q_ei=4),
-     CigarHit('4I', r_st=1, r_ei=0, q_st=1, q_ei=4)),
-
-    (CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0),
-     CigarHit('', r_st=1, r_ei=0, q_st=1, q_ei=0)),
+    ('9M@1,1', '9M@1,1'),
+    ('5M6D@1,1', '5M@1,1'),
+    ('6D5M@1,1', '6D5M@1,1'),
+    ('5M4I6D@1,1', '5M4I@1,1'),
+    ('5M4I3D3D@1,1', '5M4I@1,1'),
+    ('5M2I3D2I3D@1,1', '5M4I@1,1'),
+    ('5M6D4I@1,1', '5M4I@1,1'),
+    ('6D4I@1,1', '6D4I@1,1'),
+    ('4I6D@1,1', '4I@1,1'),
+    ('@1,1', '@1,1'),
 ]
 
 @pytest.mark.parametrize('hit, expected', rstrip_cases)
 def test_cigar_hit_rstrip(hit, expected):
+    hit = parsed_hit(hit)
+    expected = parsed_hit(expected)
     assert expected == hit.rstrip_query()
 
 
@@ -419,6 +369,8 @@ strip_prop_cases_all = [x[0] for x in cigar_hit_ref_cut_cases] \
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strip_combines_with_connect(hit):
+    hit = parsed_hit(hit)
+
     for cut_point in range(hit.r_st - 1, hit.r_ei):
         left, right = hit.cut_reference(cut_point + hit.epsilon)
 
@@ -431,6 +383,8 @@ def test_cigar_hit_strip_combines_with_connect(hit):
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strip_combines_with_add(hit):
+    hit = parsed_hit(hit)
+
     for cut_point in range(hit.r_st - 1, hit.r_ei):
         left, right = hit.cut_reference(cut_point + hit.epsilon)
 
@@ -443,6 +397,8 @@ def test_cigar_hit_strip_combines_with_add(hit):
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strip_never_crashes(hit):
+    hit = parsed_hit(hit)
+
     hit.rstrip_query().lstrip_query()
     hit.lstrip_query().rstrip_query()
     hit.lstrip_query().lstrip_query()
@@ -451,6 +407,8 @@ def test_cigar_hit_strip_never_crashes(hit):
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strip_is_idempotent(hit):
+    hit = parsed_hit(hit)
+
     h1 = hit.rstrip_query()
     assert h1 == h1.rstrip_query() == h1.rstrip_query().rstrip_query()
 
@@ -466,6 +424,8 @@ def test_cigar_hit_strip_is_idempotent(hit):
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
 def test_cigar_hit_strips_are_commutative(hit):
+    hit = parsed_hit(hit)
+
     assert hit.rstrip_query().lstrip_query() \
         == hit.lstrip_query().rstrip_query()
 
@@ -473,6 +433,7 @@ def test_cigar_hit_strips_are_commutative(hit):
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases
                                             if not isinstance(x[2], Exception)])
 def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
+    hit = parsed_hit(hit)
     percentage = cut_point - floor(cut_point)
 
     for ax_cut in range(hit.r_st, hit.r_ei + 2):
@@ -489,6 +450,7 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
 @pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
                                  if not isinstance(x[2], Exception)])
 def test_cigar_hit_gaps_no_m_or_i(hit):
+    hit = parsed_hit(hit)
     gaps = list(hit.gaps())
 
     if 'D' in str(hit.cigar):
@@ -502,6 +464,7 @@ def test_cigar_hit_gaps_no_m_or_i(hit):
 @pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
                                  if not isinstance(x[2], Exception)])
 def test_cigar_hit_gaps_lengths(hit):
+    hit = parsed_hit(hit)
     gaps = list(hit.gaps())
 
     for gap in gaps:
@@ -538,64 +501,53 @@ def test_illigal_cigar_to_msa(cigar, reference_seq, query_seq):
 connect_cigar_hits_cases = [
     # Non-overlapping hits should be connected with deletions/insertions
     (
-        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
-         CigarHit('4M', r_st=10, r_ei=13, q_st=8, q_ei=11)],
-        [CigarHit('4M5D3I4M', r_st=1, r_ei=13, q_st=1, q_ei=11)]
+        ['4M@1,1', '4M@10,8'],
+        ['4M5D3I4M@1,1']
     ),
     # Overlapping hits should ignore later ones
     (
-        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
-         CigarHit('5M', r_st=3, r_ei=7, q_st=3, q_ei=7)],
-        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4)]
+        ['4M@1,1', '5M@3,3'],
+        ['4M@1,1']
     ),
     # Touching hits should be simply concatenated
     (
-        [CigarHit('4M', r_st=1, r_ei=4, q_st=1, q_ei=4),
-         CigarHit('4M', r_st=5, r_ei=8, q_st=5, q_ei=8)],
-        [CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8)]
+        ['4M@1,1', '4M@5,5'],
+        ['8M@1,1']
     ),
     # Hits that touch at only one boundary should combine just fine
     (
-        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-         CigarHit('6M', r_st=4, r_ei=9, q_st=6, q_ei=11)],
-        [CigarHit('3M2I6M', r_st=1, r_ei=9, q_st=1, q_ei=11)]
+        ['3M@1,1', '6M@4,6'],
+        ['3M2I6M@1,1']
     ),
     # Hits that are subsets of earlier hits should be ignored
     (
-        [CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8),
-         CigarHit('3M', r_st=3, r_ei=5, q_st=3, q_ei=5)],
-        [CigarHit('8M', r_st=1, r_ei=8, q_st=1, q_ei=8)]
+        ['8M@1,1', '3M@3,3'],
+        ['8M@1,1']
     ),
     # Hits that are out of order should be connected if no overlap
     (
-        [CigarHit('3M', r_st=10, r_ei=12, q_st=6, q_ei=8),
-         CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3)],
-        [CigarHit('3M6D2I3M', r_st=1, r_ei=12, q_st=1, q_ei=8)]
+        ['3M@10,6', '3M@1,1'],
+        ['3M6D2I3M@1,1']
     ),
     # Hits that overlap by a single base should prioritize the first hit and not combine
     (
-        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-         CigarHit('3M', r_st=3, r_ei=5, q_st=3, q_ei=5)],
-        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3)]
+        ['3M@1,1', '3M@3,3'],
+        ['3M@1,1']
     ),
     # Non-overlapping hits in the query space but overlapping in reference space
     (
-        [CigarHit('5M', r_st=1, r_ei=5, q_st=1, q_ei=5),
-         CigarHit('1M', r_st=3, r_ei=3, q_st=10, q_ei=10)],
-        [CigarHit('5M', r_st=1, r_ei=5, q_st=1, q_ei=5)]
+        ['5M@1,1', '1M@3,10'],
+        ['5M@1,1']
     ),
     # Combining more than two hits
     (
-        [CigarHit('3M', r_st=1, r_ei=3, q_st=1, q_ei=3),
-         CigarHit('3M', r_st=7, r_ei=9, q_st=7, q_ei=9),
-         CigarHit('3M', r_st=12, r_ei=14, q_st=16, q_ei=18)],
-        [CigarHit('3M3D3I3M2D6I3M', r_st=1, r_ei=14, q_st=1, q_ei=18)]
+        ['3M@1,1', '3M@7,7', '3M@12,16'],
+        ['3M3D3I3M2D6I3M@1,1']
     ),
     # Combining hits including hard-clipping, which should be ignored in alignments
     (
-        [CigarHit('2H5M1H', r_st=1, r_ei=5, q_st=3, q_ei=7),
-         CigarHit('2H5M1H', r_st=11, r_ei=15, q_st=13, q_ei=17)],
-        [CigarHit('2H5M1H5D5I2H5M1H', r_st=1, r_ei=15, q_st=3, q_ei=17)]
+        ['2H5M1H@1,3', '2H5M1H@11,13'],
+        ['2H5M1H5D5I2H5M1H@1,3']
     ),
     # An empty list of hits should raise a ValueError
     (
@@ -604,18 +556,18 @@ connect_cigar_hits_cases = [
     ),
     # Before by reference, after by query
     (
-        [CigarHit('4M', r_st=1, r_ei=4, q_st=8, q_ei=11),
-         CigarHit('4M', r_st=10, r_ei=13, q_st=1, q_ei=4)],
-        [CigarHit('4M', r_st=1, r_ei=4, q_st=8, q_ei=11),
-         CigarHit('4M', r_st=10, r_ei=13, q_st=1, q_ei=4)]
+        ['4M@1,8', '4M@10,1'],
+        ['4M@1,8', '4M@10,1']
     ),
 ]
-
 @pytest.mark.parametrize('hits, expected_result', connect_cigar_hits_cases)
 def test_connect_cigar_hits(hits, expected_result):
+    hits = list(map(parsed_hit, hits))
+
     if isinstance(expected_result, Exception):
         with pytest.raises(type(expected_result)):
             connect_cigar_hits(hits)
     else:
+        expected_result = list(map(parsed_hit, expected_result))
         result = connect_cigar_hits(hits)
         assert expected_result == result
