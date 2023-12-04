@@ -212,7 +212,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         yield contig
         return
 
-    hits_array = [CigarHit(x.cigar, x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
+    hits_array = [CigarHit(Cigar.coerce(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
     connected = connect_cigar_hits(hits_array)
 
     logger.info("Contig %r aligned in %s parts.", contig.name, len(connected),

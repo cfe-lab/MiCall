@@ -2,7 +2,7 @@ import pytest
 import json
 import os
 from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps
-from micall.utils.cigar_tools import CigarHit
+from micall.utils.cigar_tools import CigarHit, Cigar
 from micall.utils.consensus_aligner import CigarActions
 from typing import Dict, List
 from collections import defaultdict
@@ -33,7 +33,7 @@ def read_contigs(line):
             ref_seq=ref_seq,
             match_fraction=2/3,
         )
-        alignment = CigarHit([(length, CigarActions.MATCH)], q_st=20, q_ei=20+length-1, r_st=start, r_ei=end)
+        alignment = CigarHit(Cigar([(length, CigarActions.MATCH)]), q_st=20, q_ei=20+length-1, r_st=start, r_ei=end)
         contig = AlignedContig(query=query, alignment=alignment)
         aidee = f'{start:03d}-{end:03d}'
         yield {'contig': contig, 'id': aidee}

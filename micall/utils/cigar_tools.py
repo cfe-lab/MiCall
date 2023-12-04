@@ -4,7 +4,7 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import Container, Tuple, Iterable, Optional, Set, Dict, List
+from typing import Container, Tuple, Iterable, Optional, Set, Dict, List, Union
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from itertools import chain, dropwhile
@@ -152,7 +152,7 @@ class Cigar:
 
 
     @staticmethod
-    def coerce(obj):
+    def coerce(obj: Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]):
         if isinstance(obj, Cigar):
             return obj
 
@@ -437,7 +437,7 @@ class Cigar:
         return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self._data)
 
 
-@dataclass
+@dataclass(frozen=True)
 class CigarHit:
     """
     This class provides an abstraction over the complex details involved in working with sequence alignments
@@ -461,8 +461,6 @@ class CigarHit:
 
 
     def __post_init__(self):
-        self.cigar = Cigar.coerce(self.cigar)
-
         if self.ref_length != self.cigar.ref_length:
             raise ValueError(f"CIGAR string maps {self.cigar.ref_length}"
                              f" reference positions, but CIGAR hit range is {self.ref_length}")
