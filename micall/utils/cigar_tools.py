@@ -125,7 +125,6 @@ class CoordinateMapping:
         return f'CoordinateMapping({self.ref_to_op},{self.query_to_op})'
 
 
-@dataclass(frozen=True)
 class Cigar:
     """
     Represents an alignment between a query sequence and a reference sequence using the
@@ -147,10 +146,9 @@ class Cigar:
     CIGAR strings are defined in the SAM specification (https://samtools.github.io/hts-specs/SAMv1.pdf).
     """
 
-    data: List[Tuple[int, CigarActions]]
 
-    def __post_init__(self):
-        self.__dict__['data'] = list(Cigar.normalize(self.data))
+    def __init__(self, data) -> None:
+        self._data: List[Tuple[int, CigarActions]] = list(Cigar.normalize(data))
 
 
     @staticmethod
@@ -173,7 +171,7 @@ class Cigar:
         The resulting sequence is a decoded version of the initial run-length encoded sequence.
         """
 
-        for num, operation in self.data:
+        for num, operation in self._data:
             for _ in range(num):
                 yield operation
 
@@ -422,8 +420,12 @@ class Cigar:
         if last_item: yield (last_item[0], last_item[1])
 
 
+    def __eq__(self, other) -> bool:
+        return isinstance(other, Cigar) and self._data == other._data
+
+
     def __add__(self, other: 'Cigar'):
-        return Cigar(self.data + other.data)
+        return Cigar(self._data + other._data)
 
 
     def __repr__(self):
@@ -432,7 +434,7 @@ class Cigar:
 
     def __str__(self):
         """ Inverse of Cigar.parse """
-        return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self.data)
+        return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self._data)
 
 
 @dataclass
@@ -489,8 +491,8 @@ class CigarHit:
 
         ref_length = r_ei - r_st + 1
         query_length = q_ei - q_st + 1
-        cigar = Cigar.coerce([[ref_length, CigarActions.DELETE],
-                              [query_length, CigarActions.INSERT]])
+        cigar = Cigar.coerce([(ref_length, CigarActions.DELETE),
+                              (query_length, CigarActions.INSERT)])
 
         return CigarHit(cigar, r_st=r_st, r_ei=r_ei, q_st=q_st, q_ei=q_ei)
 
