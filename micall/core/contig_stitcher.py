@@ -544,3 +544,35 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
         return FrankensteinContig(contigs)
 
     yield from map(combine, consensus_parts.values())
+
+
+def main(args):
+    import argparse
+    from micall.core.denovo import write_contig_refs
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('contigs', type=argparse.FileType('r'))
+    parser.add_argument('stitched_contigs', type=argparse.FileType('w'))
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity')
+    args = parser.parse_args(args)
+
+    if args.quiet:
+        logging.basicConfig(level=logging.ERROR)
+    elif args.verbose:
+        logging.basicConfig(level=logging.INFO)
+    elif args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARN)
+
+    write_contig_refs(args.contigs.name, args.stitched_contigs)
+    args.stitched_contigs.close()
+
+
+if __name__ == '__main__':
+    import sys
+    main(sys.argv[1:])

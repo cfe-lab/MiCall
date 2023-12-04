@@ -1,12 +1,14 @@
 
 import random
-import pytest
 import logging
-from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference
+import os
+import pytest
+
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.utils.structured_logger import iterate_messages
+from micall.tests.test_denovo import check_hcv_db
 
-logging.basicConfig(level=logging.DEBUG)
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
@@ -673,6 +675,26 @@ def test_correct_processing_complex_logs(exact_aligner):
         ['intro:'] * 8 + \
         ['alignment:hitnumber', 'alignment:hit'] * 8 + \
         ['stitch:'] * 2 + ['nooverlap:'] + ['stitch:'] * 2 + ['nooverlap:'] * 3
+
+
+def test_main_invocation(exact_aligner, tmp_path, hcv_db):
+    pwd = os.path.dirname(__file__)
+    contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    stitched_contigs = os.path.join(tmp_path, "stitched.csv")
+    main([contigs, stitched_contigs])
+
+    assert os.path.exists(contigs)
+    assert os.path.exists(stitched_contigs)
+
+    # Check the contents of stitched_contigs
+    with open(stitched_contigs, 'r') as stitched_file:
+        stitched_data = stitched_file.read()
+
+    expected_file_path = os.path.join(pwd, "data", "exact_parts_contigs_stitched.csv")
+    with open(expected_file_path, 'r') as expected_file:
+        expected_data = expected_file.read()
+
+    assert stitched_data == expected_data, "The contents of the stitched contigs file do not match the expected contents."
 
 
 #  _   _       _ _     _            _
