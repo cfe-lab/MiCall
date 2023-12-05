@@ -10,7 +10,7 @@ from collections import defaultdict
 
 @pytest.fixture
 def no_aligner(monkeypatch):
-    monkeypatch.setattr('micall.core.contig_stitcher.align_to_reference', lambda x: [x])
+    monkeypatch.setattr('micall.core.contig_stitcher.align_to_reference', lambda x: [(x, False)])
 
 
 def read_contigs(line):

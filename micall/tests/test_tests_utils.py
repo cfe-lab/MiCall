@@ -14,7 +14,7 @@ def test_basic_mapping():
 
     assert isinstance(alignment, MockAlignment)
     assert alignment.mapq == 60
-    assert alignment.is_rev == False
+    assert alignment.strand == 1
     assert alignment.r_st == 4
     assert alignment.r_en == 14
     assert alignment.q_st == 0

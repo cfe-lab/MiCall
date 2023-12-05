@@ -8,7 +8,7 @@ from micall.utils.consensus_aligner import CigarActions
 
 @dataclass
 class MockAlignment:
-    is_rev: bool
+    strand: int # +1 if on the forward strand; -1 if on the reverse strand
     mapq: int
     cigar: list
     cigar_str: str
@@ -41,17 +41,17 @@ class MockAligner:
                     continue
 
                 mapq = 60
-                is_rev = False # Doesn't handle reverse complements in this mock.
+                strand = 1 # Doesn't handle reverse complements in this mock.
                 r_st = self.seq.index(substring)
                 r_en = r_st + len(substring)
                 q_st = start
                 q_en = end
                 cigar = [[q_en - q_st, CigarActions.MATCH]]
                 cigar_str = f'{(q_en - q_st)}M'
-                al = MockAlignment(is_rev, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
+                al = MockAlignment(strand, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
                 if (q_st, q_en, r_st, r_en) not in returned:
                     returned.add((q_st, q_en, r_st, r_en))
-                    yield MockAlignment(is_rev, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
+                    yield MockAlignment(strand, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
 
                     max_matches -= 1
                     if max_matches < 1:

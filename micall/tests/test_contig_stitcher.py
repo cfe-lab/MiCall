@@ -438,7 +438,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
                         ),
         ]
 
-    contigs = align_all_to_reference(contigs)
+    contigs = [c for c, is_rev in align_all_to_reference(contigs)]
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
@@ -469,7 +469,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
                         ),
         ]
 
-    contigs = align_all_to_reference(contigs)
+    contigs = [c for c, is_rev in align_all_to_reference(contigs)]
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
@@ -662,18 +662,18 @@ def test_correct_processing_complex_logs(exact_aligner):
     list(stitch_contigs(contigs))
 
     messages = list(iterate_messages())
-    assert len(messages) == 48
+    assert len(messages) == 64
     assert all(name == "micall.core.contig_stitcher" for name, m in messages)
 
     info_messages = [m for name, m in messages if m.levelname == 'INFO']
     debug_messages = [m for name, m in messages if m.levelname == 'DEBUG']
-    assert len(info_messages) == 32
+    assert len(info_messages) == 40
     assert len(debug_messages) == len(messages) - len(info_messages)
 
     info_actions = [(m.action + ':' + (m.type if hasattr(m, 'type') else '')) for m in info_messages]
     assert info_actions == \
         ['intro:'] * 8 + \
-        ['alignment:hitnumber', 'alignment:hit'] * 8 + \
+        ['alignment:reversenumber', 'alignment:hitnumber', 'alignment:hit'] * 8 + \
         ['stitch:'] * 2 + ['nooverlap:'] + ['stitch:'] * 2 + ['nooverlap:'] * 3
 
 

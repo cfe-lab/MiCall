@@ -197,49 +197,61 @@ class FrankensteinContig(AlignedContig):
         return AlignedContig(query, alignment)
 
 
-def align_to_reference(contig) -> Iterable[GenotypedContig]:
+def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
     if contig.ref_seq is None:
         logger.info("Contig %r not aligned - no reference.", contig.name,
                     extra={"action": "alignment", "type": "noref", "contig": contig})
-        yield contig
+        yield (contig, False)
         return
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
-    if not alignments:
-        logger.info("Contig %r not aligned - backend choice.", contig.name,
-                    extra={"action": "alignment", "type": "zerohits", "contig": contig})
-        yield contig
-        return
+    reversed_alignments = [alignment for alignment in alignments if alignment.strand == -1]
+    alignments = [alignment for alignment in alignments if alignment.strand == 1]
+
+    logger.info("Contig %r produced %s reverse-complement alignments.", contig.name, len(reversed_alignments),
+                extra={"action": "alignment", "type": "reversenumber",
+                       "contig": contig, "n": len(reversed_alignments)})
 
     hits_array = [CigarHit(Cigar.coerce(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
-    connected = connect_cigar_hits(hits_array)
+    connected = connect_cigar_hits(hits_array) if hits_array else []
 
-    logger.info("Contig %r aligned in %s parts.", contig.name, len(connected),
+    logger.info("Contig %r produced %s forward alignments.", contig.name, len(connected),
                 extra={"action": "alignment", "type": "hitnumber",
                        "contig": contig, "n": len(connected)})
 
-    def logpart(i, part):
-        logger.info("Part %r of contig %r aligned as [%s, %s]->[%s, %s].",
+    def logpart(i, part, is_rev):
+        logger.info("Part %r of contig %r aligned as [%s, %s]->[%s, %s]%s.",
                     i, contig.name, part.q_st, part.q_ei, part.r_st, part.r_ei,
+                    " (rev)" if is_rev else "",
                     extra={"action": "alignment", "type": "hit",
                            "contig": contig, "part": part, "i": i})
-        logger.debug("Part %r of contig %r aligned as %s.", i, contig.name, part)
+        logger.debug("Part %r of contig %r aligned as %s.%s", i, contig.name, part,
+                     " (rev)" if is_rev else "")
 
-    if len(connected) == 1:
-        logpart(0, connected[0])
-        yield AlignedContig(query=contig, alignment=connected[0])
+    to_return = connected + reversed_alignments
+    if len(to_return) == 0:
+        logger.info("Contig %r not aligned - backend choice.", contig.name,
+                    extra={"action": "alignment", "type": "zerohits", "contig": contig})
+        yield (contig, False)
         return
 
-    for i, single_hit in enumerate(connected):
-        logpart(i, single_hit)
+    if len(to_return) == 1:
+        is_rev = to_return[0] in reversed_alignments
+        logpart(0, to_return[0], is_rev)
+        yield (AlignedContig(query=contig, alignment=connected[0]), is_rev)
+        return
+
+    for i, single_hit in enumerate(connected + reversed_alignments):
         query = GenotypedContig(name=f'part({i}, {contig.name})',
                                 seq=contig.seq,
                                 ref_name=contig.ref_name,
                                 group_ref=contig.group_ref,
                                 ref_seq=contig.ref_seq,
                                 match_fraction=contig.match_fraction)
-        yield AlignedContig(query=query, alignment=single_hit)
+        is_rev = single_hit in reversed_alignments
+        logpart(i, single_hit, is_rev)
+        yield (AlignedContig(query=query, alignment=single_hit), is_rev)
 
 
 def align_all_to_reference(contigs):
@@ -514,13 +526,20 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
         logger.info("Introduced contig %r of ref %r, group_ref %r, and length %s.",
                     contig.name, contig.ref_name, contig.group_ref, len(contig.seq),
                     extra={"action": "intro", "contig": contig})
+        logger.debug("Introduced contig %r (seq = %s) of ref %r, group_ref %r (seq = %s), and length %s.",
+                     contig.name, contig.seq, contig.ref_name,
+                     contig.group_ref, contig.ref_seq, len(contig.seq),
+                     extra={"action": "intro", "contig": contig})
 
-    maybe_aligned = align_all_to_reference(contigs)
+    aligned = align_all_to_reference(contigs)
+
+    # Contigs aligned in reverse do not need any more processing
+    yield from (x for (x, is_rev) in aligned if is_rev)
+    aligned = [x for (x, is_rev) in aligned if not is_rev]
 
     # Contigs that did not align do not need any more processing
-    yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
-    aligned: List[AlignedContig] = \
-        [x for x in maybe_aligned if isinstance(x, AlignedContig)]
+    yield from (x for x in aligned if not isinstance(x, AlignedContig))
+    aligned = [x for x in aligned if isinstance(x, AlignedContig)]
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
@@ -548,7 +567,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
 
 def main(args):
     import argparse
-    from micall.core.denovo import write_contig_refs
+    from micall.core.denovo import write_contig_refs # TODO(vitalik): move denovo stuff here.
 
     parser = argparse.ArgumentParser()
     parser.add_argument('contigs', type=argparse.FileType('r'))
