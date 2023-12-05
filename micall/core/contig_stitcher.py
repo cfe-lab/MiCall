@@ -206,15 +206,17 @@ def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
-    reversed_alignments = [alignment for alignment in alignments if alignment.strand == -1]
-    alignments = [alignment for alignment in alignments if alignment.strand == 1]
+    hits_array = [(CigarHit(Cigar(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1), x.strand == -1)
+                  for x in alignments]
+    reversed_alignments = [alignment for alignment, is_rev in hits_array if is_rev]
+    alignments = [alignment for alignment, is_rev in hits_array if not is_rev]
 
-    logger.info("Contig %r produced %s reverse-complement alignments.", contig.name, len(reversed_alignments),
+    logger.info("Contig %r produced %s reverse-complement alignments.",
+                contig.name, len(reversed_alignments),
                 extra={"action": "alignment", "type": "reversenumber",
                        "contig": contig, "n": len(reversed_alignments)})
 
-    hits_array = [CigarHit(Cigar.coerce(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1) for x in alignments]
-    connected = connect_cigar_hits(hits_array) if hits_array else []
+    connected = connect_cigar_hits(alignments) if alignments else []
 
     logger.info("Contig %r produced %s forward alignments.", contig.name, len(connected),
                 extra={"action": "alignment", "type": "hitnumber",
