@@ -568,7 +568,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     consensus_parts: Dict[GroupRef, List[AlignedContig]] = defaultdict(list)
 
     for contig in contigs:
-        if isinstance(contig, AlignedContig):
+        if isinstance(contig, AlignedContig) and not contig.reverse:
             consensus_parts[contig.group_ref].append(contig)
         else:
             yield contig
