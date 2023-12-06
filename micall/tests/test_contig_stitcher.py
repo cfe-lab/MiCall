@@ -659,10 +659,10 @@ def test_correct_processing_complex_logs(exact_aligner):
     messages = list(iterate_messages())
     assert len(messages) == 0
 
-    list(stitch_contigs(contigs))
+    list(stitch_consensus(contigs))
 
     messages = list(iterate_messages())
-    assert len(messages) == 64
+    assert len(messages) == 70
     assert all(name == "micall.core.contig_stitcher" for name, m in messages)
 
     info_messages = [m for name, m in messages if m.levelname == 'INFO']
@@ -670,11 +670,18 @@ def test_correct_processing_complex_logs(exact_aligner):
     assert len(info_messages) == 40
     assert len(debug_messages) == len(messages) - len(info_messages)
 
-    info_actions = [(m.action + ':' + (m.type if hasattr(m, 'type') else '')) for m in info_messages]
-    assert info_actions == \
-        ['intro:'] * 8 + \
+    actions = [m.__dict__.get('action', '') + ':' + m.__dict__.get('type', '')
+               for name, m in messages]
+    actions = [action for action in actions if action != ':']
+
+    assert actions == \
+        ['intro:'] * 16 + \
         ['alignment:reversenumber', 'alignment:hitnumber', 'alignment:hit'] * 8 + \
-        ['stitch:'] * 2 + ['nooverlap:'] + ['stitch:'] * 2 + ['nooverlap:'] * 3
+        ['stitchcut:', 'concordance:', 'stitch:'] * 2 + \
+        ['nooverlap:'] + \
+        ['stitchcut:', 'concordance:', 'stitch:'] * 2 + \
+        ['nooverlap:'] * 3 + \
+        ['finalcombine:'] * 2
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):

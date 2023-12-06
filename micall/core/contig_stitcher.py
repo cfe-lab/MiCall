@@ -222,13 +222,13 @@ def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
                 extra={"action": "alignment", "type": "hitnumber",
                        "contig": contig, "n": len(connected)})
 
-    def logpart(i, part, is_rev):
-        logger.info("Part %r of contig %r aligned as [%s, %s]->[%s, %s]%s.",
-                    i, contig.name, part.q_st, part.q_ei, part.r_st, part.r_ei,
+    def logpart(i, part_name, part, is_rev):
+        logger.info("Part %r of contig %r aligned as %r at [%s, %s]->[%s, %s]%s.",
+                    i, contig.name, part_name, part.q_st, part.q_ei, part.r_st, part.r_ei,
                     " (rev)" if is_rev else "",
                     extra={"action": "alignment", "type": "hit",
                            "contig": contig, "part": part, "i": i})
-        logger.debug("Part %r of contig %r aligned as %s.%s", i, contig.name, part,
+        logger.debug("Part %r of contig %r aligned as %s%s.", i, contig.name, part,
                      " (rev)" if is_rev else "")
 
     to_return = connected + reversed_alignments
@@ -240,7 +240,7 @@ def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
 
     if len(to_return) == 1:
         is_rev = to_return[0] in reversed_alignments
-        logpart(0, to_return[0], is_rev)
+        logpart(0, contig.name, to_return[0], is_rev)
         yield (AlignedContig(query=contig, alignment=connected[0]), is_rev)
         return
 
@@ -252,7 +252,7 @@ def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
                                 ref_seq=contig.ref_seq,
                                 match_fraction=contig.match_fraction)
         is_rev = single_hit in reversed_alignments
-        logpart(i, single_hit, is_rev)
+        logpart(i, query.name, single_hit, is_rev)
         yield (AlignedContig(query=query, alignment=single_hit), is_rev)
 
 
@@ -332,6 +332,16 @@ def stitch_2_contigs(left, right):
     left_overlap = left_overlap.rstrip_query()
     right_overlap = right_overlap.lstrip_query()
 
+    logger.debug("Stitching %r at %s (len %s) with %r at %s (len %s)."
+                 " The left_overlap %r is at %s (len %s)"
+                 " and the right_overlap %r is at %s (len %s).",
+                 left.name, left.alignment, len(left.seq),
+                 right.name, right.alignment, len(right.seq),
+                 left_overlap.name, left_overlap.alignment, len(left_overlap.seq),
+                 right_overlap.name, right_overlap.alignment, len(right_overlap.seq),
+                 extra={"action": "stitchcut", "left": left, "right": right,
+                        "left_overlap": left_overlap, "right_overlap": right_overlap})
+
     # Align overlapping parts, then recombine based on concordance.
     aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
@@ -385,9 +395,9 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
                     new_contig.alignment.r_st, new_contig.alignment.r_ei,
                     extra={"action": "stitch", "result": new_contig,
                            "left": current, "right": overlapping_contig})
-        logger.debug("Stitching %r with %r results in %r at %s.",
+        logger.debug("Stitching %r with %r results in %r at %s (len %s).",
                      current.name, overlapping_contig.name,
-                     new_contig.name, new_contig.alignment)
+                     new_contig.name, new_contig.alignment, len(new_contig.seq))
 
 
 def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
@@ -560,11 +570,16 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
         else:
             yield contig
 
-    def combine(contigs):
-        contigs = sorted(contigs, key=lambda x: x.alignment.r_st)
-        return FrankensteinContig(contigs)
+    def combine(group_ref):
+        contigs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
+        logger.debug("Combining these contigs for final output for %r: %s.",
+                     group_ref,
+                     [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in contigs],
+                     extra={"action": "finalcombine", "contigs": contigs})
+        ret = FrankensteinContig(contigs)
+        return ret
 
-    yield from map(combine, consensus_parts.values())
+    yield from map(combine, consensus_parts)
 
 
 def main(args):
