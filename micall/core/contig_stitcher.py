@@ -59,10 +59,12 @@ class GenotypedContig(Contig):
 class AlignedContig(GenotypedContig):
     query: GenotypedContig
     alignment: CigarHit
+    reverse: bool
 
-    def __init__(self, query: GenotypedContig, alignment: CigarHit):
+    def __init__(self, query: GenotypedContig, alignment: CigarHit, reverse: bool):
         self.query = query
         self.alignment = alignment
+        self.reverse = reverse
         super().__init__(
             seq = query.seq,
             name = query.name,
@@ -79,21 +81,21 @@ class AlignedContig(GenotypedContig):
         query_left, query_right = self.query.cut_query(alignment_left.q_ei + 0.5)
         alignment_right = alignment_right.translate(0, -1 * alignment_right.q_st)
 
-        return (AlignedContig(query_left, alignment_left),
-                AlignedContig(query_right, alignment_right))
+        return (AlignedContig(query_left, alignment_left, self.reverse),
+                AlignedContig(query_right, alignment_right, self.reverse))
 
 
     def lstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.lstrip_query()
         q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
-        return AlignedContig(query, alignment)
+        return AlignedContig(query, alignment, self.reverse)
 
 
     def rstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.rstrip_query()
         query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
-        return AlignedContig(query, alignment)
+        return AlignedContig(query, alignment, self.reverse)
 
 
     def overlaps(self, other) -> bool:
@@ -117,7 +119,7 @@ class SyntheticContig(AlignedContig):
     def __init__(self, query: GenotypedContig, r_st: int, r_ei: int):
         alignment = CigarHit.from_default_alignment(r_st=r_st, r_ei=r_ei,
                                                     q_st=0, q_ei=len(query.seq)-1)
-        super().__init__(query, alignment)
+        super().__init__(query, alignment, reverse=False)
 
 
     def cut_reference(self, cut_point: float):
@@ -150,7 +152,7 @@ class FrankensteinContig(AlignedContig):
 
         aligned = reduce(FrankensteinContig.munge, self.parts)
 
-        super().__init__(aligned.query, aligned.alignment)
+        super().__init__(aligned.query, aligned.alignment, reverse=aligned.reverse)
 
 
     def cut_reference(self, cut_point: float) -> Tuple['FrankensteinContig', 'FrankensteinContig']:
@@ -194,14 +196,15 @@ class FrankensteinContig(AlignedContig):
                 reference_delta=0)
         alignment = left_alignment.connect(right_alignment)
 
-        return AlignedContig(query, alignment)
+        assert left.reverse == right.reverse
+        return AlignedContig(query, alignment, left.reverse)
 
 
-def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
+def align_to_reference(contig) -> Iterable[GenotypedContig]:
     if contig.ref_seq is None:
         logger.info("Contig %r not aligned - no reference.", contig.name,
                     extra={"action": "alignment", "type": "noref", "contig": contig})
-        yield (contig, False)
+        yield contig
         return
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
@@ -235,13 +238,13 @@ def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
     if len(to_return) == 0:
         logger.info("Contig %r not aligned - backend choice.", contig.name,
                     extra={"action": "alignment", "type": "zerohits", "contig": contig})
-        yield (contig, False)
+        yield contig
         return
 
     if len(to_return) == 1:
         is_rev = to_return[0] in reversed_alignments
         logpart(0, contig.name, to_return[0], is_rev)
-        yield (AlignedContig(query=contig, alignment=connected[0]), is_rev)
+        yield AlignedContig(query=contig, alignment=connected[0], reverse=is_rev)
         return
 
     for i, single_hit in enumerate(connected + reversed_alignments):
@@ -253,7 +256,7 @@ def align_to_reference(contig) -> Iterable[Tuple[GenotypedContig, bool]]:
                                 match_fraction=contig.match_fraction)
         is_rev = single_hit in reversed_alignments
         logpart(i, query.name, single_hit, is_rev)
-        yield (AlignedContig(query=query, alignment=single_hit), is_rev)
+        yield AlignedContig(query=query, alignment=single_hit, reverse=is_rev)
 
 
 def align_all_to_reference(contigs):
@@ -545,13 +548,13 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
 
     aligned = align_all_to_reference(contigs)
 
-    # Contigs aligned in reverse do not need any more processing
-    yield from (x for (x, is_rev) in aligned if is_rev)
-    aligned = [x for (x, is_rev) in aligned if not is_rev]
-
     # Contigs that did not align do not need any more processing
     yield from (x for x in aligned if not isinstance(x, AlignedContig))
     aligned = [x for x in aligned if isinstance(x, AlignedContig)]
+
+    # Contigs aligned in reverse do not need any more processing
+    yield from (x for x in aligned if x.reverse)
+    aligned = [x for x in aligned if not x.reverse]
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)

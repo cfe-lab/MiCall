@@ -438,7 +438,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
                         ),
         ]
 
-    contigs = [c for c, is_rev in align_all_to_reference(contigs)]
+    contigs = list(align_all_to_reference(contigs))
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
@@ -469,7 +469,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
                         ),
         ]
 
-    contigs = [c for c, is_rev in align_all_to_reference(contigs)]
+    contigs = list(align_all_to_reference(contigs))
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
