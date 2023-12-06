@@ -662,12 +662,12 @@ def test_correct_processing_complex_logs(exact_aligner):
     list(stitch_consensus(contigs))
 
     messages = list(iterate_messages())
-    assert len(messages) == 70
+    assert len(messages) == 76
     assert all(name == "micall.core.contig_stitcher" for name, m in messages)
 
     info_messages = [m for name, m in messages if m.levelname == 'INFO']
     debug_messages = [m for name, m in messages if m.levelname == 'DEBUG']
-    assert len(info_messages) == 40
+    assert len(info_messages) == 42
     assert len(debug_messages) == len(messages) - len(info_messages)
 
     actions = [m.__dict__.get('action', '') + ':' + m.__dict__.get('type', '')
@@ -677,11 +677,11 @@ def test_correct_processing_complex_logs(exact_aligner):
     assert actions == \
         ['intro:'] * 16 + \
         ['alignment:reversenumber', 'alignment:hitnumber', 'alignment:hit'] * 8 + \
-        ['stitchcut:', 'concordance:', 'stitch:'] * 2 + \
+        ['stitchcut:', 'concordance:', 'munge:', 'stitch:'] * 2 + \
         ['nooverlap:'] + \
-        ['stitchcut:', 'concordance:', 'stitch:'] * 2 + \
+        ['stitchcut:', 'concordance:', 'munge:', 'stitch:'] * 2 + \
         ['nooverlap:'] * 3 + \
-        ['finalcombine:'] * 2
+        ['munge:', 'finalcombine:'] * 2
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):

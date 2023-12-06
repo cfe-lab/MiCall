@@ -151,7 +151,6 @@ class FrankensteinContig(AlignedContig):
              (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
         aligned = reduce(FrankensteinContig.munge, self.parts)
-
         super().__init__(aligned.query, aligned.alignment, reverse=aligned.reverse)
 
 
@@ -198,6 +197,15 @@ class FrankensteinContig(AlignedContig):
 
         assert left.reverse == right.reverse
         return AlignedContig(query, alignment, left.reverse)
+
+
+def combine_contigs(parts: List[AlignedContig]) -> FrankensteinContig:
+    ret = FrankensteinContig(parts)
+    logger.debug("Munge of contigs %s results in %r at %s (len %s).",
+                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in ret.parts],
+                 ret.name, ret.alignment, len(ret.seq),
+                 extra={"action": "munge", "contigs": ret.parts, "result": ret})
+    return ret
 
 
 def align_to_reference(contig) -> Iterable[GenotypedContig]:
@@ -370,7 +378,7 @@ def stitch_2_contigs(left, right):
                                      r_st=left_overlap.alignment.r_st,
                                      r_ei=right_overlap.alignment.r_ei)
 
-    return FrankensteinContig([left_remainder, overlap_contig, right_remainder])
+    return combine_contigs([left_remainder, overlap_contig, right_remainder])
 
 
 def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
@@ -575,11 +583,13 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
 
     def combine(group_ref):
         contigs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
-        logger.debug("Combining these contigs for final output for %r: %s.",
-                     group_ref,
-                     [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in contigs],
+        ret = combine_contigs(contigs)
+        logger.info("Combined these contigs for final output for %r: %s,"
+                     " resulting in %r at [%s, %s]->[%s, %s].", group_ref,
+                     [repr(x.name) for x in contigs],
+                     ret.name, ret.alignment.q_st, ret.alignment.q_ei,
+                     ret.alignment.r_st, ret.alignment.r_ei,
                      extra={"action": "finalcombine", "contigs": contigs})
-        ret = FrankensteinContig(contigs)
         return ret
 
     yield from map(combine, consensus_parts)
