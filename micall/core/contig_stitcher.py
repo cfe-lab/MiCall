@@ -12,11 +12,10 @@ import logging
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.consensus_aligner import CigarActions
-from micall.utils.structured_logger import register_structured_logger
 
 
 logger = logging.getLogger(__name__)
-register_structured_logger(logger)
+
 
 @dataclass
 class Contig:
@@ -239,8 +238,8 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
                     " (rev)" if is_rev else "",
                     extra={"action": "alignment", "type": "hit",
                            "contig": contig, "part": part, "i": i})
-        logger.debug("Part %r of contig %r aligned as %s%s.", i, contig.name, part,
-                     " (rev)" if is_rev else "")
+        logger.debug("Part %r of contig %r aligned as %r at %s%s.", i, contig.name,
+                     part_name, part, " (rev)" if is_rev else "")
 
     to_return = connected + reversed_alignments
     if len(to_return) == 0:
@@ -390,8 +389,8 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         # Find overlap. If there isn't one - we are done with the current contig.
         overlapping_contig = find_overlapping_contig(current, contigs)
         if not overlapping_contig:
-            logger.info("Nothing overlaps with %r.",
-                        current.name, extra={"action": "nooverlap", "contig": current})
+            logger.info("Nothing overlaps with %r.", current.name,
+                        extra={"action": "nooverlap", "contig": current})
             yield current
             continue
 
@@ -551,8 +550,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
                     extra={"action": "intro", "contig": contig})
         logger.debug("Introduced contig %r (seq = %s) of ref %r, group_ref %r (seq = %s), and length %s.",
                      contig.name, contig.seq, contig.ref_name,
-                     contig.group_ref, contig.ref_seq, len(contig.seq),
-                     extra={"action": "intro", "contig": contig})
+                     contig.group_ref, contig.ref_seq, len(contig.seq))
 
     aligned = align_all_to_reference(contigs)
 
@@ -589,7 +587,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
                      [repr(x.name) for x in contigs],
                      ret.name, ret.alignment.q_st, ret.alignment.q_ei,
                      ret.alignment.r_st, ret.alignment.r_ei,
-                     extra={"action": "finalcombine", "contigs": contigs})
+                     extra={"action": "finalcombine", "contigs": contigs, "result": ret})
         return ret
 
     yield from map(combine, consensus_parts)

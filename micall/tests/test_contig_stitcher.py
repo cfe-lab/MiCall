@@ -6,7 +6,7 @@ import pytest
 
 from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main
 from micall.tests.utils import MockAligner, fixed_random_seed
-from micall.utils.structured_logger import iterate_messages
+from micall.utils.structured_logger import add_structured_handler
 from micall.tests.test_denovo import check_hcv_db
 
 
@@ -655,27 +655,23 @@ def test_correct_processing_complex_logs(exact_aligner):
 
     logger = logging.getLogger("micall.core.contig_stitcher")
     logger.setLevel(logging.DEBUG)
+    handler = add_structured_handler(logger)
 
-    messages = list(iterate_messages())
-    assert len(messages) == 0
-
+    assert len(handler.logs) == 0
     list(stitch_consensus(contigs))
+    assert len(handler.logs) == 76
 
-    messages = list(iterate_messages())
-    assert len(messages) == 76
-    assert all(name == "micall.core.contig_stitcher" for name, m in messages)
-
-    info_messages = [m for name, m in messages if m.levelname == 'INFO']
-    debug_messages = [m for name, m in messages if m.levelname == 'DEBUG']
+    info_messages = [m for m in handler.logs if m.levelname == 'INFO']
+    debug_messages = [m for m in handler.logs if m.levelname == 'DEBUG']
     assert len(info_messages) == 42
-    assert len(debug_messages) == len(messages) - len(info_messages)
+    assert len(debug_messages) == len(handler.logs) - len(info_messages)
 
     actions = [m.__dict__.get('action', '') + ':' + m.__dict__.get('type', '')
-               for name, m in messages]
+               for m in handler.logs]
     actions = [action for action in actions if action != ':']
 
     assert actions == \
-        ['intro:'] * 16 + \
+        ['intro:'] * 8 + \
         ['alignment:reversenumber', 'alignment:hitnumber', 'alignment:hit'] * 8 + \
         ['stitchcut:', 'concordance:', 'munge:', 'stitch:'] * 2 + \
         ['nooverlap:'] + \
