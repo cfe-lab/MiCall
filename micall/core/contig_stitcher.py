@@ -30,6 +30,30 @@ class GenotypedContig(Contig):
     ref_seq: Optional[str]          # The sequence of self.group_ref. None in cases where the reference organism is unknown.
     match_fraction: float           # Approximated overall concordance between `seq` and `ref_seq`. It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
 
+    def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
+        """
+        Cuts this alignment in two parts with cut_point between them.
+        Reference sequence is kept untouched.
+        """
+
+        cut_point = max(0, cut_point)
+        match_fraction = self.match_fraction
+        left = GenotypedContig(name=f'left({self.name})',
+                               seq=self.seq[:ceil(cut_point)],
+                               ref_seq=self.ref_seq,
+                               ref_name=self.ref_name,
+                               group_ref=self.group_ref,
+                               match_fraction=match_fraction)
+        right = GenotypedContig(name=f'right({self.name})',
+                                seq=self.seq[ceil(cut_point):],
+                                ref_seq=self.ref_seq,
+                                ref_name=self.ref_name,
+                                group_ref=self.group_ref,
+                                match_fraction=match_fraction)
+
+        return (left, right)
+
+
     def rename(self, new_name: str) -> 'GenotypedContig':
         return GenotypedContig(
             name = new_name,
@@ -71,12 +95,15 @@ class AlignedContig(GenotypedContig):
 
     def lstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.lstrip_query()
-        return AlignedContig(self.query, alignment, self.reverse)
+        q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
+        alignment = alignment.translate(0, -1 * alignment.q_st)
+        return AlignedContig(query, alignment, self.reverse)
 
 
     def rstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.rstrip_query()
-        return AlignedContig(self.query, alignment, self.reverse)
+        query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
+        return AlignedContig(query, alignment, self.reverse)
 
 
     def overlaps(self, other) -> bool:
@@ -159,13 +186,7 @@ class FrankensteinContig(AlignedContig):
 
     @staticmethod
     def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
-
-        # query_seq = left.rstrip_query().seq + right.lstrip_query().seq
-        left = left.rstrip_query()
-        right = right.lstrip_query()
-        query_seq = left.seq[:left.alignment.q_ei + 1] \
-            + right.seq[right.alignment.q_st:]
-
+        query_seq = left.rstrip_query().seq + right.lstrip_query().seq
         match_fraction = min(left.match_fraction, right.match_fraction)
         ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
         query = GenotypedContig(seq=query_seq,
@@ -327,8 +348,8 @@ def stitch_2_contigs(left, right):
     # Cut in 4 parts.
     left_remainder, left_overlap = left.cut_reference(right.alignment.r_st - 0.5)
     right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
-    left_overlap = left_overlap.rstrip_query()
-    right_overlap = right_overlap.lstrip_query()
+    left_overlap = left_overlap.rstrip_query().lstrip_query()
+    right_overlap = right_overlap.lstrip_query().rstrip_query()
 
     logger.debug("Stitching %r at %s (len %s) with %r at %s (len %s)."
                  " The left_overlap %r is at %s (len %s)"
@@ -341,9 +362,7 @@ def stitch_2_contigs(left, right):
                         "left_overlap": left_overlap, "right_overlap": right_overlap})
 
     # Align overlapping parts, then recombine based on concordance.
-    left_seq = left_overlap.seq[left_overlap.alignment.q_st:left_overlap.alignment.q_ei + 1]
-    right_seq = right_overlap.seq[right_overlap.alignment.q_st:right_overlap.alignment.q_ei + 1]
-    aligned_left, aligned_right = align_queries(left_seq, right_seq)
+    aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
     max_concordance_index = max(range(len(concordance)), key=lambda i: concordance[i])
     aligned_left_part = aligned_left[:max_concordance_index]
