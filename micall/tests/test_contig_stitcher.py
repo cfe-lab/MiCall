@@ -499,10 +499,10 @@ def test_stitching_partial_align(exact_aligner):
     for result in results:
         assert any(result.seq in contig.seq for contig in contigs)
 
-    assert all(x.seq != x.lstrip_query().rstrip_query().seq for x in results)
+    assert all(x.seq == x.lstrip_query().rstrip_query().seq for x in results)
 
     assert { contig.seq for contig in contigs } \
-        != { contig.lstrip_query().rstrip_query().seq for contig in results }
+        == { contig.lstrip_query().rstrip_query().seq for contig in results }
 
 
 def test_partial_align_consensus(exact_aligner):
