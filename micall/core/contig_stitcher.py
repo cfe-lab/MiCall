@@ -1,13 +1,12 @@
-from typing import Iterable, Optional, Tuple, List, Dict
+from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal
 from collections import deque, defaultdict
 from dataclasses import dataclass
-from math import ceil
+from math import ceil, floor
 from mappy import Aligner
 from functools import cached_property, reduce
 from itertools import accumulate, takewhile
 from gotoh import align_it
 from queue import LifoQueue
-from math import floor
 import logging
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
@@ -15,6 +14,13 @@ from micall.utils.consensus_aligner import CigarActions
 
 
 logger = logging.getLogger(__name__)
+
+
+name_generator_state = 0
+def generate_new_name():
+    global name_generator_state
+    name_generator_state += 1
+    return f"c{name_generator_state}"
 
 
 @dataclass
@@ -38,13 +44,15 @@ class GenotypedContig(Contig):
 
         cut_point = max(0, cut_point)
         match_fraction = self.match_fraction
-        left = GenotypedContig(name=f'left({self.name})',
+        left_name = generate_new_name()
+        left = GenotypedContig(name=left_name,
                                seq=self.seq[:ceil(cut_point)],
                                ref_seq=self.ref_seq,
                                ref_name=self.ref_name,
                                group_ref=self.group_ref,
                                match_fraction=match_fraction)
-        right = GenotypedContig(name=f'right({self.name})',
+        right_name = generate_new_name()
+        right = GenotypedContig(name=right_name,
                                 seq=self.seq[ceil(cut_point):],
                                 ref_seq=self.ref_seq,
                                 ref_name=self.ref_name,
@@ -56,12 +64,12 @@ class GenotypedContig(Contig):
 
     def rename(self, new_name: str) -> 'GenotypedContig':
         return GenotypedContig(
-            name = new_name,
-            seq = self.seq,
-            ref_name = self.ref_name,
-            group_ref = self.group_ref,
-            ref_seq = self.ref_seq,
-            match_fraction = self.match_fraction)
+            name=new_name,
+            seq=self.seq,
+            ref_name=self.ref_name,
+            group_ref=self.group_ref,
+            ref_seq=self.ref_seq,
+            match_fraction=self.match_fraction)
 
 
 @dataclass
@@ -70,40 +78,67 @@ class AlignedContig(GenotypedContig):
     alignment: CigarHit
     reverse: bool
 
-    def __init__(self, query: GenotypedContig, alignment: CigarHit, reverse: bool):
+    def __init__(self,
+                 query: GenotypedContig,
+                 alignment: CigarHit,
+                 reverse: bool):
         self.query = query
         self.alignment = alignment
         self.reverse = reverse
         super().__init__(
-            seq = query.seq,
-            name = query.name,
-            ref_name = query.ref_name,
-            group_ref = query.group_ref,
-            ref_seq = query.ref_seq,
-            match_fraction = query.match_fraction)
+            seq=query.seq,
+            name=query.name,
+            ref_name=query.ref_name,
+            group_ref=query.group_ref,
+            ref_seq=query.ref_seq,
+            match_fraction=query.match_fraction)
+
+
+    def modify(self, query: GenotypedContig, alignment: CigarHit) -> 'AlignedContig':
+        if query.seq == self.query.seq and alignment == self.alignment:
+            return self
+        return AlignedContig(
+            reverse=self.reverse,
+            query=query,
+            alignment=alignment)
 
 
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        left_query = self.query.rename(f"left({self.query.name})")
-        right_query = self.query.rename(f"right({self.query.name})")
-        return (AlignedContig(left_query, alignment_left, self.reverse),
-                AlignedContig(right_query, alignment_right, self.reverse))
+        left_query = self.query.rename(generate_new_name())
+        right_query = self.query.rename(generate_new_name())
+        left = self.modify(left_query, alignment_left)
+        right = self.modify(right_query, alignment_right)
+
+        logger.debug("Created contigs %r at %s and %r at %s by cutting %r.",
+                     left.name, left.alignment, right.name, right.alignment, self.name,
+                     extra={"action": "cut", "original": self,
+                            "left": left, "right": right})
+
+        return (left, right)
 
 
     def lstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.lstrip_query()
         q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
-        return AlignedContig(query, alignment, self.reverse)
+        result = self.modify(query, alignment)
+        logger.debug("Contig %r morfed into contig %r, so %s became %s",
+                     self.name, result.name, self.alignment, result.alignment,
+                     extra={"action": "modify", "original": self, "result": result})
+        return result
 
 
     def rstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.rstrip_query()
         query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
-        return AlignedContig(query, alignment, self.reverse)
+        result = self.modify(query, alignment)
+        logger.debug("Contig %r morfed into contig %r, so %s became %s",
+                     self.name, result.name, self.alignment, result.alignment,
+                     extra={"action": "modify", "original": self, "result": result})
+        return result
 
 
     def overlaps(self, other) -> bool:
@@ -115,31 +150,6 @@ class AlignedContig(GenotypedContig):
 
         return intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
                                  (other.alignment.r_st, other.alignment.r_ei))
-
-
-class SyntheticContig(AlignedContig):
-    """
-    Contig that is not really aligned, but its boundaries are known.
-    It is created as a result of overlaps between the real contigs.
-    """
-    # TODO(vitalik): maybe it is worth to realign overlaps to get rid of this special-case class.
-
-    def __init__(self, query: GenotypedContig, r_st: int, r_ei: int):
-        alignment = CigarHit.from_default_alignment(r_st=r_st, r_ei=r_ei,
-                                                    q_st=0, q_ei=len(query.seq)-1)
-        super().__init__(query, alignment, reverse=False)
-
-
-    def cut_reference(self, cut_point: float):
-        raise NotImplementedError("SyntheticContigs cannot be cut because they are not properly aligned")
-
-
-    def lstrip_query(self):
-        return self
-
-
-    def rstrip_query(self):
-        return self
 
 
 class FrankensteinContig(AlignedContig):
@@ -159,7 +169,9 @@ class FrankensteinContig(AlignedContig):
              (part.parts if isinstance(part, FrankensteinContig) else [part])]
 
         aligned = reduce(FrankensteinContig.munge, self.parts)
-        super().__init__(aligned.query, aligned.alignment, reverse=aligned.reverse)
+        super().__init__(query=aligned.query,
+                         alignment=aligned.alignment,
+                         reverse=aligned.reverse)
 
 
     def cut_reference(self, cut_point: float) -> Tuple['FrankensteinContig', 'FrankensteinContig']:
@@ -190,7 +202,7 @@ class FrankensteinContig(AlignedContig):
         match_fraction = min(left.match_fraction, right.match_fraction)
         ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
         query = GenotypedContig(seq=query_seq,
-                                name=f'{left.name}+{right.name}',
+                                name=generate_new_name(),
                                 ref_name=ref_name,
                                 group_ref=left.group_ref,
                                 ref_seq=left.ref_seq,
@@ -204,15 +216,20 @@ class FrankensteinContig(AlignedContig):
         alignment = left_alignment.connect(right_alignment)
 
         assert left.reverse == right.reverse
-        return AlignedContig(query, alignment, left.reverse)
+        ret = AlignedContig(reverse=left.reverse, query=query, alignment=alignment)
+        logger.debug("Munged contigs %r at %s with %r at %s resulting in %r at %s.",
+                     left.name, left.alignment, right.name, right.alignment,
+                     ret.name, ret.alignment, extra={"action": "munge", "left": left,
+                                                     "right": right, "result": ret})
+        return ret
 
 
 def combine_contigs(parts: List[AlignedContig]) -> FrankensteinContig:
     ret = FrankensteinContig(parts)
-    logger.debug("Munge of contigs %s results in %r at %s (len %s).",
-                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in ret.parts],
+    logger.debug("Created a frankenstein %r at %s (len %s) from %s.",
                  ret.name, ret.alignment, len(ret.seq),
-                 extra={"action": "munge", "contigs": ret.parts, "result": ret})
+                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in ret.parts],
+                 extra={"action": "frankenstein", "contigs": ret.parts, "result": ret})
     return ret
 
 
@@ -241,14 +258,21 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
                 extra={"action": "alignment", "type": "hitnumber",
                        "contig": contig, "n": len(connected)})
 
-    def logpart(i, part_name, part, is_rev):
+    def logpart(i, part, is_rev):
         logger.info("Part %r of contig %r aligned as %r at [%s, %s]->[%s, %s]%s.",
-                    i, contig.name, part_name, part.q_st, part.q_ei, part.r_st, part.r_ei,
+                    i, contig.name, part.name, part.alignment.q_st,
+                    part.alignment.q_ei, part.alignment.r_st, part.alignment.r_ei,
                     " (rev)" if is_rev else "",
                     extra={"action": "alignment", "type": "hit",
                            "contig": contig, "part": part, "i": i})
         logger.debug("Part %r of contig %r aligned as %r at %s%s.", i, contig.name,
-                     part_name, part, " (rev)" if is_rev else "")
+                     part.name, part.alignment, " (rev)" if is_rev else "")
+
+    def make_aligned(query, alignment, is_rev):
+        return AlignedContig(
+            query=query,
+            alignment=alignment,
+            reverse=is_rev)
 
     to_return = connected + reversed_alignments
     if len(to_return) == 0:
@@ -259,20 +283,22 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
 
     if len(to_return) == 1:
         is_rev = to_return[0] in reversed_alignments
-        logpart(0, contig.name, to_return[0], is_rev)
-        yield AlignedContig(query=contig, alignment=connected[0], reverse=is_rev)
+        part = make_aligned(contig, to_return[0], is_rev)
+        logpart(0, part, is_rev)
+        yield part
         return
 
-    for i, single_hit in enumerate(connected + reversed_alignments):
-        query = GenotypedContig(name=f'part({i}, {contig.name})',
+    for i, single_hit in enumerate(to_return):
+        query = GenotypedContig(name=generate_new_name(),
                                 seq=contig.seq,
                                 ref_name=contig.ref_name,
                                 group_ref=contig.group_ref,
                                 ref_seq=contig.ref_seq,
                                 match_fraction=contig.match_fraction)
         is_rev = single_hit in reversed_alignments
-        logpart(i, query.name, single_hit, is_rev)
-        yield AlignedContig(query=query, alignment=single_hit, reverse=is_rev)
+        part = make_aligned(query, single_hit, is_rev)
+        logpart(i, part, is_rev)
+        yield part
 
 
 def align_all_to_reference(contigs):
@@ -311,7 +337,7 @@ def calculate_concordance(left: str, right: str) -> List[float]:
 
     The function compares the two strings from both left to right and then right to left,
     calculating for each position the ratio of matching characters in a window around the
-    current position.
+    current position. So position holds a moving avarage score.
 
     It's required that the input strings are of the same length.
 
@@ -325,12 +351,15 @@ def calculate_concordance(left: str, right: str) -> List[float]:
 
     result: List[float] = [0] * len(left)
 
-    def slide(left, right):
+    def slide(start, end):
         window_size = 30
         scores = deque([0] * window_size, maxlen=window_size)
         scores_sum = 0
+        inputs = list(zip(left, right))
+        increment = 1 if start <= end else -1
 
-        for i, (a, b) in enumerate(zip(left, right)):
+        for i in range(start, end, increment):
+            (a, b) = inputs[i]
             current = a == b
             scores_sum -= scores.popleft()
             scores_sum += current
@@ -338,8 +367,8 @@ def calculate_concordance(left: str, right: str) -> List[float]:
             result[i] += (scores_sum / window_size) / 2
 
     # Slide forward, then in reverse, adding the scores at each position.
-    slide(left, right)
-    slide(reversed(left), reversed(right))
+    slide(0, len(left))
+    slide(len(left) - 1, -1)
 
     return result
 
@@ -350,6 +379,8 @@ def stitch_2_contigs(left, right):
     right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
     left_overlap = left_overlap.rstrip_query().lstrip_query()
     right_overlap = right_overlap.lstrip_query().rstrip_query()
+    left_remainder = left_remainder.rstrip_query()
+    right_remainder = right_remainder.lstrip_query()
 
     logger.debug("Stitching %r at %s (len %s) with %r at %s (len %s)."
                  " The left_overlap %r is at %s (len %s)"
@@ -359,34 +390,45 @@ def stitch_2_contigs(left, right):
                  left_overlap.name, left_overlap.alignment, len(left_overlap.seq),
                  right_overlap.name, right_overlap.alignment, len(right_overlap.seq),
                  extra={"action": "stitchcut", "left": left, "right": right,
-                        "left_overlap": left_overlap, "right_overlap": right_overlap})
+                        "left_overlap": left_overlap, "right_overlap": right_overlap,
+                        "left_remainder": left_remainder, "right_remainder": right_remainder})
 
     # Align overlapping parts, then recombine based on concordance.
     aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
-    max_concordance_index = max(range(len(concordance)), key=lambda i: concordance[i])
-    aligned_left_part = aligned_left[:max_concordance_index]
-    aligned_right_part = aligned_right[max_concordance_index:]
-    overlap_seq = ''.join(c for c in aligned_left_part + aligned_right_part if c != '-')
-
-    average_concordance = sum(concordance) / (len(concordance) or 1)
-    logger.debug("Average concordance between overlapping parts of %r and %r is %s (full is %s).",
-                 left.name, right.name, average_concordance, concordance,
-                 extra={"action": "concordance", "left": left, "right": right,
-                        "value": concordance, "avg": average_concordance})
+    valuator = lambda i: (concordance[i], i if i < len(concordance) / 2 else len(concordance) - i - 1)
+    max_concordance_index = max(range(len(concordance)), key=valuator)
 
     # Return something that can be fed back into the loop.
-    match_fraction = min(left.match_fraction, right.match_fraction)
-    ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
-    overlap_query = GenotypedContig(name=f'overlap({left.name},{right.name})',
-                                    ref_name=ref_name,
-                                    seq=overlap_seq, group_ref=left.group_ref,
-                                    ref_seq=left.ref_seq, match_fraction=match_fraction)
-    overlap_contig = SyntheticContig(overlap_query,
-                                     r_st=left_overlap.alignment.r_st,
-                                     r_ei=right_overlap.alignment.r_ei)
+    without_dashes = lambda s: ''.join(c for c in s if c != '-')
+    aligned_left_q_index = len(without_dashes(aligned_left[:max_concordance_index]))
+    aligned_right_q_index = right_overlap.alignment.query_length - len(without_dashes(aligned_right[max_concordance_index:])) + 1
+    aligned_left_r_index = left_overlap.alignment.coordinate_mapping.query_to_ref.left_max(aligned_left_q_index)
+    if aligned_left_r_index is None:
+        aligned_left_r_index = left_overlap.alignment.r_st - 1
+    aligned_right_r_index = right_overlap.alignment.coordinate_mapping.query_to_ref.right_min(aligned_right_q_index)
+    if aligned_right_r_index is None:
+        aligned_right_r_index = right_overlap.alignment.r_ei + 1
+    left_overlap_take, left_overlap_drop = left_overlap.cut_reference(aligned_left_r_index + 0.5)
+    right_overlap_drop, right_overlap_take = right_overlap.cut_reference(aligned_right_r_index - 0.5)
 
-    return combine_contigs([left_remainder, overlap_contig, right_remainder])
+    # Log it.
+    average_concordance = sum(concordance) / (len(concordance) or 1)
+    concordance_str = ', '.join(map(lambda x: str(round(x, 2)), concordance)),
+    cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
+    logger.debug("Created overlap contigs %r at %s and %r at %s based on parts of %r and %r, with avg. concordance %s%%, cut point at %s%%, and full concordance [%s].",
+                 left_overlap_take.name, left_overlap.alignment, right_overlap_take.name, right_overlap_take.alignment,
+                 left.name, right.name, round(average_concordance * 100),
+                 round(cut_point_location_scaled * 100), concordance_str,
+                 extra={"action": "overlap", "left": left, "right": right,
+                        "left_remainder": left_remainder, "right_remainder": right_remainder,
+                        "left_overlap": left_overlap, "right_original": right_overlap,
+                        "left_take": left_overlap_take, "right_take": right_overlap_take,
+                        "concordance": concordance, "avg": average_concordance,
+                        "cut_point": max_concordance_index,
+                        "cut_point_scaled": cut_point_location_scaled})
+
+    return combine_contigs([left_remainder, left_overlap_take, right_overlap_take, right_remainder])
 
 
 def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
@@ -617,15 +659,16 @@ def main(args):
     args = parser.parse_args(args)
 
     if args.quiet:
-        logging.basicConfig(level=logging.ERROR)
+        logger.setLevel(logging.ERROR)
     elif args.verbose:
-        logging.basicConfig(level=logging.INFO)
+        logger.setLevel(logging.INFO)
     elif args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.WARN)
+        logger.setLevel(logging.WARN)
 
     write_contig_refs(args.contigs.name, args.stitched_contigs)
+    args.contigs.close()
     args.stitched_contigs.close()
 
 

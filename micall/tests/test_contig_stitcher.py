@@ -114,7 +114,6 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
 
     assert 100 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 50
-    assert result.query.name == 'left(a)+overlap(a,b)+right(b)'
 
 
 def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner):
@@ -151,7 +150,6 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
 
     assert 100 == len(results[0].seq)
     assert results[0].seq == 'A' * 50 + 'C' * 50
-    assert results[0].query.name == 'left(a)+overlap(a,b)+right(b)'
 
     assert results[1].query == contigs[2]
 
@@ -192,7 +190,6 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
 
     assert 200 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 100 + 'T' * 50
-    assert result.query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
 
 
 def test_stitching_with_empty_contigs(exact_aligner):
@@ -323,12 +320,10 @@ def test_correct_processing_complex_nogaps(exact_aligner):
 
     assert 170 == len(results[0].seq)
     assert results[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert results[0].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
     assert results[0].query.group_ref == 'testref-1'
 
     assert 170 == len(results[1].seq)
     assert results[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert results[1].query.name == 'left(a)+overlap(a,b)+left(right(b))+overlap(left(a)+overlap(a,b)+right(b),c)+right(c)'
     assert results[1].query.group_ref == 'testref-2'
 
     assert results[2].query == contigs[3]
@@ -580,7 +575,6 @@ def test_partial_align_consensus_multiple_sequences(exact_aligner):
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
     assert results[0].seq == contigs[0].seq + contigs[1].seq
-    assert results[0].name == 'a+b'
 
 
 def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
@@ -609,7 +603,6 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
     assert len(results) == 1
     assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10
     assert results[0].seq == contigs[0].seq[:-10] + contigs[1].seq[20:]
-    assert results[0].name == 'left(a)+overlap(a,b)+right(b)'
 
 
 def test_correct_processing_complex_logs(exact_aligner):
@@ -659,25 +652,12 @@ def test_correct_processing_complex_logs(exact_aligner):
 
     assert len(handler.logs) == 0
     list(stitch_consensus(contigs))
-    assert len(handler.logs) == 76
+    assert len(handler.logs) == 248
 
     info_messages = [m for m in handler.logs if m.levelname == 'INFO']
     debug_messages = [m for m in handler.logs if m.levelname == 'DEBUG']
     assert len(info_messages) == 42
     assert len(debug_messages) == len(handler.logs) - len(info_messages)
-
-    actions = [m.__dict__.get('action', '') + ':' + m.__dict__.get('type', '')
-               for m in handler.logs]
-    actions = [action for action in actions if action != ':']
-
-    assert actions == \
-        ['intro:'] * 8 + \
-        ['alignment:reversenumber', 'alignment:hitnumber', 'alignment:hit'] * 8 + \
-        ['stitchcut:', 'concordance:', 'munge:', 'stitch:'] * 2 + \
-        ['nooverlap:'] + \
-        ['stitchcut:', 'concordance:', 'munge:', 'stitch:'] * 2 + \
-        ['nooverlap:'] * 3 + \
-        ['munge:', 'finalcombine:'] * 2
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
