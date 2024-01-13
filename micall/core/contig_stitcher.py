@@ -587,13 +587,22 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
 
     def combine(group_ref):
         contigs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
-        ret = combine_contigs(contigs)
+        if len(contigs) == 1:
+            return contigs[0]
+
+        seq = ''.join([contig.seq for contig in contigs])
+        match_fraction = min([contig.match_fraction for contig in contigs])
+        ret = GenotypedContig(name=generate_new_name(),
+                              seq=seq, ref_name=contigs[0].ref_name,
+                              group_ref=contigs[0].group_ref,
+                              ref_seq=contigs[0].ref_seq,
+                              match_fraction=match_fraction)
+
         logger.info("Combined these contigs for final output for %r: %s,"
-                     " resulting in %r at [%s, %s]->[%s, %s].", group_ref,
-                     [repr(x.name) for x in contigs],
-                     ret.name, ret.alignment.q_st, ret.alignment.q_ei,
-                     ret.alignment.r_st, ret.alignment.r_ei,
+                     " resulting in %r of length %s.", group_ref,
+                     [repr(x.name) for x in contigs], ret.name, len(ret.seq),
                      extra={"action": "finalcombine", "contigs": contigs, "result": ret})
+
         return ret
 
     yield from map(combine, consensus_parts)
