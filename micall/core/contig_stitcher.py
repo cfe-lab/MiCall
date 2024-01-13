@@ -364,6 +364,10 @@ def stitch_2_contigs(left, right):
     aligned_right_r_index = right_overlap.alignment.coordinate_mapping.query_to_ref.right_min(aligned_right_q_index)
     if aligned_right_r_index is None:
         aligned_right_r_index = right_overlap.alignment.r_ei + 1
+    assert aligned_right_r_index > aligned_left_r_index
+    if aligned_right_r_index <= aligned_left_r_index:
+        # This should never happen due to how aligners work, but just to be sure...
+        aligned_right_r_index = aligned_left_r_index + 1
     left_overlap_take, left_overlap_drop = left_overlap.cut_reference(aligned_left_r_index + 0.5)
     right_overlap_drop, right_overlap_take = right_overlap.cut_reference(aligned_right_r_index - 0.5)
 
