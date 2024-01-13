@@ -152,84 +152,39 @@ class AlignedContig(GenotypedContig):
                                  (other.alignment.r_st, other.alignment.r_ei))
 
 
-class FrankensteinContig(AlignedContig):
-    """
-    Assembled of parts that were not even aligned together,
-    and of some parts that were not aligned at all.
-    Yet its self.seq string looks like a real contig.
-    """
-
-    def __init__(self, parts: List[AlignedContig]):
-        if len(parts) == 0:
-            raise ValueError("Empty Frankenstei do not exist")
-
-        # Flatten any possible Frankenstein parts
-        self.parts: List[AlignedContig] = \
-            [subpart for part in parts for subpart in
-             (part.parts if isinstance(part, FrankensteinContig) else [part])]
-
-        aligned = reduce(FrankensteinContig.munge, self.parts)
-        super().__init__(query=aligned.query,
-                         alignment=aligned.alignment,
-                         reverse=aligned.reverse)
-
-
-    def cut_reference(self, cut_point: float) -> Tuple['FrankensteinContig', 'FrankensteinContig']:
-        # Search for the part that needs to be cut
-        left_parts = list(takewhile(lambda part: cut_point >= part.alignment.r_ei + 1, self.parts))
-        target_part = self.parts[len(left_parts)]
-        right_parts = self.parts[len(left_parts) + 1:]
-
-        # Cut the target part and add its pieces to left and right.
-        target_part_left, target_part_right = target_part.cut_reference(cut_point)
-        left = FrankensteinContig(left_parts + [target_part_left])
-        right = FrankensteinContig([target_part_right] + right_parts)
-
-        return (left, right)
-
-
-    def lstrip_query(self):
-        return FrankensteinContig([self.parts[0].lstrip_query()] + self.parts[1:])
-
-
-    def rstrip_query(self):
-        return FrankensteinContig(self.parts[:-1] + [self.parts[-1].rstrip_query()])
-
-
-    @staticmethod
-    def munge(left: AlignedContig, right: AlignedContig) -> AlignedContig:
-        query_seq = left.rstrip_query().seq + right.lstrip_query().seq
-        match_fraction = min(left.match_fraction, right.match_fraction)
-        ref_name = max([left, right], key=lambda x: x.alignment.ref_length).ref_name
+    def munge(self, other: 'AlignedContig') -> 'AlignedContig':
+        query_seq = self.rstrip_query().seq + other.lstrip_query().seq
+        match_fraction = min(self.match_fraction, other.match_fraction)
+        ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
         query = GenotypedContig(seq=query_seq,
                                 name=generate_new_name(),
                                 ref_name=ref_name,
-                                group_ref=left.group_ref,
-                                ref_seq=left.ref_seq,
+                                group_ref=self.group_ref,
+                                ref_seq=self.ref_seq,
                                 match_fraction=match_fraction)
 
-        left_alignment = left.alignment
-        right_alignment = \
-            right.alignment.translate(
-                query_delta=(-1 * right.alignment.q_st + left.alignment.q_ei + 1),
+        self_alignment = self.alignment
+        other_alignment = \
+            other.alignment.translate(
+                query_delta=(-1 * other.alignment.q_st + self.alignment.q_ei + 1),
                 reference_delta=0)
-        alignment = left_alignment.connect(right_alignment)
+        alignment = self_alignment.connect(other_alignment)
 
-        assert left.reverse == right.reverse
-        ret = AlignedContig(reverse=left.reverse, query=query, alignment=alignment)
+        assert self.reverse == other.reverse
+        ret = AlignedContig(reverse=self.reverse, query=query, alignment=alignment)
         logger.debug("Munged contigs %r at %s with %r at %s resulting in %r at %s.",
-                     left.name, left.alignment, right.name, right.alignment,
-                     ret.name, ret.alignment, extra={"action": "munge", "left": left,
-                                                     "right": right, "result": ret})
+                     self.name, self.alignment, other.name, other.alignment,
+                     ret.name, ret.alignment, extra={"action": "munge", "left": self,
+                                                     "right": other, "result": ret})
         return ret
 
 
-def combine_contigs(parts: List[AlignedContig]) -> FrankensteinContig:
-    ret = FrankensteinContig(parts)
+def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
+    ret = reduce(AlignedContig.munge, parts)
     logger.debug("Created a frankenstein %r at %s (len %s) from %s.",
                  ret.name, ret.alignment, len(ret.seq),
-                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in ret.parts],
-                 extra={"action": "frankenstein", "contigs": ret.parts, "result": ret})
+                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in parts],
+                 extra={"action": "frankenstein", "contigs": parts, "result": ret})
     return ret
 
 
