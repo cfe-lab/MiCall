@@ -328,6 +328,26 @@ def calculate_concordance(left: str, right: str) -> List[float]:
     return result
 
 
+def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance):
+    valuator = lambda i: (concordance[i], i if i < len(concordance) / 2 else len(concordance) - i - 1)
+    sorted_concordance_indexes = sorted(range(len(concordance)), key=valuator)
+    remove_dashes = lambda s: ''.join(c for c in s if c != '-')
+
+    for max_concordance_index in reversed(sorted_concordance_indexes):
+        aligned_left_q_index = len(remove_dashes(aligned_left[:max_concordance_index]))
+        aligned_right_q_index = right_overlap.alignment.query_length - len(remove_dashes(aligned_right[max_concordance_index:])) + 1
+        aligned_left_r_index = left_overlap.alignment.coordinate_mapping.query_to_ref.left_max(aligned_left_q_index)
+        if aligned_left_r_index is None:
+            aligned_left_r_index = left_overlap.alignment.r_st - 1
+        aligned_right_r_index = right_overlap.alignment.coordinate_mapping.query_to_ref.right_min(aligned_right_q_index)
+        if aligned_right_r_index is None:
+            aligned_right_r_index = right_overlap.alignment.r_ei + 1
+        if aligned_right_r_index > aligned_left_r_index:
+            return (aligned_left_r_index + 0.5, aligned_right_r_index - 0.5, max_concordance_index)
+
+    return (left_overlap.alignment.r_st - 1 + 0.5, right_overlap.alignment.r_ei + 1 - 0.5, 0)
+
+
 def stitch_2_contigs(left, right):
     # Cut in 4 parts.
     left_remainder, left_overlap = left.cut_reference(right.alignment.r_st - 0.5)
@@ -351,25 +371,10 @@ def stitch_2_contigs(left, right):
     # Align overlapping parts, then recombine based on concordance.
     aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
     concordance = calculate_concordance(aligned_left, aligned_right)
-    valuator = lambda i: (concordance[i], i if i < len(concordance) / 2 else len(concordance) - i - 1)
-    max_concordance_index = max(range(len(concordance)), key=valuator)
-
-    # Return something that can be fed back into the loop.
-    without_dashes = lambda s: ''.join(c for c in s if c != '-')
-    aligned_left_q_index = len(without_dashes(aligned_left[:max_concordance_index]))
-    aligned_right_q_index = right_overlap.alignment.query_length - len(without_dashes(aligned_right[max_concordance_index:])) + 1
-    aligned_left_r_index = left_overlap.alignment.coordinate_mapping.query_to_ref.left_max(aligned_left_q_index)
-    if aligned_left_r_index is None:
-        aligned_left_r_index = left_overlap.alignment.r_st - 1
-    aligned_right_r_index = right_overlap.alignment.coordinate_mapping.query_to_ref.right_min(aligned_right_q_index)
-    if aligned_right_r_index is None:
-        aligned_right_r_index = right_overlap.alignment.r_ei + 1
-    assert aligned_right_r_index > aligned_left_r_index
-    if aligned_right_r_index <= aligned_left_r_index:
-        # This should never happen due to how aligners work, but just to be sure...
-        aligned_right_r_index = aligned_left_r_index + 1
-    left_overlap_take, left_overlap_drop = left_overlap.cut_reference(aligned_left_r_index + 0.5)
-    right_overlap_drop, right_overlap_take = right_overlap.cut_reference(aligned_right_r_index - 0.5)
+    aligned_left_cutpoint, aligned_right_cutpoint, max_concordance_index = \
+        concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance)
+    left_overlap_take, left_overlap_drop = left_overlap.cut_reference(aligned_left_cutpoint)
+    right_overlap_drop, right_overlap_take = right_overlap.cut_reference(aligned_right_cutpoint)
 
     # Log it.
     average_concordance = sum(concordance) / (len(concordance) or 1)
