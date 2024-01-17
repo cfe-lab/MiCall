@@ -568,7 +568,7 @@ def build_stitcher_figure(logs) -> None:
             record_contig(event.result, event.contigs)
             combine_left_edge[event.result.name] = event.contigs[0].name
             combine_right_edge[event.result.name] = event.contigs[-1].name
-        elif event.action in ("ignoregap", "nooverlap", "finalreturn"):
+        elif event.action in ("ignoregap", "nooverlap"):
             pass
         else:
             raise RuntimeError(f"Unrecognized action: {event.action}")

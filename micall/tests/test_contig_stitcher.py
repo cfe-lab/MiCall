@@ -652,11 +652,11 @@ def test_correct_processing_complex_logs(exact_aligner):
 
     assert len(handler.logs) == 0
     list(stitch_consensus(contigs))
-    assert len(handler.logs) == 150
+    assert len(handler.logs) == 158
 
     info_messages = [m for m in handler.logs if m.levelname == 'INFO']
     debug_messages = [m for m in handler.logs if m.levelname == 'DEBUG']
-    assert len(info_messages) == 42
+    assert len(info_messages) == 40
     assert len(debug_messages) == len(handler.logs) - len(info_messages)
 
 
