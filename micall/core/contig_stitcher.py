@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal
+from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar
 from collections import deque, defaultdict
 from dataclasses import dataclass, replace
 from math import ceil, floor
@@ -37,10 +37,7 @@ class GenotypedContig(Contig):
     match_fraction: float           # Approximated overall concordance between `seq` and `ref_seq`. It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
 
     def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
-        """
-        Cuts this alignment in two parts with cut_point between them.
-        Reference sequence is kept untouched.
-        """
+        """ Cuts query sequence in two parts with cut_point between them. """
 
         cut_point = max(0, cut_point)
         match_fraction = self.match_fraction
@@ -98,6 +95,11 @@ class AlignedContig(GenotypedContig):
 
 
     def lstrip_query(self) -> 'AlignedContig':
+        """
+        Trims the query sequence of the contig from its beginning up to the start of the
+        alignment. The CIGAR alignment is also updated to reflect the trimming.
+        """
+
         alignment = self.alignment.lstrip_query()
         q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
@@ -111,6 +113,11 @@ class AlignedContig(GenotypedContig):
 
 
     def rstrip_query(self) -> 'AlignedContig':
+        """
+        Trims the query sequence of the contig from its end based on the end of the
+        alignment. The CIGAR alignment is also updated to reflect the trimming.
+        """
+
         alignment = self.alignment.rstrip_query()
         query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
         result = AlignedContig.make(query, alignment, self.reverse)
@@ -134,6 +141,11 @@ class AlignedContig(GenotypedContig):
 
 
     def munge(self, other: 'AlignedContig') -> 'AlignedContig':
+        """
+        Combines two adjacent contigs into a single contig by joining their
+        query sequences and alignments.
+        """
+
         match_fraction = min(self.match_fraction, other.match_fraction)
         ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
         query = GenotypedContig(seq=self.seq + other.seq,
@@ -159,7 +171,16 @@ class AlignedContig(GenotypedContig):
         return ret
 
 
-def sliding_window(sequence):
+T = TypeVar("T")
+
+def sliding_window(sequence: Iterable[T]) -> Iterable[Tuple[Optional[T], T, Optional[T]]]:
+    """
+    Generate a three-element sliding window of a sequence.
+
+    Each element generated contains a tuple with the previous item (None if the first item),
+    the current item, and the next item (None if the last item) in the sequence.
+    """
+
     if not sequence:
         return
 
@@ -173,6 +194,13 @@ def sliding_window(sequence):
 
 
 def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
+    """
+    Combine a list of contigs into a single AlignedContig by trimming and merging overlapping parts.
+
+    Left-trimming and right-trimming occur at any shared overlapping points
+    between adjacent parts. AlignedContig.munge() is used to combine contiguous parts without overlap.
+    """
+
     stripped_parts = []
     for prev_part, part, next_part in sliding_window(parts):
         if prev_part is not None:
@@ -190,6 +218,13 @@ def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
 
 
 def align_to_reference(contig) -> Iterable[GenotypedContig]:
+    """
+    Align a single Contig to its reference sequence, producing potentially multiple aligned contigs.
+
+    If the reference sequence (ref_seq) is unavailable, the contig is returned unaltered.
+    Otherwise, alignments are performed and contigs corresponding to each alignment are yielded.
+    """
+
     if contig.ref_seq is None:
         logger.info("Contig %r not aligned - no reference.", contig.name,
                     extra={"action": "alignment", "type": "noref", "contig": contig})
@@ -258,10 +293,19 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
 
 
 def align_all_to_reference(contigs):
+    """
+    Align multiple contigs to their respective reference sequences.
+
+    Applies align_to_reference to each contig in the given collection,
+    flattening the result into a single list.
+    """
+
     return [contig for parts in map(align_to_reference, contigs) for contig in parts]
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
+    """ Globally align two query sequences against each other and return the resulting aligned sequences in MSA format. """
+
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
@@ -276,15 +320,24 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
 
 
 def find_all_overlapping_contigs(self, aligned_contigs):
+    """"
+    Yield all contigs from a collection that overlap with a given contig.
+    Contigs are considered overlapping if they have overlapping intervals on the same reference genome.
+    """
+
     for other in aligned_contigs:
         if self.overlaps(other):
             yield other
 
 
 def find_overlapping_contig(self, aligned_contigs):
+    """
+    Find the single contig in a collection that overlaps the most with a given contig.
+    It returns the contig with the maximum overlapped reference length with the given contig (self).
+    """
+
     every = find_all_overlapping_contigs(self, aligned_contigs)
-    return max(every, key=lambda other: other.alignment.ref_length if other else 0,
-               default=None)
+    return max(every, key=lambda other: other.alignment.ref_length if other else 0, default=None)
 
 
 def calculate_concordance(left: str, right: str) -> List[float]:
@@ -330,6 +383,8 @@ def calculate_concordance(left: str, right: str) -> List[float]:
 
 
 def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance):
+    """ Determine optimal cut points for stitching based on sequence concordance in the overlap region. """
+
     valuator = lambda i: (concordance[i], i if i < len(concordance) / 2 else len(concordance) - i - 1)
     sorted_concordance_indexes = sorted(range(len(concordance)), key=valuator)
     remove_dashes = lambda s: ''.join(c for c in s if c != '-')
@@ -350,6 +405,14 @@ def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned
 
 
 def stitch_2_contigs(left, right):
+    """
+    Stitch two contigs together into a single coherent contig.
+
+    The function handles the overlap by cutting both contigs into segments, aligning the
+    overlapping segments, and then choosing the optimal stitching points based on sequence
+    concordance. Non-overlapping segments are retained as is.
+    """
+
     # Cut in 4 parts.
     left_remainder, left_overlap = left.cut_reference(right.alignment.r_st - 0.5)
     right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
@@ -397,6 +460,11 @@ def stitch_2_contigs(left, right):
 
 
 def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
+    """"
+    Repeatedly combine all overlapping aligned contigs into an iterable collection of contiguous AlignedContigs.
+    It proceeds by iterating through sorted contigs and stitching any overlapping ones until none are left.
+    """
+
     # Going left-to-right through aligned contigs.
     contigs = list(sorted(contigs, key=lambda x: x.alignment.r_st))
     while contigs:
@@ -500,6 +568,13 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
 
 
 def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]:
+    """
+    Split contigs at large gaps if those gaps are covered by other contigs in the list.
+
+    A gap within a contig is considered large based on a pre-defined threshold. If another contig aligns
+    within that gap's range, the contig is split into two around the midpoint of the gap.
+    """
+
     def covered_by(gap, other):
         # Check if any 1 reference coordinate in gap is mapped in other.
         gap_coords = gap.coordinate_mapping.ref_to_query.domain
@@ -507,8 +582,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
         return not gap_coords.isdisjoint(cover_coords)
 
     def covered(contig, gap):
-        return any(covered_by(gap, other) for other in contigs
-                   if other != contig)
+        return any(covered_by(gap, other) for other in contigs if other != contig)
 
     def significant(gap):
         return gap.ref_length > 5
