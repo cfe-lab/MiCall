@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 from math import ceil, floor
 from mappy import Aligner
 from functools import cached_property, reduce
-from itertools import accumulate, takewhile
+from itertools import accumulate, takewhile, tee, islice, chain
 from gotoh import align_it
 from queue import LifoQueue
 import logging
@@ -167,16 +167,10 @@ def sliding_window(sequence: Iterable[T]) -> Iterable[Tuple[Optional[T], T, Opti
     the current item, and the next item (None if the last item) in the sequence.
     """
 
-    if not sequence:
-        return
-
-    yield (None, sequence[0], sequence[1] if len(sequence) > 1 else None)
-
-    for i in range(1, len(sequence) - 1):
-        yield (sequence[i - 1], sequence[i], sequence[i + 1])
-
-    if len(sequence) > 1:
-        yield (sequence[-2], sequence[-1], None)
+    a, b, c = tee(sequence, 3)
+    prevs = chain([None], a)
+    nexts = chain(islice(c, 1, None), [None])
+    return zip(prevs, b, nexts)
 
 
 def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
