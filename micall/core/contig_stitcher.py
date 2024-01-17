@@ -23,13 +23,13 @@ def generate_new_name():
     return f"c{name_generator_state}"
 
 
-@dataclass
+@dataclass(frozen=True)
 class Contig:
     name: str
     seq: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class GenotypedContig(Contig):
     ref_name: str
     group_ref: str
@@ -72,20 +72,18 @@ class GenotypedContig(Contig):
             match_fraction=self.match_fraction)
 
 
-@dataclass
+@dataclass(frozen=True)
 class AlignedContig(GenotypedContig):
     query: GenotypedContig
     alignment: CigarHit
     reverse: bool
 
-    def __init__(self,
-                 query: GenotypedContig,
-                 alignment: CigarHit,
-                 reverse: bool):
-        self.query = query
-        self.alignment = alignment
-        self.reverse = reverse
-        super().__init__(
+    @staticmethod
+    def make(query: GenotypedContig, alignment: CigarHit, reverse: bool):
+        return AlignedContig(
+            query=query,
+            alignment=alignment,
+            reverse=reverse,
             seq=query.seq,
             name=query.name,
             ref_name=query.ref_name,
@@ -95,7 +93,7 @@ class AlignedContig(GenotypedContig):
 
 
     def modify(self, query: GenotypedContig, alignment: CigarHit) -> 'AlignedContig':
-        return AlignedContig(
+        return AlignedContig.make(
             reverse=self.reverse,
             query=query,
             alignment=alignment)
@@ -188,7 +186,7 @@ class AlignedContig(GenotypedContig):
         alignment = self_alignment.connect(other_alignment)
 
         assert self.reverse == other.reverse
-        ret = AlignedContig(reverse=self.reverse, query=query, alignment=alignment)
+        ret = AlignedContig.make(reverse=self.reverse, query=query, alignment=alignment)
         logger.debug("Munged contigs %r at %s with %r at %s resulting in %r at %s.",
                      self.name, self.alignment, other.name, other.alignment,
                      ret.name, ret.alignment, extra={"action": "munge", "left": self,
@@ -262,7 +260,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
                      part.name, part.alignment, " (rev)" if is_rev else "")
 
     def make_aligned(query, alignment, is_rev):
-        return AlignedContig(
+        return AlignedContig.make(
             query=query,
             alignment=alignment,
             reverse=is_rev)

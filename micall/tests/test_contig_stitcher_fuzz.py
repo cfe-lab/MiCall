@@ -37,7 +37,7 @@ def read_contigs(line):
             match_fraction=2/3,
         )
         alignment = CigarHit(Cigar([(length, CigarActions.MATCH)]), q_st=20, q_ei=20+length-1, r_st=start, r_ei=end)
-        contig = AlignedContig(query=query, alignment=alignment, reverse=False)
+        contig = AlignedContig.make(query=query, alignment=alignment, reverse=False)
         aidee = f'{start:03d}-{end:03d}'
         yield {'contig': contig, 'id': aidee}
 
@@ -119,7 +119,7 @@ def test_stitching_intervals_prop(no_aligner, description):
 def test_visualizer_simple(no_aligner, description):
     contigs = description['contigs']
     for contig in contigs:
-        contig.group_ref = "HIV1-B-FR-K03455-seed"
+        contig.__dict__["group_ref"] = "HIV1-B-FR-K03455-seed"
 
     logger = logging.getLogger("micall.core.contig_stitcher")
     logger.setLevel(logging.DEBUG)
