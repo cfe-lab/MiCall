@@ -48,13 +48,13 @@ class GenotypedContig(Contig):
 @dataclass(frozen=True)
 class AlignedContig(GenotypedContig):
     alignment: CigarHit
-    reverse: bool
+    strand: Literal["forward", "reverse"]
 
     @staticmethod
-    def make(query: GenotypedContig, alignment: CigarHit, reverse: bool):
+    def make(query: GenotypedContig, alignment: CigarHit, strand: Literal["forward", "reverse"]):
         return AlignedContig(
             alignment=alignment,
-            reverse=reverse,
+            strand=strand,
             seq=query.seq,
             name=query.name,
             ref_name=query.ref_name,
@@ -67,10 +67,8 @@ class AlignedContig(GenotypedContig):
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        left_query = replace(self, name=generate_new_name())
-        right_query = replace(self, name=generate_new_name())
-        left = AlignedContig.make(left_query, alignment_left, reverse=self.reverse)
-        right = AlignedContig.make(right_query, alignment_right, reverse=self.reverse)
+        left = replace(self, name=generate_new_name(), alignment=alignment_left)
+        right = replace(self, name=generate_new_name(), alignment=alignment_right)
 
         logger.debug("Created contigs %r at %s and %r at %s by cutting %r.",
                      left.name, left.alignment, right.name, right.alignment, self.name,
@@ -89,7 +87,7 @@ class AlignedContig(GenotypedContig):
         alignment = self.alignment.lstrip_query()
         q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
-        result = AlignedContig.make(query, alignment, self.reverse)
+        result = AlignedContig.make(query, alignment, self.strand)
         logger.debug("Doing lstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
                      self.name, result.name, self.alignment,
                      len(self.seq), result.alignment, len(result.seq),
@@ -106,7 +104,7 @@ class AlignedContig(GenotypedContig):
 
         alignment = self.alignment.rstrip_query()
         query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
-        result = AlignedContig.make(query, alignment, self.reverse)
+        result = AlignedContig.make(query, alignment, self.strand)
         logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
                      self.name, result.name, self.alignment,
                      len(self.seq), result.alignment, len(result.seq),
@@ -148,8 +146,8 @@ class AlignedContig(GenotypedContig):
                 reference_delta=0)
         alignment = self_alignment.connect(other_alignment)
 
-        assert self.reverse == other.reverse
-        ret = AlignedContig.make(reverse=self.reverse, query=query, alignment=alignment)
+        assert self.strand == other.strand
+        ret = AlignedContig.make(query=query, alignment=alignment, strand=self.strand)
         logger.debug("Munged contigs %r at %s with %r at %s resulting in %r at %s.",
                      self.name, self.alignment, other.name, other.alignment,
                      ret.name, ret.alignment, extra={"action": "munge", "left": self,
@@ -213,10 +211,10 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
-    hits_array = [(CigarHit(Cigar(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1), x.strand == -1)
-                  for x in alignments]
-    reversed_alignments = [alignment for alignment, is_rev in hits_array if is_rev]
-    alignments = [alignment for alignment, is_rev in hits_array if not is_rev]
+    hits_array = [(CigarHit(Cigar(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1),
+                   "forward" if x.strand == 1 else "reverse") for x in alignments]
+    reversed_alignments = [alignment for alignment, strand in hits_array if strand == "reverse"]
+    alignments = [alignment for alignment, strand in hits_array if strand == "forward"]
 
     logger.info("Contig %r produced %s reverse-complement alignments.",
                 contig.name, len(reversed_alignments),
@@ -243,7 +241,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         return AlignedContig.make(
             query=query,
             alignment=alignment,
-            reverse=is_rev)
+            strand=is_rev)
 
     to_return = connected + reversed_alignments
     if len(to_return) == 0:
@@ -253,7 +251,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         return
 
     if len(to_return) == 1:
-        is_rev = to_return[0] in reversed_alignments
+        is_rev = "forward" if to_return[0] in alignments else "reverse"
         part = make_aligned(contig, to_return[0], is_rev)
         logpart(0, part, is_rev)
         yield part
@@ -266,7 +264,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
                                 group_ref=contig.group_ref,
                                 ref_seq=contig.ref_seq,
                                 match_fraction=contig.match_fraction)
-        is_rev = single_hit in reversed_alignments
+        is_rev = "forward" if single_hit in alignments else "reverse"
         part = make_aligned(query, single_hit, is_rev)
         logpart(i, part, is_rev)
         yield part
@@ -629,8 +627,8 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
     aligned = [x for x in aligned if isinstance(x, AlignedContig)]
 
     # Contigs aligned in reverse do not need any more processing
-    yield from (x for x in aligned if x.reverse)
-    aligned = [x for x in aligned if not x.reverse]
+    yield from (x for x in aligned if x.strand == "reverse")
+    aligned = [x for x in aligned if x.strand == "forward"]
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
@@ -644,7 +642,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     consensus_parts: Dict[GroupRef, List[AlignedContig]] = defaultdict(list)
 
     for contig in contigs:
-        if isinstance(contig, AlignedContig) and not contig.reverse:
+        if isinstance(contig, AlignedContig) and contig.strand == "forward":
             consensus_parts[contig.group_ref].append(contig)
         else:
             yield contig

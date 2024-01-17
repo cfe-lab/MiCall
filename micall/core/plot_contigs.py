@@ -528,7 +528,7 @@ def build_stitcher_figure(logs) -> None:
         elif event.action == "alignment":
             if event.type == "hit":
                 record_contig(event.part, [event.contig])
-                if event.part.reverse:
+                if event.part.strand != "forward":
                     anomaly.append(event.part.name)
             elif event.type == "noref":
                 unknown.append(event.contig.name)
@@ -883,7 +883,7 @@ def build_stitcher_figure(logs) -> None:
                 (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
                 if isinstance(contig, AlignedContig):
                     colour = "lightgray"
-                    if contig.reverse:
+                    if contig.strand == "reverse":
                         figure.add(Arrow(a_r_ei, a_r_st, elevation=-20, h=1))
                     else:
                         figure.add(Arrow(a_r_st, a_r_ei, elevation=-20, h=1))

@@ -37,7 +37,7 @@ def read_contigs(line):
             match_fraction=2/3,
         )
         alignment = CigarHit(Cigar([(length, CigarActions.MATCH)]), q_st=20, q_ei=20+length-1, r_st=start, r_ei=end)
-        contig = AlignedContig.make(query=query, alignment=alignment, reverse=False)
+        contig = AlignedContig.make(query=query, alignment=alignment, strand="forward")
         aidee = f'{start:03d}-{end:03d}'
         yield {'contig': contig, 'id': aidee}
 
