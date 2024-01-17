@@ -40,22 +40,8 @@ class GenotypedContig(Contig):
         """ Cuts query sequence in two parts with cut_point between them. """
 
         cut_point = max(0, cut_point)
-        match_fraction = self.match_fraction
-        left_name = generate_new_name()
-        left = GenotypedContig(name=left_name,
-                               seq=self.seq[:ceil(cut_point)],
-                               ref_seq=self.ref_seq,
-                               ref_name=self.ref_name,
-                               group_ref=self.group_ref,
-                               match_fraction=match_fraction)
-        right_name = generate_new_name()
-        right = GenotypedContig(name=right_name,
-                                seq=self.seq[ceil(cut_point):],
-                                ref_seq=self.ref_seq,
-                                ref_name=self.ref_name,
-                                group_ref=self.group_ref,
-                                match_fraction=match_fraction)
-
+        left = replace(self, name=generate_new_name(), seq=self.seq[:ceil(cut_point)])
+        right = replace(self, name=generate_new_name(), seq=self.seq[ceil(cut_point):])
         return (left, right)
 
 
