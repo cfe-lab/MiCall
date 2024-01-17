@@ -105,15 +105,31 @@ class AlignedContig(GenotypedContig):
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        left_query = self.query.rename(generate_new_name())
-        right_query = self.query.rename(generate_new_name())
+
+        left_query = GenotypedContig(
+            name=generate_new_name(),
+            seq=self.seq[:alignment_right.q_st],
+            ref_name=self.ref_name,
+            group_ref=self.group_ref,
+            ref_seq=self.ref_seq,
+            match_fraction=self.match_fraction)
+        right_query = GenotypedContig(
+            name=generate_new_name(),
+            seq=self.seq[alignment_left.q_ei + 1:],
+            ref_name=self.ref_name,
+            group_ref=self.group_ref,
+            ref_seq=self.ref_seq,
+            match_fraction=self.match_fraction)
+
+        alignment_right = alignment_right.translate(0, -1 * (alignment_left.q_ei + 1))
+
         left = self.modify(left_query, alignment_left)
         right = self.modify(right_query, alignment_right)
 
-        logger.debug("Created contigs %r at %s and %r at %s by cutting %r.",
-                     left.name, left.alignment, right.name, right.alignment, self.name,
-                     extra={"action": "cut", "original": self,
-                            "left": left, "right": right})
+        logger.debug("Created contigs %r at %s (len %s) and %r at %s (len %s) by cutting %r.",
+                     left.name, left.alignment, len(left.seq), right.name, right.alignment,
+                     len(right.seq), self.name, extra={"action": "cut", "original": self,
+                                                       "left": left, "right": right})
 
         return (left, right)
 
