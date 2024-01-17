@@ -64,14 +64,12 @@ class GenotypedContig(Contig):
 
 @dataclass(frozen=True)
 class AlignedContig(GenotypedContig):
-    query: GenotypedContig
     alignment: CigarHit
     reverse: bool
 
     @staticmethod
     def make(query: GenotypedContig, alignment: CigarHit, reverse: bool):
         return AlignedContig(
-            query=query,
             alignment=alignment,
             reverse=reverse,
             seq=query.seq,
@@ -86,8 +84,8 @@ class AlignedContig(GenotypedContig):
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        left_query = replace(self.query, name=generate_new_name())
-        right_query = replace(self.query, name=generate_new_name())
+        left_query = replace(self, name=generate_new_name())
+        right_query = replace(self, name=generate_new_name())
         left = AlignedContig.make(left_query, alignment_left, reverse=self.reverse)
         right = AlignedContig.make(right_query, alignment_right, reverse=self.reverse)
 
@@ -101,7 +99,7 @@ class AlignedContig(GenotypedContig):
 
     def lstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.lstrip_query()
-        q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
+        q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
         result = AlignedContig.make(query, alignment, self.reverse)
         logger.debug("Doing lstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
@@ -114,7 +112,7 @@ class AlignedContig(GenotypedContig):
 
     def rstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.rstrip_query()
-        query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
+        query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
         result = AlignedContig.make(query, alignment, self.reverse)
         logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
                      self.name, result.name, self.alignment,

@@ -151,7 +151,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
     assert 100 == len(results[0].seq)
     assert results[0].seq == 'A' * 50 + 'C' * 50
 
-    assert results[1].query == contigs[2]
+    assert results[1].seq == contigs[2].seq
 
 
 def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
@@ -234,7 +234,8 @@ def test_stitching_of_identical_contigs(exact_aligner):
 
     results = list(stitch_contigs(contigs))
     assert len(results) == 1
-    assert results[0].query == contigs[2]
+    assert results[0].name == contigs[2].name
+    assert results[0].seq == contigs[2].seq
 
 
 def test_stitching_of_zero_contigs(exact_aligner):
@@ -320,14 +321,14 @@ def test_correct_processing_complex_nogaps(exact_aligner):
 
     assert 170 == len(results[0].seq)
     assert results[0].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert results[0].query.group_ref == 'testref-1'
+    assert results[0].group_ref == 'testref-1'
 
     assert 170 == len(results[1].seq)
     assert results[1].seq == 'A' * 50 + 'C' * 100 + 'T' * 20
-    assert results[1].query.group_ref == 'testref-2'
+    assert results[1].group_ref == 'testref-2'
 
-    assert results[2].query == contigs[3]
-    assert results[3].query == contigs[7]
+    assert results[2].seq == contigs[3].seq
+    assert results[3].seq == contigs[7].seq
 
 
 def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
@@ -358,8 +359,8 @@ def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
 
     # Test to ensure that the final result contains the contig 'b' and
     # does not contain the completely covered contig 'a'.
-    assert results[0].query.name == 'b'
-    assert results[0].query == contigs[1]
+    assert results[0].name == 'b'
+    assert results[0].seq == contigs[1].seq
 
 
 def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
