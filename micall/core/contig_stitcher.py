@@ -62,16 +62,6 @@ class GenotypedContig(Contig):
         return (left, right)
 
 
-    def rename(self, new_name: str) -> 'GenotypedContig':
-        return GenotypedContig(
-            name=new_name,
-            seq=self.seq,
-            ref_name=self.ref_name,
-            group_ref=self.group_ref,
-            ref_seq=self.ref_seq,
-            match_fraction=self.match_fraction)
-
-
 @dataclass(frozen=True)
 class AlignedContig(GenotypedContig):
     query: GenotypedContig
@@ -90,13 +80,6 @@ class AlignedContig(GenotypedContig):
             group_ref=query.group_ref,
             ref_seq=query.ref_seq,
             match_fraction=query.match_fraction)
-
-
-    def modify(self, query: GenotypedContig, alignment: CigarHit) -> 'AlignedContig':
-        return AlignedContig.make(
-            reverse=self.reverse,
-            query=query,
-            alignment=alignment)
 
 
     def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
@@ -121,8 +104,8 @@ class AlignedContig(GenotypedContig):
 
         alignment_right = alignment_right.translate(0, -1 * (alignment_left.q_ei + 1))
 
-        left = self.modify(left_query, alignment_left)
-        right = self.modify(right_query, alignment_right)
+        left = AlignedContig.make(query=left_query, alignment=alignment_left, reverse=self.reverse)
+        right = AlignedContig.make(query=right_query, alignment=alignment_right, reverse=self.reverse)
 
         logger.debug("Created contigs %r at %s (len %s) and %r at %s (len %s) by cutting %r.",
                      left.name, left.alignment, len(left.seq), right.name, right.alignment,
@@ -136,7 +119,7 @@ class AlignedContig(GenotypedContig):
         alignment = self.alignment.lstrip_query()
         q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
-        result = self.modify(query, alignment)
+        result = AlignedContig.make(query, alignment, self.reverse)
         logger.debug("Doing lstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
                      self.name, result.name, self.alignment,
                      len(self.seq), result.alignment, len(result.seq),
@@ -148,7 +131,7 @@ class AlignedContig(GenotypedContig):
     def rstrip_query(self) -> 'AlignedContig':
         alignment = self.alignment.rstrip_query()
         query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
-        result = self.modify(query, alignment)
+        result = AlignedContig.make(query, alignment, self.reverse)
         logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
                      self.name, result.name, self.alignment,
                      len(self.seq), result.alignment, len(result.seq),
