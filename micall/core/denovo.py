@@ -19,7 +19,9 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig, stitch_consensus
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, logger as stitcher_logger
+from micall.core.plot_contigs import plot_stitcher_coverage
+from micall.utils.structured_logger import add_structured_handler
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -59,7 +61,8 @@ def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> ty
 def write_contig_refs(contigs_fasta_path,
                       contigs_csv,
                       merged_contigs_csv=None,
-                      blast_csv=None):
+                      blast_csv=None,
+                      stitcher_plot_path=None):
     """ Run BLAST search to identify contig sequences.
 
     :param str contigs_fasta_path: path to file to read contig sequences from
@@ -80,6 +83,10 @@ def write_contig_refs(contigs_fasta_path,
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
     group_refs = {}
+
+    logger = logging.getLogger("micall.core.contig_stitcher")
+    handler = add_structured_handler(logger)
+
     genotypes = genotype(contigs_fasta_path,
                          blast_csv=blast_csv,
                          group_refs=group_refs)
@@ -92,6 +99,9 @@ def write_contig_refs(contigs_fasta_path,
                              match=contig.match_fraction,
                              group_ref=contig.group_ref,
                              contig=contig.seq))
+
+    if stitcher_logger.level <= logging.DEBUG and stitcher_plot_path is not None:
+        plot_stitcher_coverage(handler.logs, stitcher_plot_path)
 
     return len(contigs)
 
@@ -202,7 +212,9 @@ def denovo(fastq1_path: str,
            contigs_csv: typing.TextIO,
            work_dir: str = '.',
            merged_contigs_csv: typing.TextIO = None,
-           blast_csv: typing.TextIO = None):
+           blast_csv: typing.TextIO = None,
+           stitcher_plot_path: typing.Union[str, None] = None,
+           ):
     """ Use de novo assembly to build contigs from reads.
 
     :param fastq1_path: FASTQ file name for read 1 reads
@@ -255,7 +267,8 @@ def denovo(fastq1_path: str,
     duration = datetime.now() - start_time
     contig_count = write_contig_refs(contigs_fasta_path,
                                      contigs_csv,
-                                     blast_csv=blast_csv)
+                                     blast_csv=blast_csv,
+                                     stitcher_plot_path=stitcher_plot_path)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
                 duration,
@@ -269,6 +282,7 @@ if __name__ == '__main__':
     parser.add_argument('fastq1')
     parser.add_argument('fastq2')
     parser.add_argument('contigs', type=argparse.FileType('w'))
+    parser.add_argument('--stitcher_plot')
 
     args = parser.parse_args()
-    denovo(args.fastq1, args.fastq2, args.contigs)
+    denovo(args.fastq1, args.fastq2, args.contigs, args.stitcher_plot_path)

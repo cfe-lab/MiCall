@@ -680,6 +680,34 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     assert stitched_data == expected_data, "The contents of the stitched contigs file do not match the expected contents."
 
 
+def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
+    pwd = os.path.dirname(__file__)
+    contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    stitched_contigs = os.path.join(tmp_path, "stitched.csv")
+    plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
+    main([contigs, stitched_contigs, "--debug", "--plot", plot])
+
+    assert os.path.exists(contigs)
+    assert os.path.exists(stitched_contigs)
+
+    # Check the contents of stitched_contigs
+    with open(stitched_contigs, 'r') as stitched_file:
+        stitched_data = stitched_file.read()
+
+    expected_file_path = os.path.join(pwd, "data", "exact_parts_contigs_stitched.csv")
+    with open(expected_file_path, 'r') as expected_file:
+        expected_data = expected_file.read()
+        assert stitched_data == expected_data, "The contents of the stitched contigs file do not match the expected contents."
+
+    # Check the contents of stitched_contigs
+    expected_plot = os.path.join(pwd, "data", "exact_parts_contigs.plot.svg")
+    with open(plot, 'r') as stitched_file, \
+         open(expected_plot, 'r') as expected_file:
+        stitched_data = stitched_file.read()
+        expected_data = expected_file.read()
+        assert stitched_data == expected_data, "The contents of the stitched plot file do not match the expected contents."
+
+
 #  _   _       _ _     _            _
 # | | | |_ __ (_) |_  | |_ ___  ___| |_ ___
 # | | | | '_ \| | __| | __/ _ \/ __| __/ __|

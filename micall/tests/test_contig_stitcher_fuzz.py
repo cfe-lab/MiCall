@@ -2,10 +2,13 @@ import pytest
 import json
 import os
 from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps
+from micall.core.plot_contigs import build_stitcher_figure
 from micall.utils.cigar_tools import CigarHit, Cigar
 from micall.utils.consensus_aligner import CigarActions
+from micall.utils.structured_logger import add_structured_handler
 from typing import Dict, List
 from collections import defaultdict
+import logging
 
 
 @pytest.fixture
@@ -110,3 +113,22 @@ def test_stitching_intervals_prop(no_aligner, description):
 
     # Checks that there are no overlaps between contigs
     assert all(v == 1 for (k, v) in stitched_positions.items())
+
+
+@pytest.mark.parametrize('description', all_case_descriptions, ids=all_case_ids)
+def test_visualizer_simple(no_aligner, description):
+    contigs = description['contigs']
+    for contig in contigs:
+        contig.group_ref = "HIV1-B-FR-K03455-seed"
+
+    logger = logging.getLogger("micall.core.contig_stitcher")
+    logger.setLevel(logging.DEBUG)
+    handler = add_structured_handler(logger)
+
+    stitched = list(stitch_consensus(contigs))
+
+    assert logger.level <= logging.DEBUG
+    assert len(handler.logs) >= len(contigs)
+
+    figure = build_stitcher_figure(handler.logs)
+    assert len(figure.elements) > len(contigs) + 1

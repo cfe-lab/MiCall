@@ -95,8 +95,6 @@ class AlignedContig(GenotypedContig):
 
 
     def modify(self, query: GenotypedContig, alignment: CigarHit) -> 'AlignedContig':
-        if query.seq == self.query.seq and alignment == self.alignment:
-            return self
         return AlignedContig(
             reverse=self.reverse,
             query=query,
@@ -125,9 +123,11 @@ class AlignedContig(GenotypedContig):
         q_remainder, query = self.query.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
         result = self.modify(query, alignment)
-        logger.debug("Contig %r morfed into contig %r, so %s became %s",
-                     self.name, result.name, self.alignment, result.alignment,
-                     extra={"action": "modify", "original": self, "result": result})
+        logger.debug("Doing lstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
+                     self.name, result.name, self.alignment,
+                     len(self.seq), result.alignment, len(result.seq),
+                     extra={"action": "modify", "type": "lstrip",
+                            "original": self, "result": result})
         return result
 
 
@@ -135,9 +135,11 @@ class AlignedContig(GenotypedContig):
         alignment = self.alignment.rstrip_query()
         query, q_remainder = self.query.cut_query(alignment.q_ei + 0.5)
         result = self.modify(query, alignment)
-        logger.debug("Contig %r morfed into contig %r, so %s became %s",
-                     self.name, result.name, self.alignment, result.alignment,
-                     extra={"action": "modify", "original": self, "result": result})
+        logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
+                     self.name, result.name, self.alignment,
+                     len(self.seq), result.alignment, len(result.seq),
+                     extra={"action": "modify", "type": "rstrip",
+                            "original": self, "result": result})
         return result
 
 
@@ -153,10 +155,9 @@ class AlignedContig(GenotypedContig):
 
 
     def munge(self, other: 'AlignedContig') -> 'AlignedContig':
-        query_seq = self.rstrip_query().seq + other.lstrip_query().seq
         match_fraction = min(self.match_fraction, other.match_fraction)
         ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
-        query = GenotypedContig(seq=query_seq,
+        query = GenotypedContig(seq=self.seq + other.seq,
                                 name=generate_new_name(),
                                 ref_name=ref_name,
                                 group_ref=self.group_ref,
@@ -179,12 +180,33 @@ class AlignedContig(GenotypedContig):
         return ret
 
 
+def sliding_window(sequence):
+    if not sequence:
+        return
+
+    yield (None, sequence[0], sequence[1] if len(sequence) > 1 else None)
+
+    for i in range(1, len(sequence) - 1):
+        yield (sequence[i - 1], sequence[i], sequence[i + 1])
+
+    if len(sequence) > 1:
+        yield (sequence[-2], sequence[-1], None)
+
+
 def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
-    ret = reduce(AlignedContig.munge, parts)
+    stripped_parts = []
+    for prev_part, part, next_part in sliding_window(parts):
+        if prev_part is not None:
+            part = part.lstrip_query()
+        if next_part is not None:
+            part = part.rstrip_query()
+        stripped_parts.append(part)
+
+    ret = reduce(AlignedContig.munge, stripped_parts)
     logger.debug("Created a frankenstein %r at %s (len %s) from %s.",
                  ret.name, ret.alignment, len(ret.seq),
-                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in parts],
-                 extra={"action": "frankenstein", "contigs": parts, "result": ret})
+                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in stripped_parts],
+                 extra={"action": "combine", "contigs": stripped_parts, "result": ret})
     return ret
 
 
@@ -597,6 +619,8 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     def combine(group_ref):
         contigs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
         if len(contigs) == 1:
+            logger.info("Returning contig %r as is.", contigs[0].name,
+                        extra={"action": "finalreturn", "contig": contigs[0]})
             return contigs[0]
 
         seq = ''.join([contig.seq for contig in contigs])
@@ -624,6 +648,7 @@ def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('contigs', type=argparse.FileType('r'))
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'))
+    parser.add_argument('--plot')
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity', default=True)
@@ -640,7 +665,7 @@ def main(args):
     else:
         logger.setLevel(logging.WARN)
 
-    write_contig_refs(args.contigs.name, args.stitched_contigs)
+    write_contig_refs(args.contigs.name, args.stitched_contigs, stitcher_plot_path=args.plot)
     args.contigs.close()
     args.stitched_contigs.close()
 

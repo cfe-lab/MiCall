@@ -12,12 +12,24 @@ import yaml
 from genetracks import Figure, Track, Multitrack, Coverage
 # noinspection PyPep8Naming
 import drawsvg as draw
-from genetracks.elements import Element
+from genetracks.elements import Element, Label
 from matplotlib import cm, colors
 from matplotlib.colors import Normalize
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
+
+
+class LeftLabel(Label):
+    """Like Label, but anchored to the left, instead of the middle.
+    """
+    def draw(self, *args, **kwargs):
+        d = super().draw(*args, **kwargs)
+        assert len(d.children) == 1
+        text = d.children[0]
+        text.args['text-anchor'] = 'left'
+        # text.args['fill'] = 'red' # works by the way
+        return d
 
 
 class SmoothCoverage(Coverage):
@@ -153,17 +165,19 @@ class Arrow(Element):
         group.append(draw.Line(line_start, arrow_y,
                                arrow_start, arrow_y,
                                stroke='black'))
-        group.append(draw.Circle(centre, h/2, r, fill='ivory', stroke='black'))
+        if self.label is not None:
+            group.append(draw.Circle(centre, h/2, r, fill='ivory', stroke='black'))
         group.append(draw.Lines(arrow_end, arrow_y,
                                 arrow_start, arrow_y + arrow_size/2,
                                 arrow_start, arrow_y - arrow_size/2,
                                 arrow_end, arrow_y,
                                 fill='black'))
-        group.append(draw.Text(self.label,
-                               font_size,
-                               centre, h / 2,
-                               text_anchor='middle',
-                               dy="0.35em"))
+        if self.label is not None:
+            group.append(draw.Text(self.label,
+                                   font_size,
+                                   centre, h / 2,
+                                   text_anchor='middle',
+                                   dy="0.35em"))
         return group
 
 
@@ -374,6 +388,530 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
     if not f.elements:
         f.add(Track(1, max_position, label='No contigs found.', color='none'))
     return f
+
+
+def plot_stitcher_coverage(logs, genome_coverage_svg_path):
+    f = build_stitcher_figure(logs)
+    f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
+
+
+from types import SimpleNamespace
+from typing import Union, Dict, Tuple, List, Optional, Set
+from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig
+import logging
+import random
+
+def build_stitcher_figure(logs) -> None:
+    contig_map: Dict[str, Contig] = {}
+    name_mappings: Dict[str, str] = {}
+    parent_graph: Dict[str, List[str]] = defaultdict(list)
+    morphism_graph: Dict[str, List[str]] = {}
+    reduced_parent_graph: Dict[str, List[str]] = {}
+    transitive_parent_graph: Dict[str, List[str]] = {}
+    discarded: List[str] = []
+    unknown: List[str] = []
+    anomaly: List[str] = []
+    overlap_leftparent_map: Dict[str, str] = {}
+    overlap_rightparent_map: Dict[str, str] = {}
+    overlap_lefttake_map: Dict[str, str] = {}
+    overlap_righttake_map: Dict[str, str] = {}
+    overlap_sibling_map: Dict[str, str] = {}
+    combine_left_edge: Dict[str, str] = {}
+    combine_right_edge: Dict[str, str] = {}
+    synthetic: Set[str] = set()
+    sinks: Dict[str, bool] = {}
+
+    def get_oldest_ancestors(recur, graph, ancestor_name):
+        if ancestor_name in recur:
+            return
+        else:
+            recur = recur.copy()
+            recur.add(ancestor_name)
+
+        if ancestor_name in graph:
+            existing_ancestors = graph[ancestor_name]
+            for existing in existing_ancestors:
+                yield from get_oldest_ancestors(recur, graph, existing)
+        else:
+            yield ancestor_name
+            return
+
+    def reduced_closure(graph):
+        ret = {}
+        for parent, children in graph.items():
+            lst = []
+            for child in children:
+                for anc in get_oldest_ancestors(set(), graph, child):
+                    if anc not in lst:
+                        lst.append(anc)
+            ret[parent] = lst
+        return ret
+
+    def transitive_closure(graph):
+        def dfs(current_node, start_node):
+            if current_node not in visited:
+                visited.add(current_node)
+                closure[start_node].add(current_node)
+                for neighbor in graph.get(current_node, []):
+                    dfs(neighbor, start_node)
+
+        closure = {node: set() for node in graph}
+        for node in graph:
+            visited = set()
+            dfs(node, node)
+
+        return {node: list(descendants) for node, descendants in closure.items()}
+
+    def reflexive_closure(graph):
+        ret = graph.copy()
+        for parent, children in graph.items():
+            if parent not in children:
+                children.append(parent)
+            for child in children[:]:
+                if child not in ret:
+                    ret[child] = []
+                lst = ret[child]
+                if child not in lst:
+                    ret[child].append(child)
+        return ret
+
+    def inverse_graph(graph):
+        ret = {}
+        for parent, children in graph.items():
+            for child in children:
+                if child not in ret:
+                    ret[child] = []
+                ret[child].append(parent)
+        return ret
+
+    def graph_sum(graph_a, graph_b):
+        ret = graph_a.copy()
+        for key, values in graph_b.items():
+            if key not in ret:
+                ret[key] = []
+            for value in values:
+                lst = ret[key]
+                if value not in lst:
+                    lst.append(value)
+        return ret
+
+    def symmetric_closure(graph):
+        return graph_sum(graph, inverse_graph(graph))
+
+    def record_contig(contig: Contig, parents: List[Contig]):
+        contig_map[contig.name] = contig
+        if [contig.name] != [parent.name for parent in parents]:
+            for parent in parents:
+                contig_map[parent.name] = parent
+                parent_graph[contig.name].append(parent.name)
+
+    def record_morphism(contig: Contig, original: Contig):
+        if original.name not in morphism_graph:
+            morphism_graph[original.name] = []
+        lst = morphism_graph[original.name]
+        if contig.name not in lst:
+            lst.append(contig.name)
+
+    def unwrap_final(contig):
+        yield contig
+
+    for event in logs:
+        if not hasattr(event, "action"):
+            pass
+        elif event.action == "finalcombine":
+            record_contig(event.result, event.contigs)
+        elif event.action == "splitgap":
+            record_contig(event.left, [event.contig])
+            record_contig(event.right, [event.contig])
+        elif event.action == "intro":
+            record_contig(event.contig, [])
+        elif event.action == "alignment":
+            if event.type == "hit":
+                record_contig(event.part, [event.contig])
+                if event.part.reverse:
+                    anomaly.append(event.part.name)
+            elif event.type == "noref":
+                unknown.append(event.contig.name)
+            elif event.type == "zerohits":
+                anomaly.append(event.contig.name)
+            elif event.type in ("hitnumber", "reversenumber"):
+                pass
+            else:
+                raise RuntimeError(f"Unrecognized event of type {event.type!r}: {event}")
+        elif event.action == "munge":
+            record_contig(event.result, [event.left, event.right])
+        elif event.action == "modify":
+            record_contig(event.result, [event.original])
+            record_morphism(event.result, event.original)
+        elif event.action == "overlap":
+            synthetic.add(event.left_take.name)
+            synthetic.add(event.right_take.name)
+            overlap_leftparent_map[event.left_remainder.name] = event.left.name
+            overlap_rightparent_map[event.right_remainder.name] = event.right.name
+            overlap_lefttake_map[event.left_remainder.name] = event.left_take.name
+            overlap_righttake_map[event.right_remainder.name] = event.right_take.name
+            overlap_sibling_map[event.left_remainder.name] = event.right_remainder.name
+            overlap_sibling_map[event.right_remainder.name] = event.left_remainder.name
+        elif event.action == "drop":
+            discarded.append(event.contig.name)
+        elif event.action == "stitchcut":
+            record_contig(event.left_overlap, [event.left])
+            record_contig(event.left_remainder, [event.left])
+            record_contig(event.right_overlap, [event.right])
+            record_contig(event.right_remainder, [event.right])
+        elif event.action == "stitch":
+            record_contig(event.result, [event.left, event.right])
+        elif event.action == "cut":
+            record_contig(event.left, [event.original])
+            record_contig(event.right, [event.original])
+        elif event.action == "combine":
+            record_contig(event.result, event.contigs)
+            combine_left_edge[event.result.name] = event.contigs[0].name
+            combine_right_edge[event.result.name] = event.contigs[-1].name
+        elif event.action in ("ignoregap", "nooverlap", "finalreturn"):
+            pass
+        else:
+            raise RuntimeError(f"Unrecognized action: {event.action}")
+
+    group_refs = {contig.group_ref: len(contig.ref_seq) for contig in contig_map.values() if contig.ref_seq}
+    children_graph = inverse_graph(parent_graph)
+    reduced_parent_graph = reduced_closure(parent_graph)
+    reduced_children_graph = reduced_closure(children_graph)
+    transitive_parent_graph = transitive_closure(parent_graph)
+    sorted_roots = list(sorted(parent_name for
+                               parent_name in contig_map
+                               if parent_name not in parent_graph))
+
+    eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_closure(morphism_graph)))
+    reduced_morphism_graph = reduced_closure(morphism_graph)
+
+    # Closing `synthetic'
+    for contig in contig_map:
+        if contig in synthetic:
+            for clone in eqv_morphism_graph.get(contig, []):
+                synthetic.add(clone)
+
+    def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map):
+        for parent in edge_table:
+            child_remainder = edge_table[parent]
+            for child_remainder_morph in eqv_morphism_graph.get(child_remainder, [child_remainder]):
+                if child_remainder_morph in overlap_xtake_map:
+                    continue
+
+                for parent_morph in eqv_morphism_graph.get(parent, [parent]):
+                    for parent_remainder in overlap_xparent_map:
+                        if overlap_xparent_map[parent_remainder] == parent_morph:
+                            overlap_xtake_map[child_remainder_morph] = overlap_xtake_map[parent_remainder]
+                            yield True
+
+    # Closing `takes` by parents
+    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map)): pass
+    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map)): pass
+
+    final_parts: Dict[str, bool] = {}
+    for contig in contig_map:
+        if contig in synthetic:
+            continue
+
+        if contig in overlap_sibling_map:
+            finals = reduced_morphism_graph.get(contig, [contig])
+            if len(finals) == 1:
+                [final] = finals
+                parents = reduced_parent_graph.get(final, [])
+                if len(parents) == 1:
+                    final_parts[final] = True
+
+        elif contig in discarded or contig in anomaly or contig in unknown:
+            final_parts[contig] = True
+
+    final_parent_mapping: Dict[str, List[str]] = {}
+    for parent_name in sorted_roots:
+        children = []
+        for final_contig in final_parts:
+            if final_contig == parent_name or \
+               parent_name in reduced_parent_graph.get(final_contig, []):
+                children.append(final_contig)
+
+        final_parent_mapping[parent_name] = children
+
+    min_position, max_position = 1, 1
+    position_offset = 100
+    for contig in contig_map.values():
+        if isinstance(contig, GenotypedContig) and contig.ref_seq is not None:
+            max_position = max(max_position, len(contig.ref_seq) + 3 * position_offset)
+        else:
+            max_position = max(max_position, len(contig.seq) + 3 * position_offset)
+
+    name_mappings = {}
+
+    for i, (parent, children) in enumerate(sorted(final_parent_mapping.items(), key=lambda p: p[0])):
+        name_mappings[parent] = f"{i + 1}"
+        mapped_children = [child for child in children]
+        for k, child in enumerate(mapped_children):
+            if len(mapped_children) > 1:
+                name_mappings[child] = f"{i + 1}.{k + 1}"
+            else:
+                name_mappings[child] = f"{i + 1}"
+
+        for child in discarded + anomaly + unknown:
+            if child not in children:
+                if child in transitive_parent_graph \
+                   and parent in transitive_parent_graph[child]:
+                    k += 1
+                    name_mappings[child] = f"{i + 1}.{k + 1}"
+
+    def get_neighbours(part, lookup):
+        for clone in eqv_morphism_graph.get(part.name, [part.name]):
+            maybe_name = lookup.get(clone, None)
+            if maybe_name is not None:
+                yield contig_map[maybe_name]
+
+    def get_final_version(contig):
+        name = reduced_morphism_graph.get(contig.name, [contig.name])[0] # FIXME: why 0???
+        return contig_map[name]
+
+    def get_neighbour(part, lookup):
+        if not part: return None
+        lst = list(get_neighbours(part, lookup))
+        ret = max(map(get_final_version, lst), key=lambda contig: contig.alignment.ref_length, default=None)
+        return ret
+
+    aligned_size_map: Dict[str, Tuple[int, int]] = {}
+    full_size_map: Dict[str, Tuple[int, int]] = {}
+
+    for parent_name in sorted_roots:
+        parts = final_parent_mapping[parent_name]
+        parts = [contig_map[part] for part in parts]
+
+        for part in parts:
+            if not isinstance(part, AlignedContig):
+                continue
+
+            prev_part = get_neighbour(part, overlap_righttake_map)
+            next_part = get_neighbour(part, overlap_lefttake_map)
+
+            if prev_part is not None:
+                r_st = prev_part.alignment.r_st + position_offset
+            else:
+                start_delta = -1 * part.alignment.q_st
+                r_st = part.alignment.r_st + start_delta + position_offset
+
+            if next_part is not None:
+                r_ei = next_part.alignment.r_ei + position_offset
+            else:
+                end_delta = len(part.seq) - part.alignment.q_ei
+                r_ei = part.alignment.r_ei + end_delta + position_offset
+
+            aligned_size_map[part.name] = (r_st, r_ei)
+
+            sibling = ([overlap_sibling_map[name] for name in eqv_morphism_graph.get(part.name, [part.name]) if name in overlap_sibling_map] or [None])[0]
+            sibling = sibling and contig_map[sibling]
+            prev_part = get_neighbour(sibling, overlap_lefttake_map)
+            next_part = get_neighbour(sibling, overlap_righttake_map)
+
+            if prev_part is not None and prev_part.alignment.r_ei < part.alignment.r_st and prev_part:
+                r_st = prev_part.alignment.r_st + position_offset
+            else:
+                start_delta = -1 * part.alignment.q_st
+                r_st = part.alignment.r_st + start_delta + position_offset
+
+            if next_part is not None and next_part.alignment.r_st > part.alignment.r_ei and next_part:
+                r_ei = next_part.alignment.r_ei + position_offset
+            else:
+                end_delta = len(part.seq) - part.alignment.q_ei
+                r_ei = part.alignment.r_ei + end_delta + position_offset
+
+            full_size_map[part.name] = (r_st, r_ei)
+
+    def get_contig_coordinates(contig):
+        if isinstance(contig, AlignedContig):
+            r_st = position_offset + contig.alignment.r_st
+            r_ei = position_offset + contig.alignment.r_ei
+            if contig.name in aligned_size_map:
+                a_r_st, a_r_ei = aligned_size_map[contig.name]
+            else:
+                a_r_st = r_st
+                a_r_ei = r_ei
+            if contig.name in full_size_map:
+                f_r_st, f_r_ei = full_size_map[contig.name]
+            else:
+                f_r_st = r_st - contig.alignment.q_st
+                f_r_ei = r_ei + (len(contig.seq) - contig.alignment.q_ei)
+        else:
+            f_r_st = position_offset
+            f_r_ei = position_offset + len(contig.seq)
+            a_r_st = f_r_st
+            a_r_ei = f_r_ei
+        return (a_r_st, a_r_ei, f_r_st, f_r_ei)
+
+    def get_tracks(group_ref, contig_name):
+        parts = final_parent_mapping[contig_name]
+        for part_name in parts:
+            part = contig_map[part_name]
+
+            if not isinstance(part, AlignedContig):
+                continue
+
+            if part.group_ref != group_ref:
+                continue
+
+            indexes = name_mappings[part.name]
+            (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
+            yield Track(f_r_st, f_r_ei, label=f"{indexes}")
+
+    def get_arrows(group_ref, contig_name, labels):
+        parts = final_parent_mapping[contig_name]
+        for part_name in parts:
+            part = contig_map[part_name]
+
+            if not isinstance(part, AlignedContig):
+                continue
+
+            if part.group_ref != group_ref:
+                continue
+
+            indexes = name_mappings[part.name] if labels else None
+            height = 20 if labels else 1
+            elevation = 1 if labels else -20
+            (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
+            yield Arrow(a_r_st, a_r_ei,
+                        elevation=elevation,
+                        h=height,
+                        label=indexes)
+
+    def get_all_arrows(group_ref, labels):
+        for parent_name in sorted_roots:
+            yield from get_arrows(group_ref, parent_name, labels)
+
+    ################
+    # Drawing part #
+    ################
+
+    landmarks_path = (Path(__file__).parent.parent / "data" /
+                      "landmark_references.yaml")
+    landmark_groups = yaml.safe_load(landmarks_path.read_text())
+    projects = ProjectConfig.loadDefault()
+    figure = Figure()
+    for group_ref in group_refs:
+        matching_groups = [group for group in landmark_groups if group['coordinates'] == group_ref]
+        if matching_groups:
+            reference_set = matching_groups[0]
+        elif "HIV1" in group_ref:
+            matching_groups = [group for group in landmark_groups if group['coordinates'] == "HIV1-B-FR-K03455-seed"]
+            reference_set = matching_groups[0]
+        else:
+            reference_set = None
+            add_partial_banner(figure, position_offset, max_position)
+            continue
+
+        #############
+        # Landmarks #
+        #############
+
+        if reference_set:
+            prev_landmark = None
+            for i, landmark in enumerate(sorted(reference_set['landmarks'],
+                                                key=itemgetter('start'))):
+                landmark.setdefault('frame', 0)
+                if prev_landmark and 'end' not in prev_landmark:
+                    prev_landmark['end'] = landmark['start'] - 1
+                prev_landmark = landmark
+            for frame, frame_landmarks in groupby(reference_set['landmarks'],
+                                                    itemgetter('frame')):
+                subtracks = []
+                for landmark in frame_landmarks:
+                    landmark_colour = landmark.get('colour')
+                    if landmark_colour is None:
+                        continue
+                    subtracks.append(Track(landmark['start'] + position_offset,
+                                            landmark['end'] + position_offset,
+                                            label=landmark['name'],
+                                            color=landmark_colour))
+                    max_position = max(max_position,
+                                        landmark['end'] + position_offset)
+                figure.add(Multitrack(subtracks))
+
+            r_st = position_offset
+            r_ei = position_offset + group_refs[group_ref]
+            figure.add(Track(r_st, r_ei, label=f"{group_ref}"))
+
+        ##########
+        # Arrows #
+        ##########
+
+        ref_arrows = list(get_all_arrows(group_ref, labels=True))
+        if ref_arrows:
+            figure.add(ArrowGroup(ref_arrows))
+
+        ###########
+        # Contigs #
+        ###########
+
+        for parent_name in sorted_roots:
+            arrows = list(get_arrows(group_ref, parent_name, labels=False))
+            if arrows:
+                figure.add(ArrowGroup(arrows))
+            parts = list(get_tracks(group_ref, parent_name))
+            if parts:
+                figure.add(Multitrack(parts))
+
+        #############
+        # Discarded #
+        #############
+
+        if discarded:
+            label = LeftLabel(text=f"discards:", x=0, font_size=12)
+            pos = position_offset / 2
+            figure.add(Track(pos, pos, h=40, label=label))
+            for contig_name in discarded:
+                contig = contig_map[contig_name]
+                (r_st, r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
+                name = name_mappings.get(contig.name, contig.name)
+                figure.add(Arrow(r_st, r_ei, elevation=-20, h=1))
+                figure.add(Track(f_r_st, f_r_ei, label=name))
+
+        #############
+        # Anomalies #
+        #############
+
+        if anomaly:
+            label = LeftLabel(text=f"anomaly:", x=0, font_size=12)
+            pos = position_offset / 2
+            figure.add(Track(pos, pos, h=40, label=label))
+            for contig_name in anomaly:
+                contig = contig_map[contig_name]
+                (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
+                if isinstance(contig, AlignedContig):
+                    colour = "lightgray"
+                    if contig.reverse:
+                        figure.add(Arrow(a_r_ei, a_r_st, elevation=-20, h=1))
+                    else:
+                        figure.add(Arrow(a_r_st, a_r_ei, elevation=-20, h=1))
+                else:
+                    colour = "red"
+
+                name = name_mappings.get(contig.name, contig.name)
+                figure.add(Track(a_r_st, a_r_ei, color=colour, label=name))
+
+    ###########
+    # Unknown #
+    ###########
+
+    if unknown:
+        label = LeftLabel(text=f"unknown:", x=0, font_size=12)
+        pos = position_offset / 2
+        figure.add(Track(pos, pos, h=40, label=label))
+        for contig_name in unknown:
+            contig = contig_map[contig_name]
+            r_st = position_offset
+            r_ei = position_offset + len(contig.seq)
+            colour = "red"
+            name = name_mappings.get(contig.name, contig.name)
+            figure.add(Track(r_st, r_ei, color=colour, label=name))
+
+    if not figure.elements:
+        figure.add(Track(1, max_position, label='No contigs found.', color='none'))
+    return figure
 
 
 def map_references(contig_ref_name: str,
