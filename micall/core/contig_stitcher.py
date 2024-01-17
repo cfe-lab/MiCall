@@ -1,6 +1,6 @@
 from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal
 from collections import deque, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from math import ceil, floor
 from mappy import Aligner
 from functools import cached_property, reduce
@@ -86,31 +86,15 @@ class AlignedContig(GenotypedContig):
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
+        left_query = replace(self.query, name=generate_new_name())
+        right_query = replace(self.query, name=generate_new_name())
+        left = AlignedContig.make(left_query, alignment_left, reverse=self.reverse)
+        right = AlignedContig.make(right_query, alignment_right, reverse=self.reverse)
 
-        left_query = GenotypedContig(
-            name=generate_new_name(),
-            seq=self.seq[:alignment_right.q_st],
-            ref_name=self.ref_name,
-            group_ref=self.group_ref,
-            ref_seq=self.ref_seq,
-            match_fraction=self.match_fraction)
-        right_query = GenotypedContig(
-            name=generate_new_name(),
-            seq=self.seq[alignment_left.q_ei + 1:],
-            ref_name=self.ref_name,
-            group_ref=self.group_ref,
-            ref_seq=self.ref_seq,
-            match_fraction=self.match_fraction)
-
-        alignment_right = alignment_right.translate(0, -1 * (alignment_left.q_ei + 1))
-
-        left = AlignedContig.make(query=left_query, alignment=alignment_left, reverse=self.reverse)
-        right = AlignedContig.make(query=right_query, alignment=alignment_right, reverse=self.reverse)
-
-        logger.debug("Created contigs %r at %s (len %s) and %r at %s (len %s) by cutting %r.",
-                     left.name, left.alignment, len(left.seq), right.name, right.alignment,
-                     len(right.seq), self.name, extra={"action": "cut", "original": self,
-                                                       "left": left, "right": right})
+        logger.debug("Created contigs %r at %s and %r at %s by cutting %r.",
+                     left.name, left.alignment, right.name, right.alignment, self.name,
+                     extra={"action": "cut", "original": self,
+                            "left": left, "right": right})
 
         return (left, right)
 
