@@ -532,8 +532,10 @@ def build_stitcher_figure(logs) -> None:
                     anomaly.append(event.part.name)
             elif event.type == "noref":
                 unknown.append(event.contig.name)
-            elif event.type == "zerohits":
+            elif event.type == "zerohits" or event.type == "strandconflict":
                 anomaly.append(event.contig.name)
+            elif event.type == "reversecomplement":
+                record_contig(event.new_contig, [event.contig])
             elif event.type in ("hitnumber", "reversenumber"):
                 pass
             else:

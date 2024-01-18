@@ -7,6 +7,7 @@ from functools import cached_property, reduce
 from itertools import accumulate, takewhile, tee, islice, chain
 from gotoh import align_it
 from queue import LifoQueue
+from Bio import Seq
 import logging
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
@@ -213,60 +214,52 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
     alignments = list(aligner.map(contig.seq))
     hits_array = [(CigarHit(Cigar(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1),
                    "forward" if x.strand == 1 else "reverse") for x in alignments]
-    reversed_alignments = [alignment for alignment, strand in hits_array if strand == "reverse"]
-    alignments = [alignment for alignment, strand in hits_array if strand == "forward"]
 
-    logger.info("Contig %r produced %s reverse-complement alignments.",
-                contig.name, len(reversed_alignments),
-                extra={"action": "alignment", "type": "reversenumber",
-                       "contig": contig, "n": len(reversed_alignments)})
+    connected = connect_cigar_hits(list(map(lambda p: p[0], hits_array))) if hits_array else []
 
-    connected = connect_cigar_hits(alignments) if alignments else []
-
-    logger.info("Contig %r produced %s forward alignments.", contig.name, len(connected),
-                extra={"action": "alignment", "type": "hitnumber",
-                       "contig": contig, "n": len(connected)})
-
-    def logpart(i, part, is_rev):
-        logger.info("Part %r of contig %r aligned as %r at [%s, %s]->[%s, %s]%s.",
-                    i, contig.name, part.name, part.alignment.q_st,
-                    part.alignment.q_ei, part.alignment.r_st, part.alignment.r_ei,
-                    " (rev)" if is_rev else "",
-                    extra={"action": "alignment", "type": "hit",
-                           "contig": contig, "part": part, "i": i})
-        logger.debug("Part %r of contig %r aligned as %r at %s%s.", i, contig.name,
-                     part.name, part.alignment, " (rev)" if is_rev else "")
-
-    def make_aligned(query, alignment, is_rev):
-        return AlignedContig.make(
-            query=query,
-            alignment=alignment,
-            strand=is_rev)
-
-    to_return = connected + reversed_alignments
-    if len(to_return) == 0:
-        logger.info("Contig %r not aligned - backend choice.", contig.name,
+    if not connected:
+        logger.info("Contig %r not aligned - backend's choice.", contig.name,
                     extra={"action": "alignment", "type": "zerohits", "contig": contig})
         yield contig
         return
 
-    if len(to_return) == 1:
-        is_rev = "forward" if to_return[0] in alignments else "reverse"
-        part = make_aligned(contig, to_return[0], is_rev)
-        logpart(0, part, is_rev)
-        yield part
+    if len(set(map(lambda p: p[1], hits_array))) > 1:
+        logger.info("Discarding contig %r because it aligned both in forward and reverse sense.", contig.name,
+                    extra={"action": "alignment", "type": "strandconflict", "contig": contig})
+        yield contig
         return
 
-    for i, single_hit in enumerate(to_return):
-        query = GenotypedContig(name=generate_new_name(),
-                                seq=contig.seq,
-                                ref_name=contig.ref_name,
-                                group_ref=contig.group_ref,
-                                ref_seq=contig.ref_seq,
-                                match_fraction=contig.match_fraction)
-        is_rev = "forward" if single_hit in alignments else "reverse"
-        part = make_aligned(query, single_hit, is_rev)
-        logpart(i, part, is_rev)
+    logger.info("Contig %r produced %s aligner hits. After connecting them, the number became %s.",
+                contig.name, len(hits_array), len(connected),
+                extra={"action": "alignment", "type": "hitnumber", "contig": contig,
+                       "initial": hits_array, "connected": connected})
+
+    strand = hits_array[0][1]
+    if strand == "reverse":
+        rc = str(Seq(contig.seq).reverse_complement())
+        new_contig = replace(contig, seq=rc)
+        logger.info("Reverse complemented contig %r.", contig.name,
+                    extra={"action": "alignment", "type": "reversecomplement",
+                           "contig": contig, "result": new_contig})
+        contig = new_contig
+
+    for i, single_hit in enumerate(connected):
+        if len(connected) == 1:
+            query = contig
+        else:
+            query = replace(contig, name=generate_new_name())
+
+        part = AlignedContig.make(query, single_hit, strand)
+
+        logger.info("Part %r of contig %r aligned as %r at [%s, %s]->[%s, %s]%s.",
+                    i, contig.name,part.name,part.alignment.q_st,
+                    part.alignment.q_ei,part.alignment.r_st,part.alignment.r_ei,
+                    " (rev)" if strand == "reverse" else "",
+                    extra={"action": "alignment", "type": "hit",
+                           "contig": contig, "part":part, "i": i})
+        logger.debug("Part %r of contig %r aligned as %r at %s%s.", i, contig.name,
+                     part.name,part.alignment, " (rev)" if strand == "reverse" else "")
+
         yield part
 
 
