@@ -212,7 +212,11 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
-    hits_array = [(CigarHit(Cigar(x.cigar), x.r_st, x.r_en - 1, x.q_st, x.q_en - 1),
+    hits_array = [(CigarHit(Cigar(x.cigar),
+                            min(x.r_st, x.r_en - 1),
+                            max(x.r_st, x.r_en - 1),
+                            min(x.q_st, x.q_en - 1),
+                            max(x.q_st, x.q_en - 1)),
                    "forward" if x.strand == 1 else "reverse") for x in alignments]
 
     connected = connect_cigar_hits(list(map(lambda p: p[0], hits_array))) if hits_array else []
