@@ -535,15 +535,15 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]
         current_interval = (current.alignment.r_st, current.alignment.r_ei)
 
         # Create a map of cumulative coverage for contigs
-        other_contigs = [x for x in contigs if x != current and x.group_ref == current.group_ref]
-        cumulative_coverage = calculate_cumulative_coverage(other_contigs)
+        overlaping_contigs = [x for x in contigs if x != current and x.overlaps(current)]
+        cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
         if any((cover_interval[0] <= current_interval[0] and cover_interval[1] >= current_interval[1])
                for cover_interval in cumulative_coverage):
-            return current
+            return current, overlaping_contigs
 
-    return None
+    return None, None
 
 
 def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]:
@@ -551,11 +551,12 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
 
     contigs = contigs[:]
     while contigs:
-        covered = find_covered_contig(contigs)
+        covered, covering = find_covered_contig(contigs)
         if covered:
             contigs.remove(covered)
-            logger.info("Droped contig %r as it is completely covered by other contigs.",
-                        covered.name, extra={"action": "drop", "contig": covered})
+            logger.info("Droped contig %r as it is completely covered by these contigs: %s.",
+                        covered.name, ", ".join(repr(x.name) for x in covering),
+                        extra={"action": "drop", "contig": covered, "covering": covering})
         else:
             break
 

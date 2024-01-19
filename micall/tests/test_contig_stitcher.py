@@ -4,7 +4,7 @@ import logging
 import os
 import pytest
 
-from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.utils.structured_logger import add_structured_handler
 from micall.tests.test_denovo import check_hcv_db
@@ -789,6 +789,9 @@ class MockAlignedContig:
         self.alignment = MockAlignment(r_st, r_ei)
         self.name = name
 
+    def overlaps(self, other):
+        return AlignedContig.overlaps(self, other)
+
 
 class MockAlignment:
     def __init__(self, r_st, r_ei):
@@ -867,7 +870,7 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
 def test_find_covered(contigs, expected_covered_name):
     mock_contigs = [create_mock_aligned_contig(ref_name, r_st, r_ei, f'contig{i+1}')
                     for i, (ref_name, r_st, r_ei) in enumerate(contigs)]
-    covered = find_covered_contig(mock_contigs)
+    covered, covering = find_covered_contig(mock_contigs)
     if expected_covered_name is None:
         assert covered is None
     else:
