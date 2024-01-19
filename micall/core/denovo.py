@@ -213,7 +213,7 @@ def denovo(fastq1_path: str,
            work_dir: str = '.',
            merged_contigs_csv: typing.TextIO = None,
            blast_csv: typing.TextIO = None,
-           stitcher_plot_path: typing.Union[str, None] = None,
+           stitcher_plot_path: typing.Optional[str] = None,
            ):
     """ Use de novo assembly to build contigs from reads.
 
@@ -233,6 +233,8 @@ def denovo(fastq1_path: str,
     start_time = datetime.now()
     start_dir = os.getcwd()
     joined_path = os.path.join(tmp_dir, 'joined.fastq')
+    if stitcher_plot_path is None:
+        stitcher_plot_path = os.path.join(tmp_dir, "stitcher_plot.svg")
     run(['merge-mates',
          fastq1_path,
          fastq2_path,
