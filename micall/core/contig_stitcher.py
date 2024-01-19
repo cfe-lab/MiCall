@@ -267,6 +267,26 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         yield part
 
 
+def strip_conflicting_mappings(contigs):
+    contigs = list(contigs)
+    names = {contig.name: contig for contig in contigs}
+    reference_indexes = list(sorted(names.keys(), key=lambda name: names[name].alignment.r_st if isinstance(names[name], AlignedContig) else -1))
+    query_indexes = list(sorted(names.keys(), key=lambda name: names[name].alignment.q_st if isinstance(names[name], AlignedContig) else -1))
+
+    def is_out_of_order(name):
+        return reference_indexes.index(name) != query_indexes.index(name)
+
+    sorted_by_query = list(sorted(contigs, key=lambda contig: contig.alignment.q_st if isinstance(contig, AlignedContig) else -1))
+
+    for prev_contig, contig, next_contig in sliding_window(sorted_by_query):
+        name = contig.name
+        if prev_contig is not None or is_out_of_order(name):
+            contig = contig.lstrip_query()
+        if next_contig is not None or is_out_of_order(name):
+            contig = contig.rstrip_query()
+        yield contig
+
+
 def align_all_to_reference(contigs):
     """
     Align multiple contigs to their respective reference sequences.
@@ -275,7 +295,7 @@ def align_all_to_reference(contigs):
     flattening the result into a single list.
     """
 
-    return [contig for parts in map(align_to_reference, contigs) for contig in parts]
+    return [contig for parts in map(strip_conflicting_mappings, map(align_to_reference, contigs)) for contig in parts]
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
