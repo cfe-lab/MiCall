@@ -848,28 +848,37 @@ def build_stitcher_figure(logs) -> None:
         #############
 
         if reference_set:
+
+            # Filling out missing ends.
             prev_landmark = None
-            for i, landmark in enumerate(sorted(reference_set['landmarks'],
-                                                key=itemgetter('start'))):
+            for landmark in sorted(reference_set['landmarks'], key=itemgetter('start')):
                 landmark.setdefault('frame', 0)
                 if prev_landmark and 'end' not in prev_landmark:
                     prev_landmark['end'] = landmark['start'] - 1
                 prev_landmark = landmark
+
+            # Computing the stretching factor.
+            landmark_max = 0
+            for landmark in reference_set['landmarks']:
+                landmark_max = max(landmark_max, landmark['end'])
+
+            stretch_c = group_refs[group_ref] / landmark_max
+
+            # Drawing the landmarks.
             for frame, frame_landmarks in groupby(reference_set['landmarks'],
-                                                    itemgetter('frame')):
+                                                  itemgetter('frame')):
                 subtracks = []
                 for landmark in frame_landmarks:
                     landmark_colour = landmark.get('colour')
                     if landmark_colour is None:
                         continue
-                    subtracks.append(Track(landmark['start'] + position_offset,
-                                            landmark['end'] + position_offset,
-                                            label=landmark['name'],
-                                            color=landmark_colour))
-                    max_position = max(max_position,
-                                        landmark['end'] + position_offset)
+                    subtracks.append(Track(landmark['start'] * stretch_c + position_offset,
+                                           landmark['end'] * stretch_c + position_offset,
+                                           label=landmark['name'],
+                                           color=landmark_colour))
                 figure.add(Multitrack(subtracks))
 
+            # Drawing the reference sequence.
             r_st = position_offset
             r_ei = position_offset + group_refs[group_ref]
             figure.add(Track(r_st, r_ei, label=f"{group_ref}"))
