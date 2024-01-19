@@ -404,7 +404,7 @@ import random
 def build_stitcher_figure(logs) -> None:
     contig_map: Dict[str, Contig] = {}
     name_mappings: Dict[str, str] = {}
-    parent_graph: Dict[str, List[str]] = defaultdict(list)
+    parent_graph: Dict[str, List[str]] = {}
     morphism_graph: Dict[str, List[str]] = {}
     reduced_parent_graph: Dict[str, List[str]] = {}
     transitive_parent_graph: Dict[str, List[str]] = {}
@@ -420,6 +420,7 @@ def build_stitcher_figure(logs) -> None:
     combine_right_edge: Dict[str, str] = {}
     synthetic: Set[str] = set()
     sinks: Dict[str, bool] = {}
+    returned: List[str] = []
 
     def get_oldest_ancestors(recur, graph, ancestor_name):
         if ancestor_name in recur:
@@ -503,6 +504,9 @@ def build_stitcher_figure(logs) -> None:
         if [contig.name] != [parent.name for parent in parents]:
             for parent in parents:
                 contig_map[parent.name] = parent
+                if contig.name not in parent_graph:
+                    parent_graph[contig.name] = []
+
                 parent_graph[contig.name].append(parent.name)
 
     def record_morphism(contig: Contig, original: Contig):
@@ -512,13 +516,11 @@ def build_stitcher_figure(logs) -> None:
         if contig.name not in lst:
             lst.append(contig.name)
 
-    def unwrap_final(contig):
-        yield contig
-
     for event in logs:
         if not hasattr(event, "action"):
             pass
         elif event.action == "finalcombine":
+            for part in event.contigs: returned.append(part.name)
             record_contig(event.result, event.contigs)
         elif event.action == "splitgap":
             record_contig(event.left, [event.contig])
@@ -626,6 +628,16 @@ def build_stitcher_figure(logs) -> None:
         elif contig in discarded or contig in anomaly or contig in unknown:
             final_parts[contig] = True
 
+    for contig in returned:
+        [contig] = reduced_morphism_graph.get(contig, [contig])
+
+        transitive_parent = transitive_parent_graph.get(contig, [])
+        if any(parent in transitive_parent for parent in final_parts):
+            continue
+
+        final_parts[contig] = True
+
+
     final_parent_mapping: Dict[str, List[str]] = {}
     for parent_name in sorted_roots:
         children = []
@@ -645,12 +657,18 @@ def build_stitcher_figure(logs) -> None:
             max_position = max(max_position, len(contig.seq) + 3 * position_offset)
 
     name_mappings = {}
+    def part_relative_position(name):
+        part = contig_map[name]
+        if isinstance(part, AlignedContig):
+            return part.alignment.q_st
+        else:
+            return -1
 
     for i, (parent, children) in enumerate(sorted(final_parent_mapping.items(), key=lambda p: p[0])):
         name_mappings[parent] = f"{i + 1}"
-        mapped_children = [child for child in children]
-        for k, child in enumerate(mapped_children):
-            if len(mapped_children) > 1:
+        children = list(sorted(children, key=part_relative_position))
+        for k, child in enumerate(children):
+            if len(children) > 1:
                 name_mappings[child] = f"{i + 1}.{k + 1}"
             else:
                 name_mappings[child] = f"{i + 1}"
