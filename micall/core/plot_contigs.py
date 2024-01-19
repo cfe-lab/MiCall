@@ -840,8 +840,6 @@ def build_stitcher_figure(logs) -> None:
             reference_set = matching_groups[0]
         else:
             reference_set = None
-            add_partial_banner(figure, position_offset, max_position)
-            continue
 
         #############
         # Landmarks #
@@ -878,10 +876,10 @@ def build_stitcher_figure(logs) -> None:
                                            color=landmark_colour))
                 figure.add(Multitrack(subtracks))
 
-            # Drawing the reference sequence.
-            r_st = position_offset
-            r_ei = position_offset + group_refs[group_ref]
-            figure.add(Track(r_st, r_ei, label=f"{group_ref}"))
+        # Drawing the reference sequence.
+        r_st = position_offset
+        r_ei = position_offset + group_refs[group_ref]
+        figure.add(Track(r_st, r_ei, label=f"{group_ref}"))
 
         ##########
         # Arrows #
