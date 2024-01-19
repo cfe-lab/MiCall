@@ -421,6 +421,7 @@ def build_stitcher_figure(logs) -> None:
     synthetic: Set[str] = set()
     sinks: Dict[str, bool] = {}
     returned: List[str] = []
+    query_position_map: Dict[str, int] = {}
 
     def get_oldest_ancestors(recur, graph, ancestor_name):
         if ancestor_name in recur:
@@ -589,6 +590,31 @@ def build_stitcher_figure(logs) -> None:
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_closure(morphism_graph)))
     reduced_morphism_graph = reduced_closure(morphism_graph)
 
+
+    def set_query_position(contig: Contig):
+        if contig.name in query_position_map:
+            return
+
+        if not isinstance(contig, AlignedContig):
+            return
+
+        parent_names = parent_graph.get(contig.name, [])
+        parents = [contig_map[name] for name in parent_names]
+        parents = [contig for contig in parents if isinstance(contig, AlignedContig)]
+
+        if parents:
+            for parent in parents:
+                if parent.name not in query_position_map:
+                    set_query_position(parent)
+
+            average = sum(query_position_map[parent_name] for parent_name in parent_names) / len(parent_names)
+            query_position_map[contig.name] = average
+        else:
+            query_position_map[contig.name] = (contig.alignment.q_st + contig.alignment.q_ei) // 2
+
+    for contig in contig_map.values():
+        set_query_position(contig)
+
     # Closing `synthetic'
     for contig in contig_map:
         if contig in synthetic:
@@ -657,16 +683,9 @@ def build_stitcher_figure(logs) -> None:
             max_position = max(max_position, len(contig.seq) + 3 * position_offset)
 
     name_mappings = {}
-    def part_relative_position(name):
-        part = contig_map[name]
-        if isinstance(part, AlignedContig):
-            return part.alignment.q_st
-        else:
-            return -1
-
     for i, (parent, children) in enumerate(sorted(final_parent_mapping.items(), key=lambda p: p[0])):
         name_mappings[parent] = f"{i + 1}"
-        children = list(sorted(children, key=part_relative_position))
+        children = list(sorted(children, key=lambda name: query_position_map.get(name, -1)))
         for k, child in enumerate(children):
             if len(children) > 1:
                 name_mappings[child] = f"{i + 1}.{k + 1}"
