@@ -606,6 +606,7 @@ def build_stitcher_figure(logs) -> None:
     sorted_sinks = list(sorted(child_name for
                                child_name in contig_map
                                if child_name not in children_graph))
+    bad_contigs = anomaly + discarded + unknown
 
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_closure(morphism_graph)))
     reduced_morphism_graph = reduced_closure(morphism_graph)
@@ -683,12 +684,16 @@ def build_stitcher_figure(logs) -> None:
                 if len(parents) == 1:
                     final_parts[final] = True
 
-        elif contig in discarded or contig in anomaly or contig in unknown:
+        elif contig in bad_contigs:
             final_parts[contig] = True
 
-    for join in last_join_points:
-        for contig in parent_graph.get(join, []):
+    # for join in last_join_points + sorted_sinks:
+    for join in last_join_points + sorted_sinks:
+        for contig in parent_graph.get(join, [join]):
             [contig] = reduced_morphism_graph.get(contig, [contig])
+
+            if any(contig in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
+                continue
 
             if any(eqv in temporary for eqv in eqv_morphism_graph.get(contig, [contig])):
                 continue
@@ -727,7 +732,7 @@ def build_stitcher_figure(logs) -> None:
             else:
                 name_mappings[child] = f"{i + 1}"
 
-        for child in discarded + anomaly + unknown:
+        for child in bad_contigs:
             if child not in children:
                 if child in transitive_parent_graph \
                    and parent in transitive_parent_graph[child]:
@@ -826,7 +831,7 @@ def build_stitcher_figure(logs) -> None:
         for part_name in parts:
             part = contig_map[part_name]
 
-            if part_name in discarded or part_name in anomaly or part_name in unknown:
+            if part_name in bad_contigs:
                 continue
 
             if not isinstance(part, AlignedContig):
@@ -844,7 +849,7 @@ def build_stitcher_figure(logs) -> None:
         for part_name in parts:
             part = contig_map[part_name]
 
-            if part_name in discarded or part_name in anomaly or part_name in unknown:
+            if part_name in bad_contigs:
                 continue
 
             if not isinstance(part, AlignedContig):
