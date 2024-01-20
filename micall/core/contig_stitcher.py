@@ -248,11 +248,7 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         contig = new_contig
 
     for i, single_hit in enumerate(connected):
-        if len(connected) == 1:
-            query = contig
-        else:
-            query = replace(contig, name=generate_new_name())
-
+        query = replace(contig, name=generate_new_name())
         part = AlignedContig.make(query, single_hit, strand)
 
         logger.info("Part %r of contig %r aligned as %r at [%s, %s]->[%s, %s]%s.",

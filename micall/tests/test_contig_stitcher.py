@@ -234,7 +234,6 @@ def test_stitching_of_identical_contigs(exact_aligner):
 
     results = list(stitch_contigs(contigs))
     assert len(results) == 1
-    assert results[0].name == contigs[2].name
     assert results[0].seq == contigs[2].seq
 
 
@@ -359,7 +358,6 @@ def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
 
     # Test to ensure that the final result contains the contig 'b' and
     # does not contain the completely covered contig 'a'.
-    assert results[0].name == 'b'
     assert results[0].seq == contigs[1].seq
 
 

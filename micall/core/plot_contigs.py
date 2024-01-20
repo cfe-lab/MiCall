@@ -415,6 +415,7 @@ def build_stitcher_figure(logs) -> None:
     discarded: List[str] = []
     unknown: List[str] = []
     anomaly: List[str] = []
+    overlaps_list: List[str] = []
     overlap_leftparent_map: Dict[str, str] = {}
     overlap_rightparent_map: Dict[str, str] = {}
     overlap_lefttake_map: Dict[str, str] = {}
@@ -561,12 +562,8 @@ def build_stitcher_figure(logs) -> None:
             record_contig(event.result, [event.original])
             record_morphism(event.result, event.original)
         elif event.action == "overlap":
-            temporary.add(event.left_take.name)
-            temporary.add(event.right_take.name)
-            temporary.add(event.left_overlap.name)
-            temporary.add(event.right_overlap.name)
-            temporary.add(event.left.name)
-            temporary.add(event.right.name)
+            overlaps_list.append(event.left_overlap.name)
+            overlaps_list.append(event.right_overlap.name)
             overlap_leftparent_map[event.left_remainder.name] = event.left.name
             overlap_rightparent_map[event.right_remainder.name] = event.right.name
             overlap_lefttake_map[event.left_remainder.name] = event.left_take.name
@@ -610,6 +607,11 @@ def build_stitcher_figure(logs) -> None:
 
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_closure(morphism_graph)))
     reduced_morphism_graph = reduced_closure(morphism_graph)
+
+    for contig in overlaps_list:
+        temporary.add(contig)
+        for child in transitive_children_graph.get(contig, []):
+            temporary.add(child)
 
     for contig, parents in parent_graph.items():
         if len(parents) > 2:
@@ -689,7 +691,11 @@ def build_stitcher_figure(logs) -> None:
 
     # for join in last_join_points + sorted_sinks:
     for join in last_join_points + sorted_sinks:
-        for contig in parent_graph.get(join, [join]):
+        parents = parent_graph.get(join, [join])
+        if not any(isinstance(parent, AlignedContig) for parent in parents):
+            parents = [join]
+
+        for contig in parents:
             for contig in reduced_morphism_graph.get(contig, [contig]):
                 if any(contig in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
                     continue
