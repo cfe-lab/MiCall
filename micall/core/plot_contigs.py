@@ -690,19 +690,18 @@ def build_stitcher_figure(logs) -> None:
     # for join in last_join_points + sorted_sinks:
     for join in last_join_points + sorted_sinks:
         for contig in parent_graph.get(join, [join]):
-            [contig] = reduced_morphism_graph.get(contig, [contig])
+            for contig in reduced_morphism_graph.get(contig, [contig]):
+                if any(contig in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
+                    continue
 
-            if any(contig in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
-                continue
+                if any(eqv in temporary for eqv in eqv_morphism_graph.get(contig, [contig])):
+                    continue
 
-            if any(eqv in temporary for eqv in eqv_morphism_graph.get(contig, [contig])):
-                continue
+                transitive_parent = transitive_parent_graph.get(contig, [])
+                if any(parent in transitive_parent for parent in final_parts):
+                    continue
 
-            transitive_parent = transitive_parent_graph.get(contig, [])
-            if any(parent in transitive_parent for parent in final_parts):
-                continue
-
-            final_parts[contig] = True
+                final_parts[contig] = True
 
     final_parent_mapping: Dict[str, List[str]] = {}
     for parent_name in sorted_roots:
