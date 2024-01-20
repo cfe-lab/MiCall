@@ -826,6 +826,9 @@ def build_stitcher_figure(logs) -> None:
         for part_name in parts:
             part = contig_map[part_name]
 
+            if part_name in discarded or part_name in anomaly or part_name in unknown:
+                continue
+
             if not isinstance(part, AlignedContig):
                 continue
 
@@ -840,6 +843,9 @@ def build_stitcher_figure(logs) -> None:
         parts = final_parent_mapping[contig_name]
         for part_name in parts:
             part = contig_map[part_name]
+
+            if part_name in discarded or part_name in anomaly or part_name in unknown:
+                continue
 
             if not isinstance(part, AlignedContig):
                 continue
