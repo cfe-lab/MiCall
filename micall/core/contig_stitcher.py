@@ -445,7 +445,7 @@ def stitch_2_contigs(left, right):
                  round(cut_point_location_scaled * 100), concordance_str,
                  extra={"action": "overlap", "left": left, "right": right,
                         "left_remainder": left_remainder, "right_remainder": right_remainder,
-                        "left_overlap": left_overlap, "right_original": right_overlap,
+                        "left_overlap": left_overlap, "right_overlap": right_overlap,
                         "left_take": left_overlap_take, "right_take": right_overlap_take,
                         "concordance": concordance, "avg": average_concordance,
                         "cut_point": max_concordance_index,

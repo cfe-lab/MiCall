@@ -7,6 +7,7 @@ from itertools import groupby
 from math import log10, copysign
 from operator import itemgetter, attrgetter
 from pathlib import Path
+import logging
 
 import yaml
 from genetracks import Figure, Track, Multitrack, Coverage
@@ -18,6 +19,9 @@ from matplotlib.colors import Normalize
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
+
+
+logger = logging.getLogger(__name__)
 
 
 class LeftLabel(Label):
@@ -393,12 +397,12 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
 def plot_stitcher_coverage(logs, genome_coverage_svg_path):
     f = build_stitcher_figure(logs)
     f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
+    return f
 
 
 from types import SimpleNamespace
 from typing import Union, Dict, Tuple, List, Optional, Set
 from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig
-import logging
 import random
 
 def build_stitcher_figure(logs) -> None:
@@ -418,14 +422,15 @@ def build_stitcher_figure(logs) -> None:
     overlap_sibling_map: Dict[str, str] = {}
     combine_left_edge: Dict[str, str] = {}
     combine_right_edge: Dict[str, str] = {}
-    synthetic: Set[str] = set()
-    sinks: Dict[str, bool] = {}
-    returned: List[str] = []
+    temporary: Set[str] = set()
+    children_join_points: List[str] = []
+    children_meet_points: List[str] = []
+    last_active: List[str] = []
     query_position_map: Dict[str, int] = {}
 
     def get_oldest_ancestors(recur, graph, ancestor_name):
         if ancestor_name in recur:
-            return
+            assert RuntimeError(f"Recursion in graph {graph!r}")
         else:
             recur = recur.copy()
             recur.add(ancestor_name)
@@ -449,20 +454,28 @@ def build_stitcher_figure(logs) -> None:
             ret[parent] = lst
         return ret
 
+    def get_all_ancestors(recur, lst, graph, ancestor_name):
+        if ancestor_name in recur:
+            assert RuntimeError(f"Recursion in graph {graph!r}")
+        else:
+            recur = recur.copy()
+            recur.add(ancestor_name)
+
+        if ancestor_name not in lst:
+            lst.append(ancestor_name)
+
+        existing_ancestors = graph.get(ancestor_name, [])
+        for existing in existing_ancestors:
+            get_all_ancestors(recur, lst, graph, existing)
+
     def transitive_closure(graph):
-        def dfs(current_node, start_node):
-            if current_node not in visited:
-                visited.add(current_node)
-                closure[start_node].add(current_node)
-                for neighbor in graph.get(current_node, []):
-                    dfs(neighbor, start_node)
-
-        closure = {node: set() for node in graph}
-        for node in graph:
-            visited = set()
-            dfs(node, node)
-
-        return {node: list(descendants) for node, descendants in closure.items()}
+        ret = {}
+        for parent, children in graph.items():
+            lst = []
+            for child in children:
+                get_all_ancestors(set(), lst, graph, child)
+            ret[parent] = lst
+        return ret
 
     def reflexive_closure(graph):
         ret = graph.copy()
@@ -521,7 +534,6 @@ def build_stitcher_figure(logs) -> None:
         if not hasattr(event, "action"):
             pass
         elif event.action == "finalcombine":
-            for part in event.contigs: returned.append(part.name)
             record_contig(event.result, event.contigs)
         elif event.action == "splitgap":
             record_contig(event.left, [event.contig])
@@ -549,8 +561,12 @@ def build_stitcher_figure(logs) -> None:
             record_contig(event.result, [event.original])
             record_morphism(event.result, event.original)
         elif event.action == "overlap":
-            synthetic.add(event.left_take.name)
-            synthetic.add(event.right_take.name)
+            temporary.add(event.left_take.name)
+            temporary.add(event.right_take.name)
+            temporary.add(event.left_overlap.name)
+            temporary.add(event.right_overlap.name)
+            temporary.add(event.left.name)
+            temporary.add(event.right.name)
             overlap_leftparent_map[event.left_remainder.name] = event.left.name
             overlap_rightparent_map[event.right_remainder.name] = event.right.name
             overlap_lefttake_map[event.left_remainder.name] = event.left_take.name
@@ -583,13 +599,29 @@ def build_stitcher_figure(logs) -> None:
     reduced_parent_graph = reduced_closure(parent_graph)
     reduced_children_graph = reduced_closure(children_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
+    transitive_children_graph = transitive_closure(children_graph)
     sorted_roots = list(sorted(parent_name for
                                parent_name in contig_map
                                if parent_name not in parent_graph))
+    sorted_sinks = list(sorted(child_name for
+                               child_name in contig_map
+                               if child_name not in children_graph))
 
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_closure(morphism_graph)))
     reduced_morphism_graph = reduced_closure(morphism_graph)
 
+    for contig, parents in parent_graph.items():
+        if len(parents) > 2:
+            children_join_points.append(contig)
+    for contig, children in children_graph.items():
+        if len(children) > 2:
+            children_meet_points.append(contig)
+
+    last_join_points_parent = {contig for join in children_join_points for contig in transitive_parent_graph.get(join, [])}
+    last_join_points = []
+    for contig in children_join_points:
+        if contig not in last_join_points_parent:
+            last_join_points.append(contig)
 
     def set_query_position(contig: Contig):
         if contig.name in query_position_map:
@@ -615,11 +647,11 @@ def build_stitcher_figure(logs) -> None:
     for contig in contig_map.values():
         set_query_position(contig)
 
-    # Closing `synthetic'
+    # Closing `temporary'
     for contig in contig_map:
-        if contig in synthetic:
+        if contig in temporary:
             for clone in eqv_morphism_graph.get(contig, []):
-                synthetic.add(clone)
+                temporary.add(clone)
 
     def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map):
         for parent in edge_table:
@@ -640,7 +672,7 @@ def build_stitcher_figure(logs) -> None:
 
     final_parts: Dict[str, bool] = {}
     for contig in contig_map:
-        if contig in synthetic:
+        if contig in temporary:
             continue
 
         if contig in overlap_sibling_map:
@@ -654,15 +686,18 @@ def build_stitcher_figure(logs) -> None:
         elif contig in discarded or contig in anomaly or contig in unknown:
             final_parts[contig] = True
 
-    for contig in returned:
-        [contig] = reduced_morphism_graph.get(contig, [contig])
+    for join in last_join_points:
+        for contig in parent_graph.get(join, []):
+            [contig] = reduced_morphism_graph.get(contig, [contig])
 
-        transitive_parent = transitive_parent_graph.get(contig, [])
-        if any(parent in transitive_parent for parent in final_parts):
-            continue
+            if any(eqv in temporary for eqv in eqv_morphism_graph.get(contig, [contig])):
+                continue
 
-        final_parts[contig] = True
+            transitive_parent = transitive_parent_graph.get(contig, [])
+            if any(parent in transitive_parent for parent in final_parts):
+                continue
 
+            final_parts[contig] = True
 
     final_parent_mapping: Dict[str, List[str]] = {}
     for parent_name in sorted_roots:
@@ -698,6 +733,9 @@ def build_stitcher_figure(logs) -> None:
                    and parent in transitive_parent_graph[child]:
                     k += 1
                     name_mappings[child] = f"{i + 1}.{k + 1}"
+
+    for contig, name in name_mappings.items():
+        logger.debug(f"Contig name {contig!r} is displayed as {name!r}.")
 
     def get_neighbours(part, lookup):
         for clone in eqv_morphism_graph.get(part.name, [part.name]):
