@@ -697,6 +697,10 @@ def main(args):
         logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level)
+    if args.plot and logger.level > logging.DEBUG:
+        logging.error("Option --plot requires --debug.")
+        exit(1)
+
     write_contig_refs(args.contigs.name, args.stitched_contigs, stitcher_plot_path=args.plot)
     args.contigs.close()
     args.stitched_contigs.close()
