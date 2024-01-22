@@ -971,12 +971,17 @@ def build_stitcher_figure(logs) -> None:
             label = LeftLabel(text=f"discards:", x=0, font_size=12)
             pos = position_offset / 2
             figure.add(Track(pos, pos, h=40, label=label))
-            for contig_name in discarded:
-                contig = contig_map[contig_name]
-                (r_st, r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
-                name = name_mappings.get(contig.name, contig.name)
-                figure.add(Arrow(r_st, r_ei, elevation=-20, h=1))
-                figure.add(Track(f_r_st, f_r_ei, label=name))
+            for parent_name in sorted_roots:
+                contigs = final_parent_mapping.get(parent_name, [])
+                for contig_name in contigs:
+                    if contig_name not in discarded:
+                        continue
+
+                    contig = contig_map[contig_name]
+                    (r_st, r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
+                    name = name_mappings.get(contig.name, contig.name)
+                    figure.add(Arrow(r_st, r_ei, elevation=-20, h=1))
+                    figure.add(Track(f_r_st, f_r_ei, label=name))
 
         #############
         # Anomalies #
@@ -986,20 +991,25 @@ def build_stitcher_figure(logs) -> None:
             label = LeftLabel(text=f"anomaly:", x=0, font_size=12)
             pos = position_offset / 2
             figure.add(Track(pos, pos, h=40, label=label))
-            for contig_name in anomaly:
-                contig = contig_map[contig_name]
-                (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
-                if isinstance(contig, AlignedContig):
-                    colour = "lightgray"
-                    if contig.strand == "reverse":
-                        figure.add(Arrow(a_r_ei, a_r_st, elevation=-20, h=1))
-                    else:
-                        figure.add(Arrow(a_r_st, a_r_ei, elevation=-20, h=1))
-                else:
-                    colour = "red"
+            for parent_name in sorted_roots:
+                contigs = final_parent_mapping.get(parent_name, [])
+                for contig_name in contigs:
+                    if contig_name not in anomaly:
+                        continue
 
-                name = name_mappings.get(contig.name, contig.name)
-                figure.add(Track(a_r_st, a_r_ei, color=colour, label=name))
+                    contig = contig_map[contig_name]
+                    (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
+                    if isinstance(contig, AlignedContig):
+                        colour = "lightgray"
+                        if contig.strand == "reverse":
+                            figure.add(Arrow(a_r_ei, a_r_st, elevation=-20, h=1))
+                        else:
+                            figure.add(Arrow(a_r_st, a_r_ei, elevation=-20, h=1))
+                    else:
+                        colour = "red"
+
+                    name = name_mappings.get(contig.name, contig.name)
+                    figure.add(Track(a_r_st, a_r_ei, color=colour, label=name))
 
     ###########
     # Unknown #
@@ -1009,13 +1019,18 @@ def build_stitcher_figure(logs) -> None:
         label = LeftLabel(text=f"unknown:", x=0, font_size=12)
         pos = position_offset / 2
         figure.add(Track(pos, pos, h=40, label=label))
-        for contig_name in unknown:
-            contig = contig_map[contig_name]
-            r_st = position_offset
-            r_ei = position_offset + len(contig.seq)
-            colour = "red"
-            name = name_mappings.get(contig.name, contig.name)
-            figure.add(Track(r_st, r_ei, color=colour, label=name))
+        for parent_name in sorted_roots:
+            contigs = final_parent_mapping.get(parent_name, [])
+            for contig_name in contigs:
+                if contig_name not in unknown:
+                    continue
+
+                contig = contig_map[contig_name]
+                r_st = position_offset
+                r_ei = position_offset + len(contig.seq)
+                colour = "red"
+                name = name_mappings.get(contig.name, contig.name)
+                figure.add(Track(r_st, r_ei, color=colour, label=name))
 
     if not figure.elements:
         figure.add(Track(1, max_position, label='No contigs found.', color='none'))
