@@ -531,6 +531,10 @@ def build_stitcher_figure(logs) -> None:
         if contig.name not in lst:
             lst.append(contig.name)
 
+    def record_bad_contig(contig: Contig, lst: List[Contig]):
+        contig_map[contig.name] = contig
+        lst.append(contig.name)
+
     for event in logs:
         if not hasattr(event, "action"):
             pass
@@ -544,12 +548,10 @@ def build_stitcher_figure(logs) -> None:
         elif event.action == "alignment":
             if event.type == "hit":
                 record_contig(event.part, [event.contig])
-                if event.part.strand != "forward":
-                    anomaly.append(event.part.name)
             elif event.type == "noref":
-                unknown.append(event.contig.name)
+                record_bad_contig(event.contig, unknown)
             elif event.type == "zerohits" or event.type == "strandconflict":
-                anomaly.append(event.contig.name)
+                record_bad_contig(event.contig, anomaly)
             elif event.type == "reversecomplement":
                 record_contig(event.new_contig, [event.contig])
             elif event.type in ("hitnumber", "reversenumber"):
@@ -571,7 +573,7 @@ def build_stitcher_figure(logs) -> None:
             overlap_sibling_map[event.left_remainder.name] = event.right_remainder.name
             overlap_sibling_map[event.right_remainder.name] = event.left_remainder.name
         elif event.action == "drop":
-            discarded.append(event.contig.name)
+            record_bad_contig(event.contig, discarded)
         elif event.action == "stitchcut":
             record_contig(event.left_overlap, [event.left])
             record_contig(event.left_remainder, [event.left])
