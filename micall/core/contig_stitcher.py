@@ -696,6 +696,7 @@ def main(args):
     else:
         logger.setLevel(logging.WARN)
 
+    logging.basicConfig(level=logger.level)
     write_contig_refs(args.contigs.name, args.stitched_contigs, stitcher_plot_path=args.plot)
     args.contigs.close()
     args.stitched_contigs.close()
