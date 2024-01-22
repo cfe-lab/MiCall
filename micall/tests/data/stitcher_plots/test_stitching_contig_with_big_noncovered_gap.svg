@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="969.9999999999999" height="86.0" viewBox="0.0 -86.0 969.9999999999999 86.0">
+<defs>
+</defs>
+<g transform="translate(0.0 -71.0)">
+<rect x="242.49999999999997" y="-10" width="727.4999999999999" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(606.2499999999999 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
+</g>
+</g>
+<g transform="translate(0 -41.0)">
+<g transform="translate(0.0 0)">
+<path d="M242.49999999999997,-20.0 L839.3249999999999,-20.0" stroke="black" />
+<circle cx="544.4124999999999" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M846.3249999999999,-20.0 L839.3249999999999,-23.5 L839.3249999999999,-16.5 L846.3249999999999,-20.0" fill="black" />
+<text x="544.4124999999999" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+</g>
+</g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<path d="M242.49999999999997,9.5 L839.3249999999999,9.5" stroke="black" />
+<path d="M846.3249999999999,9.5 L839.3249999999999,6.0 L839.3249999999999,13.0 L846.3249999999999,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="242.49999999999997" y="-10" width="603.8249999999999" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(544.4124999999999 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
+</g>
+</g>
+</svg>

@@ -5,9 +5,10 @@ import os
 import pytest
 
 from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig
+from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.utils.structured_logger import add_structured_handler
-from micall.tests.test_denovo import check_hcv_db
+from micall.tests.test_denovo import check_hcv_db # activates the fixture
 
 
 @pytest.fixture()
@@ -15,7 +16,40 @@ def exact_aligner(monkeypatch):
     monkeypatch.setattr('micall.core.contig_stitcher.Aligner', MockAligner)
 
 
-def test_identical_stitching_of_one_contig(exact_aligner):
+@pytest.fixture
+def visualizer(request, tmp_path):
+    # Set up the logger and structured handler
+    logger = logging.getLogger("micall.core.contig_stitcher")
+    logger.setLevel(logging.DEBUG)
+    handler = add_structured_handler(logger)
+    logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
+
+    test_name = request.node.name
+    plot_name = test_name + ".svg"
+    pwd = os.path.dirname(__file__)
+    plots_dir = os.path.join(pwd, "data", "stitcher_plots")
+    os.makedirs(plots_dir, exist_ok=True)
+    path_to_expected = os.path.join(plots_dir, plot_name)
+    path_to_produced = os.path.join(tmp_path, plot_name)
+
+    def check():
+        figure = plot_stitcher_coverage(handler.logs, path_to_produced)
+
+        with open(path_to_produced, 'r') as produced_file:
+            produced_data = produced_file.read()
+        with open(path_to_expected, 'r') as expected_file:
+            expected_data = expected_file.read()
+
+        assert produced_data == expected_data, \
+            "The contents of the stitched contigs plot" \
+            " does not match the expected contents."
+
+        return figure
+
+    return check
+
+
+def test_identical_stitching_of_one_contig(exact_aligner, visualizer):
     # Scenario: When stitching one contig, it remains the same.
 
     contigs = [
@@ -23,7 +57,7 @@ def test_identical_stitching_of_one_contig(exact_aligner):
                         seq='ACTGACTG' * 100,
                         ref_name='testref',
                         group_ref='testref',
-                        ref_seq='ACTGACTG' * 100,
+                        ref_seq='T' * 20 + 'ACTGACTG' * 110 + 'T' * 20,
                         match_fraction=1.0,
                         ),
         ]
@@ -32,45 +66,24 @@ def test_identical_stitching_of_one_contig(exact_aligner):
     assert len(results) == 1
     assert results[0].seq == contigs[0].seq
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
+
+def test_separate_stitching_of_non_overlapping_contigs_1(exact_aligner, visualizer):
     # Scenario: When stitching multiple non-overlapping contigs, the order doesn't matter.
 
-    ref_seq = 'A' * 100
+    ref_seq = 'A' * 100 + 'C' * 100
 
     contigs = [
         GenotypedContig(name='a',
-                        seq=ref_seq,
+                        seq='A' * 70,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
                         match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
-                        seq='C' * 100,
-                        ref_name='testref',
-                        group_ref='testref',
-                        ref_seq=ref_seq,
-                        match_fraction=0.5,
-                        ),
-        ]
-
-    results = list(stitch_contigs(contigs))
-
-    # No claims about the output order, so wrap into set()
-    assert { contig.seq for contig in contigs } \
-        == { contig.seq for contig in  results }
-
-    contigs = [
-        GenotypedContig(name='b',
-                        seq='C' * 100,
-                        ref_name='testref',
-                        group_ref='testref',
-                        ref_seq=ref_seq,
-                        match_fraction=0.5,
-                        ),
-        GenotypedContig(name='a',
-                        seq=ref_seq,
+                        seq='C' * 70,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -84,8 +97,41 @@ def test_separate_stitching_of_non_overlapping_contigs(exact_aligner):
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
+
+def test_separate_stitching_of_non_overlapping_contigs_2(exact_aligner, visualizer):
+    # Scenario: When stitching multiple non-overlapping contigs, the order doesn't matter.
+
+    ref_seq = 'A' * 100 + 'C' * 100
+
+    contigs = [
+        GenotypedContig(name='b',
+                        seq='C' * 70,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='a',
+                        seq='A' * 70,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+
+    # No claims about the output order, so wrap into set()
+    assert { contig.seq for contig in contigs } \
+        == { contig.seq for contig in results }
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner, visualizer):
     # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence.
 
     ref_seq = 'A' * 100 + 'C' * 100
@@ -115,8 +161,10 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner):
     assert 100 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 50
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner):
+
+def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner, visualizer):
     # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
@@ -153,8 +201,10 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
 
     assert results[1].seq == contigs[2].seq
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
+
+def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner, visualizer):
     # Scenario: All contigs have some overlapping parts, resulting in one continuous sequence after stitching.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
@@ -191,8 +241,10 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner):
     assert 200 == len(result.seq)
     assert result.seq == 'A' * 50 + 'C' * 100 + 'T' * 50
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_with_empty_contigs(exact_aligner):
+
+def test_stitching_with_empty_contigs(exact_aligner, visualizer):
     # Scenario: The function is able to handle and ignore empty contigs.
 
     ref_seq = 'A' * 100
@@ -218,8 +270,10 @@ def test_stitching_with_empty_contigs(exact_aligner):
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_of_identical_contigs(exact_aligner):
+
+def test_stitching_of_identical_contigs(exact_aligner, visualizer):
     # Scenario: The function correctly handles and avoids duplication when identical contigs are stitched together.
 
     contigs = [
@@ -236,16 +290,20 @@ def test_stitching_of_identical_contigs(exact_aligner):
     assert len(results) == 1
     assert results[0].seq == contigs[2].seq
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_of_zero_contigs(exact_aligner):
+
+def test_stitching_of_zero_contigs(exact_aligner, visualizer):
     # Scenario: The function does not crash if no contigs given.
 
     contigs = []
     results = list(stitch_contigs(contigs))
     assert results == contigs
 
+    assert len(visualizer().elements) > 0
 
-def test_correct_stitching_of_two_partially_overlapping_different_organism_contigs(exact_aligner):
+
+def test_correct_stitching_of_two_partially_overlapping_different_organism_contigs(exact_aligner, visualizer):
     # Scenario: Two partially overlapping contigs, but which come from different organism,
     # are not stitched into a single sequence.
 
@@ -274,8 +332,10 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_correct_processing_complex_nogaps(exact_aligner):
+
+def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
     # Scenario: There are two reference organisms.
     # Each with 4 contigs.
     # For each, three overlapping contigs are stitched together, the non-overlapping is kept separate.
@@ -329,8 +389,10 @@ def test_correct_processing_complex_nogaps(exact_aligner):
     assert results[2].seq == contigs[3].seq
     assert results[3].seq == contigs[7].seq
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
+
+def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner, visualizer):
     # Scenario: If one contig is completely covered by another contig,
     # the completely covered contig must be dropped.
 
@@ -360,8 +422,10 @@ def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner):
     # does not contain the completely covered contig 'a'.
     assert results[0].seq == contigs[1].seq
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
+
+def test_stitching_contig_with_big_noncovered_gap(exact_aligner, visualizer):
     # Scenario: One contig has a big gap, which is however not covered by anything else.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
@@ -381,8 +445,10 @@ def test_stitching_contig_with_big_noncovered_gap(exact_aligner):
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
+
+def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner, visualizer):
     # Scenario: One contig has a big gap, which is however not covered by anything else.
 
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
@@ -409,8 +475,10 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner):
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_contig_with_big_covered_gap(exact_aligner):
+
+def test_stitching_contig_with_big_covered_gap(exact_aligner, visualizer):
     # Scenario: If one contig has a big gap covered by another contig.
 
     ref_seq = 'G' * 100 + 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
@@ -424,7 +492,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
                         match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
-                        seq='A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 50,
+                        seq='A' * 100 + 'C' * 100 + 'T' * 50,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -433,6 +501,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
         ]
 
     contigs = list(align_all_to_reference(contigs))
+    assert len(contigs) == 2
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
 
@@ -440,8 +509,10 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner):
     assert len(results) == 3
     assert all(list(contig.alignment.gaps()) == [] for contig in results)
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_contig_with_small_covered_gap(exact_aligner):
+
+def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     # Scenario: If one contig has a small gap covered by another contig.
 
     ref_seq = 'G' * 100 + 'A' * 9 + 'C' * 100 + 'T' * 100
@@ -455,7 +526,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
                         match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
-                        seq='A' * 9 + 'C' * 100 + 'T' * 100,
+                        seq='A' * 9 + 'C' * 50,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -464,18 +535,20 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner):
         ]
 
     contigs = list(align_all_to_reference(contigs))
+    assert len(contigs) == 2
     assert len(list(contigs[0].alignment.gaps())) == 1
     assert len(list(contigs[1].alignment.gaps())) == 0
-
     results = list(split_contigs_with_gaps(contigs))
+    assert len(results) == 3
+
+    assert len(visualizer().elements) > len(contigs)
 
     assert all(x.seq == x.lstrip_query().rstrip_query().seq for x in results)
-
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
 
-def test_stitching_partial_align(exact_aligner):
+def test_stitching_partial_align(exact_aligner, visualizer):
     # Scenario: A single contig has a sequence that partially aligns to the reference sequence.
 
     contigs = [
@@ -493,13 +566,15 @@ def test_stitching_partial_align(exact_aligner):
     for result in results:
         assert any(result.seq in contig.seq for contig in contigs)
 
+    assert len(visualizer().elements) > len(contigs)
+
     assert all(x.seq != x.lstrip_query().rstrip_query().seq for x in results)
 
     assert { contig.seq for contig in contigs } \
         != { contig.lstrip_query().rstrip_query().seq for contig in results }
 
 
-def test_partial_align_consensus(exact_aligner):
+def test_partial_align_consensus(exact_aligner, visualizer):
     # Scenario: A single contig partially aligns to the reference sequence, and a consensus sequence is being stitched.
 
     contigs = [
@@ -517,8 +592,10 @@ def test_partial_align_consensus(exact_aligner):
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_stitching_partial_align_multiple_sequences(exact_aligner):
+
+def test_stitching_partial_align_multiple_sequences(exact_aligner, visualizer):
     # Scenario: Multiple contigs have sequences that partially align to the same reference sequence.
 
     ref_seq='A' * 20 + 'C' * 20 + 'T' * 20
@@ -545,11 +622,13 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner):
     for result in results:
         assert any(result.seq in contig.seq for contig in contigs)
 
+    assert len(visualizer().elements) > len(contigs)
+
     assert { contig.seq for contig in contigs } \
         != { contig.lstrip_query().rstrip_query().seq for contig in results }
 
 
-def test_partial_align_consensus_multiple_sequences(exact_aligner):
+def test_partial_align_consensus_multiple_sequences(exact_aligner, visualizer):
     # Scenario: Multiple contigs partially align to the same reference sequence, and a consensus sequence is being stitched from them.
 
     ref_seq='A' * 20 + 'C' * 20 + 'T' * 20
@@ -575,8 +654,10 @@ def test_partial_align_consensus_multiple_sequences(exact_aligner):
     assert len(results) == 1
     assert results[0].seq == contigs[0].seq + contigs[1].seq
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
+
+def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner, visualizer):
     # Scenario: Multiple contigs partially align to the same reference sequence, and a consensus sequence is being stitched from them.
 
     ref_seq='A' * 20 + 'C' * 20 + 'T' * 20
@@ -603,8 +684,10 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner):
     assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10
     assert results[0].seq == contigs[0].seq[:-10] + contigs[1].seq[20:]
 
+    assert len(visualizer().elements) > len(contigs)
 
-def test_correct_processing_complex_logs(exact_aligner):
+
+def test_correct_processing_complex_logs(exact_aligner, visualizer):
     # Scenario: There are two reference organisms.
     # Each with 4 contigs.
     # For each, three overlapping contigs are stitched together, the non-overlapping is kept separate.
@@ -657,6 +740,8 @@ def test_correct_processing_complex_logs(exact_aligner):
     debug_messages = [m for m in handler.logs if m.levelname == 'DEBUG']
     assert len(info_messages) == 32
     assert len(debug_messages) == len(handler.logs) - len(info_messages)
+
+    assert len(visualizer().elements) > len(contigs)
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):

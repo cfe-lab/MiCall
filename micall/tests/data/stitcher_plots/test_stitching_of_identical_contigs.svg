@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="198.0" viewBox="0.0 -198.0 970.0 198.0">
+<defs>
+</defs>
+<g transform="translate(0.0 -183.0)">
+<rect x="107.77777777777777" y="-10" width="862.2222222222222" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(538.8888888888889 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
+</g>
+</g>
+<g transform="translate(0 -153.0)">
+<g transform="translate(0.0 0)">
+<path d="M107.77777777777777,-20.0 L961.9222222222222,-20.0" stroke="black" />
+<circle cx="538.35" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M968.9222222222222,-20.0 L961.9222222222222,-23.5 L961.9222222222222,-16.5 L968.9222222222222,-20.0" fill="black" />
+<text x="538.35" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">3</text>
+</g>
+</g>
+<g transform="translate(0 -142.0)">
+<g transform="translate(0.0 0)">
+<path d="M107.77777777777777,9.5 L961.9222222222222,9.5" stroke="black" />
+<path d="M968.9222222222222,9.5 L961.9222222222222,6.0 L961.9222222222222,13.0 L968.9222222222222,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -122.0)">
+<g transform="translate(0.0 0)">
+<rect x="107.77777777777777" y="-10" width="861.1444444444444" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(538.35 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">3</text>
+</g>
+</g>
+</g>
+<g transform="translate(0.0 -72.0)">
+<rect x="53.888888888888886" y="-40" width="0.0" height="40" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(53.888888888888886 0)">
+<text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
+</g>
+</g>
+<g transform="translate(0.0 -61.0)">
+<path d="M107.77777777777777,9.5 L961.9222222222222,9.5" stroke="black" />
+<path d="M968.9222222222222,9.5 L961.9222222222222,6.0 L961.9222222222222,13.0 L968.9222222222222,9.5" fill="black" />
+</g>
+<g transform="translate(0.0 -41.0)">
+<rect x="107.77777777777777" y="-10" width="861.1444444444444" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(538.35 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
+</g>
+<g transform="translate(0.0 -30.0)">
+<path d="M107.77777777777777,9.5 L961.9222222222222,9.5" stroke="black" />
+<path d="M968.9222222222222,9.5 L961.9222222222222,6.0 L961.9222222222222,13.0 L968.9222222222222,9.5" fill="black" />
+</g>
+<g transform="translate(0.0 -10.0)">
+<rect x="107.77777777777777" y="-10" width="861.1444444444444" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(538.35 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
+</g>
+</g>
+</svg>
