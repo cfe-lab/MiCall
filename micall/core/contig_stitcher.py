@@ -196,7 +196,7 @@ def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
     return ret
 
 
-def align_to_reference(contig) -> Iterable[GenotypedContig]:
+def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
     """
     Align a single Contig to its reference sequence, producing potentially multiple aligned contigs.
 
@@ -212,12 +212,11 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
 
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
-    hits_array = [(CigarHit(Cigar(x.cigar),
-                            min(x.r_st, x.r_en - 1),
-                            max(x.r_st, x.r_en - 1),
-                            min(x.q_st, x.q_en - 1),
-                            max(x.q_st, x.q_en - 1)),
-                   "forward" if x.strand == 1 else "reverse") for x in alignments]
+    hits_array: List[Tuple[CigarHit, Literal["forward", "reverse"]]] = \
+        [(CigarHit(Cigar(x.cigar),
+                   min(x.r_st, x.r_en - 1), max(x.r_st, x.r_en - 1),
+                   min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1)),
+          "forward" if x.strand == 1 else "reverse") for x in alignments]
 
     connected = connect_cigar_hits(list(map(lambda p: p[0], hits_array))) if hits_array else []
 
@@ -263,27 +262,36 @@ def align_to_reference(contig) -> Iterable[GenotypedContig]:
         yield part
 
 
-def strip_conflicting_mappings(contigs):
+def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(contigs)
     names = {contig.name: contig for contig in contigs}
-    reference_indexes = list(sorted(names.keys(), key=lambda name: names[name].alignment.r_st if isinstance(names[name], AlignedContig) else -1))
-    query_indexes = list(sorted(names.keys(), key=lambda name: names[name].alignment.q_st if isinstance(names[name], AlignedContig) else -1))
 
-    def is_out_of_order(name):
-        return reference_indexes.index(name) != query_indexes.index(name)
+    def get_indexes(name: str) -> Tuple[int, int]:
+        contig = names[name]
+        if isinstance(contig, AlignedContig):
+            return (contig.alignment.q_st, contig.alignment.r_st)
+        else:
+            return (-1, -1)
+
+    reference_sorted = list(sorted(names.keys(), key=lambda name: get_indexes(name)[1]))
+    query_sorted = list(sorted(names.keys(), key=lambda name: get_indexes(name)[0]))
+
+    def is_out_of_order(name: str) -> bool:
+        return reference_sorted.index(name) != query_sorted.index(name)
 
     sorted_by_query = list(sorted(contigs, key=lambda contig: contig.alignment.q_st if isinstance(contig, AlignedContig) else -1))
-
     for prev_contig, contig, next_contig in sliding_window(sorted_by_query):
-        name = contig.name
-        if prev_contig is not None or is_out_of_order(name):
-            contig = contig.lstrip_query()
-        if next_contig is not None or is_out_of_order(name):
-            contig = contig.rstrip_query()
+        if isinstance(contig, AlignedContig):
+            name = contig.name
+            if prev_contig is not None or is_out_of_order(name):
+                contig = contig.lstrip_query()
+            if next_contig is not None or is_out_of_order(name):
+                contig = contig.rstrip_query()
+
         yield contig
 
 
-def align_all_to_reference(contigs):
+def align_all_to_reference(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     """
     Align multiple contigs to their respective reference sequences.
 
@@ -291,7 +299,10 @@ def align_all_to_reference(contigs):
     flattening the result into a single list.
     """
 
-    return [contig for parts in map(strip_conflicting_mappings, map(align_to_reference, contigs)) for contig in parts]
+    groups = map(align_to_reference, contigs)
+    groups = map(strip_conflicting_mappings, groups)
+    for group in groups:
+        yield from group
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -514,7 +525,7 @@ def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     return merged_intervals
 
 
-def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]:
+def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedContig], List[AlignedContig]]:
     """
     Find and return the first contig that is completely covered by other contigs.
 
@@ -539,7 +550,7 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Optional[AlignedContig]
                for cover_interval in cumulative_coverage):
             return current, overlaping_contigs
 
-    return None, None
+    return None, []
 
 
 def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]:
@@ -624,7 +635,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
     return contigs
 
 
-def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig]:
+def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(contigs)
     for contig in contigs:
         logger.info("Introduced contig %r of ref %r, group_ref %r, and length %s.",
@@ -634,15 +645,11 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[AlignedContig
                      contig.name, contig.seq, contig.ref_name,
                      contig.group_ref, contig.ref_seq, len(contig.seq))
 
-    aligned = align_all_to_reference(contigs)
+    maybe_aligned = list(align_all_to_reference(contigs))
 
     # Contigs that did not align do not need any more processing
-    yield from (x for x in aligned if not isinstance(x, AlignedContig))
-    aligned = [x for x in aligned if isinstance(x, AlignedContig)]
-
-    # Contigs aligned in reverse do not need any more processing
-    yield from (x for x in aligned if x.strand == "reverse")
-    aligned = [x for x in aligned if x.strand == "forward"]
+    yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
+    aligned = [x for x in maybe_aligned if isinstance(x, AlignedContig)]
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
