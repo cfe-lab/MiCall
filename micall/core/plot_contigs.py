@@ -782,13 +782,19 @@ def build_stitcher_figure(logs) -> None:
             if prev_part is not None:
                 r_st = prev_part.alignment.r_st + position_offset
             else:
-                start_delta = -1 * part.alignment.q_st
+                if part.name in bad_contigs:
+                    start_delta = 0
+                else:
+                    start_delta = -1 * part.alignment.q_st
                 r_st = part.alignment.r_st + start_delta + position_offset
 
             if next_part is not None:
                 r_ei = next_part.alignment.r_ei + position_offset
             else:
-                end_delta = len(part.seq) - part.alignment.q_ei
+                if part.name in bad_contigs:
+                    end_delta = 0
+                else:
+                    end_delta = len(part.seq) - 1 - part.alignment.q_ei
                 r_ei = part.alignment.r_ei + end_delta + position_offset
 
             aligned_size_map[part.name] = (r_st, r_ei)
@@ -807,7 +813,7 @@ def build_stitcher_figure(logs) -> None:
             if next_part is not None and next_part.alignment.r_st > part.alignment.r_ei and next_part:
                 r_ei = next_part.alignment.r_ei + position_offset
             else:
-                end_delta = len(part.seq) - part.alignment.q_ei
+                end_delta = len(part.seq) - 1 - part.alignment.q_ei
                 r_ei = part.alignment.r_ei + end_delta + position_offset
 
             full_size_map[part.name] = (r_st, r_ei)
