@@ -839,12 +839,15 @@ def build_stitcher_figure(logs) -> None:
             a_r_ei = f_r_ei
         return (a_r_st, a_r_ei, f_r_st, f_r_ei)
 
-    def get_tracks(group_ref, contig_name):
+    def get_tracks(repeatset, group_ref, contig_name):
         parts = final_parent_mapping[contig_name]
         for part_name in parts:
             part = contig_map[part_name]
 
-            if part_name in bad_contigs:
+            if part.name in repeatset:
+                continue
+
+            if part.name in bad_contigs:
                 continue
 
             if not isinstance(part, AlignedContig):
@@ -853,16 +856,20 @@ def build_stitcher_figure(logs) -> None:
             if part.group_ref != group_ref:
                 continue
 
+            repeatset.add(part.name)
             indexes = name_mappings[part.name]
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
             yield Track(f_r_st, f_r_ei, label=f"{indexes}")
 
-    def get_arrows(group_ref, contig_name, labels):
+    def get_arrows(repeatset, group_ref, contig_name, labels):
         parts = final_parent_mapping[contig_name]
         for part_name in parts:
             part = contig_map[part_name]
 
-            if part_name in bad_contigs:
+            if part.name in repeatset:
+                continue
+
+            if part.name in bad_contigs:
                 continue
 
             if not isinstance(part, AlignedContig):
@@ -871,6 +878,7 @@ def build_stitcher_figure(logs) -> None:
             if part.group_ref != group_ref:
                 continue
 
+            repeatset.add(part.name)
             indexes = name_mappings[part.name] if labels else None
             height = 20 if labels else 1
             elevation = 1 if labels else -20
@@ -881,8 +889,9 @@ def build_stitcher_figure(logs) -> None:
                         label=indexes)
 
     def get_all_arrows(group_ref, labels):
+        repeatset = set()
         for parent_name in sorted_roots:
-            yield from get_arrows(group_ref, parent_name, labels)
+            yield from get_arrows(repeatset, group_ref, parent_name, labels)
 
     ################
     # Drawing part #
@@ -955,11 +964,13 @@ def build_stitcher_figure(logs) -> None:
         # Contigs #
         ###########
 
+        repeatset1 = set()
+        repeatset2 = set()
         for parent_name in sorted_roots:
-            arrows = list(get_arrows(group_ref, parent_name, labels=False))
+            arrows = list(get_arrows(repeatset1, group_ref, parent_name, labels=False))
             if arrows:
                 figure.add(ArrowGroup(arrows))
-            parts = list(get_tracks(group_ref, parent_name))
+            parts = list(get_tracks(repeatset2, group_ref, parent_name))
             if parts:
                 figure.add(Multitrack(parts))
 
