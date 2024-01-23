@@ -384,11 +384,29 @@ def calculate_concordance(left: str, right: str) -> List[float]:
     return result
 
 
+def disambiguate_concordance(concordance: List[float]) -> Iterable[Tuple[float, int, int]]:
+    def slide(concordance):
+        count = 0
+        for i, (prev, current, next) in enumerate(sliding_window(concordance)):
+            if current == prev:
+                count += 1
+                yield count
+            else:
+                yield 0
+
+    forward = list(slide(concordance))
+    reverse = list(reversed(list(slide(reversed(concordance)))))
+    for i, (x, f, r) in enumerate(zip(concordance, forward, reverse)):
+        local_rank = f * r
+        global_rank = i if i < len(concordance) / 2 else len(concordance) - i - 1
+        yield (x, local_rank, global_rank)
+
+
 def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance):
     """ Determine optimal cut points for stitching based on sequence concordance in the overlap region. """
 
-    valuator = lambda i: (concordance[i], i if i < len(concordance) / 2 else len(concordance) - i - 1)
-    sorted_concordance_indexes = sorted(range(len(concordance)), key=valuator)
+    concordance_d = list(disambiguate_concordance(concordance))
+    sorted_concordance_indexes = sorted(range(len(concordance)), key=lambda i: concordance_d[i])
     remove_dashes = lambda s: ''.join(c for c in s if c != '-')
 
     for max_concordance_index in reversed(sorted_concordance_indexes):

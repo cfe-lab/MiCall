@@ -4,7 +4,7 @@ import logging
 import os
 import pytest
 
-from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig, disambiguate_concordance
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.utils.structured_logger import add_structured_handler
@@ -973,6 +973,42 @@ def generate_random_string_pair(length):
     left = ''.join(random.choice('ACGT') for _ in range(length))
     right = ''.join(random.choice('ACGT') for _ in range(length))
     return left, right
+
+
+@pytest.mark.parametrize(
+    'left, right, expected',
+    [("aaaaa", "aaaaa", [0.1] * 5),
+     ("abcdd", "abcdd", [0.1] * 5),
+     ("aaaaaaaa", "baaaaaab", [0.1, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12, 0.1]),
+     ("aaaaaaaa", "aaaaaaab", [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.12]),
+     ("aaaaaaaa", "aaaaaaab", [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.12]),
+     ("aaaaaaaa", "aaaaabbb", [0.1, 0.1, 0.1, 0.1, 0.1, 0.08, 0.08, 0.08]),
+     ("aaaaaaaa", "aaabbaaa", [0.12, 0.12, 0.12, 0.1, 0.1, 0.12, 0.12, 0.12]),
+     ("aaaaa", "bbbbb", [0] * 5),
+     ]
+)
+def test_concordance_simple(left, right, expected):
+    result = [round(x, 2) for x in calculate_concordance(left, right)]
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    'left, right, expected',
+    [("a" * 128, "a" * 128, 64),
+     ("a" * 128, "a" * 64 + "b" * 64, 32),
+     ("a" * 128, "a" * 64 + "ba" * 32, 32),
+     ("a" * 128, "a" * 54 + "b" * 20 + "a" * 54, 28), # two peaks
+     ("a" * 128, "a" * 63 + "b" * 2 + "a" * 63, 32), # two peaks
+     ("a" * 1280, "b" * 640 + "a" * 640, 640 + 30), # the window is too small to account for all of the context
+     ]
+)
+def test_concordance_simple_index(left, right, expected):
+    concordance = calculate_concordance(left, right)
+    concordance_d = list(disambiguate_concordance(concordance))
+    index = max(range(len(concordance)), key=lambda i: concordance_d[i])
+    if abs(index - expected) > 3:
+        assert index == expected
+
 
 def generate_test_cases(num_cases):
     with fixed_random_seed(42):
