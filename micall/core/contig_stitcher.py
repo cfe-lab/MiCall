@@ -444,7 +444,7 @@ def stitch_2_contigs(left, right):
 
     # Log it.
     average_concordance = sum(concordance) / (len(concordance) or 1)
-    concordance_str = ', '.join(map(lambda x: str(round(x, 2)), concordance)),
+    concordance_str = ', '.join(map(lambda x: str(round(x, 2)), concordance))
     cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
     logger.debug("Created overlap contigs %r at %s and %r at %s based on parts of %r and %r, with avg. concordance %s%%, cut point at %s%%, and full concordance [%s].",
                  left_overlap_take.name, left_overlap.alignment, right_overlap_take.name, right_overlap_take.alignment,
