@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar
+from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar, Callable
 from collections import deque, defaultdict
 from dataclasses import dataclass, replace
 from math import ceil, floor
@@ -9,19 +9,29 @@ from gotoh import align_it
 from queue import LifoQueue
 from Bio import Seq
 import logging
+from contextvars import ContextVar, Context
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.consensus_aligner import CigarActions
 
-
+T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-name_generator_state = 0
-def generate_new_name():
-    global name_generator_state
-    name_generator_state += 1
-    return f"c{name_generator_state}"
+class StitcherContext:
+    def __init__(self):
+        self.name_generator_state: int = 0
+
+    def generate_new_name(self):
+        self.name_generator_state += 1
+        return f"c{self.name_generator_state}"
+
+
+context: ContextVar[StitcherContext] = ContextVar("StitcherContext", default=StitcherContext())
+
+
+def with_fresh_context(body: Callable[[StitcherContext], T]) -> T:
+    return Context().run(lambda: body(context.get()))
 
 
 @dataclass(frozen=True)
@@ -41,8 +51,8 @@ class GenotypedContig(Contig):
         """ Cuts query sequence in two parts with cut_point between them. """
 
         cut_point = max(0, cut_point)
-        left = replace(self, name=generate_new_name(), seq=self.seq[:ceil(cut_point)])
-        right = replace(self, name=generate_new_name(), seq=self.seq[ceil(cut_point):])
+        left = replace(self, name=context.get().generate_new_name(), seq=self.seq[:ceil(cut_point)])
+        right = replace(self, name=context.get().generate_new_name(), seq=self.seq[ceil(cut_point):])
         return (left, right)
 
 
@@ -68,8 +78,8 @@ class AlignedContig(GenotypedContig):
         """ Cuts this alignment in two parts with cut_point between them. """
 
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        left = replace(self, name=generate_new_name(), alignment=alignment_left)
-        right = replace(self, name=generate_new_name(), alignment=alignment_right)
+        left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
+        right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
 
         logger.debug("Created contigs %r at %s and %r at %s by cutting %r.",
                      left.name, left.alignment, right.name, right.alignment, self.name,
@@ -134,7 +144,7 @@ class AlignedContig(GenotypedContig):
         match_fraction = min(self.match_fraction, other.match_fraction)
         ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
         query = GenotypedContig(seq=self.seq + other.seq,
-                                name=generate_new_name(),
+                                name=context.get().generate_new_name(),
                                 ref_name=ref_name,
                                 group_ref=self.group_ref,
                                 ref_seq=self.ref_seq,
@@ -155,8 +165,6 @@ class AlignedContig(GenotypedContig):
                                                      "right": other, "result": ret})
         return ret
 
-
-T = TypeVar("T")
 
 def sliding_window(sequence: Iterable[T]) -> Iterable[Tuple[Optional[T], T, Optional[T]]]:
     """
@@ -247,7 +255,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         contig = new_contig
 
     for i, single_hit in enumerate(connected):
-        query = replace(contig, name=generate_new_name())
+        query = replace(contig, name=context.get().generate_new_name())
         part = AlignedContig.make(query, single_hit, strand)
 
         logger.info("Part %r of contig %r aligned as %r at [%s, %s]->[%s, %s]%s.",

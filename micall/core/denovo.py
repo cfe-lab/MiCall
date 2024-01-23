@@ -19,7 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, logger as stitcher_logger
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, logger as stitcher_logger, with_fresh_context
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.structured_logger import add_structured_handler
 
@@ -84,26 +84,29 @@ def write_contig_refs(contigs_fasta_path,
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
     group_refs = {}
 
-    logger = logging.getLogger("micall.core.contig_stitcher")
-    handler = add_structured_handler(logger)
+    def run_stitcher(ctx):
+        logger = logging.getLogger("micall.core.contig_stitcher")
+        handler = add_structured_handler(logger)
 
-    genotypes = genotype(contigs_fasta_path,
-                         blast_csv=blast_csv,
-                         group_refs=group_refs)
+        genotypes = genotype(contigs_fasta_path,
+                             blast_csv=blast_csv,
+                             group_refs=group_refs)
 
-    contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
-    contigs = list(stitch_consensus(contigs))
+        contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
+        contigs = list(stitch_consensus(contigs))
 
-    for contig in contigs:
-        writer.writerow(dict(ref=contig.ref_name,
-                             match=contig.match_fraction,
-                             group_ref=contig.group_ref,
-                             contig=contig.seq))
+        for contig in contigs:
+            writer.writerow(dict(ref=contig.ref_name,
+                                 match=contig.match_fraction,
+                                 group_ref=contig.group_ref,
+                                 contig=contig.seq))
 
-    if stitcher_logger.level <= logging.DEBUG and stitcher_plot_path is not None:
-        plot_stitcher_coverage(handler.logs, stitcher_plot_path)
+        if stitcher_logger.level <= logging.DEBUG and stitcher_plot_path is not None:
+            plot_stitcher_coverage(handler.logs, stitcher_plot_path)
 
-    return len(contigs)
+        return len(contigs)
+
+    return with_fresh_context(run_stitcher)
 
 
 def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
