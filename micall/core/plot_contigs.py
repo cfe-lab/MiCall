@@ -599,6 +599,7 @@ def build_stitcher_figure(logs) -> None:
     reduced_children_graph = reduced_closure(children_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
+    eqv_parent_graph = reflexive_closure(symmetric_closure(transitive_parent_graph))
     sorted_roots = list(sorted(parent_name for
                                parent_name in contig_map
                                if parent_name not in parent_graph))
@@ -655,7 +656,7 @@ def build_stitcher_figure(logs) -> None:
     # Closing `temporary'
     for contig in contig_map:
         if contig in temporary:
-            for clone in eqv_morphism_graph.get(contig, []):
+            for clone in eqv_morphism_graph.get(contig, [contig]):
                 temporary.add(clone)
 
     def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map):
@@ -691,21 +692,23 @@ def build_stitcher_figure(logs) -> None:
         elif contig in bad_contigs:
             final_parts[contig] = True
 
-    # for join in last_join_points + sorted_sinks:
     for join in last_join_points + sorted_sinks:
         parents = parent_graph.get(join, [join])
-        if not any(isinstance(parent, AlignedContig) for parent in parents):
+        if not any(isinstance(contig_map[parent], AlignedContig) for parent in parents):
             parents = [join]
 
         for contig in parents:
             for contig in reduced_morphism_graph.get(contig, [contig]):
+                if contig in bad_contigs:
+                    continue
+
                 if any(contig in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
                     continue
 
                 if any(eqv in temporary for eqv in eqv_morphism_graph.get(contig, [contig])):
                     continue
 
-                transitive_parent = transitive_parent_graph.get(contig, [])
+                transitive_parent = eqv_parent_graph.get(contig, [contig])
                 if any(parent in transitive_parent for parent in final_parts):
                     continue
 
