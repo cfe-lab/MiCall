@@ -19,7 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, logger as stitcher_logger, with_fresh_context
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, with_fresh_context
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.structured_logger import add_structured_handler
 
@@ -98,7 +98,7 @@ def write_contig_refs(contigs_fasta_path,
                                  group_ref=contig.group_ref,
                                  contig=contig.seq))
 
-        if stitcher_logger.level <= logging.DEBUG and stitcher_plot_path is not None:
+        if stitcher_plot_path is not None:
             plot_stitcher_coverage(ctx.events, stitcher_plot_path)
 
         return len(contigs)
