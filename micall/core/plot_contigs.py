@@ -424,7 +424,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     temporary: Set[str] = set()
     children_join_points: List[str] = []
     children_meet_points: List[str] = []
-    last_active: List[str] = []
     query_position_map: Dict[str, int] = {}
 
     def get_oldest_ancestors(recur, graph, ancestor_name):
@@ -442,30 +441,27 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             yield ancestor_name
             return
 
-    def reduced_closure(graph):
+    def remove_intermediate_edges(graph):
         ret = {}
         for parent, children in graph.items():
             lst = []
             for child in children:
-                for anc in get_oldest_ancestors(set(), graph, child):
-                    if anc not in lst:
-                        lst.append(anc)
+                if all(other not in graph.get(child, []) for other in children):
+                    lst.append(child)
             ret[parent] = lst
         return ret
 
     def get_all_ancestors(recur, lst, graph, ancestor_name):
-        if ancestor_name in recur:
-            assert RuntimeError(f"Recursion in graph {graph!r}")
-        else:
+        if ancestor_name not in recur:
             recur = recur.copy()
             recur.add(ancestor_name)
 
-        if ancestor_name not in lst:
-            lst.append(ancestor_name)
+            if ancestor_name not in lst:
+                lst.append(ancestor_name)
 
-        existing_ancestors = graph.get(ancestor_name, [])
-        for existing in existing_ancestors:
-            get_all_ancestors(recur, lst, graph, existing)
+            existing_ancestors = graph.get(ancestor_name, [])
+            for existing in existing_ancestors:
+                get_all_ancestors(recur, lst, graph, existing)
 
     def transitive_closure(graph):
         ret = {}
@@ -593,10 +589,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     group_refs = {contig.group_ref: len(contig.ref_seq) for contig in contig_map.values() if contig.ref_seq}
     children_graph = inverse_graph(parent_graph)
-    reduced_parent_graph = reduced_closure(parent_graph)
-    reduced_children_graph = reduced_closure(children_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
+    reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
     eqv_parent_graph = reflexive_closure(symmetric_closure(transitive_parent_graph))
     sorted_roots = list(sorted(parent_name for
                                parent_name in contig_map
@@ -606,8 +601,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                                if child_name not in children_graph))
     bad_contigs = anomaly + discarded + unknown
 
-    eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_closure(morphism_graph)))
-    reduced_morphism_graph = reduced_closure(morphism_graph)
+    transitive_morphism_graph = transitive_closure(morphism_graph)
+    reduced_morphism_graph = remove_intermediate_edges(transitive_morphism_graph)
+    eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_morphism_graph))
 
     for contig_name in overlaps_list:
         temporary.add(contig_name)
