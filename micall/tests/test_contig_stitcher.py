@@ -688,63 +688,6 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner, vi
     assert len(visualizer().elements) > len(contigs)
 
 
-def test_correct_processing_complex_logs(exact_aligner, visualizer):
-    # Scenario: There are two reference organisms.
-    # Each with 4 contigs.
-    # For each, three overlapping contigs are stitched together, the non-overlapping is kept separate.
-    # Tested before, but this time we check the logs
-
-    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
-
-    contigs = [[
-        GenotypedContig(name='a',
-                        seq='A' * 50 + 'C' * 20,
-                        ref_name=ref_name,
-                        group_ref=ref_name,
-                        ref_seq=ref_seq,
-                        match_fraction=0.5,
-                        ),
-        GenotypedContig(name='b',
-                        seq='A' * 20 + 'C' * 50,
-                        ref_name=ref_name,
-                        group_ref=ref_name,
-                        ref_seq=ref_seq,
-                        match_fraction=0.5,
-                        ),
-        GenotypedContig(name='c',
-                        seq='C' * 70 + 'T' * 20,
-                        ref_name=ref_name,
-                        group_ref=ref_name,
-                        ref_seq=ref_seq,
-                        match_fraction=0.5,
-                        ),
-        GenotypedContig(name='d',
-                        seq='T' * 20 + 'G' * 50,
-                        ref_name=ref_name,
-                        group_ref=ref_name,
-                        ref_seq=ref_seq,
-                        match_fraction=0.5,
-                        ),
-        ] for ref_name in ['testref-1', 'testref-2']]
-
-    contigs = sum(contigs, start=[])
-
-    logger = logging.getLogger("micall.core.contig_stitcher")
-    logger.setLevel(logging.DEBUG)
-    handler = add_structured_handler(logger)
-
-    assert len(handler.logs) == 0
-    list(stitch_consensus(contigs))
-    assert len(handler.logs) == 150
-
-    info_messages = [m for m in handler.logs if m.levelname == 'INFO']
-    debug_messages = [m for m in handler.logs if m.levelname == 'DEBUG']
-    assert len(info_messages) == 32
-    assert len(debug_messages) == len(handler.logs) - len(info_messages)
-
-    assert len(visualizer().elements) > len(contigs)
-
-
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
