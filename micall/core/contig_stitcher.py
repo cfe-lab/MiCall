@@ -602,7 +602,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 continue
 
             if covered(contig, gap):
-                midpoint = gap.r_st + (gap.r_ei - gap.r_st) // 2 + contig.alignment.epsilon
+                midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + contig.alignment.epsilon
                 left_part, right_part = contig.cut_reference(midpoint)
                 left_part = left_part.rstrip_query()
                 right_part = right_part.lstrip_query()
