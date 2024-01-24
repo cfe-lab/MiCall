@@ -8,7 +8,6 @@ import micall.core.contig_stitcher as stitcher
 from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig, disambiguate_concordance
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
-from micall.utils.structured_logger import add_structured_handler
 from micall.tests.test_denovo import check_hcv_db # activates the fixture
 
 

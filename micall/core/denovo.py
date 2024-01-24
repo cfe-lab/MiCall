@@ -21,7 +21,6 @@ from Bio.SeqRecord import SeqRecord
 from micall.core.project_config import ProjectConfig
 from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, with_fresh_context
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.utils.structured_logger import add_structured_handler
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
