@@ -19,15 +19,15 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 class StitcherContext:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name_generator_state: int = 0
         self.events: List[events.EventType] = []
 
-    def generate_new_name(self):
+    def generate_new_name(self) -> str:
         self.name_generator_state += 1
         return f"c{self.name_generator_state}"
 
-    def emit(self, event: events.EventType):
+    def emit(self, event: events.EventType) -> None:
         self.events.append(event)
 
 

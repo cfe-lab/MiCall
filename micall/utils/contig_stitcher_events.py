@@ -140,4 +140,4 @@ class FinalCombine:
 
 AlignmentEvent = Union[NoRef, ZeroHits, StrandConflict, HitNumber, ReverseComplement, Hit]
 ModifyEvent = Union[LStrip, RStrip]
-EventType = Union[Cut, ModifyEvent, Munge, AlignmentEvent, StitchCut, Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro]
+EventType = Union[Cut, ModifyEvent, Munge, Combine, AlignmentEvent, StitchCut, Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro, FinalCombine]
