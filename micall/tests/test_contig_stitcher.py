@@ -4,11 +4,16 @@ import logging
 import os
 import pytest
 
+import micall.core.contig_stitcher as stitcher
 from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig, disambiguate_concordance
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.utils.structured_logger import add_structured_handler
 from micall.tests.test_denovo import check_hcv_db # activates the fixture
+
+
+logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
+logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
 @pytest.fixture()
@@ -18,12 +23,7 @@ def exact_aligner(monkeypatch):
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    # Set up the logger and structured handler
-    logger = logging.getLogger("micall.core.contig_stitcher")
-    logger.setLevel(logging.DEBUG)
-    handler = add_structured_handler(logger)
-    logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
-
+    logs = stitcher.context.set(stitcher.StitcherContext())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)
@@ -33,7 +33,8 @@ def visualizer(request, tmp_path):
     path_to_produced = os.path.join(tmp_path, plot_name)
 
     def check():
-        figure = plot_stitcher_coverage(handler.logs, path_to_produced)
+        logs = stitcher.context.get().events
+        figure = plot_stitcher_coverage(logs, path_to_produced)
 
         with open(path_to_produced, 'r') as produced_file:
             produced_data = produced_file.read()
@@ -748,7 +749,7 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    main([contigs, stitched_contigs])
+    stitcher.main([contigs, stitched_contigs])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -769,7 +770,7 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    main([contigs, stitched_contigs, "--debug", "--plot", plot])
+    stitcher.main([contigs, stitched_contigs, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)

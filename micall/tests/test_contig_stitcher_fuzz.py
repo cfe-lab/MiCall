@@ -1,14 +1,12 @@
 import pytest
 import json
 import os
-from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps
+from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps, with_fresh_context, StitcherContext
 from micall.core.plot_contigs import build_stitcher_figure
 from micall.utils.cigar_tools import CigarHit, Cigar
 from micall.utils.consensus_aligner import CigarActions
-from micall.utils.structured_logger import add_structured_handler
 from typing import Dict, List
 from collections import defaultdict
-import logging
 
 
 @pytest.fixture
@@ -121,14 +119,10 @@ def test_visualizer_simple(no_aligner, description):
     for contig in contigs:
         contig.__dict__["group_ref"] = "HIV1-B-FR-K03455-seed"
 
-    logger = logging.getLogger("micall.core.contig_stitcher")
-    logger.setLevel(logging.DEBUG)
-    handler = add_structured_handler(logger)
+    def test(ctx: StitcherContext):
+        stitched = list(stitch_consensus(contigs))
+        assert len(ctx.events) >= len(contigs)
+        figure = build_stitcher_figure(ctx.events)
+        assert len(figure.elements) > len(contigs) + 1
 
-    stitched = list(stitch_consensus(contigs))
-
-    assert logger.level <= logging.DEBUG
-    assert len(handler.logs) >= len(contigs)
-
-    figure = build_stitcher_figure(handler.logs)
-    assert len(figure.elements) > len(contigs) + 1
+    with_fresh_context(test)

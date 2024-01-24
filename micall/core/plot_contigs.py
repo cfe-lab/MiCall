@@ -19,6 +19,7 @@ from matplotlib.colors import Normalize
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
+import micall.utils.contig_stitcher_events as events
 
 
 logger = logging.getLogger(__name__)
@@ -535,35 +536,33 @@ def build_stitcher_figure(logs) -> None:
         contig_map[contig.name] = contig
         lst.append(contig.name)
 
+
     for event in logs:
-        if not hasattr(event, "action"):
-            pass
-        elif event.action == "finalcombine":
+        if isinstance(event, events.FinalCombine):
             record_contig(event.result, event.contigs)
-        elif event.action == "splitgap":
+        elif isinstance(event, events.SplitGap):
             record_contig(event.left, [event.contig])
             record_contig(event.right, [event.contig])
-        elif event.action == "intro":
+        elif isinstance(event, events.Intro):
             record_contig(event.contig, [])
-        elif event.action == "alignment":
-            if event.type == "hit":
-                record_contig(event.part, [event.contig])
-            elif event.type == "noref":
-                record_bad_contig(event.contig, unknown)
-            elif event.type == "zerohits" or event.type == "strandconflict":
-                record_bad_contig(event.contig, anomaly)
-            elif event.type == "reversecomplement":
-                record_contig(event.new_contig, [event.contig])
-            elif event.type in ("hitnumber", "reversenumber"):
-                pass
-            else:
-                raise RuntimeError(f"Unrecognized event of type {event.type!r}: {event}")
-        elif event.action == "munge":
+        elif isinstance(event, events.Hit):
+            record_contig(event.part, [event.contig])
+        elif isinstance(event, events.NoRef):
+            record_bad_contig(event.contig, unknown)
+        elif isinstance(event, events.ZeroHits):
+            record_bad_contig(event.contig, anomaly)
+        elif isinstance(event, events.StrandConflict):
+            record_bad_contig(event.contig, anomaly)
+        elif isinstance(event, events.ReverseComplement):
+            record_contig(event.result, [event.contig])
+        elif isinstance(event, events.HitNumber):
+            pass
+        elif isinstance(event, events.Munge):
             record_contig(event.result, [event.left, event.right])
-        elif event.action == "modify":
+        elif isinstance(event, (events.LStrip, events.RStrip)):
             record_contig(event.result, [event.original])
             record_morphism(event.result, event.original)
-        elif event.action == "overlap":
+        elif isinstance(event, events.Overlap):
             overlaps_list.append(event.left_overlap.name)
             overlaps_list.append(event.right_overlap.name)
             overlap_leftparent_map[event.left_remainder.name] = event.left.name
@@ -572,26 +571,26 @@ def build_stitcher_figure(logs) -> None:
             overlap_righttake_map[event.right_remainder.name] = event.right_take.name
             overlap_sibling_map[event.left_remainder.name] = event.right_remainder.name
             overlap_sibling_map[event.right_remainder.name] = event.left_remainder.name
-        elif event.action == "drop":
+        elif isinstance(event, events.Drop):
             record_bad_contig(event.contig, discarded)
-        elif event.action == "stitchcut":
+        elif isinstance(event, events.StitchCut):
             record_contig(event.left_overlap, [event.left])
             record_contig(event.left_remainder, [event.left])
             record_contig(event.right_overlap, [event.right])
             record_contig(event.right_remainder, [event.right])
-        elif event.action == "stitch":
+        elif isinstance(event, events.Stitch):
             record_contig(event.result, [event.left, event.right])
-        elif event.action == "cut":
+        elif isinstance(event, events.Cut):
             record_contig(event.left, [event.original])
             record_contig(event.right, [event.original])
-        elif event.action == "combine":
+        elif isinstance(event, events.Combine):
             record_contig(event.result, event.contigs)
             combine_left_edge[event.result.name] = event.contigs[0].name
             combine_right_edge[event.result.name] = event.contigs[-1].name
-        elif event.action in ("ignoregap", "nooverlap"):
+        elif isinstance(event, (events.IgnoreGap, events.NoOverlap)):
             pass
         else:
-            raise RuntimeError(f"Unrecognized action: {event.action}")
+            raise RuntimeError(f"Unrecognized action or event: {event}")
 
     group_refs = {contig.group_ref: len(contig.ref_seq) for contig in contig_map.values() if contig.ref_seq}
     children_graph = inverse_graph(parent_graph)

@@ -85,9 +85,6 @@ def write_contig_refs(contigs_fasta_path,
     group_refs = {}
 
     def run_stitcher(ctx):
-        logger = logging.getLogger("micall.core.contig_stitcher")
-        handler = add_structured_handler(logger)
-
         genotypes = genotype(contigs_fasta_path,
                              blast_csv=blast_csv,
                              group_refs=group_refs)
@@ -102,7 +99,7 @@ def write_contig_refs(contigs_fasta_path,
                                  contig=contig.seq))
 
         if stitcher_logger.level <= logging.DEBUG and stitcher_plot_path is not None:
-            plot_stitcher_coverage(handler.logs, stitcher_plot_path)
+            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
 
         return len(contigs)
 
