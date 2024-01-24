@@ -10,6 +10,7 @@ from queue import LifoQueue
 from Bio import Seq
 import logging
 from contextvars import ContextVar, Context
+from fractions import Fraction
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.consensus_aligner import CigarActions
@@ -350,15 +351,17 @@ def find_overlapping_contig(self, aligned_contigs):
     return max(every, key=lambda other: other.alignment.ref_length if other else 0, default=None)
 
 
-def calculate_concordance(left: str, right: str) -> List[float]:
+def calculate_concordance(left: str, right: str) -> List[Fraction]:
     """
-    Calculate concordance for two given sequences using a sliding window method.
+    Calculate concordance for two given sequences using a sliding average.
 
-    The function compares the two strings from both left to right and then right to left,
-    calculating for each position the ratio of matching characters in a window around the
-    current position. So position holds a moving avarage score.
-
-    It's required that the input strings are of the same length.
+    The function compares the two strings character by character, simultaneously from
+    both left to right and right to left, calculating a score that represents a moving
+    average of matches at each position. If characters match at a given position,
+    a score of 1 is added; otherwise, a score of 0 is added. The score is then
+    averaged with the previous scores using a weighted sliding average where the
+    current score has a weight of 1/3 and the accumulated score has a weight of 2/3.
+    This sliding average score is halved and then processed again, but in reverse direction.
 
     :param left: string representing first sequence
     :param right: string representing second sequence
@@ -368,22 +371,18 @@ def calculate_concordance(left: str, right: str) -> List[float]:
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    result: List[float] = [0] * len(left)
+    result: List[Fraction] = [Fraction(0)] * len(left)
 
     def slide(start, end):
-        window_size = 30
-        scores = deque([0] * window_size, maxlen=window_size)
-        scores_sum = 0
+        scores_sum = Fraction(0)
         inputs = list(zip(left, right))
         increment = 1 if start <= end else -1
 
         for i in range(start, end, increment):
             (a, b) = inputs[i]
-            current = a == b
-            scores_sum -= scores.popleft()
-            scores_sum += current
-            scores.append(current)
-            result[i] += (scores_sum / window_size) / 2
+            current = Fraction(1) if a == b else Fraction(0)
+            scores_sum = (scores_sum * 2 / 3 + current * 1 / 3)
+            result[i] += scores_sum / 2
 
     # Slide forward, then in reverse, adding the scores at each position.
     slide(0, len(left))
@@ -392,22 +391,10 @@ def calculate_concordance(left: str, right: str) -> List[float]:
     return result
 
 
-def disambiguate_concordance(concordance: List[float]) -> Iterable[Tuple[float, int, int]]:
-    def slide(concordance):
-        count = 0
-        for i, (prev, current, next) in enumerate(sliding_window(concordance)):
-            if current == prev:
-                count += 1
-                yield count
-            else:
-                yield 0
-
-    forward = list(slide(concordance))
-    reverse = list(reversed(list(slide(reversed(concordance)))))
-    for i, (x, f, r) in enumerate(zip(concordance, forward, reverse)):
-        local_rank = f * r
+def disambiguate_concordance(concordance: List[float]) -> Iterable[Tuple[float, int]]:
+    for i, x in enumerate(concordance):
         global_rank = i if i < len(concordance) / 2 else len(concordance) - i - 1
-        yield (x, local_rank, global_rank)
+        yield (x, global_rank)
 
 
 def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance):
@@ -467,8 +454,8 @@ def stitch_2_contigs(left, right):
     right_overlap_drop, right_overlap_take = right_overlap.cut_reference(aligned_right_cutpoint)
 
     # Log it.
-    average_concordance = sum(concordance) / (len(concordance) or 1)
-    concordance_str = ', '.join(map(lambda x: str(round(x, 2)), concordance))
+    average_concordance = Fraction(sum(concordance) / (len(concordance) or 1))
+    concordance_str = ', '.join(map(lambda x: str(int(round(x * 100)) / 100), concordance))
     cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
     logger.debug("Created overlap contigs %r at %s and %r at %s based on parts of %r and %r, with avg. concordance %s%%, cut point at %s%%, and full concordance [%s].",
                  left_overlap_take.name, left_overlap.alignment, right_overlap_take.name, right_overlap_take.alignment,

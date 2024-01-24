@@ -1,5 +1,6 @@
 from typing import Union, List
 from dataclasses import dataclass
+from fractions import Fraction
 
 
 @dataclass
@@ -89,10 +90,10 @@ class Overlap:
     right_remainder: 'AlignedContig'
     left_take: 'AlignedContig'
     right_take: 'AlignedContig'
-    concordance: List[float]
-    average: float
+    concordance: List[Fraction]
+    average: Fraction
     cut_point: int
-    cut_point_scaled: float
+    cut_point_scaled: Fraction
 
 
 @dataclass
