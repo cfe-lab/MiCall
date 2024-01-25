@@ -451,7 +451,7 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
                                  if not isinstance(x[2], Exception)])
 def test_cigar_hit_gaps_no_m_or_i(hit):
     hit = parsed_hit(hit)
-    gaps = list(hit.gaps())
+    gaps = list(hit.deletions())
 
     if 'D' in str(hit.cigar):
         assert len(gaps) > 0
@@ -465,7 +465,7 @@ def test_cigar_hit_gaps_no_m_or_i(hit):
                                  if not isinstance(x[2], Exception)])
 def test_cigar_hit_gaps_lengths(hit):
     hit = parsed_hit(hit)
-    gaps = list(hit.gaps())
+    gaps = list(hit.deletions())
 
     for gap in gaps:
         assert gap.query_length == 0

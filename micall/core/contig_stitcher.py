@@ -590,7 +590,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
         return gap.ref_length > 5
 
     def try_split(contig):
-        for gap in contig.alignment.gaps():
+        for gap in contig.alignment.deletions():
             if not significant(gap):
                 # Really we do not want to split on every little deletion
                 # because that would mean that we would need to stitch

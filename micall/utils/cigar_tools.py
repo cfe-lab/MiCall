@@ -520,7 +520,7 @@ class CigarHit:
            and self.q_ei + 1 == other.q_st
 
 
-    def gaps(self) -> Iterable['CigarHit']:
+    def deletions(self) -> Iterable['CigarHit']:
         # TODO(vitalik): memoize whatever possible.
 
         covered_coordinates = self.coordinate_mapping.ref_to_query.keys()
