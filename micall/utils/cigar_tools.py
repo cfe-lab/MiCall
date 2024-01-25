@@ -520,31 +520,45 @@ class CigarHit:
            and self.q_ei + 1 == other.q_st
 
 
-    def deletions(self) -> Iterable['CigarHit']:
-        # TODO(vitalik): memoize whatever possible.
+    def _gaps(self, is_deletions: bool) -> Iterable['CigarHit']:
+        last_query_index = self.q_st
+        last_ref_index = self.r_st
+        gap_start: Optional[int] = None
+        op_to_ref = {v: k for k, v in self.coordinate_mapping.ref_to_op.items()}
+        op_to_query = {v: k for k, v in self.coordinate_mapping.query_to_op.items()}
+        present = op_to_ref if is_deletions else op_to_query
+        missing = op_to_query if is_deletions else op_to_ref
 
-        covered_coordinates = self.coordinate_mapping.ref_to_query.keys()
-        all_coordinates = self.coordinate_mapping.ref_to_query.domain
-
-        def make_gap(r_st, r_en):
-            r_ei = r_en - 1
-            left, midright = self.cut_reference(r_st - self.epsilon)
-            middle, right = midright.cut_reference(r_ei + self.epsilon)
-            return middle
-
-        gap_start = None
-        for coord in all_coordinates:
-            if coord in covered_coordinates:
-                if gap_start is not None:
-                    yield make_gap(gap_start, coord)
-                    gap_start = None
-            else:
+        for op_index in sorted(self.coordinate_mapping.query_to_op.codomain) + [None]:
+            if op_index in present and \
+               op_index not in missing:
                 if gap_start is None:
-                    gap_start = coord
+                    gap_start = op_index
+            else:
+                if gap_start is not None:
+                    cigar = self.cigar.slice_operations(gap_start, op_index)
+                    if is_deletions:
+                        q_st = last_query_index
+                        r_st = present[gap_start]
+                    else:
+                        q_st = present[gap_start]
+                        r_st = last_ref_index
+                    q_ei = q_st + cigar.query_length - 1
+                    r_ei = r_st + cigar.ref_length - 1
+                    yield CigarHit(cigar, q_st=q_st, q_ei=q_ei, r_st=r_st, r_ei=r_ei)
+                    gap_start = None
 
-        if gap_start is not None:
-            yield make_gap(gap_start, coord)
+            if op_index in op_to_query:
+                last_query_index = op_to_query[op_index]
+            if op_index in op_to_ref:
+                last_ref_index = op_to_ref[op_index]
 
+
+    def deletions(self) -> Iterable['CigarHit']:
+        return self._gaps(is_deletions=True)
+
+    def insertions(self) -> Iterable['CigarHit']:
+        return self._gaps(is_deletions=False)
 
     def __add__(self, other):
         """

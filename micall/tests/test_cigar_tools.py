@@ -222,6 +222,12 @@ cigar_hit_ref_cut_cases = [
     ('9M9I9D9M@1,1', 13.5 or 27/2,
      ['9M9I4D@1,1', '5D9M@14,19']),
 
+    ('9M9D9I9D9I9D9M@1,1', 13.5 or 27/2,
+     ['9M4D@1,1', '5D9I9D9I9D9M@14,10']),
+
+    ('9M9I9D9I9D9I9M@1,1', 13.5 or 27/2,
+     ['9M9I4D@1,1', '5D9I9D9I9M@14,19']),
+
     ('1M1I1D1M@1,1', 1.5, # same as previous 2 cases but smaller
      ['1M1I@1,1', '1D1M@2,3']),
 
@@ -449,28 +455,53 @@ def test_cigar_hit_ref_cut_add_associativity(hit, cut_point):
 
 @pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
                                  if not isinstance(x[2], Exception)])
-def test_cigar_hit_gaps_no_m_or_i(hit):
+def test_cigar_hit_deletions_no_m_or_i(hit):
     hit = parsed_hit(hit)
-    gaps = list(hit.deletions())
+    deletions = list(hit.deletions())
 
-    if 'D' in str(hit.cigar):
-        assert len(gaps) > 0
+    assert len(deletions) == len([op for op in str(hit.cigar) if op in 'DN'])
 
-    for gap in gaps:
-        assert 'M' not in str(gap.cigar)
-        assert 'I' not in str(gap.cigar)
+    for deletion in deletions:
+        assert 'M' not in str(deletion.cigar)
+        assert 'I' not in str(deletion.cigar)
 
 
 @pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
                                  if not isinstance(x[2], Exception)])
-def test_cigar_hit_gaps_lengths(hit):
+def test_cigar_hit_deletions_lengths(hit):
     hit = parsed_hit(hit)
-    gaps = list(hit.deletions())
+    deletions = list(hit.deletions())
 
-    for gap in gaps:
-        assert gap.query_length == 0
-        assert gap.ref_length > 0
-        assert gap.coordinate_mapping.ref_to_query == {}
+    for deletion in deletions:
+        assert deletion.query_length == 0
+        assert deletion.ref_length > 0
+        assert deletion.coordinate_mapping.ref_to_query == {}
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
+                                 if not isinstance(x[2], Exception)])
+def test_cigar_hit_insertions_no_m_or_i(hit):
+    hit = parsed_hit(hit)
+    insertions = list(hit.insertions())
+
+    if 'I' in str(hit.cigar):
+        assert len(insertions) > 0
+
+    for insertion in insertions:
+        assert 'M' not in str(insertion.cigar)
+        assert 'D' not in str(insertion.cigar)
+
+
+@pytest.mark.parametrize('hit', [x[0] for x in cigar_hit_ref_cut_cases
+                                 if not isinstance(x[2], Exception)])
+def test_cigar_hit_insertions_lengths(hit):
+    hit = parsed_hit(hit)
+    insertions = list(hit.insertions())
+
+    for insertion in insertions:
+        assert insertion.ref_length == 0
+        assert insertion.query_length > 0
+        assert insertion.coordinate_mapping.ref_to_query == {}
 
 
 @pytest.mark.parametrize("reference_seq, query_seq, cigar, expected_reference, expected_query", [
