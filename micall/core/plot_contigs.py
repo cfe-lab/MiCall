@@ -1014,7 +1014,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                         else:
                             figure.add(Arrow(a_r_st, a_r_ei, elevation=-20, h=1))
                     else:
-                        colour = "red"
+                        colour = "yellow"
 
                     name = name_mappings.get(contig_name, contig_name)
                     figure.add(Track(a_r_st, a_r_ei, color=colour, label=name))
@@ -1036,7 +1036,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 contig = contig_map[contig_name]
                 r_st = position_offset
                 r_ei = position_offset + len(contig.seq)
-                colour = "red"
+                colour = "yellow"
                 name = name_mappings.get(contig_name, contig_name)
                 figure.add(Track(r_st, r_ei, color=colour, label=name))
 
