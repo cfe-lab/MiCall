@@ -343,9 +343,11 @@ lstrip_reference_cases = [
     ('4D6I5M@1->1', '4D5M@7->1'),
     ('4I6D5M@1->1', '6D5M@5->1'),
     ('6I4D@1->1', '4D@7->1'),
-    ('6D4I@1->1', '6D4I@1->1'),
-    ('4D6I@1->1', '4D6I@1->1'),
+    ('6D4I@1->1', '6D@5->1'),
+    ('4D6I@1->1', '4D@7->1'),
     ('4I6D@1->1', '6D@5->1'),
+    ('4I@1->1', '@5->1'),
+    ('4D@1->1', '4D@1->1'),
     ('@1->1', '@1->1'),
 ]
 
@@ -364,9 +366,11 @@ rstrip_reference_cases = [
     ('5M6D4I@1->1', '5M6D@1->1'),
     ('5M6I4D@1->1', '5M4D@1->1'),
     ('6D4I@1->1', '6D@1->1'),
-    ('6I4D@1->1', '6I4D@1->1'),
-    ('4I6D@1->1', '4I6D@1->1'),
+    ('6I4D@1->1', '4D@1->1'),
+    ('4I6D@1->1', '6D@1->1'),
     ('4D6I@1->1', '4D@1->1'),
+    ('4I@1->1', '@1->1'),
+    ('4D@1->1', '4D@1->1'),
     ('@1->1', '@1->1'),
 ]
 
@@ -384,10 +388,12 @@ lstrip_query_cases = [
     ('3I2D3I2D5M@1->1', '6I5M@1->5'),
     ('4D6I5M@1->1', '6I5M@1->5'),
     ('4I6D5M@1->1', '4I5M@1->7'),
-    ('6I4D@1->1', '6I4D@1->1'),
+    ('6I4D@1->1', '6I@1->5'),
     ('6D4I@1->1', '4I@1->7'),
     ('4D6I@1->1', '6I@1->5'),
-    ('4I6D@1->1', '4I6D@1->1'),
+    ('4I6D@1->1', '4I@1->7'),
+    ('4I@1->1', '4I@1->1'),
+    ('4D@1->1', '@1->5'),
     ('@1->1', '@1->1'),
 ]
 
@@ -405,10 +411,12 @@ rstrip_query_cases = [
     ('5M2D3I2D3I@1->1', '5M6I@1->1'),
     ('5M6D4I@1->1', '5M4I@1->1'),
     ('5M6I4D@1->1', '5M6I@1->1'),
-    ('6D4I@1->1', '6D4I@1->1'),
+    ('6D4I@1->1', '4I@1->1'),
     ('6I4D@1->1', '6I@1->1'),
     ('4I6D@1->1', '4I@1->1'),
-    ('4D6I@1->1', '4D6I@1->1'),
+    ('4D6I@1->1', '6I@1->1'),
+    ('4I@1->1', '4I@1->1'),
+    ('4D@1->1', '@1->1'),
     ('@1->1', '@1->1'),
 ]
 
@@ -493,8 +501,12 @@ def test_cigar_hit_reference_strip_is_idempotent(hit):
 def test_cigar_hit_reference_strips_are_commutative(hit):
     hit = parsed_hit(hit)
 
-    assert hit.rstrip_reference().lstrip_reference() \
-        == hit.lstrip_reference().rstrip_reference()
+    if len(hit.cigar.coordinate_mapping.ref_to_query) > 0:
+        assert hit.rstrip_reference().lstrip_reference() \
+            == hit.lstrip_reference().rstrip_reference()
+    else:
+        assert hit.rstrip_reference().lstrip_reference().cigar \
+            == hit.lstrip_reference().rstrip_reference().cigar
 
 
 @pytest.mark.parametrize('hit, expected', lstrip_query_cases)
@@ -540,13 +552,13 @@ def test_cigar_hit_query_strip_combines_with_add(hit):
 
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
-def test_cigar_hit_query_strip_never_crashes(hit):
+def test_cigar_hit_strips_work_together(hit):
     hit = parsed_hit(hit)
 
-    hit.rstrip_query().lstrip_query()
-    hit.lstrip_query().rstrip_query()
-    hit.lstrip_query().lstrip_query()
-    hit.rstrip_query().rstrip_query()
+    rstrip = str(hit.rstrip_query().rstrip_reference().cigar)
+    assert not rstrip.endswith("I") and not rstrip.endswith("D")
+    lstrip = str(hit.lstrip_query().lstrip_reference().cigar)
+    assert not lstrip.startswith("I") and not lstrip.startswith("D")
 
 
 @pytest.mark.parametrize('hit', strip_prop_cases_all)
@@ -570,8 +582,12 @@ def test_cigar_hit_query_strip_is_idempotent(hit):
 def test_cigar_hit_query_strips_are_commutative(hit):
     hit = parsed_hit(hit)
 
-    assert hit.rstrip_query().lstrip_query() \
-        == hit.lstrip_query().rstrip_query()
+    if len(hit.cigar.coordinate_mapping.ref_to_query) > 0:
+        assert hit.rstrip_query().lstrip_query() \
+            == hit.lstrip_query().rstrip_query()
+    else:
+        assert hit.rstrip_query().lstrip_query().cigar \
+            == hit.lstrip_query().rstrip_query().cigar
 
 
 @pytest.mark.parametrize('hit, cut_point', [(x[0], x[1]) for x in cigar_hit_ref_cut_cases

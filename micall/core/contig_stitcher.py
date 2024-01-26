@@ -103,7 +103,7 @@ class AlignedContig(GenotypedContig):
         alignment. The CIGAR alignment is also updated to reflect the trimming.
         """
 
-        alignment = self.alignment.lstrip_query()
+        alignment = self.alignment.lstrip_query().lstrip_reference()
         q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
         result = AlignedContig.make(query, alignment, self.strand)
@@ -120,7 +120,7 @@ class AlignedContig(GenotypedContig):
         alignment. The CIGAR alignment is also updated to reflect the trimming.
         """
 
-        alignment = self.alignment.rstrip_query()
+        alignment = self.alignment.rstrip_query().rstrip_reference()
         query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
         result = AlignedContig.make(query, alignment, self.strand)
         logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",

@@ -229,7 +229,7 @@ class Cigar:
     def lstrip_reference(self) -> 'Cigar':
         """ Return a copy of the Cigar with leading (unmatched) reference elements removed. """
 
-        min_r = min(self.coordinate_mapping.ref_to_query.keys(), default=0)
+        min_r = min(self.coordinate_mapping.ref_to_query.keys(), default=None)
         min_op = self.coordinate_mapping.ref_to_op.get(min_r, float("inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
@@ -241,9 +241,8 @@ class Cigar:
     def rstrip_reference(self) -> 'Cigar':
         """ Return a copy of the Cigar with trailing (unmatched) reference elements removed. """
 
-        max_r = max(self.coordinate_mapping.ref_to_query.keys(),
-                    default=len(self.coordinate_mapping.ref_to_op) - 1)
-        max_op = self.coordinate_mapping.ref_to_op.get(max_r, float("inf"))
+        max_r = max(self.coordinate_mapping.ref_to_query.keys(), default=None)
+        max_op = self.coordinate_mapping.ref_to_op.get(max_r, float("-inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -254,7 +253,7 @@ class Cigar:
     def lstrip_query(self) -> 'Cigar':
         """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
 
-        min_q = min(self.coordinate_mapping.query_to_ref.keys(), default=0)
+        min_q = min(self.coordinate_mapping.query_to_ref.keys(), default=None)
         min_op = self.coordinate_mapping.query_to_op.get(min_q, float("inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
@@ -266,9 +265,8 @@ class Cigar:
     def rstrip_query(self) -> 'Cigar':
         """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
 
-        max_q = max(self.coordinate_mapping.query_to_ref.keys(),
-                    default=len(self.coordinate_mapping.query_to_op) - 1)
-        max_op = self.coordinate_mapping.query_to_op.get(max_q, float("inf"))
+        max_q = max(self.coordinate_mapping.query_to_ref.keys(), default=None)
+        max_op = self.coordinate_mapping.query_to_op.get(max_q, float("-inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
