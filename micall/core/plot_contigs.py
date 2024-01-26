@@ -427,21 +427,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     children_join_points: List[str] = []
     children_meet_points: List[str] = []
     query_position_map: Dict[str, int] = {}
-
-    def get_oldest_ancestors(recur, graph, ancestor_name):
-        if ancestor_name in recur:
-            assert RuntimeError(f"Recursion in graph {graph!r}")
-        else:
-            recur = recur.copy()
-            recur.add(ancestor_name)
-
-        if ancestor_name in graph:
-            existing_ancestors = graph[ancestor_name]
-            for existing in existing_ancestors:
-                yield from get_oldest_ancestors(recur, graph, existing)
-        else:
-            yield ancestor_name
-            return
+    initial_alignments: Dict[str, List[CigarHit]] = {}
 
     def remove_intermediate_edges(graph):
         ret = {}
@@ -551,7 +537,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         elif isinstance(event, events.ReverseComplement):
             record_contig(event.result, [event.contig])
         elif isinstance(event, events.HitNumber):
-            pass
+            initial_alignments[event.contig.name] = event.connected
         elif isinstance(event, events.Munge):
             record_contig(event.result, [event.left, event.right])
         elif isinstance(event, (events.LStrip, events.RStrip)):
@@ -624,9 +610,16 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     def hits_to_insertions(hits: List[CigarHit]):
         for hit in hits:
-            yield CigarHit.from_default_alignment(q_st=0, q_ei=hit.q_st - 1, r_st=hit.q_st - 1, r_ei=hit.q_st - 2)
-            yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1, r_st=hit.q_ei + 1, r_ei=hit.q_ei)
+            yield CigarHit.from_default_alignment(q_st=0, q_ei=hit.q_st - 1, r_st=hit.r_st, r_ei=hit.r_st - 1)
             yield from hit.insertions()
+            yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1, r_st=hit.r_ei + 1, r_ei=hit.r_ei)
+
+    unaligned_map: Dict[str, List[CigarHit]] = {}
+    for contig_name, hits in initial_alignments.items():
+        contig = contig_map[contig_name]
+        all_insertions = list(hits_to_insertions(hits))
+        nonempty_insertions = [gap for gap in all_insertions if gap.query_length > 0]
+        unaligned_map[contig_name] = nonempty_insertions
 
     last_join_points_parent = {contig_name for join in children_join_points for contig_name in transitive_parent_graph.get(join, [])}
     last_join_points = []
@@ -785,22 +778,22 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             next_part = get_neighbour(part, overlap_lefttake_map)
 
             if prev_part is not None:
-                r_st = prev_part.alignment.r_st + position_offset
+                r_st = prev_part.alignment.r_st
             else:
                 if part.name in bad_contigs:
                     start_delta = 0
                 else:
                     start_delta = -1 * part.alignment.q_st
-                r_st = part.alignment.r_st + start_delta + position_offset
+                r_st = part.alignment.r_st + start_delta
 
             if next_part is not None:
-                r_ei = next_part.alignment.r_ei + position_offset
+                r_ei = next_part.alignment.r_ei
             else:
                 if part.name in bad_contigs:
                     end_delta = 0
                 else:
                     end_delta = len(part.seq) - 1 - part.alignment.q_ei
-                r_ei = part.alignment.r_ei + end_delta + position_offset
+                r_ei = part.alignment.r_ei + end_delta
 
             aligned_size_map[part.name] = (r_st, r_ei)
 
@@ -810,23 +803,23 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             next_part = get_neighbour(sibling, overlap_righttake_map)
 
             if prev_part is not None and prev_part.alignment.r_ei < part.alignment.r_st and prev_part:
-                r_st = prev_part.alignment.r_st + position_offset
+                r_st = prev_part.alignment.r_st
             else:
                 start_delta = -1 * part.alignment.q_st
-                r_st = part.alignment.r_st + start_delta + position_offset
+                r_st = part.alignment.r_st + start_delta
 
             if next_part is not None and next_part.alignment.r_st > part.alignment.r_ei and next_part:
-                r_ei = next_part.alignment.r_ei + position_offset
+                r_ei = next_part.alignment.r_ei
             else:
                 end_delta = len(part.seq) - 1 - part.alignment.q_ei
-                r_ei = part.alignment.r_ei + end_delta + position_offset
+                r_ei = part.alignment.r_ei + end_delta
 
             full_size_map[part.name] = (r_st, r_ei)
 
     def get_contig_coordinates(contig: GenotypedContig) -> Tuple[int, int, int, int]:
         if isinstance(contig, AlignedContig):
-            r_st = position_offset + contig.alignment.r_st
-            r_ei = position_offset + contig.alignment.r_ei
+            r_st = contig.alignment.r_st
+            r_ei = contig.alignment.r_ei
             if contig.name in aligned_size_map:
                 a_r_st, a_r_ei = aligned_size_map[contig.name]
             else:
@@ -838,15 +831,16 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 f_r_st = r_st - contig.alignment.q_st
                 f_r_ei = r_ei + (len(contig.seq) - contig.alignment.q_ei)
         else:
-            f_r_st = position_offset
-            f_r_ei = position_offset + len(contig.seq)
+            f_r_st = 0
+            f_r_ei = len(contig.seq)
             a_r_st = f_r_st
             a_r_ei = f_r_ei
         return (a_r_st, a_r_ei, f_r_st, f_r_ei)
 
     def get_tracks(repeatset: Set[str], group_ref: str, contig_name: str) -> Iterable[Track]:
         parts = final_children_mapping[contig_name]
-        for part_name in parts:
+        parts = list(sorted(parts, key=lambda part: part.alignment.r_st if isinstance(part, AlignedContig) else -1))
+        for prev_name, part_name, next_naem in sliding_window(parts):
             part = contig_map[part_name]
 
             if part.name in repeatset:
@@ -864,7 +858,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             repeatset.add(part.name)
             indexes = name_mappings[part.name]
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
-            yield Track(f_r_st, f_r_ei, label=f"{indexes}")
+
+            yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{indexes}")
 
     def get_arrows(repeatset: Set[str], group_ref: str, contig_name: str, labels: bool) -> Iterable[Arrow]:
         parts = final_children_mapping[contig_name]
@@ -888,7 +883,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             height = 20 if labels else 1
             elevation = 1 if labels else -20
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
-            yield Arrow(a_r_st, a_r_ei,
+            yield Arrow(a_r_st + position_offset, a_r_ei + position_offset,
                         elevation=elevation,
                         h=height,
                         label=indexes)
@@ -953,9 +948,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 figure.add(Multitrack(subtracks))
 
         # Drawing the reference sequence.
-        r_st = position_offset
-        r_ei = position_offset + group_refs[group_ref]
-        figure.add(Track(r_st, r_ei, label=f"{group_ref}"))
+        r_st = 0
+        r_ei = group_refs[group_ref]
+        figure.add(Track(r_st + position_offset, r_ei + position_offset, label=f"{group_ref}"))
 
         ##########
         # Arrows #
@@ -996,8 +991,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     contig = contig_map[contig_name]
                     (r_st, r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
                     name = name_mappings.get(contig_name, contig_name)
-                    figure.add(Arrow(r_st, r_ei, elevation=-20, h=1))
-                    figure.add(Track(f_r_st, f_r_ei, label=name))
+                    figure.add(Arrow(r_st + position_offset, r_ei + position_offset, elevation=-20, h=1))
+                    figure.add(Track(f_r_st + position_offset, f_r_ei + position_offset, label=name))
 
         #############
         # Anomalies #
@@ -1018,14 +1013,14 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     if isinstance(contig, AlignedContig):
                         colour = "lightgray"
                         if contig.strand == "reverse":
-                            figure.add(Arrow(a_r_ei, a_r_st, elevation=-20, h=1))
+                            figure.add(Arrow(a_r_ei + position_offset, a_r_st + position_offset, elevation=-20, h=1))
                         else:
-                            figure.add(Arrow(a_r_st, a_r_ei, elevation=-20, h=1))
+                            figure.add(Arrow(a_r_st + position_offset, a_r_ei + position_offset, elevation=-20, h=1))
                     else:
                         colour = "yellow"
 
                     name = name_mappings.get(contig_name, contig_name)
-                    figure.add(Track(a_r_st, a_r_ei, color=colour, label=name))
+                    figure.add(Track(a_r_st + position_offset, a_r_ei + position_offset, color=colour, label=name))
 
     ###########
     # Unknown #
@@ -1042,11 +1037,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     continue
 
                 contig = contig_map[contig_name]
-                r_st = position_offset
-                r_ei = position_offset + len(contig.seq)
+                r_st = 0
+                r_ei = len(contig.seq)
                 colour = "yellow"
                 name = name_mappings.get(contig_name, contig_name)
-                figure.add(Track(r_st, r_ei, color=colour, label=name))
+                figure.add(Track(r_st + position_offset, r_ei + position_offset, color=colour, label=name))
 
     if not figure.elements:
         figure.add(Track(1, max_position, label='No contigs found.', color='none'))
