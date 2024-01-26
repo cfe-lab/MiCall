@@ -97,13 +97,13 @@ class AlignedContig(GenotypedContig):
         return (left, right)
 
 
-    def lstrip_query(self) -> 'AlignedContig':
+    def lstrip(self) -> 'AlignedContig':
         """
         Trims the query sequence of the contig from its beginning up to the start of the
         alignment. The CIGAR alignment is also updated to reflect the trimming.
         """
 
-        alignment = self.alignment.lstrip_query().lstrip_reference()
+        alignment = self.alignment.lstrip_reference().lstrip_query()
         q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
         result = AlignedContig.make(query, alignment, self.strand)
@@ -114,13 +114,13 @@ class AlignedContig(GenotypedContig):
         return result
 
 
-    def rstrip_query(self) -> 'AlignedContig':
+    def rstrip(self) -> 'AlignedContig':
         """
         Trims the query sequence of the contig from its end based on the end of the
         alignment. The CIGAR alignment is also updated to reflect the trimming.
         """
 
-        alignment = self.alignment.rstrip_query().rstrip_reference()
+        alignment = self.alignment.rstrip_reference().rstrip_query()
         query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
         result = AlignedContig.make(query, alignment, self.strand)
         logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
@@ -196,9 +196,9 @@ def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
     stripped_parts = []
     for prev_part, part, next_part in sliding_window(parts):
         if prev_part is not None:
-            part = part.lstrip_query()
+            part = part.lstrip()
         if next_part is not None:
-            part = part.rstrip_query()
+            part = part.rstrip()
         stripped_parts.append(part)
 
     ret = reduce(AlignedContig.munge, stripped_parts)
@@ -288,9 +288,9 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
         if isinstance(contig, AlignedContig):
             name = contig.name
             if prev_contig is not None or is_out_of_order(name):
-                contig = contig.lstrip_query()
+                contig = contig.lstrip()
             if next_contig is not None or is_out_of_order(name):
-                contig = contig.rstrip_query()
+                contig = contig.rstrip()
 
         yield contig
 
@@ -426,10 +426,10 @@ def stitch_2_contigs(left, right):
     # Cut in 4 parts.
     left_remainder, left_overlap = left.cut_reference(right.alignment.r_st - 0.5)
     right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
-    left_overlap = left_overlap.rstrip_query().lstrip_query()
-    right_overlap = right_overlap.lstrip_query().rstrip_query()
-    left_remainder = left_remainder.rstrip_query()
-    right_remainder = right_remainder.lstrip_query()
+    left_overlap = left_overlap.rstrip().lstrip()
+    right_overlap = right_overlap.lstrip().rstrip()
+    left_remainder = left_remainder.rstrip()
+    right_remainder = right_remainder.lstrip()
 
     logger.debug("Stitching %r at %s (len %s) with %r at %s (len %s)."
                  " The left_overlap %r is at %s (len %s)"
@@ -603,8 +603,8 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
             if covered(contig, gap):
                 midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + contig.alignment.epsilon
                 left_part, right_part = contig.cut_reference(midpoint)
-                left_part = left_part.rstrip_query()
-                right_part = right_part.lstrip_query()
+                left_part = left_part.rstrip()
+                right_part = right_part.lstrip()
 
                 contigs.remove(contig)
                 contigs.append(left_part)

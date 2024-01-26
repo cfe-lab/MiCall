@@ -226,8 +226,8 @@ class Cigar:
                      [start_inclusive:end_noninclusive])
 
 
-    def lstrip_reference(self) -> 'Cigar':
-        """ Return a copy of the Cigar with leading (unmatched) reference elements removed. """
+    def lstrip_query(self) -> 'Cigar':
+        """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
 
         min_r = min(self.coordinate_mapping.ref_to_query.keys(), default=None)
         min_op = self.coordinate_mapping.ref_to_op.get(min_r, float("inf"))
@@ -238,8 +238,8 @@ class Cigar:
         return Cigar.coerce(ops)
 
 
-    def rstrip_reference(self) -> 'Cigar':
-        """ Return a copy of the Cigar with trailing (unmatched) reference elements removed. """
+    def rstrip_query(self) -> 'Cigar':
+        """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
 
         max_r = max(self.coordinate_mapping.ref_to_query.keys(), default=None)
         max_op = self.coordinate_mapping.ref_to_op.get(max_r, float("-inf"))
@@ -250,8 +250,8 @@ class Cigar:
         return Cigar.coerce(ops)
 
 
-    def lstrip_query(self) -> 'Cigar':
-        """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
+    def lstrip_reference(self) -> 'Cigar':
+        """ Return a copy of the Cigar with leading (unmatched) reference elements removed. """
 
         min_q = min(self.coordinate_mapping.query_to_ref.keys(), default=None)
         min_op = self.coordinate_mapping.query_to_op.get(min_q, float("inf"))
@@ -262,8 +262,8 @@ class Cigar:
         return Cigar.coerce(ops)
 
 
-    def rstrip_query(self) -> 'Cigar':
-        """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
+    def rstrip_reference(self) -> 'Cigar':
+        """ Return a copy of the Cigar with trailing (unmatched) reference elements removed. """
 
         max_q = max(self.coordinate_mapping.query_to_ref.keys(), default=None)
         max_op = self.coordinate_mapping.query_to_op.get(max_q, float("-inf"))
@@ -668,22 +668,6 @@ class CigarHit:
         return left, right
 
 
-    def lstrip_reference(self) -> 'CigarHit':
-        """ Return a copy of the CigarHit with leading (unmatched) reference elements removed. """
-
-        cigar = self.cigar.lstrip_reference()
-        return CigarHit(cigar, r_st=self.r_ei - cigar.ref_length + 1, r_ei=self.r_ei,
-                               q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
-
-
-    def rstrip_reference(self) -> 'CigarHit':
-        """ Return a copy of the CigarHit with trailing (unmatched) reference elements removed. """
-
-        cigar = self.cigar.rstrip_reference()
-        return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
-                               q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
-
-
     def lstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with leading (unmatched) query elements removed. """
 
@@ -696,6 +680,22 @@ class CigarHit:
         """ Return a copy of the CigarHit with trailing (unmatched) query elements removed. """
 
         cigar = self.cigar.rstrip_query()
+        return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
+                               q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
+
+
+    def lstrip_reference(self) -> 'CigarHit':
+        """ Return a copy of the CigarHit with leading (unmatched) reference elements removed. """
+
+        cigar = self.cigar.lstrip_reference()
+        return CigarHit(cigar, r_st=self.r_ei - cigar.ref_length + 1, r_ei=self.r_ei,
+                               q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
+
+
+    def rstrip_reference(self) -> 'CigarHit':
+        """ Return a copy of the CigarHit with trailing (unmatched) reference elements removed. """
+
+        cigar = self.cigar.rstrip_reference()
         return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
                                q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
 

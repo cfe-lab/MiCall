@@ -543,7 +543,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
 
     assert len(visualizer().elements) > len(contigs)
 
-    assert all(x.seq == x.lstrip_query().rstrip_query().seq for x in results)
+    assert all(x.seq == x.lstrip().rstrip().seq for x in results)
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
@@ -568,10 +568,10 @@ def test_stitching_partial_align(exact_aligner, visualizer):
 
     assert len(visualizer().elements) > len(contigs)
 
-    assert all(x.seq != x.lstrip_query().rstrip_query().seq for x in results)
+    assert all(x.seq != x.lstrip().rstrip().seq for x in results)
 
     assert { contig.seq for contig in contigs } \
-        != { contig.lstrip_query().rstrip_query().seq for contig in results }
+        != { contig.lstrip().rstrip().seq for contig in results }
 
 
 def test_partial_align_consensus(exact_aligner, visualizer):
@@ -625,7 +625,7 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
     assert { contig.seq for contig in contigs } \
-        != { contig.lstrip_query().rstrip_query().seq for contig in results }
+        != { contig.lstrip().rstrip().seq for contig in results }
 
 
 def test_partial_align_consensus_multiple_sequences(exact_aligner, visualizer):
