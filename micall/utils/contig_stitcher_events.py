@@ -1,6 +1,7 @@
-from typing import Union, List
+from typing import Union, List, Tuple, Literal
 from dataclasses import dataclass
 from fractions import Fraction
+from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 
 
 @dataclass
@@ -53,8 +54,8 @@ class StrandConflict:
 @dataclass
 class HitNumber:
     contig: 'GenotypedContig'
-    initial: object
-    connected: object
+    initial: List[Tuple[CigarHit, Literal["reverse", "forward"]]]
+    connected: List[CigarHit]
 
 
 @dataclass

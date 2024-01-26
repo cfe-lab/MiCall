@@ -5,6 +5,14 @@ import random
 
 from micall.utils.consensus_aligner import CigarActions
 
+def find_all_occurrences(s, substring):
+    start = 0
+    while True:
+        start = s.find(substring, start)
+        if start == -1:  # no more occurrences found
+            return
+        yield start
+        start += len(substring)
 
 @dataclass
 class MockAlignment:
@@ -37,25 +45,22 @@ class MockAligner:
             for start in range(len(seq) - length + 1):
                 end = start + length
                 substring = seq[start:end]
-                if substring not in self.seq:
-                    continue
+                for r_st in find_all_occurrences(self.seq, substring):
+                    mapq = 60
+                    strand = 1 # Doesn't handle reverse complements in this mock.
+                    r_en = r_st + len(substring)
+                    q_st = start
+                    q_en = end
+                    cigar = [[q_en - q_st, CigarActions.MATCH]]
+                    cigar_str = f'{(q_en - q_st)}M'
+                    al = MockAlignment(strand, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
+                    if (q_st, q_en, r_st, r_en) not in returned:
+                        returned.add((q_st, q_en, r_st, r_en))
+                        yield MockAlignment(strand, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
 
-                mapq = 60
-                strand = 1 # Doesn't handle reverse complements in this mock.
-                r_st = self.seq.index(substring)
-                r_en = r_st + len(substring)
-                q_st = start
-                q_en = end
-                cigar = [[q_en - q_st, CigarActions.MATCH]]
-                cigar_str = f'{(q_en - q_st)}M'
-                al = MockAlignment(strand, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
-                if (q_st, q_en, r_st, r_en) not in returned:
-                    returned.add((q_st, q_en, r_st, r_en))
-                    yield MockAlignment(strand, mapq, cigar, cigar_str, q_st, q_en, r_st, r_en)
-
-                    max_matches -= 1
-                    if max_matches < 1:
-                        return
+                        max_matches -= 1
+                        if max_matches < 1:
+                            return
 
 
 @contextmanager

@@ -1,5 +1,5 @@
 import typing
-from typing import Dict, Tuple, List, Set, Iterable, NoReturn
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Literal
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -20,7 +20,8 @@ from matplotlib.colors import Normalize
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
-from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig
+from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig, sliding_window
+from micall.utils.cigar_tools import CigarHit
 import micall.utils.contig_stitcher_events as events
 
 
@@ -419,6 +420,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     overlap_lefttake_map: Dict[str, str] = {}
     overlap_righttake_map: Dict[str, str] = {}
     overlap_sibling_map: Dict[str, str] = {}
+    combine_list: List[str] = []
     combine_left_edge: Dict[str, str] = {}
     combine_right_edge: Dict[str, str] = {}
     temporary: Set[str] = set()
@@ -577,6 +579,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             record_contig(event.left, [event.original])
             record_contig(event.right, [event.original])
         elif isinstance(event, events.Combine):
+            for contig in event.contigs:
+                combine_list.append(contig.name)
+
             record_contig(event.result, event.contigs)
             if event.contigs:
                 combine_left_edge[event.result.name] = event.contigs[0].name
@@ -616,6 +621,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     for contig_name, children in children_graph.items():
         if len(children) > 2:
             children_meet_points.append(contig_name)
+
+    def hits_to_insertions(hits: List[CigarHit]):
+        for hit in hits:
+            yield CigarHit.from_default_alignment(q_st=0, q_ei=hit.q_st - 1, r_st=hit.q_st - 1, r_ei=hit.q_st - 2)
+            yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1, r_st=hit.q_ei + 1, r_ei=hit.q_ei)
+            yield from hit.insertions()
 
     last_join_points_parent = {contig_name for join in children_join_points for contig_name in transitive_parent_graph.get(join, [])}
     last_join_points = []
@@ -675,13 +686,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         if contig_name in temporary:
             continue
 
-        if contig_name in overlap_sibling_map:
+        if contig_name in combine_list:
             finals = reduced_morphism_graph.get(contig_name, [contig_name])
             if len(finals) == 1:
-                [final] = finals
-                parents = reduced_parent_graph.get(final, [])
-                if len(parents) == 1:
-                    final_parts[final] = True
+                final_parts[finals[0]] = True
 
         elif contig_name in bad_contigs:
             final_parts[contig_name] = True
@@ -708,7 +716,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
                 final_parts[contig_name] = True
 
-    final_parent_mapping: Dict[str, List[str]] = {}
+    final_children_mapping: Dict[str, List[str]] = {}
     for parent_name in sorted_roots:
         children = []
         for final_contig in final_parts:
@@ -716,7 +724,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                parent_name in reduced_parent_graph.get(final_contig, []):
                 children.append(final_contig)
 
-        final_parent_mapping[parent_name] = children
+        final_children_mapping[parent_name] = children
 
     min_position, max_position = 1, 1
     position_offset = 100
@@ -727,7 +735,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             max_position = max(max_position, len(contig.seq) + 3 * position_offset)
 
     name_mappings = {}
-    for i, (parent, children) in enumerate(sorted(final_parent_mapping.items(), key=lambda p: p[0])):
+    for i, (parent, children) in enumerate(sorted(final_children_mapping.items(), key=lambda p: p[0])):
         name_mappings[parent] = f"{i + 1}"
         children = list(sorted(children, key=lambda name: query_position_map.get(name, -1)))
         for k, child in enumerate(children):
@@ -766,7 +774,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     full_size_map: Dict[str, Tuple[int, int]] = {}
 
     for parent_name in sorted_roots:
-        parts_names = final_parent_mapping[parent_name]
+        parts_names = final_children_mapping[parent_name]
         parts = [contig_map[part] for part in parts_names]
 
         for part in parts:
@@ -837,7 +845,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         return (a_r_st, a_r_ei, f_r_st, f_r_ei)
 
     def get_tracks(repeatset: Set[str], group_ref: str, contig_name: str) -> Iterable[Track]:
-        parts = final_parent_mapping[contig_name]
+        parts = final_children_mapping[contig_name]
         for part_name in parts:
             part = contig_map[part_name]
 
@@ -859,7 +867,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             yield Track(f_r_st, f_r_ei, label=f"{indexes}")
 
     def get_arrows(repeatset: Set[str], group_ref: str, contig_name: str, labels: bool) -> Iterable[Arrow]:
-        parts = final_parent_mapping[contig_name]
+        parts = final_children_mapping[contig_name]
         for part_name in parts:
             part = contig_map[part_name]
 
@@ -980,7 +988,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             pos = position_offset / 2
             figure.add(Track(pos, pos, h=40, label=label))
             for parent_name in sorted_roots:
-                contigs = final_parent_mapping.get(parent_name, [])
+                contigs = final_children_mapping.get(parent_name, [])
                 for contig_name in contigs:
                     if contig_name not in discarded:
                         continue
@@ -1000,7 +1008,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             pos = position_offset / 2
             figure.add(Track(pos, pos, h=40, label=label))
             for parent_name in sorted_roots:
-                contigs = final_parent_mapping.get(parent_name, [])
+                contigs = final_children_mapping.get(parent_name, [])
                 for contig_name in contigs:
                     if contig_name not in anomaly:
                         continue
@@ -1028,7 +1036,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         pos = position_offset / 2
         figure.add(Track(pos, pos, h=40, label=label))
         for parent_name in sorted_roots:
-            contigs = final_parent_mapping.get(parent_name, [])
+            contigs = final_children_mapping.get(parent_name, [])
             for contig_name in contigs:
                 if contig_name not in unknown:
                     continue

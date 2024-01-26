@@ -49,8 +49,8 @@ def test_multiple_matches():
     assert len(alignments) == 5
     assert alignments[0].r_st == 0
     assert alignments[0].r_en == 20
-    assert alignments[1].r_st == 0
-    assert alignments[1].r_en == 19
+    assert alignments[1].r_st == 20
+    assert alignments[1].r_en == 40
 
 
 def test_multiple_matches_bigger_query():

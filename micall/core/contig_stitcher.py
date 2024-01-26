@@ -231,8 +231,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
                    min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1)),
           "forward" if x.strand == 1 else "reverse") for x in alignments]
 
-    connected = connect_cigar_hits(list(map(lambda p: p[0], hits_array))) if hits_array else []
-
+    connected = connect_cigar_hits([hit for hit, strand in hits_array]) if hits_array else []
     if not connected:
         logger.debug("Contig %r not aligned - backend's choice.", contig.name)
         context.get().emit(events.ZeroHits(contig))
@@ -284,7 +283,7 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
     def is_out_of_order(name: str) -> bool:
         return reference_sorted.index(name) != query_sorted.index(name)
 
-    sorted_by_query = list(sorted(contigs, key=lambda contig: contig.alignment.q_st if isinstance(contig, AlignedContig) else -1))
+    sorted_by_query = sorted(contigs, key=lambda contig: get_indexes(contig.name))
     for prev_contig, contig, next_contig in sliding_window(sorted_by_query):
         if isinstance(contig, AlignedContig):
             name = contig.name

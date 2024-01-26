@@ -30,6 +30,7 @@ def visualizer(request, tmp_path):
     os.makedirs(plots_dir, exist_ok=True)
     path_to_expected = os.path.join(plots_dir, plot_name)
     path_to_produced = os.path.join(tmp_path, plot_name)
+    # path_to_produced = path_to_expected
 
     def check():
         logs = stitcher.context.get().events
@@ -684,6 +685,77 @@ def test_partial_align_consensus_multiple_overlaping_sequences(exact_aligner, vi
     assert results[0].seq == 'T' * 10 + 'A' * 5 + 'C' * 20 + 'T' * 5 + 'A' * 10 + 'G' * 10
     assert results[0].seq == contigs[0].seq[:-10] + contigs[1].seq[20:]
 
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_big_insertion_in_a_single_contig(exact_aligner, visualizer):
+    # Scenario: Single contig produces many alignments.
+
+    ref_seq='A' * 10 + 'B' * 20 + 'C' * 10
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='B' * 10 + 'D' * 100 + 'B' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[0].seq
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_big_insertion_in_a_single_contig_2(exact_aligner, visualizer):
+    # Scenario: Single contig produces many alignments.
+
+    ref_seq='A' * 10 + 'B' * 20 + 'C' * 10
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 10 + 'D' * 100 + 'C' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[0].seq
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_gap_around_big_insertion(exact_aligner, visualizer):
+    # Scenario: Contig is split around its gap, then stripped.
+
+    ref_seq='A' * 10 + 'B' * 20 + 'C' * 10
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 10 + 'D' * 100 + 'C' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        GenotypedContig(name='b',
+                        seq='B' * 20,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
     assert len(visualizer().elements) > len(contigs)
 
 
