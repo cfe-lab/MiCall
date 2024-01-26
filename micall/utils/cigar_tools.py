@@ -226,14 +226,36 @@ class Cigar:
                      [start_inclusive:end_noninclusive])
 
 
+    def lstrip_reference(self) -> 'Cigar':
+        """ Return a copy of the Cigar with leading (unmatched) reference elements removed. """
+
+        min_r = min(self.coordinate_mapping.ref_to_query.keys(), default=0)
+        min_op = self.coordinate_mapping.ref_to_op.get(min_r, float("inf"))
+
+        ops = [(1, op) for i, (op, ref_pointer, query_pointer)
+               in enumerate(self.iterate_operations_with_pointers())
+               if query_pointer is None or i >= min_op]
+        return Cigar.coerce(ops)
+
+
+    def rstrip_reference(self) -> 'Cigar':
+        """ Return a copy of the Cigar with trailing (unmatched) reference elements removed. """
+
+        max_r = max(self.coordinate_mapping.ref_to_query.keys(),
+                    default=len(self.coordinate_mapping.ref_to_op) - 1)
+        max_op = self.coordinate_mapping.ref_to_op.get(max_r, float("inf"))
+
+        ops = [(1, op) for i, (op, ref_pointer, query_pointer)
+               in enumerate(self.iterate_operations_with_pointers())
+               if query_pointer is None or i <= max_op]
+        return Cigar.coerce(ops)
+
+
     def lstrip_query(self) -> 'Cigar':
         """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
 
-        if self.query_length == 0:
-            return self
-
         min_q = min(self.coordinate_mapping.query_to_ref.keys(), default=0)
-        min_op = self.coordinate_mapping.query_to_op[min_q]
+        min_op = self.coordinate_mapping.query_to_op.get(min_q, float("inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -244,12 +266,9 @@ class Cigar:
     def rstrip_query(self) -> 'Cigar':
         """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
 
-        if self.query_length == 0:
-            return self
-
         max_q = max(self.coordinate_mapping.query_to_ref.keys(),
                     default=len(self.coordinate_mapping.query_to_op) - 1)
-        max_op = self.coordinate_mapping.query_to_op[max_q]
+        max_op = self.coordinate_mapping.query_to_op.get(max_q, float("inf"))
 
         ops = [(1, op) for i, (op, ref_pointer, query_pointer)
                in enumerate(self.iterate_operations_with_pointers())
@@ -449,7 +468,7 @@ class CigarHit:
       at any given reference position (`cut_reference()`),
     - Removing portions of the query sequence that do not align with
       the reference sequence from either end
-      while preserving the alignment context (`lstrip_query()` and `rstrip_query()`),
+      while preserving the alignment context (`lstrip*()` and `rstrip*()`),
     - Enumerating gaps in the alignment (`gaps()`).
     """
 
@@ -649,6 +668,22 @@ class CigarHit:
         right = self._slice(left.r_ei + 1, left.q_ei + 1, ceil(op_fcut_point), self.cigar.op_length)
 
         return left, right
+
+
+    def lstrip_reference(self) -> 'CigarHit':
+        """ Return a copy of the CigarHit with leading (unmatched) reference elements removed. """
+
+        cigar = self.cigar.lstrip_reference()
+        return CigarHit(cigar, r_st=self.r_ei - cigar.ref_length + 1, r_ei=self.r_ei,
+                               q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
+
+
+    def rstrip_reference(self) -> 'CigarHit':
+        """ Return a copy of the CigarHit with trailing (unmatched) reference elements removed. """
+
+        cigar = self.cigar.rstrip_reference()
+        return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
+                               q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
 
 
     def lstrip_query(self) -> 'CigarHit':
