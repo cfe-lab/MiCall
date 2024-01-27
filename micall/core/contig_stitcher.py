@@ -90,8 +90,9 @@ class AlignedContig(GenotypedContig):
         left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
         right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
 
-        logger.debug("Created contigs %r at %s and %r at %s by cutting %r.",
-                     left.name, left.alignment, right.name, right.alignment, self.name)
+        logger.debug("Created contigs %r at %s and %r at %s by cutting %r at %s at cut point = %s.",
+                     left.name, left.alignment, right.name, right.alignment,
+                     self.name, self.alignment, round(cut_point, 1))
         context.get().emit(events.Cut(self, left, right))
 
         return (left, right)
@@ -107,9 +108,9 @@ class AlignedContig(GenotypedContig):
         q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
         result = AlignedContig.make(query, alignment, self.strand)
-        logger.debug("Doing lstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
-                     self.name, result.name, self.alignment,
-                     len(self.seq), result.alignment, len(result.seq))
+        logger.debug("Doing lstrip of %r at %s (len %s) resulted in %r at %s (len %s).",
+                     self.name, self.alignment, len(self.seq),
+                     result.name, result.alignment, len(result.seq))
         context.get().emit(events.LStrip(self, result))
         return result
 
@@ -123,9 +124,9 @@ class AlignedContig(GenotypedContig):
         alignment = self.alignment.rstrip_reference().rstrip_query()
         query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
         result = AlignedContig.make(query, alignment, self.strand)
-        logger.debug("Doing rstrip of %r resulted in %r, so %s (len %s) became %s (len %s)",
-                     self.name, result.name, self.alignment,
-                     len(self.seq), result.alignment, len(result.seq))
+        logger.debug("Doing rstrip of %r at %s (len %s) resulted in %r at %s (len %s).",
+                     self.name, self.alignment, len(self.seq),
+                     result.name, result.alignment, len(result.seq))
         context.get().emit(events.RStrip(self, result))
         return result
 
@@ -611,14 +612,13 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 contigs.append(right_part)
                 process_queue.put(right_part)
 
-                logger.debug("Split contig %r around its gap at [%s, %s]->[%s, %s]. "
-                             "Left part: %r at [%s, %s]->[%s, %s], "
-                             "right part: %r at [%s, %s]->[%s, %s].",
-                             contig.name, gap.q_st, gap.q_ei, gap.r_st, gap.r_ei,
-                             left_part.name, left_part.alignment.q_st, left_part.alignment.q_ei,
-                             left_part.alignment.r_st, left_part.alignment.r_ei,
-                             right_part.name, right_part.alignment.q_st, right_part.alignment.q_ei,
-                             right_part.alignment.r_st, right_part.alignment.r_ei)
+                logger.debug("Split contig %r at %s around its gap at [%s, %s]->[%s, %s]. "
+                             "Left part: %r at %s, "
+                             "right part: %r at %s.",
+                             contig.name, contig.alignment,
+                             gap.q_st, gap.q_ei, gap.r_st, gap.r_ei,
+                             left_part.name, left_part.alignment,
+                             right_part.name, right_part.alignment)
                 context.get().emit(events.SplitGap(contig, gap, left_part, right_part))
                 return
 
