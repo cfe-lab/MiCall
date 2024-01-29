@@ -405,9 +405,10 @@ def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage_svg
 
 
 def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
-    contig_map: Dict[str, GenotypedContig] = {}
+    complete_contig_map: Dict[str, GenotypedContig] = {}
     name_mappings: Dict[str, str] = {}
-    parent_graph: Dict[str, List[str]] = {}
+    complete_parent_graph: Dict[str, List[str]] = {}
+    alive_set: Set[str] = set()
     morphism_graph: Dict[str, List[str]] = {}
     reduced_parent_graph: Dict[str, List[str]] = {}
     transitive_parent_graph: Dict[str, List[str]] = {}
@@ -420,12 +421,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     overlap_lefttake_map: Dict[str, str] = {}
     overlap_righttake_map: Dict[str, str] = {}
     overlap_sibling_map: Dict[str, str] = {}
-    combine_list: List[str] = []
     combine_left_edge: Dict[str, str] = {}
     combine_right_edge: Dict[str, str] = {}
-    temporary: Set[str] = set()
     children_join_points: List[str] = []
-    children_meet_points: List[str] = []
     query_position_map: Dict[str, int] = {}
     initial_alignments: Dict[str, List[CigarHit]] = {}
 
@@ -435,6 +433,18 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             lst = []
             for child in children:
                 if all(other not in graph.get(child, []) for other in children):
+                    lst.append(child)
+            ret[parent] = lst
+        return ret
+
+    def remove_transitive_edges(graph):
+        tr_cl = transitive_closure(graph)
+        ret = {}
+        for parent, children in graph.items():
+            lst = []
+            for child in children:
+                is_transitive = any(child in tr_cl.get(other_node, []) for other_node in children if other_node != child)
+                if not is_transitive:
                     lst.append(child)
             ret[parent] = lst
         return ret
@@ -460,9 +470,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             ret[parent] = lst
         return ret
 
-    def reflexive_closure(graph):
-        ret = graph.copy()
+    def copy_graph(graph):
+        ret = {}
         for parent, children in graph.items():
+            ret[parent] = children[:]
+        return ret
+
+    def reflexive_closure(graph):
+        ret = copy_graph(graph)
+        for parent, children in ret.items():
             if parent not in children:
                 children.append(parent)
             for child in children[:]:
@@ -483,7 +499,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         return ret
 
     def graph_sum(graph_a, graph_b):
-        ret = graph_a.copy()
+        ret = copy_graph(graph_a)
         for key, values in graph_b.items():
             if key not in ret:
                 ret[key] = []
@@ -497,52 +513,56 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         return graph_sum(graph, inverse_graph(graph))
 
     def record_contig(contig: GenotypedContig, parents: List[GenotypedContig]):
-        contig_map[contig.name] = contig
+        complete_contig_map[contig.name] = contig
         if [contig.name] != [parent.name for parent in parents]:
             for parent in parents:
-                contig_map[parent.name] = parent
-                if contig.name not in parent_graph:
-                    parent_graph[contig.name] = []
+                complete_contig_map[parent.name] = parent
+                if contig.name not in complete_parent_graph:
+                    complete_parent_graph[contig.name] = []
 
-                parent_graph[contig.name].append(parent.name)
+                complete_parent_graph[contig.name].append(parent.name)
 
-    def record_morphism(contig: Contig, original: Contig):
-        if original.name not in morphism_graph:
-            morphism_graph[original.name] = []
-        lst = morphism_graph[original.name]
-        if contig.name not in lst:
-            lst.append(contig.name)
+    def record_alive(contig: Contig):
+        alive_set.add(contig.name)
 
     def record_bad_contig(contig: GenotypedContig, lst: List[str]):
-        contig_map[contig.name] = contig
+        complete_contig_map[contig.name] = contig
         lst.append(contig.name)
-
 
     for event in logs:
         if isinstance(event, events.FinalCombine):
             record_contig(event.result, event.contigs)
+            record_alive(event.result)
         elif isinstance(event, events.SplitGap):
             record_contig(event.left, [event.contig])
             record_contig(event.right, [event.contig])
+            record_alive(event.left)
+            record_alive(event.right)
         elif isinstance(event, events.Intro):
             record_contig(event.contig, [])
+            record_alive(event.contig)
         elif isinstance(event, events.Hit):
             record_contig(event.part, [event.contig])
+            record_alive(event.part)
         elif isinstance(event, events.NoRef):
             record_bad_contig(event.contig, unknown)
+            record_alive(event.contig)
         elif isinstance(event, events.ZeroHits):
             record_bad_contig(event.contig, anomaly)
+            record_alive(event.contig)
         elif isinstance(event, events.StrandConflict):
             record_bad_contig(event.contig, anomaly)
+            record_alive(event.contig)
         elif isinstance(event, events.ReverseComplement):
             record_contig(event.result, [event.contig])
+            record_alive(event.result)
         elif isinstance(event, events.HitNumber):
             initial_alignments[event.contig.name] = event.connected
+            record_alive(event.contig)
         elif isinstance(event, events.Munge):
             record_contig(event.result, [event.left, event.right])
         elif isinstance(event, (events.LStrip, events.RStrip)):
             record_contig(event.result, [event.original])
-            record_morphism(event.result, event.original)
         elif isinstance(event, events.Overlap):
             overlaps_list.append(event.left_overlap.name)
             overlaps_list.append(event.right_overlap.name)
@@ -554,6 +574,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             overlap_sibling_map[event.right_remainder.name] = event.left_remainder.name
         elif isinstance(event, events.Drop):
             record_bad_contig(event.contig, discarded)
+            record_alive(event.contig)
         elif isinstance(event, events.StitchCut):
             record_contig(event.left_overlap, [event.left])
             record_contig(event.left_remainder, [event.left])
@@ -561,13 +582,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             record_contig(event.right_remainder, [event.right])
         elif isinstance(event, events.Stitch):
             record_contig(event.result, [event.left, event.right])
+            record_alive(event.result)
         elif isinstance(event, events.Cut):
             record_contig(event.left, [event.original])
             record_contig(event.right, [event.original])
         elif isinstance(event, events.Combine):
-            for contig in event.contigs:
-                combine_list.append(contig.name)
-
+            record_alive(event.result)
             record_contig(event.result, event.contigs)
             if event.contigs:
                 combine_left_edge[event.result.name] = event.contigs[0].name
@@ -578,6 +598,26 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             x: NoReturn = event
             raise RuntimeError(f"Unrecognized action or event: {event}")
 
+    nodup_parent_graph = remove_transitive_edges(complete_parent_graph)
+
+    # Close alive set by parents
+    def extend_alive(contig_name):
+        if contig_name not in alive_set:
+            alive_set.add(contig_name)
+
+        for parent_name in nodup_parent_graph.get(contig_name, []):
+            extend_alive(parent_name)
+
+    for contig_name in alive_set.copy():
+        extend_alive(contig_name)
+
+    parent_graph: Dict[str, List[str]] = {}
+    for contig_name in nodup_parent_graph:
+        if contig_name in alive_set:
+            parent_graph[contig_name] = nodup_parent_graph[contig_name]
+
+    contig_map: Dict[str, GenotypedContig] = {k: v for k, v in complete_contig_map.items() if k in alive_set}
+    bad_contigs = anomaly + discarded + unknown
     group_refs = {contig.group_ref: len(contig.ref_seq) for contig in contig_map.values() if contig.ref_seq}
     children_graph = inverse_graph(parent_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
@@ -590,23 +630,18 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     sorted_sinks = list(sorted(child_name for
                                child_name in contig_map
                                if child_name not in children_graph))
-    bad_contigs = anomaly + discarded + unknown
+
+    for contig_name, parents in parent_graph.items():
+        if len(parents) == 1:
+            morphism_graph[parents[0]] = [contig_name]
 
     transitive_morphism_graph = transitive_closure(morphism_graph)
     reduced_morphism_graph = remove_intermediate_edges(transitive_morphism_graph)
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_morphism_graph))
 
-    for contig_name in overlaps_list:
-        temporary.add(contig_name)
-        for child in transitive_children_graph.get(contig_name, []):
-            temporary.add(child)
-
     for contig_name, parents in parent_graph.items():
-        if len(parents) > 2:
+        if len(parents) > 1:
             children_join_points.append(contig_name)
-    for contig_name, children in children_graph.items():
-        if len(children) > 2:
-            children_meet_points.append(contig_name)
 
     def hits_to_insertions(hits: List[CigarHit]):
         for hit in hits:
@@ -620,12 +655,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         all_insertions = list(hits_to_insertions(hits))
         nonempty_insertions = [gap for gap in all_insertions if gap.query_length > 0]
         unaligned_map[contig_name] = nonempty_insertions
-
-    last_join_points_parent = {contig_name for join in children_join_points for contig_name in transitive_parent_graph.get(join, [])}
-    last_join_points = []
-    for contig_name in children_join_points:
-        if contig_name not in last_join_points_parent:
-            last_join_points.append(contig_name)
 
     def set_query_position(contig: Contig):
         if contig.name in query_position_map:
@@ -651,12 +680,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     for contig in contig_map.values():
         set_query_position(contig)
 
-    # Closing `temporary'
-    for contig_name in contig_map:
-        if contig_name in temporary:
-            for clone in eqv_morphism_graph.get(contig_name, [contig_name]):
-                temporary.add(clone)
-
     def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map):
         for parent in edge_table:
             child_remainder = edge_table[parent]
@@ -675,39 +698,42 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map)): pass
 
     final_parts: Dict[str, bool] = {}
-    for contig_name in contig_map:
-        if contig_name in temporary:
+    pre_join_points = []
+
+    def add_join_parents(join_name):
+        if join_name in children_join_points:
+            for contig_name in parent_graph.get(join_name, [join_name]):
+                add_join_parents(contig_name)
+        else:
+            pre_join_points.append(join_name)
+
+    for join_name in children_join_points + sorted_sinks:
+        add_join_parents(join_name)
+
+    def is_ancestor(contig_name, other_names):
+        for other in other_names:
+            if other == contig_name:
+                continue
+
+            if contig_name in transitive_children_graph.get(other, []):
+                return True
+        return False
+
+    for contig_name in pre_join_points[:]:
+        if is_ancestor(contig_name, pre_join_points):
+            pre_join_points.remove(contig_name)
+
+    for contig_name in pre_join_points:
+        if any(contig_name in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
             continue
 
-        if contig_name in combine_list:
-            finals = reduced_morphism_graph.get(contig_name, [contig_name])
-            if len(finals) == 1:
-                final_parts[finals[0]] = True
+        if any(contig_name in eqv_morphism_graph.get(temp_name, [temp_name]) for temp_name in overlaps_list):
+            continue
 
-        elif contig_name in bad_contigs:
-            final_parts[contig_name] = True
+        final_parts[contig_name] = True
 
-    for join in last_join_points + sorted_sinks:
-        parents = parent_graph.get(join, [join])
-        if not any(isinstance(contig_map[parent], AlignedContig) for parent in parents):
-            parents = [join]
-
-        for contig_name in parents:
-            for contig_name in reduced_morphism_graph.get(contig_name, [contig_name]):
-                if contig_name in bad_contigs:
-                    continue
-
-                if any(contig_name in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
-                    continue
-
-                if any(eqv in temporary for eqv in eqv_morphism_graph.get(contig_name, [contig_name])):
-                    continue
-
-                transitive_parent = eqv_parent_graph.get(contig_name, [contig_name])
-                if any(parent in transitive_parent for parent in final_parts):
-                    continue
-
-                final_parts[contig_name] = True
+    for contig_name in bad_contigs:
+        final_parts[contig_name] = True
 
     final_children_mapping: Dict[str, List[str]] = {}
     for parent_name in sorted_roots:
@@ -838,11 +864,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         return (a_r_st, a_r_ei, f_r_st, f_r_ei)
 
     def get_tracks(repeatset: Set[str], group_ref: str, contig_name: str) -> Iterable[Track]:
-        parts = final_children_mapping[contig_name]
+        parts_names = final_children_mapping[contig_name]
+        parts = [contig_map[name] for name in parts_names]
         parts = list(sorted(parts, key=lambda part: part.alignment.r_st if isinstance(part, AlignedContig) else -1))
-        for prev_name, part_name, next_naem in sliding_window(parts):
-            part = contig_map[part_name]
-
+        for part in parts:
             if part.name in repeatset:
                 continue
 
