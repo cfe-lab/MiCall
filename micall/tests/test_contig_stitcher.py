@@ -204,6 +204,41 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
     assert len(visualizer().elements) > len(contigs)
 
 
+def test_correct_processing_of_two_overlapping_and_one_separate_contig_2(exact_aligner, visualizer):
+    # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
+
+    ref_seq = 'Z' * 5 + 'A' * 100 + 'C' * 100 + 'T' * 100 + 'Y' * 5
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='N' * 5 + 'A' * 50 + 'C' * 20 + 'H' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='M' * 5 + 'C' * 50 + 'T' * 20 + 'J' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='c',
+                        seq='Q' * 5 + 'C' * 20 + 'T' * 50 + 'I' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[0].seq.rstrip('H') + 'C' * 30 + contigs[2].seq.lstrip('Q')
+    assert len(visualizer().elements) > len(contigs)
+
+
 def test_stitching_of_all_overlapping_contigs_into_one_sequence(exact_aligner, visualizer):
     # Scenario: All contigs have some overlapping parts, resulting in one continuous sequence after stitching.
 
@@ -602,14 +637,14 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner, visualizer):
 
     contigs = [
         GenotypedContig(name='a',
-                        seq='T' * 10 + 'C' * 20 + 'A' * 10,
+                        seq='Z' * 5 + 'C' * 20 + 'T' * 5 + 'U' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
                         match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
-                        seq='C' * 20 + 'A' * 10 + 'G' * 10,
+                        seq='M' * 5 + 'C' * 5 + 'T' * 10 + 'G' * 10,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -619,13 +654,8 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner, visualizer):
 
     results = list(stitch_contigs(contigs))
     assert len(results) == 1
-    for result in results:
-        assert any(result.seq in contig.seq for contig in contigs)
-
+    assert results[0].seq == 'Z' * 5 + 'C' * 20 + 'T' * 10 + 'G' * 10
     assert len(visualizer().elements) > len(contigs)
-
-    assert { contig.seq for contig in contigs } \
-        != { contig.lstrip().rstrip().seq for contig in results }
 
 
 def test_partial_align_consensus_multiple_sequences(exact_aligner, visualizer):
@@ -745,7 +775,7 @@ def test_gap_around_small_insertion(exact_aligner, visualizer):
                         match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
-                        seq='B' * 20,
+                        seq='Q' * 5 + 'B' * 20 + 'J' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -755,6 +785,7 @@ def test_gap_around_small_insertion(exact_aligner, visualizer):
 
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
+    assert results[0].seq == "P" * 5 + "A" * 10 + "B" * 20 + "C" * 10 + "Z" * 5
     assert len(visualizer().elements) > len(contigs)
 
 
@@ -772,7 +803,7 @@ def test_gap_around_big_insertion(exact_aligner, visualizer):
                         match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
-                        seq='B' * 20,
+                        seq='Q' * 5 + 'B' * 20 + 'J' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -782,6 +813,78 @@ def test_gap_around_big_insertion(exact_aligner, visualizer):
 
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
+    assert results[0].seq == "P" * 5 + "A" * 10 + "B" * 20 + "C" * 10 + "Z" * 5
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_stitch_with_insertion(exact_aligner, visualizer):
+    # Scenario: Contig is aligned with multiple hits, and the borders are correctly handled.
+
+    ref_seq='X' * 5 + 'A' * 10 + 'B' * 20 + 'C' * 10 + 'M' * 5
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='P' * 5 + 'A' * 10 + 'D' * 6 + 'C' * 10 + 'Z' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == "PPPPPAAAAAAAAAADDDDDDCCCCCCCCCCZZZZZ"
+    assert len(visualizer().elements) > len(contigs)
+
+
+
+def test_stitch_cross_alignment(exact_aligner, visualizer):
+    # Scenario: Single contig is cross-aligned.
+
+    ref_seq='X' * 5 + 'A' * 10 + 'B' * 20 + 'C' * 10 + 'M' * 5
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='P' * 5 + 'C' * 10 + 'D' * 6 + 'A' * 10 + 'Z' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == "AAAAAAAAAACCCCCCCCCC"
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_cross_alignment_around_small_insertion(exact_aligner, visualizer):
+    # Scenario: Single contig is cross-aligned, then combined with another contig that is between its aligned parts.
+
+    ref_seq='X' * 5 + 'A' * 10 + 'B' * 20 + 'C' * 10 + 'M' * 5
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='P' * 5 + 'C' * 10 + 'D' * 6 + 'A' * 10 + 'Z' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        GenotypedContig(name='b',
+                        seq='Q' * 5 + 'B' * 20 + 'J' * 5,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == "A" * 10 + "B" * 20 + "C" * 10
     assert len(visualizer().elements) > len(contigs)
 
 
