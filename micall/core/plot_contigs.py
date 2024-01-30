@@ -927,14 +927,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             a_r_ei = f_r_ei
         return (a_r_st, a_r_ei, f_r_st, f_r_ei)
 
-    def get_tracks(repeatset: Set[str], group_ref: str, contig_name: str) -> Iterable[Track]:
+    def get_tracks(group_ref: str, contig_name: str) -> Iterable[Track]:
         parts_names = final_children_mapping[contig_name]
         parts = [contig_map[name] for name in parts_names]
         parts = list(sorted(parts, key=lambda part: part.alignment.r_st if isinstance(part, AlignedContig) else -1))
         for prev_part, part, next_part in sliding_window(parts):
-            if part.name in repeatset:
-                continue
-
             if part.name in bad_contigs:
                 continue
 
@@ -944,7 +941,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if part.group_ref != group_ref:
                 continue
 
-            repeatset.add(part.name)
             indexes = name_map[part.name]
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
 
@@ -956,13 +952,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
             yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{indexes}")
 
-    def get_arrows(repeatset: Set[str], group_ref: str, contig_name: str, labels: bool) -> Iterable[Arrow]:
+    def get_arrows(group_ref: str, contig_name: str, labels: bool) -> Iterable[Arrow]:
         parts = final_children_mapping[contig_name]
         for part_name in parts:
             part = contig_map[part_name]
-
-            if part.name in repeatset:
-                continue
 
             if part.name in bad_contigs:
                 continue
@@ -973,7 +966,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if part.group_ref != group_ref:
                 continue
 
-            repeatset.add(part.name)
             indexes = name_map[part.name] if labels else None
             height = 20 if labels else 1
             elevation = 1 if labels else -20
@@ -984,9 +976,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                         label=indexes)
 
     def get_all_arrows(group_ref: str, labels: bool) -> Iterable[Arrow]:
-        repeatset: Set[str] = set()
         for parent_name in sorted_roots:
-            yield from get_arrows(repeatset, group_ref, parent_name, labels)
+            yield from get_arrows(group_ref, parent_name, labels)
 
     ################
     # Drawing part #
@@ -1101,13 +1092,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         # Contigs #
         ###########
 
-        repeatset1: Set[str] = set()
-        repeatset2: Set[str] = set()
         for parent_name in sorted_roots:
-            arrows = list(get_arrows(repeatset1, group_ref, parent_name, labels=False))
+            arrows = list(get_arrows(group_ref, parent_name, labels=False))
             if arrows:
                 figure.add(ArrowGroup(arrows))
-            parts = list(get_tracks(repeatset2, group_ref, parent_name))
+            parts = list(get_tracks(group_ref, parent_name))
             if parts:
                 figure.add(Multitrack(parts))
 
