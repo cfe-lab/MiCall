@@ -8,6 +8,7 @@ from itertools import groupby
 from math import log10, copysign
 from operator import itemgetter, attrgetter
 from pathlib import Path
+import dataclasses
 import logging
 
 import yaml
@@ -406,7 +407,7 @@ def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage_svg
 
 def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     complete_contig_map: Dict[str, GenotypedContig] = {}
-    name_mappings: Dict[str, str] = {}
+    name_map: Dict[str, str] = {}
     complete_parent_graph: Dict[str, List[str]] = {}
     alive_set: Set[str] = set()
     morphism_graph: Dict[str, List[str]] = {}
@@ -415,6 +416,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     discarded: List[str] = []
     unknown: List[str] = []
     anomaly: List[str] = []
+    unaligned: List[str] = []
     overlaps_list: List[str] = []
     overlap_leftparent_map: Dict[str, str] = {}
     overlap_rightparent_map: Dict[str, str] = {}
@@ -424,8 +426,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     combine_left_edge: Dict[str, str] = {}
     combine_right_edge: Dict[str, str] = {}
     children_join_points: List[str] = []
-    query_position_map: Dict[str, int] = {}
+    query_position_map: Dict[str, Tuple[int, int]] = {}
     initial_alignments: Dict[str, List[CigarHit]] = {}
+    lstrip_map: Dict[str, str] = {}
+    rstrip_map: Dict[str, str] = {}
 
     def remove_intermediate_edges(graph):
         ret = {}
@@ -512,6 +516,22 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def symmetric_closure(graph):
         return graph_sum(graph, inverse_graph(graph))
 
+    def hits_to_insertions(contig: GenotypedContig, hits: List[CigarHit]):
+        for hit in hits:
+            # yield CigarHit.from_default_alignment(q_st=0, q_ei=hit.q_st - 1, r_st=hit.r_st, r_ei=hit.r_st - 1)
+            yield from hit.insertions()
+            # yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1, r_st=hit.r_ei + 1, r_ei=hit.r_ei)
+
+    def record_unaligned_parts(contig: GenotypedContig, connected: List[CigarHit]):
+        all_insertions = list(hits_to_insertions(contig, connected))
+        nonempty_insertions = [gap for gap in all_insertions if gap.query_length > 0]
+        for insertion in nonempty_insertions:
+            query = dataclasses.replace(contig, name=f"u{len(complete_contig_map)}", seq='A' * insertion.query_length)
+            fake_aligned = AlignedContig.make(query=query, alignment=insertion, strand="forward")
+            record_contig(fake_aligned, [contig])
+            record_bad_contig(fake_aligned, unaligned)
+            record_alive(fake_aligned)
+
     def record_contig(contig: GenotypedContig, parents: List[GenotypedContig]):
         complete_contig_map[contig.name] = contig
         if [contig.name] != [parent.name for parent in parents]:
@@ -528,6 +548,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def record_bad_contig(contig: GenotypedContig, lst: List[str]):
         complete_contig_map[contig.name] = contig
         lst.append(contig.name)
+
+    def record_lstrip(result: GenotypedContig, original: GenotypedContig):
+        lstrip_map[result.name] = original.name
+
+    def record_rstrip(result: GenotypedContig, original: GenotypedContig):
+        rstrip_map[result.name] = original.name
 
     for event in logs:
         if isinstance(event, events.FinalCombine):
@@ -557,12 +583,16 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             record_contig(event.result, [event.contig])
             record_alive(event.result)
         elif isinstance(event, events.HitNumber):
-            initial_alignments[event.contig.name] = event.connected
+            record_unaligned_parts(event.contig, event.connected)
             record_alive(event.contig)
         elif isinstance(event, events.Munge):
             record_contig(event.result, [event.left, event.right])
-        elif isinstance(event, (events.LStrip, events.RStrip)):
+        elif isinstance(event, events.LStrip):
             record_contig(event.result, [event.original])
+            record_lstrip(event.result, event.original)
+        elif isinstance(event, events.RStrip):
+            record_contig(event.result, [event.original])
+            record_rstrip(event.result, event.original)
         elif isinstance(event, events.Overlap):
             overlaps_list.append(event.left_overlap.name)
             overlaps_list.append(event.right_overlap.name)
@@ -602,9 +632,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     # Close alive set by parents
     def extend_alive(contig_name):
-        if contig_name not in alive_set:
-            alive_set.add(contig_name)
-
+        alive_set.add(contig_name)
         for parent_name in nodup_parent_graph.get(contig_name, []):
             extend_alive(parent_name)
 
@@ -617,7 +645,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             parent_graph[contig_name] = nodup_parent_graph[contig_name]
 
     contig_map: Dict[str, GenotypedContig] = {k: v for k, v in complete_contig_map.items() if k in alive_set}
-    bad_contigs = anomaly + discarded + unknown
+    bad_contigs = anomaly + discarded + unknown + unaligned
     group_refs = {contig.group_ref: len(contig.ref_seq) for contig in contig_map.values() if contig.ref_seq}
     children_graph = inverse_graph(parent_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
@@ -643,42 +671,35 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         if len(parents) > 1:
             children_join_points.append(contig_name)
 
-    def hits_to_insertions(hits: List[CigarHit]):
-        for hit in hits:
-            yield CigarHit.from_default_alignment(q_st=0, q_ei=hit.q_st - 1, r_st=hit.r_st, r_ei=hit.r_st - 1)
-            yield from hit.insertions()
-            yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1, r_st=hit.r_ei + 1, r_ei=hit.r_ei)
-
-    unaligned_map: Dict[str, List[CigarHit]] = {}
-    for contig_name, hits in initial_alignments.items():
+    def set_query_position(contig_name: str) -> None:
         contig = contig_map[contig_name]
-        all_insertions = list(hits_to_insertions(hits))
-        nonempty_insertions = [gap for gap in all_insertions if gap.query_length > 0]
-        unaligned_map[contig_name] = nonempty_insertions
+        children_names = children_graph.get(contig.name, [])
 
-    def set_query_position(contig: Contig):
-        if contig.name in query_position_map:
-            return
+        if contig_name not in query_position_map:
+            if isinstance(contig, AlignedContig):
+                query_position_map[contig_name] = (contig.alignment.q_st, contig.alignment.q_ei)
 
-        if not isinstance(contig, AlignedContig):
-            return
+        children = [contig_map[name] for name in children_names]
+        for child in children:
+            strip_parent = lstrip_map.get(child.name, None)
+            if strip_parent is None:
+                if contig_name in query_position_map:
+                    query_position_map[child.name] = query_position_map[contig_name]
+            elif isinstance(child, AlignedContig):
+                (original_q_st, original_q_ei) = query_position_map[strip_parent]
+                (current_q_st, current_q_ei) = (child.alignment.q_st, child.alignment.q_ei)
+                original_query_len = len(contig_map[strip_parent].seq)
+                current_query_len = len(child.seq)
+                offset = abs(original_query_len - current_query_len)
+                new_q_st = offset + current_q_st
+                new_q_ei = offset + current_q_ei
+                query_position_map[child.name] = (new_q_st, new_q_ei)
 
-        parent_names = parent_graph.get(contig.name, [])
-        parents = [contig_map[name] for name in parent_names]
-        parents = [contig for contig in parents if isinstance(contig, AlignedContig)]
+        for child_name in children_names:
+            set_query_position(child_name)
 
-        if parents:
-            for parent in parents:
-                if parent.name not in query_position_map:
-                    set_query_position(parent)
-
-            average = round(sum(query_position_map[parent_name] for parent_name in parent_names) / len(parent_names))
-            query_position_map[contig.name] = average
-        else:
-            query_position_map[contig.name] = (contig.alignment.q_st + contig.alignment.q_ei) // 2
-
-    for contig in contig_map.values():
-        set_query_position(contig)
+    for contig_name in sorted_roots:
+        set_query_position(contig_name)
 
     def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map):
         for parent in edge_table:
@@ -697,15 +718,16 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map)): pass
     while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map)): pass
 
+    final_nodes: List[str] = []
     final_parts: Dict[str, bool] = {}
-    pre_join_points = []
+    final_children_mapping: Dict[str, List[str]] = {}
 
     def add_join_parents(join_name):
         if join_name in children_join_points:
             for contig_name in parent_graph.get(join_name, [join_name]):
                 add_join_parents(contig_name)
         else:
-            pre_join_points.append(join_name)
+            final_nodes.append(join_name)
 
     for join_name in children_join_points + sorted_sinks:
         add_join_parents(join_name)
@@ -719,11 +741,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 return True
         return False
 
-    for contig_name in pre_join_points[:]:
-        if is_ancestor(contig_name, pre_join_points):
-            pre_join_points.remove(contig_name)
+    for contig_name in final_nodes[:]:
+        if is_ancestor(contig_name, final_nodes):
+            final_nodes.remove(contig_name)
 
-    for contig_name in pre_join_points:
+    for contig_name in final_nodes:
         if any(contig_name in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
             continue
 
@@ -735,7 +757,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     for contig_name in bad_contigs:
         final_parts[contig_name] = True
 
-    final_children_mapping: Dict[str, List[str]] = {}
     for parent_name in sorted_roots:
         children = []
         for final_contig in final_parts:
@@ -753,24 +774,45 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         else:
             max_position = max(max_position, len(contig.seq) + 3 * position_offset)
 
-    name_mappings = {}
+    def overlaps(self, other) -> bool:
+        def intervals_overlap(x, y):
+            return x[0] <= y[1] and x[1] >= y[0]
+
+        return intervals_overlap((self.alignment.q_st, self.alignment.q_ei),
+                                 (other.alignment.q_st, other.alignment.q_ei))
+
+    name_map = {}
     for i, (parent, children) in enumerate(sorted(final_children_mapping.items(), key=lambda p: p[0])):
-        name_mappings[parent] = f"{i + 1}"
-        children = list(sorted(children, key=lambda name: query_position_map.get(name, -1)))
-        for k, child in enumerate(children):
-            if len(children) > 1:
-                name_mappings[child] = f"{i + 1}.{k + 1}"
+        name_map[parent] = f"{i + 1}"
+
+        unaligned_names = [name for name in children if name in unaligned]
+        aligned_names = [name for name in children if name not in unaligned]
+
+        todo_names = aligned_names
+        for contig_name in unaligned_names:
+            all_other = [contig_map[name] for name in aligned_names]
+            aligned_other = [contig for contig in all_other if isinstance(contig, AlignedContig)]
+            current = contig_map[contig_name]
+            if isinstance(current, AlignedContig) and \
+               not any(overlaps(current, other) for other in aligned_other):
+                todo_names.append(contig_name)
+                discarded.append(contig_name)
+
+        todo_names = list(sorted(todo_names, key=lambda name: query_position_map.get(name, (-1, -1))))
+        for k, child_name in enumerate(todo_names):
+            if len(todo_names) > 1:
+                name_map[child_name] = f"{i + 1}.{k + 1}"
             else:
-                name_mappings[child] = f"{i + 1}"
+                name_map[child_name] = f"{i + 1}"
 
-        for child in bad_contigs:
-            if child not in children:
-                if child in transitive_parent_graph \
-                   and parent in transitive_parent_graph[child]:
+        for bad_name in bad_contigs:
+            if bad_name not in children:
+                if bad_name in transitive_parent_graph \
+                   and parent in transitive_parent_graph[bad_name]:
                     k += 1
-                    name_mappings[child] = f"{i + 1}.{k + 1}"
+                    name_map[bad_name] = f"{i + 1}.{k + 1}"
 
-    for contig_name, name in name_mappings.items():
+    for contig_name, name in name_map.items():
         logger.debug(f"Contig name {contig_name!r} is displayed as {name!r}.")
 
     def get_neighbours(part, lookup):
@@ -831,19 +873,17 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if prev_part is not None and prev_part.alignment.r_ei < part.alignment.r_st and prev_part:
                 r_st = prev_part.alignment.r_st
             else:
-                start_delta = -1 * part.alignment.q_st
-                r_st = part.alignment.r_st + start_delta
+                r_st = part.alignment.r_st
 
             if next_part is not None and next_part.alignment.r_st > part.alignment.r_ei and next_part:
                 r_ei = next_part.alignment.r_ei
             else:
-                end_delta = len(part.seq) - 1 - part.alignment.q_ei
-                r_ei = part.alignment.r_ei + end_delta
+                r_ei = part.alignment.r_ei
 
             full_size_map[part.name] = (r_st, r_ei)
 
     def get_contig_coordinates(contig: GenotypedContig) -> Tuple[int, int, int, int]:
-        if isinstance(contig, AlignedContig):
+        if isinstance(contig, AlignedContig) and contig.alignment.ref_length > 0:
             r_st = contig.alignment.r_st
             r_ei = contig.alignment.r_ei
             if contig.name in aligned_size_map:
@@ -867,7 +907,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         parts_names = final_children_mapping[contig_name]
         parts = [contig_map[name] for name in parts_names]
         parts = list(sorted(parts, key=lambda part: part.alignment.r_st if isinstance(part, AlignedContig) else -1))
-        for part in parts:
+        for prev_part, part, next_part in sliding_window(parts):
             if part.name in repeatset:
                 continue
 
@@ -881,8 +921,14 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 continue
 
             repeatset.add(part.name)
-            indexes = name_mappings[part.name]
+            indexes = name_map[part.name]
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
+
+            if a_r_st < f_r_st:
+                yield Track(min(a_r_st, f_r_st) + position_offset, max(a_r_st, f_r_st) + position_offset, color="yellow")
+
+            if a_r_ei > f_r_ei:
+                yield Track(min(a_r_ei, f_r_ei) + position_offset, max(a_r_ei, f_r_ei) + position_offset, color="yellow")
 
             yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{indexes}")
 
@@ -904,7 +950,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 continue
 
             repeatset.add(part.name)
-            indexes = name_mappings[part.name] if labels else None
+            indexes = name_map[part.name] if labels else None
             height = 20 if labels else 1
             elevation = 1 if labels else -20
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
@@ -1015,9 +1061,13 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
                     contig = contig_map[contig_name]
                     (r_st, r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
-                    name = name_mappings.get(contig_name, contig_name)
-                    figure.add(Arrow(r_st + position_offset, r_ei + position_offset, elevation=-20, h=1))
-                    figure.add(Track(f_r_st + position_offset, f_r_ei + position_offset, label=name))
+                    name = name_map.get(contig_name, contig_name)
+                    if isinstance(contig, AlignedContig) and contig.name not in unaligned:
+                        colour = 'lightgrey'
+                        figure.add(Arrow(r_st + position_offset, r_ei + position_offset, elevation=-20, h=1))
+                    else:
+                        colour = "yellow"
+                    figure.add(Track(f_r_st + position_offset, f_r_ei + position_offset, label=name, color=colour))
 
         #############
         # Anomalies #
@@ -1044,7 +1094,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     else:
                         colour = "yellow"
 
-                    name = name_mappings.get(contig_name, contig_name)
+                    name = name_map.get(contig_name, contig_name)
                     figure.add(Track(a_r_st + position_offset, a_r_ei + position_offset, color=colour, label=name))
 
     ###########
@@ -1065,7 +1115,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 r_st = 0
                 r_ei = len(contig.seq)
                 colour = "yellow"
-                name = name_mappings.get(contig_name, contig_name)
+                name = name_map.get(contig_name, contig_name)
                 figure.add(Track(r_st + position_offset, r_ei + position_offset, color=colour, label=name))
 
     if not figure.elements:

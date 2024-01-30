@@ -25,7 +25,13 @@
 </g>
 <g transform="translate(0 -10.0)">
 <g transform="translate(0.0 0)">
-<rect x="428.5140562248996" y="-10" width="151.92771084337346" height="10" fill="lightgrey" stroke="lightgrey" />
+<rect x="428.5140562248996" y="-10" width="38.95582329317267" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="541.4859437751004" y="-10" width="38.95582329317267" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="467.4698795180723" y="-10" width="74.01606425702812" height="10" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(504.47791164658634 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
 </g>
