@@ -794,14 +794,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
         final_children_mapping[parent_name] = children
 
-    min_position, max_position = 1, 1
-    position_offset = 100
-    for _, contig in contig_map.items():
-        if isinstance(contig, GenotypedContig) and contig.ref_seq is not None:
-            max_position = max(max_position, len(contig.ref_seq) + 3 * position_offset)
-        else:
-            max_position = max(max_position, len(contig.seq) + 3 * position_offset)
-
     def overlaps(self, other) -> bool:
         def intervals_overlap(x, y):
             return x[0] <= y[1] and x[1] >= y[0]
@@ -978,6 +970,18 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def get_all_arrows(group_ref: str, labels: bool) -> Iterable[Arrow]:
         for parent_name in sorted_roots:
             yield from get_arrows(group_ref, parent_name, labels)
+
+    min_position, max_position = 0, 1
+    for contig_name in final_parts:
+        contig = contig_map[contig_name]
+        if isinstance(contig, AlignedContig):
+            positions = get_contig_coordinates(contig)
+            max_position = max(max_position, max(positions))
+            min_position = min(min_position, min(positions))
+        else:
+            max_position = max(max_position, len(contig.seq))
+
+    position_offset = -1 * min_position + 100
 
     ################
     # Drawing part #
