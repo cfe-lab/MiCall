@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="970.0" height="86.0" viewBox="0.0 -86.0 970.0 86.0">
+     width="970.0" height="84.5" viewBox="0.0 -84.5 970.0 84.5">
 <defs>
 </defs>
+<g transform="translate(0 -69.5)">
+<g transform="translate(0.0 0)">
+<rect x="389.55823293172693" y="-10" width="233.73493975903614" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="428.5140562248996" y="-10" width="151.92771084337346" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="467.4698795180723" y="-10" width="74.01606425702812" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
 <g transform="translate(0.0 -71.0)">
-<rect x="389.55823293172693" y="-10" width="233.73493975903614" height="10" fill="lightgrey" stroke="lightgrey" />
+<rect x="506.425702811245" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
 <g transform="translate(506.425702811245 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
 </g>

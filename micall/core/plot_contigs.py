@@ -789,7 +789,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         children = []
         for final_contig in final_parts:
             if final_contig == parent_name or \
-               parent_name in reduced_parent_graph.get(final_contig, []):
+               parent_name in reduced_parent_graph.get(final_contig, [final_contig]):
                 children.append(final_contig)
 
         final_children_mapping[parent_name] = children
@@ -1042,10 +1042,52 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                                            color=landmark_colour))
                 figure.add(Multitrack(subtracks))
 
-        # Drawing the reference sequence.
+        #############
+        # Reference #
+        #############
+
         r_st = 0
         r_ei = group_refs[group_ref]
-        figure.add(Track(r_st + position_offset, r_ei + position_offset, label=f"{group_ref}"))
+        reference_tracks = []
+        reference_min = r_st + position_offset
+        reference_max = r_ei + position_offset
+        reference_tracks.append(Track(r_st + position_offset, r_ei + position_offset, color="red"))
+
+        for contig_name in final_parts:
+            contig = contig_map[contig_name]
+            if contig.group_ref != group_ref:
+                continue
+
+            if not isinstance(contig, AlignedContig):
+                continue
+
+            if contig_name in bad_contigs:
+                continue
+
+            (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
+            reference_tracks.append(Track(a_r_st + position_offset, a_r_ei + position_offset, color="yellow"))
+            reference_min = min(a_r_st + position_offset, reference_min)
+            reference_max = max(a_r_ei + position_offset, reference_max)
+
+        for contig_name in final_parts:
+            contig = contig_map[contig_name]
+            if contig.group_ref != group_ref:
+                continue
+
+            if not isinstance(contig, AlignedContig):
+                continue
+
+            if contig_name in bad_contigs:
+                continue
+
+            (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
+            reference_tracks.append(Track(f_r_st + position_offset, f_r_ei + position_offset, color="lightgray"))
+            reference_min = min(f_r_st + position_offset, reference_min)
+            reference_max = max(f_r_ei + position_offset, reference_max)
+
+        figure.add(Multitrack(reference_tracks))
+        midpoint = round((reference_max - reference_min) / 2 + reference_min)
+        figure.add(Track(midpoint, midpoint, label=group_ref, color="transparent", h=-11.5))
 
         ##########
         # Arrows #

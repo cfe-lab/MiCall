@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="970.0" height="197.0" viewBox="0.0 -197.0 970.0 197.0">
+     width="970.0" height="195.5" viewBox="0.0 -195.5 970.0 195.5">
 <defs>
 </defs>
-<g transform="translate(0 -182.0)">
+<g transform="translate(0 -180.5)">
 <g transform="translate(0.0 0)">
 <rect x="9.97759445972095" y="-10" width="62.5328444851818" height="10" fill="darkgrey" stroke="darkgrey" />
 <g transform="translate(41.244016702311846 0)">
@@ -35,7 +35,7 @@
 </g>
 </g>
 </g>
-<g transform="translate(0 -162.0)">
+<g transform="translate(0 -160.5)">
 <g transform="translate(0.0 0)">
 <rect x="585.9120073327223" y="-10" width="21.53579794276402" height="10" fill="plum" stroke="plum" />
 <g transform="translate(596.6799063041043 0)">
@@ -61,7 +61,7 @@
 </g>
 </g>
 </g>
-<g transform="translate(0 -142.0)">
+<g transform="translate(0 -140.5)">
 <g transform="translate(0.0 0)">
 <rect x="215.85191974742847" y="-10" width="297.45086057643346" height="10" fill="orange" stroke="orange" />
 <g transform="translate(364.5773500356452 0)">
@@ -87,7 +87,7 @@
 </g>
 </g>
 </g>
-<g transform="translate(0 -122.0)">
+<g transform="translate(0 -120.5)">
 <g transform="translate(0.0 0)">
 <rect x="232.44831449231083" y="-10" width="29.241266931459393" height="10" fill="orange" stroke="orange" />
 <g transform="translate(247.06894795804052 0)">
@@ -119,9 +119,26 @@
 </g>
 </g>
 </g>
+<g transform="translate(0 -100.5)">
+<g transform="translate(0.0 0)">
+<rect x="9.878806395763316" y="-10" width="960.1211936042367" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="276.60657908137284" y="-10" width="31.118240146654443" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="307.82360729198496" y="-10" width="37.835828495773455" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="276.60657908137284" y="-10" width="39.416437519095666" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="299.3278337916285" y="-10" width="46.331601996129905" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
 <g transform="translate(0.0 -102.0)">
-<rect x="9.878806395763316" y="-10" width="960.1211936042367" height="10" fill="lightgrey" stroke="lightgrey" />
-<g transform="translate(489.93940319788163 0)">
+<rect x="489.9887972298605" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(489.9887972298605 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">HIV1-B-FR-K03455-seed</text>
 </g>
 </g>

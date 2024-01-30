@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="970.0" height="117.0" viewBox="0.0 -117.0 970.0 117.0">
+     width="970.0" height="115.5" viewBox="0.0 -115.5 970.0 115.5">
 <defs>
 </defs>
+<g transform="translate(0 -100.5)">
+<g transform="translate(0.0 0)">
+<rect x="374.51737451737455" y="-10" width="224.71042471042466" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="430.6949806949807" y="-10" width="93.62934362934368" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="528.0694980694981" y="-10" width="67.41312741312743" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="449.42084942084944" y="-10" width="89.88416988416986" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="505.5984555984556" y="-10" width="52.43243243243245" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
 <g transform="translate(0.0 -102.0)">
-<rect x="374.51737451737455" y="-10" width="224.71042471042466" height="10" fill="lightgrey" stroke="lightgrey" />
+<rect x="486.8725868725869" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
 <g transform="translate(486.8725868725869 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
 </g>
