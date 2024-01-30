@@ -427,9 +427,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     combine_right_edge: Dict[str, str] = {}
     children_join_points: List[str] = []
     query_position_map: Dict[str, Tuple[int, int]] = {}
-    initial_alignments: Dict[str, List[CigarHit]] = {}
     lstrip_map: Dict[str, str] = {}
     rstrip_map: Dict[str, str] = {}
+    strip_set: Set[Tuple[str, int, int]] = set()
 
     def remove_intermediate_edges(graph):
         ret = {}
@@ -516,18 +516,31 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def symmetric_closure(graph):
         return graph_sum(graph, inverse_graph(graph))
 
-    def record_unaligned_parts(result: AlignedContig, original: AlignedContig):
-        length = abs(result.alignment.query_length - original.alignment.query_length)
-        if length > 0:
-            q_st = original.alignment.q_st
-            r_st = original.alignment.r_st
-            insertion = CigarHit.from_default_alignment(q_st=q_st, q_ei=q_st + length - 1, r_st=r_st, r_ei=r_st-1)
-            query = dataclasses.replace(original, name=f"u{len(complete_contig_map)}", seq='A' * insertion.query_length)
-            fake_aligned = AlignedContig.make(query=query, alignment=insertion, strand=original.strand)
+    def record_unaligned_parts(original: AlignedContig, q_st: int, r_st: int, length: int):
+        key = (original.seq, q_st, q_st + length)
+        if length > 0 and key not in strip_set:
+            strip_set.add(key)
+            alignment = CigarHit.from_default_alignment(q_st=q_st, q_ei=q_st + length - 1, r_st=r_st, r_ei=r_st-1)
+            seq = 'A' * alignment.query_length
+            query = dataclasses.replace(original, name=f"u{len(complete_contig_map)}", seq=seq)
+            fake_aligned = AlignedContig.make(query, alignment, strand=original.strand)
             record_contig(fake_aligned, [original])
             record_bad_contig(fake_aligned, unaligned)
             record_alive(fake_aligned)
             return fake_aligned
+        return None
+
+    def record_regular_strip(result: AlignedContig, original: AlignedContig):
+        length = abs(result.alignment.query_length - original.alignment.query_length)
+        q_st = original.alignment.q_st
+        r_st = original.alignment.r_st
+        return record_unaligned_parts(original, q_st=q_st, r_st=r_st, length=length)
+
+    def record_initial_strip(original: AlignedContig, q_st: int, q_ei: int):
+        length = q_ei - q_st + 1
+        contig = record_unaligned_parts(original, q_st, original.alignment.r_st, length)
+        if contig:
+            query_position_map[contig.name] = (q_st, q_ei)
 
     def record_contig(contig: GenotypedContig, parents: List[GenotypedContig]):
         complete_contig_map[contig.name] = contig
@@ -546,17 +559,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         complete_contig_map[contig.name] = contig
         lst.append(contig.name)
 
-    def record_lstrip(result: GenotypedContig, original: GenotypedContig):
+    def record_lstrip(result: AlignedContig, original: AlignedContig):
         lstrip_map[result.name] = original.name
-        unaligned = record_unaligned_parts(result, original)
-        assert original.name != result.name
+        unaligned = record_regular_strip(result, original)
         if unaligned:
             lstrip_map[unaligned.name] = result.name
 
-    def record_rstrip(result: GenotypedContig, original: GenotypedContig):
+    def record_rstrip(result: AlignedContig, original: AlignedContig):
         rstrip_map[result.name] = original.name
-        unaligned = record_unaligned_parts(result, original)
-        assert original.name != result.name
+        unaligned = record_regular_strip(result, original)
         if unaligned:
             rstrip_map[unaligned.name] = result.name
 
@@ -597,6 +608,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         elif isinstance(event, events.RStrip):
             record_contig(event.result, [event.original])
             record_rstrip(event.result, event.original)
+        elif isinstance(event, events.InitialStrip):
+            record_initial_strip(event.contig, event.q_st, event.q_ei)
         elif isinstance(event, events.Overlap):
             overlaps_list.append(event.left_overlap.name)
             overlaps_list.append(event.right_overlap.name)
@@ -680,11 +693,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         children_names = children_graph.get(contig.name, [])
 
         def copy_from_parent(contig: AlignedContig, parent_name: str) -> None:
-            parent = contig_map[parent_name]
             if parent_name in query_position_map:
                 (original_q_st, original_q_ei) = query_position_map[parent_name]
                 (current_q_st, current_q_ei) = (contig.alignment.q_st, contig.alignment.q_ei)
-                original_query_len = abs(original_q_st - original_q_ei)
                 current_query_len = abs(current_q_st - current_q_ei)
 
                 if contig_name in lstrip_map:

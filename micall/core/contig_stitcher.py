@@ -287,11 +287,16 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
     sorted_by_query = sorted(contigs, key=lambda contig: get_indexes(contig.name))
     for prev_contig, contig, next_contig in sliding_window(sorted_by_query):
         if isinstance(contig, AlignedContig):
-            name = contig.name
-            if prev_contig is not None or is_out_of_order(name):
+            original = contig
+            start = prev_contig.alignment.q_ei + 1 if isinstance(prev_contig, AlignedContig) else 0
+            end = next_contig.alignment.q_st - 1 if isinstance(next_contig, AlignedContig) else len(contig.seq) - 1
+
+            if prev_contig is not None or is_out_of_order(original.name):
                 contig = contig.lstrip()
-            if next_contig is not None or is_out_of_order(name):
+                context.get().emit(events.InitialStrip(original, start, original.alignment.q_st - 1))
+            if next_contig is not None or is_out_of_order(original.name):
                 contig = contig.rstrip()
+                context.get().emit(events.InitialStrip(original, original.alignment.q_ei + 1, end))
 
         yield contig
 

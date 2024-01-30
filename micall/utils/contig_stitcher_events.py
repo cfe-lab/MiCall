@@ -4,74 +4,81 @@ from fractions import Fraction
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 
 
-@dataclass
+@dataclass(frozen=True)
 class Cut:
     original: 'Contig'
     left: 'Contig'
     right: 'Contig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class LStrip:
     original: 'AlignedContig'
     result: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class RStrip:
     original: 'AlignedContig'
     result: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Munge:
     left: 'AlignedContig'
     right: 'AlignedContig'
     result: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Combine:
     contigs: List['AlignedContig']
     result: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class NoRef:
     contig: 'GenotypedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class ZeroHits:
     contig: 'GenotypedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class StrandConflict:
     contig: 'GenotypedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class HitNumber:
     contig: 'GenotypedContig'
     initial: List[Tuple[CigarHit, Literal["reverse", "forward"]]]
     connected: List[CigarHit]
 
 
-@dataclass
+@dataclass(frozen=True)
 class ReverseComplement:
     contig: 'GenotypedContig'
     result: 'GenotypedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Hit:
     contig: 'GenotypedContig'
     part: 'AlignedContig'
     index: int
 
 
-@dataclass
+@dataclass(frozen=True)
+class InitialStrip:
+    contig: 'AlignedContig'
+    q_st: int
+    q_ei: int
+
+
+@dataclass(frozen=True)
 class StitchCut:
     left: 'AlignedContig'
     right: 'AlignedContig'
@@ -81,7 +88,7 @@ class StitchCut:
     right_remainder: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Overlap:
     left: 'AlignedContig'
     right: 'AlignedContig'
@@ -97,31 +104,31 @@ class Overlap:
     cut_point_scaled: Fraction
 
 
-@dataclass
+@dataclass(frozen=True)
 class NoOverlap:
     contig: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Stitch:
     left: 'AlignedContig'
     right: 'AlignedContig'
     result: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Drop:
     contig: 'AlignedContig'
     covering: List['AlignedContig']
 
 
-@dataclass
+@dataclass(frozen=True)
 class IgnoreGap:
     contig: 'AlignedContig'
     gap: 'CigarHit'
 
 
-@dataclass
+@dataclass(frozen=True)
 class SplitGap:
     contig: 'AlignedContig'
     gap: 'CigarHit'
@@ -129,12 +136,12 @@ class SplitGap:
     right: 'AlignedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Intro:
     contig: 'GenotypedContig'
 
 
-@dataclass
+@dataclass(frozen=True)
 class FinalCombine:
     contigs: List['AlignedContig']
     result: 'AlignedContig'
@@ -142,4 +149,4 @@ class FinalCombine:
 
 AlignmentEvent = Union[NoRef, ZeroHits, StrandConflict, HitNumber, ReverseComplement, Hit]
 ModifyEvent = Union[LStrip, RStrip]
-EventType = Union[Cut, ModifyEvent, Munge, Combine, AlignmentEvent, StitchCut, Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro, FinalCombine]
+EventType = Union[Cut, ModifyEvent, Munge, Combine, AlignmentEvent, InitialStrip, StitchCut, Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro, FinalCombine]
