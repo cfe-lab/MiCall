@@ -519,14 +519,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def record_unaligned_parts(result: AlignedContig, original: AlignedContig):
         length = abs(result.alignment.query_length - original.alignment.query_length)
         if length > 0:
-            q_st = max(result.alignment.q_st, original.alignment.q_st)
-            r_st = min(result.alignment.r_st, original.alignment.r_st)
+            q_st = original.alignment.q_st
+            r_st = original.alignment.r_st
             insertion = CigarHit.from_default_alignment(q_st=q_st, q_ei=q_st + length - 1, r_st=r_st, r_ei=r_st-1)
             query = dataclasses.replace(original, name=f"u{len(complete_contig_map)}", seq='A' * insertion.query_length)
-            fake_aligned = AlignedContig.make(query=query, alignment=insertion, strand="forward")
+            fake_aligned = AlignedContig.make(query=query, alignment=insertion, strand=original.strand)
             record_contig(fake_aligned, [original])
             record_bad_contig(fake_aligned, unaligned)
             record_alive(fake_aligned)
+            return fake_aligned
 
     def record_contig(contig: GenotypedContig, parents: List[GenotypedContig]):
         complete_contig_map[contig.name] = contig
@@ -547,9 +548,17 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     def record_lstrip(result: GenotypedContig, original: GenotypedContig):
         lstrip_map[result.name] = original.name
+        unaligned = record_unaligned_parts(result, original)
+        assert original.name != result.name
+        if unaligned:
+            lstrip_map[unaligned.name] = result.name
 
     def record_rstrip(result: GenotypedContig, original: GenotypedContig):
         rstrip_map[result.name] = original.name
+        unaligned = record_unaligned_parts(result, original)
+        assert original.name != result.name
+        if unaligned:
+            rstrip_map[unaligned.name] = result.name
 
     for event in logs:
         if isinstance(event, events.FinalCombine):
@@ -585,11 +594,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         elif isinstance(event, events.LStrip):
             record_contig(event.result, [event.original])
             record_lstrip(event.result, event.original)
-            record_unaligned_parts(event.result, event.original)
         elif isinstance(event, events.RStrip):
             record_contig(event.result, [event.original])
             record_rstrip(event.result, event.original)
-            record_unaligned_parts(event.result, event.original)
         elif isinstance(event, events.Overlap):
             overlaps_list.append(event.left_overlap.name)
             overlaps_list.append(event.right_overlap.name)
@@ -672,25 +679,38 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         contig = contig_map[contig_name]
         children_names = children_graph.get(contig.name, [])
 
+        def copy_from_parent(contig: AlignedContig, parent_name: str) -> None:
+            parent = contig_map[parent_name]
+            if parent_name in query_position_map:
+                (original_q_st, original_q_ei) = query_position_map[parent_name]
+                (current_q_st, current_q_ei) = (contig.alignment.q_st, contig.alignment.q_ei)
+                original_query_len = abs(original_q_st - original_q_ei)
+                current_query_len = abs(current_q_st - current_q_ei)
+
+                if contig_name in lstrip_map:
+                    if contig_name in unaligned:
+                        query_position_map[contig.name] = (original_q_st - current_query_len - 1, original_q_st - 1)
+                    else:
+                        query_position_map[contig.name] = (original_q_ei - current_query_len, original_q_ei)
+                elif contig_name in rstrip_map:
+                    if contig_name in unaligned:
+                        query_position_map[contig.name] = (original_q_ei + 1, original_q_ei + 1 + current_query_len)
+                    else:
+                        query_position_map[contig.name] = (original_q_st, original_q_st + current_query_len)
+                else:
+                    query_position_map[contig_name] = query_position_map[parent_name]
+
         if contig_name not in query_position_map:
             if isinstance(contig, AlignedContig):
-                query_position_map[contig_name] = (contig.alignment.q_st, contig.alignment.q_ei)
-
-        children = [contig_map[name] for name in children_names]
-        for child in children:
-            strip_parent = lstrip_map.get(child.name, None)
-            if strip_parent is None:
-                if contig_name in query_position_map:
-                    query_position_map[child.name] = query_position_map[contig_name]
-            elif isinstance(child, AlignedContig):
-                (original_q_st, original_q_ei) = query_position_map[strip_parent]
-                (current_q_st, current_q_ei) = (child.alignment.q_st, child.alignment.q_ei)
-                original_query_len = len(contig_map[strip_parent].seq)
-                current_query_len = len(child.seq)
-                offset = abs(original_query_len - current_query_len)
-                new_q_st = offset + current_q_st
-                new_q_ei = offset + current_q_ei
-                query_position_map[child.name] = (new_q_st, new_q_ei)
+                regular_parents_names = parent_graph.get(contig_name, [])
+                regular_parents_names = [name for name in regular_parents_names if name in query_position_map]
+                strip_parents_names = lstrip_map.get(contig_name, None) or rstrip_map.get(contig_name, None)
+                parents_names = (strip_parents_names and [strip_parents_names]) or regular_parents_names
+                if parents_names:
+                    for parent_name in parents_names:
+                        copy_from_parent(contig, parent_name)
+                else:
+                    query_position_map[contig_name] = (contig.alignment.q_st, contig.alignment.q_ei)
 
         for child_name in children_names:
             set_query_position(child_name)
