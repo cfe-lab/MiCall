@@ -516,19 +516,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def symmetric_closure(graph):
         return graph_sum(graph, inverse_graph(graph))
 
-    def hits_to_insertions(contig: GenotypedContig, hits: List[CigarHit]):
-        for hit in hits:
-            # yield CigarHit.from_default_alignment(q_st=0, q_ei=hit.q_st - 1, r_st=hit.r_st, r_ei=hit.r_st - 1)
-            yield from hit.insertions()
-            # yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1, r_st=hit.r_ei + 1, r_ei=hit.r_ei)
-
-    def record_unaligned_parts(contig: GenotypedContig, connected: List[CigarHit]):
-        all_insertions = list(hits_to_insertions(contig, connected))
-        nonempty_insertions = [gap for gap in all_insertions if gap.query_length > 0]
-        for insertion in nonempty_insertions:
-            query = dataclasses.replace(contig, name=f"u{len(complete_contig_map)}", seq='A' * insertion.query_length)
+    def record_unaligned_parts(result: AlignedContig, original: AlignedContig):
+        length = abs(result.alignment.query_length - original.alignment.query_length)
+        if length > 0:
+            q_st = max(result.alignment.q_st, original.alignment.q_st)
+            r_st = min(result.alignment.r_st, original.alignment.r_st)
+            insertion = CigarHit.from_default_alignment(q_st=q_st, q_ei=q_st + length - 1, r_st=r_st, r_ei=r_st-1)
+            query = dataclasses.replace(original, name=f"u{len(complete_contig_map)}", seq='A' * insertion.query_length)
             fake_aligned = AlignedContig.make(query=query, alignment=insertion, strand="forward")
-            record_contig(fake_aligned, [contig])
+            record_contig(fake_aligned, [original])
             record_bad_contig(fake_aligned, unaligned)
             record_alive(fake_aligned)
 
@@ -583,16 +579,17 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             record_contig(event.result, [event.contig])
             record_alive(event.result)
         elif isinstance(event, events.HitNumber):
-            record_unaligned_parts(event.contig, event.connected)
             record_alive(event.contig)
         elif isinstance(event, events.Munge):
             record_contig(event.result, [event.left, event.right])
         elif isinstance(event, events.LStrip):
             record_contig(event.result, [event.original])
             record_lstrip(event.result, event.original)
+            record_unaligned_parts(event.result, event.original)
         elif isinstance(event, events.RStrip):
             record_contig(event.result, [event.original])
             record_rstrip(event.result, event.original)
+            record_unaligned_parts(event.result, event.original)
         elif isinstance(event, events.Overlap):
             overlaps_list.append(event.left_overlap.name)
             overlaps_list.append(event.right_overlap.name)
@@ -790,12 +787,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
         todo_names = aligned_names
         for contig_name in unaligned_names:
-            all_other = [contig_map[name] for name in aligned_names]
-            aligned_other = [contig for contig in all_other if isinstance(contig, AlignedContig)]
-            current = contig_map[contig_name]
-            if isinstance(current, AlignedContig) and \
-               not any(overlaps(current, other) for other in aligned_other):
-                todo_names.append(contig_name)
+            todo_names.append(contig_name)
+            if contig_name not in discarded:
                 discarded.append(contig_name)
 
         todo_names = list(sorted(todo_names, key=lambda name: query_position_map.get(name, (-1, -1))))
