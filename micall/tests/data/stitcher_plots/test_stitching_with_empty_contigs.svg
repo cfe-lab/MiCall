@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="970.0" height="154.5" viewBox="0.0 -154.5 970.0 154.5">
+     width="969.9999999999999" height="154.5" viewBox="0.0 -154.5 969.9999999999999 154.5">
 <defs>
 </defs>
 <g transform="translate(0 -139.5)">
 <g transform="translate(0.0 0)">
-<rect x="324.41471571906357" y="-10" width="324.41471571906357" height="10" fill="red" stroke="red" />
+<rect x="23.542534935033096" y="-10" width="475.606766364305" height="10" fill="red" stroke="red" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="324.41471571906357" y="-10" width="321.17056856187287" height="10" fill="yellow" stroke="yellow" />
+<rect x="23.542534935033096" y="-10" width="470.85069870066195" height="10" fill="yellow" stroke="yellow" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="324.41471571906357" y="-10" width="321.17056856187287" height="10" fill="lightgray" stroke="lightgray" />
+<rect x="23.542534935033096" y="-10" width="470.85069870066195" height="10" fill="lightgray" stroke="lightgray" />
 </g>
 </g>
 <g transform="translate(0.0 -141.0)">
-<rect x="486.62207357859535" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
-<g transform="translate(486.62207357859535 0)">
+<rect x="261.58372150036774" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(261.58372150036774 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
 </g>
 </g>
 <g transform="translate(0 -111.0)">
 <g transform="translate(0.0 0)">
-<path d="M324.41471571906357,-20.0 L638.5852842809364,-20.0" stroke="black" />
-<circle cx="485.0" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
-<path d="M645.5852842809364,-20.0 L638.5852842809364,-23.5 L638.5852842809364,-16.5 L645.5852842809364,-20.0" fill="black" />
-<text x="485.0" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+<path d="M23.542534935033096,-20.0 L487.393233635695,-20.0" stroke="black" />
+<circle cx="258.96788428536405" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M494.393233635695,-20.0 L487.393233635695,-23.5 L487.393233635695,-16.5 L494.393233635695,-20.0" fill="black" />
+<text x="258.96788428536405" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
 </g>
 </g>
 <g transform="translate(0 -100.0)">
 <g transform="translate(0.0 0)">
-<path d="M324.41471571906357,9.5 L638.5852842809364,9.5" stroke="black" />
-<path d="M645.5852842809364,9.5 L638.5852842809364,6.0 L638.5852842809364,13.0 L645.5852842809364,9.5" fill="black" />
+<path d="M23.542534935033096,9.5 L487.393233635695,9.5" stroke="black" />
+<path d="M494.393233635695,9.5 L487.393233635695,6.0 L487.393233635695,13.0 L494.393233635695,9.5" fill="black" />
 </g>
 </g>
 <g transform="translate(0 -80.0)">
 <g transform="translate(0.0 0)">
-<rect x="324.41471571906357" y="-10" width="321.17056856187287" height="10" fill="lightgrey" stroke="lightgrey" />
-<g transform="translate(485.0 0)">
+<rect x="23.542534935033096" y="-10" width="470.85069870066195" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(258.96788428536405 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
 </g>
 </g>
 </g>
 <g transform="translate(0.0 -30.0)">
-<rect x="162.20735785953178" y="-40" width="0.0" height="40" fill="lightgrey" stroke="lightgrey" />
-<g transform="translate(162.20735785953178 0)">
+<rect x="11.771267467516548" y="-40" width="0.0" height="40" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(11.771267467516548 0)">
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">anomaly:</text>
 </g>
 </g>
 <g transform="translate(0.0 -10.0)">
-<rect x="324.41471571906357" y="-10" width="0.0" height="10" fill="yellow" stroke="yellow" />
-<g transform="translate(324.41471571906357 0)">
+<rect x="23.542534935033096" y="-10" width="0.0" height="10" fill="yellow" stroke="yellow" />
+<g transform="translate(23.542534935033096 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
 </g>
 </g>

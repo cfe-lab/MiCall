@@ -981,7 +981,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         else:
             max_position = max(max_position, len(contig.seq))
 
-    position_offset = -1 * min_position + 100
+    position_offset = -1 * min_position + 0.05 * (max_position - min_position)
 
     ################
     # Drawing part #
@@ -1178,7 +1178,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 figure.add(Track(r_st + position_offset, r_ei + position_offset, color=colour, label=name))
 
     if not figure.elements:
-        figure.add(Track(1, max_position, label='No contigs found.', color='none'))
+        figure.add(Track(0, max_position, label='.', color='none'))
+        figure.add(Track(0, max_position * 3 / 2, label='No contigs found.', color='none', h=-10))
     return figure
 
 
