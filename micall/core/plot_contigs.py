@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 from csv import DictReader
 from io import StringIO
 from itertools import groupby
-from math import log10, copysign
+from math import log10, copysign, floor
 from operator import itemgetter, attrgetter
 from pathlib import Path
 import dataclasses
@@ -971,7 +971,27 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         for parent_name in sorted_roots:
             yield from get_arrows(group_ref, parent_name, labels)
 
-    min_position, max_position = 0, 1
+    def make_ray() -> Element:
+        screen_size = (max_position - min_position) + position_offset / 2
+        single_size = 0.02 * screen_size
+
+        def generate_beams():
+            for i in range(floor(screen_size / single_size) + 1):
+                if i % 2 == 0:
+                    yield Track(i * single_size + min_position + position_offset / 2, (i + 1) * single_size + min_position + position_offset / 2, h=0.1, color="green")
+
+        return Multitrack(list(generate_beams()))
+
+    def add_section(title: str) -> None:
+        label = LeftLabel(text=title, x=0, font_size=12)
+        pos = position_offset / 2
+        figure.add(Arrow(pos, pos, h=0))
+        figure.add(make_ray())
+        figure.add(Arrow(pos, pos, h=0))
+        figure.add(Track(pos, pos, label=label, h=0))
+
+    min_position = 0
+    max_position = max(group_refs.values(), default=1)
     for contig_name in final_parts:
         contig = contig_map[contig_name]
         if isinstance(contig, AlignedContig):
@@ -1109,9 +1129,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         #############
 
         if discarded:
-            label = LeftLabel(text=f"discards:", x=0, font_size=12)
-            pos = position_offset / 2
-            figure.add(Track(pos, pos, h=40, label=label))
+            add_section("discards:")
             for parent_name in sorted_roots:
                 contigs = final_children_mapping.get(parent_name, [])
                 for contig_name in contigs:
@@ -1132,9 +1150,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         #############
 
         if anomaly:
-            label = LeftLabel(text=f"anomaly:", x=0, font_size=12)
-            pos = position_offset / 2
-            figure.add(Track(pos, pos, h=40, label=label))
+            add_section("anomaly:")
             for parent_name in sorted_roots:
                 contigs = final_children_mapping.get(parent_name, [])
                 for contig_name in contigs:
@@ -1160,9 +1176,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     ###########
 
     if unknown:
-        label = LeftLabel(text=f"unknown:", x=0, font_size=12)
-        pos = position_offset / 2
-        figure.add(Track(pos, pos, h=40, label=label))
+        add_section("unknown:")
         for parent_name in sorted_roots:
             contigs = final_children_mapping.get(parent_name, [])
             for contig_name in contigs:

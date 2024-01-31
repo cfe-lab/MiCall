@@ -5,39 +5,39 @@
 </defs>
 <g transform="translate(0 -69.5)">
 <g transform="translate(0.0 0)">
-<rect x="38.650984157465196" y="-10" width="931.3490158425348" height="10" fill="red" stroke="red" />
+<rect x="46.19047619047619" y="-10" width="923.8095238095239" height="10" fill="red" stroke="red" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="38.650984157465196" y="-10" width="773.0196831493038" height="10" fill="yellow" stroke="yellow" />
+<rect x="46.19047619047619" y="-10" width="766.7619047619048" height="10" fill="yellow" stroke="yellow" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="38.650984157465196" y="-10" width="773.0196831493038" height="10" fill="lightgray" stroke="lightgray" />
+<rect x="46.19047619047619" y="-10" width="766.7619047619048" height="10" fill="lightgray" stroke="lightgray" />
 </g>
 </g>
 <g transform="translate(0.0 -71.0)">
-<rect x="502.9284685549688" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
-<g transform="translate(502.9284685549688 0)">
+<rect x="508.09523809523813" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(508.09523809523813 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
 </g>
 </g>
 <g transform="translate(0 -41.0)">
 <g transform="translate(0.0 0)">
-<path d="M38.650984157465196,-20.0 L804.670667306769,-20.0" stroke="black" />
-<circle cx="425.16082573211713" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
-<path d="M811.670667306769,-20.0 L804.670667306769,-23.5 L804.670667306769,-16.5 L811.670667306769,-20.0" fill="black" />
-<text x="425.16082573211713" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+<path d="M46.19047619047619,-20.0 L805.952380952381,-20.0" stroke="black" />
+<circle cx="429.57142857142856" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M812.952380952381,-20.0 L805.952380952381,-23.5 L805.952380952381,-16.5 L812.952380952381,-20.0" fill="black" />
+<text x="429.57142857142856" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
 </g>
 </g>
 <g transform="translate(0 -30.0)">
 <g transform="translate(0.0 0)">
-<path d="M38.650984157465196,9.5 L804.670667306769,9.5" stroke="black" />
-<path d="M811.670667306769,9.5 L804.670667306769,6.0 L804.670667306769,13.0 L811.670667306769,9.5" fill="black" />
+<path d="M46.19047619047619,9.5 L805.952380952381,9.5" stroke="black" />
+<path d="M812.952380952381,9.5 L805.952380952381,6.0 L805.952380952381,13.0 L812.952380952381,9.5" fill="black" />
 </g>
 </g>
 <g transform="translate(0 -10.0)">
 <g transform="translate(0.0 0)">
-<rect x="38.650984157465196" y="-10" width="773.0196831493038" height="10" fill="lightgrey" stroke="lightgrey" />
-<g transform="translate(425.16082573211713 0)">
+<rect x="46.19047619047619" y="-10" width="766.7619047619048" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(429.57142857142856 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
 </g>
 </g>

@@ -5,181 +5,181 @@
 </defs>
 <g transform="translate(0 -180.5)">
 <g transform="translate(0.0 0)">
-<rect x="16.76836266742172" y="-10" width="62.09051517097367" height="10" fill="darkgrey" stroke="darkgrey" />
-<g transform="translate(47.81362025290855 0)">
+<rect x="46.285528101558555" y="-10" width="60.167859715138235" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(76.36945795912767 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">5' LTR</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="94.16080574782966" y="-10" width="147.33010076904014" height="10" fill="lightblue" stroke="lightblue" />
-<g transform="translate(167.82585613234974 0)">
+<rect x="121.28148594554602" y="-10" width="142.76797044571504" height="10" fill="lightblue" stroke="lightblue" />
+<g transform="translate(192.66547116840354 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">gag</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="511.1383412799134" y="-10" width="56.69560469008337" height="10" fill="steelblue" stroke="steelblue" />
-<g transform="translate(539.486143624955 0)">
+<rect x="525.3471599566876" y="-10" width="54.94000460560801" height="10" fill="steelblue" stroke="steelblue" />
+<g transform="translate(552.8171622594916 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">vif</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="838.6584521106893" y="-10" width="8.729946050895137" height="10" fill="plum" stroke="plum" />
-<g transform="translate(843.0234251361369 0)">
+<rect x="842.7254910607107" y="-10" width="8.459620086330574" height="10" fill="plum" stroke="plum" />
+<g transform="translate(846.9553011038761 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">tat</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="879.5616824839847" y="-10" width="60.81535451185414" height="10" fill="mediumaquamarine" stroke="mediumaquamarine" />
-<g transform="translate(909.9693597399117 0)">
+<rect x="882.3621379820577" y="-10" width="58.932184871067534" height="10" fill="mediumaquamarine" stroke="mediumaquamarine" />
+<g transform="translate(911.8282304175914 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">nef</text>
 </g>
 </g>
 </g>
 <g transform="translate(0 -160.5)">
 <g transform="translate(0.0 0)">
-<rect x="588.6288736417921" y="-10" width="21.383463360619658" height="10" fill="plum" stroke="plum" />
-<g transform="translate(599.320605322102 0)">
+<rect x="600.4381697117575" y="-10" width="20.72131661595597" height="10" fill="plum" stroke="plum" />
+<g transform="translate(610.7988280197355 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">tat</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="611.2874976615312" y="-10" width="24.326141804741724" height="10" fill="red" stroke="red" />
-<g transform="translate(623.4505685639022 0)">
+<rect x="622.3951611717841" y="-10" width="23.57287394842706" height="10" fill="red" stroke="red" />
+<g transform="translate(634.1815981459977 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">vpu</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="838.4622735477478" y="-10" width="26.9745524044514" height="10" fill="yellowgreen" stroke="yellowgreen" />
-<g transform="translate(851.9495497499736 0)">
+<rect x="842.5353872385459" y="-10" width="26.139275547650982" height="10" fill="yellowgreen" stroke="yellowgreen" />
+<g transform="translate(855.6050250123715 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">rev</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="907.9094848290264" y="-10" width="62.09051517097362" height="10" fill="darkgrey" stroke="darkgrey" />
-<g transform="translate(938.9547424145132 0)">
+<rect x="909.8321402848617" y="-10" width="60.16785971513832" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(939.9160701424308 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">3' LTR</text>
 </g>
 </g>
 </g>
 <g transform="translate(0 -140.5)">
 <g transform="translate(0.0 0)">
-<rect x="221.1864252524282" y="-10" width="295.34682650837544" height="10" fill="orange" stroke="orange" />
-<g transform="translate(368.8598385066159 0)">
+<rect x="244.37371079721112" y="-10" width="286.2013042690067" height="10" fill="orange" stroke="orange" />
+<g transform="translate(387.4743629317145 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">pol</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="561.9485890817529" y="-10" width="28.543980907983155" height="10" fill="turquoise" stroke="turquoise" />
-<g transform="translate(576.2205795357445 0)">
+<rect x="574.5840498973537" y="-10" width="27.660106124968706" height="10" fill="turquoise" stroke="turquoise" />
+<g transform="translate(588.414102959838 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">vpr</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="602.2632837662239" y="-10" width="7.650963954717099" height="10" fill="yellowgreen" stroke="yellowgreen" />
-<g transform="translate(606.0887657435825 0)">
+<rect x="613.6503853522064" y="-10" width="7.414049064424603" height="10" fill="yellowgreen" stroke="yellowgreen" />
+<g transform="translate(617.3574098844188 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">rev</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="627.2760505412607" y="-10" width="252.08945337978253" height="10" fill="salmon" stroke="salmon" />
-<g transform="translate(753.320777231152 0)">
+<rect x="637.88862267821" y="-10" width="244.28341148168295" height="10" fill="salmon" stroke="salmon" />
+<g transform="translate(760.0303284190516 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">env</text>
 </g>
 </g>
 </g>
 <g transform="translate(0 -120.5)">
 <g transform="translate(0.0 0)">
-<rect x="237.66542453951124" y="-10" width="29.034427315336842" height="10" fill="orange" stroke="orange" />
-<g transform="translate(252.18263819717964 0)">
+<rect x="260.34243185904876" y="-10" width="28.135365680380573" height="10" fill="orange" stroke="orange" />
+<g transform="translate(274.41011469923905 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">PR</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="266.7979411363188" y="-10" width="164.6919035893598" height="10" fill="darkorange" stroke="darkorange" />
-<g transform="translate(349.14389293099873 0)">
+<rect x="288.57284945051174" y="-10" width="159.59215870729395" height="10" fill="darkorange" stroke="darkorange" />
+<g transform="translate(368.3689288041587 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">RT</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="431.5879340071494" y="-10" width="84.94531775365425" height="10" fill="orange" stroke="orange" />
-<g transform="translate(474.0605928839765 0)">
+<rect x="448.2600600688881" y="-10" width="82.31495499732972" height="10" fill="orange" stroke="orange" />
+<g transform="translate(489.4175375675529 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">INT</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="714.0850646428589" y="-10" width="10.495553117368331" height="10" fill="salmon" stroke="salmon" />
-<g transform="translate(719.332841201543 0)">
+<rect x="722.0095639861047" y="-10" width="10.170554485813227" height="10" fill="salmon" stroke="salmon" />
+<g transform="translate(727.0948412290113 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">V3</text>
 </g>
 </g>
 <g transform="translate(0.0 0)">
-<rect x="777.6469190358936" y="-10" width="101.71858488514965" height="10" fill="salmon" stroke="salmon" />
-<g transform="translate(828.5062114784685 0)">
+<rect x="783.6032023674785" y="-10" width="98.56883179241447" height="10" fill="salmon" stroke="salmon" />
+<g transform="translate(832.8876182636857 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">GP41</text>
 </g>
 </g>
 </g>
 <g transform="translate(0 -100.5)">
 <g transform="translate(0.0 0)">
-<rect x="16.67027338595099" y="-10" width="953.329726614049" height="10" fill="red" stroke="red" />
+<rect x="46.19047619047619" y="-10" width="923.8095238095239" height="10" fill="red" stroke="red" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="281.5113333569287" y="-10" width="30.898123663280728" height="10" fill="yellow" stroke="yellow" />
+<rect x="302.8306361128667" y="-10" width="29.941351990945577" height="10" fill="yellow" stroke="yellow" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="312.5075463016801" y="-10" width="37.56819480329057" height="10" fill="yellow" stroke="yellow" />
+<rect x="332.86704001489466" y="-10" width="36.40488194454656" height="10" fill="yellow" stroke="yellow" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="281.5113333569287" y="-10" width="39.13762330682226" height="10" fill="lightgray" stroke="lightgray" />
+<rect x="302.8306361128667" y="-10" width="37.9257125218644" height="10" fill="lightgray" stroke="lightgray" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="304.07186809519715" y="-10" width="46.00387300977354" height="10" fill="lightgray" stroke="lightgray" />
+<rect x="324.69257566181113" y="-10" width="44.57934629763008" height="10" fill="lightgray" stroke="lightgray" />
 </g>
 </g>
 <g transform="translate(0.0 -102.0)">
-<rect x="493.29099651631367" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
-<g transform="translate(493.29099651631367 0)">
+<rect x="508.05246473525096" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(508.05246473525096 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">HIV1-B-FR-K03455-seed</text>
 </g>
 </g>
 <g transform="translate(0 -72.0)">
 <g transform="translate(0.0 0)">
-<path d="M281.5113333569287,-20.0 L305.4094570202094,-20.0" stroke="black" />
-<circle cx="296.960395188569" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
-<path d="M312.4094570202094,-20.0 L305.4094570202094,-23.5 L305.4094570202094,-16.5 L312.4094570202094,-20.0" fill="black" />
-<text x="296.960395188569" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+<path d="M302.8306361128667,-20.0 L325.7719881038123,-20.0" stroke="black" />
+<circle cx="317.8013121083395" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M332.7719881038123,-20.0 L325.7719881038123,-23.5 L325.7719881038123,-16.5 L332.7719881038123,-20.0" fill="black" />
+<text x="317.8013121083395" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
 </g>
 <g transform="translate(0.0 0)">
-<path d="M312.5075463016801,-20.0 L343.0757411049707,-20.0" stroke="black" />
-<circle cx="331.2916437033254" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
-<path d="M350.0757411049707,-20.0 L343.0757411049707,-23.5 L343.0757411049707,-16.5 L350.0757411049707,-20.0" fill="black" />
-<text x="331.2916437033254" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2</text>
+<path d="M332.86704001489466,-20.0 L362.2719219594412,-20.0" stroke="black" />
+<circle cx="351.06948098716794" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M369.2719219594412,-20.0 L362.2719219594412,-23.5 L362.2719219594412,-16.5 L369.2719219594412,-20.0" fill="black" />
+<text x="351.06948098716794" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2</text>
 </g>
 </g>
 <g transform="translate(0 -61.0)">
 <g transform="translate(0.0 0)">
-<path d="M281.5113333569287,9.5 L305.4094570202094,9.5" stroke="black" />
-<path d="M312.4094570202094,9.5 L305.4094570202094,6.0 L305.4094570202094,13.0 L312.4094570202094,9.5" fill="black" />
+<path d="M302.8306361128667,9.5 L325.7719881038123,9.5" stroke="black" />
+<path d="M332.7719881038123,9.5 L325.7719881038123,6.0 L325.7719881038123,13.0 L332.7719881038123,9.5" fill="black" />
 </g>
 </g>
 <g transform="translate(0 -41.0)">
 <g transform="translate(0.0 0)">
-<rect x="281.5113333569287" y="-10" width="39.13762330682226" height="10" fill="lightgrey" stroke="lightgrey" />
-<g transform="translate(301.08014501033983 0)">
+<rect x="302.8306361128667" y="-10" width="37.9257125218644" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(321.7934923737989 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
 </g>
 </g>
 </g>
 <g transform="translate(0 -30.0)">
 <g transform="translate(0.0 0)">
-<path d="M312.5075463016801,9.5 L343.0757411049707,9.5" stroke="black" />
-<path d="M350.0757411049707,9.5 L343.0757411049707,6.0 L343.0757411049707,13.0 L350.0757411049707,9.5" fill="black" />
+<path d="M332.86704001489466,9.5 L362.2719219594412,9.5" stroke="black" />
+<path d="M369.2719219594412,9.5 L362.2719219594412,6.0 L362.2719219594412,13.0 L369.2719219594412,9.5" fill="black" />
 </g>
 </g>
 <g transform="translate(0 -10.0)">
 <g transform="translate(0.0 0)">
-<rect x="304.07186809519715" y="-10" width="46.00387300977354" height="10" fill="lightgrey" stroke="lightgrey" />
-<g transform="translate(327.0738046000839 0)">
+<rect x="324.69257566181113" y="-10" width="44.57934629763008" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(346.9822488106262 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
 </g>
 </g>
