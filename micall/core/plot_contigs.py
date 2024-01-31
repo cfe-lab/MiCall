@@ -422,7 +422,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     overlap_rightparent_map: Dict[str, str] = {}
     overlap_lefttake_map: Dict[str, str] = {}
     overlap_righttake_map: Dict[str, str] = {}
-    overlap_sibling_map: Dict[str, str] = {}
+    overlap_left_sibling: Dict[str, str] = {}
+    overlap_right_sibling: Dict[str, str] = {}
     combine_left_edge: Dict[str, str] = {}
     combine_right_edge: Dict[str, str] = {}
     children_join_points: List[str] = []
@@ -617,8 +618,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             overlap_rightparent_map[event.right_remainder.name] = event.right.name
             overlap_lefttake_map[event.left_remainder.name] = event.left_take.name
             overlap_righttake_map[event.right_remainder.name] = event.right_take.name
-            overlap_sibling_map[event.left_remainder.name] = event.right_remainder.name
-            overlap_sibling_map[event.right_remainder.name] = event.left_remainder.name
+            overlap_left_sibling[event.left_remainder.name] = event.right_remainder.name
+            overlap_right_sibling[event.right_remainder.name] = event.left_remainder.name
         elif isinstance(event, events.Drop):
             record_bad_contig(event.contig, discarded)
             record_alive(event.contig)
@@ -864,34 +865,30 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if prev_part is not None:
                 r_st = prev_part.alignment.r_st
             else:
-                if part.name in bad_contigs:
-                    start_delta = 0
-                else:
-                    start_delta = -1 * part.alignment.q_st
+                start_delta = -1 * part.alignment.q_st
                 r_st = part.alignment.r_st + start_delta
 
             if next_part is not None:
                 r_ei = next_part.alignment.r_ei
             else:
-                if part.name in bad_contigs:
-                    end_delta = 0
-                else:
-                    end_delta = len(part.seq) - 1 - part.alignment.q_ei
+                end_delta = len(part.seq) - 1 - part.alignment.q_ei
                 r_ei = part.alignment.r_ei + end_delta
 
             aligned_size_map[part.name] = (r_st, r_ei)
 
-            sibling_name = ([overlap_sibling_map[name] for name in eqv_morphism_graph.get(part.name, [part.name]) if name in overlap_sibling_map] or [""])[0]
-            sibling = sibling_name and contig_map[sibling_name]
-            prev_part = get_neighbour(sibling, overlap_lefttake_map)
-            next_part = get_neighbour(sibling, overlap_righttake_map)
+            sibling_left_name = ([overlap_left_sibling[name] for name in eqv_morphism_graph.get(part.name, [part.name]) if name in overlap_left_sibling] or [""])[0]
+            sibling_left = sibling_left_name and contig_map[sibling_left_name]
+            sibling_right_name = ([overlap_right_sibling[name] for name in eqv_morphism_graph.get(part.name, [part.name]) if name in overlap_right_sibling] or [""])[0]
+            sibling_right = sibling_right_name and contig_map[sibling_right_name]
+            prev_part = get_neighbour(sibling_right, overlap_lefttake_map)
+            next_part = get_neighbour(sibling_left, overlap_righttake_map)
 
-            if prev_part is not None and prev_part.alignment.r_ei < part.alignment.r_st and prev_part:
+            if prev_part is not None:
                 r_st = prev_part.alignment.r_st
             else:
                 r_st = part.alignment.r_st
 
-            if next_part is not None and next_part.alignment.r_st > part.alignment.r_ei and next_part:
+            if next_part is not None:
                 r_ei = next_part.alignment.r_ei
             else:
                 r_ei = part.alignment.r_ei
