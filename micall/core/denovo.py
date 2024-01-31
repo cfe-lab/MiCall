@@ -19,7 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, with_fresh_context
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, StitcherContext
 from micall.core.plot_contigs import plot_stitcher_coverage
 
 IVA = "iva"
@@ -83,7 +83,7 @@ def write_contig_refs(contigs_fasta_path,
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
     group_refs = {}
 
-    def run_stitcher(ctx):
+    with StitcherContext.fresh() as ctx:
         genotypes = genotype(contigs_fasta_path,
                              blast_csv=blast_csv,
                              group_refs=group_refs)
@@ -101,8 +101,6 @@ def write_contig_refs(contigs_fasta_path,
             plot_stitcher_coverage(ctx.events, stitcher_plot_path)
 
         return len(contigs)
-
-    return with_fresh_context(run_stitcher)
 
 
 def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):

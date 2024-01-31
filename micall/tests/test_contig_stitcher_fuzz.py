@@ -1,7 +1,8 @@
 import pytest
 import json
 import os
-from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps, with_fresh_context, StitcherContext
+from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps, StitcherContext
+import micall.core.contig_stitcher as stitcher
 from micall.core.plot_contigs import build_stitcher_figure
 from micall.utils.cigar_tools import CigarHit, Cigar
 from micall.utils.consensus_aligner import CigarActions
@@ -12,6 +13,11 @@ from collections import defaultdict
 @pytest.fixture
 def no_aligner(monkeypatch):
     monkeypatch.setattr('micall.core.contig_stitcher.align_to_reference', lambda x: [x])
+
+
+@pytest.fixture(autouse=True)
+def stitcher_context():
+    stitcher.context.set(StitcherContext())
 
 
 def read_contigs(line):
@@ -116,13 +122,8 @@ def test_stitching_intervals_prop(no_aligner, description):
 @pytest.mark.parametrize('description', all_case_descriptions, ids=all_case_ids)
 def test_visualizer_simple(no_aligner, description):
     contigs = description['contigs']
-    for contig in contigs:
-        contig.__dict__["group_ref"] = "HIV1-B-FR-K03455-seed"
-
-    def test(ctx: StitcherContext):
+    with StitcherContext.fresh() as ctx:
         stitched = list(stitch_consensus(contigs))
         assert len(ctx.events) >= len(contigs)
         figure = build_stitcher_figure(ctx.events)
         assert len(figure.elements) > len(contigs) + 1
-
-    with_fresh_context(test)

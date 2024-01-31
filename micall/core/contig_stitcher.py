@@ -10,6 +10,7 @@ from queue import LifoQueue
 from Bio import Seq
 import logging
 from contextvars import ContextVar, Context
+from contextlib import contextmanager
 from fractions import Fraction
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
@@ -37,15 +38,18 @@ class StitcherContext:
         self.events.append(event)
 
 
-context: ContextVar[StitcherContext] = ContextVar("StitcherContext", default=StitcherContext())
-
-
-def with_fresh_context(body: Callable[[StitcherContext], T]) -> T:
-    def wrapper():
+    @staticmethod
+    @contextmanager
+    def fresh():
         ctx = StitcherContext()
-        context.set(ctx)
-        return body(ctx)
-    return Context().run(wrapper)
+        token = context.set(ctx)
+        try:
+            yield ctx
+        finally:
+            context.reset(token)
+
+
+context: ContextVar[StitcherContext] = ContextVar("StitcherContext")
 
 
 @dataclass(frozen=True)
@@ -710,9 +714,10 @@ def main(args):
         logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level)
-    write_contig_refs(args.contigs.name, args.stitched_contigs, stitcher_plot_path=args.plot)
-    args.contigs.close()
-    args.stitched_contigs.close()
+    with StitcherContext.fresh():
+        write_contig_refs(args.contigs.name, args.stitched_contigs, stitcher_plot_path=args.plot)
+        args.contigs.close()
+        args.stitched_contigs.close()
 
 
 if __name__ == '__main__':
