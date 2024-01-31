@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="970.0" height="165.5" viewBox="0.0 -165.5 970.0 165.5">
+     width="970.0" height="154.5" viewBox="0.0 -154.5 970.0 154.5">
 <defs>
 </defs>
-<g transform="translate(0 -150.5)">
+<g transform="translate(0 -139.5)">
 <g transform="translate(0.0 0)">
 <rect x="28.178982257750054" y="-10" width="756.4827451744981" height="10" fill="red" stroke="red" />
 </g>
@@ -14,13 +14,13 @@
 <rect x="217.29966855137457" y="-10" width="374.45895886137646" height="10" fill="lightgray" stroke="lightgray" />
 </g>
 </g>
-<g transform="translate(0.0 -152.0)">
+<g transform="translate(0.0 -141.0)">
 <rect x="404.7182686683565" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
 <g transform="translate(404.7182686683565 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
 </g>
 </g>
-<g transform="translate(0 -122.0)">
+<g transform="translate(0 -111.0)">
 <g transform="translate(0.0 0)">
 <path d="M217.29966855137457,-20.0 L584.758627412751,-20.0" stroke="black" />
 <circle cx="404.5291479820628" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
@@ -28,13 +28,13 @@
 <text x="404.5291479820628" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2</text>
 </g>
 </g>
-<g transform="translate(0 -111.0)">
+<g transform="translate(0 -100.0)">
 <g transform="translate(0.0 0)">
 <path d="M217.29966855137457,9.5 L584.758627412751,9.5" stroke="black" />
 <path d="M591.758627412751,9.5 L584.758627412751,6.0 L584.758627412751,13.0 L591.758627412751,9.5" fill="black" />
 </g>
 </g>
-<g transform="translate(0 -91.0)">
+<g transform="translate(0 -80.0)">
 <g transform="translate(0.0 0)">
 <rect x="217.29966855137457" y="-10" width="374.45895886137646" height="10" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(404.5291479820628 0)">
@@ -42,15 +42,11 @@
 </g>
 </g>
 </g>
-<g transform="translate(0.0 -41.0)">
+<g transform="translate(0.0 -30.0)">
 <rect x="14.089491128875027" y="-40" width="0.0" height="40" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(14.089491128875027 0)">
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
 </g>
-</g>
-<g transform="translate(0.0 -30.0)">
-<path d="M330.77208032754925,9.5 L471.2862156365764,9.5" stroke="black" />
-<path d="M478.2862156365764,9.5 L471.2862156365764,6.0 L471.2862156365764,13.0 L478.2862156365764,9.5" fill="black" />
 </g>
 <g transform="translate(0.0 -10.0)">
 <rect x="330.77208032754925" y="-10" width="147.51413530902715" height="10" fill="lightgrey" stroke="lightgrey" />

@@ -1123,7 +1123,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     name = name_map.get(contig_name, contig_name)
                     if isinstance(contig, AlignedContig) and contig.name not in unaligned:
                         colour = 'lightgrey'
-                        figure.add(Arrow(r_st + position_offset, r_ei + position_offset, elevation=-20, h=1))
                     else:
                         colour = "yellow"
                     figure.add(Track(f_r_st + position_offset, f_r_ei + position_offset, label=name, color=colour))
