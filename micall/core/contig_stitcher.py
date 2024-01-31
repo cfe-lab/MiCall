@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar, Callable
+from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar, Callable, Set
 from collections import deque, defaultdict
 from dataclasses import dataclass, replace
 from math import ceil, floor
@@ -22,11 +22,16 @@ logger = logging.getLogger(__name__)
 class StitcherContext:
     def __init__(self) -> None:
         self.name_generator_state: int = 0
+        self.nameset: Set[str] = set()
         self.events: List[events.EventType] = []
 
     def generate_new_name(self) -> str:
-        self.name_generator_state += 1
-        return f"c{self.name_generator_state}"
+        while True:
+            self.name_generator_state += 1
+            name = f"c{self.name_generator_state}"
+            if name not in self.nameset:
+                self.nameset.add(name)
+                return name
 
     def emit(self, event: events.EventType) -> None:
         self.events.append(event)
@@ -644,6 +649,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCont
                      contig.name, contig.seq, contig.ref_name,
                      contig.group_ref, contig.ref_seq, len(contig.seq))
         context.get().emit(events.Intro(contig))
+        context.get().nameset.add(contig.name)
 
     maybe_aligned = list(align_all_to_reference(contigs))
 
