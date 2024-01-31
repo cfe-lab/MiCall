@@ -136,16 +136,20 @@
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
 </g>
 </g>
-<g transform="translate(0.0 -30.0)">
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
 <rect x="45.30593180756655" y="-10" width="904.985987856142" height="10" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(497.79892573563757 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
 </g>
 </g>
-<g transform="translate(0.0 -10.0)">
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
 <rect x="45.30593180756655" y="-10" width="904.985987856142" height="10" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(497.79892573563757 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
+</g>
 </g>
 </g>
 </svg>

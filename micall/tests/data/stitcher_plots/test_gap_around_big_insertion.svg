@@ -190,10 +190,12 @@
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
 </g>
 </g>
-<g transform="translate(0.0 -10.0)">
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
 <rect x="64.45705024311184" y="-10" width="628.8492706645056" height="10" fill="yellow" stroke="yellow" />
 <g transform="translate(378.8816855753647 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1.2</text>
+</g>
 </g>
 </g>
 </svg>

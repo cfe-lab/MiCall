@@ -142,10 +142,18 @@
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
 </g>
 </g>
-<g transform="translate(0.0 -10.0)">
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="362.4474544605324" y="-10" width="45.305931807566594" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="584.4465203176086" y="-10" width="45.30593180756648" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
 <rect x="407.753386268099" y="-10" width="176.69313404950958" height="10" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(496.0999532928538 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
 </g>
 </g>
 </svg>

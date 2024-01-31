@@ -730,7 +730,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     for contig_name in sorted_roots:
         set_query_position(contig_name)
 
-    def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map):
+    def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map, overlap_xsibling):
         for parent in edge_table:
             child_remainder = edge_table[parent]
             for child_remainder_morph in eqv_morphism_graph.get(child_remainder, [child_remainder]):
@@ -741,11 +741,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     for parent_remainder in overlap_xparent_map:
                         if overlap_xparent_map[parent_remainder] == parent_morph:
                             overlap_xtake_map[child_remainder_morph] = overlap_xtake_map[parent_remainder]
+                            overlap_xsibling[child_remainder_morph] = overlap_xsibling[parent_remainder]
                             yield True
 
     # Closing `takes` by parents
-    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map)): pass
-    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map)): pass
+    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map, overlap_left_sibling)): pass
+    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map, overlap_right_sibling)): pass
 
     final_nodes: List[str] = []
     final_parts: Dict[str, bool] = {}
@@ -916,20 +917,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             a_r_ei = f_r_ei
         return (a_r_st, a_r_ei, f_r_st, f_r_ei)
 
-    def get_tracks(group_ref: str, contig_name: str) -> Iterable[Track]:
-        parts_names = final_children_mapping[contig_name]
-        parts = [contig_map[name] for name in parts_names]
-        parts = list(sorted(parts, key=lambda part: part.alignment.r_st if isinstance(part, AlignedContig) else -1))
-        for prev_part, part, next_part in sliding_window(parts):
-            if part.name in bad_contigs:
-                continue
-
-            if not isinstance(part, AlignedContig):
-                continue
-
-            if part.group_ref != group_ref:
-                continue
-
+    def get_tracks(parts: Iterable[GenotypedContig]) -> Iterable[Track]:
+        for part in parts:
             indexes = name_map[part.name]
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
 
@@ -939,22 +928,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if a_r_ei > f_r_ei:
                 yield Track(min(a_r_ei, f_r_ei) + position_offset, max(a_r_ei, f_r_ei) + position_offset, color="yellow")
 
-            yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{indexes}")
+            if isinstance(part, AlignedContig) and part.name not in unaligned:
+                colour = 'lightgrey'
+            else:
+                colour = "yellow"
 
-    def get_arrows(group_ref: str, contig_name: str, labels: bool) -> Iterable[Arrow]:
-        parts = final_children_mapping[contig_name]
-        for part_name in parts:
-            part = contig_map[part_name]
+            yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{indexes}", color=colour)
 
-            if part.name in bad_contigs:
-                continue
-
-            if not isinstance(part, AlignedContig):
-                continue
-
-            if part.group_ref != group_ref:
-                continue
-
+    def get_arrows(parts: Iterable[GenotypedContig], labels: bool) -> Iterable[Arrow]:
+        for part in parts:
             indexes = name_map[part.name] if labels else None
             height = 20 if labels else 1
             elevation = 1 if labels else -20
@@ -963,10 +945,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                         elevation=elevation,
                         h=height,
                         label=indexes)
-
-    def get_all_arrows(group_ref: str, labels: bool) -> Iterable[Arrow]:
-        for parent_name in sorted_roots:
-            yield from get_arrows(group_ref, parent_name, labels)
 
     def make_ray() -> Element:
         screen_size = (max_position - min_position) + position_offset / 2
@@ -1105,7 +1083,14 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         # Arrows #
         ##########
 
-        ref_arrows = list(get_all_arrows(group_ref, labels=True))
+        ref_arrows: List[Arrow] = []
+        for parent_name in sorted_roots:
+            parts_names = final_children_mapping[parent_name]
+            parts_names = [name for name in parts_names if name not in bad_contigs]
+            parts = [contig_map[name] for name in parts_names]
+            parts = [part for part in parts if part.group_ref == group_ref]
+            ref_arrows.extend(get_arrows(parts, labels=True))
+
         if ref_arrows:
             figure.add(ArrowGroup(ref_arrows))
 
@@ -1114,12 +1099,13 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         ###########
 
         for parent_name in sorted_roots:
-            arrows = list(get_arrows(group_ref, parent_name, labels=False))
-            if arrows:
-                figure.add(ArrowGroup(arrows))
-            parts = list(get_tracks(group_ref, parent_name))
+            parts_names = final_children_mapping[parent_name]
+            parts_names = [name for name in parts_names if name not in bad_contigs]
+            parts = [contig_map[name] for name in parts_names]
+            parts = [part for part in parts if part.group_ref == group_ref]
             if parts:
-                figure.add(Multitrack(parts))
+                figure.add(ArrowGroup(list(get_arrows(parts, labels=False))))
+                figure.add(Multitrack(list(get_tracks(parts))))
 
         #############
         # Discarded #
@@ -1128,19 +1114,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         if discarded:
             add_section("discards:")
             for parent_name in sorted_roots:
-                contigs = final_children_mapping.get(parent_name, [])
-                for contig_name in contigs:
-                    if contig_name not in discarded:
-                        continue
-
-                    contig = contig_map[contig_name]
-                    (r_st, r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
-                    name = name_map.get(contig_name, contig_name)
-                    if isinstance(contig, AlignedContig) and contig.name not in unaligned:
-                        colour = 'lightgrey'
-                    else:
-                        colour = "yellow"
-                    figure.add(Track(f_r_st + position_offset, f_r_ei + position_offset, label=name, color=colour))
+                parts_names = final_children_mapping[parent_name]
+                parts_names = [name for name in parts_names if name in discarded]
+                parts = [contig_map[name] for name in parts_names]
+                parts = [part for part in parts if part.group_ref == group_ref]
+                for part in parts:
+                    figure.add(Multitrack(list(get_tracks([part]))))
 
         #############
         # Anomalies #

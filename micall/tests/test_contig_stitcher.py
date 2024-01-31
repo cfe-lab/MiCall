@@ -167,25 +167,25 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner, v
 def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner, visualizer):
     # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
 
-    ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100
+    ref_seq = 'Z' * 5 + 'A' * 100 + 'C' * 100 + 'T' * 100 + 'Y' * 5
 
     contigs = [
         GenotypedContig(name='a',
-                        seq='A' * 50 + 'C' * 20,
+                        seq='M' * 5 + 'A' * 50 + 'C' * 20 + 'J' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
                         match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
-                        seq='A' * 20 + 'C' * 50,
+                        seq='Q' * 5 + 'A' * 20 + 'C' * 50 + 'I' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
                         match_fraction=0.5,
                         ),
         GenotypedContig(name='c',
-                        seq='C' * 20 + 'T' * 50,
+                        seq='N' * 5 + 'C' * 20 + 'T' * 50 + 'H' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -193,14 +193,9 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_ali
                         ),
         ]
 
-    results = list(stitch_contigs(contigs))
-    assert len(results) == 2
-
-    assert 100 == len(results[0].seq)
-    assert results[0].seq == 'A' * 50 + 'C' * 50
-
-    assert results[1].seq == contigs[2].seq
-
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[0].seq.rstrip('J') + 'C' * 30 + contigs[2].seq.lstrip('N')
     assert len(visualizer().elements) > len(contigs)
 
 
