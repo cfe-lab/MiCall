@@ -173,7 +173,6 @@ class AlignedContig(GenotypedContig):
                 reference_delta=0)
         alignment = self_alignment.connect(other_alignment)
 
-        assert self.strand == other.strand
         ret = AlignedContig.make(query=query, alignment=alignment, strand=self.strand)
         logger.debug("Munged contigs %r at %s with %r at %s resulting in %r at %s.",
                      self.name, self.alignment, other.name, other.alignment, ret.name, ret.alignment)
