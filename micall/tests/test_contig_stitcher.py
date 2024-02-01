@@ -1028,7 +1028,7 @@ def test_forward_and_reverse_match(projects, visualizer):
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
-    contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    contigs = os.path.join(pwd, "data", "exact_parts_contigs.fasta")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     stitcher.main([contigs, stitched_contigs])
 
@@ -1048,7 +1048,7 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
 
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
-    contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    contigs = os.path.join(pwd, "data", "exact_parts_contigs.fasta")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
     stitcher.main([contigs, stitched_contigs, "--debug", "--plot", plot])
