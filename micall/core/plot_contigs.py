@@ -772,7 +772,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             final_nodes.remove(contig_name)
 
     for contig_name in final_nodes:
-        if any(contig_name in transitive_parent_graph.get(bad, []) for bad in bad_contigs):
+        if any(contig_name in eqv_morphism_graph.get(bad, []) for bad in bad_contigs):
             continue
 
         if any(contig_name in eqv_morphism_graph.get(temp_name, [temp_name]) for temp_name in overlaps_list):
