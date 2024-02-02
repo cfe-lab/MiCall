@@ -454,25 +454,19 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             ret[parent] = lst
         return ret
 
-    def get_all_ancestors(recur, lst, graph, ancestor_name):
-        if ancestor_name not in recur:
-            recur = recur.copy()
-            recur.add(ancestor_name)
-
-            if ancestor_name not in lst:
-                lst.append(ancestor_name)
-
-            existing_ancestors = graph.get(ancestor_name, [])
-            for existing in existing_ancestors:
-                get_all_ancestors(recur, lst, graph, existing)
+    def get_transitive_children(recur, lst, graph, current):
+        for child in graph.get(current, []):
+            if child not in recur:
+                recur.add(child)
+                lst.append(child)
+                get_transitive_children(recur, lst, graph, child)
 
     def transitive_closure(graph):
         ret = {}
-        for parent, children in graph.items():
-            lst = []
-            for child in children:
-                get_all_ancestors(set(), lst, graph, child)
-            ret[parent] = lst
+        for parent in graph:
+            children = []
+            get_transitive_children(set(), children, graph, parent)
+            ret[parent] = children
         return ret
 
     def copy_graph(graph):
