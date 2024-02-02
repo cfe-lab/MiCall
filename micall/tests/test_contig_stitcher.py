@@ -978,7 +978,8 @@ def test_multiple_reverse_complement_matches_out_of_order(projects, visualizer):
 
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
-    seq = 'A' * 9 + revcomp(ref[2000:2300]) + 'A' * 9 + revcomp(ref[3000:3300]) + 'T' * 9 + revcomp(ref[4000:4300]) + 'G' * 27
+    ref_part = 'T' * 24 + ref[2000:2600] + 'A' * 9 + ref[3000:3600] + 'T' * 9 + ref[4000:4600] + 'G' * 27
+    seq = revcomp(ref_part)
 
     contigs = [
         GenotypedContig(name='a',
@@ -991,13 +992,13 @@ def test_multiple_reverse_complement_matches_out_of_order(projects, visualizer):
         ]
 
     results = list(stitch_consensus(contigs))
-    assert len(results) == 3
-
-    # Note how parts are stripped because aligned out of order
-    assert results[0].seq == ref[2000:2300]
-    assert results[1].seq == ref[3000:3300]
-    assert results[2].seq == ref[4000:4300]
-
+    assert len(results) == 1
+    assert len(results[0].seq) == len(ref_part)
+    assert results[0].seq == ref_part
+    assert len(results[0].lstrip().seq) == len(ref_part) - 24
+    assert len(results[0].rstrip().seq) == len(ref_part) - 27
+    assert results[0].lstrip().seq == ref_part[24:]
+    assert results[0].rstrip().seq == ref_part[:-27]
     assert len(visualizer().elements) > len(contigs)
 
 
