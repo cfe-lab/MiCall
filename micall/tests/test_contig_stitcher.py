@@ -164,6 +164,79 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner, v
     assert len(visualizer().elements) > len(contigs)
 
 
+def test_correct_stitching_of_two_partially_overlapping_contigs_real(projects, visualizer):
+    # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence. Not using exact aligner this time.
+
+    from mappy import revcomp
+
+    ref_name = 'HIV1-B-ZA-KP109515-seed'
+    ref = projects.getReference(ref_name)
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=ref[1700:2000],
+                        ref_name=ref_name,
+                        group_ref=ref_name,
+                        ref_seq=ref,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq=ref[1900:2200],
+                        ref_name=ref_name,
+                        group_ref=ref_name,
+                        ref_seq=ref,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert 500 == len(result.seq)
+    assert result.seq == ref[1700:2200]
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_correct_stitching_of_two_partially_overlapping_contigs_with_insignificant_gaps(projects, visualizer):
+    # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence, with insignificant gaps.
+
+    from mappy import revcomp
+
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    gap_ref = ''.join(c if i % 30 > 2 else '' for i, c in enumerate(ref))
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=gap_ref[1700:2000],
+                        ref_name=hxb2_name,
+                        group_ref=hxb2_name,
+                        ref_seq=ref,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq=gap_ref[1900:2200],
+                        ref_name=hxb2_name,
+                        group_ref=hxb2_name,
+                        ref_seq=ref,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert 500 == len(result.seq)
+    assert result.seq == gap_ref[1700:2200]
+
+    assert len(visualizer().elements) > len(contigs)
+
+
 def test_correct_processing_of_two_overlapping_and_one_separate_contig(exact_aligner, visualizer):
     # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
 
@@ -373,28 +446,28 @@ def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
     ref_seq = 'A' * 100 + 'C' * 100 + 'T' * 100 + 'G' * 100
 
     contigs = [[
-        GenotypedContig(name='a',
+        GenotypedContig(name='a' + ref_name,
                         seq='A' * 50 + 'C' * 20,
                         ref_name=ref_name,
                         group_ref=ref_name,
                         ref_seq=ref_seq,
                         match_fraction=0.5,
                         ),
-        GenotypedContig(name='b',
+        GenotypedContig(name='b' + ref_name,
                         seq='A' * 20 + 'C' * 50,
                         ref_name=ref_name,
                         group_ref=ref_name,
                         ref_seq=ref_seq,
                         match_fraction=0.5,
                         ),
-        GenotypedContig(name='c',
+        GenotypedContig(name='c' + ref_name,
                         seq='C' * 70 + 'T' * 20,
                         ref_name=ref_name,
                         group_ref=ref_name,
                         ref_seq=ref_seq,
                         match_fraction=0.5,
                         ),
-        GenotypedContig(name='d',
+        GenotypedContig(name='d' + ref_name,
                         seq='T' * 20 + 'G' * 50,
                         ref_name=ref_name,
                         group_ref=ref_name,
@@ -451,6 +524,48 @@ def test_stitching_when_one_contig_completely_covered_by_another(exact_aligner, 
     # Test to ensure that the final result contains the contig 'b' and
     # does not contain the completely covered contig 'a'.
     assert results[0].seq == contigs[1].seq
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_stitching_when_multiple_contigs_completely_covered_by_other_contigs(exact_aligner, visualizer):
+    # Scenario: If two contigs are completely covered by another two contigs.
+
+    ref_seq = 'A' * 100 + 'B' * 100 + 'C' * 100 + 'D' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='M' * 10 + 'A' * 20 + 'B' * 100 + 'C' * 20 + 'O' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='K' * 10 + 'B' * 20 + 'C' * 100 + 'D' * 20 + 'J' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='c',
+                        seq='I' * 10 + 'B' * 60 + 'C' * 80 + 'P' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='d',
+                        seq='Z' * 10 + 'B' * 80 + 'C' * 60 + 'F' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
 
     assert len(visualizer().elements) > len(contigs)
 
@@ -1027,6 +1142,40 @@ def test_forward_and_reverse_match(projects, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
 
+def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualizer):
+    # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence.
+
+    ref_seq = 'A' * 100 + 'C' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='A' * 50 + 'C' * 20,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='A' * 20 + 'C' * 50,
+                        ref_name=None,
+                        group_ref=None,
+                        ref_seq=None,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 2
+
+    assert 70 == len(results[0].seq)
+    assert 70 == len(results[1].seq)
+
+    assert {result.seq for result in results} \
+        == {contig.seq for contig in contigs}
+
+    assert len(visualizer().elements) > len(contigs)
+
+
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.fasta")
@@ -1268,6 +1417,7 @@ def generate_random_string_pair(length):
      ("aaaaaaaa", "aaaaabbb", [0.6, 0.68, 0.7, 0.68, 0.6, 0.29, 0.19, 0.13]),
      ("aaaaaaaa", "aaabbaaa", [0.56, 0.63, 0.62, 0.39, 0.39, 0.62, 0.63, 0.56]),
      ("aaaaa", "bbbbb", [0] * 5),
+     ("", "", []),
      ]
 )
 def test_concordance_simple(left, right, expected):
