@@ -935,6 +935,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             height = 20 if labels else 1
             elevation = 1 if labels else -20
             (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
+
+            if isinstance(part, AlignedContig) and part.strand == "reverse":
+                tmp = a_r_st
+                a_r_st = a_r_ei
+                a_r_ei = tmp
+
             yield Arrow(a_r_st + position_offset, a_r_ei + position_offset,
                         elevation=elevation,
                         h=height,
