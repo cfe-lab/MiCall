@@ -792,13 +792,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
         final_children_mapping[parent_name] = children
 
-    def overlaps(self, other) -> bool:
-        def intervals_overlap(x, y):
-            return x[0] <= y[1] and x[1] >= y[0]
-
-        return intervals_overlap((self.alignment.q_st, self.alignment.q_ei),
-                                 (other.alignment.q_st, other.alignment.q_ei))
-
     name_map = {}
     for i, (parent, children) in enumerate(sorted(final_children_mapping.items(), key=lambda p: p[0])):
         name_map[parent] = f"{i + 1}"
@@ -836,7 +829,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 yield contig_map[maybe_name]
 
     def get_final_version(contig):
-        name = reduced_morphism_graph.get(contig.name, [contig.name])[0] # FIXME: why 0???
+        [name] = reduced_morphism_graph.get(contig.name, [contig.name])
         return contig_map[name]
 
     def get_neighbour(part, lookup):
@@ -984,8 +977,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     # Drawing part #
     ################
 
-    landmarks_path = (Path(__file__).parent.parent / "data" /
-                      "landmark_references.yaml")
+    landmarks_path = (Path(__file__).parent.parent / "data" / "landmark_references.yaml")
     landmark_groups = yaml.safe_load(landmarks_path.read_text())
     projects = ProjectConfig.loadDefault()
     figure = Figure()
@@ -1130,24 +1122,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         if anomaly:
             add_section("anomaly:")
             for parent_name in sorted_roots:
-                contigs = final_children_mapping.get(parent_name, [])
-                for contig_name in contigs:
-                    if contig_name not in anomaly:
-                        continue
-
-                    contig = contig_map[contig_name]
-                    (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(contig)
-                    if isinstance(contig, AlignedContig):
-                        colour = "lightgray"
-                        if contig.strand == "reverse":
-                            figure.add(Arrow(a_r_ei + position_offset, a_r_st + position_offset, elevation=-20, h=1))
-                        else:
-                            figure.add(Arrow(a_r_st + position_offset, a_r_ei + position_offset, elevation=-20, h=1))
-                    else:
-                        colour = "yellow"
-
-                    name = name_map.get(contig_name, contig_name)
-                    figure.add(Track(a_r_st + position_offset, a_r_ei + position_offset, color=colour, label=name))
+                parts_names = final_children_mapping[parent_name]
+                parts_names = [name for name in parts_names if name in anomaly]
+                parts = [contig_map[name] for name in parts_names]
+                parts = [part for part in parts if part.group_ref == group_ref]
+                for part in parts:
+                    figure.add(Multitrack(list(get_tracks([part]))))
 
     ###########
     # Unknown #
@@ -1156,17 +1136,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     if unknown:
         add_section("unknown:")
         for parent_name in sorted_roots:
-            contigs = final_children_mapping.get(parent_name, [])
-            for contig_name in contigs:
-                if contig_name not in unknown:
-                    continue
-
-                contig = contig_map[contig_name]
-                r_st = 0
-                r_ei = len(contig.seq)
-                colour = "yellow"
-                name = name_map.get(contig_name, contig_name)
-                figure.add(Track(r_st + position_offset, r_ei + position_offset, color=colour, label=name))
+            parts_names = final_children_mapping[parent_name]
+            parts_names = [name for name in parts_names if name in unknown]
+            parts = [contig_map[name] for name in parts_names]
+            for part in parts:
+                figure.add(Multitrack(list(get_tracks([part]))))
 
     if not figure.elements:
         figure.add(Track(0, max_position, label='.', color='none'))

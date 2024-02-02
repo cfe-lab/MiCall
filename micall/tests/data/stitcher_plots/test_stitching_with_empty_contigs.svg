@@ -136,10 +136,12 @@
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">anomaly:</text>
 </g>
 </g>
-<g transform="translate(0.0 -10.0)">
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
 <rect x="23.774509803921568" y="-10" width="0.0" height="10" fill="yellow" stroke="yellow" />
 <g transform="translate(23.774509803921568 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
+</g>
 </g>
 </g>
 </svg>
