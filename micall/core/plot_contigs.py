@@ -454,6 +454,16 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             ret[parent] = lst
         return ret
 
+    def remove_duplicate_edges(graph):
+        ret = {}
+        for parent, children in graph.items():
+            lst = []
+            for child in children:
+                if child not in lst:
+                    lst.append(child)
+            ret[parent] = lst
+        return ret
+
     def get_transitive_children(recur, lst, graph, current):
         for child in graph.get(current, []):
             if child not in recur:
@@ -552,7 +562,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     def record_bad_contig(contig: GenotypedContig, lst: List[str]):
         complete_contig_map[contig.name] = contig
-        lst.append(contig.name)
+        if contig.name not in lst:
+            lst.append(contig.name)
 
     def record_lstrip(result: AlignedContig, original: AlignedContig):
         lstrip_map[result.name] = original.name
@@ -642,7 +653,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             x: NoReturn = event
             raise RuntimeError(f"Unrecognized action or event: {event}")
 
-    nodup_parent_graph = remove_transitive_edges(complete_parent_graph)
+    notransitive_parent_graph = remove_transitive_edges(complete_parent_graph)
+    nodup_parent_graph = remove_duplicate_edges(notransitive_parent_graph)
 
     # Close alive set by parents
     def extend_alive(contig_name):
