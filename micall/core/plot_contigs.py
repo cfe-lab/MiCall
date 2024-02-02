@@ -584,7 +584,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         elif isinstance(event, events.Intro):
             record_contig(event.contig, [])
             record_alive(event.contig)
-        elif isinstance(event, events.Hit):
+        elif isinstance(event, events.ConnectedHit):
             record_contig(event.part, [event.contig])
             record_alive(event.part)
         elif isinstance(event, events.NoRef):
@@ -640,7 +640,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if event.contigs:
                 combine_left_edge[event.result.name] = event.contigs[0].name
                 combine_right_edge[event.result.name] = event.contigs[-1].name
-        elif isinstance(event, (events.IgnoreGap, events.NoOverlap)):
+        elif isinstance(event, (events.IgnoreGap, events.NoOverlap, events.InitialHit)):
             pass
         else:
             x: NoReturn = event

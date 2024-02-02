@@ -42,6 +42,13 @@ class NoRef:
 
 
 @dataclass(frozen=True)
+class InitialHit:
+    contig: 'GenotypedContig'
+    hit: CigarHit
+    strand: Literal["forward", "reverse"]
+
+
+@dataclass(frozen=True)
 class ZeroHits:
     contig: 'GenotypedContig'
 
@@ -49,6 +56,12 @@ class ZeroHits:
 @dataclass(frozen=True)
 class StrandConflict:
     contig: 'GenotypedContig'
+
+
+@dataclass
+class ReverseComplement:
+    contig: 'GenotypedContig'
+    result: 'GenotypedContig'
 
 
 @dataclass(frozen=True)
@@ -59,13 +72,7 @@ class HitNumber:
 
 
 @dataclass(frozen=True)
-class ReverseComplement:
-    contig: 'GenotypedContig'
-    result: 'GenotypedContig'
-
-
-@dataclass(frozen=True)
-class Hit:
+class ConnectedHit:
     contig: 'GenotypedContig'
     part: 'AlignedContig'
     index: int
@@ -147,6 +154,6 @@ class FinalCombine:
     result: 'AlignedContig'
 
 
-AlignmentEvent = Union[NoRef, ZeroHits, StrandConflict, HitNumber, ReverseComplement, Hit]
+AlignmentEvent = Union[NoRef, InitialHit, ZeroHits, StrandConflict, ReverseComplement, HitNumber, ConnectedHit]
 ModifyEvent = Union[LStrip, RStrip]
 EventType = Union[Cut, ModifyEvent, Munge, Combine, AlignmentEvent, InitialStrip, StitchCut, Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro, FinalCombine]

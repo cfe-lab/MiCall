@@ -241,38 +241,51 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
                    min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1)),
           "forward" if x.strand == 1 else "reverse") for x in alignments]
 
-    connected = connect_cigar_hits([hit for hit, strand in hits_array]) if hits_array else []
-    if not connected:
+    for i, (hit, strand) in enumerate(hits_array):
+        logger.debug("Part %r of contig %r aligned at %s%s.",
+                     i, contig.name, hit, " (rev)" if strand == "reverse" else "")
+        context.get().emit(events.InitialHit(contig, hit, strand))
+
+    if not hits_array:
         logger.debug("Contig %r not aligned - backend's choice.", contig.name)
         context.get().emit(events.ZeroHits(contig))
         yield contig
         return
 
-    if len(set(map(lambda p: p[1], hits_array))) > 1:
+    if len(set(strand for hit, strand in hits_array)) > 1:
         logger.debug("Discarding contig %r because it aligned both in forward and reverse sense.", contig.name)
         context.get().emit(events.StrandConflict(contig))
         yield contig
         return
 
+    strand = hits_array[0][1]
+    if strand == "reverse":
+        rc = str(Seq.Seq(contig.seq).reverse_complement())
+        new_contig = replace(contig, seq=rc)
+        contig = new_contig
+        hits_array = [(replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1), strand)
+                      for hit, strand in hits_array]
+
+        logger.debug("Reverse complemented contig %r.", contig.name)
+        context.get().emit(events.ReverseComplement(contig, new_contig))
+
+        for i, (hit, strand) in enumerate(hits_array):
+            logger.debug("Part %r of contig %r reverse-aligned at %s%s.",
+                         i, contig.name, hit, " (rev)" if strand == "reverse" else "")
+            context.get().emit(events.InitialHit(contig, hit, strand))
+
+    connected = connect_cigar_hits([hit for hit, strand in hits_array]) if hits_array else []
     logger.debug("Contig %r produced %s aligner hits. After connecting them, the number became %s.",
                  contig.name, len(hits_array), len(connected))
     context.get().emit(events.HitNumber(contig, hits_array, connected))
-
-    strand = hits_array[0][1]
-    if strand == "reverse":
-        rc = str(Seq(contig.seq).reverse_complement())
-        new_contig = replace(contig, seq=rc)
-        logger.debug("Reverse complemented contig %r.", contig.name)
-        context.get().emit(events.ReverseComplement(contig, new_contig))
-        contig = new_contig
 
     for i, single_hit in enumerate(connected):
         query = replace(contig, name=context.get().generate_new_name())
         part = AlignedContig.make(query, single_hit, strand)
 
-        logger.debug("Part %r of contig %r aligned as %r at %s%s.", i, contig.name,
+        logger.debug("Part %r of contig %r re-aligned as %r at %s%s.", i, contig.name,
                      part.name,part.alignment, " (rev)" if strand == "reverse" else "")
-        context.get().emit(events.Hit(contig, part, i))
+        context.get().emit(events.ConnectedHit(contig, part, i))
         yield part
 
 

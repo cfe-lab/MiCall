@@ -9,7 +9,7 @@ from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs,
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.tests.test_denovo import check_hcv_db # activates the fixture
-
+from micall.tests.test_remap import load_projects # activates the "projects" fixture
 
 logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
@@ -880,6 +880,149 @@ def test_cross_alignment_around_small_insertion(exact_aligner, visualizer):
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
     assert results[0].seq == "A" * 10 + "B" * 20 + "C" * 10
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_reverse_complement_match(projects, visualizer):
+    # Scenario: Single contig is aligned in the reverse strand.
+
+    from mappy import revcomp
+
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    ref_part = ref[2000:2200]
+    seq = revcomp(ref_part)
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=seq,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == ref_part
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_reverse_complement_match_with_padding(projects, visualizer):
+    # Scenario: Single contig is aligned in the reverse strand.
+
+    from mappy import revcomp
+
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    ref_part = 'T' * 24 + ref[2000:2200] + 'G' * 27
+    seq = revcomp(ref_part)
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=seq,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == ref_part
+    assert len(results[0].lstrip().seq) == len(ref_part) - 24
+    assert len(results[0].rstrip().seq) == len(ref_part) - 27
+    assert results[0].rstrip().seq == ref_part[:-27] # 27 Gs on the right
+    assert results[0].lstrip().seq == ref_part[24:] # 24 Ts on the left
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_multiple_reverse_complement_matches(projects, visualizer):
+    # Scenario: Single contig is aligned in the reverse strand in multiple places.
+
+    from mappy import revcomp
+
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    ref_part = 'T' * 24 + ref[2000:2600] + 'A' * 9 + ref[3000:3600] + 'T' * 9 + ref[4000:4600] + 'G' * 27
+    seq = revcomp(ref_part)
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=seq,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert len(results[0].seq) == len(ref_part)
+    assert results[0].seq == ref_part
+    assert len(results[0].lstrip().seq) == len(ref_part) - 24
+    assert len(results[0].rstrip().seq) == len(ref_part) - 27
+    assert results[0].lstrip().seq == ref_part[24:]
+    assert results[0].rstrip().seq == ref_part[:-27]
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_multiple_reverse_complement_matches_out_of_order(projects, visualizer):
+    # Scenario: Single contig is aligned in the reverse strand in multiple places, producing an out of order alignment.
+
+    from mappy import revcomp
+
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    seq = 'A' * 9 + revcomp(ref[2000:2300]) + 'A' * 9 + revcomp(ref[3000:3300]) + 'T' * 9 + revcomp(ref[4000:4300]) + 'G' * 27
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=seq,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 3
+
+    # Note how parts are stripped because aligned out of order
+    assert results[0].seq == ref[2000:2300]
+    assert results[1].seq == ref[3000:3300]
+    assert results[2].seq == ref[4000:4300]
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_forward_and_reverse_match(projects, visualizer):
+    # Scenario: Single contig is aligned in both strands.
+
+    from mappy import revcomp
+
+    hxb2_name = 'HIV1-B-FR-K03455-seed'
+    ref = projects.getReference(hxb2_name)
+    seq = ref[1000:1100] + revcomp(ref[2000:2200])
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq=seq,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref,
+                        match_fraction=0.3,
+                        ),
+        ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == seq
     assert len(visualizer().elements) > len(contigs)
 
 
