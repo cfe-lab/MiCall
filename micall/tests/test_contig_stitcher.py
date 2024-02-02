@@ -164,6 +164,39 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(exact_aligner, v
     assert len(visualizer().elements) > len(contigs)
 
 
+def test_correct_stitching_of_two_partially_overlapping_contigs_with_padding(exact_aligner, visualizer):
+    # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence.
+
+    ref_seq = 'A' * 100 + 'C' * 100
+
+    contigs = [
+        GenotypedContig(name='a',
+                        seq='M' * 10 + 'A' * 50 + 'C' * 20 + 'Z' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        GenotypedContig(name='b',
+                        seq='J' * 10 + 'A' * 20 + 'C' * 50 + 'N' * 10,
+                        ref_name='testref',
+                        group_ref='testref',
+                        ref_seq=ref_seq,
+                        match_fraction=0.5,
+                        ),
+        ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert 120 == len(result.seq)
+    assert result.seq == 'M' * 10 + 'A' * 50 + 'C' * 50 + 'N' * 10
+
+    assert len(visualizer().elements) > len(contigs)
+
+
 def test_correct_stitching_of_two_partially_overlapping_contigs_real(projects, visualizer):
     # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence. Not using exact aligner this time.
 
@@ -1433,13 +1466,17 @@ def test_concordance_simple(left, right, expected):
      ("a" * 128, "a" * 54 + "b" * 20 + "a" * 54, 28), # two peaks
      ("a" * 128, "a" * 63 + "b" * 2 + "a" * 63, 32), # two peaks
      ("a" * 1280, "b" * 640 + "a" * 640, round(1280 * 3 / 4)),
+     ("a" * 128, "b" * 48 + "a" * 32 + "b" * 48, 64),
+     ("a" * 128, "b" * 48 + "a" * 15 + "ab" + "a" * 15 + "b" * 48, 48 + 16//2), # two peaks - choosing 1nd
+     ("a" * 128, "b" * 48 + "a" * 15 + "ba" + "a" * 15 + "b" * 48, 48 + 15 + 16//2), # two peaks - choosing 2nd
+     ("a" * 128, "b" * 48 + "a" * 15 + "bb" + "a" * 15 + "b" * 48, 48 + 15//2), # two peaks - choosing 1st
      ]
 )
 def test_concordance_simple_index(left, right, expected):
     concordance = calculate_concordance(left, right)
     concordance_d = list(disambiguate_concordance(concordance))
     index = max(range(len(concordance)), key=lambda i: concordance_d[i])
-    if abs(index - expected) > 3:
+    if abs(index - expected) > 1:
         assert index == expected
 
 
