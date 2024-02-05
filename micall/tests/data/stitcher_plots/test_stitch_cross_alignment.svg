@@ -158,28 +158,22 @@
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
 </g>
 </g>
-<g transform="translate(0 -50.0)">
-<g transform="translate(0.0 0)">
-<rect x="16.552901023890783" y="-10" width="33.10580204778157" height="10" fill="yellow" stroke="yellow" />
-<g transform="translate(33.105802047781566 0)">
+<g transform="translate(0.0 -50.0)">
+<rect x="16.552901023890783" y="-10" width="26.484641638225256" height="10" fill="yellow" stroke="yellow" />
+<g transform="translate(29.79522184300341 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1.1</text>
 </g>
 </g>
-</g>
-<g transform="translate(0 -30.0)">
-<g transform="translate(0.0 0)">
-<rect x="16.552901023890783" y="-10" width="39.72696245733788" height="10" fill="yellow" stroke="yellow" />
-<g transform="translate(36.41638225255973 0)">
+<g transform="translate(0.0 -30.0)">
+<rect x="16.552901023890783" y="-10" width="33.10580204778157" height="10" fill="yellow" stroke="yellow" />
+<g transform="translate(33.105802047781566 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1.3</text>
 </g>
 </g>
-</g>
-<g transform="translate(0 -10.0)">
-<g transform="translate(0.0 0)">
-<rect x="16.552901023890783" y="-10" width="33.10580204778157" height="10" fill="yellow" stroke="yellow" />
-<g transform="translate(33.105802047781566 0)">
+<g transform="translate(0.0 -10.0)">
+<rect x="16.552901023890783" y="-10" width="26.484641638225256" height="10" fill="yellow" stroke="yellow" />
+<g transform="translate(29.79522184300341 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1.5</text>
-</g>
 </g>
 </g>
 </svg>
