@@ -905,7 +905,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                         yield carved
 
     carved_unaligned_parts: Dict[str, List[str]] = {}
-    counter = 0
+    fake_name_counter = 0
     for root in sorted_roots:
         existing: Set[Tuple[int, int]] = set()
         children = final_children_mapping[root]
@@ -913,17 +913,40 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             coords = (gap.q_st, gap.q_ei)
             if coords not in existing:
                 existing.add(coords)
-                counter += 1
-                fake_name = f"u{counter}"
+                fake_name_counter += 1
+                fake_name = f"m{fake_name_counter}"
                 if root not in carved_unaligned_parts:
                     carved_unaligned_parts[root] = []
                 carved_unaligned_parts[root].append(fake_name)
                 query_position_map[fake_name] = coords
 
+    merged_unaligned_parts: Dict[str, List[str]] = {}
+    fake_name_counter = 0
+    for root in sorted_roots:
+        children = final_children_mapping[root]
+        unaligned_children = carved_unaligned_parts.get(root, [])
+        todo = children + unaligned_children
+        todo = list(sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1))))
+        current_group = []
+        for child_name in todo + [None]:
+            if child_name in unaligned_children:
+                coords = query_position_map[child_name]
+                current_group.append(coords)
+            elif current_group:
+                coords = (min(q_st for q_st, q_ei in current_group),
+                          max(q_ei for q_st, q_ei in current_group))
+                fake_name_counter += 1
+                fake_name = f"u{fake_name_counter}"
+                query_position_map[fake_name] = coords
+                if root not in merged_unaligned_parts:
+                    merged_unaligned_parts[root] = []
+                merged_unaligned_parts[root].append(fake_name)
+                current_group = []
+
     name_map = {}
     for i, root in enumerate(sorted_roots):
         children = final_children_mapping[root]
-        unaligned_children = carved_unaligned_parts.get(root, [])
+        unaligned_children = merged_unaligned_parts.get(root, [])
 
         name_map[root] = f"{i + 1}"
 
@@ -1144,7 +1167,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         # Discarded #
         #############
 
-        if discarded or carved_unaligned_parts:
+        if discarded or merged_unaligned_parts:
             add_section("discards:")
             for root in sorted_roots:
                 if contig_map[root].group_ref != group_ref:
@@ -1152,7 +1175,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
                 parts_names = final_children_mapping[root]
                 parts_names = [name for name in parts_names if name in discarded]
-                unaligned_parts = carved_unaligned_parts.get(root, [])
+                unaligned_parts = merged_unaligned_parts.get(root, [])
                 for name in sorted(parts_names + unaligned_parts, key=lambda x: name_map[x.name] if isinstance(x, Contig) else name_map[x]):
                     if name in unaligned_parts:
                         (q_st, q_ei) = query_position_map[name]
