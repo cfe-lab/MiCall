@@ -4,6 +4,7 @@ import shutil
 import sys
 import os
 import tempfile
+import gzip
 
 from micall.core.trim_fastqs import TrimSteps, trim
 
@@ -47,10 +48,31 @@ def merge_fastqs(args):
         os.makedirs(os.path.dirname(args.fastq1_result), exist_ok=True)
         os.makedirs(os.path.dirname(args.fastq2_result), exist_ok=True)
 
-        concatenate_files(trimmed_fastq1_a.name, trimmed_fastq1_b.name,
-                          args.fastq1_result)
-        concatenate_files(trimmed_fastq2_a.name, trimmed_fastq2_b.name,
-                          args.fastq2_result)
+        if args.unzipped:
+            concatenate_files(trimmed_fastq1_a.name, trimmed_fastq1_b.name,
+                              args.fastq1_result)
+            concatenate_files(trimmed_fastq2_a.name, trimmed_fastq2_b.name,
+                              args.fastq2_result)
+
+        else:
+            with tempfile.NamedTemporaryFile() as temp_fastq1, \
+                 tempfile.NamedTemporaryFile() as temp_fastq2:
+
+                temp_fastq1.close()
+                temp_fastq2.close()
+
+                concatenate_files(trimmed_fastq1_a.name, trimmed_fastq1_b.name,
+                                  temp_fastq1.name)
+                concatenate_files(trimmed_fastq2_a.name, trimmed_fastq2_b.name,
+                                  temp_fastq2.name)
+
+                logger.info('Compressing final outputs.')
+
+                with open(temp_fastq1.name, 'rb') as f_in, gzip.open(args.fastq1_result, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+
+                with open(temp_fastq2.name, 'rb') as f_in, gzip.open(args.fastq2_result, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
 
     logger.info('Done.')
 

@@ -3,6 +3,7 @@ import os
 import sys
 from io import StringIO
 import csv
+import gzip
 
 from micall.core.merge_fastqs import main
 
@@ -40,12 +41,14 @@ def fastq_files(tmp_path):
     fastq1_result = tmp_path / "fastq1_result.fastq"
     fastq2_result = tmp_path / "fastq2_result.fastq"
 
-    args = [str(fastq1_a), str(fastq2_a), str(fastq1_b), str(fastq2_b), '--unzipped', str(fastq1_result), str(fastq2_result)]
-    return args
+    return (fastq1_a, fastq2_a, fastq1_b, fastq2_b, fastq1_result, fastq2_result)
 
 
 def test_basic_main(fastq_files):
-    main(fastq_files)
+    (fastq1_a, fastq2_a, fastq1_b, fastq2_b, fastq1_result, fastq2_result) = fastq_files
+    args = [str(fastq1_a), str(fastq2_a), str(fastq1_b), str(fastq2_b), '--unzipped', str(fastq1_result), str(fastq2_result)]
+
+    main(args)
 
     # Add some assertions
     assert os.path.exists(fastq_files[-2])  # assert fastq1_result exists
@@ -53,13 +56,13 @@ def test_basic_main(fastq_files):
 
     # New checks: Check if the merged files contain the correct sequences and qualities.
 
-    with open(fastq_files[-2], 'r') as f:  # open fastq1_result
+    with open(fastq1_result, 'r') as f:
         data = f.read()
         # should contain the sequences and qualities of the first reads of both samples
         assert FASTQ_DATA_A in data
         assert FASTQ_DATA_B in data
 
-    with open(fastq_files[-1], 'r') as f:  # open fastq2_result
+    with open(fastq2_result, 'r') as f:
         data = f.read()
         # should contain the sequences and qualities of the second reads of both samples
         assert FASTQ_DATA_A2 in data
@@ -92,20 +95,72 @@ def fastq_files_with_bad_cycles(bad_cycles_csv, tmp_path):
     fastq1_result = tmp_path / "fastq1_result.fastq"
     fastq2_result = tmp_path / "fastq2_result.fastq"
 
-    args = [str(fastq1_a), str(fastq2_a), str(fastq1_b), str(fastq2_b),
-            '--bad_cycles_a_csv', bad_cycles_csv,
-            '--unzipped', str(fastq1_result), str(fastq2_result)]
-    return args
+    return (fastq1_a, fastq2_a, fastq1_b, fastq2_b,
+            fastq1_result, fastq2_result, bad_cycles_csv)
 
 
 def test_rejected_reads(fastq_files_with_bad_cycles):
-    main(fastq_files_with_bad_cycles)
+    (fastq1_a, fastq2_a, fastq1_b, fastq2_b, fastq1_result, fastq2_result, bad_cycles_csv) = \
+        fastq_files_with_bad_cycles
 
-    with open(fastq_files_with_bad_cycles[-2], 'r') as f:  # open fastq1_result
+    args = [str(fastq1_a), str(fastq2_a), str(fastq1_b), str(fastq2_b),
+            '--bad_cycles_a_csv', bad_cycles_csv,
+            '--unzipped', str(fastq1_result), str(fastq2_result)]
+
+    main(args)
+
+    with open(fastq1_result, 'r') as f:
         data = f.read()
         assert FASTQ_DATA_A not in data # first nucleotide filtered out.
         assert FASTQ_DATA_B in data
-    with open(fastq_files_with_bad_cycles[-1], 'r') as f:  # open fastq2_result
+    with open(fastq2_result, 'r') as f:
+        data = f.read()
+        assert FASTQ_DATA_A2 in data
+        assert FASTQ_DATA_B2 in data
+
+
+# Helper function to write data to a gzipped file
+def write_to_gzip(filepath, data):
+    with gzip.open(filepath, 'wt') as f:
+        f.write(data)
+
+
+@pytest.fixture
+def gzipped_fastq_files(tmp_path):
+    # Create gzipped forward and reverse fastq files for two samples: A and B.
+    fastq1_a = tmp_path / "fastq1_a.fastq.gz"
+    fastq2_a = tmp_path / "fastq2_a.fastq.gz"
+    fastq1_b = tmp_path / "fastq1_b.fastq.gz"
+    fastq2_b = tmp_path / "fastq2_b.fastq.gz"
+    write_to_gzip(fastq1_a, FASTQ_DATA_A)
+    write_to_gzip(fastq2_a, FASTQ_DATA_A2)
+    write_to_gzip(fastq1_b, FASTQ_DATA_B)
+    write_to_gzip(fastq2_b, FASTQ_DATA_B2)
+
+    # Paths for output files
+    fastq1_result = tmp_path / "fastq1_result.fastq.gz"
+    fastq2_result = tmp_path / "fastq2_result.fastq.gz"
+
+    return (fastq1_a, fastq2_a, fastq1_b, fastq2_b, fastq1_result, fastq2_result)
+
+
+def test_gzipped_main(gzipped_fastq_files):
+    (fastq1_a, fastq2_a, fastq1_b, fastq2_b, fastq1_result, fastq2_result) = gzipped_fastq_files
+    args = [str(fastq1_a), str(fastq2_a), str(fastq1_b), str(fastq2_b), str(fastq1_result), str(fastq2_result)]
+
+    main(args)
+
+    # Add some assertions
+    assert os.path.exists(fastq1_result)  # assert gzipped fastq1_result exists
+    assert os.path.exists(fastq2_result)  # assert gzipped fastq2_result exists
+
+    # Check if the merged gzipped files contain the correct sequences and qualities.
+    with gzip.open(fastq1_result, 'rt') as f:
+        data = f.read()
+        assert FASTQ_DATA_A in data
+        assert FASTQ_DATA_B in data
+
+    with gzip.open(fastq2_result, 'rt') as f:
         data = f.read()
         assert FASTQ_DATA_A2 in data
         assert FASTQ_DATA_B2 in data
