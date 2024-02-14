@@ -16,7 +16,8 @@ import typing
 import tempfile
 
 from micall.core.filter_quality import report_bad_cycles
-from micall.core.trim_fastqs import TrimSteps, trim
+from micall.core.trim_fastqs import TrimSteps
+from micall.core.merge_fastqs import merge_fastqs
 from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup, load_git_version
@@ -342,8 +343,8 @@ def get_parser(default_max_active):
                                       default_max_active,
                                       default_folder),
                 add_merge_samples_parser(subparsers,
-                                                default_max_active,
-                                                default_folder),
+                                         default_max_active,
+                                         default_folder),
                 add_basespace_parser(subparsers, default_max_active)]
     for command_parser in commands:
         command_parser.add_argument(
@@ -738,41 +739,16 @@ def single_sample(args):
 def merge_samples(args):
     resolved_args = MiCallArgs(args)
 
-    def concatenate_files(input_file1, input_file2, output_file):
-        with open(input_file1, 'rb') as src1, \
-             open(input_file2, 'rb') as src2, \
-             open(output_file, 'wb') as dst:
+    args.fastq1_a = resolved_args.fastq1_a
+    args.fastq2_a = resolved_args.fastq2_a
+    args.fastq1_b = resolved_args.fastq1_b
+    args.fastq2_b = resolved_args.fastq2_b
+    args.fastq1_result = resolved_args.fastq1_result
+    args.fastq2_result = resolved_args.fastq2_result
+    args.bad_cycles_a_csv = resolved_args.bad_cycles_a_csv
+    args.bad_cycles_b_csv = resolved_args.bad_cycles_b_csv
 
-            shutil.copyfileobj(src1, dst)
-            shutil.copyfileobj(src2, dst)
-
-    with tempfile.NamedTemporaryFile() as trimmed_fastq1_a, \
-         tempfile.NamedTemporaryFile() as trimmed_fastq2_a, \
-         tempfile.NamedTemporaryFile() as trimmed_fastq1_b, \
-         tempfile.NamedTemporaryFile() as trimmed_fastq2_b:
-
-        logger.info('Processing reads of Sample A.')
-
-        trim((args.fastq1_a, args.fastq2_a),
-             resolved_args.bad_cycles_a_csv,
-             (trimmed_fastq1_a.name, trimmed_fastq2_a.name),
-             use_gzip=not args.unzipped)
-
-        logger.info('Processing reads of Sample B.')
-
-        trim((args.fastq1_b, args.fastq2_b),
-             resolved_args.bad_cycles_b_csv,
-             (trimmed_fastq1_b.name, trimmed_fastq2_b.name),
-             use_gzip=not args.unzipped)
-
-        logger.info('Merging resuling reads files.')
-
-        concatenate_files(trimmed_fastq1_a.name, trimmed_fastq1_b.name,
-                          args.fastq1_result)
-        concatenate_files(trimmed_fastq2_a.name, trimmed_fastq2_b.name,
-                          args.fastq2_result)
-
-    logger.info('Done.')
+    merge_fastqs(args)
 
 
 def hcv_sample(args):
