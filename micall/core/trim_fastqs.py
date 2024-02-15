@@ -16,6 +16,7 @@ from itertools import chain
 from pathlib import Path
 
 import typing
+from typing import Optional
 
 from Bio import SeqIO
 
@@ -57,12 +58,12 @@ def parse_args():
 
 
 def trim(original_fastq_filenames: typing.Sequence[str],
-         bad_cycles_filename: str,
+         bad_cycles_filename: Optional[str],
          trimmed_fastq_filenames: typing.Sequence[str],
          use_gzip: bool = True,
-         summary_file: typing.TextIO = None,
-         skip: typing.Tuple[str] = (),
-         project_code: str = None):
+         summary_file: Optional[typing.TextIO] = None,
+         skip: typing.Tuple[str, ...] = (),
+         project_code: Optional[str] = None):
     """
 
     :param original_fastq_filenames: sequence of two filenames, containing
