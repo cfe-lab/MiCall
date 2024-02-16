@@ -15,5 +15,10 @@
       link: /design/resistance.html
     - name: Genome Coverage
       link: /genome_coverage.html
+- name: Scripts and tools
+  link: /scripts.html
+  dropdown:
+    - name: Merge fastqs
+      link: /scripts/merge_fastqs.html
 - name: GitHub
   link: https://github.com/cfe-lab/MiCall
