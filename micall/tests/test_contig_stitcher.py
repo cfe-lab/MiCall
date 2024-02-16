@@ -693,7 +693,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner, visualizer):
 def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     # Scenario: If one contig has a small gap covered by another contig.
 
-    ref_seq = 'G' * 100 + 'A' * 9 + 'C' * 100 + 'T' * 100
+    ref_seq = 'G' * 100 + 'A' * 29 + 'C' * 100 + 'T' * 100
 
     contigs = [
         GenotypedContig(name='a',
@@ -704,7 +704,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
                         match_fraction=0.5,
                         ),
         GenotypedContig(name='b',
-                        seq='A' * 9 + 'C' * 50,
+                        seq='A' * 29 + 'C' * 50,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -907,7 +907,7 @@ def test_big_insertion_in_a_single_contig_2(exact_aligner, visualizer):
 def test_gap_around_small_insertion(exact_aligner, visualizer):
     # Scenario: Contig is split around its gap, then stripped.
 
-    ref_seq='A' * 10 + 'B' * 20 + 'C' * 10
+    ref_seq='A' * 10 + 'B' * 29 + 'C' * 10
 
     contigs = [
         GenotypedContig(name='a',
@@ -918,7 +918,7 @@ def test_gap_around_small_insertion(exact_aligner, visualizer):
                         match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
-                        seq='Q' * 5 + 'B' * 20 + 'J' * 5,
+                        seq='Q' * 5 + 'B' * 29 + 'J' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -928,14 +928,14 @@ def test_gap_around_small_insertion(exact_aligner, visualizer):
 
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
-    assert results[0].seq == "P" * 5 + "A" * 10 + "B" * 20 + "C" * 10 + "Z" * 5
+    assert results[0].seq == "P" * 5 + "A" * 10 + "B" * 29 + "C" * 10 + "Z" * 5
     assert len(visualizer().elements) > len(contigs)
 
 
 def test_gap_around_big_insertion(exact_aligner, visualizer):
     # Scenario: Contig is split around its gap, then stripped.
 
-    ref_seq='A' * 10 + 'B' * 20 + 'C' * 10
+    ref_seq='A' * 10 + 'B' * 29 + 'C' * 10
 
     contigs = [
         GenotypedContig(name='a',
@@ -946,7 +946,7 @@ def test_gap_around_big_insertion(exact_aligner, visualizer):
                         match_fraction=0.3,
                         ),
         GenotypedContig(name='b',
-                        seq='Q' * 5 + 'B' * 20 + 'J' * 5,
+                        seq='Q' * 5 + 'B' * 29 + 'J' * 5,
                         ref_name='testref',
                         group_ref='testref',
                         ref_seq=ref_seq,
@@ -956,7 +956,7 @@ def test_gap_around_big_insertion(exact_aligner, visualizer):
 
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
-    assert results[0].seq == "P" * 5 + "A" * 10 + "B" * 20 + "C" * 10 + "Z" * 5
+    assert results[0].seq == "P" * 5 + "A" * 10 + "B" * 29 + "C" * 10 + "Z" * 5
     assert len(visualizer().elements) > len(contigs)
 
 

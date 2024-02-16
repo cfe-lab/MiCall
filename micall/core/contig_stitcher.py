@@ -613,7 +613,10 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
         return any(covered_by(gap, other) for other in contigs if other != contig)
 
     def significant(gap):
-        return gap.ref_length > 5
+        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall.
+        # A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA.
+        # The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.
+        return gap.ref_length > 21
 
     def try_split(contig):
         for gap in contig.alignment.deletions():
