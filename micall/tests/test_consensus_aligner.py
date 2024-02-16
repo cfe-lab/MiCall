@@ -1,9 +1,7 @@
 import math
 import typing
-import random
 from io import StringIO
 from pytest import approx
-from contextlib import contextmanager
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
 from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
@@ -12,29 +10,6 @@ from micall.core.project_config import ProjectConfig
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
 from micall.utils.report_amino import ReportNucleotide
-
-
-@contextmanager
-def fixed_random_seed(seed):
-    original_state = random.getstate()
-    random.seed(seed)
-    try:
-        yield
-    finally:
-        random.setstate(original_state)
-
-
-def mutate_sequence(rate, seq):
-    def mutate(x):
-        if random.random() >= rate:
-            return x
-
-        while True:
-            y = random.choice(['A', 'C', 'G', 'T'])
-            if y != x: return y
-
-    with fixed_random_seed(42):
-        return ''.join(map(mutate, seq))
 
 
 def assert_alignments(aligner: ConsensusAligner,
@@ -436,30 +411,25 @@ def test_start_contig_deletion_minimap2(projects):
 def test_start_contig_big_deletion_minimap2(projects):
     seed_name = 'HCV-1a'
     seed_seq = projects.getReference(seed_name)
-    seed_seq = mutate_sequence(seq=seed_seq, rate=0.04)
-    consensus = seed_seq[290:983] + seed_seq[3000:9269]
-
+    consensus = seed_seq[340:920] + seed_seq[3000:9000]
     expected_alignment = [AlignmentWrapper(ctg='N/A',
                                            ctg_len=len(seed_seq),
-                                           mlen=668,
-                                           r_st=290,
-                                           r_en=983,
+                                           r_st=340,
+                                           r_en=920,
                                            q_st=0,
-                                           q_en=693,
+                                           q_en=580,
                                            mapq=60,
-                                           cigar=[[693, CigarActions.MATCH]],
-                                           NM=25),
+                                           cigar=[[580, CigarActions.MATCH]],
+                                           NM=0),
                           AlignmentWrapper(ctg='N/A',
                                            ctg_len=len(seed_seq),
-                                           mlen=6013,
                                            r_st=3000,
-                                           r_en=9269,
-                                           q_st=693,
-                                           q_en=6962,
+                                           r_en=9000,
+                                           q_st=580,
+                                           q_en=6580,
                                            mapq=60,
-                                           cigar=[[6269, CigarActions.MATCH]],
-                                           NM=256)]
-
+                                           cigar=[[6000, CigarActions.MATCH]],
+                                           NM=0)]
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)

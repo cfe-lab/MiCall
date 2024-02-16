@@ -200,3 +200,21 @@ From: centos:7
 %apphelp denovo
     Standard pipeline with de novo assembly instead of mapping to reference
     sequences.
+
+%apphelp merge_fastqs
+    Combine and filter the FASTQ files from two samples into a single output file.
+
+%applabels merge_fastqs
+    KIVE_INPUTS fastq1_a fastq2_a fastq1_b fastq2_b \
+                bad_cycles_a bad_cycles_b
+    KIVE_OUTPUTS fastq1_result fastq2_result
+    KIVE_THREADS 1
+    KIVE_MEMORY 200
+
+%apprun merge_fastqs
+    PYTHONPATH=/opt/micall \
+    	python -m micall.core.merge_fastqs \
+                "$1" "$2" "$3" "$4" \
+                --bad_cycles_a_csv "$5" \
+                --bad_cycles_b_csv "$6" \
+                "$7" "$8"
