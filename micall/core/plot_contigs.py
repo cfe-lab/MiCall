@@ -1,5 +1,5 @@
 import typing
-from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Literal, Union
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -8,7 +8,6 @@ from itertools import groupby
 from math import log10, copysign, floor
 from operator import itemgetter, attrgetter
 from pathlib import Path
-import dataclasses
 import logging
 
 import yaml
@@ -21,7 +20,7 @@ from matplotlib.colors import Normalize
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
-from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig, sliding_window
+from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig
 from micall.utils.cigar_tools import CigarHit
 import micall.utils.contig_stitcher_events as events
 

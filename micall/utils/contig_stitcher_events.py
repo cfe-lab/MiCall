@@ -1,7 +1,7 @@
 from typing import Union, List, Tuple, Literal
 from dataclasses import dataclass
 from fractions import Fraction
-from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
+from micall.utils.cigar_tools import CigarHit
 
 
 @dataclass(frozen=True)

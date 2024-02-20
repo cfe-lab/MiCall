@@ -1,10 +1,10 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar, Callable, Set
-from collections import deque, defaultdict
+from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar
+from collections import defaultdict
 from dataclasses import dataclass, replace
-from math import ceil, floor
+from math import ceil
 from mappy import Aligner
-from functools import cached_property, reduce
-from itertools import accumulate, takewhile, tee, islice, chain
+from functools import reduce
+from itertools import tee, islice, chain
 from gotoh import align_it
 from queue import LifoQueue
 from Bio import Seq
@@ -12,7 +12,6 @@ import logging
 from fractions import Fraction
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
-from micall.utils.consensus_aligner import CigarActions
 from micall.utils.contig_stitcher_context import context, StitcherContext
 import micall.utils.contig_stitcher_events as events
 
