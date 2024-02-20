@@ -16,8 +16,14 @@ from micall.utils.consensus_aligner import CigarActions
 from micall.utils.contig_stitcher_context import context, StitcherContext
 import micall.utils.contig_stitcher_events as events
 
+
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
+
+
+def log(e: events.EventType) -> None:
+    context.get().emit(e)
+    logger.debug("%s", e)
 
 
 @dataclass(frozen=True)
@@ -66,12 +72,7 @@ class AlignedContig(GenotypedContig):
         alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
         left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
         right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
-
-        logger.debug("Created contigs %r at %s and %r at %s by cutting %r at %s at cut point = %s.",
-                     left.name, left.alignment, right.name, right.alignment,
-                     self.name, self.alignment, round(cut_point, 1))
-        context.get().emit(events.Cut(self, left, right))
-
+        log(events.Cut(self, left, right, cut_point))
         return (left, right)
 
 
@@ -85,10 +86,7 @@ class AlignedContig(GenotypedContig):
         q_remainder, query = self.cut_query(alignment.q_st - 0.5)
         alignment = alignment.translate(0, -1 * alignment.q_st)
         result = AlignedContig.make(query, alignment, self.strand)
-        logger.debug("Doing lstrip of %r at %s (len %s) resulted in %r at %s (len %s).",
-                     self.name, self.alignment, len(self.seq),
-                     result.name, result.alignment, len(result.seq))
-        context.get().emit(events.LStrip(self, result))
+        log(events.LStrip(self, result))
         return result
 
 
@@ -101,10 +99,7 @@ class AlignedContig(GenotypedContig):
         alignment = self.alignment.rstrip_reference().rstrip_query()
         query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
         result = AlignedContig.make(query, alignment, self.strand)
-        logger.debug("Doing rstrip of %r at %s (len %s) resulted in %r at %s (len %s).",
-                     self.name, self.alignment, len(self.seq),
-                     result.name, result.alignment, len(result.seq))
-        context.get().emit(events.RStrip(self, result))
+        log(events.RStrip(self, result))
         return result
 
 
@@ -142,9 +137,7 @@ class AlignedContig(GenotypedContig):
         alignment = self_alignment.connect(other_alignment)
 
         ret = AlignedContig.make(query=query, alignment=alignment, strand=self.strand)
-        logger.debug("Munged contigs %r at %s with %r at %s resulting in %r at %s.",
-                     self.name, self.alignment, other.name, other.alignment, ret.name, ret.alignment)
-        context.get().emit(events.Munge(self, other, ret))
+        log(events.Munge(self, other, ret))
         return ret
 
 
@@ -179,10 +172,7 @@ def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
         stripped_parts.append(part)
 
     ret = reduce(AlignedContig.munge, stripped_parts)
-    logger.debug("Created a frankenstein %r at %s (len %s) from %s.",
-                 ret.name, ret.alignment, len(ret.seq),
-                 [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in stripped_parts])
-    context.get().emit(events.Combine(stripped_parts, ret))
+    log(events.Combine(stripped_parts, ret))
     return ret
 
 
@@ -195,8 +185,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
     """
 
     if contig.ref_seq is None:
-        logger.debug("Contig %r not aligned - no reference.", contig.name)
-        context.get().emit(events.NoRef(contig))
+        log(events.NoRef(contig))
         yield contig
         return
 
@@ -209,19 +198,15 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
           "forward" if x.strand == 1 else "reverse") for x in alignments]
 
     for i, (hit, strand) in enumerate(hits_array):
-        logger.debug("Part %r of contig %r aligned at %s%s.",
-                     i, contig.name, hit, " (rev)" if strand == "reverse" else "")
-        context.get().emit(events.InitialHit(contig, hit, strand))
+        log(events.InitialHit(contig, i, hit, strand))
 
     if not hits_array:
-        logger.debug("Contig %r not aligned - backend's choice.", contig.name)
-        context.get().emit(events.ZeroHits(contig))
+        log(events.ZeroHits(contig))
         yield contig
         return
 
     if len(set(strand for hit, strand in hits_array)) > 1:
-        logger.debug("Discarding contig %r because it aligned both in forward and reverse sense.", contig.name)
-        context.get().emit(events.StrandConflict(contig))
+        log(events.StrandConflict(contig))
         yield contig
         return
 
@@ -233,26 +218,17 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         hits_array = [(replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1), strand)
                       for hit, strand in hits_array]
 
-        logger.debug("Reverse complemented contig %r.", contig.name)
-        context.get().emit(events.ReverseComplement(contig, new_contig))
-
+        log(events.ReverseComplement(contig, new_contig))
         for i, (hit, strand) in enumerate(hits_array):
-            logger.debug("Part %r of contig %r reverse-aligned at %s%s.",
-                         i, contig.name, hit, " (rev)" if strand == "reverse" else "")
-            context.get().emit(events.InitialHit(contig, hit, strand))
+            log(events.InitialHit(contig, i, hit, strand))
 
     connected = connect_cigar_hits([hit for hit, strand in hits_array]) if hits_array else []
-    logger.debug("Contig %r produced %s aligner hits. After connecting them, the number became %s.",
-                 contig.name, len(hits_array), len(connected))
-    context.get().emit(events.HitNumber(contig, hits_array, connected))
+    log(events.HitNumber(contig, hits_array, connected))
 
     for i, single_hit in enumerate(connected):
         query = replace(contig, name=context.get().generate_new_name())
         part = AlignedContig.make(query, single_hit, strand)
-
-        logger.debug("Part %r of contig %r re-aligned as %r at %s%s.", i, contig.name,
-                     part.name,part.alignment, " (rev)" if strand == "reverse" else "")
-        context.get().emit(events.ConnectedHit(contig, part, i))
+        log(events.ConnectedHit(contig, part, i))
         yield part
 
 
@@ -282,10 +258,10 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
 
             if prev_contig is not None or is_out_of_order(original.name):
                 contig = contig.lstrip()
-                context.get().emit(events.InitialStrip(original, start, original.alignment.q_st - 1))
+                log(events.InitialStrip(original, start, original.alignment.q_st - 1))
             if next_contig is not None or is_out_of_order(original.name):
                 contig = contig.rstrip()
-                context.get().emit(events.InitialStrip(original, original.alignment.q_ei + 1, end))
+                log(events.InitialStrip(original, original.alignment.q_ei + 1, end))
 
         yield contig
 
@@ -425,15 +401,7 @@ def stitch_2_contigs(left, right):
     right_overlap = right_overlap.lstrip().rstrip()
     left_remainder = left_remainder.rstrip()
     right_remainder = right_remainder.lstrip()
-
-    logger.debug("Stitching %r at %s (len %s) with %r at %s (len %s)."
-                 " The left_overlap %r is at %s (len %s)"
-                 " and the right_overlap %r is at %s (len %s).",
-                 left.name, left.alignment, len(left.seq),
-                 right.name, right.alignment, len(right.seq),
-                 left_overlap.name, left_overlap.alignment, len(left_overlap.seq),
-                 right_overlap.name, right_overlap.alignment, len(right_overlap.seq))
-    context.get().emit(events.StitchCut(left, right, left_overlap, right_overlap, left_remainder, right_remainder))
+    log(events.StitchCut(left, right, left_overlap, right_overlap, left_remainder, right_remainder))
 
     # Align overlapping parts, then recombine based on concordance.
     aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
@@ -447,14 +415,10 @@ def stitch_2_contigs(left, right):
     average_concordance = Fraction(sum(concordance) / (len(concordance) or 1))
     concordance_str = ', '.join(map(lambda x: str(int(round(x * 100)) / 100), concordance))
     cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
-    logger.debug("Created overlap contigs %r at %s and %r at %s based on parts of %r and %r, with avg. concordance %s%%, cut point at %s%%, and full concordance [%s].",
-                 left_overlap_take.name, left_overlap.alignment, right_overlap_take.name, right_overlap_take.alignment,
-                 left.name, right.name, round(average_concordance * 100),
-                 round(cut_point_location_scaled * 100), concordance_str)
-    context.get().emit(events.Overlap(left, right, left_overlap, right_overlap,
-                                      left_remainder, right_remainder, left_overlap_take,
-                                      right_overlap_take, concordance, average_concordance,
-                                      max_concordance_index, cut_point_location_scaled))
+    log(events.Overlap(left, right, left_overlap, right_overlap,
+                       left_remainder, right_remainder, left_overlap_take,
+                       right_overlap_take, concordance, average_concordance,
+                       max_concordance_index, cut_point_location_scaled))
 
     return combine_contigs([left_remainder, left_overlap_take, right_overlap_take, right_remainder])
 
@@ -473,8 +437,7 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         # Find overlap. If there isn't one - we are done with the current contig.
         overlapping_contig = find_overlapping_contig(current, contigs)
         if not overlapping_contig:
-            logger.debug("Nothing overlaps with %r.", current.name)
-            context.get().emit(events.NoOverlap(current))
+            log(events.NoOverlap(current))
             yield current
             continue
 
@@ -482,11 +445,7 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         new_contig = stitch_2_contigs(current, overlapping_contig)
         contigs.remove(overlapping_contig)
         contigs.insert(0, new_contig)
-
-        logger.debug("Stitching %r with %r results in %r at %s (len %s).",
-                     current.name, overlapping_contig.name,
-                     new_contig.name, new_contig.alignment, len(new_contig.seq))
-        context.get().emit(events.Stitch(current, overlapping_contig, new_contig))
+        log(events.Stitch(current, overlapping_contig, new_contig))
 
 
 def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
@@ -554,9 +513,7 @@ def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]
         covered, covering = find_covered_contig(contigs)
         if covered:
             contigs.remove(covered)
-            logger.debug("Droped contig %r as it is completely covered by these contigs: %s.",
-                         covered.name, ", ".join(repr(x.name) for x in covering))
-            context.get().emit(events.Drop(covered, covering))
+            log(events.Drop(covered, covering))
         else:
             break
 
@@ -594,8 +551,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 # overlaps around them.
                 # And we are likely to lose quality with every stitching operation.
                 # By skipping we assert that this gap is aligner's fault.
-                logger.debug("Ignored insignificant gap of %r, %s.", contig.name, gap)
-                context.get().emit(events.IgnoreGap(contig, gap))
+                log(events.IgnoreGap(contig, gap))
                 continue
 
             if covered(contig, gap):
@@ -608,15 +564,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 contigs.append(left_part)
                 contigs.append(right_part)
                 process_queue.put(right_part)
-
-                logger.debug("Split contig %r at %s around its gap at [%s, %s]->[%s, %s]. "
-                             "Left part: %r at %s, "
-                             "right part: %r at %s.",
-                             contig.name, contig.alignment,
-                             gap.q_st, gap.q_ei, gap.r_st, gap.r_ei,
-                             left_part.name, left_part.alignment,
-                             right_part.name, right_part.alignment)
-                context.get().emit(events.SplitGap(contig, gap, left_part, right_part))
+                log(events.SplitGap(contig, gap, left_part, right_part))
                 return
 
     process_queue: LifoQueue = LifoQueue()
@@ -632,10 +580,7 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
 def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(contigs)
     for contig in contigs:
-        logger.debug("Introduced contig %r (seq = %s) of ref %r, group_ref %r (seq = %s), and length %s.",
-                     contig.name, contig.seq, contig.ref_name,
-                     contig.group_ref, contig.ref_seq, len(contig.seq))
-        context.get().emit(events.Intro(contig))
+        log(events.Intro(contig))
         context.get().nameset.add(contig.name)
 
     maybe_aligned = list(align_all_to_reference(contigs))
@@ -664,9 +609,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     def combine(group_ref):
         contigs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
         result = combine_contigs(contigs)
-        logger.debug("Combining these contigs for final output for %r: %s.",
-                     group_ref, [f"{x.name!r} at {x.alignment} (len {len(x.seq)})" for x in contigs])
-        context.get().emit(events.FinalCombine(contigs, result))
+        log(events.FinalCombine(contigs, result))
         return result
 
     yield from map(combine, consensus_parts)
