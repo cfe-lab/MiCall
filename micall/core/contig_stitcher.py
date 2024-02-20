@@ -9,47 +9,15 @@ from gotoh import align_it
 from queue import LifoQueue
 from Bio import Seq
 import logging
-from contextvars import ContextVar, Context
-from contextlib import contextmanager
 from fractions import Fraction
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.consensus_aligner import CigarActions
+from micall.utils.contig_stitcher_context import context, StitcherContext
 import micall.utils.contig_stitcher_events as events
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
-
-class StitcherContext:
-    def __init__(self) -> None:
-        self.name_generator_state: int = 0
-        self.nameset: Set[str] = set()
-        self.events: List[events.EventType] = []
-
-    def generate_new_name(self) -> str:
-        while True:
-            self.name_generator_state += 1
-            name = f"c{self.name_generator_state}"
-            if name not in self.nameset:
-                self.nameset.add(name)
-                return name
-
-    def emit(self, event: events.EventType) -> None:
-        self.events.append(event)
-
-
-    @staticmethod
-    @contextmanager
-    def fresh():
-        ctx = StitcherContext()
-        token = context.set(ctx)
-        try:
-            yield ctx
-        finally:
-            context.reset(token)
-
-
-context: ContextVar[StitcherContext] = ContextVar("StitcherContext")
 
 
 @dataclass(frozen=True)

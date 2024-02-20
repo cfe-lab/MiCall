@@ -19,8 +19,9 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig, stitch_consensus, StitcherContext
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus
 from micall.core.plot_contigs import plot_stitcher_coverage
+from micall.utils.contig_stitcher_context import StitcherContext
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
