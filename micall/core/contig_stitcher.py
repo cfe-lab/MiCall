@@ -1,6 +1,6 @@
 from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar
 from collections import defaultdict
-from dataclasses import dataclass, replace
+from dataclasses import replace
 from math import ceil
 from mappy import Aligner
 from functools import reduce
@@ -13,6 +13,7 @@ from fractions import Fraction
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.contig_stitcher_context import context, StitcherContext
+from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 import micall.utils.contig_stitcher_events as events
 
 
@@ -25,119 +26,88 @@ def log(e: events.EventType) -> None:
     logger.debug("%s", e)
 
 
-@dataclass(frozen=True)
-class Contig:
-    name: str
-    seq: str
+def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig, GenotypedContig]:
+    """ Cuts query sequence in two parts with cut_point between them. """
+
+    cut_point = max(0, cut_point)
+    left = replace(self, name=context.get().generate_new_name(), seq=self.seq[:ceil(cut_point)])
+    right = replace(self, name=context.get().generate_new_name(), seq=self.seq[ceil(cut_point):])
+    return (left, right)
 
 
-@dataclass(frozen=True)
-class GenotypedContig(Contig):
-    ref_name: str
-    group_ref: str
-    ref_seq: Optional[str]          # The sequence of self.group_ref. None in cases where the reference organism is unknown.
-    match_fraction: float           # Approximated overall concordance between `seq` and `ref_seq`. It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
+def cut_reference(self: AlignedContig, cut_point: float) -> Tuple[AlignedContig, AlignedContig]:
+    """ Cuts this alignment in two parts with cut_point between them. """
 
-    def cut_query(self, cut_point: float) -> Tuple['GenotypedContig', 'GenotypedContig']:
-        """ Cuts query sequence in two parts with cut_point between them. """
-
-        cut_point = max(0, cut_point)
-        left = replace(self, name=context.get().generate_new_name(), seq=self.seq[:ceil(cut_point)])
-        right = replace(self, name=context.get().generate_new_name(), seq=self.seq[ceil(cut_point):])
-        return (left, right)
+    alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
+    left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
+    right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
+    log(events.Cut(self, left, right, cut_point))
+    return (left, right)
 
 
-@dataclass(frozen=True)
-class AlignedContig(GenotypedContig):
-    alignment: CigarHit
-    strand: Literal["forward", "reverse"]
+def lstrip(self: AlignedContig) -> AlignedContig:
+    """
+    Trims the query sequence of the contig from its beginning up to the start of the
+    alignment. The CIGAR alignment is also updated to reflect the trimming.
+    """
 
-    @staticmethod
-    def make(query: GenotypedContig, alignment: CigarHit, strand: Literal["forward", "reverse"]):
-        return AlignedContig(
-            alignment=alignment,
-            strand=strand,
-            seq=query.seq,
-            name=query.name,
-            ref_name=query.ref_name,
-            group_ref=query.group_ref,
-            ref_seq=query.ref_seq,
-            match_fraction=query.match_fraction)
+    alignment = self.alignment.lstrip_reference().lstrip_query()
+    q_remainder, query = cut_query(self, alignment.q_st - 0.5)
+    alignment = alignment.translate(0, -1 * alignment.q_st)
+    result = AlignedContig.make(query, alignment, self.strand)
+    log(events.LStrip(self, result))
+    return result
 
 
-    def cut_reference(self, cut_point: float) -> Tuple['AlignedContig', 'AlignedContig']:
-        """ Cuts this alignment in two parts with cut_point between them. """
+def rstrip(self: AlignedContig) -> AlignedContig:
+    """
+    Trims the query sequence of the contig from its end based on the end of the
+    alignment. The CIGAR alignment is also updated to reflect the trimming.
+    """
 
-        alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-        left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
-        right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
-        log(events.Cut(self, left, right, cut_point))
-        return (left, right)
-
-
-    def lstrip(self) -> 'AlignedContig':
-        """
-        Trims the query sequence of the contig from its beginning up to the start of the
-        alignment. The CIGAR alignment is also updated to reflect the trimming.
-        """
-
-        alignment = self.alignment.lstrip_reference().lstrip_query()
-        q_remainder, query = self.cut_query(alignment.q_st - 0.5)
-        alignment = alignment.translate(0, -1 * alignment.q_st)
-        result = AlignedContig.make(query, alignment, self.strand)
-        log(events.LStrip(self, result))
-        return result
+    alignment = self.alignment.rstrip_reference().rstrip_query()
+    query, q_remainder = cut_query(self, alignment.q_ei + 0.5)
+    result = AlignedContig.make(query, alignment, self.strand)
+    log(events.RStrip(self, result))
+    return result
 
 
-    def rstrip(self) -> 'AlignedContig':
-        """
-        Trims the query sequence of the contig from its end based on the end of the
-        alignment. The CIGAR alignment is also updated to reflect the trimming.
-        """
+def overlap(a: AlignedContig, b: AlignedContig) -> bool:
+    def intervals_overlap(x, y):
+        return x[0] <= y[1] and x[1] >= y[0]
 
-        alignment = self.alignment.rstrip_reference().rstrip_query()
-        query, q_remainder = self.cut_query(alignment.q_ei + 0.5)
-        result = AlignedContig.make(query, alignment, self.strand)
-        log(events.RStrip(self, result))
-        return result
+    if a.group_ref != b.group_ref:
+        return False
+
+    return intervals_overlap((a.alignment.r_st, a.alignment.r_ei),
+                             (b.alignment.r_st, b.alignment.r_ei))
 
 
-    def overlaps(self, other) -> bool:
-        def intervals_overlap(x, y):
-            return x[0] <= y[1] and x[1] >= y[0]
+def munge(self: AlignedContig, other: AlignedContig) -> AlignedContig:
+    """
+    Combines two adjacent contigs into a single contig by joining their
+    query sequences and alignments.
+    """
 
-        if self.group_ref != other.group_ref:
-            return False
+    match_fraction = min(self.match_fraction, other.match_fraction)
+    ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
+    query = GenotypedContig(seq=self.seq + other.seq,
+                            name=context.get().generate_new_name(),
+                            ref_name=ref_name,
+                            group_ref=self.group_ref,
+                            ref_seq=self.ref_seq,
+                            match_fraction=match_fraction)
 
-        return intervals_overlap((self.alignment.r_st, self.alignment.r_ei),
-                                 (other.alignment.r_st, other.alignment.r_ei))
+    self_alignment = self.alignment
+    other_alignment = \
+        other.alignment.translate(
+            query_delta=(-1 * other.alignment.q_st + self.alignment.q_ei + 1),
+            reference_delta=0)
+    alignment = self_alignment.connect(other_alignment)
 
-
-    def munge(self, other: 'AlignedContig') -> 'AlignedContig':
-        """
-        Combines two adjacent contigs into a single contig by joining their
-        query sequences and alignments.
-        """
-
-        match_fraction = min(self.match_fraction, other.match_fraction)
-        ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
-        query = GenotypedContig(seq=self.seq + other.seq,
-                                name=context.get().generate_new_name(),
-                                ref_name=ref_name,
-                                group_ref=self.group_ref,
-                                ref_seq=self.ref_seq,
-                                match_fraction=match_fraction)
-
-        self_alignment = self.alignment
-        other_alignment = \
-            other.alignment.translate(
-                query_delta=(-1 * other.alignment.q_st + self.alignment.q_ei + 1),
-                reference_delta=0)
-        alignment = self_alignment.connect(other_alignment)
-
-        ret = AlignedContig.make(query=query, alignment=alignment, strand=self.strand)
-        log(events.Munge(self, other, ret))
-        return ret
+    ret = AlignedContig.make(query=query, alignment=alignment, strand=self.strand)
+    log(events.Munge(self, other, ret))
+    return ret
 
 
 def sliding_window(sequence: Iterable[T]) -> Iterable[Tuple[Optional[T], T, Optional[T]]]:
@@ -159,18 +129,18 @@ def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
     Combine a list of contigs into a single AlignedContig by trimming and merging overlapping parts.
 
     Left-trimming and right-trimming occur at any shared overlapping points
-    between adjacent parts. AlignedContig.munge() is used to combine contiguous parts without overlap.
+    between adjacent parts. munge() is used to combine contiguous parts without overlap.
     """
 
     stripped_parts = []
     for prev_part, part, next_part in sliding_window(parts):
         if prev_part is not None:
-            part = part.lstrip()
+            part = lstrip(part)
         if next_part is not None:
-            part = part.rstrip()
+            part = rstrip(part)
         stripped_parts.append(part)
 
-    ret = reduce(AlignedContig.munge, stripped_parts)
+    ret = reduce(munge, stripped_parts)
     log(events.Combine(stripped_parts, ret))
     return ret
 
@@ -256,10 +226,10 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
             end = next_contig.alignment.q_st - 1 if isinstance(next_contig, AlignedContig) else len(contig.seq) - 1
 
             if prev_contig is not None or is_out_of_order(original.name):
-                contig = contig.lstrip()
+                contig = lstrip(contig)
                 log(events.InitialStrip(original, start, original.alignment.q_st - 1))
             if next_contig is not None or is_out_of_order(original.name):
-                contig = contig.rstrip()
+                contig = rstrip(contig)
                 log(events.InitialStrip(original, original.alignment.q_ei + 1, end))
 
         yield contig
@@ -295,18 +265,18 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     return aseq1, aseq2
 
 
-def find_all_overlapping_contigs(self, aligned_contigs):
+def find_all_overlapping_contigs(self: AlignedContig, aligned_contigs):
     """"
     Yield all contigs from a collection that overlap with a given contig.
     Contigs are considered overlapping if they have overlapping intervals on the same reference genome.
     """
 
     for other in aligned_contigs:
-        if self.overlaps(other):
+        if overlap(self, other):
             yield other
 
 
-def find_overlapping_contig(self, aligned_contigs):
+def find_overlapping_contig(self: AlignedContig, aligned_contigs):
     """
     Find the single contig in a collection that overlaps the most with a given contig.
     It returns the contig with the maximum overlapped reference length with the given contig (self).
@@ -394,12 +364,12 @@ def stitch_2_contigs(left, right):
     """
 
     # Cut in 4 parts.
-    left_remainder, left_overlap = left.cut_reference(right.alignment.r_st - 0.5)
-    right_overlap, right_remainder = right.cut_reference(left.alignment.r_ei + 0.5)
-    left_overlap = left_overlap.rstrip().lstrip()
-    right_overlap = right_overlap.lstrip().rstrip()
-    left_remainder = left_remainder.rstrip()
-    right_remainder = right_remainder.lstrip()
+    left_remainder, left_overlap = cut_reference(left, right.alignment.r_st - 0.5)
+    right_overlap, right_remainder = cut_reference(right, left.alignment.r_ei + 0.5)
+    left_overlap = lstrip(rstrip(left_overlap))
+    right_overlap = lstrip(rstrip(right_overlap))
+    left_remainder = rstrip(left_remainder)
+    right_remainder = lstrip(right_remainder)
     log(events.StitchCut(left, right, left_overlap, right_overlap, left_remainder, right_remainder))
 
     # Align overlapping parts, then recombine based on concordance.
@@ -407,8 +377,8 @@ def stitch_2_contigs(left, right):
     concordance = calculate_concordance(aligned_left, aligned_right)
     aligned_left_cutpoint, aligned_right_cutpoint, max_concordance_index = \
         concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance)
-    left_overlap_take, left_overlap_drop = left_overlap.cut_reference(aligned_left_cutpoint)
-    right_overlap_drop, right_overlap_take = right_overlap.cut_reference(aligned_right_cutpoint)
+    left_overlap_take, left_overlap_drop = cut_reference(left_overlap, aligned_left_cutpoint)
+    right_overlap_drop, right_overlap_take = cut_reference(right_overlap, aligned_right_cutpoint)
 
     # Log it.
     average_concordance = Fraction(sum(concordance) / (len(concordance) or 1))
@@ -493,7 +463,7 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
         current_interval = (current.alignment.r_st, current.alignment.r_ei)
 
         # Create a map of cumulative coverage for contigs
-        overlaping_contigs = [x for x in contigs if x != current and x.overlaps(current)]
+        overlaping_contigs = [x for x in contigs if x != current and overlap(current, x)]
         cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
@@ -555,9 +525,9 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
 
             if covered(contig, gap):
                 midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + contig.alignment.epsilon
-                left_part, right_part = contig.cut_reference(midpoint)
-                left_part = left_part.rstrip()
-                right_part = right_part.lstrip()
+                left_part, right_part = cut_reference(contig, midpoint)
+                left_part = rstrip(left_part)
+                right_part = lstrip(right_part)
 
                 contigs.remove(contig)
                 contigs.append(left_part)

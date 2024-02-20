@@ -20,7 +20,7 @@ from matplotlib.colors import Normalize
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
-from micall.core.contig_stitcher import Contig, GenotypedContig, AlignedContig
+from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
 from micall.utils.cigar_tools import CigarHit
 import micall.utils.contig_stitcher_events as events
 
@@ -520,7 +520,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def symmetric_closure(graph):
         return graph_sum(graph, inverse_graph(graph))
 
-    def record_contig(contig: GenotypedContig, parents: List[GenotypedContig]):
+    def record_contig(contig: GenotypedContig, parents: Iterable[GenotypedContig]):
         complete_contig_map[contig.name] = contig
         if [contig.name] != [parent.name for parent in parents]:
             for parent in parents:

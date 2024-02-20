@@ -5,7 +5,7 @@ import os
 import pytest
 
 import micall.core.contig_stitcher as stitcher
-from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig, disambiguate_concordance
+from micall.core.contig_stitcher import split_contigs_with_gaps, stitch_contigs, GenotypedContig, merge_intervals, find_covered_contig, stitch_consensus, calculate_concordance, align_all_to_reference, main, AlignedContig, disambiguate_concordance, lstrip, rstrip
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
 from micall.tests.test_denovo import check_hcv_db # activates the fixture
@@ -721,7 +721,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
 
     assert len(visualizer().elements) > len(contigs)
 
-    assert all(x.seq == x.lstrip().rstrip().seq for x in results)
+    assert all(x.seq == lstrip(rstrip(x)).seq for x in results)
     assert { contig.seq for contig in contigs } \
         == { contig.seq for contig in results }
 
@@ -746,10 +746,10 @@ def test_stitching_partial_align(exact_aligner, visualizer):
 
     assert len(visualizer().elements) > len(contigs)
 
-    assert all(x.seq != x.lstrip().rstrip().seq for x in results)
+    assert all(x.seq != lstrip(rstrip(x)).seq for x in results)
 
     assert { contig.seq for contig in contigs } \
-        != { contig.lstrip().rstrip().seq for contig in results }
+        != { lstrip(rstrip(contig)).seq for contig in results }
 
 
 def test_partial_align_consensus(exact_aligner, visualizer):
@@ -1080,10 +1080,10 @@ def test_reverse_complement_match_with_padding(projects, visualizer):
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
     assert results[0].seq == ref_part
-    assert len(results[0].lstrip().seq) == len(ref_part) - 24
-    assert len(results[0].rstrip().seq) == len(ref_part) - 27
-    assert results[0].rstrip().seq == ref_part[:-27] # 27 Gs on the right
-    assert results[0].lstrip().seq == ref_part[24:] # 24 Ts on the left
+    assert len(lstrip(results[0]).seq) == len(ref_part) - 24
+    assert len(rstrip(results[0]).seq) == len(ref_part) - 27
+    assert rstrip(results[0]).seq == ref_part[:-27] # 27 Gs on the right
+    assert lstrip(results[0]).seq == ref_part[24:] # 24 Ts on the left
     assert len(visualizer().elements) > len(contigs)
 
 
@@ -1111,10 +1111,10 @@ def test_multiple_reverse_complement_matches(projects, visualizer):
     assert len(results) == 1
     assert len(results[0].seq) == len(ref_part)
     assert results[0].seq == ref_part
-    assert len(results[0].lstrip().seq) == len(ref_part) - 24
-    assert len(results[0].rstrip().seq) == len(ref_part) - 27
-    assert results[0].lstrip().seq == ref_part[24:]
-    assert results[0].rstrip().seq == ref_part[:-27]
+    assert len(lstrip(results[0]).seq) == len(ref_part) - 24
+    assert len(rstrip(results[0]).seq) == len(ref_part) - 27
+    assert lstrip(results[0]).seq == ref_part[24:]
+    assert rstrip(results[0]).seq == ref_part[:-27]
 
     assert len(visualizer().elements) > len(contigs)
 
@@ -1143,10 +1143,10 @@ def test_multiple_reverse_complement_matches_out_of_order(projects, visualizer):
     assert len(results) == 1
     assert len(results[0].seq) == len(ref_part)
     assert results[0].seq == ref_part
-    assert len(results[0].lstrip().seq) == len(ref_part) - 24
-    assert len(results[0].rstrip().seq) == len(ref_part) - 27
-    assert results[0].lstrip().seq == ref_part[24:]
-    assert results[0].rstrip().seq == ref_part[:-27]
+    assert len(lstrip(results[0]).seq) == len(ref_part) - 24
+    assert len(rstrip(results[0]).seq) == len(ref_part) - 27
+    assert lstrip(results[0]).seq == ref_part[24:]
+    assert rstrip(results[0]).seq == ref_part[:-27]
     assert len(visualizer().elements) > len(contigs)
 
 
