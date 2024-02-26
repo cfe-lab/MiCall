@@ -60,6 +60,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
 
+      - name: Run the formatter
+        run: |
+          python -m pip install -r requirements-test.txt
+          flake8 micall/
+
       - name: Test with pytest
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
