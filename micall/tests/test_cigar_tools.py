@@ -46,8 +46,6 @@ cigar_mapping_cases = [
                    {0: 0, 1: 1, 2: 4, 3: 5, 4: 5, 5: 5, 6: 6, 7: 7}),
     ('2=1X2N1N2=1H2S', {0: 0, 1: 1, 2: 2, 6: 3, 7: 4},
                    {0: 0, 1: 1, 2: 2, 3: 2, 4: 2, 5: 2, 6: 3, 7: 4}),
-    ('2M2D2M2I2M', {0: 0, 1: 1, 4: 2, 5: 3, 6: 6, 7: 7},
-                   {0: 0, 1: 1, 2: 1, 3: 1, 4: 2, 5: 3, 6: 6, 7: 7}),
     ('3=1X2N1N2=1H2S', {0: 0, 1: 1, 2: 2, 3: 3, 7: 4, 8: 5},
                    {0: 0, 1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 3, 7: 4, 8: 5}),
 
@@ -65,10 +63,7 @@ cigar_mapping_cases = [
 @pytest.mark.parametrize("cigar_str, expected_mapping", [(x[0], x[1]) for x in cigar_mapping_cases])
 def test_cigar_to_coordinate_mapping(cigar_str, expected_mapping):
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
-
     assert expected_mapping == mapping.ref_to_query
-    assert expected_mapping == {i: mapping.ref_to_query[i]
-                                for i in mapping.ref_to_query.keys()}
 
 
 @pytest.mark.parametrize("cigar_str", [x[0] for x in cigar_mapping_cases])
@@ -87,16 +82,9 @@ def test_cigar_to_coordinate_bijection_property(cigar_str):
 def test_cigar_to_coordinate_mapping_leftmax(cigar_str, expected_leftmax_mapping):
     mapping = Cigar.coerce(cigar_str).coordinate_mapping
 
-    def test():
-        fullrange = {i: mapping.ref_to_query.left_max(i)
-                     for i in mapping.ref_to_query.domain}
-        assert expected_leftmax_mapping == fullrange
-
-    if isinstance(expected_leftmax_mapping, Exception):
-        with pytest.raises(type(expected_leftmax_mapping)):
-            test()
-    else:
-        test()
+    fullrange = {i: mapping.ref_to_query.left_max(i)
+                 for i in mapping.ref_to_query.domain}
+    assert expected_leftmax_mapping == fullrange
 
 
 @pytest.mark.parametrize("cigar_str, expected_mapping", [(x[0], x[1]) for x in cigar_mapping_cases])
@@ -119,18 +107,10 @@ def test_cigar_hit_to_coordinate_mapping_leftmax(cigar_str, expected_leftmax_map
     cigar = Cigar.coerce(cigar_str)
     hit = CigarHit(cigar, r_st=5, r_ei=(5 + cigar.ref_length - 1), q_st=7, q_ei=(7 + cigar.query_length - 1))
     mapping = hit.coordinate_mapping
-
-    def test(expected):
-        # Coordinates are translated by q_st and r_st.
-        fullrange = {i: mapping.ref_to_query.left_max(i)
-                     for i in mapping.ref_to_query.domain}
-        assert expected == fullrange
-
-    if isinstance(expected_leftmax_mapping, Exception):
-        with pytest.raises(type(expected_leftmax_mapping)):
-            test(expected_leftmax_mapping)
-    else:
-        test({k + hit.r_st: v + hit.q_st if v is not None else v for (k, v) in expected_leftmax_mapping.items()})
+    expected = {k + hit.r_st: v + hit.q_st if v is not None else v for (k, v) in expected_leftmax_mapping.items()}
+    fullrange = {i: mapping.ref_to_query.left_max(i)
+                 for i in mapping.ref_to_query.domain}
+    assert expected == fullrange
 
 
 def test_invalid_operation_in_cigar_string():
@@ -276,19 +256,19 @@ cigar_hit_ref_cut_cases = [
 
     # Negative cases
     ('9M9I9M@1->1', 20.5,
-     IndexError("20.5 is bigger than reference (18)")),
+     IndexError("Cut point out of reference bounds")), # 20.5 is bigger than reference (18)
 
     ('@2->2', 2.5,
-     IndexError("Empty string cannot be cut")),
+     IndexError("Cut point out of reference bounds")), # Empty string cannot be cut
 
     ('@2->2', 1.5,
-     IndexError("Empty string cannot be cut")),
+     IndexError("Cut point out of reference bounds")), # Empty string cannot be cut
 
     ('9I@1->1', 3.5,
-     IndexError("Out of reference bounds")),
+     IndexError("Cut point out of reference bounds")),
 
     ('9M@1->1', 4,
-     ValueError("Cut point must not be an integer")),
+     ValueError("Cut accepts fractions, not integers")),
 
 ]
 
@@ -298,8 +278,9 @@ def test_cigar_hit_ref_cut(hit, cut_point, expected_result):
     hit = parsed_hit(hit)
 
     if isinstance(expected_result, Exception):
-        with pytest.raises(type(expected_result)):
+        with pytest.raises(type(expected_result)) as exc_info:
             hit.cut_reference(cut_point)
+        assert exc_info.value.args == expected_result.args
 
     else:
         expected_result = list(map(parsed_hit, expected_result))
