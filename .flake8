@@ -1,14 +1,2 @@
 [flake8]
-ignore = W293,E121,E123,E126,E127,E128,E211,E225,E226,E231,E241,E261,E262,E265,E275,E302,E303,E305,E502,E701,E711,E722,E999,F541,F811,F821,F841,W291,W292,W503,W504
 max-line-length = 120
-per-file-ignores =
-    micall/tests/test_align_it_gotoh.py:E501,
-    micall/core/plot_simple.py:F401,
-    micall/core/remap.py:F401,
-    micall/tests/test_aln2counts_report.py:F401,
-    micall/tests/test_consensus_aligner.py:F401,
-    micall/tests/test_primer_tracker.py:F401,
-    micall/tests/test_sample.py:F401,
-    micall/utils/aln2counts_simplify.py:F401,
-    micall/utils/conseq_compare.py:F401,
-    micall/utils/find_reads_in_sam.py:F401,
