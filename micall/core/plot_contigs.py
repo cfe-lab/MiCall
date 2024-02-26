@@ -432,11 +432,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     strip_set: Set[Tuple[str, int, int]] = set()
 
     def remove_intermediate_edges(graph):
+        tr_cl = transitive_closure(graph)
         ret = {}
         for parent, children in graph.items():
             lst = []
             for child in children:
-                if all(other not in graph.get(child, []) for other in children):
+                if all(other not in tr_cl.get(child, []) for other in children):
                     lst.append(child)
             ret[parent] = lst
         return ret
