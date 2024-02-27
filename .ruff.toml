@@ -1,0 +1,62 @@
+
+[lint.per-file-ignores]
+
+# These are pre-file ignores that were added for compatibility purposes when ruff was introduced into MiCall.
+# TODO: resolve these warnings insteads of ignoring them.
+
+# Syntax error: ignore unexpected token in this file
+"micall/utils/make_hcv_genotype_refs.py" = ["E999"]
+
+# File with unused imports and local variable assignments
+"micall/core/plot_simple.py" = ["F401", "F841"]
+
+# Ignore bare except usage in project configuration
+"micall/core/project_config.py" = ["E722"]
+
+# Unused import in remap module
+"micall/core/remap.py" = ["F401"]
+
+# Do not compare types and bare excepts in pssm_lib module
+"micall/g2p/pssm_lib.py" = ["E722", "E721"]
+
+# F-string errors without placeholders in tests
+"micall/tests/svg_differ.py" = ["F541"]
+
+# Unused import in test_aln2counts_report module
+"micall/tests/test_aln2counts_report.py" = ["F401"]
+
+# Multiple issues in test_consensus_aligner: unused imports, multi-statement line, and unused local variable
+"micall/tests/test_consensus_aligner.py" = ["F401", "E701", "F841"]
+
+# Unused import in test_primer_tracker module
+"micall/tests/test_primer_tracker.py" = ["F401"]
+
+# F-string errors without placeholders in test_remap module
+"micall/tests/test_remap.py" = ["F541"]
+
+# Unused import in test_sample module
+"micall/tests/test_sample.py" = ["F401"]
+
+# Unused imports, undefined name, and type comparison in aln2counts_simplify module
+"micall/utils/aln2counts_simplify.py" = ["F401", "F821", "E721"]
+
+# Unused local variable in compare_mapping module
+"micall/utils/compare_mapping.py" = ["F841"]
+
+# Multiple issues in conseq_compare: unused sys, redefinitions, and unused local variables
+"micall/utils/conseq_compare.py" = ["F811", "F401", "F841"]
+
+# Comparisons to None should use `is` or `is not` in dd module
+"micall/utils/dd.py" = ["E711"]
+
+# Unused imports and local variable in find_reads_in_sam module
+"micall/utils/find_reads_in_sam.py" = ["F401", "F841"]
+
+# F-string errors without placeholders in primer_tracker module
+"micall/utils/primer_tracker.py" = ["F541"]
+
+# F-string errors without placeholders in ref_aligner module
+"micall/utils/ref_aligner.py" = ["F541"]
+
+# Unused local variable in release_test_compare script
+"release_test_compare.py" = ["F841"]
