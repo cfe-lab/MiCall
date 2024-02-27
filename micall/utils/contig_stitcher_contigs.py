@@ -14,8 +14,13 @@ class Contig:
 class GenotypedContig(Contig):
     ref_name: str
     group_ref: str
-    ref_seq: Optional[str]          # The sequence of self.group_ref. None in cases where the reference organism is unknown.
-    match_fraction: float           # Approximated overall concordance between `seq` and `ref_seq`. It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
+
+    # The sequence of self.group_ref. None in cases where the reference organism is unknown.
+    ref_seq: Optional[str]
+
+    # Approximated overall concordance between `seq` and `ref_seq`.
+    # It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.
+    match_fraction: float
 
 
 @dataclass(frozen=True)

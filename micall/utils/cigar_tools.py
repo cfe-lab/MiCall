@@ -4,10 +4,9 @@ Module for handling CIGAR strings and related alignment formats.
 
 from math import ceil, floor
 import re
-from typing import Container, Tuple, Iterable, Optional, Set, Dict, List, Union
+from typing import Tuple, Iterable, Optional, Set, List, Union
 from dataclasses import dataclass
 from functools import cached_property, reduce
-from itertools import chain, dropwhile
 from fractions import Fraction
 
 from micall.utils.consensus_aligner import CigarActions
@@ -26,8 +25,7 @@ class IntDict(dict):
     def __init__(self):
         super().__init__()
         self.domain: Set[int] = set()   # superset of self.keys()
-        self.codomain: Set[int] = set() # superset of self.values()
-
+        self.codomain: Set[int] = set()  # superset of self.values()
 
     def extend(self, key: Optional[int], value: Optional[int]):
         if key is not None and value is not None:
@@ -39,14 +37,11 @@ class IntDict(dict):
         if value is not None:
             self.codomain.add(value)
 
-
     def left_max(self, index) -> Optional[int]:
         return max((v for (k, v) in self.items() if k <= index), default=None)
 
-
     def right_min(self, index) -> Optional[int]:
         return min((v for (k, v) in self.items() if k >= index), default=None)
-
 
     def translate(self, domain_delta: int, codomain_delta: int) -> 'IntDict':
         """
@@ -84,7 +79,6 @@ class CoordinateMapping:
         self.ref_to_op = IntDict()
         self.query_to_op = IntDict()
 
-
     def extend(self,
                ref_index: Optional[int],
                query_index: Optional[int],
@@ -94,7 +88,6 @@ class CoordinateMapping:
         self.query_to_ref.extend(query_index, ref_index)
         self.ref_to_op.extend(ref_index, op_index)
         self.query_to_op.extend(query_index, op_index)
-
 
     def translate(self, reference_delta: int, query_delta: int) -> 'CoordinateMapping':
         """
@@ -115,11 +108,9 @@ class CoordinateMapping:
 
         return ret
 
-
     def __eq__(self, other):
         return (self.ref_to_op, self.query_to_op) \
             == (other.ref_to_op, other.query_to_op)
-
 
     def __repr__(self):
         return f'CoordinateMapping({self.ref_to_op},{self.query_to_op})'
@@ -146,10 +137,8 @@ class Cigar:
     CIGAR strings are defined in the SAM specification (https://samtools.github.io/hts-specs/SAMv1.pdf).
     """
 
-
     def __init__(self, data) -> None:
         self._data: List[Tuple[int, CigarActions]] = list(Cigar.normalize(data))
-
 
     @staticmethod
     def coerce(obj: Union['Cigar', str, Iterable[Tuple[int, CigarActions]]]):
@@ -164,7 +153,6 @@ class Cigar:
 
         raise TypeError(f"Cannot coerce {obj!r} to CIGAR string.")
 
-
     def iterate_operations(self) -> Iterable[CigarActions]:
         """
         Yields each operation in the CIGAR sequence as a `CigarActions` enum.
@@ -174,7 +162,6 @@ class Cigar:
         for num, operation in self._data:
             for _ in range(num):
                 yield operation
-
 
     def iterate_operations_with_pointers(self) -> Iterable[Tuple[CigarActions, Optional[int], Optional[int]]]:
         """
@@ -210,7 +197,6 @@ class Cigar:
             else:
                 yield (operation, None, None)
 
-
     def slice_operations(self, start_inclusive, end_noninclusive) -> 'Cigar':
         """
         Creates a new Cigar object by slicing the current one from start_inclusive to
@@ -225,7 +211,6 @@ class Cigar:
         return Cigar([(1, op) for op in self.iterate_operations()]
                      [start_inclusive:end_noninclusive])
 
-
     def lstrip_query(self) -> 'Cigar':
         """ Return a copy of the Cigar with leading (unmatched) query elements removed. """
 
@@ -236,7 +221,6 @@ class Cigar:
                in enumerate(self.iterate_operations_with_pointers())
                if query_pointer is None or i >= min_op]
         return Cigar.coerce(ops)
-
 
     def rstrip_query(self) -> 'Cigar':
         """ Return a copy of the Cigar with trailing (unmatched) query elements removed. """
@@ -249,7 +233,6 @@ class Cigar:
                if query_pointer is None or i <= max_op]
         return Cigar.coerce(ops)
 
-
     def lstrip_reference(self) -> 'Cigar':
         """ Return a copy of the Cigar with leading (unmatched) reference elements removed. """
 
@@ -260,7 +243,6 @@ class Cigar:
                in enumerate(self.iterate_operations_with_pointers())
                if ref_pointer is None or i >= min_op]
         return Cigar.coerce(ops)
-
 
     def rstrip_reference(self) -> 'Cigar':
         """ Return a copy of the Cigar with trailing (unmatched) reference elements removed. """
@@ -273,11 +255,11 @@ class Cigar:
                if ref_pointer is None or i <= max_op]
         return Cigar.coerce(ops)
 
-
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
         """
-        Convert this CIGAR string to coordinate mapping representing a reference-to-query and query-to-reference coordinate mappings.
+        Convert this CIGAR string to coordinate mapping representing
+        a reference-to-query and query-to-reference coordinate mappings.
 
         :param cigar: a CIGAR string.
 
@@ -293,7 +275,6 @@ class Cigar:
                            op_pointer)
 
         return mapping
-
 
     def to_msa(self, reference_seq, query_seq) -> Tuple[str, str]:
         """
@@ -325,11 +306,9 @@ class Cigar:
 
         return reference_msa, query_msa
 
-
     @cached_property
     def op_length(self):
         return sum(1 for x in self.iterate_operations())
-
 
     @cached_property
     def query_length(self):
@@ -337,29 +316,27 @@ class Cigar:
                     in self.iterate_operations_with_pointers()),
                    default=0)
 
-
     @cached_property
     def ref_length(self):
         return max((ref_pointer + 1 if ref_pointer is not None else 0 for (_, ref_pointer, _)
                     in self.iterate_operations_with_pointers()),
                    default=0)
 
-     #                                 #
-     #  Boring boilerplate code below  #
-     #                                 #
+        #                                 #
+        #  Boring boilerplate code below  #
+        #                                 #
 
     OP_MAPPING = {
-        'M': CigarActions.MATCH,        # Alignment match (can be a sequence match or mismatch)
-        'I': CigarActions.INSERT,       # Insertion to the reference
-        'D': CigarActions.DELETE,       # Deletion from the reference
-        'N': CigarActions.SKIPPED,      # Skipped region from the reference
-        'S': CigarActions.SOFT_CLIPPED, # Soft clip on the read (ignored region, not aligned but present in the read)
-        'H': CigarActions.HARD_CLIPPED, # Hard clip on the read (ignored region, not present in the read)
-        'P': CigarActions.PADDING,      # Padding (silent deletion from padded reference, not applicable for our case)
-        '=': CigarActions.SEQ_MATCH,    # Sequence match
-        'X': CigarActions.MISMATCH,     # Sequence mismatch
+        'M': CigarActions.MATCH,         # Alignment match (can be a sequence match or mismatch)
+        'I': CigarActions.INSERT,        # Insertion to the reference
+        'D': CigarActions.DELETE,        # Deletion from the reference
+        'N': CigarActions.SKIPPED,       # Skipped region from the reference
+        'S': CigarActions.SOFT_CLIPPED,  # Soft clip on the read (ignored region, not aligned but present in the read)
+        'H': CigarActions.HARD_CLIPPED,  # Hard clip on the read (ignored region, not present in the read)
+        'P': CigarActions.PADDING,       # Padding (silent deletion from padded reference, not applicable for our case)
+        '=': CigarActions.SEQ_MATCH,     # Sequence match
+        'X': CigarActions.MISMATCH,      # Sequence mismatch
     }
-
 
     @staticmethod
     def parse_operation(operation: str) -> CigarActions:
@@ -368,11 +345,9 @@ class Cigar:
         else:
             raise ValueError(f"Unexpected CIGAR action: {operation}.")
 
-
     @staticmethod
     def operation_to_str(op: CigarActions) -> str:
         return [k for (k, v) in Cigar.OP_MAPPING.items() if v == op][0]
-
 
     @staticmethod
     def parse(string) -> 'Cigar':
@@ -394,7 +369,6 @@ class Cigar:
                 raise ValueError(f"Invalid CIGAR string. Invalid part: {string[:20]}")
 
         return Cigar(data)
-
 
     @staticmethod
     def normalize(cigar_lst) -> Iterable[Tuple[int, CigarActions]]:
@@ -419,7 +393,7 @@ class Cigar:
             if not isinstance(num, int) or not isinstance(operation, CigarActions):
                 raise ValueError(f"Invalid CIGAR list: {item!r} is not a number/operation tuple.")
             if num < 0:
-                raise ValueError(f"Invalid CIGAR list: number of operations is negative.")
+                raise ValueError("Invalid CIGAR list: number of operations is negative.")
 
             # Normalization
             if num == 0:
@@ -431,23 +405,21 @@ class Cigar:
                     last_item = (last_num + num, operation)
                     continue
 
-            if last_item: yield (last_item[0], last_item[1])
+            if last_item:
+                yield (last_item[0], last_item[1])
             last_item = item
 
-        if last_item: yield (last_item[0], last_item[1])
-
+        if last_item:
+            yield (last_item[0], last_item[1])
 
     def __eq__(self, other) -> bool:
         return isinstance(other, Cigar) and self._data == other._data
 
-
     def __add__(self, other: 'Cigar'):
         return Cigar(self._data + other._data)
 
-
     def __repr__(self):
         return f'Cigar({str(self)!r})'
-
 
     def __str__(self):
         """ Inverse of Cigar.parse """
@@ -472,10 +444,9 @@ class CigarHit:
 
     cigar: Cigar
     r_st: int
-    r_ei: int # inclusive
+    r_ei: int  # inclusive
     q_st: int
-    q_ei: int # inclusive
-
+    q_ei: int  # inclusive
 
     def __post_init__(self):
         if self.ref_length != self.cigar.ref_length:
@@ -486,16 +457,13 @@ class CigarHit:
             raise ValueError(f"CIGAR string maps {self.cigar.query_length}"
                              f" query positions, but CIGAR hit range is {self.query_length}")
 
-
     @property
     def ref_length(self):
         return self.r_ei + 1 - self.r_st
 
-
     @property
     def query_length(self):
         return self.q_ei + 1 - self.q_st
-
 
     @staticmethod
     def from_default_alignment(r_st, r_ei, q_st, q_ei):
@@ -511,7 +479,6 @@ class CigarHit:
 
         return CigarHit(cigar, r_st=r_st, r_ei=r_ei, q_st=q_st, q_ei=q_ei)
 
-
     def overlaps(self, other) -> bool:
         """
         Determines whether this CigarHit overlaps with another in terms of reference or query coordinates.
@@ -526,7 +493,6 @@ class CigarHit:
         return intervals_overlap((self.r_st, self.r_ei), (other.r_st, other.r_ei)) \
             or intervals_overlap((self.q_st, self.q_ei), (other.q_st, other.q_ei))
 
-
     def touches(self, other) -> bool:
         """
         Checks if the end of this CigarHit is immediately adjacent to the start of another one.
@@ -534,8 +500,7 @@ class CigarHit:
         """
 
         return self.r_ei + 1 == other.r_st \
-           and self.q_ei + 1 == other.q_st
-
+            and self.q_ei + 1 == other.q_st
 
     def _gaps(self, is_deletions: bool) -> Iterable['CigarHit']:
         last_query_index = self.q_st
@@ -570,7 +535,6 @@ class CigarHit:
             if op_index in op_to_ref:
                 last_ref_index = op_to_ref[op_index]
 
-
     def deletions(self) -> Iterable['CigarHit']:
         return self._gaps(is_deletions=True)
 
@@ -592,7 +556,6 @@ class CigarHit:
                         q_st=self.q_st,
                         q_ei=other.q_ei)
 
-
     def connect(self, other):
         """
         Inserts deletions/insertions between self and other,
@@ -605,11 +568,9 @@ class CigarHit:
         filler = CigarHit.from_default_alignment(self.r_ei + 1, other.r_st - 1, self.q_ei + 1, other.q_st - 1)
         return self + filler + other
 
-
     @property
     def epsilon(self):
         return Fraction(1, self.cigar.op_length * 3 + 1)
-
 
     def _ref_cut_to_op_cut(self, cut_point):
         mapping = self.coordinate_mapping
@@ -622,7 +583,7 @@ class CigarHit:
         if right_op_cut_point is None:
             right_op_cut_point = self.cigar.op_length
 
-        lerp = lambda start, end, t: (1 - t) * start + t * end
+        def lerp(start, end, t): return (1 - t) * start + t * end
         op_cut_point = lerp(left_op_cut_point, right_op_cut_point,
                             cut_point - floor(cut_point))
 
@@ -632,19 +593,17 @@ class CigarHit:
 
         return op_cut_point
 
-
     def _slice(self, r_st, q_st, o_st, o_ei):
         cigar = self.cigar.slice_operations(o_st, o_ei + 1)
         r_ei = r_st + cigar.ref_length - 1
         q_ei = q_st + cigar.query_length - 1
 
         return CigarHit(cigar=cigar,
-                        r_st = r_st,
-                        r_ei = r_ei,
-                        q_st = q_st,
-                        q_ei = q_ei,
+                        r_st=r_st,
+                        r_ei=r_ei,
+                        q_st=q_st,
+                        q_ei=q_ei,
                         )
-
 
     def cut_reference(self, cut_point: float) -> Tuple['CigarHit', 'CigarHit']:
         """
@@ -667,47 +626,42 @@ class CigarHit:
 
         return left, right
 
-
     def lstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with leading (unmatched) query elements removed. """
 
         cigar = self.cigar.lstrip_query()
         return CigarHit(cigar, r_st=self.r_ei - cigar.ref_length + 1, r_ei=self.r_ei,
-                               q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
-
+                        q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
 
     def rstrip_query(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with trailing (unmatched) query elements removed. """
 
         cigar = self.cigar.rstrip_query()
         return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
-                               q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
-
+                        q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
 
     def lstrip_reference(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with leading (unmatched) reference elements removed. """
 
         cigar = self.cigar.lstrip_reference()
         return CigarHit(cigar, r_st=self.r_ei - cigar.ref_length + 1, r_ei=self.r_ei,
-                               q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
-
+                        q_st=self.q_ei - cigar.query_length + 1, q_ei=self.q_ei)
 
     def rstrip_reference(self) -> 'CigarHit':
         """ Return a copy of the CigarHit with trailing (unmatched) reference elements removed. """
 
         cigar = self.cigar.rstrip_reference()
         return CigarHit(cigar, r_st=self.r_st, r_ei=self.r_st + cigar.ref_length - 1,
-                               q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
-
+                        q_st=self.q_st, q_ei=self.q_st + cigar.query_length - 1)
 
     @cached_property
     def coordinate_mapping(self) -> CoordinateMapping:
         """
-        Convert this alignment to coordinate mapping representing a reference-to-query and query-to-reference coordinate mappings.
+        Convert this alignment to coordinate mapping representing
+        a reference-to-query and query-to-reference coordinate mappings.
         """
 
         return self.cigar.coordinate_mapping.translate(self.r_st, self.q_st)
-
 
     def to_msa(self, reference_seq: str, query_seq: str) -> Tuple[str, str]:
         """
@@ -718,7 +672,6 @@ class CigarHit:
 
         return self.cigar.to_msa(reference_seq[self.r_st:], query_seq[self.q_st:])
 
-
     def translate(self, reference_delta: int, query_delta: int) -> 'CigarHit':
         return CigarHit(cigar=self.cigar,
                         r_st=self.r_st + reference_delta,
@@ -726,13 +679,13 @@ class CigarHit:
                         q_st=self.q_st + query_delta,
                         q_ei=self.q_ei + query_delta)
 
-
     def __repr__(self):
-        return f'CigarHit({str(self.cigar)!r}, r_st={self.r_st!r}, r_ei={self.r_ei!r}, q_st={self.q_st!r}, q_ei={self.q_ei!r})'
-
+        return 'CigarHit(%r, r_st=%r, r_ei=%r, q_st=%r, q_ei=%r)' \
+            % (self.cigar, self.r_st, self.r_ei, self.q_st, self.q_ei)
 
     def __str__(self):
-        return f'{str(self.cigar)}@[{self.q_st},{self.q_ei}]->[{self.r_st},{self.r_ei}]'
+        return '%s@[%d,%d]->[%d,%d]' \
+            % (str(self.cigar), self.q_st, self.q_ei, self.r_st, self.r_ei)
 
 
 def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:

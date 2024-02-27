@@ -1,5 +1,4 @@
 
-import pytest
 from micall.tests.utils import MockAligner, MockAlignment
 
 def test_basic_mapping():

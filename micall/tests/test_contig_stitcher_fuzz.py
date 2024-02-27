@@ -1,7 +1,14 @@
 import pytest
 import json
 import os
-from micall.core.contig_stitcher import GenotypedContig, AlignedContig, stitch_consensus, stitch_contigs, split_contigs_with_gaps, drop_completely_covered, combine_overlaps, StitcherContext
+from micall.core.contig_stitcher import (
+    GenotypedContig,
+    AlignedContig,
+    stitch_consensus,
+    stitch_contigs,
+    drop_completely_covered,
+    StitcherContext,
+)
 import micall.core.contig_stitcher as stitcher
 from micall.core.plot_contigs import build_stitcher_figure
 from micall.utils.cigar_tools import CigarHit, Cigar
@@ -12,7 +19,7 @@ from collections import defaultdict
 
 @pytest.fixture
 def no_aligner(monkeypatch):
-    monkeypatch.setattr('micall.core.contig_stitcher.align_to_reference', lambda x: [x])
+    monkeypatch.setattr("micall.core.contig_stitcher.align_to_reference", lambda x: [x])
 
 
 @pytest.fixture(autouse=True)
@@ -22,28 +29,34 @@ def stitcher_context():
 
 def read_contigs(line):
     array = json.loads(line)
-    contig_descriptions = [obj['fields'] for obj in array if obj['type'] == 'contig']
+    contig_descriptions = [obj["fields"] for obj in array if obj["type"] == "contig"]
     for description in contig_descriptions:
-        start = description['start']
-        end = description['end']
-        name = description['name']
+        start = description["start"]
+        end = description["end"]
+        name = description["name"]
         length = end - start + 1
         assert length > 0
 
-        ref_seq = 'A' * 1000 # it does not matter
-        seq='C' * 10 + 'A' * length + 'T' * 10
+        ref_seq = "A" * 1000  # it does not matter
+        seq = "C" * 10 + "A" * length + "T" * 10
         query = GenotypedContig(
             name=name,
             seq=seq,
-            ref_name='commonref',
-            group_ref='commongroup',
+            ref_name="commonref",
+            group_ref="commongroup",
             ref_seq=ref_seq,
-            match_fraction=2/3,
+            match_fraction=2 / 3,
         )
-        alignment = CigarHit(Cigar([(length, CigarActions.MATCH)]), q_st=20, q_ei=20+length-1, r_st=start, r_ei=end)
+        alignment = CigarHit(
+            Cigar([(length, CigarActions.MATCH)]),
+            q_st=20,
+            q_ei=20 + length - 1,
+            r_st=start,
+            r_ei=end,
+        )
         contig = AlignedContig.make(query=query, alignment=alignment, strand="forward")
-        aidee = f'{start:03d}-{end:03d}'
-        yield {'contig': contig, 'id': aidee}
+        aidee = f"{start:03d}-{end:03d}"
+        yield {"contig": contig, "id": aidee}
 
 
 def get_case_descriptions():
@@ -52,26 +65,26 @@ def get_case_descriptions():
     with open(jsonfile, "r", encoding="utf8") as reader:
         for line in reader:
             read = list(read_contigs(line))
-            contigs = [x['contig'] for x in read]
-            ids = [x['id'] for x in read]
-            aidee = ','.join(ids)
-            yield {'contigs': contigs, 'id': aidee}
+            contigs = [x["contig"] for x in read]
+            ids = [x["id"] for x in read]
+            aidee = ",".join(ids)
+            yield {"contigs": contigs, "id": aidee}
 
 
 all_case_descriptions = list(get_case_descriptions())
-all_case_ids = [x['id'] for x in all_case_descriptions]
+all_case_ids = [x["id"] for x in all_case_descriptions]
 
 
-@pytest.mark.parametrize('description', all_case_descriptions, ids=all_case_ids)
+@pytest.mark.parametrize("description", all_case_descriptions, ids=all_case_ids)
 def test_contig_number_prop(no_aligner, description):
-    contigs = description['contigs']
+    contigs = description["contigs"]
     stitched = list(stitch_consensus(contigs))
     assert len(stitched) <= len(contigs)
 
 
-@pytest.mark.parametrize('description', all_case_descriptions, ids=all_case_ids)
+@pytest.mark.parametrize("description", all_case_descriptions, ids=all_case_ids)
 def test_contig_number_prop2(no_aligner, description):
-    contigs = description['contigs']
+    contigs = description["contigs"]
     consensus = list(stitch_consensus(contigs))
     stitched = list(stitch_contigs(contigs))
     uncovered = list(drop_completely_covered(contigs))
@@ -81,19 +94,22 @@ def test_contig_number_prop2(no_aligner, description):
 def test_contig_number_prop2_existential():
     # This test is just to confirm that our cases cover all sub-actions.
 
-    contig_sets = [x['contigs'] for x in all_case_descriptions]
+    contig_sets = [x["contigs"] for x in all_case_descriptions]
 
-    assert any(len(list(stitch_contigs(contigs))) >
-               len(list(stitch_consensus(contigs)))
-               for contigs in contig_sets)
+    assert any(
+        len(list(stitch_contigs(contigs))) > len(list(stitch_consensus(contigs)))
+        for contigs in contig_sets
+    )
 
-    assert any(len(list(drop_completely_covered(contigs))) >
-               len(list(stitch_contigs(contigs)))
-               for contigs in contig_sets)
+    assert any(
+        len(list(drop_completely_covered(contigs))) > len(list(stitch_contigs(contigs)))
+        for contigs in contig_sets
+    )
 
-    assert any(len(list(contigs)) >
-               len(list(drop_completely_covered(contigs)))
-               for contigs in contig_sets)
+    assert any(
+        len(list(contigs)) > len(list(drop_completely_covered(contigs)))
+        for contigs in contig_sets
+    )
 
 
 def get_all_reference_positions(contigs: List[AlignedContig]):
@@ -105,9 +121,9 @@ def get_all_reference_positions(contigs: List[AlignedContig]):
     return ret
 
 
-@pytest.mark.parametrize('description', all_case_descriptions, ids=all_case_ids)
+@pytest.mark.parametrize("description", all_case_descriptions, ids=all_case_ids)
 def test_stitching_intervals_prop(no_aligner, description):
-    contigs = description['contigs']
+    contigs = description["contigs"]
     stitched = list(stitch_contigs(contigs))
     initial_positions = get_all_reference_positions(contigs)
     stitched_positions = get_all_reference_positions(stitched)
@@ -119,11 +135,11 @@ def test_stitching_intervals_prop(no_aligner, description):
     assert all(v == 1 for (k, v) in stitched_positions.items())
 
 
-@pytest.mark.parametrize('description', all_case_descriptions, ids=all_case_ids)
+@pytest.mark.parametrize("description", all_case_descriptions, ids=all_case_ids)
 def test_visualizer_simple(no_aligner, description):
-    contigs = description['contigs']
+    contigs = description["contigs"]
     with StitcherContext.fresh() as ctx:
-        stitched = list(stitch_consensus(contigs))
+        list(stitch_consensus(contigs))
         assert len(ctx.events) >= len(contigs)
         figure = build_stitcher_figure(ctx.events)
         assert len(figure.elements) > len(contigs) + 1

@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Union, Literal, TypeVar, Callable, Set
+from typing import List, Set
 from contextvars import ContextVar
 from contextlib import contextmanager
 
@@ -21,7 +21,6 @@ class StitcherContext:
 
     def emit(self, event: events.EventType) -> None:
         self.events.append(event)
-
 
     @staticmethod
     @contextmanager

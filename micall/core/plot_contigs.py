@@ -429,7 +429,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     query_position_map: Dict[str, Tuple[int, int]] = {}
     lstrip_map: Dict[str, str] = {}
     rstrip_map: Dict[str, str] = {}
-    strip_set: Set[Tuple[str, int, int]] = set()
 
     def remove_intermediate_edges(graph):
         tr_cl = transitive_closure(graph)
@@ -632,7 +631,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         elif isinstance(event, (events.IgnoreGap, events.InitialHit)):
             pass
         else:
-            x: NoReturn = event
+            _x: NoReturn = event
             raise RuntimeError(f"Unrecognized action or event: {event}")
 
     notransitive_parent_graph = remove_transitive_edges(complete_parent_graph)
@@ -659,7 +658,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
     reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
-    eqv_parent_graph = reflexive_closure(symmetric_closure(transitive_parent_graph))
     sorted_roots = list(sorted(parent_name for
                                parent_name in contig_map
                                if parent_name not in parent_graph))
@@ -729,8 +727,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                             yield True
 
     # Closing `takes` by parents
-    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map, overlap_left_sibling)): pass
-    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map, overlap_right_sibling)): pass
+    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map, overlap_left_sibling)):
+        pass
+    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map, overlap_right_sibling)):
+        pass
 
     final_nodes: List[str] = []
     final_parts: Dict[str, bool] = {}
@@ -794,7 +794,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         return contig_map[name]
 
     def get_neighbour(part, lookup):
-        if not part: return None
+        if not part:
+            return None
         lst = list(get_neighbours(part, lookup))
         ret = max(map(get_final_version, lst), key=lambda contig: contig.alignment.ref_length, default=None)
         return ret
@@ -1041,7 +1042,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     landmarks_path = (Path(__file__).parent.parent / "data" / "landmark_references.yaml")
     landmark_groups = yaml.safe_load(landmarks_path.read_text())
-    projects = ProjectConfig.loadDefault()
     figure = Figure()
     for group_ref in group_refs:
         matching_groups = [group for group in landmark_groups if group['coordinates'] == group_ref]

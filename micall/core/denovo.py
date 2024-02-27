@@ -47,7 +47,7 @@ def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> ty
         except KeyError:
             try:
                 ref_seq = projects.getReference(group_ref)
-            except:
+            except KeyError:
                 ref_seq = None
 
         yield GenotypedContig(name=record.name,

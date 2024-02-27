@@ -250,7 +250,10 @@ def align_all_to_reference(contigs: Iterable[GenotypedContig]) -> Iterable[Genot
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
-    """ Globally align two query sequences against each other and return the resulting aligned sequences in MSA format. """
+    """
+    Globally align two query sequences against each other
+    and return the resulting aligned sequences in MSA format.
+    """
 
     gap_open_penalty = 15
     gap_extend_penalty = 3
@@ -337,11 +340,12 @@ def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned
 
     concordance_d = list(disambiguate_concordance(concordance))
     sorted_concordance_indexes = sorted(range(len(concordance)), key=lambda i: concordance_d[i])
-    remove_dashes = lambda s: ''.join(c for c in s if c != '-')
+    def remove_dashes(s): return ''.join(c for c in s if c != '-')
 
     for max_concordance_index in reversed(sorted_concordance_indexes):
         aligned_left_q_index = len(remove_dashes(aligned_left[:max_concordance_index]))
-        aligned_right_q_index = right_overlap.alignment.query_length - len(remove_dashes(aligned_right[max_concordance_index:])) + 1
+        aligned_right_q_index = right_overlap.alignment.query_length - \
+            len(remove_dashes(aligned_right[max_concordance_index:])) + 1
         aligned_left_r_index = left_overlap.alignment.coordinate_mapping.query_to_ref.left_max(aligned_left_q_index)
         if aligned_left_r_index is None:
             aligned_left_r_index = left_overlap.alignment.r_st - 1
@@ -382,7 +386,6 @@ def stitch_2_contigs(left, right):
 
     # Log it.
     average_concordance = Fraction(sum(concordance) / (len(concordance) or 1))
-    concordance_str = ', '.join(map(lambda x: str(int(round(x * 100)) / 100), concordance))
     cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
     log(events.Overlap(left, right, left_overlap, right_overlap,
                        left_remainder, right_remainder, left_overlap_take,
@@ -507,9 +510,8 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
         return any(covered_by(gap, other) for other in contigs if other != contig)
 
     def significant(gap):
-        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall.
-        # A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA.
-        # The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.
+        # noinspection PyLongLine
+        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.         # noqa: E501
         return gap.ref_length > 21
 
     def try_split(contig):
@@ -537,7 +539,8 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
                 return
 
     process_queue: LifoQueue = LifoQueue()
-    for contig in contigs: process_queue.put(contig)
+    for contig in contigs:
+        process_queue.put(contig)
 
     while not process_queue.empty():
         contig = process_queue.get()
@@ -565,6 +568,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCont
 
 GroupRef = str
 
+
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(stitch_contigs(contigs))
     consensus_parts: Dict[GroupRef, List[AlignedContig]] = defaultdict(list)
@@ -586,7 +590,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
 
 def main(args):
     import argparse
-    from micall.core.denovo import write_contig_refs # TODO(vitalik): move denovo stuff here.
+    from micall.core.denovo import write_contig_refs  # TODO(vitalik): move denovo stuff here.
 
     parser = argparse.ArgumentParser()
     parser.add_argument('contigs', type=argparse.FileType('r'))
