@@ -60,6 +60,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
 
+      - name: Linter check
+        # Have to clean up alignment build files. Otherwise, they'll get reused
+        # in Singularity build with the wrong GLIBC libraries.
+        run: |
+          pip install -r requirements-test.txt
+          ruff check
+
       - name: Test with pytest
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
