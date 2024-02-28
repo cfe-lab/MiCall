@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-import typing
+from typing import Optional, TextIO, Iterable, Dict
 from collections import Counter
 from csv import DictWriter, DictReader
 from datetime import datetime
@@ -31,7 +31,7 @@ DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
 logger = logging.getLogger(__name__)
 
 
-def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> typing.Iterable[GenotypedContig]:
+def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
@@ -82,7 +82,7 @@ def write_contig_refs(contigs_fasta_path,
             for i, row in enumerate(contig_reader, 1):
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
-    group_refs = {}
+    group_refs: Dict[str, str] = {}
 
     with StitcherContext.fresh() as ctx:
         genotypes = genotype(contigs_fasta_path,
@@ -120,7 +120,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
         fraction of the query that aligned against the reference (matches and
         mismatches).
     """
-    contig_nums = {}  # {contig_name: contig_num}
+    contig_nums: Dict[str, int] = {}  # {contig_name: contig_num}
     with open(fasta) as f:
         for line in f:
             if line.startswith('>'):
@@ -167,7 +167,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
                           for match in matches}
     top_refs = set(contig_top_matches.values())
     projects = ProjectConfig.loadDefault()
-    match_scores = Counter()
+    match_scores: Counter[str] = Counter()
     for contig_name, contig_matches in groupby(matches, itemgetter('qaccver')):
         contig_top_ref = contig_top_matches[contig_name]
         contig_seed_group = projects.getSeedGroup(contig_top_ref)
@@ -177,7 +177,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
                 continue
             match_seed_group = projects.getSeedGroup(ref_name)
             if match_seed_group == contig_seed_group:
-                match_scores[ref_name] += float(match['score'])
+                match_scores[ref_name] += float(match['score'])  # type: ignore[assignment]
 
     if group_refs is not None:
         group_top_refs = {projects.getSeedGroup(ref_name): ref_name
@@ -207,11 +207,11 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
 def denovo(fastq1_path: str,
            fastq2_path: str,
-           contigs_csv: typing.TextIO,
+           contigs_csv: TextIO,
            work_dir: str = '.',
-           merged_contigs_csv: typing.TextIO = None,
-           blast_csv: typing.TextIO = None,
-           stitcher_plot_path: typing.Optional[str] = None,
+           merged_contigs_csv: Optional[TextIO] = None,
+           blast_csv: Optional[TextIO] = None,
+           stitcher_plot_path: Optional[str] = None,
            ):
     """ Use de novo assembly to build contigs from reads.
 

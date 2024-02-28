@@ -199,7 +199,7 @@ class Overlap:
     concordance: List[Fraction]
     average: Fraction
     cut_point: int
-    cut_point_scaled: Fraction
+    cut_point_scaled: float
 
     def __str__(self) -> str:
         average_concordance = round(self.average * 100)

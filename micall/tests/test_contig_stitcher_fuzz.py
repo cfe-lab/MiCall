@@ -112,11 +112,12 @@ def test_contig_number_prop2_existential():
     )
 
 
-def get_all_reference_positions(contigs: List[AlignedContig]):
+def get_all_reference_positions(contigs: List[GenotypedContig]):
     ret: Dict[int, int] = defaultdict(lambda: 0)
     for contig in contigs:
-        for i in contig.alignment.coordinate_mapping.ref_to_query.domain:
-            ret[i] += 1
+        if isinstance(contig, AlignedContig):
+            for i in contig.alignment.coordinate_mapping.ref_to_query.domain:
+                ret[i] += 1
 
     return ret
 

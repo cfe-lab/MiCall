@@ -29,10 +29,10 @@ def log(e: events.EventType) -> None:
 def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig, GenotypedContig]:
     """ Cuts query sequence in two parts with cut_point between them. """
 
-    cut_point = max(0, cut_point)
+    cut_point = max(0.0, cut_point)
     left = replace(self, name=context.get().generate_new_name(), seq=self.seq[:ceil(cut_point)])
     right = replace(self, name=context.get().generate_new_name(), seq=self.seq[ceil(cut_point):])
-    return (left, right)
+    return left, right
 
 
 def cut_reference(self: AlignedContig, cut_point: float) -> Tuple[AlignedContig, AlignedContig]:
@@ -42,7 +42,7 @@ def cut_reference(self: AlignedContig, cut_point: float) -> Tuple[AlignedContig,
     left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
     right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
     log(events.Cut(self, left, right, cut_point))
-    return (left, right)
+    return left, right
 
 
 def lstrip(self: AlignedContig) -> AlignedContig:
@@ -158,13 +158,15 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         yield contig
         return
 
+    def init_hit(x) -> Tuple[CigarHit, Literal["forward", "reverse"]]:
+        cigar = CigarHit(Cigar(x.cigar),
+                         min(x.r_st, x.r_en - 1), max(x.r_st, x.r_en - 1),
+                         min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1))
+        return cigar, "forward" if x.strand == 1 else "reverse"
+
     aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
     alignments = list(aligner.map(contig.seq))
-    hits_array: List[Tuple[CigarHit, Literal["forward", "reverse"]]] = \
-        [(CigarHit(Cigar(x.cigar),
-                   min(x.r_st, x.r_en - 1), max(x.r_st, x.r_en - 1),
-                   min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1)),
-          "forward" if x.strand == 1 else "reverse") for x in alignments]
+    hits_array = [init_hit(x) for x in alignments]
 
     for i, (hit, strand) in enumerate(hits_array):
         log(events.InitialHit(contig, i, hit, strand))
@@ -208,9 +210,9 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
     def get_indexes(name: str) -> Tuple[int, int]:
         contig = names[name]
         if isinstance(contig, AlignedContig):
-            return (contig.alignment.q_st, contig.alignment.r_st)
+            return contig.alignment.q_st, contig.alignment.r_st
         else:
-            return (-1, -1)
+            return -1, -1
 
     reference_sorted = list(sorted(names.keys(), key=lambda name: get_indexes(name)[1]))
     query_sorted = list(sorted(names.keys(), key=lambda name: get_indexes(name)[0]))
@@ -269,7 +271,7 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
 
 
 def find_all_overlapping_contigs(self: AlignedContig, aligned_contigs):
-    """"
+    """
     Yield all contigs from a collection that overlap with a given contig.
     Contigs are considered overlapping if they have overlapping intervals on the same reference genome.
     """
@@ -332,7 +334,7 @@ def calculate_concordance(left: str, right: str) -> List[Fraction]:
 def disambiguate_concordance(concordance: List[float]) -> Iterable[Tuple[float, int]]:
     for i, x in enumerate(concordance):
         global_rank = i if i < len(concordance) / 2 else len(concordance) - i - 1
-        yield (x, global_rank)
+        yield x, global_rank
 
 
 def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance):
@@ -353,9 +355,9 @@ def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned
         if aligned_right_r_index is None:
             aligned_right_r_index = right_overlap.alignment.r_ei + 1
         if aligned_right_r_index > aligned_left_r_index:
-            return (aligned_left_r_index + 0.5, aligned_right_r_index - 0.5, max_concordance_index)
+            return aligned_left_r_index + 0.5, aligned_right_r_index - 0.5, max_concordance_index
 
-    return (left_overlap.alignment.r_st - 1 + 0.5, right_overlap.alignment.r_ei + 1 - 0.5, 0)
+    return left_overlap.alignment.r_st - 1 + 0.5, right_overlap.alignment.r_ei + 1 - 0.5, 0
 
 
 def stitch_2_contigs(left, right):
@@ -396,7 +398,7 @@ def stitch_2_contigs(left, right):
 
 
 def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
-    """"
+    """
     Repeatedly combine all overlapping aligned contigs into an iterable collection of contiguous AlignedContigs.
     It proceeds by iterating through sorted contigs and stitching any overlapping ones until none are left.
     """
@@ -457,8 +459,8 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
     :return: An AlignedContig if there is one completely covered by others, None otherwise.
     """
 
-    def calculate_cumulative_coverage(contigs) -> List[Tuple[int, int]]:
-        intervals = [(contig.alignment.r_st, contig.alignment.r_ei) for contig in contigs]
+    def calculate_cumulative_coverage(others) -> List[Tuple[int, int]]:
+        intervals = [(contig.alignment.r_st, contig.alignment.r_ei) for contig in others]
         merged_intervals = merge_intervals(intervals)
         return merged_intervals
 
@@ -501,41 +503,41 @@ def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]
     """
 
     def covered_by(gap, other):
-        # Check if any 1 reference coordinate in gap is mapped in other.
+        # Check if any 1 reference coordinate in gap is mapped in `other`.
         gap_coords = gap.coordinate_mapping.ref_to_query.domain
         cover_coords = set(other.alignment.coordinate_mapping.ref_to_query.keys())
         return not gap_coords.isdisjoint(cover_coords)
 
-    def covered(contig, gap):
-        return any(covered_by(gap, other) for other in contigs if other != contig)
+    def covered(self, gap):
+        return any(covered_by(gap, other) for other in contigs if other != self)
 
     def significant(gap):
         # noinspection PyLongLine
         # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.         # noqa: E501
         return gap.ref_length > 21
 
-    def try_split(contig):
-        for gap in contig.alignment.deletions():
+    def try_split(self: AlignedContig):
+        for gap in self.alignment.deletions():
             if not significant(gap):
                 # Really we do not want to split on every little deletion
                 # because that would mean that we would need to stitch
                 # overlaps around them.
                 # And we are likely to lose quality with every stitching operation.
                 # By skipping we assert that this gap is aligner's fault.
-                log(events.IgnoreGap(contig, gap))
+                log(events.IgnoreGap(self, gap))
                 continue
 
-            if covered(contig, gap):
-                midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + contig.alignment.epsilon
-                left_part, right_part = cut_reference(contig, midpoint)
+            if covered(self, gap):
+                midpoint = gap.r_st + (gap.r_ei - gap.r_st) / 2 + self.alignment.epsilon
+                left_part, right_part = cut_reference(self, midpoint)
                 left_part = rstrip(left_part)
                 right_part = lstrip(right_part)
 
-                contigs.remove(contig)
+                contigs.remove(self)
                 contigs.append(left_part)
                 contigs.append(right_part)
                 process_queue.put(right_part)
-                log(events.SplitGap(contig, gap, left_part, right_part))
+                log(events.SplitGap(self, gap, left_part, right_part))
                 return
 
     process_queue: LifoQueue = LifoQueue()
@@ -580,9 +582,9 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
             yield contig
 
     def combine(group_ref):
-        contigs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
-        result = combine_contigs(contigs)
-        log(events.FinalCombine(contigs, result))
+        ctgs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
+        result = combine_contigs(ctgs)
+        log(events.FinalCombine(ctgs, result))
         return result
 
     yield from map(combine, consensus_parts)

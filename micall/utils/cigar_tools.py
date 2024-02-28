@@ -128,7 +128,7 @@ class Cigar:
     manipulation (as seen in self.iterate_operations()), while retaining the compact
     form for storage and return purposes (seen in self.__str__()).
 
-    Instances of this class should be created by calling the Cigar.coerce method.
+    Instances of this class should be created by calling the `Cigar.coerce` method.
     Examples:
         Cigar.coerce("10M1I5M1D")
         Cigar.coerce([(10, CigarActions.MATCH), (1, CigarActions.INSERT), ...])
@@ -182,20 +182,20 @@ class Cigar:
 
         for operation in self.iterate_operations():
             if operation in (CigarActions.MATCH, CigarActions.SEQ_MATCH, CigarActions.MISMATCH):
-                yield (operation, ref_pointer, query_pointer)
+                yield operation, ref_pointer, query_pointer
                 query_pointer += 1
                 ref_pointer += 1
 
             elif operation in (CigarActions.INSERT, CigarActions.SOFT_CLIPPED):
-                yield (operation, None, query_pointer)
+                yield operation, None, query_pointer
                 query_pointer += 1
 
             elif operation in (CigarActions.DELETE, CigarActions.SKIPPED):
-                yield (operation, ref_pointer, None)
+                yield operation, ref_pointer, None
                 ref_pointer += 1
 
             else:
-                yield (operation, None, None)
+                yield operation, None, None
 
     def slice_operations(self, start_inclusive, end_noninclusive) -> 'Cigar':
         """
@@ -260,8 +260,6 @@ class Cigar:
         """
         Convert this CIGAR string to coordinate mapping representing
         a reference-to-query and query-to-reference coordinate mappings.
-
-        :param cigar: a CIGAR string.
 
         :return: Lists of integers representing the mappings of coordinates from the reference
                 sequence to the query sequence, and back.
@@ -406,11 +404,11 @@ class Cigar:
                     continue
 
             if last_item:
-                yield (last_item[0], last_item[1])
+                yield last_item[0], last_item[1]
             last_item = item
 
         if last_item:
-            yield (last_item[0], last_item[1])
+            yield last_item[0], last_item[1]
 
     def __eq__(self, other) -> bool:
         return isinstance(other, Cigar) and self._data == other._data
@@ -422,7 +420,7 @@ class Cigar:
         return f'Cigar({str(self)!r})'
 
     def __str__(self):
-        """ Inverse of Cigar.parse """
+        """ Inverse of `Cigar.parse` """
         return ''.join('{}{}'.format(num, Cigar.operation_to_str(op)) for num, op in self._data)
 
 
@@ -556,7 +554,7 @@ class CigarHit:
                         q_st=self.q_st,
                         q_ei=other.q_ei)
 
-    def connect(self, other):
+    def connect(self, other: 'CigarHit') -> 'CigarHit':
         """
         Inserts deletions/insertions between self and other,
         then ajusts boundaries appropriately.
@@ -718,16 +716,16 @@ def connect_cigar_hits(cigar_hits: List[CigarHit]) -> List[CigarHit]:
     # Segregate independent matches.
     sorted_groups: List[List[CigarHit]] = []
 
-    def find_group(hit):
+    def find_group(phit):
         for group in sorted_groups:
-            if hit.q_st > group[-1].q_st:
-                group.append(hit)
+            if phit.q_st > group[-1].q_st:
+                group.append(phit)
                 return
 
-        sorted_groups.append([hit])
+        sorted_groups.append([phit])
 
     for hit in sorted_parts:
         find_group(hit)
 
     # Collect all intervals back together, connecting them with CigarActions.DELETE.
-    return [reduce(CigarHit.connect, group) for group in sorted_groups]
+    return [reduce(lambda x, y: x.connect(y), group) for group in sorted_groups]
