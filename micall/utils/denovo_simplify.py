@@ -90,7 +90,7 @@ class MicallDD(DD):
             exception = None
             # noinspection PyBroadException
             try:
-                denovo(trimmed_filename1, trimmed_filename2, contigs_csv, workdir)
+                denovo(trimmed_filename1, trimmed_filename2, contigs_csv, None, workdir)
             except Exception as ex:
                 logger.warning('Assembly failed.', exc_info=True)
                 exception = ex

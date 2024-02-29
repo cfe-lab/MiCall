@@ -83,6 +83,9 @@ def parse_args():
     parser.add_argument('contigs_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly')
+    parser.add_argument('contigs_stitched_csv',
+                        nargs='?',
+                        help='CSV containing contigs built by de novo assembly and stitched by our stitcher')
     parser.add_argument('read_entropy_csv',
                         nargs='?',
                         help='CSV containing read pair length counts')
@@ -125,6 +128,7 @@ def load_sample(args):
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
                     contigs_csv=args.contigs_csv,
+                    contigs_stitched_csv=args.contigs_stitched_csv,
                     genome_coverage_csv=args.genome_coverage_csv,
                     genome_coverage_svg=args.genome_coverage_svg,
                     genome_concordance_svg=args.genome_concordance_svg,

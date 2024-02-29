@@ -216,10 +216,14 @@ Individual files are described after the list of steps.
   * insert - the nucleotide sequence that was inserted
   * qual - the Phred quality scores for the inserted sequence
 * contigs.csv
-  * genotype - the reference name with the best BLAST result
+  * ref - the reference name with the best BLAST result
   * match - the fraction of the contig that matched in BLAST, negative for
     reverse-complemented matches
+  * group_ref - the reference name chosen to best match all of
+    the contigs in a sample
   * contig - the nucleotide sequence of the assembled contig
+* contigs_stitched.csv
+  Same as `contigs.csv`, but contigs are stitched by `micall/core/contig_stitcher.py`.
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed

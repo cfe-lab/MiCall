@@ -616,7 +616,7 @@ def main(args):
 
     logging.basicConfig(level=logger.level)
     with StitcherContext.fresh():
-        write_contig_refs(args.contigs.name, args.stitched_contigs, stitcher_plot_path=args.plot)
+        write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=args.plot)
         args.contigs.close()
         args.stitched_contigs.close()
 

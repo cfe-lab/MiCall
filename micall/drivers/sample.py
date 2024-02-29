@@ -250,6 +250,7 @@ class Sample:
                         conseq_ins_csv=(self.conseq_ins_csv, 'r'),
                         remap_conseq_csv=(self.remap_conseq_csv, 'r'),
                         contigs_csv=(self.contigs_csv, 'r') if use_denovo else None,
+                        contigs_stitched_csv=(self.contigs_stitched_csv, 'r') if use_denovo else None,
                         nuc_detail_csv=(self.nuc_details_csv, 'w') if use_denovo else None,
                         amino_csv=(self.amino_csv, 'w'),
                         amino_detail_csv=(self.amino_details_csv, 'w') if use_denovo else None,
@@ -387,10 +388,12 @@ class Sample:
         scratch_path = self.get_scratch_path()
         with open(self.merged_contigs_csv) as merged_contigs_csv, \
                 open(self.contigs_csv, 'w') as contigs_csv, \
+                open(self.contigs_stitched_csv, 'w') as contigs_stitched_csv, \
                 open(self.blast_csv, 'w') as blast_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
                    contigs_csv,
+                   contigs_stitched_csv,
                    self.scratch_path,
                    merged_contigs_csv,
                    blast_csv=blast_csv)
@@ -399,7 +402,7 @@ class Sample:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
-        with open(self.contigs_csv) as contigs_csv, \
+        with open(self.contigs_stitched_csv) as contigs_stitched_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \
                 open(self.remap_counts_csv, 'w') as counts_csv, \
                 open(self.remap_conseq_csv, 'w') as conseq_csv, \
@@ -408,7 +411,7 @@ class Sample:
 
             map_to_contigs(self.trimmed1_fastq,
                            self.trimmed2_fastq,
-                           contigs_csv,
+                           contigs_stitched_csv,
                            remap_csv,
                            counts_csv,
                            conseq_csv,
