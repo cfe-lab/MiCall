@@ -442,6 +442,7 @@ class SampleRunner:
                         'g2p_summary.csv',
                         'remap_counts.csv',
                         'remap_conseq.csv',
+                        'remap_unstitched_conseq.csv',
                         'unmapped1.fastq',
                         'unmapped2.fastq',
                         'conseq_ins.csv',

@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import tempfile
-from typing import Optional, TextIO, Iterable, Dict
+from typing import Optional, TextIO, Iterable, Dict, cast
 from collections import Counter
 from csv import DictWriter, DictReader
 from datetime import datetime
@@ -264,8 +264,8 @@ def denovo(fastq1_path: str,
     tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
 
     if contigs_csv is None:
-        contigs_csv_tmp = tempfile.NamedTemporaryFile()
-        contigs_csv = contigs_csv_tmp.name
+        contigs_csv_tmp = tempfile.NamedTemporaryFile("wt")
+        contigs_csv = cast(TextIO, contigs_csv_tmp.file)
     else:
         contigs_csv_tmp = None
 

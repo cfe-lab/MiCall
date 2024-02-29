@@ -249,6 +249,7 @@ class Sample:
                         nuc_csv=(self.nuc_csv, 'w'),
                         conseq_ins_csv=(self.conseq_ins_csv, 'r'),
                         remap_conseq_csv=(self.remap_conseq_csv, 'r'),
+                        remap_unstitched_conseq_csv=(self.remap_unstitched_conseq_csv, 'r') if use_denovo else None,
                         contigs_csv=(self.contigs_csv, 'r') if use_denovo else None,
                         contigs_stitched_csv=(self.contigs_stitched_csv, 'r') if use_denovo else None,
                         nuc_detail_csv=(self.nuc_details_csv, 'w') if use_denovo else None,
@@ -397,15 +398,17 @@ class Sample:
                    self.scratch_path,
                    merged_contigs_csv,
                    blast_csv=blast_csv)
+
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
+
         with open(self.contigs_stitched_csv) as contigs_stitched_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \
                 open(self.remap_counts_csv, 'w') as counts_csv, \
-                open(self.remap_conseq_csv, 'w') as conseq_csv, \
+                open(self.remap_conseq_csv, 'w') as remap_conseq_csv, \
                 open(self.unmapped1_fastq, 'w') as unmapped1, \
                 open(self.unmapped2_fastq, 'w') as unmapped2:
 
@@ -414,7 +417,27 @@ class Sample:
                            contigs_stitched_csv,
                            remap_csv,
                            counts_csv,
-                           conseq_csv,
+                           remap_conseq_csv,
+                           unmapped1,
+                           unmapped2,
+                           scratch_path,
+                           debug_file_prefix=debug_file_prefix,
+                           excluded_seeds=excluded_seeds)
+
+        # Mapping the unstitched version too.
+        with open(self.contigs_csv) as contigs_csv, \
+                open(os.devnull, 'w') as remap_csv, \
+                open(os.devnull, 'w') as counts_csv, \
+                open(self.remap_unstitched_conseq_csv, 'w') as remap_unstitched_conseq_csv, \
+                open(os.devnull, 'w') as unmapped1, \
+                open(os.devnull, 'w') as unmapped2:
+
+            map_to_contigs(self.trimmed1_fastq,
+                           self.trimmed2_fastq,
+                           contigs_csv,
+                           remap_csv,
+                           counts_csv,
+                           remap_unstitched_conseq_csv,
                            unmapped1,
                            unmapped2,
                            scratch_path,
