@@ -82,10 +82,10 @@ def parse_args():
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
                              'reference sequences.')
-    parser.add_argument('contigs_csv',
+    parser.add_argument('contigs_unstitched_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly')
-    parser.add_argument('contigs_stitched_csv',
+    parser.add_argument('contigs_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly and stitched by our stitcher')
     parser.add_argument('read_entropy_csv',
@@ -130,8 +130,8 @@ def load_sample(args):
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
+                    contigs_unstitched_csv=args.contigs_unstitched_csv,
                     contigs_csv=args.contigs_csv,
-                    contigs_stitched_csv=args.contigs_stitched_csv,
                     genome_coverage_csv=args.genome_coverage_csv,
                     genome_coverage_svg=args.genome_coverage_svg,
                     genome_concordance_svg=args.genome_concordance_svg,

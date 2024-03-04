@@ -33,6 +33,7 @@ MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
+                      'remap_unstitched_conseq_csv',
                       'conseq_csv',
                       'conseq_all_csv',
                       'conseq_stitched_csv',
@@ -60,7 +61,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'wg_fasta',
                       'mid_fasta',
                       'contigs_csv',
-                      'contigs_stitched_csv',
+                      'contigs_unstitched_csv',
                       'alignment_svg',
                       'alignment_png',
                       'assembly_fasta',

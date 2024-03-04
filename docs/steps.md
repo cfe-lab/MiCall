@@ -44,8 +44,9 @@ Individual files are described after the list of steps.
   * in - fastq1
   * in - fastq2
   * in - merged_contigs.csv
-  * contigs.csv - the assembled contigs, plus any merged contigs, including
+  * contigs_unstitched.csv - the assembled contigs, plus any merged contigs, including
     the best blast results
+  * contigs.csv - stitched version of `contigs_unstitched`
   * blast.csv - multiple blast results for each contig
 * `remap`: iteratively use consensus from previous mapping as reference to try
     and map more reads. See [remap design] for more details. (The denovo version
@@ -217,15 +218,15 @@ Individual files are described after the list of steps.
   * pos - 1-based position in the consensus sequence that this insertion follows
   * insert - the nucleotide sequence that was inserted
   * qual - the Phred quality scores for the inserted sequence
-* contigs.csv
+* contigs_unstitched.csv
   * ref - the reference name with the best BLAST result
   * match - the fraction of the contig that matched in BLAST, negative for
     reverse-complemented matches
   * group_ref - the reference name chosen to best match all of
     the contigs in a sample
   * contig - the nucleotide sequence of the assembled contig
-* contigs_stitched.csv
-  Same as `contigs.csv`, but contigs are stitched by `micall/core/contig_stitcher.py`.
+* contigs.csv
+  Same as `contigs_unstitched.csv`, but contigs are stitched by `micall/core/contig_stitcher.py`.
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed

@@ -595,14 +595,16 @@ def main(args):
     from micall.core.denovo import write_contig_refs  # TODO(vitalik): move denovo stuff here.
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('contigs', type=argparse.FileType('r'))
-    parser.add_argument('stitched_contigs', type=argparse.FileType('w'))
-    parser.add_argument('--plot')
+    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input fasta file with assembled contigs.")
+    parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
+                        help="Output fasta file with stitched contigs.")
+    parser.add_argument('--plot', type=argparse.FileType('w'),
+                        help="Output SVG image visualizing the stitching process.")
     verbosity_group = parser.add_mutually_exclusive_group()
-    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity')
-    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity', default=True)
-    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity')
-    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity')
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     args = parser.parse_args(args)
 
     if args.quiet:
@@ -616,9 +618,12 @@ def main(args):
 
     logging.basicConfig(level=logger.level)
     with StitcherContext.fresh():
-        write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=args.plot)
+        plot_path = args.plot.name if args.plot is not None else None
+        write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
         args.contigs.close()
         args.stitched_contigs.close()
+        if args.plot is not None:
+            args.plot.close()
 
 
 if __name__ == '__main__':

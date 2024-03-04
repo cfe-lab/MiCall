@@ -72,8 +72,8 @@ def contigs_refs_write(writer, ref: str, match: float, group_ref: str, contig: s
 
 
 def write_contig_refs(contigs_fasta_path: str,
+                      contigs_unstitched_csv: Optional[TextIO],
                       contigs_csv: Optional[TextIO],
-                      contigs_stitched_csv: Optional[TextIO],
                       merged_contigs_csv: Optional[TextIO] = None,
                       blast_csv: Optional[TextIO] = None,
                       stitcher_plot_path: Optional[str] = None) -> int:
@@ -81,8 +81,8 @@ def write_contig_refs(contigs_fasta_path: str,
 
     :param str contigs_fasta_path: path to file to read contig sequences from
         and append merged contigs to
-    :param contigs_csv: open file to write assembled contigs to
-    :param contigs_stitched_csv: open file to write stitched contigs to
+    :param contigs_unstitched_csv: open file to write assembled contigs to
+    :param contigs_csv: open file to write stitched contigs to
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
     :param blast_csv: open file to write BLAST search results for each contig
@@ -96,8 +96,9 @@ def write_contig_refs(contigs_fasta_path: str,
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
 
-    writer = init_contigs_refs(contigs_csv) if contigs_csv else None
-    stitched_writer = init_contigs_refs(contigs_stitched_csv) if contigs_stitched_csv else None
+    unstitched_writer = init_contigs_refs(contigs_unstitched_csv) \
+        if contigs_unstitched_csv else None
+    stitched_writer = init_contigs_refs(contigs_csv) if contigs_csv else None
     group_refs: Dict[str, str] = {}
 
     with StitcherContext.fresh() as ctx:
@@ -107,16 +108,18 @@ def write_contig_refs(contigs_fasta_path: str,
 
         contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
 
-        if writer is not None:
+        if unstitched_writer is not None:
             for contig in contigs:
-                contigs_refs_write(writer,
+                contigs_refs_write(unstitched_writer,
                                    ref=contig.ref_name,
                                    match=contig.match_fraction,
                                    group_ref=contig.group_ref,
                                    contig=contig.seq)
 
-        if stitched_writer is not None:
+        if stitched_writer is not None or stitcher_plot_path is not None:
             contigs = list(stitch_consensus(contigs))
+
+        if stitched_writer is not None:
             for contig in contigs:
                 contigs_refs_write(stitched_writer,
                                    ref=contig.ref_name,
@@ -124,8 +127,8 @@ def write_contig_refs(contigs_fasta_path: str,
                                    group_ref=contig.group_ref,
                                    contig=contig.seq)
 
-            if stitcher_plot_path is not None:
-                plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+        if stitcher_plot_path is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
 
         return len(contigs)
 
@@ -234,8 +237,8 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
 def denovo(fastq1_path: str,
            fastq2_path: str,
+           contigs_unstitched_csv: Optional[TextIO],
            contigs_csv: Optional[TextIO],
-           contigs_stitched_csv: Optional[TextIO],
            work_dir: str = '.',
            merged_contigs_csv: Optional[TextIO] = None,
            blast_csv: Optional[TextIO] = None,
@@ -245,8 +248,8 @@ def denovo(fastq1_path: str,
 
     :param fastq1_path: FASTQ file name for read 1 reads
     :param fastq2_path: FASTQ file name for read 2 reads
-    :param contigs_csv: open file to write assembled contigs to
-    :param contigs_stitched_csv: open file to write stitched contigs to
+    :param contigs_unstitched_csv: open file to write assembled contigs to
+    :param contigs_csv: open file to write stitched contigs to
     :param work_dir: path for writing temporary files
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
@@ -254,8 +257,8 @@ def denovo(fastq1_path: str,
     :param stitcher_plot_path: open file to write the visualizer plot to
     """
 
-    if contigs_csv is None and contigs_stitched_csv is None:
-        raise ValueError("Must specify either contigs_csv or contigs_stitched_csv")
+    if contigs_unstitched_csv is None and contigs_csv is None:
+        raise ValueError("Must specify either contigs_csv or contigs_unstitched_csv")
 
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
@@ -307,8 +310,8 @@ def denovo(fastq1_path: str,
     os.chdir(start_dir)
     duration = datetime.now() - start_time
     contig_count = write_contig_refs(contigs_fasta_path,
+                                     contigs_unstitched_csv,
                                      contigs_csv,
-                                     contigs_stitched_csv,
                                      blast_csv=blast_csv,
                                      stitcher_plot_path=stitcher_plot_path)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
@@ -326,9 +329,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('fastq1')
     parser.add_argument('fastq2')
-    parser.add_argument('contigs', type=argparse.FileType('w'))
-    parser.add_argument('--contigs_stitched', type=argparse.FileType('w'))
+    parser.add_argument('--contigs_unstitched', type=argparse.FileType('w'))
+    parser.add_argument('--contigs', type=argparse.FileType('w'))
     parser.add_argument('--stitcher_plot')
 
     args = parser.parse_args()
-    denovo(args.fastq1, args.fastq2, args.contigs, args.contigs_stitched, args.stitcher_plot_path)
+    denovo(args.fastq1, args.fastq2, args.contigs_unstitched, args.contigs, args.stitcher_plot_path)
