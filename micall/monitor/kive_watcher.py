@@ -938,13 +938,14 @@ class KiveWatcher:
             run_dataset['argument_name']: run_dataset['dataset']
             for run_dataset in main_run['datasets']
             if run_dataset['argument_name'] in ('sample_info_csv',
-                                                'conseq_csv',
-                                                'contigs_csv',
+                                                'remap_unstitched_conseq_csv',
+                                                'contigs_unstitched_csv',
                                                 'cascade_csv')}
         input_datasets = {
             argument_name: self.kive_retry(lambda: self.session.get(url).json())
             for argument_name, url in input_dataset_urls.items()}
-        input_datasets['conseqs_csv'] = input_datasets.pop('conseq_csv')
+        input_datasets['conseqs_csv'] = input_datasets.pop('remap_unstitched_conseq_csv')
+        input_datasets['contigs_csv'] = input_datasets.pop('contigs_unstitched_csv')
         run = self.find_or_launch_run(
             pipeline_id,
             input_datasets,
