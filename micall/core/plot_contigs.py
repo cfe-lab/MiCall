@@ -665,6 +665,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                                child_name in contig_map
                                if child_name not in children_graph))
 
+    lstrip_set = set(lstrip_map.keys())
+    rstrip_set = set(rstrip_map.keys())
+
     for contig_name, parents in parent_graph.items():
         if len(parents) == 1:
             morphism_graph[parents[0]] = [contig_name]
@@ -712,14 +715,18 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     for contig_name in sorted_roots:
         set_query_position(contig_name)
 
-    def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map, overlap_xsibling):
+    def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map, overlap_xsibling, xstrip_set):
         for parent in edge_table:
             child_remainder = edge_table[parent]
             for child_remainder_morph in eqv_morphism_graph.get(child_remainder, [child_remainder]):
-                if child_remainder_morph in overlap_xtake_map:
-                    continue
-
                 for parent_morph in eqv_morphism_graph.get(parent, [parent]):
+                    if child_remainder_morph in xstrip_set:
+                        xstrip_set.add(parent_morph)
+                    if parent_morph in xstrip_set:
+                        xstrip_set.add(child_remainder_morph)
+
+                    if child_remainder_morph in overlap_xtake_map:
+                        continue
                     for parent_remainder in overlap_xparent_map:
                         if overlap_xparent_map[parent_remainder] == parent_morph:
                             overlap_xtake_map[child_remainder_morph] = overlap_xtake_map[parent_remainder]
@@ -727,9 +734,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                             yield True
 
     # Closing `takes` by parents
-    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map, overlap_leftparent_map, overlap_left_sibling)):
+    while list(copy_takes_one_side(combine_right_edge, overlap_lefttake_map,
+                                   overlap_leftparent_map, overlap_left_sibling, rstrip_set)):
         pass
-    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map, overlap_rightparent_map, overlap_right_sibling)):
+    while list(copy_takes_one_side(combine_left_edge, overlap_righttake_map,
+                                   overlap_rightparent_map, overlap_right_sibling, lstrip_set)):
         pass
 
     final_nodes: List[str] = []
@@ -823,9 +832,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
     for parent_name in sorted_roots:
         parts_names = final_children_mapping[parent_name]
-        parts = [contig_map[part] for part in parts_names]
-
-        for part in parts:
+        for part_name in parts_names:
+            part = contig_map[part_name]
             if not isinstance(part, AlignedContig):
                 continue
 
@@ -834,12 +842,16 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
             if prev_part is not None:
                 r_st = prev_part.alignment.r_st
+            elif part_name in lstrip_set:
+                r_st = part.alignment.r_st
             else:
                 start_delta = -1 * part.alignment.q_st
                 r_st = part.alignment.r_st + start_delta
 
             if next_part is not None:
                 r_ei = next_part.alignment.r_ei
+            elif part_name in rstrip_set:
+                r_ei = part.alignment.r_ei
             else:
                 end_delta = len(part.seq) - 1 - part.alignment.q_ei
                 r_ei = part.alignment.r_ei + end_delta
