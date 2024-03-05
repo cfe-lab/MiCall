@@ -226,7 +226,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_with_padding(
     assert len(visualizer().elements) > len(contigs)
 
 
-def test_correct_stitching_of_two_partially_overlapping_contigs_real(
+def test_correct_stitching_of_two_partially_overlapping_contigs_real_hiv(
     projects, visualizer
 ):
     # Scenario: Two partially overlapping contigs are stitched
@@ -249,6 +249,46 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_real(
             seq=ref[1900:2200],
             ref_name=ref_name,
             group_ref=ref_name,
+            ref_seq=ref,
+            match_fraction=0.5,
+        ),
+    ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert 500 == len(result.seq)
+    assert result.seq == ref[1700:2200]
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_correct_stitching_of_two_partially_overlapping_contigs_real_hcv(
+    projects, visualizer
+):
+    # Scenario: Two partially overlapping contigs are stitched
+    # correctly into a single sequence. Not using exact aligner this time.
+
+    ref_name = "HCV-1a"
+    ref = projects.getReference(ref_name)
+    group_ref = ref_name
+
+    contigs = [
+        GenotypedContig(
+            name="a",
+            seq=ref[1700:2000],
+            ref_name=ref_name,
+            group_ref=group_ref,
+            ref_seq=ref,
+            match_fraction=0.5,
+        ),
+        GenotypedContig(
+            name="b",
+            seq=ref[1900:2200],
+            ref_name=ref_name,
+            group_ref=group_ref,
             ref_seq=ref,
             match_fraction=0.5,
         ),

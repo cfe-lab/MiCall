@@ -23,6 +23,7 @@ from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
 from micall.utils.cigar_tools import CigarHit
 import micall.utils.contig_stitcher_events as events
+from micall.data.landmark_reader import LandmarkReader
 
 
 logger = logging.getLogger(__name__)
@@ -1052,28 +1053,22 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     # Drawing part #
     ################
 
-    landmarks_path = (Path(__file__).parent.parent / "data" / "landmark_references.yaml")
-    landmark_groups = yaml.safe_load(landmarks_path.read_text())
+    landmark_reader = LandmarkReader.load()
     figure = Figure()
     for group_ref in group_refs:
-        matching_groups = [group for group in landmark_groups if group['coordinates'] == group_ref]
-        if matching_groups:
-            reference_set = matching_groups[0]
-        elif "HIV1" in group_ref:
-            matching_groups = [group for group in landmark_groups if group['coordinates'] == "HIV1-B-FR-K03455-seed"]
-            reference_set = matching_groups[0]
-        else:
-            reference_set = None
+        try:
+            landmarks = landmark_reader.get_landmarks(group_ref)
+        except ValueError:
+            landmarks = None
 
         #############
         # Landmarks #
         #############
 
-        if reference_set:
-
+        if landmarks:
             # Filling out missing ends.
             prev_landmark = None
-            for landmark in sorted(reference_set['landmarks'], key=itemgetter('start')):
+            for landmark in sorted(landmarks, key=itemgetter('start')):
                 landmark.setdefault('frame', 0)
                 if prev_landmark and 'end' not in prev_landmark:
                     prev_landmark['end'] = landmark['start'] - 1
@@ -1081,14 +1076,13 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
             # Computing the stretching factor.
             landmark_max = 0
-            for landmark in reference_set['landmarks']:
+            for landmark in landmarks:
                 landmark_max = max(landmark_max, landmark['end'])
 
             stretch_c = group_refs[group_ref] / landmark_max
 
             # Drawing the landmarks.
-            for frame, frame_landmarks in groupby(reference_set['landmarks'],
-                                                  itemgetter('frame')):
+            for frame, frame_landmarks in groupby(landmarks, itemgetter('frame')):
                 subtracks = []
                 for landmark in frame_landmarks:
                     landmark_colour = landmark.get('colour')

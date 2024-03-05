@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="135.5" viewBox="0.0 -135.5 970.0 135.5">
+<defs>
+</defs>
+<g transform="translate(0 -120.5)">
+<g transform="translate(0.0 0)">
+<rect x="46.2862474452771" y="-10" width="32.562226632307485" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(62.56736076143084 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">5'</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="78.94424533238549" y="-10" width="54.781157746117316" height="10" fill="#1f77b4" stroke="#1f77b4" />
+<g transform="translate(106.33482420544415 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">C</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="133.8211743333037" y="-10" width="55.06847151052003" height="10" fill="#ff7f0e" stroke="#ff7f0e" />
+<g transform="translate(161.3554100885637 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">E1</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="188.98541709862465" y="-10" width="104.19912522338402" height="10" fill="#2ca02c" stroke="#2ca02c" />
+<g transform="translate(241.08497971031665 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">E2</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="293.28031357680953" y="-10" width="18.004995902570045" height="10" fill="#d62728" stroke="#d62728" />
+<g transform="translate(302.28281152809456 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">p7</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="311.3810807341805" y="-10" width="62.25131562058783" height="10" fill="#9467bd" stroke="#9467bd" />
+<g transform="translate(342.5067385444744 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">NS2</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="373.72816760956925" y="-10" width="181.19921408331106" height="10" fill="#8c564b" stroke="#8c564b" />
+<g transform="translate(464.3277746512248 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">NS3</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="570.5380962254278" y="-10" width="74.89312125430718" height="10" fill="#7f7f7f" stroke="#7f7f7f" />
+<g transform="translate(607.9846568525813 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">NS4b</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="555.0231529476813" y="-10" width="15.419172022945645" height="10" fill="#e377c2" stroke="#e377c2" />
+<g transform="translate(562.7327389591542 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">NS4a</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="645.526988734536" y="-10" width="128.6207951976146" height="10" fill="#bcbd22" stroke="#bcbd22" />
+<g transform="translate(709.8373863333433 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">NS5a</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="774.2435551869514" y="-10" width="169.99397727160522" height="10" fill="#17becf" stroke="#17becf" />
+<g transform="translate(859.240543822754 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">NS5b</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
+<rect x="944.3333037133576" y="-10" width="25.666696286642377" height="10" fill="darkgrey" stroke="darkgrey" />
+<g transform="translate(957.1666518566788 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">3'</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -100.5)">
+<g transform="translate(0.0 0)">
+<rect x="46.19047619047619" y="-10" width="923.8095238095239" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="209.00160935201367" y="-10" width="23.94281370022611" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="233.04019430704068" y="-10" width="23.751271190624323" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="209.00160935201367" y="-10" width="28.63560518547044" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="228.15586031219456" y="-10" width="28.63560518547044" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
+<g transform="translate(0.0 -102.0)">
+<rect x="508.0665067187978" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(508.0665067187978 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">HCV-1a</text>
+</g>
+</g>
+<g transform="translate(0 -72.0)">
+<g transform="translate(0.0 0)">
+<path d="M209.00160935201367,-20.0 L225.94442305223978,-20.0" stroke="black" />
+<circle cx="220.97301620212673" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M232.94442305223978,-20.0 L225.94442305223978,-23.5 L225.94442305223978,-16.5 L232.94442305223978,-20.0" fill="black" />
+<text x="220.97301620212673" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+</g>
+<g transform="translate(0.0 0)">
+<path d="M233.04019430704068,-20.0 L249.791465497665,-20.0" stroke="black" />
+<circle cx="244.91582990235284" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M256.791465497665,-20.0 L249.791465497665,-23.5 L249.791465497665,-16.5 L256.791465497665,-20.0" fill="black" />
+<text x="244.91582990235284" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2</text>
+</g>
+</g>
+<g transform="translate(0 -61.0)">
+<g transform="translate(0.0 0)">
+<path d="M209.00160935201367,9.5 L225.94442305223978,9.5" stroke="black" />
+<path d="M232.94442305223978,9.5 L225.94442305223978,6.0 L225.94442305223978,13.0 L232.94442305223978,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -41.0)">
+<g transform="translate(0.0 0)">
+<rect x="209.00160935201367" y="-10" width="28.63560518547044" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(223.31941194474888 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<path d="M233.04019430704068,9.5 L249.791465497665,9.5" stroke="black" />
+<path d="M256.791465497665,9.5 L249.791465497665,6.0 L249.791465497665,13.0 L256.791465497665,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="228.15586031219456" y="-10" width="28.63560518547044" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(242.47366290492977 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
+</g>
+</g>
+</g>
+</svg>

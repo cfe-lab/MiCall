@@ -70,6 +70,13 @@ class LandmarkReader:
                 return genotype_landmarks['coordinates']
         raise ValueError(f'No landmarks match {seed_name!r}.')
 
+    def get_landmarks(self, seed_name: str) -> typing.Dict[str, object]:
+        for genotype_landmarks in self.landmarks:
+            seed_pattern = genotype_landmarks['seed_pattern']
+            if re.fullmatch(seed_pattern, seed_name):
+                return genotype_landmarks['landmarks']
+        raise ValueError(f'No landmarks match {seed_name!r}.')
+
     def get_region(self, ref_name, position):
         match_regions = []
         matches = [entry
