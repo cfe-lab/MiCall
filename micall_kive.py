@@ -33,8 +33,6 @@ def parse_args():
                         help='CSV containing numbers of mapped reads')
     parser.add_argument('remap_conseq_csv',
                         help='CSV containing mapping consensus sequences')
-    parser.add_argument('remap_unstitched_conseq_csv',
-                        help='CSV containing mapping unstitched consensus sequences')
     parser.add_argument('unmapped1_fastq',
                         help='FASTQ R1 of reads that failed to map to any region')
     parser.add_argument('unmapped2_fastq',
@@ -82,6 +80,9 @@ def parse_args():
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
                              'reference sequences.')
+    parser.add_argument('remap_unstitched_conseq_csv',
+                        nargs='?',
+                        help='CSV containing mapping unstitched consensus sequences')
     parser.add_argument('contigs_unstitched_csv',
                         nargs='?',
                         help='CSV containing contigs built by de novo assembly')
@@ -114,7 +115,6 @@ def load_sample(args):
                     g2p_summary_csv=args.g2p_summary_csv,
                     remap_counts_csv=args.remap_counts_csv,
                     remap_conseq_csv=args.remap_conseq_csv,
-                    remap_unstitched_conseq_csv=args.remap_unstitched_conseq_csv,
                     unmapped1_fastq=args.unmapped1_fastq,
                     unmapped2_fastq=args.unmapped2_fastq,
                     insertions_csv=args.insertions_csv,
@@ -130,6 +130,7 @@ def load_sample(args):
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
+                    remap_unstitched_conseq_csv=args.remap_unstitched_conseq_csv,
                     contigs_unstitched_csv=args.contigs_unstitched_csv,
                     contigs_csv=args.contigs_csv,
                     genome_coverage_csv=args.genome_coverage_csv,
