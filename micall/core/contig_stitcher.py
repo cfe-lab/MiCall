@@ -10,6 +10,7 @@ from queue import LifoQueue
 from Bio import Seq
 import logging
 from fractions import Fraction
+from operator import itemgetter
 
 from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.contig_stitcher_context import context, StitcherContext
@@ -341,10 +342,13 @@ def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned
     """ Determine optimal cut points for stitching based on sequence concordance in the overlap region. """
 
     concordance_d = list(disambiguate_concordance(concordance))
-    sorted_concordance_indexes = sorted(range(len(concordance)), key=lambda i: concordance_d[i])
-    def remove_dashes(s): return ''.join(c for c in s if c != '-')
+    sorted_concordance_indexes = [i for i, v in sorted(enumerate(concordance_d),
+                                                       key=itemgetter(1),
+                                                       reverse=True,
+                                                       )]
+    def remove_dashes(s): return s.replace('-', '')
 
-    for max_concordance_index in reversed(sorted_concordance_indexes):
+    for max_concordance_index in sorted_concordance_indexes:
         aligned_left_q_index = len(remove_dashes(aligned_left[:max_concordance_index]))
         aligned_right_q_index = right_overlap.alignment.query_length - \
             len(remove_dashes(aligned_right[max_concordance_index:])) + 1

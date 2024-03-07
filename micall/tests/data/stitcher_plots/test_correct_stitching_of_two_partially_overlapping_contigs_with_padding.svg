@@ -8,10 +8,10 @@
 <rect x="36.059479553903344" y="-10" width="721.1895910780669" height="10" fill="red" stroke="red" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="180.29739776951672" y="-10" width="216.3568773234201" height="10" fill="yellow" stroke="yellow" />
+<rect x="180.29739776951672" y="-10" width="212.75092936802972" height="10" fill="yellow" stroke="yellow" />
 </g>
 <g transform="translate(0.0 0)">
-<rect x="400.26022304832713" y="-10" width="209.14498141263937" height="10" fill="yellow" stroke="yellow" />
+<rect x="396.6542750929368" y="-10" width="212.7509293680297" height="10" fill="yellow" stroke="yellow" />
 </g>
 <g transform="translate(0.0 0)">
 <rect x="216.35687732342006" y="-10" width="248.81040892193306" height="10" fill="lightgray" stroke="lightgray" />
@@ -28,22 +28,22 @@
 </g>
 <g transform="translate(0 -152.1)">
 <g transform="translate(0.0 0)">
-<path d="M180.29739776951672,-20.0 L389.6542750929368,-20.0" stroke="black" />
-<circle cx="288.47583643122675" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
-<path d="M396.6542750929368,-20.0 L389.6542750929368,-23.5 L389.6542750929368,-16.5 L396.6542750929368,-20.0" fill="black" />
-<text x="288.47583643122675" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1.1</text>
+<path d="M180.29739776951672,-20.0 L386.04832713754644,-20.0" stroke="black" />
+<circle cx="286.6728624535316" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M393.04832713754644,-20.0 L386.04832713754644,-23.5 L386.04832713754644,-16.5 L393.04832713754644,-20.0" fill="black" />
+<text x="286.6728624535316" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1.1</text>
 </g>
 <g transform="translate(0.0 0)">
-<path d="M400.26022304832713,-20.0 L602.4052044609665,-20.0" stroke="black" />
-<circle cx="504.8327137546468" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M396.6542750929368,-20.0 L602.4052044609665,-20.0" stroke="black" />
+<circle cx="503.02973977695166" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
 <path d="M609.4052044609665,-20.0 L602.4052044609665,-23.5 L602.4052044609665,-16.5 L609.4052044609665,-20.0" fill="black" />
-<text x="504.8327137546468" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2.2</text>
+<text x="503.02973977695166" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2.2</text>
 </g>
 </g>
 <g transform="translate(0 -141.1)">
 <g transform="translate(0.0 0)">
-<path d="M180.29739776951672,9.5 L389.6542750929368,9.5" stroke="black" />
-<path d="M396.6542750929368,9.5 L389.6542750929368,6.0 L389.6542750929368,13.0 L396.6542750929368,9.5" fill="black" />
+<path d="M180.29739776951672,9.5 L386.04832713754644,9.5" stroke="black" />
+<path d="M393.04832713754644,9.5 L386.04832713754644,6.0 L386.04832713754644,13.0 L393.04832713754644,9.5" fill="black" />
 </g>
 </g>
 <g transform="translate(0 -121.1)">
@@ -59,7 +59,7 @@
 </g>
 <g transform="translate(0 -110.1)">
 <g transform="translate(0.0 0)">
-<path d="M400.26022304832713,9.5 L602.4052044609665,9.5" stroke="black" />
+<path d="M396.6542750929368,9.5 L602.4052044609665,9.5" stroke="black" />
 <path d="M609.4052044609665,9.5 L602.4052044609665,6.0 L602.4052044609665,13.0 L609.4052044609665,9.5" fill="black" />
 </g>
 </g>
