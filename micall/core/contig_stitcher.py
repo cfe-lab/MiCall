@@ -332,7 +332,7 @@ def calculate_concordance(left: str, right: str) -> List[Fraction]:
     return result
 
 
-def disambiguate_concordance(concordance: List[float]) -> Iterable[Tuple[float, int]]:
+def disambiguate_concordance(concordance: List[Fraction]) -> Iterable[Tuple[Fraction, int]]:
     for i, x in enumerate(concordance):
         global_rank = i if i < len(concordance) / 2 else len(concordance) - i - 1
         yield x, global_rank
@@ -346,7 +346,8 @@ def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned
                                                        key=itemgetter(1),
                                                        reverse=True,
                                                        )]
-    def remove_dashes(s): return s.replace('-', '')
+
+    def remove_dashes(s: str): return s.replace('-', '')
 
     for max_concordance_index in sorted_concordance_indexes:
         aligned_left_q_index = len(remove_dashes(aligned_left[:max_concordance_index]))
