@@ -1,7 +1,8 @@
 import argparse
 import logging
 import os
-import typing
+import tempfile
+from typing import Optional, TextIO, Iterable, Dict, cast
 from collections import Counter
 from csv import DictWriter, DictReader
 from datetime import datetime
@@ -19,6 +20,9 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
+from micall.core.contig_stitcher import GenotypedContig, stitch_consensus
+from micall.core.plot_contigs import plot_stitcher_coverage
+from micall.utils.contig_stitcher_context import StitcherContext
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -28,46 +32,105 @@ DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
 logger = logging.getLogger(__name__)
 
 
-def write_contig_refs(contigs_fasta_path,
-                      contigs_csv,
-                      merged_contigs_csv=None,
-                      blast_csv=None):
-    """ Run BLAST search to identify contig sequences.
+def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> Iterable[GenotypedContig]:
+    projects = ProjectConfig.loadDefault()
 
-    :param str contigs_fasta_path: path to file to read contig sequences from
-        and append merged contigs to
-    :param contigs_csv: open file to write assembled contigs to
-    :param merged_contigs_csv: open file to read contigs that were merged from
-        amplicon reads
-    :param blast_csv: open file to write BLAST search results for each contig
-    """
-    writer = DictWriter(contigs_csv,
-                        ['ref', 'match', 'group_ref', 'contig'],
-                        lineterminator=os.linesep)
-    writer.writeheader()
-    with open(contigs_fasta_path, 'a') as contigs_fasta:
-        if merged_contigs_csv is not None:
-            contig_reader = DictReader(merged_contigs_csv)
-            for i, row in enumerate(contig_reader, 1):
-                contig_name = f'merged-contig-{i}'
-                contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
-    group_refs = {}
-    genotypes = genotype(contigs_fasta_path,
-                         blast_csv=blast_csv,
-                         group_refs=group_refs)
-    genotype_count = 0
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
         (ref_name, match_fraction) = genotypes.get(record.name, ('unknown', 0))
         seq = record.seq
         if match_fraction < 0:
             seq = seq.reverse_complement()
             match_fraction *= -1
-        writer.writerow(dict(ref=ref_name,
-                             match=match_fraction,
-                             group_ref=group_refs.get(ref_name),
-                             contig=seq))
-        genotype_count += 1
-    return genotype_count
+
+        group_ref = group_refs.get(ref_name)
+        try:
+            ref_seq = projects.getGenotypeReference(group_ref)
+        except KeyError:
+            try:
+                ref_seq = projects.getReference(group_ref)
+            except KeyError:
+                ref_seq = None
+
+        yield GenotypedContig(name=record.name,
+                              seq=str(seq),
+                              ref_name=ref_name,
+                              group_ref=group_ref,
+                              ref_seq=str(ref_seq) if ref_seq is not None else None,
+                              match_fraction=match_fraction)
+
+
+def init_contigs_refs(contigs_csv: TextIO):
+    writer = DictWriter(contigs_csv,
+                        ['ref', 'match', 'group_ref', 'contig'],
+                        lineterminator=os.linesep)
+    writer.writeheader()
+    return writer
+
+
+def contigs_refs_write(writer, ref: str, match: float, group_ref: str, contig: str):
+    writer.writerow(dict(ref=ref, match=match, group_ref=group_ref, contig=contig))
+
+
+def write_contig_refs(contigs_fasta_path: str,
+                      contigs_unstitched_csv: Optional[TextIO],
+                      contigs_csv: Optional[TextIO],
+                      merged_contigs_csv: Optional[TextIO] = None,
+                      blast_csv: Optional[TextIO] = None,
+                      stitcher_plot_path: Optional[str] = None) -> int:
+    """ Run BLAST search to identify contig sequences.
+
+    :param str contigs_fasta_path: path to file to read contig sequences from
+        and append merged contigs to
+    :param contigs_unstitched_csv: open file to write assembled contigs to
+    :param contigs_csv: open file to write stitched contigs to
+    :param merged_contigs_csv: open file to read contigs that were merged from
+        amplicon reads
+    :param blast_csv: open file to write BLAST search results for each contig
+    :param stitcher_plot_path: open file to write the visualizer plot to
+    """
+
+    with open(contigs_fasta_path, 'a') as contigs_fasta:
+        if merged_contigs_csv is not None:
+            contig_reader = DictReader(merged_contigs_csv)
+            for i, row in enumerate(contig_reader, 1):
+                contig_name = f'merged-contig-{i}'
+                contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
+
+    unstitched_writer = init_contigs_refs(contigs_unstitched_csv) \
+        if contigs_unstitched_csv else None
+    stitched_writer = init_contigs_refs(contigs_csv) if contigs_csv else None
+    group_refs: Dict[str, str] = {}
+
+    with StitcherContext.fresh() as ctx:
+        genotypes = genotype(contigs_fasta_path,
+                             blast_csv=blast_csv,
+                             group_refs=group_refs)
+
+        contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
+
+        if unstitched_writer is not None:
+            for contig in contigs:
+                contigs_refs_write(unstitched_writer,
+                                   ref=contig.ref_name,
+                                   match=contig.match_fraction,
+                                   group_ref=contig.group_ref,
+                                   contig=contig.seq)
+
+        if stitched_writer is not None or stitcher_plot_path is not None:
+            contigs = list(stitch_consensus(contigs))
+
+        if stitched_writer is not None:
+            for contig in contigs:
+                contigs_refs_write(stitched_writer,
+                                   ref=contig.ref_name,
+                                   match=contig.match_fraction,
+                                   group_ref=contig.group_ref,
+                                   contig=contig.seq)
+
+        if stitcher_plot_path is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+
+        return len(contigs)
 
 
 def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
@@ -86,7 +149,8 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
         fraction of the query that aligned against the reference (matches and
         mismatches).
     """
-    contig_nums = {}  # {contig_name: contig_num}
+
+    contig_nums: Dict[str, int] = {}  # {contig_name: contig_num}
     with open(fasta) as f:
         for line in f:
             if line.startswith('>'):
@@ -133,7 +197,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
                           for match in matches}
     top_refs = set(contig_top_matches.values())
     projects = ProjectConfig.loadDefault()
-    match_scores = Counter()
+    match_scores: Counter[str] = Counter()
     for contig_name, contig_matches in groupby(matches, itemgetter('qaccver')):
         contig_top_ref = contig_top_matches[contig_name]
         contig_seed_group = projects.getSeedGroup(contig_top_ref)
@@ -143,7 +207,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
                 continue
             match_seed_group = projects.getSeedGroup(ref_name)
             if match_seed_group == contig_seed_group:
-                match_scores[ref_name] += float(match['score'])
+                match_scores[ref_name] += float(match['score'])  # type: ignore[assignment]
 
     if group_refs is not None:
         group_top_refs = {projects.getSeedGroup(ref_name): ref_name
@@ -173,28 +237,46 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
 def denovo(fastq1_path: str,
            fastq2_path: str,
-           contigs_csv: typing.TextIO,
+           contigs_unstitched_csv: Optional[TextIO],
+           contigs_csv: Optional[TextIO],
            work_dir: str = '.',
-           merged_contigs_csv: typing.TextIO = None,
-           blast_csv: typing.TextIO = None):
+           merged_contigs_csv: Optional[TextIO] = None,
+           blast_csv: Optional[TextIO] = None,
+           stitcher_plot_path: Optional[str] = None,
+           ):
     """ Use de novo assembly to build contigs from reads.
 
     :param fastq1_path: FASTQ file name for read 1 reads
     :param fastq2_path: FASTQ file name for read 2 reads
-    :param contigs_csv: open file to write assembled contigs to
+    :param contigs_unstitched_csv: open file to write assembled contigs to
+    :param contigs_csv: open file to write stitched contigs to
     :param work_dir: path for writing temporary files
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
     :param blast_csv: open file to write BLAST search results for each contig
+    :param stitcher_plot_path: open file to write the visualizer plot to
     """
+
+    if contigs_unstitched_csv is None and contigs_csv is None:
+        raise ValueError("Must specify either contigs_csv or contigs_unstitched_csv")
+
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
 
     tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
+
+    if contigs_csv is None:
+        contigs_csv_tmp = tempfile.NamedTemporaryFile("wt")
+        contigs_csv = cast(TextIO, contigs_csv_tmp.file)
+    else:
+        contigs_csv_tmp = None
+
     start_time = datetime.now()
     start_dir = os.getcwd()
     joined_path = os.path.join(tmp_dir, 'joined.fastq')
+    if stitcher_plot_path is None:
+        stitcher_plot_path = os.path.join(tmp_dir, "stitcher_plot.svg")
     run(['merge-mates',
          fastq1_path,
          fastq2_path,
@@ -228,13 +310,18 @@ def denovo(fastq1_path: str,
     os.chdir(start_dir)
     duration = datetime.now() - start_time
     contig_count = write_contig_refs(contigs_fasta_path,
+                                     contigs_unstitched_csv,
                                      contigs_csv,
-                                     blast_csv=blast_csv)
+                                     blast_csv=blast_csv,
+                                     stitcher_plot_path=stitcher_plot_path)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
                 contig_count,
                 duration,
                 duration.total_seconds(),
                 fastq1_path)
+
+    if contigs_csv_tmp:
+        contigs_csv_tmp.close()
 
 
 if __name__ == '__main__':
@@ -242,7 +329,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('fastq1')
     parser.add_argument('fastq2')
-    parser.add_argument('contigs', type=argparse.FileType('w'))
+    parser.add_argument('--contigs_unstitched', type=argparse.FileType('w'))
+    parser.add_argument('--contigs', type=argparse.FileType('w'))
+    parser.add_argument('--stitcher_plot')
 
     args = parser.parse_args()
-    denovo(args.fastq1, args.fastq2, args.contigs)
+    denovo(args.fastq1, args.fastq2, args.contigs_unstitched, args.contigs, args.stitcher_plot_path)

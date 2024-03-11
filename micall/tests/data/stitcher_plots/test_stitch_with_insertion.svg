@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="84.5" viewBox="0.0 -84.5 970.0 84.5">
+<defs>
+</defs>
+<g transform="translate(0 -69.5)">
+<g transform="translate(0.0 0)">
+<rect x="16.006600660066006" y="-10" width="320.13201320132015" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="16.006600660066006" y="-10" width="313.7293729372937" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="48.01980198019802" y="-10" width="249.70297029702968" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
+<g transform="translate(0.0 -71.0)">
+<rect x="179.27392739273927" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(179.27392739273927 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
+</g>
+</g>
+<g transform="translate(0 -41.0)">
+<g transform="translate(0.0 0)">
+<path d="M16.006600660066006,-20.0 L322.7359735973597,-20.0" stroke="black" />
+<circle cx="172.87128712871285" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M329.7359735973597,-20.0 L322.7359735973597,-23.5 L322.7359735973597,-16.5 L329.7359735973597,-20.0" fill="black" />
+<text x="172.87128712871285" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+</g>
+</g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<path d="M16.006600660066006,9.5 L322.7359735973597,9.5" stroke="black" />
+<path d="M329.7359735973597,9.5 L322.7359735973597,6.0 L322.7359735973597,13.0 L329.7359735973597,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="16.006600660066006" y="-10" width="32.01320132013201" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="297.7227722772277" y="-10" width="32.013201320132" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="48.01980198019802" y="-10" width="249.70297029702968" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(172.87128712871285 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
+</g>
+</g>
+</svg>
