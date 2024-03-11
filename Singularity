@@ -116,7 +116,7 @@ From: python:3.8
     # Also trigger matplotlib to build its font cache.
     cd /opt
     pip install --upgrade pip
-    pip install -r /opt/micall/requirements-basespace.txt
+    pip install -r /opt/micall/requirements.txt
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
     python /opt/micall/micall/blast_db/make_blast_db.py
 
