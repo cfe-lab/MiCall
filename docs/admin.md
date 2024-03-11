@@ -109,11 +109,8 @@ Here's an example configuration, in `/etc/systemd/system/micall_watcher.service`
     Description=micall_watcher
     
     [Service]
-    ExecStart=/usr/local/share/venv-micall/bin/python3.6 \
-        /usr/local/share/MiCall/micall_watcher.py \
-        --pipeline_version=8.0 --raw_data=/data/raw \
-        --micall_filter_quality_pipeline_id=100 --micall_main_pipeline_id=101 \
-        --micall_resistance_pipeline_id=102
+    ExecStart=/usr/local/share/venv-micall/bin/python3 \
+        /usr/local/share/MiCall/micall_watcher.py
     EnvironmentFile=/etc/micall/micall.conf
     User=micall
     
@@ -123,10 +120,11 @@ Here's an example configuration, in `/etc/systemd/system/micall_watcher.service`
     [Install]
     WantedBy=multi-user.target
 
-The settings can either be given on the command line or set as
-environment variables. Environment variables are a better option for
-sensitive parameters like passwords, because the command line is visible to all
-users. Environment variables go in the configuration file listed in the
+Micall watcher accepts multiple settings which can be passed
+directly as command line arguments, or as environment variables.
+Environment variables are a better option for sensitive parameters like passwords,
+because the command line is visible to all users.
+Environment variables go in the configuration file listed in the
 `EnvironmentFile=` setting. In this example, it's `/etc/micall/micall.conf`
 
     $ sudo mkdir /etc/micall
@@ -136,16 +134,24 @@ users. Environment variables go in the configuration file listed in the
 Make sure you reduce the read permissions on the `.conf` file so
 other users can't read it. The environment variable names are the same as the
 command options, but they add a `MICALL_` prefix, if it's not already there.
+To list all the available options, run `python3 micall_watcher.py --help`.
+Below is the example config:
 
     # This is an example of /etc/micall/micall.conf
     # You can add comment lines that start with #
-    MICALL_KIVE_SERVER=https://example.com
-    MICALL_KIVE_USER=badexample
-    MICALL_KIVE_PASSWORD=badexample
+    MICALL_KIVE_SERVER=https://kive.example.com
+    MICALL_KIVE_USER=kiveusername
+    MICALL_KIVE_PASSWORD=kivepassword
 
-    MICALL_QAI_SERVER=https://example.com
-    MICALL_QAI_USER=badexample
-    MICALL_QAI_PASSWORD=badexample
+    MICALL_QAI_SERVER=https://qai.example.com
+    MICALL_QAI_USER=qaiuser
+    MICALL_QAI_PASSWORD=qaipassword
+
+    MICALL_RAW_DATA=/data/raw
+
+    MICALL_MAIN_PIPELINE_ID=100
+    MICALL_FILTER_QUALITY_PIPELINE_ID=101
+    MICALL_RESISTANCE_PIPELINE_ID=102
 
 Don't put the environment variables directly in the `.service` file, because
 its contents are visible to all users with `systemctl show micall_watcher`.
