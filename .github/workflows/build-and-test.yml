@@ -16,6 +16,9 @@ jobs:
         with:
           go-version: '^1.15.6'
 
+      - name: Run apt update
+        run: sudo apt-get update
+
       - name: Install IVA assembler dependencies
         run: |
           sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
