@@ -3189,13 +3189,11 @@ def test_launch_main_bad_pipeline_id(mock_open_kive, default_config):
     inputs = {'quality_csv': {'bad_argument': 777, 'id': 104}}
     run_batch = {'url': '/batches/101'}
     pipeline_id = 42
+    expected_msg = f'The specified app with id {pipeline_id}' \
+                    ' appears to expect a different set of inputs'
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError, match=expected_msg) as excinfo:
         kive_watcher.find_or_launch_run(pipeline_id=pipeline_id,
                                         inputs=inputs,
                                         run_name='MiCall filter quality on 140101_M01234',
                                         run_batch=run_batch)
-
-    assert f'The specified app with id {pipeline_id}' \
-            ' appears to expect a different set of inputs' \
-            in str(excinfo.value)
