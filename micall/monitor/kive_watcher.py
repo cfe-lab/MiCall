@@ -983,9 +983,14 @@ class KiveWatcher:
                        for run_dataset in run_datasets):
                     run = None
         if run is None:
-            run_datasets = [dict(argument=app_arg,
-                                 dataset=inputs[name]['url'])
-                            for name, app_arg in app_args.items()]
+            try:
+                run_datasets = [dict(argument=app_arg,
+                                     dataset=inputs[name]['url'])
+                                for name, app_arg in app_args.items()]
+            except KeyError as e:
+                raise ValueError(f"Pipeline input error: {repr(e)}."
+                                 f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
+                                 f" Does the run name {repr(run_name)} make sense for it?")
             run_params = dict(name=run_name,
                               batch=run_batch['url'],
                               groups_allowed=ALLOWED_GROUPS,
