@@ -28,7 +28,9 @@ logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
-random.choice([check_hcv_db, load_projects])  # make linters not complain about unused imports.
+# make linters not complain about unused imports.
+assert check_hcv_db is not None
+assert load_projects is not None
 
 
 @pytest.fixture()
@@ -349,6 +351,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(
     exact_aligner, visualizer
 ):
     # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
+    # One contig on the right, and two on the left.
 
     ref_seq = "Z" * 5 + "A" * 100 + "C" * 100 + "T" * 100 + "Y" * 5
 
@@ -391,6 +394,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig_2(
     exact_aligner, visualizer
 ):
     # Scenario: Two overlapping contigs are stitched together, the non-overlapping is kept separate.
+    # One contig on the left, and two on the right.
 
     ref_seq = "Z" * 5 + "A" * 100 + "C" * 100 + "T" * 100 + "Y" * 5
 

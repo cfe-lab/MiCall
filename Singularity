@@ -188,12 +188,12 @@ From: centos:7
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
     KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
-        remap_conseq_csv remap_unstitched_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
+        remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
         failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg genome_concordance_svg \
-        contigs_unstitched_csv contigs_csv \
+        remap_unstitched_conseq_csv contigs_unstitched_csv contigs_csv \
         read_entropy_csv conseq_region_csv conseq_stitched_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
