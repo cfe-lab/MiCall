@@ -347,7 +347,8 @@ def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned
                                                        reverse=True,
                                                        )]
 
-    def remove_dashes(s: str): return s.replace('-', '')
+    def remove_dashes(s: str):
+        return s.replace('-', '')
 
     for max_concordance_index in sorted_concordance_indexes:
         aligned_left_q_index = len(remove_dashes(aligned_left[:max_concordance_index]))

@@ -67,6 +67,10 @@ jobs:
         run: |
           mypy
 
+      - name: Run linter
+        run: |
+          flake8 micall/
+
       - name: Test with pytest
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
