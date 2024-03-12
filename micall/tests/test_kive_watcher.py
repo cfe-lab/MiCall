@@ -1784,7 +1784,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
                        dataset='/datasets/112/'),
                   dict(argument='/containerargs/106',
                        dataset='/datasets/113/')],
-        name='Proviral HIVSeqinR on 2120A',
+        name='Proviral on 2120A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
 
@@ -3007,7 +3007,7 @@ def test_collate_denovo_results(raw_data_with_two_samples, default_config, mock_
 
     expected_cascade_path = version_folder / "denovo" / "cascade.csv"
     expected_done_path = version_folder / "denovo" / "doneprocessing"
-    proviral_path = version_folder / "denovo" / "hivseqinr_results"
+    proviral_path = version_folder / "denovo" / "detailed_results"
 
     main_scratch_path = version_folder / "scratch"
     main_scratch_path.mkdir()
