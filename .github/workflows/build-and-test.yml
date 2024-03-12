@@ -63,6 +63,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
 
+      - name: Run type checker
+        run: |
+          mypy
+
       - name: Test with pytest
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 

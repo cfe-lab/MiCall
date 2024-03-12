@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import tempfile
+import typing
 from typing import Optional, TextIO, Iterable, Dict, cast
 from collections import Counter
 from csv import DictWriter, DictReader
@@ -197,7 +198,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
                           for match in matches}
     top_refs = set(contig_top_matches.values())
     projects = ProjectConfig.loadDefault()
-    match_scores: Counter[str] = Counter()
+    match_scores: typing.Counter[str] = Counter()
     for contig_name, contig_matches in groupby(matches, itemgetter('qaccver')):
         contig_top_ref = contig_top_matches[contig_name]
         contig_seed_group = projects.getSeedGroup(contig_top_ref)
