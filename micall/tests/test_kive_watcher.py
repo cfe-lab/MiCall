@@ -1784,7 +1784,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
                        dataset='/datasets/112/'),
                   dict(argument='/containerargs/106',
                        dataset='/datasets/113/')],
-        name='Proviral HIVIntact on 2120A',
+        name='Proviral on 2120A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
 

@@ -74,6 +74,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'contigs_primers_csv',
                       'table_precursor_csv',
                       'proviral_landscape_csv',
+                      'hivseqinr_results_tar',  # TODO: remove when proviral is finally updated.
                       'detailed_results_tar']
 
 # noinspection PyArgumentList
@@ -781,7 +782,7 @@ class KiveWatcher:
             run = self.run_proviral_pipeline(
                 sample_watcher,
                 folder_watcher,
-                'Proviral HIVIntact')
+                'Proviral')
             return run
         if pipeline_type == PipelineType.RESISTANCE:
             run = self.run_resistance_pipeline(
