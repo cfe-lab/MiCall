@@ -7,7 +7,7 @@ mypy-extensions==1.0.0
 pytest==8.1.1
 coverage==7.4.3
 pandas==2.0.2
-seaborn==0.12.2
+seaborn==0.13.2
 ete3
 flake8==7.0.0
 
