@@ -1,15 +1,13 @@
 """
 Module for handling CIGAR strings and related alignment formats.
 """
-
+from enum import IntEnum
 from math import ceil, floor
 import re
 from typing import Tuple, Iterable, Optional, Set, List, Union
 from dataclasses import dataclass
 from functools import cached_property, reduce
 from fractions import Fraction
-
-from micall.utils.consensus_aligner import CigarActions
 
 
 class IntDict(dict):
@@ -114,6 +112,13 @@ class CoordinateMapping:
 
     def __repr__(self):
         return f'CoordinateMapping({self.ref_to_op},{self.query_to_op})'
+
+
+# Mapping as defined in https://samtools.github.io/hts-specs/SAMv1.pdf, page 8
+CigarActions = IntEnum(
+    'CigarActions',
+    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED PADDING SEQ_MATCH MISMATCH',
+    start=0)
 
 
 class Cigar:

@@ -5,7 +5,8 @@ from io import StringIO
 from pytest import approx
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
-from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
+from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, AminoAlignment
+from micall.utils.cigar_tools import CigarActions
 from micall.core.project_config import ProjectConfig
 
 # noinspection PyUnresolvedReferences
