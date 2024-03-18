@@ -1,6 +1,5 @@
-from typing import Dict, List, Optional, Iterable, Set, Any
+from typing import Dict, List, Optional, Iterable, Set
 from dataclasses import dataclass, replace
-from enum import IntEnum
 from itertools import count
 from operator import attrgetter
 import csv
@@ -11,6 +10,7 @@ from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
 
 from micall.core.project_config import ProjectConfig
+from micall.utils.cigar_tools import CigarActions
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
 from micall.utils.translation import translate
 
@@ -22,12 +22,6 @@ MINIMUM_READING_FRAME_SHIFT = 30
 MINIMUM_AMINO_ALIGNMENT = 10
 # Most codons in an insertion or deletion that is still aligned in amino acids.
 MAXIMUM_AMINO_GAP = 10
-
-# Mapping as defined in https://samtools.github.io/hts-specs/SAMv1.pdf, page 8
-CigarActions = IntEnum(
-    'CigarActions',
-    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED PADDING SEQ_MATCH MISMATCH',
-    start=0)
 
 
 def align_aminos(reference: str,

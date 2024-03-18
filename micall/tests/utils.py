@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from contextlib import contextmanager
 import random
 
-from micall.utils.consensus_aligner import CigarActions
+from micall.utils.cigar_tools import CigarActions
 
 
 def find_all_occurrences(s, substring):
