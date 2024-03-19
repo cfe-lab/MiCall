@@ -29,7 +29,7 @@ from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.data.landmark_reader import LandmarkReader
 from micall.utils.big_counter import BigCounter
 from micall.utils.consensus_aligner import ConsensusAligner
-from micall.utils.cigar_tools import CigarActions
+from aligntools import CigarActions
 from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_ALPHABET, ReportNucleotide, \
     SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead

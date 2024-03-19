@@ -11,7 +11,7 @@ from micall.core.contig_stitcher import (
 )
 import micall.core.contig_stitcher as stitcher
 from micall.core.plot_contigs import build_stitcher_figure
-from micall.utils.cigar_tools import CigarHit, Cigar, CigarActions
+from aligntools import CigarHit, Cigar, CigarActions
 from typing import Dict, List
 from collections import defaultdict
 

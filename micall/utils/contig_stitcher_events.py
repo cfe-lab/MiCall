@@ -1,8 +1,8 @@
 from typing import Union, List, Tuple, Literal
 from dataclasses import dataclass
 from fractions import Fraction
+from aligntools import CigarHit
 
-from micall.utils.cigar_tools import CigarHit
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 
 
