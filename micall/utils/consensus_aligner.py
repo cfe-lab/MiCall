@@ -5,12 +5,12 @@ from operator import attrgetter
 import csv
 import os
 import logging
+from aligntools import CigarActions
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.cigar_tools import CigarActions
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
 from micall.utils.translation import translate
 

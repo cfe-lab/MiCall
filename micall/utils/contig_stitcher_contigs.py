@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Literal
 
-from micall.utils.cigar_tools import CigarHit
+from aligntools import CigarHit
 
 
 @dataclass(frozen=True)

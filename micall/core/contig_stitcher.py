@@ -11,8 +11,8 @@ from Bio import Seq
 import logging
 from fractions import Fraction
 from operator import itemgetter
+from aligntools import Cigar, connect_cigar_hits, CigarHit
 
-from micall.utils.cigar_tools import Cigar, connect_cigar_hits, CigarHit
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 import micall.utils.contig_stitcher_events as events

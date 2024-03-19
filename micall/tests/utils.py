@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from contextlib import contextmanager
 import random
-
-from micall.utils.cigar_tools import CigarActions
+from aligntools import CigarActions
 
 
 def find_all_occurrences(s, substring):
