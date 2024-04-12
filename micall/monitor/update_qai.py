@@ -164,10 +164,16 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
     # noinspection PyTypeChecker
     sample_names = dict(map(itemgetter('tags', 'filename'), sample_sheet['DataSplit']))
 
+    def read_int(table, name):
+        ret = float(table[name])
+        if float(int(ret)) != ret:
+            raise ValueError(f"Bad value for {name!r}: {ret!r}. Expected an integer.")
+        return int(ret)
+
     counts_map = {}  # {tags: raw, (tags, seed): mapped]}
     # sample,type,count
     for counts in csv.DictReader(collated_counts_file):
-        count = int(counts['count'])
+        count = read_int(counts, 'count')
         tags = sample_tags[counts['sample']]
         count_type = counts['type']
         if count_type not in ('raw', 'unmapped'):
@@ -178,11 +184,11 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
     unreported_tags = set()
     for counts in csv.DictReader(cascade_file):
         tags = sample_tags[counts['sample']]
-        counts_map[tags] = int(counts['demultiplexed']) * 2
+        counts_map[tags] = read_int(counts, 'demultiplexed') * 2
         unreported_tags.add(tags)
 
         key = tags, G2P_SEED_NAME
-        counts_map[key] = int(counts['v3loop']) * 2
+        counts_map[key] = read_int(counts, 'v3loop') * 2
 
     sequencing_map = defaultdict(dict)  # {tags: {project: sequencing}}
     for sequencing in sequencings:
@@ -201,9 +207,9 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
                            "tagged layouts missing?" % (tags, coverage_file.name))
         sequencing = project_map.get(coverage['project'])
         if sequencing is not None:
-            score = int(coverage['on.score'])
+            score = read_int(coverage, 'on.score')
         else:
-            score = int(coverage['off.score'])
+            score = read_int(coverage, 'off.score')
             first_project = sorted(project_map.keys())[0]
             sequencing = project_map[first_project]
         project_region_id = project_region_map[(coverage['project'],
@@ -226,8 +232,8 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
                 'seed_region_id': seed_region_id,
                 'sample_name': coverage['sample'],
                 'score': score,
-                'min_coverage': int(coverage['min.coverage']),
-                'min_coverage_pos': int(coverage['which.key.pos']),
+                'min_coverage': read_int(coverage, 'min.coverage'),
+                'min_coverage_pos': read_int(coverage, 'which.key.pos'),
                 'raw_reads': raw_count,
                 'mapped_reads': mapped_count
             }
