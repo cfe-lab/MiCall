@@ -229,6 +229,13 @@ class Sample:
         else:
             self.run_mapping(excluded_seeds)
 
+        return self.process_post_assembly(use_denovo=use_denovo,
+                                          excluded_projects=excluded_projects)
+
+    def process_post_assembly(self,
+                              use_denovo: bool,
+                              excluded_projects=(),
+                              ):
         logger.info('Running sam2aln on %s.', self)
         with open(self.remap_csv) as remap_csv, \
                 open(self.aligned_csv, 'w') as aligned_csv, \
