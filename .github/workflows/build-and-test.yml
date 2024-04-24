@@ -118,11 +118,11 @@ jobs:
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
 
+      - name: Singularity test
+        run: python release_test_microtest.py micall.simg
+
       - name: Upload Singularity Image
         uses: actions/upload-artifact@v2
         with:
           name: micall.simg
           path: micall.simg
-
-      - name: Singularity test
-        run: python release_test_microtest.py micall.simg
