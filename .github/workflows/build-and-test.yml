@@ -1,7 +1,7 @@
 name: Build and Test MiCall
 on: push
 jobs:
-  build:
+  main:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -11,10 +11,6 @@ jobs:
           python-version: 3.8
       - run: mkdir -p ~/bin
       - run: echo ~/bin >> $GITHUB_PATH
-
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.15.6'
 
       - name: Run apt update
         run: sudo apt-get update
@@ -74,6 +70,29 @@ jobs:
       - name: Test with pytest
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
+      - name: Report code coverage
+        run: |
+          rm -rf micall/tests/microtest/scratch
+          python -m pip install codecov
+          codecov
+
+  singularity-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.6'
+
+      - name: Run apt update
+        run: sudo apt-get update
+
       - name: Install Singularity
         run: |
           sudo apt-get install -qq \
@@ -95,19 +114,15 @@ jobs:
           cd ..
           rm -rf singularity
           singularity --version
+
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
+
+      - name: Singularity test
+        run: python release_test_microtest.py micall.simg
+
       - name: Upload Singularity Image
         uses: actions/upload-artifact@v2
         with:
           name: micall.simg
           path: micall.simg
-
-      - name: Singularity test
-        run: python release_test_microtest.py micall.simg
-
-      - name: Report code coverage
-        run: |
-          rm -rf micall/tests/microtest/scratch
-          python -m pip install codecov
-          codecov
