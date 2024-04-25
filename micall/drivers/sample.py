@@ -61,10 +61,10 @@ def open_files(**files):
             raise IOError
 
 
-def exclude_extra_seeds(excluded_seeds: typing.Sequence[str],
-                        project_code: str = None) -> typing.Sequence[str]:
+def exclude_extra_seeds(excluded_seeds: typing.Iterable[str],
+                        project_code: typing.Optional[str] = None) -> typing.Sequence[str]:
     if project_code == 'HIVGHA':
-        return excluded_seeds
+        return tuple(excluded_seeds)
     projects = ProjectConfig.loadDefault()
     hivgha_seeds = projects.getProjectSeeds('HIVGHA')
     extra_exclusions = {seed
@@ -81,7 +81,7 @@ class Sample:
                  rank=None,
                  debug_remap=False,
                  scratch_path=None,
-                 skip: typing.Tuple[str] = (),
+                 skip: typing.Iterable[str] = (),
                  **paths):
         """ Record the details.
 
@@ -98,13 +98,13 @@ class Sample:
         fastq1 = paths.get('fastq1')
         if 'fastq2' in paths:
             pass
-        elif 'fastq1' in paths:
+        elif fastq1:
             if '_R1_' not in fastq1:
                 raise ValueError(
                     "fastq2 not given, and fastq1 does not contain '_R1_'.")
             paths['fastq2'] = fastq1.replace('_R1_', '_R2_')
         if fastq1:
-            self.name = '_'.join(os.path.basename(fastq1).split('_')[:2])
+            self.name: typing.Optional[str] = '_'.join(os.path.basename(fastq1).split('_')[:2])
         else:
             self.name = None
         self.basespace_id = basespace_id
@@ -158,8 +158,8 @@ class Sample:
 
     def process(self,
                 pssm,
-                excluded_seeds=(),
-                excluded_projects=(),
+                excluded_seeds: typing.Iterable[str] = (),
+                excluded_projects: typing.Iterable[str] = (),
                 force_gzip=False,
                 use_denovo=False):
         """ Process a single sample.
@@ -236,7 +236,7 @@ class Sample:
 
     def process_post_assembly(self,
                               use_denovo: bool,
-                              excluded_projects=(),
+                              excluded_projects: typing.Iterable[str] = (),
                               ):
         logger.info('Running sam2aln on %s.', self)
         with open(self.remap_csv) as remap_csv, \
