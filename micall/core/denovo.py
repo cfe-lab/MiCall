@@ -73,7 +73,7 @@ def contigs_refs_write(writer, ref: str, match: float, group_ref: str, contig: s
 
 
 def write_contig_refs(contigs_fasta_path: str,
-                      contigs_unstitched_csv: Optional[TextIO],
+                      unstitched_contigs_csv: Optional[TextIO],
                       contigs_csv: Optional[TextIO],
                       merged_contigs_csv: Optional[TextIO] = None,
                       blast_csv: Optional[TextIO] = None,
@@ -82,7 +82,7 @@ def write_contig_refs(contigs_fasta_path: str,
 
     :param str contigs_fasta_path: path to file to read contig sequences from
         and append merged contigs to
-    :param contigs_unstitched_csv: open file to write assembled contigs to
+    :param unstitched_contigs_csv: open file to write assembled contigs to
     :param contigs_csv: open file to write stitched contigs to
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
@@ -97,8 +97,8 @@ def write_contig_refs(contigs_fasta_path: str,
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
 
-    unstitched_writer = init_contigs_refs(contigs_unstitched_csv) \
-        if contigs_unstitched_csv else None
+    unstitched_writer = init_contigs_refs(unstitched_contigs_csv) \
+        if unstitched_contigs_csv else None
     stitched_writer = init_contigs_refs(contigs_csv) if contigs_csv else None
     group_refs: Dict[str, str] = {}
 
@@ -238,7 +238,7 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
 
 def denovo(fastq1_path: str,
            fastq2_path: str,
-           contigs_unstitched_csv: Optional[TextIO],
+           unstitched_contigs_csv: Optional[TextIO],
            contigs_csv: Optional[TextIO],
            work_dir: str = '.',
            merged_contigs_csv: Optional[TextIO] = None,
@@ -249,7 +249,7 @@ def denovo(fastq1_path: str,
 
     :param fastq1_path: FASTQ file name for read 1 reads
     :param fastq2_path: FASTQ file name for read 2 reads
-    :param contigs_unstitched_csv: open file to write assembled contigs to
+    :param unstitched_contigs_csv: open file to write assembled contigs to
     :param contigs_csv: open file to write stitched contigs to
     :param work_dir: path for writing temporary files
     :param merged_contigs_csv: open file to read contigs that were merged from
@@ -258,8 +258,8 @@ def denovo(fastq1_path: str,
     :param stitcher_plot_path: open file to write the visualizer plot to
     """
 
-    if contigs_unstitched_csv is None and contigs_csv is None:
-        raise ValueError("Must specify either contigs_csv or contigs_unstitched_csv")
+    if unstitched_contigs_csv is None and contigs_csv is None:
+        raise ValueError("Must specify either contigs_csv or unstitched_contigs_csv")
 
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
@@ -311,7 +311,7 @@ def denovo(fastq1_path: str,
     os.chdir(start_dir)
     duration = datetime.now() - start_time
     contig_count = write_contig_refs(contigs_fasta_path,
-                                     contigs_unstitched_csv,
+                                     unstitched_contigs_csv,
                                      contigs_csv,
                                      blast_csv=blast_csv,
                                      stitcher_plot_path=stitcher_plot_path)
@@ -330,9 +330,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('fastq1')
     parser.add_argument('fastq2')
-    parser.add_argument('--contigs_unstitched', type=argparse.FileType('w'))
+    parser.add_argument('--unstitched_contigs', type=argparse.FileType('w'))
     parser.add_argument('--contigs', type=argparse.FileType('w'))
     parser.add_argument('--stitcher_plot')
 
     args = parser.parse_args()
-    denovo(args.fastq1, args.fastq2, args.contigs_unstitched, args.contigs, args.stitcher_plot_path)
+    denovo(args.fastq1, args.fastq2, args.unstitched_contigs, args.contigs, args.stitcher_plot_path)

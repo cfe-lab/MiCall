@@ -60,9 +60,9 @@ def trim(original_fastq_filenames: typing.Sequence[str],
          bad_cycles_filename: str,
          trimmed_fastq_filenames: typing.Sequence[str],
          use_gzip: bool = True,
-         summary_file: typing.TextIO = None,
-         skip: typing.Tuple[str] = (),
-         project_code: str = None):
+         summary_file: typing.Optional[typing.TextIO] = None,
+         skip: typing.Iterable[str] = (),
+         project_code: typing.Optional[str] = None):
     """
 
     :param original_fastq_filenames: sequence of two filenames, containing

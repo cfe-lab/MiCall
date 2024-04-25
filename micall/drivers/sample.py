@@ -258,8 +258,8 @@ class Sample:
                         nuc_csv=(self.nuc_csv, 'w'),
                         conseq_ins_csv=(self.conseq_ins_csv, 'r'),
                         remap_conseq_csv=(self.remap_conseq_csv, 'r'),
-                        remap_unstitched_conseq_csv=(self.remap_unstitched_conseq_csv, 'r') if use_denovo else None,
-                        contigs_unstitched_csv=(self.contigs_unstitched_csv, 'r') if use_denovo else None,
+                        unstitched_remap_conseq_csv=(self.unstitched_remap_conseq_csv, 'r') if use_denovo else None,
+                        unstitched_contigs_csv=(self.unstitched_contigs_csv, 'r') if use_denovo else None,
                         contigs_csv=(self.contigs_csv, 'r') if use_denovo else None,
                         nuc_detail_csv=(self.nuc_details_csv, 'w') if use_denovo else None,
                         amino_csv=(self.amino_csv, 'w'),
@@ -396,12 +396,12 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
         with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.contigs_unstitched_csv, 'w') as contigs_unstitched_csv, \
+                open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
                 open(self.contigs_csv, 'w') as contigs_csv, \
                 open(self.blast_csv, 'w') as blast_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
-                   contigs_unstitched_csv,
+                   unstitched_contigs_csv,
                    contigs_csv,
                    self.scratch_path,
                    merged_contigs_csv,
@@ -433,19 +433,19 @@ class Sample:
                            excluded_seeds=excluded_seeds)
 
         # Mapping the unstitched version too.
-        with open(self.contigs_unstitched_csv) as contigs_unstitched_csv, \
+        with open(self.unstitched_contigs_csv) as unstitched_contigs_csv, \
                 open(os.devnull, 'w') as remap_csv, \
                 open(os.devnull, 'w') as counts_csv, \
-                open(self.remap_unstitched_conseq_csv, 'w') as remap_unstitched_conseq_csv, \
+                open(self.unstitched_remap_conseq_csv, 'w') as unstitched_remap_conseq_csv, \
                 open(os.devnull, 'w') as unmapped1, \
                 open(os.devnull, 'w') as unmapped2:
 
             map_to_contigs(self.trimmed1_fastq,
                            self.trimmed2_fastq,
-                           contigs_unstitched_csv,
+                           unstitched_contigs_csv,
                            remap_csv,
                            counts_csv,
-                           remap_unstitched_conseq_csv,
+                           unstitched_remap_conseq_csv,
                            unmapped1,
                            unmapped2,
                            scratch_path,
