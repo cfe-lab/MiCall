@@ -232,6 +232,8 @@ class Sample:
         return self.process_post_assembly(use_denovo=use_denovo,
                                           excluded_projects=excluded_projects)
 
+        logger.info('Finished sample %s.', self)
+
     def process_post_assembly(self,
                               use_denovo: bool,
                               excluded_projects=(),
@@ -346,7 +348,6 @@ class Sample:
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()
-        logger.info('Finished sample %s.', self)
 
     def load_sample_info(self):
         path = Path(self.sample_info_csv)
