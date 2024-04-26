@@ -59,7 +59,7 @@ Individual files are described after the list of steps.
     each stage.
   * remap_conseq.csv - downloaded - consensus sequence that reads were mapped to
     on the final iteration
-  * unstitched_remap_conseq.csv - downloaded - consensus sequence that reads were
+  * unstitched_conseq.csv - downloaded - consensus sequence that reads were
     mapped to the unstitched contigs.
   * unmapped1.fastq - FASTQ format (unstructured text) reads that didn't map to
     any of the final references.
@@ -350,7 +350,7 @@ Individual files are described after the list of steps.
 * remap_conseq.csv
   * region - the region mapped to
   * sequence - the consensus sequence used
-* unstitched_remap_conseq.csv
+* unstitched_conseq.csv
   * region - the region mapped to
   * sequence - the consensus sequence used
 * resistance.csv

@@ -80,7 +80,7 @@ def parse_args():
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
                              'reference sequences.')
-    parser.add_argument('unstitched_remap_conseq_csv',
+    parser.add_argument('unstitched_conseq_csv',
                         nargs='?',
                         help='CSV containing mapping unstitched consensus sequences')
     parser.add_argument('unstitched_contigs_csv',
@@ -130,7 +130,7 @@ def load_sample(args):
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,
                     g2p_aligned_csv=args.g2p_aligned_csv,
-                    unstitched_remap_conseq_csv=args.unstitched_remap_conseq_csv,
+                    unstitched_conseq_csv=args.unstitched_conseq_csv,
                     unstitched_contigs_csv=args.unstitched_contigs_csv,
                     contigs_csv=args.contigs_csv,
                     genome_coverage_csv=args.genome_coverage_csv,
