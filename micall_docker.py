@@ -1075,7 +1075,6 @@ def collate_samples(run_info: RunInfo):
     """
     filenames = ['remap_counts.csv',
                  'remap_conseq.csv',
-                 'unstitched_conseq.csv',
                  'insertions.csv',
                  'failed_read.csv',
                  'nuc.csv',
@@ -1096,7 +1095,7 @@ def collate_samples(run_info: RunInfo):
                  'concordance.csv',
                  'concordance_seed.csv']
     if run_info.is_denovo:
-        filenames += ['conseq_stitched.csv', 'conseq_region.csv']
+        filenames += ['conseq_stitched.csv', 'conseq_region.csv', 'unstitched_conseq.csv']
     for filename in filenames:
         out_path = run_info.output_path
         with open(os.path.join(out_path, filename), 'w') as fout:
