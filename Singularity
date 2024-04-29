@@ -156,7 +156,7 @@ From: python:3.8
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg genome_concordance_svg \
-        remap_unstitched_conseq_csv contigs_unstitched_csv contigs_csv \
+        unstitched_conseq_csv unstitched_contigs_csv contigs_csv \
         read_entropy_csv conseq_region_csv conseq_stitched_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000

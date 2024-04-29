@@ -24,6 +24,11 @@ from contextlib import contextmanager
 logger = logging.getLogger(__name__)
 
 
+def prepend_prefix_to_basename(prefix: str, path: str):
+    dir_name, base_name = os.path.split(path)
+    return os.path.join(dir_name, prefix + base_name)
+
+
 @contextmanager
 def open_files(**files):
     """ Context manager that will open files and close them at the end.
@@ -61,10 +66,10 @@ def open_files(**files):
             raise IOError
 
 
-def exclude_extra_seeds(excluded_seeds: typing.Sequence[str],
-                        project_code: str = None) -> typing.Sequence[str]:
+def exclude_extra_seeds(excluded_seeds: typing.Iterable[str],
+                        project_code: typing.Optional[str] = None) -> typing.Sequence[str]:
     if project_code == 'HIVGHA':
-        return excluded_seeds
+        return tuple(excluded_seeds)
     projects = ProjectConfig.loadDefault()
     hivgha_seeds = projects.getProjectSeeds('HIVGHA')
     extra_exclusions = {seed
@@ -81,7 +86,7 @@ class Sample:
                  rank=None,
                  debug_remap=False,
                  scratch_path=None,
-                 skip: typing.Tuple[str] = (),
+                 skip: typing.Iterable[str] = (),
                  **paths):
         """ Record the details.
 
@@ -98,13 +103,13 @@ class Sample:
         fastq1 = paths.get('fastq1')
         if 'fastq2' in paths:
             pass
-        elif 'fastq1' in paths:
+        elif fastq1:
             if '_R1_' not in fastq1:
                 raise ValueError(
                     "fastq2 not given, and fastq1 does not contain '_R1_'.")
             paths['fastq2'] = fastq1.replace('_R1_', '_R2_')
         if fastq1:
-            self.name = '_'.join(os.path.basename(fastq1).split('_')[:2])
+            self.name: typing.Optional[str] = '_'.join(os.path.basename(fastq1).split('_')[:2])
         else:
             self.name = None
         self.basespace_id = basespace_id
@@ -158,8 +163,8 @@ class Sample:
 
     def process(self,
                 pssm,
-                excluded_seeds=(),
-                excluded_projects=(),
+                excluded_seeds: typing.Iterable[str] = (),
+                excluded_projects: typing.Iterable[str] = (),
                 force_gzip=False,
                 use_denovo=False):
         """ Process a single sample.
@@ -229,12 +234,32 @@ class Sample:
         else:
             self.run_mapping(excluded_seeds)
 
+        self.process_post_assembly(prefix="",
+                                   use_denovo=use_denovo,
+                                   excluded_projects=excluded_projects)
+
+        if use_denovo:
+            self.process_post_assembly(prefix="unstitched_",
+                                       use_denovo=use_denovo,
+                                       excluded_projects=excluded_projects)
+
+        logger.info('Finished sample %s.', self)
+
+    def process_post_assembly(self,
+                              use_denovo: bool,
+                              excluded_projects: typing.Iterable[str],
+                              prefix: str,
+                              ):
+
+        def with_prefix(path):
+            return prepend_prefix_to_basename(prefix, path)
+
         logger.info('Running sam2aln on %s.', self)
-        with open(self.remap_csv) as remap_csv, \
-                open(self.aligned_csv, 'w') as aligned_csv, \
-                open(self.conseq_ins_csv, 'w') as conseq_ins_csv, \
-                open(self.failed_csv, 'w') as failed_csv, \
-                open(self.clipping_csv, 'w') as clipping_csv:
+        with open(with_prefix(self.remap_csv)) as remap_csv, \
+                open(with_prefix(self.aligned_csv), 'w') as aligned_csv, \
+                open(with_prefix(self.conseq_ins_csv), 'w') as conseq_ins_csv, \
+                open(with_prefix(self.failed_csv), 'w') as failed_csv, \
+                open(with_prefix(self.clipping_csv), 'w') as clipping_csv:
 
             sam2aln(remap_csv,
                     aligned_csv,
@@ -243,34 +268,35 @@ class Sample:
                     clipping_csv=clipping_csv)
 
         logger.info('Running aln2counts on %s.', self)
-        with open_files(aligned_csv=(self.aligned_csv, 'r'),
+        with open_files(aligned_csv=(with_prefix(self.aligned_csv), 'r'),
+
+                        # Does not need a prefix because it is produced before the denovo/remap split.
                         g2p_aligned_csv=(self.g2p_aligned_csv, 'r'),
-                        clipping_csv=(self.clipping_csv, 'r'),
-                        nuc_csv=(self.nuc_csv, 'w'),
-                        conseq_ins_csv=(self.conseq_ins_csv, 'r'),
-                        remap_conseq_csv=(self.remap_conseq_csv, 'r'),
-                        remap_unstitched_conseq_csv=(self.remap_unstitched_conseq_csv, 'r') if use_denovo else None,
-                        contigs_unstitched_csv=(self.contigs_unstitched_csv, 'r') if use_denovo else None,
-                        contigs_csv=(self.contigs_csv, 'r') if use_denovo else None,
-                        nuc_detail_csv=(self.nuc_details_csv, 'w') if use_denovo else None,
-                        amino_csv=(self.amino_csv, 'w'),
-                        amino_detail_csv=(self.amino_details_csv, 'w') if use_denovo else None,
-                        insertions_csv=(self.insertions_csv, 'w'),
-                        conseq_csv=(self.conseq_csv, 'w'),
-                        conseq_region_csv=(self.conseq_region_csv, 'w') if use_denovo else None,
-                        failed_align_csv=(self.failed_align_csv, 'w'),
-                        coverage_summary_csv=(self.coverage_summary_csv, 'w'),
-                        genome_coverage_csv=(self.genome_coverage_csv, 'w'),
-                        conseq_all_csv=(self.conseq_all_csv, 'w'),
-                        conseq_stitched_csv=(self.conseq_stitched_csv, 'w') if use_denovo else None,
-                        minimap_hits_csv=(self.minimap_hits_csv, 'w'),
-                        alignments_csv=(self.alignments_csv, 'w'),
-                        alignments_unmerged_csv=(self.alignments_unmerged_csv, 'w'),
-                        alignments_intermediate_csv=(self.alignments_intermediate_csv, 'w'),
-                        alignments_overall_csv=(self.alignments_overall_csv, 'w'),
-                        concordance_csv=(self.concordance_csv, 'w'),
-                        concordance_detailed_csv=(self.concordance_detailed_csv, 'w'),
-                        concordance_seed_csv=(self.concordance_seed_csv, 'w')) as opened_files:
+
+                        clipping_csv=(with_prefix(self.clipping_csv), 'r'),
+                        nuc_csv=(with_prefix(self.nuc_csv), 'w'),
+                        conseq_ins_csv=(with_prefix(self.conseq_ins_csv), 'r'),
+                        remap_conseq_csv=(with_prefix(self.remap_conseq_csv), 'r'),
+                        contigs_csv=(with_prefix(self.contigs_csv), 'r') if use_denovo else None,
+                        nuc_detail_csv=(with_prefix(self.nuc_details_csv), 'w') if use_denovo else None,
+                        amino_csv=(with_prefix(self.amino_csv), 'w'),
+                        amino_detail_csv=(with_prefix(self.amino_details_csv), 'w') if use_denovo else None,
+                        insertions_csv=(with_prefix(self.insertions_csv), 'w'),
+                        conseq_csv=(with_prefix(self.conseq_csv), 'w'),
+                        conseq_region_csv=(with_prefix(self.conseq_region_csv), 'w') if use_denovo else None,
+                        failed_align_csv=(with_prefix(self.failed_align_csv), 'w'),
+                        coverage_summary_csv=(with_prefix(self.coverage_summary_csv), 'w'),
+                        genome_coverage_csv=(with_prefix(self.genome_coverage_csv), 'w'),
+                        conseq_all_csv=(with_prefix(self.conseq_all_csv), 'w'),
+                        conseq_stitched_csv=(with_prefix(self.conseq_stitched_csv), 'w') if use_denovo else None,
+                        minimap_hits_csv=(with_prefix(self.minimap_hits_csv), 'w'),
+                        alignments_csv=(with_prefix(self.alignments_csv), 'w'),
+                        alignments_unmerged_csv=(with_prefix(self.alignments_unmerged_csv), 'w'),
+                        alignments_intermediate_csv=(with_prefix(self.alignments_intermediate_csv), 'w'),
+                        alignments_overall_csv=(with_prefix(self.alignments_overall_csv), 'w'),
+                        concordance_csv=(with_prefix(self.concordance_csv), 'w'),
+                        concordance_detailed_csv=(with_prefix(self.concordance_detailed_csv), 'w'),
+                        concordance_seed_csv=(with_prefix(self.concordance_seed_csv), 'w')) as opened_files:
 
             aln2counts(opened_files['aligned_csv'],
                        opened_files['nuc_csv'],
@@ -300,46 +326,47 @@ class Sample:
                        concordance_seed_csv=opened_files['concordance_seed_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
-        os.makedirs(self.coverage_maps)
-        with open(self.amino_csv) as amino_csv, \
-                open(self.coverage_scores_csv, 'w') as coverage_scores_csv:
+        os.makedirs(with_prefix(self.coverage_maps))
+        with open(with_prefix(self.amino_csv)) as amino_csv, \
+             open(with_prefix(self.coverage_scores_csv), 'w') as coverage_scores_csv:
             coverage_plot(amino_csv,
                           coverage_scores_csv,
                           coverage_maps_path=self.coverage_maps,
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
-        with open(self.genome_coverage_csv) as genome_coverage_csv, \
-                open(self.minimap_hits_csv) as minimap_hits_csv:
+        with open(with_prefix(self.genome_coverage_csv)) as genome_coverage_csv, \
+             open(with_prefix(self.minimap_hits_csv)) as minimap_hits_csv:
             if not use_denovo:
                 minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
                                  minimap_hits_csv,
-                                 self.genome_coverage_svg)
+                                 with_prefix(self.genome_coverage_svg))
 
-        with open(self.genome_coverage_csv) as genome_coverage_csv, \
-                open(self.minimap_hits_csv) as minimap_hits_csv:
+        with open(with_prefix(self.genome_coverage_csv)) as genome_coverage_csv, \
+             open(with_prefix(self.minimap_hits_csv)) as minimap_hits_csv:
             if not use_denovo:
                 minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
                                  minimap_hits_csv,
-                                 self.genome_concordance_svg,
+                                 with_prefix(self.genome_concordance_svg),
                                  use_concordance=True)
 
-        with open(self.concordance_detailed_csv) as concordance_detailed_csv:
-            concordance_plot(concordance_detailed_csv, plot_path=self.coverage_maps, concordance_prefix=self.name)
+        with open(with_prefix(self.concordance_detailed_csv)) as concordance_detailed_csv:
+            concordance_plot(concordance_detailed_csv,
+                             plot_path=with_prefix(self.coverage_maps),
+                             concordance_prefix=self.name)
 
         logger.info('Running cascade_report on %s.', self)
         with open(self.g2p_summary_csv) as g2p_summary_csv, \
-                open(self.remap_counts_csv) as remap_counts_csv, \
-                open(self.aligned_csv) as aligned_csv, \
-                open(self.cascade_csv, 'w') as cascade_csv:
+             open(with_prefix(self.remap_counts_csv)) as remap_counts_csv, \
+             open(with_prefix(self.aligned_csv)) as aligned_csv, \
+             open(with_prefix(self.cascade_csv), 'w') as cascade_csv:
             cascade_report = CascadeReport(cascade_csv)
             cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()
-        logger.info('Finished sample %s.', self)
 
     def load_sample_info(self):
         path = Path(self.sample_info_csv)
@@ -388,12 +415,12 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
         with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.contigs_unstitched_csv, 'w') as contigs_unstitched_csv, \
+                open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
                 open(self.contigs_csv, 'w') as contigs_csv, \
                 open(self.blast_csv, 'w') as blast_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
-                   contigs_unstitched_csv,
+                   unstitched_contigs_csv,
                    contigs_csv,
                    self.scratch_path,
                    merged_contigs_csv,
@@ -424,20 +451,22 @@ class Sample:
                            debug_file_prefix=debug_file_prefix,
                            excluded_seeds=excluded_seeds)
 
-        # Mapping the unstitched version too.
-        with open(self.contigs_unstitched_csv) as contigs_unstitched_csv, \
-                open(os.devnull, 'w') as remap_csv, \
-                open(os.devnull, 'w') as counts_csv, \
-                open(self.remap_unstitched_conseq_csv, 'w') as remap_unstitched_conseq_csv, \
-                open(os.devnull, 'w') as unmapped1, \
-                open(os.devnull, 'w') as unmapped2:
+        def with_prefix(path):
+            return prepend_prefix_to_basename("unstitched_", path)
+
+        with open(self.unstitched_contigs_csv) as contigs_csv, \
+                open(with_prefix(self.remap_csv), 'w') as remap_csv, \
+                open(with_prefix(self.remap_counts_csv), 'w') as counts_csv, \
+                open(with_prefix(self.remap_conseq_csv), 'w') as remap_conseq_csv, \
+                open(with_prefix(self.unmapped1_fastq), 'w') as unmapped1, \
+                open(with_prefix(self.unmapped2_fastq), 'w') as unmapped2:
 
             map_to_contigs(self.trimmed1_fastq,
                            self.trimmed2_fastq,
-                           contigs_unstitched_csv,
+                           contigs_csv,
                            remap_csv,
                            counts_csv,
-                           remap_unstitched_conseq_csv,
+                           remap_conseq_csv,
                            unmapped1,
                            unmapped2,
                            scratch_path,

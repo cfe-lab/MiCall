@@ -1759,10 +1759,10 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
               argument_name='sample_info_csv'),
          dict(dataset='/datasets/111/',
               argument_type='O',
-              argument_name='contigs_unstitched_csv'),
+              argument_name='unstitched_contigs_csv'),
          dict(dataset='/datasets/112/',
               argument_type='O',
-              argument_name='remap_unstitched_conseq_csv'),
+              argument_name='unstitched_conseq_csv'),
          dict(dataset='/datasets/113/',
               argument_type='O',
               argument_name='cascade_csv')]]  # run datasets
