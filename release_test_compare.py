@@ -22,7 +22,7 @@ from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
 from micall_docker import get_available_memory
 
-MICALL_VERSION = '7.15'
+MICALL_VERSION = '7.17.0-rc1'
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
