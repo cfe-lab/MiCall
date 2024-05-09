@@ -603,7 +603,7 @@ def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('contigs', type=argparse.FileType('r'), help="Input fasta file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
-                        help="Output fasta file with stitched contigs.")
+                        help="Output CSV file with stitched contigs.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
                         help="Output SVG image visualizing the stitching process.")
     verbosity_group = parser.add_mutually_exclusive_group()
