@@ -685,8 +685,7 @@ def main():
         scenarios_reported = (Scenarios.OTHER_CONSENSUS_CHANGED |
                               Scenarios.CONSENSUS_DELETIONS_CHANGED |
                               Scenarios.VPR_FRAME_SHIFT_FIXED |
-                              Scenarios.CONSENSUS_EXTENDED |
-                              Scenarios.REMAP_COUNTS_CHANGED)
+                              Scenarios.CONSENSUS_EXTENDED)
         try:
             results = pool.map(partial(compare_sample,
                                        scenarios_reported=scenarios_reported,
