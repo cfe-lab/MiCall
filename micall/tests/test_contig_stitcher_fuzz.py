@@ -23,7 +23,7 @@ def no_aligner(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def stitcher_context():
-    stitcher.context.set(StitcherContext())
+    stitcher.context.set(StitcherContext.make())
 
 
 def read_contigs(line):

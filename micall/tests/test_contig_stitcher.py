@@ -13,7 +13,6 @@ from micall.core.contig_stitcher import (
     stitch_consensus,
     calculate_concordance,
     align_all_to_reference,
-    AlignedContig,
     disambiguate_concordance,
     lstrip,
     rstrip,
@@ -40,7 +39,7 @@ def exact_aligner(monkeypatch):
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.StitcherContext())
+    stitcher.context.set(stitcher.StitcherContext.make())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)
@@ -1491,9 +1490,7 @@ class MockAlignedContig:
         self.group_ref = group_ref
         self.alignment = MockAlignment(r_st, r_ei)
         self.name = name
-
-    def overlaps(self, other):
-        return AlignedContig.overlaps(self, other)
+        self.id = id(self)
 
 
 class MockAlignment:

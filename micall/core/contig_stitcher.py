@@ -31,8 +31,8 @@ def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig,
     """ Cuts query sequence in two parts with cut_point between them. """
 
     cut_point = max(0.0, cut_point)
-    left = replace(self, name=context.get().generate_new_name(), seq=self.seq[:ceil(cut_point)])
-    right = replace(self, name=context.get().generate_new_name(), seq=self.seq[ceil(cut_point):])
+    left = replace(self, name=None, seq=self.seq[:ceil(cut_point)])
+    right = replace(self, name=None, seq=self.seq[ceil(cut_point):])
     return left, right
 
 
@@ -40,8 +40,8 @@ def cut_reference(self: AlignedContig, cut_point: float) -> Tuple[AlignedContig,
     """ Cuts this alignment in two parts with cut_point between them. """
 
     alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
-    left = replace(self, name=context.get().generate_new_name(), alignment=alignment_left)
-    right = replace(self, name=context.get().generate_new_name(), alignment=alignment_right)
+    left = replace(self, name=None, alignment=alignment_left)
+    right = replace(self, name=None, alignment=alignment_right)
     log(events.Cut(self, left, right, cut_point))
     return left, right
 
@@ -93,7 +93,7 @@ def munge(self: AlignedContig, other: AlignedContig) -> AlignedContig:
     match_fraction = min(self.match_fraction, other.match_fraction)
     ref_name = max([self, other], key=lambda x: x.alignment.ref_length).ref_name
     query = GenotypedContig(seq=self.seq + other.seq,
-                            name=context.get().generate_new_name(),
+                            name=None,
                             ref_name=ref_name,
                             group_ref=self.group_ref,
                             ref_seq=self.ref_seq,
@@ -199,7 +199,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
     log(events.HitNumber(contig, hits_array, connected))
 
     for i, single_hit in enumerate(connected):
-        query = replace(contig, name=context.get().generate_new_name())
+        query = replace(contig, name=None)
         part = AlignedContig.make(query, single_hit, strand)
         log(events.ConnectedHit(contig, part, i))
         yield part
@@ -207,32 +207,32 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
 
 def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(contigs)
-    names = {contig.name: contig for contig in contigs}
+    names = {contig.id: contig for contig in contigs}
 
-    def get_indexes(name: str) -> Tuple[int, int]:
-        contig = names[name]
+    def get_indexes(id: int) -> Tuple[int, int]:
+        contig = names[id]
         if isinstance(contig, AlignedContig):
             return contig.alignment.q_st, contig.alignment.r_st
         else:
             return -1, -1
 
-    reference_sorted = list(sorted(names.keys(), key=lambda name: get_indexes(name)[1]))
-    query_sorted = list(sorted(names.keys(), key=lambda name: get_indexes(name)[0]))
+    reference_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[1]))
+    query_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[0]))
 
-    def is_out_of_order(name: str) -> bool:
-        return reference_sorted.index(name) != query_sorted.index(name)
+    def is_out_of_order(id: int) -> bool:
+        return reference_sorted.index(id) != query_sorted.index(id)
 
-    sorted_by_query = sorted(contigs, key=lambda contig: get_indexes(contig.name))
+    sorted_by_query = sorted(contigs, key=lambda contig: get_indexes(contig.id))
     for prev_contig, contig, next_contig in sliding_window(sorted_by_query):
         if isinstance(contig, AlignedContig):
             original = contig
             start = prev_contig.alignment.q_ei + 1 if isinstance(prev_contig, AlignedContig) else 0
             end = next_contig.alignment.q_st - 1 if isinstance(next_contig, AlignedContig) else len(contig.seq) - 1
 
-            if prev_contig is not None or is_out_of_order(original.name):
+            if prev_contig is not None or is_out_of_order(original.id):
                 contig = lstrip(contig)
                 log(events.InitialStrip(original, start, original.alignment.q_st - 1))
-            if next_contig is not None or is_out_of_order(original.name):
+            if next_contig is not None or is_out_of_order(original.id):
                 contig = rstrip(contig)
                 log(events.InitialStrip(original, original.alignment.q_ei + 1, end))
 
@@ -475,7 +475,7 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
         current_interval = (current.alignment.r_st, current.alignment.r_ei)
 
         # Create a map of cumulative coverage for contigs
-        overlaping_contigs = [x for x in contigs if x != current and overlap(current, x)]
+        overlaping_contigs = [x for x in contigs if x.id != current.id and overlap(current, x)]
         cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
@@ -562,7 +562,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCont
     contigs = list(contigs)
     for contig in contigs:
         log(events.Intro(contig))
-        context.get().nameset.add(contig.name)
+        contig.register()
 
     maybe_aligned = list(align_all_to_reference(contigs))
 
@@ -602,7 +602,7 @@ def main(args):
     from micall.core.denovo import write_contig_refs  # TODO(vitalik): move denovo stuff here.
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input fasta file with assembled contigs.")
+    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input FASTA file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
