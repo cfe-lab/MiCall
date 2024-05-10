@@ -529,6 +529,29 @@ def test_stitching_of_identical_contigs(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
 
+def test_stitching_of_completely_identical_contigs(exact_aligner, visualizer):
+    # Scenario: The function correctly handles and avoids duplication when completely identical contigs
+    # are stitched together.
+
+    contigs = [
+        GenotypedContig(
+            name="x",
+            seq="ACTGACTG" * 100,
+            ref_name="testref",
+            group_ref="testref",
+            ref_seq="ACTGACTG" * 100,
+            match_fraction=1.0,
+        )
+        for copy in [1, 2, 3]
+    ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[2].seq
+
+    assert len(visualizer().elements) > len(contigs)
+
+
 def test_stitching_of_zero_contigs(exact_aligner, visualizer):
     # Scenario: The function does not crash if no contigs given.
 
