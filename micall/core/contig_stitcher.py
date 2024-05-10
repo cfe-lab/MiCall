@@ -185,12 +185,13 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
     strand = hits_array[0][1]
     if strand == "reverse":
         rc = str(Seq.Seq(contig.seq).reverse_complement())
+        original_contig = contig
         new_contig = replace(contig, seq=rc)
         contig = new_contig
         hits_array = [(replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1), strand)
                       for hit, strand in hits_array]
 
-        log(events.ReverseComplement(contig, new_contig))
+        log(events.ReverseComplement(original_contig, new_contig))
         for i, (hit, strand) in enumerate(hits_array):
             log(events.InitialHit(contig, i, hit, strand))
 
