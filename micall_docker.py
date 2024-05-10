@@ -584,18 +584,21 @@ def process_run(run_info, args):
         logger.info('Summarizing run.')
         run_summary = summarize_run(run_info)
 
-    with ProcessPoolExecutor(max_workers=args.max_active) as pool:
-        for _ in pool.map(functools.partial(process_sample,
-                                            args=args,
-                                            pssm=pssm,
-                                            use_denovo=run_info.is_denovo),
-                          run_info.get_all_samples()):
-            pass
+    def runner(func, inputs):
+        if args.max_active > 1 and len(inputs) > 1:
+            with ProcessPoolExecutor(max_workers=args.max_active) as pool:
+                list(pool.map(func, inputs))
+        else:
+            list(map(func, inputs))
 
-        for _ in pool.map(functools.partial(process_resistance,
-                                            run_info=run_info),
-                          run_info.sample_groups):
-            pass
+    runner(functools.partial(process_sample,
+                             args=args,
+                             pssm=pssm,
+                             use_denovo=run_info.is_denovo),
+           run_info.get_all_samples())
+
+    runner(functools.partial(process_resistance, run_info=run_info),
+           run_info.sample_groups)
 
     collate_samples(run_info)
     if run_summary is not None:
