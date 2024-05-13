@@ -1,13 +1,39 @@
 from dataclasses import dataclass
 from typing import Optional, Literal
-
+from functools import cached_property
 from aligntools import CigarHit
+
+
+ID_STATE = 0
+
+def generate_new_id() -> int:
+    global ID_STATE
+    ID_STATE += 1
+    return ID_STATE
 
 
 @dataclass(frozen=True)
 class Contig:
-    name: str
+    name: Optional[str]
     seq: str
+
+    @cached_property
+    def id(self) -> int:
+        return generate_new_id()
+
+    @cached_property
+    def unique_name(self) -> str:
+        index = self.register()
+        unqualified = repr(self.name) if self.name is not None else ""
+        if index == 1 and self.name:
+            return unqualified
+        else:
+            return unqualified + f'({index})'
+
+    def register(self) -> int:
+        from micall.utils.contig_stitcher_context import context
+        ctx = context.get()
+        return ctx.register(key=self.id, value=self.name)
 
 
 @dataclass(frozen=True)

@@ -13,7 +13,6 @@ from micall.core.contig_stitcher import (
     stitch_consensus,
     calculate_concordance,
     align_all_to_reference,
-    AlignedContig,
     disambiguate_concordance,
     lstrip,
     rstrip,
@@ -40,7 +39,7 @@ def exact_aligner(monkeypatch):
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.StitcherContext())
+    stitcher.context.set(stitcher.StitcherContext.make())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)
@@ -521,6 +520,29 @@ def test_stitching_of_identical_contigs(exact_aligner, visualizer):
             match_fraction=1.0,
         )
         for name in ["a", "b", "c"]
+    ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 1
+    assert results[0].seq == contigs[2].seq
+
+    assert len(visualizer().elements) > len(contigs)
+
+
+def test_stitching_of_completely_identical_contigs(exact_aligner, visualizer):
+    # Scenario: The function correctly handles and avoids duplication when completely identical contigs
+    # are stitched together.
+
+    contigs = [
+        GenotypedContig(
+            name="x",
+            seq="ACTGACTG" * 100,
+            ref_name="testref",
+            group_ref="testref",
+            ref_seq="ACTGACTG" * 100,
+            match_fraction=1.0,
+        )
+        for copy in [1, 2, 3]
     ]
 
     results = list(stitch_contigs(contigs))
@@ -1491,9 +1513,7 @@ class MockAlignedContig:
         self.group_ref = group_ref
         self.alignment = MockAlignment(r_st, r_ei)
         self.name = name
-
-    def overlaps(self, other):
-        return AlignedContig.overlaps(self, other)
+        self.id = id(self)
 
 
 class MockAlignment:
