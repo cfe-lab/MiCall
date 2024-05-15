@@ -557,13 +557,13 @@ Moreover, keeping all contigs would violate **Regulation 1**.
 
 **Note**: rules apply to contigs that are in the same group.
 
-# Visualizer
+# Diagnostics
 
-The Stitcher includes a visualizer tool that helps to see and verify
-its decisions by producing a visual representation of the stitching
-process. This tool is particularly useful for understanding how
-contigs are combined or discarded at each step of the stitching
-process, providing a visual context to the resulting stitched output.
+The Stitcher includes diagnostic tools to ensure transparency and
+correctness throughout the stitching process. Two primary methods are
+used for diagnostics: visualizer plots and traditional log
+files. These tools help users understand and verify the decisions made
+by the Stitcher during the stitching process.
 
 ## The Optional Visualizer Tool
 
@@ -627,6 +627,79 @@ of the stitching process:
 
 Understanding these basics will help to interpret other scenarios
 displayed by the visualizer plot.
+
+## Traditional Logs
+
+In addition to visual tools, the Stitcher produces traditional log
+files that provide textual details of the stitching process. These
+logs are crucial for debugging and understanding the sequence of
+operations performed by the Stitcher. The verbosity of logs can be
+adjusted using command-line options (`--verbose`, `--debug`, `--quiet`).
+
+Here is an example of typical log entries:
+
+```text
+DEBUG:micall.core.contig_stitcher:Introduced contig 'contig.00001' (seq = TA...CA) of ref 'HIV1-C-BR-JX140663-seed', group_ref HIV1-A1-RW-KF716472-seed (seq = GA...AC), and length 7719.
+DEBUG:micall.core.contig_stitcher:Introduced contig 'contig.00002' (seq = CG...AG) of ref 'HIV1-A1-RW-KF716472-seed', group_ref HIV1-A1-RW-KF716472-seed (seq = GA...AC), and length 1634.
+...
+DEBUG:micall.core.contig_stitcher:Contig 'contig.00006' produced 1 aligner hits. After connecting them, the number became 1.
+DEBUG:micall.core.contig_stitcher:Part 0 of contig 'contig.00006' re-aligned as (5) at 7M...3D@[8,1433]->[7461,8946].
+DEBUG:micall.core.contig_stitcher:Part 0 of contig 'contig.00007' aligned at 76M...3D@[0,732]->[5536,6277].
+DEBUG:micall.core.contig_stitcher:Contig 'contig.00007' produced 1 aligner hits. After connecting them, the number became 1.
+DEBUG:micall.core.contig_stitcher:Part 0 of contig 'contig.00007' re-aligned as (6) at 76M...3D@[0,732]->[5536,6277].
+...
+DEBUG:micall.core.contig_stitcher:Ignored insignificant gap of (5), 3D@[790,789]->[8280,8282].
+DEBUG:micall.core.contig_stitcher:Ignored insignificant gap of (5), 19D@[1324,1323]->[8817,8835].
+DEBUG:micall.core.contig_stitcher:Ignored insignificant gap of (5), 2D@[1354,1353]->[8866,8867].
+...
+DEBUG:micall.core.contig_stitcher:Created contigs (8) at 24M...1I@[14,3864]->[0,4558] and (9) at 708D...92I@[3865,7691]->[4559,9032] by cutting (1) at 24M...1I@[14,7691]->[0,9032] at cut point = 4558.5.
+DEBUG:micall.core.contig_stitcher:Doing rstrip of (8) at 24M...1I@[14,3864]->[0,4558] (len 7719) resulted in (10) at 24M...1I@[14,3864]->[0,3850] (len 3865).
+DEBUG:micall.core.contig_stitcher:Doing lstrip of (9) at 708D...92I@[3865,7691]->[4559,9032] (len 7719) resulted in (11) at 14M...1I@[0,3734]->[5267,9032] (len 3762).
+DEBUG:micall.core.contig_stitcher:Split contig (1) at 24M...1I@[14,7691]->[0,9032] around its gap at [3864, 3863]->[3851, 5266]. Left part: (10) at 24M...1I@[14,3864]->[0,3850], right part: (11) at 14M...1I@[0,3734]->[5267,9032].
+...
+DEBUG:micall.core.contig_stitcher:Created a frankenstein (34) at 24M...1I@[14,4185]->[0,4171] (len 4186) from [(26) at 24M...1I@[14,3041]->[0,3027] (len 3042), (28) at 271M2D3M2I395M@[0,670]->[3028,3698] (len 671), (30) at 152M@[0,151]->[3699,3850] (len 152), (31) at 321M@[0,320]->[3851,4171] (len 321)].
+DEBUG:micall.core.plot_contigs:Contig name (26) is displayed as '1.1'.
+DEBUG:micall.core.plot_contigs:Contig name (36) is displayed as '1.3'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00002' is displayed as '2'.
+DEBUG:micall.core.plot_contigs:Contig name (2) is displayed as '2'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00003' is displayed as '3'.
+DEBUG:micall.core.plot_contigs:Contig name (31) is displayed as '3.2'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00004' is displayed as '4'.
+DEBUG:micall.core.plot_contigs:Contig name (4) is displayed as '4'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00005' is displayed as '5'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00006' is displayed as '6'.
+DEBUG:micall.core.plot_contigs:Contig name (5) is displayed as '6'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00007' is displayed as '7'.
+DEBUG:micall.core.plot_contigs:Contig name (6) is displayed as '7'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00008' is displayed as '8'.
+DEBUG:micall.core.plot_contigs:Contig name (7) is displayed as '8'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00009' is displayed as '9'.
+DEBUG:micall.core.plot_contigs:Contig name 'contig.00010' is displayed as '10'.
+```
+
+The following points illustrate how these logs can facilitate
+understanding the stitching process:
+
+- **Contig Introduction**: Provides details about the contigs
+  introduced for stitching.
+  - `Introduced contig 'contig.00001'...`
+
+- **Alignment Details**: Shows the alignment results for each contig.
+  - `Part 0 of contig 'contig.00006' re-aligned as (5) at
+    7M...3D@[8,1433]->[7461,8946].`
+
+- **Gap Handling**: Indicates which gaps were ignored as
+  insignificant.
+  - `Ignored insignificant gap of (5), 3D@[790,789]->[8280,8282].`
+
+- **Splitting and Merging Contigs**: Documents the splitting of
+  contigs at identified gaps and merging of overlapping segments.
+  - `Split contig (1) at 24M...1I@[14,7691]->[0,9032]...`
+  - `Created a frankenstein (34) at 24M...1I@[14,4185]->[0,4171]...`
+
+- **Visualizer Compatibility**: The visualizer diagrams are produced
+  exclusively from these logs, ensuring compatibility and consistency
+  between the logs and visual output.
 
 <!-- # Limitations -->
 
