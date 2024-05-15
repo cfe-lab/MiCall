@@ -11,6 +11,8 @@
       link: /design/remap.html
     - name: De Novo Assembly
       link: /design/assembly.html
+    - name: Contig stitcher
+      link: /design/stitcher.html
     - name: Resistance
       link: /design/resistance.html
     - name: Genome Coverage
