@@ -219,17 +219,23 @@ Stitching is an iterative process, governed by the following rules:
 #### Example:
 
 **Input:**
-- Contig A: Sequence = `GG[ATGCCC]AA`, aligned to Referece X at
+
+![non overlaping example input illustration](stitcher_rule_1_input.svg)
+
+- Contig 1: Sequence = `GG[ATGCCC]AA`, aligned to Referece X at
   position 10, with first two and last two nucleotides not aligned.
-- Contig B: Sequence = `AC[TTAG]TA`, aligned to Referece X at position
+- Contig 2: Sequence = `AC[TTAG]TA`, aligned to Referece X at position
   30, with first two and last two nucleotides not aligned.
 
 **Procedure:**
-- Verify that Contig A ends before Contig B begins.
-- Delete non-aligned nucleotides resulting in Contig A = `GG[ATGCCC]` and Contig B = `[TTAG]TA`.
-- Concatenate Contig A and Contig B to form `GG[ATGCCC][TTAG]TA`.
+- Verify that Contig 1 ends before Contig 2 begins.
+- Delete non-aligned nucleotides resulting in Contig 1 = `GG[ATGCCC]` and Contig 2 = `[TTAG]TA`.
+- Concatenate Contig 1 and Contig 2 to form `GG[ATGCCC][TTAG]TA`.
 
 **Result:**
+
+![non overlaping example result illustration](stitcher_rule_1_result.svg)
+
 - The new sequence, `GG[ATGCCCTTAG]TA`, spans positions 10 to 34 on the reference genome.
 
 #### Rationale
@@ -296,18 +302,20 @@ This enables us to consider all of them:
 
 **Input:**
 
-- Contig A: Sequence = `G[GGC A--TAC]T T`, aligned to Reference X from positions 10 to 19.
-- Contig B: Sequence = `C CCA[AAATAC C]GGG`, aligned to Reference X from positions 14 to 20.
+![overlaping example input illustration](stitcher_rule_2_input.svg)
+
+- Contig 1: Sequence = `G[GGCC A--TAC]T T`, aligned to Reference X from positions 10 to 19.
+- Contig 2: Sequence = `--CCAC[AAATAC C]GGG`, aligned to Reference X from positions 14 to 20.
 
 **Procedure:**
 
 1. **Verify Overlap**:
-   - Contig A ends at position 19, and Contig B starts at position 14
+   - Contig 1 ends at position 19, and Contig 2 starts at position 14
      (both on Reference X), resulting in an overlap from positions 14
      to 19.
 
-2. **Delete adjacent non-aligned parts**: Contig A is right-stripped
-   to become `G[GGCA--TAC]`, contig B is left-stripped to become
+2. **Delete adjacent non-aligned parts**: Contig 1 is right-stripped
+   to become `G[GGCCA--TAC]`, contig B is left-stripped to become
    `[AAATACC]GGG`.
 
 3. **Align Overlapping Regions**:
@@ -342,9 +350,12 @@ This enables us to consider all of them:
 
 6. **Segment and Combine**:
    - Cut the sequences at the determined cut points.
-   - Combine sequence parts: `G[GGC][--AT][AC][C]GGG`.
+   - Combine sequence parts: `G[GGCC][--AT][AC][C]GGG`.
 
 **Result:**
+
+![overlaping example result illustration](stitcher_rule_2_result.svg)
+
 - The new sequence `G[GGC--ATACC]GGG` spans positions 10 to 20 on Reference X,
   representing the most accurate combined sequence.
 
@@ -420,37 +431,41 @@ identified so far.
 
 **Input:**
 
-- Contig A: Sequence = `AGC[TTAC---------------------GGCACATATCATA]CTA`,
+![gap example input illustration](stitcher_rule_3_input.svg)
+
+- Contig 1: Sequence = `AGC[TTAC---------------------GGCACATATCATA]CTA`,
   aligned to Reference X from positions 10 to 48.
-- Contig B: Sequence = `G[TGAC-----GGACG-TCGTCG--TACGATCAG]G`,
+- Contig 2: Sequence = `G[TGAC-----GGACG-TCGTCG--TACGATCAG]G`,
   aligned to Reference X from positions 8 to 40.
 
 **Procedure:**
 
 1. **Identify Large Gaps**:
-   - Contig A has a significant gap between positions 14 and 35.
+   - Contig 1 has a significant gap between positions 14 and 35.
 
 2. **Verify Coverage by Other Contigs**:
-   - Contig B covers the gap region from positions 8 to 40.
+   - Contig 2 covers the gap region from positions 8 to 40.
 
 3. **Split Contig at Gap Midpoint**:
-   - Split Contig A into two parts at the midpoint of the gap (i.e., position 24).
+   - Split Contig 1 into two parts at the midpoint of the gap (i.e., position 24).
      This creates two new contigs:
-     - Contig A1: Sequence = `AGC[TTAC----------]`,
+     - Contig 1a: Sequence = `AGC[TTAC----------]`,
        aligned to Reference X from positions 10 to 24.
-     - Contig A2: Sequence = `[-----------GGCACATATCATA]CTA`,
+     - Contig 1b: Sequence = `[-----------GGCACATATCATA]CTA`,
        aligned to Reference X from positions 25 to 48.
    - Trim the new segments:
-       - Contig A1 becomes `AGC[TTAC]`.
-       - Contig A2 becomes `[GGCACATATCATA]CTA`.
+       - Contig 1a becomes `AGC[TTAC]`.
+       - Contig 1b becomes `[GGCACATATCATA]CTA`.
 
 4. **Update Contig List**:
-   - Discard the original Contig A and add Contig A1 and Contig A2 to
+   - Discard the original Contig 1 and add Contig 1a and Contig 1b to
      the list of contigs.
 
 **Result:**
 
-- Modified list of contigs now includes Contig B, Contig A1, and Contig A2.
+![gap example result illustration](stitcher_rule_3_result.svg)
+
+- Modified list of contigs now includes Contig 2, Contig 11, and Contig 12.
 
 #### Rationale
 
@@ -498,27 +513,31 @@ suspect gaps indicative of potential assembler errors.
 
 **Input:**
 
-- Contig A: Sequence = `A[ATCGA]GCT`, aligned to Reference X from positions 10 to 15.
-- Contig B: Sequence = `C[TAGTTG]A`, aligned to Reference X from positions 14 to 19.
-- Contig C: Sequence = `G[CGTACC]G`, aligned to Reference X from positions 12 to 17.
+![covered example input illustration](stitcher_rule_4_input.svg)
+
+- Contig 1: Sequence = `A[ATCGA]GCT`, aligned to Reference X from positions 10 to 15.
+- Contig 2: Sequence = `C[TAGTTG]A`, aligned to Reference X from positions 14 to 19.
+- Contig 3: Sequence = `G[CGTACC]G`, aligned to Reference X from positions 12 to 17.
 
 **Procedure:**
 
 1. **Identify Covered Contigs**:
    - Calculate the intervals:
-     - Contig A: `[10-15]`
-     - Contig B: `[14-19]`
-     - Contig C: `[12-17]`
+     - Contig 1: `[10-15]`
+     - Contig 2: `[14-19]`
+     - Contig 3: `[12-17]`
 
 2. **Compare Intervals**:
-   - Assess intervals and find Contig C: `[12-17]` is completely within the intervals `[10-15]` of Contig A and `[14-19]` of Contig B.
+   - Assess intervals and find Contig 3: `[12-17]` is completely within the intervals `[10-15]` of Contig 1 and `[14-19]` of Contig 2.
 
 3. **Discard Fully Covered Contigs**:
-   - Remove Contig C from the analysis.
+   - Remove Contig 3 from the analysis.
 
 **Result:**
 
-- Unchanged remaining contigs Contig A and Contig C.
+![covered example result illustration](stitcher_rule_4_result.svg)
+
+- Unchanged remaining contigs Contig 1 and Contig 3.
 
 #### Rationale
 
