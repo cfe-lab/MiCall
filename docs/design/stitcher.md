@@ -701,12 +701,46 @@ understanding the stitching process:
   exclusively from these logs, ensuring compatibility and consistency
   between the logs and visual output.
 
-<!-- # Limitations -->
+# Limitations
 
-<!-- TODO(13): -->
-<!-- 1. describe general limitations -->
-<!-- 2. describe particular limitation that prevents us using stitcher for -->
-<!--    the proviral pipeline. The limitation here is that we don't want to -->
-<!--    "fix" sequences that are broken. And lots of them are expected to -->
-<!--    be completely broken (like scrambled, long-deleted, or -->
-<!--    hypermutated). -->
+Following limitations stem from the choice of principles and various
+assumptions that guide the Stitcher's operation. Understanding them
+allows users to better interpret the results and apply post-processing
+steps to mitigate potential issues.
+
+One of the critical challenges is the handling of ambiguous
+nucleotides. The Stitcher's **Ambiguity Omission Principle**, which
+aims to avoid propagating uncertainties, might lead to the exclusion
+of significant sequence data, resulting in the loss of potentially
+valuable variations or mutations.
+
+Moreover, the calculation of concordance in overlapping regions
+assumes that local concordance is the best indicator of the correct
+sequence. This approach may not fully account for complex genomic
+rearrangements or context outside the overlap, potentially
+compromising the accuracy of the stitched sequence.
+
+The predefined threshold for significant gaps, based on specific
+assumptions about RNA secondary structures of organisms like HIV,
+might not generalize well to other organisms or genomic regions. This
+can lead to over-splitting or under-splitting contigs, further
+fragmenting the consensus sequence.
+
+Additionally, The Stitcher’s principle of scale-dependent credibility
+might overlook important small-scale variations, such as single
+nucleotide polymorphisms (SNPs) or small indels, especially if they
+are lost in longer contigs deemed more reliable.
+
+Another critical limitation arises in the context of pipelines dealing
+with proviral sequences. The Stitcher might attempt to "fix" sequences
+that are inherently "broken", such as those that are scrambled,
+contain long deletions, or exhibit hypermutation. In such cases, the
+tool's corrective measures may not be desirable, as they risk
+introducing inaccuracies. This limitation makes the Stitcher
+unsuitable for certain pipelines where the integrity of such broken
+sequences should be preserved without alteration.
+
+Finally, the handling of multidirectional and cross-alignments may
+fall short when addressing complex genomic rearrangements, such as
+translocations or inversions, potentially resulting in misalignments
+and stitching errors in the consensus sequence.
