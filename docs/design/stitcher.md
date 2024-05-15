@@ -557,17 +557,76 @@ Moreover, keeping all contigs would violate **Regulation 1**.
 
 **Note**: rules apply to contigs that are in the same group.
 
-<!-- # Visualization -->
+# Visualizer
 
-<!-- TODO(10): describe the visualizer. -->
+The Stitcher includes a visualizer tool that helps to see and verify
+its decisions by producing a visual representation of the stitching
+process. This tool is particularly useful for understanding how
+contigs are combined or discarded at each step of the stitching
+process, providing a visual context to the resulting stitched output.
 
-<!-- ## The optional visualizer tool -->
+## The Optional Visualizer Tool
 
-<!-- TODO(11): describe the invocation, inputs and outputs. -->
+The visualizer can be enabled through the `--plot` flag when running
+the Stitcher executable. Running the Stitcher with this flag will
+produce an SVG file that visualizes the stitching process, helping to
+confirm and debug the Stitcher's operations.
 
-<!-- ## Understanding the output -->
+To use the visualizer, run the Stitcher with an additional argument
+specifying the path to the output plot file. Here's an example of how
+to stitch contigs and retrieve a visualizer plot:
 
-<!-- TODO(12): describe contents of the pictures produced by the visualizer tool. -->
+```sh
+PYTHONPATH="/path/to/micall/repository" python3 -m micall.core.contig_stitcher "contigs.fasta" "stitched_contigs.csv" --plot "visualized.svg"
+```
+
+**Command Line Arguments:**
+
+- `contigs.fasta`: Input file in FASTA format containing assembled
+  contigs.
+- `stitched_contigs.csv`: Output CSV file that will contain the
+  stitched contigs.
+- `--plot visualized.svg`: The optional argument to generate a visual
+  representation of the stitching process, saved as `visualized.svg`.
+
+### Understanding the Output
+
+In practice, a visualizer plot might look something like this:
+
+![practical visualizer plot](stitcher_practical_plot.svg)
+
+From such a diagram, you can gain insights into the following aspects
+of the stitching process:
+
+- **Reference genome**: The best matching reference genome for this
+  group of contigs was determined to be `HIV1-A1-RW-KF716472`.
+
+- **Dropped Contigs**: Contigs that were dropped due to being fully
+  covered by other contigs, as per Rule 4. In the example plot:
+  - Contigs 2, 4, 7, 8, and 6 were dropped.
+
+- **Split Contigs**: Contigs split at large gaps covered by other
+  contigs, according to Rule 3. The resulting parts are shown as
+  individual segments.
+  - Contig 1 was split around Contig 3, producing segments labeled as
+    1.1 and 1.3.
+
+- **Joined Contigs**: Contigs that were merged due to overlap:
+  - Contigs 1 and 3, which were joined as per Rule 2, with
+    **ambiguous, non-conflicting** nucleotides discarded, shown as
+    segments labeled 1.2 and 3.1.
+
+- **Unaligned Contigs**: Contigs that failed to align to the reference
+  genome during the alignment step of the setup.
+  - Contig 5 failed to align.
+
+- **Contigs without a Reference**: Contigs for which a reference
+  genome could not be determined during the reference detection step
+  of the setup.
+  - Contigs 9 and 10 failed to determine a reference genome.
+
+Understanding these basics will help to interpret other scenarios
+displayed by the visualizer plot.
 
 <!-- # Limitations -->
 
