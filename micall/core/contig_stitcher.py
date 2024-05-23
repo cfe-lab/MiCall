@@ -651,19 +651,24 @@ def parse_and_run(input_csv: TextIO, stitched_writer: TextIO, stitcher_plot_path
 
 def main(args):
     import argparse
+    import os
     from micall.core.denovo import write_contig_refs  # TODO(vitalik): move denovo stuff here.
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input FASTA file with assembled contigs.")
+    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
                         help="Output SVG image visualizing the stitching process.")
+    parser.add_argument('--input-type', choices=['csv', 'fasta'],
+                        help='Type of the input file: either "csv" or "fasta".'
+                             ' If not specified, the type is inferred from the file extension.')
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+
     args = parser.parse_args(args)
 
     if args.quiet:
@@ -676,9 +681,22 @@ def main(args):
         logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level)
+
+    # Infer input type from file extension if not specified
+    if args.input_type is None:
+        _, ext = os.path.splitext(args.contigs.name)
+        if ext.lower() in ['.csv']:
+            args.input_type = 'csv'
+        elif ext.lower() in ['.fasta', '.fa']:
+            args.input_type = 'fasta'
+        else:
+            parser.error('Unable to infer the input type from file extension. Please provide "--input-type".')
+
     with StitcherContext.fresh():
         plot_path = args.plot.name if args.plot is not None else None
+
         write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
+
         args.contigs.close()
         args.stitched_contigs.close()
         if args.plot is not None:
