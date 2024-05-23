@@ -11,9 +11,9 @@ from glob import glob
 from io import StringIO
 from itertools import groupby
 from operator import itemgetter
-from shutil import rmtree
+from shutil import rmtree, copyfileobj
 from subprocess import run, PIPE, CalledProcessError, STDOUT
-from tempfile import mkdtemp
+from tempfile import mkdtemp, NamedTemporaryFile
 
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -21,9 +21,8 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.core.project_config import ProjectConfig
-from micall.core.contig_stitcher import GenotypedContig, stitch_consensus
-from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.utils.contig_stitcher_context import StitcherContext
+from micall.utils.contig_stitcher_contigs import GenotypedContig
+import micall.core.contig_stitcher as stitcher
 
 IVA = "iva"
 DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
@@ -68,8 +67,18 @@ def init_contigs_refs(contigs_csv: TextIO):
     return writer
 
 
-def contigs_refs_write(writer, ref: str, match: float, group_ref: str, contig: str):
-    writer.writerow(dict(ref=ref, match=match, group_ref=group_ref, contig=contig))
+def write_unstitched_contigs(writer,
+                             group_refs,
+                             genotypes,
+                             contigs_fasta_path
+                             ):
+
+    for contig in read_assembled_contigs(group_refs, genotypes, contigs_fasta_path):
+        writer.writerow(dict(ref=contig.ref_name,
+                             match=contig.match_fraction,
+                             group_ref=contig.group_ref,
+                             contig=contig.seq
+                             ))
 
 
 def write_contig_refs(contigs_fasta_path: str,
@@ -97,41 +106,27 @@ def write_contig_refs(contigs_fasta_path: str,
                 contig_name = f'merged-contig-{i}'
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
 
-    unstitched_writer = init_contigs_refs(unstitched_contigs_csv) \
-        if unstitched_contigs_csv else None
-    stitched_writer = init_contigs_refs(contigs_csv) if contigs_csv else None
-    group_refs: Dict[str, str] = {}
+    with NamedTemporaryFile(mode='wt') as temporary_unstitched_csv:
+        unstitched_writer = init_contigs_refs(cast(TextIO, temporary_unstitched_csv))
+        stitched_writer = init_contigs_refs(contigs_csv) if contigs_csv else None
+        group_refs: Dict[str, str] = {}
 
-    with StitcherContext.fresh() as ctx:
         genotypes = genotype(contigs_fasta_path,
                              blast_csv=blast_csv,
                              group_refs=group_refs)
 
-        contigs = list(read_assembled_contigs(group_refs, genotypes, contigs_fasta_path))
+        write_unstitched_contigs(unstitched_writer,
+                                 group_refs,
+                                 genotypes,
+                                 contigs_fasta_path)
+        temporary_unstitched_csv.flush()
 
-        if unstitched_writer is not None:
-            for contig in contigs:
-                contigs_refs_write(unstitched_writer,
-                                   ref=contig.ref_name,
-                                   match=contig.match_fraction,
-                                   group_ref=contig.group_ref,
-                                   contig=contig.seq)
+        if unstitched_contigs_csv:
+            with open(temporary_unstitched_csv.name) as input_csv:
+                copyfileobj(input_csv, unstitched_contigs_csv)
 
-        if stitched_writer is not None or stitcher_plot_path is not None:
-            contigs = list(stitch_consensus(contigs))
-
-        if stitched_writer is not None:
-            for contig in contigs:
-                contigs_refs_write(stitched_writer,
-                                   ref=contig.ref_name,
-                                   match=contig.match_fraction,
-                                   group_ref=contig.group_ref,
-                                   contig=contig.seq)
-
-        if stitcher_plot_path is not None:
-            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
-
-        return len(contigs)
+        with open(temporary_unstitched_csv.name) as input_csv:
+            return stitcher.parse_and_run(input_csv, stitched_writer, stitcher_plot_path)
 
 
 def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):

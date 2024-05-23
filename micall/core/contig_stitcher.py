@@ -1,5 +1,6 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar
+from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar, TextIO
 from collections import defaultdict
+import csv
 from dataclasses import replace
 from math import ceil
 from mappy import Aligner
@@ -13,6 +14,8 @@ from fractions import Fraction
 from operator import itemgetter
 from aligntools import Cigar, connect_cigar_hits, CigarHit
 
+from micall.core.project_config import ProjectConfig
+from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 import micall.utils.contig_stitcher_events as events
@@ -595,6 +598,55 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
         return result
 
     yield from map(combine, consensus_parts)
+
+
+def output_contigs(writer, contigs: Iterable[GenotypedContig]):
+    for contig in contigs:
+        writer.writerow(dict(ref=contig.ref_name,
+                             match=contig.match_fraction,
+                             group_ref=contig.group_ref,
+                             contig=contig.seq))
+
+
+def input_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+    projects = ProjectConfig.loadDefault()
+
+    for row in csv.DictReader(input_csv):
+        seq = row['contig']
+        ref_name = row['ref']
+        group_ref = row['group_ref']
+        match_fraction = float(row['match'])
+
+        try:
+            ref_seq = projects.getGenotypeReference(group_ref)
+        except KeyError:
+            try:
+                ref_seq = projects.getReference(group_ref)
+            except KeyError:
+                ref_seq = None
+
+        yield GenotypedContig(name=None,
+                              seq=seq,
+                              ref_name=ref_name,
+                              group_ref=group_ref,
+                              ref_seq=str(ref_seq) if ref_seq is not None else None,
+                              match_fraction=match_fraction)
+
+
+def parse_and_run(input_csv: TextIO, stitched_writer: TextIO, stitcher_plot_path: Optional[str]) -> int:
+    with StitcherContext.fresh() as ctx:
+        contigs = list(input_contigs(input_csv))
+
+        if stitched_writer is not None or stitcher_plot_path is not None:
+            contigs = list(stitch_consensus(contigs))
+
+        if stitched_writer is not None:
+            output_contigs(stitched_writer, contigs)
+
+        if stitcher_plot_path is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+
+        return len(contigs)
 
 
 def main(args):
