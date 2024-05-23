@@ -1,5 +1,7 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar
+from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar, TextIO, Sequence
 from collections import defaultdict
+import csv
+import os
 from dataclasses import replace
 from math import ceil
 from mappy import Aligner
@@ -13,6 +15,8 @@ from fractions import Fraction
 from operator import itemgetter
 from aligntools import Cigar, connect_cigar_hits, CigarHit
 
+from micall.core.project_config import ProjectConfig
+from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 import micall.utils.contig_stitcher_events as events
@@ -575,7 +579,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCont
     yield from combine_overlaps(aligned)
 
 
-GroupRef = str
+GroupRef = Optional[str]
 
 
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
@@ -597,12 +601,66 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     yield from map(combine, consensus_parts)
 
 
-def main(args):
+def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
+    writer = csv.DictWriter(output_csv,
+                            ['ref', 'match', 'group_ref', 'contig'],
+                            lineterminator=os.linesep)
+    writer.writeheader()
+    for contig in contigs:
+        writer.writerow(dict(ref=contig.ref_name,
+                             match=contig.match_fraction,
+                             group_ref=contig.group_ref,
+                             contig=contig.seq))
+
+    output_csv.flush()
+
+
+def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+    projects = ProjectConfig.loadDefault()
+
+    for row in csv.DictReader(input_csv):
+        seq = row['contig']
+        ref_name = row['ref']
+        group_ref = row['group_ref']
+        match_fraction = float(row['match'])
+
+        try:
+            ref_seq = projects.getGenotypeReference(group_ref)
+        except KeyError:
+            try:
+                ref_seq = projects.getReference(group_ref)
+            except KeyError:
+                ref_seq = None
+
+        yield GenotypedContig(name=None,
+                              seq=seq,
+                              ref_name=ref_name,
+                              group_ref=group_ref,
+                              ref_seq=str(ref_seq) if ref_seq is not None else None,
+                              match_fraction=match_fraction)
+
+
+def run(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
+    with StitcherContext.fresh() as ctx:
+        contigs = list(read_contigs(input_csv))
+
+        if output_csv is not None or stitcher_plot_path is not None:
+            contigs = list(stitch_consensus(contigs))
+
+        if output_csv is not None:
+            write_contigs(output_csv, contigs)
+
+        if stitcher_plot_path is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+
+        return len(contigs)
+
+
+def main(argv: Sequence[str]):
     import argparse
-    from micall.core.denovo import write_contig_refs  # TODO(vitalik): move denovo stuff here.
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input FASTA file with assembled contigs.")
+    parser.add_argument('contigs', type=argparse.FileType('r'), help="Input CSV file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
@@ -612,7 +670,8 @@ def main(args):
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
-    args = parser.parse_args(args)
+
+    args = parser.parse_args(argv)
 
     if args.quiet:
         logger.setLevel(logging.ERROR)
@@ -624,13 +683,9 @@ def main(args):
         logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level)
-    with StitcherContext.fresh():
-        plot_path = args.plot.name if args.plot is not None else None
-        write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
-        args.contigs.close()
-        args.stitched_contigs.close()
-        if args.plot is not None:
-            args.plot.close()
+
+    plot_path = args.plot.name if args.plot is not None else None
+    run(args.contigs, args.stitched_contigs, plot_path)
 
 
 if __name__ == '__main__':

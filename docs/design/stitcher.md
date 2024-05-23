@@ -44,10 +44,11 @@ PYTHONPATH="/path/to/micall/repository" python3 -m micall.core.contig_stitcher -
 Stitching is initiated either as a pipeline step in MiCall, or as a
 command line call given above. In each case:
 
-**Input:** The Stitcher receives a single input file in FASTA
+**Input:** The Stitcher receives a single input file in CSV
 format. This file contains 1 or more contigs that are the outcomes of
-the previous assembly step. These contigs are essentially segments of
-DNA sequences. They can vary significantly in length.
+the previous assembly step, together with associated reference genome
+information. These contigs are essentially segments of DNA
+sequences. They can vary significantly in length.
 
 **Output:** The sole output from the Stitcher is a CSV
 file. This file holds the stitched sequences -- longer or fully
@@ -173,25 +174,22 @@ The setup process for the Stitcher ensures that each contig is
 properly aligned and prepared for the stitching process. The steps are
 as follows:
 
-1. **Determine Reference Genome**: Identify a the best maching
-   reference genome for each contig based on its sequence data.
-
-2. **Align Contigs**: Align each contig to its corresponding reference
+1. **Align Contigs**: Align each contig to its corresponding reference
    genome to approximate their positions within a global reference
    framework, allowing for spatial comparison between different contigs.
 
-3. **Split Multi-Alignment Contigs**: Split contigs that align to
+2. **Split Multi-Alignment Contigs**: Split contigs that align to
    multiple distinct parts of the reference genome into separate
    segments.
 
-4. **Handle Reverse Complement**: Reverse complement contigs that
+3. **Handle Reverse Complement**: Reverse complement contigs that
    align to the reverse strand of the reference genome to ensure all
    sequences are oriented in the same direction.
 
-5. **Sort Contigs**: Arrange the contigs based on their starting
+4. **Sort Contigs**: Arrange the contigs based on their starting
    positions along the reference genome.
 
-6. **Group by Reference**: Group contigs such that all contigs
+5. **Group by Reference**: Group contigs such that all contigs
    associated with the same reference genome are processed together.
 
 These setup steps perform minimal alteration to the original contigs
@@ -577,13 +575,13 @@ specifying the path to the output plot file. Here's an example of how
 to stitch contigs and retrieve a visualizer plot:
 
 ```sh
-PYTHONPATH="/path/to/micall/repository" python3 -m micall.core.contig_stitcher "contigs.fasta" "stitched_contigs.csv" --plot "visualized.svg"
+PYTHONPATH="/path/to/micall/repository" python3 -m micall.core.contig_stitcher "contigs.csv" "stitched_contigs.csv" --plot "visualized.svg"
 ```
 
 **Command Line Arguments:**
 
-- `contigs.fasta`: Input file in FASTA format containing assembled
-  contigs.
+- `contigs.csv`: Input file in CSV format containing assembled
+  contigs and related information.
 - `stitched_contigs.csv`: Output CSV file that will contain the
   stitched contigs.
 - `--plot visualized.svg`: The optional argument to generate a visual
