@@ -58,7 +58,7 @@ with open('hcv_genes.fasta', 'w') as outfile:
         if subtype in processed_subtypes:
             continue
         for region, refseq in h77.iteritems():
-            print subtype, region
+            print(subtype, region)
             aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, genome)
             left, right = hyphyAlign.get_boundaries(aref)
             outfile.write('>%s-%s\n%s\n' % (subtype,
