@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar, TextIO
+from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar, TextIO, Sequence
 from collections import defaultdict
 import csv
 import os
@@ -601,7 +601,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     yield from map(combine, consensus_parts)
 
 
-def output_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
+def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     writer = csv.DictWriter(output_csv,
                             ['ref', 'match', 'group_ref', 'contig'],
                             lineterminator=os.linesep)
@@ -612,8 +612,10 @@ def output_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
                              group_ref=contig.group_ref,
                              contig=contig.seq))
 
+    output_csv.flush()
 
-def input_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+
+def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
     for row in csv.DictReader(input_csv):
@@ -640,13 +642,13 @@ def input_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
 
 def run(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
     with StitcherContext.fresh() as ctx:
-        contigs = list(input_contigs(input_csv))
+        contigs = list(read_contigs(input_csv))
 
         if output_csv is not None or stitcher_plot_path is not None:
             contigs = list(stitch_consensus(contigs))
 
         if output_csv is not None:
-            output_contigs(output_csv, contigs)
+            write_contigs(output_csv, contigs)
 
         if stitcher_plot_path is not None:
             plot_stitcher_coverage(ctx.events, stitcher_plot_path)
@@ -654,7 +656,7 @@ def run(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]
         return len(contigs)
 
 
-def main(args):
+def main(argv: Sequence[str]):
     import argparse
     import os
     from micall.core.denovo import write_contig_refs  # TODO(vitalik): move denovo stuff here.
@@ -674,7 +676,7 @@ def main(args):
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(argv)
 
     if args.quiet:
         logger.setLevel(logging.ERROR)
@@ -697,18 +699,11 @@ def main(args):
         else:
             parser.error('Unable to infer the input type from file extension. Please provide "--input-type".')
 
-    with StitcherContext.fresh():
-        plot_path = args.plot.name if args.plot is not None else None
-
-        if args.input_type == 'csv':
-            run(args.contigs, args.stitched_contigs, plot_path)
-        else:
-            write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
-
-        args.contigs.close()
-        args.stitched_contigs.close()
-        if args.plot is not None:
-            args.plot.close()
+    plot_path = args.plot.name if args.plot is not None else None
+    if args.input_type == 'csv':
+        run(args.contigs, args.stitched_contigs, plot_path)
+    else:
+        write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
 
 
 if __name__ == '__main__':
