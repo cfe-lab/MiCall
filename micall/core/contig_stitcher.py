@@ -695,7 +695,10 @@ def main(args):
     with StitcherContext.fresh():
         plot_path = args.plot.name if args.plot is not None else None
 
-        write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
+        if args.input_type == 'csv':
+            parse_and_run(args.contigs, args.stitched_contigs, plot_path)
+        else:
+            write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
 
         args.contigs.close()
         args.stitched_contigs.close()
