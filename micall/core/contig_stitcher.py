@@ -1,6 +1,7 @@
 from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar, TextIO
 from collections import defaultdict
 import csv
+import os
 from dataclasses import replace
 from math import ceil
 from mappy import Aligner
@@ -600,7 +601,11 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     yield from map(combine, consensus_parts)
 
 
-def output_contigs(writer, contigs: Iterable[GenotypedContig]):
+def output_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
+    writer = csv.DictWriter(output_csv,
+                            ['ref', 'match', 'group_ref', 'contig'],
+                            lineterminator=os.linesep)
+    writer.writeheader()
     for contig in contigs:
         writer.writerow(dict(ref=contig.ref_name,
                              match=contig.match_fraction,
@@ -633,15 +638,15 @@ def input_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               match_fraction=match_fraction)
 
 
-def parse_and_run(input_csv: TextIO, stitched_writer: TextIO, stitcher_plot_path: Optional[str]) -> int:
+def run(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
     with StitcherContext.fresh() as ctx:
         contigs = list(input_contigs(input_csv))
 
-        if stitched_writer is not None or stitcher_plot_path is not None:
+        if output_csv is not None or stitcher_plot_path is not None:
             contigs = list(stitch_consensus(contigs))
 
-        if stitched_writer is not None:
-            output_contigs(stitched_writer, contigs)
+        if output_csv is not None:
+            output_contigs(output_csv, contigs)
 
         if stitcher_plot_path is not None:
             plot_stitcher_coverage(ctx.events, stitcher_plot_path)
@@ -696,7 +701,7 @@ def main(args):
         plot_path = args.plot.name if args.plot is not None else None
 
         if args.input_type == 'csv':
-            parse_and_run(args.contigs, args.stitched_contigs, plot_path)
+            run(args.contigs, args.stitched_contigs, plot_path)
         else:
             write_contig_refs(args.contigs.name, None, args.stitched_contigs, stitcher_plot_path=plot_path)
 
