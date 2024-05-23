@@ -578,7 +578,7 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCont
     yield from combine_overlaps(aligned)
 
 
-GroupRef = str
+GroupRef = Optional[str]
 
 
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:

@@ -39,7 +39,7 @@ class Contig:
 @dataclass(frozen=True)
 class GenotypedContig(Contig):
     ref_name: str
-    group_ref: str
+    group_ref: Optional[str]
 
     # The sequence of self.group_ref. None in cases where the reference organism is unknown.
     ref_seq: Optional[str]
