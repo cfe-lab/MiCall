@@ -1,11 +1,14 @@
+import argparse
+import logging
+import os
 import typing
-from typing import Optional, TextIO, Iterable, Dict, cast
+from typing import Optional, TextIO, Iterable, Dict, cast, Sequence
 from collections import Counter
 from csv import DictWriter, DictReader
-from io import StringIO
 from itertools import groupby
 from operator import itemgetter
-import os
+
+from io import StringIO
 
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -14,13 +17,22 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.contig_stitcher_contigs import GenotypedContig
 
 
-DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__),
-                                '..',
-                                'blast_db',
-                                'refs.fasta')
+DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'blast_db', 'refs.fasta')
 
 
-def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> Iterable[GenotypedContig]:
+def read_assembled_contigs(group_refs: Dict[str, str],
+                           genotypes: Dict[str, typing.Tuple[str, float]],
+                           contigs_fasta_path: str) -> Iterable[GenotypedContig]:
+    """Read assembled contigs and generate GenotypedContig objects.
+
+    Args:
+        group_refs (Dict[str, str]): Mapping of reference names to group references.
+        genotypes (Dict[str, Tuple[str, float]]): Mapping of contig names to (reference name, match fraction).
+        contigs_fasta_path (str): Path to the FASTA file containing contig sequences.
+
+    Returns:
+        Iterable[GenotypedContig]: An iterable of GenotypedContig objects.
+    """
     projects = ProjectConfig.loadDefault()
 
     for i, record in enumerate(SeqIO.parse(contigs_fasta_path, "fasta")):
@@ -47,7 +59,15 @@ def read_assembled_contigs(group_refs, genotypes, contigs_fasta_path: str) -> It
                               match_fraction=match_fraction)
 
 
-def init_contigs_refs(contigs_csv: TextIO):
+def init_contigs_refs(contigs_csv: TextIO) -> DictWriter:
+    """Initialize a CSV writer with header for contig references.
+
+    Args:
+        contigs_csv (TextIO): Open file object to write the contig references.
+
+    Returns:
+        DictWriter: A CSV DictWriter object initialized with the headers.
+    """
     writer = DictWriter(contigs_csv,
                         ['ref', 'match', 'group_ref', 'contig'],
                         lineterminator=os.linesep)
@@ -55,35 +75,39 @@ def init_contigs_refs(contigs_csv: TextIO):
     return writer
 
 
-def write_unstitched_contigs(writer,
-                             group_refs,
-                             genotypes,
-                             contigs_fasta_path
-                             ):
+def write_unstitched_contigs(writer: DictWriter,
+                             group_refs: Dict[str, str],
+                             genotypes: Dict[str, typing.Tuple[str, float]],
+                             contigs_fasta_path: str):
+    """Write unstitched contigs to a CSV file.
 
+    Args:
+        writer (DictWriter): CSV writer to write contigs.
+        group_refs (Dict[str, str]): Mapping of reference names to group references.
+        genotypes (Dict[str, Tuple[str, float]]): Mapping of contig names to (reference name, match fraction).
+        contigs_fasta_path (str): Path to the FASTA file containing contig sequences.
+    """
     for contig in read_assembled_contigs(group_refs, genotypes, contigs_fasta_path):
         writer.writerow(dict(ref=contig.ref_name,
                              match=contig.match_fraction,
                              group_ref=contig.group_ref,
-                             contig=contig.seq
-                             ))
+                             contig=contig.seq))
 
 
-def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
-    """ Use Blastn to search for the genotype of a set of reference sequences.
+def genotype(fasta: str, db: str = DEFAULT_DATABASE,
+             blast_csv: Optional[TextIO] = None,
+             group_refs: Optional[Dict[str, str]] = None) -> Dict[str, typing.Tuple[str, float]]:
+    """Use Blastn to search for the genotype of a set of reference sequences.
 
-    :param str fasta: file path of the FASTA file containing the query
-        sequences
-    :param str db: file path of the database to search for matches
-    :param blast_csv: open file to write the blast matches to, or None
-    :param dict group_refs: {contig_ref: group_ref} or None. The dictionary
-        will get filled in with the mapping from each contig's reference name
-        to the best matched reference for the whole seed group.
-    :return: {query_name: (ref_name, matched_fraction)} where query_name is a
-        sequence header from the query sequences FASTA file, ref_name is the
-        name of the best match from the database, and matched_fraction is the
-        fraction of the query that aligned against the reference (matches and
-        mismatches).
+    Args:
+        fasta (str): File path of the FASTA file containing the query sequences.
+        db (str): File path of the database to search for matches.
+        blast_csv (Optional[TextIO]): Open file to write the blast matches to, or None.
+        group_refs (Optional[Dict[str, str]]): Dictionary to fill with the mapping from
+           each contig's reference name to the best matched reference for the whole seed group.
+
+    Returns:
+        Dict[str, Tuple[str, float]]: Mapping of query name to (reference name, matched fraction).
     """
 
     contig_nums: Dict[str, int] = {}  # {contig_name: contig_num}
@@ -171,30 +195,35 @@ def genotype(fasta, db=DEFAULT_DATABASE, blast_csv=None, group_refs=None):
     return samples
 
 
-def run(contigs_fasta_path: str,
-        unstitched_contigs_csv: TextIO,
-        blast_csv: Optional[TextIO] = None):
-    """ Run BLAST search to identify contig sequences.
+def run(contigs_fasta_path: str, unstitched_contigs_csv: TextIO, blast_csv: Optional[TextIO] = None):
+    """Run BLAST search to identify contig sequences and write them to CSV.
 
-    :param str contigs_fasta_path: path to file to read contig sequences from
-        and append merged contigs to
-    :param unstitched_contigs_csv: open file to write assembled contigs to
-    :param contigs_csv: open file to write stitched contigs to
-    :param merged_contigs_csv: open file to read contigs that were merged from
-        amplicon reads
-    :param blast_csv: open file to write BLAST search results for each contig
-    :param stitcher_plot_path: open file to write the visualizer plot to
+    Args:
+        contigs_fasta_path (str): Path to the FASTA file containing contig sequences.
+        unstitched_contigs_csv (TextIO): Open file to write assembled contigs to.
+        blast_csv (Optional[TextIO]): Open file to write BLAST search results for each contig.
     """
-
     unstitched_writer = init_contigs_refs(cast(TextIO, unstitched_contigs_csv))
     group_refs: Dict[str, str] = {}
 
-    genotypes = genotype(contigs_fasta_path,
-                         blast_csv=blast_csv,
-                         group_refs=group_refs)
+    genotypes = genotype(contigs_fasta_path, blast_csv=blast_csv, group_refs=group_refs)
 
-    write_unstitched_contigs(unstitched_writer,
-                             group_refs,
-                             genotypes,
-                             contigs_fasta_path)
+    write_unstitched_contigs(unstitched_writer, group_refs, genotypes, contigs_fasta_path)
     unstitched_contigs_csv.flush()
+
+
+def main(argv: Sequence[str]):
+    logging.basicConfig(level=logging.INFO)
+    parser = argparse.ArgumentParser(description="Convert contigs from FASTA to CSV format with BLAST annotations.")
+    parser.add_argument('contigs_fasta', help="Input FASTA file with contig sequences.")
+    parser.add_argument('unstitched_contigs_csv', type=argparse.FileType('w'),
+                        help="Output CSV file to write assembled contigs.")
+    parser.add_argument('--blast_csv', type=argparse.FileType('w'),
+                        help="Optional CSV file to write BLAST search results.")
+    args = parser.parse_args(argv)
+    run(args.contigs_fasta, args.unstitched_contigs_csv, args.blast_csv)
+
+
+if __name__ == "__main__":
+    import sys
+    main(sys.argv[1:])
