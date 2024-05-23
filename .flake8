@@ -68,7 +68,7 @@ per-file-ignores =
     micall/utils/hcv_reference_tree.py: W504
     micall/utils/hcv_rules_import.py: W503,W504,E126,E241
     micall/utils/make_fda_refs.py: E211,E261,W293,W292
-    micall/utils/make_hcv_genotype_refs.py: E999
+    micall/utils/make_hcv_genotype_refs.py: E211,E261,E231,E722,E305,E127,E251,E127
     micall/utils/primer_checks.py: E303,F541
     micall/utils/primer_tracker.py: F541
     micall/utils/projects_dump.py: W504
