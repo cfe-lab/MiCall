@@ -1,12 +1,9 @@
 # MiCall #
 ## Processing FASTQ data from an Illumina MiSeq ##
-[![Build Status]][travis]
 [![Code Coverage]][codecov]
 [![DOI]][zenodo]
 
 
-[Build Status]: https://travis-ci.com/cfe-lab/MiCall.svg?branch=master
-[travis]: https://travis-ci.com/cfe-lab/MiCall
 [Code Coverage]: https://codecov.io/github/cfe-lab/MiCall/coverage.svg?branch=master
 [codecov]: https://codecov.io/github/cfe-lab/MiCall?branch=master
 [DOI]: https://zenodo.org/badge/DOI/10.5281/zenodo.1289989.svg
