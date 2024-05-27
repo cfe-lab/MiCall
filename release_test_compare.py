@@ -96,10 +96,10 @@ def find_runs(source_folder, target_folder, use_denovo):
         target_path = os.path.join(run_path,
                                    'Results',
                                    'version_' + MICALL_VERSION)
+
         done_path = os.path.join(target_path, 'doneprocessing')
         is_done = os.path.exists(done_path)
-        if use_denovo:
-            target_path = os.path.join(target_path, 'denovo')
+
         source_results_path = os.path.join(source_folder,
                                            'MiSeq',
                                            'runs',
@@ -112,6 +112,10 @@ def find_runs(source_folder, target_folder, use_denovo):
             message = f'Unexpected results file name in {run_name}.'
             raise ValueError(message) from ex
         source_path = os.path.join(source_results_path, source_versions[-1])
+
+        if use_denovo:
+            target_path = os.path.join(target_path, 'denovo')
+            source_path = os.path.join(source_path, 'denovo')
 
         logger.debug("Comparing %r with %r.", source_path, target_path)
         yield MiseqRun(source_path, target_path, is_done)
