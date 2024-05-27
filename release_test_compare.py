@@ -109,6 +109,7 @@ def parse_version(version_name):
     version_text = version_name.split('_')[-1]
     if version_text.endswith('.zip'):
         version_text = version_text[:-4]
+    version_text, possible_dash, possible_modifiers = version_text.partition("-")
     return tuple(map(int, version_text.split('.')))
 
 
