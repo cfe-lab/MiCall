@@ -23,6 +23,11 @@ from micall.utils.translation import translate
 from micall_docker import get_available_memory
 
 MICALL_VERSION = '7.15'
+#                ^^^^^^ Version of the MiCall release being tested.
+#                This is the new version against which older versions are compared.
+# The version for the older revision is determined dynamically in the `find_runs` function.
+# The source folder is inspected to find all previous result versions for each run.
+# These versions are then sorted and the latest one is selected for comparison.
 
 MiseqRun = namedtuple('MiseqRun', 'source_path target_path is_done')
 MiseqRun.__new__.__defaults__ = (None,) * 3
