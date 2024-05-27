@@ -10,6 +10,7 @@ from itertools import groupby, zip_longest, chain
 from glob import glob
 from operator import itemgetter
 import os
+import logging
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -44,6 +45,8 @@ SampleComparison = namedtuple('SampleComparison',
                                'scenarios',  # {Scenarios: [description]}
                                'consensus_distances'])  # [ConsensusDistance]
 
+logger = logging.getLogger(__name__)
+
 
 class Scenarios(IntEnum):
     NONE = 0
@@ -75,6 +78,13 @@ def parse_args(default_max_active):
                         default=default_max_active,
                         type=int,
                         help='Number of parallel workers to process the samples.')
+
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+
     return parser.parse_args()
 
 
@@ -102,6 +112,8 @@ def find_runs(source_folder, target_folder, use_denovo):
             message = f'Unexpected results file name in {run_name}.'
             raise ValueError(message) from ex
         source_path = os.path.join(source_results_path, source_versions[-1])
+
+        logger.debug("Comparing %r with %r.", source_path, target_path)
         yield MiseqRun(source_path, target_path, is_done)
 
 
@@ -682,6 +694,15 @@ def main():
     recommended_memory = int((1 << 30) * 1.5)  # 1.5GB
     default_max_active = max(1, available_memory // recommended_memory)
     args = parse_args(default_max_active)
+
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
 
     with ProcessPoolExecutor() as pool:
         runs = find_runs(args.source_folder, args.target_folder, args.denovo)
