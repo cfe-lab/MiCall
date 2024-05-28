@@ -1,7 +1,11 @@
 import random
+from dataclasses import dataclass
 import logging
 import os
 import pytest
+from typing import Iterable, List, Tuple
+
+from aligntools import CigarActions, CigarHit, Cigar
 
 import micall.core.contig_stitcher as stitcher
 from micall.core.contig_stitcher import (
@@ -1368,6 +1372,54 @@ def test_forward_and_reverse_match(projects, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
 
+def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
+    # Scenario: Single contig is aligned in two parts that overlap in reference space.
+
+    @dataclass
+    class MockMappyHit:
+        strand: int
+        q_st: int
+        q_en: int
+        r_st: int
+        r_en: int
+        cigar: List[Tuple[int, CigarActions]]
+
+    @dataclass
+    class MockAligner:
+        seq: str
+        preset: str
+
+        def map(self, seq: str) -> Iterable[MockMappyHit]:
+            return [MockMappyHit(1, 100, 300, 200, 400, [(200, CigarActions.MATCH)]),
+                    MockMappyHit(1, 300, 500, 300, 500, [(200, CigarActions.MATCH)]),
+                    ]
+
+    monkeypatch.setattr("micall.core.contig_stitcher.Aligner", MockAligner)
+
+    ref = 'A' * 700
+    seq = 'C' * 600
+
+    contigs = [
+        GenotypedContig(
+            name="a",
+            seq=seq,
+            ref_name="testref",
+            group_ref="testref",
+            ref_seq=ref,
+            match_fraction=0.3,
+        ),
+    ]
+
+    results = list(stitch_consensus(contigs))
+    assert len(results) == 1
+    assert results[0].seq == 'C' * 500
+
+    assert isinstance(results[0], stitcher.AlignedContig)
+    assert results[0].alignment == CigarHit(Cigar.parse('300M'), r_st=200, r_ei=499, q_st=100, q_ei=399)
+
+    assert len(visualizer().elements) > len(contigs)
+
+
 def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualizer):
     # Scenario: Two partially overlapping contigs are stitched correctly into a single sequence.
 
@@ -1518,10 +1570,10 @@ class MockAlignedContig:
         self.id = id(self)
 
 
+@dataclass
 class MockAlignment:
-    def __init__(self, r_st, r_ei):
-        self.r_st = r_st
-        self.r_ei = r_ei
+    r_st: int
+    r_ei: int
 
 
 # Simple function to create mock AlignedContig objects for testing, including ref_name.
