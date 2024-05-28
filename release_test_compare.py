@@ -126,7 +126,8 @@ def parse_version(version_name):
     if version_text.endswith('.zip'):
         version_text = version_text[:-4]
     version_text, possible_dash, possible_modifiers = version_text.partition("-")
-    return tuple(map(int, version_text.split('.')))
+    version_numbers = tuple(map(int, version_text.split('.')))
+    return (version_numbers, possible_modifiers)
 
 
 def report_source_versions(runs):
