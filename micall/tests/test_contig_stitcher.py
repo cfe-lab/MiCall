@@ -1021,15 +1021,17 @@ def test_partial_align_consensus_multiple_overlaping_sequences(
     assert len(visualizer().elements) > len(contigs)
 
 
-def test_big_insertion_in_a_single_contig(exact_aligner, visualizer):
+def test_big_insertion_in_a_single_contig(projects, visualizer):
     # Scenario: Single contig produces many alignments.
 
-    ref_seq = "A" * 10 + "B" * 20 + "C" * 10
+    hxb2_name = "HIV1-B-FR-K03455-seed"
+    ref_seq = projects.getReference(hxb2_name)
+    seq = ref_seq[2000:3000] + 'C' * 300 + ref_seq[3100:4000]
 
     contigs = [
         GenotypedContig(
             name="a",
-            seq="B" * 10 + "D" * 100 + "B" * 10,
+            seq=seq,
             ref_name="testref",
             group_ref="testref",
             ref_seq=ref_seq,
