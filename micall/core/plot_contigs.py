@@ -1068,7 +1068,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     figure = Figure()
     for group_ref in group_refs:
         try:
-            landmarks = landmark_reader.get_landmarks(group_ref)
+            if group_ref is not None:
+                landmarks = landmark_reader.get_landmarks(group_ref)
+            else:
+                landmarks = None
         except ValueError:
             landmarks = None
 
