@@ -592,6 +592,21 @@ def compare_consensus(sample: Sample,
               scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
+            logger.debug("Found consensus differences in:\n    %r %r %r %r %r\n\n",
+                         sample.run.source_path,
+                         sample.run.target_path,
+                         sample.name, seed, region,
+                         )
+
+            import subprocess
+            subprocess.run(["ws-release-compare-samples",
+                            sample.run.source_path,
+                            sample.run.target_path,
+                            sample.name, seed, region,
+                            ],
+                           shell=False
+                           )
+
             diffs.append('{}:{} consensus: {} {} {}'.format(run_name,
                                                             sample.name,
                                                             seed,
