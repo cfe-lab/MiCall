@@ -1508,6 +1508,70 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
         ), "The contents of the stitched plot file do not match the expected contents."
 
 
+def test_visualizer_correct_labeling_of_different_organism_contigs(
+    exact_aligner, visualizer
+):
+    # Scenario: Some discarded and anomaly contigs correctly labelled.
+
+    ref_seq = "A" * 100 + "C" * 100
+
+    contigs = [
+        GenotypedContig(
+            name="a",
+            seq="A" * 50,
+            ref_name="testref-1",
+            group_ref="testref-1",
+            ref_seq=ref_seq,
+            match_fraction=0.5,
+        ),
+        GenotypedContig(
+            name="b",
+            seq="C" * 50,
+            ref_name="testref-2",
+            group_ref="testref-2",
+            ref_seq=ref_seq,
+            match_fraction=0.5,
+        ),
+        GenotypedContig(
+            name="a_anomaly",
+            seq="D" * 50,
+            ref_name="testref-1",
+            group_ref="testref-1",
+            ref_seq=ref_seq,
+            match_fraction=0.5,
+        ),
+        GenotypedContig(
+            name="b_discarded",
+            seq="C" * 20,
+            ref_name="testref-2",
+            group_ref="testref-2",
+            ref_seq=ref_seq,
+            match_fraction=0.5,
+        ),
+        GenotypedContig(
+            name="some_anomaly",
+            seq="T" * 20,
+            ref_name='unknown',
+            group_ref=None,
+            ref_seq=ref_seq,
+            match_fraction=0.5,
+        ),
+        GenotypedContig(
+            name="some_unknown",
+            seq="T" * 20,
+            ref_name='unknown',
+            group_ref=None,
+            ref_seq=None,
+            match_fraction=0.5,
+        ),
+    ]
+
+    results = list(stitch_contigs(contigs))
+    assert len(results) == 5
+
+    assert len(visualizer().elements) > len(contigs)
+
+
 #  _   _       _ _     _            _
 # | | | |_ __ (_) |_  | |_ ___  ___| |_ ___
 # | | | | '_ \| | __| | __/ _ \/ __| __/ __|
