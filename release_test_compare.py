@@ -23,7 +23,7 @@ from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
 from micall_docker import get_available_memory
 
-MICALL_VERSION = '7.15'
+MICALL_VERSION = '7.17.0-rc1'
 #                ^^^^^^ Version of the MiCall release being tested.
 #                This is the new version against which older versions are compared.
 # The version for the older revision is determined dynamically in the `find_runs` function.
