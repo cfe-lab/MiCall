@@ -5,7 +5,7 @@ from pathlib import Path
 
 from Bio.Blast.Applications import NcbiblastnCommandline
 
-from micall.core.denovo import DEFAULT_DATABASE
+from micall.utils.fasta_to_csv import DEFAULT_DATABASE
 
 import matplotlib
 matplotlib.use('Agg')

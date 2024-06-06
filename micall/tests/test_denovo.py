@@ -4,7 +4,8 @@ from pathlib import Path
 from Bio import SeqIO
 from pytest import fixture, mark
 
-from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE, genotype
+from micall.utils.fasta_to_csv import DEFAULT_DATABASE, genotype
+from micall.core.denovo import write_contig_refs, denovo
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 

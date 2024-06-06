@@ -15,11 +15,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from micall.utils.fasta_to_csv import run, DEFAULT_DATABASE, genotype
+import micall.utils.fasta_to_csv as fasta_to_csv
 import micall.core.contig_stitcher as stitcher
-
-assert DEFAULT_DATABASE
-assert genotype is not None
 
 IVA = "iva"
 logger = logging.getLogger(__name__)
@@ -50,9 +47,9 @@ def write_contig_refs(contigs_fasta_path: str,
                 contigs_fasta.write(f">{contig_name}\n{row['contig']}\n")
 
     with NamedTemporaryFile(mode='wt') as temporary_unstitched_csv:
-        run(contigs_fasta_path,
-            cast(TextIO, temporary_unstitched_csv),
-            blast_csv)
+        fasta_to_csv.run(contigs_fasta_path,
+                         cast(TextIO, temporary_unstitched_csv),
+                         blast_csv)
 
         if unstitched_contigs_csv:
             with open(temporary_unstitched_csv.name) as input_csv:
