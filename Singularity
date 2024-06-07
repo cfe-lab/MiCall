@@ -9,7 +9,8 @@ From: python:3.8
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Fix alignment bugs, and updated to HIVdb 9.4.
+    Change Notes: Comprehensive updates to the contig stitcher,
+    including bug fixes and visualization enhancements.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
