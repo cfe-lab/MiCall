@@ -19,7 +19,9 @@ from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
+from micall.utils.fasta_to_csv import write_contig_refs
 from contextlib import contextmanager
+import micall.core.contig_stitcher as stitcher
 
 logger = logging.getLogger(__name__)
 
@@ -414,17 +416,28 @@ class Sample:
     def run_denovo(self, excluded_seeds):
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
-        with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
-                open(self.contigs_csv, 'w') as contigs_csv, \
-                open(self.blast_csv, 'w') as blast_csv:
+
+        with open(self.unstitched_contigs_fasta, 'w') as unstitched_contigs_fasta, \
+             open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
-                   unstitched_contigs_csv,
-                   contigs_csv,
+                   unstitched_contigs_fasta,
                    self.scratch_path,
                    merged_contigs_csv,
-                   blast_csv=blast_csv)
+                   )
+
+        with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
+             open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
+             open(self.blast_csv, 'w') as blast_csv:
+            write_contig_refs(self.unstitched_contigs_fasta,
+                              unstitched_contigs_csv,
+                              merged_contigs_csv,
+                              blast_csv=blast_csv,
+                              )
+
+        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+             open(self.contigs_csv, 'w') as contigs_csv:
+            stitcher.run(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
 
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
