@@ -94,10 +94,24 @@ def denovo(fastq1_path: str,
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('fastq1', type=argparse.FileType('r'))
-    parser.add_argument('fastq2', type=argparse.FileType('r'))
-    parser.add_argument('fasta', type=argparse.FileType('w'))
+    parser = argparse.ArgumentParser(
+        description="A script to perform de novo assembly of reads to build contigs."
+    )
+    parser.add_argument(
+        'fastq1',
+        type=argparse.FileType('r'),
+        help="Path to the FASTQ file containing read 1 of paired-end sequencing data."
+    )
+    parser.add_argument(
+        'fastq2',
+        type=argparse.FileType('r'),
+        help="Path to the FASTQ file containing read 2 of paired-end sequencing data."
+    )
+    parser.add_argument(
+        'fasta',
+        type=argparse.FileType('w'),
+        help="Path to the output FASTA file where assembled contigs will be written."
+    )
 
     args = parser.parse_args()
     denovo(args.fastq1.name, args.fastq2.name, args.fasta)
