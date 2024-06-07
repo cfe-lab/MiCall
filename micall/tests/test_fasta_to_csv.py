@@ -4,7 +4,7 @@ from pathlib import Path
 from Bio import SeqIO
 import pytest
 
-from micall.utils.fasta_to_csv import DEFAULT_DATABASE, genotype, write_contig_refs
+from micall.utils.fasta_to_csv import DEFAULT_DATABASE, genotype, fasta_to_svg
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 
@@ -54,7 +54,7 @@ contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
     assert expected_blast_csv == blast_csv.getvalue()
 
 
-def test_write_contig_refs_two_sequences(tmpdir, hcv_db):
+def test_fasta_to_svg_two_sequences(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
@@ -69,12 +69,12 @@ HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-1a,1.0,HCV-1a,CAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_write_contig_refs_two_groups(tmpdir, hcv_db):
+def test_fasta_to_svg_two_groups(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
@@ -92,12 +92,12 @@ HCV-1g,1.0,HCV-1g,ACCATGGATCACTCCCCTGTGAGGAACTACTGTCTT
 HCV-2b,1.0,HCV-2b,TGCAATGACAGCTTACAGACGGGTTTCCTCGCTTCCTTGTTTTACACCCA
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_write_contig_refs_not_found(tmpdir, hcv_db):
+def test_fasta_to_svg_not_found(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
@@ -109,12 +109,12 @@ ref,match,group_ref,contig
 unknown,0,,CATCACATAGGAGA
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_write_contig_refs_partial_match(tmpdir, hcv_db):
+def test_fasta_to_svg_partial_match(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
@@ -129,12 +129,12 @@ HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_write_contig_refs_reversed_match(tmpdir, hcv_db):
+def test_fasta_to_svg_reversed_match(tmpdir, hcv_db):
     """ If BLAST match is reversed, then reverse the contig before reporting. """
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
@@ -150,12 +150,12 @@ HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
 
-def test_write_contig_refs(tmpdir, hcv_db):
+def test_fasta_to_svg(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / "contigs.fasta"
     contigs_fasta.write_text("""\
 >foo
@@ -177,13 +177,13 @@ contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
 1,HCV-1a,41,1.0,100,1,41,8187,8227
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv, blast_csv=blast_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv, blast_csv=blast_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
     assert expected_blast_csv == blast_csv.getvalue()
 
 
-def test_write_contig_refs_none(tmpdir, hcv_db):
+def test_fasta_to_svg_none(tmpdir, hcv_db):
     contigs_fasta = Path(tmpdir) / 'contigs.fasta'
     assert not contigs_fasta.exists()
 
@@ -192,7 +192,7 @@ def test_write_contig_refs_none(tmpdir, hcv_db):
 ref,match,group_ref,contig
 """
 
-    write_contig_refs(str(contigs_fasta), contigs_csv)
+    fasta_to_svg(str(contigs_fasta), contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
@@ -214,8 +214,8 @@ HIV1-C-BR-JX140663-seed,1.0,HIV1-C-BR-JX140663-seed,TGCACAAGACCCAACAACAATACAAGAA
 """
 
     with merged_contigs_path.open() as merged_contigs_csv:
-        write_contig_refs(str(contigs_fasta),
-                          contigs_csv,
-                          merged_contigs_csv=merged_contigs_csv)
+        fasta_to_svg(str(contigs_fasta),
+                     contigs_csv,
+                     merged_contigs_csv=merged_contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()

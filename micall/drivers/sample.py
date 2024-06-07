@@ -19,7 +19,7 @@ from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
-from micall.utils.fasta_to_csv import write_contig_refs
+from micall.utils.fasta_to_csv import fasta_to_svg
 from contextlib import contextmanager
 import micall.core.contig_stitcher as stitcher
 
@@ -429,11 +429,11 @@ class Sample:
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            write_contig_refs(self.unstitched_contigs_fasta,
-                              unstitched_contigs_csv,
-                              merged_contigs_csv,
-                              blast_csv=blast_csv,
-                              )
+            fasta_to_svg(self.unstitched_contigs_fasta,
+                         unstitched_contigs_csv,
+                         merged_contigs_csv,
+                         blast_csv=blast_csv,
+                         )
 
         with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
              open(self.contigs_csv, 'w') as contigs_csv:

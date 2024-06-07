@@ -195,15 +195,16 @@ def genotype(fasta: str, db: str = DEFAULT_DATABASE,
     return samples
 
 
-def write_contig_refs(contigs_fasta_path: str,
-                      contigs_csv: TextIO,
-                      merged_contigs_csv: Optional[TextIO] = None,
-                      blast_csv: Optional[TextIO] = None) -> None:
+def fasta_to_svg(contigs_fasta_path: str,
+                 contigs_csv: TextIO,
+                 merged_contigs_csv: Optional[TextIO] = None,
+                 blast_csv: Optional[TextIO] = None) -> None:
     """Run BLAST search to identify contig sequences and write them to CSV.
 
     Args:
         contigs_fasta_path (str): Path to the FASTA file containing contig sequences.
         contigs_csv (TextIO): Open file to write assembled contigs to.
+        merged_contigs_csv: open file to read contigs that were merged from amplicon reads.
         blast_csv (Optional[TextIO]): Open file to write BLAST search results for each contig.
     """
 
@@ -234,7 +235,7 @@ def main(argv: Sequence[str]):
     parser.add_argument('--blast_csv', type=argparse.FileType('w'),
                         help="Optional CSV file to write BLAST search results.")
     args = parser.parse_args(argv)
-    write_contig_refs(args.contigs_fasta, args.contigs_csv, args.merged_contigs_csv, args.blast_csv)
+    fasta_to_svg(args.contigs_fasta, args.contigs_csv, args.merged_contigs_csv, args.blast_csv)
 
 
 if __name__ == "__main__":
