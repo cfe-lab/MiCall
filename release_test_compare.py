@@ -377,6 +377,16 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
                 source_score,
                 target_score)
             scenario = '  ' + message + '\n'
+
+            import subprocess
+            subprocess.run(["ws-release-compare-samples",
+                            sample.run.source_path or '/nopath1',
+                            sample.run.target_path or '/nopath2',
+                            sample.name or '.*', source_seed or '.*', region or '.*',
+                            ],
+                           shell=False
+                           )
+
             if (source_counts != target_counts and
                     scenarios_reported & Scenarios.REMAP_COUNTS_CHANGED):
                 scenarios[Scenarios.REMAP_COUNTS_CHANGED].append(scenario)
@@ -592,17 +602,12 @@ def compare_consensus(sample: Sample,
               scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
-            logger.debug("Found consensus differences in:\n    %r %r %r %r %r\n\n",
-                         sample.run.source_path,
-                         sample.run.target_path,
-                         sample.name, seed, region,
-                         )
 
             import subprocess
             subprocess.run(["ws-release-compare-samples",
-                            sample.run.source_path,
-                            sample.run.target_path,
-                            sample.name, seed, region,
+                            sample.run.source_path or '/nopath1',
+                            sample.run.target_path or '/nopath2',
+                            sample.name or '.*', seed or '.*', region or '.*',
                             ],
                            shell=False
                            )
