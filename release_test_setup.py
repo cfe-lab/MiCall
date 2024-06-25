@@ -173,9 +173,14 @@ class Sample(object):
                 os.symlink(interop_source, interop_target)
             for filename in ('RunInfo.xml',
                              'SampleSheet.csv',
+                             'SampleSheetOverrides.csv',
                              'needsprocessing'):
-                copy(os.path.join(self.run_name, filename),
-                     os.path.join(target_run_path, filename))
+
+                source = os.path.join(self.run_name, filename)
+                target = os.path.join(target_run_path, filename)
+                if os.path.exists(source):
+                    copy(source, target)
+
         results_path = os.path.join(target_run_path,
                                     'Results',
                                     'version_' + self.config.pipeline_version)
