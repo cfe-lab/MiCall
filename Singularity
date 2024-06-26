@@ -64,6 +64,7 @@ From: python:3.8
     # Git is expected to be already installed.
     mkdir -p /etc/micall
     git -C /opt/micall/ rev-parse HEAD > /etc/micall/git-version
+    git -C /opt/micall/ -c 'core.fileMode=false' describe --tags --dirty 1>&2 > /etc/micall/git-describe || true
     git -C /opt/micall/ log -n 10 > /etc/micall/git-log
     rm -rf /opt/micall/.git
 
