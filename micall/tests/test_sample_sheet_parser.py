@@ -10,6 +10,7 @@ Test suite for the sample sheet parser.
 Important cases to test:
  - a version 1 sample sheet
  - a version 2 sample sheet
+ - a version 2024 sample sheet
  - entries (wells) with multiple samples
  - defective file whose Data portion does not include a Sample_Name column
 
@@ -625,6 +626,111 @@ Disablecontamcheck:Sample3--Proj3--TRUE---Sample4--Proj4--TRUE,
                 }
             ]
         )
+
+
+class MultipleSamplesV2024Test(unittest.TestCase):
+    stub_sample_sheet = """
+[Header]
+Experiment Name,11-Jun-2023-M05995
+Date,2023-06-11
+Module,GenerateFASTQ - 3.0.1
+Workflow,GenerateFASTQ
+Library Prep Kit,Custom
+Index Kit,Custom
+Description,Amplicon
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,Description,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project
+S501-N710_12A3456-V3-SK-1_V3LOOP,12A3456-V3-SK-1_V3LOOP,,CGAGGCTG,CGAGGCTG,TAGATCGC,TAGATCGC,11-Jun-2023-M05995
+S501-N711_12A3456-V3-SK-2_V3LOOP,12A3456-V3-SK-2_V3LOOP,,AAGAGGCA,AAGAGGCA,TAGATCGC,TAGATCGC,11-Jun-2023-M05995
+S501-N712_12A3456-V3-SK-3_V3LOOP,12A3456-V3-SK-3_V3LOOP,,GTAGAGGA,GTAGAGGA,TAGATCGC,TAGATCGC,11-Jun-2023-M05995
+S502-N710_12B3456-V3-SK-1_V3LOOP,12B3456-V3-SK-1_V3LOOP,,CGAGGCTG,CGAGGCTG,CTCTCTAT,CTCTCTAT,11-Jun-2023-M05995
+S505-N710_ABC1-3-TK505-SK-1_V3LOOP,ABC1-3-TK505-SK-1_V3LOOP,,CGAGGCTG,CGAGGCTG,GTAAGGAG,GTAAGGAG,11-Jun-2023-M05995
+S508-N710_NEG_V3LOOP,NEG_V3LOOP,,CGAGGCTG,CGAGGCTG,CTAAGCCT,CTAAGCCT,11-Jun-2023-M05995
+"""
+
+    clean_filenames = ["12A3456-V3-SK-1_V3LOOP", "12A3456-V3-SK-2_V3LOOP",
+                       "12A3456-V3-SK-3_V3LOOP", "12B3456-V3-SK-1_V3LOOP",
+                       "ABC1-3-TK505-SK-1_V3LOOP", "NEG_V3LOOP",
+                       ]
+
+    def setUp(self):
+        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
+
+    def test_keys_correct(self):
+        """
+        Test that all of the keys in the resulting dictionary are correct.
+
+        There should be one key per [Header] field, as well as "Data", "DataSplit",
+        and sample_sheet_version.
+        """
+        self.assertSetEqual(
+            set(self.ss.keys()),
+            {"Chemistry",
+             'Data',
+             'Index Kit',
+             'Library Prep Kit',
+             'DataSplit',
+             'Reads',
+             'Date',
+             'Workflow',
+             'Module',
+             'Description',
+             'Experiment Name',
+             'sample_sheet_version',
+             })
+
+    def test_preamble_correct(self):
+        """
+        Test that all of the header stuff, as well as the sample sheet version, was set correctly.
+        """
+        self.assertEqual(self.ss["Experiment Name"], "11-Jun-2023-M05995")
+        self.assertEqual(self.ss["Date"], "2023-06-11")
+        self.assertEqual(self.ss["Module"], "GenerateFASTQ - 3.0.1")
+        self.assertEqual(self.ss["Workflow"], "GenerateFASTQ")
+        self.assertEqual(self.ss["Library Prep Kit"], "Custom")
+        self.assertEqual(self.ss["Index Kit"], "Custom")
+        self.assertEqual(self.ss["Description"], "Amplicon")
+        self.assertEqual(self.ss["Chemistry"], "Amplicon")
+        self.assertEqual(self.ss["sample_sheet_version"], 2024)
+
+    def test_datasplit(self):
+        """
+        Check each entry in the "DataSplit" dictionary.
+        """
+
+        assert self.ss["DataSplit"][0] == \
+            {'index1': 'CGAGGCTG',
+             'index2': 'TAGATCGC',
+             'comments': '',
+             'disable_contamination_check': False,
+             'research': True,
+             'chemistry': 'Amplicon',
+             'orig_sample_name': '12A3456-V3-SK-1_V3LOOP',
+             'tags': 'S501-N710',
+             'sample': '12A3456-V3-SK-1',
+             'project': 'V3LOOP',
+             'filename': '12A3456-V3-SK-1-V3LOOP_S1',
+             'sample_number': 'S1',
+             }
+
+        assert self.ss["DataSplit"][1] == \
+            {'index1': 'AAGAGGCA',
+             'index2': 'TAGATCGC',
+             'comments': '',
+             'disable_contamination_check': False,
+             'research': True,
+             'chemistry': 'Amplicon',
+             'orig_sample_name': '12A3456-V3-SK-2_V3LOOP',
+             'tags': 'S501-N711',
+             'sample': '12A3456-V3-SK-2',
+             'project': 'V3LOOP',
+             'filename': '12A3456-V3-SK-2-V3LOOP_S2',
+             'sample_number': 'S2',
+             }
 
 
 class OtherTest(unittest.TestCase):

@@ -45,6 +45,9 @@ def sample_sheet_parser(handle):
             key, value = tokens[:2]
             run_info.update({key: value})
 
+            if key == 'Module':
+                sample_sheet_version = 2024
+
         elif tag == 'Reads':
             read_lengths.append(int(tokens[0]))
 
@@ -86,7 +89,12 @@ def sample_sheet_parser(handle):
             clean_filename += '_S%d' % sample_number  # should correspond to FASTQ filename
 
             sample_id = fields['Sample_ID']
-            tags = sample_id.split('_')[3]
+
+            if sample_sheet_version == 2024:
+                tags = sample_id.split('_')[0]
+            else:
+                tags = sample_id.split('_')[3]
+
             if '-' not in tags:
                 tags += '-X'
 
@@ -100,7 +108,7 @@ def sample_sheet_parser(handle):
                     "comments": "",
                     "disable_contamination_check": False,
                     "research": True,
-                    "chemistry": run_info["Assay"],
+                    "chemistry": run_info.get("Assay") or run_info.get("Chemistry"),
                     "orig_sample_name": filename,
                     "tags": tags
                 }})
