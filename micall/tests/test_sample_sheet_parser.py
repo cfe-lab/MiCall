@@ -732,7 +732,7 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 
     def test_underscores_in_sample_name(self):
         """
-        Extracts the correct project code having multiple options.
+        Extracts the correct project code and sample name in presence of underscores.
         """
 
         stub_sample_sheet = """
@@ -763,8 +763,18 @@ Chemistry:Sample2_Foo_Proj2:BreakingBad Disablecontamcheck:Sample2_Foo_Proj2:TRU
         ss = sample_sheet_parser(StringIO(stub_sample_sheet))
         split_rows = ss['DataSplit']
         assert len(split_rows) == 2
+
+        assert split_rows[0]['filename'] == 'Sample1-Proj1_S1'
+        assert split_rows[1]['filename'] == 'Sample2-Proj2_S2'
+
         assert split_rows[0]['project'] == 'Proj1'
         assert split_rows[1]['project'] == 'Proj2'
+
+        assert split_rows[0]['sample'] == 'Sample1'
+        assert split_rows[1]['sample'] == 'Sample2'
+
+        assert split_rows[0]['sample_number'] == 'S1'
+        assert split_rows[1]['sample_number'] == 'S2'
 
 
 def test_read_sample_sheet_overrides(tmpdir):
