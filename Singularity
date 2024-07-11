@@ -31,6 +31,9 @@ From: python:3.8
     mkdir ${SINGULARITY_ROOTFS}/opt/micall/micall
 
 %files
+    ## Git files
+    .git /opt/micall/.git
+
     ## MiCall
     micall_docker.py /opt/micall/
     micall_kive.py /opt/micall/
@@ -56,6 +59,14 @@ From: python:3.8
     echo ===== Installing Prerequisites ===== >/dev/null
     apt-get update -q
     apt-get install -q -y unzip wget
+
+    echo ===== Saving git version ===== >/dev/null
+    # Git is expected to be already installed.
+    mkdir -p /etc/micall
+    git -C /opt/micall/ rev-parse HEAD > /etc/micall/git-version
+    git -C /opt/micall/ -c 'core.fileMode=false' describe --tags --dirty 1>&2 > /etc/micall/git-describe || true
+    git -C /opt/micall/ log -n 10 > /etc/micall/git-log
+    rm -rf /opt/micall/.git
 
     echo ===== Installing blast ===== >/dev/null
     apt-get install -q -y ncbi-blast+
