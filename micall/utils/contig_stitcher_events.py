@@ -240,7 +240,7 @@ class Drop:
     covering: List[AlignedContig]
 
     def __str__(self) -> str:
-        covering_contig_names = ', '.join(repr(x.name) for x in self.covering)
+        covering_contig_names = ', '.join(repr(x.unique_name) for x in self.covering)
         return (
             f"Dropped contig {self.contig.unique_name} as it is completely covered by these contigs: "
             f"{covering_contig_names}."
