@@ -33,7 +33,6 @@ per-file-ignores =
     micall/tests/test_cigar_tools.py: E704,W503
     micall/tests/test_consensus_aligner.py: F841,E126,W504,E701,F401
     micall/tests/test_contig_stitcher.py: W503
-    micall/tests/test_error_metrics_parser.py: E231
     micall/tests/test_fastq_g2p.py: W293
     micall/tests/test_hcv_reference_tree.py: W293
     micall/tests/test_hcv_rules_import.py: E241
