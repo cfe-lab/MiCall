@@ -2,10 +2,11 @@
 
 from csv import DictReader
 from pathlib import Path
+from typing import TextIO, Dict
 
 from micall.utils.sample_sheet_v1_parser import sample_sheet_v1_parser
 
-def sample_sheet_parser(handle):
+def sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     """
     Parse the contents of SampleSheet.csv, convert contents into a
     Python dictionary object.
@@ -13,6 +14,7 @@ def sample_sheet_parser(handle):
     This is to distinguish replicates of the same sample.
     """
 
+    handle.seek(0)
     return sample_sheet_v1_parser(handle)
 
 
@@ -44,7 +46,7 @@ def main():
     parser.add_argument("samplesheet")
     args = parser.parse_args()
 
-    with open(args.samplesheet, "rb") as f:
+    with open(args.samplesheet) as f:
         ss = sample_sheet_parser(f)
         print(ss)
 

@@ -1,8 +1,8 @@
 
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, TextIO
 
-def sample_sheet_v1_parser(handle):
+def sample_sheet_v1_parser(handle: TextIO) -> Dict[str, object]:
     tag = None
     get_header = False
     header = []  # store Data block column labels
@@ -147,14 +147,9 @@ def sample_sheet_v1_parser(handle):
                 # the description field up and change the values in entry
                 # appropriately.
                 for desc_field in desc_fields:
-                    name, value, tmp = None, None, None
-                    if sample_sheet_version == 1:
-                        name = desc_field.split(':')[0]  # slice #actually this is wrong...
-                        value = desc_field.replace(name + ':', '')
-                        tmp = value.split(sample_delimiter)
-                    elif sample_sheet_version == 2:
-                        name, value = desc_field.split(':')
-                        tmp = value.split(sample_delimiter)
+                    name = desc_field.split(':')[0]  # slice #actually this is wrong...
+                    value = desc_field.replace(name + ':', '')
+                    tmp = value.split(sample_delimiter)
 
                     for elem in tmp:
                         samp, proj, val = None, None, None
