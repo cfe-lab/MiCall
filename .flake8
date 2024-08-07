@@ -76,6 +76,5 @@ per-file-ignores =
     micall/utils/report_amino.py: W504
     micall/utils/sam_g2p_simplify.py: W293,E265,E303,E305
     micall/utils/sample_fastq.py: E305
-    micall/utils/sample_sheet_parser.py: E275,W504
     micall/utils/scan_run_folders.py: W504
     micall/utils/v3loop_alignment_scores/plot.py: W293
