@@ -3,26 +3,15 @@ import re
 from typing import List, Dict, Any
 
 def sample_sheet_v1_parser(handle):
-    """
-    Parse the contents of SampleSheet.csv, convert contents into a
-    Python dictionary object.
-    Samples are tracked by sample name and sample number (e.g., S9).
-    This is to distinguish replicates of the same sample.
-    """
-
     tag = None
     get_header = False
     header = []  # store Data block column labels
     sample_number = 1  # 1-indexing
     read_lengths: List[int] = []
     run_info: Dict[str, Any] = {'Reads': read_lengths}  # return object
-    sample_sheet_version = None  # Version 1 used _ and ;, version 2 ~ and #
-    sample_delimiter_v1 = ';'  # Between multiple samples in one well
-    project_delimiter_v1 = '_'  # Between the sample and project names
-    sample_delimiter_v2 = '---'
-    project_delimiter_v2 = '--'
-    sample_delimiter = sample_delimiter_v1
-    project_delimiter = project_delimiter_v1
+    sample_sheet_version = 1
+    sample_delimiter = ';'  # Between multiple samples in one well
+    project_delimiter = '_'  # Between the sample and project names
 
     for line in handle:
         stripped_line = line.rstrip('\n,')
@@ -69,14 +58,6 @@ def sample_sheet_v1_parser(handle):
 
             # parse Sample_Name field
             filename = fields['Sample_Name']
-            if sample_sheet_version is None and (sample_delimiter_v2 in filename or project_delimiter_v2 in filename):
-
-                sample_sheet_version = 2
-                sample_delimiter = sample_delimiter_v2
-                project_delimiter = project_delimiter_v2
-            elif sample_sheet_version is None and (sample_delimiter_v1 in filename or project_delimiter_v1 in filename):
-                sample_sheet_version = 1
-
             clean_filename = re.sub('[_.;]', '-', filename)
             clean_filename += '_S%d' % sample_number  # should correspond to FASTQ filename
 
@@ -170,20 +151,20 @@ def sample_sheet_v1_parser(handle):
                     if sample_sheet_version == 1:
                         name = desc_field.split(':')[0]  # slice #actually this is wrong...
                         value = desc_field.replace(name + ':', '')
-                        tmp = value.split(sample_delimiter_v1)
+                        tmp = value.split(sample_delimiter)
                     elif sample_sheet_version == 2:
                         name, value = desc_field.split(':')
-                        tmp = value.split(sample_delimiter_v2)
+                        tmp = value.split(sample_delimiter)
 
                     for elem in tmp:
                         samp, proj, val = None, None, None
                         if sample_sheet_version == 1:
                             sj, val = elem.split(':')
-                            components = sj.split(project_delimiter_v1)
-                            samp, proj = (project_delimiter_v1.join(components[:-1]), components[-1])
+                            components = sj.split(project_delimiter)
+                            samp, proj = (project_delimiter.join(components[:-1]), components[-1])
                         elif sample_sheet_version == 2:
-                            components = elem.split(project_delimiter_v2)
-                            samp, proj, val = (project_delimiter_v2.join(components[:-2]),
+                            components = elem.split(project_delimiter)
+                            samp, proj, val = (project_delimiter.join(components[:-2]),
                                                components[-2], components[-1])
 
                         if samp == entry['sample'] and proj == entry['project']:
