@@ -1,5 +1,5 @@
 
-from multicsv.file import MultiCSVFile
+from multicsv import MultiCSVFile
 from typing import Dict, Any
 import csv
 
