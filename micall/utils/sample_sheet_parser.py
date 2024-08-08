@@ -3,8 +3,10 @@
 from csv import DictReader
 from pathlib import Path
 from typing import TextIO, Dict
+import multicsv
 
 from micall.utils.sample_sheet_v1_parser import sample_sheet_v1_parser
+from micall.utils.sample_sheet_v2_parser import sample_sheet_v2_parser
 
 def sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     """
@@ -14,8 +16,11 @@ def sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     This is to distinguish replicates of the same sample.
     """
 
-    handle.seek(0)
-    return sample_sheet_v1_parser(handle)
+    with multicsv.wrap(handle) as csvfile:
+        if 'BCCFE_Settings' in csvfile:
+            return sample_sheet_v2_parser(csvfile)
+        else:
+            return sample_sheet_v1_parser(handle)
 
 
 def read_sample_sheet_overrides(override_file, run_info):
