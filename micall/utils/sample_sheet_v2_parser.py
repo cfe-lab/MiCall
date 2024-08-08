@@ -54,6 +54,8 @@ def sample_sheet_v2_parser(file: MultiCSVFile) -> Dict[str, object]:
                 datasplit.update(data)
                 break
 
+    ret['sample_sheet_version'] = ret['SampleSheetVersion']
+
     return ret
 
 
@@ -62,6 +64,7 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
         raise ValueError("Missing 'Header' section in the sample sheet.")
 
     # Verify BCCFE_Settings section
+    found_version = False
     if 'BCCFE_Settings' in file.keys():
         for line_number, row in enumerate(csv.reader(file['BCCFE_Settings']), start=1):
             if len(row) != 2:
@@ -69,8 +72,14 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
                     f"Line {line_number} in [BCCFE_Settings] section: "
                     f"Expected 2 elements (key-value pair), but got {len(row)}."
                 )
+
+            if row[0] == 'SampleSheetVersion':
+                found_version = True
     else:
         raise ValueError("Missing 'BCCFE_Settings' section in the sample sheet.")
+
+    if not found_version:
+        raise ValueError("Did not found version number in the sample sheet.")
 
     # Verify Header section
     for line_number, row in enumerate(csv.reader(file['Header']), start=1):
@@ -91,7 +100,7 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
     else:
         raise ValueError("Missing 'Reads' section in the sample sheet.")
 
-    required_data_fields = ['Sample_ID', 'Sample_Name', 'index']
+    required_data_fields = ['Sample_ID', 'Sample_Name', 'index', 'index2']
     data_field_errors = []
     if 'Data' in file.keys():
         for line_number, row in enumerate(csv.reader(file['Data']), start=1):

@@ -650,6 +650,33 @@ Sample_ID,Enum,Project,Tag,Sequence
              ]
         )
 
+    def test_empty_bccfe_data(self):
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+        self.assertEqual(len(ss['DataSplit']), 0)
+
 
 class SampleSheetV2VerifierTests(unittest.TestCase):
     def test_valid_sample_sheet(self):
@@ -813,3 +840,337 @@ Sample_ID,Enum,Project,Tag,Sequence
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Row length 4 does not match header length 5", str(context.exception))
+
+    def test_invalid_read_length(self):
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+abc
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+2,Enum2,Proj2,Tag2,Seq2
+"""
+        with self.assertRaises(ValueError) as context:
+            sample_sheet_parser(StringIO(sample_sheet))
+        self.assertIn("Expected an integer but got", str(context.exception))
+
+    def test_missing_sample_id_in_bccfe_data(self):
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Enum,Project,Tag,Sequence
+Enum1,Proj1,Tag1,Seq1
+Enum2,Proj2,Tag2,Seq2
+"""
+        with self.assertRaises(ValueError) as context:
+            sample_sheet_parser(StringIO(sample_sheet))
+        self.assertIn("Expected field 'Sample_ID' not found", str(context.exception))
+
+    def test_correct_bccfe_data_parsing(self):
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+2,Enum2,Proj2,Tag2,Seq2
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+
+        self.assertEqual(len(ss["Data"]), 2)
+        self.assertEqual(len(ss["DataSplit"]), 2)
+
+        sample1 = ss["Data"]["Sample1_S1"]
+        self.assertEqual(sample1["Sample_ID"], "1")
+        self.assertEqual(sample1["index1"], "ACGT")
+        self.assertEqual(sample1["index2"], "TGCA")
+        self.assertEqual(sample1["chemistry"], "Amplicon")
+        self.assertEqual(sample1["orig_sample_name"], "Sample1")
+        self.assertEqual(sample1["tags"], "Tag1")
+
+        split1 = ss["DataSplit"][0]
+        self.assertEqual(split1["Sample_ID"], "1")
+        self.assertEqual(split1["tags"], "Tag1")
+        self.assertEqual(split1["filename"], "Sample1_S1")
+
+        sample2 = ss["Data"]["Sample2_S2"]
+        self.assertEqual(sample2["Sample_ID"], "2")
+        self.assertEqual(sample2["index1"], "CGAT")
+        self.assertEqual(sample2["index2"], "ATGC")
+        self.assertEqual(sample2["chemistry"], "Amplicon")
+        self.assertEqual(sample2["orig_sample_name"], "Sample2")
+        self.assertEqual(sample2["tags"], "Tag2")
+
+        split2 = ss["DataSplit"][1]
+        self.assertEqual(split2["Sample_ID"], "2")
+        self.assertEqual(split2["tags"], "Tag2")
+        self.assertEqual(split2["filename"], "Sample2_S2")
+
+    def test_missing_reads_section(self):
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+"""
+        with self.assertRaises(ValueError) as context:
+            sample_sheet_parser(StringIO(sample_sheet))
+        self.assertIn("Missing 'Reads' section in the sample sheet.", str(context.exception))
+
+    def test_not_allowed_missing_index2(self):
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index
+1,Sample1,ACGT
+2,Sample2,CGAT
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+2,Enum2,Proj2,Tag2,Seq2
+"""
+
+        with self.assertRaises(ValueError) as context:
+            sample_sheet_parser(StringIO(sample_sheet))
+        self.assertIn("Expected field 'index2' not found", str(context.exception))
+
+
+class EdgeVersionTwoTests(unittest.TestCase):
+
+    def test_minimal_valid_sample_sheet(self):
+        # Minimal valid sample sheet with all required sections and fields.
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+
+        self.assertEqual(ss["IEMFileVersion"], "5")
+        self.assertEqual(ss["Investigator Name"], "JN")
+        self.assertEqual(ss["Project Name"], "TestProject")
+        self.assertEqual(ss["Reads"], [251, 251])
+
+        self.assertIn("Sample1_S1", ss["Data"])
+        self.assertEqual(ss["Data"]["Sample1_S1"]["index1"], "ACGT")
+        self.assertEqual(ss["Data"]["Sample1_S1"]["index2"], "TGCA")
+        self.assertEqual(ss["Data"]["Sample1_S1"]["tags"], "Tag1")
+
+        self.assertIn("sample_sheet_version", ss)
+        self.assertEqual(ss["sample_sheet_version"], "2.0.0")
+
+    def test_multiple_valid_entries(self):
+        # Valid sample sheet with multiple entries in all sections.
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,MultiEntryTest
+Experiment Name,MultiEntryExperiment
+Date,01/01/2022
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,SomeDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+3,Sample3,TTAA,AAGT
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+2,Enum2,Proj2,Tag2,Seq2
+3,Enum3,Proj3,Tag3,Seq3
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+
+        self.assertEqual(len(ss["Data"]), 3)
+        self.assertEqual(len(ss["DataSplit"]), 3)
+
+        samples = ["Sample1_S1", "Sample2_S2", "Sample3_S3"]
+
+        for i, sample in enumerate(samples, start=1):
+            sample_data = ss["Data"][sample]
+            self.assertEqual(sample_data["Sample_ID"], str(i))
+            self.assertIn("index1", sample_data)
+            self.assertIn("index2", sample_data)
+            self.assertIn("tags", sample_data)
+
+        projects = ["Proj1", "Proj2", "Proj3"]
+        for i, data_split in enumerate(ss["DataSplit"]):
+            self.assertEqual(data_split["project"], projects[i])
+
+    def test_with_optional_fields(self):
+        # Valid sample sheet with optional fields like index2 present.
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,OptionalFieldTest
+Experiment Name,OptionalFieldExperiment
+Date,01/01/2023
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,OptionalFieldDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+2,Enum2,Proj2,Tag2,Seq2
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+
+        self.assertIn("Sample1_S1", ss["Data"])
+        self.assertEqual(ss["Data"]["Sample1_S1"]["index2"], "TGCA")
+
+        self.assertIn("Sample2_S2", ss["Data"])
+        self.assertEqual(ss["Data"]["Sample2_S2"]["index2"], "ATGC")
+
+    def test_complete_bccfe_data_entries(self):
+        # Valid sample sheet with all elements in BCCFE_Data present and correctly parsed.
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,CompleteBCCFETest
+Experiment Name,CompleteBCCFEExperiment
+Date,01/01/2024
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,CompleteBCCFEDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Neurology,Tag1,Seq1
+2,Enum2,Oncology,Tag2,Seq2
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+
+        self.assertEqual(ss["Data"]["Sample1_S1"]["tags"], "Tag1")
+        self.assertEqual(ss["Data"]["Sample2_S2"]["tags"], "Tag2")
+
+        self.assertEqual(len(ss["DataSplit"]), 2)
+        self.assertEqual(ss["DataSplit"][0]["project"], "Neurology")
+        self.assertEqual(ss["DataSplit"][1]["project"], "Oncology")
