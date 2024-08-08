@@ -548,10 +548,10 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,1234,DRT,N501-N701,\"CATGGTCT,GTGTTGCT\"
-1,1234,INT,N501-N701,\"CATGGTCT,GTGTTGCT\"
-2,4321,DRT,N501-N702,\"CATTGTCA,GTGTTGCA\"
+Sample_ID,Enum,Project,Tag
+1,1234,DRT,N501-N701
+1,1234,INT,N501-N701
+2,4321,DRT,N501-N702
 """
 
     clean_filenames = ["1234-1234_S1", "4321_S2"]
@@ -702,9 +702,9 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
-2,Enum2,Proj2,Tag2,Seq2
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
+2,Enum2,Proj2,Tag2
 """
         sample_sheet_parser(StringIO(valid_sample_sheet))
 
@@ -719,8 +719,8 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -747,8 +747,8 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -776,8 +776,8 @@ Sample2,CGAT,ATGC
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -805,8 +805,8 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -834,12 +834,12 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
-        self.assertIn("Row length 4 does not match header length 5", str(context.exception))
+        self.assertIn("Row length 3 does not match header length 4", str(context.exception))
 
     def test_invalid_read_length(self):
         sample_sheet = """
@@ -893,9 +893,9 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Enum,Project,Tag,Sequence
-Enum1,Proj1,Tag1,Seq1
-Enum2,Proj2,Tag2,Seq2
+Enum,Project,Tag
+Enum1,Proj1,Tag1
+Enum2,Proj2,Tag2
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(sample_sheet))
@@ -923,9 +923,9 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
-2,Enum2,Proj2,Tag2,Seq2
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
+2,Enum2,Proj2,Tag2
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
@@ -976,8 +976,8 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(sample_sheet))
@@ -1005,9 +1005,9 @@ Sample_ID,Sample_Name,index
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
-2,Enum2,Proj2,Tag2,Seq2
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
+2,Enum2,Proj2,Tag2
 """
 
         with self.assertRaises(ValueError) as context:
@@ -1039,8 +1039,8 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
@@ -1081,10 +1081,10 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
-2,Enum2,Proj2,Tag2,Seq2
-3,Enum3,Proj3,Tag3,Seq3
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
+2,Enum2,Proj2,Tag2
+3,Enum3,Proj3,Tag3
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
@@ -1127,9 +1127,9 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Proj1,Tag1,Seq1
-2,Enum2,Proj2,Tag2,Seq2
+Sample_ID,Enum,Project,Tag
+1,Enum1,Proj1,Tag1
+2,Enum2,Proj2,Tag2
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
@@ -1162,9 +1162,9 @@ Sample_ID,Sample_Name,index,index2
 [BCCFE_Settings]
 SampleSheetVersion,2.0.0
 [BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sequence
-1,Enum1,Neurology,Tag1,Seq1
-2,Enum2,Oncology,Tag2,Seq2
+Sample_ID,Enum,Project,Tag
+1,Enum1,Neurology,Tag1
+2,Enum2,Oncology,Tag2
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
