@@ -118,6 +118,9 @@ jobs:
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
 
+      - name: Install python packages
+        run: pip install multicsv
+
       - name: Singularity test
         run: python release_test_microtest.py micall.simg
 
