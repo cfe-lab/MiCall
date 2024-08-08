@@ -695,7 +695,7 @@ SampleSheetVersion,2.0.0
 Sample_ID,Enum,Project,Tag,Sequence
 1,Enum1,Proj1,Tag1,Seq1
 """
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Missing 'Header' section in the sample sheet.", str(context.exception))
 
@@ -725,7 +725,7 @@ Sample_ID,Enum,Project,Tag,Sequence
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
-        self.assertIn("Expected an integer in [Reads] section.", str(context.exception))
+        self.assertIn("Expected an integer but got", str(context.exception))
 
     def test_missing_required_fields_in_data(self):
         invalid_sample_sheet = """
@@ -752,9 +752,9 @@ SampleSheetVersion,2.0.0
 Sample_ID,Enum,Project,Tag,Sequence
 1,Enum1,Proj1,Tag1,Seq1
 """
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
-        self.assertIn("Expected 'Sample_ID' in [Data] section header.", str(context.exception))
+        self.assertIn("Expected field 'Sample_ID' not found", str(context.exception))
 
     def test_row_length_mismatch_in_data(self):
         invalid_sample_sheet = """
@@ -781,9 +781,9 @@ SampleSheetVersion,2.0.0
 Sample_ID,Enum,Project,Tag,Sequence
 1,Enum1,Proj1,Tag1,Seq1
 """
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
-        self.assertIn("Row length mismatch in [Data] section at line 2", str(context.exception))
+        self.assertIn("Row length 3 does not match header length 4", str(context.exception))
 
     def test_row_length_mismatch_in_bccfe_data(self):
         invalid_sample_sheet = """
@@ -810,6 +810,6 @@ SampleSheetVersion,2.0.0
 Sample_ID,Enum,Project,Tag,Sequence
 1,Enum1,Proj1,Tag1
 """
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
-        self.assertIn("Row length mismatch in [BCCFE_Data] section at line 2", str(context.exception))
+        self.assertIn("Row length 4 does not match header length 5", str(context.exception))

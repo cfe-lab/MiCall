@@ -58,37 +58,73 @@ def sample_sheet_v2_parser(file: MultiCSVFile) -> Dict[str, object]:
 
 
 def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
-    assert 'Header' in file.keys(), "Missing 'Header' section in the sample sheet."
+    if 'Header' not in file.keys():
+        raise ValueError("Missing 'Header' section in the sample sheet.")
 
-    for row in csv.reader(file['BCCFE_Settings']):
-        assert len(row) == 2, "Expected key-value pairs in [BCCFE_Settings] section."
+    # Verify BCCFE_Settings section
+    if 'BCCFE_Settings' in file.keys():
+        for line_number, row in enumerate(csv.reader(file['BCCFE_Settings']), start=1):
+            if len(row) != 2:
+                raise ValueError(
+                    f"Line {line_number} in [BCCFE_Settings] section: "
+                    f"Expected 2 elements (key-value pair), but got {len(row)}."
+                )
+    else:
+        raise ValueError("Missing 'BCCFE_Settings' section in the sample sheet.")
 
-    for row in csv.reader(file['Header']):
-        assert len(row) == 2, "Expected key-value pairs in [Header] section."
+    # Verify Header section
+    for line_number, row in enumerate(csv.reader(file['Header']), start=1):
+        if len(row) != 2:
+            raise ValueError(
+                f"Line {line_number} in [Header] section: Expected 2 elements (key-value pair), but got {len(row)}."
+            )
 
-    for row in csv.reader(file['Reads']):
-        assert len(row) == 1, "Expected a list in [Reads] section."
-        try:
-            int(row[0])
-        except ValueError:
-            raise ValueError("Expected an integer in [Reads] section.")
+    # Verify Reads section
+    if 'Reads' in file.keys():
+        for line_number, row in enumerate(csv.reader(file['Reads']), start=1):
+            if len(row) != 1:
+                raise ValueError(f"Line {line_number} in [Reads] section: Expected 1 element, but got {len(row)}.")
+            try:
+                int(row[0])
+            except ValueError:
+                raise ValueError(f"Line {line_number} in [Reads] section: Expected an integer but got {row[0]}.")
+    else:
+        raise ValueError("Missing 'Reads' section in the sample sheet.")
 
     required_data_fields = ['Sample_ID', 'Sample_Name', 'index']
-    for i, row in enumerate(csv.reader(file['Data'])):
-        if i == 0:
-            # Check that the required header fields are present
-            headers = row
-            for field in required_data_fields:
-                assert field in headers, f"Expected '{field}' in [Data] section header."
-        else:
-            # Check the data integrity for required fields
-            assert len(row) == len(headers), f"Row length mismatch in [Data] section at line {i+1}"
+    data_field_errors = []
+    if 'Data' in file.keys():
+        for line_number, row in enumerate(csv.reader(file['Data']), start=1):
+            if line_number == 1:
+                headers = row
+                for field in required_data_fields:
+                    if field not in headers:
+                        data_field_errors.append(f"Line {line_number} in [Data] section: "
+                                                 f"Expected field '{field}' not found.")
+            else:
+                if len(row) != len(headers):
+                    data_field_errors.append(f"Line {line_number} in [Data] section: Row length {len(row)} "
+                                             f"does not match header length {len(headers)}.")
+    else:
+        raise ValueError("Missing 'Data' section in the sample sheet.")
 
-    for i, row in enumerate(csv.reader(file['BCCFE_Data'])):
-        if i == 0:
-            # Check that the required header fields are present
-            headers = row
-            assert 'Sample_ID' in headers, "Expected 'Sample_ID' in [BCCFE_Data] section header."
-        else:
-            # Check the data integrity for each row
-            assert len(row) == len(headers), f"Row length mismatch in [BCCFE_Data] section at line {i+1}"
+    if data_field_errors:
+        raise ValueError("\n".join(data_field_errors))
+
+    bccfe_data_errors = []
+    if 'BCCFE_Data' in file.keys():
+        for line_number, row in enumerate(csv.reader(file['BCCFE_Data']), start=1):
+            if line_number == 1:
+                headers = row
+                if 'Sample_ID' not in headers:
+                    bccfe_data_errors.append(f"Line {line_number} in [BCCFE_Data] section: "
+                                             "Expected field 'Sample_ID' not found.")
+            else:
+                if len(row) != len(headers):
+                    bccfe_data_errors.append(f"Line {line_number} in [BCCFE_Data] section: "
+                                             f"Row length {len(row)} does not match header length {len(headers)}.")
+    else:
+        raise ValueError("Missing 'BCCFE_Data' section in the sample sheet.")
+
+    if bccfe_data_errors:
+        raise ValueError("\n".join(bccfe_data_errors))
