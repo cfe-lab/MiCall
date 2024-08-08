@@ -521,3 +521,295 @@ Sample2-Proj2_S2,AltB
     assert len(split_rows) == 2
     assert split_rows[0]['project'] == 'Proj1'
     assert split_rows[1]['project'] == 'AltB'
+
+
+# noinspection DuplicatedCode
+class VersionTwoTest(unittest.TestCase):
+    # Stub is taken from QAI sample sheet writer test case.
+    stub_sample_sheet = """\
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,20-Jul-2017.M04401
+Experiment Name,20-Jul-2017.M04401
+Date,07/31/2024
+Workflow,Workflow
+Assay,Chemistry
+Description,Chemistry
+Chemistry,Chemistry
+[Reads]
+251
+251
+[Settings]
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder
+1,1234-1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,""
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,""
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,1234,DRT,N501-N701,\"CATGGTCT,GTGTTGCT\"
+1,1234,INT,N501-N701,\"CATGGTCT,GTGTTGCT\"
+2,4321,DRT,N501-N702,\"CATTGTCA,GTGTTGCA\"
+"""
+
+    clean_filenames = ["1234-1234_S1", "4321_S2"]
+
+    def setUp(self):
+        self.maxDiff = None
+        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
+
+    def test_preamble_correct(self):
+        """
+        Test that all of the header stuff, as well as the sample sheet version, was set correctly.
+        """
+
+        self.assertEqual(self.ss["IEMFileVersion"], "5")
+        self.assertEqual(self.ss["Investigator Name"], "JN")
+        self.assertEqual(self.ss["Project Name"], "20-Jul-2017.M04401")
+        self.assertEqual(self.ss["Experiment Name"], "20-Jul-2017.M04401")
+        self.assertEqual(self.ss["Date"], "07/31/2024")
+        self.assertEqual(self.ss["Workflow"], "Workflow")
+        self.assertEqual(self.ss["Assay"], "Chemistry")
+        self.assertEqual(self.ss["Description"], "Chemistry")
+        self.assertEqual(self.ss["Chemistry"], "Chemistry")
+        self.assertEqual(self.ss["Reads"], [251, 251])
+
+    def test_data(self):
+        """
+        Check each entry in the "Data" dictionary.
+        """
+
+        self.assertDictEqual(
+            self.ss["Data"],
+            {
+                self.clean_filenames[0]:
+                    {
+                        "Sample_ID": "1",
+                        "sample_number": "S1",
+                        "index1": "GTGTTGCT",
+                        "index2": "CATGGTCT",
+                        "tags": "N501-N701",
+                        "chemistry": "Chemistry",
+                        "orig_sample_name": "1234-1234",
+                    },
+                self.clean_filenames[1]:
+                    {
+                        "Sample_ID": "2",
+                        "sample_number": "S2",
+                        "index1": "GTGTTGCA",
+                        "index2": "CATTGTCA",
+                        "tags": "N501-N702",
+                        "chemistry": "Chemistry",
+                        "orig_sample_name": "4321",
+                    },
+            }
+        )
+
+    def test_datasplit(self):
+        """
+        Check each entry in the "DataSplit" list.
+        """
+
+        self.assertListEqual(
+            self.ss["DataSplit"],
+            [{'sample': '1234',
+              'project': 'DRT',
+              'filename': '1234-1234_S1',
+              'tags': 'N501-N701',
+              'index1': 'GTGTTGCT',
+              'index2': 'CATGGTCT',
+              'sample_number': 'S1',
+              'chemistry': 'Chemistry',
+              'orig_sample_name': '1234-1234',
+              'Sample_ID': '1',
+              },
+             {'sample': '1234',
+              'project': 'INT',
+              'filename': '1234-1234_S1',
+              'tags': 'N501-N701',
+              'index1': 'GTGTTGCT',
+              'index2': 'CATGGTCT',
+              'sample_number': 'S1',
+              'chemistry': 'Chemistry',
+              'orig_sample_name': '1234-1234',
+              'Sample_ID': '1',
+              },
+             {'sample': '4321',
+              'project': 'DRT',
+              'filename': '4321_S2',
+              'tags': 'N501-N702',
+              'index1': 'GTGTTGCA',
+              'index2': 'CATTGTCA',
+              'sample_number': 'S2',
+              'chemistry': 'Chemistry',
+              'orig_sample_name': '4321',
+              'Sample_ID': '2',
+              },
+             ]
+        )
+
+
+class SampleSheetV2VerifierTests(unittest.TestCase):
+    def test_valid_sample_sheet(self):
+        valid_sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Settings]
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+2,Enum2,Proj2,Tag2,Seq2
+"""
+        sample_sheet_parser(StringIO(valid_sample_sheet))
+
+    def test_missing_header(self):
+        invalid_sample_sheet = """
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+"""
+        with self.assertRaises(AssertionError) as context:
+            sample_sheet_parser(StringIO(invalid_sample_sheet))
+        self.assertIn("Missing 'Header' section in the sample sheet.", str(context.exception))
+
+    def test_invalid_reads_section(self):
+        invalid_sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+not_a_number
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+"""
+        with self.assertRaises(ValueError) as context:
+            sample_sheet_parser(StringIO(invalid_sample_sheet))
+        self.assertIn("Expected an integer in [Reads] section.", str(context.exception))
+
+    def test_missing_required_fields_in_data(self):
+        invalid_sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_Name,index,index2
+Sample1,ACGT,TGCA
+Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+"""
+        with self.assertRaises(AssertionError) as context:
+            sample_sheet_parser(StringIO(invalid_sample_sheet))
+        self.assertIn("Expected 'Sample_ID' in [Data] section header.", str(context.exception))
+
+    def test_row_length_mismatch_in_data(self):
+        invalid_sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1,Seq1
+"""
+        with self.assertRaises(AssertionError) as context:
+            sample_sheet_parser(StringIO(invalid_sample_sheet))
+        self.assertIn("Row length mismatch in [Data] section at line 2", str(context.exception))
+
+    def test_row_length_mismatch_in_bccfe_data(self):
+        invalid_sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,TestProject
+Experiment Name,TestExperiment
+Date,01/01/2021
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,TestDescription
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Data]
+Sample_ID,Sample_Name,index,index2
+1,Sample1,ACGT,TGCA
+2,Sample2,CGAT,ATGC
+[BCCFE_Settings]
+SampleSheetVersion,2.0.0
+[BCCFE_Data]
+Sample_ID,Enum,Project,Tag,Sequence
+1,Enum1,Proj1,Tag1
+"""
+        with self.assertRaises(AssertionError) as context:
+            sample_sheet_parser(StringIO(invalid_sample_sheet))
+        self.assertIn("Row length mismatch in [BCCFE_Data] section at line 2", str(context.exception))
