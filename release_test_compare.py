@@ -739,11 +739,10 @@ def main():
                               Scenarios.VPR_FRAME_SHIFT_FIXED |
                               Scenarios.CONSENSUS_EXTENDED)
         try:
-            results = pool.map(partial(compare_sample,
-                                       scenarios_reported=scenarios_reported,
-                                       use_denovo=args.denovo),
-                               samples,
-                               chunksize=args.workers)
+            results = map(partial(compare_sample,
+                                  scenarios_reported=scenarios_reported,
+                                  use_denovo=args.denovo),
+                          samples)
         except BrokenProcessPool:
             print("Broken Process Pool - probably the memory usage is too high. Try again with fewer workers!")
             print("Current number of workers: {args.workers}")
