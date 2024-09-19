@@ -125,7 +125,7 @@ jobs:
         run: python release_test_microtest.py micall.simg
 
       - name: Upload Singularity Image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: micall.simg
           path: micall.simg
