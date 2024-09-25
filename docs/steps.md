@@ -181,7 +181,7 @@ Individual files are described after the list of steps.
   * remap - mapped to other references after remapping
   * aligned - aligned with a reference and merged with mate
 * conseq.csv
-  * region - seed region it mapped to
+  * region - the name of the contig. Includes the name of the reference seed, plus an optional prefix, which is a number that makes the name unique.
   * q-cutoff - minimum quality score
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts

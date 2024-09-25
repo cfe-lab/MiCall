@@ -1068,7 +1068,10 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     figure = Figure()
     for group_ref in group_refs:
         try:
-            landmarks = landmark_reader.get_landmarks(group_ref)
+            if group_ref is not None:
+                landmarks = landmark_reader.get_landmarks(group_ref)
+            else:
+                landmarks = None
         except ValueError:
             landmarks = None
 
@@ -1184,8 +1187,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         # Discarded #
         #############
 
-        if discarded or merged_unaligned_parts:
-            add_section("discards:")
+        def get_group_discards(group_ref):
             for root in sorted_roots:
                 if contig_map[root].group_ref != group_ref:
                     continue
@@ -1198,25 +1200,36 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     if id in unaligned_parts:
                         (q_st, q_ei) = query_position_map[id]
                         label = name_map[id]
-                        figure.add(Track(position_offset, position_offset + abs(q_ei - q_st),
-                                         label=label, color="yellow"))
+                        yield Track(position_offset, position_offset + abs(q_ei - q_st),
+                                    label=label, color="yellow")
                     else:
                         part = contig_map[id]
-                        figure.add(Multitrack(list(get_tracks([part]))))
+                        yield Multitrack(list(get_tracks([part])))
+
+        disc = list(get_group_discards(group_ref))
+        if disc:
+            add_section("discards:")
+            for element in disc:
+                figure.add(element)
 
         #############
         # Anomalies #
         #############
 
-        if anomaly:
-            add_section("anomaly:")
+        def get_group_anomalies(group_ref):
             for root in sorted_roots:
                 parts_ids = final_children_mapping[root]
                 parts_ids = [name for name in parts_ids if name in anomaly]
                 parts = [contig_map[name] for name in parts_ids]
                 parts = [part for part in parts if part.group_ref == group_ref]
                 for part in parts:
-                    figure.add(Multitrack(list(get_tracks([part]))))
+                    yield Multitrack(list(get_tracks([part])))
+
+        anom = list(get_group_anomalies(group_ref))
+        if anom:
+            add_section("anomaly:")
+            for element in anom:
+                figure.add(element)
 
     ###########
     # Unknown #

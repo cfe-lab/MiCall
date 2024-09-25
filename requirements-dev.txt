@@ -2,6 +2,6 @@
 -r requirements-test.txt
 -r requirements-watcher.txt
 # Used for plotting profiling results.
-gprof2dot==2022.7.29
+gprof2dot==2024.6.6
 mypy==1.10.0
 mypy-extensions==1.0.0
