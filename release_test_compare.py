@@ -485,6 +485,8 @@ def compare_consensus(sample: Sample,
                 continue
         source_nucs = []
         target_nucs = []
+
+        # Note: if either source or target region is missing, it might be because its coverage score is below 4.
         if source_details is None:
             has_big_change = True
             target_nucs = [nuc for nuc, row in target_details]
