@@ -1,7 +1,7 @@
 from io import BytesIO, StringIO
 from struct import pack
 from unittest import TestCase
-from micall.monitor.error_metrics_parser import read_errors, write_phix_csv,\
+from micall.monitor.error_metrics_parser import read_errors, write_phix_csv, \
     read_records
 
 
