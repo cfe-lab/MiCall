@@ -6,7 +6,6 @@ This test is supposed to verify that installation of MiCall is not broken.
 
 This tests assumes Debian-compatible operating system, such as Ubuntu.
 It also assumes that python3 and python3-venv are installed.
-For the version check it also assumes that git is installed, and that the test is run in micall git repository.
 
 It then:
   1. Creates a temporary virtual environment.
@@ -74,9 +73,9 @@ def test_micall_installation(temp_venv):
     stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
     assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
 
-    # Check MiCall version to verify installation
+    # Check MiCall executable path to verify installation
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
-    assert returncode == 0, f"MiCall version command failed:\n{stderr}"
+    assert returncode == 0, f"Cound not find MiCall installation:\n{stderr}"
     assert stdout.endswith('micall'), "Unexpected output for micall path check."
 
 
