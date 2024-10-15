@@ -68,6 +68,10 @@ def test_micall_installation(temp_venv):
     def q(s: object) -> str:
         return shlex.quote(str(s))
 
+    # Check that MiCall is not installed.
+    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
+    assert returncode != 0, "Unexpected MiCall installation."
+
     # Install MiCall using pip from the local path
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && pip install -- {q(micall_path)}")
     assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
