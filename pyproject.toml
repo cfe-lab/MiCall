@@ -1,0 +1,66 @@
+[project]
+name = "micall"
+version = "7.17.0"
+description = "Pipeline for processing FASTQ data from an Illumina MiSeq to genotype human RNA viruses like HIV and hepatitis C."
+authors = [
+    { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
+]
+license = {text = "AGPL-3.0-or-later"}
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+dependencies = [
+    "requests",
+]
+
+[project.optional-dependencies]
+test = [
+    # Dependencies required for running the test suite
+    "pytest>=6.0",
+    "pytest-cov",
+]
+dev = [
+    # Dependencies required for development (linting, type checking, etc.)
+    "flake8",
+    "mypy>=0.800",
+]
+
+[project.scripts]
+micall = "micall.main:cli"
+
+[tool.hatch.build]
+include = [
+  "micall/",
+  "basespace/",  # TODO: do we really need this in the package?
+  "gui/",        # TODO: do we really need this in the package?
+  "*.py",
+]
+exclude = [
+  "micall/tests/",
+]
+skip-excluded-dirs = true
+
+[project.urls]
+homepage = "https://cfe-lab.github.io/MiCall"
+repository = "https://github.com/cfe-lab/MiCall"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
