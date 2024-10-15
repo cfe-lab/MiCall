@@ -10,8 +10,8 @@ It also assumes that python3 and python3-venv are installed.
 It then:
   1. Creates a temporary virtual environment.
   2. Activates the environment.
-  3. Installs MiCall via pip. (path to micall is `__file__.parent.parent.parent`)
-  4. Runs `micall --version` to check the installation.
+  3. Installs MiCall via pip.
+  4. Runs `command -v micall` to check the installation.
 
 """
 
@@ -57,7 +57,7 @@ def test_micall_installation(temp_venv):
     Test to verify installation of MiCall.
 
     This test installs MiCall in an isolated virtual environment and verifies the installation
-    by executing the command `micall --version`.
+    by executing the command `command -v micall`.
     """
 
     # Path to MiCall directory (3 levels up from the current script file)
@@ -75,4 +75,4 @@ def test_micall_installation(temp_venv):
     # Check MiCall version to verify installation
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
     assert returncode == 0, f"MiCall version command failed:\n{stderr}"
-    assert 'micall' in stdout, "Unexpected output for micall path check."
+    assert stdout.endswith('micall'), "Unexpected output for micall path check."
