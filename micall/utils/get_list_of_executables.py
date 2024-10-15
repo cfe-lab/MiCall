@@ -40,7 +40,8 @@ def iterate_executables() -> Iterator[Path]:
             content = file_path.read_text()
 
             if is_executable_script(content):
-                yield file_path
+                relative = file_path.relative_to(base_dir)
+                yield relative
 
 
 def main(argv: Sequence[str]) -> int:
