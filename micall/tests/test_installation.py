@@ -18,7 +18,6 @@ It then:
 
 import subprocess
 import venv
-import shutil
 from pathlib import Path
 from typing import Sequence
 import pytest
@@ -40,9 +39,6 @@ def temp_venv(tmpdir: Path):
 
     # Yield the environment setup to the test function
     yield venv_dir / "bin" / "activate"
-
-    # Cleanup the virtual environment after the test
-    shutil.rmtree(venv_dir)
 
 
 def run_command(command: Sequence[str]):
