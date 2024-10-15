@@ -6,12 +6,13 @@ This test is supposed to verify that installation of MiCall is not broken.
 
 This tests assumes Debian-compatible operating system, such as Ubuntu.
 It also assumes that python3 and python3-venv are installed.
+For the version check it also assumes that git is installed, and that the test is run in micall git repository.
 
 It then:
   1. Creates a temporary virtual environment.
   2. Activates the environment.
   3. Installs MiCall via pip.
-  4. Runs `command -v micall` to check the installation.
+  4. Runs various shell commands to check the installation.
 
 """
 
@@ -22,6 +23,7 @@ from pathlib import Path
 from typing import Sequence
 import pytest
 import shlex
+import re
 
 
 @pytest.fixture(scope="function")
@@ -76,3 +78,31 @@ def test_micall_installation(temp_venv):
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
     assert returncode == 0, f"MiCall version command failed:\n{stderr}"
     assert stdout.endswith('micall'), "Unexpected output for micall path check."
+
+
+def test_micall_version(temp_venv):
+    """
+    Test to verify installation of MiCall.
+
+    This test installs MiCall in an isolated virtual environment and verifies the installation
+    by executing the command `micall --version`.
+    """
+
+    # Path to MiCall directory (3 levels up from the current script file)
+    script_path = Path(__file__).resolve()
+    micall_path = script_path.parent.parent.parent
+
+    # Function to quote shell arguments.
+    def q(s: object) -> str:
+        return shlex.quote(str(s))
+
+    # Install MiCall using pip from the local path
+    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
+    assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
+
+    # Check MiCall version to verify installation
+    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && micall --version")
+    assert returncode == 0, f"MiCall version command failed:\n{stderr}"
+    lines = [line.strip() for line in stdout.split('\n')]
+    first_line = lines[0].strip()
+    assert re.match(r'(\d+[.]\d+[.]\d+)|development', first_line), "Unexpected output for micall version check."
