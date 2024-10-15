@@ -69,7 +69,7 @@ def test_micall_installation(temp_venv):
     assert returncode != 0, "Unexpected MiCall installation."
 
     # Install MiCall using pip from the local path
-    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && pip install -- {q(micall_path)}")
+    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
     assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
 
     # Check MiCall version to verify installation
