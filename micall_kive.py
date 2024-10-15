@@ -164,4 +164,5 @@ def main():
             tar.add(image_path, archive_path)
 
 
-main()
+if __name__ == '__main__':
+    main()
