@@ -72,7 +72,7 @@ Create a Python 3.6 virtual environment to run MiCall.
     $ cd /usr/local/share
     $ sudo python3.6 -m venv venv-micall
     $ cd MiCall
-    $ sudo ../venv-micall/bin/pip install -r requirements-watcher.txt
+    $ sudo ../venv-micall/bin/pip install .[watcher]
 
 Copy the logging configuration if you want to change any of the settings.
 
