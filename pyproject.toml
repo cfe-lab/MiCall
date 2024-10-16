@@ -102,3 +102,131 @@ build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.mypy]
+files = ["micall/"]
+
+exclude = '''(?x)
+    ^micall/core/aln2counts[.]py$|
+    ^micall/core/amplicon_finder[.]py$|
+    ^micall/core/cascade_report[.]py$|
+    ^micall/core/consensus_builder[.]py$|
+    ^micall/core/coverage_plots[.]py$|
+    ^micall/core/plot_simple[.]py$|
+    ^micall/core/prelim_map[.]py$|
+    ^micall/core/remap[.]py$|
+    ^micall/core/sam2aln[.]py$|
+    ^micall/core/trim_fastqs[.]py$|
+    ^micall/drivers/run_info[.]py$|
+    ^micall/drivers/sample_group[.]py$|
+    ^micall/drivers/sample[.]py$|
+    ^micall/g2p/fastq_g2p[.]py$|
+    ^micall/g2p/pssm_lib[.]py$|
+    ^micall/monitor/find_groups[.]py$|
+    ^micall/monitor/kive_watcher[.]py$|
+    ^micall/monitor/qai_helper[.]py$|
+    ^micall/monitor/sample_watcher[.]py$|
+    ^micall/monitor/update_qai[.]py$|
+    ^micall/resistance/asi_algorithm[.]py$|
+    ^micall/resistance/genreport[.]py$|
+    ^micall/resistance/pdfreport[.]py$|
+    ^micall/resistance/resistance[.]py$|
+    ^micall/tests/.*|
+    ^micall/utils/aln2counts_simplify[.]py$|
+    ^micall/utils/amplicon_finder[.]py$|
+    ^micall/utils/big_counter[.]py$|
+    ^micall/utils/compare_454_samples[.]py$|
+    ^micall/utils/compare_mapping[.]py$|
+    ^micall/utils/concordance_evaluation[.]py$|
+    ^micall/utils/conseq_compare[.]py$|
+    ^micall/utils/contig_blaster[.]py$|
+    ^micall/utils/contig_counts[.]py$|
+    ^micall/utils/contig_summary[.]py$|
+    ^micall/utils/convert_primers_cutadapt[.]py$|
+    ^micall/utils/coverage_data[.]py$|
+    ^micall/utils/dd[.]py$|
+    ^micall/utils/denovo_simplify[.]py$|
+    ^micall/utils/externals[.]py$|
+    ^micall/utils/fetch_sequences[.]py$|
+    ^micall/utils/find_by_coverage[.]py$|
+    ^micall/utils/find_chimera[.]py$|
+    ^micall/utils/find_missing_samples[.]py$|
+    ^micall/utils/find_reads_in_sam[.]py$|
+    ^micall/utils/genreport_rerun[.]py$|
+    ^micall/utils/hcv_reference_tree[.]py$|
+    ^micall/utils/hcv_rules_display[.]py$|
+    ^micall/utils/hcv_rules_import[.]py$|
+    ^micall/utils/make_fda_refs[.]py$|
+    ^micall/utils/make_hcv_genotype_refs[.]py$|
+    ^micall/utils/primer_tracker[.]py$|
+    ^micall/utils/probe_finder[.]py$|
+    ^micall/utils/projects_dump[.]py$|
+    ^micall/utils/project_seeds_from_compendium[.]py$|
+    ^micall/utils/projects_upload[.]py$|
+    ^micall/utils/ref_aligner[.]py$|
+    ^micall/utils/reference_distances[.]py$|
+    ^micall/utils/remap_fastq_simplify[.]py$|
+    ^micall/utils/sam_g2p_simplify[.]py$|
+    ^micall/utils/sample_fastq[.]py$|
+    ^micall/utils/sample_project_summary[.]py$|
+    ^micall/utils/samples_from_454[.]py$|
+    ^micall/utils/sample_sheet_parser[.]py$|
+    ^micall/utils/scan_run_folders[.]py$|
+    ^micall/utils/seed_alignments[.]py$|
+    ^micall/utils/spring_beads[.]py$|
+    ^micall/utils/v3loop_alignment_scores/plot[.]py$
+'''
+
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "micall.core.plot_contigs"
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "mappy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "gotoh"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio.Seq"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio.Blast.Applications"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio.SeqRecord"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "genetracks"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "genetracks.elements"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "drawsvg"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "matplotlib"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "matplotlib.colors"
+ignore_missing_imports = true
