@@ -5,11 +5,11 @@ description = "Pipeline for processing FASTQ data from an Illumina MiSeq to geno
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
-license = {text = "AGPL-3.0-or-later"}
+license = {text = "AGPL-3.0"}
 readme = "README.md"
 requires-python = ">=3.8,<3.9"
 classifiers = [
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
