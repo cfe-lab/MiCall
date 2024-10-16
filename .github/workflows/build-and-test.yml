@@ -57,7 +57,7 @@ jobs:
         # in Singularity build with the wrong GLIBC libraries.
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-test.txt
+          pip install .[dev,test]
 
       - name: Run type checker
         run: |

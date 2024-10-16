@@ -17,5 +17,5 @@
 FROM docker.illumina.com/cfe_lab/micall:latest
 
 ## Add the dev packages.
-COPY requirements-test.txt requirements-watcher.txt requirements-dev.txt /opt/micall/
-RUN pip install -r /opt/micall/requirements-dev.txt
+COPY pyproject.toml /opt/micall/
+RUN pip install -r .[dev]

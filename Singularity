@@ -35,22 +35,22 @@ From: python:3.8
     .git /opt/micall/.git
 
     ## MiCall
-    micall_docker.py /opt/micall/
-    micall_kive.py /opt/micall/
+    micall_docker.py          /opt/micall/
+    micall_kive.py            /opt/micall/
     micall_kive_resistance.py /opt/micall/
-    micall/__init__.py /opt/micall/micall/
-    micall/project* /opt/micall/micall/
+    micall/__init__.py        /opt/micall/micall/
+    micall/project*           /opt/micall/micall/
 
-    micall/core    /opt/micall/micall/core
-    micall/data    /opt/micall/micall/data
+    micall/core       /opt/micall/micall/core
+    micall/data       /opt/micall/micall/data
     micall/drivers    /opt/micall/micall/drivers
-    micall/g2p     /opt/micall/micall/g2p
-    micall/resistance   /opt/micall/micall/resistance
-    micall/monitor /opt/micall/micall/monitor
-    micall/utils   /opt/micall/micall/utils
+    micall/g2p        /opt/micall/micall/g2p
+    micall/resistance /opt/micall/micall/resistance
+    micall/monitor    /opt/micall/micall/monitor
+    micall/utils      /opt/micall/micall/utils
 
-    requirements.txt /opt/micall/
-    requirements-basespace.txt /opt/micall/
+    README.md       /opt/micall/
+    pyproject.toml  /opt/micall/
 
     ## HCV genotyping database
     micall/blast_db /opt/micall/micall/blast_db
@@ -120,7 +120,7 @@ From: python:3.8
     # Also trigger matplotlib to build its font cache.
     cd /opt
     pip install --upgrade pip
-    pip install -r /opt/micall/requirements.txt
+    pip install /opt/micall
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
     python /opt/micall/micall/blast_db/make_blast_db.py
 
