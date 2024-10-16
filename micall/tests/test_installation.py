@@ -24,6 +24,7 @@ import pytest
 import shlex
 import re
 import os
+from itertools import groupby
 from micall.utils.get_list_of_executables import iterate_executables
 
 
@@ -138,3 +139,18 @@ def test_micall_help(temp_venv):
 
     for executable in executables:
         assert executable in stdout, f"Executable {executable!r} not listed in micall --help."
+
+
+def test_executables_names():
+    """
+    Verify that there is no duplication in names of executables.
+    """
+
+    def get_name(path: Path) -> str:
+        return os.path.splitext(path.name)[0]
+
+    executables = list(iterate_executables())
+
+    for key, group in groupby(executables, key=get_name):
+        group = list(map(str, group))
+        assert len(group) == 1, f"Scripts {group!r} share the same executable name."
