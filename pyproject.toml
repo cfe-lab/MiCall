@@ -66,7 +66,6 @@ dev = [
     "mypy==1.10.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
-    "utilities",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
