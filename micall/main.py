@@ -3,6 +3,7 @@
 import sys
 import argparse
 import os
+import runpy
 from typing import Sequence
 from pathlib import Path
 from importlib.metadata import version
@@ -98,6 +99,12 @@ def executable_module(path: str) -> str:
 EXECUTABLES_MAP = {executable_name(path): path for path in EXECUTABLES}
 
 
+def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
+    sys.argv = [module_name] + list(arguments)
+    runpy.run_module(module_name, run_name='__main__', alter_sys=True)
+    return 0
+
+
 def get_version() -> str:
     if __package__ is None:
         return "development"
@@ -129,9 +136,7 @@ def main(argv: Sequence[str]) -> int:
     elif EXECUTABLES_MAP.get(args.program):
         path = EXECUTABLES_MAP[args.program]
         mod = executable_module(path)
-        evalstring = f'__import__({mod!r}, fromlist=[""])'
-        evaluated_module = eval(evalstring)
-        return evaluated_module.main(args.arguments)
+        return execute_module_as_main(mod, args.arguments)
 
     else:
         parser.print_help()
