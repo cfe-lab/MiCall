@@ -1,5 +1,11 @@
 #! /usr/bin/env python
 
+"""
+This script serves as the primary command-line interface for MiCall,
+enabling users to execute various MiCall components directly
+from the terminal.
+"""
+
 import sys
 import argparse
 import os
@@ -8,7 +14,8 @@ from typing import Sequence
 from pathlib import Path
 from importlib.metadata import version
 
-
+# Run micall/utils/get_list_of_executables.py to get the up-to-date list of these executables.
+# The consistency of this list is verified in micall/tests/test_installation.py
 EXECUTABLES = [
     "release_test_publish.py",
     "micall_kive.py",
