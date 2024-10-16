@@ -103,6 +103,11 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.pytest.ini_options]
+markers = [
+    "iva: test requires IVA (deselect with '-m \"not iva\"')"
+]
+
 [tool.mypy]
 files = ["micall/"]
 
