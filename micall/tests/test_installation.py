@@ -28,8 +28,13 @@ from itertools import groupby
 from micall.utils.get_list_of_executables import iterate_executables
 
 
-@pytest.fixture(scope="function")
-def temp_venv(tmpdir: Path):
+# Function to quote shell arguments.
+def quote(s: object) -> str:
+    return shlex.quote(str(s))
+
+
+@pytest.fixture(scope="session")
+def temp_venv(tmpdir_factory):
     """
     Fixture for creating and cleaning up a virtual environment.
 
@@ -38,11 +43,34 @@ def temp_venv(tmpdir: Path):
     """
 
     # Create the virtual environment
-    venv_dir = tmpdir / "temp_test_venv"
+    venv_dir = tmpdir_factory.mktemp("venv")
     venv.create(venv_dir, with_pip=True)
 
     # Yield the environment setup to the test function
     yield venv_dir / "bin" / "activate"
+
+
+@pytest.fixture(scope="session")
+def micall_installation(temp_venv: Path):
+    """
+    Ensures an installed micall executable.
+    """
+
+    q = quote
+
+    # Check that MiCall is not installed.
+    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
+    assert returncode != 0, "Unexpected MiCall installation."
+
+    # Path to MiCall directory (3 levels up from the current script file)
+    script_path = Path(__file__).resolve()
+    micall_path = script_path.parent.parent.parent
+
+    # Install MiCall using pip from the local path
+    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
+    assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
+
+    yield "micall"
 
 
 def run_command(command: Sequence[str]):
@@ -52,7 +80,7 @@ def run_command(command: Sequence[str]):
     return result.stdout.decode('utf-8').strip(), result.stderr.decode('utf-8').strip(), result.returncode
 
 
-def test_micall_installation(temp_venv):
+def test_micall_installation(temp_venv, micall_installation):
     """
     Test to verify installation of MiCall.
 
@@ -60,29 +88,14 @@ def test_micall_installation(temp_venv):
     by executing the command `command -v micall`.
     """
 
-    # Path to MiCall directory (3 levels up from the current script file)
-    script_path = Path(__file__).resolve()
-    micall_path = script_path.parent.parent.parent
-
-    # Function to quote shell arguments.
-    def q(s: object) -> str:
-        return shlex.quote(str(s))
-
-    # Check that MiCall is not installed.
-    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
-    assert returncode != 0, "Unexpected MiCall installation."
-
-    # Install MiCall using pip from the local path
-    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
-    assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
-
     # Check MiCall executable path to verify installation
+    q = quote
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
     assert returncode == 0, f"Cound not find MiCall installation:\n{stderr}"
     assert stdout.endswith('micall'), "Unexpected output for micall path check."
 
 
-def test_micall_version(temp_venv):
+def test_micall_version(temp_venv, micall_installation):
     """
     Test to verify installation of MiCall.
 
@@ -90,19 +103,8 @@ def test_micall_version(temp_venv):
     by executing the command `micall --version`.
     """
 
-    # Path to MiCall directory (3 levels up from the current script file)
-    script_path = Path(__file__).resolve()
-    micall_path = script_path.parent.parent.parent
-
-    # Function to quote shell arguments.
-    def q(s: object) -> str:
-        return shlex.quote(str(s))
-
-    # Install MiCall using pip from the local path
-    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
-    assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
-
     # Check MiCall version to verify installation
+    q = quote
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && micall --version")
     assert returncode == 0, f"MiCall version command failed:\n{stderr}"
     lines = [line.strip() for line in stdout.split('\n')]
@@ -110,7 +112,7 @@ def test_micall_version(temp_venv):
     assert re.match(r'(\d+[.]\d+[.]\d+)|development', first_line), "Unexpected output for micall version check."
 
 
-def test_micall_help(temp_venv):
+def test_micall_help(temp_venv, micall_installation):
     """
     Test to verify installation of MiCall.
 
@@ -121,19 +123,8 @@ def test_micall_help(temp_venv):
     # These are supposed to be listed in output of --help.
     executables = [os.path.splitext(path.name)[0] for path in iterate_executables()]
 
-    # Path to MiCall directory (3 levels up from the current script file)
-    script_path = Path(__file__).resolve()
-    micall_path = script_path.parent.parent.parent
-
-    # Function to quote shell arguments.
-    def q(s: object) -> str:
-        return shlex.quote(str(s))
-
-    # Install MiCall using pip from the local path
-    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
-    assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
-
     # Check MiCall help to verify installation
+    q = quote
     stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && micall --help")
     assert returncode == 0, f"MiCall help command failed:\n{stderr}"
 
@@ -152,5 +143,5 @@ def test_executables_names():
     executables = list(iterate_executables())
 
     for key, group in groupby(executables, key=get_name):
-        group = list(map(str, group))
-        assert len(group) == 1, f"Scripts {group!r} share the same executable name."
+        paths = list(map(str, group))
+        assert len(paths) == 1, f"Scripts {group!r} share the same executable name."
