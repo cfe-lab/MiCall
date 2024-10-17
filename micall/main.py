@@ -108,6 +108,9 @@ EXECUTABLES_MAP = {executable_name(path): path for path in EXECUTABLES}
 
 def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
     sys.argv = [module_name] + list(arguments)
+    micall_directory = str(Path(__file__).parent.parent)
+    if micall_directory not in sys.path:
+        sys.path.append(micall_directory)
     runpy.run_module(module_name, run_name='__main__', alter_sys=True)
     return 0
 
