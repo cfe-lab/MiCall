@@ -50,6 +50,7 @@ From: python:3.8
     micall/utils      /opt/micall/micall/utils
 
     README.md       /opt/micall/
+    LICENSE.txt     /opt/micall/
     pyproject.toml  /opt/micall/
 
     ## HCV genotyping database
