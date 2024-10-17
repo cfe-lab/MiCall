@@ -76,7 +76,7 @@ Create a Python 3.6 virtual environment to run MiCall.
 
 Copy the logging configuration if you want to change any of the settings.
 
-    $ cp micall_logging_config.py micall_logging_override.py
+    $ cp micall/utils/micall_logging_config.py micall/utils/micall_logging_override.py
 
 Read the instructions in the file, and edit the override copy. If the default
 settings are fine, you don't need the override file.
@@ -97,9 +97,9 @@ log folder and grant access to the micall user.
 
 Test that everything is installed with the right permissions:
 
-    $ sudo su -c "/usr/local/share/venv-micall/bin/python micall_watcher.py --help" micall 
+    $ sudo su -c "/usr/local/share/venv-micall/bin/python micall/monitor/micall_watcher.py --help" micall 
 
-Look at the options you can give to the `micall_watcher.py` script when you
+Look at the options you can give to the `micall/monitor/micall_watcher.py` script when you
 configure the service file in the next step.
 
 Now configure the service using a systemd [service unit] configuration.
@@ -110,7 +110,7 @@ Here's an example configuration, in `/etc/systemd/system/micall_watcher.service`
     
     [Service]
     ExecStart=/usr/local/share/venv-micall/bin/python3 \
-        /usr/local/share/MiCall/micall_watcher.py
+        /usr/local/share/MiCall/micall/monitor/micall_watcher.py
     EnvironmentFile=/etc/micall/micall.conf
     User=micall
     
@@ -134,7 +134,7 @@ Environment variables go in the configuration file listed in the
 Make sure you reduce the read permissions on the `.conf` file so
 other users can't read it. The environment variable names are the same as the
 command options, but they add a `MICALL_` prefix, if it's not already there.
-To list all the available options, run `python3 micall_watcher.py --help`.
+To list all the available options, run `python3 micall/monitor/micall_watcher.py --help`.
 Below is the example config:
 
     # This is an example of /etc/micall/micall.conf
@@ -175,7 +175,7 @@ If you installed it as a service as described above, then it's easy:
 
     sudo systemctl restart micall_watcher
 
-Don't launch the `micall_watcher.py` script on its own, or the service will run
+Don't launch the `micall/monitor/micall_watcher.py` script on its own, or the service will run
 won't know that it's running. That can end up running two copies of the watcher
 process, and it gets confused.
 
