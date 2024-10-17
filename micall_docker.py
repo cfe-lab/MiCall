@@ -1,3 +1,9 @@
+#! /usr/bin/env python
+
+"""
+Entry script that serves as an entry point of MiCall's Docker image.
+"""
+
 from argparse import ArgumentParser
 import csv
 import errno
