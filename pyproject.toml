@@ -82,9 +82,6 @@ micall = "micall.main:cli"
 [tool.hatch.build]
 include = [
   "micall/",
-  "basespace/",  # TODO: do we really need this in the package?
-  "gui/",        # TODO: do we really need this in the package?
-  "*.py",
 ]
 exclude = [
   "micall/tests/",
