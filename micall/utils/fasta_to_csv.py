@@ -7,6 +7,7 @@ from collections import Counter
 from csv import DictWriter, DictReader
 from itertools import groupby
 from operator import itemgetter
+from pathlib import Path
 
 from io import StringIO
 
@@ -17,7 +18,7 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.contig_stitcher_contigs import GenotypedContig
 
 
-DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'blast_db', 'refs.fasta')
+DEFAULT_DATABASE = os.path.normpath((Path(__file__).parent.parent / 'blast_db' / 'refs.fasta').resolve())
 
 
 def read_assembled_contigs(group_refs: Dict[str, str],
