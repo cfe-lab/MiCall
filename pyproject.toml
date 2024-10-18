@@ -48,7 +48,7 @@ test = [
     # Dependencies required for running the test suite
     "pytest==8.2.2",
     "coverage==7.5.3",
-    "pandas==2.0.2",
+    "pandas==2.2.3",
     "seaborn==0.13.2",
     "ete3",
     # For reading HCV rules from an Excel file.
