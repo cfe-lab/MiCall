@@ -124,7 +124,7 @@ From: python:3.8
     pip install --upgrade pip
     pip install /opt/micall
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-    micall make_blast_db
+    python /opt/micall/micall/blast_db/make_blast_db.py
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
@@ -143,7 +143,7 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun filter_quality
-    PYTHONPATH=/opt/micall micall filter_quality "$@"
+    micall filter_quality "$@"
 
 %apphelp resistance
     Combine HCV results with HCV-Midi results, and generate resistance
