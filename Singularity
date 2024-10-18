@@ -123,12 +123,15 @@ From: python:3.8
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+    # Cleanup.
+    rm -rf /opt/micall
+
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
-    python /opt/micall/micall/utils/micall_kive.py "$@"
+    micall micall_kive "$@"
 
 %apphelp filter_quality
     Post-processing of short-read alignments.
@@ -140,7 +143,7 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun filter_quality
-    PYTHONPATH=/opt/micall python -m micall.core.filter_quality "$@"
+    micall filter_quality "$@"
 
 %apphelp resistance
     Combine HCV results with HCV-Midi results, and generate resistance
@@ -154,10 +157,10 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun resistance
-    python /opt/micall/micall/utils/micall_kive_resistance.py "$@"
+    micall micall_kive_resistance "$@"
 
 %apprun denovo
-    python /opt/micall/micall/utils/micall_kive.py --denovo "$@"
+    micall micall_kive --denovo "$@"
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
