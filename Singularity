@@ -35,9 +35,6 @@ From: python:3.8
     .git /opt/micall/.git
 
     ## MiCall
-    micall_docker.py          /opt/micall/
-    micall_kive.py            /opt/micall/
-    micall_kive_resistance.py /opt/micall/
     micall/__init__.py        /opt/micall/micall/
     micall/project*           /opt/micall/micall/
 
@@ -49,6 +46,7 @@ From: python:3.8
     micall/monitor    /opt/micall/micall/monitor
     micall/utils      /opt/micall/micall/utils
 
+    micall/main.py  /opt/micall/micall/
     README.md       /opt/micall/
     LICENSE.txt     /opt/micall/
     pyproject.toml  /opt/micall/
@@ -118,19 +116,19 @@ From: python:3.8
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
-    # Also trigger matplotlib to build its font cache.
-    cd /opt
+    # Install micall main executable.
     pip install --upgrade pip
+    python /opt/micall/micall/main.py make_blast_db
     pip install /opt/micall
+    # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-    python /opt/micall/micall/blast_db/make_blast_db.py
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
-    python /opt/micall/micall_kive.py "$@"
+    python /opt/micall/micall/utils/micall_kive.py "$@"
 
 %apphelp filter_quality
     Post-processing of short-read alignments.
@@ -156,10 +154,10 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun resistance
-    python /opt/micall/micall_kive_resistance.py "$@"
+    python /opt/micall/micall/utils/micall_kive_resistance.py "$@"
 
 %apprun denovo
-    python /opt/micall/micall_kive.py --denovo "$@"
+    python /opt/micall/micall/utils/micall_kive.py --denovo "$@"
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv

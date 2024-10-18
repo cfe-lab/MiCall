@@ -186,6 +186,9 @@ per-file-ignores = [
     'micall/utils/sample_sheet_parser.py: E275,W504',
     'micall/utils/scan_run_folders.py: W504',
     'micall/utils/v3loop_alignment_scores/plot.py: W293',
+    'micall/utils/docker_build.py: W504',
+    'micall/utils/micall_docker.py: W291,W293,W503,W504',
+    'micall/utils/release_test_compare.py: W293,W503,W504,F841',
 ]
 
 [tool.mypy]
@@ -212,6 +215,7 @@ exclude = '''(?x)
     ^micall/monitor/qai_helper[.]py$|
     ^micall/monitor/sample_watcher[.]py$|
     ^micall/monitor/update_qai[.]py$|
+    ^micall/monitor/micall_watcher[.]py$|
     ^micall/resistance/asi_algorithm[.]py$|
     ^micall/resistance/genreport[.]py$|
     ^micall/resistance/pdfreport[.]py$|
@@ -259,7 +263,13 @@ exclude = '''(?x)
     ^micall/utils/scan_run_folders[.]py$|
     ^micall/utils/seed_alignments[.]py$|
     ^micall/utils/spring_beads[.]py$|
-    ^micall/utils/v3loop_alignment_scores/plot[.]py$
+    ^micall/utils/v3loop_alignment_scores/plot[.]py$|
+    ^micall/utils/release_test_compare[.]py$|
+    ^micall/utils/release_test_microtest[.]py$|
+    ^micall/utils/release_test_setup[.]py$|
+    ^micall/utils/micall_kive[.]py$|
+    ^micall/utils/micall_kive_resistance[.]py$|
+    ^micall/utils/micall_docker[.]py$
 '''
 
 check_untyped_defs = true
