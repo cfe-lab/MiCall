@@ -160,7 +160,7 @@ From: python:3.8
     micall micall_kive_resistance "$@"
 
 %apprun denovo
-    python /opt/micall/micall_kive.py --denovo "$@"
+    micall micall_kive --denovo "$@"
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
