@@ -28,31 +28,10 @@ From: python:3.8
     # Unneeded once Singularity creates parent dirs:
     # https://github.com/singularityware/singularity/issues/1549
     mkdir ${SINGULARITY_ROOTFS}/opt/micall
-    mkdir ${SINGULARITY_ROOTFS}/opt/micall/micall
 
 %files
-    ## Git files
-    .git /opt/micall/.git
-
-    ## MiCall
-    micall/__init__.py        /opt/micall/micall/
-    micall/project*           /opt/micall/micall/
-
-    micall/core       /opt/micall/micall/core
-    micall/data       /opt/micall/micall/data
-    micall/drivers    /opt/micall/micall/drivers
-    micall/g2p        /opt/micall/micall/g2p
-    micall/resistance /opt/micall/micall/resistance
-    micall/monitor    /opt/micall/micall/monitor
-    micall/utils      /opt/micall/micall/utils
-
-    micall/main.py  /opt/micall/micall/
-    README.md       /opt/micall/
-    LICENSE.txt     /opt/micall/
-    pyproject.toml  /opt/micall/
-
-    ## HCV genotyping database
-    micall/blast_db /opt/micall/micall/blast_db
+    ## These files will be deleted after the install.
+    . /opt/micall/
 
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
@@ -65,7 +44,6 @@ From: python:3.8
     git -C /opt/micall/ rev-parse HEAD > /etc/micall/git-version
     git -C /opt/micall/ -c 'core.fileMode=false' describe --tags --dirty 1>&2 > /etc/micall/git-describe || true
     git -C /opt/micall/ log -n 10 > /etc/micall/git-log
-    rm -rf /opt/micall/.git
 
     echo ===== Installing blast ===== >/dev/null
     apt-get install -q -y ncbi-blast+
@@ -118,8 +96,8 @@ From: python:3.8
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
     pip install --upgrade pip
-    python /opt/micall/micall/main.py make_blast_db
     pip install /opt/micall
+    micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
