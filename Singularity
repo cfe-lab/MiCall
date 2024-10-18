@@ -124,6 +124,9 @@ From: python:3.8
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+    # Cleanup.
+    rm -rf /opt/micall
+
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
