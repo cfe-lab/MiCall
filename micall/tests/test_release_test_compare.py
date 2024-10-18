@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import typing
 
-from release_test_compare import compare_sample, SampleFiles, Sample, \
+from micall.utils.release_test_compare import compare_sample, SampleFiles, Sample, \
     MiseqRun, Scenarios, ConsensusDistance, group_samples_file, \
     group_nucs_file, compare_consensus
 
