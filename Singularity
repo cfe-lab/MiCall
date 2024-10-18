@@ -143,7 +143,7 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun filter_quality
-    PYTHONPATH=/opt/micall micall filter_quality "$@"
+    micall filter_quality "$@"
 
 %apphelp resistance
     Combine HCV results with HCV-Midi results, and generate resistance
