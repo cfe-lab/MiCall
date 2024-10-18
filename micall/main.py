@@ -20,7 +20,6 @@ EXECUTABLES = [
     "release_test_publish.py",
     "micall_kive.py",
     "micall_watcher.py",
-    "release_test_microtest.py",
     "docker_build.py",
     "release_test_setup.py",
     "release_test_compare.py",
