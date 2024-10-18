@@ -130,7 +130,7 @@ From: python:3.8
     export LANG=en_US.UTF-8
 
 %runscript
-    python /opt/micall/micall/utils/micall_kive.py "$@"
+    python /opt/micall/micall_kive.py "$@"
 
 %apphelp filter_quality
     Post-processing of short-read alignments.
@@ -156,7 +156,7 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun resistance
-    python /opt/micall/micall/utils/micall_kive_resistance.py "$@"
+    python /opt/micall/micall_kive_resistance.py "$@"
 
 %apprun denovo
     python /opt/micall/micall/utils/micall_kive.py --denovo "$@"
