@@ -35,9 +35,6 @@ From: python:3.8
     .git /opt/micall/.git
 
     ## MiCall
-    micall_docker.py          /opt/micall/
-    micall_kive.py            /opt/micall/
-    micall_kive_resistance.py /opt/micall/
     micall/__init__.py        /opt/micall/micall/
     micall/project*           /opt/micall/micall/
 

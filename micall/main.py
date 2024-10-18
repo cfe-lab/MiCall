@@ -17,15 +17,6 @@ from importlib.metadata import version
 # Run micall/utils/get_list_of_executables.py to get the up-to-date list of these executables.
 # The consistency of this list is verified in micall/tests/test_installation.py
 EXECUTABLES = [
-    "release_test_publish.py",
-    "micall_kive.py",
-    "micall_watcher.py",
-    "docker_build.py",
-    "release_test_setup.py",
-    "release_test_compare.py",
-    "micall_kive_resistance.py",
-    "micall_docker.py",
-    "micall/main.py",
     "micall/main.py",
     "micall/resistance/genreport.py",
     "micall/resistance/resistance.py",
