@@ -116,12 +116,13 @@ From: python:3.8
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
-    # Also trigger matplotlib to build its font cache.
     cd /opt
+    # Install micall main executable.
     pip install --upgrade pip
+    python /opt/micall/micall/main.py make_blast_db
     pip install /opt/micall
+    # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-    python /opt/micall/micall/blast_db/make_blast_db.py
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
