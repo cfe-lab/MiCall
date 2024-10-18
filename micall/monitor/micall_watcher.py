@@ -9,9 +9,9 @@ from time import sleep
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType
 from micall.monitor import update_qai
 try:
-    from micall_logging_override import LOGGING
+    from micall.utils.micall_logging_override import LOGGING
 except ImportError:
-    from micall_logging_config import LOGGING
+    from micall.utils.micall_logging_config import LOGGING
 
 POLLING_DELAY = 10  # seconds between scans for new samples or finished runs
 logger = logging.getLogger(__name__)

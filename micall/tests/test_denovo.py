@@ -4,33 +4,36 @@ from pathlib import Path
 from Bio import SeqIO
 from pytest import fixture, mark
 
-from micall.core.denovo import write_contig_refs, denovo, DEFAULT_DATABASE, genotype
+from micall.core.denovo import write_contig_refs, denovo, genotype
+from micall.utils.fasta_to_csv import default_database
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 
 @fixture(scope='session', name='hcv_db')
 def check_hcv_db():
-    db_path = Path(DEFAULT_DATABASE)
-    index_path = db_path.parent / "refs.fasta.nin"
-    build_needed = not index_path.exists()
-    if not build_needed:
-        projects_date = Path(DEFAULT_PROJECTS).stat().st_mtime
-        index_date = index_path.stat().st_mtime
-        build_needed = index_date < projects_date
-    if build_needed:
-        with open(DEFAULT_PROJECTS) as projects_json, \
-                open(DEFAULT_DATABASE, 'w') as refs_fasta:
-            make_blast_db(projects_json, refs_fasta)
-    assert index_path.exists()
-    return db_path
+    with default_database() as DEFAULT_DATABASE:
+        db_path = Path(DEFAULT_DATABASE)
+        index_path = db_path.parent / "refs.fasta.nin"
+        build_needed = not index_path.exists()
+        if not build_needed:
+            projects_date = Path(DEFAULT_PROJECTS).stat().st_mtime
+            index_date = index_path.stat().st_mtime
+            build_needed = index_date < projects_date
+        if build_needed:
+            with open(DEFAULT_PROJECTS) as projects_json, \
+                 open(DEFAULT_DATABASE, 'w') as refs_fasta:
+                make_blast_db(projects_json, refs_fasta)
+        assert index_path.exists()
+        return db_path
 
 
 def test_make_blast_db_excludes_hivgha(hcv_db):
-    fasta_path = Path(DEFAULT_DATABASE)
-    with fasta_path.open() as f:
-        for reference in SeqIO.parse(f, 'fasta'):
-            # Exclude the Ghana project, because they're recombinant.
-            assert reference.name != 'HIV1-CRF02_AG-GH-AB286855-seed'
+    with default_database() as DEFAULT_DATABASE:
+        fasta_path = Path(DEFAULT_DATABASE)
+        with fasta_path.open() as f:
+            for reference in SeqIO.parse(f, 'fasta'):
+                # Exclude the Ghana project, because they're recombinant.
+                assert reference.name != 'HIV1-CRF02_AG-GH-AB286855-seed'
 
 
 def test_write_contig_refs_two_sequences(tmpdir, hcv_db):

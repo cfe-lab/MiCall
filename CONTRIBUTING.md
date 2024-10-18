@@ -60,20 +60,20 @@ this, you will have to log in to your account using
 
     sudo docker login docker.illumina.com
 
-Use the `docker_build.py` script to build a Docker image and push it to
+Use the `micall/utils/docker_build.py` script to build a Docker image and push it to
 BaseSpace. If you add `-t vX.Y`, it will add a tag to the Docker image. If you
 add `-a <agent id>`, it will launch the spacedock tool to process samples as a
 local agent. You can also set the `BASESPACE_AGENT_ID` environment variable so
 you don't have to supply it every time. You can get the agent id from the Form
 Builder page on BaseSpace.
 
-    sudo python3 /media/sf_MiCall/docker_build.py -a abcde12345
+    sudo python3 /media/sf_MiCall/micall/utils/docker_build.py -a abcde12345
 
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
 [vbox guest]: https://linuxize.com/post/how-to-install-virtualbox-guest-additions-in-ubuntu/
 
 ### Test data
-If you want to run `micall_watcher.py`, you have to set up data folders for raw
+If you want to run `micall/monitor/micall_watcher.py`, you have to set up data folders for raw
 data and for the working folders. You'll also need to set up the QAI project
 and the MiseqQCReport so you can download QC data and upload results.
 
@@ -96,7 +96,7 @@ and the MiseqQCReport so you can download QC data and upload results.
 10. Run the Ruby console for QAI and `LabMiseqRun.import('01-Jan-2000')` for the
     date of your sample run.
 11. Upload the projects to a micall pipelines in QAI, use `micall.utils.projects_upload` to create a new pipeline in QAI
-11. Run micall_watcher.py, it does need arguments. Look up the container app ids from Kive, check the Kive server URL and ports as well as QAI server and port
+11. Run `micall/monitor/micall_watcher.py`, it does need arguments. Look up the container app ids from Kive, check the Kive server URL and ports as well as QAI server and port
 
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 
@@ -105,7 +105,7 @@ When you don't understand the pipeline's output, it can be helpful to look at
 the raw reads in a sequence viewer like [Tablet][tablet]. Run the `micall_docker`
 script on a run folder or a single sample, like this:
 
-    python micall_docker.py folder --debug_remap --all_projects --keep_scratch /path/to/run
+    python micall/utils/micall_docker.py folder --debug_remap --all_projects --keep_scratch /path/to/run
 
 The options tell it to write the debug files, use all projects, and save the
 scratch folder that holds all the debug files. Look through the scratch folders
@@ -167,13 +167,13 @@ similar steps to setting up a development workstation. Follow these steps:
 1. Check that all the issues in the current milestone are closed, and make sure
     the code works in your development environment. Run all the unit
     tests as described above, process the microtest data set with
-    `release_test_microtest.py`.
+    `micall/utils/release_test_microtest.py`.
 2. Check if the kiveapi package needs a new release by looking for new commits.
     Make sure you tested with the latest version.
 3. Determine what version number should be used next.
-4. Use the `projects_dump.py` script for the previous version and compare
+4. Use the `micall/utils/projects_dump.py` script for the previous version and compare
     `projects.json` to check that the projects match, or that the differences
-    were intended. Test the `projects_upload.py` script with your updated project
+    were intended. Test the `micall/utils/projects_upload.py` script with your updated project
     files in your local test QAI.
 5. Check the history of the HIV and HCV rules files in the `micall/resistance`
     folder. If they have changed, create a new display file in the `docs` folder
@@ -192,13 +192,13 @@ similar steps to setting up a development workstation. Follow these steps:
     ids of the new apps.
 8. Process all the samples from test_samples.csv on the Kive test server, and
     run the micall_watcher service on a VirtualBox. Use the
-    `release_test_*.py` scripts to compare the results of the new release with
+    `micall/utils/release_test_*.py` scripts to compare the results of the new release with
     the previous version. Also run the internal scripts `miseq_gen_results.rb`
     and `miseq_compare_results.rb` to look for differences. Get the comparison
     signed off to begin the release process.
 8. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
-8. Upload the pipeline definitions to QAI, using the `projects_upload.py`
+8. Upload the pipeline definitions to QAI, using the `micall/utils/projects_upload.py`
     script. There is no need to create the new pipeline version in QAI beforehand,
     the script will do this for you - just remember to update the `Order by` field
     afterwards.
@@ -216,7 +216,7 @@ similar steps to setting up a development workstation. Follow these steps:
         git fetch
         git checkout tags/vX.Y
 
-10. Look for changes in [`micall_watcher.py`'s `parse_args()` function][parse_args].
+10. Look for changes in [`micall/monitor/micall_watcher.py`'s `parse_args()` function][parse_args].
     Either look at the blame annotations at the link above, or review the
     changes in the new release. If there are new or changed settings, adjust
     the configuration in `/etc/systemd/system/micall_watcher.service` or
@@ -247,7 +247,7 @@ similar steps to setting up a development workstation. Follow these steps:
     a new Docker image from GitHub. Tag it with the release number.
 
         cd /media/sf_micall
-        sudo python3 docker_build.py -t vX.Y --nopush
+        sudo python3 micall/utils/docker_build.py -t vX.Y --nopush
 
     The script is able to push the docker image to the illumina repo and launch 
     spacedock as well, but that is currently broken because of the old docker version 
@@ -300,7 +300,7 @@ similar steps to setting up a development workstation. Follow these steps:
     Zenodo version.
 
 [release]: https://help.github.com/categories/85/articles
-[parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall_watcher.py
+[parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall/monitor/micall_watcher.py
 [Zenodo]: https://doi.org/10.5281/zenodo.2644171
 [can't log in]: https://www.docker.com/blog/registry-v1-api-deprecation/
 [docker hub]: https://hub.docker.com/orgs/cfelab/members

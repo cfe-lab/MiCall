@@ -627,7 +627,7 @@ def main():
                         type=Path,
                         help='Singularity image to run tests in.')
     args = parser.parse_args()
-    source_path: Path = Path(__file__).parent / 'micall' / 'tests' / 'microtest'
+    source_path: Path = Path(__file__).parent.parent / 'tests' / 'microtest'
     if args.sandbox is None:
         sandbox_path = source_path
         shutil.rmtree(source_path / 'scratch', ignore_errors=True)

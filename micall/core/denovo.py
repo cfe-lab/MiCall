@@ -15,10 +15,9 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from micall.utils.fasta_to_csv import run, DEFAULT_DATABASE, genotype
+from micall.utils.fasta_to_csv import run, genotype
 import micall.core.contig_stitcher as stitcher
 
-assert DEFAULT_DATABASE
 assert genotype is not None
 
 IVA = "iva"

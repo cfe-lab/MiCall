@@ -2,13 +2,16 @@ import argparse
 import logging
 import os
 import typing
-from typing import Optional, TextIO, Iterable, Dict, cast, Sequence
+from typing import Optional, TextIO, Iterable, Dict, cast, Sequence, Iterator
 from collections import Counter
 from csv import DictWriter, DictReader
 from itertools import groupby
 from operator import itemgetter
+from pathlib import Path
+import contextlib
 
 from io import StringIO
+import importlib.resources as resources
 
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -17,7 +20,44 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.contig_stitcher_contigs import GenotypedContig
 
 
-DEFAULT_DATABASE = os.path.join(os.path.dirname(__file__), '..', 'blast_db', 'refs.fasta')
+@contextlib.contextmanager
+def reference_dir() -> Iterator[Path]:
+    """
+    A context manager handling reference sequences paths packaged with MiCall.
+
+    The complexity of the function arises from the need to maintain compatibility with
+    multiple python versions due to changes in APIs of the `importlib.resources` package.
+
+    It first tries to fetch the resource using `resources.files` function introduced in
+    Python 3.9. If it fails, it falls back on `resources.path`.
+    It further ensures that the obtained resource is returned
+    as a Path instance regardless of it being a string, Path, or contextlib context-manager instance.
+
+    Note: `resources.path` is set to be deprecated in future Python versions, hence the
+    intended primary method is using `resources.files`.
+
+    Yields:
+        Path: A path-like object pointing to the reference directory within 'micall'.
+    """
+
+    try:
+        ret = resources.as_file(resources.files('micall').joinpath('blast_db'))  # type: ignore
+    except AttributeError:
+        ret = resources.path('micall', 'blast_db')  # type: ignore
+
+    if isinstance(ret, str):
+        yield Path(ret)
+    elif isinstance(ret, Path):
+        yield ret
+    else:
+        with ret as path:
+            yield path
+
+
+@contextlib.contextmanager
+def default_database() -> Iterator[str]:
+    with reference_dir() as blast_db:
+        yield str(blast_db / "refs.fasta")
 
 
 def read_assembled_contigs(group_refs: Dict[str, str],
@@ -94,14 +134,14 @@ def write_unstitched_contigs(writer: DictWriter,
                              contig=contig.seq))
 
 
-def genotype(fasta: str, db: str = DEFAULT_DATABASE,
+def genotype(fasta: str, db: Optional[str] = None,
              blast_csv: Optional[TextIO] = None,
              group_refs: Optional[Dict[str, str]] = None) -> Dict[str, typing.Tuple[str, float]]:
     """Use Blastn to search for the genotype of a set of reference sequences.
 
     Args:
         fasta (str): File path of the FASTA file containing the query sequences.
-        db (str): File path of the database to search for matches.
+        db (Optional[str]): File path of the database to search for matches.
         blast_csv (Optional[TextIO]): Open file to write the blast matches to, or None.
         group_refs (Optional[Dict[str, str]]): Dictionary to fill with the mapping from
            each contig's reference name to the best matched reference for the whole seed group.
@@ -125,16 +165,26 @@ def genotype(fasta: str, db: str = DEFAULT_DATABASE,
                      'qend',
                      'sstart',
                      'send']
-    cline = NcbiblastnCommandline(query=fasta,
-                                  db=db,
-                                  outfmt=f'"10 {" ".join(blast_columns)}"',
-                                  evalue=0.0001,
-                                  gapopen=5,
-                                  gapextend=2,
-                                  penalty=-3,
-                                  reward=1,
-                                  max_target_seqs=5000)
-    stdout, _ = cline()
+
+    def invoke_blast(db: str) -> str:
+        cline = NcbiblastnCommandline(query=fasta,
+                                      db=db,
+                                      outfmt=f'"10 {" ".join(blast_columns)}"',
+                                      evalue=0.0001,
+                                      gapopen=5,
+                                      gapextend=2,
+                                      penalty=-3,
+                                      reward=1,
+                                      max_target_seqs=5000)
+        stdout, _ = cline()
+        return stdout
+
+    if db is None:
+        with default_database() as db:
+            stdout = invoke_blast(db)
+    else:
+        stdout = invoke_blast(db)
+
     samples = {}  # {query_name: (subject_name, matched_fraction)}
     matches = sorted(DictReader(StringIO(stdout), blast_columns),
                      key=lambda row: (row['qaccver'], float(row['score'])))

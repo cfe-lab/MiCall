@@ -3,6 +3,7 @@ import os
 import sys
 import re
 from subprocess import CalledProcessError
+from pathlib import Path
 
 
 class AssetWrapper(object):
@@ -10,10 +11,10 @@ class AssetWrapper(object):
     def __init__(self, path, **kwargs):
         # noinspection PyArgumentList
         super(AssetWrapper, self).__init__(**kwargs)
-        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        local_path = os.path.join(app_dir, path)
-        if os.path.exists(local_path):
-            self.path = local_path
+        app_dir = Path(__file__).parent.parent / "assets"
+        local_path = app_dir / path
+        if local_path.exists():
+            self.path = str(local_path)
         else:
             self.path = os.path.join(getattr(sys, '_MEIPASS', ''), path)
 

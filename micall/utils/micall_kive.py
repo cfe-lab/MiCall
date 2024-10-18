@@ -1,3 +1,10 @@
+#! /usr/bin/env python
+
+"""
+Entry script that serves as an entry point of MiCall's Singularity image.
+This file is run by Kive.
+"""
+
 import logging
 import shutil
 import tarfile
@@ -164,4 +171,5 @@ def main():
             tar.add(image_path, archive_path)
 
 
-main()
+if __name__ == '__main__':
+    main()
