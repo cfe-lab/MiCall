@@ -89,11 +89,10 @@ RUN apt-get install -q -y libcairo2-dev
 COPY . /opt/micall/
 
 RUN pip install --upgrade pip
-RUN pip install /opt/micall
+RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 
 ## Trigger matplotlib to build its font cache
-RUN pip install /opt/micall[basespace]
 RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 WORKDIR /data
