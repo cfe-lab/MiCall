@@ -60,8 +60,6 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "flake8==7.0.0",
-    "Flake8-pyproject==1.2.3",
     "ruff==0.7.0",
     "mypy==1.10.0",
     "mypy-extensions==1.0.0",
