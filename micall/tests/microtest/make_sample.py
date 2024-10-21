@@ -106,6 +106,14 @@ def main():
                                            315,
                                            20,
                                            (CodonMutation(207, 'TCT'),)))),
+                   # FastqFile('2060A-V3LOOP_S8_L001_R1_001.fastq',
+                   #           '02060',
+                   #           False,
+                   #           [FastqSection('HIV1-B-FR-K03455-seed', 7106, 7169, 10)]),
+                   # FastqFile('2060A-V3LOOP_S8_L001_R2_001.fastq',
+                   #           '02060',
+                   #           True,
+                   #           [FastqSection('HIV1-B-FR-K03455-seed', 7160, 7217, 10)]),
                    FastqFile('2070A-PR_S9_L001_R1_001.fastq',
                              '2070',
                              False,
@@ -268,6 +276,8 @@ def main():
                              True,
                              sections_2210_2)]
     for fastq_file in fastq_files:
+        # if not fastq_file.name.startswith('2060'):
+        #     continue
         with open(fastq_file.name, 'w') as f:
             next_cluster = 1
             for section in fastq_file.sections:

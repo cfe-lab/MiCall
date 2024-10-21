@@ -44,8 +44,9 @@ Individual files are described after the list of steps.
   * in - fastq1
   * in - fastq2
   * in - merged_contigs.csv
-  * contigs.csv - the assembled contigs, plus any merged contigs, including
+  * unstitched_contigs.csv - the assembled contigs, plus any merged contigs, including
     the best blast results
+  * contigs.csv - stitched version of `unstitched_contigs`
   * blast.csv - multiple blast results for each contig
 * `remap`: iteratively use consensus from previous mapping as reference to try
     and map more reads. See [remap design] for more details. (The denovo version
@@ -58,6 +59,8 @@ Individual files are described after the list of steps.
     each stage.
   * remap_conseq.csv - downloaded - consensus sequence that reads were mapped to
     on the final iteration
+  * unstitched_conseq.csv - downloaded - consensus sequence that reads were
+    mapped to the unstitched contigs.
   * unmapped1.fastq - FASTQ format (unstructured text) reads that didn't map to
     any of the final references.
   * unmapped2.fastq - FASTQ 
@@ -178,7 +181,7 @@ Individual files are described after the list of steps.
   * remap - mapped to other references after remapping
   * aligned - aligned with a reference and merged with mate
 * conseq.csv
-  * region - seed region it mapped to
+  * region - the name of the contig. Includes the name of the reference seed, plus an optional prefix, which is a number that makes the name unique.
   * q-cutoff - minimum quality score
   * consensus-percent-cutoff - to be included in a mixture, a variant must make
     up at least this fraction of the total valid counts
@@ -215,11 +218,15 @@ Individual files are described after the list of steps.
   * pos - 1-based position in the consensus sequence that this insertion follows
   * insert - the nucleotide sequence that was inserted
   * qual - the Phred quality scores for the inserted sequence
-* contigs.csv
-  * genotype - the reference name with the best BLAST result
+* unstitched_contigs.csv
+  * ref - the reference name with the best BLAST result
   * match - the fraction of the contig that matched in BLAST, negative for
     reverse-complemented matches
+  * group_ref - the reference name chosen to best match all of
+    the contigs in a sample
   * contig - the nucleotide sequence of the assembled contig
+* contigs.csv
+  Same as `unstitched_contigs.csv`, but contigs are stitched by `micall/core/contig_stitcher.py`.
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed
@@ -343,6 +350,16 @@ Individual files are described after the list of steps.
 * remap_conseq.csv
   * region - the region mapped to
   * sequence - the consensus sequence used
+* unstitched_conseq.csv
+  * region - the region mapped to
+  * sequence - the consensus sequence used
+* unstitched_cascade.csv - number of read pairs that flow through the pipeline steps
+  * demultiplexed - count from the raw FASTQ
+  * v3loop - aligned with V3LOOP
+  * g2p - valid reads to count in G2P
+  * prelim_map - mapped to other references on first pass
+  * remap - mapped to other references after remapping
+  * aligned - aligned with a reference and merged with mate
 * resistance.csv
   * region - the region code, like PR or RT
   * drug_class - the drug class code from the HIVdb rules, like NRTI

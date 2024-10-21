@@ -23,7 +23,7 @@ from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, 
     trim_run_name, compress_old_versions
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.monitor.find_groups import SampleGroup
-from micall_watcher import parse_args
+from micall.monitor.micall_watcher import parse_args
 
 
 class DummyDataset:
@@ -1759,13 +1759,13 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
               argument_name='sample_info_csv'),
          dict(dataset='/datasets/111/',
               argument_type='O',
-              argument_name='contigs_csv'),
+              argument_name='unstitched_contigs_csv'),
          dict(dataset='/datasets/112/',
               argument_type='O',
-              argument_name='conseq_csv'),
+              argument_name='unstitched_conseq_csv'),
          dict(dataset='/datasets/113/',
               argument_type='O',
-              argument_name='cascade_csv')]]  # run datasets
+              argument_name='unstitched_cascade_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/110/', id=110),
         dict(url='/datasets/111/', id=111),
@@ -1784,7 +1784,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
                        dataset='/datasets/112/'),
                   dict(argument='/containerargs/106',
                        dataset='/datasets/113/')],
-        name='Proviral HIVSeqinR on 2120A',
+        name='Proviral on 2120A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
 
@@ -3007,7 +3007,7 @@ def test_collate_denovo_results(raw_data_with_two_samples, default_config, mock_
 
     expected_cascade_path = version_folder / "denovo" / "cascade.csv"
     expected_done_path = version_folder / "denovo" / "doneprocessing"
-    proviral_path = version_folder / "denovo" / "hivseqinr_results"
+    proviral_path = version_folder / "denovo" / "detailed_results"
 
     main_scratch_path = version_folder / "scratch"
     main_scratch_path.mkdir()
@@ -3160,3 +3160,40 @@ E22222,10,20,30
     KiveWatcher.extract_csv(source2, target, 'ignored', source_count=1)
 
     assert target.getvalue() == expected_target
+
+def test_launch_main_good_pipeline_id(mock_open_kive, default_config):
+    _mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.app_urls = {
+        default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
+    kive_watcher.app_args = {
+        default_config.micall_filter_quality_pipeline_id: dict(
+            quality_csv='/containerargs/103')}
+
+    inputs = {'quality_csv': {'url': '/datasets/104', 'id': 104}}
+    run_batch = {'url': '/batches/101'}
+    kive_watcher.find_or_launch_run(pipeline_id=42,
+                                    inputs=inputs,
+                                    run_name='MiCall filter quality on 140101_M01234',
+                                    run_batch=run_batch)
+
+def test_launch_main_bad_pipeline_id(mock_open_kive, default_config):
+    _mock_session = mock_open_kive.return_value
+    kive_watcher = KiveWatcher(default_config)
+    kive_watcher.app_urls = {
+        default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
+    kive_watcher.app_args = {
+        default_config.micall_filter_quality_pipeline_id: dict(
+            quality_csv='/containerargs/103')}
+
+    inputs = {'quality_csv': {'bad_argument': 777, 'id': 104}}
+    run_batch = {'url': '/batches/101'}
+    pipeline_id = 42
+    expected_msg = f'The specified app with id {pipeline_id}' \
+                    ' appears to expect a different set of inputs'
+
+    with pytest.raises(ValueError, match=expected_msg) as _excinfo:
+        kive_watcher.find_or_launch_run(pipeline_id=pipeline_id,
+                                        inputs=inputs,
+                                        run_name='MiCall filter quality on 140101_M01234',
+                                        run_batch=run_batch)

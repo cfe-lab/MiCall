@@ -11,9 +11,13 @@
       link: /design/remap.html
     - name: De Novo Assembly
       link: /design/assembly.html
+    - name: Contig stitcher
+      link: /design/stitcher.html
     - name: Resistance
       link: /design/resistance.html
     - name: Genome Coverage
       link: /genome_coverage.html
+- name: MiCall at BC CfE
+  link: /micall_at_bccfe.html
 - name: GitHub
   link: https://github.com/cfe-lab/MiCall

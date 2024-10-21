@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: centos:7
+From: python:3.8
 
 %help
     MiCall maps all the reads from a sample against a set of reference
@@ -9,7 +9,8 @@ From: centos:7
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Fix alignment bugs, and updated to HIVdb 9.4.
+    Change Notes: Comprehensive updates to the contig stitcher,
+    including bug fixes and visualization enhancements.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
@@ -27,74 +28,42 @@ From: centos:7
     # Unneeded once Singularity creates parent dirs:
     # https://github.com/singularityware/singularity/issues/1549
     mkdir ${SINGULARITY_ROOTFS}/opt/micall
-    mkdir ${SINGULARITY_ROOTFS}/opt/micall/micall
 
 %files
-    ## MiCall
-    micall_docker.py /opt/micall/
-    micall_kive.py /opt/micall/
-    micall_kive_resistance.py /opt/micall/
-    micall/__init__.py /opt/micall/micall/
-    micall/project* /opt/micall/micall/
-
-    micall/core    /opt/micall/micall/core
-    micall/data    /opt/micall/micall/data
-    micall/drivers    /opt/micall/micall/drivers
-    micall/g2p     /opt/micall/micall/g2p
-    micall/resistance   /opt/micall/micall/resistance
-    micall/monitor /opt/micall/micall/monitor
-    micall/utils   /opt/micall/micall/utils
-
-    requirements.txt /opt/micall/
-    requirements-basespace.txt /opt/micall/
-
-    ## HCV genotyping database
-    micall/blast_db /opt/micall/micall/blast_db
+    ## These files will be deleted after the install.
+    . /opt/micall/
 
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
-    yum update -q -y
+    apt-get update -q
+    apt-get install -q -y unzip wget
 
-    yum groupinstall -q -y 'development tools'
-    yum install -q -y epel-release
-    yum install -q -y unzip wget fontconfig bzip2-devel xz-devel openssl-devel \
-        libffi-devel sqlite-devel
-
-    echo ===== Installing Python ===== >/dev/null
-    wget -q https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz
-    tar xJf Python*
-    rm Python*.xz
-    cd Python*
-    ./configure --enable-optimizations
-    make altinstall
-    cd ..
-    rm -rf Python*
-    ln -s /usr/local/bin/python3.8 /usr/local/bin/python3
+    echo ===== Saving git version ===== >/dev/null
+    # Git is expected to be already installed.
+    mkdir -p /etc/micall
+    git -C /opt/micall/ rev-parse HEAD > /etc/micall/git-version
+    git -C /opt/micall/ -c 'core.fileMode=false' describe --tags --dirty 1>&2 > /etc/micall/git-describe || true
+    git -C /opt/micall/ log -n 10 > /etc/micall/git-log
 
     echo ===== Installing blast ===== >/dev/null
-    cd /root
-    # Saved our own copy, because download was slow from ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-1.x86_64.rpm
-    wget -q https://github.com/cfe-lab/MiCall/releases/download/v7.12.dev28/ncbi-blast-2.6.0+-1.x86_64.rpm
-    yum install -q -y ncbi-blast-2.6.0+-1.x86_64.rpm
-    rm ncbi-blast-2.6.0+-1.x86_64.rpm
-    python3 /opt/micall/micall/blast_db/make_blast_db.py
+    apt-get install -q -y ncbi-blast+
 
     echo ===== Installing Rust and merge-mates ===== >/dev/null
-    yum install -q -y rust cargo
+    wget -qO rustup.sh https://sh.rustup.rs
+    chmod +x /rustup.sh
+    /rustup.sh -y -q
+    . /root/.cargo/env
+    rm rustup.sh
     cargo install --quiet --root / --git https://github.com/jeff-k/merge-mates.git --rev 2fec61363f645e2008a4adff553d098beae21469
-
-    ## Miniconda (Python 2) (Don't use this)
-    #wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-    #bash miniconda.sh -b -p /opt/miniconda
 
     echo ===== Installing bowtie2 ===== >/dev/null
     wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip
-    unzip -qq bowtie2.zip -d /opt/
+    unzip bowtie2.zip -d /opt/
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
 
     echo ===== Installing IVA dependencies ===== >/dev/null
-    yum install -q -y tcsh ncurses-devel zlib-devel
+    apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev
     cd /bin
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
@@ -123,38 +92,24 @@ From: centos:7
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
     echo ===== Installing Python packages ===== >/dev/null
-    # Also trigger matplotlib to build its font cache.
-    wget -q https://bootstrap.pypa.io/get-pip.py
-    python3 get-pip.py
-    rm get-pip.py
-    cd /opt
-    pip install --quiet -r /opt/micall/requirements.txt
-    ln -s /usr/local/bin/cutadapt /usr/local/bin/cutadapt-1.11
-    python3 -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-
     # Install dependencies for genetracks/drawsvg
-    yum install -q -y cairo-devel cairo cairo-tools zlib-devel
+    apt-get install -q -y libcairo2-dev
+    # Install micall main executable.
+    pip install --upgrade pip
+    pip install /opt/micall
+    micall make_blast_db
+    # Also trigger matplotlib to build its font cache.
+    python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
-    yum groupremove -q -y 'development tools'
-    yum remove -q -y epel-release wget unzip
-    yum autoremove -q -y
-    yum clean all
-
-    rm -rf /var/cache/yum
-
-    ## CAUTION! This changes the default python command to python3!
-    ## This breaks many things, including yum!
-    ## To switch back to python2, use this command:
-    # sudo alternatives --set python /usr/bin/python2
-    alternatives --install /usr/bin/python python /usr/bin/python2 50
-    alternatives --install /usr/bin/python python /usr/local/bin/python3 60
+    # Cleanup.
+    rm -rf /opt/micall
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
-    python /opt/micall/micall_kive.py "$@"
+    micall micall_kive "$@"
 
 %apphelp filter_quality
     Post-processing of short-read alignments.
@@ -166,7 +121,7 @@ From: centos:7
     KIVE_MEMORY 200
 
 %apprun filter_quality
-    PYTHONPATH=/opt/micall python -m micall.core.filter_quality "$@"
+    micall filter_quality "$@"
 
 %apphelp resistance
     Combine HCV results with HCV-Midi results, and generate resistance
@@ -180,10 +135,10 @@ From: centos:7
     KIVE_MEMORY 200
 
 %apprun resistance
-    python /opt/micall/micall_kive_resistance.py "$@"
+    micall micall_kive_resistance "$@"
 
 %apprun denovo
-    python /opt/micall/micall_kive.py --denovo "$@"
+    micall micall_kive --denovo "$@"
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
@@ -192,7 +147,8 @@ From: centos:7
         failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
-        genome_coverage_csv genome_coverage_svg genome_concordance_svg contigs_csv \
+        genome_coverage_csv genome_coverage_svg genome_concordance_svg \
+        unstitched_cascade_csv unstitched_conseq_csv unstitched_contigs_csv contigs_csv \
         read_entropy_csv conseq_region_csv conseq_stitched_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000

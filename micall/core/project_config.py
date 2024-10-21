@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Dict, List
 
 G2P_SEED_NAME = "HIV1-CON-XX-Consensus-seed"
 
@@ -53,7 +54,7 @@ class ProjectConfig(object):
         if excluded_seeds:
             seed_region_set.difference_update(excluded_seeds)
         seed_region_list = list(seed_region_set)
-        seed_name_map = {}  # {sequence: name}
+        seed_name_map: Dict[str, str] = {}  # {sequence: name}
         seed_region_list.sort()
         for name in seed_region_list:
             region = self.config['regions'][name]
@@ -157,7 +158,7 @@ class ProjectConfig(object):
         project_names = set(self.config['projects'])
         if excluded_projects is not None:
             project_names.difference_update(excluded_projects)
-        project_names = sorted(project_names)
+        project_names: List[str] = sorted(project_names) # type: ignore[no-redef]
         for project_name in project_names:
             project = self.config['projects'][project_name]
             for region in project['regions']:

@@ -1,11 +1,11 @@
-import typing
+from typing import Dict, List, Optional, Iterable, Set
 from dataclasses import dataclass, replace
-from enum import IntEnum
 from itertools import count
 from operator import attrgetter
 import csv
 import os
 import logging
+from aligntools import CigarActions
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -22,12 +22,6 @@ MINIMUM_READING_FRAME_SHIFT = 30
 MINIMUM_AMINO_ALIGNMENT = 10
 # Most codons in an insertion or deletion that is still aligned in amino acids.
 MAXIMUM_AMINO_GAP = 10
-
-# Mapping as defined in https://samtools.github.io/hts-specs/SAMv1.pdf, page 8
-CigarActions = IntEnum(
-    'CigarActions',
-    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED PADDING SEQ_MATCH MISMATCH',
-    start=0)
 
 
 def align_aminos(reference: str,
@@ -91,7 +85,7 @@ class AlignmentWrapper(Alignment):
                 q_st=0,
                 q_en=0,
                 mapq=0,
-                cigar: typing.Iterable[typing.List[int]] = tuple(),
+                cigar: Iterable[List[int]] = tuple(),
                 is_primary=True,
                 mlen=0,
                 blen=0,
@@ -179,14 +173,14 @@ class ConsensusAligner:
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
         self.consensus_offset = 0
-        self.alignments: typing.List[Alignment] = []
-        self.reading_frames: typing.List[typing.List[SeedAmino]] = []
-        self.seed_nucs: typing.List[SeedNucleotide] = []
-        self.amino_alignments: typing.List[AminoAlignment] = []
+        self.alignments: List[Alignment] = []
+        self.reading_frames: Dict[int, List[SeedAmino]] = {}
+        self.seed_nucs: List[SeedNucleotide] = []
+        self.amino_alignments: List[AminoAlignment] = []
         self.contig_name = contig_name
 
         # consensus nucleotide positions that were inserts
-        self.inserts: typing.Set[int] = set()
+        self.inserts: Set[int] = set()
 
         if alignments_file is not None:
             self.alignments_writer = self._create_alignments_writer(alignments_file)
@@ -248,11 +242,9 @@ class ConsensusAligner:
         return writer
 
     def start_contig(self,
-                     coordinate_name: str = None,
-                     consensus: str = None,
-                     reading_frames: typing.Dict[
-                         int,
-                         typing.List[SeedAmino]] = None):
+                     coordinate_name: Optional[str] = None,
+                     consensus: Optional[str] = None,
+                     reading_frames: Optional[Dict[int, List[SeedAmino]]] = None):
         self.clear()
 
         if consensus:
@@ -301,7 +293,7 @@ class ConsensusAligner:
                        "cigar_str": alignment.cigar_str}
                 self.overall_alignments_writer.writerow(row)
 
-    def align_gotoh(self, coordinate_seq, consensus):
+    def align_gotoh(self, coordinate_seq: str, consensus: str):
         gap_open_penalty = 15
         gap_extend_penalty = 3
         use_terminal_gap_penalty = 1
@@ -313,12 +305,12 @@ class ConsensusAligner:
             use_terminal_gap_penalty)
         if min(len(coordinate_seq), len(consensus)) < score:
             ref_start = len(aligned_consensus) - len(aligned_consensus.lstrip('-'))
-            aligned_consensus: str = aligned_consensus[ref_start:]
-            aligned_coordinate: str = aligned_coordinate[ref_start:]
+            aligned_consensus: str = aligned_consensus[ref_start:] # type: ignore[no-redef]
+            aligned_coordinate: str = aligned_coordinate[ref_start:] # type: ignore[no-redef]
             aligned_consensus = aligned_consensus.rstrip('-')
             ref_index = ref_start
             consensus_index = 0
-            cigar = []
+            cigar: List[List[int]] = []
             for ref_nuc, nuc in zip(aligned_coordinate, aligned_consensus):
                 expected_nuc = consensus[consensus_index]
                 ref_index += 1
@@ -346,9 +338,9 @@ class ConsensusAligner:
     def find_amino_alignments(self,
                               start_pos: int,
                               end_pos: int,
-                              repeat_pos: typing.Optional[int],
-                              skip_pos: typing.Optional[int],
-                              amino_ref: str):
+                              repeat_pos: Optional[int],
+                              skip_pos: Optional[int],
+                              amino_ref: Optional[str]):
         translations = {
             reading_frame: translate(
                 '-'*(reading_frame + self.consensus_offset) +
@@ -527,11 +519,11 @@ class ConsensusAligner:
             self,
             start_pos: int,
             end_pos: int,
-            report_nucleotides: typing.List[ReportNucleotide],
-            report_aminos: typing.List[ReportAmino] = None,
-            repeat_position: int = None,
-            skip_position: int = None,
-            amino_ref: str = None):
+            report_nucleotides: List[ReportNucleotide],
+            report_aminos: Optional[List[ReportAmino]] = None,
+            repeat_position: Optional[int] = None,
+            skip_position: Optional[int] = None,
+            amino_ref: Optional[str] = None):
         """ Add read counts to report counts for a section of the reference.
 
         :param start_pos: 1-based position of first nucleotide to report in
@@ -565,7 +557,7 @@ class ConsensusAligner:
             self.build_nucleotide_report(start_pos,
                                          end_pos,
                                          report_nucleotides)
-        else:
+        elif amino_ref is not None:
             report_aminos.extend(ReportAmino(SeedAmino(None), i + 1)
                                  for i in range(len(amino_ref)))
             self.build_amino_report(start_pos,
@@ -593,13 +585,13 @@ class ConsensusAligner:
     def build_amino_report(self,
                            start_pos: int,
                            end_pos: int,
-                           report_nucleotides: typing.List[ReportNucleotide],
-                           report_aminos: typing.List[ReportAmino] = None,
-                           repeat_position: int = None,
-                           skip_position: int = None,
-                           amino_ref: str = None):
+                           report_nucleotides: List[ReportNucleotide],
+                           report_aminos: Optional[List[ReportAmino]] = None,
+                           repeat_position: Optional[int] = None,
+                           skip_position: Optional[int] = None,
+                           amino_ref: Optional[str] = None):
         """ Add read counts to report counts for a section of the reference.
-        
+
         Used for regions that translate to amino acids.
 
         :param start_pos: 1-based position of first nucleotide to report in
@@ -657,13 +649,13 @@ class ConsensusAligner:
 
     @staticmethod
     def update_report_amino(coord_index: int,
-                            report_aminos: typing.List[ReportAmino],
-                            report_nucleotides: typing.List[ReportNucleotide],
+                            report_aminos: List[ReportAmino],
+                            report_nucleotides: List[ReportNucleotide],
                             seed_amino: SeedAmino,
                             start_pos: int,
-                            repeat_position: int = None,
-                            skip_position: int = None,
-                            skipped_nuc=None):
+                            repeat_position: Optional[int] = None,
+                            skip_position: Optional[int] = None,
+                            skipped_nuc: Optional[SeedAmino] =None):
         report_amino = report_aminos[coord_index]
         report_amino.seed_amino.add(seed_amino)
         ref_nuc_pos = coord_index * 3 + start_pos
@@ -848,7 +840,7 @@ class ConsensusAligner:
     def build_nucleotide_report(self,
                                 start_pos: int,
                                 end_pos: int,
-                                report_nucleotides: typing.List[ReportNucleotide]):
+                                report_nucleotides: List[ReportNucleotide]):
         """ Add read counts to report counts for a section of the reference.
 
         Used for regions that don't translate to amino acids.
@@ -921,14 +913,14 @@ class ConsensusAligner:
                 continue
             self.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, start_pos, end_pos)
 
-    def coord_concordance(self, half_window_size=10):
+    def coord_concordance(self, half_window_size: int = 10) -> List[float]:
         coord_alignments = self.alignments
         try:
             coord_ref = self.projects.getGenotypeReference(self.coordinate_name)
         except KeyError:
             coord_ref = self.projects.getReference(self.coordinate_name)
         query_matches = [0] * len(self.consensus)
-        concordance_list: typing.List[typing.Any] = [None] * len(self.consensus)
+        concordance_list: List[float] = [0] * len(self.consensus)
 
         for alignment in coord_alignments:
             ref_progress = alignment.r_st
@@ -1019,11 +1011,11 @@ class AminoAlignment:
     ref_end: int
     action: CigarActions
     reading_frame: int
-    query: str = None  # Amino sequence
-    ref: str = None  # Amino sequence
-    aligned_query: str = None
-    aligned_ref: str = None
-    ref_amino_start: int = None
+    query: Optional[str] = None  # Amino sequence
+    ref: Optional[str] = None  # Amino sequence
+    aligned_query: Optional[str] = None
+    aligned_ref: Optional[str] = None
+    ref_amino_start: Optional[int] = None
 
     def has_overlap(self, start_pos: int, end_pos: int) -> bool:
         before_end = self.ref_start < end_pos
@@ -1073,8 +1065,15 @@ class AminoAlignment:
     def amino_size(self):
         return (self.size + 2) // 3
 
-    def map_amino_sequences(self) -> typing.Dict[int, int]:
+    def map_amino_sequences(self) -> Dict[int, int]:
         """ Map reference amino indexes to query amino indexes. """
+
+        assert self.aligned_ref is not None, "For this operation, aligned_ref must not be None"
+        assert self.aligned_query is not None, "For this operation, aligned_query must not be None"
+        assert self.query is not None, "For this operation, query must not be None"
+        assert self.ref is not None, "For this operation, ref must not be None"
+        assert self.ref_amino_start is not None, "For this operation, ref_amino_start must not be None"
+
         seq_map = {}
         query_offset = (self.query_start + self.reading_frame) // 3
         ref_index = query_index = 0

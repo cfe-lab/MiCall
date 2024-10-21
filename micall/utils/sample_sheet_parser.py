@@ -179,9 +179,12 @@ def sample_sheet_parser(handle):
                         samp, proj, val = None, None, None
                         if sample_sheet_version == 1:
                             sj, val = elem.split(':')
-                            samp, proj = sj.split(project_delimiter_v1)
+                            components = sj.split(project_delimiter_v1)
+                            samp, proj = (project_delimiter_v1.join(components[:-1]), components[-1])
                         elif sample_sheet_version == 2:
-                            samp, proj, val = elem.split(project_delimiter_v2)
+                            components = elem.split(project_delimiter_v2)
+                            samp, proj, val = (project_delimiter_v2.join(components[:-2]),
+                                               components[-2], components[-1])
 
                         if samp == entry['sample'] and proj == entry['project']:
                             if name == 'Research':

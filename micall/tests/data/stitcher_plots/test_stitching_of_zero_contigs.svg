@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="25.0" viewBox="0.0 -25.0 970.0 25.0">
+<defs>
+</defs>
+<g transform="translate(0.0 -10.0)">
+<rect x="0.0" y="-10" width="646.6666666666666" height="10" fill="none" stroke="none" />
+<g transform="translate(323.3333333333333 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">.</text>
+</g>
+</g>
+<g transform="translate(0.0 -10.0)">
+<rect x="0.0" y="10" width="970.0" height="-10" fill="none" stroke="none" />
+<g transform="translate(485.0 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">No contigs found.</text>
+</g>
+</g>
+</svg>

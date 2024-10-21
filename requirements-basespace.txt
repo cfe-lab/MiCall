@@ -1,3 +1,0 @@
-# Requirements for running the micall_basespace.py script
--r requirements.txt
-requests==2.31.0

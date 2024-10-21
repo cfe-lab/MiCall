@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="969.9999999999999" height="235.6" viewBox="0.0 -235.6 969.9999999999999 235.6">
+<defs>
+</defs>
+<g transform="translate(0 -220.6)">
+<g transform="translate(0.0 0)">
+<rect x="45.30593180756655" y="-10" width="906.1186361513311" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="203.8766931340495" y="-10" width="292.2232601588043" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="498.3652498832321" y="-10" width="292.22326015880435" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="226.52965903783277" y="-10" width="314.87622606258753" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="453.05931807566554" y="-10" width="314.8762260625876" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
+<g transform="translate(0.0 -222.1)">
+<rect x="498.3652498832321" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(498.3652498832321 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
+</g>
+</g>
+<g transform="translate(0 -192.1)">
+<g transform="translate(0.0 0)">
+<path d="M203.8766931340495,-20.0 L489.0999532928538,-20.0" stroke="black" />
+<circle cx="349.9883232134516" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M496.0999532928538,-20.0 L489.0999532928538,-23.5 L489.0999532928538,-16.5 L496.0999532928538,-20.0" fill="black" />
+<text x="349.9883232134516" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1.1</text>
+</g>
+<g transform="translate(0.0 0)">
+<path d="M498.3652498832321,-20.0 L783.5885100420364,-20.0" stroke="black" />
+<circle cx="644.4768799626343" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M790.5885100420364,-20.0 L783.5885100420364,-23.5 L783.5885100420364,-16.5 L790.5885100420364,-20.0" fill="black" />
+<text x="644.4768799626343" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2.2</text>
+</g>
+</g>
+<g transform="translate(0 -181.1)">
+<g transform="translate(0.0 0)">
+<path d="M203.8766931340495,9.5 L489.0999532928538,9.5" stroke="black" />
+<path d="M496.0999532928538,9.5 L489.0999532928538,6.0 L489.0999532928538,13.0 L496.0999532928538,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -161.1)">
+<g transform="translate(0.0 0)">
+<rect x="203.8766931340495" y="-10" width="22.65296590378327" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="226.52965903783277" y="-10" width="314.87622606258753" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(383.9677720691265 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1.1</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -150.1)">
+<g transform="translate(0.0 0)">
+<path d="M498.3652498832321,9.5 L783.5885100420364,9.5" stroke="black" />
+<path d="M790.5885100420364,9.5 L783.5885100420364,6.0 L783.5885100420364,13.0 L790.5885100420364,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -130.1)">
+<g transform="translate(0.0 0)">
+<rect x="767.9355441382531" y="-10" width="22.652965903783297" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="453.05931807566554" y="-10" width="314.8762260625876" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(610.4974311069593 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2.2</text>
+</g>
+</g>
+</g>
+<g transform="translate(0.0 -120.1)">
+<path d="M22.652965903783276,-0.0 L22.652965903783276,-0.0" stroke="black" />
+<path d="M22.652965903783276,-0.0 L22.652965903783276,-3.5 L22.652965903783276,3.5 L22.652965903783276,-0.0" fill="black" />
+</g>
+<g transform="translate(0 -110.0)">
+<g transform="translate(0.0 0)">
+<rect x="22.652965903783276" y="-0.1" width="18.57543204110229" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="59.803829985987846" y="-0.1" width="18.575432041102275" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="96.95469406819242" y="-0.1" width="18.57543204110229" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="134.105558150397" y="-0.1" width="18.57543204110226" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="171.25642223260158" y="-0.1" width="18.57543204110229" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="208.40728631480616" y="-0.1" width="18.57543204110226" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="245.5581503970107" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="282.7090144792153" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="319.85987856141986" y="-0.1" width="18.57543204110226" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="357.01074264362444" y="-0.1" width="18.57543204110226" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="394.161606725829" y="-0.1" width="18.57543204110226" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="431.31247080803354" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="468.4633348902381" y="-0.1" width="18.57543204110226" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="505.61419897244275" y="-0.1" width="18.575432041102204" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="542.7650630546473" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="579.9159271368518" y="-0.1" width="18.57543204110243" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="617.0667912190564" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="654.217655301261" y="-0.1" width="18.57543204110243" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="691.3685193834656" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="728.5193834656701" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="765.6702475478747" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="802.8211116300793" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="839.9719757122838" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="877.1228397944885" y="-0.1" width="18.575432041102204" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="914.273703876693" y="-0.1" width="18.575432041102204" height="0.1" fill="green" stroke="green" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="951.4245679588976" y="-0.1" width="18.575432041102317" height="0.1" fill="green" stroke="green" />
+</g>
+</g>
+<g transform="translate(0.0 -100.0)">
+<path d="M22.652965903783276,-0.0 L22.652965903783276,-0.0" stroke="black" />
+<path d="M22.652965903783276,-0.0 L22.652965903783276,-3.5 L22.652965903783276,3.5 L22.652965903783276,-0.0" fill="black" />
+</g>
+<g transform="translate(0.0 -90.0)">
+<rect x="22.652965903783276" y="0" width="0.0" height="0" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(22.652965903783276 0)">
+<text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">discards:</text>
+</g>
+</g>
+<g transform="translate(0.0 -70.0)">
+<rect x="45.30593180756655" y="-10" width="20.387669313404956" height="10" fill="yellow" stroke="yellow" />
+<g transform="translate(55.49976646426903 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1.2</text>
+</g>
+</g>
+<g transform="translate(0.0 -50.0)">
+<rect x="45.30593180756655" y="-10" width="20.387669313404956" height="10" fill="yellow" stroke="yellow" />
+<g transform="translate(55.49976646426903 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2.1</text>
+</g>
+</g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<rect x="339.7944885567492" y="-10" width="22.65296590378324" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="677.32368052312" y="-10" width="22.652965903783297" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="362.4474544605324" y="-10" width="314.87622606258753" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(519.8855674918261 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">3</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="294.48855674918264" y="-10" width="22.65296590378324" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="632.0177487155535" y="-10" width="22.652965903783297" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="317.1415226529659" y="-10" width="314.8762260625876" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(474.57963568425964 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">4</text>
+</g>
+</g>
+</g>
+</svg>

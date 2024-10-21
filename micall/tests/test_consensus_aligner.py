@@ -3,25 +3,16 @@ import typing
 import random
 from io import StringIO
 from pytest import approx
-from contextlib import contextmanager
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
-from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
+from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, AminoAlignment
+from aligntools import CigarActions
 from micall.core.project_config import ProjectConfig
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
+from micall.tests.utils import fixed_random_seed
 from micall.utils.report_amino import ReportNucleotide
-
-
-@contextmanager
-def fixed_random_seed(seed):
-    original_state = random.getstate()
-    random.seed(seed)
-    try:
-        yield
-    finally:
-        random.setstate(original_state)
 
 
 def mutate_sequence(rate, seq):
