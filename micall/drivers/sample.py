@@ -465,7 +465,7 @@ class Sample:
                            excluded_seeds=excluded_seeds)
 
         def with_prefix(path):
-            return prepend_prefix_to_basename("unstitched_", path)
+            return path and prepend_prefix_to_basename("unstitched_", path)
 
         with open(self.unstitched_contigs_csv) as contigs_csv, \
                 open(with_prefix(self.remap_csv), 'w') as remap_csv, \
@@ -483,5 +483,5 @@ class Sample:
                            unmapped1,
                            unmapped2,
                            scratch_path,
-                           debug_file_prefix=debug_file_prefix,
+                           debug_file_prefix=with_prefix(debug_file_prefix),
                            excluded_seeds=excluded_seeds)

@@ -23,7 +23,7 @@ from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, 
     trim_run_name, compress_old_versions
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.monitor.find_groups import SampleGroup
-from micall_watcher import parse_args
+from micall.monitor.micall_watcher import parse_args
 
 
 class DummyDataset:
@@ -1765,7 +1765,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
               argument_name='unstitched_conseq_csv'),
          dict(dataset='/datasets/113/',
               argument_type='O',
-              argument_name='cascade_csv')]]  # run datasets
+              argument_name='unstitched_cascade_csv')]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
         dict(url='/datasets/110/', id=110),
         dict(url='/datasets/111/', id=111),

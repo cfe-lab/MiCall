@@ -9,7 +9,8 @@ From: python:3.8
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Fix alignment bugs, and updated to HIVdb 9.4.
+    Change Notes: Comprehensive updates to the contig stitcher,
+    including bug fixes and visualization enhancements.
 
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
@@ -27,34 +28,22 @@ From: python:3.8
     # Unneeded once Singularity creates parent dirs:
     # https://github.com/singularityware/singularity/issues/1549
     mkdir ${SINGULARITY_ROOTFS}/opt/micall
-    mkdir ${SINGULARITY_ROOTFS}/opt/micall/micall
 
 %files
-    ## MiCall
-    micall_docker.py /opt/micall/
-    micall_kive.py /opt/micall/
-    micall_kive_resistance.py /opt/micall/
-    micall/__init__.py /opt/micall/micall/
-    micall/project* /opt/micall/micall/
-
-    micall/core    /opt/micall/micall/core
-    micall/data    /opt/micall/micall/data
-    micall/drivers    /opt/micall/micall/drivers
-    micall/g2p     /opt/micall/micall/g2p
-    micall/resistance   /opt/micall/micall/resistance
-    micall/monitor /opt/micall/micall/monitor
-    micall/utils   /opt/micall/micall/utils
-
-    requirements.txt /opt/micall/
-    requirements-basespace.txt /opt/micall/
-
-    ## HCV genotyping database
-    micall/blast_db /opt/micall/micall/blast_db
+    ## These files will be deleted after the install.
+    . /opt/micall/
 
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     apt-get update -q
     apt-get install -q -y unzip wget
+
+    echo ===== Saving git version ===== >/dev/null
+    # Git is expected to be already installed.
+    mkdir -p /etc/micall
+    git -C /opt/micall/ rev-parse HEAD > /etc/micall/git-version
+    git -C /opt/micall/ -c 'core.fileMode=false' describe --tags --dirty 1>&2 > /etc/micall/git-describe || true
+    git -C /opt/micall/ log -n 10 > /etc/micall/git-log
 
     echo ===== Installing blast ===== >/dev/null
     apt-get install -q -y ncbi-blast+
@@ -105,19 +94,22 @@ From: python:3.8
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
-    # Also trigger matplotlib to build its font cache.
-    cd /opt
+    # Install micall main executable.
     pip install --upgrade pip
-    pip install -r /opt/micall/requirements.txt
+    pip install /opt/micall
+    micall make_blast_db
+    # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-    python /opt/micall/micall/blast_db/make_blast_db.py
+
+    # Cleanup.
+    rm -rf /opt/micall
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
-    python /opt/micall/micall_kive.py "$@"
+    micall micall_kive "$@"
 
 %apphelp filter_quality
     Post-processing of short-read alignments.
@@ -129,7 +121,7 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun filter_quality
-    PYTHONPATH=/opt/micall python -m micall.core.filter_quality "$@"
+    micall filter_quality "$@"
 
 %apphelp resistance
     Combine HCV results with HCV-Midi results, and generate resistance
@@ -143,10 +135,10 @@ From: python:3.8
     KIVE_MEMORY 200
 
 %apprun resistance
-    python /opt/micall/micall_kive_resistance.py "$@"
+    micall micall_kive_resistance "$@"
 
 %apprun denovo
-    python /opt/micall/micall_kive.py --denovo "$@"
+    micall micall_kive --denovo "$@"
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
@@ -156,7 +148,7 @@ From: python:3.8
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg genome_concordance_svg \
-        unstitched_conseq_csv unstitched_contigs_csv contigs_csv \
+        unstitched_cascade_csv unstitched_conseq_csv unstitched_contigs_csv contigs_csv \
         read_entropy_csv conseq_region_csv conseq_stitched_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000

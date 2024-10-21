@@ -5,10 +5,11 @@ import re
 from pytest import mark
 
 from micall.core.denovo import denovo
-from micall.tests.test_fasta_to_csv import check_hcv_db  # activates the fixture
+from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
 
 # make linters not complain about unused imports.
-assert check_hcv_db
+assert check_hcv_db is not None
+assert DEFAULT_DATABASE is not None
 
 
 def normalize_fasta(content: str) -> str:

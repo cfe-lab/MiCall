@@ -465,6 +465,7 @@ class SampleRunner:
                 'genome_coverage.csv',
                 'genome_coverage.svg',
                 'genome_concordance.svg',
+                'unstitched_cascade.csv',
                 'unstitched_conseq.csv',
                 'unstitched_contigs.csv',
                 'contigs.csv',
@@ -626,7 +627,7 @@ def main():
                         type=Path,
                         help='Singularity image to run tests in.')
     args = parser.parse_args()
-    source_path: Path = Path(__file__).parent / 'micall' / 'tests' / 'microtest'
+    source_path: Path = Path(__file__).parent.parent / 'tests' / 'microtest'
     if args.sandbox is None:
         sandbox_path = source_path
         shutil.rmtree(source_path / 'scratch', ignore_errors=True)

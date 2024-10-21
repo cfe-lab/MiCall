@@ -21,7 +21,7 @@ import Levenshtein
 from micall.utils.primer_tracker import PrimerTracker
 from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
-from micall_docker import get_available_memory
+from micall.utils.micall_docker import get_available_memory
 
 MICALL_VERSION = '7.15'
 #                ^^^^^^ Version of the MiCall release being tested.
@@ -485,6 +485,8 @@ def compare_consensus(sample: Sample,
                 continue
         source_nucs = []
         target_nucs = []
+
+        # Note: if either source or target region is missing, it might be because its coverage score is below 4.
         if source_details is None:
             has_big_change = True
             target_nucs = [nuc for nuc, row in target_details]

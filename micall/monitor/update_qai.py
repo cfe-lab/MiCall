@@ -8,10 +8,11 @@ from argparse import SUPPRESS
 from collections import defaultdict
 from datetime import datetime
 import logging
+from functools import partial
 from pathlib import Path
 
 from micall.monitor.sample_watcher import PipelineType
-from operator import itemgetter
+from operator import itemgetter, getitem
 import os
 
 from micall.monitor import qai_helper
@@ -24,6 +25,7 @@ logger = logging.getLogger('update_qai')
 
 def parse_args():
     import argparse
+    pipeline_parser = partial(getitem, PipelineType)
     parser = argparse.ArgumentParser(
         description="Update the Oracle database with conseq information",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -34,7 +36,7 @@ def parse_args():
                         help='version suffix for batch names and folder names')
     parser.add_argument('--pipeline_group',
                         default=PipelineType.MAIN,
-                        type=PipelineType,
+                        type=pipeline_parser,
                         choices=(PipelineType.MAIN,
                                  PipelineType.DENOVO_MAIN,
                                  PipelineType.PROVIRAL),

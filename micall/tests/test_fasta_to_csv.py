@@ -4,12 +4,18 @@ from pathlib import Path
 from Bio import SeqIO
 import pytest
 
-from micall.utils.fasta_to_csv import DEFAULT_DATABASE, genotype, fasta_to_svg
+from micall.utils.fasta_to_csv import default_database, genotype, fasta_to_svg
 from micall.blast_db.make_blast_db import make_blast_db, DEFAULT_PROJECTS
 
 
+@pytest.fixture(scope='session')
+def DEFAULT_DATABASE():
+    with default_database() as ret:
+        yield ret
+
+
 @pytest.fixture(scope='session', name='hcv_db')
-def check_hcv_db():
+def check_hcv_db(DEFAULT_DATABASE):
     db_path = Path(DEFAULT_DATABASE)
     index_path = db_path.parent / "refs.fasta.nin"
     build_needed = not index_path.exists()
@@ -25,7 +31,7 @@ def check_hcv_db():
     return db_path
 
 
-def test_make_blast_db_excludes_hivgha(hcv_db):
+def test_make_blast_db_excludes_hivgha(hcv_db, DEFAULT_DATABASE):
     fasta_path = Path(DEFAULT_DATABASE)
     with fasta_path.open() as f:
         for reference in SeqIO.parse(f, 'fasta'):

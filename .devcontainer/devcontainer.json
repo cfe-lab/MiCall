@@ -15,7 +15,7 @@
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "python -m pip install -r requirements-dev.txt",
+  "postCreateCommand": "python -m pip install .[dev]",
 
   // Configure tool-specific properties.
   "customizations": {

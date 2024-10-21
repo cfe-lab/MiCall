@@ -1,3 +1,10 @@
+#! /usr/bin/env python
+
+"""
+Entry script that serves as an entry point of MiCall's Singularity image.
+This file is run by Kive.
+"""
+
 import logging
 import shutil
 import tarfile
@@ -80,6 +87,9 @@ def parse_args():
                         action='store_true',
                         help='Use de novo assembly instead of mapping to '
                              'reference sequences.')
+    parser.add_argument('unstitched_cascade_csv',
+                        nargs='?',
+                        help='count of reads at each step')
     parser.add_argument('unstitched_conseq_csv',
                         nargs='?',
                         help='CSV containing mapping unstitched consensus sequences')
@@ -161,4 +171,5 @@ def main():
             tar.add(image_path, archive_path)
 
 
-main()
+if __name__ == '__main__':
+    main()

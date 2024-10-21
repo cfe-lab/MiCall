@@ -5,7 +5,7 @@ from pathlib import Path
 
 from Bio.Blast.Applications import NcbiblastnCommandline
 
-from micall.utils.fasta_to_csv import DEFAULT_DATABASE
+from micall.utils.fasta_to_csv import default_database
 
 import matplotlib
 matplotlib.use('Agg')
@@ -61,16 +61,17 @@ def main():
                 print(sample_dir, contigs_fasta_paths)
                 continue
             contigs_fasta_path, = contigs_fasta_paths
-            cline = NcbiblastnCommandline(query=str(contigs_fasta_path),
-                                          db=DEFAULT_DATABASE,
-                                          outfmt=blast_format,
-                                          evalue=0.0001,
-                                          gapopen=5,
-                                          gapextend=2,
-                                          penalty=-3,
-                                          reward=1,
-                                          max_target_seqs=5000)
-            stdout, _ = cline(stderr=False)
+            with default_database() as DEFAULT_DATABASE:
+                cline = NcbiblastnCommandline(query=str(contigs_fasta_path),
+                                              db=DEFAULT_DATABASE,
+                                              outfmt=blast_format,
+                                              evalue=0.0001,
+                                              gapopen=5,
+                                              gapextend=2,
+                                              penalty=-3,
+                                              reward=1,
+                                              max_target_seqs=5000)
+                stdout, _ = cline(stderr=False)
             plot_contigs(sample_dir, stdout)
             plot_path = contig_plots_path / (sample_dir.name + '.png')
             plt.savefig(str(plot_path))

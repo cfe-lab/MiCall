@@ -353,6 +353,13 @@ Individual files are described after the list of steps.
 * unstitched_conseq.csv
   * region - the region mapped to
   * sequence - the consensus sequence used
+* unstitched_cascade.csv - number of read pairs that flow through the pipeline steps
+  * demultiplexed - count from the raw FASTQ
+  * v3loop - aligned with V3LOOP
+  * g2p - valid reads to count in G2P
+  * prelim_map - mapped to other references on first pass
+  * remap - mapped to other references after remapping
+  * aligned - aligned with a reference and merged with mate
 * resistance.csv
   * region - the region code, like PR or RT
   * drug_class - the drug class code from the HIVdb rules, like NRTI

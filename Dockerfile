@@ -86,12 +86,12 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
 
-COPY requirements.txt requirements-basespace.txt /opt/micall/
+COPY pyproject.toml /opt/micall/
 
 ## Python packages, plus trigger matplotlib to build its font cache
 WORKDIR /opt
 RUN pip install --upgrade pip && \
-  pip install -r /opt/micall/requirements-basespace.txt && \
+  pip install .[basespace] && \
   python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 ## MiCall
