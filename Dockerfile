@@ -93,7 +93,7 @@ RUN pip install /opt/micall
 RUN micall make_blast_db
 
 ## Trigger matplotlib to build its font cache
-RUN pip install .[basespace]
+RUN pip install /opt/micall[basespace]
 RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 WORKDIR /data

@@ -2,6 +2,9 @@
 .idea
 bin
 docs
+*cache*
+.github
+Dockerfile
 micall/tests/working
 micall/tests/microtest/scratch
 micall/tests/microtest/micall-results
