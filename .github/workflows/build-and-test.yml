@@ -76,6 +76,17 @@ jobs:
           python -m pip install codecov
           codecov
 
+  docker-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build docker image
+        run: docker build --tag micall --file Dockerfile .
+      - name: Run docker image entrypoint
+        run: docker run micall --help
+      - name: Check docker image entrypoint
+        run: docker run micall --help | grep -i -e 'docker'
+
   singularity-test:
     runs-on: ubuntu-20.04
     steps:
