@@ -640,7 +640,7 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               match_fraction=match_fraction)
 
 
-def run(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
+def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
     with StitcherContext.fresh() as ctx:
         contigs = list(read_contigs(input_csv))
 
@@ -685,7 +685,7 @@ def main(argv: Sequence[str]):
     logging.basicConfig(level=logger.level)
 
     plot_path = args.plot.name if args.plot is not None else None
-    run(args.contigs, args.stitched_contigs, plot_path)
+    contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
 
 
 if __name__ == '__main__':

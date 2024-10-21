@@ -23,7 +23,7 @@ from micall.core.contig_stitcher import (
 )
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import MockAligner, fixed_random_seed
-from micall.tests.test_denovo import check_hcv_db  # activates the fixture
+from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
@@ -33,6 +33,7 @@ logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 # make linters not complain about unused imports.
 assert check_hcv_db is not None
+assert DEFAULT_DATABASE is not None
 assert load_projects is not None
 
 
