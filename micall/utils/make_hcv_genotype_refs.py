@@ -26,7 +26,7 @@ def convert_fasta (lines):
             sequence += i.strip('\n')
     try:
         blocks.append([h,sequence])    # handle last entry
-    except:
+    except RuntimeError:
         raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))
     return blocks
 
