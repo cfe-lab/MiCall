@@ -14,8 +14,8 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
 
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "python -m pip install .[dev,test]",
+  // Use 'onCreateCommand' to run commands after the container is created, but before anything else starts.
+  "onCreateCommand": "python -m pip install .[dev,test]",
 
   // Configure tool-specific properties.
   "customizations": {
