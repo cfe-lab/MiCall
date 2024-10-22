@@ -62,7 +62,7 @@ class Alignment:
     Our representation of mappy's Alignment object.
     """
 
-    init_fields = ('ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary cigar_str').split()
+    init_fields = ('ctg ctg_len r_st r_en strand q_st q_en mapq cigar cigar_str').split()
 
     @classmethod
     def wrap(cls, source: object, **overrides):
@@ -86,7 +86,6 @@ class Alignment:
                  q_en=0,
                  mapq=0,
                  cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
-                 is_primary=True,
                  cigar_str=None):
 
         cigar = list(cigar)
@@ -104,7 +103,6 @@ class Alignment:
         self.q_en = q_en
         self.mapq = mapq
         self.cigar = cigar
-        self.is_primary = is_primary
         self.cigar_str = cigar_str
 
     def __eq__(self, other: object):
@@ -231,22 +229,20 @@ class ConsensusAligner:
         except KeyError:
             coordinate_seq = self.projects.getReference(coordinate_name)
         aligner = Aligner(seq=coordinate_seq, preset='map-ont')
-        self.alignments = list(aligner.map(self.consensus))
-        if self.alignments or 10_000 < len(self.consensus):
+        mappy_alignments = list(aligner.map(self.consensus))
+        if mappy_alignments or 10_000 < len(self.consensus):
             self.algorithm = 'minimap2'
+            self.alignments = [Alignment.wrap(alignment)
+                               for alignment in mappy_alignments
+                               if alignment.is_primary]
+            for alignment in self.alignments:
+                new = []
+                for (size, action) in alignment.cigar:
+                    new.append((size, CigarActions(action)))
+                alignment.cigar = new
         else:
             self.algorithm = 'gotoh'
             self.align_gotoh(coordinate_seq, self.consensus)
-
-        self.alignments = [Alignment.wrap(alignment)
-                           for alignment in self.alignments
-                           if alignment.is_primary]
-
-        for alignment in self.alignments:
-            new = []
-            for (size, action) in alignment.cigar:
-                new.append((size, CigarActions(action)))
-            alignment.cigar = new
 
         self.alignments.sort(key=attrgetter('q_st'))
 
