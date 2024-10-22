@@ -58,15 +58,18 @@ def map_amino_sequences(from_seq: str, to_seq: str):
 
 
 class AlignmentWrapper:
+    """
+    Our representation of mappy's Alignment object.
+    """
+
     init_fields = (
         'ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary mlen '
         'blen NM trans_strand read_num cs MD cigar_str').split()
 
     @classmethod
     def wrap(cls, source: Alignment, **overrides):
-        """ Wrap an Alignment object to make it easier to compare and display.
-
-        Mostly used when testing.
+        """
+        Wrap mappy's Alignment object to make it easier to work with.
         """
         args = [getattr(source, field_name)
                 for field_name in cls.init_fields]
