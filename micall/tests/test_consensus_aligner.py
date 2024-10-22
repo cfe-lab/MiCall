@@ -107,8 +107,8 @@ def test_alignment_repr():
 
 def test_wrap_overrides():
     alignment1 = Alignment(r_st=100, r_en=200, cigar_str='')
-    alignment2 = Alignment.wrap(alignment1, r_en=300, blen=200, cigar=[])
-    expected_alignment = Alignment(r_st=100, r_en=300, blen=200, cigar=[], cigar_str='')
+    alignment2 = Alignment.wrap(alignment1, r_en=300, cigar=[])
+    expected_alignment = Alignment(r_st=100, r_en=300, cigar=[], cigar_str='')
 
     assert alignment2 == expected_alignment
 
@@ -414,8 +414,7 @@ def test_start_contig_deletion_minimap2(projects):
                                    mapq=9,
                                    cigar=[(30, CigarActions.MATCH),
                                           (1, CigarActions.DELETE),
-                                          (29, CigarActions.MATCH)],
-                                   NM=1)
+                                          (29, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -432,24 +431,20 @@ def test_start_contig_big_deletion_minimap2(projects):
 
     expected_alignment = [Alignment(ctg='N/A',
                                     ctg_len=len(seed_seq),
-                                    mlen=668,
                                     r_st=290,
                                     r_en=983,
                                     q_st=0,
                                     q_en=693,
                                     mapq=60,
-                                    cigar=[(693, CigarActions.MATCH)],
-                                    NM=25),
+                                    cigar=[(693, CigarActions.MATCH)]),
                           Alignment(ctg='N/A',
                                     ctg_len=len(seed_seq),
-                                    mlen=6013,
                                     r_st=3000,
                                     r_en=9269,
                                     q_st=693,
                                     q_en=6962,
                                     mapq=60,
-                                    cigar=[(6269, CigarActions.MATCH)],
-                                    NM=256)]
+                                    cigar=[(6269, CigarActions.MATCH)])]
 
     aligner = ConsensusAligner(projects)
 
@@ -472,8 +467,7 @@ def test_start_contig_deletion_gotoh(projects):
                                    mapq=0,
                                    cigar=[(30, CigarActions.MATCH),
                                           (1, CigarActions.DELETE),
-                                          (19, CigarActions.MATCH)],
-                                   NM=0)
+                                          (19, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -494,8 +488,7 @@ def test_start_contig_matched_deletion_gotoh(projects):
                                    q_st=0,
                                    q_en=50,
                                    mapq=0,
-                                   cigar=[(50, CigarActions.MATCH)],
-                                   NM=0)
+                                   cigar=[(50, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -518,8 +511,7 @@ def test_start_contig_insertion_minimap2(projects):
                                    mapq=9,
                                    cigar=[(30, CigarActions.MATCH),
                                           (3, CigarActions.INSERT),
-                                          (30, CigarActions.MATCH)],
-                                   NM=3)
+                                          (30, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -541,8 +533,7 @@ def test_start_contig_insertion_gotoh(projects):
                                    mapq=0,
                                    cigar=[(30, CigarActions.MATCH),
                                           (1, CigarActions.INSERT),
-                                          (20, CigarActions.MATCH)],
-                                   NM=0)
+                                          (20, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)

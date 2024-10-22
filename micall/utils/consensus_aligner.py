@@ -62,9 +62,7 @@ class Alignment:
     Our representation of mappy's Alignment object.
     """
 
-    init_fields = (
-        'ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary mlen '
-        'blen NM trans_strand read_num cs MD cigar_str').split()
+    init_fields = ('ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary cigar_str').split()
 
     @classmethod
     def wrap(cls, source: object, **overrides):
@@ -89,20 +87,9 @@ class Alignment:
                  mapq=0,
                  cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
                  is_primary=True,
-                 mlen=0,
-                 blen=0,
-                 NM=0,
-                 trans_strand=0,
-                 read_num=1,
-                 cs='',
-                 MD='',
                  cigar_str=None):
 
         cigar = list(cigar)
-        if not mlen:
-            mlen = min(q_en-q_st, r_en-r_st)
-        if not blen:
-            blen = max(q_en-q_st, r_en-r_st)
         if not cigar:
             cigar = [(max(q_en-q_st, r_en-r_st), CigarActions.MATCH)]
         if cigar_str is None:
@@ -118,13 +105,6 @@ class Alignment:
         self.mapq = mapq
         self.cigar = cigar
         self.is_primary = is_primary
-        self.mlen = mlen
-        self.blen = blen
-        self.NM = NM
-        self.trans_strand = trans_strand
-        self.read_num = read_num
-        self.cs = cs
-        self.MD = MD
         self.cigar_str = cigar_str
 
     def __eq__(self, other: object):
