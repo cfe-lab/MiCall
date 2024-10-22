@@ -245,7 +245,7 @@ def genotype(fasta: str, db: Optional[str] = None,
     return samples
 
 
-def fasta_to_svg(contigs_fasta_path: str,
+def fasta_to_csv(contigs_fasta_path: str,
                  contigs_csv: TextIO,
                  merged_contigs_csv: Optional[TextIO] = None,
                  blast_csv: Optional[TextIO] = None) -> None:
@@ -285,7 +285,7 @@ def main(argv: Sequence[str]):
     parser.add_argument('--blast_csv', type=argparse.FileType('w'),
                         help="Optional CSV file to write BLAST search results.")
     args = parser.parse_args(argv)
-    fasta_to_svg(args.contigs_fasta, args.contigs_csv, args.merged_contigs_csv, args.blast_csv)
+    fasta_to_csv(args.contigs_fasta, args.contigs_csv, args.merged_contigs_csv, args.blast_csv)
 
 
 if __name__ == "__main__":
