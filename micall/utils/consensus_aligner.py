@@ -57,28 +57,7 @@ def map_amino_sequences(from_seq: str, to_seq: str):
     return seq_map
 
 
-@dataclass
 class AlignmentWrapper:
-
-    ctg: str  # The reference contig name.
-    ctg_len: int  # The reference contig length.
-    r_st: int
-    r_en: int
-    strand: int  # Either forward (1 : int) or reverse (-1 : int) strand.
-    q_st: int
-    q_en: int
-    mapq: int  # The map quality.
-    cigar: List[Tuple[int, CigarActions]]
-    is_primary: bool
-    mlen: int  # How many matches.
-    blen: int
-    NM: int
-    trans_strand: int
-    read_num: int
-    cs: str
-    MD: str
-    cigar_str: str
-
     init_fields = (
         'ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary mlen '
         'blen NM trans_strand read_num cs MD cigar_str').split()
