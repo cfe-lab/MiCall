@@ -49,7 +49,7 @@ class Alignment:
                         q_st=self.q_st, q_ei=self.q_en - 1)
 
     @staticmethod
-    def from_cigar_hit(hit: CigarHit, ctg='', ctg_len=0, strand=1, mapq=0) -> 'Alignment':
+    def from_cigar_hit(hit: CigarHit, ctg: str, ctg_len: int, strand: int, mapq: int) -> 'Alignment':
         return Alignment(ctg=ctg,
                          ctg_len=ctg_len,
                          r_st=hit.r_st, r_en=hit.r_ei + 1,
