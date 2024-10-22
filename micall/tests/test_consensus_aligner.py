@@ -106,9 +106,9 @@ def test_alignment_repr():
 
 
 def test_wrap_overrides():
-    alignment1 = AlignmentWrapper(r_st=100, r_en=200)
+    alignment1 = AlignmentWrapper(r_st=100, r_en=200, cigar_str='')
     alignment2 = AlignmentWrapper.wrap(alignment1, r_en=300, blen=200, cigar=[])
-    expected_alignment = AlignmentWrapper(r_st=100, r_en=300, cigar=[])
+    expected_alignment = AlignmentWrapper(r_st=100, r_en=300, blen=200, cigar=[], cigar_str='')
 
     assert alignment2 == expected_alignment
 
@@ -412,9 +412,9 @@ def test_start_contig_deletion_minimap2(projects):
                                           q_st=0,
                                           q_en=59,
                                           mapq=9,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.DELETE],
-                                                 [29, CigarActions.MATCH]],
+                                          cigar=[(30, CigarActions.MATCH),
+                                                 (1, CigarActions.DELETE),
+                                                 (29, CigarActions.MATCH)],
                                           NM=1)
     aligner = ConsensusAligner(projects)
 
@@ -438,7 +438,7 @@ def test_start_contig_big_deletion_minimap2(projects):
                                            q_st=0,
                                            q_en=693,
                                            mapq=60,
-                                           cigar=[[693, CigarActions.MATCH]],
+                                           cigar=[(693, CigarActions.MATCH)],
                                            NM=25),
                           AlignmentWrapper(ctg='N/A',
                                            ctg_len=len(seed_seq),
@@ -448,7 +448,7 @@ def test_start_contig_big_deletion_minimap2(projects):
                                            q_st=693,
                                            q_en=6962,
                                            mapq=60,
-                                           cigar=[[6269, CigarActions.MATCH]],
+                                           cigar=[(6269, CigarActions.MATCH)],
                                            NM=256)]
 
     aligner = ConsensusAligner(projects)
@@ -470,9 +470,9 @@ def test_start_contig_deletion_gotoh(projects):
                                           q_st=0,
                                           q_en=49,
                                           mapq=0,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.DELETE],
-                                                 [19, CigarActions.MATCH]],
+                                          cigar=[(30, CigarActions.MATCH),
+                                                 (1, CigarActions.DELETE),
+                                                 (19, CigarActions.MATCH)],
                                           NM=0)
     aligner = ConsensusAligner(projects)
 
@@ -494,7 +494,7 @@ def test_start_contig_matched_deletion_gotoh(projects):
                                           q_st=0,
                                           q_en=50,
                                           mapq=0,
-                                          cigar=[[50, CigarActions.MATCH]],
+                                          cigar=[(50, CigarActions.MATCH)],
                                           NM=0)
     aligner = ConsensusAligner(projects)
 
@@ -516,9 +516,9 @@ def test_start_contig_insertion_minimap2(projects):
                                           q_st=0,
                                           q_en=63,
                                           mapq=9,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [3, CigarActions.INSERT],
-                                                 [30, CigarActions.MATCH]],
+                                          cigar=[(30, CigarActions.MATCH),
+                                                 (3, CigarActions.INSERT),
+                                                 (30, CigarActions.MATCH)],
                                           NM=3)
     aligner = ConsensusAligner(projects)
 
@@ -539,9 +539,9 @@ def test_start_contig_insertion_gotoh(projects):
                                           q_st=0,
                                           q_en=51,
                                           mapq=0,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.INSERT],
-                                                 [20, CigarActions.MATCH]],
+                                          cigar=[(30, CigarActions.MATCH),
+                                                 (1, CigarActions.INSERT),
+                                                 (20, CigarActions.MATCH)],
                                           NM=0)
     aligner = ConsensusAligner(projects)
 
@@ -865,7 +865,7 @@ def test_count_coord_concordance():
     aligner = ConsensusAligner(projects)
     aligner.consensus = "AGATTTCGATGATTCAGAAGATAAGCA"
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[(27, CigarActions.MATCH)])]
 
     expected_concordance_list = [1.0]*len(aligner.consensus)
 
@@ -885,7 +885,7 @@ def test_count_coord_concordance_mismatch():
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
     # changed nucs:                            ^^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[(27, CigarActions.MATCH)])]
 
     # At the end of the consensus, the size of the averaging window for the concordance decreases from 20 to 11.
     # The concordance therefore decreases from 18/20 to 9/11
@@ -908,7 +908,7 @@ def test_count_coord_concordance_short_match():
     aligner.consensus = "AGATTTCGATGATTCTCTTCTAAACGT"
     # last match position:             ^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[(15, CigarActions.MATCH)])]
     # We start out with 100% match for the first 6 positions
     expected_concordance_list = [1.0] * 6
     # After that, the averaging window (whose size is still increasing) starts to slide past the match:
@@ -936,8 +936,8 @@ def test_count_coord_concordance_two_matches():
     aligner = ConsensusAligner(projects)
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATTT"
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[[12, CigarActions.MATCH]]),
-                          AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[[15, CigarActions.MATCH]])]
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[(12, CigarActions.MATCH)]),
+                          AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[(15, CigarActions.MATCH)])]
 
     expected_concordance_list = [1.0] * 3 + [12/13, 12/14, 12/15, 13/16, 14/17, 15/18, 16/19] + [17/20]*11 + \
                                 [16/19, 15/18, 15/17, 15/16] + [1.0]*5
@@ -958,9 +958,9 @@ def test_count_coord_concordance_with_insertion():
     aligner.consensus = "AGATTTCGACCCTGATTCAGAAGATTTGCA"
     # insertion:                  ^^^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
-                                                                                    [3, CigarActions.INSERT],
-                                                                                    [18, CigarActions.MATCH]])]
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[(9, CigarActions.MATCH),
+                                                                                    (3, CigarActions.INSERT),
+                                                                                    (18, CigarActions.MATCH)])]
     # the window size increases from 10 to 20, while the averaging window slides over the insertion
     expected_concordance_list = [9/10, 9/11, 9/12, 10/13, 11/14, 12/15, 13/16, 14/17, 15/18, 16/19]
     # for 10 positions in the middle, the insertion is included in the full window size fo 20
@@ -984,9 +984,9 @@ def test_count_coord_concordance_with_deletion():
     aligner.consensus = "AGATTTCGATTCAGAAGATTTGCA"
     # deletion behind this pos:  ^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
-                                                                                    [3, CigarActions.DELETE],
-                                                                                    [15, CigarActions.MATCH]])]
+    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[(9, CigarActions.MATCH),
+                                                                                    (3, CigarActions.DELETE),
+                                                                                    (15, CigarActions.MATCH)])]
     # the deletion does not decrease the concordance
     expected_concordance_list = [1.0]*len(aligner.consensus)
 
@@ -1005,7 +1005,7 @@ def test_count_seed_region_concordance(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[(27, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1028,7 +1028,7 @@ def test_count_seed_region_concordance_mismatch(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[(30, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1050,7 +1050,7 @@ def test_count_seed_region_concordance_seed_not_aligned(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[(15, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1072,7 +1072,7 @@ def test_count_seed_region_concordance_larger_match(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[(30, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1095,9 +1095,9 @@ def test_count_seed_region_concordance_insertion(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
-                                                                                 [3, CigarActions.INSERT],
-                                                                                 [18, CigarActions.MATCH]])]
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[(9, CigarActions.MATCH),
+                                                                                 (3, CigarActions.INSERT),
+                                                                                 (18, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1120,9 +1120,9 @@ def test_count_seed_region_concordance_deletion(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=27, cigar=[[9, CigarActions.MATCH],
-                                                                                 [3, CigarActions.DELETE],
-                                                                                 [18, CigarActions.MATCH]])]
+    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=27, cigar=[(9, CigarActions.MATCH),
+                                                                                 (3, CigarActions.DELETE),
+                                                                                 (18, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered

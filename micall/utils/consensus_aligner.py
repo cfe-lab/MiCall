@@ -1,11 +1,11 @@
-from typing import Dict, List, Optional, Iterable, Set
+from typing import Dict, List, Optional, Iterable, Set, Tuple
 from dataclasses import dataclass, replace
 from itertools import count
 from operator import attrgetter
 import csv
 import os
 import logging
-from aligntools import CigarActions
+from aligntools import CigarActions, Cigar
 
 from gotoh import align_it, align_it_aa
 from mappy import Alignment, Aligner
@@ -57,10 +57,31 @@ def map_amino_sequences(from_seq: str, to_seq: str):
     return seq_map
 
 
-class AlignmentWrapper(Alignment):
+@dataclass
+class AlignmentWrapper:
+
+    ctg: str  # The reference contig name.
+    ctg_len: int  # The reference contig length.
+    r_st: int
+    r_en: int
+    strand: int  # Either forward (1 : int) or reverse (-1 : int) strand.
+    q_st: int
+    q_en: int
+    mapq: int  # The map quality.
+    cigar: List[Tuple[int, CigarActions]]
+    is_primary: bool
+    mlen: int  # How many matches.
+    blen: int
+    NM: int
+    trans_strand: int
+    read_num: int
+    cs: str
+    MD: str
+    cigar_str: str
+
     init_fields = (
         'ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary mlen '
-        'blen NM trans_strand read_num cs MD').split()
+        'blen NM trans_strand read_num cs MD cigar_str').split()
 
     @classmethod
     def wrap(cls, source: Alignment, **overrides):
@@ -75,76 +96,54 @@ class AlignmentWrapper(Alignment):
             args[i] = value
         return cls(*args)
 
-    # noinspection PyPep8Naming
-    def __new__(cls,
-                ctg='',
-                ctg_len=0,
-                r_st=0,
-                r_en=0,
-                strand=1,
-                q_st=0,
-                q_en=0,
-                mapq=0,
-                cigar: Iterable[List[int]] = tuple(),
-                is_primary=True,
-                mlen=0,
-                blen=0,
-                NM=0,
-                trans_strand=0,
-                read_num=1,
-                cs='',
-                MD=''):
-        """ Create an instance.
+    def __init__(self,
+                 ctg='',
+                 ctg_len=0,
+                 r_st=0,
+                 r_en=0,
+                 strand=1,
+                 q_st=0,
+                 q_en=0,
+                 mapq=0,
+                 cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
+                 is_primary=True,
+                 mlen=0,
+                 blen=0,
+                 NM=0,
+                 trans_strand=0,
+                 read_num=1,
+                 cs='',
+                 MD='',
+                 cigar_str=None):
 
-        :param ctg: name of the reference sequence the query is mapped to
-        :param ctg_len: total length of the reference sequence
-        :param r_st and r_en: start and end positions on the reference
-        :param strand: +1 if on the forward strand; -1 if on the reverse strand
-        :param q_st and q_en: start and end positions on the query
-        :param mapq: mapping quality
-        :param cigar: CIGAR returned as an array of shape (n_cigar,2). The two
-            numbers give the length and the operator of each CIGAR operation.
-        :param is_primary: if the alignment is primary (typically the best and
-            the first to generate)
-        :param mlen: length of the matching bases in the alignment, excluding
-            ambiguous base matches.
-        :param blen: length of the alignment, including both alignment matches
-            and gaps but excluding ambiguous bases.
-        :param NM: number of mismatches, gaps and ambiguous positions in the
-            alignment
-        :param trans_strand: transcript strand. +1 if on the forward strand; -1
-            if on the reverse strand; 0 if unknown
-        :param read_num: read number that the alignment corresponds to; 1 for
-            the first read and 2 for the second read
-        :param cs: the cs tag.
-        :param MD: the MD tag as in the SAM format. It is an empty string unless
-            the MD argument is applied when calling mappy.Aligner.map().
-        """
         cigar = list(cigar)
         if not mlen:
             mlen = min(q_en-q_st, r_en-r_st)
         if not blen:
             blen = max(q_en-q_st, r_en-r_st)
         if not cigar:
-            cigar = [[max(q_en-q_st, r_en-r_st), CigarActions.MATCH]]
-        return super().__new__(cls,
-                               ctg,
-                               ctg_len,
-                               r_st,
-                               r_en,
-                               strand,
-                               q_st,
-                               q_en,
-                               mapq,
-                               cigar,
-                               is_primary,
-                               mlen,
-                               blen,
-                               NM,
-                               trans_strand,
-                               read_num-1,
-                               cs,
-                               MD)
+            cigar = [(max(q_en-q_st, r_en-r_st), CigarActions.MATCH)]
+        if cigar_str is None:
+            cigar_str = str(Cigar(cigar))
+
+        self.ctg = ctg
+        self.ctg_len = ctg_len
+        self.r_st = r_st
+        self.r_en = r_en
+        self.strand = strand
+        self.q_st = q_st
+        self.q_en = q_en
+        self.mapq = mapq
+        self.cigar = cigar
+        self.is_primary = is_primary
+        self.mlen = mlen
+        self.blen = blen
+        self.NM = NM
+        self.trans_strand = trans_strand
+        self.read_num = read_num
+        self.cs = cs
+        self.MD = MD
+        self.cigar_str = cigar_str
 
     def __eq__(self, other: Alignment):
         for field_name in self.init_fields:
@@ -173,7 +172,7 @@ class ConsensusAligner:
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
         self.consensus_offset = 0
-        self.alignments: List[Alignment] = []
+        self.alignments: List[AlignmentWrapper] = []
         self.reading_frames: Dict[int, List[SeedAmino]] = {}
         self.seed_nucs: List[SeedNucleotide] = []
         self.amino_alignments: List[AminoAlignment] = []
@@ -276,9 +275,17 @@ class ConsensusAligner:
         else:
             self.algorithm = 'gotoh'
             self.align_gotoh(coordinate_seq, self.consensus)
-        self.alignments = [alignment
+
+        self.alignments = [AlignmentWrapper.wrap(alignment)
                            for alignment in self.alignments
                            if alignment.is_primary]
+
+        for alignment in self.alignments:
+            new = []
+            for (size, action) in alignment.cigar:
+                new.append((size, CigarActions(action)))
+            alignment.cigar = new
+
         self.alignments.sort(key=attrgetter('q_st'))
 
         if self.overall_alignments_writer is not None:
@@ -326,6 +333,9 @@ class ConsensusAligner:
                     cigar[-1][0] += 1
                 else:
                     cigar.append([1, expected_action])
+
+            typed_cigar: List[Tuple[int, CigarActions]] = [(a, CigarActions(b))
+                                                           for [a, b] in cigar]
             self.alignments.append(AlignmentWrapper(
                 'N/A',
                 len(coordinate_seq),
@@ -333,7 +343,7 @@ class ConsensusAligner:
                 ref_index,
                 q_st=0,
                 q_en=consensus_index,
-                cigar=cigar))
+                cigar=typed_cigar))
 
     def find_amino_alignments(self,
                               start_pos: int,
