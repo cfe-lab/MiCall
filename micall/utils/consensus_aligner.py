@@ -5,7 +5,7 @@ from operator import attrgetter
 import csv
 import os
 import logging
-from aligntools import CigarActions, Cigar
+from aligntools import CigarActions, Cigar, CigarHit
 
 from gotoh import align_it, align_it_aa
 from mappy import Aligner
@@ -104,6 +104,23 @@ class Alignment:
         self.mapq = mapq
         self.cigar = cigar
         self.cigar_str = cigar_str
+
+    def to_cigar_hit(self) -> CigarHit:
+        return CigarHit(Cigar(self.cigar),
+                        r_st=self.r_st, r_ei=self.r_en - 1,
+                        q_st=self.q_st, q_ei=self.q_en - 1)
+
+    @staticmethod
+    def from_cigar_hit(hit: CigarHit, ctg='', ctg_len=0, strand=1, mapq=0) -> 'Alignment':
+        return Alignment(ctg=ctg,
+                         ctg_len=ctg_len,
+                         r_st=hit.r_st, r_en=hit.r_ei + 1,
+                         strand=strand,
+                         q_st=hit.q_st, q_en=hit.q_ei + 1,
+                         mapq=mapq,
+                         cigar=hit.cigar._data,
+                         cigar_str=str(hit.cigar),
+                         )
 
     def __eq__(self, other: object):
         for field_name in self.init_fields:
