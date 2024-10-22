@@ -1,42 +1,26 @@
-from typing import Iterable, Tuple, List
+from typing import Tuple, List, Sequence
+from dataclasses import dataclass
 
 from aligntools import CigarActions, Cigar, CigarHit
 import mappy
 
 
+@dataclass(frozen=True)
 class Alignment:
     """
     Our representation of mappy's Alignment object.
     """
 
-    def __init__(self,
-                 ctg='',
-                 ctg_len=0,
-                 r_st=0,
-                 r_en=0,
-                 strand=1,
-                 q_st=0,
-                 q_en=0,
-                 mapq=0,
-                 cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
-                 cigar_str=None):
-
-        cigar = list(cigar)
-        if not cigar:
-            cigar = [(max(q_en-q_st, r_en-r_st), CigarActions.MATCH)]
-        if cigar_str is None:
-            cigar_str = str(Cigar(cigar))
-
-        self.ctg = ctg
-        self.ctg_len = ctg_len
-        self.r_st = r_st
-        self.r_en = r_en
-        self.strand = strand
-        self.q_st = q_st
-        self.q_en = q_en
-        self.mapq = mapq
-        self.cigar = cigar
-        self.cigar_str = cigar_str
+    ctg: str
+    ctg_len: int
+    r_st: int
+    r_en: int
+    strand: int
+    q_st: int
+    q_en: int
+    mapq: int
+    cigar: Sequence[Tuple[int, CigarActions]]
+    cigar_str: str
 
     @staticmethod
     def coerce(obj: object) -> 'Alignment':

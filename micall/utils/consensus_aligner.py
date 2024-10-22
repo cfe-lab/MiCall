@@ -5,7 +5,7 @@ from operator import attrgetter
 import csv
 import os
 import logging
-from aligntools import CigarActions
+from aligntools import CigarActions, Cigar
 
 from gotoh import align_it, align_it_aa
 import mappy
@@ -229,13 +229,16 @@ class ConsensusAligner:
             typed_cigar: List[Tuple[int, CigarActions]] = [(a, CigarActions(b))
                                                            for [a, b] in cigar]
             self.alignments.append(Alignment(
-                'N/A',
-                len(coordinate_seq),
-                ref_start,
-                ref_index,
+                ctg='N/A',
+                ctg_len=len(coordinate_seq),
+                r_st=ref_start,
+                r_en=ref_index,
+                strand=1,
                 q_st=0,
                 q_en=consensus_index,
-                cigar=typed_cigar))
+                cigar=typed_cigar,
+                mapq=0,
+                cigar_str=str(Cigar(typed_cigar))))
 
     def find_amino_alignments(self,
                               start_pos: int,
