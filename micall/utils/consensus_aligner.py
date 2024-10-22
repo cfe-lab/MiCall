@@ -96,13 +96,17 @@ class Alignment:
         if isinstance(obj, Alignment):
             return obj
         elif isinstance(obj, mappy.Alignment):
+            cigar: List[Tuple[int, CigarActions]] = []
+            for (size, action) in obj.cigar:
+                cigar.append((size, CigarActions(action)))
+
             return Alignment(ctg=obj.ctg,
                              ctg_len=obj.ctg_len,
                              r_st=obj.r_st, r_en=obj.r_en,
                              strand=obj.strand,
                              q_st=obj.q_st, q_en=obj.q_en,
                              mapq=obj.mapq,
-                             cigar=obj.cigar,
+                             cigar=cigar,
                              cigar_str=obj.cigar_str,
                              )
         else:
@@ -253,11 +257,6 @@ class ConsensusAligner:
             self.alignments = [Alignment.coerce(alignment)
                                for alignment in mappy_alignments
                                if alignment.is_primary]
-            for alignment in self.alignments:
-                new = []
-                for (size, action) in alignment.cigar:
-                    new.append((size, CigarActions(action)))
-                alignment.cigar = new
         else:
             self.algorithm = 'gotoh'
             self.align_gotoh(coordinate_seq, self.consensus)
