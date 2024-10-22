@@ -8,7 +8,7 @@ import logging
 from aligntools import CigarActions, Cigar
 
 from gotoh import align_it, align_it_aa
-from mappy import Alignment, Aligner
+from mappy import Aligner
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
@@ -67,7 +67,7 @@ class AlignmentWrapper:
         'blen NM trans_strand read_num cs MD cigar_str').split()
 
     @classmethod
-    def wrap(cls, source: Alignment, **overrides):
+    def wrap(cls, source: object, **overrides):
         """
         Wrap mappy's Alignment object to make it easier to work with.
         """
@@ -127,7 +127,7 @@ class AlignmentWrapper:
         self.MD = MD
         self.cigar_str = cigar_str
 
-    def __eq__(self, other: Alignment):
+    def __eq__(self, other: object):
         for field_name in self.init_fields:
             self_value = getattr(self, field_name)
             other_value = getattr(other, field_name)
