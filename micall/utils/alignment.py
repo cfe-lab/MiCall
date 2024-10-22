@@ -59,14 +59,3 @@ class Alignment:
                          cigar=hit.cigar._data,
                          cigar_str=str(hit.cigar),
                          )
-
-    def __eq__(self, other: object):
-        # Filter out private attributes (those starting with an underscore)
-        self_public_attrs = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
-        other_public_attrs = {k: v for k, v in other.__dict__.items() if not k.startswith('_')}
-        return self_public_attrs == other_public_attrs
-
-    def __repr__(self):
-        return (f'Alignment({self.ctg!r}, {self.ctg_len}, '
-                f'{self.r_st}, {self.r_en}, {self.strand}, '
-                f'{self.q_st}, {self.q_en})')
