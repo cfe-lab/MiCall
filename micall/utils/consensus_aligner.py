@@ -8,7 +8,7 @@ import logging
 from aligntools import CigarActions, Cigar, CigarHit
 
 from gotoh import align_it, align_it_aa
-from mappy import Aligner
+import mappy
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
@@ -62,20 +62,6 @@ class Alignment:
     Our representation of mappy's Alignment object.
     """
 
-    init_fields = ('ctg ctg_len r_st r_en strand q_st q_en mapq cigar cigar_str').split()
-
-    @classmethod
-    def wrap(cls, source: object, **overrides):
-        """
-        Wrap mappy's Alignment object to make it easier to work with.
-        """
-        args = [getattr(source, field_name)
-                for field_name in cls.init_fields]
-        for name, value in overrides.items():
-            i = cls.init_fields.index(name)
-            args[i] = value
-        return cls(*args)
-
     def __init__(self,
                  ctg='',
                  ctg_len=0,
@@ -105,6 +91,23 @@ class Alignment:
         self.cigar = cigar
         self.cigar_str = cigar_str
 
+    @staticmethod
+    def coerce(obj: object) -> 'Alignment':
+        if isinstance(obj, Alignment):
+            return obj
+        elif isinstance(obj, mappy.Alignment):
+            return Alignment(ctg=obj.ctg,
+                             ctg_len=obj.ctg_len,
+                             r_st=obj.r_st, r_en=obj.r_en,
+                             strand=obj.strand,
+                             q_st=obj.q_st, q_en=obj.q_en,
+                             mapq=obj.mapq,
+                             cigar=obj.cigar,
+                             cigar_str=obj.cigar_str,
+                             )
+        else:
+            raise TypeError(f"Cannot coerce from {obj!r}.")
+
     def to_cigar_hit(self) -> CigarHit:
         return CigarHit(Cigar(self.cigar),
                         r_st=self.r_st, r_ei=self.r_en - 1,
@@ -123,12 +126,10 @@ class Alignment:
                          )
 
     def __eq__(self, other: object):
-        for field_name in self.init_fields:
-            self_value = getattr(self, field_name)
-            other_value = getattr(other, field_name)
-            if self_value != other_value:
-                return False
-        return True
+        # Filter out private attributes (those starting with an underscore)
+        self_public_attrs = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+        other_public_attrs = {k: v for k, v in other.__dict__.items() if not k.startswith('_')}
+        return self_public_attrs == other_public_attrs
 
     def __repr__(self):
         return (f'Alignment({self.ctg!r}, {self.ctg_len}, '
@@ -245,11 +246,11 @@ class ConsensusAligner:
             coordinate_seq = self.projects.getGenotypeReference(coordinate_name)
         except KeyError:
             coordinate_seq = self.projects.getReference(coordinate_name)
-        aligner = Aligner(seq=coordinate_seq, preset='map-ont')
-        mappy_alignments = list(aligner.map(self.consensus))
+        aligner = mappy.Aligner(seq=coordinate_seq, preset='map-ont')
+        mappy_alignments: List[mappy.Alignment] = list(aligner.map(self.consensus))
         if mappy_alignments or 10_000 < len(self.consensus):
             self.algorithm = 'minimap2'
-            self.alignments = [Alignment.wrap(alignment)
+            self.alignments = [Alignment.coerce(alignment)
                                for alignment in mappy_alignments
                                if alignment.is_primary]
             for alignment in self.alignments:
@@ -881,8 +882,8 @@ class ConsensusAligner:
         if self.seed_concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
-        seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
-        seed_alignments = list(seed_aligner.map(self.consensus))
+        seed_aligner = mappy.Aligner(seq=seed_ref, preset='map-ont')
+        seed_alignments: List[mappy.Alignment] = list(seed_aligner.map(self.consensus))
 
         regions = projects.getCoordinateReferences(seed_name)
         for region in regions:

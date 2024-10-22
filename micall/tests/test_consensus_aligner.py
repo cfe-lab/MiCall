@@ -31,13 +31,15 @@ def mutate_sequence(rate, seq):
 def assert_alignments(aligner: ConsensusAligner,
                       *expected_alignments: Alignment):
     __tracebackhide__ = True
-    wrapped_alignments = tuple(Alignment.wrap(alignment)
+    wrapped_alignments = tuple(Alignment.coerce(alignment)
                                for alignment in aligner.alignments)
     if repr(wrapped_alignments) != repr(expected_alignments):
         assert wrapped_alignments == expected_alignments
     for i, (wrapped_alignment, expected_alignment) in enumerate(
             zip(wrapped_alignments, expected_alignments)):
-        for field_name in Alignment.init_fields:
+        for field_name in dir(expected_alignment):
+            if callable(getattr(expected_alignment, field_name)) or field_name.startswith('_'):
+                continue
             wrapped = (i, field_name, getattr(wrapped_alignment, field_name))
             expected = (i, field_name, getattr(expected_alignment, field_name))
             assert wrapped == expected
@@ -103,14 +105,6 @@ def test_alignment_repr():
     alignment = Alignment('R1', 0, 1001, 1100, 1, 1, 100)
 
     assert repr(alignment) == "Alignment('R1', 0, 1001, 1100, 1, 1, 100)"
-
-
-def test_wrap_overrides():
-    alignment1 = Alignment(r_st=100, r_en=200, cigar_str='')
-    alignment2 = Alignment.wrap(alignment1, r_en=300, cigar=[])
-    expected_alignment = Alignment(r_st=100, r_en=300, cigar=[], cigar_str='')
-
-    assert alignment2 == expected_alignment
 
 
 def test_start_contig(projects):
