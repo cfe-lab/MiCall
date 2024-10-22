@@ -57,7 +57,7 @@ def map_amino_sequences(from_seq: str, to_seq: str):
     return seq_map
 
 
-class AlignmentWrapper:
+class Alignment:
     """
     Our representation of mappy's Alignment object.
     """
@@ -136,7 +136,7 @@ class AlignmentWrapper:
         return True
 
     def __repr__(self):
-        return (f'AlignmentWrapper({self.ctg!r}, {self.ctg_len}, '
+        return (f'Alignment({self.ctg!r}, {self.ctg_len}, '
                 f'{self.r_st}, {self.r_en}, {self.strand}, '
                 f'{self.q_st}, {self.q_en})')
 
@@ -154,7 +154,7 @@ class ConsensusAligner:
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
         self.consensus_offset = 0
-        self.alignments: List[AlignmentWrapper] = []
+        self.alignments: List[Alignment] = []
         self.reading_frames: Dict[int, List[SeedAmino]] = {}
         self.seed_nucs: List[SeedNucleotide] = []
         self.amino_alignments: List[AminoAlignment] = []
@@ -258,7 +258,7 @@ class ConsensusAligner:
             self.algorithm = 'gotoh'
             self.align_gotoh(coordinate_seq, self.consensus)
 
-        self.alignments = [AlignmentWrapper.wrap(alignment)
+        self.alignments = [Alignment.wrap(alignment)
                            for alignment in self.alignments
                            if alignment.is_primary]
 
@@ -318,7 +318,7 @@ class ConsensusAligner:
 
             typed_cigar: List[Tuple[int, CigarActions]] = [(a, CigarActions(b))
                                                            for [a, b] in cigar]
-            self.alignments.append(AlignmentWrapper(
+            self.alignments.append(Alignment(
                 'N/A',
                 len(coordinate_seq),
                 ref_start,
