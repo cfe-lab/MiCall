@@ -56,6 +56,6 @@ class Alignment:
                          strand=strand,
                          q_st=hit.q_st, q_en=hit.q_ei + 1,
                          mapq=mapq,
-                         cigar=hit.cigar._data,
+                         cigar=list(hit.cigar._data),
                          cigar_str=str(hit.cigar),
                          )

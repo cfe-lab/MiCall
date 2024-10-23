@@ -1,11 +1,11 @@
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, replace
 from itertools import count
 from operator import attrgetter
 import csv
 import os
 import logging
-from aligntools import CigarActions, Cigar
+from aligntools import CigarActions, Cigar, CigarHit
 
 from gotoh import align_it, align_it_aa
 import mappy
@@ -196,6 +196,8 @@ class ConsensusAligner:
         gap_open_penalty = 15
         gap_extend_penalty = 3
         use_terminal_gap_penalty = 1
+        assert '&' not in consensus, "Consensus contains forbidden character '&'"
+        consensus = ''.join('&' if x == '-' else x for x in consensus)
         aligned_coordinate, aligned_consensus, score = align_it(
             coordinate_seq,
             consensus,
@@ -203,42 +205,17 @@ class ConsensusAligner:
             gap_extend_penalty,
             use_terminal_gap_penalty)
         if min(len(coordinate_seq), len(consensus)) < score:
-            ref_start = len(aligned_consensus) - len(aligned_consensus.lstrip('-'))
-            aligned_consensus: str = aligned_consensus[ref_start:] # type: ignore[no-redef]
-            aligned_coordinate: str = aligned_coordinate[ref_start:] # type: ignore[no-redef]
-            aligned_consensus = aligned_consensus.rstrip('-')
-            ref_index = ref_start
-            consensus_index = 0
-            cigar: List[List[int]] = []
-            for ref_nuc, nuc in zip(aligned_coordinate, aligned_consensus):
-                expected_nuc = consensus[consensus_index]
-                ref_index += 1
-                consensus_index += 1
-                expected_action = CigarActions.MATCH
-                if nuc == '-' and nuc != expected_nuc:
-                    expected_action = CigarActions.DELETE
-                    consensus_index -= 1
-                if ref_nuc == '-':
-                    expected_action = CigarActions.INSERT
-                    ref_index -= 1
-                if cigar and cigar[-1][1] == expected_action:
-                    cigar[-1][0] += 1
-                else:
-                    cigar.append([1, expected_action])
-
-            typed_cigar: List[Tuple[int, CigarActions]] = [(a, CigarActions(b))
-                                                           for [a, b] in cigar]
-            self.alignments.append(Alignment(
+            cigar = Cigar.from_msa(aligned_coordinate, aligned_consensus)
+            hit = CigarHit(cigar,
+                           q_st=0, q_ei=len(consensus)-1,
+                           r_st=0, r_ei=len(coordinate_seq)-1)
+            hit = hit.lstrip_query().lstrip_reference().rstrip_query().rstrip_reference()
+            self.alignments.append(Alignment.from_cigar_hit(
+                hit,
                 ctg='N/A',
                 ctg_len=len(coordinate_seq),
-                r_st=ref_start,
-                r_en=ref_index,
                 strand=1,
-                q_st=0,
-                q_en=consensus_index,
-                cigar=typed_cigar,
-                mapq=0,
-                cigar_str=str(Cigar(typed_cigar))))
+                mapq=0))
 
     def find_amino_alignments(self,
                               start_pos: int,
