@@ -4,7 +4,6 @@ import csv
 import os
 from dataclasses import replace
 from math import ceil
-from mappy import Aligner
 from functools import reduce
 from itertools import tee, islice, chain
 from gotoh import align_it
@@ -13,12 +12,13 @@ from Bio import Seq
 import logging
 from fractions import Fraction
 from operator import itemgetter
-from aligntools import Cigar, connect_cigar_hits, CigarHit
+from aligntools import connect_cigar_hits, CigarHit
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
+from micall.utils.alignment import Alignment, align_consensus
 import micall.utils.contig_stitcher_events as events
 
 
@@ -163,14 +163,11 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         yield contig
         return
 
-    def init_hit(x) -> Tuple[CigarHit, Literal["forward", "reverse"]]:
-        cigar = CigarHit(Cigar(x.cigar),
-                         min(x.r_st, x.r_en - 1), max(x.r_st, x.r_en - 1),
-                         min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1))
+    def init_hit(x: Alignment) -> Tuple[CigarHit, Literal["forward", "reverse"]]:
+        cigar = x.to_cigar_hit()
         return cigar, "forward" if x.strand == 1 else "reverse"
 
-    aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
-    alignments = list(aligner.map(contig.seq))
+    alignments, _algo = align_consensus(contig.ref_seq, contig.seq)
     hits_array = [init_hit(x) for x in alignments]
 
     for i, (hit, strand) in enumerate(hits_array):
