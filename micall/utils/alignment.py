@@ -1,8 +1,9 @@
-from typing import Tuple, List, Sequence, Optional
+from typing import Tuple, List, Sequence, Optional, Iterable, Iterator
 from dataclasses import dataclass
 from operator import attrgetter
+from itertools import groupby
 
-from aligntools import CigarActions, Cigar, CigarHit
+from aligntools import CigarActions, Cigar, CigarHit, connect_cigar_hits
 from gotoh import align_it
 from mappy import Aligner
 import mappy
@@ -93,6 +94,26 @@ def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
         return None
 
 
+def alignment_quality(alignment: Alignment) -> Tuple[int, ...]:
+    cigar = Cigar(alignment.cigar)
+    mlen = sum(1 for action in cigar.iterate_operations()
+               if action == CigarActions.MATCH)
+    return (alignment.mapq * cigar.query_length, mlen, cigar.query_length)
+
+
+def connect_alignments(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
+    stranded = groupby(alignments, key=lambda x: (x.strand, x.ctg, x.ctg_len))
+    for (strand, ctg, ctg_len), group_iter in stranded:
+        group = list(group_iter)
+        hits = list(map(Alignment.to_cigar_hit, group))
+        connected_hits = connect_cigar_hits(hits)
+        mapq = min(x.mapq for x in group)
+        for hit in connected_hits:
+            yield Alignment.from_cigar_hit(hit,
+                                           ctg=ctg, ctg_len=ctg_len,
+                                           strand=strand, mapq=mapq)
+
+
 def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment], str]:
     aligner = Aligner(seq=coordinate_seq, preset='map-ont')
     mappy_alignments: List[mappy.Alignment] = list(aligner.map(consensus))
@@ -101,6 +122,15 @@ def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment
         alignments = [Alignment.coerce(alignment)
                       for alignment in mappy_alignments
                       if alignment.is_primary]
+
+        # Following code will connect non-overlapping alignments
+        # that mappy outputs sometimes.
+        # It will also drop overlapping (in query coords) alignments.
+        # We are sorting the alignments before connect in order
+        # to drop the lowest quality contigs in case they overlap with
+        # higher quality alignments.
+        alignments.sort(key=alignment_quality)
+        alignments = list(connect_alignments(reversed(alignments)))
     else:
         algorithm = 'gotoh'
         gotoh_alignment = align_gotoh(coordinate_seq, consensus)

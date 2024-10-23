@@ -195,26 +195,19 @@ def test_start_contig_overlapping_sections(projects):
 
     In this example, positions 1-60 of the read map to pos 4441-4500 of the
     reference. Positions 55-120 of the read map to pos 2995-3060 of the ref.
-    Since positions 55-60 are in both alignments, remove them from the second
-    one.
+    This way, positions 55-60 are in both alignments. We expect our aligner
+    to drop the alignment with lesser quality
+    (quality is calculated from `mapq`, `query_length`, and others)
     """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[4440:4500] + seed_seq[3000:3060]
     reading_frames = create_reading_frames(consensus)
     int_ref = projects.getReference('INT')
-    rt_ref = projects.getReference('RT')
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    rt_aminos: typing.List[ReportAmino] = []
-    rt_nucleotides: typing.List[ReportNucleotide] = []
-    aligner.report_region(2550,
-                          4229,
-                          rt_nucleotides,
-                          rt_aminos,
-                          amino_ref=rt_ref)
     int_aminos: typing.List[ReportAmino] = []
     int_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(4230,
@@ -228,11 +221,6 @@ def test_start_contig_overlapping_sections(projects):
                                  list(range(3001, 3061)),
                                  4230,
                                  5096)
-    assert_consensus_nuc_indexes(rt_aminos,
-                                 list(range(4441, 4501)) +
-                                 list(range(3001, 3061)),
-                                 2550,
-                                 4229)
 
 
 # noinspection DuplicatedCode
@@ -457,19 +445,13 @@ def test_start_contig_big_deletion_minimap2(projects):
     expected_alignment = [make_alignment(ctg='N/A',
                                          ctg_len=len(seed_seq),
                                          r_st=290,
-                                         r_en=983,
-                                         q_st=0,
-                                         q_en=693,
-                                         mapq=60,
-                                         cigar=[(693, CigarActions.MATCH)]),
-                          make_alignment(ctg='N/A',
-                                         ctg_len=len(seed_seq),
-                                         r_st=3000,
                                          r_en=9269,
-                                         q_st=693,
+                                         q_st=0,
                                          q_en=6962,
                                          mapq=60,
-                                         cigar=[(6269, CigarActions.MATCH)])]
+                                         cigar=[(693, CigarActions.MATCH),
+                                                (2017, CigarActions.DELETE),
+                                                (6269, CigarActions.MATCH)])]
 
     aligner = ConsensusAligner(projects)
 

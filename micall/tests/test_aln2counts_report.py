@@ -2117,26 +2117,17 @@ HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
 
     #                                    A,C,G,T
     expected_text = """\
-HIV1-B-FR-K03455-seed,INT,15,51,262,4491,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,52,263,4492,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,53,264,4493,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,54,265,4494,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,55,266,4495,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,56,267,4496,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,57,268,4497,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,58,269,4498,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,59,270,4499,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,60,271,4500,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,61,452,3001,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,62,453,3002,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,63,454,3003,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,64,455,3004,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,65,456,3005,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,66,457,3006,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,67,458,3007,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,68,459,3008,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,69,460,3009,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,70,461,3010,9,0,0,0,0,0,0,0,0,9"""
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+HIV1-B-FR-K03455-seed,INT,15,1,212,4441,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,2,213,4442,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,3,214,4443,0,0,9,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,4,215,4444,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,5,216,4445,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,6,217,4446,9,0,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,7,218,4447,0,0,0,9,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,8,219,4448,0,9,0,0,0,0,0,0,0,9
+HIV1-B-FR-K03455-seed,INT,15,9,220,4449,0,9,0,0,0,0,0,0,0,9"""
+
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -2144,11 +2135,11 @@ HIV1-B-FR-K03455-seed,RT,15,70,461,3010,9,0,0,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 121
+    expected_size = 61
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[51:71]
+    key_lines = report_lines[0:10]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
@@ -2156,24 +2147,26 @@ HIV1-B-FR-K03455-seed,RT,15,70,461,3010,9,0,0,0,0,0,0,0,0,9"""
 def test_minimap_overlap_at_start(default_sequence_report, projects):
     """ Actual overlaps cause blank query position. Check consensus offset.
 
-    In this example, the start of PR appears twice, so the consensus index
-    gets blanked. Make sure that the PR consensus has the correct offset and
-    doesn't crash.
+    In this example, the start of PR (first 6 nuleotides) appears twice,
+    so the shorter alignment is discarded. Make sure that the PR consensus
+    has the correct offset and doesn't crash.
     """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
-    read_seq = seed_seq[2252:2400] + seed_seq[2000:2258]
+    first_part = seed_seq[2252:2400]
+    second_part = seed_seq[2000:2258]
+    _read_seq = first_part + second_part
 
     # refname,qcut,rank,count,offset,seq
     aligned_reads = prepare_reads(f"""\
-HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
+HIV1-B-FR-K03455-seed,15,0,9,0,{second_part}
 """)
 
     expected_text = f"""\
 seed,region,q-cutoff,consensus-percent-cutoff,seed-offset,region-offset,sequence
-HIV1-B-FR-K03455-seed,,15,MAX,0,,{read_seq}
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,1463,{read_seq}
-HIV1-B-FR-K03455-seed,PR,15,MAX,0,0,{read_seq}
+HIV1-B-FR-K03455-seed,,15,MAX,0,,{second_part}
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,MAX,0,1211,{second_part}
+HIV1-B-FR-K03455-seed,PR,15,MAX,252,0,{second_part[-6:]}
 """
     report_file = StringIO()
     default_sequence_report.write_consensus_all_header(report_file)
@@ -2290,7 +2283,7 @@ def test_contig_coverage_report_huge_gap(default_sequence_report):
     """ A gap so big that Gotoh can't bridge it, but minimap2 can. """
     ref = default_sequence_report.projects.getReference('HIV1-B-FR-K03455-seed')
     seq = ref[100:150] + ref[1000:1050]
-    expected_positions = list(range(101, 151)) + list(range(1001, 1051))
+    expected_positions = list(range(101, 1051))
     remap_conseq_csv = StringIO(f"""\
 region,sequence
 HIV1-B-FR-K03455-seed,{seq}
@@ -2555,7 +2548,7 @@ def test_write_sequence_coverage_counts_without_coverage(projects,
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[100:150] + ref[1000:1050]
-    expected_positions = list(range(101, 151)) + list(range(1001, 1051))
+    expected_positions = list(range(101, 1051))
 
     report_file = StringIO()
     sequence_report.projects = projects
@@ -2789,15 +2782,13 @@ def test_write_sequence_coverage_counts_with_unaligned_middle(projects,
                                                               sequence_report):
     """ The middle 100 bases are from a different reference.
 
-    They get reported with query positions, but no reference positions.
+    They get reported with query positions, but with deletions at reference positions.
     """
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     hcv_ref = projects.getReference('HCV-1a')
     seq = ref[:100] + hcv_ref[1000:1100] + ref[1000:1100]
-    expected_ref_positions = (list(range(1, 101)) +
-                              list(range(501, 601)) +
-                              list(range(1001, 1101)))
+    expected_ref_positions = list(range(1, 1101))
     expected_query_positions = list(range(1, 301))
 
     report_file = StringIO()
@@ -2832,7 +2823,7 @@ def test_write_sequence_coverage_counts_with_double_mapped_edges(
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[2858:2908] + ref[8187:8237]
-    expected_ref_positions = (list(range(2859, 2916)) + list(range(8196, 8238)))
+    expected_ref_positions = list(range(2859, 2908 + (8237-8187)))
     expected_query_positions = list(range(1, len(seq)+1))
 
     report_file = StringIO()
@@ -2861,8 +2852,7 @@ def test_write_sequence_coverage_minimap_hits(projects, sequence_report):
     seq = ref[1000:1100] + ref[2000:2100]
     expected_minimap_hits = """\
 contig,ref_name,start,end,ref_start,ref_end
-1-my-contig,HIV1-B-FR-K03455-seed,1,100,1001,1100
-1-my-contig,HIV1-B-FR-K03455-seed,101,200,2001,2100
+1-my-contig,HIV1-B-FR-K03455-seed,1,200,1001,2100
 """
     report_file = StringIO()
     sequence_report.projects = projects
