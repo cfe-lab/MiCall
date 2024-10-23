@@ -176,7 +176,9 @@ class ConsensusAligner:
                                if alignment.is_primary]
         else:
             self.algorithm = 'gotoh'
-            self.align_gotoh(coordinate_seq, self.consensus)
+            gotoh_alignment = ConsensusAligner.align_gotoh(coordinate_seq, self.consensus)
+            if gotoh_alignment:
+                self.alignments = [gotoh_alignment]
 
         self.alignments.sort(key=attrgetter('q_st'))
 
@@ -192,7 +194,8 @@ class ConsensusAligner:
                        "cigar_str": alignment.cigar_str}
                 self.overall_alignments_writer.writerow(row)
 
-    def align_gotoh(self, coordinate_seq: str, consensus: str):
+    @staticmethod
+    def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
         gap_open_penalty = 15
         gap_extend_penalty = 3
         use_terminal_gap_penalty = 1
@@ -204,18 +207,21 @@ class ConsensusAligner:
             gap_open_penalty,
             gap_extend_penalty,
             use_terminal_gap_penalty)
+
         if min(len(coordinate_seq), len(consensus)) < score:
             cigar = Cigar.from_msa(aligned_coordinate, aligned_consensus)
             hit = CigarHit(cigar,
                            q_st=0, q_ei=len(consensus)-1,
                            r_st=0, r_ei=len(coordinate_seq)-1)
             hit = hit.lstrip_query().lstrip_reference().rstrip_query().rstrip_reference()
-            self.alignments.append(Alignment.from_cigar_hit(
+            return Alignment.from_cigar_hit(
                 hit,
                 ctg='N/A',
                 ctg_len=len(coordinate_seq),
                 strand=1,
-                mapq=0))
+                mapq=0)
+        else:
+            return None
 
     def find_amino_alignments(self,
                               start_pos: int,
