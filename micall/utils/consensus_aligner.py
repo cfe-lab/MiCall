@@ -1,19 +1,18 @@
 from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, replace
 from itertools import count
-from operator import attrgetter
 import csv
 import os
 import logging
-from aligntools import CigarActions, Cigar, CigarHit
+from aligntools import CigarActions
 
-from gotoh import align_it, align_it_aa
+from gotoh import align_it_aa
 import mappy
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
 from micall.utils.translation import translate
-from micall.utils.alignment import Alignment
+from micall.utils.alignment import Alignment, align_consensus
 
 logger = logging.getLogger(__name__)
 
@@ -167,20 +166,8 @@ class ConsensusAligner:
             coordinate_seq = self.projects.getGenotypeReference(coordinate_name)
         except KeyError:
             coordinate_seq = self.projects.getReference(coordinate_name)
-        aligner = mappy.Aligner(seq=coordinate_seq, preset='map-ont')
-        mappy_alignments: List[mappy.Alignment] = list(aligner.map(self.consensus))
-        if mappy_alignments or 10_000 < len(self.consensus):
-            self.algorithm = 'minimap2'
-            self.alignments = [Alignment.coerce(alignment)
-                               for alignment in mappy_alignments
-                               if alignment.is_primary]
-        else:
-            self.algorithm = 'gotoh'
-            gotoh_alignment = ConsensusAligner.align_gotoh(coordinate_seq, self.consensus)
-            if gotoh_alignment:
-                self.alignments = [gotoh_alignment]
 
-        self.alignments.sort(key=attrgetter('q_st'))
+        self.alignments, self.algorithm = align_consensus(coordinate_seq, self.consensus)
 
         if self.overall_alignments_writer is not None:
             for alignment in self.alignments:
@@ -193,35 +180,6 @@ class ConsensusAligner:
                        "ref_end": alignment.r_en,
                        "cigar_str": alignment.cigar_str}
                 self.overall_alignments_writer.writerow(row)
-
-    @staticmethod
-    def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
-        gap_open_penalty = 15
-        gap_extend_penalty = 3
-        use_terminal_gap_penalty = 1
-        assert '&' not in consensus, "Consensus contains forbidden character '&'"
-        consensus = ''.join('&' if x == '-' else x for x in consensus)
-        aligned_coordinate, aligned_consensus, score = align_it(
-            coordinate_seq,
-            consensus,
-            gap_open_penalty,
-            gap_extend_penalty,
-            use_terminal_gap_penalty)
-
-        if min(len(coordinate_seq), len(consensus)) < score:
-            cigar = Cigar.from_msa(aligned_coordinate, aligned_consensus)
-            hit = CigarHit(cigar,
-                           q_st=0, q_ei=len(consensus)-1,
-                           r_st=0, r_ei=len(coordinate_seq)-1)
-            hit = hit.lstrip_query().lstrip_reference().rstrip_query().rstrip_reference()
-            return Alignment.from_cigar_hit(
-                hit,
-                ctg='N/A',
-                ctg_len=len(coordinate_seq),
-                strand=1,
-                mapq=0)
-        else:
-            return None
 
     def find_amino_alignments(self,
                               start_pos: int,

@@ -1,7 +1,10 @@
-from typing import Tuple, List, Sequence
+from typing import Tuple, List, Sequence, Optional
 from dataclasses import dataclass
+from operator import attrgetter
 
 from aligntools import CigarActions, Cigar, CigarHit
+from gotoh import align_it
+from mappy import Aligner
 import mappy
 
 
@@ -59,3 +62,52 @@ class Alignment:
                          cigar=list(hit.cigar._data),
                          cigar_str=str(hit.cigar),
                          )
+
+
+def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
+    gap_open_penalty = 15
+    gap_extend_penalty = 3
+    use_terminal_gap_penalty = 1
+    assert '&' not in consensus, "Consensus contains forbidden character '&'"
+    consensus = ''.join('&' if x == '-' else x for x in consensus)
+    aligned_coordinate, aligned_consensus, score = align_it(
+        coordinate_seq,
+        consensus,
+        gap_open_penalty,
+        gap_extend_penalty,
+        use_terminal_gap_penalty)
+
+    if min(len(coordinate_seq), len(consensus)) < score:
+        cigar = Cigar.from_msa(aligned_coordinate, aligned_consensus)
+        hit = CigarHit(cigar,
+                       q_st=0, q_ei=len(consensus)-1,
+                       r_st=0, r_ei=len(coordinate_seq)-1)
+        hit = hit.lstrip_query().lstrip_reference().rstrip_query().rstrip_reference()
+        return Alignment.from_cigar_hit(
+            hit,
+            ctg='N/A',
+            ctg_len=len(coordinate_seq),
+            strand=1,
+            mapq=0)
+    else:
+        return None
+
+
+def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment], str]:
+    aligner = Aligner(seq=coordinate_seq, preset='map-ont')
+    mappy_alignments: List[mappy.Alignment] = list(aligner.map(consensus))
+    if mappy_alignments or 10_000 < len(consensus):
+        algorithm = 'minimap2'
+        alignments = [Alignment.coerce(alignment)
+                      for alignment in mappy_alignments
+                      if alignment.is_primary]
+    else:
+        algorithm = 'gotoh'
+        gotoh_alignment = align_gotoh(coordinate_seq, consensus)
+        if gotoh_alignment:
+            alignments = [gotoh_alignment]
+        else:
+            alignments = []
+
+    alignments.sort(key=attrgetter('q_st'))
+    return (alignments, algorithm)
