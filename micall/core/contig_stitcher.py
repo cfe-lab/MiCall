@@ -4,7 +4,6 @@ import csv
 import os
 from dataclasses import replace
 from math import ceil
-from mappy import Aligner
 from functools import reduce
 from itertools import tee, islice, chain
 from gotoh import align_it
@@ -19,6 +18,7 @@ from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
+from micall.utils.alignment import align_consensus
 import micall.utils.contig_stitcher_events as events
 
 
@@ -169,8 +169,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
                          min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1))
         return cigar, "forward" if x.strand == 1 else "reverse"
 
-    aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
-    alignments = list(aligner.map(contig.seq))
+    alignments, _algo = align_consensus(contig.ref_seq, contig.seq)
     hits_array = [init_hit(x) for x in alignments]
 
     for i, (hit, strand) in enumerate(hits_array):
