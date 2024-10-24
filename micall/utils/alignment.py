@@ -9,6 +9,14 @@ from mappy import Aligner
 import mappy
 
 
+#
+# Alignments with deletions larger than MAX_GAP_SIZE
+# will be split around those deletions into multiple
+# separate alignments.
+#
+MAX_GAP_SIZE = 600  # TODO: make this smaller?
+
+
 @dataclass(frozen=True)
 class Alignment:
     """
@@ -114,6 +122,39 @@ def connect_alignments(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
                                            strand=strand, mapq=mapq)
 
 
+def collect_big_gaps_cut_points(alignment: Alignment) -> Iterator[float]:
+    hit = alignment.to_cigar_hit()
+    for deletion in hit.deletions():
+        if deletion.ref_length > MAX_GAP_SIZE:
+            midpoint = deletion.r_st + deletion.ref_length / 2
+            yield int(midpoint) + hit.epsilon
+
+
+def cut_hit_into_multiple_parts(hit: CigarHit, cut_points: Iterable[float]) -> Iterator[CigarHit]:
+    for cut_point in cut_points:
+        left, right = hit.cut_reference(cut_point)
+        left = left.rstrip_reference()
+        right = right.lstrip_reference()
+        yield left
+        hit = right
+    yield hit
+
+
+def split_around_big_gaps(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
+    for alignment in alignments:
+        cut_points = list(collect_big_gaps_cut_points(alignment))
+        if cut_points:
+            hit = alignment.to_cigar_hit()
+            for part in cut_hit_into_multiple_parts(hit, cut_points):
+                yield Alignment.from_cigar_hit(part,
+                                               ctg=alignment.ctg,
+                                               ctg_len=alignment.ctg_len,
+                                               strand=alignment.strand,
+                                               mapq=alignment.mapq)
+        else:
+            yield alignment
+
+
 def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment], str]:
     aligner = Aligner(seq=coordinate_seq, preset='map-ont')
     mappy_alignments: List[mappy.Alignment] = list(aligner.map(consensus))
@@ -139,5 +180,6 @@ def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment
         else:
             alignments = []
 
+    alignments = list(split_around_big_gaps(alignments))
     alignments.sort(key=attrgetter('q_st'))
     return (alignments, algorithm)

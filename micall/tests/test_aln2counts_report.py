@@ -2283,7 +2283,7 @@ def test_contig_coverage_report_huge_gap(default_sequence_report):
     """ A gap so big that Gotoh can't bridge it, but minimap2 can. """
     ref = default_sequence_report.projects.getReference('HIV1-B-FR-K03455-seed')
     seq = ref[100:150] + ref[1000:1050]
-    expected_positions = list(range(101, 1051))
+    expected_positions = list(range(101, 151)) + list(range(1001, 1051))
     remap_conseq_csv = StringIO(f"""\
 region,sequence
 HIV1-B-FR-K03455-seed,{seq}
@@ -2548,7 +2548,7 @@ def test_write_sequence_coverage_counts_without_coverage(projects,
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     seq = ref[100:150] + ref[1000:1050]
-    expected_positions = list(range(101, 1051))
+    expected_positions = list(range(101, 151)) + list(range(1001, 1051))
 
     report_file = StringIO()
     sequence_report.projects = projects
@@ -2782,13 +2782,14 @@ def test_write_sequence_coverage_counts_with_unaligned_middle(projects,
                                                               sequence_report):
     """ The middle 100 bases are from a different reference.
 
-    They get reported with query positions, but with deletions at reference positions.
+    They get reported with query positions, but no reference positions.
     """
     hxb2_name = 'HIV1-B-FR-K03455-seed'
     ref = projects.getReference(hxb2_name)
     hcv_ref = projects.getReference('HCV-1a')
     seq = ref[:100] + hcv_ref[1000:1100] + ref[1000:1100]
-    expected_ref_positions = list(range(1, 1101))
+    expected_ref_positions = (list(range(1, 101)) +
+                              list(range(1001, 1101)))
     expected_query_positions = list(range(1, 301))
 
     report_file = StringIO()
@@ -2852,7 +2853,8 @@ def test_write_sequence_coverage_minimap_hits(projects, sequence_report):
     seq = ref[1000:1100] + ref[2000:2100]
     expected_minimap_hits = """\
 contig,ref_name,start,end,ref_start,ref_end
-1-my-contig,HIV1-B-FR-K03455-seed,1,200,1001,2100
+1-my-contig,HIV1-B-FR-K03455-seed,1,100,1001,1100
+1-my-contig,HIV1-B-FR-K03455-seed,101,200,2001,2100
 """
     report_file = StringIO()
     sequence_report.projects = projects
