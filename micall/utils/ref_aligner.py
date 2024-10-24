@@ -44,7 +44,7 @@ class AlignmentEvaluator:
                     group_seeds.append(seed)
             self.seeds = group_seeds
         self.aligner_preset = aligner_preset
-        self.aligner = Aligner(seq=self.main_reference, preset=aligner_preset)
+        self.aligner = Aligner(seq=self.main_reference, bw=500, bw_long=500, preset=aligner_preset)
         self.num_warning_seeds = 0
         self.verbose = verbose
         self.warning_seeds = {'insertions': [], 'deletions': [], 'frameshift': [], 'coverage': [], 'alignment': []}

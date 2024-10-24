@@ -156,7 +156,7 @@ def split_around_big_gaps(alignments: Iterable[Alignment]) -> Iterator[Alignment
 
 
 def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment], str]:
-    aligner = Aligner(seq=coordinate_seq, preset='map-ont')
+    aligner = Aligner(seq=coordinate_seq, bw=500, bw_long=500, preset='map-ont')
     mappy_alignments: List[mappy.Alignment] = list(aligner.map(consensus))
     if mappy_alignments or 10_000 < len(consensus):
         algorithm = 'minimap2'
