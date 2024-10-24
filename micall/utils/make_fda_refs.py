@@ -10,11 +10,11 @@ from seqUtils import convert_fasta
 hyphy = HyPhy._THyPhy (os.getcwd(), 1) # instance of HyPhy
 hyphyAlign.change_settings(hyphy)  # default settings
 
-handle = open('fda_hcv_polyprotein.fa', 'rU')
+handle = open('fda_hcv_polyprotein.fa', 'r')
 fasta = convert_fasta(handle)
 handle.close()
 
-handle = open('/Users/art/git/MiseqPipeline/projects.json', 'rU')
+handle = open('/Users/art/git/MiseqPipeline/projects.json', 'r')
 proj = json.load(handle)
 handle.close()
 

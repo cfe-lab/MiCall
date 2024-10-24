@@ -60,7 +60,7 @@ class MicallDD(DD):
                   devnull,
                   devnull,
                   devnull)
-        with open(remap_filename, 'rU') as remap_csv:
+        with open(remap_filename, 'r') as remap_csv:
             print('Filtering.')
             reader = DictReader(remap_csv)
             mapped_qnames = {row['qname']
@@ -72,7 +72,7 @@ class MicallDD(DD):
         return filter_name1
 
     def filter_reads(self, filename, filter_name, qnames):
-        with open(filename, 'rU') as fin, open(filter_name, 'w') as fout:
+        with open(filename, 'r') as fin, open(filter_name, 'w') as fout:
             for read in zip(fin, fin, fin, fin):
                 qname = read[0].split()[0][1:]
                 if qname in qnames:
@@ -92,12 +92,12 @@ class MicallDD(DD):
         trimmed_filename2 = os.path.join(workdir, 'rerun.trimmed2.fastq')
         prelim_censored_filename = os.path.join(workdir, 'rerun_censored.prelim.csv')
         prelim_trimmed_filename = os.path.join(workdir, 'rerun_trimmed.prelim.csv')
-        with open(self.bad_cycles_filename, 'rU') as bad_cycles:
+        with open(self.bad_cycles_filename, 'r') as bad_cycles:
             bad_cycles = list(csv.DictReader(bad_cycles))
-        with open(simple_filename1, 'rU') as simple1, \
+        with open(simple_filename1, 'r') as simple1, \
                 open(censored_filename1, 'w') as censored1:
             censor(simple1, bad_cycles, censored1, use_gzip=False)
-        with open(simple_filename2, 'rU') as simple2, \
+        with open(simple_filename2, 'r') as simple2, \
                 open(censored_filename2, 'w') as censored2:
             censor(simple2, bad_cycles, censored2, use_gzip=False)
         with open(prelim_censored_filename, 'w+') as prelim_censored_csv, \
@@ -205,7 +205,7 @@ def read_fastq(filename, reads):
     @param filename: the FASTQ file to open
     @param reads: defaultdict({qname: [line1, line2, line3, line4, line1, line2, line3, line4]}
     """
-    with open(filename, 'rU') as f:
+    with open(filename, 'r') as f:
         for line1, line2, line3, line4 in zip(f, f, f, f):
             qname = line1.split()[0]
             lines = reads[qname]

@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.8
+FROM python:3.11
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -85,10 +85,10 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
+RUN pip install --upgrade pip
 
 COPY . /opt/micall/
 
-RUN pip install --upgrade pip
 RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 

@@ -8,12 +8,12 @@ authors = [
 license = {text = "AGPL-3.0"}
 license-files = { paths = ["LICENSE.txt"] }
 readme = "README.md"
-requires-python = ">=3.8,<3.9"
+requires-python = ">=3.11,<3.12"
 classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",

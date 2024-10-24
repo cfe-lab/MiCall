@@ -100,7 +100,7 @@ def process_file(sample_name, projects, args):
 
     nuc_counts = defaultdict(dict)  # {(source, dest): {pos: (agree, disagree)}}
     nucleotide_path = os.path.join(args.results, 'nuc.csv')
-    with open(nucleotide_path, 'rU') as nuc_csv:
+    with open(nucleotide_path, 'r') as nuc_csv:
         reader = DictReader(nuc_csv)
         sample_rows = (row for row in reader
                        if row['sample'] == sample_name)

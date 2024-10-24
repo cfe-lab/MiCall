@@ -82,7 +82,7 @@ def main():
         clean_count = 0
         dirty_count = 0
         recombinant_names = []
-        with open(filename, 'rU') as f:
+        with open(filename, 'r') as f:
             reader = csv.reader(f)
             for description, seed_seq in reader:
                 seed_seq = seed_seq.replace('-', '')

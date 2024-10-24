@@ -13,7 +13,7 @@ def parse_args():
         description='Post-processing of short-read alignments.')
 
     parser.add_argument('quality_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='QC error rate data, grouped by tile')
     parser.add_argument('bad_cycles_csv',
                         type=argparse.FileType('w'),

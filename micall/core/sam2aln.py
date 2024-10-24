@@ -26,7 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Conversion of SAM data into aligned format.')
     parser.add_argument('remap_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='<input> SAM output of bowtie2 in CSV format')
     parser.add_argument('aligned_csv',
                         type=argparse.FileType('w'),

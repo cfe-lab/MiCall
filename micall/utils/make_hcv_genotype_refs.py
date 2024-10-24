@@ -44,7 +44,7 @@ hyphyAlign.change_settings(hyphy,
                             noTerminalPenalty = 1)
 
 
-with open('HCV_REF_2012_genome.fasta', 'rU') as handle:
+with open('HCV_REF_2012_genome.fasta', 'r') as handle:
     genomes = convert_fasta(handle)  # keep one per genotype
 
 projects = ProjectConfig.loadDefault()
