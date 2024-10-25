@@ -12,13 +12,13 @@ from Bio import Seq
 import logging
 from fractions import Fraction
 from operator import itemgetter
-from aligntools import connect_cigar_hits, CigarHit
+from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
-from micall.utils.alignment import Alignment, align_consensus
+from micall.utils.alignment import align_consensus
 import micall.utils.contig_stitcher_events as events
 
 
@@ -163,41 +163,41 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         yield contig
         return
 
-    def init_hit(x: Alignment) -> Tuple[CigarHit, Literal["forward", "reverse"]]:
-        cigar = x.to_cigar_hit()
-        return cigar, "forward" if x.strand == 1 else "reverse"
-
     alignments, _algo = align_consensus(contig.ref_seq, contig.seq)
-    hits_array = [init_hit(x) for x in alignments]
+    hits = [x.to_cigar_hit() for x in alignments]
+    strands: List[Literal["forward", "reverse"]] = ["forward" if x.strand == 1 else "reverse" for x in alignments]
 
-    for i, (hit, strand) in enumerate(hits_array):
+    for i, (hit, strand) in enumerate(zip(hits, strands)):
         log(events.InitialHit(contig, i, hit, strand))
 
-    if not hits_array:
+    if not hits:
         log(events.ZeroHits(contig))
         yield contig
         return
 
-    if len(set(strand for hit, strand in hits_array)) > 1:
+    if len(set(strands)) > 1:
         log(events.StrandConflict(contig))
         yield contig
         return
 
-    strand = hits_array[0][1]
+    strand = strands[0]
     if strand == "reverse":
         rc = str(Seq.Seq(contig.seq).reverse_complement())
         original_contig = contig
         new_contig = replace(contig, seq=rc)
         contig = new_contig
-        hits_array = [(replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1), strand)
-                      for hit, strand in hits_array]
+        hits = [replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1) for hit in hits]
 
         log(events.ReverseComplement(original_contig, new_contig))
-        for i, (hit, strand) in enumerate(hits_array):
+        for i, (hit, strand) in enumerate(zip(hits, strands)):
             log(events.InitialHit(contig, i, hit, strand))
 
-    connected = connect_cigar_hits([hit for hit, strand in hits_array]) if hits_array else []
-    log(events.HitNumber(contig, hits_array, connected))
+    def quality(x: CigarHit):
+        return x.ref_length
+
+    filtered = list(drop_overlapping_cigar_hits(hits, quality))
+    connected = list(connect_nonoverlapping_cigar_hits(filtered))
+    log(events.HitNumber(contig, list(zip(hits, strands)), connected))
 
     for i, single_hit in enumerate(connected):
         query = replace(contig, name=None)
