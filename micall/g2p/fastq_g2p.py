@@ -36,9 +36,9 @@ COORDINATE_REF_NAME = "V3LOOP"
 def parse_args():
     parser = argparse.ArgumentParser(description='Calculate g2p scores from amino acid sequences.')
 
-    parser.add_argument('fastq1', type=argparse.FileType('rU'),
+    parser.add_argument('fastq1', type=argparse.FileType('r'),
                         help='<input> FASTQ file containing read 1 reads')
-    parser.add_argument('fastq2', type=argparse.FileType('rU'),
+    parser.add_argument('fastq2', type=argparse.FileType('r'),
                         help='<input> FASTQ file containing read 2 reads')
     parser.add_argument('g2p_csv', type=argparse.FileType('w'),
                         help='<output> CSV containing g2p predictions.')
