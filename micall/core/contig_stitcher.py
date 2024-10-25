@@ -18,7 +18,7 @@ from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
-from micall.utils.alignment import align_consensus
+from micall.utils.consensus_aligner import align_consensus
 import micall.utils.contig_stitcher_events as events
 
 
