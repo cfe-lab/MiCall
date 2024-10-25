@@ -533,7 +533,7 @@ def test_start_contig_insertion_minimap2(projects):
                                         r_en=2060,
                                         q_st=0,
                                         q_en=63,
-                                        mapq=9,
+                                        mapq=8,
                                         cigar=[(30, CigarActions.MATCH),
                                                (3, CigarActions.INSERT),
                                                (30, CigarActions.MATCH)])

@@ -742,7 +742,7 @@ class ConsensusAligner:
         if self.seed_concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
-        seed_aligner = mappy.Aligner(seq=seed_ref, preset='map-ont')
+        seed_aligner = mappy.Aligner(seq=seed_ref, bw=500, bw_long=500, preset='map-ont')
         seed_alignments: List[mappy.Alignment] = list(seed_aligner.map(self.consensus))
 
         regions = projects.getCoordinateReferences(seed_name)
