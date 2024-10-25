@@ -2796,7 +2796,6 @@ def test_write_sequence_coverage_counts_with_unaligned_middle(projects,
     hcv_ref = projects.getReference('HCV-1a')
     seq = ref[:100] + hcv_ref[1000:1100] + ref[1000:1100]
     expected_ref_positions = (list(range(1, 101)) +
-                              list(range(501, 601)) +
                               list(range(1001, 1101)))
     expected_query_positions = list(range(1, 301))
 
