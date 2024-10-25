@@ -56,7 +56,7 @@ def calculate_distance(source, destination):
 
 
 def plot_distances(projects_filename):
-    with open(projects_filename, 'rU') as f:
+    with open(projects_filename, 'r') as f:
         config = json.load(f)
     populate_key_references(config['regions'])
     groups = defaultdict(list)

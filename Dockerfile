@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.8
+FROM python:3.11
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 

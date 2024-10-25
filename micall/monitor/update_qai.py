@@ -373,7 +373,7 @@ def find_pipeline_id(session, pipeline_version):
 def load_ok_sample_regions(result_folder):
     ok_sample_regions = set()
     coverage_file = os.path.join(result_folder, 'coverage_scores.csv')
-    with open(coverage_file, "rU") as f:
+    with open(coverage_file, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row['on.score'] == '4':
