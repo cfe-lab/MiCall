@@ -195,19 +195,26 @@ def test_start_contig_overlapping_sections(projects):
 
     In this example, positions 1-60 of the read map to pos 4441-4500 of the
     reference. Positions 55-120 of the read map to pos 2995-3060 of the ref.
-    This way, positions 55-60 are in both alignments. We expect our aligner
-    to drop the alignment with lesser quality
-    (quality is calculated from `mapq`, `query_length`, and others)
+    Since positions 55-60 are in both alignments, remove them from the second
+    one.
     """
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[4440:4500] + seed_seq[3000:3060]
     reading_frames = create_reading_frames(consensus)
     int_ref = projects.getReference('INT')
+    rt_ref = projects.getReference('RT')
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
+    rt_aminos: typing.List[ReportAmino] = []
+    rt_nucleotides: typing.List[ReportNucleotide] = []
+    aligner.report_region(2550,
+                          4229,
+                          rt_nucleotides,
+                          rt_aminos,
+                          amino_ref=rt_ref)
     int_aminos: typing.List[ReportAmino] = []
     int_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(4230,
@@ -221,6 +228,11 @@ def test_start_contig_overlapping_sections(projects):
                                  list(range(3001, 3061)),
                                  4230,
                                  5096)
+    assert_consensus_nuc_indexes(rt_aminos,
+                                 list(range(4441, 4501)) +
+                                 list(range(3001, 3061)),
+                                 2550,
+                                 4229)
 
 
 # noinspection DuplicatedCode
@@ -412,6 +424,28 @@ def test_start_contig_short_consensus(projects):
 
     assert_alignments(aligner, expected_alignment)
     assert aligner.algorithm == 'gotoh'
+
+
+def test_start_contig_deletion_minimap2(projects):
+    seed_name = 'SARS-CoV-2-seed'
+    seed_seq = projects.getReference(seed_name)
+    consensus = seed_seq[2000:2030] + seed_seq[2031:2060]
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=2000,
+                                        r_en=2060,
+                                        q_st=0,
+                                        q_en=59,
+                                        mapq=9,
+                                        cigar=[(30, CigarActions.MATCH),
+                                               (1, CigarActions.DELETE),
+                                               (29, CigarActions.MATCH)])
+    aligner = ConsensusAligner(projects)
+
+    aligner.start_contig(seed_name, consensus)
+
+    assert_alignments(aligner, expected_alignment)
+    assert aligner.algorithm == 'minimap2'
 
 
 def test_start_contig_big_deletion_minimap2(projects):

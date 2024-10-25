@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from operator import attrgetter
 from itertools import groupby
 
-from aligntools import CigarActions, Cigar, CigarHit, connect_cigar_hits
+from aligntools import CigarActions, Cigar, CigarHit, connect_nonoverlapping_cigar_hits
 from gotoh import align_it
 from mappy import Aligner
 import mappy
@@ -114,7 +114,7 @@ def connect_alignments(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
     for (strand, ctg, ctg_len), group_iter in stranded:
         group = list(group_iter)
         hits = list(map(Alignment.to_cigar_hit, group))
-        connected_hits = connect_cigar_hits(hits)
+        connected_hits = connect_nonoverlapping_cigar_hits(hits)
         mapq = min(x.mapq for x in group)
         for hit in connected_hits:
             yield Alignment.from_cigar_hit(hit,
