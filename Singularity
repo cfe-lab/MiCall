@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: python:3.11
+From: python:3.12
 
 %help
     MiCall maps all the reads from a sample against a set of reference
