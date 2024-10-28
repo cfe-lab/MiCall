@@ -1,4 +1,4 @@
-from typing import Tuple, List, Sequence
+from typing import Tuple, Sequence, Union, NoReturn
 from dataclasses import dataclass
 
 from aligntools import CigarActions, Cigar, CigarHit
@@ -23,14 +23,12 @@ class Alignment:
     cigar_str: str
 
     @staticmethod
-    def coerce(obj: object) -> 'Alignment':
+    def coerce(obj: Union['Alignment', mappy.Alignment]) -> 'Alignment':
         if isinstance(obj, Alignment):
             return obj
         elif isinstance(obj, mappy.Alignment):
-            cigar: List[Tuple[int, CigarActions]] = []
-            for (size, action) in obj.cigar:
-                cigar.append((size, CigarActions(action)))
-
+            cigar = [(size, CigarActions(action))
+                     for (size, action) in obj.cigar]
             return Alignment(ctg=obj.ctg,
                              ctg_len=obj.ctg_len,
                              r_st=obj.r_st, r_en=obj.r_en,
@@ -41,6 +39,7 @@ class Alignment:
                              cigar_str=obj.cigar_str,
                              )
         else:
+            _: NoReturn = obj
             raise TypeError(f"Cannot coerce from {obj!r}.")
 
     def to_cigar_hit(self) -> CigarHit:
