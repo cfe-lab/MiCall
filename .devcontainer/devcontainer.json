@@ -15,7 +15,7 @@
   // "forwardPorts": [],
 
   // Use 'onCreateCommand' to run commands after the container is created, but before anything else starts.
-  "onCreateCommand": "python -m pip install .[dev,test]",
+  "onCreateCommand": "python -m pip install .[denovo,watcher,dev,test]",
 
   // Configure tool-specific properties.
   "customizations": {
