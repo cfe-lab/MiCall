@@ -50,6 +50,7 @@ def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
 
     if min(len(coordinate_seq), len(consensus)) < score:
         cigar = Cigar.from_msa(aligned_coordinate, aligned_consensus)
+        cigar = cigar.relax()  # turn '=' and 'X' into 'M'.
         hit = CigarHit(cigar,
                        q_st=0, q_ei=len(consensus)-1,
                        r_st=0, r_ei=len(coordinate_seq)-1)
