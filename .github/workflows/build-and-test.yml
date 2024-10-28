@@ -73,7 +73,6 @@ jobs:
       - name: Report code coverage
         run: |
           rm -rf micall/tests/microtest/scratch
-          python -m pip install codecov
           codecov
 
   docker-test:
