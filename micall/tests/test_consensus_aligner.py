@@ -135,7 +135,7 @@ def test_create_reading_frames():
 def test_alignment_repr():
     alignment = make_alignment('R1', 0, 1001, 1100, 1, 1, 100)
 
-    assert repr(alignment) == "Alignment(ctg='R1', ctg_len=0, r_st=1001, r_en=1100, strand=1, q_st=1, q_en=100, mapq=0, cigar=[(99, <CigarActions.MATCH: 0>)], cigar_str='99M')"
+    assert repr(alignment) == "Alignment(ctg='R1', ctg_len=0, r_st=1001, r_en=1100, strand=1, q_st=1, q_en=100, mapq=0, cigar=[(99, CigarActions.MATCH)], cigar_str='99M')"
 
 
 def test_start_contig(projects):

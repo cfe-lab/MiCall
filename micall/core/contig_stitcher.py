@@ -12,7 +12,7 @@ from Bio import Seq
 import logging
 from fractions import Fraction
 from operator import itemgetter
-from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits
+from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
@@ -193,7 +193,9 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
             log(events.InitialHit(contig, i, hit, strand))
 
     def quality(x: CigarHit):
-        return x.ref_length
+        mlen = sum(1 for x in x.cigar.relax().iterate_operations()
+                   if x == CigarActions.MATCH)
+        return (mlen, x.ref_length)
 
     filtered = list(drop_overlapping_cigar_hits(hits, quality))
     connected = list(connect_nonoverlapping_cigar_hits(filtered))
