@@ -89,7 +89,7 @@ RUN pip install --upgrade pip
 
 COPY . /opt/micall/
 
-RUN pip install /opt/micall[basespace]
+RUN pip install /opt/micall[denovo,basespace]
 RUN micall make_blast_db
 
 ## Trigger matplotlib to build its font cache

@@ -24,7 +24,6 @@ classifiers = [
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
     "pytz==2024.2",
-    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
     "biopython==1.84",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
@@ -64,6 +63,11 @@ dev = [
     "mypy==1.13.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
+    "codecov==2.1.13",  # For reporting the code coverage.
+]
+denovo = [
+    # Requirements for running De-Novo pipeline (only problematic ones).
+    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script

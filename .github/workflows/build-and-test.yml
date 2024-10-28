@@ -53,11 +53,9 @@ jobs:
           echo "/opt/bowtie2" >> $GITHUB_PATH
 
       - name: Install MiCall's Python dependencies
-        # Have to clean up alignment build files. Otherwise, they'll get reused
-        # in Singularity build with the wrong GLIBC libraries.
         run: |
           python -m pip install --upgrade pip
-          pip install .[dev,test]
+          pip install .[denovo,watcher,dev,test]
 
       - name: Run type checker
         run: |
@@ -73,7 +71,6 @@ jobs:
       - name: Report code coverage
         run: |
           rm -rf micall/tests/microtest/scratch
-          python -m pip install codecov
           codecov
 
   docker-test:
