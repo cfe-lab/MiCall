@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from typing import Optional, TextIO
+from typing import Optional, TextIO, cast, BinaryIO
 from csv import DictReader
 from datetime import datetime
 from glob import glob
@@ -79,8 +79,8 @@ def denovo(fastq1_path: str,
         with open(contigs_fasta_path, 'a'):
             pass
 
-    with open(contigs_fasta_path, 'rt') as reader:
-        copyfileobj(reader, fasta)  # type: ignore
+    with open(contigs_fasta_path) as reader:
+        copyfileobj(cast(BinaryIO, reader), fasta)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
