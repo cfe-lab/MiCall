@@ -195,7 +195,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
     def quality(x: CigarHit):
         mlen = sum(1 for x in x.cigar.relax().iterate_operations()
                    if x == CigarActions.MATCH)
-        return 0.9 * mlen + 0.1 * x.ref_length
+        return (mlen, x.ref_length)
 
     filtered = list(drop_overlapping_cigar_hits(hits, quality))
     connected = list(connect_nonoverlapping_cigar_hits(filtered))
