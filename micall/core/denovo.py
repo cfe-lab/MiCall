@@ -79,8 +79,8 @@ def denovo(fastq1_path: str,
         with open(contigs_fasta_path, 'a'):
             pass
 
-    with open(contigs_fasta_path) as reader:
-        copyfileobj(reader, fasta)
+    with open(contigs_fasta_path, 'rt') as reader:
+        copyfileobj(reader, fasta)  # type: ignore
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
