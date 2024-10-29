@@ -253,7 +253,7 @@ similar steps to setting up a development workstation. Follow these steps:
 
 14. Launch the basespace virtual machine (see BaseSpace section above) and copy
     MiCall source files into it. The easiest way to copy is via scp:
-    
+
     ```shell
     scp -P 2222 /path/to/micall/on/host basespace@localhost:MiCall
     # (password is "basespace")
@@ -266,8 +266,8 @@ similar steps to setting up a development workstation. Follow these steps:
     sudo python3 MiCall/micall/utils/docker_build.py -t vX.Y.Z --nopush
     ```
 
-    The script is able to push the docker image to the illumina repo and launch 
-    spacedock as well, but that is currently broken because of the old docker version 
+    The script is able to push the docker image to the illumina repo and launch
+    spacedock as well, but that is currently broken because of the old docker version
     in the VM. If this is ever updated, or we build our own VM, you won't have to do these
     steps manually anymore and can remove the `--nopush`.
 
@@ -275,7 +275,7 @@ similar steps to setting up a development workstation. Follow these steps:
     Unfortunately, the old
     version of docker that comes with the basespace virtual machine
     [can't log in] to docker hub or illumina, so you'll have to save it to a tar file and
-    load that into your host system's version of docker. Before pushing it anywhere, 
+    load that into your host system's version of docker. Before pushing it anywhere,
     check that the docker image works by running the microtests.
     If the docker push fails with mysterious error messages (access to the resource
     is denied), try `docker logout` and `docker login` again, and make sure you are
@@ -297,8 +297,8 @@ similar steps to setting up a development workstation. Follow these steps:
 
 16. Duplicate the MiCall form in the revisions section of the form builder, then
     edit the `callbacks.js` in the form builder itself, and add the `:vX.Y.Z` tag to the
-    `containerImageId` field. In My Apps, create a new version of the App with the new 
-    version number. Record the new agent ID (click the arrow on the bottom right of the 
+    `containerImageId` field. In My Apps, create a new version of the App with the new
+    version number. Record the new agent ID (click the arrow on the bottom right of the
     form builder).
 17. Launch the spacedock version by running this in your basespace VM:
 
