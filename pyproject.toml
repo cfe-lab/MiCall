@@ -38,7 +38,7 @@ dependencies = [
     "mappy==2.28",
     "drawsvg==2.4.0",
     "cairosvg==2.7.1",
-    "aligntools==1.2.0",
+    "aligntools==1.2.1",
 ]
 
 [project.optional-dependencies]
