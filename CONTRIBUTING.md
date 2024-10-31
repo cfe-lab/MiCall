@@ -284,7 +284,6 @@ similar steps to setting up a development workstation. Follow these steps:
     ```shell
     ssh basespace@localhost -p2222  # password is "basespace"
     sudo su
-    cd /media/sf_micall
     sudo docker save cfelab/micall:vX.Y.Z > micall-vX.Y.Z.tar
     exit  # Exit the root shell.
     exit  # Exit the virtual machine.
