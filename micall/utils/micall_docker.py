@@ -591,6 +591,7 @@ def process_run(run_info, args):
         run_summary = summarize_run(run_info)
 
     def runner(func, inputs):
+        inputs = list(inputs)
         if args.max_active > 1 and len(inputs) > 1:
             with ProcessPoolExecutor(max_workers=args.max_active) as pool:
                 list(pool.map(func, inputs))
