@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 from typing import Optional, TextIO, cast, BinaryIO
-from csv import DictReader
 from datetime import datetime
 from glob import glob
 from shutil import rmtree, copyfileobj
@@ -10,12 +9,8 @@ from subprocess import PIPE, CalledProcessError, STDOUT
 import subprocess
 from tempfile import mkdtemp
 
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 
-
-IVA = "iva"
+HAPLOFLOW = "haploflow"
 logger = logging.getLogger(__name__)
 
 
@@ -40,6 +35,10 @@ def denovo(fastq1_path: str,
         amplicon reads
     """
 
+    if merged_contigs_csv is not None:
+        # TODO: implement this.
+        logger.error("Haploflow implementation does not support contig extensions yet.")
+
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
@@ -55,26 +54,36 @@ def denovo(fastq1_path: str,
                     '--interleave',
                     '-o', joined_path],
                    check=True)
-    iva_out_path = os.path.join(tmp_dir, 'iva_out')
-    contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
-    if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
-    iva_args.append(iva_out_path)
+
+    haplo_args = {'long': 0,
+                  'filter': 500,
+                  'thres': -1,
+                  'strict': 5,
+                  'error': 0.02,
+                  'kmer': 41,
+                  'merge': False,
+                  'scaffold': False,
+                  'patch': False,
+                  'ref': None,
+                  'RP': False,
+                  }
+    assembly_out_path = os.path.join(tmp_dir, 'haplo_out')
+    contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fa')
+    haplo_cmd = [HAPLOFLOW,
+                 '--read-file', joined_path,
+                 '--out', assembly_out_path,
+                 '--k', str(haplo_args['kmer']),
+                 '--error-rate', str(haplo_args['error']),
+                 '--strict', str(haplo_args['strict']),
+                 '--filter', str(haplo_args['filter']),
+                 '--thres', str(haplo_args['thres']),
+                 '--long', str(haplo_args['long'])]
     try:
-        subprocess.run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
+        subprocess.run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
         output = ex.output and ex.output.decode('UTF8')
         if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('iva failed to assemble.', exc_info=True)
+            logger.warning('Haploflow failed to assemble.', exc_info=True)
             logger.warning(output)
         with open(contigs_fasta_path, 'a'):
             pass
