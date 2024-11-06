@@ -1,31 +1,19 @@
 name: Build and Test MiCall
 on: push
 jobs:
-  build:
+  main:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.11
       - run: mkdir -p ~/bin
       - run: echo ~/bin >> $GITHUB_PATH
 
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.15.6'
-
-      - name: Install Haploflow
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential git ronn
-          cd /opt/
-          git clone https://github.com/hzi-bifo/Haploflow
-          cd Haploflow
-          git checkout 9a5a0ff6c3a0435e723e41f98fe82ec2ad19cf50
-          sh build.sh
-          sudo ln -s /opt/Haploflow/build/haploflow ~/bin/haploflow
+      - name: Run apt update
+        run: sudo apt-get update
 
       - name: Install IVA assembler dependencies
         run: |
@@ -65,14 +53,53 @@ jobs:
           echo "/opt/bowtie2" >> $GITHUB_PATH
 
       - name: Install MiCall's Python dependencies
-        # Have to clean up alignment build files. Otherwise, they'll get reused
-        # in Singularity build with the wrong GLIBC libraries.
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-test.txt
+          pip install .[denovo,watcher,dev,test]
+
+      - name: Run type checker
+        run: |
+          mypy
+
+      - name: Run linter
+        run: |
+          ruff check
 
       - name: Test with pytest
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+
+      - name: Report code coverage
+        run: |
+          rm -rf micall/tests/microtest/scratch
+          codecov
+
+  docker-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build docker image
+        run: docker build --tag micall --file Dockerfile .
+      - name: Run docker image entrypoint
+        run: docker run micall --help
+      - name: Check docker image entrypoint
+        run: docker run micall --help | grep -i -e 'docker'
+
+  singularity-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.6'
+
+      - name: Run apt update
+        run: sudo apt-get update
 
       - name: Install Singularity
         run: |
@@ -95,19 +122,15 @@ jobs:
           cd ..
           rm -rf singularity
           singularity --version
+
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
+
+      - name: Singularity test
+        run: python micall/main.py release_test_microtest micall.simg
+
       - name: Upload Singularity Image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: micall.simg
           path: micall.simg
-
-      - name: Singularity test
-        run: python release_test_microtest.py micall.simg
-
-      - name: Report code coverage
-        run: |
-          rm -rf micall/tests/microtest/scratch
-          python -m pip install codecov
-          codecov

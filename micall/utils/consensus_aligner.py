@@ -1,18 +1,20 @@
-import typing
+from typing import Dict, List, Optional, Set, Iterator, Iterable, Tuple
 from dataclasses import dataclass, replace
-from enum import IntEnum
-from itertools import count
+from itertools import count, groupby
 from operator import attrgetter
 import csv
 import os
 import logging
+from aligntools import CigarActions, Cigar, CigarHit, connect_nonoverlapping_cigar_hits
 
 from gotoh import align_it, align_it_aa
-from mappy import Alignment, Aligner
+from mappy import Aligner
+import mappy
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.report_amino import SeedAmino, ReportAmino, ReportNucleotide, SeedNucleotide
 from micall.utils.translation import translate
+from micall.utils.alignment import Alignment
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +25,115 @@ MINIMUM_AMINO_ALIGNMENT = 10
 # Most codons in an insertion or deletion that is still aligned in amino acids.
 MAXIMUM_AMINO_GAP = 10
 
-CigarActions = IntEnum(
-    'CigarActions',
-    'MATCH INSERT DELETE SKIPPED SOFT_CLIPPED HARD_CLIPPED',
-    start=0)
+
+#
+# Alignments with deletions larger than MAX_GAP_SIZE
+# will be split around those deletions into multiple
+# separate alignments.
+#
+MAX_GAP_SIZE = 600  # TODO: make this smaller?
+
+
+
+def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
+    gap_open_penalty = 15
+    gap_extend_penalty = 3
+    use_terminal_gap_penalty = 1
+    assert '&' not in consensus, "Consensus contains forbidden character '&'"
+    consensus = ''.join('&' if x == '-' else x for x in consensus)
+    aligned_coordinate, aligned_consensus, score = align_it(
+        coordinate_seq,
+        consensus,
+        gap_open_penalty,
+        gap_extend_penalty,
+        use_terminal_gap_penalty)
+
+    if min(len(coordinate_seq), len(consensus)) < score:
+        cigar = Cigar.from_msa(aligned_coordinate, aligned_consensus)
+        cigar = cigar.relax()  # turn '=' and 'X' into 'M'.
+        hit = CigarHit(cigar,
+                       q_st=0, q_ei=len(consensus)-1,
+                       r_st=0, r_ei=len(coordinate_seq)-1)
+        hit = hit.lstrip_query().lstrip_reference().rstrip_query().rstrip_reference()
+        return Alignment.from_cigar_hit(
+            hit,
+            ctg='N/A',
+            ctg_len=len(coordinate_seq),
+            strand=1,
+            mapq=0)
+    else:
+        return None
+
+
+def connect_alignments(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
+    stranded = groupby(alignments, key=lambda x: (x.strand, x.ctg, x.ctg_len))
+    for (strand, ctg, ctg_len), group_iter in stranded:
+        group = list(group_iter)
+        hits = list(map(Alignment.to_cigar_hit, group))
+        connected_hits = connect_nonoverlapping_cigar_hits(hits)
+        mapq = min(x.mapq for x in group)
+        for hit in connected_hits:
+            yield Alignment.from_cigar_hit(hit,
+                                           ctg=ctg, ctg_len=ctg_len,
+                                           strand=strand, mapq=mapq)
+
+
+def collect_big_gaps_cut_points(alignment: Alignment) -> Iterator[float]:
+    hit = alignment.to_cigar_hit()
+    for deletion in hit.deletions():
+        if deletion.ref_length > MAX_GAP_SIZE:
+            midpoint = deletion.r_st + deletion.ref_length / 2
+            yield int(midpoint) + hit.epsilon
+
+
+def cut_hit_into_multiple_parts(hit: CigarHit, cut_points: Iterable[float]) -> Iterator[CigarHit]:
+    for cut_point in cut_points:
+        left, right = hit.cut_reference(cut_point)
+        left = left.rstrip_reference()
+        right = right.lstrip_reference()
+        yield left
+        hit = right
+    yield hit
+
+
+def split_around_big_gaps(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
+    for alignment in alignments:
+        cut_points = list(collect_big_gaps_cut_points(alignment))
+        if cut_points:
+            hit = alignment.to_cigar_hit()
+            for part in cut_hit_into_multiple_parts(hit, cut_points):
+                yield Alignment.from_cigar_hit(part,
+                                               ctg=alignment.ctg,
+                                               ctg_len=alignment.ctg_len,
+                                               strand=alignment.strand,
+                                               mapq=alignment.mapq)
+        else:
+            yield alignment
+
+
+def align_consensus(coordinate_seq: str, consensus: str) -> Tuple[List[Alignment], str]:
+    aligner = Aligner(seq=coordinate_seq, bw=500, bw_long=500, preset='map-ont')
+    mappy_alignments: List[mappy.Alignment] = list(aligner.map(consensus))
+    if mappy_alignments or 10_000 < len(consensus):
+        algorithm = 'minimap2'
+        alignments = [Alignment.coerce(alignment)
+                      for alignment in mappy_alignments
+                      if alignment.is_primary]
+
+        # Following code will connect non-overlapping alignments
+        # that mappy outputs sometimes.
+        alignments = list(connect_alignments(reversed(alignments)))
+    else:
+        algorithm = 'gotoh'
+        gotoh_alignment = align_gotoh(coordinate_seq, consensus)
+        if gotoh_alignment:
+            alignments = [gotoh_alignment]
+        else:
+            alignments = []
+
+    alignments = list(split_around_big_gaps(alignments))
+    alignments.sort(key=attrgetter('q_st'))
+    return (alignments, algorithm)
 
 
 def align_aminos(reference: str,
@@ -62,109 +169,6 @@ def map_amino_sequences(from_seq: str, to_seq: str):
     return seq_map
 
 
-class AlignmentWrapper(Alignment):
-    init_fields = (
-        'ctg ctg_len r_st r_en strand q_st q_en mapq cigar is_primary mlen '
-        'blen NM trans_strand read_num cs MD').split()
-
-    @classmethod
-    def wrap(cls, source: Alignment, **overrides):
-        """ Wrap an Alignment object to make it easier to compare and display.
-
-        Mostly used when testing.
-        """
-        args = [getattr(source, field_name)
-                for field_name in cls.init_fields]
-        for name, value in overrides.items():
-            i = cls.init_fields.index(name)
-            args[i] = value
-        return cls(*args)
-
-    # noinspection PyPep8Naming
-    def __new__(cls,
-                ctg='',
-                ctg_len=0,
-                r_st=0,
-                r_en=0,
-                strand=1,
-                q_st=0,
-                q_en=0,
-                mapq=0,
-                cigar: typing.Iterable[typing.List[int]] = tuple(),
-                is_primary=True,
-                mlen=0,
-                blen=0,
-                NM=0,
-                trans_strand=0,
-                read_num=1,
-                cs='',
-                MD=''):
-        """ Create an instance.
-
-        :param ctg: name of the reference sequence the query is mapped to
-        :param ctg_len: total length of the reference sequence
-        :param r_st and r_en: start and end positions on the reference
-        :param strand: +1 if on the forward strand; -1 if on the reverse strand
-        :param q_st and q_en: start and end positions on the query
-        :param mapq: mapping quality
-        :param cigar: CIGAR returned as an array of shape (n_cigar,2). The two
-            numbers give the length and the operator of each CIGAR operation.
-        :param is_primary: if the alignment is primary (typically the best and
-            the first to generate)
-        :param mlen: length of the matching bases in the alignment, excluding
-            ambiguous base matches.
-        :param blen: length of the alignment, including both alignment matches
-            and gaps but excluding ambiguous bases.
-        :param NM: number of mismatches, gaps and ambiguous positions in the
-            alignment
-        :param trans_strand: transcript strand. +1 if on the forward strand; -1
-            if on the reverse strand; 0 if unknown
-        :param read_num: read number that the alignment corresponds to; 1 for
-            the first read and 2 for the second read
-        :param cs: the cs tag.
-        :param MD: the MD tag as in the SAM format. It is an empty string unless
-            the MD argument is applied when calling mappy.Aligner.map().
-        """
-        cigar = list(cigar)
-        if not mlen:
-            mlen = min(q_en-q_st, r_en-r_st)
-        if not blen:
-            blen = max(q_en-q_st, r_en-r_st)
-        if not cigar:
-            cigar = [[max(q_en-q_st, r_en-r_st), CigarActions.MATCH]]
-        return super().__new__(cls,
-                               ctg,
-                               ctg_len,
-                               r_st,
-                               r_en,
-                               strand,
-                               q_st,
-                               q_en,
-                               mapq,
-                               cigar,
-                               is_primary,
-                               mlen,
-                               blen,
-                               NM,
-                               trans_strand,
-                               read_num-1,
-                               cs,
-                               MD)
-
-    def __eq__(self, other: Alignment):
-        for field_name in self.init_fields:
-            self_value = getattr(self, field_name)
-            other_value = getattr(other, field_name)
-            if self_value != other_value:
-                return False
-        return True
-
-    def __repr__(self):
-        return (f'AlignmentWrapper({self.ctg!r}, {self.ctg_len}, '
-                f'{self.r_st}, {self.r_en}, {self.strand}, '
-                f'{self.q_st}, {self.q_en})')
-
-
 class ConsensusAligner:
     def __init__(self,
                  projects: ProjectConfig,
@@ -178,14 +182,14 @@ class ConsensusAligner:
         self.coordinate_name = self.consensus = self.amino_consensus = ''
         self.algorithm = ''
         self.consensus_offset = 0
-        self.alignments: typing.List[Alignment] = []
-        self.reading_frames: typing.List[typing.List[SeedAmino]] = []
-        self.seed_nucs: typing.List[SeedNucleotide] = []
-        self.amino_alignments: typing.List[AminoAlignment] = []
+        self.alignments: List[Alignment] = []
+        self.reading_frames: Dict[int, List[SeedAmino]] = {}
+        self.seed_nucs: List[SeedNucleotide] = []
+        self.amino_alignments: List[AminoAlignment] = []
         self.contig_name = contig_name
 
         # consensus nucleotide positions that were inserts
-        self.inserts: typing.Set[int] = set()
+        self.inserts: Set[int] = set()
 
         if alignments_file is not None:
             self.alignments_writer = self._create_alignments_writer(alignments_file)
@@ -247,11 +251,9 @@ class ConsensusAligner:
         return writer
 
     def start_contig(self,
-                     coordinate_name: str = None,
-                     consensus: str = None,
-                     reading_frames: typing.Dict[
-                         int,
-                         typing.List[SeedAmino]] = None):
+                     coordinate_name: Optional[str] = None,
+                     consensus: Optional[str] = None,
+                     reading_frames: Optional[Dict[int, List[SeedAmino]]] = None):
         self.clear()
 
         if consensus:
@@ -276,17 +278,8 @@ class ConsensusAligner:
             coordinate_seq = self.projects.getGenotypeReference(coordinate_name)
         except KeyError:
             coordinate_seq = self.projects.getReference(coordinate_name)
-        aligner = Aligner(seq=coordinate_seq, preset='map-ont')
-        self.alignments = list(aligner.map(self.consensus))
-        if self.alignments or 10_000 < len(self.consensus):
-            self.algorithm = 'minimap2'
-        else:
-            self.algorithm = 'gotoh'
-            self.align_gotoh(coordinate_seq, self.consensus)
-        self.alignments = [alignment
-                           for alignment in self.alignments
-                           if alignment.is_primary]
-        self.alignments.sort(key=attrgetter('q_st'))
+
+        self.alignments, self.algorithm = align_consensus(coordinate_seq, self.consensus)
 
         if self.overall_alignments_writer is not None:
             for alignment in self.alignments:
@@ -300,54 +293,12 @@ class ConsensusAligner:
                        "cigar_str": alignment.cigar_str}
                 self.overall_alignments_writer.writerow(row)
 
-    def align_gotoh(self, coordinate_seq, consensus):
-        gap_open_penalty = 15
-        gap_extend_penalty = 3
-        use_terminal_gap_penalty = 1
-        aligned_coordinate, aligned_consensus, score = align_it(
-            coordinate_seq,
-            consensus,
-            gap_open_penalty,
-            gap_extend_penalty,
-            use_terminal_gap_penalty)
-        if min(len(coordinate_seq), len(consensus)) < score:
-            ref_start = len(aligned_consensus) - len(aligned_consensus.lstrip('-'))
-            aligned_consensus: str = aligned_consensus[ref_start:]
-            aligned_coordinate: str = aligned_coordinate[ref_start:]
-            aligned_consensus = aligned_consensus.rstrip('-')
-            ref_index = ref_start
-            consensus_index = 0
-            cigar = []
-            for ref_nuc, nuc in zip(aligned_coordinate, aligned_consensus):
-                expected_nuc = consensus[consensus_index]
-                ref_index += 1
-                consensus_index += 1
-                expected_action = CigarActions.MATCH
-                if nuc == '-' and nuc != expected_nuc:
-                    expected_action = CigarActions.DELETE
-                    consensus_index -= 1
-                if ref_nuc == '-':
-                    expected_action = CigarActions.INSERT
-                    ref_index -= 1
-                if cigar and cigar[-1][1] == expected_action:
-                    cigar[-1][0] += 1
-                else:
-                    cigar.append([1, expected_action])
-            self.alignments.append(AlignmentWrapper(
-                'N/A',
-                len(coordinate_seq),
-                ref_start,
-                ref_index,
-                q_st=0,
-                q_en=consensus_index,
-                cigar=cigar))
-
     def find_amino_alignments(self,
                               start_pos: int,
                               end_pos: int,
-                              repeat_pos: typing.Optional[int],
-                              skip_pos: typing.Optional[int],
-                              amino_ref: str):
+                              repeat_pos: Optional[int],
+                              skip_pos: Optional[int],
+                              amino_ref: Optional[str]):
         translations = {
             reading_frame: translate(
                 '-'*(reading_frame + self.consensus_offset) +
@@ -526,11 +477,11 @@ class ConsensusAligner:
             self,
             start_pos: int,
             end_pos: int,
-            report_nucleotides: typing.List[ReportNucleotide],
-            report_aminos: typing.List[ReportAmino] = None,
-            repeat_position: int = None,
-            skip_position: int = None,
-            amino_ref: str = None):
+            report_nucleotides: List[ReportNucleotide],
+            report_aminos: Optional[List[ReportAmino]] = None,
+            repeat_position: Optional[int] = None,
+            skip_position: Optional[int] = None,
+            amino_ref: Optional[str] = None):
         """ Add read counts to report counts for a section of the reference.
 
         :param start_pos: 1-based position of first nucleotide to report in
@@ -564,7 +515,7 @@ class ConsensusAligner:
             self.build_nucleotide_report(start_pos,
                                          end_pos,
                                          report_nucleotides)
-        else:
+        elif amino_ref is not None:
             report_aminos.extend(ReportAmino(SeedAmino(None), i + 1)
                                  for i in range(len(amino_ref)))
             self.build_amino_report(start_pos,
@@ -592,13 +543,13 @@ class ConsensusAligner:
     def build_amino_report(self,
                            start_pos: int,
                            end_pos: int,
-                           report_nucleotides: typing.List[ReportNucleotide],
-                           report_aminos: typing.List[ReportAmino] = None,
-                           repeat_position: int = None,
-                           skip_position: int = None,
-                           amino_ref: str = None):
+                           report_nucleotides: List[ReportNucleotide],
+                           report_aminos: Optional[List[ReportAmino]] = None,
+                           repeat_position: Optional[int] = None,
+                           skip_position: Optional[int] = None,
+                           amino_ref: Optional[str] = None):
         """ Add read counts to report counts for a section of the reference.
-        
+
         Used for regions that translate to amino acids.
 
         :param start_pos: 1-based position of first nucleotide to report in
@@ -656,13 +607,13 @@ class ConsensusAligner:
 
     @staticmethod
     def update_report_amino(coord_index: int,
-                            report_aminos: typing.List[ReportAmino],
-                            report_nucleotides: typing.List[ReportNucleotide],
+                            report_aminos: List[ReportAmino],
+                            report_nucleotides: List[ReportNucleotide],
                             seed_amino: SeedAmino,
                             start_pos: int,
-                            repeat_position: int = None,
-                            skip_position: int = None,
-                            skipped_nuc=None):
+                            repeat_position: Optional[int] = None,
+                            skip_position: Optional[int] = None,
+                            skipped_nuc: Optional[SeedAmino] =None):
         report_amino = report_aminos[coord_index]
         report_amino.seed_amino.add(seed_amino)
         ref_nuc_pos = coord_index * 3 + start_pos
@@ -847,7 +798,7 @@ class ConsensusAligner:
     def build_nucleotide_report(self,
                                 start_pos: int,
                                 end_pos: int,
-                                report_nucleotides: typing.List[ReportNucleotide]):
+                                report_nucleotides: List[ReportNucleotide]):
         """ Add read counts to report counts for a section of the reference.
 
         Used for regions that don't translate to amino acids.
@@ -903,8 +854,8 @@ class ConsensusAligner:
         if self.seed_concordance_writer is None:
             return
         seed_ref = self.projects.getReference(seed_name)
-        seed_aligner = Aligner(seq=seed_ref, preset='map-ont')
-        seed_alignments = list(seed_aligner.map(self.consensus))
+        seed_aligner = mappy.Aligner(seq=seed_ref, bw=500, bw_long=500, preset='map-ont')
+        seed_alignments: List[mappy.Alignment] = list(seed_aligner.map(self.consensus))
 
         regions = projects.getCoordinateReferences(seed_name)
         for region in regions:
@@ -920,14 +871,14 @@ class ConsensusAligner:
                 continue
             self.region_seed_concordance(region, seed_name, seed_alignments, seed_ref, start_pos, end_pos)
 
-    def coord_concordance(self, half_window_size=10):
+    def coord_concordance(self, half_window_size: int = 10) -> List[float]:
         coord_alignments = self.alignments
         try:
             coord_ref = self.projects.getGenotypeReference(self.coordinate_name)
         except KeyError:
             coord_ref = self.projects.getReference(self.coordinate_name)
         query_matches = [0] * len(self.consensus)
-        concordance_list: typing.List[typing.Any] = [None] * len(self.consensus)
+        concordance_list: List[float] = [0] * len(self.consensus)
 
         for alignment in coord_alignments:
             ref_progress = alignment.r_st
@@ -1018,11 +969,11 @@ class AminoAlignment:
     ref_end: int
     action: CigarActions
     reading_frame: int
-    query: str = None  # Amino sequence
-    ref: str = None  # Amino sequence
-    aligned_query: str = None
-    aligned_ref: str = None
-    ref_amino_start: int = None
+    query: Optional[str] = None  # Amino sequence
+    ref: Optional[str] = None  # Amino sequence
+    aligned_query: Optional[str] = None
+    aligned_ref: Optional[str] = None
+    ref_amino_start: Optional[int] = None
 
     def has_overlap(self, start_pos: int, end_pos: int) -> bool:
         before_end = self.ref_start < end_pos
@@ -1072,8 +1023,15 @@ class AminoAlignment:
     def amino_size(self):
         return (self.size + 2) // 3
 
-    def map_amino_sequences(self) -> typing.Dict[int, int]:
+    def map_amino_sequences(self) -> Dict[int, int]:
         """ Map reference amino indexes to query amino indexes. """
+
+        assert self.aligned_ref is not None, "For this operation, aligned_ref must not be None"
+        assert self.aligned_query is not None, "For this operation, aligned_query must not be None"
+        assert self.query is not None, "For this operation, query must not be None"
+        assert self.ref is not None, "For this operation, ref must not be None"
+        assert self.ref_amino_start is not None, "For this operation, ref_amino_start must not be None"
+
         seq_map = {}
         query_offset = (self.query_start + self.reading_frame) // 3
         ref_index = query_index = 0

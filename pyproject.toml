@@ -1,0 +1,302 @@
+[project]
+name = "micall"
+version = "7.17.0"
+description = "Pipeline for processing FASTQ data from an Illumina MiSeq to genotype human RNA viruses like HIV and hepatitis C."
+authors = [
+    { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
+]
+license = {text = "AGPL-3.0"}
+license-files = { paths = ["LICENSE.txt"] }
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+dependencies = [
+    # Requirements for running the bare pipeline under Kive.
+    "pytz==2024.2",
+    "biopython==1.84",
+    "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
+    "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
+    "numpy==2.1.3",
+    "scipy==1.14.1",
+    "matplotlib==3.9.2",
+    "cutadapt==4.9",
+    "python-Levenshtein==0.26.1",
+    "PyYAML==6.0.2",
+    "reportlab==4.2.5",
+    "pysam==0.22.1",
+    "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
+    "mappy==2.28",
+    "drawsvg==2.4.0",
+    "cairosvg==2.7.1",
+    "aligntools==1.2.1",
+]
+
+[project.optional-dependencies]
+test = [
+    # Dependencies required for running the test suite
+    "pytest==8.3.3",
+    "coverage==7.6.4",
+    "pandas==2.2.3",
+    "seaborn==0.13.2",
+    "ete3",
+    # For reading HCV rules from an Excel file.
+    "openpyxl==3.1.5",
+
+    # Also includes watcher's dependencies.
+    "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
+    "requests==2.32.3",
+]
+dev = [
+    # Dependencies required for development (linting, type checking, etc.)
+    "ruff==0.7.2",
+    "mypy==1.13.0",
+    "mypy-extensions==1.0.0",
+    "gprof2dot==2024.6.6",
+    "codecov==2.1.13",  # For reporting the code coverage.
+]
+denovo = [
+    # Requirements for running De-Novo pipeline (only problematic ones).
+    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
+]
+watcher = [
+    # Requirements for running the MISEQ_MONITOR.py script
+    "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
+    "requests==2.32.3",
+]
+basespace = [
+    # Requirements for running the micall_basespace.py script
+    "requests==2.32.3",
+]
+
+[project.scripts]
+micall = "micall.main:cli"
+
+[tool.hatch.build]
+include = [
+  "micall/",
+]
+exclude = [
+  "micall/tests/",
+]
+skip-excluded-dirs = true
+
+[project.urls]
+homepage = "https://cfe-lab.github.io/MiCall"
+repository = "https://github.com/cfe-lab/MiCall"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+markers = [
+    "iva: test requires IVA (deselect with '-m \"not iva\"')"
+]
+
+[tool.ruff.lint.per-file-ignores]
+# TODO: resolve these warnings insteads of ignoring them.
+
+# Syntax error: ignore unexpected token in this file
+"micall/utils/make_hcv_genotype_refs.py" = ["E999"]
+
+# File with unused imports and local variable assignments
+"micall/core/plot_simple.py" = ["F401", "F841"]
+
+# Ignore bare except usage in project configuration
+"micall/core/project_config.py" = ["E722"]
+
+# Unused import in remap module
+"micall/core/remap.py" = ["F401"]
+
+# Do not compare types and bare excepts in pssm_lib module
+"micall/g2p/pssm_lib.py" = ["E722", "E721"]
+
+# F-string errors without placeholders in tests
+"micall/tests/svg_differ.py" = ["F541"]
+
+# Unused import in test_aln2counts_report module
+"micall/tests/test_aln2counts_report.py" = ["F401"]
+
+# Multiple issues in test_consensus_aligner: unused imports, multi-statement line, and unused local variable
+"micall/tests/test_consensus_aligner.py" = ["F401", "E701", "F841"]
+
+# Unused import in test_primer_tracker module
+"micall/tests/test_primer_tracker.py" = ["F401"]
+
+# F-string errors without placeholders in test_remap module
+"micall/tests/test_remap.py" = ["F541"]
+
+# Unused import in test_sample module
+"micall/tests/test_sample.py" = ["F401"]
+
+# Unused imports, undefined name, and type comparison in aln2counts_simplify module
+"micall/utils/aln2counts_simplify.py" = ["F401", "F821", "E721"]
+
+# Unused local variable in compare_mapping module
+"micall/utils/compare_mapping.py" = ["F841"]
+
+# Multiple issues in conseq_compare: unused sys, redefinitions, and unused local variables
+"micall/utils/conseq_compare.py" = ["F811", "F401", "F841"]
+
+# Comparisons to None should use `is` or `is not` in dd module
+"micall/utils/dd.py" = ["E711"]
+
+# Unused imports and local variable in find_reads_in_sam module
+"micall/utils/find_reads_in_sam.py" = ["F401", "F841"]
+
+# F-string errors without placeholders in primer_tracker module
+"micall/utils/primer_tracker.py" = ["F541"]
+
+# F-string errors without placeholders in ref_aligner module
+"micall/utils/ref_aligner.py" = ["F541"]
+
+# Unused local variable in release_test_compare script
+"release_test_compare.py" = ["F841"]
+
+[tool.mypy]
+files = ["micall/"]
+
+exclude = '''(?x)
+    ^micall/core/aln2counts[.]py$|
+    ^micall/core/amplicon_finder[.]py$|
+    ^micall/core/cascade_report[.]py$|
+    ^micall/core/consensus_builder[.]py$|
+    ^micall/core/coverage_plots[.]py$|
+    ^micall/core/plot_simple[.]py$|
+    ^micall/core/prelim_map[.]py$|
+    ^micall/core/remap[.]py$|
+    ^micall/core/sam2aln[.]py$|
+    ^micall/core/trim_fastqs[.]py$|
+    ^micall/drivers/run_info[.]py$|
+    ^micall/drivers/sample_group[.]py$|
+    ^micall/drivers/sample[.]py$|
+    ^micall/g2p/fastq_g2p[.]py$|
+    ^micall/g2p/pssm_lib[.]py$|
+    ^micall/monitor/find_groups[.]py$|
+    ^micall/monitor/kive_watcher[.]py$|
+    ^micall/monitor/qai_helper[.]py$|
+    ^micall/monitor/sample_watcher[.]py$|
+    ^micall/monitor/update_qai[.]py$|
+    ^micall/monitor/micall_watcher[.]py$|
+    ^micall/resistance/asi_algorithm[.]py$|
+    ^micall/resistance/genreport[.]py$|
+    ^micall/resistance/pdfreport[.]py$|
+    ^micall/resistance/resistance[.]py$|
+    ^micall/tests/.*|
+    ^micall/utils/aln2counts_simplify[.]py$|
+    ^micall/utils/amplicon_finder[.]py$|
+    ^micall/utils/big_counter[.]py$|
+    ^micall/utils/compare_454_samples[.]py$|
+    ^micall/utils/compare_mapping[.]py$|
+    ^micall/utils/concordance_evaluation[.]py$|
+    ^micall/utils/conseq_compare[.]py$|
+    ^micall/utils/contig_blaster[.]py$|
+    ^micall/utils/contig_counts[.]py$|
+    ^micall/utils/contig_summary[.]py$|
+    ^micall/utils/convert_primers_cutadapt[.]py$|
+    ^micall/utils/coverage_data[.]py$|
+    ^micall/utils/dd[.]py$|
+    ^micall/utils/denovo_simplify[.]py$|
+    ^micall/utils/externals[.]py$|
+    ^micall/utils/fetch_sequences[.]py$|
+    ^micall/utils/find_by_coverage[.]py$|
+    ^micall/utils/find_chimera[.]py$|
+    ^micall/utils/find_missing_samples[.]py$|
+    ^micall/utils/find_reads_in_sam[.]py$|
+    ^micall/utils/genreport_rerun[.]py$|
+    ^micall/utils/hcv_reference_tree[.]py$|
+    ^micall/utils/hcv_rules_display[.]py$|
+    ^micall/utils/hcv_rules_import[.]py$|
+    ^micall/utils/make_fda_refs[.]py$|
+    ^micall/utils/make_hcv_genotype_refs[.]py$|
+    ^micall/utils/primer_tracker[.]py$|
+    ^micall/utils/probe_finder[.]py$|
+    ^micall/utils/projects_dump[.]py$|
+    ^micall/utils/project_seeds_from_compendium[.]py$|
+    ^micall/utils/projects_upload[.]py$|
+    ^micall/utils/ref_aligner[.]py$|
+    ^micall/utils/reference_distances[.]py$|
+    ^micall/utils/remap_fastq_simplify[.]py$|
+    ^micall/utils/sam_g2p_simplify[.]py$|
+    ^micall/utils/sample_fastq[.]py$|
+    ^micall/utils/sample_project_summary[.]py$|
+    ^micall/utils/samples_from_454[.]py$|
+    ^micall/utils/sample_sheet_parser[.]py$|
+    ^micall/utils/scan_run_folders[.]py$|
+    ^micall/utils/seed_alignments[.]py$|
+    ^micall/utils/spring_beads[.]py$|
+    ^micall/utils/v3loop_alignment_scores/plot[.]py$|
+    ^micall/utils/release_test_compare[.]py$|
+    ^micall/utils/release_test_microtest[.]py$|
+    ^micall/utils/release_test_setup[.]py$|
+    ^micall/utils/micall_kive[.]py$|
+    ^micall/utils/micall_kive_resistance[.]py$|
+    ^micall/utils/micall_docker[.]py$
+'''
+
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "micall.core.plot_contigs"
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "mappy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "gotoh"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio.Seq"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio.Blast.Applications"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "Bio.SeqRecord"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "genetracks"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "genetracks.elements"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "drawsvg"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "matplotlib"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "matplotlib.colors"
+ignore_missing_imports = true

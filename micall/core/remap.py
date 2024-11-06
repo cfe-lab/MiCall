@@ -631,7 +631,7 @@ def remap(fastq1: str,
                                                stderr,
                                                callback)
             new_counts.update(split_counts)
-            with open(samfile, 'rU') as f:
+            with open(samfile, 'r') as f:
                 for fields in splitter.walk(f):
                     remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
 
@@ -771,7 +771,7 @@ def map_to_contigs(fastq1,
                                                stderr,
                                                callback)
             new_counts.update(split_counts)
-            with open(samfile, 'rU') as f:
+            with open(samfile, 'r') as f:
                 for fields in splitter.walk(f):
                     write_remap_row(remap_writer, fields)
 
@@ -1199,7 +1199,7 @@ def main():
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
     parser.add_argument('contigs_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='<input> CSV containing assembled contigs')
     parser.add_argument('remap_csv',
                         type=argparse.FileType('w'),

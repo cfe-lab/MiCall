@@ -1,5 +1,5 @@
 import re
-import typing
+from typing import Optional, TextIO, Dict
 from operator import itemgetter
 from pathlib import Path
 
@@ -10,7 +10,7 @@ DEFAULT_PATH = Path(__file__).parent / 'landmark_references.yaml'
 
 class LandmarkReader:
     @classmethod
-    def load(cls, f: typing.TextIO = None):
+    def load(cls, f: Optional[TextIO] = None):
         """ Load an instance of this class from an open JSON file.
 
         :param f: The file to load from, or None to load from the default.
@@ -68,6 +68,13 @@ class LandmarkReader:
             seed_pattern = genotype_landmarks['seed_pattern']
             if re.fullmatch(seed_pattern, seed_name):
                 return genotype_landmarks['coordinates']
+        raise ValueError(f'No landmarks match {seed_name!r}.')
+
+    def get_landmarks(self, seed_name: str) -> Dict[str, object]:
+        for genotype_landmarks in self.landmarks:
+            seed_pattern = genotype_landmarks['seed_pattern']
+            if re.fullmatch(seed_pattern, seed_name):
+                return genotype_landmarks['landmarks']
         raise ValueError(f'No landmarks match {seed_name!r}.')
 
     def get_region(self, ref_name, position):

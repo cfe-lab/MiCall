@@ -26,7 +26,7 @@ def convert_fasta (lines):
             sequence += i.strip('\n')
     try:
         blocks.append([h,sequence])    # handle last entry
-    except:
+    except RuntimeError:
         raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))
     return blocks
 
@@ -44,7 +44,7 @@ hyphyAlign.change_settings(hyphy,
                             noTerminalPenalty = 1)
 
 
-with open('HCV_REF_2012_genome.fasta', 'rU') as handle:
+with open('HCV_REF_2012_genome.fasta', 'r') as handle:
     genomes = convert_fasta(handle)  # keep one per genotype
 
 projects = ProjectConfig.loadDefault()
@@ -58,7 +58,7 @@ with open('hcv_genes.fasta', 'w') as outfile:
         if subtype in processed_subtypes:
             continue
         for region, refseq in h77.iteritems():
-            print subtype, region
+            print(subtype, region)
             aquery, aref, ascore = hyphyAlign.pair_align(hyphy, refseq, genome)
             left, right = hyphyAlign.get_boundaries(aref)
             outfile.write('>%s-%s\n%s\n' % (subtype,

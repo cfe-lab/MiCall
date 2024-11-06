@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import Optional
 
 from micall.utils.translation import translate, ambig_dict
 
@@ -19,7 +20,7 @@ class SeedAmino(object):
         if consensus_nuc_index is not None:
             self.all_consensus_nuc_indexes.add(consensus_nuc_index)
         self.counts = counts or Counter()  # {amino: count}
-        self.codon_counts = Counter()  # {codon_nucs: count}
+        self.codon_counts: Counter = Counter()  # {codon_nucs: count}
         self.nucleotides = []
         for i in range(3):
             seed_nuc = SeedNucleotide()
@@ -239,7 +240,7 @@ class SeedNucleotide(object):
 
 
 class ReportNucleotide:
-    def __init__(self, position: int, seed_nucleotide: SeedNucleotide = None):
+    def __init__(self, position: int, seed_nucleotide: Optional[SeedNucleotide] = None):
         self.position = position
         if seed_nucleotide is None:
             self.seed_nucleotide = SeedNucleotide()

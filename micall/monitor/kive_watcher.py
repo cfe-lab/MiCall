@@ -59,6 +59,9 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'resistance_consensus_csv',
                       'wg_fasta',
                       'mid_fasta',
+                      'unstitched_cascade_csv',
+                      'unstitched_conseq_csv',
+                      'unstitched_contigs_csv',
                       'contigs_csv',
                       'alignment_svg',
                       'alignment_png',
@@ -72,7 +75,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'contigs_primers_csv',
                       'table_precursor_csv',
                       'proviral_landscape_csv',
-                      'hivseqinr_results_tar']
+                      'hivseqinr_results_tar',  # TODO: remove when proviral is finally updated.
+                      'detailed_results_tar']
 
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
@@ -779,7 +783,7 @@ class KiveWatcher:
             run = self.run_proviral_pipeline(
                 sample_watcher,
                 folder_watcher,
-                'Proviral HIVSeqinR')
+                'Proviral')
             return run
         if pipeline_type == PipelineType.RESISTANCE:
             run = self.run_resistance_pipeline(
@@ -936,13 +940,15 @@ class KiveWatcher:
             run_dataset['argument_name']: run_dataset['dataset']
             for run_dataset in main_run['datasets']
             if run_dataset['argument_name'] in ('sample_info_csv',
-                                                'conseq_csv',
-                                                'contigs_csv',
-                                                'cascade_csv')}
+                                                'unstitched_cascade_csv',
+                                                'unstitched_conseq_csv',
+                                                'unstitched_contigs_csv')}
         input_datasets = {
             argument_name: self.kive_retry(lambda: self.session.get(url).json())
             for argument_name, url in input_dataset_urls.items()}
-        input_datasets['conseqs_csv'] = input_datasets.pop('conseq_csv')
+        input_datasets['cascade_csv'] = input_datasets.pop('unstitched_cascade_csv')
+        input_datasets['conseqs_csv'] = input_datasets.pop('unstitched_conseq_csv')
+        input_datasets['contigs_csv'] = input_datasets.pop('unstitched_contigs_csv')
         run = self.find_or_launch_run(
             pipeline_id,
             input_datasets,
@@ -980,9 +986,14 @@ class KiveWatcher:
                        for run_dataset in run_datasets):
                     run = None
         if run is None:
-            run_datasets = [dict(argument=app_arg,
-                                 dataset=inputs[name]['url'])
-                            for name, app_arg in app_args.items()]
+            try:
+                run_datasets = [dict(argument=app_arg,
+                                     dataset=inputs[name]['url'])
+                                for name, app_arg in app_args.items()]
+            except KeyError as e:
+                raise ValueError(f"Pipeline input error: {repr(e)}."
+                                 f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
+                                 f" Does the run name {repr(run_name)} make sense for it?")
             run_params = dict(name=run_name,
                               batch=run_batch['url'],
                               groups_allowed=ALLOWED_GROUPS,

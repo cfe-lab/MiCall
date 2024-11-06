@@ -1,27 +1,46 @@
 import math
 import typing
+from typing import Iterable, Tuple
+import random
 from io import StringIO
 from pytest import approx
 
 from micall.core.aln2counts import SeedAmino, ReportAmino
-from micall.utils.consensus_aligner import ConsensusAligner, AlignmentWrapper, CigarActions, AminoAlignment
+from micall.utils.consensus_aligner import ConsensusAligner, Alignment, AminoAlignment
+from aligntools import CigarActions, Cigar
 from micall.core.project_config import ProjectConfig
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
+from micall.tests.utils import fixed_random_seed
 from micall.utils.report_amino import ReportNucleotide
 
 
+def mutate_sequence(rate, seq):
+    def mutate(x):
+        if random.random() >= rate:
+            return x
+
+        while True:
+            y = random.choice(['A', 'C', 'G', 'T'])
+            if y != x: return y
+
+    with fixed_random_seed(42):
+        return ''.join(map(mutate, seq))
+
+
 def assert_alignments(aligner: ConsensusAligner,
-                      *expected_alignments: AlignmentWrapper):
+                      *expected_alignments: Alignment):
     __tracebackhide__ = True
-    wrapped_alignments = tuple(AlignmentWrapper.wrap(alignment)
+    wrapped_alignments = tuple(Alignment.coerce(alignment)
                                for alignment in aligner.alignments)
     if repr(wrapped_alignments) != repr(expected_alignments):
         assert wrapped_alignments == expected_alignments
     for i, (wrapped_alignment, expected_alignment) in enumerate(
             zip(wrapped_alignments, expected_alignments)):
-        for field_name in AlignmentWrapper.init_fields:
+        for field_name in dir(expected_alignment):
+            if callable(getattr(expected_alignment, field_name)) or field_name.startswith('_'):
+                continue
             wrapped = (i, field_name, getattr(wrapped_alignment, field_name))
             expected = (i, field_name, getattr(expected_alignment, field_name))
             assert wrapped == expected
@@ -70,6 +89,36 @@ def create_reading_frames(consensus: str) -> typing.Dict[int,
     return reading_frames
 
 
+def make_alignment(
+        ctg='',
+        ctg_len=0,
+        r_st=0,
+        r_en=0,
+        strand=1,
+        q_st=0,
+        q_en=0,
+        mapq=0,
+        cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
+        cigar_str=None) -> Alignment:
+
+    cigar = list(cigar)
+    if not cigar:
+        cigar = [(max(q_en-q_st, r_en-r_st), CigarActions.MATCH)]
+    if cigar_str is None:
+        cigar_str = str(Cigar(cigar))
+
+    return Alignment(ctg=ctg,
+                     ctg_len=ctg_len,
+                     r_st=r_st,
+                     r_en=r_en,
+                     strand=strand,
+                     q_st=q_st,
+                     q_en=q_en,
+                     mapq=mapq,
+                     cigar=cigar,
+                     cigar_str=cigar_str)
+
+
 def test_create_reading_frames():
     reading_frames = create_reading_frames('AAACCCTTTGGG')
 
@@ -84,30 +133,22 @@ def test_create_reading_frames():
 
 
 def test_alignment_repr():
-    alignment = AlignmentWrapper('R1', 0, 1001, 1100, 1, 1, 100)
+    alignment = make_alignment('R1', 0, 1001, 1100, 1, 1, 100)
 
-    assert repr(alignment) == "AlignmentWrapper('R1', 0, 1001, 1100, 1, 1, 100)"
-
-
-def test_wrap_overrides():
-    alignment1 = AlignmentWrapper(r_st=100, r_en=200)
-    alignment2 = AlignmentWrapper.wrap(alignment1, r_en=300, blen=200, cigar=[])
-    expected_alignment = AlignmentWrapper(r_st=100, r_en=300, cigar=[])
-
-    assert alignment2 == expected_alignment
+    assert repr(alignment) == "Alignment(ctg='R1', ctg_len=0, r_st=1001, r_en=1100, strand=1, q_st=1, q_en=100, mapq=0, cigar=[(99, CigarActions.MATCH)], cigar_str='99M')"
 
 
 def test_start_contig(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[1000:2000]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=1000,
-                                          r_en=2000,
-                                          q_st=0,
-                                          q_en=1000,
-                                          mapq=60)
+    expected_alignment = make_alignment(ctg='N/A',
+                                   ctg_len=len(seed_seq),
+                                   r_st=1000,
+                                   r_en=2000,
+                                   q_st=0,
+                                   q_en=1000,
+                                   mapq=60)
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -121,27 +162,27 @@ def test_start_contig_multiple_sections(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[6000:6500] + seed_seq[3000:3500] + seed_seq[1000:2000]
-    expected_alignments = [AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=6000,
-                                            r_en=6500,
-                                            q_st=0,
-                                            q_en=500,
-                                            mapq=60),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=3000,
-                                            r_en=3500,
-                                            q_st=500,
-                                            q_en=1000,
-                                            mapq=60),
-                           AlignmentWrapper(ctg='N/A',
-                                            ctg_len=len(seed_seq),
-                                            r_st=1000,
-                                            r_en=2000,
-                                            q_st=1000,
-                                            q_en=2000,
-                                            mapq=60)]
+    expected_alignments = [make_alignment(ctg='N/A',
+                                     ctg_len=len(seed_seq),
+                                     r_st=6000,
+                                     r_en=6500,
+                                     q_st=0,
+                                     q_en=500,
+                                     mapq=60),
+                           make_alignment(ctg='N/A',
+                                     ctg_len=len(seed_seq),
+                                     r_st=3000,
+                                     r_en=3500,
+                                     q_st=500,
+                                     q_en=1000,
+                                     mapq=60),
+                           make_alignment(ctg='N/A',
+                                     ctg_len=len(seed_seq),
+                                     r_st=1000,
+                                     r_en=2000,
+                                     q_st=1000,
+                                     q_en=2000,
+                                     mapq=60)]
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -371,12 +412,12 @@ def test_start_contig_short_consensus(projects):
     start = 1560
     end = 1617
     consensus = seed_seq[start:end]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=start,
-                                          r_en=end,
-                                          q_st=0,
-                                          q_en=end-start)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=start,
+                                        r_en=end,
+                                        q_st=0,
+                                        q_en=end-start)
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -389,17 +430,16 @@ def test_start_contig_deletion_minimap2(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[2000:2030] + seed_seq[2031:2060]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=2000,
-                                          r_en=2060,
-                                          q_st=0,
-                                          q_en=59,
-                                          mapq=9,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.DELETE],
-                                                 [29, CigarActions.MATCH]],
-                                          NM=1)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=2000,
+                                        r_en=2060,
+                                        q_st=0,
+                                        q_en=59,
+                                        mapq=9,
+                                        cigar=[(30, CigarActions.MATCH),
+                                               (1, CigarActions.DELETE),
+                                               (29, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -411,25 +451,26 @@ def test_start_contig_deletion_minimap2(projects):
 def test_start_contig_big_deletion_minimap2(projects):
     seed_name = 'HCV-1a'
     seed_seq = projects.getReference(seed_name)
-    consensus = seed_seq[340:920] + seed_seq[3000:9000]
-    expected_alignment = [AlignmentWrapper(ctg='N/A',
-                                           ctg_len=len(seed_seq),
-                                           r_st=340,
-                                           r_en=920,
-                                           q_st=0,
-                                           q_en=580,
-                                           mapq=60,
-                                           cigar=[[580, CigarActions.MATCH]],
-                                           NM=0),
-                          AlignmentWrapper(ctg='N/A',
-                                           ctg_len=len(seed_seq),
-                                           r_st=3000,
-                                           r_en=9000,
-                                           q_st=580,
-                                           q_en=6580,
-                                           mapq=60,
-                                           cigar=[[6000, CigarActions.MATCH]],
-                                           NM=0)]
+    seed_seq = mutate_sequence(seq=seed_seq, rate=0.04)
+    consensus = seed_seq[290:983] + seed_seq[3000:9269]
+
+    expected_alignment = [make_alignment(ctg='N/A',
+                                         ctg_len=len(seed_seq),
+                                         r_st=290,
+                                         r_en=983,
+                                         q_st=0,
+                                         q_en=693,
+                                         mapq=60,
+                                         cigar=[(693, CigarActions.MATCH)]),
+                          make_alignment(ctg='N/A',
+                                         ctg_len=len(seed_seq),
+                                         r_st=3000,
+                                         r_en=9269,
+                                         q_st=693,
+                                         q_en=6962,
+                                         mapq=60,
+                                         cigar=[(6269, CigarActions.MATCH)])]
+
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -442,17 +483,16 @@ def test_start_contig_deletion_gotoh(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[2000:2030] + seed_seq[2031:2050]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=2000,
-                                          r_en=2050,
-                                          q_st=0,
-                                          q_en=49,
-                                          mapq=0,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.DELETE],
-                                                 [19, CigarActions.MATCH]],
-                                          NM=0)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=2000,
+                                        r_en=2050,
+                                        q_st=0,
+                                        q_en=49,
+                                        mapq=0,
+                                        cigar=[(30, CigarActions.MATCH),
+                                               (1, CigarActions.DELETE),
+                                               (19, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -466,15 +506,14 @@ def test_start_contig_matched_deletion_gotoh(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[2000:2030] + '-' + seed_seq[2031:2050]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=2000,
-                                          r_en=2050,
-                                          q_st=0,
-                                          q_en=50,
-                                          mapq=0,
-                                          cigar=[[50, CigarActions.MATCH]],
-                                          NM=0)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=2000,
+                                        r_en=2050,
+                                        q_st=0,
+                                        q_en=50,
+                                        mapq=0,
+                                        cigar=[(50, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -488,17 +527,16 @@ def test_start_contig_insertion_minimap2(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[2000:2030] + 'ACT' + seed_seq[2030:2060]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=2000,
-                                          r_en=2060,
-                                          q_st=0,
-                                          q_en=63,
-                                          mapq=9,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [3, CigarActions.INSERT],
-                                                 [30, CigarActions.MATCH]],
-                                          NM=3)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=2000,
+                                        r_en=2060,
+                                        q_st=0,
+                                        q_en=63,
+                                        mapq=8,
+                                        cigar=[(30, CigarActions.MATCH),
+                                               (3, CigarActions.INSERT),
+                                               (30, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -511,17 +549,16 @@ def test_start_contig_insertion_gotoh(projects):
     seed_name = 'SARS-CoV-2-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[2000:2030] + 'T' + seed_seq[2030:2050]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=2000,
-                                          r_en=2050,
-                                          q_st=0,
-                                          q_en=51,
-                                          mapq=0,
-                                          cigar=[[30, CigarActions.MATCH],
-                                                 [1, CigarActions.INSERT],
-                                                 [20, CigarActions.MATCH]],
-                                          NM=0)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=2000,
+                                        r_en=2050,
+                                        q_st=0,
+                                        q_en=51,
+                                        mapq=0,
+                                        cigar=[(30, CigarActions.MATCH),
+                                               (1, CigarActions.INSERT),
+                                               (20, CigarActions.MATCH)])
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -535,13 +572,13 @@ def test_start_contig_with_only_primary_matches(projects):
     seed_name = 'HIV1-B-FR-K03455-seed'
     seed_seq = projects.getReference(seed_name)
     consensus = seed_seq[:500]
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=0,
-                                          r_en=500,
-                                          q_st=0,
-                                          q_en=500,
-                                          mapq=60)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=0,
+                                        r_en=500,
+                                        q_st=0,
+                                        q_en=500,
+                                        mapq=60)
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, consensus)
@@ -556,13 +593,13 @@ def test_start_contig_reading_frames(projects):
     reading_frames = create_reading_frames(expected_consensus)
     seed_name = 'HCV-6t'
     seed_seq = projects.getReference(seed_name)
-    expected_alignment = AlignmentWrapper(ctg='N/A',
-                                          ctg_len=len(seed_seq),
-                                          r_st=4798,
-                                          r_en=4807,
-                                          q_st=0,
-                                          q_en=9,
-                                          mapq=0)
+    expected_alignment = make_alignment(ctg='N/A',
+                                        ctg_len=len(seed_seq),
+                                        r_st=4798,
+                                        r_en=4807,
+                                        q_st=0,
+                                        q_en=9,
+                                        mapq=0)
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
@@ -844,7 +881,7 @@ def test_count_coord_concordance():
     aligner = ConsensusAligner(projects)
     aligner.consensus = "AGATTTCGATGATTCAGAAGATAAGCA"
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+    aligner.alignments = [make_alignment(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[(27, CigarActions.MATCH)])]
 
     expected_concordance_list = [1.0]*len(aligner.consensus)
 
@@ -864,7 +901,7 @@ def test_count_coord_concordance_mismatch():
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCA"
     # changed nucs:                            ^^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+    aligner.alignments = [make_alignment(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[(27, CigarActions.MATCH)])]
 
     # At the end of the consensus, the size of the averaging window for the concordance decreases from 20 to 11.
     # The concordance therefore decreases from 18/20 to 9/11
@@ -887,7 +924,7 @@ def test_count_coord_concordance_short_match():
     aligner.consensus = "AGATTTCGATGATTCTCTTCTAAACGT"
     # last match position:             ^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+    aligner.alignments = [make_alignment(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[(15, CigarActions.MATCH)])]
     # We start out with 100% match for the first 6 positions
     expected_concordance_list = [1.0] * 6
     # After that, the averaging window (whose size is still increasing) starts to slide past the match:
@@ -915,8 +952,8 @@ def test_count_coord_concordance_two_matches():
     aligner = ConsensusAligner(projects)
     aligner.consensus = "AGATTTCGATGATTCAGAAGATTTGCATTT"
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[[12, CigarActions.MATCH]]),
-                          AlignmentWrapper(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[[15, CigarActions.MATCH]])]
+    aligner.alignments = [make_alignment(r_st=0, r_en=12, q_st=0, q_en=12, cigar=[(12, CigarActions.MATCH)]),
+                          make_alignment(r_st=15, r_en=30, q_st=15, q_en=30, cigar=[(15, CigarActions.MATCH)])]
 
     expected_concordance_list = [1.0] * 3 + [12/13, 12/14, 12/15, 13/16, 14/17, 15/18, 16/19] + [17/20]*11 + \
                                 [16/19, 15/18, 15/17, 15/16] + [1.0]*5
@@ -937,9 +974,9 @@ def test_count_coord_concordance_with_insertion():
     aligner.consensus = "AGATTTCGACCCTGATTCAGAAGATTTGCA"
     # insertion:                  ^^^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
-                                                                                    [3, CigarActions.INSERT],
-                                                                                    [18, CigarActions.MATCH]])]
+    aligner.alignments = [make_alignment(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[(9, CigarActions.MATCH),
+                                                                                  (3, CigarActions.INSERT),
+                                                                                  (18, CigarActions.MATCH)])]
     # the window size increases from 10 to 20, while the averaging window slides over the insertion
     expected_concordance_list = [9/10, 9/11, 9/12, 10/13, 11/14, 12/15, 13/16, 14/17, 15/18, 16/19]
     # for 10 positions in the middle, the insertion is included in the full window size fo 20
@@ -963,9 +1000,9 @@ def test_count_coord_concordance_with_deletion():
     aligner.consensus = "AGATTTCGATTCAGAAGATTTGCA"
     # deletion behind this pos:  ^
     aligner.coordinate_name = 'test-region'
-    aligner.alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
-                                                                                    [3, CigarActions.DELETE],
-                                                                                    [15, CigarActions.MATCH]])]
+    aligner.alignments = [make_alignment(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[(9, CigarActions.MATCH),
+                                                                                  (3, CigarActions.DELETE),
+                                                                                  (15, CigarActions.MATCH)])]
     # the deletion does not decrease the concordance
     expected_concordance_list = [1.0]*len(aligner.consensus)
 
@@ -984,7 +1021,7 @@ def test_count_seed_region_concordance(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[[27, CigarActions.MATCH]])]
+    seed_alignments = [make_alignment(r_st=0, r_en=27, q_st=0, q_en=27, cigar=[(27, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1007,7 +1044,7 @@ def test_count_seed_region_concordance_mismatch(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+    seed_alignments = [make_alignment(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[(30, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1029,7 +1066,7 @@ def test_count_seed_region_concordance_seed_not_aligned(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[[15, CigarActions.MATCH]])]
+    seed_alignments = [make_alignment(r_st=0, r_en=15, q_st=0, q_en=15, cigar=[(15, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1051,7 +1088,7 @@ def test_count_seed_region_concordance_larger_match(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[[30, CigarActions.MATCH]])]
+    seed_alignments = [make_alignment(r_st=0, r_en=30, q_st=0, q_en=30, cigar=[(30, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1074,9 +1111,9 @@ def test_count_seed_region_concordance_insertion(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[[9, CigarActions.MATCH],
-                                                                                 [3, CigarActions.INSERT],
-                                                                                 [18, CigarActions.MATCH]])]
+    seed_alignments = [make_alignment(r_st=0, r_en=27, q_st=0, q_en=30, cigar=[(9, CigarActions.MATCH),
+                                                                               (3, CigarActions.INSERT),
+                                                                               (18, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered
@@ -1099,9 +1136,9 @@ def test_count_seed_region_concordance_deletion(projects):
     seed_name = 'test-seed'
     seed_ref = "AGATTTCGATGATTCAGAAGATTTGCATGA"
     region = 'test-region'
-    seed_alignments = [AlignmentWrapper(r_st=0, r_en=30, q_st=0, q_en=27, cigar=[[9, CigarActions.MATCH],
-                                                                                 [3, CigarActions.DELETE],
-                                                                                 [18, CigarActions.MATCH]])]
+    seed_alignments = [make_alignment(r_st=0, r_en=30, q_st=0, q_en=27, cigar=[(9, CigarActions.MATCH),
+                                                                               (3, CigarActions.DELETE),
+                                                                               (18, CigarActions.MATCH)])]
 
     expected_file = """\
 seed_name,contig,region,pct_concordance,pct_covered

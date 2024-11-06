@@ -730,6 +730,52 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
         ss = sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEqual(ss["Experiment Name"], "10-Jul-2014")
 
+    def test_underscores_in_sample_name(self):
+        """
+        Extracts the correct project code and sample name in presence of underscores.
+        """
+
+        stub_sample_sheet = """
+[Header]
+IEMFileVersion,3
+Investigator Name,RL
+Project Name,10-Jul-2014_v1test
+Experiment Name,10-Jul-2014_v1test
+Date,07/10/2014
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,Nextera
+Chemistry,Amplicon
+[Reads]
+251
+251
+[Settings]
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,Sample_Project,Description,GenomeFolder
+CFE_SomeId_10-Jul-2014_N501-N701_Sample1_Proj1,Sample1_Proj1,10-Jul-2014_testing,N/A,ACGTACGT,TGCATGCA,\
+10-Jul-2014_testing,Research:Sample1_Proj1:TRUE Comments:Sample1_Proj1:thisiscommentone \
+Disablecontamcheck:Sample1_Proj1:FALSE,
+CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,AAAAGGGG,CCCCTTTT,\
+10-Jul-2014_testing,Research:Sample2_Foo_Proj2:FALSE Comments:Sample2_Foo_Proj2:thisiscommenttwo \
+Chemistry:Sample2_Foo_Proj2:BreakingBad Disablecontamcheck:Sample2_Foo_Proj2:TRUE,
+"""
+
+        ss = sample_sheet_parser(StringIO(stub_sample_sheet))
+        split_rows = ss['DataSplit']
+        assert len(split_rows) == 2
+
+        assert split_rows[0]['filename'] == 'Sample1-Proj1_S1'
+        assert split_rows[1]['filename'] == 'Sample2-Proj2_S2'
+
+        assert split_rows[0]['project'] == 'Proj1'
+        assert split_rows[1]['project'] == 'Proj2'
+
+        assert split_rows[0]['sample'] == 'Sample1'
+        assert split_rows[1]['sample'] == 'Sample2'
+
+        assert split_rows[0]['sample_number'] == 'S1'
+        assert split_rows[1]['sample_number'] == 'S2'
+
 
 def test_read_sample_sheet_overrides(tmpdir):
     sample_sheet_path = Path(str(tmpdir)) / 'SampleSheet.csv'

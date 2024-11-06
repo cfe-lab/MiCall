@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="138.5" viewBox="0.0 -138.5 970.0 138.5">
+<defs>
+</defs>
+<g transform="translate(0 -123.5)">
+<g transform="translate(0.0 0)">
+<rect x="11.781376518218623" y="-10" width="235.62753036437246" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="74.61538461538461" y="-10" width="94.251012145749" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="82.46963562753037" y="-10" width="102.10526315789473" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="82.46963562753037" y="-10" width="70.68825910931174" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="113.88663967611336" y="-10" width="47.12550607287449" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
+<g transform="translate(0.0 -125.0)">
+<rect x="125.66801619433198" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(125.66801619433198 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">Reference X</text>
+</g>
+</g>
+<g transform="translate(0 -72.0)">
+<g transform="translate(0.0 -23)">
+<path d="M74.61538461538461,-20.0 L161.86639676113361,-20.0" stroke="black" />
+<circle cx="121.74089068825911" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M168.86639676113361,-20.0 L161.86639676113361,-23.5 L161.86639676113361,-16.5 L168.86639676113361,-20.0" fill="black" />
+<text x="121.74089068825911" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+</g>
+<g transform="translate(0.0 0)">
+<path d="M82.46963562753037,-20.0 L177.5748987854251,-20.0" stroke="black" />
+<circle cx="133.52226720647772" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M184.5748987854251,-20.0 L177.5748987854251,-23.5 L177.5748987854251,-16.5 L184.5748987854251,-20.0" fill="black" />
+<text x="133.52226720647772" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">2</text>
+</g>
+</g>
+<g transform="translate(0 -61.0)">
+<g transform="translate(0.0 0)">
+<path d="M74.61538461538461,9.5 L161.86639676113361,9.5" stroke="black" />
+<path d="M168.86639676113361,9.5 L161.86639676113361,6.0 L161.86639676113361,13.0 L168.86639676113361,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -41.0)">
+<g transform="translate(0.0 0)">
+<rect x="74.61538461538461" y="-10" width="7.8542510121457525" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="153.1578947368421" y="-10" width="15.708502024291505" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="82.46963562753037" y="-10" width="70.68825910931174" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(117.81376518218624 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
+</g>
+</g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<path d="M82.46963562753037,9.5 L177.5748987854251,9.5" stroke="black" />
+<path d="M184.5748987854251,9.5 L177.5748987854251,6.0 L177.5748987854251,13.0 L184.5748987854251,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="82.46963562753037" y="-10" width="31.417004048582996" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="161.01214574898785" y="-10" width="23.562753036437243" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="113.88663967611336" y="-10" width="47.12550607287449" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(137.4493927125506 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">2</text>
+</g>
+</g>
+</g>
+</svg>

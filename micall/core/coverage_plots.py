@@ -223,7 +223,7 @@ def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordanc
     if plot_path is None:
         plot_path, _ = os.path.split(concordance_csv.name)
     reader = DictReader(concordance_csv)
-    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=100, layout='tight')
     paths = []
     for (reference, region), group in itertools.groupby(reader,
                                                         itemgetter('reference', 'region')):
@@ -250,7 +250,6 @@ def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordanc
         plt.ylim([0, 110])
         plt.xlabel('Reference coordinates (AA)', fontsize=9)
         plt.ylabel('20-base window average', fontsize=9)
-        plt.tight_layout()
         figname_parts = ['concordance', reference, region, filetype]
         if concordance_prefix:
             figname_parts.insert(0, concordance_prefix)
@@ -284,7 +283,7 @@ def make_tar_path(tar_path):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate coverage plots from MiCall outputs.')
-    parser.add_argument('amino_csv', type=argparse.FileType('rU'),
+    parser.add_argument('amino_csv', type=argparse.FileType('r'),
                         help='<input> CSV containing amino acid frequency outputs.')
     parser.add_argument('coverage_scores_csv', type=argparse.FileType('w'),
                         help='<output> CSV coverage scores.')

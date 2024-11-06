@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="970.0" height="84.5" viewBox="0.0 -84.5 970.0 84.5">
+<defs>
+</defs>
+<g transform="translate(0 -69.5)">
+<g transform="translate(0.0 0)">
+<rect x="46.19047619047619" y="-10" width="923.8095238095239" height="10" fill="red" stroke="red" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="234.01305248923313" y="-10" width="23.762977770591704" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="236.29429835520992" y="-10" width="18.915330305391024" height="10" fill="lightgray" stroke="lightgray" />
+</g>
+</g>
+<g transform="translate(0.0 -71.0)">
+<rect x="508.05246473525096" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
+<g transform="translate(508.05246473525096 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
+</g>
+</g>
+<g transform="translate(0 -41.0)">
+<g transform="translate(0.0 0)">
+<path d="M257.77603025982484,-20.0 L241.01305248923313,-20.0" stroke="black" />
+<circle cx="245.89454137452898" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M234.01305248923313,-20.0 L241.01305248923313,-23.5 L241.01305248923313,-16.5 L234.01305248923313,-20.0" fill="black" />
+<text x="245.89454137452898" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+</g>
+</g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<path d="M257.77603025982484,9.5 L241.01305248923313,9.5" stroke="black" />
+<path d="M234.01305248923313,9.5 L241.01305248923313,6.0 L241.01305248923313,13.0 L234.01305248923313,9.5" fill="black" />
+</g>
+</g>
+<g transform="translate(0 -10.0)">
+<g transform="translate(0.0 0)">
+<rect x="234.01305248923313" y="-10" width="2.2812458659767856" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="255.20962866060094" y="-10" width="2.5664015992238944" height="10" fill="yellow" stroke="yellow" />
+</g>
+<g transform="translate(0.0 0)">
+<rect x="236.29429835520992" y="-10" width="18.915330305391024" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(245.75196350790543 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
+</g>
+</g>
+</g>
+</svg>
