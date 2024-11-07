@@ -69,6 +69,9 @@ def denovo(fastq1_path: str,
                   }
     assembly_out_path = os.path.join(tmp_dir, 'haplo_out')
     contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fa')
+    with open(contigs_fasta_path, 'w'):
+        pass
+
     haplo_cmd = [HAPLOFLOW,
                  '--read-file', joined_path,
                  '--out', assembly_out_path,
@@ -85,8 +88,6 @@ def denovo(fastq1_path: str,
         if output != 'Failed to make first seed. Cannot continue\n':
             logger.warning('Haploflow failed to assemble.', exc_info=True)
             logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
-            pass
 
     with open(contigs_fasta_path) as reader:
         copyfileobj(cast(BinaryIO, reader), fasta)
