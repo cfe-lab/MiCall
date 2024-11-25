@@ -58,7 +58,7 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.7.2",
+    "ruff==0.8.0",
     "mypy==1.13.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
