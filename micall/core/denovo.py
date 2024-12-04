@@ -1,9 +1,9 @@
 import argparse
 import logging
-from typing import Optional, TextIO, cast, BinaryIO
+from typing import Optional
 from datetime import datetime
 from glob import glob
-from shutil import rmtree, copyfileobj
+import shutil
 from subprocess import CalledProcessError
 import subprocess
 from tempfile import mkdtemp
@@ -21,9 +21,9 @@ def count_fasta_sequences(file_path: Path):
 
 def denovo(fastq1_path: Path,
            fastq2_path: Path,
-           fasta: TextIO,
+           fasta: Path,
            work_dir: Path = Path('.'),
-           merged_contigs_csv: Optional[TextIO] = None,
+           merged_contigs_csv: Optional[Path] = None,
            ):
     """ Use de novo assembly to build contigs from reads.
 
@@ -31,7 +31,7 @@ def denovo(fastq1_path: Path,
     :param fastq2: FASTQ file for read 2 reads
     :param fasta: file to write assembled contigs to
     :param work_dir: path for writing temporary files
-    :param merged_contigs_csv: open file to read contigs that were merged from
+    :param merged_contigs_csv: file to read contigs that were merged from
         amplicon reads
     """
 
@@ -41,7 +41,7 @@ def denovo(fastq1_path: Path,
 
     old_tmp_dirs = glob(str(work_dir / 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
-        rmtree(old_tmp_dir, ignore_errors=True)
+        shutil.rmtree(old_tmp_dir, ignore_errors=True)
 
     tmp_dir = Path(mkdtemp(dir=work_dir, prefix='assembly_'))
 
@@ -87,9 +87,7 @@ def denovo(fastq1_path: Path,
     except CalledProcessError:
         logger.warning('Haploflow failed to assemble.', exc_info=True)
 
-    with open(contigs_fasta_path) as reader:
-        copyfileobj(cast(BinaryIO, reader), fasta)
-        fasta.flush()
+    shutil.copy(contigs_fasta_path, fasta)
 
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
@@ -122,4 +120,4 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
-    denovo(args.fastq1.name, args.fastq2.name, args.fasta)
+    denovo(args.fastq1.name, args.fastq2.name, args.fasta.name)

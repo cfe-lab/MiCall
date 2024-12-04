@@ -1,4 +1,3 @@
-from io import StringIO
 from pathlib import Path
 import re
 
@@ -23,7 +22,7 @@ def normalize_fasta(content: str) -> str:
 @mark.iva()  # skip with -k-iva
 def test_denovo_iva(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
-    contigs_fasta = StringIO()
+    contigs_fasta: Path = tmpdir / 'result.fasta'
     expected_contigs_fasta = """\
 >contig.00001
 TGAGGGCCAAAAAGGTAACTTTTGATAGGATGCAAGTGC\
@@ -35,11 +34,11 @@ GCCTCATCGTTTACCCTGACCTCGGCGTCAGGGTCTGCGAGAAGATGGCCCTTTATGATGTCACACAAAAGCTTCCTC\
 AGGCGGTGATGGGGGCTTCTTATGGATTCCAGTACTCCC
 """
 
-    denovo(str(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq'),
-           str(microtest_path / '2160A-HCV_S19_L001_R2_001.fastq'),
+    denovo(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq',
+           microtest_path / '2160A-HCV_S19_L001_R2_001.fastq',
            contigs_fasta,
            tmpdir)
 
-    result = contigs_fasta.getvalue()
+    result = contigs_fasta.read_text()
     expected = expected_contigs_fasta
     assert normalize_fasta(result) == normalize_fasta(expected)
