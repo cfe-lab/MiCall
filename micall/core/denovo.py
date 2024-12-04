@@ -5,7 +5,7 @@ from typing import Optional, TextIO, cast, BinaryIO
 from datetime import datetime
 from glob import glob
 from shutil import rmtree, copyfileobj
-from subprocess import PIPE, CalledProcessError, STDOUT
+from subprocess import CalledProcessError
 import subprocess
 from tempfile import mkdtemp
 
@@ -84,12 +84,9 @@ def denovo(fastq1_path: str,
                  '--thres', str(haplo_args['thres']),
                  '--long', str(haplo_args['long'])]
     try:
-        subprocess.run(haplo_cmd, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('Haploflow failed to assemble.', exc_info=True)
-            logger.warning(output)
+        subprocess.run(haplo_cmd, check=True)
+    except CalledProcessError:
+        logger.warning('Haploflow failed to assemble.', exc_info=True)
 
     with open(contigs_fasta_path) as reader:
         copyfileobj(cast(BinaryIO, reader), fasta)
