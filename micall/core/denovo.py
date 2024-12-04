@@ -56,7 +56,7 @@ def denovo(fastq1_path: str,
                    check=True)
 
     haplo_args = {'long': 0,
-                  'filter': 500,
+                  'filter': 80,
                   'thres': -1,
                   'strict': 5,
                   'error': 0.02,
