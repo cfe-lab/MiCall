@@ -87,13 +87,17 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 RUN apt-get install -q -y libcairo2-dev
 RUN pip install --upgrade pip
 
+## Install just the dependencies of MiCall (for faster build times in development).
+COPY pyproject.toml README.md /opt/micall/
+RUN pip install /opt/micall[denovo,basespace]
+
+## Trigger matplotlib to build its font cache
+RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+
 COPY . /opt/micall/
 
 RUN pip install /opt/micall[denovo,basespace]
 RUN micall make_blast_db
-
-## Trigger matplotlib to build its font cache
-RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 WORKDIR /data
 ENTRYPOINT ["micall", "micall_docker"]
