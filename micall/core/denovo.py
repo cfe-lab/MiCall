@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 from typing import Optional, TextIO, cast, BinaryIO
 from datetime import datetime
 from glob import glob
@@ -8,21 +7,22 @@ from shutil import rmtree, copyfileobj
 from subprocess import CalledProcessError
 import subprocess
 from tempfile import mkdtemp
+from pathlib import Path
 
 
 HAPLOFLOW = "haploflow"
 logger = logging.getLogger(__name__)
 
 
-def count_fasta_sequences(file_path):
+def count_fasta_sequences(file_path: Path):
     with open(file_path, 'r') as file:
         return sum(1 for line in file if line.startswith('>'))
 
 
-def denovo(fastq1_path: str,
-           fastq2_path: str,
+def denovo(fastq1_path: Path,
+           fastq2_path: Path,
            fasta: TextIO,
-           work_dir: str = '.',
+           work_dir: Path = Path('.'),
            merged_contigs_csv: Optional[TextIO] = None,
            ):
     """ Use de novo assembly to build contigs from reads.
@@ -39,20 +39,19 @@ def denovo(fastq1_path: str,
         # TODO: implement this.
         logger.error("Haploflow implementation does not support contig extensions yet.")
 
-    old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
+    old_tmp_dirs = glob(str(work_dir / 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
 
-    tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
+    tmp_dir = Path(mkdtemp(dir=work_dir, prefix='assembly_'))
 
     start_time = datetime.now()
-    start_dir = os.getcwd()
-    joined_path = os.path.join(tmp_dir, 'joined.fastq')
+    joined_path = tmp_dir / 'joined.fastq'
     subprocess.run(['merge-mates',
-                    fastq1_path,
-                    fastq2_path,
+                    str(fastq1_path),
+                    str(fastq2_path),
                     '--interleave',
-                    '-o', joined_path],
+                    '-o', str(joined_path)],
                    check=True)
 
     haplo_args = {'long': 0,
@@ -67,16 +66,16 @@ def denovo(fastq1_path: str,
                   'ref': None,
                   'RP': False,
                   }
-    assembly_out_path = os.path.join(tmp_dir, 'haplo_out')
-    contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fa')
 
-    os.makedirs(assembly_out_path, exist_ok=True)
-    with open(contigs_fasta_path, 'w'):
-        pass
+    assembly_out_path = tmp_dir / 'haplo_out'
+    contigs_fasta_path = assembly_out_path / 'contigs.fa'
+
+    assembly_out_path.mkdir(exist_ok=True, parents=True)
+    contigs_fasta_path.touch()
 
     haplo_cmd = [HAPLOFLOW,
-                 '--read-file', joined_path,
-                 '--out', assembly_out_path,
+                 '--read-file', str(joined_path),
+                 '--out', str(assembly_out_path),
                  '--k', str(haplo_args['kmer']),
                  '--error-rate', str(haplo_args['error']),
                  '--strict', str(haplo_args['strict']),
@@ -90,8 +89,8 @@ def denovo(fastq1_path: str,
 
     with open(contigs_fasta_path) as reader:
         copyfileobj(cast(BinaryIO, reader), fasta)
+        fasta.flush()
 
-    os.chdir(start_dir)
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
     logger.info('Assembled %d contigs in %s (%ds) on %s.',
