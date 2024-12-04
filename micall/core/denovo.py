@@ -69,6 +69,8 @@ def denovo(fastq1_path: str,
                   }
     assembly_out_path = os.path.join(tmp_dir, 'haplo_out')
     contigs_fasta_path = os.path.join(assembly_out_path, 'contigs.fa')
+
+    os.makedirs(assembly_out_path, exist_ok=True)
     with open(contigs_fasta_path, 'w'):
         pass
 
