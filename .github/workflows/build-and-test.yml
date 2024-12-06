@@ -15,6 +15,10 @@ jobs:
       - name: Run apt update
         run: sudo apt-get update
 
+      - name: Installing blast
+        run: |
+          sudo apt-get install -q -y ncbi-blast+
+
       - name: Install Haploflow
         run: |
           sudo apt-get update
