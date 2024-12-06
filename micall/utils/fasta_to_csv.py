@@ -9,12 +9,12 @@ from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
 import contextlib
+import subprocess
 
 from io import StringIO
 import importlib.resources as resources
 
 from Bio import SeqIO
-from Bio.Blast.Applications import NcbiblastnCommandline
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.contig_stitcher_contigs import GenotypedContig
@@ -167,17 +167,19 @@ def genotype(fasta: str, db: Optional[str] = None,
                      'send']
 
     def invoke_blast(db: str) -> str:
-        cline = NcbiblastnCommandline(query=fasta,
-                                      db=db,
-                                      outfmt=f'"10 {" ".join(blast_columns)}"',
-                                      evalue=0.0001,
-                                      gapopen=5,
-                                      gapextend=2,
-                                      penalty=-3,
-                                      reward=1,
-                                      max_target_seqs=5000)
-        stdout, _ = cline()
-        return stdout
+        program = ["blastn",
+                   "-outfmt", "10 " + " ".join(blast_columns),
+                   "-query", str(fasta),
+                   "-db", str(db),
+                   "-evalue", "0.0001",
+                   "-max_target_seqs", "5000",
+                   "-gapopen", "5",
+                   "-gapextend", "2",
+                   "-penalty", "-3",
+                   "-reward", "1",
+                   ]
+        stdout = subprocess.check_output(program)
+        return stdout.decode()
 
     if db is None:
         with default_database() as db:
