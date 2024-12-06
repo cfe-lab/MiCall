@@ -21,6 +21,7 @@ def normalize_fasta(content: str) -> str:
 
 @mark.iva()  # skip with -k-iva
 def test_denovo_iva(tmpdir, hcv_db):
+    tmpdir = Path(tmpdir)
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_fasta: Path = tmpdir / 'result.fasta'
     expected_contigs_fasta = """\
