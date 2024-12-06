@@ -28,6 +28,9 @@ FROM python:3.11
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
+## Download package sources
+RUN apt-get update -qq -y
+
 ## Prerequisites
 RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   unzip \
