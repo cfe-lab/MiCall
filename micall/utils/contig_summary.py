@@ -2,8 +2,7 @@ from argparse import ArgumentParser
 from csv import DictReader
 from io import StringIO
 from pathlib import Path
-
-from Bio.Blast.Applications import NcbiblastnCommandline
+import subprocess
 
 from micall.utils.fasta_to_csv import default_database
 
@@ -62,16 +61,18 @@ def main():
                 continue
             contigs_fasta_path, = contigs_fasta_paths
             with default_database() as DEFAULT_DATABASE:
-                cline = NcbiblastnCommandline(query=str(contigs_fasta_path),
-                                              db=DEFAULT_DATABASE,
-                                              outfmt=blast_format,
-                                              evalue=0.0001,
-                                              gapopen=5,
-                                              gapextend=2,
-                                              penalty=-3,
-                                              reward=1,
-                                              max_target_seqs=5000)
-                stdout, _ = cline(stderr=False)
+                program = ["blastn",
+                           "-outfmt", blast_format,
+                           "-query", str(contigs_fasta_path),
+                           "-db", str(DEFAULT_DATABASE),
+                           "-evalue", "0.0001",
+                           "-max_target_seqs", "5000",
+                           "-gapopen", "5",
+                           "-gapextend", "2",
+                           "-penalty", "-3",
+                           "-reward", "1",
+                           ]
+                stdout = subprocess.check_output(program).decode()
             plot_contigs(sample_dir, stdout)
             plot_path = contig_plots_path / (sample_dir.name + '.png')
             plt.savefig(str(plot_path))
