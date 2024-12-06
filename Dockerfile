@@ -42,8 +42,7 @@ RUN wget -qO rustup.sh https://sh.rustup.rs && \
     cargo install --root / --git https://github.com/jeff-k/merge-mates.git --rev 2fec61363f645e2008a4adff553d098beae21469
 
 ## Installing blast
-RUN apt-get update -qq --fix-missing && \
-    apt-get install -q -y ncbi-blast+ && \
+RUN apt-get install -q -y ncbi-blast+ && \
     rm -rf /var/lib/apt/lists/*
 
 ## bowtie2
@@ -55,8 +54,7 @@ RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/downl
 ENV PATH $PATH:/opt/bowtie2
 
 ## Install Haploflow
-RUN apt-get update && \
-    apt-get install -y build-essential sudo git ronn cmake && \
+RUN apt-get install -y build-essential sudo git ronn cmake && \
     cd /opt/ && \
     git clone https://github.com/hzi-bifo/Haploflow && \
     cd Haploflow && \
