@@ -253,3 +253,38 @@ class LineCounter(object):
                 buf = read_f(buf_size)
 
         return lines
+
+
+class Blastn(CommandWrapper):
+    BLAST_COLUMNS = ['qaccver',
+                     'saccver',
+                     'qlen',
+                     'pident',
+                     'score',
+                     'qcovhsp',
+                     'qstart',
+                     'qend',
+                     'sstart',
+                     'send',
+                     ]
+
+    def __init__(self, version=None, execname='blastn', logger=None, **kwargs):
+        super(Blastn, self).__init__(version, execname, logger, **kwargs)
+        stdout = self.check_output(['-version'], stderr=subprocess.STDOUT)
+        version_found = stdout.split('\n')[0].split()[-1]
+        self.validate_version(version_found)
+
+    def genotype(self, database: Path, contigs_fasta: Path) -> str:
+        blast_format = '10 ' + " ".join(Blastn.BLAST_COLUMNS)
+        program = ["-outfmt", blast_format,
+                   "-query", str(contigs_fasta),
+                   "-db", str(database),
+                   "-evalue", "0.0001",
+                   "-max_target_seqs", "5000",
+                   "-gapopen", "5",
+                   "-gapextend", "2",
+                   "-penalty", "-3",
+                   "-reward", "1",
+                   ]
+        stdout = self.check_output(program)
+        return stdout

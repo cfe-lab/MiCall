@@ -429,7 +429,7 @@ class Sample:
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            fasta_to_csv(self.unstitched_contigs_fasta,
+            fasta_to_csv(Path(self.unstitched_contigs_fasta),
                          unstitched_contigs_csv,
                          merged_contigs_csv,
                          blast_csv=blast_csv,

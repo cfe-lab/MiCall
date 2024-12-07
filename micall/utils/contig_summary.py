@@ -2,9 +2,9 @@ from argparse import ArgumentParser
 from csv import DictReader
 from io import StringIO
 from pathlib import Path
-import subprocess
 
 from micall.utils.fasta_to_csv import default_database
+from micall.utils.externals import Blastn
 
 import matplotlib
 matplotlib.use('Agg')
@@ -12,16 +12,6 @@ from matplotlib import pyplot as plt  # noqa
 
 DEFAULT_SCRATCH_PATH = (Path(__file__).parent.parent / "tests" / "working" /
                         "basespace_linked_data" / "scratch")
-BLAST_COLUMNS = ['qaccver',
-                 'saccver',
-                 'qlen',
-                 'pident',
-                 'score',
-                 'qcovhsp',
-                 'qstart',
-                 'qend',
-                 'sstart',
-                 'send']
 
 
 def parse_args():
@@ -39,7 +29,6 @@ def main():
     sample_dirs = [d for d in args.scratch.iterdir() if d.is_dir()]
     contig_plots_path = sample_dirs[0].parent / 'contig_plots'
     contig_plots_path.mkdir(exist_ok=True)
-    blast_format = f'"10 {" ".join(BLAST_COLUMNS)}"'
     sample_dirs.sort()
     incomplete_count = empty_count = 0
     for sample_dir in sample_dirs:
@@ -61,18 +50,10 @@ def main():
                 continue
             contigs_fasta_path, = contigs_fasta_paths
             with default_database() as DEFAULT_DATABASE:
-                program = ["blastn",
-                           "-outfmt", blast_format,
-                           "-query", str(contigs_fasta_path),
-                           "-db", str(DEFAULT_DATABASE),
-                           "-evalue", "0.0001",
-                           "-max_target_seqs", "5000",
-                           "-gapopen", "5",
-                           "-gapextend", "2",
-                           "-penalty", "-3",
-                           "-reward", "1",
-                           ]
-                stdout = subprocess.check_output(program).decode()
+                stdout = Blastn().genotype(
+                    contigs_fasta=contigs_fasta_path,
+                    database=DEFAULT_DATABASE,
+                )
             plot_contigs(sample_dir, stdout)
             plot_path = contig_plots_path / (sample_dir.name + '.png')
             plt.savefig(str(plot_path))
@@ -85,7 +66,7 @@ def main():
 
 
 def plot_contigs(sample_dir, contigs_csv):
-    reader = DictReader(StringIO(contigs_csv), BLAST_COLUMNS)
+    reader = DictReader(StringIO(contigs_csv), Blastn.BLAST_COLUMNS)
     rows = list(reader)
     rows.sort(reverse=True, key=lambda row: int(row['score']))
     contig_names = sorted({row['qaccver'] for row in rows})
