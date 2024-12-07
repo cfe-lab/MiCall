@@ -58,7 +58,7 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.8.1",
+    "ruff==0.8.2",
     "mypy==1.13.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
@@ -202,7 +202,6 @@ exclude = '''(?x)
     ^micall/utils/coverage_data[.]py$|
     ^micall/utils/dd[.]py$|
     ^micall/utils/denovo_simplify[.]py$|
-    ^micall/utils/externals[.]py$|
     ^micall/utils/fetch_sequences[.]py$|
     ^micall/utils/find_by_coverage[.]py$|
     ^micall/utils/find_chimera[.]py$|
