@@ -210,7 +210,6 @@ exclude = '''(?x)
     ^micall/utils/coverage_data[.]py$|
     ^micall/utils/dd[.]py$|
     ^micall/utils/denovo_simplify[.]py$|
-    ^micall/utils/externals[.]py$|
     ^micall/utils/fetch_sequences[.]py$|
     ^micall/utils/find_by_coverage[.]py$|
     ^micall/utils/find_chimera[.]py$|
