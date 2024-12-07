@@ -8,6 +8,7 @@ import logging
 from typing import Optional, List, Any, Iterator
 from functools import cached_property
 from abc import ABC, abstractmethod
+import shutil
 
 
 class AssetWrapper(object):
@@ -17,9 +18,9 @@ class AssetWrapper(object):
         app_dir = Path(__file__).parent.parent / "assets"
         local_path = app_dir / path
         if local_path.exists():
-            self.path = str(local_path)
+            self.path = local_path
         else:
-            self.path = os.path.join(getattr(sys, '_MEIPASS', ''), path)
+            self.path = Path(getattr(sys, '_MEIPASS', '')) / path
 
 
 class CommandWrapper(ABC, AssetWrapper):
@@ -29,14 +30,19 @@ class CommandWrapper(ABC, AssetWrapper):
                  execname: str,
                  logger: Optional[logging.Logger] = None,
                  ) -> None:
-        super(CommandWrapper, self).__init__(path=Path(execname))
+
+        path = shutil.which(execname)
+        if path is None:
+            raise RuntimeError(f"Cannot find {execname!r} executable.")
+
+        super(CommandWrapper, self).__init__(path=Path(path))
         self._version: Optional[str] = version
         self._logger: Optional[logging.Logger] = logger
         if self._version is not None:
             assert self.version == self._version
 
     def build_args(self, args: List[str]) -> List[str]:
-        return [self.path] + args
+        return [str(self.path)] + args
 
     def check_output(self, args: List[str] = [],
                      *popenargs: Any, **kwargs: Any) -> str:
