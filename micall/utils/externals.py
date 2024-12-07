@@ -39,11 +39,11 @@ class CommandWrapper(AssetWrapper):
         @return the command's output
         """
         try:
-            startupinfo = subprocess.STARTUPINFO()
+            startupinfo = subprocess.STARTUPINFO()  # type: ignore[attr-defined]
 
             # Needed on Windows, fails elsewhere.
             # noinspection PyUnresolvedReferences
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore[attr-defined]
             kwargs.setdefault('startupinfo', startupinfo)
         except AttributeError:
             pass
@@ -66,10 +66,10 @@ class CommandWrapper(AssetWrapper):
         @return the new Popen object
         """
         try:
-            startupinfo = subprocess.STARTUPINFO()
+            startupinfo = subprocess.STARTUPINFO()  # type: ignore[attr-defined]
             # Needed on Windows, fails elsewhere.
             # noinspection PyUnresolvedReferences
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore[attr-defined]
             kwargs.setdefault('startupinfo', startupinfo)
         except AttributeError:
             pass
@@ -238,7 +238,7 @@ class LineCounter(object):
 
                 return int(wc_output.split()[0])
             except CalledProcessError:
-                self.command = None
+                self.command = ''
         return self.buffered_count(filename)
 
     def buffered_count(self, filename):
