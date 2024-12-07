@@ -32,6 +32,8 @@ class CommandWrapper(ABC, AssetWrapper):
         super(CommandWrapper, self).__init__(path=Path(execname))
         self._version: Optional[str] = version
         self._logger: Optional[logging.Logger] = logger
+        if self._version is not None:
+            assert self.version == self._version
 
     def build_args(self, args: List[str]) -> List[str]:
         return [self.path] + args
