@@ -1,6 +1,5 @@
 import subprocess
 import os
-import sys
 import re
 from subprocess import CalledProcessError
 from pathlib import Path
@@ -9,18 +8,32 @@ from typing import Optional, List, Any, Iterator
 from functools import cached_property
 from abc import ABC, abstractmethod
 import shutil
+from dataclasses import dataclass
 
 
-class AssetWrapper(object):
+ASSETS_DIR: Path = Path(__file__).parent.parent / "assets"
+
+
+@dataclass(frozen=True)
+class AssetWrapper:
     """ Wraps a packaged asset, and finds its path. """
-    def __init__(self, path: Path):
-        # noinspection PyArgumentList
-        app_dir = Path(__file__).parent.parent / "assets"
-        local_path = app_dir / path
+
+    def __init__(self, identifier: str) -> None:
+        self.identifier: str = identifier
+
+    def _resolve_local_path(self) -> Optional[Path]:
+        local_path = ASSETS_DIR / self.identifier
         if local_path.exists():
-            self.path = local_path
+            return local_path
         else:
-            self.path = Path(getattr(sys, '_MEIPASS', '')) / path
+            return None
+
+    @cached_property
+    def path(self) -> Path:
+        path = self._resolve_local_path()
+        if path is None:
+            raise RuntimeError(f"Cannot find {self.identifier!r} asset.")
+        return path
 
 
 class CommandWrapper(ABC, AssetWrapper):
@@ -30,16 +43,23 @@ class CommandWrapper(ABC, AssetWrapper):
                  execname: str,
                  logger: Optional[logging.Logger] = None,
                  ) -> None:
-
-        path = shutil.which(execname)
-        if path is None:
-            raise RuntimeError(f"Cannot find {execname!r} executable.")
-
-        super(CommandWrapper, self).__init__(path=Path(path))
+        super(CommandWrapper, self).__init__(execname)
         self._version: Optional[str] = version
         self._logger: Optional[logging.Logger] = logger
         if self._version is not None:
             assert self.version == self._version
+
+    def _resolve_local_path(self) -> Optional[Path]:
+        local = super()._resolve_local_path()
+        if local is not None:
+            return local
+
+        path = shutil.which(self.identifier)
+        if path is not None:
+            return Path(path)
+
+        raise RuntimeError(f"Cannot find {self.identifier!r} executable."
+                           "Make sure you have installed the package.")
 
     def build_args(self, args: List[str]) -> List[str]:
         return [str(self.path)] + args
