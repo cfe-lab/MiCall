@@ -6,63 +6,82 @@ from pathlib import Path
 import logging
 from typing import Optional, List, Any, Iterator
 from functools import cached_property
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 import shutil
-from dataclasses import dataclass
+import importlib.resources as resources
+import contextlib
 
 
-ASSETS_DIR: Path = Path(__file__).parent.parent / "assets"
+class ExternalResource(ABC):
+    @abstractproperty
+    def identifier(sef) -> str: ...
+
+    @abstractmethod
+    @contextlib.contextmanager
+    def path(self) -> Iterator[Path]: ...
 
 
-@dataclass(frozen=True)
-class AssetWrapper:
-    """ Wraps a packaged asset, and finds its path. """
+class CommandWrapper(ExternalResource):
+    """ Wraps an external tool, and builds the command lines for it. """
 
-    def __init__(self, identifier: str) -> None:
-        self.identifier: str = identifier
+    def __init__(self) -> None:
+        self._logger: Optional[logging.Logger] = None
+        if self.expected_version is not None:
+            self._validate_version()
 
-    def _resolve_local_path(self) -> Optional[Path]:
-        local_path = ASSETS_DIR / self.identifier
-        if local_path.exists():
-            return local_path
-        else:
-            return None
+    @abstractproperty
+    def executable_name(self) -> str: ...
+
+    @abstractproperty
+    def expected_version(self) -> Optional[str]: ...
+
+    @property
+    def identifier(self) -> str:
+        return self.executable_name
 
     @cached_property
-    def path(self) -> Path:
-        path = self._resolve_local_path()
-        if path is None:
-            raise RuntimeError(f"Cannot find {self.identifier!r} asset.")
-        return path
-
-
-class CommandWrapper(ABC, AssetWrapper):
-    """ Wraps an external tool, and builds the command lines for it. """
-    def __init__(self,
-                 version: Optional[str],
-                 execname: str,
-                 logger: Optional[logging.Logger] = None,
-                 ) -> None:
-        super(CommandWrapper, self).__init__(execname)
-        self._version: Optional[str] = version
-        self._logger: Optional[logging.Logger] = logger
-        if self._version is not None:
-            assert self.version == self._version
-
-    def _resolve_local_path(self) -> Optional[Path]:
-        local = super()._resolve_local_path()
-        if local is not None:
-            return local
-
-        path = shutil.which(self.identifier)
+    def executable_path(self) -> Path:
+        path = shutil.which(self.executable_name)
         if path is not None:
             return Path(path)
 
         raise RuntimeError(f"Cannot find {self.identifier!r} executable."
                            "Make sure you have installed the package.")
 
+    @contextlib.contextmanager
+    def path(self) -> Iterator[Path]:
+        yield self.executable_path
+
+    def _validate_version(self) -> None:
+        version_found = self.version
+        if self.expected_version is None:
+            pass
+        elif self.expected_version != version_found:
+            message = '{} version incompatibility: expected {}, found {}'.format(
+                str(self.executable_path),
+                self.expected_version,
+                version_found)
+            raise RuntimeError(message)
+
+    @abstractmethod
+    def get_version(self) -> str: ...
+
+    @cached_property
+    def version(self) -> str:
+        return self.get_version()
+
+    @property
+    def logger(self) -> logging.Logger:
+        """ Raise an exception if no logger is set for this command. """
+        if self._logger is None:
+            raise RuntimeError(f'logger not set for command {self.identifier!r}')
+        return self._logger
+
+    def set_logger(self, logger: logging.Logger) -> None:
+        self._logger = logger
+
     def build_args(self, args: List[str]) -> List[str]:
-        return [str(self.path)] + args
+        return [str(self.executable_path)] + args
 
     def check_output(self, args: List[str] = [],
                      *popenargs: Any, **kwargs: Any) -> str:
@@ -114,13 +133,6 @@ class CommandWrapper(ABC, AssetWrapper):
         with open(os.devnull) as devnull:
             kwargs.setdefault('stdin', devnull)
             return subprocess.Popen(self.build_args(args or []), *popenargs, **kwargs)
-
-    @property
-    def logger(self) -> logging.Logger:
-        """ Raise an exception if no logger is set for this command. """
-        if self._logger is None:
-            raise RuntimeError('logger not set for command {}'.format(self.path))
-        return self._logger
 
     def log_call(self, args: List[str], format_string: str = '%s') -> None:
         """ Launch a subprocess, and log any output to the debug logger.
@@ -189,33 +201,15 @@ class CommandWrapper(ABC, AssetWrapper):
                 raise subprocess.CalledProcessError(p.returncode,
                                                     self.build_args(args))
 
-    @abstractmethod
-    def get_version(self) -> str: ...
-
-    def _validate_version(self, version_found: str) -> None:
-        if self._version is None:
-            pass
-        elif self._version != version_found:
-            message = '{} version incompatibility: expected {}, found {}'.format(
-                self.path,
-                self._version,
-                version_found)
-            raise RuntimeError(message)
-
-    @cached_property
-    def version(self) -> str:
-        version_found = self.get_version()
-        self._validate_version(version_found)
-        return version_found
-
 
 class CutAdapt(CommandWrapper):
-    def __init__(self,
-                 version: Optional[str] = None,
-                 execname: str = 'cutadapt',
-                 logger: Optional[logging.Logger] = None,
-                 ):
-        super(CutAdapt, self).__init__(version, execname, logger)
+    @property
+    def executable_name(self) -> str:
+        return 'cutadapt'
+
+    @property
+    def expected_version(self) -> Optional[str]:
+        return None
 
     def get_version(self):
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
@@ -223,12 +217,13 @@ class CutAdapt(CommandWrapper):
 
 
 class Bowtie2(CommandWrapper):
-    def __init__(self,
-                 version: Optional[str] = None,
-                 execname: str = 'bowtie2',
-                 logger: Optional[logging.Logger] = None,
-                 ):
-        super(Bowtie2, self).__init__(version, execname, logger)
+    @property
+    def executable_name(self) -> str:
+        return 'bowtie2-align-s'
+
+    @property
+    def expected_version(self) -> Optional[str]:
+        return '2.2.8'
 
     def get_version(self):
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
@@ -236,12 +231,13 @@ class Bowtie2(CommandWrapper):
 
 
 class Bowtie2Build(CommandWrapper):
-    def __init__(self,
-                 version: Optional[str] = None,
-                 execname: str = 'bowtie2-build',
-                 logger: Optional[logging.Logger] = None,
-                 ):
-        super(Bowtie2Build, self).__init__(version, execname, logger)
+    @property
+    def executable_name(self) -> str:
+        return 'bowtie2-build-s'
+
+    @property
+    def expected_version(self) -> Optional[str]:
+        return '2.2.8'
 
     def get_version(self):
         stdout = self.check_output(['--version'], stderr=subprocess.STDOUT)
@@ -330,12 +326,13 @@ class Blastn(CommandWrapper):
                      'send',
                      ]
 
-    def __init__(self,
-                 version: Optional[str] = None,
-                 execname: str = 'blastn',
-                 logger: Optional[logging.Logger] = None,
-                 ):
-        super(Blastn, self).__init__(version, execname, logger)
+    @property
+    def executable_name(self) -> str:
+        return 'blastn'
+
+    @property
+    def expected_version(self) -> Optional[str]:
+        return None
 
     def get_version(self):
         stdout = self.check_output(['-version'], stderr=subprocess.STDOUT)
@@ -355,3 +352,60 @@ class Blastn(CommandWrapper):
                    ]
         stdout = self.check_output(program)
         return stdout
+
+
+class PackagedResource(ExternalResource):
+    @property
+    def identifier(self) -> str:
+        return 'micall://' + str(self.relative_path)
+
+    @contextlib.contextmanager
+    def path(self) -> Iterator[Path]:
+        with PackagedResource.root_dir() as root:
+            yield root / self.relative_path
+
+    @abstractproperty
+    def relative_path(self) -> Path: ...
+
+    @staticmethod
+    @contextlib.contextmanager
+    def root_dir() -> Iterator[Path]:
+        """
+        A context manager handling the path to packaged MiCall directory.
+
+        The complexity of the function arises from the need to maintain
+        compatibility with multiple python versions due to changes in APIs
+        of the `importlib.resources` package.
+
+        It first tries to fetch the resource using `resources.files`
+        function introduced in Python 3.9. If it fails, it falls back on
+        `resources.path`.  It further ensures that the obtained resource
+        is returned as a Path instance regardless of it being a string,
+        Path, or contextlib context-manager instance.
+
+        Note: `resources.path` is set to be deprecated in future Python
+        versions, hence the intended primary method is using
+        `resources.files`.
+
+        Yields: Path: A path-like object pointing to
+                  the root directory of 'micall' package.
+        """
+
+        try:
+            ret = resources.as_file(resources.files('micall'))  # type: ignore
+        except AttributeError:
+            ret = resources.path('micall')  # type: ignore
+
+        if isinstance(ret, str):
+            yield Path(ret)
+        elif isinstance(ret, Path):
+            yield ret
+        else:
+            with ret as path:
+                yield path
+
+
+class DefaultBlastDatabase(PackagedResource):
+    @property
+    def relative_path(self) -> Path:
+        return Path(".") / "blast_db" / "refs.fasta"
