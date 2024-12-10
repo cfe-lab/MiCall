@@ -16,9 +16,6 @@ from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 
 BOWTIE_THREADS = 1    # Bowtie performance roughly scales with number of threads
-BOWTIE_VERSION = '2.2.8'        # version of bowtie2, used for version control
-BOWTIE_PATH = 'bowtie2-align-s'         # path to executable, so you can install more than one version
-BOWTIE_BUILD_PATH = 'bowtie2-build-s'
 # Read and reference gap open/extension penalties.
 READ_GAP_OPEN = 10
 READ_GAP_EXTEND = 3
@@ -53,16 +50,10 @@ def prelim_map(fastq1,
     @param work_path:  optional path to store working files
     @param excluded_seeds: a list of seed names to exclude from mapping
     """
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except RuntimeError:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+
+    bowtie2 = Bowtie2()
+    bowtie2_build = Bowtie2Build()
+    bowtie2_build.set_logger(logger)
 
     # check that the inputs exist
     fastq1 = check_fastq(fastq1, gzip)

@@ -2,62 +2,23 @@ import argparse
 import logging
 import os
 import typing
-from typing import Optional, TextIO, Iterable, Dict, cast, Sequence, Iterator
+from typing import Optional, TextIO, Iterable, Dict, cast, Sequence
 from collections import Counter
 from csv import DictWriter, DictReader
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
-import contextlib
 
 from io import StringIO
-import importlib.resources as resources
 
 from Bio import SeqIO
 
 from micall.core.project_config import ProjectConfig
 from micall.utils.contig_stitcher_contigs import GenotypedContig
-from micall.utils.externals import Blastn
+from micall.utils.externals import Blastn, DefaultBlastDatabase
 
 
-@contextlib.contextmanager
-def reference_dir() -> Iterator[Path]:
-    """
-    A context manager handling reference sequences paths packaged with MiCall.
-
-    The complexity of the function arises from the need to maintain compatibility with
-    multiple python versions due to changes in APIs of the `importlib.resources` package.
-
-    It first tries to fetch the resource using `resources.files` function introduced in
-    Python 3.9. If it fails, it falls back on `resources.path`.
-    It further ensures that the obtained resource is returned
-    as a Path instance regardless of it being a string, Path, or contextlib context-manager instance.
-
-    Note: `resources.path` is set to be deprecated in future Python versions, hence the
-    intended primary method is using `resources.files`.
-
-    Yields:
-        Path: A path-like object pointing to the reference directory within 'micall'.
-    """
-
-    try:
-        ret = resources.as_file(resources.files('micall').joinpath('blast_db'))  # type: ignore
-    except AttributeError:
-        ret = resources.path('micall', 'blast_db')  # type: ignore
-
-    if isinstance(ret, str):
-        yield Path(ret)
-    elif isinstance(ret, Path):
-        yield ret
-    else:
-        with ret as path:
-            yield path
-
-
-@contextlib.contextmanager
-def default_database() -> Iterator[Path]:
-    with reference_dir() as blast_db:
-        yield blast_db / "refs.fasta"
+default_database = DefaultBlastDatabase().path
 
 
 def read_assembled_contigs(group_refs: Dict[str, str],
