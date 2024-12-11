@@ -56,7 +56,7 @@ class CommandWrapper(ExternalResource):
             pass
         elif self.expected_version != self.version:
             message = '{} version incompatibility: expected {}, found {}'.format(
-                str(self.executable_path),
+                self.identifier,
                 self.expected_version,
                 self.version)
             raise RuntimeError(message)
