@@ -26,8 +26,7 @@ class CommandWrapper(ExternalResource):
 
     def __init__(self) -> None:
         self._logger: Optional[logging.Logger] = None
-        if self.expected_version is not None:
-            self._validate_version()
+        self._validate_version()
 
     @abstractproperty
     def executable_name(self) -> str: ...
@@ -53,14 +52,13 @@ class CommandWrapper(ExternalResource):
         yield self.executable_path
 
     def _validate_version(self) -> None:
-        version_found = self.version
         if self.expected_version is None:
             pass
-        elif self.expected_version != version_found:
+        elif self.expected_version != self.version:
             message = '{} version incompatibility: expected {}, found {}'.format(
                 str(self.executable_path),
                 self.expected_version,
-                version_found)
+                self.version)
             raise RuntimeError(message)
 
     @abstractmethod
