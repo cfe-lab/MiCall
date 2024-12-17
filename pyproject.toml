@@ -28,7 +28,7 @@ dependencies = [
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
     "numpy==2.2.0",
     "scipy==1.14.1",
-    "matplotlib==3.9.4",
+    "matplotlib==3.10.0",
     "cutadapt==5.0",
     "python-Levenshtein==0.26.1",
     "PyYAML==6.0.2",
