@@ -71,3 +71,17 @@ def find_maximum_overlap(arr1: Sequence[object],
 
     shift_value = max_offset - len(total)
     return int(shift_value)
+
+
+def show_maximum_overlap(arr1: Sequence[object],
+                         arr2: Sequence[object],
+                         shift: int,
+                         ) -> str:
+
+    arr1_line = '-' * (abs(shift) - len(arr1)) + ''.join(map(str, arr1))
+    arr2_line = '-' * (len(arr1) - abs(shift)) + ''.join(map(str, arr2))
+    max_len = max(len(arr1_line), len(arr2_line))
+    lines = (x.ljust(max_len, '-')
+             for x in [arr1_line, arr2_line])
+
+    return '\n'.join(chain(lines, ['']))

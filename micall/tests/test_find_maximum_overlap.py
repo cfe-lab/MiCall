@@ -1,5 +1,5 @@
 import pytest
-from micall.utils.find_maximum_overlap import find_maximum_overlap
+from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum_overlap
 
 
 @pytest.mark.parametrize(
@@ -25,3 +25,57 @@ def test_maximum_overlap_cases(left, right, expected):
     else:
         with pytest.raises(expected):
             find_maximum_overlap(left, right)
+
+
+@pytest.mark.parametrize(
+    "left, right, expected",
+    [
+        ('tttttxxxxx', 'uuuuuxxx', '''\
+tttttxxxxx
+uuuuuxxx--
+'''),
+        ('tttttxxx', 'uuuuuxxxxx', '''\
+--tttttxxx
+uuuuuxxxxx
+'''),
+        ('xxxttttt', 'xxxxxuuuuu', '''\
+--xxxttttt
+xxxxxuuuuu
+'''),
+        ('xxxxxttttt', 'xxxuuuuu', '''\
+xxxxxttttt
+xxxuuuuu--
+'''),
+        ('xxxxttttt', 'uuuuuxxx', '''\
+-----xxxxttttt
+uuuuuxxx------
+'''),
+        ('aaaaxxxxttttt', 'uxxxk', '''\
+aaaaxxxxttttt
+---uxxxk-----
+'''
+         ),
+        ('tttttxxxx', 'xxxuuuuu', '''\
+tttttxxxx-----
+------xxxuuuuu
+'''),
+        ('tttttxxxx', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', '''\
+tttttxxxx-------------------------------
+------xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+'''),
+        ('tttttxxxxpppppppppppppppppppp', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', '''\
+tttttxxxxpppppppppppppppppppp-----------
+------xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+'''),
+    ],
+)
+def test_print(left, right, expected):
+    shift = find_maximum_overlap(left, right)
+    ret = show_maximum_overlap(left, right, shift)
+    if ret != expected:
+        print()
+        print()
+        print(ret)
+        print()
+        print()
+    assert ret == expected
