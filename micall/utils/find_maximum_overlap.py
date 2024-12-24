@@ -1,4 +1,7 @@
+#! /usr/bin/env python
 
+import argparse
+import sys
 import numpy as np
 from typing import Sequence
 from itertools import chain
@@ -85,3 +88,27 @@ def show_maximum_overlap(arr1: Sequence[object],
              for x in [arr1_line, arr2_line])
 
     return '\n'.join(chain(lines, ['']))
+
+
+def main(seq1: str, seq2: str) -> int:
+    shift = find_maximum_overlap(seq1, seq2)
+    ret = show_maximum_overlap(seq1, seq2, shift)
+    print(ret, end='')
+    return 0
+
+
+def get_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser("Find maximum overlap between two sequences.")
+    parser.add_argument('seq1')
+    parser.add_argument('seq2')
+    return parser
+
+
+def cli_main(argv: Sequence[str]) -> int:
+    parser = get_parser()
+    args = parser.parse_args(argv)
+    return main(args.seq1, args.seq2)
+
+
+if __name__ == '__main__':
+    sys.exit(cli_main(sys.argv[1:]))

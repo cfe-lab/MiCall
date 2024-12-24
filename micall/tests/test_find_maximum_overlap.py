@@ -1,5 +1,5 @@
 import pytest
-from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum_overlap
+from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum_overlap, cli_main
 
 
 @pytest.mark.parametrize(
@@ -27,8 +27,7 @@ def test_maximum_overlap_cases(left, right, expected):
             find_maximum_overlap(left, right)
 
 
-@pytest.mark.parametrize(
-    "left, right, expected",
+print_cases = \
     [
         ('tttttxxxxx', 'uuuuuxxx', '''\
 tttttxxxxx
@@ -67,15 +66,18 @@ tttttxxxx-------------------------------
 tttttxxxxpppppppppppppppppppp-----------
 ------xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
 '''),
-    ],
-)
+]
+
+
+@pytest.mark.parametrize("left, right, expected", print_cases)
 def test_print(left, right, expected):
     shift = find_maximum_overlap(left, right)
     ret = show_maximum_overlap(left, right, shift)
-    if ret != expected:
-        print()
-        print()
-        print(ret)
-        print()
-        print()
+    assert ret == expected
+
+
+@pytest.mark.parametrize("left, right, expected", print_cases)
+def test_main(left, right, expected, capsys):
+    cli_main([left, right])
+    ret = capsys.readouterr().out
     assert ret == expected
