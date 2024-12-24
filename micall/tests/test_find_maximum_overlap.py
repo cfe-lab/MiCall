@@ -1,5 +1,5 @@
 import pytest
-import micall.utils.merge_contigs as merge_contigs
+from micall.utils.find_maximum_overlap import find_maximum_overlap
 
 
 @pytest.mark.parametrize(
@@ -21,7 +21,7 @@ import micall.utils.merge_contigs as merge_contigs
 )
 def test_maximum_overlap_cases(left, right, expected):
     if isinstance(expected, int):
-        assert merge_contigs.find_maximum_overlap(left, right) == expected
+        assert find_maximum_overlap(left, right) == expected
     else:
         with pytest.raises(expected):
-            merge_contigs.find_maximum_overlap(left, right)
+            find_maximum_overlap(left, right)
