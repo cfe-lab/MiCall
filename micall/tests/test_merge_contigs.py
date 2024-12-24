@@ -14,7 +14,14 @@ import micall.utils.merge_contigs as merge_contigs
         ('tttttxxxx', 'xxxuuuuu', -3),
         ('tttttxxxx', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', -3),
         ('tttttxxxxpppppppppppppppppppp', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', -23),
+        ('', 'tttttxxxx', ValueError),
+        ('tttttxxxx', '', ValueError),
+        ('', '', ValueError),
     ],
 )
 def test_maximum_overlap_cases(left, right, expected):
-    assert merge_contigs.find_maximum_overlap(left, right) == expected
+    if isinstance(expected, int):
+        assert merge_contigs.find_maximum_overlap(left, right) == expected
+    else:
+        with pytest.raises(expected):
+            merge_contigs.find_maximum_overlap(left, right)
