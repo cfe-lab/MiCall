@@ -71,7 +71,7 @@ tttttxxxxpppppppppppppppppppp-----------
 aaaa----
 ----bbbb
 '''),
-]
+    ]
 
 
 @pytest.mark.parametrize("left, right, expected", print_cases)
