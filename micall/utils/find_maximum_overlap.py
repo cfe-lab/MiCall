@@ -64,6 +64,9 @@ def find_maximum_overlap(arr1: Sequence[object],
 
     # Return the shift value that yields maximum overlap
     max_value = np.max(total)
+    if max_value <= 0:
+        return 0
+
     max_indices = np.where(total == max_value)[0]
     left_max = max_indices[0]
     right_max = max_indices[-1]

@@ -14,6 +14,7 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum
         ('tttttxxxx', 'xxxuuuuu', -3),
         ('tttttxxxx', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', -3),
         ('tttttxxxxpppppppppppppppppppp', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', -23),
+        ('aaaa', 'bbbb', 0),
         ('', 'tttttxxxx', ValueError),
         ('tttttxxxx', '', ValueError),
         ('', '', ValueError),
@@ -65,6 +66,10 @@ tttttxxxx-------------------------------
         ('tttttxxxxpppppppppppppppppppp', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', '''\
 tttttxxxxpppppppppppppppppppp-----------
 ------xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+'''),
+        ('aaaa', 'bbbb', '''\
+aaaa----
+----bbbb
 '''),
 ]
 
