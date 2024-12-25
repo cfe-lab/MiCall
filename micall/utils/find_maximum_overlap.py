@@ -7,6 +7,9 @@ from typing import Sequence
 from itertools import chain
 
 
+# TODO: optimize the time complexity here. In particular, don't use
+# the slow `numpy.convolve`.
+
 def find_maximum_overlap(arr1: Sequence[object],
                          arr2: Sequence[object],
                          ) -> int:
