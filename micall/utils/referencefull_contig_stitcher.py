@@ -614,26 +614,7 @@ def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     output_csv.flush()
 
 
-def referencefull_contig_stitcher(input_csv: TextIO,
-                                  output_csv: TextIO,
-                                  stitcher_plot_path: Optional[str],
-                                  ) -> int:
-    with StitcherContext.fresh() as ctx:
-        contigs = list(read_referencefull_contigs(input_csv))
-
-        if output_csv is not None or stitcher_plot_path is not None:
-            contigs = list(stitch_consensus(contigs))
-
-        if output_csv is not None:
-            write_contigs(output_csv, contigs)
-
-        if stitcher_plot_path is not None:
-            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
-
-        return len(contigs)
-
-
-def read_referencefull_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
     for row in csv.DictReader(input_csv):
@@ -656,3 +637,22 @@ def read_referencefull_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               group_ref=group_ref,
                               ref_seq=str(ref_seq) if ref_seq is not None else None,
                               match_fraction=match_fraction)
+
+
+def referencefull_contig_stitcher(input_csv: TextIO,
+                                  output_csv: Optional[TextIO],
+                                  stitcher_plot_path: Optional[str],
+                                  ) -> int:
+    with StitcherContext.fresh() as ctx:
+        contigs = list(read_contigs(input_csv))
+
+        if output_csv is not None or stitcher_plot_path is not None:
+            contigs = list(stitch_consensus(contigs))
+
+        if output_csv is not None:
+            write_contigs(output_csv, contigs)
+
+        if stitcher_plot_path is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+
+        return len(contigs)
