@@ -5,18 +5,20 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum
 @pytest.mark.parametrize(
     "left, right, expected",
     [
-        ('tttttxxxxx', 'uuuuuxxx', -10),
-        ('tttttxxx', 'uuuuuxxxxx', -10),
-        ('xxxttttt', 'xxxxxuuuuu', -10),
-        ('xxxxxttttt', 'xxxuuuuu', -10),
-        ('xxxxttttt', 'uuuuuxxx', -14),
-        ('aaaaxxxxttttt', 'uxxxk', -10),
-        ('tttttxxxx', 'xxxuuuuu', -3),
-        ('tttttxxxx', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', -3),
-        ('tttttxxxxpppppppppppppppppppp', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', -23),
+        ('aaaaaxxxx', 'xxxbbbbb', -3),
+        ('aaaaaxxxx', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -3),
+        ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -23),
+        ('aaaaaxxxxx', 'bbbbbxxx', -10),
+        ('bbbbbxxx', 'aaaaaxxxxx', -10),
+        ('aaaaaxxx', 'bbbbbxxxxx', -10),
+        ('xxxaaaaa', 'xxxxxbbbbb', -10),
+        ('xxxxxaaaaa', 'xxxbbbbb', -10),
+        ('xxxxaaaaa', 'bbbbbxxx', -14),
+        ('aaaaxxxxaaaaa', 'bxxxk', -10),
         ('aaaa', 'bbbb', 0),
-        ('', 'tttttxxxx', ValueError),
-        ('tttttxxxx', '', ValueError),
+        ('aaaax', 'xbbbb', -1),
+        ('', 'aaaaaxxxx', ValueError),
+        ('aaaaaxxxx', '', ValueError),
         ('', '', ValueError),
     ],
 )
@@ -30,42 +32,46 @@ def test_maximum_overlap_cases(left, right, expected):
 
 print_cases = \
     [
-        ('tttttxxxxx', 'uuuuuxxx', '''\
-tttttxxxxx
-uuuuuxxx--
+        ('bbbbbxxx', 'aaaaaxxxxx', '''\
+--bbbbbxxx
+aaaaaxxxxx
 '''),
-        ('tttttxxx', 'uuuuuxxxxx', '''\
---tttttxxx
-uuuuuxxxxx
+        ('aaaaaxxxxx', 'bbbbbxxx', '''\
+aaaaaxxxxx
+bbbbbxxx--
 '''),
-        ('xxxttttt', 'xxxxxuuuuu', '''\
---xxxttttt
-xxxxxuuuuu
+        ('aaaaaxxx', 'bbbbbxxxxx', '''\
+--aaaaaxxx
+bbbbbxxxxx
 '''),
-        ('xxxxxttttt', 'xxxuuuuu', '''\
-xxxxxttttt
-xxxuuuuu--
+        ('xxxaaaaa', 'xxxxxbbbbb', '''\
+--xxxaaaaa
+xxxxxbbbbb
 '''),
-        ('xxxxttttt', 'uuuuuxxx', '''\
------xxxxttttt
-uuuuuxxx------
+        ('xxxxxaaaaa', 'xxxbbbbb', '''\
+xxxxxaaaaa
+xxxbbbbb--
 '''),
-        ('aaaaxxxxttttt', 'uxxxk', '''\
-aaaaxxxxttttt
----uxxxk-----
+        ('xxxxaaaaa', 'bbbbbxxx', '''\
+-----xxxxaaaaa
+bbbbbxxx------
+'''),
+        ('aaaaxxxxaaaaa', 'bxxxk', '''\
+aaaaxxxxaaaaa
+---bxxxk-----
 '''
          ),
-        ('tttttxxxx', 'xxxuuuuu', '''\
-tttttxxxx-----
-------xxxuuuuu
+        ('aaaaaxxxx', 'xxxbbbbb', '''\
+aaaaaxxxx-----
+------xxxbbbbb
 '''),
-        ('tttttxxxx', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', '''\
-tttttxxxx-------------------------------
-------xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+        ('aaaaaxxxx', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '''\
+aaaaaxxxx-------------------------------
+------xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 '''),
-        ('tttttxxxxpppppppppppppppppppp', 'xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', '''\
-tttttxxxxpppppppppppppppppppp-----------
-------xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+        ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '''\
+aaaaaxxxxcccccccccccccccccccc-----------
+------xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 '''),
         ('aaaa', 'bbbb', '''\
 aaaa----
