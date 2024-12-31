@@ -3,6 +3,8 @@ import logging
 
 from micall.utils.referencefull_contig_stitcher \
     import referencefull_contig_stitcher
+from micall.utils.referenceless_contig_stitcher \
+    import referenceless_contig_stitcher
 
 
 logger = logging.getLogger(__name__)
@@ -43,8 +45,7 @@ def main(argv: Sequence[str]):
     if args.use_references:
         referencefull_contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
     else:
-        # TODO: implement this path.
-        raise NotImplementedError()
+        referenceless_contig_stitcher(args.contigs, args.stitched_contigs)
 
 
 if __name__ == '__main__':
