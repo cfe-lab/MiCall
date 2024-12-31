@@ -662,6 +662,8 @@ def main(argv: Sequence[str]):
     parser.add_argument('contigs', type=argparse.FileType('r'), help="Input CSV file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
+    parser.add_argument('--use-references', required=True, choices=['yes', 'no'],
+                        help="Whether to use reference genomes during stitching.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
                         help="Output SVG image visualizing the stitching process.")
     verbosity_group = parser.add_mutually_exclusive_group()
@@ -684,7 +686,12 @@ def main(argv: Sequence[str]):
     logging.basicConfig(level=logger.level)
 
     plot_path = args.plot.name if args.plot is not None else None
-    contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
+
+    if args.use_references:
+        contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
+    else:
+        # TODO: implement this path.
+        raise NotImplementedError()
 
 
 if __name__ == '__main__':
