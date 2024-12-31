@@ -17,7 +17,7 @@ from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlap
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
-from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
+from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
 from micall.utils.consensus_aligner import align_consensus
 import micall.utils.contig_stitcher_events as events
 
@@ -614,7 +614,13 @@ def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     output_csv.flush()
 
 
-def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+def read_referenceless_contigs(input_csv: TextIO) -> Iterable[Contig]:
+    for row in csv.DictReader(input_csv):
+        seq = row['contig']
+        yield Contig(name=None, seq=seq)
+
+
+def read_referencefull_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
     for row in csv.DictReader(input_csv):
@@ -639,9 +645,12 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               match_fraction=match_fraction)
 
 
-def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
+def referencefull_contig_stitcher(input_csv: TextIO,
+                                  output_csv: TextIO,
+                                  stitcher_plot_path: Optional[str],
+                                  ) -> int:
     with StitcherContext.fresh() as ctx:
-        contigs = list(read_contigs(input_csv))
+        contigs = list(read_referencefull_contigs(input_csv))
 
         if output_csv is not None or stitcher_plot_path is not None:
             contigs = list(stitch_consensus(contigs))
@@ -688,7 +697,7 @@ def main(argv: Sequence[str]):
     plot_path = args.plot.name if args.plot is not None else None
 
     if args.use_references:
-        contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
+        referencefull_contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
     else:
         # TODO: implement this path.
         raise NotImplementedError()
