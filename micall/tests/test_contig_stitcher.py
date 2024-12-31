@@ -1630,17 +1630,16 @@ def test_merge_intervals(intervals, expected):
     assert merge_intervals(intervals) == expected
 
 
-@dataclass
-class TestMockAlignment:
-    r_st: int
-    r_ei: int
-
-
 class MockAlignedContig:
+    @dataclass
+    class TestMockAlignment:
+        r_st: int
+        r_ei: int
+
     def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig"):
         self.ref_name = ref_name
         self.group_ref = group_ref
-        self.alignment = TestMockAlignment(r_st, r_ei)
+        self.alignment = MockAlignedContig.TestMockAlignment(r_st, r_ei)
         self.name = name
         self.id = id(self)
 
