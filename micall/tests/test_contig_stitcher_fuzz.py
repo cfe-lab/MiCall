@@ -1,7 +1,7 @@
 import pytest
 import json
 import os
-from micall.core.contig_stitcher import (
+from micall.utils.referencefull_contig_stitcher import (
     GenotypedContig,
     AlignedContig,
     stitch_consensus,
@@ -9,7 +9,7 @@ from micall.core.contig_stitcher import (
     drop_completely_covered,
     StitcherContext,
 )
-import micall.core.contig_stitcher as stitcher
+import micall.utils.referencefull_contig_stitcher as stitcher
 from micall.core.plot_contigs import build_stitcher_figure
 from aligntools import CigarHit, Cigar, CigarActions
 from typing import Dict, List
@@ -18,7 +18,7 @@ from collections import defaultdict
 
 @pytest.fixture
 def no_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.align_to_reference", lambda x: [x])
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_to_reference", lambda x: [x])
 
 
 @pytest.fixture(autouse=True)

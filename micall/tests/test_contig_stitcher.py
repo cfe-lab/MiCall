@@ -7,8 +7,8 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.core.contig_stitcher as stitcher
-from micall.core.contig_stitcher import (
+import micall.utils.referencefull_contig_stitcher as stitcher
+from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
     stitch_contigs,
     GenotypedContig,
@@ -27,7 +27,7 @@ from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # act
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
-logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
+logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
@@ -39,7 +39,7 @@ assert load_projects is not None
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align_consensus)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align_consensus)
 
 
 @pytest.fixture
@@ -1395,7 +1395,7 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
         algorithm = 'mock'
         return (alignments, algorithm)
 
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align)
 
     ref = 'A' * 700
     seq = 'C' * 600
@@ -1457,10 +1457,11 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs, "--use-references", "yes"])
+    main([contigs, stitched_contigs, "--use-references", "yes"])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1479,13 +1480,14 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
 
 
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs,
-                   "--debug", "--plot", plot,
-                   "--use-references", "yes"])
+    main([contigs, stitched_contigs,
+          "--debug", "--plot", plot,
+          "--use-references", "yes"])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)

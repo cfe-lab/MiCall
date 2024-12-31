@@ -1,6 +1,7 @@
-from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence
+from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence, TextIO
 from dataclasses import dataclass
 from fractions import Fraction
+import csv
 
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
@@ -139,3 +140,9 @@ def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
         yield most_probable.whole
         remaining = tuple(contig for contig in remaining
                           if not most_probable.has_contig(contig))
+
+
+def read_referenceless_contigs(input_csv: TextIO) -> Iterable[Contig]:
+    for row in csv.DictReader(input_csv):
+        seq = row['contig']
+        yield Contig(name=None, seq=seq)

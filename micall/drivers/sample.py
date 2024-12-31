@@ -9,7 +9,6 @@ from pathlib import Path
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
-from micall.core.contig_stitcher import referencefull_contig_stitcher
 from micall.core.coverage_plots import coverage_plot, concordance_plot
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
@@ -21,6 +20,7 @@ from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
+from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
