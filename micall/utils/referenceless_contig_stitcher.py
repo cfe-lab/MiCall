@@ -43,6 +43,9 @@ class Overlap:
 
 
 def get_overlap(left: Contig, right: Contig) -> Optional[Overlap]:
+    if len(left.seq) == 0 or len(right.seq) == 0:
+        return None
+
     shift = find_maximum_overlap(left.seq, right.seq)
     if shift == 0:
         return None
