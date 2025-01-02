@@ -6,6 +6,7 @@ from aligntools import CigarHit
 
 ID_STATE = 0
 
+
 def generate_new_id() -> int:
     global ID_STATE
     ID_STATE += 1
