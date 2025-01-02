@@ -21,6 +21,7 @@ from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VA
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -426,10 +427,20 @@ class Sample:
                    merged_contigs_csv,
                    )
 
+        with open(self.unstitched_contigs_fasta, 'r') as unstitched_contigs_fasta, \
+             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
+            # FIXME: Remove this when proper combination is implemented.
+            import micall.utils.referenceless_contig_stitcher as stitcher
+            from fractions import Fraction
+            def combiner(a, b, o):
+                return (a, Fraction(2, 1))
+            stitcher.combine_contigs = combiner
+            referenceless_contig_stitcher(unstitched_contigs_fasta, stitched_contigs_fasta)
+
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            fasta_to_csv(Path(self.unstitched_contigs_fasta),
+            fasta_to_csv(Path(self.stitched_contigs_fasta),
                          unstitched_contigs_csv,
                          merged_contigs_csv,
                          blast_csv=blast_csv,
