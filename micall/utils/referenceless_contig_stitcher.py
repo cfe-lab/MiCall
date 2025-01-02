@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
+from micall.utils.contig_stitcher_context import StitcherContext
 
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
@@ -144,10 +145,13 @@ def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
 
 
 def write_contigs(output_fasta: TextIO, contigs: Iterable[Contig]):
-    records = (SeqRecord(Seq.Seq(contig.seq),
-                         name=contig.unique_name)
-               for contig in contigs)
-    SeqIO.write(records, output_fasta, "fasta")
+    with StitcherContext.fresh():
+        records = (SeqRecord(Seq.Seq(contig.seq),
+                             description='',
+                             id=contig.unique_name,
+                             name=contig.unique_name)
+                   for contig in contigs)
+        SeqIO.write(records, output_fasta, "fasta")
 
 
 def read_contigs(input_fasta: TextIO) -> Iterable[Contig]:
