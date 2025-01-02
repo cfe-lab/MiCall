@@ -27,6 +27,8 @@ from micall.utils.contig_stitcher_contigs import Contig
         # Multiple.
         #
         (('aaax', 'xbbby', 'ycccz', 'zddd'), ('aaaxbbbyccczddd',)),
+        (('aaa',), ('aaa',)),
+        ((), ()),
     ],
 )
 def test_stitch_simple_cases(seqs, expected):
