@@ -1461,7 +1461,7 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    main([contigs, stitched_contigs, "--use-references", "yes"])
+    main(['with-references', contigs, stitched_contigs])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1485,9 +1485,7 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    main([contigs, stitched_contigs,
-          "--debug", "--plot", plot,
-          "--use-references", "yes"])
+    main(['with-references', contigs, stitched_contigs, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
