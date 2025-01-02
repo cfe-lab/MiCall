@@ -150,7 +150,7 @@ class Sample:
         if self.scratch_path is None:
             raise AttributeError(
                 'Unknown output {} and no scratch path.'.format(output_name))
-        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png'):
+        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png', 'fasta'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension
                 break
