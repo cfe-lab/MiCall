@@ -35,6 +35,14 @@ class Contig:
         ctx = context.get()
         return ctx.register(key=self.id, value=self.name)
 
+    @staticmethod
+    def empty() -> 'Contig':
+        return EMPTY_CONTIG
+
+
+EMPTY_CONTIG = Contig(name=None, seq='')
+assert EMPTY_CONTIG.id > 0
+
 
 @dataclass(frozen=True)
 class GenotypedContig(Contig):

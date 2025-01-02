@@ -30,7 +30,7 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(Contig(None, ''), frozenset(), Fraction(1))
+        return ContigsPath(Contig.empty(), frozenset(), Fraction(1))
 
 
 @dataclass(frozen=True)
