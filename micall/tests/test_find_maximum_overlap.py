@@ -6,6 +6,7 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum
     "left, right, expected",
     [
         ('aaaaaxxxx', 'xxxbbbbb', -3),
+        ('xxxbbbbb', 'aaaaaxxxx', -14),
         ('aaaaaxxxx', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -3),
         ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -23),
         ('aaaaaxxxxx', 'bbbbbxxx', -10),
@@ -35,6 +36,10 @@ print_cases = \
         ('bbbbbxxx', 'aaaaaxxxxx', '''\
 --bbbbbxxx
 aaaaaxxxxx
+'''),
+        ('xxxbbbbb', 'aaaaaxxxx', '''\
+------xxxbbbbb
+aaaaaxxxx-----
 '''),
         ('aaaaaxxxxx', 'bbbbbxxx', '''\
 aaaaaxxxxx

@@ -3,6 +3,11 @@ from micall.utils.referenceless_contig_stitcher import stitch_consensus
 from micall.utils.contig_stitcher_contigs import Contig
 
 
+@pytest.fixture(autouse=True)
+def disable_acceptable_prob_check(monkeypatch):
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_PROB", 1)
+
+
 @pytest.mark.parametrize(
     "seqs, expected",
     [
@@ -12,13 +17,13 @@ from micall.utils.contig_stitcher_contigs import Contig
 
         (('aaaaaxxxx', 'xxxbbbbb'), ('aaaaaxxxxbbbbb',)),
         (('aaaaaxxxx', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'), ('aaaaaxxxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',)),
-        (('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'), ('aaaaaxxxxccccccccccccccccccccbbbbbbbbbbb',)),
-        (('aaaaaxxxxx', 'bbbbbxxx'), ("bbbbbxxx",)),
+        (('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'), ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')),
+        (('aaaaaxxxxx', 'bbbbbxxx'), ("bbbbbxxxxx",)),
         (('bbbbbxxx', 'aaaaaxxxxx'), ('aaaaaxxxxx',)),
         (('aaaaaxxx', 'bbbbbxxxxx'), ('bbbbbxxxxx',)),
-        (('xxxaaaaa', 'xxxxxbbbbb'), ('xxxxxbbbbb',)),
-        (('xxxxxaaaaa', 'xxxbbbbb'), ('xxxbbbbb',)),
-        (('xxxxaaaaa', 'bbbbbxxx'), ('bbbbbxxx',)),
+        (('xxxaaaaa', 'xxxxxbbbbb'), ('xxxaaaaabb',)),
+        (('xxxxxaaaaa', 'xxxbbbbb'), ('xxxbbbbbaa',)),
+        (('xxxxaaaaa', 'bbbbbxxx'), ('bbbbbxxxxaaaaa',)),
         (('aaaaxxxxaaaaa', 'bxxx'), ('aaaaxxxxaaaaa',)),
         (('aaaa', 'bbbb'), ('aaaa', 'bbbb',)),
         (('aaaax', 'xbbbb'), ('aaaaxbbbb',)),

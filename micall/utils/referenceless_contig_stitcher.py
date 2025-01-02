@@ -4,9 +4,13 @@ from fractions import Fraction
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 from micall.utils.contig_stitcher_context import StitcherContext
+from gotoh import align_it
 
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
+
+
+ACCEPTABLE_STITCHING_PROB = Fraction(1, 100000)
 
 
 @dataclass(frozen=True)
@@ -61,20 +65,38 @@ def combine_contigs(a: Contig,
     #        It is easy to improve.
 
     if abs(overlap.shift) < len(a.seq):
-        a_goes_first = True
+        shift = overlap.shift
+        left = a
+        right = b
     else:
-        a_goes_first = False
+        shift = (len(b.seq) + len(a.seq) - abs(overlap.shift)) * -1
+        left = b
+        right = a
 
-    (left, right) = (a, b) if a_goes_first else (b, a)
-    adjusted_left = left.seq[:-abs(overlap.shift)]
-    adjusted_right = right.seq[abs(overlap.shift):]
-    assert adjusted_left is not None
-    assert adjusted_right is not None
+    left_initial_overlap = left.seq[len(left.seq) - abs(shift):]
+    left_initial_remainder = left.seq[:len(left.seq) - abs(shift)]
+    right_initial_overlap = right.seq[:abs(shift)]
+    right_initial_remainder = right.seq[abs(shift):]
 
-    result_seq = left.seq + adjusted_right
+    gap_open_penalty = 15
+    gap_extend_penalty = 3
+    use_terminal_gap_penalty = 1
+    aligned_left, aligned_right, alignment_score = align_it(
+        left_initial_overlap,
+        right_initial_overlap,
+        gap_open_penalty,
+        gap_extend_penalty,
+        use_terminal_gap_penalty)
+
+    resulting_matches = sum(1 for x, y
+                            in zip(aligned_left, aligned_right)
+                            if x == y and x != '-')
+
+    result_seq = left_initial_remainder + left_initial_overlap + right_initial_remainder
     result_contig = Contig(None, result_seq)
 
-    result_probability = Fraction(1, 2)
+    # FIXME: Calculate a more accurate probability.
+    result_probability = Fraction(1, 2 ** resulting_matches)
 
     return (result_contig, result_probability)
 
@@ -103,6 +125,10 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
         if combination is None:
             return
         (combined, prob) = combination
+        if prob > ACCEPTABLE_STITCHING_PROB:
+            # FIXME: Adjust the threold to something more based.
+            # FIXME: Print a warning that this happened.
+            return
 
     score = path.score * prob
     new_elements = path.parts_ids.union([candidate.id])
