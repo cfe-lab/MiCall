@@ -83,6 +83,8 @@ jobs:
         run: docker run micall --help
       - name: Check docker image entrypoint
         run: docker run micall --help | grep -i -e 'docker'
+      - name: Check docker image microtest
+        run: python micall/main.py release_test_microtest micall --docker
 
   singularity-test:
     runs-on: ubuntu-20.04
