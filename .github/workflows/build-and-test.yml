@@ -69,6 +69,7 @@ jobs:
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
       - name: Report code coverage
+        if: "!github.event.pull_request.draft"
         run: |
           rm -rf micall/tests/microtest/scratch
           codecov
