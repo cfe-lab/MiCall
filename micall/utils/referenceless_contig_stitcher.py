@@ -68,8 +68,6 @@ def map_overlap_onto_candidate(overlap: str, candidate: str) -> Sequence[Alignme
 
 def try_combine_contigs(a: Contig, b: Contig,
                         ) -> Optional[Tuple[Contig, Fraction]]:
-    # FIXME: This is a trivial implementation. It often doesn't work.
-    #        It is easy to improve.
     # TODO: Memoize this function.
     #       Two-layer caching seems most optimal:
     #       first by key=contig.id, then by key=contig.seq.
