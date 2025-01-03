@@ -110,7 +110,13 @@ def try_combine_contigs(a: Contig, b: Contig,
     if overlap is None:
         return None
 
-    return combine_contigs(a, b, overlap)
+    (combined, prob) = combine_contigs(a, b, overlap)
+    if prob > ACCEPTABLE_STITCHING_PROB:
+        # FIXME: Adjust the threold to something more based.
+        # FIXME: Print a warning that this happened.
+        return None
+
+    return (combined, prob)
 
 
 def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
@@ -124,10 +130,6 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
         if combination is None:
             return
         (combined, prob) = combination
-        if prob > ACCEPTABLE_STITCHING_PROB:
-            # FIXME: Adjust the threold to something more based.
-            # FIXME: Print a warning that this happened.
-            return
 
     score = path.score * prob
     new_elements = path.parts_ids.union([candidate.id])
