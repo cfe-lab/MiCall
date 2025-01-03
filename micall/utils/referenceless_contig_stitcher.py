@@ -10,7 +10,7 @@ from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
 
 
-ACCEPTABLE_STITCHING_PROB = Fraction(1, 100000)
+ACCEPTABLE_STITCHING_PROB = Fraction(1, 100)
 
 
 @dataclass(frozen=True)
