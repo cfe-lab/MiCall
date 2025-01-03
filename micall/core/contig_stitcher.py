@@ -2,10 +2,8 @@ from typing import Sequence
 import logging
 from pathlib import Path
 
-from micall.utils.referencefull_contig_stitcher \
-    import referencefull_contig_stitcher
-from micall.utils.referenceless_contig_stitcher \
-    import referenceless_contig_stitcher
+import micall.utils.referencefull_contig_stitcher as referencefull
+import micall.utils.referenceless_contig_stitcher as referenceless
 
 
 logger = logging.getLogger(__name__)
@@ -58,9 +56,13 @@ def main(argv: Sequence[str]) -> int:
 
     if head_args.mode == 'with-references':
         plot_path = args.plot.name if args.plot is not None else None
-        referencefull_contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
+        referencefull.logger = logger
+        referencefull.referencefull_contig_stitcher(
+            args.contigs, args.stitched_contigs, plot_path)
     else:
-        referenceless_contig_stitcher(args.contigs, args.stitched_contigs)
+        referenceless.logger = logger
+        referenceless.referenceless_contig_stitcher(
+            args.contigs, args.stitched_contigs)
 
     return 0
 

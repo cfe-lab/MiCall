@@ -3,14 +3,17 @@ from dataclasses import dataclass
 from fractions import Fraction
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
-from micall.utils.contig_stitcher_context import StitcherContext
+import logging
 
+from micall.utils.contig_stitcher_context import StitcherContext
 from micall.utils.consensus_aligner import align_consensus, Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
 
+
+logger = logging.getLogger(__name__)
 
 ACCEPTABLE_STITCHING_PROB = Fraction(1, 100)
 
