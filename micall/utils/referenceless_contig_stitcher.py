@@ -4,9 +4,9 @@ from fractions import Fraction
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 from micall.utils.contig_stitcher_context import StitcherContext
-from gotoh import align_it
 
 from micall.utils.consensus_aligner import align_consensus, Alignment
+from micall.utils.overlap_stitcher import align_queries, calculate_concordance, sort_concordance_indexes
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
 
@@ -104,21 +104,17 @@ def try_combine_contigs(a: Contig, b: Contig,
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
 
-    gap_open_penalty = 15
-    gap_extend_penalty = 3
-    use_terminal_gap_penalty = 1
-    aligned_left, aligned_right, alignment_score = align_it(
-        str(left_overlap),
-        str(right_overlap),
-        gap_open_penalty,
-        gap_extend_penalty,
-        use_terminal_gap_penalty)
+    aligned_left, aligned_right = align_queries(str(left_overlap), str(right_overlap))
+    concordance = calculate_concordance(aligned_left, aligned_right)
+    max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
+    left_overlap_chunk = ''.join(x for x in aligned_left[:max_concordance_index] if x != '-')
+    right_overlap_chunk = ''.join(x for x in aligned_right[max_concordance_index:] if x != '-')
 
     resulting_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
 
-    result_seq = left_remainder + left_overlap + right_remainder
+    result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
     result_contig = Contig(None, result_seq)
 
     # FIXME: Calculate a more accurate probability.

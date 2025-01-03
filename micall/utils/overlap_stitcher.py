@@ -77,9 +77,10 @@ def disambiguate_concordance(concordance: Sequence[Fraction],
         yield x, global_rank
 
 
-def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Sequence[int]:
+def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Iterator[int]:
     concordance_d = disambiguate_concordance(concordance)
-    return tuple(i for i, v in sorted(enumerate(concordance_d),
-                                      key=itemgetter(1),
-                                      reverse=True,
-                                      ))
+    for i, v in sorted(enumerate(concordance_d),
+                       key=itemgetter(1),
+                       reverse=True,
+                       ):
+        yield i
