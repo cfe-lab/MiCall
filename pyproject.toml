@@ -64,10 +64,7 @@ dev = [
     "gprof2dot==2024.6.6",
     "codecov==2.1.13",  # For reporting the code coverage.
 ]
-denovo = [
-    # Requirements for running De-Novo pipeline (only problematic ones).
-    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
-]
+denovo = []
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
@@ -100,11 +97,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.pytest.ini_options]
-markers = [
-    "iva: test requires IVA (deselect with '-m \"not iva\"')"
-]
 
 [tool.ruff.lint.per-file-ignores]
 # TODO: resolve these warnings insteads of ignoring them.

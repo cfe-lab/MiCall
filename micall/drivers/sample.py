@@ -418,14 +418,12 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
 
-        with open(self.unstitched_contigs_fasta, 'w') as unstitched_contigs_fasta, \
-             open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
-            denovo(self.trimmed1_fastq,
-                   self.trimmed2_fastq,
-                   unstitched_contigs_fasta,
-                   self.scratch_path,
-                   merged_contigs_csv,
-                   )
+        denovo(Path(self.trimmed1_fastq),
+               Path(self.trimmed2_fastq),
+               Path(self.unstitched_contigs_fasta),
+               Path(self.scratch_path),
+               Path(self.merged_contigs_csv),
+               )
 
         with open(self.unstitched_contigs_fasta, 'r') as unstitched_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
