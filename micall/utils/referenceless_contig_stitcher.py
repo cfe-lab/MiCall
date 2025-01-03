@@ -96,8 +96,7 @@ def combine_contigs(a: Contig,
     result_contig = Contig(None, result_seq)
 
     # FIXME: Calculate a more accurate probability.
-    result_probability = Fraction(1, 2 ** resulting_matches)
-
+    result_probability = Fraction(1.0) - Fraction(resulting_matches, len(left_initial_overlap) + 2)
     return (result_contig, result_probability)
 
 
