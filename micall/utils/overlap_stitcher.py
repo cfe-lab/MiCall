@@ -1,6 +1,7 @@
 from fractions import Fraction
 from typing import Sequence, Iterator, Tuple
 from operator import itemgetter
+from functools import lru_cache
 from gotoh import align_it
 import math
 
@@ -87,6 +88,7 @@ def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Iterator[int]:
         yield i
 
 
+@lru_cache
 def calc_overlap_pvalue(L: int, M: int) -> Fraction:
     """
     Compute the probability (p-value) of observing at least M matches
