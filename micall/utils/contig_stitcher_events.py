@@ -196,7 +196,7 @@ class Overlap:
     right_remainder: AlignedContig
     left_take: AlignedContig
     right_take: AlignedContig
-    concordance: List[Fraction]
+    concordance: Tuple[Fraction, ...]
     average: Fraction
     cut_point: int
     cut_point_scaled: float
