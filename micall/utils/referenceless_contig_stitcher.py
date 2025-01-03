@@ -82,8 +82,8 @@ def combine_contigs(a: Contig,
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
     aligned_left, aligned_right, alignment_score = align_it(
-        left_initial_overlap,
-        right_initial_overlap,
+        str(left_initial_overlap),
+        str(right_initial_overlap),
         gap_open_penalty,
         gap_extend_penalty,
         use_terminal_gap_penalty)
