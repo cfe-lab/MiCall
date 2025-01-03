@@ -8,32 +8,38 @@ def disable_acceptable_prob_check(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_PROB", 1)
 
 
+TTT = 40 * 'T'
+
+
 @pytest.mark.parametrize(
     "seqs, expected",
     [
         #
-        # Singletons. Copied from `find_maximum_overlap`.
+        # Singletons
         #
 
-        (('aaaaaxxxx', 'xxxbbbbb'), ('aaaaaxxxxbbbbb',)),
-        (('aaaaaxxxx', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'), ('aaaaaxxxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',)),
-        (('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'), ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')),
-        (('aaaaaxxxxx', 'bbbbbxxx'), ("bbbbbxxxxx",)),
-        (('bbbbbxxx', 'aaaaaxxxxx'), ('aaaaaxxxxx',)),
-        (('aaaaaxxx', 'bbbbbxxxxx'), ('bbbbbxxxxx',)),
-        (('xxxaaaaa', 'xxxxxbbbbb'), ('xxxaaaaabb',)),
-        (('xxxxxaaaaa', 'xxxbbbbb'), ('xxxbbbbbaa',)),
-        (('xxxxaaaaa', 'bbbbbxxx'), ('bbbbbxxxxaaaaa',)),
-        (('aaaaxxxxaaaaa', 'bxxx'), ('aaaaxxxxaaaaa',)),
-        (('aaaa', 'bbbb'), ('aaaa', 'bbbb',)),
-        (('aaaax', 'xbbbb'), ('aaaaxbbbb',)),
+        (('AAAAA' + TTT, TTT + 'GGGGG'), ('AAAAA' + TTT + 'GGGGG',)),
+        (('AAAAA' + TTT, TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
+        (('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCC', TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ("GGGGG" + TTT,)),
+        (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT,)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ('GGGGG' + TTT,)),
+        ((TTT + 'AAAAA', TTT + 'GGGGG'), (TTT + 'GGGGGAAAAA',)),
+        ((TTT + 'AAAAA', 'GGGGG' + TTT), ('GGGGG' + TTT + 'AAAAA',)),
+        (('AAAA' + TTT + 'AAAAA', 'GGG' + TTT), ('AAAA' + TTT + 'AAAAA',)),
+        (('AAAA', 'GGGG'), ('AAAA', 'GGGG',)),
+        (('AAAAT', 'TGGGG'), ('AAAAT', 'TGGGG')),
 
         #
         # Multiple.
         #
-        (('aaax', 'xbbby', 'ycccz', 'zddd'), ('aaaxbbbyccczddd',)),
-        (('aaa',), ('aaa',)),
+        (('AAA' + 'T' * 40,  'T' * 40 + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG'),
+         ('AAA' + 40 * 'T' + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG')),
+        (('AAA' + 'T' * 40,  'T' * 40 + 'GGG' + 'A' * 40, 'A' * 40 + 'CCC' + 'T' * 40, 'T' * 40 + 'GGG'),
+         ('AAA' + 40 * 'T' + 'GGG' + 40 * 'A' + 'CCC' + 40 * 'T',)),
+        (('AAA',), ('AAA',)),
         ((), ()),
+
     ],
 )
 def test_stitch_simple_cases(seqs, expected):

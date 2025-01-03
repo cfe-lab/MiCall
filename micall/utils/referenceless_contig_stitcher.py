@@ -6,6 +6,7 @@ from Bio.SeqRecord import SeqRecord
 from micall.utils.contig_stitcher_context import StitcherContext
 from gotoh import align_it
 
+from micall.utils.consensus_aligner import align_consensus, Alignment
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
 
@@ -57,12 +58,24 @@ def get_overlap(left: Contig, right: Contig) -> Optional[Overlap]:
     return Overlap(shift)
 
 
-def combine_contigs(a: Contig,
-                    b: Contig,
-                    overlap: Overlap,
-                    ) -> Tuple[Contig, Fraction]:
+def map_overlap_onto_candidate(overlap: str, candidate: str) -> Sequence[Alignment]:
+    alignments, algo = align_consensus(candidate, overlap)
+    if algo != 'minimap2':
+        return []
+    return alignments
+
+
+def try_combine_contigs(a: Contig, b: Contig,
+                        ) -> Optional[Tuple[Contig, Fraction]]:
     # FIXME: This is a trivial implementation. It often doesn't work.
     #        It is easy to improve.
+    # TODO: Memoize this function.
+    #       Two-layer caching seems most optimal:
+    #       first by key=contig.id, then by key=contig.seq.
+
+    overlap = get_overlap(a, b)
+    if overlap is None:
+        return None
 
     if abs(overlap.shift) < len(a.seq):
         shift = overlap.shift
@@ -74,16 +87,29 @@ def combine_contigs(a: Contig,
         right = a
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):]
-    left_initial_remainder = left.seq[:len(left.seq) - abs(shift)]
     right_initial_overlap = right.seq[:abs(shift)]
-    right_initial_remainder = right.seq[abs(shift):]
+
+    left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
+    if not left_overlap_alignments:
+        return None
+    right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
+    if not right_overlap_alignments:
+        return None
+
+    left_cutoff = min(al.r_st for al in left_overlap_alignments)
+    right_cutoff = max(al.r_en for al in right_overlap_alignments)
+
+    left_overlap = left.seq[left_cutoff:]
+    left_remainder = left.seq[:left_cutoff]
+    right_overlap = right.seq[:right_cutoff]
+    right_remainder = right.seq[right_cutoff:]
 
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
     aligned_left, aligned_right, alignment_score = align_it(
-        str(left_initial_overlap),
-        str(right_initial_overlap),
+        str(left_overlap),
+        str(right_overlap),
         gap_open_penalty,
         gap_extend_penalty,
         use_terminal_gap_penalty)
@@ -92,31 +118,17 @@ def combine_contigs(a: Contig,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
 
-    result_seq = left_initial_remainder + left_initial_overlap + right_initial_remainder
+    result_seq = left_remainder + left_overlap + right_remainder
     result_contig = Contig(None, result_seq)
 
     # FIXME: Calculate a more accurate probability.
-    result_probability = Fraction(1.0) - Fraction(resulting_matches, len(left_initial_overlap) + 2)
-    return (result_contig, result_probability)
-
-
-def try_combine_contigs(a: Contig, b: Contig,
-                        ) -> Optional[Tuple[Contig, Fraction]]:
-    # TODO: Memoize this function.
-    #       Two-layer caching seems most optimal:
-    #       first by key=contig.id, then by key=contig.seq.
-
-    overlap = get_overlap(a, b)
-    if overlap is None:
-        return None
-
-    (combined, prob) = combine_contigs(a, b, overlap)
-    if prob > ACCEPTABLE_STITCHING_PROB:
+    result_probability = Fraction(1.0) - Fraction(resulting_matches, len(left_overlap) + 2)
+    if result_probability > ACCEPTABLE_STITCHING_PROB:
         # FIXME: Adjust the threold to something more based.
         # FIXME: Print a warning that this happened.
         return None
 
-    return (combined, prob)
+    return (result_contig, result_probability)
 
 
 def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
