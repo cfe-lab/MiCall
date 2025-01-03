@@ -6,7 +6,8 @@ from Bio.SeqRecord import SeqRecord
 from micall.utils.contig_stitcher_context import StitcherContext
 
 from micall.utils.consensus_aligner import align_consensus, Alignment
-from micall.utils.overlap_stitcher import align_queries, calculate_concordance, sort_concordance_indexes
+from micall.utils.overlap_stitcher import align_queries, \
+    calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import find_maximum_overlap
 
@@ -105,24 +106,23 @@ def try_combine_contigs(a: Contig, b: Contig,
     right_remainder = right.seq[right_cutoff:]
 
     aligned_left, aligned_right = align_queries(str(left_overlap), str(right_overlap))
+
+    number_of_matches = sum(1 for x, y
+                            in zip(aligned_left, aligned_right)
+                            if x == y and x != '-')
+    result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
+    if result_probability > ACCEPTABLE_STITCHING_PROB:
+        # FIXME: Adjust the threold to something more based.
+        # FIXME: Print a warning that this happened.
+        return None
+
     concordance = calculate_concordance(aligned_left, aligned_right)
     max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
     left_overlap_chunk = ''.join(x for x in aligned_left[:max_concordance_index] if x != '-')
     right_overlap_chunk = ''.join(x for x in aligned_right[max_concordance_index:] if x != '-')
 
-    resulting_matches = sum(1 for x, y
-                            in zip(aligned_left, aligned_right)
-                            if x == y and x != '-')
-
     result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
     result_contig = Contig(None, result_seq)
-
-    # FIXME: Calculate a more accurate probability.
-    result_probability = Fraction(1.0) - Fraction(resulting_matches, len(left_overlap) + 2)
-    if result_probability > ACCEPTABLE_STITCHING_PROB:
-        # FIXME: Adjust the threold to something more based.
-        # FIXME: Print a warning that this happened.
-        return None
 
     return (result_contig, result_probability)
 
