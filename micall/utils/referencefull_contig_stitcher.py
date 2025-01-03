@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, List, Dict, Literal, TypeVar, TextIO
+from typing import Iterable, Optional, Tuple, Dict, Literal, TypeVar, TextIO, Sequence, List
 from collections import defaultdict
 import csv
 import os
@@ -129,7 +129,7 @@ def sliding_window(sequence: Iterable[T]) -> Iterable[Tuple[Optional[T], T, Opti
     return zip(prevs, b, nexts)
 
 
-def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
+def combine_contigs(parts: Sequence[AlignedContig]) -> AlignedContig:
     """
     Combine a list of contigs into a single AlignedContig by trimming and merging overlapping parts.
 
@@ -146,7 +146,7 @@ def combine_contigs(parts: List[AlignedContig]) -> AlignedContig:
         stripped_parts.append(part)
 
     ret = reduce(munge, stripped_parts)
-    log(events.Combine(stripped_parts, ret))
+    log(events.Combine(tuple(stripped_parts), ret))
     return ret
 
 
@@ -165,7 +165,8 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
 
     alignments, _algo = align_consensus(contig.ref_seq, contig.seq)
     hits = [x.to_cigar_hit() for x in alignments]
-    strands: List[Literal["forward", "reverse"]] = ["forward" if x.strand == 1 else "reverse" for x in alignments]
+    strands: Tuple[Literal["forward", "reverse"], ...] = tuple(
+        "forward" if x.strand == 1 else "reverse" for x in alignments)
 
     for i, (hit, strand) in enumerate(zip(hits, strands)):
         log(events.InitialHit(contig, i, hit, strand))
@@ -197,9 +198,9 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
                    if x == CigarActions.MATCH)
         return (mlen, x.ref_length)
 
-    filtered = list(drop_overlapping_cigar_hits(hits, quality))
-    connected = list(connect_nonoverlapping_cigar_hits(filtered))
-    log(events.HitNumber(contig, list(zip(hits, strands)), connected))
+    filtered = tuple(drop_overlapping_cigar_hits(hits, quality))
+    connected = tuple(connect_nonoverlapping_cigar_hits(filtered))
+    log(events.HitNumber(contig, tuple(zip(hits, strands)), connected))
 
     for i, single_hit in enumerate(connected):
         query = replace(contig, name=None)
@@ -342,7 +343,7 @@ def stitch_2_contigs(left, right):
     return combine_contigs([left_remainder, left_overlap_take, right_overlap_take, right_remainder])
 
 
-def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
+def combine_overlaps(contigs: Sequence[AlignedContig]) -> Iterable[AlignedContig]:
     """
     Repeatedly combine all overlapping aligned contigs into an iterable collection of contiguous AlignedContigs.
     It proceeds by iterating through sorted contigs and stitching any overlapping ones until none are left.
@@ -367,7 +368,7 @@ def combine_overlaps(contigs: List[AlignedContig]) -> Iterable[AlignedContig]:
         log(events.Stitch(current, overlapping_contig, new_contig))
 
 
-def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def merge_intervals(intervals: Sequence[Tuple[int, int]]) -> Sequence[Tuple[int, int]]:
     """
     Merge overlapping and adjacent intervals.
     Note that intervals are inclusive.
@@ -396,15 +397,15 @@ def merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     return merged_intervals
 
 
-def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedContig], List[AlignedContig]]:
+def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[AlignedContig], Sequence[AlignedContig]]:
     """
     Find and return the first contig that is completely covered by other contigs.
 
-    :param contigs: List of all aligned contigs to be considered.
+    :param contigs: Sequence of all aligned contigs to be considered.
     :return: An AlignedContig if there is one completely covered by others, None otherwise.
     """
 
-    def calculate_cumulative_coverage(others) -> List[Tuple[int, int]]:
+    def calculate_cumulative_coverage(others) -> Sequence[Tuple[int, int]]:
         intervals = [(contig.alignment.r_st, contig.alignment.r_ei) for contig in others]
         merged_intervals = merge_intervals(intervals)
         return merged_intervals
@@ -424,28 +425,30 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
     return None, []
 
 
-def drop_completely_covered(contigs: List[AlignedContig]) -> List[AlignedContig]:
+def drop_completely_covered(contigs: Sequence[AlignedContig]) -> Sequence[AlignedContig]:
     """ Filter out all contigs that are contained within other contigs. """
 
-    contigs = contigs[:]
+    contigs = list(contigs)
     while contigs:
         covered, covering = find_covered_contig(contigs)
         if covered:
             contigs.remove(covered)
-            log(events.Drop(covered, covering))
+            log(events.Drop(covered, tuple(covering)))
         else:
             break
 
     return contigs
 
 
-def split_contigs_with_gaps(contigs: List[AlignedContig]) -> List[AlignedContig]:
+def split_contigs_with_gaps(contigs: Sequence[AlignedContig]) -> Sequence[AlignedContig]:
     """
     Split contigs at large gaps if those gaps are covered by other contigs in the list.
 
     A gap within a contig is considered large based on a pre-defined threshold. If another contig aligns
     within that gap's range, the contig is split into two around the midpoint of the gap.
     """
+
+    contigs = list(contigs)
 
     def covered_by(gap, other):
         # Check if any 1 reference coordinate in gap is mapped in `other`.
@@ -506,7 +509,8 @@ def stitch_contigs(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCont
 
     # Contigs that did not align do not need any more processing
     yield from (x for x in maybe_aligned if not isinstance(x, AlignedContig))
-    aligned = [x for x in maybe_aligned if isinstance(x, AlignedContig)]
+    aligned: Sequence[AlignedContig] = [
+        x for x in maybe_aligned if isinstance(x, AlignedContig)]
 
     aligned = split_contigs_with_gaps(aligned)
     aligned = drop_completely_covered(aligned)
@@ -529,7 +533,7 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
     def combine(group_ref):
         ctgs = sorted(consensus_parts[group_ref], key=lambda x: x.alignment.r_st)
         result = combine_contigs(ctgs)
-        log(events.FinalCombine(ctgs, result))
+        log(events.FinalCombine(tuple(ctgs), result))
         return result
 
     yield from map(combine, consensus_parts)

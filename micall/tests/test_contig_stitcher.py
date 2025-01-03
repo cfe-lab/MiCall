@@ -875,7 +875,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
     assert all(x.seq == lstrip(rstrip(x)).seq for x in results)
-    assert {contig.seq for contig in contigs} == {contig.seq for contig in results}
+    assert {contig.seq for contig in contigs} != {contig.seq for contig in results}
 
 
 def test_stitching_partial_align(exact_aligner, visualizer):

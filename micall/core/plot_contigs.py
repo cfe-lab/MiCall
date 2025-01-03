@@ -1,5 +1,5 @@
 import typing
-from typing import Dict, Tuple, List, Set, Iterable, NoReturn
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -555,11 +555,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1,
                                               r_st=hit.r_ei + 1, r_ei=hit.r_ei)
 
-    def hits_to_insertions(contig: GenotypedContig, hits: List[CigarHit]):
+    def hits_to_insertions(contig: GenotypedContig, hits: Iterable[CigarHit]):
         for hit in hits:
             yield from hit_to_insertions(contig, hit)
 
-    def record_initial_hit(contig: GenotypedContig, hits: List[CigarHit]):
+    def record_initial_hit(contig: GenotypedContig, hits: Sequence[CigarHit]):
         insertions = [gap for gap in hits_to_insertions(contig, hits)]
         unaligned_map[contig.id] = insertions
 
