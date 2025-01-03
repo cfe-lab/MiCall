@@ -198,10 +198,10 @@ def read_contigs(input_fasta: TextIO) -> Iterable[Contig]:
 def referenceless_contig_stitcher(input_fasta: TextIO,
                                   output_fasta: Optional[TextIO],
                                   ) -> int:
-    contigs = list(read_contigs(input_fasta))
+    contigs = tuple(read_contigs(input_fasta))
 
     if output_fasta is not None:
-        contigs = list(stitch_consensus(contigs))
+        contigs = tuple(stitch_consensus(contigs))
 
     if output_fasta is not None:
         write_contigs(output_fasta, contigs)
