@@ -56,9 +56,8 @@ def main(argv: Sequence[str]) -> int:
 
     logging.basicConfig(level=logger.level)
 
-    plot_path = args.plot.name if args.plot is not None else None
-
     if head_args.mode == 'with-references':
+        plot_path = args.plot.name if args.plot is not None else None
         referencefull_contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
     else:
         referenceless_contig_stitcher(args.contigs, args.stitched_contigs)
