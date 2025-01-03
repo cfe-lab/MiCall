@@ -69,6 +69,7 @@ jobs:
         run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
       - name: Report code coverage
+        if: "!github.event.pull_request.draft"
         run: |
           rm -rf micall/tests/microtest/scratch
           codecov
@@ -132,6 +133,7 @@ jobs:
         run: python micall/main.py release_test_microtest micall.simg
 
       - name: Upload Singularity Image
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg
