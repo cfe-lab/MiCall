@@ -17,10 +17,10 @@ from micall.utils.referencefull_contig_stitcher import (
     stitch_consensus,
     calculate_concordance,
     align_all_to_reference,
-    disambiguate_concordance,
     lstrip,
     rstrip,
 )
+from micall.utils.overlap_stitcher import disambiguate_concordance
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import mock_align_consensus, MockAlignment, fixed_random_seed
 from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture

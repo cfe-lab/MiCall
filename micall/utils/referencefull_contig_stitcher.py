@@ -10,7 +10,6 @@ from queue import LifoQueue
 from Bio import Seq
 import logging
 from fractions import Fraction
-from operator import itemgetter
 from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
 
 from micall.core.project_config import ProjectConfig
@@ -18,7 +17,7 @@ from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 from micall.utils.consensus_aligner import align_consensus
-from micall.utils.overlap_stitcher import align_queries, calculate_concordance, disambiguate_concordance
+from micall.utils.overlap_stitcher import align_queries, calculate_concordance, sort_concordance_indexes
 import micall.utils.contig_stitcher_events as events
 
 
@@ -281,11 +280,7 @@ def find_overlapping_contig(self: AlignedContig, aligned_contigs):
 def concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance):
     """ Determine optimal cut points for stitching based on sequence concordance in the overlap region. """
 
-    concordance_d = list(disambiguate_concordance(concordance))
-    sorted_concordance_indexes = [i for i, v in sorted(enumerate(concordance_d),
-                                                       key=itemgetter(1),
-                                                       reverse=True,
-                                                       )]
+    sorted_concordance_indexes = sort_concordance_indexes(concordance)
 
     def remove_dashes(s: str):
         return s.replace('-', '')

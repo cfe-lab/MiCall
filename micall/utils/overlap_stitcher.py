@@ -1,5 +1,6 @@
 from fractions import Fraction
 from typing import Sequence, Iterator, Tuple
+from operator import itemgetter
 from gotoh import align_it
 
 
@@ -76,4 +77,9 @@ def disambiguate_concordance(concordance: Sequence[Fraction],
         yield x, global_rank
 
 
-# def get_max_
+def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Sequence[int]:
+    concordance_d = disambiguate_concordance(concordance)
+    return tuple(i for i, v in sorted(enumerate(concordance_d),
+                                      key=itemgetter(1),
+                                      reverse=True,
+                                      ))
