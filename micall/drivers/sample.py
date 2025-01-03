@@ -429,12 +429,6 @@ class Sample:
 
         with open(self.unstitched_contigs_fasta, 'r') as unstitched_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
-            # FIXME: Remove this when proper combination is implemented.
-            import micall.utils.referenceless_contig_stitcher as stitcher
-            from fractions import Fraction
-            def combiner(a, b, o):
-                return (a, Fraction(2, 1))
-            stitcher.combine_contigs = combiner
             referenceless_contig_stitcher(unstitched_contigs_fasta, stitched_contigs_fasta)
 
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
