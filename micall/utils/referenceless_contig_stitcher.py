@@ -223,7 +223,7 @@ def write_contigs(output_fasta: TextIO, contigs: Iterable[Contig]):
                          description='',
                          id=contig.unique_name,
                          name=contig.unique_name)
-                   for contig in contigs)
+               for contig in contigs)
     SeqIO.write(records, output_fasta, "fasta")
 
 
