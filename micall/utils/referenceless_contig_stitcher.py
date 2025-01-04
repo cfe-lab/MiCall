@@ -75,12 +75,12 @@ def try_combine_contigs(a: Contig, b: Contig,
     #       Two-layer caching seems most optimal:
     #       first by key=contig.id, then by key=contig.seq.
 
-    logger.debug("Trying to put together %s with %s.", a.unique_name, b.unique_name)
-
     overlap = get_overlap(a, b)
     if overlap is None:
-        logger.debug("No overlap between %s and %s.", a.unique_name, b.unique_name)
         return None
+
+    logger.debug("Trying to put together %s with %s (with lengts %s and %s).",
+                 a.unique_name, b.unique_name, len(a.seq), len(b.seq))
 
     if abs(overlap.shift) < len(a.seq):
         shift = overlap.shift
@@ -94,9 +94,14 @@ def try_combine_contigs(a: Contig, b: Contig,
     logger.debug("Overlap of size %s detected between %s and %s.",
                  min([abs(shift), len(a.seq), len(b.seq)]),
                  a.unique_name, b.unique_name)
-    logger.debug("Contig %s comes before %s.", left.unique_name, right.unique_name)
 
-    left_initial_overlap = left.seq[len(left.seq) - abs(shift):]
+    is_covered = len(right.seq) < abs(shift)
+    if is_covered:
+        logger.debug("Contig %s is covered by %s.", right.unique_name, left.unique_name)
+    else:
+        logger.debug("Contig %s comes before %s.", left.unique_name, right.unique_name)
+
+    left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
     left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
@@ -111,7 +116,7 @@ def try_combine_contigs(a: Contig, b: Contig,
     left_cutoff = min(al.r_st for al in left_overlap_alignments)
     right_cutoff = max(al.r_en for al in right_overlap_alignments)
 
-    left_overlap = left.seq[left_cutoff:]
+    left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
@@ -137,18 +142,25 @@ def try_combine_contigs(a: Contig, b: Contig,
         logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
         return None
 
-    concordance = calculate_concordance(aligned_left, aligned_right)
-    max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
-    left_overlap_chunk = ''.join(x for x in aligned_left[:max_concordance_index] if x != '-')
-    right_overlap_chunk = ''.join(x for x in aligned_right[max_concordance_index:] if x != '-')
+    if is_covered:
+        logger.debug("Between %s and %s, returning the covering contig, %s.",
+                     a.unique_name, b.unique_name, left.unique_name)
+        return (left, result_probability)
 
-    result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
-    result_contig = Contig(None, result_seq)
+    else:
+        concordance = calculate_concordance(aligned_left, aligned_right)
+        max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
+        left_overlap_chunk = ''.join(x for x in aligned_left[:max_concordance_index] if x != '-')
+        right_overlap_chunk = ''.join(x for x in aligned_right[max_concordance_index:] if x != '-')
 
-    logger.debug("Joined %s and %s together in a contig %s with lengh %s.",
-                 result_contig.unique_name, len(result_contig.seq))
+        result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
+        result_contig = Contig(None, result_seq)
 
-    return (result_contig, result_probability)
+        logger.debug("Joined %s and %s together in a contig %s with lengh %s.",
+                     a.unique_name, b.unique_name,
+                     result_contig.unique_name, len(result_contig.seq))
+
+        return (result_contig, result_probability)
 
 
 def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
