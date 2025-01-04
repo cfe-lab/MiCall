@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import sys
 import argparse
 import csv
 from typing import TextIO, Sequence, Iterator
@@ -23,10 +24,11 @@ def csv_to_fasta(contigs_csv: TextIO, contigs_fasta: Path) -> None:
                             id=name,
                             name=name)
 
+    contigs_fasta.parent.mkdir(parents=True, exist_ok=True)
     SeqIO.write(records(), contigs_fasta, "fasta")
 
 
-def main(argv: Sequence[str]):
+def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(description="Convert contigs from CSV to FASTA."
                                      " This converter assumes the MiCall's conventions"
                                      " for CSV field names.")
@@ -36,8 +38,11 @@ def main(argv: Sequence[str]):
                         help="Output FASTA file to write contigs to.")
     args = parser.parse_args(argv)
     csv_to_fasta(args.contigs_csv, args.contigs_fasta)
+    return 0
 
 
-if __name__ == "__main__":
-    import sys
-    main(sys.argv[1:])
+def cli() -> None:
+    sys.exit(main(sys.argv[1:]))
+
+
+if __name__ == "__main__": cli()  # noqa
