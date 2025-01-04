@@ -29,7 +29,10 @@ class ContigsPath:
 
     # Lower is better. This is an estimated probability that
     # all the components in this path came together by accident.
-    score: Fraction
+    probability: Fraction
+
+    def score(self) -> Tuple[Fraction, int]:
+        return (self.probability, -len(self.parts_ids))
 
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
@@ -174,9 +177,9 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
             return
         (combined, prob) = combination
 
-    score = path.score * prob
+    probability = path.probability * prob
     new_elements = path.parts_ids.union([candidate.id])
-    new_path = ContigsPath(combined, new_elements, score)
+    new_path = ContigsPath(combined, new_elements, probability)
     yield new_path
 
 
@@ -210,7 +213,7 @@ def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
 
 def find_most_probable_path(contigs: Sequence[Contig]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
-    return min(paths, key=lambda path: (path.score, -len(path.parts_ids)))
+    return min(paths, key=ContigsPath.score)
 
 
 def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
