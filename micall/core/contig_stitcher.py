@@ -1,3 +1,4 @@
+import sys
 from typing import Sequence
 import logging
 from pathlib import Path
@@ -67,6 +68,11 @@ def main(argv: Sequence[str]) -> int:
     return 0
 
 
-if __name__ == '__main__':
-    import sys
-    sys.exit(main(sys.argv[1:]))
+def cli() -> None:
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except KeyboardInterrupt:
+        sys.exit(1)
+
+
+if __name__ == '__main__': cli()  # noqa
