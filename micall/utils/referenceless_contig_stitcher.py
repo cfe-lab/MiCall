@@ -4,9 +4,10 @@ from fractions import Fraction
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import logging
+from mappy import Aligner
 
 from micall.utils.contig_stitcher_context import StitcherContext
-from micall.utils.consensus_aligner import align_consensus, Alignment
+from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 from micall.utils.contig_stitcher_contigs import Contig
@@ -62,11 +63,12 @@ def get_overlap(left: Contig, right: Contig) -> Optional[Overlap]:
     return Overlap(shift)
 
 
-def map_overlap_onto_candidate(overlap: str, candidate: str) -> Sequence[Alignment]:
-    alignments, algo = align_consensus(candidate, overlap)
-    if algo != 'minimap2':
-        return []
-    return alignments
+def map_overlap_onto_candidate(overlap: str, candidate: str) -> Iterator[Alignment]:
+    # TODO: Move this implementation into consensus_aligner maybe.
+    aligner = Aligner(seq=candidate, bw=500, bw_long=500, preset='map-ont')
+    for x in aligner.map(overlap):
+        if x.is_primary:
+            yield x
 
 
 def try_combine_contigs(a: Contig, b: Contig,
@@ -105,27 +107,24 @@ def try_combine_contigs(a: Contig, b: Contig,
     right_initial_overlap = right.seq[:abs(shift)]
 
     left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
-    if not left_overlap_alignments:
-        logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
-        return None
     right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
-    if not right_overlap_alignments:
+    left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
+    right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
+    if left_cutoff is None:
         logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
         return None
-
-    left_cutoff = min(al.r_st for al in left_overlap_alignments)
-    right_cutoff = max(al.r_en for al in right_overlap_alignments)
+    if right_cutoff is None:
+        logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+        return None
 
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
 
-    logger.debug("Cut off sizes between %s and %s are %s and %s based on %s and %s.",
+    logger.debug("Cut off sizes between %s and %s are %s and %s.",
                  a.unique_name, b.unique_name,
-                 len(left_overlap), len(right_overlap),
-                 [str(x.to_cigar_hit()) for x in left_overlap_alignments],
-                 [str(x.to_cigar_hit()) for x in right_overlap_alignments])
+                 len(left_overlap), len(right_overlap))
 
     aligned_left, aligned_right = align_queries(str(left_overlap), str(right_overlap))
 
@@ -198,9 +197,14 @@ def calc_multiple_extensions(paths: Iterable[ContigsPath],
 
 def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
     initial = ContigsPath.empty()
-    paths: Iterable[ContigsPath] = [initial]
+    paths: Tuple[ContigsPath, ...] = (initial,)
+    logger.debug("Calculating all paths...")
+    cycle = 1
     while paths:
+        logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
         paths = tuple(calc_multiple_extensions(paths, contigs))
+        logger.debug("Cycle %s finished with %s new paths.", cycle, len(paths))
+        cycle += 1
         yield from paths
 
 
@@ -237,6 +241,7 @@ def referenceless_contig_stitcher(input_fasta: TextIO,
                                   ) -> int:
     with StitcherContext.fresh():
         contigs = tuple(read_contigs(input_fasta))
+        logger.debug("Loaded %s contigs.", len(contigs))
 
         if output_fasta is not None:
             contigs = tuple(stitch_consensus(contigs))
