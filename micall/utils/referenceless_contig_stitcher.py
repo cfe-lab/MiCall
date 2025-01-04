@@ -145,7 +145,7 @@ def try_combine_contigs(a: Contig, b: Contig,
     if is_covered:
         logger.debug("Between %s and %s, returning the covering contig, %s.",
                      a.unique_name, b.unique_name, left.unique_name)
-        return (left, result_probability)
+        return (left, Fraction(1))
 
     else:
         concordance = calculate_concordance(aligned_left, aligned_right)
@@ -206,7 +206,7 @@ def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
 
 def find_most_probable_path(contigs: Sequence[Contig]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
-    return min(paths, key=lambda path: path.score)
+    return min(paths, key=lambda path: (path.score, -len(path.parts_ids)))
 
 
 def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
@@ -240,6 +240,7 @@ def referenceless_contig_stitcher(input_fasta: TextIO,
 
         if output_fasta is not None:
             contigs = tuple(stitch_consensus(contigs))
+            logger.debug("Outputting %s contigs", len(contigs))
 
         if output_fasta is not None:
             write_contigs(output_fasta, contigs)
