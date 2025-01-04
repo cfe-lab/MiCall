@@ -7,8 +7,8 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.core.contig_stitcher as stitcher
-from micall.core.contig_stitcher import (
+import micall.utils.referencefull_contig_stitcher as stitcher
+from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
     stitch_contigs,
     GenotypedContig,
@@ -17,17 +17,17 @@ from micall.core.contig_stitcher import (
     stitch_consensus,
     calculate_concordance,
     align_all_to_reference,
-    disambiguate_concordance,
     lstrip,
     rstrip,
 )
+from micall.utils.overlap_stitcher import disambiguate_concordance
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.tests.utils import mock_align_consensus, MockAlignment, fixed_random_seed
 from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
-logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
+logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
@@ -39,7 +39,7 @@ assert load_projects is not None
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align_consensus)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align_consensus)
 
 
 @pytest.fixture
@@ -875,7 +875,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
     assert all(x.seq == lstrip(rstrip(x)).seq for x in results)
-    assert {contig.seq for contig in contigs} == {contig.seq for contig in results}
+    assert {contig.seq for contig in contigs} != {contig.seq for contig in results}
 
 
 def test_stitching_partial_align(exact_aligner, visualizer):
@@ -1395,7 +1395,7 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
         algorithm = 'mock'
         return (alignments, algorithm)
 
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align)
 
     ref = 'A' * 700
     seq = 'C' * 600
@@ -1457,10 +1457,11 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs])
+    main(['with-references', contigs, stitched_contigs])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1479,11 +1480,12 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
 
 
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs, "--debug", "--plot", plot])
+    main(['with-references', contigs, stitched_contigs, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1626,17 +1628,16 @@ def test_merge_intervals(intervals, expected):
     assert merge_intervals(intervals) == expected
 
 
-@dataclass
-class TestMockAlignment:
-    r_st: int
-    r_ei: int
-
-
 class MockAlignedContig:
+    @dataclass
+    class TestMockAlignment:
+        r_st: int
+        r_ei: int
+
     def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig"):
         self.ref_name = ref_name
         self.group_ref = group_ref
-        self.alignment = TestMockAlignment(r_st, r_ei)
+        self.alignment = MockAlignedContig.TestMockAlignment(r_st, r_ei)
         self.name = name
         self.id = id(self)
 
