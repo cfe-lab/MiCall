@@ -75,8 +75,11 @@ def try_combine_contigs(a: Contig, b: Contig,
     #       Two-layer caching seems most optimal:
     #       first by key=contig.id, then by key=contig.seq.
 
+    logger.debug("Trying to put together %s with %s.", a.unique_name, b.unique_name)
+
     overlap = get_overlap(a, b)
     if overlap is None:
+        logger.debug("No overlap between %s and %s.", a.unique_name, b.unique_name)
         return None
 
     if abs(overlap.shift) < len(a.seq):
@@ -88,14 +91,21 @@ def try_combine_contigs(a: Contig, b: Contig,
         left = b
         right = a
 
+    logger.debug("Overlap of size %s detected between %s and %s.",
+                 min([abs(shift), len(a.seq), len(b.seq)]),
+                 a.unique_name, b.unique_name)
+    logger.debug("Contig %s comes before %s.", left.unique_name, right.unique_name)
+
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):]
     right_initial_overlap = right.seq[:abs(shift)]
 
     left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
     if not left_overlap_alignments:
+        logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
         return None
     right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
     if not right_overlap_alignments:
+        logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
         return None
 
     left_cutoff = min(al.r_st for al in left_overlap_alignments)
@@ -106,15 +116,25 @@ def try_combine_contigs(a: Contig, b: Contig,
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
 
+    logger.debug("Cut off sizes between %s and %s are %s and %s based on %s and %s.",
+                 a.unique_name, b.unique_name,
+                 len(left_overlap), len(right_overlap),
+                 [str(x.to_cigar_hit()) for x in left_overlap_alignments],
+                 [str(x.to_cigar_hit()) for x in right_overlap_alignments])
+
     aligned_left, aligned_right = align_queries(str(left_overlap), str(right_overlap))
 
     number_of_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
+    logger.debug("Overlap probability between %s and %s is %s.",
+                 a.unique_name, b.unique_name, f"{float(1 - result_probability):.5f}")
+
     if result_probability > ACCEPTABLE_STITCHING_PROB:
         # FIXME: Adjust the threold to something more based.
         # FIXME: Print a warning that this happened.
+        logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
         return None
 
     concordance = calculate_concordance(aligned_left, aligned_right)
@@ -124,6 +144,9 @@ def try_combine_contigs(a: Contig, b: Contig,
 
     result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
     result_contig = Contig(None, result_seq)
+
+    logger.debug("Joined %s and %s together in a contig %s with lengh %s.",
+                 result_contig.unique_name, len(result_contig.seq))
 
     return (result_contig, result_probability)
 
@@ -184,13 +207,12 @@ def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
 
 
 def write_contigs(output_fasta: TextIO, contigs: Iterable[Contig]):
-    with StitcherContext.fresh():
-        records = (SeqRecord(Seq.Seq(contig.seq),
-                             description='',
-                             id=contig.unique_name,
-                             name=contig.unique_name)
+    records = (SeqRecord(Seq.Seq(contig.seq),
+                         description='',
+                         id=contig.unique_name,
+                         name=contig.unique_name)
                    for contig in contigs)
-        SeqIO.write(records, output_fasta, "fasta")
+    SeqIO.write(records, output_fasta, "fasta")
 
 
 def read_contigs(input_fasta: TextIO) -> Iterable[Contig]:
@@ -201,12 +223,13 @@ def read_contigs(input_fasta: TextIO) -> Iterable[Contig]:
 def referenceless_contig_stitcher(input_fasta: TextIO,
                                   output_fasta: Optional[TextIO],
                                   ) -> int:
-    contigs = tuple(read_contigs(input_fasta))
+    with StitcherContext.fresh():
+        contigs = tuple(read_contigs(input_fasta))
 
-    if output_fasta is not None:
-        contigs = tuple(stitch_consensus(contigs))
+        if output_fasta is not None:
+            contigs = tuple(stitch_consensus(contigs))
 
-    if output_fasta is not None:
-        write_contigs(output_fasta, contigs)
+        if output_fasta is not None:
+            write_contigs(output_fasta, contigs)
 
-    return len(contigs)
+        return len(contigs)
