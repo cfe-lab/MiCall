@@ -237,18 +237,21 @@ def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
         paths = tuple(filter_extensions(existing, extensions))
 
         if paths:
-
             longest = max(paths, key=lambda path: len(path.whole.seq))
             size = len(longest.whole.seq)
             parts = len(longest.parts_ids)
             logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the longest.",
                          cycle, len(paths), size, parts)
 
-            logger.debug("Full length is %s, but without duplicates its %s.",
-                         len(paths), len(set(path.whole.seq for path in paths)))
-
-        if len(paths) > 10:
-            paths = tuple(sorted(paths, key=ContigsPath.score)[-10:])
+        MAX_ALTERNATIVES = 30
+        if len(paths) > MAX_ALTERNATIVES:
+            # This is necessary so that the time complexity does not explode.
+            # Note that if MAX_ALTERNATIVES = 1, then this algorithm becomes
+            # the standard greedy algorithm that simply chooses
+            # the most promising alternative at each point.
+            logger.debug("Dropping %s paths that have the lowest scores.",
+                         len(paths) - MAX_ALTERNATIVES)
+            paths = tuple(sorted(paths, key=ContigsPath.score)[-MAX_ALTERNATIVES:])
 
         cycle += 1
         yield from paths
