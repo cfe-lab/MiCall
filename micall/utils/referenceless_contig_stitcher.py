@@ -80,6 +80,12 @@ def try_combine_contigs(a: Contig, b: Contig,
     #       Two-layer caching seems most optimal:
     #       first by key=contig.id, then by key=contig.seq.
 
+    if len(b.seq) == 0:
+        return (a, Fraction(1))
+
+    if len(a.seq) == 0:
+        return (b, Fraction(1))
+
     overlap = get_overlap(a, b)
     if overlap is None:
         return None
@@ -169,14 +175,11 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
     if path.has_contig(candidate):
         return
 
-    if path.is_empty:
-        (combined, prob) = (candidate, Fraction(1))
-    else:
-        combination = try_combine_contigs(path.whole, candidate)
-        if combination is None:
-            return
-        (combined, prob) = combination
+    combination = try_combine_contigs(path.whole, candidate)
+    if combination is None:
+        return
 
+    (combined, prob) = combination
     probability = path.probability * prob
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, probability)
