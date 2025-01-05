@@ -16,7 +16,7 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap
 
 logger = logging.getLogger(__name__)
 
-ACCEPTABLE_STITCHING_PROB = Fraction(1, 100)
+ACCEPTABLE_STITCHING_PROB = Fraction(1, 10000)
 
 
 @dataclass(frozen=True)
