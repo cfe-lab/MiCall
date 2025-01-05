@@ -1,4 +1,4 @@
-from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence, TextIO
+from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence, TextIO, MutableMapping
 from dataclasses import dataclass
 from fractions import Fraction
 from Bio import SeqIO, Seq
@@ -32,7 +32,7 @@ class ContigsPath:
     probability: Fraction
 
     def score(self) -> Tuple[Fraction, int]:
-        return (self.probability, -len(self.parts_ids))
+        return (1-self.probability, len(self.parts_ids))
 
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
@@ -201,22 +201,57 @@ def calc_multiple_extensions(paths: Iterable[ContigsPath],
         yield from calc_extension(contigs, path)
 
 
+def filter_extensions(existing: MutableMapping[str, ContigsPath],
+                      extensions: Iterable[ContigsPath],
+                      ) -> Iterator[ContigsPath]:
+    ret = {}
+
+    for path in extensions:
+        key = path.whole.seq
+        alternative = existing.get(key)
+        if alternative is None or path.score() > alternative.score():
+            existing[key] = path
+            ret[key] = path
+
+    yield from ret.values()
+
+
 def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
-    initial = ContigsPath.empty()
-    paths: Tuple[ContigsPath, ...] = (initial,)
+    existing: MutableMapping[str, ContigsPath] = {}
+
+    extensions = calc_extension(contigs, ContigsPath.empty())
+    paths = tuple(filter_extensions(existing, extensions))
+    yield from paths
+
     logger.debug("Calculating all paths...")
     cycle = 1
     while paths:
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
-        paths = tuple(calc_multiple_extensions(paths, contigs))
-        logger.debug("Cycle %s finished with %s new paths.", cycle, len(paths))
+
+        extensions = calc_multiple_extensions(paths, contigs)
+        paths = tuple(filter_extensions(existing, extensions))
+
+        if paths:
+
+            longest = max(paths, key=lambda path: len(path.whole.seq))
+            size = len(longest.whole.seq)
+            parts = len(longest.parts_ids)
+            logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the longest.",
+                         cycle, len(paths), size, parts)
+
+            logger.debug("Full length is %s, but without duplicates its %s.",
+                         len(paths), len(set(path.whole.seq for path in paths)))
+
+        if len(paths) > 10:
+            paths = tuple(sorted(paths, key=ContigsPath.score)[-10:])
+
         cycle += 1
         yield from paths
 
 
 def find_most_probable_path(contigs: Sequence[Contig]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
-    return min(paths, key=ContigsPath.score)
+    return max(paths, key=ContigsPath.score)
 
 
 def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
