@@ -27,7 +27,7 @@ dependencies = [
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
     "numpy==2.2.1",
-    "scipy==1.14.1",
+    "scipy==1.15.0",
     "matplotlib==3.10.0",
     "cutadapt==5.0",
     "python-Levenshtein==0.26.1",
