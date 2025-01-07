@@ -9,11 +9,15 @@ from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO, Seq
 
 
+class NoContigsInCSV(ValueError):
+    pass
+
+
 def csv_to_fasta(contigs_csv: TextIO, contigs_fasta: Path) -> None:
     reader = csv.DictReader(contigs_csv)
     if reader.fieldnames is None or \
        'contig' not in reader.fieldnames:
-        raise ValueError("Input CSV does not contain contigs.")
+        raise NoContigsInCSV("Input CSV does not contain contigs.")
 
     def records() -> Iterator[SeqRecord]:
         for i, row in enumerate(reader):
