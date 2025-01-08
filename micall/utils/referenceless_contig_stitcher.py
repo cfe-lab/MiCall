@@ -182,10 +182,7 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
 
     (combined, prob) = combination
     probability = path.probability * prob
-    if prob == 1:
-        pessimisstic_probability = path.pessimisstic_probability
-    else:
-        pessimisstic_probability = max(path.pessimisstic_probability, prob)
+    pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
     yield new_path
