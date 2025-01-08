@@ -220,7 +220,7 @@ def main(argv: Sequence[str]):
     parser.add_argument('--blast_csv', type=argparse.FileType('w'),
                         help="Optional CSV file to write BLAST search results.")
     args = parser.parse_args(argv)
-    fasta_to_csv(args.contigs_fasta, args.contigs_csv, args.blast_csv)
+    fasta_to_csv(Path(args.contigs_fasta), args.contigs_csv, args.blast_csv)
 
 
 if __name__ == "__main__":
