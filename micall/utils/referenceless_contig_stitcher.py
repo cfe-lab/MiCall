@@ -30,9 +30,10 @@ class ContigsPath:
     # Lower is better. This is an estimated probability that
     # all the components in this path came together by accident.
     probability: Fraction
+    pessimisstic_probability: Fraction
 
-    def score(self) -> Tuple[Fraction, int]:
-        return (1-self.probability, len(self.parts_ids))
+    def score(self) -> Tuple[Fraction, Fraction, int]:
+        return (1-self.pessimisstic_probability, 1-self.probability, len(self.parts_ids))
 
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
@@ -43,7 +44,7 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(Contig.empty(), frozenset(), Fraction(1))
+        return ContigsPath(Contig.empty(), frozenset(), Fraction(1), Fraction(1))
 
 
 @dataclass(frozen=True)
@@ -181,8 +182,13 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
 
     (combined, prob) = combination
     probability = path.probability * prob
+    if prob == 1:
+        pessimisstic_probability = path.pessimisstic_probability
+    else:
+        pessimisstic_probability = max(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
-    yield ContigsPath(combined, new_elements, probability)
+    new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
+    yield new_path
 
 
 def calc_extension(contigs: Sequence[Contig],
