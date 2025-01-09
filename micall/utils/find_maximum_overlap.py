@@ -1,15 +1,37 @@
 #! /usr/bin/env python
 
 import argparse
+from dataclasses import dataclass
 import sys
 import numpy as np
-from typing import Sequence
+from typing import Sequence, Optional, Tuple, Iterable, Any
 from itertools import chain
 import scipy
 
 
+@dataclass(frozen=False)
+class OverlapFinder:
+    alphabet: Tuple[object, ...]
+    bit_arr1: np.ndarray[Any, np.dtype[Any]]
+    bit_arr2: np.ndarray[Any, np.dtype[Any]]
+    total: np.ndarray[Any, np.dtype[Any]]
+
+    @staticmethod
+    def make(alphabet: Iterable[object]) -> 'OverlapFinder':
+        # FIXME: Automatically resize these arrays.
+        total = np.zeros(100_000)
+        bit_arr1 = np.zeros(100_000)
+        bit_arr2 = np.zeros(100_000)
+        return OverlapFinder(tuple(alphabet),
+                             total=total,
+                             bit_arr1=bit_arr1,
+                             bit_arr2=bit_arr2,
+                             )
+
+
 def find_maximum_overlap(arr1: Sequence[object],
                          arr2: Sequence[object],
+                         finder: Optional[OverlapFinder] = None,
                          ) -> int:
     """
     Calculate the offset at which two sequences (arr1 and arr2)
@@ -35,28 +57,43 @@ def find_maximum_overlap(arr1: Sequence[object],
 
     if len(arr1) == 0 or len(arr2) == 0:
         raise ValueError(
-            f"Expected non-empty lists, but got {len(arr1)}, {len(arr2)}.")
+            f"Expected non-empty sequences, but got {len(arr1)}, {len(arr2)}.")
 
-    # Create a set to store unique elements from both sequences
-    alphabet_set = set()
-    alphabet = []
+    if finder is None:
+        # Create a set to store unique elements from both sequences
+        alphabet_set = set()
+        alphabet = []
 
-    # Iterate over each element in both sequences to build a list of
-    # unique elements
-    for x in chain(arr1, arr2):
-        if x not in alphabet_set:
-            alphabet_set.add(x)
-            alphabet.append(x)
+        # Iterate over each element in both sequences to build a list of
+        # unique elements
+        for x in chain(arr1, arr2):
+            if x not in alphabet_set:
+                alphabet_set.add(x)
+                alphabet.append(x)
+
+        finder = OverlapFinder.make(alphabet)
 
     # Initialize an array to accumulate convolved results for
     # determining overlap
-    total = np.zeros(len(arr1) + len(arr2) - 1)
+    len_total = len(arr1) + len(arr2) - 1
+
+    # Slicing a NumPy array does not create a copy of the original array.
+    # It creates a view.
+    total = finder.total[:len_total]
+    total.fill(0)
+
+    bit_arr1 = finder.bit_arr1[:len(arr1)]
+    bit_arr2 = finder.bit_arr2[:len(arr2)]
+
+    np_arr1 = np.array(tuple(arr1))
+    np_arr2 = np.array(tuple(reversed(arr2)))
 
     # Iterate over each unique element to determine overlap
-    for element in alphabet:
-        # Create binary arrays indicating the presence of the current element
-        bit_arr1 = tuple(1 if x == element else 0 for x in arr1)
-        bit_arr2 = tuple(1 if x == element else 0 for x in reversed(arr2))
+    for element in finder.alphabet:
+        bit_arr1.fill(0)
+        bit_arr2.fill(0)
+        bit_arr1[np_arr1 == element] = 1
+        bit_arr2[np_arr2 == element] = 1
 
         # Compute the convolution of the two binary arrays
         convo = scipy.signal.convolve(bit_arr1, bit_arr2, mode='full')
@@ -71,12 +108,12 @@ def find_maximum_overlap(arr1: Sequence[object],
     max_indices = np.where(total == max_value)[0]
     left_max = max_indices[0]
     right_max = max_indices[-1]
-    if left_max < (len(total) - right_max):
+    if left_max < (len_total - right_max):
         max_offset = left_max
     else:
         max_offset = right_max
 
-    shift_value = max_offset - len(total)
+    shift_value = max_offset - len_total
     return int(shift_value)
 
 
