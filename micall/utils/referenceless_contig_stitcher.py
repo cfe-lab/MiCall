@@ -117,16 +117,30 @@ def try_combine_contigs(finder: OverlapFinder,
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
-    left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
-    right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
-    left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
-    right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
-    if left_cutoff is None:
-        logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
-        return None
-    if right_cutoff is None:
-        logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
-        return None
+    if len(left_initial_overlap) < len(right_initial_overlap):
+        left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
+        left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
+        if left_cutoff is None:
+            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            return None
+
+        right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
+        right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
+        if right_cutoff is None:
+            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            return None
+    else:
+        right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
+        right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
+        if right_cutoff is None:
+            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            return None
+
+        left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
+        left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
+        if left_cutoff is None:
+            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            return None
 
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
     left_remainder = left.seq[:left_cutoff]
