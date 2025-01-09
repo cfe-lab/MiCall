@@ -5,10 +5,8 @@ import sys
 import numpy as np
 from typing import Sequence
 from itertools import chain
+import scipy
 
-
-# TODO: optimize the time complexity here. In particular, don't use
-# the slow `numpy.convolve`.
 
 def find_maximum_overlap(arr1: Sequence[object],
                          arr2: Sequence[object],
@@ -52,16 +50,16 @@ def find_maximum_overlap(arr1: Sequence[object],
 
     # Initialize an array to accumulate convolved results for
     # determining overlap
-    total = np.array([0] * (len(arr1) + len(arr2) - 1))
+    total = np.zeros(len(arr1) + len(arr2) - 1)
 
     # Iterate over each unique element to determine overlap
     for element in alphabet:
         # Create binary arrays indicating the presence of the current element
-        bit_arr1 = [1 if x == element else 0 for x in arr1]
-        bit_arr2 = [1 if x == element else 0 for x in reversed(arr2)]
+        bit_arr1 = tuple(1 if x == element else 0 for x in arr1)
+        bit_arr2 = tuple(1 if x == element else 0 for x in reversed(arr2))
 
         # Compute the convolution of the two binary arrays
-        convo = np.convolve(bit_arr1, bit_arr2, mode='full')
+        convo = scipy.signal.convolve(bit_arr1, bit_arr2, mode='full')
         # Add the convolution to the total results
         total += convo
 
