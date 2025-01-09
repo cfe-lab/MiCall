@@ -1,9 +1,7 @@
 from fractions import Fraction
 from typing import Sequence, Iterator, Tuple
 from operator import itemgetter
-from functools import lru_cache
 from gotoh import align_it
-import math
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -88,7 +86,6 @@ def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Iterator[int]:
         yield i
 
 
-@lru_cache
 def calc_overlap_pvalue(L: int, M: int) -> Fraction:
     """
     Compute the probability (p-value) of observing at least M matches
@@ -104,21 +101,4 @@ def calc_overlap_pvalue(L: int, M: int) -> Fraction:
     matches by chance
     """
 
-    # TODO: Implement an evidence-based p-value calculation.
-
-    pval = Fraction(0)
-    match_prob = Fraction(1, 4)
-
-    # Accounting for the fact that the contigs differ at the ends
-    # (left end is different and right end is different).
-    L += 2
-
-    # Summation of
-    # Binomial(L, x) * match_prob^x * (1-match_prob)^(L-x)
-    #   from x = M to L
-    for x in range(M, L + 1):
-        pval += (math.comb(L, x) *
-                 (match_prob ** x) *
-                 ((1 - match_prob) ** (L - x)))
-
-    return pval
+    return 1-Fraction(M, L + 2)
