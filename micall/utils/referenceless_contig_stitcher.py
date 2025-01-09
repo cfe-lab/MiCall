@@ -11,7 +11,7 @@ from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 from micall.utils.contig_stitcher_contigs import Contig
-from micall.utils.find_maximum_overlap import find_maximum_overlap
+from micall.utils.find_maximum_overlap import find_maximum_overlap, OverlapFinder
 
 
 logger = logging.getLogger(__name__)
@@ -56,11 +56,11 @@ class Overlap:
     shift: int
 
 
-def get_overlap(left: Contig, right: Contig) -> Optional[Overlap]:
+def get_overlap(finder: OverlapFinder, left: Contig, right: Contig) -> Optional[Overlap]:
     if len(left.seq) == 0 or len(right.seq) == 0:
         return None
 
-    shift = find_maximum_overlap(left.seq, right.seq)
+    shift = find_maximum_overlap(left.seq, right.seq, finder=finder)
     if shift == 0:
         return None
 
@@ -75,7 +75,8 @@ def map_overlap_onto_candidate(overlap: str, candidate: str) -> Iterator[Alignme
             yield x
 
 
-def try_combine_contigs(a: Contig, b: Contig,
+def try_combine_contigs(finder: OverlapFinder,
+                        a: Contig, b: Contig,
                         ) -> Optional[Tuple[Contig, Fraction]]:
     # TODO: Memoize this function.
     #       Two-layer caching seems most optimal:
@@ -87,7 +88,7 @@ def try_combine_contigs(a: Contig, b: Contig,
     if len(a.seq) == 0:
         return (b, Fraction(1))
 
-    overlap = get_overlap(a, b)
+    overlap = get_overlap(finder, a, b)
     if overlap is None:
         return None
 
@@ -172,11 +173,11 @@ def try_combine_contigs(a: Contig, b: Contig,
         return (result_contig, result_probability)
 
 
-def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
+def extend_by_1(finder: OverlapFinder, path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
     if path.has_contig(candidate):
         return
 
-    combination = try_combine_contigs(path.whole, candidate)
+    combination = try_combine_contigs(finder, path.whole, candidate)
     if combination is None:
         return
 
@@ -188,19 +189,21 @@ def extend_by_1(path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
     yield new_path
 
 
-def calc_extension(contigs: Sequence[Contig],
+def calc_extension(finder: OverlapFinder,
+                   contigs: Sequence[Contig],
                    path: ContigsPath,
                    ) -> Iterator[ContigsPath]:
 
     for contig in contigs:
-        yield from extend_by_1(path, contig)
+        yield from extend_by_1(finder, path, contig)
 
 
-def calc_multiple_extensions(paths: Iterable[ContigsPath],
+def calc_multiple_extensions(finder: OverlapFinder,
+                             paths: Iterable[ContigsPath],
                              contigs: Sequence[Contig],
                              ) -> Iterator[ContigsPath]:
     for path in paths:
-        yield from calc_extension(contigs, path)
+        yield from calc_extension(finder, contigs, path)
 
 
 def filter_extensions(existing: MutableMapping[str, ContigsPath],
@@ -220,8 +223,8 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
     existing: MutableMapping[str, ContigsPath] = {}
-
-    extensions = calc_extension(contigs, ContigsPath.empty())
+    finder = OverlapFinder.make('ACTG')
+    extensions = calc_extension(finder, contigs, ContigsPath.empty())
     paths = tuple(filter_extensions(existing, extensions))
     yield from paths
 
@@ -230,7 +233,7 @@ def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
     while paths:
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
 
-        extensions = calc_multiple_extensions(paths, contigs)
+        extensions = calc_multiple_extensions(finder, paths, contigs)
         paths = tuple(filter_extensions(existing, extensions))
 
         if paths:
