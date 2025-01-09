@@ -22,7 +22,7 @@ class OverlapFinder:
         total = np.zeros(100_000)
         bit_arr1 = np.zeros(100_000)
         bit_arr2 = np.zeros(100_000)
-        return OverlapFinder(tuple(alphabet),
+        return OverlapFinder(tuple({x: True for x in alphabet}.keys()),
                              total=total,
                              bit_arr1=bit_arr1,
                              bit_arr2=bit_arr2,
@@ -60,18 +60,7 @@ def find_maximum_overlap(arr1: Sequence[object],
             f"Expected non-empty sequences, but got {len(arr1)}, {len(arr2)}.")
 
     if finder is None:
-        # Create a set to store unique elements from both sequences
-        alphabet_set = set()
-        alphabet = []
-
-        # Iterate over each element in both sequences to build a list of
-        # unique elements
-        for x in chain(arr1, arr2):
-            if x not in alphabet_set:
-                alphabet_set.add(x)
-                alphabet.append(x)
-
-        finder = OverlapFinder.make(alphabet)
+        finder = OverlapFinder.make(chain(arr1, arr2))
 
     # Initialize an array to accumulate convolved results for
     # determining overlap
