@@ -56,46 +56,28 @@ class Score:
                      )
 
     @staticmethod
-    def initial() -> 'Score':
-        return Score(pessimisstic_probability=ACCEPTABLE_STITCHING_PROB,
+    def lowest() -> 'Score':
+        return Score(pessimisstic_probability=Fraction(1),
                      overall_probability=Fraction(1),
                      path_lenth=0)
 
+    @property
+    def characteristic(self) -> Tuple[Fraction, Fraction, int]:
+        return ((1 - self.pessimisstic_probability),
+                (1 - self.overall_probability),
+                self.path_lenth)
+
     def __lt__(self, other: 'Score') -> bool:
-        if (1 - self.pessimisstic_probability) < (1 - other.pessimisstic_probability):
-            return True
-        if (1 - self.overall_probability) < (1 - other.overall_probability):
-            return True
-        if self.path_lenth < other.path_lenth:
-            return True
-        return False
+        return self.characteristic < other.characteristic
 
     def __le__(self, other: 'Score') -> bool:
-        if (1 - self.pessimisstic_probability) <= (1 - other.pessimisstic_probability):
-            return True
-        if (1 - self.overall_probability) <= (1 - other.overall_probability):
-            return True
-        if self.path_lenth <= other.path_lenth:
-            return True
-        return False
+        return self.characteristic <= other.characteristic
 
     def __gt__(self, other: 'Score') -> bool:
-        if (1 - self.pessimisstic_probability) > (1 - other.pessimisstic_probability):
-            return True
-        if (1 - self.overall_probability) > (1 - other.overall_probability):
-            return True
-        if self.path_lenth > other.path_lenth:
-            return True
-        return False
+        return self.characteristic > other.characteristic
 
     def __ge__(self, other: 'Score') -> bool:
-        if (1 - self.pessimisstic_probability) >= (1 - other.pessimisstic_probability):
-            return True
-        if (1 - self.overall_probability) >= (1 - other.overall_probability):
-            return True
-        if self.path_lenth >= other.path_lenth:
-            return True
-        return False
+        return self.characteristic >= other.characteristic
 
 
 @dataclass(frozen=True)
@@ -115,7 +97,7 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(ContigWithAligner.empty(), frozenset(), Score.initial())
+        return ContigsPath(ContigWithAligner.empty(), frozenset(), Score.lowest())
 
 
 @dataclass
@@ -320,7 +302,10 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 
 def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
-    min_acceptable_score = MinimumAcceptableScore(Score.initial())
+    min_acceptable_score = MinimumAcceptableScore(Score(pessimisstic_probability=ACCEPTABLE_STITCHING_PROB,
+                                                        overall_probability=ACCEPTABLE_STITCHING_PROB,
+                                                        path_lenth=1,
+                                                        ))
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
     extensions = calc_extension(finder, min_acceptable_score, contigs, ContigsPath.empty())
