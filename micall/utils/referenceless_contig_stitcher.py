@@ -120,9 +120,6 @@ def try_combine_contigs(finder: OverlapFinder,
                         max_acceptable_prob: Fraction,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
-    # TODO: Memoize this function.
-    #       Two-layer caching seems most optimal:
-    #       first by key=contig.id, then by key=contig.seq.
 
     if len(b.seq) == 0:
         return (a, Fraction(1))
