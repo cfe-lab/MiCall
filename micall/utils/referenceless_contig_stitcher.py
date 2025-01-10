@@ -157,63 +157,41 @@ def try_combine_contigs(finder: OverlapFinder,
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
-            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             TRY_COMBINE_CACHE[key] = None
             return None
 
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
-            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             TRY_COMBINE_CACHE[key] = None
             return None
     else:
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
-            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             TRY_COMBINE_CACHE[key] = None
             return None
 
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
-            logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             TRY_COMBINE_CACHE[key] = None
             return None
-
-    logger.debug("Overlap of size %s detected between %s and %s.",
-                 overlap_size,
-                 a.unique_name, b.unique_name)
-
-    is_covered = len(right.seq) < abs(shift)
-    if is_covered:
-        logger.debug("Contig %s is covered by %s.", right.unique_name, left.unique_name)
-    else:
-        logger.debug("Contig %s comes before %s.", left.unique_name, right.unique_name)
 
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
-
-    logger.debug("Cut off sizes between %s and %s are %s and %s.",
-                 a.unique_name, b.unique_name,
-                 len(left_overlap), len(right_overlap))
-
     aligned_left, aligned_right = align_queries(left_overlap, right_overlap)
 
     number_of_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    logger.debug("Overlap probability between %s and %s is %s.",
-                 a.unique_name, b.unique_name, f"{float(1 - result_probability):.5f}")
-
     if result_probability > max_acceptable_prob:
-        logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
         return None
 
+    is_covered = len(right.seq) < abs(shift)
     if is_covered:
         logger.debug("Between %s and %s, returning the covering contig, %s.",
                      a.unique_name, b.unique_name, left.unique_name)
