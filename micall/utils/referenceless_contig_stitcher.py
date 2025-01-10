@@ -41,52 +41,20 @@ class ContigWithAligner(Contig):
 
 
 @dataclass(frozen=True)
-class Score:
-    pessimisstic_probability: Fraction
-
-    # Lower is better. This is an estimated probability that
-    # all the components in this path came together by accident.
-    overall_probability: Fraction
-    path_lenth: int
-
-    def combine(self, prob: Fraction) -> 'Score':
-        return Score(pessimisstic_probability=min(prob, self.pessimisstic_probability),
-                     overall_probability=prob * self.pessimisstic_probability,
-                     path_lenth=1 + self.path_lenth,
-                     )
-
-    @staticmethod
-    def lowest() -> 'Score':
-        return Score(pessimisstic_probability=Fraction(1),
-                     overall_probability=Fraction(1),
-                     path_lenth=0)
-
-    @property
-    def characteristic(self) -> Tuple[Fraction, Fraction, int]:
-        return ((1 - self.pessimisstic_probability),
-                (1 - self.overall_probability),
-                self.path_lenth)
-
-    def __lt__(self, other: 'Score') -> bool:
-        return self.characteristic < other.characteristic
-
-    def __le__(self, other: 'Score') -> bool:
-        return self.characteristic <= other.characteristic
-
-    def __gt__(self, other: 'Score') -> bool:
-        return self.characteristic > other.characteristic
-
-    def __ge__(self, other: 'Score') -> bool:
-        return self.characteristic >= other.characteristic
-
-
-@dataclass(frozen=True)
 class ContigsPath:
     # Contig representing all combined contigs in the path.
     whole: ContigWithAligner
+
     # Id's of contigs that comprise this path.
     parts_ids: FrozenSet[int]
-    score: Score
+
+    # Lower is better. This is an estimated probability that
+    # all the components in this path came together by accident.
+    probability: Fraction
+    pessimisstic_probability: Fraction
+
+    def score(self) -> Tuple[Fraction, Fraction, int]:
+        return (1-self.pessimisstic_probability, 1-self.probability, len(self.parts_ids))
 
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
@@ -97,12 +65,9 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(ContigWithAligner.empty(), frozenset(), Score.lowest())
-
-
-@dataclass
-class MinimumAcceptableScore:
-    value: Score
+        return ContigsPath(ContigWithAligner.empty(), frozenset(),
+                           probability=Fraction(1),
+                           pessimisstic_probability=ACCEPTABLE_STITCHING_PROB)
 
 
 @dataclass(frozen=True)
@@ -141,16 +106,23 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
     return ret
 
 
+def combine_probability(current: Fraction, new: Fraction) -> Fraction:
+    return current * new
+
+
 TRY_COMBINE_CACHE: MutableMapping[
     Tuple[ContigId, ContigId],
     Optional[Tuple[ContigWithAligner, Fraction]]] = {}
 
 
 def try_combine_contigs(finder: OverlapFinder,
-                        current_score: Score,
-                        min_acceptable_score: MinimumAcceptableScore,
+                        current_prob: Fraction,
+                        max_acceptable_prob: Fraction,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
+    # TODO: Memoize this function.
+    #       Two-layer caching seems most optimal:
+    #       first by key=contig.id, then by key=contig.seq.
 
     if len(b.seq) == 0:
         return (a, Fraction(1))
@@ -173,8 +145,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap.size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
-    # if current_score.combine(optimistic_result_probability) < min_acceptable_score.value:
-    if optimistic_result_probability > ACCEPTABLE_STITCHING_PROB:
+    if combine_probability(optimistic_result_probability, current_prob) > max_acceptable_prob:
         return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
@@ -222,8 +193,7 @@ def try_combine_contigs(finder: OverlapFinder,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    # if current_score.combine(result_probability) < min_acceptable_score.value:
-    if result_probability > ACCEPTABLE_STITCHING_PROB:
+    if combine_probability(current_prob, result_probability) > max_acceptable_prob:
         return None
 
     is_covered = len(right.seq) < abs(shift)
@@ -251,41 +221,42 @@ def try_combine_contigs(finder: OverlapFinder,
 
 
 def extend_by_1(finder: OverlapFinder,
-                min_acceptable_score: MinimumAcceptableScore,
+                max_acceptable_prob: Fraction,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
                 ) -> Iterator[ContigsPath]:
     if path.has_contig(candidate):
         return
 
-    combination = try_combine_contigs(finder, path.score, min_acceptable_score, path.whole, candidate)
+    combination = try_combine_contigs(finder, path.probability, max_acceptable_prob, path.whole, candidate)
     if combination is None:
         return
 
     (combined, prob) = combination
-    score = path.score.combine(prob)
+    probability = combine_probability(path.probability, prob)
+    pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
-    new_path = ContigsPath(combined, new_elements, score)
+    new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
     yield new_path
 
 
 def calc_extension(finder: OverlapFinder,
-                   min_acceptable_score: MinimumAcceptableScore,
+                   max_acceptable_prob: Fraction,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> Iterator[ContigsPath]:
 
     for contig in contigs:
-        yield from extend_by_1(finder, min_acceptable_score, path, contig)
+        yield from extend_by_1(finder, max_acceptable_prob, path, contig)
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
-                             min_acceptable_score: MinimumAcceptableScore,
+                             max_acceptable_prob: Fraction,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> Iterator[ContigsPath]:
     for path in paths:
-        yield from calc_extension(finder, min_acceptable_score, contigs, path)
+        yield from calc_extension(finder, max_acceptable_prob, contigs, path)
 
 
 def filter_extensions(existing: MutableMapping[str, ContigsPath],
@@ -296,7 +267,7 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
     for path in extensions:
         key = path.whole.seq
         alternative = existing.get(key)
-        if alternative is None or path.score > alternative.score:
+        if alternative is None or path.score() > alternative.score():
             existing[key] = path
             ret[key] = path
 
@@ -304,13 +275,10 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 
 def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
-    min_acceptable_score = MinimumAcceptableScore(Score(pessimisstic_probability=ACCEPTABLE_STITCHING_PROB,
-                                                        overall_probability=ACCEPTABLE_STITCHING_PROB,
-                                                        path_lenth=1,
-                                                        ))
+    max_acceptable_prob = ACCEPTABLE_STITCHING_PROB
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
-    extensions = calc_extension(finder, min_acceptable_score, contigs, ContigsPath.empty())
+    extensions = calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
     paths = tuple(filter_extensions(existing, extensions))
     yield from paths
 
@@ -319,7 +287,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
     while paths:
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
 
-        extensions = calc_multiple_extensions(finder, min_acceptable_score, paths, contigs)
+        extensions = calc_multiple_extensions(finder, max_acceptable_prob, paths, contigs)
         paths = tuple(filter_extensions(existing, extensions))
 
         if paths:
@@ -337,15 +305,17 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
             # the most promising alternative at each point.
             logger.debug("Dropping %s paths that have the lowest scores.",
                          len(paths) - MAX_ALTERNATIVES)
-            paths = tuple(sorted(paths, key=lambda x: x.score)[-MAX_ALTERNATIVES:])
+            paths = tuple(sorted(paths, key=ContigsPath.score)[-MAX_ALTERNATIVES:])
 
         cycle += 1
         yield from paths
+        if paths:
+            max_acceptable_prob = max(x.probability for x in paths)
 
 
 def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
-    return max(paths, key=lambda x: x.score)
+    return max(paths, key=ContigsPath.score)
 
 
 def stitch_consensus(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
