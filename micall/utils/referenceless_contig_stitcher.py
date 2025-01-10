@@ -70,6 +70,11 @@ class ContigsPath:
                            pessimisstic_probability=ACCEPTABLE_STITCHING_PROB)
 
 
+@dataclass
+class MaximumAcceptableProbability:
+    value: Fraction
+
+
 @dataclass(frozen=True)
 class Overlap:
     # A negative integer.
@@ -117,7 +122,7 @@ TRY_COMBINE_CACHE: MutableMapping[
 
 def try_combine_contigs(finder: OverlapFinder,
                         current_prob: Fraction,
-                        max_acceptable_prob: Fraction,
+                        max_acceptable_prob: MaximumAcceptableProbability,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
 
@@ -142,7 +147,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap.size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
-    if combine_probability(optimistic_result_probability, current_prob) > max_acceptable_prob:
+    if combine_probability(optimistic_result_probability, current_prob) > max_acceptable_prob.value:
         return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
@@ -190,7 +195,7 @@ def try_combine_contigs(finder: OverlapFinder,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    if combine_probability(current_prob, result_probability) > max_acceptable_prob:
+    if combine_probability(current_prob, result_probability) > max_acceptable_prob.value:
         return None
 
     is_covered = len(right.seq) < abs(shift)
@@ -218,7 +223,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
 
 def extend_by_1(finder: OverlapFinder,
-                max_acceptable_prob: Fraction,
+                max_acceptable_prob: MaximumAcceptableProbability,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
                 ) -> Iterator[ContigsPath]:
@@ -238,7 +243,7 @@ def extend_by_1(finder: OverlapFinder,
 
 
 def calc_extension(finder: OverlapFinder,
-                   max_acceptable_prob: Fraction,
+                   max_acceptable_prob: MaximumAcceptableProbability,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> Iterator[ContigsPath]:
@@ -248,7 +253,7 @@ def calc_extension(finder: OverlapFinder,
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
-                             max_acceptable_prob: Fraction,
+                             max_acceptable_prob: MaximumAcceptableProbability,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> Iterator[ContigsPath]:
@@ -272,7 +277,7 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 
 def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
-    max_acceptable_prob = ACCEPTABLE_STITCHING_PROB
+    max_acceptable_prob = MaximumAcceptableProbability(ACCEPTABLE_STITCHING_PROB)
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
     extensions = calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
@@ -307,7 +312,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
         cycle += 1
         yield from paths
         if paths:
-            max_acceptable_prob = max(x.probability for x in paths)
+            max_acceptable_prob.value = max(x.probability for x in paths)
 
 
 def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
