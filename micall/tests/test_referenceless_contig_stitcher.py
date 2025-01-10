@@ -1,6 +1,5 @@
 import pytest
-from micall.utils.referenceless_contig_stitcher import stitch_consensus
-from micall.utils.contig_stitcher_contigs import Contig
+from micall.utils.referenceless_contig_stitcher import stitch_consensus, ContigWithAligner
 from micall.utils.contig_stitcher_context import StitcherContext
 
 
@@ -54,7 +53,7 @@ TTT = 40 * 'T'
     ],
 )
 def test_stitch_simple_cases(seqs, expected):
-    contigs = [Contig(None, seq) for seq in seqs]
+    contigs = [ContigWithAligner(None, seq) for seq in seqs]
     with StitcherContext.fresh():
         consenses = tuple(contig.seq for contig in stitch_consensus(contigs))
     assert consenses == expected

@@ -5,6 +5,7 @@ from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import logging
 from mappy import Aligner
+from functools import cached_property
 
 from micall.utils.contig_stitcher_context import StitcherContext
 from micall.utils.consensus_aligner import Alignment
@@ -20,9 +21,29 @@ ACCEPTABLE_STITCHING_PROB = Fraction(1, 20)
 
 
 @dataclass(frozen=True)
+class ContigWithAligner(Contig):
+    @cached_property
+    def aligner(self) -> Aligner:
+        return Aligner(seq=str(self.seq), bw=500, bw_long=500, preset='map-ont')
+
+    @staticmethod
+    def make(contig: Contig) -> 'ContigWithAligner':
+        return ContigWithAligner(name=contig.name, seq=contig.seq)
+
+    @staticmethod
+    def empty() -> 'ContigWithAligner':
+        return ContigWithAligner.make(Contig.empty())
+
+    def map_overlap(self, overlap: str) -> Iterator[Alignment]:
+        for x in self.aligner.map(overlap):
+            if x.is_primary:
+                yield x
+
+
+@dataclass(frozen=True)
 class ContigsPath:
     # Contig representing all combined contigs in the path.
-    whole: Contig
+    whole: ContigWithAligner
 
     # Id's of contigs that comprise this path.
     parts_ids: FrozenSet[int]
@@ -44,7 +65,7 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(Contig.empty(), frozenset(),
+        return ContigsPath(ContigWithAligner.empty(), frozenset(),
                            probability=Fraction(1),
                            pessimisstic_probability=ACCEPTABLE_STITCHING_PROB)
 
@@ -58,29 +79,29 @@ class Overlap:
     shift: int
 
 
-def get_overlap(finder: OverlapFinder, left: Contig, right: Contig) -> Optional[Overlap]:
+GET_OVERLAP_CACHE: MutableMapping[Tuple[int, int], Optional[Overlap]] = {}
+
+
+def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWithAligner) -> Optional[Overlap]:
     if len(left.seq) == 0 or len(right.seq) == 0:
         return None
 
+    key = (left.id, right.id)
     shift = find_maximum_overlap(left.seq, right.seq, finder=finder)
     if shift == 0:
-        return None
+        ret = None
+        GET_OVERLAP_CACHE[key] = ret
+        return ret
 
-    return Overlap(shift)
-
-
-def map_overlap_onto_candidate(overlap: str, candidate: str) -> Iterator[Alignment]:
-    # TODO: Move this implementation into consensus_aligner maybe.
-    aligner = Aligner(seq=candidate, bw=500, bw_long=500, preset='map-ont')
-    for x in aligner.map(overlap):
-        if x.is_primary:
-            yield x
+    ret = Overlap(shift)
+    GET_OVERLAP_CACHE[key] = ret
+    return ret
 
 
 def try_combine_contigs(finder: OverlapFinder,
                         max_acceptable_prob: Fraction,
-                        a: Contig, b: Contig,
-                        ) -> Optional[Tuple[Contig, Fraction]]:
+                        a: ContigWithAligner, b: ContigWithAligner,
+                        ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
     # TODO: Memoize this function.
     #       Two-layer caching seems most optimal:
     #       first by key=contig.id, then by key=contig.seq.
@@ -128,25 +149,25 @@ def try_combine_contigs(finder: OverlapFinder,
     right_initial_overlap = right.seq[:abs(shift)]
 
     if len(left_initial_overlap) < len(right_initial_overlap):
-        left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
+        left_overlap_alignments = left.map_overlap(str(right_initial_overlap))
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             return None
 
-        right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
+        right_overlap_alignments = right.map_overlap(str(left_initial_overlap))
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             return None
     else:
-        right_overlap_alignments = map_overlap_onto_candidate(str(left_initial_overlap), str(right.seq))
+        right_overlap_alignments = right.map_overlap(str(left_initial_overlap))
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             return None
 
-        left_overlap_alignments = map_overlap_onto_candidate(str(right_initial_overlap), str(left.seq))
+        left_overlap_alignments = left.map_overlap(str(right_initial_overlap))
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
@@ -186,7 +207,7 @@ def try_combine_contigs(finder: OverlapFinder,
         right_overlap_chunk = ''.join(x for x in aligned_right[max_concordance_index:] if x != '-')
 
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
-        result_contig = Contig(None, result_seq)
+        result_contig = ContigWithAligner(None, result_seq)
 
         logger.debug("Joined %s and %s together in a contig %s with lengh %s.",
                      a.unique_name, b.unique_name,
@@ -198,7 +219,7 @@ def try_combine_contigs(finder: OverlapFinder,
 def extend_by_1(finder: OverlapFinder,
                 max_acceptable_prob: Fraction,
                 path: ContigsPath,
-                candidate: Contig,
+                candidate: ContigWithAligner,
                 ) -> Iterator[ContigsPath]:
     if path.has_contig(candidate):
         return
@@ -217,7 +238,7 @@ def extend_by_1(finder: OverlapFinder,
 
 def calc_extension(finder: OverlapFinder,
                    max_acceptable_prob: Fraction,
-                   contigs: Sequence[Contig],
+                   contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> Iterator[ContigsPath]:
 
@@ -228,7 +249,7 @@ def calc_extension(finder: OverlapFinder,
 def calc_multiple_extensions(finder: OverlapFinder,
                              max_acceptable_prob: Fraction,
                              paths: Iterable[ContigsPath],
-                             contigs: Sequence[Contig],
+                             contigs: Sequence[ContigWithAligner],
                              ) -> Iterator[ContigsPath]:
     for path in paths:
         yield from calc_extension(finder, max_acceptable_prob, contigs, path)
@@ -249,7 +270,7 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
     yield from ret.values()
 
 
-def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
+def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
     max_acceptable_prob = ACCEPTABLE_STITCHING_PROB
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
@@ -290,12 +311,12 @@ def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
             max_acceptable_prob = max(x.pessimisstic_probability for x in paths)
 
 
-def find_most_probable_path(contigs: Sequence[Contig]) -> ContigsPath:
+def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
     return max(paths, key=ContigsPath.score)
 
 
-def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
+def stitch_consensus(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
     remaining = tuple(contigs)
     while remaining:
         most_probable = find_most_probable_path(remaining)
@@ -304,7 +325,7 @@ def stitch_consensus(contigs: Iterable[Contig]) -> Iterable[Contig]:
                           if not most_probable.has_contig(contig))
 
 
-def write_contigs(output_fasta: TextIO, contigs: Iterable[Contig]):
+def write_contigs(output_fasta: TextIO, contigs: Iterable[ContigWithAligner]):
     records = (SeqRecord(Seq.Seq(contig.seq),
                          description='',
                          id=contig.unique_name,
@@ -313,9 +334,9 @@ def write_contigs(output_fasta: TextIO, contigs: Iterable[Contig]):
     SeqIO.write(records, output_fasta, "fasta")
 
 
-def read_contigs(input_fasta: TextIO) -> Iterable[Contig]:
+def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
     for record in SeqIO.parse(input_fasta, "fasta"):
-        yield Contig(name=record.name, seq=record.seq)
+        yield ContigWithAligner(name=record.name, seq=record.seq)
 
 
 def referenceless_contig_stitcher(input_fasta: TextIO,
