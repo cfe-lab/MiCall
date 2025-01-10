@@ -44,7 +44,9 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(Contig.empty(), frozenset(), Fraction(1), Fraction(1))
+        return ContigsPath(Contig.empty(), frozenset(),
+                           probability=Fraction(1),
+                           pessimisstic_probability=ACCEPTABLE_STITCHING_PROB)
 
 
 @dataclass(frozen=True)
@@ -76,6 +78,7 @@ def map_overlap_onto_candidate(overlap: str, candidate: str) -> Iterator[Alignme
 
 
 def try_combine_contigs(finder: OverlapFinder,
+                        max_acceptable_prob: Fraction,
                         a: Contig, b: Contig,
                         ) -> Optional[Tuple[Contig, Fraction]]:
     # TODO: Memoize this function.
@@ -111,8 +114,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap_size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap_size, M=optimistic_number_of_matches)
-    if optimistic_result_probability > ACCEPTABLE_STITCHING_PROB:
-        # FIXME: Adjust the threshold to something more based.
+    if optimistic_result_probability > max_acceptable_prob:
         logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
         return None
 
@@ -168,9 +170,7 @@ def try_combine_contigs(finder: OverlapFinder,
     logger.debug("Overlap probability between %s and %s is %s.",
                  a.unique_name, b.unique_name, f"{float(1 - result_probability):.5f}")
 
-    if result_probability > ACCEPTABLE_STITCHING_PROB:
-        # FIXME: Adjust the threold to something more based.
-        # FIXME: Print a warning that this happened.
+    if result_probability > max_acceptable_prob:
         logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
         return None
 
@@ -195,11 +195,15 @@ def try_combine_contigs(finder: OverlapFinder,
         return (result_contig, result_probability)
 
 
-def extend_by_1(finder: OverlapFinder, path: ContigsPath, candidate: Contig) -> Iterator[ContigsPath]:
+def extend_by_1(finder: OverlapFinder,
+                max_acceptable_prob: Fraction,
+                path: ContigsPath,
+                candidate: Contig,
+                ) -> Iterator[ContigsPath]:
     if path.has_contig(candidate):
         return
 
-    combination = try_combine_contigs(finder, path.whole, candidate)
+    combination = try_combine_contigs(finder, max_acceptable_prob, path.whole, candidate)
     if combination is None:
         return
 
@@ -212,20 +216,22 @@ def extend_by_1(finder: OverlapFinder, path: ContigsPath, candidate: Contig) -> 
 
 
 def calc_extension(finder: OverlapFinder,
+                   max_acceptable_prob: Fraction,
                    contigs: Sequence[Contig],
                    path: ContigsPath,
                    ) -> Iterator[ContigsPath]:
 
     for contig in contigs:
-        yield from extend_by_1(finder, path, contig)
+        yield from extend_by_1(finder, max_acceptable_prob, path, contig)
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
+                             max_acceptable_prob: Fraction,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[Contig],
                              ) -> Iterator[ContigsPath]:
     for path in paths:
-        yield from calc_extension(finder, contigs, path)
+        yield from calc_extension(finder, max_acceptable_prob, contigs, path)
 
 
 def filter_extensions(existing: MutableMapping[str, ContigsPath],
@@ -244,18 +250,21 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 
 def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
+    max_acceptable_prob = ACCEPTABLE_STITCHING_PROB
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
-    extensions = calc_extension(finder, contigs, ContigsPath.empty())
+    extensions = calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
     paths = tuple(filter_extensions(existing, extensions))
     yield from paths
+    if paths:
+        max_acceptable_prob = max(x.pessimisstic_probability for x in paths)
 
     logger.debug("Calculating all paths...")
     cycle = 1
     while paths:
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
 
-        extensions = calc_multiple_extensions(finder, paths, contigs)
+        extensions = calc_multiple_extensions(finder, max_acceptable_prob, paths, contigs)
         paths = tuple(filter_extensions(existing, extensions))
 
         if paths:
@@ -277,6 +286,8 @@ def calculate_all_paths(contigs: Sequence[Contig]) -> Iterator[ContigsPath]:
 
         cycle += 1
         yield from paths
+        if paths:
+            max_acceptable_prob = max(x.pessimisstic_probability for x in paths)
 
 
 def find_most_probable_path(contigs: Sequence[Contig]) -> ContigsPath:
