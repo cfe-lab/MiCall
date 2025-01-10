@@ -24,7 +24,7 @@ ACCEPTABLE_STITCHING_PROB = Fraction(1, 20)
 class ContigWithAligner(Contig):
     @cached_property
     def aligner(self) -> Aligner:
-        return Aligner(seq=self.seq, bw=500, bw_long=500, preset='map-ont')
+        return Aligner(seq=self.seq)
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
