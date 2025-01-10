@@ -316,7 +316,10 @@ def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath
 
 
 def stitch_consensus(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
-    remaining = tuple(contigs)
+    def contig_size(contig: Contig) -> int:
+        return -len(contig.seq)
+
+    remaining = tuple(sorted(contigs, key=contig_size))
     while remaining:
         most_probable = find_most_probable_path(remaining)
         yield most_probable.whole
