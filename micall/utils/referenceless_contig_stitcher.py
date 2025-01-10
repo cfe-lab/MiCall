@@ -24,7 +24,7 @@ ACCEPTABLE_STITCHING_PROB = Fraction(1, 20)
 class ContigWithAligner(Contig):
     @cached_property
     def aligner(self) -> Aligner:
-        return Aligner(seq=str(self.seq), bw=500, bw_long=500, preset='map-ont')
+        return Aligner(seq=self.seq, bw=500, bw_long=500, preset='map-ont')
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
@@ -149,25 +149,25 @@ def try_combine_contigs(finder: OverlapFinder,
     right_initial_overlap = right.seq[:abs(shift)]
 
     if len(left_initial_overlap) < len(right_initial_overlap):
-        left_overlap_alignments = left.map_overlap(str(right_initial_overlap))
+        left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             return None
 
-        right_overlap_alignments = right.map_overlap(str(left_initial_overlap))
+        right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             return None
     else:
-        right_overlap_alignments = right.map_overlap(str(left_initial_overlap))
+        right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             return None
 
-        left_overlap_alignments = left.map_overlap(str(right_initial_overlap))
+        left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
@@ -182,7 +182,7 @@ def try_combine_contigs(finder: OverlapFinder,
                  a.unique_name, b.unique_name,
                  len(left_overlap), len(right_overlap))
 
-    aligned_left, aligned_right = align_queries(str(left_overlap), str(right_overlap))
+    aligned_left, aligned_right = align_queries(left_overlap, right_overlap)
 
     number_of_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
@@ -336,7 +336,7 @@ def write_contigs(output_fasta: TextIO, contigs: Iterable[ContigWithAligner]):
 
 def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
     for record in SeqIO.parse(input_fasta, "fasta"):
-        yield ContigWithAligner(name=record.name, seq=record.seq)
+        yield ContigWithAligner(name=record.name, seq=str(record.seq))
 
 
 def referenceless_contig_stitcher(input_fasta: TextIO,
