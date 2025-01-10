@@ -1,4 +1,4 @@
-from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence, TextIO, MutableMapping
+from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence, TextIO, MutableMapping, Literal, Union
 from dataclasses import dataclass
 from fractions import Fraction
 from Bio import SeqIO, Seq
@@ -87,6 +87,10 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
         return None
 
     key = (left.id, right.id)
+    cached: Union[Overlap, None, Literal["none"]] = GET_OVERLAP_CACHE.get(key, "none")
+    if cached != "none":
+        return cached
+
     shift = find_maximum_overlap(left.seq, right.seq, finder=finder)
     if shift == 0:
         ret = None
