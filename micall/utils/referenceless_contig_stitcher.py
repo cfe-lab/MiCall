@@ -72,11 +72,11 @@ class ContigsPath:
 
 @dataclass(frozen=True)
 class Overlap:
-
     # A negative integer.
     # Represents the shift value for left contig relative to right
     # contig to achieve the maximum overlap.
     shift: int
+    size: int
 
 
 ContigId = int
@@ -100,7 +100,8 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
         GET_OVERLAP_CACHE[key] = ret
         return ret
 
-    ret = Overlap(shift)
+    size = min((abs(shift), len(left.seq), len(right.seq)))
+    ret = Overlap(shift=shift, size=size)
     GET_OVERLAP_CACHE[key] = ret
     return ret
 
@@ -137,9 +138,8 @@ def try_combine_contigs(finder: OverlapFinder,
         left = b
         right = a
 
-    overlap_size = min([abs(shift), len(a.seq), len(b.seq)])
-    optimistic_number_of_matches = overlap_size
-    optimistic_result_probability = calc_overlap_pvalue(L=overlap_size, M=optimistic_number_of_matches)
+    optimistic_number_of_matches = overlap.size
+    optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
     if optimistic_result_probability > max_acceptable_prob:
         return None
 
