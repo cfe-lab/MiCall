@@ -94,7 +94,7 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
     if cached != 0:
         return cached
 
-    shift = find_maximum_overlap(left.seq, right.seq, finder=finder)
+    (shift, value) = find_maximum_overlap(left.seq, right.seq, finder=finder)
     if shift == 0:
         ret = None
         GET_OVERLAP_CACHE[key] = ret

@@ -32,7 +32,7 @@ class OverlapFinder:
 def find_maximum_overlap(arr1: Sequence[object],
                          arr2: Sequence[object],
                          finder: Optional[OverlapFinder] = None,
-                         ) -> int:
+                         ) -> Tuple[int, int]:
     """
     Calculate the offset at which two sequences (arr1 and arr2)
     overlap the most.
@@ -92,7 +92,7 @@ def find_maximum_overlap(arr1: Sequence[object],
     # Return the shift value that yields maximum overlap
     max_value = np.max(total)
     if max_value <= 0:
-        return 0
+        return (0, 0)
 
     max_indices = np.where(total == max_value)[0]
     left_max = max_indices[0]
@@ -103,7 +103,7 @@ def find_maximum_overlap(arr1: Sequence[object],
         max_offset = right_max
 
     shift_value = max_offset - len_total
-    return int(shift_value)
+    return (int(shift_value), int(max_value))
 
 
 def show_maximum_overlap(arr1: Sequence[object],
@@ -121,7 +121,7 @@ def show_maximum_overlap(arr1: Sequence[object],
 
 
 def main(seq1: str, seq2: str) -> int:
-    shift = find_maximum_overlap(seq1, seq2)
+    (shift, value) = find_maximum_overlap(seq1, seq2)
     ret = show_maximum_overlap(seq1, seq2, shift)
     print(ret, end='')
     return 0
