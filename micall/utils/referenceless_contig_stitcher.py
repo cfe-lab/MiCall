@@ -79,7 +79,10 @@ class Overlap:
     shift: int
 
 
-GET_OVERLAP_CACHE: MutableMapping[Tuple[int, int], Optional[Overlap]] = {}
+ContigId = int
+GET_OVERLAP_CACHE: MutableMapping[
+    Tuple[ContigId, ContigId],
+    Optional[Overlap]] = {}
 
 
 def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWithAligner) -> Optional[Overlap]:
@@ -87,8 +90,8 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
         return None
 
     key = (left.id, right.id)
-    cached: Union[Overlap, None, Literal["none"]] = GET_OVERLAP_CACHE.get(key, "none")
-    if cached != "none":
+    cached: Union[Overlap, None, Literal[0]] = GET_OVERLAP_CACHE.get(key, 0)
+    if cached != 0:
         return cached
 
     shift = find_maximum_overlap(left.seq, right.seq, finder=finder)
@@ -100,6 +103,11 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
     ret = Overlap(shift)
     GET_OVERLAP_CACHE[key] = ret
     return ret
+
+
+TRY_COMBINE_CACHE: MutableMapping[
+    Tuple[ContigId, ContigId],
+    Optional[Tuple[ContigWithAligner, Fraction]]] = {}
 
 
 def try_combine_contigs(finder: OverlapFinder,
@@ -152,29 +160,40 @@ def try_combine_contigs(finder: OverlapFinder,
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
-    if len(left_initial_overlap) < len(right_initial_overlap):
+    key = (left.id, right.id)
+    existing: Union[Tuple[ContigWithAligner, Fraction], None, Literal[0]] \
+        = TRY_COMBINE_CACHE.get(key, 0)
+
+    if existing != 0:
+        return existing
+
+    elif len(left_initial_overlap) < len(right_initial_overlap):
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            TRY_COMBINE_CACHE[key] = None
             return None
 
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            TRY_COMBINE_CACHE[key] = None
             return None
     else:
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            TRY_COMBINE_CACHE[key] = None
             return None
 
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
+            TRY_COMBINE_CACHE[key] = None
             return None
 
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
@@ -202,6 +221,7 @@ def try_combine_contigs(finder: OverlapFinder,
     if is_covered:
         logger.debug("Between %s and %s, returning the covering contig, %s.",
                      a.unique_name, b.unique_name, left.unique_name)
+        TRY_COMBINE_CACHE[key] = (left, Fraction(1))
         return (left, Fraction(1))
 
     else:
@@ -217,6 +237,7 @@ def try_combine_contigs(finder: OverlapFinder,
                      a.unique_name, b.unique_name,
                      result_contig.unique_name, len(result_contig.seq))
 
+        TRY_COMBINE_CACHE[key] = (result_contig, result_probability)
         return (result_contig, result_probability)
 
 
