@@ -128,9 +128,6 @@ def try_combine_contigs(finder: OverlapFinder,
     if overlap is None:
         return None
 
-    logger.debug("Trying to put together %s with %s (with lengts %s and %s).",
-                 a.unique_name, b.unique_name, len(a.seq), len(b.seq))
-
     if abs(overlap.shift) < len(a.seq):
         shift = overlap.shift
         left = a
@@ -141,21 +138,10 @@ def try_combine_contigs(finder: OverlapFinder,
         right = a
 
     overlap_size = min([abs(shift), len(a.seq), len(b.seq)])
-    logger.debug("Overlap of size %s detected between %s and %s.",
-                 overlap_size,
-                 a.unique_name, b.unique_name)
-
     optimistic_number_of_matches = overlap_size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap_size, M=optimistic_number_of_matches)
     if optimistic_result_probability > max_acceptable_prob:
-        logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
         return None
-
-    is_covered = len(right.seq) < abs(shift)
-    if is_covered:
-        logger.debug("Contig %s is covered by %s.", right.unique_name, left.unique_name)
-    else:
-        logger.debug("Contig %s comes before %s.", left.unique_name, right.unique_name)
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
@@ -195,6 +181,16 @@ def try_combine_contigs(finder: OverlapFinder,
             logger.debug("Overlap alignment between %s and %s failed.", a.unique_name, b.unique_name)
             TRY_COMBINE_CACHE[key] = None
             return None
+
+    logger.debug("Overlap of size %s detected between %s and %s.",
+                 overlap_size,
+                 a.unique_name, b.unique_name)
+
+    is_covered = len(right.seq) < abs(shift)
+    if is_covered:
+        logger.debug("Contig %s is covered by %s.", right.unique_name, left.unique_name)
+    else:
+        logger.debug("Contig %s comes before %s.", left.unique_name, right.unique_name)
 
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
     left_remainder = left.seq[:left_cutoff]
