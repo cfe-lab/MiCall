@@ -106,12 +106,17 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
     return ret
 
 
+def combine_probability(current: Fraction, new: Fraction) -> Fraction:
+    return current * new
+
+
 TRY_COMBINE_CACHE: MutableMapping[
     Tuple[ContigId, ContigId],
     Optional[Tuple[ContigWithAligner, Fraction]]] = {}
 
 
 def try_combine_contigs(finder: OverlapFinder,
+                        current_prob: Fraction,
                         max_acceptable_prob: Fraction,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
@@ -140,7 +145,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap.size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
-    if optimistic_result_probability > max_acceptable_prob:
+    if combine_probability(optimistic_result_probability, current_prob) > max_acceptable_prob:
         return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
@@ -188,7 +193,7 @@ def try_combine_contigs(finder: OverlapFinder,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    if result_probability > max_acceptable_prob:
+    if combine_probability(current_prob, result_probability) > max_acceptable_prob:
         return None
 
     is_covered = len(right.seq) < abs(shift)
@@ -223,12 +228,12 @@ def extend_by_1(finder: OverlapFinder,
     if path.has_contig(candidate):
         return
 
-    combination = try_combine_contigs(finder, max_acceptable_prob, path.whole, candidate)
+    combination = try_combine_contigs(finder, path.probability, max_acceptable_prob, path.whole, candidate)
     if combination is None:
         return
 
     (combined, prob) = combination
-    probability = path.probability * prob
+    probability = combine_probability(path.probability, prob)
     pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
@@ -277,7 +282,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
     paths = tuple(filter_extensions(existing, extensions))
     yield from paths
     if paths:
-        max_acceptable_prob = max(x.pessimisstic_probability for x in paths)
+        max_acceptable_prob = max(x.probability for x in paths)
 
     logger.debug("Calculating all paths...")
     cycle = 1
@@ -307,7 +312,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
         cycle += 1
         yield from paths
         if paths:
-            max_acceptable_prob = max(x.pessimisstic_probability for x in paths)
+            max_acceptable_prob = max(x.probability for x in paths)
 
 
 def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
