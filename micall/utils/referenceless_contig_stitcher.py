@@ -281,8 +281,6 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
     extensions = calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
     paths = tuple(filter_extensions(existing, extensions))
     yield from paths
-    if paths:
-        max_acceptable_prob = max(x.probability for x in paths)
 
     logger.debug("Calculating all paths...")
     cycle = 1
