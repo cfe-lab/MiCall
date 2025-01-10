@@ -104,9 +104,17 @@ def try_combine_contigs(finder: OverlapFinder,
         left = b
         right = a
 
+    overlap_size = min([abs(shift), len(a.seq), len(b.seq)])
     logger.debug("Overlap of size %s detected between %s and %s.",
-                 min([abs(shift), len(a.seq), len(b.seq)]),
+                 overlap_size,
                  a.unique_name, b.unique_name)
+
+    optimistic_number_of_matches = overlap_size
+    optimistic_result_probability = calc_overlap_pvalue(L=overlap_size, M=optimistic_number_of_matches)
+    if optimistic_result_probability > ACCEPTABLE_STITCHING_PROB:
+        # FIXME: Adjust the threshold to something more based.
+        logger.debug("Overlap probability between %s and %s is too small.", a.unique_name, b.unique_name)
+        return None
 
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
