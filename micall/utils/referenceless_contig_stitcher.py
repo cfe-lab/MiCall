@@ -173,7 +173,8 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap.size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
-    if current_score.combine(optimistic_result_probability) < min_acceptable_score.value:
+    # if current_score.combine(optimistic_result_probability) < min_acceptable_score.value:
+    if optimistic_result_probability > ACCEPTABLE_STITCHING_PROB:
         return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
@@ -221,7 +222,8 @@ def try_combine_contigs(finder: OverlapFinder,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    if current_score.combine(result_probability) < min_acceptable_score.value:
+    # if current_score.combine(result_probability) < min_acceptable_score.value:
+    if result_probability > ACCEPTABLE_STITCHING_PROB:
         return None
 
     is_covered = len(right.seq) < abs(shift)
