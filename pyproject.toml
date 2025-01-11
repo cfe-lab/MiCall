@@ -27,6 +27,7 @@ dependencies = [
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
     "numpy==2.2.1",
+    "sortedcontainers==2.4.0",
     "scipy==1.14.1",
     "matplotlib==3.10.0",
     "cutadapt==5.0",
@@ -258,6 +259,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "scipy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sortedcontainers"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

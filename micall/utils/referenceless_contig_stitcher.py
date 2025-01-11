@@ -1,4 +1,5 @@
-from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, Sequence, TextIO, MutableMapping, Literal, Union
+from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, \
+    Sequence, TextIO, MutableMapping, Literal, Union
 from dataclasses import dataclass
 from fractions import Fraction
 from Bio import SeqIO, Seq
@@ -6,6 +7,7 @@ from Bio.SeqRecord import SeqRecord
 import logging
 from mappy import Aligner
 from functools import cached_property
+from sortedcontainers import SortedList
 
 from micall.utils.contig_stitcher_context import StitcherContext
 from micall.utils.consensus_aligner import Alignment
@@ -18,6 +20,7 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, OverlapFinde
 logger = logging.getLogger(__name__)
 
 ACCEPTABLE_STITCHING_PROB = Fraction(1, 20)
+MAX_ALTERNATIVES = 30
 
 
 @dataclass(frozen=True)
@@ -56,6 +59,18 @@ class ContigsPath:
     def score(self) -> Tuple[Fraction, Fraction, int]:
         return (1-self.pessimisstic_probability, 1-self.probability, len(self.parts_ids))
 
+    def __lt__(self, other: 'ContigsPath') -> bool:
+        return self.score() < other.score()
+
+    def __le__(self, other: 'ContigsPath') -> bool:
+        return self.score() <= other.score()
+
+    def __gt__(self, other: 'ContigsPath') -> bool:
+        return self.score() > other.score()
+
+    def __ge__(self, other: 'ContigsPath') -> bool:
+        return self.score() >= other.score()
+
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
 
@@ -73,6 +88,19 @@ class ContigsPath:
 @dataclass
 class MaximumAcceptableProbability:
     value: Fraction
+    paths: SortedList[ContigsPath]
+
+    @staticmethod
+    def empty() -> 'MaximumAcceptableProbability':
+        return MaximumAcceptableProbability(ACCEPTABLE_STITCHING_PROB, SortedList())
+
+    def adjust(self, path: ContigsPath) -> None:
+        self.value = max(self.value, path.probability)
+
+        if len(self.paths) > MAX_ALTERNATIVES:
+            del self.paths[0]
+
+        self.paths.add(path)
 
 
 @dataclass(frozen=True)
@@ -226,7 +254,7 @@ def extend_by_1(finder: OverlapFinder,
                 max_acceptable_prob: MaximumAcceptableProbability,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
-                ) -> Iterator[ContigsPath]:
+                ) -> None:
     if path.has_contig(candidate):
         return
 
@@ -239,26 +267,25 @@ def extend_by_1(finder: OverlapFinder,
     pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
-    yield new_path
+    max_acceptable_prob.adjust(new_path)
 
 
 def calc_extension(finder: OverlapFinder,
                    max_acceptable_prob: MaximumAcceptableProbability,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
-                   ) -> Iterator[ContigsPath]:
-
+                   ) -> None:
     for contig in contigs:
-        yield from extend_by_1(finder, max_acceptable_prob, path, contig)
+        extend_by_1(finder, max_acceptable_prob, path, contig)
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
                              max_acceptable_prob: MaximumAcceptableProbability,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
-                             ) -> Iterator[ContigsPath]:
+                             ) -> None:
     for path in paths:
-        yield from calc_extension(finder, max_acceptable_prob, contigs, path)
+        calc_extension(finder, max_acceptable_prob, contigs, path)
 
 
 def filter_extensions(existing: MutableMapping[str, ContigsPath],
@@ -277,19 +304,22 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 
 def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
-    max_acceptable_prob = MaximumAcceptableProbability(ACCEPTABLE_STITCHING_PROB)
+    max_acceptable_prob = MaximumAcceptableProbability.empty()
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
-    extensions = calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
+    calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
+    extensions = tuple(max_acceptable_prob.paths)
     paths = tuple(filter_extensions(existing, extensions))
-    yield from paths
 
     logger.debug("Calculating all paths...")
     cycle = 1
     while paths:
+        yield from paths
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
 
-        extensions = calc_multiple_extensions(finder, max_acceptable_prob, paths, contigs)
+        max_acceptable_prob.paths.clear()
+        calc_multiple_extensions(finder, max_acceptable_prob, paths, contigs)
+        extensions = tuple(max_acceptable_prob.paths)
         paths = tuple(filter_extensions(existing, extensions))
 
         if paths:
@@ -299,25 +329,13 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
             logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the longest.",
                          cycle, len(paths), size, parts)
 
-        MAX_ALTERNATIVES = 30
-        if len(paths) > MAX_ALTERNATIVES:
-            # This is necessary so that the time complexity does not explode.
-            # Note that if MAX_ALTERNATIVES = 1, then this algorithm becomes
-            # the standard greedy algorithm that simply chooses
-            # the most promising alternative at each point.
-            logger.debug("Dropping %s paths that have the lowest scores.",
-                         len(paths) - MAX_ALTERNATIVES)
-            paths = tuple(sorted(paths, key=ContigsPath.score)[-MAX_ALTERNATIVES:])
-
         cycle += 1
         yield from paths
-        if paths:
-            max_acceptable_prob.value = max(x.probability for x in paths)
 
 
 def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
-    return max(paths, key=ContigsPath.score)
+    return max(paths)
 
 
 def stitch_consensus(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
