@@ -95,12 +95,11 @@ class MaximumAcceptableProbability:
         return MaximumAcceptableProbability(ACCEPTABLE_STITCHING_PROB, SortedList())
 
     def adjust(self, path: ContigsPath) -> None:
-        self.value = max(self.value, path.probability)
-
         if len(self.paths) > MAX_ALTERNATIVES:
             del self.paths[0]
 
         self.paths.add(path)
+        self.value = self.paths[0].probability
 
 
 @dataclass(frozen=True)
