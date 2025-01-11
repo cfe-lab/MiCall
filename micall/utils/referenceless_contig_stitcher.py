@@ -316,7 +316,6 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
         yield from paths
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
 
-        max_acceptable_prob.paths.clear()
         calc_multiple_extensions(finder, max_acceptable_prob, paths, contigs)
         extensions = tuple(max_acceptable_prob.paths)
         paths = tuple(filter_extensions(existing, extensions))
