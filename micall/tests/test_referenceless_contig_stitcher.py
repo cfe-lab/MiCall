@@ -55,5 +55,5 @@ TTT = 40 * 'T'
 def test_stitch_simple_cases(seqs, expected):
     contigs = [ContigWithAligner(None, seq) for seq in seqs]
     with StitcherContext.fresh():
-        consenses = tuple(contig.seq for contig in stitch_consensus(contigs))
-    assert consenses == expected
+        consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
+    assert consenses == tuple(sorted(expected))

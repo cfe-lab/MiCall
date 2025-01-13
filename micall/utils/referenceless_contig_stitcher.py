@@ -88,10 +88,11 @@ class ContigsPath:
 @dataclass(frozen=True)
 class Pool:
     paths: SortedList[ContigsPath]
+    existing: MutableMapping[str, ContigsPath]
 
     @staticmethod
     def empty() -> 'Pool':
-        return Pool(SortedList())
+        return Pool(SortedList(), {})
 
     @property
     def max_acceptable_probability(self) -> Fraction:
@@ -100,11 +101,18 @@ class Pool:
         else:
             return ACCEPTABLE_STITCHING_PROB
 
-    def adjust(self, path: ContigsPath) -> None:
+    def add(self, path: ContigsPath) -> bool:
+        key = path.whole.seq
+        alternative = self.existing.get(key)
+        if alternative is not None and alternative.score() >= path.score():
+            return False
+
         if len(self.paths) > MAX_ALTERNATIVES:
             del self.paths[0]
 
         self.paths.add(path)
+        self.existing[key] = path
+        return True
 
 
 @dataclass(frozen=True)
@@ -264,88 +272,72 @@ def extend_by_1(finder: OverlapFinder,
                 pool: Pool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
-                ) -> None:
+                ) -> bool:
     if path.has_contig(candidate):
-        return
+        return False
 
     combination = try_combine_contigs(finder, path.probability, pool, path.whole, candidate)
     if combination is None:
-        return
+        return False
 
     (combined, prob) = combination
     probability = combine_probability(path.probability, prob)
     pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
-    pool.adjust(new_path)
+    return pool.add(new_path)
 
 
 def calc_extension(finder: OverlapFinder,
                    pool: Pool,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
-                   ) -> None:
+                   ) -> bool:
+    ret = False
     for contig in contigs:
-        extend_by_1(finder, pool, path, contig)
+        ret = extend_by_1(finder, pool, path, contig) or ret
+    return ret
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
                              pool: Pool,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
-                             ) -> None:
+                             ) -> bool:
+    ret = False
     for path in paths:
-        calc_extension(finder, pool, contigs, path)
+        ret = calc_extension(finder, pool, contigs, path) or ret
+    return ret
 
 
-def filter_extensions(existing: MutableMapping[str, ContigsPath],
-                      extensions: Iterable[ContigsPath],
-                      ) -> Iterator[ContigsPath]:
-    ret = {}
-
-    for path in extensions:
-        key = path.whole.seq
-        alternative = existing.get(key)
-        if alternative is None or path.score() > alternative.score():
-            existing[key] = path
-            ret[key] = path
-
-    yield from ret.values()
-
-
-def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
+def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[ContigsPath]:
     pool = Pool.empty()
-    existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
     calc_extension(finder, pool, contigs, ContigsPath.empty())
-    extensions = tuple(pool.paths)
-    paths = tuple(filter_extensions(existing, extensions))
+    extending = True
 
     logger.debug("Calculating all paths...")
     cycle = 1
-    while paths:
-        yield from paths
-        logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
+    while extending:
+        logger.debug("Cycle %s started with %s paths.", cycle, len(pool.paths))
 
-        pool.paths.clear()
-        calc_multiple_extensions(finder, pool, paths, contigs)
-        extensions = tuple(pool.paths)
-        paths = tuple(filter_extensions(existing, extensions))
+        extending = calc_multiple_extensions(finder, pool, pool.paths, contigs)
 
-        if paths:
-            longest = max(paths, key=lambda path: len(path.whole.seq))
+        if pool.paths:
+            longest = max(pool.paths, key=lambda path: len(path.whole.seq))
             size = len(longest.whole.seq)
             parts = len(longest.parts_ids)
             logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the longest.",
-                         cycle, len(paths), size, parts)
+                         cycle, len(pool.paths), size, parts)
 
         cycle += 1
-        yield from paths
+
+    return pool.paths
 
 
 def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
     paths = calculate_all_paths(contigs)
-    return max(paths)
+    return max(paths, key=lambda path: path.score())
 
 
 def contig_size_fun(contig: Contig) -> int:
