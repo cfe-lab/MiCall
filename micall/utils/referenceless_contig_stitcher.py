@@ -85,21 +85,26 @@ class ContigsPath:
                            pessimisstic_probability=ACCEPTABLE_STITCHING_PROB)
 
 
-@dataclass
-class MaximumAcceptableProbability:
-    value: Fraction
+@dataclass(frozen=True)
+class Pool:
     paths: SortedList[ContigsPath]
 
     @staticmethod
-    def empty() -> 'MaximumAcceptableProbability':
-        return MaximumAcceptableProbability(ACCEPTABLE_STITCHING_PROB, SortedList())
+    def empty() -> 'Pool':
+        return Pool(SortedList())
+
+    @property
+    def max_acceptable_probability(self) -> Fraction:
+        if len(self.paths) > 0:
+            return self.paths[0].probability
+        else:
+            return ACCEPTABLE_STITCHING_PROB
 
     def adjust(self, path: ContigsPath) -> None:
         if len(self.paths) > MAX_ALTERNATIVES:
             del self.paths[0]
 
         self.paths.add(path)
-        self.value = self.paths[0].probability
 
 
 @dataclass(frozen=True)
@@ -149,7 +154,7 @@ TRY_COMBINE_CACHE: MutableMapping[
 
 def try_combine_contigs(finder: OverlapFinder,
                         current_prob: Fraction,
-                        max_acceptable_prob: MaximumAcceptableProbability,
+                        pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
 
@@ -162,7 +167,7 @@ def try_combine_contigs(finder: OverlapFinder,
     maximum_overlap_size = min(len(a.seq), len(b.seq))
     maximum_number_of_matches = maximum_overlap_size
     maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
-    if combine_probability(maximum_result_probability, current_prob) > max_acceptable_prob.value:
+    if combine_probability(maximum_result_probability, current_prob) > pool.max_acceptable_probability:
         return None
 
     overlap = get_overlap(finder, a, b)
@@ -180,7 +185,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap.size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
-    if combine_probability(optimistic_result_probability, current_prob) > max_acceptable_prob.value:
+    if combine_probability(optimistic_result_probability, current_prob) > pool.max_acceptable_probability:
         return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
@@ -228,7 +233,7 @@ def try_combine_contigs(finder: OverlapFinder,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    if combine_probability(current_prob, result_probability) > max_acceptable_prob.value:
+    if combine_probability(current_prob, result_probability) > pool.max_acceptable_probability:
         return None
 
     is_covered = len(right.seq) < abs(shift)
@@ -256,14 +261,14 @@ def try_combine_contigs(finder: OverlapFinder,
 
 
 def extend_by_1(finder: OverlapFinder,
-                max_acceptable_prob: MaximumAcceptableProbability,
+                pool: Pool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
                 ) -> None:
     if path.has_contig(candidate):
         return
 
-    combination = try_combine_contigs(finder, path.probability, max_acceptable_prob, path.whole, candidate)
+    combination = try_combine_contigs(finder, path.probability, pool, path.whole, candidate)
     if combination is None:
         return
 
@@ -272,25 +277,25 @@ def extend_by_1(finder: OverlapFinder,
     pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
-    max_acceptable_prob.adjust(new_path)
+    pool.adjust(new_path)
 
 
 def calc_extension(finder: OverlapFinder,
-                   max_acceptable_prob: MaximumAcceptableProbability,
+                   pool: Pool,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> None:
     for contig in contigs:
-        extend_by_1(finder, max_acceptable_prob, path, contig)
+        extend_by_1(finder, pool, path, contig)
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
-                             max_acceptable_prob: MaximumAcceptableProbability,
+                             pool: Pool,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> None:
     for path in paths:
-        calc_extension(finder, max_acceptable_prob, contigs, path)
+        calc_extension(finder, pool, contigs, path)
 
 
 def filter_extensions(existing: MutableMapping[str, ContigsPath],
@@ -309,11 +314,11 @@ def filter_extensions(existing: MutableMapping[str, ContigsPath],
 
 
 def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[ContigsPath]:
-    max_acceptable_prob = MaximumAcceptableProbability.empty()
+    pool = Pool.empty()
     existing: MutableMapping[str, ContigsPath] = {}
     finder = OverlapFinder.make('ACTG')
-    calc_extension(finder, max_acceptable_prob, contigs, ContigsPath.empty())
-    extensions = tuple(max_acceptable_prob.paths)
+    calc_extension(finder, pool, contigs, ContigsPath.empty())
+    extensions = tuple(pool.paths)
     paths = tuple(filter_extensions(existing, extensions))
 
     logger.debug("Calculating all paths...")
@@ -322,9 +327,9 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterator[Contig
         yield from paths
         logger.debug("Cycle %s started with %s paths.", cycle, len(paths))
 
-        max_acceptable_prob.paths.clear()
-        calc_multiple_extensions(finder, max_acceptable_prob, paths, contigs)
-        extensions = tuple(max_acceptable_prob.paths)
+        pool.paths.clear()
+        calc_multiple_extensions(finder, pool, paths, contigs)
+        extensions = tuple(pool.paths)
         paths = tuple(filter_extensions(existing, extensions))
 
         if paths:
@@ -366,10 +371,10 @@ def try_combine_1(finder: OverlapFinder,
             if first.id >= second.id:
                 continue
 
-            max_prob = MaximumAcceptableProbability.empty()
+            pool = Pool.empty()
             result = try_combine_contigs(finder=finder,
                                          current_prob=Fraction(1),
-                                         max_acceptable_prob=max_prob,
+                                         pool=pool,
                                          a=first, b=second,
                                          )
             if result is not None:
