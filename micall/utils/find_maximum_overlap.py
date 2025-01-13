@@ -73,8 +73,8 @@ def find_maximum_overlap(arr1: Sequence[object],
     bit_arr1 = finder.bit_arr1[:len(arr1)]
     bit_arr2 = finder.bit_arr2[:len(arr2)]
 
-    np_arr1 = np.array(tuple(arr1))
-    np_arr2 = np.array(tuple(reversed(arr2)))
+    np_arr1 = np.fromiter(arr1, dtype='U1')
+    np_arr2 = np.fromiter(reversed(arr2), dtype='U1')
 
     # Iterate over each unique element to determine overlap
     for element in finder.alphabet:
