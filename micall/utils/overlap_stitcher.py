@@ -86,7 +86,7 @@ def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Iterator[int]:
         yield i
 
 
-def calc_overlap_pvalue(L: int, M: int) -> Fraction:
+def calc_overlap_pvalue(L: int, M: int) -> int:
     """
     Compute the probability (p-value) of observing at least M matches
     out of L under a binomial model where each position has
@@ -101,4 +101,9 @@ def calc_overlap_pvalue(L: int, M: int) -> Fraction:
     matches by chance
     """
 
-    return 1-Fraction(M, L + 2)
+    M += 1
+    L += 1
+
+    D = (L - M) + 2
+
+    return 3 + M*M - D*D

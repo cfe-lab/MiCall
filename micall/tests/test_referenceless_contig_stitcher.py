@@ -5,7 +5,7 @@ from micall.utils.contig_stitcher_context import StitcherContext
 
 @pytest.fixture(autouse=True)
 def disable_acceptable_prob_check(monkeypatch):
-    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_PROB", 1)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", 0)
 
 
 TTT = 40 * 'T'

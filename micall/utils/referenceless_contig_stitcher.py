@@ -1,7 +1,6 @@
 from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, \
     Sequence, TextIO, MutableMapping, Literal, Union
 from dataclasses import dataclass
-from fractions import Fraction
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import logging
@@ -19,7 +18,11 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, OverlapFinde
 
 logger = logging.getLogger(__name__)
 
-ACCEPTABLE_STITCHING_PROB = Fraction(1, 20)
+Score = int
+SCORE_NOTHING = 0
+SCORE_EPSILON = 1
+
+ACCEPTABLE_STITCHING_SCORE: Score = calc_overlap_pvalue(L=15, M=15)
 MAX_ALTERNATIVES = 30
 
 
@@ -51,13 +54,12 @@ class ContigsPath:
     # Id's of contigs that comprise this path.
     parts_ids: FrozenSet[int]
 
-    # Lower is better. This is an estimated probability that
+    # Higher is better. This is an estimated probability that
     # all the components in this path came together by accident.
-    probability: Fraction
-    pessimisstic_probability: Fraction
+    probability: int
 
-    def score(self) -> Tuple[Fraction, Fraction, int]:
-        return (1-self.pessimisstic_probability, 1-self.probability, len(self.parts_ids))
+    def score(self) -> Tuple[int, int]:
+        return (self.probability, len(self.parts_ids))
 
     def __lt__(self, other: 'ContigsPath') -> bool:
         return self.score() < other.score()
@@ -80,9 +82,10 @@ class ContigsPath:
 
     @staticmethod
     def empty() -> 'ContigsPath':
-        return ContigsPath(ContigWithAligner.empty(), frozenset(),
-                           probability=Fraction(1),
-                           pessimisstic_probability=ACCEPTABLE_STITCHING_PROB)
+        return ContigsPath(ContigWithAligner.empty(),
+                           frozenset(),
+                           SCORE_NOTHING,
+                           )
 
 
 @dataclass(frozen=True)
@@ -95,11 +98,11 @@ class Pool:
         return Pool(SortedList(), {})
 
     @property
-    def max_acceptable_probability(self) -> Fraction:
+    def min_acceptable_score(self) -> Score:
         if len(self.paths) > 0:
             return self.paths[0].probability
         else:
-            return ACCEPTABLE_STITCHING_PROB
+            return ACCEPTABLE_STITCHING_SCORE
 
     def add(self, path: ContigsPath) -> bool:
         key = path.whole.seq
@@ -155,31 +158,31 @@ def get_overlap(finder: OverlapFinder, left: ContigWithAligner, right: ContigWit
     return ret
 
 
-def combine_probability(current: Fraction, new: Fraction) -> Fraction:
-    return current * new
+def combine_probability(current: Score, new: Score) -> Score:
+    return current + new
 
 
 TRY_COMBINE_CACHE: MutableMapping[
     Tuple[ContigId, ContigId],
-    Optional[Tuple[ContigWithAligner, Fraction]]] = {}
+    Optional[Tuple[ContigWithAligner, Score]]] = {}
 
 
 def try_combine_contigs(finder: OverlapFinder,
-                        current_prob: Fraction,
+                        current_prob: Score,
                         pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
-                        ) -> Optional[Tuple[ContigWithAligner, Fraction]]:
+                        ) -> Optional[Tuple[ContigWithAligner, Score]]:
 
     if len(b.seq) == 0:
-        return (a, Fraction(1))
+        return (a, SCORE_NOTHING)
 
     if len(a.seq) == 0:
-        return (b, Fraction(1))
+        return (b, SCORE_NOTHING)
 
     maximum_overlap_size = min(len(a.seq), len(b.seq))
     maximum_number_of_matches = maximum_overlap_size
     maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
-    if combine_probability(maximum_result_probability, current_prob) > pool.max_acceptable_probability:
+    if combine_probability(maximum_result_probability, current_prob) < pool.min_acceptable_score:
         return None
 
     overlap = get_overlap(finder, a, b)
@@ -197,17 +200,17 @@ def try_combine_contigs(finder: OverlapFinder,
 
     optimistic_number_of_matches = overlap.size
     optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
-    if combine_probability(optimistic_result_probability, current_prob) > pool.max_acceptable_probability:
+    if combine_probability(optimistic_result_probability, current_prob) < pool.min_acceptable_score:
         return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
     key = (left.id, right.id)
-    existing: Union[Tuple[ContigWithAligner, Fraction], None, Literal[0]] \
-        = TRY_COMBINE_CACHE.get(key, 0)
+    existing: Union[Tuple[ContigWithAligner, Score], None, Literal[False]] \
+        = TRY_COMBINE_CACHE.get(key, False)
 
-    if existing != 0:
+    if existing is not False:
         return existing
 
     elif len(left_initial_overlap) < len(right_initial_overlap):
@@ -245,13 +248,14 @@ def try_combine_contigs(finder: OverlapFinder,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    if combine_probability(current_prob, result_probability) > pool.max_acceptable_probability:
+    if combine_probability(current_prob, result_probability) < pool.min_acceptable_score:
         return None
 
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
-        TRY_COMBINE_CACHE[key] = (left, Fraction(1))
-        return (left, Fraction(1))
+        ret = (left, SCORE_EPSILON)
+        TRY_COMBINE_CACHE[key] = ret
+        return ret
 
     else:
         concordance = calculate_concordance(aligned_left, aligned_right)
@@ -262,8 +266,9 @@ def try_combine_contigs(finder: OverlapFinder,
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
         result_contig = ContigWithAligner(None, result_seq)
 
-        TRY_COMBINE_CACHE[key] = (result_contig, result_probability)
-        return (result_contig, result_probability)
+        ret = (result_contig, result_probability)
+        TRY_COMBINE_CACHE[key] = ret
+        return ret
 
 
 def extend_by_1(finder: OverlapFinder,
@@ -280,9 +285,8 @@ def extend_by_1(finder: OverlapFinder,
 
     (combined, prob) = combination
     probability = combine_probability(path.probability, prob)
-    pessimisstic_probability = min(path.pessimisstic_probability, prob)
     new_elements = path.parts_ids.union([candidate.id])
-    new_path = ContigsPath(combined, new_elements, probability, pessimisstic_probability)
+    new_path = ContigsPath(combined, new_elements, probability)
     return pool.add(new_path)
 
 
@@ -362,7 +366,7 @@ def try_combine_1(finder: OverlapFinder,
 
             pool = Pool.empty()
             result = try_combine_contigs(finder=finder,
-                                         current_prob=Fraction(1),
+                                         current_prob=SCORE_NOTHING,
                                          pool=pool,
                                          a=first, b=second,
                                          )
