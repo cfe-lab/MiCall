@@ -159,6 +159,12 @@ def try_combine_contigs(finder: OverlapFinder,
     if len(a.seq) == 0:
         return (b, Fraction(1))
 
+    maximum_overlap_size = min(len(a.seq), len(b.seq))
+    maximum_number_of_matches = maximum_overlap_size
+    maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
+    if combine_probability(maximum_result_probability, current_prob) > max_acceptable_prob.value:
+        return None
+
     overlap = get_overlap(finder, a, b)
     if overlap is None:
         return None
