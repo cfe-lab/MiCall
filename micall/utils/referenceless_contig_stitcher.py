@@ -107,7 +107,11 @@ class Pool:
         if alternative is not None and alternative.score() >= path.score():
             return False
 
-        if len(self.paths) > MAX_ALTERNATIVES:
+        if len(self.paths) >= MAX_ALTERNATIVES:
+            to_delete = self.paths[0]
+            if to_delete.score() >= path.score():
+                return False
+
             del self.paths[0]
 
         self.paths.add(path)
