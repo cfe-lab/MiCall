@@ -337,16 +337,65 @@ def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath
     return max(paths)
 
 
-def stitch_consensus(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
-    def contig_size(contig: Contig) -> int:
-        return -len(contig.seq)
+def contig_size_fun(contig: Contig) -> int:
+    return -len(contig.seq)
 
-    remaining = tuple(sorted(contigs, key=contig_size))
+
+def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
+    remaining = tuple(sorted(contigs, key=contig_size_fun))
     while remaining:
         most_probable = find_most_probable_path(remaining)
         yield most_probable.whole
         remaining = tuple(contig for contig in remaining
                           if not most_probable.has_contig(contig))
+
+
+def try_combine_1(finder: OverlapFinder,
+                  contigs: Iterable[ContigWithAligner],
+                  ) -> Optional[Tuple[ContigWithAligner,
+                                      ContigWithAligner,
+                                      ContigWithAligner]]:
+    for first in contigs:
+        for second in contigs:
+            if first.id >= second.id:
+                continue
+
+            max_prob = MaximumAcceptableProbability.empty()
+            result = try_combine_contigs(finder=finder,
+                                         current_prob=Fraction(1),
+                                         max_acceptable_prob=max_prob,
+                                         a=first, b=second,
+                                         )
+            if result is not None:
+                (combined, prob) = result
+                return (first, second, combined)
+
+    return None
+
+
+def o2_loop(contigs: Iterable[ContigWithAligner],
+            ) -> Iterator[ContigWithAligner]:
+    finder = OverlapFinder.make('ACTG')
+    buf = {contig.id: contig for contig in contigs}
+
+    while True:
+        combination = try_combine_1(finder, buf.values())
+        if combination is None:
+            break
+
+        (first, second, combined) = combination
+        del buf[first.id]
+        del buf[second.id]
+        buf[combined.id] = combined
+
+    yield from sorted(buf.values(), key=contig_size_fun)
+
+
+def stitch_consensus(contigs: Iterable[ContigWithAligner],
+                     ) -> Iterator[ContigWithAligner]:
+    contigs = stitch_consensus_overlaps(contigs)
+    contigs = o2_loop(contigs)
+    yield from contigs
 
 
 def write_contigs(output_fasta: TextIO, contigs: Iterable[ContigWithAligner]):
