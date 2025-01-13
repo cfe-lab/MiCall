@@ -75,7 +75,7 @@ def find_maximum_overlap(arr1: Sequence[object],
     bit_arr2 = finder.bit_arr2[:len(arr2)]
 
     np_arr1 = np.array(tuple(arr1))
-    np_arr2 = np.array(tuple(reversed(arr2)))
+    np_arr2 = np.array(tuple(arr2))
 
     # Iterate over each unique element to determine overlap
     for element in finder.alphabet:
@@ -85,7 +85,7 @@ def find_maximum_overlap(arr1: Sequence[object],
         bit_arr2[np_arr2 == element] = 1
 
         # Compute the convolution of the two binary arrays
-        convo = scipy.signal.convolve(bit_arr1, bit_arr2, mode='full')
+        convo = scipy.signal.correlate(bit_arr1, bit_arr2, mode='full')
         # Add the convolution to the total results
         total += convo
 
