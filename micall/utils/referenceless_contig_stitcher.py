@@ -246,8 +246,6 @@ def try_combine_contigs(finder: OverlapFinder,
 
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
-        logger.debug("Between %s and %s, returning the covering contig, %s.",
-                     a.unique_name, b.unique_name, left.unique_name)
         TRY_COMBINE_CACHE[key] = (left, Fraction(1))
         return (left, Fraction(1))
 
@@ -259,10 +257,6 @@ def try_combine_contigs(finder: OverlapFinder,
 
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
         result_contig = ContigWithAligner(None, result_seq)
-
-        logger.debug("Joined %s and %s together in a contig %s with lengh %s.",
-                     a.unique_name, b.unique_name,
-                     result_contig.unique_name, len(result_contig.seq))
 
         TRY_COMBINE_CACHE[key] = (result_contig, result_probability)
         return (result_contig, result_probability)
@@ -313,8 +307,7 @@ def calc_multiple_extensions(finder: OverlapFinder,
 def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[ContigsPath]:
     pool = Pool.empty()
     finder = OverlapFinder.make('ACTG')
-    calc_extension(finder, pool, contigs, ContigsPath.empty())
-    extending = True
+    extending = calc_extension(finder, pool, contigs, ContigsPath.empty())
 
     logger.debug("Calculating all paths...")
     cycle = 1
@@ -324,10 +317,10 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
         extending = calc_multiple_extensions(finder, pool, pool.paths, contigs)
 
         if pool.paths:
-            longest = max(pool.paths, key=lambda path: len(path.whole.seq))
+            longest = pool.paths[-1]
             size = len(longest.whole.seq)
             parts = len(longest.parts_ids)
-            logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the longest.",
+            logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the fittest.",
                          cycle, len(pool.paths), size, parts)
 
         cycle += 1
