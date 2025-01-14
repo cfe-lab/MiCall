@@ -447,7 +447,7 @@ def referenceless_contig_stitcher(input_fasta: TextIO,
 
         if output_fasta is not None:
             contigs = tuple(stitch_consensus(contigs))
-            logger.debug("Outputting %s contigs", len(contigs))
+            logger.debug("Outputting %s contigs.", len(contigs))
 
         if output_fasta is not None:
             write_contigs(output_fasta, contigs)
