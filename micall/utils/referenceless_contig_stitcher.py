@@ -58,8 +58,8 @@ class ContigsPath:
     # all the components in this path came together by accident.
     probability: int
 
-    def score(self) -> Tuple[int, int]:
-        return (self.probability, len(self.parts_ids))
+    def score(self) -> int:
+        return self.probability
 
     def __lt__(self, other: 'ContigsPath') -> bool:
         return self.score() < other.score()
