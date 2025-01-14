@@ -313,37 +313,42 @@ def calc_multiple_extensions(finder: OverlapFinder,
     return ret
 
 
-def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[ContigsPath]:
+def calculate_all_paths(finder: OverlapFinder,
+                        paths: Sequence[ContigsPath],
+                        contigs: Sequence[ContigWithAligner],
+                        ) -> Iterable[ContigsPath]:
     pool = Pool.empty()
-    finder = OverlapFinder.make('ACTG')
-    extending = calc_extension(finder, pool, contigs, ContigsPath.empty())
-    paths: Iterable[ContigsPath] = tuple(pool.paths)
-    size = pool.size
     pool.resize(MAX_ALTERNATIVES)
+
+    for path in sorted(paths):
+        if pool.size >= pool.capacity:
+            break
+        pool.add(path)
 
     logger.debug("Calculating all paths...")
     cycle = 1
-    while extending:
-        logger.debug("Cycle %s started with %s paths.", cycle, size)
+    while True:
+        logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
-        extending = calc_multiple_extensions(finder, pool, paths, contigs)
+        if not calc_multiple_extensions(finder, pool, pool.paths, contigs):
+            break
 
-        if pool.size > 0:
-            fittest = pool.paths[-1]
-            length = len(fittest.whole.seq)
-            parts = len(fittest.parts_ids)
-            logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the fittest.",
-                         cycle, pool.size, length, parts)
+        fittest = pool.paths[-1]
+        length = len(fittest.whole.seq)
+        parts = len(fittest.parts_ids)
+        logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the fittest.",
+                     cycle, pool.size, length, parts)
 
         cycle += 1
-        paths = pool.paths
-        size = pool.size
 
-    return paths
+    return pool.paths
 
 
-def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
-    paths = calculate_all_paths(contigs)
+def find_most_probable_path(finder: OverlapFinder,
+                            seeds: Sequence[ContigsPath],
+                            contigs: Sequence[ContigWithAligner],
+                            ) -> ContigsPath:
+    paths = calculate_all_paths(finder, seeds, contigs)
     return max(paths, key=lambda path: path.score())
 
 
@@ -351,15 +356,56 @@ def contig_size_fun(contig: Contig) -> int:
     return -len(contig.seq)
 
 
+def find_best_candidates(finder: OverlapFinder,
+                         first: ContigWithAligner,
+                         contigs: Iterable[ContigWithAligner],
+                         ) -> Iterator[ContigsPath]:
+
+    initial = ContigsPath(whole=first,
+                          parts_ids=frozenset((first.id,)),
+                          probability=SCORE_NOTHING)
+    yield initial
+
+    pool = Pool.empty()
+    pool.resize(1)
+
+    for candidate in contigs:
+        if first.id >= candidate.id:
+            continue
+
+        extend_by_1(finder=finder,
+                    pool=pool,
+                    path=initial,
+                    candidate=candidate,
+                    )
+
+    yield from pool.paths
+
+
+def o2_combine(finder: OverlapFinder,
+               contigs: Iterable[ContigWithAligner],
+               ) -> Iterator[ContigsPath]:
+    for contig in contigs:
+        yield from find_best_candidates(finder, contig, contigs)
+
+
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
+    finder = OverlapFinder.make('ACTG')
     remaining = tuple(sorted(contigs, key=contig_size_fun))
+
+    logger.debug("Initializing initial seeds...")
+    seeds = tuple(sorted(o2_combine(finder, remaining), reverse=True))
+    logger.debug("Starting with %s initial seeds.", len(seeds))
+
     while remaining:
-        most_probable = find_most_probable_path(remaining)
+        most_probable = find_most_probable_path(finder, seeds, remaining)
         logger.debug("Constructed a path of length %s.",
                      len(most_probable.whole.seq))
         yield most_probable.whole
         remaining = tuple(contig for contig in remaining
                           if not most_probable.has_contig(contig))
+        seeds = tuple(path for path in seeds
+                      if most_probable.parts_ids.isdisjoint(path.parts_ids))
         logger.debug("Removed %s components from the working list, having %s still to process.",
                      len(most_probable.parts_ids), len(remaining))
 
