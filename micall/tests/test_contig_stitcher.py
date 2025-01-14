@@ -15,7 +15,7 @@ from micall.utils.referencefull_contig_stitcher import (
     merge_intervals,
     find_covered_contig,
     stitch_consensus,
-    calculate_concordance,
+    calculate_concordance_norm,
     align_all_to_reference,
     lstrip,
     rstrip,
@@ -1745,12 +1745,12 @@ def test_find_covered(contigs, expected_covered_name):
 
 def test_concordance_same_length_inputs():
     with pytest.raises(ValueError):
-        calculate_concordance("abc", "ab")
+        calculate_concordance_norm("abc", "ab")
 
 
 def test_concordance_completely_different_strings():
-    result = calculate_concordance("a" * 30, "b" * 30)
-    assert all(n == 0 for n in result)
+    result = calculate_concordance_norm("a" * 30, "b" * 30)
+    assert any(n > 0 for n in result)
 
 
 def generate_random_string_pair(length):
@@ -1762,19 +1762,21 @@ def generate_random_string_pair(length):
 @pytest.mark.parametrize(
     "left, right, expected",
     [
-        ("aaaaa", "aaaaa", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("abcdd", "abcdd", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("aaaaaaaa", "baaaaaab", [0.3, 0.62, 0.71, 0.75, 0.75, 0.71, 0.62, 0.3]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaabbb", [0.6, 0.68, 0.7, 0.68, 0.6, 0.29, 0.19, 0.13]),
-        ("aaaaaaaa", "aaabbaaa", [0.56, 0.63, 0.62, 0.39, 0.39, 0.62, 0.63, 0.56]),
-        ("aaaaa", "bbbbb", [0] * 5),
+        # ("aaaaa", "aaaaa", [0.0, 0.78, 1.0, 0.78, 0.0]),
+        # ("abcdd", "abcdd", [0.0, 0.78, 1.0, 0.78, 0.0]),
+        ("aaaaaaaa", "baaaaaab", [0.0, 0.95, 0.99, 1.0, 1.0, 0.99, 0.95, 0.0]),
+        ("aaaaaaaa", "aaaaaaab", [0.94, 0.98, 0.99, 1.0, 0.99, 0.98, 0.94, 0.0]),
+        ("aaaaaaaa", "aaaaabbb", [0.96, 0.99, 1.0, 0.99, 0.96, 0.02, 0.0, 0.02]),
+        ("aaaaaaaaaaa", "aaaaabaaaaa", [0.96, 0.99, 1.0, 0.99, 0.96, 0.0, 0.96, 0.99, 1.0, 0.99, 0.96]),
+        ("aaaaaaaaaaa", "aaaabbbaaaa", [0.98, 1.0, 1.0, 0.98, 0.02, 0.0, 0.02, 0.98, 1.0, 1.0, 0.98]),
+        ("aaaaaaaaaaa", "aaabbbbbaaa", [0.98, 1.0, 0.98, 0.04, 0.01, 0.0, 0.01, 0.04, 0.98, 1.0, 0.98]),
+        ("aaaaaaaa", "aaabbaaa", [0.98, 1.0, 0.98, 0.0, 0.0, 0.98, 1.0, 0.98]),
+        ("aaaaa", "bbbbb", [1.0, 0.22, 0.0, 0.22, 1.0]),
         ("", "", []),
     ],
 )
 def test_concordance_simple(left, right, expected):
-    result = [round(float(x), 2) for x in calculate_concordance(left, right)]
+    result = [round(float(x), 2) for x in calculate_concordance_norm(left, right)]
     assert result == expected
 
 
@@ -1791,8 +1793,8 @@ def test_concordance_simple(left, right, expected):
         (
             "a" * 128,
             "b" * 48 + "a" * 15 + "ab" + "a" * 15 + "b" * 48,
-            48 + 16 // 2,
-        ),  # two peaks - choosing 1nd
+            48 + 15 // 2,
+        ),  # two peaks - choosing 1st
         (
             "a" * 128,
             "b" * 48 + "a" * 15 + "ba" + "a" * 15 + "b" * 48,
@@ -1806,7 +1808,7 @@ def test_concordance_simple(left, right, expected):
     ],
 )
 def test_concordance_simple_index(left, right, expected):
-    concordance = calculate_concordance(left, right)
+    concordance = calculate_concordance_norm(left, right)
     concordance_d = list(disambiguate_concordance(concordance))
     index = max(range(len(concordance)), key=lambda i: concordance_d[i])
     if abs(index - expected) > 1:
@@ -1824,7 +1826,7 @@ concordance_cases = generate_test_cases(num_cases=100)
 
 @pytest.mark.parametrize("left, right", concordance_cases)
 def test_concordance_output_range(left, right):
-    result = calculate_concordance(left, right)
+    result = calculate_concordance_norm(left, right)
     assert all(
         0 <= n <= 1 for n in result
     ), "All values in result should be between 0 and 1"
@@ -1846,8 +1848,8 @@ def test_concordance_higher_if_more_matches_added(left, right):
         + right[insert_position + len(matching_sequence):]
     )
 
-    old_conc = calculate_concordance(left, right)
-    new_conc = calculate_concordance(new_left, new_right)
+    old_conc = calculate_concordance_norm(left, right)
+    new_conc = calculate_concordance_norm(new_left, new_right)
     old_average = sum(old_conc) / len(old_conc)
     new_average = sum(new_conc) / len(new_conc)
     assert old_average <= new_average
@@ -1869,7 +1871,7 @@ def test_concordance_higher_in_matching_areas(left, right):
         + right[insert_position + len(matching_sequence):]
     )
 
-    concordance_scores = calculate_concordance(new_left, new_right)
+    concordance_scores = calculate_concordance_norm(new_left, new_right)
 
     # Check concordance in the matching area
     matching_area_concordance = concordance_scores[

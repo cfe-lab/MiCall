@@ -1,7 +1,8 @@
 from fractions import Fraction
-from typing import Sequence, Iterator, Tuple
+from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
+import math
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -23,8 +24,27 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     return aseq1, aseq2
 
 
+def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
+                               ) -> Sequence[Fraction]:
+    absolute = calculate_concordance(left, right)
+    if len(absolute) == 0:
+        return []
+
+    low = min(absolute)
+    high = max(absolute)
+    if low == high:
+        if low < 0:
+            value = 0
+        elif low > 0:
+            value = 1
+        return [Fraction(value)] * len(absolute)
+
+    diff = high - low
+    return [Fraction(x - low) / Fraction(diff) for x in absolute]
+
+
 def calculate_concordance(left: Sequence[object], right: Sequence[object],
-                          ) -> Sequence[Fraction]:
+                          ) -> Sequence[float]:
     """
     Calculate concordance for two given sequences using a sliding
     average.
@@ -33,42 +53,51 @@ def calculate_concordance(left: Sequence[object], right: Sequence[object],
     simultaneously from both left to right and right to left,
     calculating a score that represents a moving average of matches at
     each position. If characters match at a given position, a score of
-    1 is added; otherwise, a score of 0 is added. The score is then
-    averaged with the previous scores using a weighted sliding average
-    where the current score has a weight of 1/3 and the accumulated
-    score has a weight of 2/3.  This sliding average score is halved
-    and then processed again, but in reverse direction.
+    1 is added; otherwise, a score of 0 is added. This "sliding
+    average" score is then processed again, but in reverse direction.
+    The score is not normalized here.
 
     :param left: string representing first sequence
     :param right: string representing second sequence
-    :return: list representing concordance ratio for each position
+    :return: list representing concordance score for each position
     """
 
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    result = [Fraction(0)] * len(left)
+    xs = tuple(1 if x == y else 0 for x, y in zip(left, right))
 
-    def slide(start, end):
-        scores_sum = Fraction(0)
-        inputs = list(zip(left, right))
-        increment = 1 if start <= end else -1
+    positive = [0.0] * len(left)
+    negative = [0.0] * len(left)
 
-        for i in range(start, end, increment):
-            (a, b) = inputs[i]
-            current = Fraction(1) if a == b else Fraction(0)
-            scores_sum = (scores_sum * 2 / 3 + current * 1 / 3)
-            result[i] += scores_sum / 2
+    pacc = 0
+    nacc = 0
+    for i, x in enumerate(xs):
+        pacc += 1
+        pacc *= x
+        nacc += 1
+        nacc *= (1 - x)
+        positive[i] += math.sqrt(pacc)
+        negative[i] += math.sqrt(nacc)
 
-    # Slide forward, then in reverse, adding the scores at each position.
-    slide(0, len(left))
-    slide(len(left) - 1, -1)
+    pacc = 0
+    nacc = 0
+    for i, x in reversed(tuple(enumerate(xs))):
+        pacc += 1
+        pacc *= x
+        nacc += 1
+        nacc *= (1 - x)
+        positive[i] += math.sqrt(pacc)
+        negative[i] += math.sqrt(nacc)
 
-    return result
+    return tuple(x - y for x, y in zip(positive, negative))
 
 
-def disambiguate_concordance(concordance: Sequence[Fraction],
-                             ) -> Iterator[Tuple[Fraction, int]]:
+T = TypeVar("T")
+
+
+def disambiguate_concordance(concordance: Sequence[T],
+                             ) -> Iterator[Tuple[T, int]]:
     for i, x in enumerate(concordance):
         if i < len(concordance) / 2:
             global_rank = i
@@ -77,7 +106,7 @@ def disambiguate_concordance(concordance: Sequence[Fraction],
         yield x, global_rank
 
 
-def sort_concordance_indexes(concordance: Sequence[Fraction]) -> Iterator[int]:
+def sort_concordance_indexes(concordance: Sequence[object]) -> Iterator[int]:
     concordance_d = disambiguate_concordance(concordance)
     for i, v in sorted(enumerate(concordance_d),
                        key=itemgetter(1),

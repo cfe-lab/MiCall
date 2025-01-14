@@ -17,7 +17,7 @@ from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 from micall.utils.consensus_aligner import align_consensus
-from micall.utils.overlap_stitcher import align_queries, calculate_concordance, sort_concordance_indexes
+from micall.utils.overlap_stitcher import align_queries, calculate_concordance_norm, sort_concordance_indexes
 import micall.utils.contig_stitcher_events as events
 
 
@@ -321,7 +321,7 @@ def stitch_2_contigs(left, right):
 
     # Align overlapping parts, then recombine based on concordance.
     aligned_left, aligned_right = align_queries(left_overlap.seq, right_overlap.seq)
-    concordance = calculate_concordance(aligned_left, aligned_right)
+    concordance = calculate_concordance_norm(aligned_left, aligned_right)
     aligned_left_cutpoint, aligned_right_cutpoint, max_concordance_index = \
         concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance)
     left_overlap_take, left_overlap_drop = cut_reference(left_overlap, aligned_left_cutpoint)
