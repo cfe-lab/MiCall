@@ -185,10 +185,10 @@ def combine_probability(current: Score, new: Score) -> Score:
 
 CutoffsCacheResult = Optional[Tuple[int, int]]
 CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
+CUTOFFS_CACHE: CutoffsCache = {}
 
 
-def find_overlap_cutoffs(cutoffs_cache: CutoffsCache,
-                         left: ContigWithAligner,
+def find_overlap_cutoffs(left: ContigWithAligner,
                          right: ContigWithAligner,
                          left_initial_overlap: str,
                          right_initial_overlap: str,
@@ -197,7 +197,7 @@ def find_overlap_cutoffs(cutoffs_cache: CutoffsCache,
     key = (left.id, right.id)
 
     existing: Union[CutoffsCacheResult, Literal[False]] \
-        = cutoffs_cache.get(key, False)
+        = CUTOFFS_CACHE.get(key, False)
 
     if existing is None:
         return None
@@ -209,34 +209,33 @@ def find_overlap_cutoffs(cutoffs_cache: CutoffsCache,
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
-            cutoffs_cache[key] = None
+            CUTOFFS_CACHE[key] = None
             return None
 
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
-            cutoffs_cache[key] = None
+            CUTOFFS_CACHE[key] = None
             return None
     else:
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
-            cutoffs_cache[key] = None
+            CUTOFFS_CACHE[key] = None
             return None
 
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
-            cutoffs_cache[key] = None
+            CUTOFFS_CACHE[key] = None
             return None
 
     ret = (left_cutoff, right_cutoff)
-    cutoffs_cache[key] = ret
+    CUTOFFS_CACHE[key] = ret
     return ret
 
 
 def try_combine_contigs(finder: OverlapFinder,
-                        cutoffs_cache: CutoffsCache,
                         current_prob: Score,
                         pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
@@ -275,8 +274,7 @@ def try_combine_contigs(finder: OverlapFinder,
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
-    cutoffs = find_overlap_cutoffs(cutoffs_cache,
-                                   left, right,
+    cutoffs = find_overlap_cutoffs(left, right,
                                    left_initial_overlap,
                                    right_initial_overlap,
                                    )
@@ -314,7 +312,6 @@ def try_combine_contigs(finder: OverlapFinder,
 
 
 def extend_by_1(finder: OverlapFinder,
-                cutoffs_cache: CutoffsCache,
                 pool: Pool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
@@ -322,7 +319,7 @@ def extend_by_1(finder: OverlapFinder,
     if path.has_contig(candidate):
         return False
 
-    combination = try_combine_contigs(finder, cutoffs_cache, path.probability, pool, path.whole, candidate)
+    combination = try_combine_contigs(finder, path.probability, pool, path.whole, candidate)
     if combination is None:
         return False
 
@@ -334,31 +331,28 @@ def extend_by_1(finder: OverlapFinder,
 
 
 def calc_extension(finder: OverlapFinder,
-                   cutoffs_cache: CutoffsCache,
                    pool: Pool,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> bool:
     ret = False
     for contig in contigs:
-        ret = extend_by_1(finder, cutoffs_cache, pool, path, contig) or ret
+        ret = extend_by_1(finder, pool, path, contig) or ret
     return ret
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
-                             cutoffs_cache: CutoffsCache,
                              pool: Pool,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> bool:
     ret = False
     for path in paths:
-        ret = calc_extension(finder, cutoffs_cache, pool, contigs, path) or ret
+        ret = calc_extension(finder, pool, contigs, path) or ret
     return ret
 
 
 def calculate_all_paths(finder: OverlapFinder,
-                        cutoffs_cache: CutoffsCache,
                         paths: Sequence[ContigsPath],
                         contigs: Sequence[ContigWithAligner],
                         ) -> Iterable[ContigsPath]:
@@ -375,7 +369,7 @@ def calculate_all_paths(finder: OverlapFinder,
     while True:
         logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
-        if not calc_multiple_extensions(finder, cutoffs_cache, pool, pool.paths, contigs):
+        if not calc_multiple_extensions(finder, pool, pool.paths, contigs):
             break
 
         fittest = pool.paths[-1]
@@ -390,11 +384,10 @@ def calculate_all_paths(finder: OverlapFinder,
 
 
 def find_most_probable_path(finder: OverlapFinder,
-                            cutoffs_cache: CutoffsCache,
                             seeds: Sequence[ContigsPath],
                             contigs: Sequence[ContigWithAligner],
                             ) -> ContigsPath:
-    paths = calculate_all_paths(finder, cutoffs_cache, seeds, contigs)
+    paths = calculate_all_paths(finder, seeds, contigs)
     return max(paths, key=lambda path: path.score())
 
 
@@ -403,7 +396,6 @@ def contig_size_fun(contig: Contig) -> int:
 
 
 def find_best_candidates(finder: OverlapFinder,
-                         cutoffs_cache: CutoffsCache,
                          first: ContigWithAligner,
                          contigs: Iterable[ContigWithAligner],
                          ) -> Iterator[ContigsPath]:
@@ -419,7 +411,6 @@ def find_best_candidates(finder: OverlapFinder,
             continue
 
         extend_by_1(finder=finder,
-                    cutoffs_cache=cutoffs_cache,
                     pool=pool,
                     path=initial,
                     candidate=candidate,
@@ -429,24 +420,22 @@ def find_best_candidates(finder: OverlapFinder,
 
 
 def o2_combine(finder: OverlapFinder,
-               cutoffs_cache: CutoffsCache,
                contigs: Iterable[ContigWithAligner],
                ) -> Iterator[ContigsPath]:
     for contig in contigs:
-        yield from find_best_candidates(finder, cutoffs_cache, contig, contigs)
+        yield from find_best_candidates(finder, contig, contigs)
 
 
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
     finder = OverlapFinder.make('ACTG')
-    cutoffs_cache: CutoffsCache = {}
     remaining = tuple(sorted(contigs, key=contig_size_fun))
 
     logger.debug("Initializing initial seeds...")
-    seeds = tuple(sorted(o2_combine(finder, cutoffs_cache, remaining), reverse=True))
+    seeds = tuple(sorted(o2_combine(finder, remaining), reverse=True))
     logger.debug("Starting with %s initial seeds.", len(seeds))
 
     while remaining:
-        most_probable = find_most_probable_path(finder, cutoffs_cache, seeds, remaining)
+        most_probable = find_most_probable_path(finder, seeds, remaining)
         logger.debug("Constructed a path of length %s.",
                      len(most_probable.whole.seq))
         yield most_probable.whole
@@ -474,9 +463,7 @@ def try_combine_1(finder: OverlapFinder,
                 continue
 
             pool = Pool.empty()
-            cutoffs_cache: CutoffsCache = {}
             result = try_combine_contigs(finder=finder,
-                                         cutoffs_cache=cutoffs_cache,
                                          current_prob=SCORE_NOTHING,
                                          pool=pool,
                                          a=first, b=second,
