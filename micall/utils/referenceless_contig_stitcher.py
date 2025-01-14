@@ -185,6 +185,20 @@ def combine_probability(current: Score, new: Score) -> Score:
     return current + new
 
 
+ALIGN_CACHE: MutableMapping[Tuple[str, str], Tuple[str, str]] = {}
+
+
+def align_overlaps(left_overlap: str, right_overlap: str) -> Tuple[str, str]:
+    key = (left_overlap, right_overlap)
+    existing = ALIGN_CACHE.get(key)
+    if existing is not None:
+        return existing
+
+    result = align_queries(left_overlap, right_overlap)
+    ALIGN_CACHE[key] = result
+    return result
+
+
 CutoffsCacheResult = Optional[Tuple[int, int]]
 CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
 CUTOFFS_CACHE: CutoffsCache = {}
@@ -287,7 +301,7 @@ def try_combine_contigs(current_prob: Score,
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
-    aligned_left, aligned_right = align_queries(left_overlap, right_overlap)
+    aligned_left, aligned_right = align_overlaps(left_overlap, right_overlap)
 
     number_of_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
