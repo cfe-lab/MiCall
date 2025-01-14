@@ -76,10 +76,6 @@ class ContigsPath:
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
 
-    @property
-    def is_empty(self) -> bool:
-        return len(self.parts_ids) == 0
-
     @staticmethod
     def empty() -> 'ContigsPath':
         return ContigsPath(ContigWithAligner.empty(),
