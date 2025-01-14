@@ -183,12 +183,13 @@ def combine_probability(current: Score, new: Score) -> Score:
     return current + new
 
 
-TRY_COMBINE_CACHE: MutableMapping[
+CombineCache = MutableMapping[
     Tuple[ContigId, ContigId],
-    Optional[Tuple[ContigWithAligner, Score]]] = {}
+    Optional[Tuple[ContigWithAligner, Score]]]
 
 
 def try_combine_contigs(finder: OverlapFinder,
+                        combine_cache: CombineCache,
                         current_prob: Score,
                         pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
@@ -229,7 +230,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     key = (left.id, right.id)
     existing: Union[Tuple[ContigWithAligner, Score], None, Literal[False]] \
-        = TRY_COMBINE_CACHE.get(key, False)
+        = combine_cache.get(key, False)
 
     if existing is not False:
         return existing
@@ -238,25 +239,25 @@ def try_combine_contigs(finder: OverlapFinder,
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
-            TRY_COMBINE_CACHE[key] = None
+            combine_cache[key] = None
             return None
 
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
-            TRY_COMBINE_CACHE[key] = None
+            combine_cache[key] = None
             return None
     else:
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
         if right_cutoff is None:
-            TRY_COMBINE_CACHE[key] = None
+            combine_cache[key] = None
             return None
 
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
         if left_cutoff is None:
-            TRY_COMBINE_CACHE[key] = None
+            combine_cache[key] = None
             return None
 
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
@@ -275,7 +276,7 @@ def try_combine_contigs(finder: OverlapFinder,
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
         ret = (left, SCORE_EPSILON)
-        TRY_COMBINE_CACHE[key] = ret
+        combine_cache[key] = ret
         return ret
 
     else:
@@ -288,11 +289,12 @@ def try_combine_contigs(finder: OverlapFinder,
         result_contig = ContigWithAligner(None, result_seq)
 
         ret = (result_contig, result_probability)
-        TRY_COMBINE_CACHE[key] = ret
+        combine_cache[key] = ret
         return ret
 
 
 def extend_by_1(finder: OverlapFinder,
+                combine_cache: CombineCache,
                 pool: Pool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
@@ -300,7 +302,7 @@ def extend_by_1(finder: OverlapFinder,
     if path.has_contig(candidate):
         return False
 
-    combination = try_combine_contigs(finder, path.probability, pool, path.whole, candidate)
+    combination = try_combine_contigs(finder, combine_cache, path.probability, pool, path.whole, candidate)
     if combination is None:
         return False
 
@@ -312,31 +314,35 @@ def extend_by_1(finder: OverlapFinder,
 
 
 def calc_extension(finder: OverlapFinder,
+                   combine_cache: CombineCache,
                    pool: Pool,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> bool:
     ret = False
     for contig in contigs:
-        ret = extend_by_1(finder, pool, path, contig) or ret
+        ret = extend_by_1(finder, combine_cache, pool, path, contig) or ret
     return ret
 
 
 def calc_multiple_extensions(finder: OverlapFinder,
+                             combine_cache: CombineCache,
                              pool: Pool,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> bool:
     ret = False
     for path in paths:
-        ret = calc_extension(finder, pool, contigs, path) or ret
+        ret = calc_extension(finder, combine_cache, pool, contigs, path) or ret
     return ret
 
 
-def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[ContigsPath]:
+def calculate_all_paths(combine_cache: CombineCache,
+                        contigs: Sequence[ContigWithAligner],
+                        ) -> Iterable[ContigsPath]:
     pool = Pool.empty()
     finder = OverlapFinder.make('ACTG')
-    extending = calc_extension(finder, pool, contigs, ContigsPath.empty())
+    extending = calc_extension(finder, combine_cache, pool, contigs, ContigsPath.empty())
     paths: Iterable[ContigsPath] = tuple(pool.paths)
     pool.resize(MAX_ALTERNATIVES)
 
@@ -345,7 +351,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
     while extending:
         logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
-        extending = calc_multiple_extensions(finder, pool, paths, contigs)
+        extending = calc_multiple_extensions(finder, combine_cache, pool, paths, contigs)
 
         if pool.size > 0:
             longest = pool.paths[-1]
@@ -360,8 +366,10 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
     return paths
 
 
-def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
-    paths = calculate_all_paths(contigs)
+def find_most_probable_path(combine_cache: CombineCache,
+                            contigs: Sequence[ContigWithAligner],
+                            ) -> ContigsPath:
+    paths = calculate_all_paths(combine_cache, contigs)
     return max(paths, key=lambda path: path.score())
 
 
@@ -370,9 +378,10 @@ def contig_size_fun(contig: Contig) -> int:
 
 
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
+    combine_cache: CombineCache = {}
     remaining = tuple(sorted(contigs, key=contig_size_fun))
     while remaining:
-        most_probable = find_most_probable_path(remaining)
+        most_probable = find_most_probable_path(combine_cache, remaining)
         logger.debug("Constructed a path of length %s.",
                      len(most_probable.whole.seq))
         yield most_probable.whole
@@ -398,7 +407,9 @@ def try_combine_1(finder: OverlapFinder,
                 continue
 
             pool = Pool.empty()
+            combine_cache: CombineCache = {}
             result = try_combine_contigs(finder=finder,
+                                         combine_cache=combine_cache,
                                          current_prob=SCORE_NOTHING,
                                          pool=pool,
                                          a=first, b=second,
