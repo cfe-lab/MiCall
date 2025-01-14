@@ -91,17 +91,15 @@ class Pool:
     existing: MutableMapping[str, ContigsPath]
     size: int
     capacity: int
+    smallest_score: Score
 
     @staticmethod
     def empty() -> 'Pool':
-        return Pool(SortedList(), {}, 0, 999999)
+        return Pool(SortedList(), {}, 0, 999999, ACCEPTABLE_STITCHING_SCORE)
 
     @property
     def min_acceptable_score(self) -> Score:
-        if self.size > 0:
-            return self.paths[0].probability
-        else:
-            return ACCEPTABLE_STITCHING_SCORE
+        return self.smallest_score
 
     def resize(self, new_capacity: int) -> None:
         if new_capacity < self.size:
@@ -111,19 +109,33 @@ class Pool:
 
         self.capacity = new_capacity
 
+        if self.size > 0:
+            smallest_path = self.paths[0]
+            self.smallest_score = smallest_path.probability
+        else:
+            self.smallest_score = ACCEPTABLE_STITCHING_SCORE
+
     def add(self, path: ContigsPath) -> bool:
         key = path.whole.seq
         alternative = self.existing.get(key)
         if alternative is not None and alternative.score() >= path.score():
             return False
 
-        if self.size >= self.capacity:
-            to_delete = self.paths[0]
-            if to_delete.score() >= path.score():
-                return False
+        if self.size > 0:
+            smallest_path = self.paths[0]
+            if self.size >= self.capacity:
+                if smallest_path.score() >= path.score():
+                    return False
 
-            del self.paths[0]
-            self.size -= 1
+                del self.paths[0]
+                self.size -= 1
+
+            if path.score() < smallest_path.score():
+                smallest_path = path
+
+            self.smallest_score = smallest_path.probability
+        else:
+            self.smallest_score = path.score()
 
         self.size += 1
         self.paths.add(path)
