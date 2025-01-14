@@ -256,12 +256,6 @@ def try_combine_contigs(current_prob: Score,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Score]]:
 
-    if len(b.seq) == 0:
-        return (a, SCORE_NOTHING)
-
-    if len(a.seq) == 0:
-        return (b, SCORE_NOTHING)
-
     maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
     maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
