@@ -266,6 +266,12 @@ def try_combine_contigs(current_prob: Score,
     if overlap is None:
         return None
 
+    optimistic_overlap_size = overlap.size - 1
+    optimistic_number_of_matches = optimistic_overlap_size
+    optimistic_result_probability = calc_overlap_pvalue(L=optimistic_overlap_size, M=optimistic_number_of_matches)
+    if combine_probability(optimistic_result_probability, current_prob) < pool.min_acceptable_score:
+        return None
+
     if abs(overlap.shift) < len(a.seq):
         shift = overlap.shift
         left = a
@@ -274,12 +280,6 @@ def try_combine_contigs(current_prob: Score,
         shift = (len(b.seq) + len(a.seq) - abs(overlap.shift)) * -1
         left = b
         right = a
-
-    optimistic_overlap_size = overlap.size - 1
-    optimistic_number_of_matches = optimistic_overlap_size
-    optimistic_result_probability = calc_overlap_pvalue(L=optimistic_overlap_size, M=optimistic_number_of_matches)
-    if combine_probability(optimistic_result_probability, current_prob) < pool.min_acceptable_score:
-        return None
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
