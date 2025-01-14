@@ -183,9 +183,8 @@ def combine_probability(current: Score, new: Score) -> Score:
     return current + new
 
 
-CombineCache = MutableMapping[
-    Tuple[ContigId, ContigId],
-    Optional[Tuple[ContigWithAligner, Score]]]
+CombineCacheResult = Optional[Tuple[int, int]]
+CombineCache = MutableMapping[Tuple[ContigId, ContigId], CombineCacheResult]
 
 
 def try_combine_contigs(finder: OverlapFinder,
@@ -229,37 +228,43 @@ def try_combine_contigs(finder: OverlapFinder,
     right_initial_overlap = right.seq[:abs(shift)]
 
     key = (left.id, right.id)
-    existing: Union[Tuple[ContigWithAligner, Score], None, Literal[False]] \
+    existing: Union[CombineCacheResult, Literal[False]] \
         = combine_cache.get(key, False)
 
-    if existing is not False:
-        return existing
+    if existing is None:
+        return None
+
+    elif existing is not False:
+        (left_cutoff, right_cutoff) = existing
 
     elif len(left_initial_overlap) < len(right_initial_overlap):
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
-        left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
-        if left_cutoff is None:
+        left_cutoff = min((al.r_st for al in left_overlap_alignments), default=-1)
+        if left_cutoff < 0:
             combine_cache[key] = None
             return None
 
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
-        right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
-        if right_cutoff is None:
+        right_cutoff = max((al.r_en for al in right_overlap_alignments), default=-1)
+        if right_cutoff < 0:
             combine_cache[key] = None
             return None
     else:
         right_overlap_alignments = right.map_overlap(left_initial_overlap)
-        right_cutoff = max((al.r_en for al in right_overlap_alignments), default=None)
-        if right_cutoff is None:
+        right_cutoff = max((al.r_en for al in right_overlap_alignments), default=-1)
+        if right_cutoff < 0:
             combine_cache[key] = None
             return None
 
         left_overlap_alignments = left.map_overlap(right_initial_overlap)
-        left_cutoff = min((al.r_st for al in left_overlap_alignments), default=None)
-        if left_cutoff is None:
+        left_cutoff = min((al.r_st for al in left_overlap_alignments), default=-1)
+        if left_cutoff < 0:
             combine_cache[key] = None
             return None
 
+    assert left_cutoff is not None
+    assert right_cutoff is not None
+    combine_cache[key] = (left_cutoff, right_cutoff)
     left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
@@ -275,9 +280,7 @@ def try_combine_contigs(finder: OverlapFinder,
 
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
-        ret = (left, SCORE_EPSILON)
-        combine_cache[key] = ret
-        return ret
+        return (left, SCORE_EPSILON)
 
     else:
         concordance = calculate_concordance(aligned_left, aligned_right)
@@ -288,9 +291,7 @@ def try_combine_contigs(finder: OverlapFinder,
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
         result_contig = ContigWithAligner(None, result_seq)
 
-        ret = (result_contig, result_probability)
-        combine_cache[key] = ret
-        return ret
+        return (result_contig, result_probability)
 
 
 def extend_by_1(finder: OverlapFinder,
