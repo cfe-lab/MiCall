@@ -344,24 +344,26 @@ def calculate_all_paths(combine_cache: CombineCache,
     finder = OverlapFinder.make('ACTG')
     extending = calc_extension(finder, combine_cache, pool, contigs, ContigsPath.empty())
     paths: Iterable[ContigsPath] = tuple(pool.paths)
+    size = pool.size
     pool.resize(MAX_ALTERNATIVES)
 
     logger.debug("Calculating all paths...")
     cycle = 1
     while extending:
-        logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
+        logger.debug("Cycle %s started with %s paths.", cycle, size)
 
         extending = calc_multiple_extensions(finder, combine_cache, pool, paths, contigs)
 
         if pool.size > 0:
-            longest = pool.paths[-1]
-            size = len(longest.whole.seq)
-            parts = len(longest.parts_ids)
+            fittest = pool.paths[-1]
+            length = len(fittest.whole.seq)
+            parts = len(fittest.parts_ids)
             logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the fittest.",
-                         cycle, pool.size, size, parts)
+                         cycle, pool.size, length, parts)
 
         cycle += 1
         paths = pool.paths
+        size = pool.size
 
     return paths
 
