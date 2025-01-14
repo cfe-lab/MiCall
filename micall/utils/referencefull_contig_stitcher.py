@@ -9,7 +9,6 @@ from itertools import tee, islice, chain
 from queue import LifoQueue
 from Bio import Seq
 import logging
-from fractions import Fraction
 from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
 
 from micall.core.project_config import ProjectConfig
@@ -328,11 +327,10 @@ def stitch_2_contigs(left, right):
     right_overlap_drop, right_overlap_take = cut_reference(right_overlap, aligned_right_cutpoint)
 
     # Log it.
-    average_concordance = Fraction(sum(concordance) / (len(concordance) or 1))
     cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
     log(events.Overlap(left, right, left_overlap, right_overlap,
                        left_remainder, right_remainder, left_overlap_take,
-                       right_overlap_take, tuple(concordance), average_concordance,
+                       right_overlap_take, tuple(concordance),
                        max_concordance_index, cut_point_location_scaled))
 
     return combine_contigs([left_remainder, left_overlap_take, right_overlap_take, right_remainder])
