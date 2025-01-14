@@ -369,6 +369,11 @@ def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[
         logger.debug("Removed %s components from the working list, having %s still to process.",
                      len(most_probable.parts_ids), len(remaining))
 
+        if len(most_probable.parts_ids) == 1:
+            logger.debug("Giving up on attempts to stitch more overlaps since most probable is a singleton.")
+            yield from remaining
+            return
+
 
 def try_combine_1(finder: OverlapFinder,
                   contigs: Iterable[ContigWithAligner],
