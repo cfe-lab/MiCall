@@ -16,24 +16,26 @@ class OverlapFinder:
     total: np.ndarray[Any, np.dtype[Any]]
 
     @staticmethod
-    def make(alphabet: Iterable[object]) -> 'OverlapFinder':
+    def make(alphabet: Iterable[str]) -> 'OverlapFinder':
         # FIXME: Automatically resize these arrays.
         total = np.zeros(100_000)
         bit_arr1 = np.zeros(100_000)
         bit_arr2 = np.zeros(100_000)
-        return OverlapFinder(tuple({x: True for x in alphabet}.keys()),
+        alphabet_keys = {x: True for x in alphabet}.keys()
+        alphabet_init = tuple(x.encode('utf-8') for x in alphabet_keys)
+        return OverlapFinder(alphabet=alphabet_init,
                              total=total,
                              bit_arr1=bit_arr1,
                              bit_arr2=bit_arr2,
                              )
 
 
-def find_maximum_overlap(arr1: Sequence[object],
-                         arr2: Sequence[object],
+def find_maximum_overlap(seq1: str,
+                         seq2: str,
                          finder: Optional[OverlapFinder] = None,
                          ) -> Tuple[int, int]:
     """
-    Calculate the offset at which two sequences (arr1 and arr2)
+    Calculate the offset at which two sequences (seq1 and seq2)
     overlap the most.
 
     This function uses a convolution-based approach to determine the
@@ -43,38 +45,38 @@ def find_maximum_overlap(arr1: Sequence[object],
     results in the maximum overlap.
 
     Parameters:
-    arr1 (Sequence[object]): The first sequence of objects.
-    arr2 (Sequence[object]): The second sequence of objects.
+    seq1 (str): The first sequence of objects.
+    seq2 (str): The second sequence of objects.
 
     Returns:
-    int: The shift value for `arr1` relative to `arr2` to achieve the
-    maximum overlap. Value of 0 aligns `arr1` before `arr2` with no
-    overlap. Negative value shifts the start of `arr2` back, creating
-    more and more overlap, until it shifts it past the start of `arr1`,
+    int: The shift value for `seq1` relative to `seq2` to achieve the
+    maximum overlap. Value of 0 aligns `seq1` before `seq2` with no
+    overlap. Negative value shifts the start of `seq2` back, creating
+    more and more overlap, until it shifts it past the start of `seq1`,
     when the overlap starts to decrease again.
     """
 
-    if len(arr1) == 0 or len(arr2) == 0:
+    if len(seq1) == 0 or len(seq2) == 0:
         raise ValueError(
-            f"Expected non-empty sequences, but got {len(arr1)}, {len(arr2)}.")
+            f"Expected non-empty sequences, but got {len(seq1)}, {len(seq2)}.")
 
     if finder is None:
-        finder = OverlapFinder.make(chain(arr1, arr2))
+        finder = OverlapFinder.make(chain(seq1, seq2))
 
     # Initialize an array to accumulate convolved results for
     # determining overlap
-    len_total = len(arr1) + len(arr2) - 1
+    len_total = len(seq1) + len(seq2) - 1
 
     # Slicing a NumPy array does not create a copy of the original array.
     # It creates a view.
     total = finder.total[:len_total]
     total.fill(0)
 
-    bit_arr1 = finder.bit_arr1[:len(arr1)]
-    bit_arr2 = finder.bit_arr2[:len(arr2)]
+    bit_arr1 = finder.bit_arr1[:len(seq1)]
+    bit_arr2 = finder.bit_arr2[:len(seq2)]
 
-    np_arr1 = np.fromiter(arr1, dtype='U1')
-    np_arr2 = np.fromiter(reversed(arr2), dtype='U1')
+    np_arr1 = np.frombuffer(seq1.encode('utf-8'), dtype='S1')
+    np_arr2 = np.flip(np.frombuffer(seq2.encode('utf-8'), dtype='S1'))
 
     # Iterate over each unique element to determine overlap
     for element in finder.alphabet:
