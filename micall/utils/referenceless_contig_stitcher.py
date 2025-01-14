@@ -77,10 +77,10 @@ class ContigsPath:
         return contig.id in self.parts_ids
 
     @staticmethod
-    def empty() -> 'ContigsPath':
-        return ContigsPath(ContigWithAligner.empty(),
-                           frozenset(),
-                           SCORE_NOTHING,
+    def singleton(contig: ContigWithAligner) -> 'ContigsPath':
+        return ContigsPath(whole=contig,
+                           parts_ids=frozenset((contig.id,)),
+                           probability=SCORE_NOTHING,
                            )
 
 
@@ -361,9 +361,7 @@ def find_best_candidates(finder: OverlapFinder,
                          contigs: Iterable[ContigWithAligner],
                          ) -> Iterator[ContigsPath]:
 
-    initial = ContigsPath(whole=first,
-                          parts_ids=frozenset((first.id,)),
-                          probability=SCORE_NOTHING)
+    initial = ContigsPath.singleton(first)
     yield initial
 
     pool = Pool.empty()
