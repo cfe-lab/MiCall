@@ -86,13 +86,15 @@ class ContigsPath:
 
 @dataclass
 class Pool:
+    # TODO: Factor out a SortedRing structure out of here.
     paths: SortedList[ContigsPath]
     existing: MutableMapping[str, ContigsPath]
     size: int
+    capacity: int
 
     @staticmethod
     def empty() -> 'Pool':
-        return Pool(SortedList(), {}, 0)
+        return Pool(SortedList(), {}, 0, 999999)
 
     @property
     def min_acceptable_score(self) -> Score:
@@ -101,13 +103,21 @@ class Pool:
         else:
             return ACCEPTABLE_STITCHING_SCORE
 
+    def resize(self, new_capacity: int) -> None:
+        if new_capacity < self.size:
+            stop = self.size - new_capacity
+            del self.paths[:stop]
+            self.size = new_capacity
+
+        self.capacity = new_capacity
+
     def add(self, path: ContigsPath) -> bool:
         key = path.whole.seq
         alternative = self.existing.get(key)
         if alternative is not None and alternative.score() >= path.score():
             return False
 
-        if self.size >= MAX_ALTERNATIVES:
+        if self.size >= self.capacity:
             to_delete = self.paths[0]
             if to_delete.score() >= path.score():
                 return False
@@ -315,15 +325,17 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
     pool = Pool.empty()
     finder = OverlapFinder.make('ACTG')
     extending = calc_extension(finder, pool, contigs, ContigsPath.empty())
+    paths: Iterable[ContigsPath] = tuple(pool.paths)
+    pool.resize(MAX_ALTERNATIVES)
 
     logger.debug("Calculating all paths...")
     cycle = 1
     while extending:
         logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
-        extending = calc_multiple_extensions(finder, pool, pool.paths, contigs)
+        extending = calc_multiple_extensions(finder, pool, paths, contigs)
 
-        if pool.paths:
+        if pool.size > 0:
             longest = pool.paths[-1]
             size = len(longest.whole.seq)
             parts = len(longest.parts_ids)
@@ -331,8 +343,9 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
                          cycle, pool.size, size, parts)
 
         cycle += 1
+        paths = pool.paths
 
-    return pool.paths
+    return paths
 
 
 def find_most_probable_path(contigs: Sequence[ContigWithAligner]) -> ContigsPath:
