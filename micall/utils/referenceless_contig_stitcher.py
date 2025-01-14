@@ -84,18 +84,19 @@ class ContigsPath:
                            )
 
 
-@dataclass(frozen=True)
+@dataclass
 class Pool:
     paths: SortedList[ContigsPath]
     existing: MutableMapping[str, ContigsPath]
+    size: int
 
     @staticmethod
     def empty() -> 'Pool':
-        return Pool(SortedList(), {})
+        return Pool(SortedList(), {}, 0)
 
     @property
     def min_acceptable_score(self) -> Score:
-        if len(self.paths) > 0:
+        if self.size > 0:
             return self.paths[0].probability
         else:
             return ACCEPTABLE_STITCHING_SCORE
@@ -106,13 +107,15 @@ class Pool:
         if alternative is not None and alternative.score() >= path.score():
             return False
 
-        if len(self.paths) >= MAX_ALTERNATIVES:
+        if self.size >= MAX_ALTERNATIVES:
             to_delete = self.paths[0]
             if to_delete.score() >= path.score():
                 return False
 
             del self.paths[0]
+            self.size -= 1
 
+        self.size += 1
         self.paths.add(path)
         self.existing[key] = path
         return True
@@ -316,7 +319,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
     logger.debug("Calculating all paths...")
     cycle = 1
     while extending:
-        logger.debug("Cycle %s started with %s paths.", cycle, len(pool.paths))
+        logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
         extending = calc_multiple_extensions(finder, pool, pool.paths, contigs)
 
@@ -325,7 +328,7 @@ def calculate_all_paths(contigs: Sequence[ContigWithAligner]) -> Iterable[Contig
             size = len(longest.whole.seq)
             parts = len(longest.parts_ids)
             logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the fittest.",
-                         cycle, len(pool.paths), size, parts)
+                         cycle, pool.size, size, parts)
 
         cycle += 1
 
