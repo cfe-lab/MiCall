@@ -262,7 +262,7 @@ def try_combine_contigs(current_prob: Score,
     if len(a.seq) == 0:
         return (b, SCORE_NOTHING)
 
-    maximum_overlap_size = min(len(a.seq), len(b.seq))
+    maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
     maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
     if combine_probability(maximum_result_probability, current_prob) < pool.min_acceptable_score:
@@ -281,8 +281,9 @@ def try_combine_contigs(current_prob: Score,
         left = b
         right = a
 
-    optimistic_number_of_matches = overlap.size
-    optimistic_result_probability = calc_overlap_pvalue(L=overlap.size, M=optimistic_number_of_matches)
+    optimistic_overlap_size = overlap.size - 1
+    optimistic_number_of_matches = optimistic_overlap_size
+    optimistic_result_probability = calc_overlap_pvalue(L=optimistic_overlap_size, M=optimistic_number_of_matches)
     if combine_probability(optimistic_result_probability, current_prob) < pool.min_acceptable_score:
         return None
 
