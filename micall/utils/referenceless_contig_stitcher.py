@@ -361,9 +361,13 @@ def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[
     remaining = tuple(sorted(contigs, key=contig_size_fun))
     while remaining:
         most_probable = find_most_probable_path(remaining)
+        logger.debug("Constructed a path of length %s.",
+                     len(most_probable.whole.seq))
         yield most_probable.whole
         remaining = tuple(contig for contig in remaining
                           if not most_probable.has_contig(contig))
+        logger.debug("Removed %s components from the working list, having %s still to process.",
+                     len(most_probable.parts_ids), len(remaining))
 
 
 def try_combine_1(finder: OverlapFinder,
@@ -409,7 +413,8 @@ def o2_loop(contigs: Iterable[ContigWithAligner],
 
 def stitch_consensus(contigs: Iterable[ContigWithAligner],
                      ) -> Iterator[ContigWithAligner]:
-    contigs = stitch_consensus_overlaps(contigs)
+    contigs = tuple(stitch_consensus_overlaps(contigs))
+    logger.debug("Initial overlap stitching produced %s contigs.", len(contigs))
     contigs = o2_loop(contigs)
     yield from contigs
 
