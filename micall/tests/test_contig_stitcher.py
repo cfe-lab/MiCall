@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import logging
 import os
 import pytest
-from typing import Iterable, List, Tuple
+from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
@@ -22,8 +22,8 @@ from micall.core.contig_stitcher import (
     rstrip,
 )
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.tests.utils import MockAligner, fixed_random_seed
-from micall.tests.test_denovo import check_hcv_db  # activates the fixture
+from micall.tests.utils import mock_align_consensus, MockAlignment, fixed_random_seed
+from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
@@ -33,12 +33,13 @@ logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 # make linters not complain about unused imports.
 assert check_hcv_db is not None
+assert DEFAULT_DATABASE is not None
 assert load_projects is not None
 
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.Aligner", MockAligner)
+    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align_consensus)
 
 
 @pytest.fixture
@@ -1375,26 +1376,26 @@ def test_forward_and_reverse_match(projects, visualizer):
 def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
     # Scenario: Single contig is aligned in two parts that overlap in reference space.
 
-    @dataclass
-    class MockMappyHit:
-        strand: int
-        q_st: int
-        q_en: int
-        r_st: int
-        r_en: int
-        cigar: List[Tuple[int, CigarActions]]
+    def mock_align(reference_seq: str, consensus: str) -> Tuple[List[MockAlignment], str]:
+        alignments = [MockAlignment(ctg="N/A", ctg_len=0,
+                                    strand=1, mapq=60,
+                                    is_primary=True,
+                                    q_st=100, q_en=300,
+                                    r_st=200, r_en=400,
+                                    cigar=[(200, CigarActions.MATCH)],
+                                    cigar_str="200M"),
+                      MockAlignment(ctg="N/A", ctg_len=0,
+                                    strand=1, mapq=60,
+                                    is_primary=True,
+                                    q_st=300, q_en=500,
+                                    r_st=300, r_en=500,
+                                    cigar=[(200, CigarActions.MATCH)],
+                                    cigar_str="200M"),
+                      ]
+        algorithm = 'mock'
+        return (alignments, algorithm)
 
-    @dataclass
-    class MockAligner:
-        seq: str
-        preset: str
-
-        def map(self, seq: str) -> Iterable[MockMappyHit]:
-            return [MockMappyHit(1, 100, 300, 200, 400, [(200, CigarActions.MATCH)]),
-                    MockMappyHit(1, 300, 500, 300, 500, [(200, CigarActions.MATCH)]),
-                    ]
-
-    monkeypatch.setattr("micall.core.contig_stitcher.Aligner", MockAligner)
+    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align)
 
     ref = 'A' * 700
     seq = 'C' * 600
@@ -1625,19 +1626,19 @@ def test_merge_intervals(intervals, expected):
     assert merge_intervals(intervals) == expected
 
 
+@dataclass
+class TestMockAlignment:
+    r_st: int
+    r_ei: int
+
+
 class MockAlignedContig:
     def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig"):
         self.ref_name = ref_name
         self.group_ref = group_ref
-        self.alignment = MockAlignment(r_st, r_ei)
+        self.alignment = TestMockAlignment(r_st, r_ei)
         self.name = name
         self.id = id(self)
-
-
-@dataclass
-class MockAlignment:
-    r_st: int
-    r_ei: int
 
 
 # Simple function to create mock AlignedContig objects for testing, including ref_name.

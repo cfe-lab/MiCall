@@ -34,7 +34,7 @@ def test(remap_lines, temp_prefix, pssm, ruby_script, delete_results=True):
         try:
             check_call([ruby_script, remap_file.name, nuc_filename, ruby_out_filename],
                        cwd=ruby_path)
-            with open(nuc_filename, 'rU') as nuc_csv, \
+            with open(nuc_filename, 'r') as nuc_csv, \
                  open(python_out_filename, 'wb') as g2p_csv:
 
                 # TODO: update this to the new arguments.
@@ -83,7 +83,7 @@ def ddmin(remap_lines, temp_prefix, pssm, ruby_script):
     return header + remap_lines
 
 def compare_conseqs(txtfilename, ruby_script, pssm):
-    with open(txtfilename, 'rU') as remap_file:
+    with open(txtfilename, 'r') as remap_file:
         remap_lines = remap_file.readlines()
     simple_prefix = os.path.splitext(txtfilename)[0] + '_simple'
     if test(remap_lines, simple_prefix, pssm, ruby_script) != 'PASS':

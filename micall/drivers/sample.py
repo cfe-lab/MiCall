@@ -9,6 +9,7 @@ from pathlib import Path
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
+from micall.core.contig_stitcher import contig_stitcher
 from micall.core.coverage_plots import coverage_plot, concordance_plot
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
@@ -19,6 +20,7 @@ from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
+from micall.utils.fasta_to_csv import fasta_to_csv
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -414,17 +416,28 @@ class Sample:
     def run_denovo(self, excluded_seeds):
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
-        with open(self.merged_contigs_csv) as merged_contigs_csv, \
-                open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
-                open(self.contigs_csv, 'w') as contigs_csv, \
-                open(self.blast_csv, 'w') as blast_csv:
+
+        with open(self.unstitched_contigs_fasta, 'w') as unstitched_contigs_fasta, \
+             open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
             denovo(self.trimmed1_fastq,
                    self.trimmed2_fastq,
-                   unstitched_contigs_csv,
-                   contigs_csv,
+                   unstitched_contigs_fasta,
                    self.scratch_path,
                    merged_contigs_csv,
-                   blast_csv=blast_csv)
+                   )
+
+        with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
+             open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
+             open(self.blast_csv, 'w') as blast_csv:
+            fasta_to_csv(Path(self.unstitched_contigs_fasta),
+                         unstitched_contigs_csv,
+                         merged_contigs_csv,
+                         blast_csv=blast_csv,
+                         )
+
+        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+             open(self.contigs_csv, 'w') as contigs_csv:
+            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
 
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
@@ -452,7 +465,7 @@ class Sample:
                            excluded_seeds=excluded_seeds)
 
         def with_prefix(path):
-            return prepend_prefix_to_basename("unstitched_", path)
+            return path and prepend_prefix_to_basename("unstitched_", path)
 
         with open(self.unstitched_contigs_csv) as contigs_csv, \
                 open(with_prefix(self.remap_csv), 'w') as remap_csv, \
@@ -470,5 +483,5 @@ class Sample:
                            unmapped1,
                            unmapped2,
                            scratch_path,
-                           debug_file_prefix=debug_file_prefix,
+                           debug_file_prefix=with_prefix(debug_file_prefix),
                            excluded_seeds=excluded_seeds)

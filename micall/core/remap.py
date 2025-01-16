@@ -27,8 +27,7 @@ import Levenshtein
 from micall.core import project_config
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
-from micall.core.prelim_map import BOWTIE_BUILD_PATH, \
-    BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
+from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
     REF_GAP_EXTEND, check_fastq
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
@@ -631,7 +630,7 @@ def remap(fastq1: str,
                                                stderr,
                                                callback)
             new_counts.update(split_counts)
-            with open(samfile, 'rU') as f:
+            with open(samfile, 'r') as f:
                 for fields in splitter.walk(f):
                     remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
 
@@ -771,7 +770,7 @@ def map_to_contigs(fastq1,
                                                stderr,
                                                callback)
             new_counts.update(split_counts)
-            with open(samfile, 'rU') as f:
+            with open(samfile, 'r') as f:
                 for fields in splitter.walk(f):
                     write_remap_row(remap_writer, fields)
 
@@ -786,16 +785,9 @@ def map_to_contigs(fastq1,
 
 
 def find_bowtie2():
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except RuntimeError:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+    bowtie2 = Bowtie2()
+    bowtie2_build = Bowtie2Build()
+    bowtie2_build.set_logger(logger)
     return bowtie2, bowtie2_build
 
 
@@ -1199,7 +1191,7 @@ def main():
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
     parser.add_argument('contigs_csv',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='<input> CSV containing assembled contigs')
     parser.add_argument('remap_csv',
                         type=argparse.FileType('w'),

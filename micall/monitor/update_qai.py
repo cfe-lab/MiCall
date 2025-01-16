@@ -8,10 +8,11 @@ from argparse import SUPPRESS
 from collections import defaultdict
 from datetime import datetime
 import logging
+from functools import partial
 from pathlib import Path
 
 from micall.monitor.sample_watcher import PipelineType
-from operator import itemgetter
+from operator import itemgetter, getitem
 import os
 
 from micall.monitor import qai_helper
@@ -24,6 +25,7 @@ logger = logging.getLogger('update_qai')
 
 def parse_args():
     import argparse
+    pipeline_parser = partial(getitem, PipelineType)
     parser = argparse.ArgumentParser(
         description="Update the Oracle database with conseq information",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -34,7 +36,7 @@ def parse_args():
                         help='version suffix for batch names and folder names')
     parser.add_argument('--pipeline_group',
                         default=PipelineType.MAIN,
-                        type=PipelineType,
+                        type=pipeline_parser,
                         choices=(PipelineType.MAIN,
                                  PipelineType.DENOVO_MAIN,
                                  PipelineType.PROVIRAL),
@@ -371,7 +373,7 @@ def find_pipeline_id(session, pipeline_version):
 def load_ok_sample_regions(result_folder):
     ok_sample_regions = set()
     coverage_file = os.path.join(result_folder, 'coverage_scores.csv')
-    with open(coverage_file, "rU") as f:
+    with open(coverage_file, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row['on.score'] == '4':

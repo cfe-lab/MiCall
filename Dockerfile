@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.8
+FROM python:3.11
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -85,29 +85,19 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
+RUN pip install --upgrade pip
 
-COPY requirements.txt requirements-basespace.txt /opt/micall/
+## Install just the dependencies of MiCall (for faster build times in development).
+COPY pyproject.toml README.md /opt/micall/
+RUN pip install /opt/micall[denovo,basespace]
 
-## Python packages, plus trigger matplotlib to build its font cache
-WORKDIR /opt
-RUN pip install --upgrade pip && \
-  pip install -r /opt/micall/requirements-basespace.txt && \
-  python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+## Trigger matplotlib to build its font cache
+RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
-## MiCall
-COPY micall_docker.py micall_kive.py micall_kive_resistance.py version.tx[t] /opt/micall/
-COPY micall/__init__.py micall/project* /opt/micall/micall/
+COPY . /opt/micall/
 
-COPY micall/blast_db/make_blast_db.py    /opt/micall/micall/blast_db/make_blast_db.py
-COPY micall/core    /opt/micall/micall/core/
-COPY micall/data    /opt/micall/micall/data/
-COPY micall/drivers    /opt/micall/micall/drivers/
-COPY micall/g2p     /opt/micall/micall/g2p/
-COPY micall/resistance   /opt/micall/micall/resistance/
-COPY micall/monitor /opt/micall/micall/monitor/
-COPY micall/utils   /opt/micall/micall/utils/
-
-RUN python /opt/micall/micall/blast_db/make_blast_db.py
+RUN pip install /opt/micall[denovo,basespace]
+RUN micall make_blast_db
 
 WORKDIR /data
-ENTRYPOINT ["python", "/opt/micall/micall_docker.py"]
+ENTRYPOINT ["micall", "micall_docker"]

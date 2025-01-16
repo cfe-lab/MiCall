@@ -23,7 +23,7 @@ from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, 
     trim_run_name, compress_old_versions
 from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
 from micall.monitor.find_groups import SampleGroup
-from micall_watcher import parse_args
+from micall.monitor.micall_watcher import parse_args
 
 
 class DummyDataset:
@@ -3162,7 +3162,7 @@ E22222,10,20,30
     assert target.getvalue() == expected_target
 
 def test_launch_main_good_pipeline_id(mock_open_kive, default_config):
-    mock_session = mock_open_kive.return_value
+    _mock_session = mock_open_kive.return_value
     kive_watcher = KiveWatcher(default_config)
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
@@ -3178,7 +3178,7 @@ def test_launch_main_good_pipeline_id(mock_open_kive, default_config):
                                     run_batch=run_batch)
 
 def test_launch_main_bad_pipeline_id(mock_open_kive, default_config):
-    mock_session = mock_open_kive.return_value
+    _mock_session = mock_open_kive.return_value
     kive_watcher = KiveWatcher(default_config)
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
@@ -3192,7 +3192,7 @@ def test_launch_main_bad_pipeline_id(mock_open_kive, default_config):
     expected_msg = f'The specified app with id {pipeline_id}' \
                     ' appears to expect a different set of inputs'
 
-    with pytest.raises(ValueError, match=expected_msg) as excinfo:
+    with pytest.raises(ValueError, match=expected_msg) as _excinfo:
         kive_watcher.find_or_launch_run(pipeline_id=pipeline_id,
                                         inputs=inputs,
                                         run_name='MiCall filter quality on 140101_M01234',

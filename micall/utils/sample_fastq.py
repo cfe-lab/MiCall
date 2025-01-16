@@ -8,10 +8,10 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Randomly sample reads from FASTQ files for quick processing.")
     parser.add_argument('fastq1',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='original FASTQ file of forward reads')
     parser.add_argument('fastq2',
-                        type=argparse.FileType('rU'),
+                        type=argparse.FileType('r'),
                         help='original FASTQ file of reverse reads')
     parser.add_argument('short_fastq1',
                         type=argparse.FileType('w'),

@@ -13,7 +13,7 @@ Do not commit micall_logging_override.py to source control.
 
 # Production server probably needs /var/log/micall/micall.log
 # Don't forget to create the folder and change owner to micall.
-LOG_FILE = 'micall.log'
+LOG_FILE = '/tmp/micall.log'
 
 LOGGING = {
     # This is the default logger. Probably want to switch console to mail.

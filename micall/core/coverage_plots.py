@@ -283,7 +283,7 @@ def make_tar_path(tar_path):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate coverage plots from MiCall outputs.')
-    parser.add_argument('amino_csv', type=argparse.FileType('rU'),
+    parser.add_argument('amino_csv', type=argparse.FileType('r'),
                         help='<input> CSV containing amino acid frequency outputs.')
     parser.add_argument('coverage_scores_csv', type=argparse.FileType('w'),
                         help='<output> CSV coverage scores.')

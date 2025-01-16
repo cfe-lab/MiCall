@@ -22,7 +22,7 @@ from matplotlib.colors import Normalize
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
-from micall.utils.contig_stitcher_context import StitcherContext, context
+from micall.utils.contig_stitcher_context import StitcherContext
 import micall.utils.contig_stitcher_events as events
 from micall.data.landmark_reader import LandmarkReader
 

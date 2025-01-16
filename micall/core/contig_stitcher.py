@@ -4,7 +4,6 @@ import csv
 import os
 from dataclasses import replace
 from math import ceil
-from mappy import Aligner
 from functools import reduce
 from itertools import tee, islice, chain
 from gotoh import align_it
@@ -13,12 +12,13 @@ from Bio import Seq
 import logging
 from fractions import Fraction
 from operator import itemgetter
-from aligntools import Cigar, connect_cigar_hits, CigarHit
+from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import context, StitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
+from micall.utils.consensus_aligner import align_consensus
 import micall.utils.contig_stitcher_events as events
 
 
@@ -163,44 +163,43 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         yield contig
         return
 
-    def init_hit(x) -> Tuple[CigarHit, Literal["forward", "reverse"]]:
-        cigar = CigarHit(Cigar(x.cigar),
-                         min(x.r_st, x.r_en - 1), max(x.r_st, x.r_en - 1),
-                         min(x.q_st, x.q_en - 1), max(x.q_st, x.q_en - 1))
-        return cigar, "forward" if x.strand == 1 else "reverse"
+    alignments, _algo = align_consensus(contig.ref_seq, contig.seq)
+    hits = [x.to_cigar_hit() for x in alignments]
+    strands: List[Literal["forward", "reverse"]] = ["forward" if x.strand == 1 else "reverse" for x in alignments]
 
-    aligner = Aligner(seq=contig.ref_seq, preset='map-ont')
-    alignments = list(aligner.map(contig.seq))
-    hits_array = [init_hit(x) for x in alignments]
-
-    for i, (hit, strand) in enumerate(hits_array):
+    for i, (hit, strand) in enumerate(zip(hits, strands)):
         log(events.InitialHit(contig, i, hit, strand))
 
-    if not hits_array:
+    if not hits:
         log(events.ZeroHits(contig))
         yield contig
         return
 
-    if len(set(strand for hit, strand in hits_array)) > 1:
+    if len(set(strands)) > 1:
         log(events.StrandConflict(contig))
         yield contig
         return
 
-    strand = hits_array[0][1]
+    strand = strands[0]
     if strand == "reverse":
         rc = str(Seq.Seq(contig.seq).reverse_complement())
         original_contig = contig
         new_contig = replace(contig, seq=rc)
         contig = new_contig
-        hits_array = [(replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1), strand)
-                      for hit, strand in hits_array]
+        hits = [replace(hit, q_st=len(rc)-hit.q_ei-1, q_ei=len(rc)-hit.q_st-1) for hit in hits]
 
         log(events.ReverseComplement(original_contig, new_contig))
-        for i, (hit, strand) in enumerate(hits_array):
+        for i, (hit, strand) in enumerate(zip(hits, strands)):
             log(events.InitialHit(contig, i, hit, strand))
 
-    connected = connect_cigar_hits([hit for hit, strand in hits_array]) if hits_array else []
-    log(events.HitNumber(contig, hits_array, connected))
+    def quality(x: CigarHit):
+        mlen = sum(1 for x in x.cigar.relax().iterate_operations()
+                   if x == CigarActions.MATCH)
+        return (mlen, x.ref_length)
+
+    filtered = list(drop_overlapping_cigar_hits(hits, quality))
+    connected = list(connect_nonoverlapping_cigar_hits(filtered))
+    log(events.HitNumber(contig, list(zip(hits, strands)), connected))
 
     for i, single_hit in enumerate(connected):
         query = replace(contig, name=None)
@@ -640,7 +639,7 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               match_fraction=match_fraction)
 
 
-def run(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
+def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
     with StitcherContext.fresh() as ctx:
         contigs = list(read_contigs(input_csv))
 
@@ -685,7 +684,7 @@ def main(argv: Sequence[str]):
     logging.basicConfig(level=logger.level)
 
     plot_path = args.plot.name if args.plot is not None else None
-    run(args.contigs, args.stitched_contigs, plot_path)
+    contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
 
 
 if __name__ == '__main__':
