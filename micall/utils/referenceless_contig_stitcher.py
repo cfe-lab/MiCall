@@ -431,7 +431,9 @@ def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[
     remaining = tuple(sorted(contigs, key=contig_size_fun))
 
     logger.debug("Initializing initial seeds...")
-    seeds = tuple(sorted(o2_combine(remaining), reverse=True))
+    seeds = tuple(sorted(o2_combine(remaining),
+                         key=lambda path: (path.score(), len(path.whole.seq)),
+                         reverse=True))
     logger.debug("Starting with %s initial seeds.", len(seeds))
 
     while remaining:
