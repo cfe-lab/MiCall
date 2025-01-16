@@ -23,6 +23,7 @@ from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
 from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
+from micall.utils.cat import cat as concatenate_files
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -31,16 +32,6 @@ logger = logging.getLogger(__name__)
 def prepend_prefix_to_basename(prefix: str, path: str):
     dir_name, base_name = os.path.split(path)
     return os.path.join(dir_name, prefix + base_name)
-
-
-def concatenate_files(file1_path, file2_path, output_path):
-    with open(output_path, 'w') as outfile:
-        with open(file1_path, 'r') as file1:
-            for line in file1:
-                outfile.write(line)
-        with open(file2_path, 'r') as file2:
-            for line in file2:
-                outfile.write(line)
 
 
 @contextmanager
@@ -444,9 +435,10 @@ class Sample:
             except NoContigsInCSV:
                 Path(self.merged_contigs_fasta).touch()
 
-        concatenate_files(self.unstitched_contigs_fasta,
-                          self.merged_contigs_fasta,
-                          self.combined_contigs_fasta)
+        concatenate_files(inputs=[self.unstitched_contigs_fasta,
+                                  self.merged_contigs_fasta],
+                          output=self.combined_contigs_fasta,
+                          text=True, ignore_not_found=True)
 
         with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
