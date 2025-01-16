@@ -19,22 +19,10 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 
-def cat(inputs: Iterable[Path],
-        output: Path,
-        text: bool,
-        ignore_not_found: bool,
-        ) -> int:
-
+def cat(inputs: Iterable[Path], output: Path) -> int:
     """
     Concatenates the contents of input inputs and writes the result to
     an output file.
-
-    Args:
-        inputs (Paths): List of input file paths.
-        output (Path): Path to the output file where the result
-        will be saved.
-        text (bool): Whether to treat inputs as text.
-        ignore_not_found (bool): Whether to treat non-existant inputs as empty.
     """
 
     with open(output, 'w') as out:
@@ -42,39 +30,26 @@ def cat(inputs: Iterable[Path],
             for file in inputs:
                 try:
                     with open(file) as f:
-                        if text:
-                            for line in f:
-                                out.write(line)
-                        else:
-                            shutil.copyfileobj(f, out)
+                        shutil.copyfileobj(f, out)
                 except FileNotFoundError:
-                    if ignore_not_found:
-                        continue
-                    else:
-                        print(f"The file {str(file)!r} was not found."
-                              " Please check the file path and try again.",
-                              file=sys.stderr)
-                        raise
-                        return 1
+                    print(f"The file {str(file)!r} was not found."
+                          " Please check the file path and try again.",
+                          file=sys.stderr)
+                    return 1
                 except IOError as e:
                     print(f"IO Error while processing the file {str(file)!r}: {e}",
                           file=sys.stderr)
-                    raise
                     return 1
+
+            return 0
         except BaseException as e:
             print(f"An unexpected error occurred: {e}", file=sys.stderr)
-            raise
-        return 1
+            return 1
 
 
 def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Concatenate inputs and write to an output file.")
-
-    parser.add_argument('--text', action='store_true',
-                        help='Operate on text inputs.')
-    parser.add_argument('--ignore-not-found', action='store_true',
-                        help='Treat non-existant inputs as empty.')
 
     parser.add_argument(
         'inputs',
@@ -92,7 +67,7 @@ def main(argv: Sequence[str]) -> int:
     )
 
     args = parser.parse_args(argv)
-    return cat(args.inputs, args.output, args.text, args.ignore_not_found)
+    return cat(args.inputs, args.output)
 
 
 def entry() -> None:

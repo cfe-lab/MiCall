@@ -437,8 +437,7 @@ class Sample:
 
         concatenate_files(inputs=[self.unstitched_contigs_fasta,
                                   self.merged_contigs_fasta],
-                          output=self.combined_contigs_fasta,
-                          text=True, ignore_not_found=True)
+                          output=self.combined_contigs_fasta)
 
         with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
