@@ -3,10 +3,25 @@
 from csv import DictReader
 from pathlib import Path
 from typing import TextIO, Dict
+import csv
 import multicsv
 
 from micall.utils.sample_sheet_v1_parser import sample_sheet_v1_parser
-from micall.utils.sample_sheet_v2_parser import sample_sheet_v2_parser
+from micall.utils.sample_sheet_v2_parser import sample_sheet_v2_parser, try_parse_sample_project
+
+
+def determine_version(file: multicsv.MultiCSVFile) -> int:
+    data_section = file.get('Data')
+    if data_section is None:
+        raise ValueError("Missing 'Data' section in the sample sheet.")
+
+    for row in csv.DictReader(data_section):
+        for value in row.values():
+            if try_parse_sample_project(value):
+                return 2
+
+    return 1
+
 
 def sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     """
@@ -17,10 +32,10 @@ def sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     """
 
     with multicsv.wrap(handle) as csvfile:
-        if 'BCCFE_Settings' in csvfile:
-            return sample_sheet_v2_parser(csvfile)
-        else:
+        if determine_version(csvfile) == 1:
             return sample_sheet_v1_parser(handle)
+        else:
+            return sample_sheet_v2_parser(csvfile)
 
 
 def read_sample_sheet_overrides(override_file, run_info):

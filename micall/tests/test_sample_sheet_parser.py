@@ -542,19 +542,12 @@ Chemistry,Chemistry
 251
 [Settings]
 [Data]
-Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder
-1,1234-1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,""
-2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,""
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,1234,DRT,N501-N701,20-Jul-2017.M04401
-1,1234,INT,N501-N701,20-Jul-2017.M04401
-2,4321,DRT,N501-N702,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
 
-    clean_filenames = ["1234-1234_S1", "4321_S2"]
+    clean_filenames = ["1234_1234_S1", "4321_S2"]
 
     def setUp(self):
         self.maxDiff = None
@@ -592,7 +585,7 @@ Sample_ID,Enum,Project,Tag,Sample_Plate
                         "index2": "CATGGTCT",
                         "tags": "N501-N701",
                         "chemistry": "Chemistry",
-                        "orig_sample_name": "1234-1234",
+                        "orig_sample_name": "1234_1234",
                     },
                 self.clean_filenames[1]:
                     {
@@ -616,24 +609,24 @@ Sample_ID,Enum,Project,Tag,Sample_Plate
             self.ss["DataSplit"],
             [{'sample': '1234',
               'project': 'DRT',
-              'filename': '1234-1234_S1',
+              'filename': '1234_1234_S1',
               'tags': 'N501-N701',
               'index1': 'GTGTTGCT',
               'index2': 'CATGGTCT',
               'sample_number': 'S1',
               'chemistry': 'Chemistry',
-              'orig_sample_name': '1234-1234',
+              'orig_sample_name': '1234_1234',
               'Sample_ID': '1',
               },
              {'sample': '1234',
               'project': 'INT',
-              'filename': '1234-1234_S1',
+              'filename': '1234_1234_S1',
               'tags': 'N501-N701',
               'index1': 'GTGTTGCT',
               'index2': 'CATGGTCT',
               'sample_number': 'S1',
               'chemistry': 'Chemistry',
-              'orig_sample_name': '1234-1234',
+              'orig_sample_name': '1234_1234',
               'Sample_ID': '1',
               },
              {'sample': '4321',
@@ -650,33 +643,6 @@ Sample_ID,Enum,Project,Tag,Sample_Plate
              ]
         )
 
-    def test_empty_bccfe_data(self):
-        sample_sheet = """
-[Header]
-IEMFileVersion,5
-Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
-[Reads]
-251
-251
-[Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-"""
-        ss = sample_sheet_parser(StringIO(sample_sheet))
-        self.assertEqual(len(ss['DataSplit']), 0)
-
 
 class SampleSheetV2VerifierTests(unittest.TestCase):
     def test_valid_sample_sheet(self):
@@ -684,27 +650,21 @@ class SampleSheetV2VerifierTests(unittest.TestCase):
 [Header]
 IEMFileVersion,5
 Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
+Project Name,20-Jul-2017.M04401
+Experiment Name,20-Jul-2017.M04401
+Date,07/31/2024
+Workflow,Workflow
+Assay,Chemistry
+Description,Chemistry
+Chemistry,Chemistry
 [Reads]
 251
 251
 [Settings]
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-2,Enum2,Proj2,Tag2,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         sample_sheet_parser(StringIO(valid_sample_sheet))
 
@@ -714,45 +674,13 @@ Sample_ID,Enum,Project,Tag,Sample_Plate
 251
 251
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Missing 'Header' section in the sample sheet.", str(context.exception))
-
-    def test_invalid_reads_section(self):
-        invalid_sample_sheet = """
-[Header]
-IEMFileVersion,5
-Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
-[Reads]
-251
-not_a_number
-[Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-"""
-        with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(invalid_sample_sheet))
-        self.assertIn("Expected an integer but got", str(context.exception))
 
     def test_missing_required_fields_in_data(self):
         invalid_sample_sheet = """
@@ -770,14 +698,9 @@ Chemistry,Amplicon
 251
 251
 [Data]
-Sample_Name,index,index2
-Sample1,ACGT,TGCA
-Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
+Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
+4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -799,14 +722,9 @@ Chemistry,Amplicon
 251
 251
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
+Sample_Name,index,index2,Sample_Project
+ACGT,TGCA,bccfe_2_N501-N701_INT
+CGAT,ATGC,bccfe_2_N501-N701_INT
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -828,14 +746,9 @@ Chemistry,Amplicon
 251
 251
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1
+Sample_ID,Sample_Name,index,index2,Sample_Project
+Sample1,ACGT,TGCA,bccfe_2_N501-N701_INT
+Sample2,CGAT,ATGC,bccfe_2_N501-N701_INT
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(invalid_sample_sheet))
@@ -846,117 +759,25 @@ Sample_ID,Enum,Project,Tag,Sample_Plate
 [Header]
 IEMFileVersion,5
 Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
+Project Name,20-Jul-2017.M04401
+Experiment Name,20-Jul-2017.M04401
+Date,07/31/2024
+Workflow,Workflow
+Assay,Chemistry
+Description,Chemistry
+Chemistry,Chemistry
 [Reads]
 251
 abc
+[Settings]
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-2,Enum2,Proj2,Tag2,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(sample_sheet))
         self.assertIn("Expected an integer but got", str(context.exception))
-
-    def test_missing_sample_id_in_bccfe_data(self):
-        sample_sheet = """
-[Header]
-IEMFileVersion,5
-Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
-[Reads]
-251
-251
-[Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Enum,Project,Tag,Sample_Plate
-Enum1,Proj1,Tag1,20-Jul-2017.M04401
-Enum2,Proj2,Tag2,20-Jul-2017.M04401
-"""
-        with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(sample_sheet))
-        self.assertIn("Expected field 'Sample_ID' not found", str(context.exception))
-
-    def test_correct_bccfe_data_parsing(self):
-        sample_sheet = """
-[Header]
-IEMFileVersion,5
-Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
-[Reads]
-251
-251
-[Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-2,Enum2,Proj2,Tag2,20-Jul-2017.M04401
-"""
-        ss = sample_sheet_parser(StringIO(sample_sheet))
-
-        self.assertEqual(len(ss["Data"]), 2)
-        self.assertEqual(len(ss["DataSplit"]), 2)
-
-        sample1 = ss["Data"]["Sample1_S1"]
-        self.assertEqual(sample1["Sample_ID"], "1")
-        self.assertEqual(sample1["index1"], "ACGT")
-        self.assertEqual(sample1["index2"], "TGCA")
-        self.assertEqual(sample1["chemistry"], "Amplicon")
-        self.assertEqual(sample1["orig_sample_name"], "Sample1")
-        self.assertEqual(sample1["tags"], "Tag1")
-
-        split1 = ss["DataSplit"][0]
-        self.assertEqual(split1["Sample_ID"], "1")
-        self.assertEqual(split1["tags"], "Tag1")
-        self.assertEqual(split1["filename"], "Sample1_S1")
-
-        sample2 = ss["Data"]["Sample2_S2"]
-        self.assertEqual(sample2["Sample_ID"], "2")
-        self.assertEqual(sample2["index1"], "CGAT")
-        self.assertEqual(sample2["index2"], "ATGC")
-        self.assertEqual(sample2["chemistry"], "Amplicon")
-        self.assertEqual(sample2["orig_sample_name"], "Sample2")
-        self.assertEqual(sample2["tags"], "Tag2")
-
-        split2 = ss["DataSplit"][1]
-        self.assertEqual(split2["Sample_ID"], "2")
-        self.assertEqual(split2["tags"], "Tag2")
-        self.assertEqual(split2["filename"], "Sample2_S2")
 
     def test_missing_reads_section(self):
         sample_sheet = """
@@ -971,13 +792,9 @@ Assay,Nextera
 Description,TestDescription
 Chemistry,Amplicon
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(sample_sheet))
@@ -999,15 +816,9 @@ Chemistry,Amplicon
 251
 251
 [Data]
-Sample_ID,Sample_Name,index
-1,Sample1,ACGT
-2,Sample2,CGAT
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-2,Enum2,Proj2,Tag2,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,GenomeFolder,Sample_Project
+1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,"",bccfe_2_N501-N701_DRT_INT
+2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,"",bccfe_2_N501-N702_DRT
 """
 
         with self.assertRaises(ValueError) as context:
@@ -1017,119 +828,26 @@ Sample_ID,Enum,Project,Tag,Sample_Plate
 
 class EdgeVersionTwoTests(unittest.TestCase):
 
-    def test_minimal_valid_sample_sheet(self):
-        # Minimal valid sample sheet with all required sections and fields.
-        sample_sheet = """
-[Header]
-IEMFileVersion,5
-Investigator Name,JN
-Project Name,TestProject
-Experiment Name,TestExperiment
-Date,01/01/2021
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,TestDescription
-Chemistry,Amplicon
-[Reads]
-251
-251
-[Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-"""
-        ss = sample_sheet_parser(StringIO(sample_sheet))
-
-        self.assertEqual(ss["IEMFileVersion"], "5")
-        self.assertEqual(ss["Investigator Name"], "JN")
-        self.assertEqual(ss["Project Name"], "TestProject")
-        self.assertEqual(ss["Reads"], [251, 251])
-
-        self.assertIn("Sample1_S1", ss["Data"])
-        self.assertEqual(ss["Data"]["Sample1_S1"]["index1"], "ACGT")
-        self.assertEqual(ss["Data"]["Sample1_S1"]["index2"], "TGCA")
-        self.assertEqual(ss["Data"]["Sample1_S1"]["tags"], "Tag1")
-
-        self.assertIn("sample_sheet_version", ss)
-        self.assertEqual(ss["sample_sheet_version"], "2.0.0")
-
-    def test_multiple_valid_entries(self):
-        # Valid sample sheet with multiple entries in all sections.
-        sample_sheet = """
-[Header]
-IEMFileVersion,5
-Investigator Name,JN
-Project Name,MultiEntryTest
-Experiment Name,MultiEntryExperiment
-Date,01/01/2022
-Workflow,GenerateFASTQ
-Assay,Nextera
-Description,SomeDescription
-Chemistry,Amplicon
-[Reads]
-251
-251
-[Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-3,Sample3,TTAA,AAGT
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-2,Enum2,Proj2,Tag2,20-Jul-2017.M04401
-3,Enum3,Proj3,Tag3,20-Jul-2017.M04401
-"""
-        ss = sample_sheet_parser(StringIO(sample_sheet))
-
-        self.assertEqual(len(ss["Data"]), 3)
-        self.assertEqual(len(ss["DataSplit"]), 3)
-
-        samples = ["Sample1_S1", "Sample2_S2", "Sample3_S3"]
-
-        for i, sample in enumerate(samples, start=1):
-            sample_data = ss["Data"][sample]
-            self.assertEqual(sample_data["Sample_ID"], str(i))
-            self.assertIn("index1", sample_data)
-            self.assertIn("index2", sample_data)
-            self.assertIn("tags", sample_data)
-
-        projects = ["Proj1", "Proj2", "Proj3"]
-        for i, data_split in enumerate(ss["DataSplit"]):
-            self.assertEqual(data_split["project"], projects[i])
-
     def test_with_optional_fields(self):
-        # Valid sample sheet with optional fields like index2 present.
+        # Valid sample sheet with optional fields like index3 present.
         sample_sheet = """
 [Header]
 IEMFileVersion,5
 Investigator Name,JN
-Project Name,OptionalFieldTest
-Experiment Name,OptionalFieldExperiment
-Date,01/01/2023
+Project Name,CompleteBCCFETest
+Experiment Name,CompleteBCCFEExperiment
+Date,01/01/2024
 Workflow,GenerateFASTQ
 Assay,Nextera
-Description,OptionalFieldDescription
+Description,CompleteBCCFEDescription
 Chemistry,Amplicon
 [Reads]
 251
 251
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Proj1,Tag1,20-Jul-2017.M04401
-2,Enum2,Proj2,Tag2,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,index3,GenomeFolder,Sample_Project
+1,Sample1,20-Jul-2017.M04401,N/A,ACTG,TGCA,ACCC,"",bccfe_2_Tag1_Neurology
+2,Sample2,20-Jul-2017.M04401,N/A,CGAT,ATGC,TCCC,"",bccfe_2_Tag2_Oncology
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
@@ -1156,15 +874,9 @@ Chemistry,Amplicon
 251
 251
 [Data]
-Sample_ID,Sample_Name,index,index2
-1,Sample1,ACGT,TGCA
-2,Sample2,CGAT,ATGC
-[BCCFE_Settings]
-SampleSheetVersion,2.0.0
-[BCCFE_Data]
-Sample_ID,Enum,Project,Tag,Sample_Plate
-1,Enum1,Neurology,Tag1,20-Jul-2017.M04401
-2,Enum2,Oncology,Tag2,20-Jul-2017.M04401
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,Sample1,20-Jul-2017.M04401,N/A,ACTG,TGCA,"",bccfe_2_Tag1_Neurology
+2,Sample2,20-Jul-2017.M04401,N/A,CGAT,ATGC,"",bccfe_2_Tag2_Oncology
 """
         ss = sample_sheet_parser(StringIO(sample_sheet))
 
