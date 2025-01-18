@@ -17,8 +17,8 @@ class SampleProject:
     project_codes: Sequence[str]
 
 
-def try_parse_sample_project(value: str) -> Optional[SampleProject]:
-    if not value.startswith(SAMPLE_SHEET_MAGIC):
+def try_parse_sample_project(value: Optional[str]) -> Optional[SampleProject]:
+    if value is None or not value.startswith(SAMPLE_SHEET_MAGIC):
         return None
 
     sample_project_parts = value.split(SAMPLE_SHEET_SEPARATOR)
@@ -33,13 +33,16 @@ def try_parse_sample_project(value: str) -> Optional[SampleProject]:
                          )
 
 
-def parse_sample_project(sample_project: str) -> SampleProject:
+def parse_sample_project(sample_project: Optional[str]) -> SampleProject:
     ret = try_parse_sample_project(sample_project)
     assert ret is not None
     return ret
 
 
-def try_parse_sample_name(value: str) -> Optional[Sequence[str]]:
+def try_parse_sample_name(value: Optional[str]) -> Optional[Sequence[str]]:
+    if value is None:
+        return None
+
     sample_name_parts = value.split(SAMPLE_SHEET_SEPARATOR)
     if len(sample_name_parts) < 1:
         return None
@@ -47,7 +50,7 @@ def try_parse_sample_name(value: str) -> Optional[Sequence[str]]:
     return sample_name_parts
 
 
-def parse_sample_name(sample_name: str) -> Sequence[str]:
+def parse_sample_name(sample_name: Optional[str]) -> Sequence[str]:
     ret = try_parse_sample_name(sample_name)
     assert ret is not None
     return ret
@@ -133,11 +136,29 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
                 for field in required_data_fields:
                     if field not in headers:
                         data_field_errors.append(f"Line {line_number} in [Data] section: "
-                                                 f"Expected field '{field}' not found.")
+                                                 f"Expected field {field!r} not found.")
             else:
                 if len(row) != len(headers):
                     data_field_errors.append(f"Line {line_number} in [Data] section: Row length {len(row)} "
                                              f"does not match header length {len(headers)}.")
+
+        reference_parsed_project: Optional[SampleProject] = None
+        for row_d in csv.DictReader(file['Data']):
+            sample_project = row_d['Sample_Project']
+            if reference_parsed_project is not None:
+                parsed_project = try_parse_sample_project(sample_project)
+                if parsed_project is None:
+                    data_field_errors.append(f"Cannot parse sample project field: {sample_project!r}.")
+                    continue
+
+                if parsed_project.major_version != reference_parsed_project.major_version:
+                    left = parsed_project.major_version
+                    right = reference_parsed_project.major_version
+                    data_field_errors.append(f"Got two different versions: {left} and {right}.")
+            else:
+                reference_parsed_project = try_parse_sample_project(sample_project)
+                if reference_parsed_project is None:
+                    data_field_errors.append(f"Cannot parse sample project field: {sample_project!r}.")
     else:
         raise ValueError("Missing 'Data' section in the sample sheet.")
 
