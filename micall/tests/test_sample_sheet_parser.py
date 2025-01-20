@@ -777,7 +777,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 """
         with self.assertRaises(ValueError) as context:
             sample_sheet_parser(StringIO(sample_sheet))
-        self.assertIn("Expected an integer but got", str(context.exception))
+        self.assertIn("Expected an integer, but got", str(context.exception))
 
     def test_missing_reads_section(self):
         sample_sheet = """

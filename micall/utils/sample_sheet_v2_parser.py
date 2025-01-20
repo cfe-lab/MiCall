@@ -116,7 +116,9 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
             continue
         if len(row) != 2:
             raise ValueError(
-                f"Line {line_number} in [Header] section: Expected 2 elements (key-value pair), but got {len(row)}."
+                f"Line {line_number} in [Header] section:"
+                " Expected 2 elements (key-value pair), "
+                f"but got {len(row)}: {row!r}."
             )
 
     # Verify Reads section
@@ -125,11 +127,15 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
             if len(row) == 0:
                 continue
             if len(row) != 1:
-                raise ValueError(f"Line {line_number} in [Reads] section: Expected 1 element, but got {len(row)}.")
+                raise ValueError(f"Line {line_number} in [Reads] section:"
+                                 " Expected 1 element, "
+                                 f"but got {len(row)}: {row!r}.")
             try:
                 int(row[0])
             except BaseException:
-                raise ValueError(f"Line {line_number} in [Reads] section: Expected an integer but got {row[0]}.")
+                raise ValueError(f"Line {line_number} in [Reads] section:"
+                                 " Expected an integer, "
+                                 f"but got {row[0]}: {row!r}.")
     else:
         raise ValueError("Missing 'Reads' section in the sample sheet.")
 
