@@ -24,23 +24,45 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     return aseq1, aseq2
 
 
-def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
-                               ) -> Sequence[Fraction]:
-    absolute = calculate_concordance(left, right)
-    if len(absolute) == 0:
-        return []
+def normalize_array(array: Sequence[float]) -> Sequence[Fraction]:
+    if len(array) == 0:
+        return ()
 
-    low = min(absolute)
-    high = max(absolute)
+    low = min(array)
+    high = max(array)
     if low == high:
         if low < 0:
             value = 0
         elif low > 0:
             value = 1
-        return [Fraction(value)] * len(absolute)
+        return (Fraction(value),) * len(array)
 
     diff = high - low
-    return [Fraction(x - low) / Fraction(diff) for x in absolute]
+    return tuple(Fraction(x - low) / Fraction(diff) for x in array)
+
+
+def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
+                               ) -> Sequence[Fraction]:
+    absolute = calculate_concordance(left, right)
+    return normalize_array(absolute)
+
+
+def exp_accumulate_array(array: Sequence[int]) -> Sequence[float]:
+    positive = [0.0] * len(array)
+
+    pacc = 0.0
+    for i, x in enumerate(array):
+        pacc += 1
+        pacc *= x
+        positive[i] += math.sqrt(pacc)
+
+    pacc = 0.0
+    for i, x in reversed(tuple(enumerate(array))):
+        pacc += 1
+        pacc *= x
+        positive[i] += math.sqrt(pacc)
+
+    return positive
 
 
 def calculate_concordance(left: Sequence[object], right: Sequence[object],
@@ -66,30 +88,9 @@ def calculate_concordance(left: Sequence[object], right: Sequence[object],
         raise ValueError("Can only calculate concordance for same sized sequences")
 
     xs = tuple(1 if x == y else 0 for x, y in zip(left, right))
-
-    positive = [0.0] * len(left)
-    negative = [0.0] * len(left)
-
-    pacc = 0
-    nacc = 0
-    for i, x in enumerate(xs):
-        pacc += 1
-        pacc *= x
-        nacc += 1
-        nacc *= (1 - x)
-        positive[i] += math.sqrt(pacc)
-        negative[i] += math.sqrt(nacc)
-
-    pacc = 0
-    nacc = 0
-    for i, x in reversed(tuple(enumerate(xs))):
-        pacc += 1
-        pacc *= x
-        nacc += 1
-        nacc *= (1 - x)
-        positive[i] += math.sqrt(pacc)
-        negative[i] += math.sqrt(nacc)
-
+    ys = tuple(0 if x == y else 1 for x, y in zip(left, right))
+    positive = exp_accumulate_array(xs)
+    negative = exp_accumulate_array(ys)
     return tuple(x - y for x, y in zip(positive, negative))
 
 
