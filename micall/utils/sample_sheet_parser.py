@@ -6,6 +6,7 @@ from typing import TextIO, Dict
 import csv
 import multicsv
 from io import StringIO
+import json
 
 from micall.utils.sample_sheet_v1_parser import sample_sheet_v1_parser
 from micall.utils.sample_sheet_v2_parser import sample_sheet_v2_parser, try_parse_sample_project
@@ -70,7 +71,7 @@ def main():
 
     with open(args.samplesheet) as f:
         ss = sample_sheet_parser(f)
-        print(ss)
+        print(json.dumps(ss, indent='\t'))
 
 
 if __name__ == "__main__":
