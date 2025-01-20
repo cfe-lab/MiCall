@@ -66,11 +66,13 @@ def sample_sheet_v2_parser(file: MultiCSVFile) -> Dict[str, object]:
         ret['sample_sheet_version'] = proj.major_version
 
     for row in csv.reader(file['Header']):
-        ret[row[0]] = row[1]
+        if row:
+            ret[row[0]] = row[1]
 
     ret['Reads'] = []
     for row in csv.reader(file['Reads']):
-        ret['Reads'].append(int(row[0]))
+        if row:
+            ret['Reads'].append(int(row[0]))
 
     ret['Data'] = {}
     ret['DataSplit'] = []
@@ -110,6 +112,8 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
 
     # Verify Header section
     for line_number, row in enumerate(csv.reader(file['Header']), start=1):
+        if len(row) == 0:
+            continue
         if len(row) != 2:
             raise ValueError(
                 f"Line {line_number} in [Header] section: Expected 2 elements (key-value pair), but got {len(row)}."
@@ -118,6 +122,8 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
     # Verify Reads section
     if 'Reads' in file.keys():
         for line_number, row in enumerate(csv.reader(file['Reads']), start=1):
+            if len(row) == 0:
+                continue
             if len(row) != 1:
                 raise ValueError(f"Line {line_number} in [Reads] section: Expected 1 element, but got {len(row)}.")
             try:

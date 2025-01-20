@@ -886,3 +886,37 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
         self.assertEqual(len(ss["DataSplit"]), 2)
         self.assertEqual(ss["DataSplit"][0]["project"], "Neurology")
         self.assertEqual(ss["DataSplit"][1]["project"], "Oncology")
+
+    def test_complete_bccfe_data_entries_with_spaces(self):
+        # Sample that contains empty lines
+        sample_sheet = """
+[Header]
+IEMFileVersion,5
+Investigator Name,JN
+Project Name,CompleteBCCFETest
+Experiment Name,CompleteBCCFEExperiment
+Date,01/01/2024
+Workflow,GenerateFASTQ
+Assay,Nextera
+Description,CompleteBCCFEDescription
+Chemistry,Amplicon
+
+[Reads]
+251
+251
+
+[Settings]
+
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
+1,Sample1,20-Jul-2017.M04401,N/A,ACTG,TGCA,"",bccfe_2_Tag1_Neurology
+2,Sample2,20-Jul-2017.M04401,N/A,CGAT,ATGC,"",bccfe_2_Tag2_Oncology
+"""
+        ss = sample_sheet_parser(StringIO(sample_sheet))
+
+        self.assertEqual(ss["Data"]["Sample1_S1"]["tags"], "Tag1")
+        self.assertEqual(ss["Data"]["Sample2_S2"]["tags"], "Tag2")
+
+        self.assertEqual(len(ss["DataSplit"]), 2)
+        self.assertEqual(ss["DataSplit"][0]["project"], "Neurology")
+        self.assertEqual(ss["DataSplit"][1]["project"], "Oncology")
