@@ -39,6 +39,7 @@ dependencies = [
     "drawsvg==2.4.0",
     "cairosvg==2.7.1",
     "aligntools==1.2.1",
+    "multicsv==1.0.4",
 ]
 
 [project.optional-dependencies]
@@ -233,7 +234,6 @@ exclude = '''(?x)
     ^micall/utils/sample_fastq[.]py$|
     ^micall/utils/sample_project_summary[.]py$|
     ^micall/utils/samples_from_454[.]py$|
-    ^micall/utils/sample_sheet_parser[.]py$|
     ^micall/utils/scan_run_folders[.]py$|
     ^micall/utils/seed_alignments[.]py$|
     ^micall/utils/spring_beads[.]py$|
