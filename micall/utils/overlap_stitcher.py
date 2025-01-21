@@ -67,10 +67,16 @@ def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
     return out
 
 
-def exp_accumulate_array(array: np.ndarray) -> np.ndarray:
+def exp_accumulate_array_positive(array: np.ndarray) -> np.ndarray:
     forward = consecutive_true_counts(array)
     reverse = np.flip(consecutive_true_counts(np.flip(array)))
     return forward ** 0.5 + reverse ** 0.5
+
+
+def exp_accumulate_array(array: np.ndarray) -> np.ndarray:
+    positive = exp_accumulate_array_positive(array)
+    negative = exp_accumulate_array_positive(1 - array)
+    return positive - negative
 
 
 def calculate_concordance(left: Sequence[object], right: Sequence[object],
@@ -95,11 +101,8 @@ def calculate_concordance(left: Sequence[object], right: Sequence[object],
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    xs = np.fromiter((x == y for x, y in zip(left, right)), dtype=np.bool)
-    ys = 1 - xs
-    positive = exp_accumulate_array(xs)
-    negative = exp_accumulate_array(ys)
-    return positive - negative
+    array = np.fromiter((x == y for x, y in zip(left, right)), dtype=np.bool)
+    return exp_accumulate_array(array)  # type: ignore
 
 
 T = TypeVar("T")
