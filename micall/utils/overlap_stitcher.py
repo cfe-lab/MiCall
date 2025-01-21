@@ -2,6 +2,7 @@ from fractions import Fraction
 from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
+from itertools import accumulate
 import math
 
 
@@ -48,21 +49,16 @@ def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
 
 
 def exp_accumulate_array(array: Sequence[int]) -> Sequence[float]:
-    positive = [0.0] * len(array)
+    def op(acc, x):
+        acc += 1
+        acc *= x
+        return acc
 
-    pacc = 0.0
-    for i, x in enumerate(array):
-        pacc += 1
-        pacc *= x
-        positive[i] += math.sqrt(pacc)
+    forward = accumulate(array, op)
+    reverse = reversed(tuple(accumulate(reversed(array), op)))
 
-    pacc = 0.0
-    for i, x in reversed(tuple(enumerate(array))):
-        pacc += 1
-        pacc *= x
-        positive[i] += math.sqrt(pacc)
-
-    return positive
+    return tuple(math.sqrt(x) + math.sqrt(y)
+                 for x, y in zip(forward, reverse))
 
 
 def calculate_concordance(left: Sequence[object], right: Sequence[object],
