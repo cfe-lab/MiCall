@@ -49,10 +49,8 @@ def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
 
 
 def exp_accumulate_array(array: Sequence[bool]) -> Sequence[float]:
-    def op(acc, x):
-        acc += 1
-        acc *= x
-        return acc
+    def op(acc: int, x: bool) -> int:
+        return (acc + 1) * x
 
     forward = accumulate(array, op)
     reverse = reversed(tuple(accumulate(reversed(array), op)))
