@@ -48,7 +48,7 @@ def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
     return normalize_array(absolute)
 
 
-def exp_accumulate_array(array: Sequence[int]) -> Sequence[float]:
+def exp_accumulate_array(array: Sequence[bool]) -> Sequence[float]:
     def op(acc, x):
         acc += 1
         acc *= x
@@ -83,8 +83,8 @@ def calculate_concordance(left: Sequence[object], right: Sequence[object],
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    xs = tuple(1 if x == y else 0 for x, y in zip(left, right))
-    ys = tuple(0 if x == y else 1 for x, y in zip(left, right))
+    xs = tuple(x == y for x, y in zip(left, right))
+    ys = tuple(x != y for x, y in zip(left, right))
     positive = exp_accumulate_array(xs)
     negative = exp_accumulate_array(ys)
     return tuple(x - y for x, y in zip(positive, negative))
