@@ -101,7 +101,8 @@ def calculate_concordance(left: Sequence[object], right: Sequence[object],
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    array = np.fromiter((x == y for x, y in zip(left, right)), dtype=np.bool)
+    array = np.fromiter((x == y for x, y in zip(left, right)),
+                        count=len(left), dtype=np.bool)
     return exp_accumulate_array(array)  # type: ignore
 
 
