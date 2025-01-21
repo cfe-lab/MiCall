@@ -23,12 +23,12 @@ classifiers = [
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
     "pytz==2024.2",
-    "biopython==1.84",
+    "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
-    "numpy==2.2.1",
+    "numpy==2.2.2",
     "sortedcontainers==2.4.0",
-    "scipy==1.14.1",
+    "scipy==1.15.1",
     "matplotlib==3.10.0",
     "cutadapt==5.0",
     "python-Levenshtein==0.26.1",
@@ -40,6 +40,7 @@ dependencies = [
     "drawsvg==2.4.0",
     "cairosvg==2.7.1",
     "aligntools==1.2.1",
+    "multicsv==1.0.4",
 ]
 
 [project.optional-dependencies]
@@ -59,7 +60,7 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.8.5",
+    "ruff==0.9.2",
     "mypy==1.14.1",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
@@ -234,7 +235,6 @@ exclude = '''(?x)
     ^micall/utils/sample_fastq[.]py$|
     ^micall/utils/sample_project_summary[.]py$|
     ^micall/utils/samples_from_454[.]py$|
-    ^micall/utils/sample_sheet_parser[.]py$|
     ^micall/utils/scan_run_folders[.]py$|
     ^micall/utils/seed_alignments[.]py$|
     ^micall/utils/spring_beads[.]py$|

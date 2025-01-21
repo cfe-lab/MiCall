@@ -84,6 +84,8 @@ jobs:
         run: docker run micall --help
       - name: Check docker image entrypoint
         run: docker run micall --help | grep -i -e 'docker'
+      - name: Install python packages
+        run: pip install multicsv
       - name: Check docker image microtest
         run: python micall/main.py release_test_microtest micall --docker
 
@@ -128,6 +130,9 @@ jobs:
 
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
+
+      - name: Install python packages
+        run: pip install multicsv
 
       - name: Singularity test
         run: python micall/main.py release_test_microtest micall.simg
