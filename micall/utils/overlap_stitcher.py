@@ -2,8 +2,8 @@ from fractions import Fraction
 from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
-from itertools import accumulate
-import math
+import numba
+import numpy as np
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -48,15 +48,29 @@ def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
     return normalize_array(absolute)
 
 
-def exp_accumulate_array(array: Sequence[bool]) -> Sequence[float]:
-    def op(acc: int, x: bool) -> int:
-        return (acc + 1) * x
+@numba.njit
+def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
+    """
+    Given a boolean array arr, returns an integer array
+    where out[i] is the count of consecutive True values
+    up to (and including) index i, resetting on False.
+    """
 
-    forward = accumulate(array, op)
-    reverse = reversed(tuple(accumulate(reversed(array), op)))
+    n = len(arr)
+    out = np.empty(n, dtype=np.int64)
+    count = 0
 
-    return tuple(math.sqrt(x) + math.sqrt(y)
-                 for x, y in zip(forward, reverse))
+    for i in range(n):
+        count = (count + 1) * arr[i]
+        out[i] = count
+
+    return out
+
+
+def exp_accumulate_array(array: np.ndarray) -> np.ndarray:
+    forward = consecutive_true_counts(array)
+    reverse = np.flip(consecutive_true_counts(np.flip(array)))
+    return forward ** 0.5 + reverse ** 0.5
 
 
 def calculate_concordance(left: Sequence[object], right: Sequence[object],
@@ -81,11 +95,11 @@ def calculate_concordance(left: Sequence[object], right: Sequence[object],
     if len(left) != len(right):
         raise ValueError("Can only calculate concordance for same sized sequences")
 
-    xs = tuple(x == y for x, y in zip(left, right))
-    ys = tuple(x != y for x, y in zip(left, right))
+    xs = np.fromiter((x == y for x, y in zip(left, right)), dtype=np.bool)
+    ys = 1 - xs
     positive = exp_accumulate_array(xs)
     negative = exp_accumulate_array(ys)
-    return tuple(x - y for x, y in zip(positive, negative))
+    return positive - negative
 
 
 T = TypeVar("T")

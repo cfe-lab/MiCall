@@ -26,11 +26,12 @@ dependencies = [
     "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
-    "numpy==2.2.2",
+    "numpy==2.1.3",
     "sortedcontainers==2.4.0",
     "scipy==1.15.1",
     "matplotlib==3.10.0",
     "cutadapt==5.0",
+    "numba==0.61.0",
     "python-Levenshtein==0.26.1",
     "PyYAML==6.0.2",
     "reportlab==4.2.5",
@@ -255,6 +256,10 @@ check_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = "mappy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "numba"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
