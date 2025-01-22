@@ -19,32 +19,28 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 
-def cat(inputs: Iterable[Path], output: Path) -> int:
+def cat(inputs: Iterable[Path], output: Path) -> None:
     """
     Concatenates the contents of input inputs and writes the result to
     an output file.
     """
 
     with open(output, 'w') as out:
-        try:
-            for file in inputs:
-                try:
-                    with open(file) as f:
-                        shutil.copyfileobj(f, out)
-                except FileNotFoundError:
-                    print(f"The file {str(file)!r} was not found."
-                          " Please check the file path and try again.",
-                          file=sys.stderr)
-                    return 1
-                except IOError as e:
-                    print(f"IO Error while processing the file {str(file)!r}: {e}",
-                          file=sys.stderr)
-                    return 1
+        for file in inputs:
+            with open(file) as f:
+                shutil.copyfileobj(f, out)
 
-            return 0
-        except BaseException as e:
-            print(f"An unexpected error occurred: {e}", file=sys.stderr)
-            return 1
+
+def exceptional_cat(inputs: Iterable[Path], output: Path) -> int:
+    try:
+        cat(inputs, output)
+        return 0
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 1
+    except IOError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 1
 
 
 def main(argv: Sequence[str]) -> int:
@@ -67,7 +63,7 @@ def main(argv: Sequence[str]) -> int:
     )
 
     args = parser.parse_args(argv)
-    return cat(args.inputs, args.output)
+    return exceptional_cat(args.inputs, args.output)
 
 
 def entry() -> None:
