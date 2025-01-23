@@ -32,10 +32,10 @@ def normalize_array(array: Sequence[float]) -> Sequence[Fraction]:
     low = min(array)
     high = max(array)
     if low == high:
-        if low < 0:
-            value = 0
-        elif low > 0:
+        if low > 0:
             value = 1
+        else:
+            value = 0
         return (Fraction(value),) * len(array)
 
     diff = high - low
