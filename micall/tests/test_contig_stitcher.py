@@ -1762,8 +1762,8 @@ def generate_random_string_pair(length):
 @pytest.mark.parametrize(
     "left, right, expected",
     [
-        # ("aaaaa", "aaaaa", [0.0, 0.78, 1.0, 0.78, 0.0]),
-        # ("abcdd", "abcdd", [0.0, 0.78, 1.0, 0.78, 0.0]),
+        ("aaaaa", "aaaaa", [0.0, 0.78, 1.0, 0.78, 0.0]),
+        ("abcdd", "abcdd", [0.0, 0.78, 1.0, 0.78, 0.0]),
         ("aaaaaaaa", "baaaaaab", [0.0, 0.95, 0.99, 1.0, 1.0, 0.99, 0.95, 0.0]),
         ("aaaaaaaa", "aaaaaaab", [0.94, 0.98, 0.99, 1.0, 0.99, 0.98, 0.94, 0.0]),
         ("aaaaaaaa", "aaaaabbb", [0.96, 0.99, 1.0, 0.99, 0.96, 0.02, 0.0, 0.02]),
