@@ -263,6 +263,10 @@ module = "numba"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "scipy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "sortedcontainers"
 ignore_missing_imports = true
 

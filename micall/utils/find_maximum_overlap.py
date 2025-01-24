@@ -6,6 +6,7 @@ import sys
 import numpy as np
 from typing import Sequence, Optional, Tuple, Iterable, Any
 from itertools import chain
+import scipy
 
 
 @dataclass(frozen=False)
@@ -78,6 +79,11 @@ def find_maximum_overlap(seq1: str,
     np_arr1 = np.frombuffer(seq1.encode('utf-8'), dtype='S1')
     np_arr2 = np.flip(np.frombuffer(seq2.encode('utf-8'), dtype='S1'))
 
+    if len(bit_arr1) * len(bit_arr2) > 10_000 * 10_000:
+        method = scipy.signal.convolve
+    else:
+        method = np.convolve
+
     # Iterate over each unique element to determine overlap
     for element in finder.alphabet:
         bit_arr1.fill(0)
@@ -86,7 +92,7 @@ def find_maximum_overlap(seq1: str,
         bit_arr2[np_arr2 == element] = 1
 
         # Compute the convolution of the two binary arrays
-        convo = np.convolve(bit_arr1, bit_arr2, mode='full')
+        convo = method(bit_arr1, bit_arr2, mode='full')
 
         # Add the convolution to the total results
         total += convo
