@@ -119,10 +119,10 @@ def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
 
 
 def get_version() -> str:
-    if __package__ is None:
-        return "development"
-    else:
+    try:
         return str(version(__package__))
+    except BaseException:
+        return "development"
 
 
 def get_parser() -> argparse.ArgumentParser:
