@@ -60,7 +60,7 @@ test = [
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
     "ruff==0.9.4",
-    "mypy==1.14.1",
+    "mypy==1.15.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
     "codecov==2.1.13",  # For reporting the code coverage.
