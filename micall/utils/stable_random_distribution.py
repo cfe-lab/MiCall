@@ -27,5 +27,6 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
             np_weights[:(index + 1)] += forward[-(index + 1):]
             np_weights[(index + 1):] += backwards[1:-index]
 
-        np_weights -= np_weights.min()
-        np_weights = (1 + np_weights.max()) - np_weights
+        minarg = np_weights.min()
+        maxarg = np_weights.max()
+        np_weights = (1 + maxarg - minarg) - (np_weights - minarg)
