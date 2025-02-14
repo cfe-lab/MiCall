@@ -12,14 +12,13 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
     rng = random.Random(seed)
 
     population = np.arange(n)
-    forward = np.arange(1, n + 1) ** 0.5
+    forward = np.arange(1, n + 1)
     backwards = np.copy(np.flip(forward))
-    np_weights = np.zeros(n) + 0.1
+    np_weights = np.zeros(n) + 1
 
     while True:
-        weights: Sequence[float] = 1 - np_weights  # type: ignore
-        indexes = rng.choices(population=population, weights=weights)
-        index = indexes[0]
+        weights: Sequence[float] = np_weights  # type: ignore
+        index = rng.choices(population=population, weights=weights)[0]
         yield index
 
         if index == 0:
@@ -28,4 +27,5 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
             np_weights[:(index + 1)] += forward[-(index + 1):]
             np_weights[(index + 1):] += backwards[1:-index]
 
-        np_weights /= np_weights.sum()
+        np_weights -= np_weights.min()
+        np_weights = (1 + np_weights.max()) - np_weights
