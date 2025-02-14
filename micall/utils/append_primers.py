@@ -43,6 +43,16 @@ def append_primers_to_record(record: SeqRecord,
     is the forward primer + original sequence + reverse primer.
     """
 
+    if fwd_primer in str(record.seq):
+        pos = str(record.seq).index(fwd_primer)
+        logger.error("Sequence %r contains the forward primer at position %s.",
+                     record.name, pos)
+
+    if rev_primer in str(record.seq):
+        pos = str(record.seq).index(rev_primer)
+        logger.error("Sequence %r contains the reverse primer at position %s.",
+                     record.name, pos)
+
     new_seq = Seq(fwd_primer + str(record.seq) + rev_primer)
     new_record = SeqRecord(
         new_seq,
