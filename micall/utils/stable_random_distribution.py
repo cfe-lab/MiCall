@@ -14,7 +14,7 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
     population = np.arange(n)
     forward = np.arange(1, n + 1)
     backwards = np.copy(np.flip(forward))
-    np_weights = np.zeros(n) + 1
+    np_weights = np.zeros(n)
 
     while True:
         top = np.max(np_weights) + 1
@@ -29,4 +29,4 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
             np_weights[(index + 1):] += backwards[1:-index]
 
         # Prevent overflow.
-        np_weights = np_weights - np_weights.min()
+        np_weights -= np_weights.min()
