@@ -14,6 +14,7 @@ import sys
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord, Seq
 from typing import Sequence, Iterator
+from pathlib import Path
 
 MAX_QUALITY = 40
 
@@ -30,12 +31,12 @@ def simulate_reads(reference: Seq,
     Generate random reads records from the given reference sequence.
 
     Args:
-      reference (str): The reference sequence.
-      n_reads (int): Total number of reads to generate.
-      is_reversed (bool): Whether this is reverse complement reads.
-      min_length (int): Minimum length of each read.
-      max_length (int): Maximum length of each read.
-      extract_num (int): Extraction number, a metadata component.
+      reference: The reference sequence.
+      n_reads: Total number of reads to generate.
+      is_reversed: Whether this is reverse complement reads.
+      min_length: Minimum length of each read.
+      max_length: Maximum length of each read.
+      extract_num: Extraction number, a metadata component.
 
     Returns:
       Bio.SeqRecord objects representing FASTQ reads.
@@ -86,8 +87,8 @@ M01234:01:000000000-AAAAA:1:1101:{extract_num}:{y_coord:04d} {file_num}:N:0:1
         yield record
 
 
-def generate_fastq(fasta: str,
-                   fastq: str,
+def generate_fastq(fasta: Path,
+                   fastq: Path,
                    n_reads: int,
                    is_reversed: bool,
                    min_length: int,
@@ -100,14 +101,14 @@ def generate_fastq(fasta: str,
     simulated random reads.
 
     Args:
-      fasta (str): Path to the input FASTA file containing one or
+      fasta: Path to the input FASTA file containing one or
                    more reference sequences.
-      fastq (str): Path to the output FASTQ file.
-      n_reads (int): Total number of reads to generate.
-      is_reversed (bool): Whether this is reverse complement reads.
-      min_length (int): Minimum length of each read.
-      max_length (int): Maximum length of each read.
-      extract_num (int): Extraction number, a metadata component.
+      fastq: Path to the output FASTQ file.
+      n_reads: Total number of reads to generate.
+      is_reversed: Whether this is reverse complement reads.
+      min_length: Minimum length of each read.
+      max_length: Maximum length of each read.
+      extract_num: Extraction number, a metadata component.
     """
 
     with open(fasta, "r") as fasta_handle, \
@@ -131,8 +132,10 @@ The simulated reads, when assembled,\
  should produce the original FASTA sequence.
 """
     p = argparse.ArgumentParser(description=description)
-    p.add_argument("fasta", help="Path to the input reference FASTA file.")
-    p.add_argument("fastq", help="Path to the output FASTQ file.")
+    p.add_argument("fasta", type=Path,
+                   help="Path to the input reference FASTA file.")
+    p.add_argument("fastq", type=Path,
+                   help="Path to the output FASTQ file.")
     p.add_argument("--nreads", type=int, default=1000,
                    help="Number of reads to generate.")
     p.add_argument("--reversed", action='store_true',
