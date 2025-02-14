@@ -1,19 +1,31 @@
-from typing import Iterator
+from typing import Iterator, Sequence
 
 import numpy as np
+import random
 
 
 def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
-    n = maximum
-    rng = np.random.default_rng(seed)
+    if maximum <= 0:
+        return
 
-    weights = np.zeros(n) + 1
-    forward = np.arange(1, n + 1)
-    backwards = np.arange(n, 0, -1)
+    n = maximum
+    rng = random.Random(seed)
+
+    population = np.arange(n)
+    forward = np.arange(1, n + 1) ** 0.5
+    backwards = np.copy(np.flip(forward))
+    np_weights = np.zeros(n) + 0.1
 
     while True:
-        probabilities = weights / weights.sum()
-        index = rng.choice(n, p=probabilities)
+        weights: Sequence[float] = 1 - np_weights  # type: ignore
+        indexes = rng.choices(population=population, weights=weights)
+        index = indexes[0]
         yield index
-        weights[:index] += forward[:index]
-        weights[index:] += backwards[index:]
+
+        if index == 0:
+            np_weights += backwards
+        else:
+            np_weights[:(index + 1)] += forward[-(index + 1):]
+            np_weights[(index + 1):] += backwards[1:-index]
+
+        np_weights /= np_weights.sum()
