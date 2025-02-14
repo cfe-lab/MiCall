@@ -17,7 +17,8 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
     np_weights = np.zeros(n) + 1
 
     while True:
-        weights: Sequence[float] = np_weights  # type: ignore
+        top = np.max(np_weights) + 1
+        weights: Sequence[float] = top - np_weights  # type: ignore
         index = rng.choices(population=population, weights=weights)[0]
         yield index
 
@@ -27,6 +28,5 @@ def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
             np_weights[:(index + 1)] += forward[-(index + 1):]
             np_weights[(index + 1):] += backwards[1:-index]
 
-        minarg = np_weights.min()
-        maxarg = np_weights.max()
-        np_weights = (1 + maxarg - minarg) - (np_weights - minarg)
+        # Prevent overflow.
+        np_weights = np_weights - np_weights.min()
