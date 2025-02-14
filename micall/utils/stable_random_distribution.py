@@ -3,8 +3,9 @@ from typing import Iterator
 import numpy as np
 
 
-def stable_random_distribution(maximum: int) -> Iterator[int]:
+def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
     n = maximum
+    rng = np.random.default_rng(seed)
 
     weights = np.zeros(n) + 1
     forward = np.arange(1, n + 1)
@@ -12,7 +13,7 @@ def stable_random_distribution(maximum: int) -> Iterator[int]:
 
     while True:
         probabilities = weights / weights.sum()
-        index = np.random.choice(n, p=probabilities)
+        index = rng.choice(n, p=probabilities)
         yield index
         weights[:index] += forward[:index]
         weights[index:] += backwards[index:]
