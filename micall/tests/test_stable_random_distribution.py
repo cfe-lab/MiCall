@@ -66,7 +66,7 @@ def test_fair_distribution_behavior():
 
     maximum = 1_000
     num_samples = 10_000
-    for seed in range(20):
+    for seed in range(100):
         # Gather samples from our generator.
         gen = stable_random_distribution(maximum, seed=seed)
         samples = np.array([next(gen) for _ in range(num_samples)])
