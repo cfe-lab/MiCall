@@ -65,8 +65,9 @@ def append_primers_to_record(record: SeqRecord,
 
 def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Append configurable primer sequences to every "
-                    "FASTA sequence in an input file."
+        description="Append primer sequences to every "
+                    "FASTA sequence in an input file. "
+                    "Sequences are appended at both ends."
     )
     parser.add_argument("input_fasta", type=Path,
                         help="Path to the input FASTA file")
