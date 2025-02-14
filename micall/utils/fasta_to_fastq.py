@@ -15,7 +15,6 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord, Seq
 from typing import Sequence, Iterator
 from pathlib import Path
-from micall.utils.stable_random_distribution import stable_random_distribution
 
 MAX_QUALITY = 40
 
@@ -53,16 +52,19 @@ def simulate_reads(reference: Seq,
 
     ref_len = len(reference)
     file_num = 2 if is_reversed else 1
-    rng = stable_random_distribution(maximum=(ref_len - min_length))
 
     for i in range(n_reads):
         # Choose a read length uniformly between min_length and max_length.
         read_length = random.randint(min_length, max_length)
-        # Choose a start index from a fair distribution.
-        start = next(rng)
-        end = start + read_length
 
-        # Get the read nucleotides.
+        # Choose a random start index ensuring the read fits within
+        # the reference.
+        if ref_len - read_length <= 0:
+            start = 0
+        else:
+            start = random.randrange(0, ref_len - read_length + 1)
+
+        end = start + read_length
         read_seq_seq = reference[start:end]
         read_seq_str = str(read_seq_seq)
         read_seq = Seq(read_seq_str)
