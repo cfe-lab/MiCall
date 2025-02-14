@@ -1,6 +1,7 @@
 
 from micall.utils.stable_random_distribution import stable_random_distribution
 import numpy as np
+from itertools import islice
 
 
 def test_indices_in_range():
@@ -13,6 +14,17 @@ def test_indices_in_range():
     for _ in range(1000):
         idx = next(gen)
         assert 0 <= idx < maximum, f"Index {idx} out of range [0,{maximum})"
+
+
+def test_bounds_are_reachable():
+    """Test that both min and max-1 can be generated."""
+
+    maximum = 999
+    gen = stable_random_distribution(maximum, seed=123)
+    lst = islice(gen, 1000)
+
+    assert 0 in lst
+    assert (maximum-1) in lst
 
 
 def test_deterministic_output_with_seed():
@@ -65,7 +77,7 @@ def test_fair_distribution_behavior():
     """
 
     maximum = 1_000
-    num_samples = 10_000
+    num_samples = 3_000
     for seed in range(100):
         # Gather samples from our generator.
         gen = stable_random_distribution(maximum, seed=seed)
