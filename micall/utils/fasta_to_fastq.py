@@ -55,7 +55,7 @@ def simulate_reads(reference: Seq,
 
     ref_len = len(reference)
     file_num = 2 if is_reversed else 1
-    gen = stable_random_distribution(high=(ref_len - min_length)+1, rng=rng)
+    gen = stable_random_distribution(high=(ref_len - min_length), rng=rng)
 
     for i in range(n_reads):
         # Choose a read length uniformly between min_length and max_length.
