@@ -15,6 +15,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord, Seq
 from typing import Sequence, Iterator
 from pathlib import Path
+from micall.utils.stable_random_distribution import stable_random_distribution
 
 MAX_QUALITY = 40
 
@@ -25,6 +26,7 @@ def simulate_reads(reference: Seq,
                    min_length: int,
                    max_length: int,
                    extract_num: int,
+                   rng: random.Random,
                    ) -> Iterator[SeqRecord]:
 
     """
@@ -37,6 +39,7 @@ def simulate_reads(reference: Seq,
       min_length: Minimum length of each read.
       max_length: Maximum length of each read.
       extract_num: Extraction number, a metadata component.
+      rng: Random number generator.
 
     Returns:
       Bio.SeqRecord objects representing FASTQ reads.
@@ -52,19 +55,16 @@ def simulate_reads(reference: Seq,
 
     ref_len = len(reference)
     file_num = 2 if is_reversed else 1
+    gen = stable_random_distribution(high=(ref_len - min_length), rng=rng)
 
     for i in range(n_reads):
         # Choose a read length uniformly between min_length and max_length.
         read_length = random.randint(min_length, max_length)
-
-        # Choose a random start index ensuring the read fits within
-        # the reference.
-        if ref_len - read_length <= 0:
-            start = 0
-        else:
-            start = random.randrange(0, ref_len - read_length + 1)
-
+        # Choose a start index from a fair distribution.
+        start = next(gen)
         end = start + read_length
+
+        # Get the read nucleotides.
         read_seq_seq = reference[start:end]
         read_seq_str = str(read_seq_seq)
         read_seq = Seq(read_seq_str)
@@ -94,6 +94,7 @@ def generate_fastq(fasta: Path,
                    min_length: int,
                    max_length: int,
                    extract_num: int,
+                   rng: random.Random,
                    ) -> None:
 
     """
@@ -109,6 +110,7 @@ def generate_fastq(fasta: Path,
       min_length: Minimum length of each read.
       max_length: Maximum length of each read.
       extract_num: Extraction number, a metadata component.
+      rng: Random number generator.
     """
 
     with open(fasta, "r") as fasta_handle, \
@@ -121,6 +123,7 @@ def generate_fastq(fasta: Path,
                                              min_length=min_length,
                                              max_length=max_length,
                                              extract_num=extract_num,
+                                             rng=rng,
                                              )
             SeqIO.write(simulated_reads, fastq_handle, format="fastq")
 
@@ -146,12 +149,19 @@ The simulated reads, when assembled,\
                    help="Maximum length of each simulated read.")
     p.add_argument("--extract_num", type=int, default=1234,
                    help="Extraction number, a metadata component.")
+    p.add_argument("--seed", type=int, default=None,
+                   help="Random seed for reproducibility.")
     return p
 
 
 def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
+
+    if args.seed is None:
+        rng = random.Random()
+    else:
+        rng = random.Random(args.seed)
 
     generate_fastq(fasta=args.fasta,
                    fastq=args.fastq,
@@ -160,6 +170,7 @@ def main(argv: Sequence[str]) -> int:
                    min_length=args.min_length,
                    max_length=args.max_length,
                    extract_num=args.extract_num,
+                   rng=rng,
                    )
     return 0
 
