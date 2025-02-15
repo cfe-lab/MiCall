@@ -26,4 +26,4 @@ def stable_random_distribution(high: int,
         choice = rng.randint(0, maximum)
         index = population[choice]
         yield index
-        population[index] = rng.randint(0, maximum)
+        population[choice] = rng.randint(0, maximum)

@@ -154,4 +154,4 @@ def test_fill_domain_speed():
         if stable_steps < uniform_steps:
             wins += 1
 
-    assert wins / trials > 0.80
+    assert wins / trials > 0.90
