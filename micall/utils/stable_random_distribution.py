@@ -1,32 +1,21 @@
-from typing import Iterator, Sequence
+from typing import Iterator
 
 import numpy as np
-import random
+
+DUPLICATION_FACTOR = 1
 
 
-def stable_random_distribution(maximum: int, seed: int = 42) -> Iterator[int]:
-    if maximum <= 0:
+def stable_random_distribution(high: int, seed: int = 42) -> Iterator[int]:
+    if high <= 0:
         return
 
-    n = maximum
-    rng = random.Random(seed)
+    rng = np.random.default_rng(seed)
+    block = np.arange(high)
+    population = np.concatenate([block] * DUPLICATION_FACTOR, axis=0)
 
-    population = np.arange(n)
-    forward = np.arange(1, n + 1)
-    backwards = np.copy(np.flip(forward))
-    np_weights = np.zeros(n)
+    assert len(population) == DUPLICATION_FACTOR * len(block)
 
     while True:
-        top = np.max(np_weights) + 1
-        weights: Sequence[float] = top - np_weights  # type: ignore
-        index = rng.choices(population=population, weights=weights)[0]
+        index = rng.choice(population)
         yield index
-
-        if index == 0:
-            np_weights += backwards
-        else:
-            np_weights[:(index + 1)] += forward[-(index + 1):]
-            np_weights[(index + 1):] += backwards[1:-index]
-
-        # Prevent overflow.
-        np_weights -= np_weights.min()
+        population[index] = rng.integers(low=0, high=high)
