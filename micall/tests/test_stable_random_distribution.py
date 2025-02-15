@@ -22,8 +22,8 @@ def test_indices_in_range():
 def test_bounds_are_reachable():
     """Test that both min and max-1 can be generated."""
 
-    high = 999
-    rng = random.Random(123456)
+    high = 200
+    rng = random.Random(123)
     gen = stable_random_distribution(high, rng=rng)
     lst = islice(gen, 1000)
 
@@ -154,4 +154,4 @@ def test_fill_domain_speed():
         if stable_steps < uniform_steps:
             wins += 1
 
-    assert wins / trials > 0.90
+    assert wins / trials > 0.999

@@ -1,9 +1,7 @@
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Sequence
 
 import random
 import numpy as np
-
-DUPLICATION_FACTOR = 1
 
 
 def stable_random_distribution(high: int,
@@ -16,14 +14,13 @@ def stable_random_distribution(high: int,
     if rng is None:
         rng = random.Random()
 
-    maximum = high - 1
-    block = np.arange(high)
-    population = np.concatenate([block] * DUPLICATION_FACTOR, axis=0)
-
-    assert len(population) == DUPLICATION_FACTOR * len(block)
+    population = np.arange(high)
+    weights = np.zeros(high) + 16.5
 
     while True:
-        choice = rng.randint(0, maximum)
-        index = population[choice]
+        pweights: Sequence[float] = weights  # type: ignore
+        index = rng.choices(population, weights=pweights)[0]
         yield index
-        population[choice] = rng.randint(0, maximum)
+        weights[index] *= 0.5
+        if weights[index] < 1.0:
+            weights += 1.0
