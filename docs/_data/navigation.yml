@@ -17,6 +17,8 @@
       link: /design/resistance.html
     - name: Genome Coverage
       link: /genome_coverage.html
+- name: Local Analysis
+  link: /local_analysis.html
 - name: MiCall at BC CfE
   link: /micall_at_bccfe.html
 - name: GitHub
