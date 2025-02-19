@@ -12,7 +12,7 @@ Or, with docker version of MiCall:
 
 ```shell
 cd data
-docker run --rm -v .:/data micall folder --project HIVB --skip trim.censor --denovo --keep_scratch . results
+docker run --rm -v .:/data cfelab/micall folder --project HIVB --skip trim.censor --denovo --keep_scratch . results
 ```
 
 # Download
