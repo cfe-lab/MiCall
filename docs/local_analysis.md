@@ -50,7 +50,7 @@ For local analysis, you will run MiCall on your local run folder. The most commo
 Assuming your MiSeq run folder is the current directory and you wish to write results in `./results` subfolder, use the following command:
 
 ```shell
-docker run --rm -v .:/data micall folder --project HIVB --skip trim.censor --denovo --keep_scratch . results
+docker run --rm -v .:/data cfelab/micall folder --project HIVB --skip trim.censor --denovo --keep_scratch . results
 ```
 
 In this command:
@@ -102,7 +102,7 @@ MiCall provides several command--line options to tailor runs to your needs. For 
 Run following command to learn more about the possibilities:
 
 ```shell
-docker run --rm micall --help
+docker run --rm cfelab/micall --help
 ```
 
 ---
