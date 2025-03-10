@@ -17,4 +17,6 @@ docker run --rm -v .:/data cfelab/micall folder --project HIVB --skip trim.censo
 
 # Download
 
+Open [this link](https://codeload.github.com/cfe-lab/MiCall/legacy.zip/refs/heads/example-inputs) to download this repository as a ZIP archive.
+
 If you are having issues when downloading the sample inputs, follow [these instructions](https://www.wikihow.com/Download-a-GitHub-Folder).
