@@ -59,7 +59,7 @@ def simulate_reads(reference: Seq,
 
     for i in range(n_reads):
         # Choose a read length uniformly between min_length and max_length.
-        read_length = random.randint(min_length, max_length)
+        read_length = rng.randint(min_length, max_length)
         # Choose a start index from a fair distribution.
         start = next(gen)
         end = start + read_length
