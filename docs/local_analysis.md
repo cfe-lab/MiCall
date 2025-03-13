@@ -97,7 +97,7 @@ MiCall provides several command--line options to tailor runs to your needs. For 
 
 - **Skipping Steps:** You can skip over certain steps (e.g., quality censoring) by using the `--skip` parameter.
 - **Enabling de novo Mode:** Use the `--denovo` flag if you want to perform de novo assembly instead of mapping to known references.
-- **Specifying Primers:** Use the `--project_code` option to indicate the primer set (e.g., HCV, HIVB, or SARSCOV2) to trim.
+- **Specifying Primers:** Use the `--project` option to indicate the primer set (e.g., HCV, HIVB, or SARSCOV2) to trim.
 
 Run following command to learn more about the possibilities:
 
