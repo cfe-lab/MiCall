@@ -87,7 +87,12 @@ In this command:
   samples.
 - Options such as `--project` (here set to HIVB) specify the primer
   set to use (for example, for HIV tests), while `--skip trim.censor`
-  instructs MiCall to bypass certain quality filtering steps.
+  instructs MiCall to bypass the quality filtering step.
+
+> Note that quality filtering is a good thing to do in production.
+  But in order to test it, we need the `InterOp` data.
+  That is the reason why we skip filtering in this short guide.
+
 - The `--denovo` flag activates de novo assembly mode, and
   `--keep_scratch` preserves intermediate files to aid in
   troubleshooting if needed.
