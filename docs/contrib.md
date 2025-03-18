@@ -1,4 +1,6 @@
-# Contributing to the MiCall Project
+---
+title: Contributing to the MiCall Project
+---
 
 If you like this project and want to make it better, help out. You could report
 a bug, or pitch in with some development work.
