@@ -116,31 +116,26 @@ If you want to understand the de novo assembly process, read through the
 [assembly page]: https://cfe-lab.github.io/MiCall/design/assembly.html
 
 ### GitHub Web Site
+
 Most of the time, you can change the web site content just by editing the
 markdown files in the `docs` folder. However, you may occasionally need to dig
 into the page templates or do more serious work. If that happens, you can test
 out the web site locally before publishing it.
 
-1. Install Ruby 2.6, preferably with [Ruby Version Manager].
-
-    ```shell
-    rvm install 2.6
-    rvm use 2.6
-    ```
-
-2. Install the gems for the web site.
-
-    ```shell
-    cd MiCall/docs
-    gem install bundler
-    bundle install
-    ```
-
-3. Serve the web site.
-
-    ```shell
-    bundle exec jekyll serve
-    ```
+```shell
+# Enter MiCall's docs directory.
+cd docs/
+# Build and run the documentation website.
+docker build --tag micall-documentation .
+docker run \
+       --volume .:/docs \
+       --publish 4000:80 \
+       --rm \
+       --name micall-documentation \
+       --interactive --tty \
+       micall-documentation
+# Goto http://localhost:4000
+```
 
 What changes might you want to make? The web site is based on the
 [Bulma Clean Theme], so read through the documentation there to see if it
