@@ -5,6 +5,8 @@
 - name: Steps and Files
   link: /steps.html
   dropdown:
+    - name: Overview
+      link: /steps.html
     - name: G2P
       link: /design/fastq_g2p.html
     - name: Remap
