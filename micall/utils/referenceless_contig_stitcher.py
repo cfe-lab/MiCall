@@ -7,6 +7,7 @@ import logging
 from mappy import Aligner
 from functools import cached_property
 from sortedcontainers import SortedList
+import itertools
 
 from micall.utils.contig_stitcher_context import StitcherContext
 from micall.utils.consensus_aligner import Alignment
@@ -371,8 +372,7 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
         pool.add(path)
 
     logger.debug("Calculating all paths...")
-    cycle = 1
-    while True:
+    for cycle in itertools.count(1):
         logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
         if not calc_multiple_extensions(pool, pool.paths, contigs):
@@ -384,8 +384,6 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
         logger.debug("Cycle %s finished with %s new paths. "
                      "The fittest has length %s and consists of %s parts.",
                      cycle, pool.size, length, parts)
-
-        cycle += 1
 
     return pool.paths
 
