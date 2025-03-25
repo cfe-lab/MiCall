@@ -22,7 +22,7 @@ classifiers = [
 
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
-    "pytz==2025.1",
+    "pytz==2025.2",
     "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
