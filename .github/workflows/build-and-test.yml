@@ -2,7 +2,7 @@ name: Build and Test MiCall
 on: push
 jobs:
   main:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -75,7 +75,7 @@ jobs:
           codecov
 
   docker-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - name: Build docker image
@@ -90,7 +90,7 @@ jobs:
         run: python micall/main.py release_test_microtest micall --docker
 
   singularity-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
 

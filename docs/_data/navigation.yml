@@ -1,10 +1,10 @@
-- name: Getting Started
-  link: /getting_started.html
 - name: Admin
   link: /admin.html
 - name: Steps and Files
   link: /steps.html
   dropdown:
+    - name: Overview
+      link: /steps.html
     - name: G2P
       link: /design/fastq_g2p.html
     - name: Remap
@@ -17,7 +17,11 @@
       link: /design/resistance.html
     - name: Genome Coverage
       link: /genome_coverage.html
+- name: Local Analysis
+  link: /local_analysis.html
 - name: MiCall at BC CfE
   link: /micall_at_bccfe.html
+- name: Contributing
+  link: /contrib.html
 - name: GitHub
   link: https://github.com/cfe-lab/MiCall

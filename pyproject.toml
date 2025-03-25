@@ -22,7 +22,7 @@ classifiers = [
 
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
-    "pytz==2024.2",
+    "pytz==2025.2",
     "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
@@ -34,8 +34,8 @@ dependencies = [
     "numba==0.61.0",
     "python-Levenshtein==0.26.1",
     "PyYAML==6.0.2",
-    "reportlab==4.2.5",
-    "pysam==0.22.1",
+    "reportlab==4.3.1",
+    "pysam==0.23.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy==2.28",
     "drawsvg==2.4.0",
@@ -47,8 +47,8 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest==8.3.4",
-    "coverage==7.6.10",
+    "pytest==8.3.5",
+    "coverage==7.7.1",
     "pandas==2.2.3",
     "seaborn==0.13.2",
     "ete3",
@@ -61,8 +61,8 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.9.2",
-    "mypy==1.14.1",
+    "ruff==0.11.2",
+    "mypy==1.15.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",
     "codecov==2.1.13",  # For reporting the code coverage.
