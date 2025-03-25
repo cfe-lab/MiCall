@@ -381,7 +381,8 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
         fittest = pool.paths[-1]
         length = len(fittest.whole.seq)
         parts = len(fittest.parts_ids)
-        logger.debug("Cycle %s finished with %s new paths, %s [%s parts] being the fittest.",
+        logger.debug("Cycle %s finished with %s new paths. "
+                     "The fittest has length %s and consists of %s parts.",
                      cycle, pool.size, length, parts)
 
         cycle += 1
