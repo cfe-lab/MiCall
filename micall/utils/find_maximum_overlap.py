@@ -31,6 +31,37 @@ class OverlapFinder:
                              )
 
 
+def choose_convolution_method(arr1: np.ndarray,
+                              arr2: np.ndarray,
+                              ) -> Any:
+    if len(arr1) * len(arr2) > 10_000 * 10_000:
+        method = scipy.signal.convolve
+    else:
+        method = np.convolve
+    return method
+
+
+def get_overlap_results(total: np.ndarray,
+                        ) -> Tuple[int, int]:
+    len_total = len(total)
+
+    # Return the shift value that yields maximum overlap
+    max_value = np.max(total)
+    if max_value <= 0:
+        return (0, 0)
+
+    max_indices = np.where(total == max_value)[0]
+    left_max = max_indices[0]
+    right_max = max_indices[-1]
+    if left_max < (len_total - right_max):
+        max_offset = left_max
+    else:
+        max_offset = right_max
+
+    shift_value = max_offset - len_total
+    return (int(shift_value), int(max_value))
+
+
 def find_maximum_overlap(seq1: str,
                          seq2: str,
                          finder: Optional[OverlapFinder] = None,
@@ -79,10 +110,7 @@ def find_maximum_overlap(seq1: str,
     np_arr1 = np.frombuffer(seq1.encode('utf-8'), dtype='S1')
     np_arr2 = np.flip(np.frombuffer(seq2.encode('utf-8'), dtype='S1'))
 
-    if len(bit_arr1) * len(bit_arr2) > 10_000 * 10_000:
-        method = scipy.signal.convolve
-    else:
-        method = np.convolve
+    method = choose_convolution_method(bit_arr1, bit_arr2)
 
     # Iterate over each unique element to determine overlap
     for element in finder.alphabet:
@@ -97,21 +125,7 @@ def find_maximum_overlap(seq1: str,
         # Add the convolution to the total results
         total += convo
 
-    # Return the shift value that yields maximum overlap
-    max_value = np.max(total)
-    if max_value <= 0:
-        return (0, 0)
-
-    max_indices = np.where(total == max_value)[0]
-    left_max = max_indices[0]
-    right_max = max_indices[-1]
-    if left_max < (len_total - right_max):
-        max_offset = left_max
-    else:
-        max_offset = right_max
-
-    shift_value = max_offset - len_total
-    return (int(shift_value), int(max_value))
+    return get_overlap_results(total)
 
 
 def show_maximum_overlap(arr1: Sequence[object],

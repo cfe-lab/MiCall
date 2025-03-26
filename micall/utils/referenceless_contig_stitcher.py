@@ -8,6 +8,7 @@ from mappy import Aligner
 from functools import cached_property
 from sortedcontainers import SortedList
 import itertools
+import numpy as np
 
 from micall.utils.contig_stitcher_context import StitcherContext
 from micall.utils.consensus_aligner import Alignment
@@ -45,6 +46,30 @@ class ContigWithAligner(Contig):
         for x in self.aligner.map(overlap):
             if x.is_primary:
                 yield x
+
+    @cached_property
+    def nucleotide_seq(self) -> Sequence[str]:
+        ret = np.frombuffer(self.seq.encode('utf-8'), dtype='S1')
+        return ret  # type: ignore
+
+    @cached_property
+    def alignment_seqs(self) -> Tuple[Sequence[float],
+                                      Sequence[float],
+                                      Sequence[float],
+                                      Sequence[float],
+                                      ]:
+
+        alphabet_keys = sorted(set(self.seq))
+        alphabet = tuple(x.encode('utf-8') for x in alphabet_keys)
+        assert len(alphabet) == 4, "Expected only 4 letters in a nucleotide sequence."
+        (A, C, G, T) = alphabet
+
+        def to_array(letter: object) -> Sequence[float]:
+            ret = np.zeros(len(self.nucleotide_seq))
+            ret[self.nucleotide_seq == letter] = 1
+            return ret  # type: ignore
+
+        return (to_array(A), to_array(C), to_array(G), to_array(T))
 
 
 @dataclass(frozen=True)
