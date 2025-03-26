@@ -31,10 +31,8 @@ class OverlapFinder:
                              )
 
 
-def choose_convolution_method(arr1: np.ndarray,
-                              arr2: np.ndarray,
-                              ) -> Any:
-    if len(arr1) * len(arr2) > 10_000 * 10_000:
+def choose_convolution_method(len1: int, len2: int) -> Any:
+    if len1 * len2 > 10_000 * 10_000:
         method = scipy.signal.convolve
     else:
         method = np.convolve
@@ -110,7 +108,7 @@ def find_maximum_overlap(seq1: str,
     np_arr1 = np.frombuffer(seq1.encode('utf-8'), dtype='S1')
     np_arr2 = np.flip(np.frombuffer(seq2.encode('utf-8'), dtype='S1'))
 
-    method = choose_convolution_method(bit_arr1, bit_arr2)
+    method = choose_convolution_method(len(bit_arr1), len(bit_arr2))
 
     # Iterate over each unique element to determine overlap
     for element in finder.alphabet:

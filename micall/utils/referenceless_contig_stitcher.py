@@ -1,5 +1,5 @@
 from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, \
-    Sequence, TextIO, MutableMapping, Literal, Union
+    Sequence, TextIO, MutableMapping, Literal, Union, Mapping
 from dataclasses import dataclass
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
@@ -15,7 +15,7 @@ from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 from micall.utils.contig_stitcher_contigs import Contig
-from micall.utils.find_maximum_overlap import find_maximum_overlap, \
+from micall.utils.find_maximum_overlap import \
     OverlapFinder, get_overlap_results, choose_convolution_method
 
 
@@ -54,26 +54,32 @@ class ContigWithAligner(Contig):
         return ret
 
     @cached_property
-    def alignment_seqs(self) -> Tuple[np.ndarray, ...]:
-        alphabet_keys = sorted(set(self.seq))
-        alphabet = tuple(x.encode('utf-8') for x in alphabet_keys)
-        assert len(alphabet) == 4, \
-            "Expected only 4 letters in a nucleotide sequence."
+    def alphabet(self) -> Tuple[str, ...]:
+        return tuple(sorted(set(self.seq)))
 
-        def to_array(letter: object) -> np.ndarray:
+    @cached_property
+    def alignment_seqs(self) -> Mapping[str, np.ndarray]:
+        def to_array(letter: str) -> np.ndarray:
+            value = letter.encode('utf-8')
             ret = np.zeros(len(self.nucleotide_seq))
-            ret[self.nucleotide_seq == letter] = 1
+            ret[self.nucleotide_seq == value] = 1
             return ret
 
-        return tuple(to_array(x) for x in alphabet)
+        return {x: to_array(x) for x in self.alphabet}
 
     def find_maximum_overlap(self, other: 'ContigWithAligner',
                              ) -> Tuple[int, int]:
 
-        total = np.zeros(len(self.seq))
-        method = choose_convolution_method(self.alignment_seqs[0],
-                                           other.alignment_seqs[0])
-        for x, y in zip(self.alignment_seqs, other.alignment_seqs):
+        total = np.zeros(len(self.seq) + len(other.seq) - 1)
+        method = choose_convolution_method(len(self.seq), len(other.seq))
+        keys = sorted(set(list(self.alphabet) + list(other.alphabet)))
+        for key in keys:
+            if key not in self.alignment_seqs or \
+               key not in other.alignment_seqs:
+                continue
+
+            x = self.alignment_seqs[key]
+            y = np.flip(other.alignment_seqs[key])
             total += method(x, y, mode='full')
 
         return get_overlap_results(total)
@@ -202,7 +208,7 @@ def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[O
     if cached != 0:
         return cached
 
-    (shift, value) = find_maximum_overlap(left.seq, right.seq, OVERLAP_FINDER)
+    (shift, value) = left.find_maximum_overlap(right)
     if shift == 0:
         ret = None
         GET_OVERLAP_CACHE[key] = ret
