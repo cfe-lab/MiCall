@@ -70,7 +70,7 @@ class ContigWithAligner(Contig):
         return {x: to_array(x) for x in self.alphabet}
 
     def find_maximum_overlap(self, other: 'ContigWithAligner',
-                             ) -> Tuple[int, int]:
+                             ) -> Tuple[int, float]:
 
         total = np.zeros(len(self.seq) + len(other.seq) - 1)
         method = choose_convolution_method(len(self.seq), len(other.seq))

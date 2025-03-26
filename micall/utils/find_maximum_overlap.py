@@ -40,7 +40,7 @@ def choose_convolution_method(len1: int, len2: int) -> Any:
 
 
 def get_overlap_results(total: np.ndarray,
-                        ) -> Tuple[int, int]:
+                        ) -> Tuple[int, float]:
     len_total = len(total)
 
     # Return the shift value that yields maximum overlap
@@ -57,13 +57,13 @@ def get_overlap_results(total: np.ndarray,
         max_offset = right_max
 
     shift_value = max_offset - len_total
-    return (int(shift_value), int(max_value))
+    return (int(shift_value), float(max_value))
 
 
 def find_maximum_overlap(seq1: str,
                          seq2: str,
                          finder: Optional[OverlapFinder] = None,
-                         ) -> Tuple[int, int]:
+                         ) -> Tuple[int, float]:
     """
     Calculate the offset at which two sequences (seq1 and seq2)
     overlap the most.
