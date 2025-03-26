@@ -13,7 +13,8 @@ import numpy as np
 from micall.utils.contig_stitcher_context import StitcherContext
 from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
-    calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
+    calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue, \
+    exp_dropoff_array
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import \
     OverlapFinder, get_overlap_results, choose_convolution_method
@@ -63,6 +64,7 @@ class ContigWithAligner(Contig):
             value = letter.encode('utf-8')
             ret = np.zeros(len(self.nucleotide_seq))
             ret[self.nucleotide_seq == value] = 1
+            exp_dropoff_array(ret)
             return ret
 
         return {x: to_array(x) for x in self.alphabet}
