@@ -15,7 +15,8 @@ from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 from micall.utils.contig_stitcher_contigs import Contig
-from micall.utils.find_maximum_overlap import find_maximum_overlap, OverlapFinder
+from micall.utils.find_maximum_overlap import find_maximum_overlap, \
+    OverlapFinder, get_overlap_results, choose_convolution_method
 
 
 logger = logging.getLogger(__name__)
@@ -48,28 +49,34 @@ class ContigWithAligner(Contig):
                 yield x
 
     @cached_property
-    def nucleotide_seq(self) -> Sequence[str]:
+    def nucleotide_seq(self) -> np.ndarray:
         ret = np.frombuffer(self.seq.encode('utf-8'), dtype='S1')
-        return ret  # type: ignore
+        return ret
 
     @cached_property
-    def alignment_seqs(self) -> Tuple[Sequence[float],
-                                      Sequence[float],
-                                      Sequence[float],
-                                      Sequence[float],
-                                      ]:
-
+    def alignment_seqs(self) -> Tuple[np.ndarray, ...]:
         alphabet_keys = sorted(set(self.seq))
         alphabet = tuple(x.encode('utf-8') for x in alphabet_keys)
-        assert len(alphabet) == 4, "Expected only 4 letters in a nucleotide sequence."
-        (A, C, G, T) = alphabet
+        assert len(alphabet) == 4, \
+            "Expected only 4 letters in a nucleotide sequence."
 
-        def to_array(letter: object) -> Sequence[float]:
+        def to_array(letter: object) -> np.ndarray:
             ret = np.zeros(len(self.nucleotide_seq))
             ret[self.nucleotide_seq == letter] = 1
-            return ret  # type: ignore
+            return ret
 
-        return (to_array(A), to_array(C), to_array(G), to_array(T))
+        return tuple(to_array(x) for x in alphabet)
+
+    def find_maximum_overlap(self, other: 'ContigWithAligner',
+                             ) -> Tuple[int, int]:
+
+        total = np.zeros(len(self.seq))
+        method = choose_convolution_method(self.alignment_seqs[0],
+                                           other.alignment_seqs[0])
+        for x, y in zip(self.alignment_seqs, other.alignment_seqs):
+            total += method(x, y, mode='full')
+
+        return get_overlap_results(total)
 
 
 @dataclass(frozen=True)
