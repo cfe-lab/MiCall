@@ -126,6 +126,31 @@ def sort_concordance_indexes(concordance: Sequence[object]) -> Iterator[int]:
         yield i
 
 
+def exp_dropoff_array_iter(array: np.ndarray,
+                           direction: int,
+                           factor: int = 2,
+                           ) -> None:
+    if direction > 0:
+        iterator = range(len(array))
+    else:
+        iterator = range(len(array) - 1, -1, -1)
+
+    previous = 0.0
+    for i in iterator:
+        current = array[i]
+        dropoff = previous / factor
+        if current < dropoff:
+            array[i] = dropoff
+            previous = dropoff
+        else:
+            previous = current
+
+
+def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
+    exp_dropoff_array_iter(array=array, direction=1, factor=factor)
+    exp_dropoff_array_iter(array=array, direction=-1, factor=factor)
+
+
 def calc_overlap_pvalue(L: int, M: int) -> int:
     """
     Compute the probability (p-value) of observing at least M matches

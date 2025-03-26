@@ -2,7 +2,7 @@ import pytest
 import random
 
 from micall.tests.utils import fixed_random_seed
-from micall.utils.overlap_stitcher import calculate_concordance_norm, disambiguate_concordance
+from micall.utils.overlap_stitcher import calculate_concordance_norm, disambiguate_concordance, exp_dropoff_array
 
 
 def test_concordance_same_length_inputs():
@@ -150,3 +150,23 @@ def test_concordance_higher_in_matching_areas(left, right):
     assert (
         average_inside > average_outside
     ), "Concordance in matching areas should be higher than in non-matching areas"
+
+
+@pytest.mark.parametrize(
+    "input, output",
+    [
+        ([0, 0, 0, 1, 0, 0, 0], [0.125, 0.25, 0.5, 1, 0.5, 0.25, 0.125]),
+        ([0, 0, 1, 1, 0, 0, 0], [0.25, 0.5, 1, 1, 0.5, 0.25, 0.125]),
+        ([0, 0, 1, 1, 0, 1, 0], [0.25, 0.5, 1, 1, 0.5, 1, 0.5]),
+        ([0, 0, 1, 0, 0, 0, 0], [0.25, 0.5, 1, 0.5, 0.25, 0.125, 0.0625]),
+        ([0, 0, 0, 8, 0, 0, 0], [1, 2, 4, 8, 4, 2, 1]),
+        ([0, 0, 0, -8, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]),
+        ([0, 0, 1, -8, 0, 0, 0], [0.25, 0.5, 1, 0.5, 0.25, 0.125, 0.0625]),
+        ([0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]),
+        ([1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1]),
+        ([], []),
+    ],
+)
+def test_exp_dropoff_simple(input, output):
+    exp_dropoff_array(input)
+    assert input == output
