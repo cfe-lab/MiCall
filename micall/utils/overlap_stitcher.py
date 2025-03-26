@@ -2,7 +2,6 @@ from fractions import Fraction
 from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
-import numba
 import numpy as np
 
 
@@ -48,7 +47,6 @@ def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
     return normalize_array(absolute)
 
 
-@numba.njit
 def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
     """
     Given a boolean array arr, returns an integer array
