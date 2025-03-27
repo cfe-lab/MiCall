@@ -55,7 +55,7 @@ def simulate_reads(reference: Seq,
 
     ref_len = len(reference)
     file_num = 2 if is_reversed else 1
-    distribution_high = (ref_len + 10) * 10
+    distribution_high = ref_len + 20
     gen = stable_random_distribution(high=distribution_high, rng=rng)
 
     for i in range(n_reads):
