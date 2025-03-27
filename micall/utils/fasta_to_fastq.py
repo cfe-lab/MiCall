@@ -55,13 +55,18 @@ def simulate_reads(reference: Seq,
 
     ref_len = len(reference)
     file_num = 2 if is_reversed else 1
-    gen = stable_random_distribution(high=(ref_len - min_length), rng=rng)
+    distribution_high = (ref_len + 10) * 10
+    gen = stable_random_distribution(high=distribution_high, rng=rng)
 
     for i in range(n_reads):
         # Choose a read length uniformly between min_length and max_length.
         read_length = rng.randint(min_length, max_length)
+
         # Choose a start index from a fair distribution.
-        start = next(gen)
+        start_absolute = next(gen)
+        max_start = ref_len - read_length
+        start = round((start_absolute * max_start) / distribution_high)
+
         end = start + read_length
 
         # Get the read nucleotides.
