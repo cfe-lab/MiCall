@@ -78,16 +78,20 @@ def simulate_reads(reference: Seq,
         # then convert that into a FASTQ quality string.
         # Bio.SeqIO.write when given a SeqRecord with
         # letter_annotations["phred_quality"] writes in FASTQ.
-        qualities = [MAX_QUALITY] * read_length
+        qualities: Sequence[int] = [MAX_QUALITY] * read_length
 
         y_coord = i + 1
         record_id = f"""\
 M01234:01:000000000-AAAAA:1:1101:{extract_num}:{y_coord:04d} {file_num}:N:0:1
 """.strip()
         description = f"start={start} length={read_length}"
+        annotations = {"phred_quality": qualities}
 
-        record = SeqRecord(read_seq, id=record_id, description=description)
-        record.letter_annotations["phred_quality"] = qualities
+        record = SeqRecord(read_seq,
+                           id=record_id,
+                           description=description,
+                           letter_annotations=annotations,
+                           )
 
         yield record
 
