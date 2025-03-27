@@ -17,7 +17,7 @@ from micall.utils.overlap_stitcher import align_queries, \
     exp_dropoff_array
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import \
-    OverlapFinder, get_overlap_results, choose_convolution_method
+    get_overlap_results, choose_convolution_method
 
 
 logger = logging.getLogger(__name__)
@@ -197,8 +197,6 @@ ContigId = int
 GET_OVERLAP_CACHE: MutableMapping[
     Tuple[ContigId, ContigId],
     Optional[Overlap]] = {}
-
-OVERLAP_FINDER = OverlapFinder.make('ACTG')
 
 
 def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[Overlap]:
