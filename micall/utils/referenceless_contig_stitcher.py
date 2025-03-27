@@ -152,7 +152,8 @@ class Pool:
 
         if self.size > 0:
             smallest_path = self.paths[0]
-            self.smallest_score = smallest_path.probability
+            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
+                                      smallest_path.probability)
         else:
             self.smallest_score = ACCEPTABLE_STITCHING_SCORE
 
@@ -174,9 +175,11 @@ class Pool:
             if path.score() < smallest_path.score():
                 smallest_path = path
 
-            self.smallest_score = smallest_path.probability
+            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
+                                      smallest_path.probability)
         else:
-            self.smallest_score = path.score()
+            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
+                                      path.score())
 
         self.size += 1
         self.paths.add(path)
