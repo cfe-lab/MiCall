@@ -64,7 +64,7 @@ class ContigWithAligner(Contig):
             value = letter.encode('utf-8')
             ret = np.zeros(len(self.nucleotide_seq))
             ret[self.nucleotide_seq == value] = 1
-            exp_dropoff_array(ret)
+            exp_dropoff_array(ret, factor=32)
             return ret
 
         return {x: to_array(x) for x in self.alphabet}
