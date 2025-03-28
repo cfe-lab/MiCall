@@ -32,7 +32,6 @@ class Row(TypedDict, total=True):
     A TypedDict for CSV rows.
     """
 
-    qseqid: str
     size: int
     matches: int
     occurrences: int
@@ -62,6 +61,15 @@ class KMer:
     sequence: str
     left: str
     right: str
+
+
+@dataclass(frozen=True)
+class KMerWithCounter:
+    kmer: KMer
+    counter: MutableMapping[int, int]
+
+
+Pool = MutableMapping[str, KMerWithCounter]
 
 
 def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
@@ -100,7 +108,7 @@ def kmers(sequence: str, size: int) -> Iterator[KMer]:
         yield KMer(sequence=seq, left=left, right=right)
 
 
-def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
+def slide_kmer(with_counter: KMerWithCounter) -> None:
     """
     Compare kmer against k-mers from its surrounding context and yield
     match counts.
@@ -111,13 +119,11 @@ def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
     Parameters:
         qseqid (str): The contig identifier.
         kmer (KMer): The k-mer with its context.
-
-    Yields:
-        Row: A dictionary row with match details.
     """
 
+    kmer = with_counter.kmer
     size = len(kmer.sequence)
-    counter: MutableMapping[int, int] = defaultdict(int)
+    counter = with_counter.counter
 
     for other in chain(kmers(kmer.left, size),
                        kmers(kmer.right, size),
@@ -126,17 +132,11 @@ def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
         if matches > 0:
             counter[matches] += 1
 
-    for matches, occurrences in counter.items():
-        ret: Row = {"qseqid": qseqid,
-                    "size": size,
-                    "matches": matches,
-                    "occurrences": occurrences,
-                    "kmer": kmer.sequence,
-                    }
-        yield ret
 
-
-def process_contig(contig: Contig, max_kmer: int) -> Iterator[Row]:
+def process_contig(pool: Pool,
+                   contig: Contig,
+                   max_kmer: int,
+                   ) -> None:
     """
     Process a single contig, compute k-mer statistics for k=1..max_kmer.
 
@@ -148,12 +148,41 @@ def process_contig(contig: Contig, max_kmer: int) -> Iterator[Row]:
         Row: The computed CSV row data for each unique k-mer.
     """
 
-    qseqid = (contig.name and str(contig.name)) or ''
     for size in range(1, max_kmer + 1):
         all_kmers = kmers(contig.seq, size)
         deduplicated = {x.sequence: x for x in all_kmers}.values()
-        for kmer in sorted(deduplicated, key=lambda x: x.sequence):
-            yield from slide_kmer(qseqid, kmer)
+        for kmer in deduplicated:
+            if kmer.sequence in pool:
+                existing = pool[kmer.sequence]
+                with_counter = KMerWithCounter(kmer, existing.counter)
+            else:
+                with_counter = KMerWithCounter(kmer, defaultdict(int))
+                pool[kmer.sequence] = with_counter
+            slide_kmer(with_counter)
+
+
+def process_all_contigs(pool: Pool,
+                        contigs: Sequence[Contig],
+                        max_kmer: int,
+                        ) -> None:
+    for i, contig in enumerate(contigs):
+        logger.debug("Processing contig %s (%s/%s).",
+                     contig.name, i+1, len(contigs))
+        process_contig(pool, contig, max_kmer)
+
+
+def counters_to_rows(pool: Pool) -> Iterator[Row]:
+    for with_counter in pool.values():
+        kmer = with_counter.kmer
+        counter = with_counter.counter
+        size = len(kmer.sequence)
+        for matches, occurrences in counter.items():
+            row: Row = {"size": size,
+                        "matches": matches,
+                        "occurrences": occurrences,
+                        "kmer": kmer.sequence,
+                        }
+            yield row
 
 
 def main_typed(input: Path, output: Path, max_kmer: int) -> None:
@@ -174,15 +203,14 @@ def main_typed(input: Path, output: Path, max_kmer: int) -> None:
         contigs = tuple(read_contigs(input_file))
         logger.debug("Read %s input sequences.", len(contigs))
 
+    pool: Pool = {}
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w") as output_file:
         writer = csv.DictWriter(output_file, fieldnames=FIELDNAMES)
         writer.writeheader()
-        for i, contig in enumerate(contigs):
-            logger.debug("Processing contig %s (%s/%s).",
-                         contig.name, i+1, len(contigs))
-            for row in process_contig(contig, max_kmer):
-                writer.writerow(row)
+        process_all_contigs(pool, contigs, max_kmer)
+        for row in counters_to_rows(pool):
+            writer.writerow(row)
 
 
 def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
