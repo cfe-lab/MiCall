@@ -22,7 +22,7 @@ from micall.utils.find_maximum_overlap import \
 
 logger = logging.getLogger(__name__)
 
-Score = int
+Score = float
 SCORE_NOTHING = 0
 SCORE_EPSILON = 1
 
@@ -97,9 +97,9 @@ class ContigsPath:
 
     # Higher is better. This is an estimated probability that
     # all the components in this path came together by accident.
-    probability: int
+    probability: Score
 
-    def score(self) -> int:
+    def score(self) -> Score:
         return self.probability
 
     def __lt__(self, other: 'ContigsPath') -> bool:

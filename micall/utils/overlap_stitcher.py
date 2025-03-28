@@ -3,6 +3,7 @@ from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
 import numpy as np
+import math
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -151,7 +152,7 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
     exp_dropoff_array_iter(array=array, direction=-1, factor=factor)
 
 
-def calc_overlap_pvalue(L: int, M: int) -> int:
+def calc_overlap_pvalue(L: int, M: int) -> float:
     """
     Compute the probability (p-value) of observing at least M matches
     out of L under a binomial model where each position has
@@ -166,9 +167,8 @@ def calc_overlap_pvalue(L: int, M: int) -> int:
     matches by chance
     """
 
-    M += 1
     L += 1
+    baseline = L / 4
+    extra = M - baseline
 
-    D = (L - M) + 2
-
-    return 3 + M*M - D*D
+    return 9 + extra * (-1 * math.log(1/L))
