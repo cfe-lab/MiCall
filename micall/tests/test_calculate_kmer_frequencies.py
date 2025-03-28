@@ -72,7 +72,7 @@ def test_slide_kmer_some_matches():
     # Expect a counter: 1 match occurred twice, and 2 matches occurred once.
     # Order of rows is not guaranteed; we can check counts.
 
-    counter = {}
+    counter: dict[int, int] = {}
     for row in rows:
         counter[row["matches"]] = counter.get(row["matches"], 0) + row["occurrences"]
     assert counter.get(1) == 1, "Expected count of 1-match to be 2."
@@ -131,6 +131,7 @@ ACGTACGT
         rows = list(reader)
         # Check header fields match expected.
         expected_headers = ("qseqid", "size", "matches", "occurrences", "kmer")
+        assert reader.fieldnames is not None
         assert tuple(reader.fieldnames) == expected_headers
         # This test might yield rows if there are context comparisons;
         # if no matches occur, we might get no rows. Here, ensure that no error occurred.
