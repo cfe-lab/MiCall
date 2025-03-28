@@ -59,7 +59,7 @@ def kmers(sequence: str, size: int) -> Iterator[KMer]:
         end = i+size
         seq = sequence[i:end]
         left = sequence[:i]
-        right = sequence[end+1:]
+        right = sequence[end:]
         yield KMer(sequence=seq, left=left, right=right)
 
 
