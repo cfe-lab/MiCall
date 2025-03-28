@@ -170,5 +170,7 @@ def calc_overlap_pvalue(L: int, M: int) -> float:
     L += 1
     baseline = L / 4
     extra = M - baseline
+    exp = 2.0 ** round(min(500, extra))
+    triple = extra * extra * extra
 
-    return 9 + extra * (-1 * math.log(1/L))
+    return 9 + triple * exp * (-1 * math.log(1/L))
