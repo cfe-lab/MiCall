@@ -1,7 +1,10 @@
 #! /usr/bin/env python
 
 """
-This script computes kmer frequencies of given sequences.
+This module computes k-mer frequencies (and matches in contexts) from
+given FASTA sequences.  It processes each contig in the FASTA file
+and, for each k-mer (of sizes 1 up to a maximum), computes the number
+of occurrences in the input sequence.
 """
 
 import argparse
@@ -25,6 +28,10 @@ logger = logging.getLogger(__name__)
 
 
 class Row(TypedDict, total=True):
+    """
+    A TypedDict for CSV rows.
+    """
+
     qseqid: str
     size: int
     matches: int
@@ -36,6 +43,10 @@ FIELDNAMES = tuple(Row.__annotations__.keys())
 
 
 class UserError(ValueError):
+    """
+    Custom error for user-facing messages.
+    """
+
     def __init__(self, fmt: str, *fmt_args: object):
         self.fmt = fmt
         self.fmt_args = fmt_args
@@ -44,17 +55,43 @@ class UserError(ValueError):
 
 @dataclass(frozen=True)
 class KMer:
+    """
+    Represents a k-mer and its context within a sequence.
+    """
+
     sequence: str
     left: str
     right: str
 
 
 def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
+    """
+    Read contigs from a FASTA file.
+
+    Parameters:
+        input_fasta (TextIO): Input file handle in FASTA format.
+
+    Yields:
+        Contig: A contig with a name and sequence.
+    """
+
     for record in SeqIO.parse(input_fasta, "fasta"):
         yield Contig(name=record.name, seq=str(record.seq))
 
 
 def kmers(sequence: str, size: int) -> Iterator[KMer]:
+    """
+    Generate all k-mers of a given size from a sequence along with
+    their left and right context.
+
+    Parameters:
+        sequence (str): The input DNA sequence.
+        size (int): The k-mer size.
+
+    Yields:
+        KMer: The k-mer and its context.
+    """
+
     for i in range(len(sequence) - size + 1):
         end = i+size
         seq = sequence[i:end]
@@ -64,6 +101,21 @@ def kmers(sequence: str, size: int) -> Iterator[KMer]:
 
 
 def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
+    """
+    Compare kmer against k-mers from its surrounding context and yield
+    match counts.
+
+    For each k-mer extracted from the left and right contexts, count
+    how many positions match.
+
+    Parameters:
+        qseqid (str): The contig identifier.
+        kmer (KMer): The k-mer with its context.
+
+    Yields:
+        Row: A dictionary row with match details.
+    """
+
     size = len(kmer.sequence)
     counter: MutableMapping[int, int] = defaultdict(int)
 
@@ -85,6 +137,17 @@ def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
 
 
 def process_contig(contig: Contig, max_kmer: int) -> Iterator[Row]:
+    """
+    Process a single contig, compute k-mer statistics for k=1..max_kmer.
+
+    Parameters:
+        contig (Contig): The contig to process.
+        max_kmer (int): The maximum k-mer size to consider.
+
+    Yields:
+        Row: The computed CSV row data for each unique k-mer.
+    """
+
     qseqid = (contig.name and str(contig.name)) or ''
     for size in range(1, max_kmer + 1):
         all_kmers = kmers(contig.seq, size)
@@ -93,7 +156,16 @@ def process_contig(contig: Contig, max_kmer: int) -> Iterator[Row]:
             yield from slide_kmer(qseqid, kmer)
 
 
-def main_typed(input: Path, output: Path, max_kmer: int) -> int:
+def main_typed(input: Path, output: Path, max_kmer: int) -> None:
+    """
+    Main processing function: reads input FASTA, processes contigs,
+    and writes CSV output.
+
+    Parameters:
+        input_path (Path): Path to the FASTA input file.
+        output_path (Path): Path to the CSV output file.
+        max_kmer (int): Maximum k-mer length to process.
+    """
 
     if not input.exists():
         raise UserError("Input file %r does not exist.", str(input))
@@ -109,10 +181,8 @@ def main_typed(input: Path, output: Path, max_kmer: int) -> int:
             for row in process_contig(contig, max_kmer):
                 writer.writerow(row)
 
-    return 0
 
-
-def main(argv: Sequence[str]) -> int:
+def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Concatenate inputs and write to an output file.")
 
@@ -123,25 +193,28 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument('--max', type=int, default=10,
                         help='Largest k-mer to be analyzed.')
 
-    args = parser.parse_args(argv)
-    return main_typed(args.input, args.output, args.max)
+    return parser.parse_args(argv)
+
+
+def main(argv: Sequence[str]) -> int:
+    try:
+        args = parse_arguments(argv)
+        main_typed(args.input, args.output, args.max)
+        logger.debug("Done.")
+        return 0
+    except BrokenPipeError:
+        logger.debug("Broken pipe.")
+        return 1
+    except KeyboardInterrupt:
+        logger.debug("Interrupted.")
+        return 1
+    except UserError as e:
+        logger.fatal(e.fmt, *e.fmt_args)
+        return e.code
 
 
 def entry() -> None:
-    try:
-        rc = main(sys.argv[1:])
-        logger.debug("Done.")
-    except BrokenPipeError:
-        logger.debug("Broken pipe.")
-        rc = 1
-    except KeyboardInterrupt:
-        logger.debug("Interrupted.")
-        rc = 1
-    except UserError as e:
-        logger.fatal(e.fmt, *e.fmt_args)
-        rc = e.code
-
-    sys.exit(rc)
+    sys.exit(main(sys.argv[1:]))
 
 
 if __name__ == "__main__": entry()  # noqa
