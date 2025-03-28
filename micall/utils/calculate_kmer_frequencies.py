@@ -172,12 +172,15 @@ def main_typed(input: Path, output: Path, max_kmer: int) -> None:
 
     with input.open() as input_file:
         contigs = tuple(read_contigs(input_file))
+        logger.debug("Read %s input sequences.", len(contigs))
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w") as output_file:
         writer = csv.DictWriter(output_file, fieldnames=FIELDNAMES)
         writer.writeheader()
-        for contig in contigs:
+        for i, contig in enumerate(contigs):
+            logger.debug("Processing contig %s (%s/%s).",
+                         contig.name, i, len(contigs))
             for row in process_contig(contig, max_kmer):
                 writer.writerow(row)
 
@@ -193,12 +196,34 @@ def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument('--max', type=int, default=10,
                         help='Largest k-mer to be analyzed.')
 
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true',
+                                 help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true',
+                                 help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true',
+                                 help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true',
+                                 help='Minimize output verbosity.')
+
     return parser.parse_args(argv)
+
+
+def configure_logging(args: argparse.Namespace) -> None:
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARNING)
 
 
 def main(argv: Sequence[str]) -> int:
     try:
         args = parse_arguments(argv)
+        configure_logging(args)
         main_typed(args.input, args.output, args.max)
         logger.debug("Done.")
         return 0
