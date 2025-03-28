@@ -55,7 +55,7 @@ def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
 
 
 def kmers(sequence: str, size: int) -> Iterator[KMer]:
-    for i in range(len(sequence) - size):
+    for i in range(len(sequence) - size + 1):
         end = i+size
         seq = sequence[i:end]
         left = sequence[:i]
