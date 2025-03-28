@@ -55,13 +55,18 @@ def simulate_reads(reference: Seq,
 
     ref_len = len(reference)
     file_num = 2 if is_reversed else 1
-    gen = stable_random_distribution(high=(ref_len - min_length), rng=rng)
+    distribution_high = ref_len + 20
+    gen = stable_random_distribution(high=distribution_high, rng=rng)
 
     for i in range(n_reads):
         # Choose a read length uniformly between min_length and max_length.
         read_length = rng.randint(min_length, max_length)
+
         # Choose a start index from a fair distribution.
-        start = next(gen)
+        start_absolute = next(gen)
+        max_start = ref_len - read_length
+        start = round((start_absolute * max_start) / distribution_high)
+
         end = start + read_length
 
         # Get the read nucleotides.
@@ -73,16 +78,20 @@ def simulate_reads(reference: Seq,
         # then convert that into a FASTQ quality string.
         # Bio.SeqIO.write when given a SeqRecord with
         # letter_annotations["phred_quality"] writes in FASTQ.
-        qualities = [MAX_QUALITY] * read_length
+        qualities: Sequence[int] = [MAX_QUALITY] * read_length
 
         y_coord = i + 1
         record_id = f"""\
 M01234:01:000000000-AAAAA:1:1101:{extract_num}:{y_coord:04d} {file_num}:N:0:1
 """.strip()
         description = f"start={start} length={read_length}"
+        annotations = {"phred_quality": qualities}
 
-        record = SeqRecord(read_seq, id=record_id, description=description)
-        record.letter_annotations["phred_quality"] = qualities
+        record = SeqRecord(read_seq,
+                           id=record_id,
+                           description=description,
+                           letter_annotations=annotations,
+                           )
 
         yield record
 

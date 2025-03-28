@@ -6,6 +6,7 @@ from aligntools import CigarHit
 
 ID_STATE = 0
 
+
 def generate_new_id() -> int:
     global ID_STATE
     ID_STATE += 1
@@ -34,6 +35,14 @@ class Contig:
         from micall.utils.contig_stitcher_context import context
         ctx = context.get()
         return ctx.register(key=self.id, value=self.name)
+
+    @staticmethod
+    def empty() -> 'Contig':
+        return EMPTY_CONTIG
+
+
+EMPTY_CONTIG = Contig(name=None, seq='')
+assert EMPTY_CONTIG.id > 0
 
 
 @dataclass(frozen=True)
