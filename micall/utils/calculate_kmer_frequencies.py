@@ -38,6 +38,7 @@ class Row(TypedDict, total=True):
     kmer: str
 
 
+# FIELDNAMES defines the header for the CSV output.
 FIELDNAMES = tuple(Row.__annotations__.keys())
 
 
@@ -55,7 +56,12 @@ class UserError(ValueError):
 @dataclass(frozen=True)
 class KMer:
     """
-    Represents a k-mer and its context within a sequence.
+    Represents a k-mer from a sequence along with its flanking context.
+
+    Attributes:
+        sequence: The k-mer substring.
+        left: All bases to the left of the k-mer within the sequence.
+        right: All bases to the right of the k-mer within the sequence.
     """
 
     sequence: str
@@ -65,22 +71,35 @@ class KMer:
 
 @dataclass(frozen=True)
 class KMerWithCounter:
+    """
+    Combines a KMer with its associated counter that maps matching
+    score to occurrence.
+
+    Attributes:
+        kmer: The KMer instance.
+        counter: A mapping from match count (int) to number of
+                 occurrences (int) of context k-mers that have this
+                 many matching positions.
+    """
+
     kmer: KMer
     counter: MutableMapping[int, int]
 
 
+# Pool is defined as a mapping from k-mer string to its
+# KMerWithCounter.
 Pool = MutableMapping[str, KMerWithCounter]
 
 
 def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
     """
-    Read contigs from a FASTA file.
+    Read contig records from a FASTA file.
 
     Parameters:
-        input_fasta (TextIO): Input file handle in FASTA format.
+        input_fasta (TextIO): A file-like object in FASTA format.
 
     Yields:
-        Contig: A contig with a name and sequence.
+        Contig: A contig with a name and a sequence string.
     """
 
     for record in SeqIO.parse(input_fasta, "fasta"):
@@ -89,15 +108,22 @@ def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
 
 def kmers(sequence: str, size: int) -> Iterator[KMer]:
     """
-    Generate all k-mers of a given size from a sequence along with
-    their left and right context.
+    Generate all k-mers of a specified size from a DNA sequence along
+    with their left and right contexts.
+
+    Explanation:
+      For each valid window in the sequence (using a sliding window approach),
+      yields a KMer object with:
+         - sequence: the current k-mer substring,
+         - left: substring preceding the k-mer,
+         - right: substring following the k-mer.
 
     Parameters:
-        sequence (str): The input DNA sequence.
-        size (int): The k-mer size.
+        sequence (str): The DNA sequence.
+        size (int): The desired k-mer size (window length).
 
     Yields:
-        KMer: The k-mer and its context.
+        KMer: A k-mer with its associated context.
     """
 
     for i in range(len(sequence) - size + 1):
@@ -110,15 +136,19 @@ def kmers(sequence: str, size: int) -> Iterator[KMer]:
 
 def slide_kmer(with_counter: KMerWithCounter) -> None:
     """
-    Compare kmer against k-mers from its surrounding context and yield
-    match counts.
+    Compute match counts between a given k-mer and all k-mers
+    generated from its flanking contexts.
 
-    For each k-mer extracted from the left and right contexts, count
-    how many positions match.
+    For the provided KMerWithCounter object, this function slides a
+    window over the left and right context sequences to generate
+    k-mers of the same size. For each such context k-mer, it compares
+    the bases with the original k-mer, tallying the number of matching
+    positions. Results are stored in the provided counter mapping
+    within the KMerWithCounter.
 
     Parameters:
-        qseqid (str): The contig identifier.
-        kmer (KMer): The k-mer with its context.
+        with_counter (KMerWithCounter): Combines a KMer with its
+        counter where counts will be updated.
     """
 
     kmer = with_counter.kmer
@@ -138,14 +168,22 @@ def process_contig(pool: Pool,
                    max_kmer: int,
                    ) -> None:
     """
-    Process a single contig, compute k-mer statistics for k=1..max_kmer.
+    Process a single contig to compute k-mer statistics for k = 1 to
+    max_kmer.
+
+    For each k value:
+      1. All k-mers are generated from the contig sequence.
+      2. Duplicates (based on k-mer sequence) are removed.
+      3. Each unique k-mer is then tested against its flanking context
+      using slide_kmer().
+      4. Results are accumulated within a shared pool (deduplicating
+      k-mers across contigs).
 
     Parameters:
-        contig (Contig): The contig to process.
-        max_kmer (int): The maximum k-mer size to consider.
-
-    Yields:
-        Row: The computed CSV row data for each unique k-mer.
+        pool (Pool): A dictionary that accumulates KMerWithCounter
+        objects across contigs.
+        contig (Contig): The input contig to be processed.
+        max_kmer (int): Maximum k-mer length to analyze.
     """
 
     for size in range(1, max_kmer + 1):
@@ -215,7 +253,7 @@ def main_typed(input: Path, output: Path, max_kmer: int) -> None:
 
 def parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Concatenate inputs and write to an output file.")
+        description="Calculate k-mer frequencies from FASTA sequences and output results as CSV.")
 
     parser.add_argument('input', type=Path,
                         help='Input FASTA file.')
