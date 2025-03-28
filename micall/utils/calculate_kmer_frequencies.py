@@ -287,9 +287,10 @@ def configure_logging(args: argparse.Namespace) -> None:
 
 
 def main(argv: Sequence[str]) -> int:
+    args = parse_arguments(argv)
+    configure_logging(args)
+
     try:
-        args = parse_arguments(argv)
-        configure_logging(args)
         main_typed(args.input, args.output, args.max)
         logger.debug("Done.")
         return 0
