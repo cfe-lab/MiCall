@@ -6,12 +6,14 @@ This script computes kmer frequencies of given sequences.
 
 import argparse
 import sys
+from dataclasses import dataclass
 from collections import defaultdict
 from pathlib import Path
 from typing import Sequence, Iterator, TextIO, TypedDict, MutableMapping
 import logging
 from micall.utils.contig_stitcher_contigs import Contig
 from Bio import SeqIO
+from itertools import chain
 import csv
 
 
@@ -40,23 +42,35 @@ class UserError(ValueError):
         self.code = 1
 
 
+@dataclass(frozen=True)
+class KMer:
+    sequence: str
+    left: str
+    right: str
+
+
 def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
     for record in SeqIO.parse(input_fasta, "fasta"):
         yield Contig(name=record.name, seq=str(record.seq))
 
 
-def kmers(sequence: str, size: int) -> Iterator[str]:
+def kmers(sequence: str, size: int) -> Iterator[KMer]:
     for i in range(len(sequence) - size):
-        yield sequence[i:i+size]
+        end = i+size
+        seq = sequence[i:end]
+        left = sequence[:i]
+        right = sequence[end+1:]
+        yield KMer(sequence=seq, left=left, right=right)
 
 
-def slide_kmer(contig: Contig, kmer: Sequence[object]) -> Iterator[Row]:
-    qseqid = (contig.name and str(contig.name)) or ''
-    size = len(kmer)
+def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
+    size = len(kmer.sequence)
     counter: MutableMapping[int, int] = defaultdict(int)
 
-    for other in kmers(contig.seq, size):
-        matches = sum(x == y for x, y in zip(kmer, other))
+    for other in chain(kmers(kmer.left, size),
+                       kmers(kmer.right, size),
+                       ):
+        matches = sum(x == y for x, y in zip(kmer.sequence, other.sequence))
         if matches > 0:
             counter[matches] += 1
 
@@ -69,15 +83,18 @@ def slide_kmer(contig: Contig, kmer: Sequence[object]) -> Iterator[Row]:
                     "size": size,
                     "matches": matches,
                     "occurrences": occurrences,
-                    "kmer": str(kmer),
+                    "kmer": kmer.sequence,
                     }
         yield ret
 
 
 def process_contig(contig: Contig, max_kmer: int) -> Iterator[Row]:
+    qseqid = (contig.name and str(contig.name)) or ''
     for size in range(1, max_kmer + 1):
-        for kmer in sorted(set(kmers(contig.seq, size))):
-            yield from slide_kmer(contig, kmer)
+        all_kmers = kmers(contig.seq, size)
+        deduplicated = {x.sequence: x for x in all_kmers}.values()
+        for kmer in sorted(deduplicated, key=lambda x: x.sequence):
+            yield from slide_kmer(qseqid, kmer)
 
 
 def main_typed(input: Path, output: Path, max_kmer: int) -> int:
