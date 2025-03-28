@@ -75,10 +75,6 @@ def slide_kmer(qseqid: str, kmer: KMer) -> Iterator[Row]:
             counter[matches] += 1
 
     for matches, occurrences in counter.items():
-        assert occurrences >= 0
-        if occurrences <= 0:
-            continue
-
         ret: Row = {"qseqid": qseqid,
                     "size": size,
                     "matches": matches,
