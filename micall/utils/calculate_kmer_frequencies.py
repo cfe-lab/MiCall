@@ -180,7 +180,7 @@ def main_typed(input: Path, output: Path, max_kmer: int) -> None:
         writer.writeheader()
         for i, contig in enumerate(contigs):
             logger.debug("Processing contig %s (%s/%s).",
-                         contig.name, i, len(contigs))
+                         contig.name, i+1, len(contigs))
             for row in process_contig(contig, max_kmer):
                 writer.writerow(row)
 
