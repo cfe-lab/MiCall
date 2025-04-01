@@ -6,6 +6,7 @@ from Bio.SeqRecord import SeqRecord
 import logging
 from mappy import Aligner
 from functools import cached_property
+from sortedcontainers import SortedList
 import itertools
 import numpy as np
 
@@ -17,7 +18,6 @@ from micall.utils.overlap_stitcher import align_queries, \
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import \
     get_overlap_results, choose_convolution_method
-from micall.utils.sorted_ring import SortedRing
 
 
 logger = logging.getLogger(__name__)
@@ -127,19 +127,35 @@ class ContigsPath:
 
 @dataclass
 class Pool:
-    paths: SortedRing[ContigsPath]
+    # TODO: Factor out a SortedRing structure out of here.
+    paths: SortedList[ContigsPath]
     existing: MutableMapping[str, ContigsPath]
+    size: int
+    capacity: int
+    smallest_score: Score
 
     @staticmethod
-    def make(capacity: int) -> 'Pool':
-        return Pool(SortedRing(capacity), {})
+    def empty() -> 'Pool':
+        return Pool(SortedList(), {}, 0, 999999, ACCEPTABLE_STITCHING_SCORE)
 
     @property
     def min_acceptable_score(self) -> Score:
-        if self.paths.is_full():
-            return self.paths.smallest_item().score()
+        return self.smallest_score
+
+    def resize(self, new_capacity: int) -> None:
+        if new_capacity < self.size:
+            stop = self.size - new_capacity
+            del self.paths[:stop]
+            self.size = new_capacity
+
+        self.capacity = new_capacity
+
+        if self.size > 0:
+            smallest_path = self.paths[0]
+            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
+                                      smallest_path.probability)
         else:
-            return ACCEPTABLE_STITCHING_SCORE
+            self.smallest_score = ACCEPTABLE_STITCHING_SCORE
 
     def add(self, path: ContigsPath) -> bool:
         key = path.whole.seq
@@ -147,11 +163,28 @@ class Pool:
         if alternative is not None and alternative.score() >= path.score():
             return False
 
-        if self.paths.add(path):
-            self.existing[key] = path
-            return True
+        if self.size > 0:
+            smallest_path = self.paths[0]
+            if self.size >= self.capacity:
+                if smallest_path.score() >= path.score():
+                    return False
+
+                del self.paths[0]
+                self.size -= 1
+
+            if path.score() < smallest_path.score():
+                smallest_path = path
+
+            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
+                                      smallest_path.probability)
         else:
-            return False
+            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
+                                      path.score())
+
+        self.size += 1
+        self.paths.add(path)
+        self.existing[key] = path
+        return True
 
 
 @dataclass(frozen=True)
@@ -371,26 +404,27 @@ def calc_multiple_extensions(pool: Pool,
 def calculate_all_paths(paths: Sequence[ContigsPath],
                         contigs: Sequence[ContigWithAligner],
                         ) -> Iterable[ContigsPath]:
-    pool = Pool.make(MAX_ALTERNATIVES)
+    pool = Pool.empty()
+    pool.resize(MAX_ALTERNATIVES)
 
     for path in sorted(paths):
-        if pool.paths.is_full():
+        if pool.size >= pool.capacity:
             break
         pool.add(path)
 
     logger.debug("Calculating all paths...")
     for cycle in itertools.count(1):
-        logger.debug("Cycle %s started with %s paths.", cycle, pool.paths.size)
+        logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
 
         if not calc_multiple_extensions(pool, pool.paths, contigs):
             break
 
-        fittest = pool.paths.largest_item()
+        fittest = pool.paths[-1]
         length = len(fittest.whole.seq)
         parts = len(fittest.parts_ids)
         logger.debug("Cycle %s finished with %s new paths. "
                      "The fittest has length %s and consists of %s parts.",
-                     cycle, pool.paths.size, length, parts)
+                     cycle, pool.size, length, parts)
 
     return pool.paths
 
@@ -413,7 +447,8 @@ def find_best_candidates(first: ContigWithAligner,
     initial = ContigsPath.singleton(first)
     yield initial
 
-    pool = Pool.make(1)
+    pool = Pool.empty()
+    pool.resize(1)
 
     for candidate in contigs:
         if first.id >= candidate.id:
@@ -468,7 +503,7 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
             if first.id >= second.id:
                 continue
 
-            pool = Pool.make(MAX_ALTERNATIVES)
+            pool = Pool.empty()
             result = try_combine_contigs(current_prob=SCORE_NOTHING,
                                          pool=pool,
                                          a=first, b=second,
