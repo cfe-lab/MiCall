@@ -131,17 +131,15 @@ def test_full_pipeline(tmp_path: Path, projects):
     # For a well-sampled read set, we expect the stitiching algorithm to
     # reconstruct the original sequence.
     # We check that one of the resulting contigs matches our original HXB2 sequence.
+    reconstructed = None
+    for contig in stitched_contigs:
+        if contig.seq == ref_seq:
+            reconstructed = contig.seq
+            break
 
-    # # FIXME: actually check this.
-    # reconstructed = None
-    # for contig in stitched_contigs:
-    #     if contig.seq == ref_seq:
-    #         reconstructed = contig.seq
-    #         break
-
-    # assert reconstructed is not None, (
-    #     "The contig stitching did not reconstruct the original HXB2 sequence."
-    # )
+    assert reconstructed is not None, (
+        "The contig stitching did not reconstruct the original HXB2 sequence."
+    )
 
     # Check that only one contig remains.
     count = len(stitched_contigs)
