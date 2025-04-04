@@ -13,7 +13,7 @@ from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlap
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.utils.contig_stitcher_context import context, StitcherContext
+from micall.utils.contig_stitcher_context import context, ReferencefullStitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 from micall.utils.consensus_aligner import align_consensus
 from micall.utils.overlap_stitcher import align_queries, calculate_concordance_norm, sort_concordance_indexes
@@ -575,7 +575,7 @@ def referencefull_contig_stitcher(input_csv: TextIO,
                                   output_csv: Optional[TextIO],
                                   stitcher_plot_path: Optional[str],
                                   ) -> int:
-    with StitcherContext.fresh() as ctx:
+    with ReferencefullStitcherContext.fresh() as ctx:
         contigs = list(read_contigs(input_csv))
 
         if output_csv is not None or stitcher_plot_path is not None:

@@ -6,7 +6,7 @@ from Bio.SeqRecord import SeqRecord
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, \
     referenceless_contig_stitcher, read_contigs
-from micall.utils.contig_stitcher_context import StitcherContext
+from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.fasta_to_fastq import generate_fastq
 from micall.utils.fastq_to_fasta import main_typed
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
@@ -69,7 +69,7 @@ TTT = 40 * 'T'
 )
 def test_stitch_simple_cases(seqs, expected):
     contigs = [ContigWithAligner(None, seq) for seq in seqs]
-    with StitcherContext.fresh():
+    with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
     assert consenses == tuple(sorted(expected))
 

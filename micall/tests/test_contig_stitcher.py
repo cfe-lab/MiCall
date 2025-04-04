@@ -41,7 +41,7 @@ def exact_aligner(monkeypatch):
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.StitcherContext.make())
+    stitcher.context.set(stitcher.ReferencefullStitcherContext.make())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)

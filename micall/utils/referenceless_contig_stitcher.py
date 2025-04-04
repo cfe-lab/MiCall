@@ -10,7 +10,7 @@ from sortedcontainers import SortedList
 import itertools
 import numpy as np
 
-from micall.utils.contig_stitcher_context import StitcherContext
+from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue, \
@@ -557,7 +557,7 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
 def referenceless_contig_stitcher(input_fasta: TextIO,
                                   output_fasta: Optional[TextIO],
                                   ) -> int:
-    with StitcherContext.fresh():
+    with ReferencelessStitcherContext.fresh():
         contigs = tuple(read_contigs(input_fasta))
         logger.debug("Loaded %s contigs.", len(contigs))
 

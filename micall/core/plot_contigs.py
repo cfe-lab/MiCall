@@ -22,7 +22,7 @@ from matplotlib.colors import Normalize
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
-from micall.utils.contig_stitcher_context import StitcherContext
+from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
 import micall.utils.contig_stitcher_events as events
 from micall.data.landmark_reader import LandmarkReader
 
@@ -401,7 +401,7 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
 
 
 def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage_svg_path: str):
-    with StitcherContext.stage():
+    with ReferencefullStitcherContext.stage():
         f = build_stitcher_figure(logs)
         f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
         return f

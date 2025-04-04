@@ -7,7 +7,7 @@ from micall.utils.referencefull_contig_stitcher import (
     stitch_consensus,
     stitch_contigs,
     drop_completely_covered,
-    StitcherContext,
+    ReferencefullStitcherContext,
 )
 import micall.utils.referencefull_contig_stitcher as stitcher
 from micall.core.plot_contigs import build_stitcher_figure
@@ -23,7 +23,7 @@ def no_aligner(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def stitcher_context():
-    stitcher.context.set(StitcherContext.make())
+    stitcher.context.set(ReferencefullStitcherContext.make())
 
 
 def read_contigs(line):
@@ -138,7 +138,7 @@ def test_stitching_intervals_prop(no_aligner, description):
 @pytest.mark.parametrize("description", all_case_descriptions, ids=all_case_ids)
 def test_visualizer_simple(no_aligner, description):
     contigs = description["contigs"]
-    with StitcherContext.fresh() as ctx:
+    with ReferencefullStitcherContext.fresh() as ctx:
         list(stitch_consensus(contigs))
         assert len(ctx.events) >= len(contigs)
         figure = build_stitcher_figure(ctx.events)

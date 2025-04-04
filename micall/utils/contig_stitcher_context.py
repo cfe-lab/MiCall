@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, TypeVar, Generic
 from contextvars import ContextVar
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -7,10 +7,13 @@ from copy import deepcopy
 import micall.utils.contig_stitcher_events as st_events
 
 
-@dataclass
-class StitcherContext:
+T = TypeVar('T')
+
+
+@dataclass(frozen=True)
+class GenericStitcherContext(Generic[T]):
     uniq_dict: Dict[object, Dict[object, int]]
-    events: List[st_events.EventType]
+    events: List[T]
 
     def register(self, key: object, value: object) -> int:
         if value not in self.uniq_dict:
@@ -22,17 +25,17 @@ class StitcherContext:
 
         return existing[key]
 
-    def emit(self, event: st_events.EventType) -> None:
+    def emit(self, event: T) -> None:
         self.events.append(event)
 
     @staticmethod
-    def make() -> 'StitcherContext':
-        return StitcherContext(events=[], uniq_dict={})
+    def make() -> 'GenericStitcherContext':
+        return GenericStitcherContext(events=[], uniq_dict={})
 
     @staticmethod
     @contextmanager
     def fresh():
-        ctx = StitcherContext.make()
+        ctx = GenericStitcherContext.make()
         token = context.set(ctx)
         try:
             yield ctx
@@ -50,4 +53,7 @@ class StitcherContext:
             context.reset(token)
 
 
-context: ContextVar[StitcherContext] = ContextVar("StitcherContext")
+ReferencefullStitcherContext = GenericStitcherContext[st_events.EventType]
+ReferencelessStitcherContext = GenericStitcherContext[object]
+
+context: ContextVar[GenericStitcherContext] = ContextVar("GenericStitcherContext")
