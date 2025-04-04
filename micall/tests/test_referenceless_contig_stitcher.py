@@ -100,7 +100,6 @@ def test_full_pipeline(tmp_path: Path, projects):
     is_reversed = False
     min_length = 100
     max_length = 900
-    extract_num = 1234
 
     generate_fastq(
         fasta=fasta_file,
@@ -109,7 +108,6 @@ def test_full_pipeline(tmp_path: Path, projects):
         is_reversed=is_reversed,
         min_length=min_length,
         max_length=max_length,
-        extract_num=extract_num,
         rng=rng
     )
 
