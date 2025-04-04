@@ -114,8 +114,10 @@ def simulate_reads(reference: Seq,
                                ref_length=ref_length,
                                rng=rng,
                                )
+    shuffled_indexes = list(islice(indexes, n_reads))
+    rng.shuffle(shuffled_indexes)
 
-    for (i, (start, end)) in enumerate(islice(indexes, n_reads)):
+    for (i, (start, end)) in enumerate(shuffled_indexes):
         # Get the read nucleotides.
         read_seq_seq = reference[start:end]
         read_seq_str = str(read_seq_seq)
