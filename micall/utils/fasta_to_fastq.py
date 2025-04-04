@@ -13,9 +13,9 @@ import random
 import sys
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord, Seq
-from typing import Sequence, Iterator
+from typing import Sequence, Iterator, Tuple
 from pathlib import Path
-from micall.utils.stable_random_distribution import stable_random_distribution
+from itertools import islice
 from micall.utils.user_error import UserError
 
 
@@ -36,6 +36,35 @@ class LengthTooLarge(ModuleError):
     def __init__(self, read: int, ref: int):
         fmt = "Max read length (%s) should not be bigger than reference length (%s)."
         super().__init__(fmt, read, ref)
+
+
+def generate_indexes(min_length: int,
+                     max_length: int,
+                     ref_length: int,
+                     rng: random.Random,
+                     ) -> Iterator[Tuple[int, int]]:
+    start = ref_length // 2
+    direction = 1
+
+    while True:
+        # Choose a read length uniformly between min_length and max_length.
+        read_length = rng.randint(min_length, max_length)
+
+        # Choose a start index from a fair distribution.
+        end = start + read_length
+
+        if end > ref_length:
+            yield (ref_length - read_length, ref_length)
+            direction = -1
+        elif start < 0:
+            yield (0, read_length)
+            direction = 1
+        else:
+            yield (start, end)
+
+        # Calculate values for the next iteration.
+        skip_size = rng.randint(1, read_length - 1)
+        start += direction * skip_size
 
 
 def simulate_reads(reference: Seq,
@@ -74,34 +103,24 @@ def simulate_reads(reference: Seq,
     if min_length > max_length:
         raise InvalidRange(min_length, max_length)
 
-    ref_len = len(reference)
+    ref_length = len(reference)
 
-    if max_length > ref_len:
-        raise LengthTooLarge(max_length, ref_len)
+    if max_length > ref_length:
+        raise LengthTooLarge(max_length, ref_length)
 
     file_num = 2 if is_reversed else 1
-    distribution_high = ref_len + 20
-    gen = stable_random_distribution(high=distribution_high, rng=rng)
+    indexes = generate_indexes(min_length=min_length,
+                               max_length=max_length,
+                               ref_length=ref_length,
+                               rng=rng,
+                               )
 
-    for i in range(n_reads):
-        # Choose a read length uniformly between min_length and max_length.
-        read_length = rng.randint(min_length, max_length)
-
-        # Choose a start index from a fair distribution.
-        start_absolute = next(gen)
-        max_start = ref_len - read_length
-        start = round((start_absolute * max_start) / distribution_high)
-
-        end = start + read_length
-
+    for (i, (start, end)) in enumerate(islice(indexes, n_reads)):
         # Get the read nucleotides.
         read_seq_seq = reference[start:end]
         read_seq_str = str(read_seq_seq)
         read_seq = Seq(read_seq_str)
-
-        assert len(read_seq) == read_length, \
-            f"Read lengths error: {len(read_seq)} vs {read_length}." \
-            f"Given: {[read_length, int(start_absolute), max_start, start, end]}."
+        read_length = len(read_seq)
 
         # Create a dummy quality list (here "max" for each base) and
         # then convert that into a FASTQ quality string.
@@ -131,8 +150,8 @@ def generate_fastq(fasta: Path,
                    is_reversed: bool,
                    min_length: int,
                    max_length: int,
-                   extract_num: int,
                    rng: random.Random,
+                   extract_num: int = 1234,
                    ) -> None:
 
     """
@@ -207,8 +226,8 @@ def main(argv: Sequence[str]) -> int:
                    is_reversed=args.reversed,
                    min_length=args.min_length,
                    max_length=args.max_length,
-                   extract_num=args.extract_num,
                    rng=rng,
+                   extract_num=args.extract_num,
                    )
     return 0
 
