@@ -72,7 +72,6 @@ def simulate_reads(reference: Seq,
                    is_reversed: bool,
                    min_length: int,
                    max_length: int,
-                   extract_num: int,
                    rng: random.Random,
                    ) -> Iterator[SeqRecord]:
 
@@ -85,7 +84,6 @@ def simulate_reads(reference: Seq,
       is_reversed: Whether this is reverse complement reads.
       min_length: Minimum length of each read.
       max_length: Maximum length of each read.
-      extract_num: Extraction number, a metadata component.
       rng: Random number generator.
 
     Returns:
@@ -132,7 +130,7 @@ def simulate_reads(reference: Seq,
 
         y_coord = i + 1
         record_id = f"""\
-M01234:01:000000000-AAAAA:1:1101:{extract_num}:{y_coord:04d} {file_num}:N:0:1
+M01234:01:000000000-AAAAA:1:1101:1234:{y_coord:04d} {file_num}:N:0:1
 """.strip()
         description = f"start={start} length={read_length}"
         annotations = {"phred_quality": qualities}
@@ -153,7 +151,6 @@ def generate_fastq(fasta: Path,
                    min_length: int,
                    max_length: int,
                    rng: random.Random,
-                   extract_num: int = 1234,
                    ) -> None:
 
     """
@@ -168,7 +165,6 @@ def generate_fastq(fasta: Path,
       is_reversed: Whether this is reverse complement reads.
       min_length: Minimum length of each read.
       max_length: Maximum length of each read.
-      extract_num: Extraction number, a metadata component.
       rng: Random number generator.
     """
 
@@ -181,7 +177,6 @@ def generate_fastq(fasta: Path,
                                              is_reversed=is_reversed,
                                              min_length=min_length,
                                              max_length=max_length,
-                                             extract_num=extract_num,
                                              rng=rng,
                                              )
             SeqIO.write(simulated_reads, fastq_handle, format="fastq")
@@ -206,8 +201,6 @@ The simulated reads, when assembled,\
                    help="Minimum length of each simulated read.")
     p.add_argument("--max_length", type=int, default=250,
                    help="Maximum length of each simulated read.")
-    p.add_argument("--extract_num", type=int, default=1234,
-                   help="Extraction number, a metadata component.")
     p.add_argument("--seed", type=int, default=None,
                    help="Random seed for reproducibility.")
     return p
@@ -229,7 +222,6 @@ def main(argv: Sequence[str]) -> int:
                    min_length=args.min_length,
                    max_length=args.max_length,
                    rng=rng,
-                   extract_num=args.extract_num,
                    )
     return 0
 
