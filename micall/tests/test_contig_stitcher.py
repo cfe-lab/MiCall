@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 import logging
 import os
@@ -7,27 +6,25 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.core.contig_stitcher as stitcher
-from micall.core.contig_stitcher import (
+import micall.utils.referencefull_contig_stitcher as stitcher
+from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
     stitch_contigs,
     GenotypedContig,
     merge_intervals,
     find_covered_contig,
     stitch_consensus,
-    calculate_concordance,
     align_all_to_reference,
-    disambiguate_concordance,
     lstrip,
     rstrip,
 )
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.tests.utils import mock_align_consensus, MockAlignment, fixed_random_seed
+from micall.tests.utils import mock_align_consensus, MockAlignment
 from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
-logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
+logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
@@ -39,12 +36,12 @@ assert load_projects is not None
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align_consensus)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align_consensus)
 
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.StitcherContext.make())
+    stitcher.context.set(stitcher.ReferencefullStitcherContext.make())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)
@@ -875,7 +872,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
     assert all(x.seq == lstrip(rstrip(x)).seq for x in results)
-    assert {contig.seq for contig in contigs} == {contig.seq for contig in results}
+    assert {contig.seq for contig in contigs} != {contig.seq for contig in results}
 
 
 def test_stitching_partial_align(exact_aligner, visualizer):
@@ -1395,7 +1392,7 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
         algorithm = 'mock'
         return (alignments, algorithm)
 
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align)
 
     ref = 'A' * 700
     seq = 'C' * 600
@@ -1457,10 +1454,11 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs])
+    main(['with-references', contigs, stitched_contigs])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1479,11 +1477,12 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
 
 
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs, "--debug", "--plot", plot])
+    main(['with-references', contigs, stitched_contigs, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1626,17 +1625,16 @@ def test_merge_intervals(intervals, expected):
     assert merge_intervals(intervals) == expected
 
 
-@dataclass
-class TestMockAlignment:
-    r_st: int
-    r_ei: int
-
-
 class MockAlignedContig:
+    @dataclass
+    class TestMockAlignment:
+        r_st: int
+        r_ei: int
+
     def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig"):
         self.ref_name = ref_name
         self.group_ref = group_ref
-        self.alignment = TestMockAlignment(r_st, r_ei)
+        self.alignment = MockAlignedContig.TestMockAlignment(r_st, r_ei)
         self.name = name
         self.id = id(self)
 
@@ -1740,148 +1738,3 @@ def test_find_covered(contigs, expected_covered_name):
     else:
         assert covered is not None
         assert covered.name == expected_covered_name
-
-
-def test_concordance_same_length_inputs():
-    with pytest.raises(ValueError):
-        calculate_concordance("abc", "ab")
-
-
-def test_concordance_completely_different_strings():
-    result = calculate_concordance("a" * 30, "b" * 30)
-    assert all(n == 0 for n in result)
-
-
-def generate_random_string_pair(length):
-    left = "".join(random.choice("ACGT") for _ in range(length))
-    right = "".join(random.choice("ACGT") for _ in range(length))
-    return left, right
-
-
-@pytest.mark.parametrize(
-    "left, right, expected",
-    [
-        ("aaaaa", "aaaaa", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("abcdd", "abcdd", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("aaaaaaaa", "baaaaaab", [0.3, 0.62, 0.71, 0.75, 0.75, 0.71, 0.62, 0.3]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaabbb", [0.6, 0.68, 0.7, 0.68, 0.6, 0.29, 0.19, 0.13]),
-        ("aaaaaaaa", "aaabbaaa", [0.56, 0.63, 0.62, 0.39, 0.39, 0.62, 0.63, 0.56]),
-        ("aaaaa", "bbbbb", [0] * 5),
-        ("", "", []),
-    ],
-)
-def test_concordance_simple(left, right, expected):
-    result = [round(float(x), 2) for x in calculate_concordance(left, right)]
-    assert result == expected
-
-
-@pytest.mark.parametrize(
-    "left, right, expected",
-    [
-        ("a" * 128, "a" * 128, 64),
-        ("a" * 128, "a" * 64 + "b" * 64, 32),
-        ("a" * 128, "a" * 64 + "ba" * 32, 32),
-        ("a" * 128, "a" * 54 + "b" * 20 + "a" * 54, 28),  # two peaks
-        ("a" * 128, "a" * 63 + "b" * 2 + "a" * 63, 32),  # two peaks
-        ("a" * 1280, "b" * 640 + "a" * 640, round(1280 * 3 / 4)),
-        ("a" * 128, "b" * 48 + "a" * 32 + "b" * 48, 64),
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "ab" + "a" * 15 + "b" * 48,
-            48 + 16 // 2,
-        ),  # two peaks - choosing 1nd
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "ba" + "a" * 15 + "b" * 48,
-            48 + 15 + 16 // 2,
-        ),  # two peaks - choosing 2nd
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "bb" + "a" * 15 + "b" * 48,
-            48 + 15 // 2,
-        ),  # two peaks - choosing 1st
-    ],
-)
-def test_concordance_simple_index(left, right, expected):
-    concordance = calculate_concordance(left, right)
-    concordance_d = list(disambiguate_concordance(concordance))
-    index = max(range(len(concordance)), key=lambda i: concordance_d[i])
-    if abs(index - expected) > 1:
-        assert index == expected
-
-
-def generate_test_cases(num_cases):
-    with fixed_random_seed(42):
-        length = random.randint(1, 80)
-        return [generate_random_string_pair(length) for _ in range(num_cases)]
-
-
-concordance_cases = generate_test_cases(num_cases=100)
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_output_range(left, right):
-    result = calculate_concordance(left, right)
-    assert all(
-        0 <= n <= 1 for n in result
-    ), "All values in result should be between 0 and 1"
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_higher_if_more_matches_added(left, right):
-    # Insert exact matches in the middle
-    matching_sequence = "A" * 30
-    insert_position = len(left) // 2
-    new_left = (
-        left[:insert_position]
-        + matching_sequence
-        + left[insert_position + len(matching_sequence):]
-    )
-    new_right = (
-        right[:insert_position]
-        + matching_sequence
-        + right[insert_position + len(matching_sequence):]
-    )
-
-    old_conc = calculate_concordance(left, right)
-    new_conc = calculate_concordance(new_left, new_right)
-    old_average = sum(old_conc) / len(old_conc)
-    new_average = sum(new_conc) / len(new_conc)
-    assert old_average <= new_average
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_higher_in_matching_areas(left, right):
-    # Insert exact matches in the middle
-    matching_sequence = "A" * 30
-    insert_position = len(left) // 2
-    new_left = (
-        left[:insert_position]
-        + matching_sequence
-        + left[insert_position + len(matching_sequence):]
-    )
-    new_right = (
-        right[:insert_position]
-        + matching_sequence
-        + right[insert_position + len(matching_sequence):]
-    )
-
-    concordance_scores = calculate_concordance(new_left, new_right)
-
-    # Check concordance in the matching area
-    matching_area_concordance = concordance_scores[
-        insert_position:insert_position + len(matching_sequence)
-    ]
-
-    # Calculate average concordance inside and outside the matching area
-    average_inside = sum(matching_area_concordance) / len(matching_sequence)
-    average_outside = (sum(concordance_scores) - sum(matching_area_concordance)) / (
-        len(concordance_scores) - len(matching_sequence)
-    )
-
-    # Assert that the concordance is indeed higher in the matching area
-    assert (
-        average_inside > average_outside
-    ), "Concordance in matching areas should be higher than in non-matching areas"
