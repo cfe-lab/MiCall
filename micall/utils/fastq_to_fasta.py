@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Sequence
 from Bio import SeqIO
+from micall.utils.user_error import UserError
 
 
 # Configure logging
@@ -17,25 +18,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class UserError(BaseException):
-    def __init__(self, fmt: str, *fmt_args: object):
-        self.fmt = fmt
-        self.fmt_args = fmt_args
-        self.code = 1
-        super().__init__(fmt % fmt_args if fmt_args else fmt)
+class ModuleError(UserError):
+    """Base exception for errors in this module."""
 
 
-class FastqToFastaError(UserError):
-    """Base exception for FASTQ to FASTA conversion errors."""
-
-
-class InputNotFound(FastqToFastaError):
+class InputNotFound(ModuleError):
     def __init__(self, source_fastq: Path):
         fmt = "Input FASTQ file does not exist %r."
         super().__init__(fmt, str(source_fastq))
 
 
-class OutputDirectoryError(FastqToFastaError):
+class OutputDirectoryError(ModuleError):
     def __init__(self, dir_path: Path):
         fmt = "Could not create output directory %r."
         super().__init__(fmt, str(dir_path))

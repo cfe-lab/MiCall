@@ -16,8 +16,26 @@ from Bio.SeqRecord import SeqRecord, Seq
 from typing import Sequence, Iterator
 from pathlib import Path
 from micall.utils.stable_random_distribution import stable_random_distribution
+from micall.utils.user_error import UserError
+
 
 MAX_QUALITY = 40
+
+
+class ModuleError(UserError):
+    """Base exception for errors in this module."""
+
+
+class InvalidRange(ModuleError):
+    def __init__(self, a: int, b: int):
+        fmt = "Min length (%s) should not be bigger than max length (%s)."
+        super().__init__(fmt, a, b)
+
+
+class LengthTooLarge(ModuleError):
+    def __init__(self, read: int, ref: int):
+        fmt = "Max read length (%s) should not be bigger than reference length (%s)."
+        super().__init__(fmt, read, ref)
 
 
 def simulate_reads(reference: Seq,
@@ -53,7 +71,14 @@ def simulate_reads(reference: Seq,
     if is_reversed:
         reference = reference.reverse_complement()
 
+    if min_length > max_length:
+        raise InvalidRange(min_length, max_length)
+
     ref_len = len(reference)
+
+    if max_length > ref_len:
+        raise LengthTooLarge(max_length, ref_len)
+
     file_num = 2 if is_reversed else 1
     distribution_high = ref_len + 20
     gen = stable_random_distribution(high=distribution_high, rng=rng)
@@ -73,6 +98,10 @@ def simulate_reads(reference: Seq,
         read_seq_seq = reference[start:end]
         read_seq_str = str(read_seq_seq)
         read_seq = Seq(read_seq_str)
+
+        assert len(read_seq) == read_length, \
+            f"Read lengths error: {len(read_seq)} vs {read_length}." \
+            f"Given: {[read_length, int(start_absolute), max_start, start, end]}."
 
         # Create a dummy quality list (here "max" for each base) and
         # then convert that into a FASTQ quality string.
