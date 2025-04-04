@@ -95,6 +95,7 @@ EXECUTABLES = [
     "micall/utils/append_primers.py",
     "micall/utils/randomize_fastq.py",
     "micall/utils/calculate_kmer_frequencies.py",
+    "micall/utils/fastq_to_fasta.py",
 ]
 
 
