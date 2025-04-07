@@ -74,7 +74,9 @@ def test_stitch_simple_cases(seqs, expected):
     assert consenses == tuple(sorted(expected))
 
 
-def test_full_pipeline(tmp_path: Path, projects):
+
+@pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
+def test_full_pipeline(tmp_path: Path, random_seed: int, projects):
     fasta_file = tmp_path / "hxb2.fasta"
     fastq_file = tmp_path / "hxb2.fastq"
     converted_fasta_file = tmp_path / "hxb2_converted.fasta"
@@ -93,7 +95,7 @@ def test_full_pipeline(tmp_path: Path, projects):
 
     # Step 2. Use fasta_to_fastq to generate simulated FASTQ reads from the FASTA.
     # We use a fixed random seed for reproducibility.
-    rng = random.Random(42)
+    rng = random.Random(random_seed)
     # Choose simulation parameters; these should be set so that
     # the reads overlap sufficiently to allow full reconstruction.
     n_reads = 50      # total number of reads to generate
