@@ -323,7 +323,7 @@ def try_combine_contigs(current_prob: Score,
     if overlap is None:
         return None
 
-    optimistic_overlap_size = overlap.size - 1
+    optimistic_overlap_size = overlap.size
     optimistic_number_of_matches = optimistic_overlap_size
     optimistic_result_probability = calc_overlap_pvalue(L=optimistic_overlap_size, M=optimistic_number_of_matches)
     if optimistic_result_probability < minimum_score:
