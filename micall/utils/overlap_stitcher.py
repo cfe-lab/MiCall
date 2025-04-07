@@ -2,6 +2,7 @@ from fractions import Fraction
 from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
+from functools import lru_cache
 import numpy as np
 import math
 
@@ -152,6 +153,7 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
     exp_dropoff_array_iter(array=array, direction=-1, factor=factor)
 
 
+@lru_cache(maxsize=99999)
 def calc_overlap_pvalue(L: int, M: int) -> float:
     """
     Compute the probability (p-value) of observing at least M matches
