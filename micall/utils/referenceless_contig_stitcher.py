@@ -44,7 +44,11 @@ class ContigWithAligner(Contig):
     def empty() -> 'ContigWithAligner':
         return ContigWithAligner.make(Contig.empty())
 
-    def map_overlap(self, overlap: str) -> Iterator[Alignment]:
+    def map_overlap(self,
+                    minimum_score: Score,
+                    is_left: bool,
+                    overlap: str,
+                    ) -> Iterator[Alignment]:
         for x in self.aligner.map(overlap):
             if x.is_primary:
                 yield x
@@ -227,6 +231,14 @@ def combine_probability(current: Score, new: Score) -> Score:
     return current + new
 
 
+def get_minimum_score(current: Score, minimum: Score) -> Score:
+    """
+    Returns minimum probability that is still acceptable.
+    """
+
+    return minimum - current
+
+
 ALIGN_CACHE: MutableMapping[Tuple[str, str], Tuple[str, str]] = {}
 
 
@@ -246,7 +258,8 @@ CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
 CUTOFFS_CACHE: CutoffsCache = {}
 
 
-def find_overlap_cutoffs(left: ContigWithAligner,
+def find_overlap_cutoffs(minimum_score: Score,
+                         left: ContigWithAligner,
                          right: ContigWithAligner,
                          left_initial_overlap: str,
                          right_initial_overlap: str,
@@ -264,25 +277,25 @@ def find_overlap_cutoffs(left: ContigWithAligner,
         (left_cutoff, right_cutoff) = existing
 
     elif len(left_initial_overlap) < len(right_initial_overlap):
-        left_overlap_alignments = left.map_overlap(right_initial_overlap)
+        left_overlap_alignments = left.map_overlap(minimum_score, True, right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
 
-        right_overlap_alignments = right.map_overlap(left_initial_overlap)
+        right_overlap_alignments = right.map_overlap(minimum_score, False, left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
     else:
-        right_overlap_alignments = right.map_overlap(left_initial_overlap)
+        right_overlap_alignments = right.map_overlap(minimum_score, False, left_initial_overlap)
         right_cutoff = max((al.r_en for al in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
 
-        left_overlap_alignments = left.map_overlap(right_initial_overlap)
+        left_overlap_alignments = left.map_overlap(minimum_score, True, right_initial_overlap)
         left_cutoff = min((al.r_st for al in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
             CUTOFFS_CACHE[key] = None
@@ -298,10 +311,12 @@ def try_combine_contigs(current_prob: Score,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Score]]:
 
+    minimum_score = get_minimum_score(current_prob, pool.min_acceptable_score)
+
     maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
     maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
-    if combine_probability(maximum_result_probability, current_prob) < pool.min_acceptable_score:
+    if maximum_result_probability < minimum_score:
         return None
 
     overlap = get_overlap(a, b)
@@ -311,7 +326,7 @@ def try_combine_contigs(current_prob: Score,
     optimistic_overlap_size = overlap.size - 1
     optimistic_number_of_matches = optimistic_overlap_size
     optimistic_result_probability = calc_overlap_pvalue(L=optimistic_overlap_size, M=optimistic_number_of_matches)
-    if combine_probability(optimistic_result_probability, current_prob) < pool.min_acceptable_score:
+    if optimistic_result_probability < minimum_score:
         return None
 
     if abs(overlap.shift) < len(a.seq):
@@ -326,7 +341,8 @@ def try_combine_contigs(current_prob: Score,
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
-    cutoffs = find_overlap_cutoffs(left, right,
+    cutoffs = find_overlap_cutoffs(minimum_score,
+                                   left, right,
                                    left_initial_overlap,
                                    right_initial_overlap,
                                    )
@@ -344,7 +360,7 @@ def try_combine_contigs(current_prob: Score,
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
     result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
-    if combine_probability(current_prob, result_probability) < pool.min_acceptable_score:
+    if result_probability < minimum_score:
         return None
 
     is_covered = len(right.seq) < abs(shift)
