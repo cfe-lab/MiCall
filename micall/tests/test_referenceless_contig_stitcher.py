@@ -101,7 +101,7 @@ def test_full_pipeline(tmp_path: Path, random_seed: int, projects):
     n_reads = 50      # total number of reads to generate
     is_reversed = False
     min_length = 100
-    max_length = 900
+    max_length = 300
 
     generate_fastq(
         fasta=fasta_file,
