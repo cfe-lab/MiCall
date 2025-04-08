@@ -126,7 +126,7 @@ def test_full_pipeline(tmp_path: Path, random_fasta_file, random_seed: int):
     converted_fasta_file, ref_seq = random_fasta_file(random_seed)
     output_fasta_file = tmp_path / "out.fasta"
 
-    # Step 4. Read the converted FASTA contigs and run the contig stitcher.
+    # Read the converted FASTA contigs and run the contig stitcher.
     with converted_fasta_file.open("r") as input_handle, \
          output_fasta_file.open("w") as output_handle:
         referenceless_contig_stitcher(input_handle, output_handle)
@@ -157,3 +157,49 @@ def test_full_pipeline(tmp_path: Path, random_fasta_file, random_seed: int):
         "Expected one stitched contig; got "
         f"{count} contigs."
     )
+
+
+@pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
+def test_exact_events(request, random_fasta_file, random_seed: int):
+    """
+    This test verifies that the exact behaviour of the stitcher has not changed.
+    It is very brittle by design.
+
+    It overwrites the expected test results after the first run.
+    This way, you will only have to commit them in case that
+    the stitcher behaviour is actually supposed to change.
+    """
+
+    converted_fasta_file, ref_seq = random_fasta_file(random_seed)
+
+    test_name = request.node.name
+    log_name = test_name + ".log"
+    pwd = Path(__file__).parent
+    logs_dir = pwd / "data" / "referenceless_stitcher_logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    path_to_produced = logs_dir / log_name
+    is_rerun = path_to_produced.exists()
+
+    def stitch() -> None:
+        converted_fasta_file, ref_seq = random_fasta_file(random_seed)
+
+        with converted_fasta_file.open("r") as input_handle:
+            contigs = tuple(read_contigs(input_handle))
+            tuple(stitch_consensus(contigs))
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        stitch()
+
+        logs = ctx.events
+        produced_logs = '\n'.join(map(str, logs))
+
+        if is_rerun:
+            with path_to_produced.open() as reader:
+                expected_logs: str = reader.read()
+
+        with path_to_produced.open("w") as writer:
+            writer.write(produced_logs)
+
+        if is_rerun:
+            assert produced_logs == expected_logs
