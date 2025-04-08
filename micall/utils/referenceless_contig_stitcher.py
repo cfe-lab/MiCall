@@ -221,7 +221,15 @@ def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[O
         GET_OVERLAP_CACHE[key] = ret
         return ret
 
-    size = min((abs(shift), len(left.seq), len(right.seq)))
+    if abs(shift) <= len(left.seq):
+        size = min(abs(shift), len(right.seq))
+    else:
+        size = min(len(left.seq), len(left.seq) + len(right.seq) + shift)
+
+    assert size > 0, f"{shift}, {len(left.seq)}, {len(right.seq)}"
+    assert size <= len(left.seq), f"{shift}, {size}, {len(left.seq)}, {len(right.seq)}"
+    assert size <= len(right.seq), f"{shift}, {size}, {len(left.seq)}, {len(right.seq)}"
+
     ret = Overlap(shift=shift, size=size)
     GET_OVERLAP_CACHE[key] = ret
     return ret
@@ -340,6 +348,13 @@ def try_combine_contigs(current_prob: Score,
 
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
+
+    assert len(right_initial_overlap) == overlap.size
+    assert len(left_initial_overlap) == overlap.size, f"{len(left_initial_overlap)} == {overlap.size}"
+
+    assert calc_overlap_pvalue(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_score
+    assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size} in {len(right.seq), {shift}}"
+    assert len(left_initial_overlap) == len(right_initial_overlap), f"{len(left_initial_overlap)} == {len(right_initial_overlap)}"
 
     cutoffs = find_overlap_cutoffs(minimum_score,
                                    left, right,
