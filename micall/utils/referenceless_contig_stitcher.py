@@ -1,139 +1,32 @@
-from typing import Iterable, Iterator, Optional, FrozenSet, Tuple, \
-    Sequence, TextIO, MutableMapping, Literal, Union, Mapping
+from typing import Iterable, Iterator, Optional, Tuple, \
+    Sequence, TextIO, MutableMapping, Literal, Union
 from dataclasses import dataclass
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import logging
-from mappy import Aligner
-from functools import cached_property
 from sortedcontainers import SortedList
 import itertools
-import numpy as np
 
-from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.consensus_aligner import Alignment
+from micall.utils.contig_stitcher_context import context, ReferencelessStitcherContext
 from micall.utils.overlap_stitcher import align_queries, \
-    calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue, \
-    exp_dropoff_array, find_max_overlap_length
+    calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
+import micall.utils.referenceless_contig_stitcher_events as events
+from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
+from micall.utils.referenceless_contig_path import ContigsPath
+from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 from micall.utils.contig_stitcher_contigs import Contig
-from micall.utils.find_maximum_overlap import \
-    get_overlap_results, choose_convolution_method
 
 
 logger = logging.getLogger(__name__)
 
-Score = float
-SCORE_NOTHING = 0
-SCORE_EPSILON = 1
 
 ACCEPTABLE_STITCHING_SCORE: Score = calc_overlap_pvalue(L=15, M=15)
 MAX_ALTERNATIVES = 30
 
 
-@dataclass(frozen=True)
-class ContigWithAligner(Contig):
-    @cached_property
-    def aligner(self) -> Aligner:
-        return Aligner(seq=self.seq)
-
-    @staticmethod
-    def make(contig: Contig) -> 'ContigWithAligner':
-        return ContigWithAligner(name=contig.name, seq=contig.seq)
-
-    @staticmethod
-    def empty() -> 'ContigWithAligner':
-        return ContigWithAligner.make(Contig.empty())
-
-    def map_overlap(self,
-                    minimum_score: Score,
-                    is_left: bool,
-                    overlap: str,
-                    ) -> Iterator[Alignment]:
-
-        optimistic_number_of_matches = len(overlap)
-        max_length = find_max_overlap_length(M=optimistic_number_of_matches,
-                                             X=minimum_score,
-                                             )
-        assert max_length > 0
-
-        for x in self.aligner.map(overlap):
-            if x.is_primary:
-                yield x
-
-    @cached_property
-    def nucleotide_seq(self) -> np.ndarray:
-        ret = np.frombuffer(self.seq.encode('utf-8'), dtype='S1')
-        return ret
-
-    @cached_property
-    def alphabet(self) -> Tuple[str, ...]:
-        return tuple(sorted(set(self.seq)))
-
-    @cached_property
-    def alignment_seqs(self) -> Mapping[str, np.ndarray]:
-        def to_array(letter: str) -> np.ndarray:
-            value = letter.encode('utf-8')
-            ret = np.zeros(len(self.nucleotide_seq))
-            ret[self.nucleotide_seq == value] = 1
-            exp_dropoff_array(ret, factor=8)
-            return ret
-
-        return {x: to_array(x) for x in self.alphabet}
-
-    def find_maximum_overlap(self, other: 'ContigWithAligner',
-                             ) -> Tuple[int, float]:
-
-        total = np.zeros(len(self.seq) + len(other.seq) - 1)
-        method = choose_convolution_method(len(self.seq), len(other.seq))
-        keys = sorted(set(list(self.alphabet) + list(other.alphabet)))
-        for key in keys:
-            if key not in self.alignment_seqs or \
-               key not in other.alignment_seqs:
-                continue
-
-            x = self.alignment_seqs[key]
-            y = np.flip(other.alignment_seqs[key])
-            total += method(x, y, mode='full')
-
-        return get_overlap_results(total)
-
-
-@dataclass(frozen=True)
-class ContigsPath:
-    # Contig representing all combined contigs in the path.
-    whole: ContigWithAligner
-
-    # Id's of contigs that comprise this path.
-    parts_ids: FrozenSet[int]
-
-    # Higher is better. This is an estimated probability that
-    # all the components in this path came together by accident.
-    probability: Score
-
-    def score(self) -> Score:
-        return self.probability
-
-    def __lt__(self, other: 'ContigsPath') -> bool:
-        return self.score() < other.score()
-
-    def __le__(self, other: 'ContigsPath') -> bool:
-        return self.score() <= other.score()
-
-    def __gt__(self, other: 'ContigsPath') -> bool:
-        return self.score() > other.score()
-
-    def __ge__(self, other: 'ContigsPath') -> bool:
-        return self.score() >= other.score()
-
-    def has_contig(self, contig: Contig) -> bool:
-        return contig.id in self.parts_ids
-
-    @staticmethod
-    def singleton(contig: ContigWithAligner) -> 'ContigsPath':
-        return ContigsPath(whole=contig,
-                           parts_ids=frozenset((contig.id,)),
-                           probability=SCORE_NOTHING,
-                           )
+def log(e: events.EventType) -> None:
+    context.get().emit(e)
+    logger.debug("%s", e)
 
 
 @dataclass
@@ -450,19 +343,14 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
             break
         pool.add(path)
 
-    logger.debug("Calculating all paths...")
+    log(events.CalculatingAll())
     for cycle in itertools.count(1):
-        logger.debug("Cycle %s started with %s paths.", cycle, pool.size)
+        log(events.CycleStart(cycle, pool.size))
 
         if not calc_multiple_extensions(pool, pool.paths, contigs):
             break
 
-        fittest = pool.paths[-1]
-        length = len(fittest.whole.seq)
-        parts = len(fittest.parts_ids)
-        logger.debug("Cycle %s finished with %s new paths. "
-                     "The fittest has length %s and consists of %s parts.",
-                     cycle, pool.size, length, parts)
+        log(events.CycleEnd(cycle, pool.size, pool))
 
     return pool.paths
 
@@ -508,26 +396,23 @@ def o2_combine(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigsPath]:
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
     remaining = tuple(sorted(contigs, key=contig_size_fun))
 
-    logger.debug("Initializing initial seeds...")
+    log(events.InitializingSeeds())
     seeds = tuple(sorted(o2_combine(remaining),
                          key=lambda path: (path.score(), len(path.whole.seq)),
                          reverse=True))
-    logger.debug("Starting with %s initial seeds.", len(seeds))
+    log(events.Starting(len(seeds)))
 
     while remaining:
         most_probable = find_most_probable_path(seeds, remaining)
-        logger.debug("Constructed a path of length %s.",
-                     len(most_probable.whole.seq))
+        log(events.Constructed(most_probable))
         yield most_probable.whole
         remaining = tuple(contig for contig in remaining
                           if not most_probable.has_contig(contig))
         seeds = tuple(path for path in seeds
                       if most_probable.parts_ids.isdisjoint(path.parts_ids))
-        logger.debug("Removed %s components from the working list, having %s still to process.",
-                     len(most_probable.parts_ids), len(remaining))
-
+        log(events.Remove(len(most_probable.parts_ids), len(remaining)))
         if len(most_probable.parts_ids) == 1:
-            logger.debug("Giving up on attempts to stitch more overlaps since most probable is a singleton.")
+            log(events.GiveUp())
             yield from remaining
             return
 
