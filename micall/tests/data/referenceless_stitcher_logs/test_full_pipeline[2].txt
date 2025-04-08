@@ -1,3 +1,4 @@
+Loaded 50 contigs.
 Initializing initial seeds...
 Starting with 96 initial seeds.
 Calculating all paths...
@@ -64,3 +65,5 @@ Cycle 1 finished with 12 new paths. The fittest has length 261 and consists of 4
 Cycle 2 started with 12 paths
 Constructed a path of length 261.
 Removed 4 components from the working list, having 0 still to process.
+Initial overlap stitching produced 5 contigs.
+Outputting 1 contigs.

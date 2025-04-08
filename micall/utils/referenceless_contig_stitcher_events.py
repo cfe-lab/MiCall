@@ -69,5 +69,30 @@ class Constructed:
         return f"Constructed a path of length {len(self.path.whole.seq)}."
 
 
+@dataclass(frozen=True)
+class Loaded:
+    n_contigs: int
+
+    def __str__(self) -> str:
+        return f"Loaded {self.n_contigs} contigs."
+
+
+@dataclass(frozen=True)
+class Outputting:
+    n_contigs: int
+
+    def __str__(self) -> str:
+        return f"Outputting {self.n_contigs} contigs."
+
+
+@dataclass(frozen=True)
+class InitiallyProduced:
+    n_contigs: int
+
+    def __str__(self) -> str:
+        return f"Initial overlap stitching produced {self.n_contigs} contigs."
+
+
 EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,
-                  CycleEnd, InitializingSeeds, Starting, Constructed]
+                  CycleEnd, InitializingSeeds, Starting, Constructed,
+                  Loaded, Outputting, InitiallyProduced]

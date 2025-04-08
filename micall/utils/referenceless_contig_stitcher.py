@@ -458,7 +458,7 @@ def o2_loop(contigs: Iterable[ContigWithAligner],
 def stitch_consensus(contigs: Iterable[ContigWithAligner],
                      ) -> Iterator[ContigWithAligner]:
     contigs = tuple(stitch_consensus_overlaps(contigs))
-    logger.debug("Initial overlap stitching produced %s contigs.", len(contigs))
+    log(events.InitiallyProduced(len(contigs)))
     contigs = o2_loop(contigs)
     yield from contigs
 
@@ -482,11 +482,11 @@ def referenceless_contig_stitcher_with_ctx(
         output_fasta: Optional[TextIO],
 ) -> int:
     contigs = tuple(read_contigs(input_fasta))
-    logger.debug("Loaded %s contigs.", len(contigs))
+    log(events.Loaded(len(contigs)))
 
     if output_fasta is not None:
         contigs = tuple(stitch_consensus(contigs))
-        logger.debug("Outputting %s contigs.", len(contigs))
+        log(events.Outputting(len(contigs)))
 
     if output_fasta is not None:
         write_contigs(output_fasta, contigs)

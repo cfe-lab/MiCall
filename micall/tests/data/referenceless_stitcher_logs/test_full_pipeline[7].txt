@@ -1,3 +1,4 @@
+Loaded 50 contigs.
 Initializing initial seeds...
 Starting with 93 initial seeds.
 Calculating all paths...
@@ -63,3 +64,5 @@ Cycle 1 started with 1 paths
 Constructed a path of length 126.
 Removed 1 components from the working list, having 0 still to process.
 Giving up on attempts to stitch more overlaps since most probable is a singleton.
+Initial overlap stitching produced 6 contigs.
+Outputting 1 contigs.
