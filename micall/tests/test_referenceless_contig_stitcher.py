@@ -15,7 +15,7 @@ from micall.tests.test_remap import load_projects  # activates the "projects" fi
 assert load_projects is not None
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", 0)
 
