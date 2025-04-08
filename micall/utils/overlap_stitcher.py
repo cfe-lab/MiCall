@@ -187,15 +187,13 @@ def find_max_overlap_length(M: int, X: float, L_low: int = -1, L_high: int = -1)
         int: The largest integer L for which calc_overlap_pvalue(L, M) > X.
     """
 
-    cur = calc_overlap_pvalue(L=M, M=M)
-    assert cur >= X, f"BAD: {[M, cur, X]}"
-    return 0
+    score = 0.0
+    old_score = score
+    ret = M
+    while True:
+        score = calc_overlap_pvalue(L=ret, M=M)
+        if score < X or score == old_score:
+            return ret - 1
 
-    # score = 0.0
-    # ret = M
-    # while True:
-    #     score = calc_overlap_pvalue(L=ret, M=M)
-    #     if score < X:
-    #         return ret - 1
-
-    #     ret += 1
+        old_score = score
+        ret += 1

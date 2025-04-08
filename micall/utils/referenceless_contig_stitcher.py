@@ -14,7 +14,7 @@ from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.consensus_aligner import Alignment
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue, \
-    exp_dropoff_array
+    exp_dropoff_array, find_max_overlap_length
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.find_maximum_overlap import \
     get_overlap_results, choose_convolution_method
@@ -49,6 +49,13 @@ class ContigWithAligner(Contig):
                     is_left: bool,
                     overlap: str,
                     ) -> Iterator[Alignment]:
+
+        optimistic_number_of_matches = len(overlap)
+        max_length = find_max_overlap_length(M=optimistic_number_of_matches,
+                                             X=minimum_score,
+                                             )
+        assert max_length > 0
+
         for x in self.aligner.map(overlap):
             if x.is_primary:
                 yield x
