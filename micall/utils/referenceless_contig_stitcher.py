@@ -477,18 +477,25 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
         yield ContigWithAligner(name=record.name, seq=str(record.seq))
 
 
+def referenceless_contig_stitcher_with_ctx(
+        input_fasta: TextIO,
+        output_fasta: Optional[TextIO],
+) -> int:
+    contigs = tuple(read_contigs(input_fasta))
+    logger.debug("Loaded %s contigs.", len(contigs))
+
+    if output_fasta is not None:
+        contigs = tuple(stitch_consensus(contigs))
+        logger.debug("Outputting %s contigs.", len(contigs))
+
+    if output_fasta is not None:
+        write_contigs(output_fasta, contigs)
+
+    return len(contigs)
+
+
 def referenceless_contig_stitcher(input_fasta: TextIO,
                                   output_fasta: Optional[TextIO],
                                   ) -> int:
     with ReferencelessStitcherContext.fresh():
-        contigs = tuple(read_contigs(input_fasta))
-        logger.debug("Loaded %s contigs.", len(contigs))
-
-        if output_fasta is not None:
-            contigs = tuple(stitch_consensus(contigs))
-            logger.debug("Outputting %s contigs.", len(contigs))
-
-        if output_fasta is not None:
-            write_contigs(output_fasta, contigs)
-
-        return len(contigs)
+        return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
