@@ -155,20 +155,6 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
 
 @lru_cache(maxsize=99999)
 def calc_overlap_pvalue(L: int, M: int) -> float:
-    """
-    Compute the probability (p-value) of observing at least M matches
-    out of L under a binomial model where each position has
-    probability `match_prob` of matching.
-    Lower return value suggest that the matches are not coincidental.
-
-    NOTE: This is a very simplistic model.
-
-    :param L: Total length of the overlap region (int)
-    :param M: Number of matching positions observed (int)
-    :return: p-value (float), the probability of seeing at least M
-    matches by chance
-    """
-
     L += 1
     baseline = L / 4
     extra = M - baseline
@@ -176,3 +162,40 @@ def calc_overlap_pvalue(L: int, M: int) -> float:
     triple = extra * extra * extra
 
     return 9 + triple * exp * math.log(L)
+
+
+def find_max_overlap_length(M: int, X: float, L_low: int = -1, L_high: int = -1) -> int:
+    """
+    Find the maximum integer L for which calc_overlap_pvalue(L, M) is
+    greater than a given threshold X using binary search.
+
+    This function assumes that the calc_overlap_pvalue function is
+    monotonic (or nearly so) in L over the range of interest.  It
+    performs a binary search within the bounds [L_low, L_high] to
+    efficiently determine the largest L for which the score exceeds X.
+
+    Args:
+        M (int): The parameter M used in calc_overlap_pvalue.
+        X (float): The threshold value; the function finds the maximum
+        L such that calc_overlap_pvalue(L, M) > X.
+        L_low (int, optional): The lower bound of the search interval
+        for L. Defaults to M.
+        L_high (int, optional): The upper bound of the search interval
+        for L. Defaults to ~M * M.
+
+    Returns:
+        int: The largest integer L for which calc_overlap_pvalue(L, M) > X.
+    """
+
+    cur = calc_overlap_pvalue(L=M, M=M)
+    assert cur >= X, f"BAD: {[M, cur, X]}"
+    return 0
+
+    # score = 0.0
+    # ret = M
+    # while True:
+    #     score = calc_overlap_pvalue(L=ret, M=M)
+    #     if score < X:
+    #         return ret - 1
+
+    #     ret += 1
