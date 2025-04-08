@@ -1,0 +1,57 @@
+Initializing initial seeds...
+Starting with 94 initial seeds.
+Calculating all paths...
+Cycle 1 started with 30 paths
+Cycle 1 finished with 30 new paths. The fittest has length 405 and consists of 5 parts.
+Cycle 2 started with 30 paths
+Cycle 2 finished with 30 new paths. The fittest has length 405 and consists of 5 parts.
+Cycle 3 started with 30 paths
+Cycle 3 finished with 30 new paths. The fittest has length 716 and consists of 11 parts.
+Cycle 4 started with 30 paths
+Cycle 4 finished with 30 new paths. The fittest has length 694 and consists of 11 parts.
+Cycle 5 started with 30 paths
+Cycle 5 finished with 30 new paths. The fittest has length 694 and consists of 13 parts.
+Cycle 6 started with 30 paths
+Cycle 6 finished with 30 new paths. The fittest has length 862 and consists of 15 parts.
+Cycle 7 started with 30 paths
+Cycle 7 finished with 30 new paths. The fittest has length 1000 and consists of 18 parts.
+Cycle 8 started with 30 paths
+Cycle 8 finished with 30 new paths. The fittest has length 1000 and consists of 18 parts.
+Cycle 9 started with 30 paths
+Constructed a path of length 1000.
+Removed 18 components from the working list, having 32 still to process.
+Calculating all paths...
+Cycle 1 started with 30 paths
+Cycle 1 finished with 30 new paths. The fittest has length 430 and consists of 7 parts.
+Cycle 2 started with 30 paths
+Cycle 2 finished with 30 new paths. The fittest has length 507 and consists of 10 parts.
+Cycle 3 started with 30 paths
+Cycle 3 finished with 30 new paths. The fittest has length 743 and consists of 16 parts.
+Cycle 4 started with 30 paths
+Cycle 4 finished with 30 new paths. The fittest has length 1000 and consists of 20 parts.
+Cycle 5 started with 30 paths
+Cycle 5 finished with 30 new paths. The fittest has length 1000 and consists of 20 parts.
+Cycle 6 started with 30 paths
+Cycle 6 finished with 30 new paths. The fittest has length 951 and consists of 21 parts.
+Cycle 7 started with 30 paths
+Cycle 7 finished with 30 new paths. The fittest has length 1000 and consists of 22 parts.
+Cycle 8 started with 30 paths
+Cycle 8 finished with 30 new paths. The fittest has length 1000 and consists of 23 parts.
+Cycle 9 started with 30 paths
+Constructed a path of length 1000.
+Removed 23 components from the working list, having 9 still to process.
+Calculating all paths...
+Cycle 1 started with 12 paths
+Cycle 1 finished with 19 new paths. The fittest has length 271 and consists of 4 parts.
+Cycle 2 started with 19 paths
+Constructed a path of length 271.
+Removed 4 components from the working list, having 5 still to process.
+Calculating all paths...
+Cycle 1 started with 6 paths
+Constructed a path of length 153.
+Removed 2 components from the working list, having 3 still to process.
+Calculating all paths...
+Cycle 1 started with 3 paths
+Constructed a path of length 133.
+Removed 1 components from the working list, having 2 still to process.
+Giving up on attempts to stitch more overlaps since most probable is a singleton.

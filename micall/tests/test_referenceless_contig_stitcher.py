@@ -135,7 +135,7 @@ def log_check(request, tmp_path: Path):
     context.set(ReferencelessStitcherContext.make())
 
     test_name = request.node.name
-    log_name = test_name + ".log"
+    log_name = test_name + ".txt"
     pwd = Path(__file__).parent
     logs_dir = pwd / "data" / "referenceless_stitcher_logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
