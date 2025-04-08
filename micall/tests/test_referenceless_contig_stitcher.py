@@ -1,5 +1,6 @@
 import pytest
 from pathlib import Path
+from typing import Callable, Tuple
 import random
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
@@ -74,47 +75,56 @@ def test_stitch_simple_cases(seqs, expected):
     assert consenses == tuple(sorted(expected))
 
 
-
-@pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
-def test_full_pipeline(tmp_path: Path, random_seed: int, projects):
-    fasta_file = tmp_path / "hxb2.fasta"
-    fastq_file = tmp_path / "hxb2.fastq"
-    converted_fasta_file = tmp_path / "hxb2_converted.fasta"
-    output_fasta_file = tmp_path / "hxb2_reconstructed.fasta"
+@pytest.fixture
+def random_fasta_file(tmp_path: Path, projects) -> Callable[[int], Tuple[Path, str]]:
     hxb2_name = "HIV1-B-FR-K03455-seed"
     ref_seq = projects.getReference(hxb2_name)
     ref_seq = ref_seq[4000:5000]  # Consider a part of genome, for speed.
 
-    # Step 1. Write the HXB2 sequence into a FASTA file.
-    with fasta_file.open("w") as writer:
-        records = [SeqRecord(Seq.Seq(ref_seq),
-                             description='',
-                             id='HXB2',
-                             name='HXB2')]
-        SeqIO.write(records, writer, "fasta")
+    def ret(random_seed: int) -> Tuple[Path, str]:
+        root = tmp_path / str(random_seed)
+        root.mkdir(parents=True, exist_ok=True)
 
-    # Step 2. Use fasta_to_fastq to generate simulated FASTQ reads from the FASTA.
-    # We use a fixed random seed for reproducibility.
-    rng = random.Random(random_seed)
-    # Choose simulation parameters; these should be set so that
-    # the reads overlap sufficiently to allow full reconstruction.
-    n_reads = 50      # total number of reads to generate
-    is_reversed = False
-    min_length = 100
-    max_length = 300
+        fasta_file = root / "hxb2.fasta"
+        fastq_file = root / "hxb2.fastq"
+        converted_fasta_file = root / "hxb2_converted.fasta"
 
-    generate_fastq(
-        fasta=fasta_file,
-        fastq=fastq_file,
-        n_reads=n_reads,
-        is_reversed=is_reversed,
-        min_length=min_length,
-        max_length=max_length,
-        rng=rng
-    )
+        # Step 1. Write the HXB2 sequence into a FASTA file.
+        with fasta_file.open("w") as writer:
+            records = [SeqRecord(Seq.Seq(ref_seq))]
+            SeqIO.write(records, writer, "fasta")
 
-    # Step 3. Convert the simulated FASTQ file back into a FASTA file.
-    main_typed(source_fastq=fastq_file, target_fasta=converted_fasta_file)
+        # Step 2. Use fasta_to_fastq to generate simulated FASTQ reads from the FASTA.
+        # We use a fixed random seed for reproducibility.
+        rng = random.Random(random_seed)
+        # Choose simulation parameters; these should be set so that
+        # the reads overlap sufficiently to allow full reconstruction.
+        n_reads = 50      # total number of reads to generate
+        is_reversed = False
+        min_length = 100
+        max_length = 300
+
+        generate_fastq(
+            fasta=fasta_file,
+            fastq=fastq_file,
+            n_reads=n_reads,
+            is_reversed=is_reversed,
+            min_length=min_length,
+            max_length=max_length,
+            rng=rng
+        )
+
+        # Step 3. Convert the simulated FASTQ file back into a FASTA file.
+        main_typed(source_fastq=fastq_file, target_fasta=converted_fasta_file)
+        return converted_fasta_file, ref_seq
+
+    return ret
+
+
+@pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
+def test_full_pipeline(tmp_path: Path, random_fasta_file, random_seed: int):
+    converted_fasta_file, ref_seq = random_fasta_file(random_seed)
+    output_fasta_file = tmp_path / "out.fasta"
 
     # Step 4. Read the converted FASTA contigs and run the contig stitcher.
     with converted_fasta_file.open("r") as input_handle, \
