@@ -4,6 +4,7 @@ from typing import Callable, Tuple
 import random
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
+from micall.utils.referenceless_contig_stitcher_events import EventType
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, \
     referenceless_contig_stitcher_with_ctx, read_contigs
@@ -143,9 +144,16 @@ def log_check(request, tmp_path: Path):
     path_to_produced = logs_dir / log_name
     is_rerun = path_to_produced.exists()
 
+    def pretty_print_event(ev: EventType) -> str:
+        message = str(ev)
+        words = message.split()
+        first = str(ev.__class__.__name__)
+        rest = words
+        return first + '\n  ' + '\n  '.join(rest)
+
     def check():
         logs = context.get().events
-        produced_logs = '\n'.join(map(str, logs))
+        produced_logs = '\n'.join(map(pretty_print_event, logs))
 
         if is_rerun:
             with path_to_produced.open() as reader:
