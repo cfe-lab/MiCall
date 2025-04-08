@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from copy import deepcopy
 
-import micall.utils.contig_stitcher_events as st_events
+import micall.utils.referencefull_contig_stitcher_events as full_events
 
 
 T = TypeVar('T')
@@ -53,7 +53,7 @@ class GenericStitcherContext(Generic[T]):
             context.reset(token)
 
 
-ReferencefullStitcherContext = GenericStitcherContext[st_events.EventType]
+ReferencefullStitcherContext = GenericStitcherContext[full_events.EventType]
 ReferencelessStitcherContext = GenericStitcherContext[object]
 
 context: ContextVar[GenericStitcherContext] = ContextVar("GenericStitcherContext")

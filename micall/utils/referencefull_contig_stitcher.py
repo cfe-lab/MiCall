@@ -17,7 +17,7 @@ from micall.utils.contig_stitcher_context import context, ReferencefullStitcherC
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 from micall.utils.consensus_aligner import align_consensus
 from micall.utils.overlap_stitcher import align_queries, calculate_concordance_norm, sort_concordance_indexes
-import micall.utils.contig_stitcher_events as events
+import micall.utils.referencefull_contig_stitcher_events as events
 
 
 T = TypeVar("T")
