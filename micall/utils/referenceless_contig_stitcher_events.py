@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 from dataclasses import dataclass
 
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -99,9 +99,10 @@ class InitiallyProduced:
 class Covered:
     left_contig: str
     right_contig: str
+    cutoffs: Tuple[int, int]
 
     def __str__(self) -> str:
-        return f"Contig {self.left_contig} covers contig {self.right_contig} completely."
+        return f"Contig {self.left_contig} covers contig {self.right_contig} completely with {self.cutoffs} cutoffs."
 
 
 @dataclass(frozen=True)
@@ -110,9 +111,10 @@ class FoundOverlap:
     right_contig: str
     result_contig: str
     overlap_size: int
+    cutoffs: Tuple[int, int]
 
     def __str__(self) -> str:
-        return f"Found a significant overlap of size {self.overlap_size}" \
+        return f"Found a significant overlap of size {self.overlap_size} with cutoffs {self.cutoffs}" \
             f" between contigs {self.left_contig} and {self.right_contig}," \
             f" resulting in contig {self.result_contig}."
 
