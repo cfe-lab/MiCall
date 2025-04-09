@@ -47,7 +47,7 @@ dependencies = [
 test = [
     # Dependencies required for running the test suite
     "pytest==8.3.5",
-    "coverage==7.7.1",
+    "coverage==7.8.0",
     "pandas==2.2.3",
     "seaborn==0.13.2",
     "ete3",
@@ -60,7 +60,7 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.11.2",
+    "ruff==0.11.4",
     "mypy==1.15.0",
     "mypy-extensions==1.0.0",
     "gprof2dot==2024.6.6",

@@ -95,7 +95,7 @@ From: python:3.11
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
-    pip install --upgrade pip
+    pip install --upgrade pip setuptools
     pip install /opt/micall[denovo]
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
