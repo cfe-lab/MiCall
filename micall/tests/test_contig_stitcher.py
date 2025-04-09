@@ -6,6 +6,7 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
+import micall.utils.registry as registry
 import micall.utils.referencefull_contig_stitcher as stitcher
 from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
@@ -42,6 +43,7 @@ def exact_aligner(monkeypatch):
 @pytest.fixture
 def visualizer(request, tmp_path):
     stitcher.context.set(stitcher.ReferencefullStitcherContext.make())
+    registry.context.set(registry.Registry())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)

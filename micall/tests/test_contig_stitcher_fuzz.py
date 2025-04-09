@@ -10,6 +10,7 @@ from micall.utils.referencefull_contig_stitcher import (
     ReferencefullStitcherContext,
 )
 import micall.utils.referencefull_contig_stitcher as stitcher
+import micall.utils.registry as registry
 from micall.core.plot_contigs import build_stitcher_figure
 from aligntools import CigarHit, Cigar, CigarActions
 from typing import Dict, List
@@ -24,6 +25,7 @@ def no_aligner(monkeypatch):
 @pytest.fixture(autouse=True)
 def stitcher_context():
     stitcher.context.set(ReferencefullStitcherContext.make())
+    registry.context.set(registry.Registry())
 
 
 def read_contigs(line):

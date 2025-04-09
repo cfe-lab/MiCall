@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Literal
 from functools import cached_property
 from aligntools import CigarHit
+import micall.utils.registry as registry
 
 
 ID_STATE = 0
@@ -32,9 +33,8 @@ class Contig:
             return unqualified + f'({index})'
 
     def register(self) -> int:
-        from micall.utils.contig_stitcher_context import context
-        ctx = context.get()
-        return ctx.register(key=self.id, value=self.name)
+        ctx = registry.context.get()
+        return ctx.add(key=self.id, value=self.name)
 
     @staticmethod
     def empty() -> 'Contig':
