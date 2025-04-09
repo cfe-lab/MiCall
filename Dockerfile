@@ -85,7 +85,7 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools
 
 ## Install just the dependencies of MiCall (for faster build times in development).
 COPY pyproject.toml README.md /opt/micall/
