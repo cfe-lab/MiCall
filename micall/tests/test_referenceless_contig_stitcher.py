@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 from typing import Callable, Tuple
 import random
+import math
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 from micall.utils.referenceless_contig_stitcher_events import EventType
@@ -78,7 +79,7 @@ def test_stitch_simple_cases(seqs, expected):
 
 
 @pytest.fixture
-def random_fasta_file(tmp_path: Path, projects) -> Callable[[int], Tuple[Path, str]]:
+def random_fasta_file(tmp_path: Path, projects) -> Callable[[int, int], Tuple[Path, str]]:
     hxb2_name = "HIV1-B-FR-K03455-seed"
     ref_seq = projects.getReference(hxb2_name)
     ref_seq = ref_seq[4000:5000]  # Consider a part of genome, for speed.
@@ -102,8 +103,8 @@ def random_fasta_file(tmp_path: Path, projects) -> Callable[[int], Tuple[Path, s
         # Choose simulation parameters; these should be set so that
         # the reads overlap sufficiently to allow full reconstruction.
         is_reversed = False
-        min_length = 100
-        max_length = 300
+        min_length = round(math.sqrt(len(ref_seq) / n_reads) * (100 / math.sqrt(len(ref_seq) / 50)))
+        max_length = min(len(ref_seq), min_length * 3)
 
         generate_fastq(
             fasta=fasta_file,
@@ -112,7 +113,7 @@ def random_fasta_file(tmp_path: Path, projects) -> Callable[[int], Tuple[Path, s
             is_reversed=is_reversed,
             min_length=min_length,
             max_length=max_length,
-            rng=rng
+            rng=rng,
         )
 
         # Step 3. Convert the simulated FASTQ file back into a FASTA file.
@@ -211,4 +212,11 @@ def run_full_pipeline(log_check, tmp_path: Path, converted_fasta_file: Path, ref
 @pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
 def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
     converted_fasta_file, ref_seq = random_fasta_file(50, random_seed)
+    run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seq)
+
+
+@pytest.mark.parametrize("random_seed", [3, 7, 11, 13, 17, 21, 27, 37, 1337])
+def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 2)
+    converted_fasta_file, ref_seq = random_fasta_file(3, random_seed)
     run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seq)

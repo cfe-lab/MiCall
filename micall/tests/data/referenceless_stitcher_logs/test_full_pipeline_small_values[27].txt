@@ -1,0 +1,191 @@
+Loaded
+  Loaded
+  3
+  contigs.
+InitializingSeeds
+  Initializing
+  initial
+  seeds...
+Starting
+  Starting
+  with
+  3
+  initial
+  seeds.
+CalculatingAll
+  Calculating
+  all
+  paths...
+CycleStart
+  Cycle
+  1
+  started
+  with
+  2
+  paths
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  590
+  with
+  cutoffs
+  (101,
+  590)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003',
+  resulting
+  in
+  contig
+  (1).
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  582
+  with
+  cutoffs
+  (27,
+  582)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003',
+  resulting
+  in
+  contig
+  (2).
+Covered
+  Contig
+  (1)
+  covers
+  contig
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  completely
+  with
+  (74,
+  609)
+  cutoffs.
+CycleEnd
+  Cycle
+  1
+  finished
+  with
+  2
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  1000
+  and
+  consists
+  of
+  3
+  parts.
+CycleStart
+  Cycle
+  2
+  started
+  with
+  2
+  paths
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  617
+  with
+  cutoffs
+  (74,
+  617)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (3).
+CycleEnd
+  Cycle
+  2
+  finished
+  with
+  2
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  1000
+  and
+  consists
+  of
+  3
+  parts.
+CycleStart
+  Cycle
+  3
+  started
+  with
+  2
+  paths
+Covered
+  Contig
+  (1)
+  covers
+  contig
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  completely
+  with
+  (74,
+  609)
+  cutoffs.
+Constructed
+  Constructed
+  a
+  path
+  of
+  length
+  1000.
+Remove
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+InitiallyProduced
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+Outputting
+  Outputting
+  1
+  contigs.

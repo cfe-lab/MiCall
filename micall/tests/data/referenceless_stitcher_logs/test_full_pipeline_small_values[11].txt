@@ -1,0 +1,165 @@
+Loaded
+  Loaded
+  3
+  contigs.
+InitializingSeeds
+  Initializing
+  initial
+  seeds...
+Starting
+  Starting
+  with
+  3
+  initial
+  seeds.
+CalculatingAll
+  Calculating
+  all
+  paths...
+CycleStart
+  Cycle
+  1
+  started
+  with
+  2
+  paths
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  812
+  with
+  cutoffs
+  (72,
+  812)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003',
+  resulting
+  in
+  contig
+  (1).
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  871
+  with
+  cutoffs
+  (57,
+  871)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002',
+  resulting
+  in
+  contig
+  (2).
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  812
+  with
+  cutoffs
+  (72,
+  812)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (3).
+CycleEnd
+  Cycle
+  1
+  finished
+  with
+  2
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  1000
+  and
+  consists
+  of
+  3
+  parts.
+CycleStart
+  Cycle
+  2
+  started
+  with
+  2
+  paths
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  812
+  with
+  cutoffs
+  (72,
+  812)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (4).
+Constructed
+  Constructed
+  a
+  path
+  of
+  length
+  1000.
+Remove
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+InitiallyProduced
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+Outputting
+  Outputting
+  1
+  contigs.
