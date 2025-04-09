@@ -180,6 +180,8 @@ def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed
          output_fasta_file.open("w") as output_handle:
         referenceless_contig_stitcher_with_ctx(input_handle, output_handle)
 
+    log_check()
+
     with output_fasta_file.open("r") as output_handle:
         stitched_contigs = tuple(read_contigs(output_handle))
 
@@ -206,5 +208,3 @@ def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed
         "Expected one stitched contig; got "
         f"{count} contigs."
     )
-
-    log_check()
