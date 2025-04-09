@@ -33,17 +33,36 @@ class ContigWithAligner(Contig):
                     minimum_score: Score,
                     is_left: bool,
                     overlap: str,
-                    ) -> Iterator[Alignment]:
+                    ) -> Iterator[Tuple[Alignment, int]]:
 
         optimistic_number_of_matches = len(overlap)
         max_length = find_max_overlap_length(M=optimistic_number_of_matches,
                                              X=minimum_score,
+                                             L_high=len(self.seq),
                                              )
-        assert max_length > 0
 
-        for x in self.aligner.map(overlap):
+        assert max_length > 0
+        assert max_length >= len(overlap)
+        assert max_length <= len(self.seq)
+
+        if max_length < len(self.seq):
+            if is_left:
+                max_length = min(len(self.seq), max_length + len(overlap))
+                seq = self.seq
+                shift = 0
+                # seq = self.seq[-max_length:]
+                # shift = len(self.seq) - max_length
+            else:
+                seq = self.seq[:max_length]
+                shift = 0
+            aligner = Aligner(seq=seq)
+        else:
+            aligner = self.aligner
+            shift = 0
+
+        for x in aligner.map(overlap):
             if x.is_primary:
-                yield x
+                yield (x, shift)
 
     @cached_property
     def nucleotide_seq(self) -> np.ndarray:
