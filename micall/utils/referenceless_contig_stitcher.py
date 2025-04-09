@@ -394,17 +394,12 @@ def find_best_candidates(first: ContigWithAligner,
     yield from pool.paths
 
 
-def o2_combine(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigsPath]:
-    for contig in contigs:
-        yield from find_best_candidates(contig, contigs)
-
-
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
     remaining = tuple(sorted(contigs, key=contig_size_fun))
 
     log(events.InitializingSeeds())
-    seeds = tuple(sorted(o2_combine(remaining),
-                         key=lambda path: (path.score(), len(path.whole.seq)),
+    seeds = tuple(sorted(map(ContigsPath.singleton, remaining),
+                         key=lambda path: len(path.whole.seq),
                          reverse=True))
     log(events.Starting(len(seeds)))
 
