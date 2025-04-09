@@ -165,7 +165,8 @@ def log_check(request, tmp_path: Path):
             writer.write(produced_logs)
 
         if is_rerun:
-            assert produced_logs == expected_logs
+            are_equal = produced_logs == expected_logs
+            assert are_equal
 
     return check
 
