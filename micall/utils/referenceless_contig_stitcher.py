@@ -184,7 +184,7 @@ def find_overlap_cutoffs(minimum_score: Score,
     elif existing is not False:
         (left_cutoff, right_cutoff) = existing
 
-    elif len(left_initial_overlap) < len(right_initial_overlap):
+    elif len(left.seq) < len(right.seq):
         left_overlap_alignments = left.map_overlap(minimum_score, True, right_initial_overlap)
         left_cutoff = min((al.r_st + shift for al, shift in left_overlap_alignments), default=-1)
         if left_cutoff < 0:

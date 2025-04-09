@@ -47,7 +47,6 @@ class ContigWithAligner(Contig):
 
         if max_length < len(self.seq):
             if is_left:
-                max_length = min(len(self.seq), max_length + len(overlap))
                 seq = self.seq
                 shift = 0
                 # seq = self.seq[-max_length:]
