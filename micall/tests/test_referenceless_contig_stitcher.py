@@ -83,7 +83,7 @@ def random_fasta_file(tmp_path: Path, projects) -> Callable[[int], Tuple[Path, s
     ref_seq = projects.getReference(hxb2_name)
     ref_seq = ref_seq[4000:5000]  # Consider a part of genome, for speed.
 
-    def ret(random_seed: int) -> Tuple[Path, str]:
+    def ret(n_reads: int, random_seed: int) -> Tuple[Path, str]:
         root = tmp_path / str(random_seed)
         root.mkdir(parents=True, exist_ok=True)
 
@@ -101,7 +101,6 @@ def random_fasta_file(tmp_path: Path, projects) -> Callable[[int], Tuple[Path, s
         rng = random.Random(random_seed)
         # Choose simulation parameters; these should be set so that
         # the reads overlap sufficiently to allow full reconstruction.
-        n_reads = 50      # total number of reads to generate
         is_reversed = False
         min_length = 100
         max_length = 300
@@ -171,9 +170,7 @@ def log_check(request, tmp_path: Path):
     return check
 
 
-@pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
-def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
-    converted_fasta_file, ref_seq = random_fasta_file(random_seed)
+def run_full_pipeline(log_check, tmp_path: Path, converted_fasta_file: Path, ref_seq: str):
     output_fasta_file = tmp_path / "out.fasta"
 
     # Read the converted FASTA contigs and run the contig stitcher.
@@ -209,3 +206,9 @@ def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed
         "Expected one stitched contig; got "
         f"{count} contigs."
     )
+
+
+@pytest.mark.parametrize("random_seed", [1, 2, 3, 5, 7, 11, 13, 17, 42, 1337])
+def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
+    converted_fasta_file, ref_seq = random_fasta_file(50, random_seed)
+    run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seq)
