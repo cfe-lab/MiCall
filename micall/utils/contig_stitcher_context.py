@@ -28,7 +28,7 @@ class GenericStitcherContext(Generic[T]):
         ctx = GenericStitcherContext.make()
         token = context.set(ctx)
         try:
-            with registry.fresh():
+            with registry.ensure():
                 yield ctx
         finally:
             context.reset(token)

@@ -25,7 +25,7 @@ def no_aligner(monkeypatch):
 @pytest.fixture(autouse=True)
 def stitcher_context():
     stitcher.context.set(ReferencefullStitcherContext.make())
-    registry.context.set(registry.Registry())
+    registry.set(registry.Registry())
 
 
 def read_contigs(line):

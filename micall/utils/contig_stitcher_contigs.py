@@ -33,7 +33,7 @@ class Contig:
             return unqualified + f'({index})'
 
     def register(self) -> int:
-        ctx = registry.context.get()
+        ctx = registry.get()
         return ctx.add(key=self.id, value=self.name)
 
     @staticmethod

@@ -23,11 +23,30 @@ class Registry:
 @contextmanager
 def fresh():
     ctx = Registry()
-    token = context.set(ctx)
+    token = _context.set(ctx)
     try:
         yield ctx
     finally:
-        context.reset(token)
+        _context.reset(token)
 
 
-context: ContextVar[Registry] = ContextVar("Registry")
+@contextmanager
+def ensure():
+    try:
+        existing = get()
+    except BaseException:
+        with fresh() as ret:
+            yield ret
+        return
+    yield existing
+
+
+def get() -> Registry:
+    return _context.get()
+
+
+def set(value: Registry) -> None:
+    _context.set(value)
+
+
+_context: ContextVar[Registry] = ContextVar("Registry")
