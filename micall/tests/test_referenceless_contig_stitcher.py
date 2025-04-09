@@ -11,6 +11,7 @@ from micall.utils.referenceless_contig_stitcher import \
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext, context
 from micall.utils.fasta_to_fastq import generate_fastq
 from micall.utils.fastq_to_fasta import main_typed
+import micall.utils.registry as registry
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
@@ -134,6 +135,7 @@ def log_check(request, tmp_path: Path):
     """
 
     context.set(ReferencelessStitcherContext.make())
+    registry.set(registry.Registry())
 
     test_name = request.node.name
     log_name = test_name + ".txt"

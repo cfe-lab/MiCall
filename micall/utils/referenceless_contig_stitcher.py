@@ -280,6 +280,7 @@ def try_combine_contigs(current_prob: Score,
 
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
+        log(events.Covered(left.unique_name, right.unique_name))
         return (left, SCORE_EPSILON)
 
     else:
@@ -291,6 +292,11 @@ def try_combine_contigs(current_prob: Score,
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
         result_contig = ContigWithAligner(None, result_seq)
 
+        log(events.FoundOverlap(left_contig=left.unique_name,
+                                right_contig=right.unique_name,
+                                result_contig=result_contig.unique_name,
+                                overlap_size=len(aligned_left),
+                                ))
         return (result_contig, result_probability)
 
 

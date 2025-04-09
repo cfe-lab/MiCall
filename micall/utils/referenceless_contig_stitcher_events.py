@@ -38,13 +38,15 @@ class CycleEnd:
     def __init__(self, i_cycle: int, n_paths: int, pool: object) -> None:
         self.i_cycle: int = i_cycle
         self.n_paths: int = n_paths
-        fittest = pool.paths[-1]  # type: ignore
-        self.length = len(fittest.whole.seq)  # type: ignore
-        self.parts = len(fittest.parts_ids)  # type: ignore
+        self.pool = pool
 
     def __str__(self) -> str:
+        fittest = self.pool.paths[-1]  # type: ignore
+        length = len(fittest.whole.seq)  # type: ignore
+        parts = len(fittest.parts_ids)  # type: ignore
+
         return f"Cycle {self.i_cycle} finished with {self.n_paths} new paths. " \
-            f"The fittest has length {self.length} and consists of {self.parts} parts."
+            f"The fittest has length {length} and consists of {parts} parts."
 
 
 @dataclass(frozen=True)
@@ -93,6 +95,29 @@ class InitiallyProduced:
         return f"Initial overlap stitching produced {self.n_contigs} contigs."
 
 
+@dataclass(frozen=True)
+class Covered:
+    left_contig: str
+    right_contig: str
+
+    def __str__(self) -> str:
+        return f"Contig {self.left_contig} covers contig {self.right_contig} completely."
+
+
+@dataclass(frozen=True)
+class FoundOverlap:
+    left_contig: str
+    right_contig: str
+    result_contig: str
+    overlap_size: int
+
+    def __str__(self) -> str:
+        return f"Found a significant overlap of size {self.overlap_size}" \
+            f" between contigs {self.left_contig} and {self.right_contig}," \
+            f" resulting in contig {self.result_contig}."
+
+
 EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,
                   CycleEnd, InitializingSeeds, Starting, Constructed,
-                  Loaded, Outputting, InitiallyProduced]
+                  Loaded, Outputting, InitiallyProduced, Covered,
+                  FoundOverlap]
