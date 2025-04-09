@@ -1,6 +1,6 @@
 Loaded
   Loaded
-  3
+  6
   contigs.
 InitializingSeeds
   Initializing
@@ -9,7 +9,7 @@ InitializingSeeds
 Starting
   Starting
   with
-  3
+  6
   initial
   seeds.
 CalculatingAll
@@ -21,19 +21,8 @@ CycleStart
   1
   started
   with
-  2
+  1
   paths
-Covered
-  Contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
-  completely
-  with
-  (27,
-  786)
-  cutoffs.
 FoundOverlap
   Found
   a
@@ -41,37 +30,79 @@ FoundOverlap
   overlap
   of
   size
-  616
+  441
   with
   cutoffs
-  (349,
-  616)
+  (333,
+  441)
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0005',
+  resulting
+  in
+  contig
+  (1).
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  328
+  with
+  cutoffs
+  (446,
+  328)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0004',
+  resulting
+  in
+  contig
+  (2).
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  306
+  with
+  cutoffs
+  (468,
+  306)
+  between
+  contigs
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
   and
   'M01234:01:000000000-AAAAA:1:1101:1234:0001',
   resulting
   in
   contig
-  (1).
+  (3).
 Covered
   Contig
-  (1)
+  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
   covers
   contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
   completely
   with
-  (27,
-  786)
+  (388,
+  356)
   cutoffs.
 CycleEnd
   Cycle
   1
   finished
   with
-  2
+  1
   new
   paths.
   The
@@ -82,14 +113,14 @@ CycleEnd
   and
   consists
   of
-  2
+  4
   parts.
 CycleStart
   Cycle
   2
   started
   with
-  2
+  1
   paths
 FoundOverlap
   Found
@@ -98,31 +129,208 @@ FoundOverlap
   overlap
   of
   size
-  616
+  554
   with
   cutoffs
-  (349,
-  616)
+  (446,
+  554)
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  (1)
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0004',
+  resulting
+  in
+  contig
+  (4).
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  532
+  with
+  cutoffs
+  (468,
+  532)
+  between
+  contigs
+  (1)
   and
   'M01234:01:000000000-AAAAA:1:1101:1234:0001',
   resulting
   in
   contig
-  (2).
+  (5).
 Covered
   Contig
   (1)
   covers
   contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
   completely
   with
-  (27,
-  786)
+  (388,
+  356)
   cutoffs.
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  302
+  with
+  cutoffs
+  (698,
+  302)
+  between
+  contigs
+  (1)
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0006',
+  resulting
+  in
+  contig
+  (6).
+CycleEnd
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  1000
+  and
+  consists
+  of
+  4
+  parts.
+CycleStart
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  532
+  with
+  cutoffs
+  (468,
+  532)
+  between
+  contigs
+  (4)
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0001',
+  resulting
+  in
+  contig
+  (7).
+Covered
+  Contig
+  (4)
+  covers
+  contig
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  completely
+  with
+  (388,
+  356)
+  cutoffs.
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  302
+  with
+  cutoffs
+  (698,
+  302)
+  between
+  contigs
+  (4)
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0006',
+  resulting
+  in
+  contig
+  (8).
+CycleEnd
+  Cycle
+  3
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  1000
+  and
+  consists
+  of
+  4
+  parts.
+CycleStart
+  Cycle
+  4
+  started
+  with
+  1
+  paths
+Covered
+  Contig
+  (7)
+  covers
+  contig
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  completely
+  with
+  (388,
+  356)
+  cutoffs.
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  302
+  with
+  cutoffs
+  (698,
+  302)
+  between
+  contigs
+  (7)
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0006',
+  resulting
+  in
+  contig
+  (9).
 Constructed
   Constructed
   a
@@ -132,14 +340,14 @@ Constructed
   1000.
 Remove
   Removed
-  2
+  4
   components
   from
   the
   working
   list,
   having
-  1
+  2
   still
   to
   process.
@@ -160,7 +368,7 @@ Constructed
   path
   of
   length
-  786.
+  356.
 Remove
   Removed
   1
@@ -170,7 +378,7 @@ Remove
   working
   list,
   having
-  0
+  1
   still
   to
   process.
@@ -194,19 +402,40 @@ InitiallyProduced
   overlap
   stitching
   produced
-  2
+  3
   contigs.
 Covered
   Contig
-  (1)
+  (7)
   covers
   contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
   completely
   with
-  (27,
-  786)
+  (388,
+  356)
   cutoffs.
+FoundOverlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  302
+  with
+  cutoffs
+  (698,
+  302)
+  between
+  contigs
+  (7)
+  and
+  'M01234:01:000000000-AAAAA:1:1101:1234:0006',
+  resulting
+  in
+  contig
+  (10).
 Outputting
   Outputting
   1
