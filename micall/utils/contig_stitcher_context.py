@@ -1,53 +1,63 @@
-from typing import List, Dict
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List, TypeVar, Generic, Iterator
 from contextvars import ContextVar
 from contextlib import contextmanager
-from dataclasses import dataclass
 from copy import deepcopy
 
-import micall.utils.contig_stitcher_events as st_events
+import micall.utils.referencefull_contig_stitcher_events as full_events
+import micall.utils.referenceless_contig_stitcher_events as less_events
+import micall.utils.registry as registry
 
 
-@dataclass
-class StitcherContext:
-    uniq_dict: Dict[object, Dict[object, int]]
-    events: List[st_events.EventType]
+T = TypeVar('T')
 
-    def register(self, key: object, value: object) -> int:
-        if value not in self.uniq_dict:
-            self.uniq_dict[value] = {}
 
-        existing = self.uniq_dict[value]
-        if key not in existing:
-            existing[key] = len(existing) + 1
+@dataclass(frozen=True)
+class GenericStitcherContext(ABC, Generic[T]):
+    events: List[T]
 
-        return existing[key]
-
-    def emit(self, event: st_events.EventType) -> None:
+    def emit(self, event: T) -> None:
         self.events.append(event)
 
     @staticmethod
-    def make() -> 'StitcherContext':
-        return StitcherContext(events=[], uniq_dict={})
+    @abstractmethod
+    def make() -> 'GenericStitcherContext': ...
 
-    @staticmethod
+    @classmethod
     @contextmanager
-    def fresh():
-        ctx = StitcherContext.make()
+    def fresh(cls) -> Iterator['GenericStitcherContext']:
+        ctx = cls.make()
         token = context.set(ctx)
         try:
-            yield ctx
+            with registry.stage():
+                yield ctx
         finally:
             context.reset(token)
 
     @staticmethod
     @contextmanager
-    def stage():
+    def stage() -> Iterator['GenericStitcherContext']:
         ctx = deepcopy(context.get())
         token = context.set(ctx)
         try:
-            yield ctx
+            with registry.fresh():
+                yield ctx
         finally:
             context.reset(token)
 
 
-context: ContextVar[StitcherContext] = ContextVar("StitcherContext")
+class ReferencefullStitcherContext(GenericStitcherContext[full_events.EventType]):
+    @staticmethod
+    def make() -> 'GenericStitcherContext':
+        return ReferencefullStitcherContext([])
+
+
+class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]):
+    @staticmethod
+    def make() -> 'GenericStitcherContext':
+        return ReferencelessStitcherContext([])
+
+
+context: ContextVar[GenericStitcherContext] = ContextVar("GenericStitcherContext")

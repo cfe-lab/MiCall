@@ -1,4 +1,4 @@
-from typing import Union, List, Tuple, Literal
+from typing import Union, Sequence, Tuple, Literal
 from dataclasses import dataclass
 from fractions import Fraction
 from aligntools import CigarHit
@@ -64,7 +64,7 @@ class Munge:
 
 @dataclass(frozen=True)
 class Combine:
-    contigs: List[AlignedContig]
+    contigs: Sequence[AlignedContig]
     result: AlignedContig
 
     def __str__(self) -> str:
@@ -130,8 +130,8 @@ class ReverseComplement:
 @dataclass(frozen=True)
 class HitNumber:
     contig: GenotypedContig
-    initial: List[Tuple[CigarHit, Literal["reverse", "forward"]]]
-    connected: List[CigarHit]
+    initial: Sequence[Tuple[CigarHit, Literal["reverse", "forward"]]]
+    connected: Sequence[CigarHit]
 
     def __str__(self) -> str:
         return (
@@ -196,19 +196,17 @@ class Overlap:
     right_remainder: AlignedContig
     left_take: AlignedContig
     right_take: AlignedContig
-    concordance: List[Fraction]
-    average: Fraction
+    concordance: Sequence[Fraction]
     cut_point: int
     cut_point_scaled: float
 
     def __str__(self) -> str:
-        average_concordance = round(self.average * 100)
         cut_point_location_scaled = round(self.cut_point_scaled * 100)
         concordance_str = ', '.join(str(int(round(x * 100)) / 100) for x in self.concordance)
         return (
             f"Created overlap contigs {self.left_take.unique_name} at {self.left_overlap.alignment} and "
             f"{self.right_take.unique_name} at {self.right_take.alignment} based on parts of "
-            f"{self.left.unique_name} and {self.right.unique_name}, with avg. concordance {average_concordance}%, "
+            f"{self.left.unique_name} and {self.right.unique_name}, with "
             f"cut point at {cut_point_location_scaled}%, and full concordance [{concordance_str}]."
         )
 
@@ -237,7 +235,7 @@ class Stitch:
 @dataclass(frozen=True)
 class Drop:
     contig: AlignedContig
-    covering: List[AlignedContig]
+    covering: Sequence[AlignedContig]
 
     def __str__(self) -> str:
         covering_contig_names = ', '.join(repr(x.unique_name) for x in self.covering)
@@ -286,7 +284,7 @@ class Intro:
 
 @dataclass(frozen=True)
 class FinalCombine:
-    contigs: List[AlignedContig]
+    contigs: Sequence[AlignedContig]
     result: AlignedContig
 
     def __str__(self) -> str:
