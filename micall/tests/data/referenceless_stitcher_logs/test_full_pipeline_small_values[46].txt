@@ -210,7 +210,7 @@ BEGIN 14
   to
   be
   (208,
-  239).
+  447).
 END 14
 BEGIN 15
   Overlap
@@ -447,7 +447,7 @@ BEGIN 28
   to
   be
   (208,
-  239).
+  447).
 END 28
 BEGIN 29
   Overlap
@@ -636,9 +636,36 @@ BEGIN 41
   'r534-772.0'
   to
   be
-  None.
+  (308,
+  398).
 END 41
 BEGIN 42
+  Overlap
+  between
+  contigs
+  'r226-623.1'
+  and
+  'r534-772.0'
+  has
+  size
+  239,
+  90
+  matches,
+  and
+  the
+  score
+  of
+  158889363324343.9.
+END 42
+BEGIN 43
+  Contig
+  'r226-623.1'
+  covers
+  contig
+  'r534-772.0'
+  completely.
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -655,9 +682,9 @@ BEGIN 42
   to
   be
   (88,
-  230).
-END 42
-BEGIN 43
+  318).
+END 44
+BEGIN 45
   Overlap
   between
   contigs
@@ -674,16 +701,16 @@ BEGIN 43
   score
   of
   1.6650558952032708e+59.
-END 43
-BEGIN 44
+END 45
+BEGIN 46
   Contig
   'r226-623.1'
   covers
   contig
   'r314-543.3'
   completely.
-END 44
-BEGIN 45
+END 46
+BEGIN 47
   Cycle
   1
   finished
@@ -701,16 +728,16 @@ BEGIN 45
   of
   2
   parts.
-END 45
-BEGIN 46
+END 47
+BEGIN 48
   Cycle
   2
   started
   with
   1
   paths
-END 46
-BEGIN 47
+END 48
+BEGIN 49
   Calculated
   cutoff
   for
@@ -726,9 +753,36 @@ BEGIN 47
   'r534-772.0'
   to
   be
-  None.
-END 47
-BEGIN 48
+  (409,
+  499).
+END 49
+BEGIN 50
+  Overlap
+  between
+  contigs
+  (8)
+  and
+  'r534-772.0'
+  has
+  size
+  239,
+  90
+  matches,
+  and
+  the
+  score
+  of
+  158889363324343.9.
+END 50
+BEGIN 51
+  Contig
+  (8)
+  covers
+  contig
+  'r534-772.0'
+  completely.
+END 51
+BEGIN 52
   Calculated
   cutoff
   for
@@ -745,9 +799,9 @@ BEGIN 48
   to
   be
   (189,
-  230).
-END 48
-BEGIN 49
+  419).
+END 52
+BEGIN 53
   Overlap
   between
   contigs
@@ -764,24 +818,24 @@ BEGIN 49
   score
   of
   1.6650558952032708e+59.
-END 49
-BEGIN 50
+END 53
+BEGIN 54
   Contig
   (8)
   covers
   contig
   'r314-543.3'
   completely.
-END 50
-BEGIN 51
+END 54
+BEGIN 55
   Constructed
   a
   path
   of
   length
   499.
-END 51
-BEGIN 52
+END 55
+BEGIN 56
   Removed
   2
   components
@@ -794,21 +848,21 @@ BEGIN 52
   still
   to
   process.
-END 52
-BEGIN 53
+END 56
+BEGIN 57
   Calculating
   all
   paths...
-END 53
-BEGIN 54
+END 57
+BEGIN 58
   Cycle
   1
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 58
+BEGIN 59
   Calculated
   cutoff
   for
@@ -825,16 +879,16 @@ BEGIN 55
   to
   be
   None.
-END 55
-BEGIN 56
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
   239.
-END 56
-BEGIN 57
+END 60
+BEGIN 61
   Removed
   1
   components
@@ -847,8 +901,8 @@ BEGIN 57
   still
   to
   process.
-END 57
-BEGIN 58
+END 61
+BEGIN 62
   Giving
   up
   on
@@ -863,16 +917,16 @@ BEGIN 58
   is
   a
   singleton.
-END 58
-BEGIN 59
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 59
-BEGIN 60
+END 63
+BEGIN 64
   Calculated
   cutoff
   for
@@ -890,8 +944,8 @@ BEGIN 60
   be
   (201,
   298).
-END 60
-BEGIN 61
+END 64
+BEGIN 65
   Overlap
   between
   contigs
@@ -908,8 +962,8 @@ BEGIN 61
   score
   of
   8.550117574725871e+74.
-END 61
-BEGIN 62
+END 65
+BEGIN 66
   Found
   a
   significant
@@ -926,8 +980,8 @@ BEGIN 62
   in
   contig
   (9).
-END 62
-BEGIN 63
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -944,8 +998,8 @@ BEGIN 63
   to
   be
   None.
-END 63
-BEGIN 64
+END 67
+BEGIN 68
   Calculated
   cutoff
   for
@@ -962,9 +1016,9 @@ BEGIN 64
   to
   be
   (409,
-  239).
-END 64
-BEGIN 65
+  648).
+END 68
+BEGIN 69
   Overlap
   between
   contigs
@@ -981,16 +1035,16 @@ BEGIN 65
   score
   of
   2.408571302390333e+61.
-END 65
-BEGIN 66
+END 69
+BEGIN 70
   Contig
   (9)
   covers
   contig
   'r534-772.0'
   completely.
-END 66
-BEGIN 67
+END 70
+BEGIN 71
   Calculated
   cutoff
   for
@@ -1007,9 +1061,9 @@ BEGIN 67
   to
   be
   (189,
-  230).
-END 67
-BEGIN 68
+  419).
+END 71
+BEGIN 72
   Overlap
   between
   contigs
@@ -1026,17 +1080,17 @@ BEGIN 68
   score
   of
   1.6650558952032708e+59.
-END 68
-BEGIN 69
+END 72
+BEGIN 73
   Contig
   (9)
   covers
   contig
   'r314-543.3'
   completely.
-END 69
-BEGIN 70
+END 73
+BEGIN 74
   Outputting
   1
   contigs.
-END 70
+END 74

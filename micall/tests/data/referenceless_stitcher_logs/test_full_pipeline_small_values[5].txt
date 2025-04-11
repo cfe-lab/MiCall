@@ -155,7 +155,7 @@ BEGIN 11
   to
   be
   (55,
-  415).
+  470).
 END 11
 BEGIN 12
   Overlap
@@ -200,7 +200,7 @@ BEGIN 14
   to
   be
   (30,
-  225).
+  255).
 END 14
 BEGIN 15
   Overlap
@@ -382,7 +382,7 @@ BEGIN 25
   to
   be
   (55,
-  415).
+  470).
 END 25
 BEGIN 26
   Overlap
@@ -427,7 +427,7 @@ BEGIN 28
   to
   be
   (30,
-  225).
+  255).
 END 28
 BEGIN 29
   Overlap

@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (344,
-  75).
+  432).
 END 8
 BEGIN 9
   Overlap
@@ -111,24 +111,16 @@ BEGIN 9
   'r390-793.0'
   has
   size
-  88,
-  75
+  404,
+  88
   matches,
   and
   the
   score
   of
-  5.934328537782793e+21.
+  7.295134172650108.
 END 9
 BEGIN 10
-  Contig
-  'r46-477.2'
-  covers
-  contig
-  'r390-793.0'
-  completely.
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -146,16 +138,16 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -173,8 +165,8 @@ BEGIN 13
   be
   (344,
   272).
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -191,8 +183,8 @@ BEGIN 14
   score
   of
   1.2199272611365159e+69.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Found
   a
   significant
@@ -209,8 +201,8 @@ BEGIN 15
   in
   contig
   (2).
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -228,24 +220,24 @@ BEGIN 16
   of
   3
   parts.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   748.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Removed
   3
   components
@@ -258,17 +250,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 21
+END 20

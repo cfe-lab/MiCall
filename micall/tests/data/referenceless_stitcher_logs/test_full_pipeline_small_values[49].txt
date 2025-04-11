@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (419,
-  121).
+  553).
 END 8
 BEGIN 9
   Overlap
@@ -111,24 +111,16 @@ BEGIN 9
   'r442-945.1'
   has
   size
-  134,
-  121
+  504,
+  134
   matches,
   and
   the
   score
   of
-  5.0416102629423484e+32.
+  741752.280666169.
 END 9
 BEGIN 10
-  Contig
-  'r23-575.5'
-  covers
-  contig
-  'r442-945.1'
-  completely.
-END 10
-BEGIN 11
   Calculated
   cutoff
   for
@@ -145,9 +137,9 @@ BEGIN 11
   to
   be
   (419,
-  99).
-END 11
-BEGIN 12
+  553).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
@@ -156,24 +148,24 @@ BEGIN 12
   'r442-923.4'
   has
   size
-  134,
-  99
+  482,
+  134
   matches,
   and
   the
   score
   of
-  5.027529255139286e+25.
-END 12
-BEGIN 13
+  117767988.43626675.
+END 11
+BEGIN 12
   Contig
   'r23-575.5'
   covers
   contig
   'r442-923.4'
   completely.
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -190,9 +182,9 @@ BEGIN 14
   to
   be
   (30,
-  289).
-END 14
-BEGIN 15
+  319).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -209,16 +201,16 @@ BEGIN 15
   score
   of
   6.059359273135458e+72.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Contig
   'r23-575.5'
   covers
   contig
   'r53-341.0'
   completely.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -234,7 +226,26 @@ BEGIN 17
   'r511-797.2'
   to
   be
-  None.
+  (488,
+  553).
+END 16
+BEGIN 17
+  Overlap
+  between
+  contigs
+  'r23-575.5'
+  and
+  'r511-797.2'
+  has
+  size
+  287,
+  65
+  matches,
+  and
+  the
+  score
+  of
+  -6.174964411614294.
 END 17
 BEGIN 18
   Cycle
@@ -390,7 +401,7 @@ BEGIN 26
   to
   be
   (30,
-  289).
+  319).
 END 26
 BEGIN 27
   Overlap
@@ -435,7 +446,7 @@ BEGIN 29
   to
   be
   (488,
-  287).
+  775).
 END 29
 BEGIN 30
   Overlap
@@ -507,7 +518,7 @@ BEGIN 34
   to
   be
   (419,
-  482).
+  901).
 END 34
 BEGIN 35
   Overlap
@@ -552,7 +563,7 @@ BEGIN 37
   to
   be
   (30,
-  289).
+  319).
 END 37
 BEGIN 38
   Overlap
@@ -597,7 +608,7 @@ BEGIN 40
   to
   be
   (488,
-  287).
+  775).
 END 40
 BEGIN 41
   Overlap
@@ -695,7 +706,7 @@ BEGIN 48
   to
   be
   (69,
-  287).
+  356).
 END 48
 BEGIN 49
   Overlap
@@ -866,7 +877,7 @@ BEGIN 62
   to
   be
   (419,
-  482).
+  901).
 END 62
 BEGIN 63
   Overlap
@@ -911,7 +922,7 @@ BEGIN 65
   to
   be
   (30,
-  289).
+  319).
 END 65
 BEGIN 66
   Overlap

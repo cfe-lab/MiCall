@@ -62,17 +62,36 @@ BEGIN 6
   'r424-679.2'
   to
   be
-  None.
+  (0,
+  72).
 END 6
 BEGIN 7
+  Overlap
+  between
+  contigs
+  'r608-954.0'
+  and
+  'r424-679.2'
+  has
+  size
+  256,
+  72
+  matches,
+  and
+  the
+  score
+  of
+  661259.102580454.
+END 7
+BEGIN 8
   Constructed
   a
   path
   of
   length
   347.
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Removed
   1
   components
@@ -85,8 +104,8 @@ BEGIN 8
   still
   to
   process.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Giving
   up
   on
@@ -101,16 +120,16 @@ BEGIN 9
   is
   a
   singleton.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -127,8 +146,8 @@ BEGIN 11
   to
   be
   None.
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -144,9 +163,28 @@ BEGIN 12
   'r424-679.2'
   to
   be
-  None.
-END 12
-BEGIN 13
+  (0,
+  72).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r608-954.0'
+  and
+  'r424-679.2'
+  has
+  size
+  256,
+  72
+  matches,
+  and
+  the
+  score
+  of
+  661259.102580454.
+END 14
+BEGIN 15
   Calculated
   cutoff
   for
@@ -164,8 +202,8 @@ BEGIN 13
   be
   (132,
   134).
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Overlap
   between
   contigs
@@ -182,8 +220,8 @@ BEGIN 14
   score
   of
   6.264927513981833e+36.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Found
   a
   significant
@@ -200,8 +238,8 @@ BEGIN 15
   in
   contig
   (1).
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -219,8 +257,8 @@ BEGIN 16
   be
   (316,
   72).
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Overlap
   between
   contigs
@@ -237,8 +275,8 @@ BEGIN 17
   score
   of
   1.2002147851897737e+22.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Found
   a
   significant
@@ -255,9 +293,9 @@ BEGIN 18
   in
   contig
   (2).
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 19
+END 21

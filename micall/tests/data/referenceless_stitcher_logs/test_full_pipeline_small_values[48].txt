@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (390,
-  131).
+  538).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r508-940.2'
   has
   size
-  148,
-  131
+  433,
+  148
   matches,
   and
   the
   score
   of
-  8.166689850450659e+34.
+  4.1152628462423654e+17.
 END 9
 BEGIN 10
   Contig
@@ -200,7 +200,7 @@ BEGIN 14
   to
   be
   (166,
-  301).
+  467).
 END 14
 BEGIN 15
   Overlap
@@ -245,7 +245,7 @@ BEGIN 17
   to
   be
   (264,
-  272).
+  536).
 END 17
 BEGIN 18
   Overlap
@@ -427,7 +427,7 @@ BEGIN 28
   to
   be
   (166,
-  301).
+  467).
 END 28
 BEGIN 29
   Overlap
@@ -472,7 +472,7 @@ BEGIN 31
   to
   be
   (264,
-  272).
+  536).
 END 31
 BEGIN 32
   Overlap
@@ -599,7 +599,7 @@ BEGIN 39
   to
   be
   (166,
-  301).
+  467).
 END 39
 BEGIN 40
   Overlap
@@ -644,7 +644,7 @@ BEGIN 42
   to
   be
   (264,
-  272).
+  536).
 END 42
 BEGIN 43
   Overlap

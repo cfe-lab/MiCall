@@ -155,7 +155,7 @@ BEGIN 11
   to
   be
   (150,
-  371).
+  521).
 END 11
 BEGIN 12
   Overlap
@@ -282,7 +282,7 @@ BEGIN 19
   to
   be
   (150,
-  371).
+  521).
 END 19
 BEGIN 20
   Overlap
@@ -382,7 +382,7 @@ BEGIN 25
   to
   be
   (403,
-  207).
+  610).
 END 25
 BEGIN 26
   Overlap
@@ -454,7 +454,7 @@ BEGIN 30
   to
   be
   (150,
-  371).
+  521).
 END 30
 BEGIN 31
   Overlap
@@ -499,7 +499,7 @@ BEGIN 33
   to
   be
   (380,
-  274).
+  654).
 END 33
 BEGIN 34
   Overlap
@@ -544,7 +544,7 @@ BEGIN 36
   to
   be
   (403,
-  207).
+  610).
 END 36
 BEGIN 37
   Overlap
@@ -761,7 +761,7 @@ BEGIN 51
   to
   be
   (253,
-  207).
+  460).
 END 51
 BEGIN 52
   Overlap
@@ -887,7 +887,7 @@ BEGIN 62
   to
   be
   (150,
-  504).
+  654).
 END 62
 BEGIN 63
   Overlap
@@ -932,7 +932,7 @@ BEGIN 65
   to
   be
   (403,
-  207).
+  610).
 END 65
 BEGIN 66
   Overlap

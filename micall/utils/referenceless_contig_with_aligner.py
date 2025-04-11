@@ -44,11 +44,13 @@ class ContigWithAligner(Contig):
         assert max_length > 0
         assert max_length >= len(overlap)
         assert max_length <= len(self.seq)
+        max_length = len(self.seq)  # FIXME: remove this line.
 
         if max_length < len(self.seq):
             if is_left:
                 seq = self.seq
                 shift = 0
+                # FIXME: uncomment below.
                 # seq = self.seq[-max_length:]
                 # shift = len(self.seq) - max_length
             else:

@@ -210,7 +210,7 @@ BEGIN 14
   to
   be
   (228,
-  252).
+  480).
 END 14
 BEGIN 15
   Overlap
@@ -255,7 +255,7 @@ BEGIN 17
   to
   be
   (16,
-  239).
+  255).
 END 17
 BEGIN 18
   Overlap
@@ -382,7 +382,7 @@ BEGIN 25
   to
   be
   (56,
-  273).
+  329).
 END 25
 BEGIN 26
   Overlap
@@ -427,7 +427,7 @@ BEGIN 28
   to
   be
   (364,
-  252).
+  616).
 END 28
 BEGIN 29
   Overlap
@@ -472,7 +472,7 @@ BEGIN 31
   to
   be
   (152,
-  239).
+  391).
 END 31
 BEGIN 32
   Overlap
@@ -544,7 +544,7 @@ BEGIN 36
   to
   be
   (57,
-  273).
+  330).
 END 36
 BEGIN 37
   Overlap
@@ -589,7 +589,7 @@ BEGIN 39
   to
   be
   (365,
-  252).
+  617).
 END 39
 BEGIN 40
   Overlap
@@ -634,7 +634,7 @@ BEGIN 42
   to
   be
   (153,
-  239).
+  392).
 END 42
 BEGIN 43
   Overlap
@@ -913,7 +913,7 @@ BEGIN 64
   to
   be
   (57,
-  335).
+  392).
 END 64
 BEGIN 65
   Overlap
@@ -958,7 +958,7 @@ BEGIN 67
   to
   be
   (365,
-  252).
+  617).
 END 67
 BEGIN 68
   Overlap

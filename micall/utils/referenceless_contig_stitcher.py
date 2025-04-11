@@ -184,6 +184,24 @@ def find_overlap_cutoffs(minimum_score: Score,
     elif existing is not False:
         (left_cutoff, right_cutoff) = existing
 
+    elif len(left.seq) == len(left_initial_overlap):
+        overlap_alignments = tuple(right.map_overlap(minimum_score, False, left_initial_overlap))
+        right_cutoff = max((al.r_en + shift for al, shift in overlap_alignments), default=-1)
+        if right_cutoff < 0:
+            CUTOFFS_CACHE[key] = None
+            return None
+
+        left_cutoff = min((al.r_st + shift for al, shift in overlap_alignments), default=-1)
+
+    elif len(right.seq) == len(right_initial_overlap):
+        overlap_alignments = tuple(left.map_overlap(minimum_score, False, right_initial_overlap))
+        left_cutoff = min((al.r_st + shift for al, shift in overlap_alignments), default=-1)
+        if left_cutoff < 0:
+            CUTOFFS_CACHE[key] = None
+            return None
+
+        right_cutoff = max((al.r_en + shift for al, shift in overlap_alignments), default=-1)
+
     elif len(left.seq) < len(right.seq):
         left_overlap_alignments = left.map_overlap(minimum_score, True, right_initial_overlap)
         left_cutoff = min((al.r_st + shift for al, shift in left_overlap_alignments), default=-1)
@@ -250,12 +268,9 @@ def try_combine_contigs(is_debug2: bool,
     left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
     right_initial_overlap = right.seq[:abs(shift)]
 
-    assert len(right_initial_overlap) == overlap.size
+    assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size}"
     assert len(left_initial_overlap) == overlap.size, f"{len(left_initial_overlap)} == {overlap.size}"
-
     assert calc_overlap_pvalue(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_score
-    assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size} in {len(right.seq), {shift}}"
-    assert len(left_initial_overlap) == len(right_initial_overlap), f"{len(left_initial_overlap)} == {len(right_initial_overlap)}"
 
     cutoffs = find_overlap_cutoffs(minimum_score,
                                    left, right,
@@ -272,19 +287,37 @@ def try_combine_contigs(is_debug2: bool,
         return None
 
     (left_cutoff, right_cutoff) = cutoffs
-    left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
-    left_remainder = left.seq[:left_cutoff]
-    right_overlap = right.seq[:right_cutoff]
-    right_remainder = right.seq[right_cutoff:]
-    aligned_left, aligned_right = align_overlaps(left_overlap, right_overlap)
+
+    left_is_covered = len(left.seq) <= overlap.size
+    right_is_covered = len(right.seq) <= overlap.size
+    is_covered = left_is_covered or right_is_covered
+    if is_covered:
+        if left_is_covered:
+            covered = left
+            bigger = right
+        else:
+            covered = right
+            bigger = left
+
+        covered_overlap = covered.seq
+        bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
+        aligned_1, aligned_2 = align_overlaps(covered_overlap, bigger_overlap)
+        result_length = max(len(bigger_overlap), len(covered_overlap)) # NOTE: bigger_overlap is not always bigger than covered_overlap.
+
+    else:
+        left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
+        left_remainder = left.seq[:left_cutoff]
+        right_overlap = right.seq[:right_cutoff]
+        right_remainder = right.seq[right_cutoff:]
+        aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
+        result_length = max(len(left_overlap), len(right_overlap)) # TODO: take len(aligned_1) to be the result_length.
 
     number_of_matches = sum(1 for x, y
-                            in zip(aligned_left, aligned_right)
+                            in zip(aligned_1, aligned_2)
                             if x == y and x != '-')
 
     # Note that result_length is not necessarily == len(left_overlap_chunk) + len(right_overlap_chunk).
     # The addition would give a more precise value for the result_probability, but it's much more expensive to calculate.
-    result_length = max(len(left_overlap), len(right_overlap))
     result_probability = calc_overlap_pvalue(L=result_length, M=number_of_matches)
     if is_debug2:
         log(events.DeterminedOverlap(left.unique_name, right.unique_name, result_length, number_of_matches, result_probability))
@@ -292,17 +325,16 @@ def try_combine_contigs(is_debug2: bool,
     if result_probability < minimum_score:
         return None
 
-    is_covered = len(right.seq) < abs(shift)
     if is_covered:
         if is_debug2:
             log(events.Covered(left.unique_name, right.unique_name))
-        return (left, SCORE_EPSILON)
+        return (bigger, SCORE_EPSILON)
 
     else:
-        concordance = calculate_concordance(aligned_left, aligned_right)
+        concordance = calculate_concordance(aligned_1, aligned_2)
         max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
-        left_overlap_chunk = ''.join(x for x in aligned_left[:max_concordance_index] if x != '-')
-        right_overlap_chunk = ''.join(x for x in aligned_right[max_concordance_index:] if x != '-')
+        left_overlap_chunk = ''.join(x for x in aligned_1[:max_concordance_index] if x != '-')
+        right_overlap_chunk = ''.join(x for x in aligned_2[max_concordance_index:] if x != '-')
 
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
         result_contig = ContigWithAligner(None, result_seq)
@@ -311,7 +343,7 @@ def try_combine_contigs(is_debug2: bool,
             log(events.CombinedContings(left_contig=left.unique_name,
                                         right_contig=right.unique_name,
                                         result_contig=result_contig.unique_name,
-                                        overlap_size=len(aligned_left),
+                                        overlap_size=len(left_overlap_chunk) + len(right_overlap_chunk),
                                         ))
         return (result_contig, result_probability)
 

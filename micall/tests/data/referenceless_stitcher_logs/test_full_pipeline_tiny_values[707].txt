@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  925
+  211
   between
   contigs
   'r372-936.2'

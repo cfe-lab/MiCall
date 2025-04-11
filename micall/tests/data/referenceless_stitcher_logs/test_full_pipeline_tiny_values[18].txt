@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (465,
-  81).
+  568).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r622-940.1'
   has
   size
-  103,
-  81
+  319,
+  103
   matches,
   and
   the
   score
   of
-  2.7839831050361625e+22.
+  588739030501.4678.
 END 9
 BEGIN 10
   Contig

@@ -210,7 +210,7 @@ BEGIN 14
   to
   be
   (64,
-  449).
+  513).
 END 14
 BEGIN 15
   Overlap
@@ -447,7 +447,7 @@ BEGIN 28
   to
   be
   (70,
-  449).
+  519).
 END 28
 BEGIN 29
   Overlap
@@ -609,7 +609,7 @@ BEGIN 40
   overlap
   of
   size
-  779
+  141
   between
   contigs
   'r507-964.4'
@@ -692,7 +692,7 @@ BEGIN 44
   to
   be
   (64,
-  270).
+  334).
 END 44
 BEGIN 45
   Overlap
@@ -819,7 +819,7 @@ BEGIN 52
   to
   be
   (64,
-  270).
+  334).
 END 52
 BEGIN 53
   Overlap
@@ -891,7 +891,7 @@ BEGIN 57
   to
   be
   (64,
-  270).
+  334).
 END 57
 BEGIN 58
   Overlap
@@ -1017,7 +1017,7 @@ BEGIN 68
   to
   be
   (179,
-  535).
+  714).
 END 68
 BEGIN 69
   Overlap
@@ -1062,7 +1062,7 @@ BEGIN 71
   to
   be
   (64,
-  270).
+  334).
 END 71
 BEGIN 72
   Overlap

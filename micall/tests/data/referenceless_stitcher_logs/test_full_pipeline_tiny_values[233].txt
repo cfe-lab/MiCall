@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  806
+  157
   between
   contigs
   'r519-958.1'

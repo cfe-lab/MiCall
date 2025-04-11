@@ -45,7 +45,7 @@ BEGIN 5
   to
   be
   (354,
-  84).
+  455).
 END 5
 BEGIN 6
   Overlap
@@ -56,24 +56,16 @@ BEGIN 6
   'r493-902.2'
   has
   size
-  101,
-  84
+  410,
+  101
   matches,
   and
   the
   score
   of
-  2.6688030848229324e+23.
+  0.9360254977648115.
 END 6
 BEGIN 7
-  Contig
-  'r139-593.0'
-  covers
-  contig
-  'r493-902.2'
-  completely.
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -91,8 +83,8 @@ BEGIN 8
   be
   (271,
   184).
-END 8
-BEGIN 9
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -109,8 +101,8 @@ BEGIN 9
   score
   of
   4.754603767881652e+48.
-END 9
-BEGIN 10
+END 8
+BEGIN 9
   Found
   a
   significant
@@ -127,8 +119,8 @@ BEGIN 10
   in
   contig
   (1).
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -146,16 +138,16 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -173,8 +165,8 @@ BEGIN 13
   be
   (354,
   264).
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -191,8 +183,8 @@ BEGIN 14
   score
   of
   1.7334119595171544e+67.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Found
   a
   significant
@@ -209,8 +201,8 @@ BEGIN 15
   in
   contig
   (2).
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -228,24 +220,24 @@ BEGIN 16
   of
   3
   parts.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   764.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Removed
   3
   components
@@ -258,17 +250,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 21
+END 20

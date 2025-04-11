@@ -45,7 +45,7 @@ BEGIN 5
   to
   be
   (486,
-  69).
+  616).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r516-884.0'
   has
   size
-  130,
-  69
+  369,
+  130
   matches,
   and
   the
   score
   of
-  1.595864724483948e+16.
+  8.57192692972975e+16.
 END 6
 BEGIN 7
   Contig

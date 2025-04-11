@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (286,
-  130).
+  439).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r457-866.0'
   has
   size
-  153,
-  130
+  410,
+  153
   matches,
   and
   the
   score
   of
-  1.9106922737823416e+34.
+  8.598109518343737e+20.
 END 9
 BEGIN 10
   Contig
