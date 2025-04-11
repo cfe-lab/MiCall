@@ -275,7 +275,8 @@ def try_combine_contigs(is_debug2: bool,
     number_of_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
-    result_probability = calc_overlap_pvalue(L=len(left_overlap), M=number_of_matches)
+    result_length = max(len(left_overlap), len(right_overlap))
+    result_probability = calc_overlap_pvalue(L=result_length, M=number_of_matches)
     if result_probability < minimum_score:
         return None
 
