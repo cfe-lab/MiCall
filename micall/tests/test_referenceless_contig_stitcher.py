@@ -146,9 +146,10 @@ def log_check(request, tmp_path: Path):
     path_to_produced = logs_dir / log_name
     is_rerun = path_to_produced.exists()
 
-    def pretty_print_event(ev: EventType) -> str:
+    def pretty_print_event(pair: Tuple[int, EventType]) -> str:
+        (i, ev) = pair
         message = str(ev)
-        name = str(ev.__class__.__name__)
+        name = str(i)
         words = message.split()
         body = '\n  '.join(words)
         header = f"BEGIN {name}"
@@ -157,7 +158,7 @@ def log_check(request, tmp_path: Path):
 
     def check():
         logs = ReferencelessStitcherContext.get().events
-        produced_logs = '\n'.join(map(pretty_print_event, logs))
+        produced_logs = '\n'.join(map(pretty_print_event, enumerate(logs)))
 
         if is_rerun:
             with path_to_produced.open() as reader:

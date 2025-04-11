@@ -1,34 +1,34 @@
-BEGIN Loaded
+BEGIN 0
   Loaded
   6
   contigs.
-END Loaded
-BEGIN InitializingSeeds
+END 0
+BEGIN 1
   Initializing
   initial
   seeds...
-END InitializingSeeds
-BEGIN Starting
+END 1
+BEGIN 2
   Starting
   with
   6
   initial
   seeds.
-END Starting
-BEGIN CalculatingAll
+END 2
+BEGIN 3
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 3
+BEGIN 4
   Cycle
   1
   started
   with
   1
   paths
-END CycleStart
-BEGIN CalculatedCutoffs
+END 4
+BEGIN 5
   Calculated
   cutoff
   for
@@ -46,8 +46,8 @@ BEGIN CalculatedCutoffs
   be
   (3,
   805).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 5
+BEGIN 6
   Overlap
   between
   contigs
@@ -64,8 +64,8 @@ BEGIN DeterminedOverlap
   score
   of
   4.814941580690343e+159.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 6
+BEGIN 7
   Found
   a
   significant
@@ -82,8 +82,8 @@ BEGIN CombinedContings
   in
   contig
   (1).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -101,8 +101,8 @@ BEGIN CalculatedCutoffs
   be
   (192,
   530).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -119,8 +119,8 @@ BEGIN DeterminedOverlap
   score
   of
   1.2696887030396398e+128.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 9
+BEGIN 10
   Found
   a
   significant
@@ -137,8 +137,8 @@ BEGIN CombinedContings
   in
   contig
   (2).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -156,8 +156,8 @@ BEGIN CalculatedCutoffs
   be
   (196,
   612).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -174,8 +174,8 @@ BEGIN DeterminedOverlap
   score
   of
   9.224028755057798e+146.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 12
+BEGIN 13
   Found
   a
   significant
@@ -192,8 +192,8 @@ BEGIN CombinedContings
   in
   contig
   (3).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 13
+BEGIN 14
   Calculated
   cutoff
   for
@@ -211,8 +211,8 @@ BEGIN CalculatedCutoffs
   be
   (215,
   593).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 14
+BEGIN 15
   Overlap
   between
   contigs
@@ -229,8 +229,8 @@ BEGIN DeterminedOverlap
   score
   of
   2.5481329333527916e+142.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 15
+BEGIN 16
   Found
   a
   significant
@@ -247,8 +247,8 @@ BEGIN CombinedContings
   in
   contig
   (4).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 16
+BEGIN 17
   Calculated
   cutoff
   for
@@ -265,8 +265,8 @@ BEGIN CalculatedCutoffs
   to
   be
   None.
-END CalculatedCutoffs
-BEGIN CycleEnd
+END 17
+BEGIN 18
   Cycle
   1
   finished
@@ -284,16 +284,16 @@ BEGIN CycleEnd
   of
   3
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 18
+BEGIN 19
   Cycle
   2
   started
   with
   1
   paths
-END CycleStart
-BEGIN CalculatedCutoffs
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -311,8 +311,8 @@ BEGIN CalculatedCutoffs
   be
   (192,
   530).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 20
+BEGIN 21
   Overlap
   between
   contigs
@@ -329,8 +329,8 @@ BEGIN DeterminedOverlap
   score
   of
   1.2696887030396398e+128.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 21
+BEGIN 22
   Found
   a
   significant
@@ -347,8 +347,8 @@ BEGIN CombinedContings
   in
   contig
   (5).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -366,8 +366,8 @@ BEGIN CalculatedCutoffs
   be
   (196,
   612).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -384,8 +384,8 @@ BEGIN DeterminedOverlap
   score
   of
   9.224028755057798e+146.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 24
+BEGIN 25
   Found
   a
   significant
@@ -402,8 +402,8 @@ BEGIN CombinedContings
   in
   contig
   (6).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 25
+BEGIN 26
   Calculated
   cutoff
   for
@@ -421,8 +421,8 @@ BEGIN CalculatedCutoffs
   be
   (215,
   593).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 26
+BEGIN 27
   Overlap
   between
   contigs
@@ -439,8 +439,8 @@ BEGIN DeterminedOverlap
   score
   of
   2.5481329333527916e+142.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 27
+BEGIN 28
   Found
   a
   significant
@@ -457,8 +457,8 @@ BEGIN CombinedContings
   in
   contig
   (7).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 28
+BEGIN 29
   Calculated
   cutoff
   for
@@ -475,8 +475,8 @@ BEGIN CalculatedCutoffs
   to
   be
   None.
-END CalculatedCutoffs
-BEGIN CycleEnd
+END 29
+BEGIN 30
   Cycle
   2
   finished
@@ -494,16 +494,16 @@ BEGIN CycleEnd
   of
   3
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 30
+BEGIN 31
   Cycle
   3
   started
   with
   1
   paths
-END CycleStart
-BEGIN CalculatedCutoffs
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -521,8 +521,8 @@ BEGIN CalculatedCutoffs
   be
   (192,
   530).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -539,8 +539,8 @@ BEGIN DeterminedOverlap
   score
   of
   1.2696887030396398e+128.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 33
+BEGIN 34
   Found
   a
   significant
@@ -557,8 +557,8 @@ BEGIN CombinedContings
   in
   contig
   (8).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -576,8 +576,8 @@ BEGIN CalculatedCutoffs
   be
   (215,
   593).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 35
+BEGIN 36
   Overlap
   between
   contigs
@@ -594,8 +594,8 @@ BEGIN DeterminedOverlap
   score
   of
   2.5481329333527916e+142.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 36
+BEGIN 37
   Found
   a
   significant
@@ -612,8 +612,8 @@ BEGIN CombinedContings
   in
   contig
   (9).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 37
+BEGIN 38
   Calculated
   cutoff
   for
@@ -630,16 +630,16 @@ BEGIN CalculatedCutoffs
   to
   be
   None.
-END CalculatedCutoffs
-BEGIN Constructed
+END 38
+BEGIN 39
   Constructed
   a
   path
   of
   length
   808.
-END Constructed
-BEGIN Remove
+END 39
+BEGIN 40
   Removed
   3
   components
@@ -652,21 +652,21 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN CalculatingAll
+END 40
+BEGIN 41
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 41
+BEGIN 42
   Cycle
   1
   started
   with
   1
   paths
-END CycleStart
-BEGIN CalculatedCutoffs
+END 42
+BEGIN 43
   Calculated
   cutoff
   for
@@ -684,8 +684,8 @@ BEGIN CalculatedCutoffs
   be
   (407,
   315).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 43
+BEGIN 44
   Overlap
   between
   contigs
@@ -702,8 +702,8 @@ BEGIN DeterminedOverlap
   score
   of
   8.354420299884919e+78.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 44
+BEGIN 45
   Found
   a
   significant
@@ -720,8 +720,8 @@ BEGIN CombinedContings
   in
   contig
   (10).
-END CombinedContings
-BEGIN CalculatedCutoffs
+END 45
+BEGIN 46
   Calculated
   cutoff
   for
@@ -739,8 +739,8 @@ BEGIN CalculatedCutoffs
   be
   (0,
   318).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 46
+BEGIN 47
   Overlap
   between
   contigs
@@ -757,8 +757,8 @@ BEGIN DeterminedOverlap
   score
   of
   3.443906909036704e+79.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 47
+BEGIN 48
   Found
   a
   significant
@@ -775,8 +775,8 @@ BEGIN CombinedContings
   in
   contig
   (11).
-END CombinedContings
-BEGIN CycleEnd
+END 48
+BEGIN 49
   Cycle
   1
   finished
@@ -794,16 +794,16 @@ BEGIN CycleEnd
   of
   3
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 49
+BEGIN 50
   Cycle
   2
   started
   with
   1
   paths
-END CycleStart
-BEGIN CalculatedCutoffs
+END 50
+BEGIN 51
   Calculated
   cutoff
   for
@@ -821,8 +821,8 @@ BEGIN CalculatedCutoffs
   be
   (407,
   315).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 51
+BEGIN 52
   Overlap
   between
   contigs
@@ -839,8 +839,8 @@ BEGIN DeterminedOverlap
   score
   of
   8.354420299884919e+78.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 52
+BEGIN 53
   Found
   a
   significant
@@ -857,8 +857,8 @@ BEGIN CombinedContings
   in
   contig
   (12).
-END CombinedContings
-BEGIN CycleEnd
+END 53
+BEGIN 54
   Cycle
   2
   finished
@@ -876,24 +876,24 @@ BEGIN CycleEnd
   of
   3
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 54
+BEGIN 55
   Cycle
   3
   started
   with
   1
   paths
-END CycleStart
-BEGIN Constructed
+END 55
+BEGIN 56
   Constructed
   a
   path
   of
   length
   1000.
-END Constructed
-BEGIN Remove
+END 56
+BEGIN 57
   Removed
   3
   components
@@ -906,16 +906,16 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN InitiallyProduced
+END 57
+BEGIN 58
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END InitiallyProduced
-BEGIN CalculatedCutoffs
+END 58
+BEGIN 59
   Calculated
   cutoff
   for
@@ -933,8 +933,8 @@ BEGIN CalculatedCutoffs
   be
   (192,
   808).
-END CalculatedCutoffs
-BEGIN DeterminedOverlap
+END 59
+BEGIN 60
   Overlap
   between
   contigs
@@ -951,8 +951,8 @@ BEGIN DeterminedOverlap
   score
   of
   4.871699626246433e+159.
-END DeterminedOverlap
-BEGIN CombinedContings
+END 60
+BEGIN 61
   Found
   a
   significant
@@ -969,9 +969,9 @@ BEGIN CombinedContings
   in
   contig
   (13).
-END CombinedContings
-BEGIN Outputting
+END 61
+BEGIN 62
   Outputting
   1
   contigs.
-END Outputting
+END 62

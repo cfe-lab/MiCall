@@ -1,34 +1,34 @@
-BEGIN Loaded
+BEGIN 0
   Loaded
   50
   contigs.
-END Loaded
-BEGIN InitializingSeeds
+END 0
+BEGIN 1
   Initializing
   initial
   seeds...
-END InitializingSeeds
-BEGIN Starting
+END 1
+BEGIN 2
   Starting
   with
   50
   initial
   seeds.
-END Starting
-BEGIN CalculatingAll
+END 2
+BEGIN 3
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 3
+BEGIN 4
   Cycle
   1
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 4
+BEGIN 5
   Cycle
   1
   finished
@@ -46,16 +46,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 5
+BEGIN 6
   Cycle
   2
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 6
+BEGIN 7
   Cycle
   2
   finished
@@ -73,16 +73,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 7
+BEGIN 8
   Cycle
   3
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 8
+BEGIN 9
   Cycle
   3
   finished
@@ -100,16 +100,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 9
+BEGIN 10
   Cycle
   4
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 10
+BEGIN 11
   Cycle
   4
   finished
@@ -127,16 +127,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 11
+BEGIN 12
   Cycle
   5
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 12
+BEGIN 13
   Cycle
   5
   finished
@@ -154,16 +154,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 13
+BEGIN 14
   Cycle
   6
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 14
+BEGIN 15
   Cycle
   6
   finished
@@ -181,16 +181,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 15
+BEGIN 16
   Cycle
   7
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 16
+BEGIN 17
   Cycle
   7
   finished
@@ -208,16 +208,16 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 17
+BEGIN 18
   Cycle
   8
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 18
+BEGIN 19
   Cycle
   8
   finished
@@ -235,24 +235,24 @@ BEGIN CycleEnd
   of
   18
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 19
+BEGIN 20
   Cycle
   9
   started
   with
   30
   paths
-END CycleStart
-BEGIN Constructed
+END 20
+BEGIN 21
   Constructed
   a
   path
   of
   length
   1000.
-END Constructed
-BEGIN Remove
+END 21
+BEGIN 22
   Removed
   18
   components
@@ -265,21 +265,21 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN CalculatingAll
+END 22
+BEGIN 23
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 23
+BEGIN 24
   Cycle
   1
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 24
+BEGIN 25
   Cycle
   1
   finished
@@ -297,16 +297,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 25
+BEGIN 26
   Cycle
   2
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 26
+BEGIN 27
   Cycle
   2
   finished
@@ -324,16 +324,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 27
+BEGIN 28
   Cycle
   3
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 28
+BEGIN 29
   Cycle
   3
   finished
@@ -351,16 +351,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 29
+BEGIN 30
   Cycle
   4
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 30
+BEGIN 31
   Cycle
   4
   finished
@@ -378,16 +378,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 31
+BEGIN 32
   Cycle
   5
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 32
+BEGIN 33
   Cycle
   5
   finished
@@ -405,16 +405,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 33
+BEGIN 34
   Cycle
   6
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 34
+BEGIN 35
   Cycle
   6
   finished
@@ -432,16 +432,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 35
+BEGIN 36
   Cycle
   7
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 36
+BEGIN 37
   Cycle
   7
   finished
@@ -459,16 +459,16 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 37
+BEGIN 38
   Cycle
   8
   started
   with
   30
   paths
-END CycleStart
-BEGIN CycleEnd
+END 38
+BEGIN 39
   Cycle
   8
   finished
@@ -486,24 +486,24 @@ BEGIN CycleEnd
   of
   23
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 39
+BEGIN 40
   Cycle
   9
   started
   with
   30
   paths
-END CycleStart
-BEGIN Constructed
+END 40
+BEGIN 41
   Constructed
   a
   path
   of
   length
   1000.
-END Constructed
-BEGIN Remove
+END 41
+BEGIN 42
   Removed
   23
   components
@@ -516,21 +516,21 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN CalculatingAll
+END 42
+BEGIN 43
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 43
+BEGIN 44
   Cycle
   1
   started
   with
   9
   paths
-END CycleStart
-BEGIN CycleEnd
+END 44
+BEGIN 45
   Cycle
   1
   finished
@@ -548,24 +548,24 @@ BEGIN CycleEnd
   of
   4
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 45
+BEGIN 46
   Cycle
   2
   started
   with
   19
   paths
-END CycleStart
-BEGIN Constructed
+END 46
+BEGIN 47
   Constructed
   a
   path
   of
   length
   271.
-END Constructed
-BEGIN Remove
+END 47
+BEGIN 48
   Removed
   4
   components
@@ -578,21 +578,21 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN CalculatingAll
+END 48
+BEGIN 49
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 49
+BEGIN 50
   Cycle
   1
   started
   with
   5
   paths
-END CycleStart
-BEGIN CycleEnd
+END 50
+BEGIN 51
   Cycle
   1
   finished
@@ -610,24 +610,24 @@ BEGIN CycleEnd
   of
   2
   parts.
-END CycleEnd
-BEGIN CycleStart
+END 51
+BEGIN 52
   Cycle
   2
   started
   with
   6
   paths
-END CycleStart
-BEGIN Constructed
+END 52
+BEGIN 53
   Constructed
   a
   path
   of
   length
   153.
-END Constructed
-BEGIN Remove
+END 53
+BEGIN 54
   Removed
   2
   components
@@ -640,29 +640,29 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN CalculatingAll
+END 54
+BEGIN 55
   Calculating
   all
   paths...
-END CalculatingAll
-BEGIN CycleStart
+END 55
+BEGIN 56
   Cycle
   1
   started
   with
   3
   paths
-END CycleStart
-BEGIN Constructed
+END 56
+BEGIN 57
   Constructed
   a
   path
   of
   length
   133.
-END Constructed
-BEGIN Remove
+END 57
+BEGIN 58
   Removed
   1
   components
@@ -675,8 +675,8 @@ BEGIN Remove
   still
   to
   process.
-END Remove
-BEGIN GiveUp
+END 58
+BEGIN 59
   Giving
   up
   on
@@ -691,17 +691,17 @@ BEGIN GiveUp
   is
   a
   singleton.
-END GiveUp
-BEGIN InitiallyProduced
+END 59
+BEGIN 60
   Initial
   overlap
   stitching
   produced
   7
   contigs.
-END InitiallyProduced
-BEGIN Outputting
+END 60
+BEGIN 61
   Outputting
   1
   contigs.
-END Outputting
+END 61
