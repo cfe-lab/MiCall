@@ -134,7 +134,7 @@ def log_check(request, tmp_path: Path):
     the stitcher behaviour is actually supposed to change.
     """
 
-    ReferencelessStitcherContext.set(ReferencelessStitcherContext.make())
+    ReferencelessStitcherContext.set(ReferencelessStitcherContext())
     registry.set(registry.Registry())
 
     test_name = request.node.name

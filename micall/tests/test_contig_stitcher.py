@@ -42,7 +42,7 @@ def exact_aligner(monkeypatch):
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
     registry.set(registry.Registry())
     test_name = request.node.name
     plot_name = test_name + ".svg"

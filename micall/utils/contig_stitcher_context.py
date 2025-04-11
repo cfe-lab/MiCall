@@ -1,7 +1,6 @@
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import List, TypeVar, Generic, Iterator
+from typing import List, TypeVar, Generic, Iterator, Self
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
@@ -14,25 +13,29 @@ import micall.utils.registry as registry
 T = TypeVar('T')
 
 
-@dataclass(frozen=True)
 class GenericStitcherContext(ABC, Generic[T]):
-    events: List[T]
+    def __init__(self):
+        self.events: List[T] = []
 
     def emit(self, event: T) -> None:
         self.events.append(event)
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def make() -> 'GenericStitcherContext': ...
+    def _context(cls) -> ContextVar[Self]: ...
 
-    @staticmethod
-    @abstractmethod
-    def _context() -> ContextVar: ...
+    @classmethod
+    def get(cls) -> Self:
+        return cls._context().get()
+
+    @classmethod
+    def set(cls, value: Self) -> None:
+        cls._context().set(value)
 
     @classmethod
     @contextmanager
-    def fresh(cls) -> Iterator['GenericStitcherContext']:
-        ctx = cls.make()
+    def fresh(cls) -> Iterator[Self]:
+        ctx = cls()
         class_context = cls._context()
         token = class_context.set(ctx)
         try:
@@ -43,7 +46,7 @@ class GenericStitcherContext(ABC, Generic[T]):
 
     @classmethod
     @contextmanager
-    def stage(cls) -> Iterator['GenericStitcherContext']:
+    def stage(cls) -> Iterator[Self]:
         class_context = cls._context()
         try:
             existing = class_context.get()
@@ -63,35 +66,11 @@ class GenericStitcherContext(ABC, Generic[T]):
 
 class ReferencefullStitcherContext(GenericStitcherContext[full_events.EventType]):
     @staticmethod
-    def make() -> 'ReferencefullStitcherContext':
-        return ReferencefullStitcherContext([])
-
-    @staticmethod
-    def get() -> 'ReferencefullStitcherContext':
-        return _referencefull_context.get()
-
-    @staticmethod
-    def set(value: 'ReferencefullStitcherContext') -> None:
-        _referencefull_context.set(value)
-
-    @staticmethod
     def _context() -> ContextVar['ReferencefullStitcherContext']:
         return _referencefull_context
 
 
 class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]):
-    @staticmethod
-    def make() -> 'ReferencelessStitcherContext':
-        return ReferencelessStitcherContext([])
-
-    @staticmethod
-    def get() -> 'ReferencelessStitcherContext':
-        return _referenceless_context.get()
-
-    @staticmethod
-    def set(value: 'ReferencelessStitcherContext') -> None:
-        _referenceless_context.set(value)
-
     @staticmethod
     def _context() -> ContextVar['ReferencelessStitcherContext']:
         return _referenceless_context
