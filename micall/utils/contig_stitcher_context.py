@@ -1,10 +1,13 @@
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import List, TypeVar, Generic
 from contextvars import ContextVar
 from contextlib import contextmanager
-from dataclasses import dataclass
 from copy import deepcopy
 
 import micall.utils.referencefull_contig_stitcher_events as full_events
+import micall.utils.referenceless_contig_stitcher_events as less_events
 import micall.utils.registry as registry
 
 
@@ -12,20 +15,20 @@ T = TypeVar('T')
 
 
 @dataclass(frozen=True)
-class GenericStitcherContext(Generic[T]):
+class GenericStitcherContext(ABC, Generic[T]):
     events: List[T]
 
     def emit(self, event: T) -> None:
         self.events.append(event)
 
     @staticmethod
-    def make() -> 'GenericStitcherContext':
-        return GenericStitcherContext(events=[])
+    @abstractmethod
+    def make() -> 'GenericStitcherContext': ...
 
-    @staticmethod
+    @classmethod
     @contextmanager
-    def fresh():
-        ctx = GenericStitcherContext.make()
+    def fresh(cls):
+        ctx = cls.make()
         token = context.set(ctx)
         try:
             with registry.ensure():
@@ -45,7 +48,16 @@ class GenericStitcherContext(Generic[T]):
             context.reset(token)
 
 
-ReferencefullStitcherContext = GenericStitcherContext[full_events.EventType]
-ReferencelessStitcherContext = GenericStitcherContext[object]
+class ReferencefullStitcherContext(GenericStitcherContext[full_events.EventType]):
+    @staticmethod
+    def make() -> 'GenericStitcherContext':
+        return ReferencefullStitcherContext([])
+
+
+class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]):
+    @staticmethod
+    def make() -> 'GenericStitcherContext':
+        return ReferencelessStitcherContext([])
+
 
 context: ContextVar[GenericStitcherContext] = ContextVar("GenericStitcherContext")
