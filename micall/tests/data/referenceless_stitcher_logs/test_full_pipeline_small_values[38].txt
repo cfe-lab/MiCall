@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  392
+  191
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  'r467-861.4'
   to
   be
-  (280,
-  392).
+  (301,
+  191).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  'r467-861.4'
   has
   size
-  392,
-  392
+  191,
+  191
   matches,
   and
   the
   score
   of
-  4.819519351096359e+96.
+  1.714258815211483e+50.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  392
+  191
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001',
+  'r467-861.4',
   resulting
   in
   contig
@@ -91,54 +91,72 @@ BEGIN 8
   overlap
   of
   size
-  410
+  362
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  'r599-960.5'
   to
   be
-  (254,
-  410).
+  None.
 END 8
 BEGIN 9
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  282
+  between
+  contigs
+  'r166-657.3'
+  and
+  'r376-734.0'
+  to
+  be
+  (210,
+  282).
+END 9
+BEGIN 10
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  'r376-734.0'
   has
   size
-  410,
-  410
+  282,
+  282
   matches,
   and
   the
   score
   of
-  4.55175978694474e+100.
-END 9
-BEGIN 10
+  1.751529937039277e+71.
+END 10
+BEGIN 11
   Found
   a
   significant
   overlap
   of
   size
-  410
+  282
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001',
+  'r376-734.0',
   resulting
   in
   contig
   (2).
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -146,36 +164,44 @@ BEGIN 11
   overlap
   of
   size
-  462
+  295
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  'r190-484.2'
   to
   be
-  (280,
-  183).
-END 11
-BEGIN 12
+  (24,
+  295).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  'r166-657.3'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
+  'r190-484.2'
   has
   size
-  183,
-  183
+  295,
+  295
   matches,
   and
   the
   score
   of
-  2.336254065781434e+48.
-END 12
-BEGIN 13
+  2.0698818862705537e+74.
+END 13
+BEGIN 14
+  Contig
+  'r166-657.3'
+  covers
+  contig
+  'r190-484.2'
+  completely.
+END 14
+BEGIN 15
   Cycle
   1
   finished
@@ -187,22 +213,22 @@ BEGIN 13
   fittest
   has
   length
-  1000
+  795
   and
   consists
   of
   4
   parts.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Cycle
   2
   started
   with
   1
   paths
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Calculated
   cutoff
   for
@@ -210,54 +236,54 @@ BEGIN 15
   overlap
   of
   size
-  646
+  268
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
-  and
   (2)
+  and
+  'r467-861.4'
   to
   be
-  (26,
-  646).
-END 15
-BEGIN 16
+  (301,
+  268).
+END 17
+BEGIN 18
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
-  and
   (2)
+  and
+  'r467-861.4'
   has
   size
-  646,
-  646
+  268,
+  268
   matches,
   and
   the
   score
   of
-  3.671035084534196e+154.
-END 16
-BEGIN 17
+  1.454700128966913e+68.
+END 18
+BEGIN 19
   Found
   a
   significant
   overlap
   of
   size
-  646
+  268
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
+  (2)
   and
-  (2),
+  'r467-861.4',
   resulting
   in
   contig
   (3).
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -265,54 +291,54 @@ BEGIN 18
   overlap
   of
   size
-  615
+  352
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
   (2)
+  and
+  'r599-960.5'
   to
   be
-  (26,
-  615).
-END 18
-BEGIN 19
+  (433,
+  136).
+END 20
+BEGIN 21
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
   (2)
+  and
+  'r599-960.5'
   has
   size
-  615,
-  615
+  136,
+  136
   matches,
   and
   the
   score
   of
-  3.747014705496915e+147.
-END 19
-BEGIN 20
+  2.628005262083779e+37.
+END 21
+BEGIN 22
   Found
   a
   significant
   overlap
   of
   size
-  615
+  136
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
+  (2)
   and
-  (2),
+  'r599-960.5',
   resulting
   in
   contig
   (4).
-END 20
-BEGIN 21
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -320,99 +346,99 @@ BEGIN 21
   overlap
   of
   size
-  437
+  295
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
   (2)
+  and
+  'r190-484.2'
   to
   be
-  (26,
-  437).
-END 21
-BEGIN 22
+  (24,
+  295).
+END 23
+BEGIN 24
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
   (2)
+  and
+  'r190-484.2'
   has
   size
-  437,
-  437
+  295,
+  295
   matches,
   and
   the
   score
   of
-  1.1682466327466642e+107.
-END 22
-BEGIN 23
+  2.0698818862705537e+74.
+END 24
+BEGIN 25
+  Contig
+  (2)
+  covers
+  contig
+  'r190-484.2'
+  completely.
+END 25
+BEGIN 26
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  238
+  between
+  contigs
+  (2)
+  and
+  'r497-766.1'
+  to
+  be
+  (331,
+  238).
+END 26
+BEGIN 27
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r497-766.1'
+  has
+  size
+  238,
+  238
+  matches,
+  and
+  the
+  score
+  of
+  1.18830533073086e+61.
+END 27
+BEGIN 28
   Found
   a
   significant
   overlap
   of
   size
-  437
+  238
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  (2)
   and
-  (2),
+  'r497-766.1',
   resulting
   in
   contig
   (5).
-END 23
-BEGIN 24
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  393
-  between
-  contigs
-  (2)
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  to
-  be
-  (34,
-  393).
-END 24
-BEGIN 25
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  has
-  size
-  393,
-  393
-  matches,
-  and
-  the
-  score
-  of
-  4.858595149998396e+96.
-END 25
-BEGIN 26
-  Contig
-  (2)
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  completely.
-END 26
-BEGIN 27
+END 28
+BEGIN 29
   Cycle
   2
   finished
@@ -424,22 +450,22 @@ BEGIN 27
   fittest
   has
   length
-  1000
+  795
   and
   consists
   of
   4
   parts.
-END 27
-BEGIN 28
+END 29
+BEGIN 30
   Cycle
   3
   started
   with
   1
   paths
-END 28
-BEGIN 29
+END 30
+BEGIN 31
   Calculated
   cutoff
   for
@@ -447,109 +473,54 @@ BEGIN 29
   overlap
   of
   size
-  641
+  263
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
   (3)
+  and
+  'r599-960.5'
   to
   be
-  (0,
-  641).
-END 29
-BEGIN 30
+  (433,
+  263).
+END 31
+BEGIN 32
   Overlap
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
   (3)
+  and
+  'r599-960.5'
   has
   size
-  641,
-  641
+  263,
+  263
   matches,
   and
   the
   score
   of
-  2.2388189118647367e+153.
-END 30
-BEGIN 31
+  8.56301343060922e+66.
+END 32
+BEGIN 33
   Found
   a
   significant
   overlap
   of
   size
-  641
+  263
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
+  (3)
   and
-  (3),
+  'r599-960.5',
   resulting
   in
   contig
   (6).
-END 31
-BEGIN 32
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  463
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  (3)
-  to
-  be
-  (0,
-  463).
-END 32
-BEGIN 33
-  Overlap
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  (3)
-  has
-  size
-  463,
-  463
-  matches,
-  and
-  the
-  score
-  of
-  7.354567275188196e+112.
 END 33
 BEGIN 34
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  463
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  (3),
-  resulting
-  in
-  contig
-  (7).
-END 34
-BEGIN 35
   Calculated
   cutoff
   for
@@ -557,44 +528,89 @@ BEGIN 35
   overlap
   of
   size
-  393
+  295
   between
   contigs
   (3)
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r190-484.2'
   to
   be
-  (60,
-  393).
-END 35
-BEGIN 36
+  (24,
+  295).
+END 34
+BEGIN 35
   Overlap
   between
   contigs
   (3)
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r190-484.2'
   has
   size
-  393,
-  393
+  295,
+  295
   matches,
   and
   the
   score
   of
-  4.858595149998396e+96.
-END 36
-BEGIN 37
+  2.0698818862705537e+74.
+END 35
+BEGIN 36
   Contig
   (3)
   covers
   contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r190-484.2'
   completely.
+END 36
+BEGIN 37
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  270
+  between
+  contigs
+  (3)
+  and
+  'r497-766.1'
+  to
+  be
+  (331,
+  270).
 END 37
 BEGIN 38
+  Overlap
+  between
+  contigs
+  (3)
+  and
+  'r497-766.1'
+  has
+  size
+  270,
+  270
+  matches,
+  and
+  the
+  score
+  of
+  2.979044776644523e+68.
+END 38
+BEGIN 39
+  Contig
+  (3)
+  covers
+  contig
+  'r497-766.1'
+  completely.
+END 39
+BEGIN 40
   Cycle
   3
   finished
@@ -606,77 +622,22 @@ BEGIN 38
   fittest
   has
   length
-  1000
+  795
   and
   consists
   of
   4
   parts.
-END 38
-BEGIN 39
+END 40
+BEGIN 41
   Cycle
   4
   started
   with
   1
   paths
-END 39
-BEGIN 40
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  463
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  (6)
-  to
-  be
-  (0,
-  463).
-END 40
-BEGIN 41
-  Overlap
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  (6)
-  has
-  size
-  463,
-  463
-  matches,
-  and
-  the
-  score
-  of
-  7.354567275188196e+112.
 END 41
 BEGIN 42
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  463
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  (6),
-  resulting
-  in
-  contig
-  (8).
-END 42
-BEGIN 43
   Calculated
   cutoff
   for
@@ -684,52 +645,97 @@ BEGIN 43
   overlap
   of
   size
-  393
+  295
   between
   contigs
   (6)
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r190-484.2'
   to
   be
-  (60,
-  393).
-END 43
-BEGIN 44
+  (24,
+  295).
+END 42
+BEGIN 43
   Overlap
   between
   contigs
   (6)
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r190-484.2'
   has
   size
-  393,
-  393
+  295,
+  295
   matches,
   and
   the
   score
   of
-  4.858595149998396e+96.
-END 44
-BEGIN 45
+  2.0698818862705537e+74.
+END 43
+BEGIN 44
   Contig
   (6)
   covers
   contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r190-484.2'
   completely.
+END 44
+BEGIN 45
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  270
+  between
+  contigs
+  (6)
+  and
+  'r497-766.1'
+  to
+  be
+  (331,
+  270).
 END 45
 BEGIN 46
+  Overlap
+  between
+  contigs
+  (6)
+  and
+  'r497-766.1'
+  has
+  size
+  270,
+  270
+  matches,
+  and
+  the
+  score
+  of
+  2.979044776644523e+68.
+END 46
+BEGIN 47
+  Contig
+  (6)
+  covers
+  contig
+  'r497-766.1'
+  completely.
+END 47
+BEGIN 48
   Constructed
   a
   path
   of
   length
-  1000.
-END 46
-BEGIN 47
+  795.
+END 48
+BEGIN 49
   Removed
   4
   components
@@ -742,21 +748,21 @@ BEGIN 47
   still
   to
   process.
-END 47
-BEGIN 48
+END 49
+BEGIN 50
   Calculating
   all
   paths...
-END 48
-BEGIN 49
+END 50
+BEGIN 51
   Cycle
   1
   started
   with
   1
   paths
-END 49
-BEGIN 50
+END 51
+BEGIN 52
   Calculated
   cutoff
   for
@@ -764,101 +770,63 @@ BEGIN 50
   overlap
   of
   size
-  393
+  270
   between
   contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  'r190-484.2'
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
+  'r497-766.1'
   to
   be
-  (60,
-  393).
-END 50
-BEGIN 51
-  Overlap
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  has
-  size
-  393,
-  393
-  matches,
-  and
-  the
-  score
-  of
-  4.858595149998396e+96.
-END 51
-BEGIN 52
-  Contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  completely.
+  None.
 END 52
 BEGIN 53
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  463
-  and
-  consists
-  of
-  2
-  parts.
-END 53
-BEGIN 54
-  Cycle
-  2
-  started
-  with
-  1
-  paths
-END 54
-BEGIN 55
   Constructed
   a
   path
   of
   length
-  463.
-END 55
-BEGIN 56
+  295.
+END 53
+BEGIN 54
   Removed
-  2
+  1
   components
   from
   the
   working
   list,
   having
-  0
+  1
   still
   to
   process.
-END 56
-BEGIN 57
+END 54
+BEGIN 55
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 55
+BEGIN 56
   Initial
   overlap
   stitching
   produced
-  2
+  3
   contigs.
-END 57
-BEGIN 58
+END 56
+BEGIN 57
   Calculated
   cutoff
   for
@@ -866,45 +834,90 @@ BEGIN 58
   overlap
   of
   size
-  463
+  295
   between
   contigs
   (6)
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  'r190-484.2'
   to
   be
-  (0,
-  463).
-END 58
-BEGIN 59
+  (24,
+  295).
+END 57
+BEGIN 58
   Overlap
   between
   contigs
   (6)
   and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  'r190-484.2'
   has
   size
-  463,
-  463
+  295,
+  295
   matches,
   and
   the
   score
   of
-  7.354567275188196e+112.
-END 59
-BEGIN 60
+  2.0698818862705537e+74.
+END 58
+BEGIN 59
   Contig
   (6)
   covers
   contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004'
+  'r190-484.2'
   completely.
+END 59
+BEGIN 60
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  270
+  between
+  contigs
+  (6)
+  and
+  'r497-766.1'
+  to
+  be
+  (331,
+  270).
 END 60
 BEGIN 61
+  Overlap
+  between
+  contigs
+  (6)
+  and
+  'r497-766.1'
+  has
+  size
+  270,
+  270
+  matches,
+  and
+  the
+  score
+  of
+  2.979044776644523e+68.
+END 61
+BEGIN 62
+  Contig
+  (6)
+  covers
+  contig
+  'r497-766.1'
+  completely.
+END 62
+BEGIN 63
   Outputting
   1
   contigs.
-END 61
+END 63
