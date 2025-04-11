@@ -2,6 +2,7 @@
 from typing import MutableMapping
 from contextlib import contextmanager
 from contextvars import ContextVar
+from copy import deepcopy
 
 
 class Registry:
@@ -31,14 +32,13 @@ def fresh():
 
 
 @contextmanager
-def ensure():
+def stage():
+    ctx = deepcopy(get())
+    token = _context.set(ctx)
     try:
-        existing = get()
-    except BaseException:
-        with fresh() as ret:
-            yield ret
-        return
-    yield existing
+        yield ctx
+    finally:
+        _context.reset(token)
 
 
 def get() -> Registry:
