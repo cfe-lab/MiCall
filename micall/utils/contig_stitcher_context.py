@@ -36,7 +36,7 @@ class GenericStitcherContext(ABC, Generic[T]):
         class_context = cls._context()
         token = class_context.set(ctx)
         try:
-            with registry.stage():
+            with registry.fresh():
                 yield ctx
         finally:
             class_context.reset(token)
@@ -45,10 +45,17 @@ class GenericStitcherContext(ABC, Generic[T]):
     @contextmanager
     def stage(cls) -> Iterator['GenericStitcherContext']:
         class_context = cls._context()
-        ctx = deepcopy(class_context.get())
+        try:
+            existing = class_context.get()
+        except BaseException:
+            with cls.fresh() as ret:
+                yield ret
+                return
+
+        ctx = deepcopy(existing)
         token = class_context.set(ctx)
         try:
-            with registry.fresh():
+            with registry.stage():
                 yield ctx
         finally:
             class_context.reset(token)
