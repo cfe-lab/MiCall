@@ -214,7 +214,8 @@ def find_overlap_cutoffs(minimum_score: Score,
     return ret
 
 
-def try_combine_contigs(current_prob: Score,
+def try_combine_contigs(is_debug2: bool,
+                        current_prob: Score,
                         pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Score]]:
@@ -301,14 +302,15 @@ def try_combine_contigs(current_prob: Score,
         return (result_contig, result_probability)
 
 
-def extend_by_1(pool: Pool,
+def extend_by_1(is_debug2: bool,
+                pool: Pool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
                 ) -> bool:
     if path.has_contig(candidate):
         return False
 
-    combination = try_combine_contigs(path.probability, pool, path.whole, candidate)
+    combination = try_combine_contigs(is_debug2, path.probability, pool, path.whole, candidate)
     if combination is None:
         return False
 
@@ -319,29 +321,33 @@ def extend_by_1(pool: Pool,
     return pool.add(new_path)
 
 
-def calc_extension(pool: Pool,
+def calc_extension(is_debug2: bool,
+                   pool: Pool,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> bool:
     ret = False
     for contig in contigs:
-        ret = extend_by_1(pool, path, contig) or ret
+        ret = extend_by_1(is_debug2, pool, path, contig) or ret
     return ret
 
 
-def calc_multiple_extensions(pool: Pool,
+def calc_multiple_extensions(is_debug2: bool,
+                             pool: Pool,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> bool:
     ret = False
     for path in paths:
-        ret = calc_extension(pool, contigs, path) or ret
+        ret = calc_extension(is_debug2, pool, contigs, path) or ret
     return ret
 
 
 def calculate_all_paths(paths: Sequence[ContigsPath],
                         contigs: Sequence[ContigWithAligner],
                         ) -> Iterable[ContigsPath]:
+    is_debug2 = ReferencelessStitcherContext.get().is_debug2
+
     pool = Pool.empty()
     pool.resize(MAX_ALTERNATIVES)
 
@@ -354,7 +360,7 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
     for cycle in itertools.count(1):
         log(events.CycleStart(cycle, pool.size))
 
-        if not calc_multiple_extensions(pool, pool.paths, contigs):
+        if not calc_multiple_extensions(is_debug2, pool, pool.paths, contigs):
             break
 
         log(events.CycleEnd(cycle, pool.size, pool))
@@ -371,28 +377,6 @@ def find_most_probable_path(seeds: Sequence[ContigsPath],
 
 def contig_size_fun(contig: Contig) -> int:
     return -len(contig.seq)
-
-
-def find_best_candidates(first: ContigWithAligner,
-                         contigs: Iterable[ContigWithAligner],
-                         ) -> Iterator[ContigsPath]:
-
-    initial = ContigsPath.singleton(first)
-    yield initial
-
-    pool = Pool.empty()
-    pool.resize(1)
-
-    for candidate in contigs:
-        if first.id >= candidate.id:
-            continue
-
-        extend_by_1(pool=pool,
-                    path=initial,
-                    candidate=candidate,
-                    )
-
-    yield from pool.paths
 
 
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
@@ -423,13 +407,16 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
                   ) -> Optional[Tuple[ContigWithAligner,
                                       ContigWithAligner,
                                       ContigWithAligner]]:
+    is_debug2 = ReferencelessStitcherContext.get().is_debug2
+
     for first in contigs:
         for second in contigs:
             if first.id >= second.id:
                 continue
 
             pool = Pool.empty()
-            result = try_combine_contigs(current_prob=SCORE_NOTHING,
+            result = try_combine_contigs(is_debug2=is_debug2,
+                                         current_prob=SCORE_NOTHING,
                                          pool=pool,
                                          a=first, b=second,
                                          )
@@ -499,5 +486,7 @@ def referenceless_contig_stitcher_with_ctx(
 def referenceless_contig_stitcher(input_fasta: TextIO,
                                   output_fasta: Optional[TextIO],
                                   ) -> int:
-    with ReferencelessStitcherContext.fresh():
+    with ReferencelessStitcherContext.fresh() as ctx:
+        if logger.level == logging.DEBUG - 1:
+            ctx.is_debug2 = True
         return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)

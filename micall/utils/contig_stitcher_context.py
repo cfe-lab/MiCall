@@ -71,6 +71,10 @@ class ReferencefullStitcherContext(GenericStitcherContext[full_events.EventType]
 
 
 class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]):
+    def __init__(self) -> None:
+        self.is_debug2: bool = False
+        super().__init__()
+
     @staticmethod
     def _context() -> ContextVar['ReferencelessStitcherContext']:
         return _referenceless_context

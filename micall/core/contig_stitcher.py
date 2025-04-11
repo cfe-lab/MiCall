@@ -36,10 +36,12 @@ def main(argv: Sequence[str]) -> int:
                             help="Output FASTA file with stitched contigs.")
 
     parser.prog = ' '.join([Path(__file__).stem, head_args.mode])
+
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--debug2', action='store_true', help='Even more debug messages.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
 
     args = parser.parse_args(head_args.stitcher_arguments)
@@ -50,6 +52,8 @@ def main(argv: Sequence[str]) -> int:
         logger.setLevel(logging.INFO)
     elif args.debug:
         logger.setLevel(logging.DEBUG)
+    elif args.debug2:
+        logger.setLevel(logging.DEBUG - 1)
     else:
         logger.setLevel(logging.WARN)
 
