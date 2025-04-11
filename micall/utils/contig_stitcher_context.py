@@ -1,7 +1,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, TypeVar, Generic
+from typing import List, TypeVar, Generic, Iterator
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
@@ -27,18 +27,18 @@ class GenericStitcherContext(ABC, Generic[T]):
 
     @classmethod
     @contextmanager
-    def fresh(cls):
+    def fresh(cls) -> Iterator['GenericStitcherContext']:
         ctx = cls.make()
         token = context.set(ctx)
         try:
-            with registry.ensure():
+            with registry.stage():
                 yield ctx
         finally:
             context.reset(token)
 
     @staticmethod
     @contextmanager
-    def stage():
+    def stage() -> Iterator['GenericStitcherContext']:
         ctx = deepcopy(context.get())
         token = context.set(ctx)
         try:
