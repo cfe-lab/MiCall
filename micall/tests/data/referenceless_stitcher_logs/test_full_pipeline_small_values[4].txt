@@ -1,82 +1,34 @@
-Loaded
+BEGIN Loaded
   Loaded
   6
   contigs.
-InitializingSeeds
+END Loaded
+BEGIN InitializingSeeds
   Initializing
   initial
   seeds...
-Starting
+END InitializingSeeds
+BEGIN Starting
   Starting
   with
   6
   initial
   seeds.
-CalculatingAll
+END Starting
+BEGIN CalculatingAll
   Calculating
   all
   paths...
-CycleStart
+END CalculatingAll
+BEGIN CycleStart
   Cycle
   1
   started
   with
   1
   paths
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  394
-  with
-  cutoffs
-  (300,
-  394)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001',
-  resulting
-  in
-  contig
-  (1).
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  530
-  with
-  cutoffs
-  (170,
-  530)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0004',
-  resulting
-  in
-  contig
-  (2).
-Covered
-  Contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0001'
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
-  completely
-  with
-  (10,
-  447)
-  cutoffs.
-CycleEnd
+END CycleStart
+BEGIN CycleEnd
   Cycle
   1
   finished
@@ -94,85 +46,24 @@ CycleEnd
   of
   2
   parts.
-CycleStart
+END CycleEnd
+BEGIN CycleStart
   Cycle
   2
   started
   with
   1
   paths
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  394
-  with
-  cutoffs
-  (300,
-  394)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (3).
-Covered
-  Contig
-  (2)
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003'
-  completely
-  with
-  (10,
-  447)
-  cutoffs.
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  283
-  with
-  cutoffs
-  (111,
-  283)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (4).
-Covered
-  Contig
-  (2)
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006'
-  completely
-  with
-  (57,
-  357)
-  cutoffs.
-Constructed
+END CycleStart
+BEGIN Constructed
   Constructed
   a
   path
   of
   length
   700.
-Remove
+END Constructed
+BEGIN Remove
   Removed
   2
   components
@@ -185,71 +76,21 @@ Remove
   still
   to
   process.
-CalculatingAll
+END Remove
+BEGIN CalculatingAll
   Calculating
   all
   paths...
-CycleStart
+END CalculatingAll
+BEGIN CycleStart
   Cycle
   1
   started
   with
   1
   paths
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  384
-  with
-  cutoffs
-  (310,
-  384)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0003',
-  resulting
-  in
-  contig
-  (5).
-Covered
-  Contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  completely
-  with
-  (189,
-  394)
-  cutoffs.
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  337
-  with
-  cutoffs
-  (357,
-  337)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0005'
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006',
-  resulting
-  in
-  contig
-  (6).
-CycleEnd
+END CycleStart
+BEGIN CycleEnd
   Cycle
   1
   finished
@@ -267,43 +108,24 @@ CycleEnd
   of
   2
   parts.
-CycleStart
+END CycleEnd
+BEGIN CycleStart
   Cycle
   2
   started
   with
   1
   paths
-Covered
-  Contig
-  (5)
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  completely
-  with
-  (189,
-  394)
-  cutoffs.
-Covered
-  Contig
-  (5)
-  covers
-  contig
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006'
-  completely
-  with
-  (357,
-  357)
-  cutoffs.
-Constructed
+END CycleStart
+BEGIN Constructed
   Constructed
   a
   path
   of
   length
   757.
-Remove
+END Constructed
+BEGIN Remove
   Removed
   2
   components
@@ -316,39 +138,21 @@ Remove
   still
   to
   process.
-CalculatingAll
+END Remove
+BEGIN CalculatingAll
   Calculating
   all
   paths...
-CycleStart
+END CalculatingAll
+BEGIN CycleStart
   Cycle
   1
   started
   with
   1
   paths
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  226
-  with
-  cutoffs
-  (168,
-  226)
-  between
-  contigs
-  'M01234:01:000000000-AAAAA:1:1101:1234:0002'
-  and
-  'M01234:01:000000000-AAAAA:1:1101:1234:0006',
-  resulting
-  in
-  contig
-  (7).
-CycleEnd
+END CycleStart
+BEGIN CycleEnd
   Cycle
   1
   finished
@@ -366,21 +170,24 @@ CycleEnd
   of
   2
   parts.
-CycleStart
+END CycleEnd
+BEGIN CycleStart
   Cycle
   2
   started
   with
   1
   paths
-Constructed
+END CycleStart
+BEGIN Constructed
   Constructed
   a
   path
   of
   length
   525.
-Remove
+END Constructed
+BEGIN Remove
   Removed
   2
   components
@@ -393,46 +200,17 @@ Remove
   still
   to
   process.
-InitiallyProduced
+END Remove
+BEGIN InitiallyProduced
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-FoundOverlap
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  457
-  with
-  cutoffs
-  (300,
-  457)
-  between
-  contigs
-  (5)
-  and
-  (2),
-  resulting
-  in
-  contig
-  (8).
-Covered
-  Contig
-  (8)
-  covers
-  contig
-  (7)
-  completely
-  with
-  (189,
-  525)
-  cutoffs.
-Outputting
+END InitiallyProduced
+BEGIN Outputting
   Outputting
   1
   contigs.
+END Outputting

@@ -262,6 +262,12 @@ def try_combine_contigs(is_debug2: bool,
                                    left_initial_overlap,
                                    right_initial_overlap,
                                    )
+
+    if is_debug2:
+        log(events.CalculatedCutoffs(left.unique_name, right.unique_name,
+                                     len(left_initial_overlap),
+                                     cutoffs))
+
     if cutoffs is None:
         return None
 
@@ -275,14 +281,21 @@ def try_combine_contigs(is_debug2: bool,
     number_of_matches = sum(1 for x, y
                             in zip(aligned_left, aligned_right)
                             if x == y and x != '-')
+
+    # Note that result_length is not necessarily == len(left_overlap_chunk) + len(right_overlap_chunk).
+    # The addition would give a more precise value for the result_probability, but it's much more expensive to calculate.
     result_length = max(len(left_overlap), len(right_overlap))
     result_probability = calc_overlap_pvalue(L=result_length, M=number_of_matches)
+    if is_debug2:
+        log(events.DeterminedOverlap(left.unique_name, right.unique_name, result_length, number_of_matches, result_probability))
+
     if result_probability < minimum_score:
         return None
 
     is_covered = len(right.seq) < abs(shift)
     if is_covered:
-        log(events.Covered(left.unique_name, right.unique_name, cutoffs=cutoffs))
+        if is_debug2:
+            log(events.Covered(left.unique_name, right.unique_name))
         return (left, SCORE_EPSILON)
 
     else:
@@ -294,12 +307,12 @@ def try_combine_contigs(is_debug2: bool,
         result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
         result_contig = ContigWithAligner(None, result_seq)
 
-        log(events.FoundOverlap(left_contig=left.unique_name,
-                                right_contig=right.unique_name,
-                                result_contig=result_contig.unique_name,
-                                overlap_size=len(aligned_left),
-                                cutoffs=cutoffs,
-                                ))
+        if is_debug2:
+            log(events.CombinedContings(left_contig=left.unique_name,
+                                        right_contig=right.unique_name,
+                                        result_contig=result_contig.unique_name,
+                                        overlap_size=len(aligned_left),
+                                        ))
         return (result_contig, result_probability)
 
 

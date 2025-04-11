@@ -148,10 +148,12 @@ def log_check(request, tmp_path: Path):
 
     def pretty_print_event(ev: EventType) -> str:
         message = str(ev)
+        name = str(ev.__class__.__name__)
         words = message.split()
-        first = str(ev.__class__.__name__)
-        rest = words
-        return first + '\n  ' + '\n  '.join(rest)
+        body = '\n  '.join(words)
+        header = f"BEGIN {name}"
+        footer = f"END {name}"
+        return header + '\n  ' + body + '\n' + footer
 
     def check():
         logs = ReferencelessStitcherContext.get().events

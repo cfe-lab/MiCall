@@ -1,7 +1,8 @@
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 from dataclasses import dataclass
 
 from micall.utils.referenceless_contig_path import ContigsPath
+from micall.utils.referenceless_score import Score
 
 
 @dataclass(frozen=True)
@@ -99,27 +100,52 @@ class InitiallyProduced:
 class Covered:
     left_contig: str
     right_contig: str
-    cutoffs: Tuple[int, int]
 
     def __str__(self) -> str:
-        return f"Contig {self.left_contig} covers contig {self.right_contig} completely with {self.cutoffs} cutoffs."
+        return f"Contig {self.left_contig} covers contig {self.right_contig} completely."
 
 
 @dataclass(frozen=True)
-class FoundOverlap:
+class CombinedContings:
     left_contig: str
     right_contig: str
     result_contig: str
     overlap_size: int
-    cutoffs: Tuple[int, int]
 
     def __str__(self) -> str:
-        return f"Found a significant overlap of size {self.overlap_size} with cutoffs {self.cutoffs}" \
+        return f"Found a significant overlap of size {self.overlap_size}" \
             f" between contigs {self.left_contig} and {self.right_contig}," \
             f" resulting in contig {self.result_contig}."
+
+
+@dataclass(frozen=True)
+class CalculatedCutoffs:
+    left_contig: str
+    right_contig: str
+    overlap_size: int
+    cutoffs: Optional[Tuple[int, int]]
+
+    def __str__(self) -> str:
+        return f"Calculated cutoff for an overlap of size {self.overlap_size}" \
+            f" between contigs {self.left_contig} and {self.right_contig}" \
+            f" to be {self.cutoffs}."
+
+
+@dataclass(frozen=True)
+class DeterminedOverlap:
+    left_contig: str
+    right_contig: str
+    overlap_size: int
+    number_of_matches: int
+    result_probability: Score
+
+    def __str__(self) -> str:
+        return f"Overlap between contigs {self.left_contig} and {self.right_contig}" \
+            f" has size {self.overlap_size}, {self.number_of_matches} matches," \
+            f" and the score of {self.result_probability}."
 
 
 EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,
                   CycleEnd, InitializingSeeds, Starting, Constructed,
                   Loaded, Outputting, InitiallyProduced, Covered,
-                  FoundOverlap]
+                  CombinedContings, CalculatedCutoffs, DeterminedOverlap]
