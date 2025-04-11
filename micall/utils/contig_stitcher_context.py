@@ -25,39 +25,70 @@ class GenericStitcherContext(ABC, Generic[T]):
     @abstractmethod
     def make() -> 'GenericStitcherContext': ...
 
+    @staticmethod
+    @abstractmethod
+    def _context() -> ContextVar: ...
+
     @classmethod
     @contextmanager
     def fresh(cls) -> Iterator['GenericStitcherContext']:
         ctx = cls.make()
-        token = context.set(ctx)
+        class_context = cls._context()
+        token = class_context.set(ctx)
         try:
             with registry.stage():
                 yield ctx
         finally:
-            context.reset(token)
+            class_context.reset(token)
 
-    @staticmethod
+    @classmethod
     @contextmanager
-    def stage() -> Iterator['GenericStitcherContext']:
-        ctx = deepcopy(context.get())
-        token = context.set(ctx)
+    def stage(cls) -> Iterator['GenericStitcherContext']:
+        class_context = cls._context()
+        ctx = deepcopy(class_context.get())
+        token = class_context.set(ctx)
         try:
             with registry.fresh():
                 yield ctx
         finally:
-            context.reset(token)
+            class_context.reset(token)
 
 
 class ReferencefullStitcherContext(GenericStitcherContext[full_events.EventType]):
     @staticmethod
-    def make() -> 'GenericStitcherContext':
+    def make() -> 'ReferencefullStitcherContext':
         return ReferencefullStitcherContext([])
+
+    @staticmethod
+    def get() -> 'ReferencefullStitcherContext':
+        return _referencefull_context.get()
+
+    @staticmethod
+    def set(value: 'ReferencefullStitcherContext') -> None:
+        _referencefull_context.set(value)
+
+    @staticmethod
+    def _context() -> ContextVar['ReferencefullStitcherContext']:
+        return _referencefull_context
 
 
 class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]):
     @staticmethod
-    def make() -> 'GenericStitcherContext':
+    def make() -> 'ReferencelessStitcherContext':
         return ReferencelessStitcherContext([])
 
+    @staticmethod
+    def get() -> 'ReferencelessStitcherContext':
+        return _referenceless_context.get()
 
-context: ContextVar[GenericStitcherContext] = ContextVar("GenericStitcherContext")
+    @staticmethod
+    def set(value: 'ReferencelessStitcherContext') -> None:
+        _referenceless_context.set(value)
+
+    @staticmethod
+    def _context() -> ContextVar['ReferencelessStitcherContext']:
+        return _referenceless_context
+
+
+_referencefull_context: ContextVar[ReferencefullStitcherContext] = ContextVar("ReferencefullStitcherContext")
+_referenceless_context: ContextVar[ReferencelessStitcherContext] = ContextVar("ReferencelessStitcherContext")

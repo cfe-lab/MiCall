@@ -7,7 +7,7 @@ import logging
 from sortedcontainers import SortedList
 import itertools
 
-from micall.utils.contig_stitcher_context import context, ReferencelessStitcherContext
+from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.overlap_stitcher import align_queries, \
     calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
 import micall.utils.referenceless_contig_stitcher_events as events
@@ -25,7 +25,7 @@ MAX_ALTERNATIVES = 30
 
 
 def log(e: events.EventType) -> None:
-    context.get().emit(e)
+    ReferencelessStitcherContext.get().emit(e)
     logger.debug("%s", e)
 
 

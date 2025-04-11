@@ -13,7 +13,7 @@ from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlap
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.utils.contig_stitcher_context import context, ReferencefullStitcherContext
+from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 from micall.utils.consensus_aligner import align_consensus
 from micall.utils.overlap_stitcher import align_queries, calculate_concordance_norm, sort_concordance_indexes
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def log(e: events.EventType) -> None:
-    context.get().emit(e)
+    ReferencefullStitcherContext.get().emit(e)
     logger.debug("%s", e)
 
 

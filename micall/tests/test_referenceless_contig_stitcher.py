@@ -9,7 +9,7 @@ from micall.utils.referenceless_contig_stitcher_events import EventType
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, \
     referenceless_contig_stitcher_with_ctx, read_contigs
-from micall.utils.contig_stitcher_context import ReferencelessStitcherContext, context
+from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.fasta_to_fastq import generate_fastq
 from micall.utils.fastq_to_fasta import main_typed
 import micall.utils.registry as registry
@@ -134,7 +134,7 @@ def log_check(request, tmp_path: Path):
     the stitcher behaviour is actually supposed to change.
     """
 
-    context.set(ReferencelessStitcherContext.make())
+    ReferencelessStitcherContext.set(ReferencelessStitcherContext.make())
     registry.set(registry.Registry())
 
     test_name = request.node.name
@@ -154,7 +154,7 @@ def log_check(request, tmp_path: Path):
         return first + '\n  ' + '\n  '.join(rest)
 
     def check():
-        logs = context.get().events
+        logs = ReferencelessStitcherContext.get().events
         produced_logs = '\n'.join(map(pretty_print_event, logs))
 
         if is_rerun:

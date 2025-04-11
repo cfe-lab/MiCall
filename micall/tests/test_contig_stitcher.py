@@ -42,7 +42,7 @@ def exact_aligner(monkeypatch):
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.ReferencefullStitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext.make())
     registry.set(registry.Registry())
     test_name = request.node.name
     plot_name = test_name + ".svg"
@@ -53,7 +53,7 @@ def visualizer(request, tmp_path):
     path_to_produced = os.path.join(tmp_path, plot_name)
 
     def check():
-        logs = stitcher.context.get().events
+        logs = stitcher.ReferencefullStitcherContext.get().events
         figure = plot_stitcher_coverage(logs, path_to_produced)
 
         with open(path_to_produced, "r") as produced_file:

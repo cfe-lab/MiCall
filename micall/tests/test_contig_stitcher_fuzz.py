@@ -24,7 +24,7 @@ def no_aligner(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def stitcher_context():
-    stitcher.context.set(ReferencefullStitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext.make())
     registry.set(registry.Registry())
 
 
