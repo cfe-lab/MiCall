@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from typing import Iterator, Tuple, Mapping
+from typing import Iterator, Tuple, Mapping, Literal, NoReturn
 from dataclasses import dataclass
 from mappy import Aligner
 from functools import cached_property
@@ -13,6 +13,9 @@ from micall.utils.overlap_stitcher import \
     exp_dropoff_array, find_max_overlap_length
 from micall.utils.find_maximum_overlap import \
     get_overlap_results, choose_convolution_method
+
+
+OverlapRelation = Literal["left", "right", "cover"]
 
 
 @dataclass(frozen=True)
@@ -31,7 +34,7 @@ class ContigWithAligner(Contig):
 
     def map_overlap(self,
                     minimum_score: Score,
-                    is_left: bool,
+                    relation: OverlapRelation,
                     overlap: str,
                     ) -> Iterator[Tuple[Alignment, int]]:
 
@@ -44,18 +47,16 @@ class ContigWithAligner(Contig):
         assert max_length > 0
         assert max_length >= len(overlap)
         assert max_length <= len(self.seq)
-        max_length = len(self.seq)  # FIXME: remove this line.
 
-        if max_length < len(self.seq):
-            if is_left:
-                seq = self.seq
-                shift = 0
-                # FIXME: uncomment below.
-                # seq = self.seq[-max_length:]
-                # shift = len(self.seq) - max_length
-            else:
+        if max_length < len(self.seq) and relation != "cover":
+            if relation == "left":
+                seq = self.seq[-max_length:]
+                shift = len(self.seq) - max_length
+            elif relation == "right":
                 seq = self.seq[:max_length]
                 shift = 0
+            else:
+                _x: NoReturn = relation
             aligner = Aligner(seq=seq)
         else:
             aligner = self.aligner
