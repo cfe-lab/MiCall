@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  301
+  56
   between
   contigs
-  'r0'
+  'r219-556.0'
   and
-  'r2'
+  'r501-801.2'
   to
   be
   (282,
-  49).
+  56).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r219-556.0'
   and
-  'r2'
+  'r501-801.2'
   has
   size
   56,
-  49
+  56
   matches,
   and
   the
   score
   of
-  5829395527835041.0.
+  1.2940126018831834e+18.
 END 6
 BEGIN 7
-  Contig
-  'r0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  56
+  between
+  contigs
+  'r219-556.0'
+  and
+  'r501-801.2',
+  resulting
+  in
   contig
-  'r2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -84,21 +94,21 @@ BEGIN 8
   295
   between
   contigs
-  'r0'
+  'r219-556.0'
   and
-  'r1'
+  'r221-515.1'
   to
   be
   (2,
-  295).
+  297).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r0'
+  'r219-556.0'
   and
-  'r1'
+  'r221-515.1'
   has
   size
   295,
@@ -112,10 +122,10 @@ BEGIN 9
 END 9
 BEGIN 10
   Contig
-  'r0'
+  'r219-556.0'
   covers
   contig
-  'r1'
+  'r221-515.1'
   completely.
 END 10
 BEGIN 11
@@ -130,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  338
+  583
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -156,21 +166,21 @@ BEGIN 13
   295
   between
   contigs
-  'r0'
+  (1)
   and
-  'r1'
+  'r221-515.1'
   to
   be
   (2,
-  295).
+  297).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r0'
+  (1)
   and
-  'r1'
+  'r221-515.1'
   has
   size
   295,
@@ -184,50 +194,58 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r0'
+  (1)
   covers
   contig
-  'r1'
+  'r221-515.1'
   completely.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  338
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
-  338.
+  583.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  295.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -238,17 +256,78 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  295
+  between
+  contigs
+  (1)
+  and
+  'r221-515.1'
+  to
+  be
+  (2,
+  297).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r221-515.1'
+  has
+  size
+  295,
+  295
+  matches,
+  and
+  the
+  score
+  of
+  2.0698818862705537e+74.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r221-515.1'
+  completely.
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

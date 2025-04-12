@@ -39,9 +39,9 @@ BEGIN 5
   227
   between
   contigs
-  'r0'
+  'r53-393.0'
   and
-  'r1'
+  'r167-585.1'
   to
   be
   (114,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r53-393.0'
   and
-  'r1'
+  'r167-585.1'
   has
   size
   227,
@@ -75,9 +75,9 @@ BEGIN 7
   227
   between
   contigs
-  'r0'
+  'r53-393.0'
   and
-  'r1',
+  'r167-585.1',
   resulting
   in
   contig
@@ -91,12 +91,12 @@ BEGIN 8
   overlap
   of
   size
-  267
+  260
   between
   contigs
-  'r1'
+  'r167-585.1'
   and
-  'r2'
+  'r556-822.2'
   to
   be
   None.
@@ -141,7 +141,7 @@ BEGIN 11
   contigs
   (1)
   and
-  'r2'
+  'r556-822.2'
   to
   be
   None.
@@ -240,7 +240,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r2'
+  'r556-822.2'
   to
   be
   None.

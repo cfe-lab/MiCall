@@ -39,9 +39,9 @@ BEGIN 5
   300
   between
   contigs
-  'r0'
+  'r63-466.0'
   and
-  'r1'
+  'r688-987.1'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   265
   between
   contigs
-  'r0'
+  'r63-466.0'
   and
-  'r2'
+  'r709-973.2'
   to
   be
   None.
@@ -121,9 +121,9 @@ BEGIN 11
   300
   between
   contigs
-  'r0'
+  'r63-466.0'
   and
-  'r1'
+  'r688-987.1'
   to
   be
   None.
@@ -139,9 +139,9 @@ BEGIN 12
   265
   between
   contigs
-  'r0'
+  'r63-466.0'
   and
-  'r2'
+  'r709-973.2'
   to
   be
   None.
@@ -157,21 +157,21 @@ BEGIN 13
   265
   between
   contigs
-  'r1'
+  'r688-987.1'
   and
-  'r2'
+  'r709-973.2'
   to
   be
   (21,
-  265).
+  286).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r1'
+  'r688-987.1'
   and
-  'r2'
+  'r709-973.2'
   has
   size
   265,
@@ -185,10 +185,10 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r1'
+  'r688-987.1'
   covers
   contig
-  'r2'
+  'r709-973.2'
   completely.
 END 15
 BEGIN 16
@@ -202,9 +202,9 @@ BEGIN 16
   300
   between
   contigs
-  'r0'
+  'r63-466.0'
   and
-  'r1'
+  'r688-987.1'
   to
   be
   None.

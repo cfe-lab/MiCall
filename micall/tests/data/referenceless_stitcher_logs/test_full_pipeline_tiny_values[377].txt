@@ -39,9 +39,9 @@ BEGIN 5
   290
   between
   contigs
-  'r0'
+  'r410-744.0'
   and
-  'r1'
+  'r455-871.1'
   to
   be
   (45,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r410-744.0'
   and
-  'r1'
+  'r455-871.1'
   has
   size
   290,
@@ -75,9 +75,9 @@ BEGIN 7
   290
   between
   contigs
-  'r0'
+  'r410-744.0'
   and
-  'r1',
+  'r455-871.1',
   resulting
   in
   contig
@@ -91,12 +91,12 @@ BEGIN 8
   overlap
   of
   size
-  309
+  258
   between
   contigs
-  'r1'
+  'r455-871.1'
   and
-  'r2'
+  'r12-320.2'
   to
   be
   None.
@@ -136,12 +136,12 @@ BEGIN 11
   overlap
   of
   size
-  309
+  258
   between
   contigs
   (1)
   and
-  'r2'
+  'r12-320.2'
   to
   be
   None.
@@ -235,12 +235,12 @@ BEGIN 20
   overlap
   of
   size
-  309
+  258
   between
   contigs
   (1)
   and
-  'r2'
+  'r12-320.2'
   to
   be
   None.

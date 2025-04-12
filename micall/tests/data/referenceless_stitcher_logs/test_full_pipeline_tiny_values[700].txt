@@ -39,21 +39,21 @@ BEGIN 5
   382
   between
   contigs
-  'r1'
+  'r14-529.1'
   and
-  'r0'
+  'r22-403.0'
   to
   be
   (8,
-  382).
+  390).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r14-529.1'
   and
-  'r0'
+  'r22-403.0'
   has
   size
   382,
@@ -67,10 +67,10 @@ BEGIN 6
 END 6
 BEGIN 7
   Contig
-  'r1'
+  'r14-529.1'
   covers
   contig
-  'r0'
+  'r22-403.0'
   completely.
 END 7
 BEGIN 8
@@ -84,9 +84,9 @@ BEGIN 8
   305
   between
   contigs
-  'r1'
+  'r14-529.1'
   and
-  'r2'
+  'r533-837.2'
   to
   be
   None.
@@ -129,9 +129,9 @@ BEGIN 11
   305
   between
   contigs
-  'r1'
+  'r14-529.1'
   and
-  'r2'
+  'r533-837.2'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   305
   between
   contigs
-  'r1'
+  'r14-529.1'
   and
-  'r2'
+  'r533-837.2'
   to
   be
   None.

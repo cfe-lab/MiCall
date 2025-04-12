@@ -39,9 +39,9 @@ BEGIN 5
   433
   between
   contigs
-  'r2'
+  'r482-929.2'
   and
-  'r1'
+  'r19-529.1'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   356
   between
   contigs
-  'r1'
+  'r19-529.1'
   and
-  'r0'
+  'r174-557.0'
   to
   be
   (155,
@@ -69,9 +69,9 @@ BEGIN 7
   Overlap
   between
   contigs
-  'r1'
+  'r19-529.1'
   and
-  'r0'
+  'r174-557.0'
   has
   size
   356,
@@ -93,9 +93,9 @@ BEGIN 8
   356
   between
   contigs
-  'r1'
+  'r19-529.1'
   and
-  'r0',
+  'r174-557.0',
   resulting
   in
   contig
@@ -136,25 +136,62 @@ BEGIN 11
   overlap
   of
   size
-  433
+  76
   between
   contigs
-  'r2'
-  and
   (1)
+  and
+  'r482-929.2'
   to
   be
-  None.
+  (463,
+  76).
 END 11
 BEGIN 12
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r482-929.2'
+  has
+  size
+  76,
+  76
+  matches,
+  and
+  the
+  score
+  of
+  1.1441361651733767e+23.
+END 12
+BEGIN 13
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  76
+  between
+  contigs
+  (1)
+  and
+  'r482-929.2',
+  resulting
+  in
+  contig
+  (2).
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
   539.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -167,29 +204,29 @@ BEGIN 13
   still
   to
   process.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   448.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -202,8 +239,8 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -218,16 +255,16 @@ BEGIN 18
   is
   a
   singleton.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -235,18 +272,55 @@ BEGIN 20
   overlap
   of
   size
-  433
+  76
   between
   contigs
-  'r2'
-  and
   (1)
+  and
+  'r482-929.2'
   to
   be
-  None.
-END 20
-BEGIN 21
+  (463,
+  76).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r482-929.2'
+  has
+  size
+  76,
+  76
+  matches,
+  and
+  the
+  score
+  of
+  1.1441361651733767e+23.
+END 23
+BEGIN 24
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  76
+  between
+  contigs
+  (1)
+  and
+  'r482-929.2',
+  resulting
+  in
+  contig
+  (3).
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 21
+END 25

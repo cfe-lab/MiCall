@@ -39,9 +39,9 @@ BEGIN 5
   345
   between
   contigs
-  'r1'
+  'r318-665.1'
   and
-  'r2'
+  'r321-737.2'
   to
   be
   (3,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r318-665.1'
   and
-  'r2'
+  'r321-737.2'
   has
   size
   345,
@@ -75,9 +75,9 @@ BEGIN 7
   345
   between
   contigs
-  'r1'
+  'r318-665.1'
   and
-  'r2',
+  'r321-737.2',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   295
   between
   contigs
-  'r2'
+  'r321-737.2'
   and
-  'r0'
+  'r1-295.0'
   to
   be
   None.
@@ -141,7 +141,7 @@ BEGIN 11
   contigs
   (1)
   and
-  'r0'
+  'r1-295.0'
   to
   be
   None.
@@ -240,7 +240,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r0'
+  'r1-295.0'
   to
   be
   None.

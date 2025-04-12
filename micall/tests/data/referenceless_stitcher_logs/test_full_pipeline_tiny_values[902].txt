@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  451
+  106
   between
   contigs
-  'r1'
+  'r6-549.1'
   and
-  'r2'
+  'r444-894.2'
   to
   be
   (438,
-  98).
+  106).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r6-549.1'
   and
-  'r2'
+  'r444-894.2'
   has
   size
   106,
-  98
+  106
   matches,
   and
   the
   score
   of
-  3.9908386659872404e+27.
+  1.4058770559145155e+30.
 END 6
 BEGIN 7
-  Contig
-  'r1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  106
+  between
+  contigs
+  'r6-549.1'
+  and
+  'r444-894.2',
+  resulting
+  in
   contig
-  'r2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -84,9 +94,9 @@ BEGIN 8
   288
   between
   contigs
-  'r1'
+  'r6-549.1'
   and
-  'r0'
+  'r262-571.0'
   to
   be
   (256,
@@ -96,9 +106,9 @@ BEGIN 9
   Overlap
   between
   contigs
-  'r1'
+  'r6-549.1'
   and
-  'r0'
+  'r262-571.0'
   has
   size
   288,
@@ -120,13 +130,13 @@ BEGIN 10
   288
   between
   contigs
-  'r1'
+  'r6-549.1'
   and
-  'r0',
+  'r262-571.0',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  451
+  128
   between
   contigs
-  (1)
+  (2)
   and
-  'r2'
+  'r444-894.2'
   to
   be
   (438,
-  98).
+  128).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r2'
+  'r444-894.2'
   has
   size
   128,
-  98
+  128
   matches,
   and
   the
   score
   of
-  1.0192635426704735e+26.
+  3.3799901672303226e+35.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  128
+  between
+  contigs
+  (2)
+  and
+  'r444-894.2',
+  resulting
+  in
   contig
-  'r2'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -289,42 +309,52 @@ BEGIN 24
   overlap
   of
   size
-  451
+  128
   between
   contigs
-  (1)
+  (2)
   and
-  'r2'
+  'r444-894.2'
   to
   be
   (438,
-  98).
+  128).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r2'
+  'r444-894.2'
   has
   size
   128,
-  98
+  128
   matches,
   and
   the
   score
   of
-  1.0192635426704735e+26.
+  3.3799901672303226e+35.
 END 25
 BEGIN 26
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  128
+  between
+  contigs
+  (2)
+  and
+  'r444-894.2',
+  resulting
+  in
   contig
-  'r2'
-  completely.
+  (4).
 END 26
 BEGIN 27
   Outputting

@@ -36,12 +36,12 @@ BEGIN 5
   overlap
   of
   size
-  320
+  306
   between
   contigs
-  'r1'
+  'r603-940.1'
   and
-  'r2'
+  'r98-417.2'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   303
   between
   contigs
-  'r0'
+  'r591-905.0'
   and
-  'r1'
+  'r603-940.1'
   to
   be
   (12,
@@ -69,9 +69,9 @@ BEGIN 7
   Overlap
   between
   contigs
-  'r0'
+  'r591-905.0'
   and
-  'r1'
+  'r603-940.1'
   has
   size
   303,
@@ -93,9 +93,9 @@ BEGIN 8
   303
   between
   contigs
-  'r0'
+  'r591-905.0'
   and
-  'r1',
+  'r603-940.1',
   resulting
   in
   contig
@@ -139,7 +139,7 @@ BEGIN 11
   317
   between
   contigs
-  'r2'
+  'r98-417.2'
   and
   (1)
   to
@@ -238,7 +238,7 @@ BEGIN 20
   317
   between
   contigs
-  'r2'
+  'r98-417.2'
   and
   (1)
   to

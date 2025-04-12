@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  490
+  184
   between
   contigs
-  'r0'
+  'r14-503.1'
   and
-  'r1'
+  'r320-912.0'
   to
   be
-  (0,
-  490).
+  (306,
+  184).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r14-503.1'
   and
-  'r1'
+  'r320-912.0'
   has
   size
-  490,
+  184,
   184
   matches,
   and
   the
   score
   of
-  3.283148696348785e+24.
+  4.754603767881652e+48.
 END 6
 BEGIN 7
-  Contig
-  'r0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  184
+  between
+  contigs
+  'r14-503.1'
+  and
+  'r320-912.0',
+  resulting
+  in
   contig
-  'r1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -84,9 +94,9 @@ BEGIN 8
   289
   between
   contigs
-  'r0'
+  'r320-912.0'
   and
-  'r2'
+  'r624-942.2'
   to
   be
   (304,
@@ -96,9 +106,9 @@ BEGIN 9
   Overlap
   between
   contigs
-  'r0'
+  'r320-912.0'
   and
-  'r2'
+  'r624-942.2'
   has
   size
   289,
@@ -120,13 +130,13 @@ BEGIN 10
   289
   between
   contigs
-  'r0'
+  'r320-912.0'
   and
-  'r2',
+  'r624-942.2',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  490
+  184
   between
   contigs
-  (1)
+  'r14-503.1'
   and
-  'r1'
+  (2)
   to
   be
-  (0,
-  490).
+  (306,
+  184).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r14-503.1'
   and
-  'r1'
+  (2)
   has
   size
-  490,
+  184,
   184
   matches,
   and
   the
   score
   of
-  3.283148696348785e+24.
+  4.754603767881652e+48.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  184
+  between
+  contigs
+  'r14-503.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r1'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -289,42 +309,52 @@ BEGIN 24
   overlap
   of
   size
-  490
+  184
   between
   contigs
-  (1)
+  'r14-503.1'
   and
-  'r1'
+  (2)
   to
   be
-  (0,
-  490).
+  (306,
+  184).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  (1)
+  'r14-503.1'
   and
-  'r1'
+  (2)
   has
   size
-  490,
+  184,
   184
   matches,
   and
   the
   score
   of
-  3.283148696348785e+24.
+  4.754603767881652e+48.
 END 25
 BEGIN 26
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  184
+  between
+  contigs
+  'r14-503.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r1'
-  completely.
+  (4).
 END 26
 BEGIN 27
   Outputting

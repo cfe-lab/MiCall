@@ -36,12 +36,12 @@ BEGIN 5
   overlap
   of
   size
-  438
+  84
   between
   contigs
-  'r0'
+  'r4-443.0'
   and
-  'r2'
+  'r360-883.2'
   to
   be
   (356,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r4-443.0'
   and
-  'r2'
+  'r360-883.2'
   has
   size
   84,
@@ -75,9 +75,9 @@ BEGIN 7
   84
   between
   contigs
-  'r0'
+  'r4-443.0'
   and
-  'r2',
+  'r360-883.2',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   230
   between
   contigs
-  'r1'
+  'r271-589.1'
   and
-  'r2'
+  'r360-883.2'
   to
   be
   (89,
@@ -106,9 +106,9 @@ BEGIN 9
   Overlap
   between
   contigs
-  'r1'
+  'r271-589.1'
   and
-  'r2'
+  'r360-883.2'
   has
   size
   230,
@@ -130,9 +130,9 @@ BEGIN 10
   230
   between
   contigs
-  'r1'
+  'r271-589.1'
   and
-  'r2',
+  'r360-883.2',
   resulting
   in
   contig
@@ -150,11 +150,11 @@ BEGIN 11
   fittest
   has
   length
-  613
+  880
   and
   consists
   of
-  2
+  3
   parts.
 END 11
 BEGIN 12
@@ -173,89 +173,91 @@ BEGIN 13
   overlap
   of
   size
-  440
+  173
   between
   contigs
-  (2)
+  'r4-443.0'
   and
-  'r0'
+  (2)
   to
   be
-  (0,
-  440).
+  (267,
+  173).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r4-443.0'
   and
-  'r0'
+  (2)
   has
   size
-  440,
+  173,
   173
   matches,
   and
   the
   score
   of
-  1.3876504857854367e+25.
+  1.5250318874895692e+46.
 END 14
 BEGIN 15
-  Contig
-  (2)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  173
+  between
+  contigs
+  'r4-443.0'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r0'
-  completely.
+  (3).
 END 15
 BEGIN 16
-  Constructed
-  a
-  path
-  of
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  613.
+  880
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 17
-BEGIN 18
-  Calculating
-  all
-  paths...
-END 18
-BEGIN 19
   Cycle
-  1
+  3
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  440.
-END 20
-BEGIN 21
+  880.
+END 18
+BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -266,78 +268,17 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 22
-BEGIN 23
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 23
-BEGIN 24
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  440
-  between
-  contigs
-  (2)
-  and
-  'r0'
-  to
-  be
-  (0,
-  440).
-END 24
-BEGIN 25
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r0'
-  has
-  size
-  440,
-  173
-  matches,
-  and
-  the
-  score
-  of
-  1.3876504857854367e+25.
-END 25
-BEGIN 26
-  Contig
-  (2)
-  covers
-  contig
-  'r0'
-  completely.
-END 26
-BEGIN 27
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 27
+END 21

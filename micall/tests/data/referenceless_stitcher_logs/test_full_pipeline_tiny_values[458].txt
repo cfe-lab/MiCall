@@ -39,21 +39,21 @@ BEGIN 5
   298
   between
   contigs
-  'r0'
+  'r483-927.0'
   and
-  'r2'
+  'r574-871.2'
   to
   be
   (91,
-  298).
+  389).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r483-927.0'
   and
-  'r2'
+  'r574-871.2'
   has
   size
   298,
@@ -67,10 +67,10 @@ BEGIN 6
 END 6
 BEGIN 7
   Contig
-  'r0'
+  'r483-927.0'
   covers
   contig
-  'r2'
+  'r574-871.2'
   completely.
 END 7
 BEGIN 8
@@ -84,9 +84,9 @@ BEGIN 8
   285
   between
   contigs
-  'r0'
+  'r483-927.0'
   and
-  'r1'
+  'r10-294.1'
   to
   be
   None.
@@ -129,9 +129,9 @@ BEGIN 11
   285
   between
   contigs
-  'r0'
+  'r483-927.0'
   and
-  'r1'
+  'r10-294.1'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   285
   between
   contigs
-  'r0'
+  'r483-927.0'
   and
-  'r1'
+  'r10-294.1'
   to
   be
   None.

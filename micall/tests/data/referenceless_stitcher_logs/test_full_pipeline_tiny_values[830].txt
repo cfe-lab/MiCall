@@ -39,21 +39,21 @@ BEGIN 5
   363
   between
   contigs
-  'r0'
+  'r16-672.0'
   and
-  'r1'
+  'r44-406.1'
   to
   be
   (28,
-  363).
+  391).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r16-672.0'
   and
-  'r1'
+  'r44-406.1'
   has
   size
   363,
@@ -67,10 +67,10 @@ BEGIN 6
 END 6
 BEGIN 7
   Contig
-  'r0'
+  'r16-672.0'
   covers
   contig
-  'r1'
+  'r44-406.1'
   completely.
 END 7
 BEGIN 8
@@ -84,9 +84,9 @@ BEGIN 8
   332
   between
   contigs
-  'r0'
+  'r16-672.0'
   and
-  'r2'
+  'r633-964.2'
   to
   be
   None.
@@ -129,9 +129,9 @@ BEGIN 11
   332
   between
   contigs
-  'r0'
+  'r16-672.0'
   and
-  'r2'
+  'r633-964.2'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   332
   between
   contigs
-  'r0'
+  'r16-672.0'
   and
-  'r2'
+  'r633-964.2'
   to
   be
   None.

@@ -39,9 +39,9 @@ BEGIN 5
   399
   between
   contigs
-  'r1'
+  'r313-785.1'
   and
-  'r0'
+  'r387-930.0'
   to
   be
   (74,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r313-785.1'
   and
-  'r0'
+  'r387-930.0'
   has
   size
   399,
@@ -75,9 +75,9 @@ BEGIN 7
   399
   between
   contigs
-  'r1'
+  'r313-785.1'
   and
-  'r0',
+  'r387-930.0',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   268
   between
   contigs
-  'r0'
+  'r387-930.0'
   and
-  'r2'
+  'r139-411.2'
   to
   be
   None.
@@ -136,25 +136,62 @@ BEGIN 11
   overlap
   of
   size
-  268
+  99
   between
   contigs
-  (1)
+  'r139-411.2'
   and
-  'r2'
+  (1)
   to
   be
-  None.
+  (174,
+  99).
 END 11
 BEGIN 12
+  Overlap
+  between
+  contigs
+  'r139-411.2'
+  and
+  (1)
+  has
+  size
+  99,
+  99
+  matches,
+  and
+  the
+  score
+  of
+  3.5250113743433053e+28.
+END 12
+BEGIN 13
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  99
+  between
+  contigs
+  'r139-411.2'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
   618.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -167,29 +204,29 @@ BEGIN 13
   still
   to
   process.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   273.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -202,8 +239,8 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -218,16 +255,16 @@ BEGIN 18
   is
   a
   singleton.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -235,18 +272,55 @@ BEGIN 20
   overlap
   of
   size
-  268
+  99
   between
   contigs
-  (1)
+  'r139-411.2'
   and
-  'r2'
+  (1)
   to
   be
-  None.
-END 20
-BEGIN 21
+  (174,
+  99).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  'r139-411.2'
+  and
+  (1)
+  has
+  size
+  99,
+  99
+  matches,
+  and
+  the
+  score
+  of
+  3.5250113743433053e+28.
+END 23
+BEGIN 24
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  99
+  between
+  contigs
+  'r139-411.2'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (3).
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 21
+END 25

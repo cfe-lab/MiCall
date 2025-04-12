@@ -39,9 +39,9 @@ BEGIN 5
   309
   between
   contigs
-  'r0'
+  'r393-811.0'
   and
-  'r2'
+  'r503-999.2'
   to
   be
   (110,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r393-811.0'
   and
-  'r2'
+  'r503-999.2'
   has
   size
   309,
@@ -75,9 +75,9 @@ BEGIN 7
   309
   between
   contigs
-  'r0'
+  'r393-811.0'
   and
-  'r2',
+  'r503-999.2',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   278
   between
   contigs
-  'r2'
+  'r503-999.2'
   and
-  'r1'
+  'r88-365.1'
   to
   be
   None.
@@ -141,7 +141,7 @@ BEGIN 11
   contigs
   (1)
   and
-  'r1'
+  'r88-365.1'
   to
   be
   None.
@@ -240,7 +240,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r1'
+  'r88-365.1'
   to
   be
   None.

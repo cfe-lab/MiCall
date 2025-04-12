@@ -36,36 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  411
+  91
   between
   contigs
-  'r2'
+  'r107-517.1'
   and
-  'r1'
+  'r427-864.2'
   to
   be
-  (0,
-  411).
+  (320,
+  91).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r2'
+  'r107-517.1'
   and
-  'r1'
+  'r427-864.2'
   has
   size
-  411,
+  91,
   91
   matches,
   and
   the
   score
   of
-  6.459880774493168.
+  4.1963982347661436e+26.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  91
+  between
+  contigs
+  'r107-517.1'
+  and
+  'r427-864.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -76,21 +94,21 @@ BEGIN 7
   227
   between
   contigs
-  'r2'
+  'r427-864.2'
   and
-  'r0'
+  'r638-907.0'
   to
   be
   (211,
   227).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r2'
+  'r427-864.2'
   and
-  'r0'
+  'r638-907.0'
   has
   size
   227,
@@ -101,8 +119,8 @@ BEGIN 8
   score
   of
   3.9920274275296087e+58.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Found
   a
   significant
@@ -112,15 +130,15 @@ BEGIN 9
   227
   between
   contigs
-  'r2'
+  'r427-864.2'
   and
-  'r0',
+  'r638-907.0',
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -155,25 +173,62 @@ BEGIN 12
   overlap
   of
   size
-  411
+  91
   between
   contigs
-  (1)
+  'r107-517.1'
   and
-  'r1'
+  (2)
   to
   be
-  None.
-END 12
-BEGIN 13
+  (320,
+  91).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r107-517.1'
+  and
+  (2)
+  has
+  size
+  91,
+  91
+  matches,
+  and
+  the
+  score
+  of
+  4.1963982347661436e+26.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  91
+  between
+  contigs
+  'r107-517.1'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   481.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -186,29 +241,29 @@ BEGIN 14
   still
   to
   process.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 15
-BEGIN 16
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   411.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -221,8 +276,8 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -237,16 +292,16 @@ BEGIN 19
   is
   a
   singleton.
-END 19
-BEGIN 20
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -254,18 +309,55 @@ BEGIN 21
   overlap
   of
   size
-  411
+  91
   between
   contigs
-  (1)
+  'r107-517.1'
   and
-  'r1'
+  (2)
   to
   be
-  None.
-END 21
-BEGIN 22
+  (320,
+  91).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  'r107-517.1'
+  and
+  (2)
+  has
+  size
+  91,
+  91
+  matches,
+  and
+  the
+  score
+  of
+  4.1963982347661436e+26.
+END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  91
+  between
+  contigs
+  'r107-517.1'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 22
+END 27

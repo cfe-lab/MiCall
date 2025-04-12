@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  82
+  66
   between
   contigs
-  'r129-731.2'
+  'r13-494.1'
   and
-  'r650-996.0'
+  'r429-883.0'
   to
   be
-  (521,
-  82).
+  (416,
+  66).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r129-731.2'
+  'r13-494.1'
   and
-  'r650-996.0'
+  'r429-883.0'
   has
   size
-  82,
-  82
+  66,
+  66
   matches,
   and
   the
   score
   of
-  2.3412961501234668e+24.
+  2.8276310670464493e+20.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  82
+  66
   between
   contigs
-  'r129-731.2'
+  'r13-494.1'
   and
-  'r650-996.0',
+  'r429-883.0',
   resulting
   in
   contig
@@ -91,54 +91,17 @@ BEGIN 8
   overlap
   of
   size
-  82
+  278
   between
   contigs
-  'r129-731.2'
+  'r13-494.1'
   and
-  'r650-913.1'
+  'r557-834.2'
   to
   be
-  (521,
-  82).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r129-731.2'
-  and
-  'r650-913.1'
-  has
-  size
-  82,
-  82
-  matches,
-  and
-  the
-  score
-  of
-  2.3412961501234668e+24.
-END 9
-BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  82
-  between
-  contigs
-  'r129-731.2'
-  and
-  'r650-913.1',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -150,22 +113,22 @@ BEGIN 11
   fittest
   has
   length
-  868
+  871
   and
   consists
   of
   2
   parts.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -173,52 +136,52 @@ BEGIN 13
   overlap
   of
   size
-  264
+  278
   between
   contigs
   (1)
   and
-  'r650-913.1'
+  'r557-834.2'
   to
   be
-  (521,
-  785).
-END 13
-BEGIN 14
+  (544,
+  822).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
   (1)
   and
-  'r650-913.1'
+  'r557-834.2'
   has
   size
-  264,
-  264
+  278,
+  278
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
-END 14
-BEGIN 15
+  2.0921652732166993e+70.
+END 12
+BEGIN 13
   Contig
   (1)
   covers
   contig
-  'r650-913.1'
+  'r557-834.2'
   completely.
-END 15
-BEGIN 16
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  868.
-END 16
-BEGIN 17
+  871.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -231,29 +194,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  264.
-END 20
-BEGIN 21
+  278.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -266,8 +229,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -282,16 +245,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -299,45 +262,45 @@ BEGIN 24
   overlap
   of
   size
-  264
+  278
   between
   contigs
   (1)
   and
-  'r650-913.1'
+  'r557-834.2'
   to
   be
-  (521,
-  785).
-END 24
-BEGIN 25
+  (544,
+  822).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
   (1)
   and
-  'r650-913.1'
+  'r557-834.2'
   has
   size
-  264,
-  264
+  278,
+  278
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
-END 25
-BEGIN 26
+  2.0921652732166993e+70.
+END 23
+BEGIN 24
   Contig
   (1)
   covers
   contig
-  'r650-913.1'
+  'r557-834.2'
   completely.
-END 26
-BEGIN 27
+END 24
+BEGIN 25
   Outputting
   1
   contigs.
-END 27
+END 25

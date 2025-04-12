@@ -39,9 +39,9 @@ BEGIN 5
   377
   between
   contigs
-  'r2'
+  'r50-439.2'
   and
-  'r1'
+  'r615-995.1'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   270
   between
   contigs
-  'r0'
+  'r26-319.0'
   and
-  'r2'
+  'r50-439.2'
   to
   be
   (24,
@@ -69,9 +69,9 @@ BEGIN 7
   Overlap
   between
   contigs
-  'r0'
+  'r26-319.0'
   and
-  'r2'
+  'r50-439.2'
   has
   size
   270,
@@ -93,9 +93,9 @@ BEGIN 8
   270
   between
   contigs
-  'r0'
+  'r26-319.0'
   and
-  'r2',
+  'r50-439.2',
   resulting
   in
   contig
@@ -139,7 +139,7 @@ BEGIN 11
   367
   between
   contigs
-  'r1'
+  'r615-995.1'
   and
   (1)
   to
@@ -238,7 +238,7 @@ BEGIN 20
   367
   between
   contigs
-  'r1'
+  'r615-995.1'
   and
   (1)
   to

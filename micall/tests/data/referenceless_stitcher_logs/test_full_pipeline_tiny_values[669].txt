@@ -39,21 +39,21 @@ BEGIN 5
   442
   between
   contigs
-  'r2'
+  'r466-971.2'
   and
-  'r1'
+  'r517-958.1'
   to
   be
   (51,
-  442).
+  493).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r2'
+  'r466-971.2'
   and
-  'r1'
+  'r517-958.1'
   has
   size
   442,
@@ -67,10 +67,10 @@ BEGIN 6
 END 6
 BEGIN 7
   Contig
-  'r2'
+  'r466-971.2'
   covers
   contig
-  'r1'
+  'r517-958.1'
   completely.
 END 7
 BEGIN 8
@@ -84,9 +84,9 @@ BEGIN 8
   276
   between
   contigs
-  'r0'
+  'r107-395.0'
   and
-  'r2'
+  'r466-971.2'
   to
   be
   None.
@@ -129,9 +129,9 @@ BEGIN 11
   276
   between
   contigs
-  'r0'
+  'r107-395.0'
   and
-  'r2'
+  'r466-971.2'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   276
   between
   contigs
-  'r0'
+  'r107-395.0'
   and
-  'r2'
+  'r466-971.2'
   to
   be
   None.

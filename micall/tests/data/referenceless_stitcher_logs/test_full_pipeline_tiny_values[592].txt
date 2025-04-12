@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  367
+  138
   between
   contigs
-  'r1'
+  'r44-429.1'
   and
-  'r0'
+  'r292-658.0'
   to
   be
   (248,
-  133).
+  138).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r44-429.1'
   and
-  'r0'
+  'r292-658.0'
   has
   size
   138,
-  133
+  138
   matches,
   and
   the
   score
   of
-  1.4831262149313907e+36.
+  5.508084491121119e+37.
 END 6
 BEGIN 7
-  Contig
-  'r1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  138
+  between
+  contigs
+  'r44-429.1'
+  and
+  'r292-658.0',
+  resulting
+  in
   contig
-  'r0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -84,9 +94,9 @@ BEGIN 8
   317
   between
   contigs
-  'r1'
+  'r44-429.1'
   and
-  'r2'
+  'r408-755.2'
   to
   be
   None.
@@ -103,11 +113,11 @@ BEGIN 9
   fittest
   has
   length
-  386
+  712
   and
   consists
   of
-  2
+  3
   parts.
 END 9
 BEGIN 10
@@ -126,46 +136,75 @@ BEGIN 11
   overlap
   of
   size
-  317
+  251
   between
   contigs
-  'r1'
+  (1)
   and
-  'r2'
+  'r408-755.2'
   to
   be
-  None.
+  (364,
+  251).
 END 11
 BEGIN 12
-  Constructed
-  a
-  path
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r408-755.2'
+  has
+  size
+  251,
+  251
+  matches,
+  and
+  the
+  score
   of
-  length
-  386.
+  1.4414282368544858e+64.
 END 12
 BEGIN 13
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  251
+  between
+  contigs
+  (1)
+  and
+  'r408-755.2',
+  resulting
+  in
+  contig
+  (2).
 END 13
 BEGIN 14
-  Calculating
-  all
-  paths...
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  712
+  and
+  consists
+  of
+  3
+  parts.
 END 14
 BEGIN 15
   Cycle
-  1
+  3
   started
   with
   1
@@ -177,11 +216,11 @@ BEGIN 16
   path
   of
   length
-  348.
+  712.
 END 16
 BEGIN 17
   Removed
-  1
+  3
   components
   from
   the
@@ -194,49 +233,15 @@ BEGIN 17
   process.
 END 17
 BEGIN 18
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 18
-BEGIN 19
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 18
+BEGIN 19
+  Outputting
+  1
   contigs.
 END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  317
-  between
-  contigs
-  'r1'
-  and
-  'r2'
-  to
-  be
-  None.
-END 20
-BEGIN 21
-  Outputting
-  2
-  contigs.
-END 21

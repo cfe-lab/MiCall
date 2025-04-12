@@ -39,9 +39,9 @@ BEGIN 5
   329
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r3'
+  'r147-521.3'
   to
   be
   (102,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r3'
+  'r147-521.3'
   has
   size
   329,
@@ -75,9 +75,9 @@ BEGIN 7
   329
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r3',
+  'r147-521.3',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   221
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r1'
+  'r255-546.1'
   to
   be
   (210,
@@ -106,9 +106,9 @@ BEGIN 9
   Overlap
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r1'
+  'r255-546.1'
   has
   size
   221,
@@ -130,9 +130,9 @@ BEGIN 10
   221
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r1',
+  'r255-546.1',
   resulting
   in
   contig
@@ -149,21 +149,21 @@ BEGIN 11
   263
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r0'
+  'r51-313.0'
   to
   be
   (6,
-  263).
+  269).
 END 11
 BEGIN 12
   Overlap
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r0'
+  'r51-313.0'
   has
   size
   263,
@@ -177,10 +177,10 @@ BEGIN 12
 END 12
 BEGIN 13
   Contig
-  'r2'
+  'r45-475.2'
   covers
   contig
-  'r0'
+  'r51-313.0'
   completely.
 END 13
 BEGIN 14
@@ -194,9 +194,9 @@ BEGIN 14
   250
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r5'
+  'r718-967.5'
   to
   be
   None.
@@ -212,9 +212,9 @@ BEGIN 15
   237
   between
   contigs
-  'r2'
+  'r45-475.2'
   and
-  'r4'
+  'r692-928.4'
   to
   be
   None.
@@ -259,7 +259,7 @@ BEGIN 18
   contigs
   (1)
   and
-  'r1'
+  'r255-546.1'
   to
   be
   (210,
@@ -271,7 +271,7 @@ BEGIN 19
   contigs
   (1)
   and
-  'r1'
+  'r255-546.1'
   has
   size
   267,
@@ -295,7 +295,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r1',
+  'r255-546.1',
   resulting
   in
   contig
@@ -314,11 +314,11 @@ BEGIN 21
   contigs
   (1)
   and
-  'r0'
+  'r51-313.0'
   to
   be
   (6,
-  263).
+  269).
 END 21
 BEGIN 22
   Overlap
@@ -326,7 +326,7 @@ BEGIN 22
   contigs
   (1)
   and
-  'r0'
+  'r51-313.0'
   has
   size
   263,
@@ -343,7 +343,7 @@ BEGIN 23
   (1)
   covers
   contig
-  'r0'
+  'r51-313.0'
   completely.
 END 23
 BEGIN 24
@@ -359,7 +359,7 @@ BEGIN 24
   contigs
   (1)
   and
-  'r5'
+  'r718-967.5'
   to
   be
   None.
@@ -377,7 +377,7 @@ BEGIN 25
   contigs
   (1)
   and
-  'r4'
+  'r692-928.4'
   to
   be
   None.
@@ -422,11 +422,11 @@ BEGIN 28
   contigs
   (3)
   and
-  'r0'
+  'r51-313.0'
   to
   be
   (6,
-  263).
+  269).
 END 28
 BEGIN 29
   Overlap
@@ -434,7 +434,7 @@ BEGIN 29
   contigs
   (3)
   and
-  'r0'
+  'r51-313.0'
   has
   size
   263,
@@ -451,7 +451,7 @@ BEGIN 30
   (3)
   covers
   contig
-  'r0'
+  'r51-313.0'
   completely.
 END 30
 BEGIN 31
@@ -467,7 +467,7 @@ BEGIN 31
   contigs
   (3)
   and
-  'r5'
+  'r718-967.5'
   to
   be
   None.
@@ -485,7 +485,7 @@ BEGIN 32
   contigs
   (3)
   and
-  'r4'
+  'r692-928.4'
   to
   be
   None.
@@ -533,12 +533,12 @@ BEGIN 37
   overlap
   of
   size
-  249
+  226
   between
   contigs
-  'r0'
+  'r718-967.5'
   and
-  'r5'
+  'r51-313.0'
   to
   be
   None.
@@ -551,12 +551,12 @@ BEGIN 38
   overlap
   of
   size
-  237
+  217
   between
   contigs
-  'r0'
+  'r51-313.0'
   and
-  'r4'
+  'r692-928.4'
   to
   be
   None.
@@ -620,11 +620,11 @@ BEGIN 43
   contigs
   (3)
   and
-  'r0'
+  'r51-313.0'
   to
   be
   (6,
-  263).
+  269).
 END 43
 BEGIN 44
   Overlap
@@ -632,7 +632,7 @@ BEGIN 44
   contigs
   (3)
   and
-  'r0'
+  'r51-313.0'
   has
   size
   263,
@@ -649,7 +649,7 @@ BEGIN 45
   (3)
   covers
   contig
-  'r0'
+  'r51-313.0'
   completely.
 END 45
 BEGIN 46
@@ -663,9 +663,9 @@ BEGIN 46
   211
   between
   contigs
-  'r4'
+  'r692-928.4'
   and
-  'r5'
+  'r718-967.5'
   to
   be
   (26,
@@ -675,9 +675,9 @@ BEGIN 47
   Overlap
   between
   contigs
-  'r4'
+  'r692-928.4'
   and
-  'r5'
+  'r718-967.5'
   has
   size
   211,
@@ -699,9 +699,9 @@ BEGIN 48
   211
   between
   contigs
-  'r4'
+  'r692-928.4'
   and
-  'r5',
+  'r718-967.5',
   resulting
   in
   contig

@@ -36,36 +36,99 @@ BEGIN 5
   overlap
   of
   size
-  486
+  118
   between
   contigs
-  'r1'
+  'r12-497.2'
   and
-  'r2'
+  'r380-907.1'
   to
   be
-  (0,
-  486).
+  (368,
+  118).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r12-497.2'
   and
-  'r2'
+  'r380-907.1'
   has
   size
-  486,
+  118,
   118
   matches,
   and
   the
   score
   of
-  -11.395890054105216.
+  1.0165576512864902e+33.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  118
+  between
+  contigs
+  'r12-497.2'
+  and
+  'r380-907.1',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  54
+  between
+  contigs
+  'r168-433.0'
+  and
+  'r380-907.1'
+  to
+  be
+  None.
+END 8
+BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  896
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -76,22 +139,84 @@ BEGIN 7
   266
   between
   contigs
-  'r1'
+  (1)
   and
-  'r0'
+  'r168-433.0'
   to
   be
-  None.
-END 7
-BEGIN 8
+  (156,
+  422).
+END 11
+BEGIN 12
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r168-433.0'
+  has
+  size
+  266,
+  266
+  matches,
+  and
+  the
+  score
+  of
+  3.551093662302419e+67.
+END 12
+BEGIN 13
+  Contig
+  (1)
+  covers
+  contig
+  'r168-433.0'
+  completely.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  528.
-END 8
-BEGIN 9
+  896.
+END 14
+BEGIN 15
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  266.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -100,12 +225,12 @@ BEGIN 9
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 9
-BEGIN 10
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -120,53 +245,16 @@ BEGIN 10
   is
   a
   singleton.
-END 10
-BEGIN 11
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 11
-BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  486
-  between
-  contigs
-  'r1'
-  and
-  'r2'
-  to
-  be
-  (0,
-  486).
-END 12
-BEGIN 13
-  Overlap
-  between
-  contigs
-  'r1'
-  and
-  'r2'
-  has
-  size
-  486,
-  118
-  matches,
-  and
-  the
-  score
-  of
-  -11.395890054105216.
-END 13
-BEGIN 14
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -177,39 +265,21 @@ BEGIN 14
   266
   between
   contigs
-  'r1'
+  (1)
   and
-  'r0'
-  to
-  be
-  None.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  266
-  between
-  contigs
-  'r2'
-  and
-  'r0'
+  'r168-433.0'
   to
   be
   (156,
-  266).
-END 15
-BEGIN 16
+  422).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  'r2'
+  (1)
   and
-  'r0'
+  'r168-433.0'
   has
   size
   266,
@@ -220,54 +290,17 @@ BEGIN 16
   score
   of
   3.551093662302419e+67.
-END 16
-BEGIN 17
+END 23
+BEGIN 24
   Contig
-  'r2'
+  (1)
   covers
   contig
-  'r0'
+  'r168-433.0'
   completely.
-END 17
-BEGIN 18
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  486
-  between
-  contigs
-  'r1'
-  and
-  'r2'
-  to
-  be
-  (0,
-  486).
-END 18
-BEGIN 19
-  Overlap
-  between
-  contigs
-  'r1'
-  and
-  'r2'
-  has
-  size
-  486,
-  118
-  matches,
-  and
-  the
-  score
-  of
-  -11.395890054105216.
-END 19
-BEGIN 20
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 20
+END 25

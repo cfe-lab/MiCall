@@ -36,12 +36,12 @@ BEGIN 5
   overlap
   of
   size
-  324
+  85
   between
   contigs
-  'r0'
+  'r48-379.0'
   and
-  'r2'
+  'r295-703.2'
   to
   be
   (247,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r48-379.0'
   and
-  'r2'
+  'r295-703.2'
   has
   size
   85,
@@ -75,9 +75,9 @@ BEGIN 7
   85
   between
   contigs
-  'r0'
+  'r48-379.0'
   and
-  'r2',
+  'r295-703.2',
   resulting
   in
   contig
@@ -91,17 +91,54 @@ BEGIN 8
   overlap
   of
   size
-  256
+  55
   between
   contigs
-  'r2'
+  'r295-703.2'
   and
-  'r1'
+  'r649-904.1'
   to
   be
-  None.
+  (354,
+  55).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r295-703.2'
+  and
+  'r649-904.1'
+  has
+  size
+  55,
+  55
+  matches,
+  and
+  the
+  score
+  of
+  6.100778010830523e+17.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  55
+  between
+  contigs
+  'r295-703.2'
+  and
+  'r649-904.1',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -113,22 +150,22 @@ BEGIN 9
   fittest
   has
   length
-  656
+  857
   and
   consists
   of
-  2
+  3
   parts.
-END 9
-BEGIN 10
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -136,62 +173,91 @@ BEGIN 11
   overlap
   of
   size
-  256
+  55
   between
   contigs
   (1)
   and
-  'r1'
+  'r649-904.1'
   to
   be
-  None.
-END 11
-BEGIN 12
-  Constructed
-  a
-  path
-  of
-  length
-  656.
-END 12
-BEGIN 13
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  (601,
+  55).
 END 13
 BEGIN 14
-  Calculating
-  all
-  paths...
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r649-904.1'
+  has
+  size
+  55,
+  55
+  matches,
+  and
+  the
+  score
+  of
+  6.100778010830523e+17.
 END 14
 BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  55
+  between
+  contigs
+  (1)
+  and
+  'r649-904.1',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Cycle
+  2
+  finished
+  with
   1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  857
+  and
+  consists
+  of
+  3
+  parts.
+END 16
+BEGIN 17
+  Cycle
+  3
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  256.
-END 16
-BEGIN 17
+  857.
+END 18
+BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -202,51 +268,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  256
-  between
-  contigs
-  (1)
-  and
-  'r1'
-  to
-  be
-  None.
 END 20
 BEGIN 21
   Outputting
-  2
+  1
   contigs.
 END 21

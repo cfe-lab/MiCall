@@ -39,9 +39,9 @@ BEGIN 5
   282
   between
   contigs
-  'r0'
+  'r308-645.0'
   and
-  'r2'
+  'r697-978.2'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   143
   between
   contigs
-  'r1'
+  'r172-450.1'
   and
-  'r0'
+  'r308-645.0'
   to
   be
   (136,
@@ -69,9 +69,9 @@ BEGIN 7
   Overlap
   between
   contigs
-  'r1'
+  'r172-450.1'
   and
-  'r0'
+  'r308-645.0'
   has
   size
   143,
@@ -93,9 +93,9 @@ BEGIN 8
   143
   between
   contigs
-  'r1'
+  'r172-450.1'
   and
-  'r0',
+  'r308-645.0',
   resulting
   in
   contig
@@ -136,12 +136,12 @@ BEGIN 11
   overlap
   of
   size
-  282
+  263
   between
   contigs
-  (1)
+  'r697-978.2'
   and
-  'r2'
+  (1)
   to
   be
   None.
@@ -235,12 +235,12 @@ BEGIN 20
   overlap
   of
   size
-  282
+  263
   between
   contigs
-  (1)
+  'r697-978.2'
   and
-  'r2'
+  (1)
   to
   be
   None.

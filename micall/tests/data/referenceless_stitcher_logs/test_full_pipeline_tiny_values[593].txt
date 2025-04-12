@@ -39,9 +39,9 @@ BEGIN 5
   325
   between
   contigs
-  'r1'
+  'r30-446.1'
   and
-  'r0'
+  'r122-584.0'
   to
   be
   (92,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r30-446.1'
   and
-  'r0'
+  'r122-584.0'
   has
   size
   325,
@@ -75,9 +75,9 @@ BEGIN 7
   325
   between
   contigs
-  'r1'
+  'r30-446.1'
   and
-  'r0',
+  'r122-584.0',
   resulting
   in
   contig
@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  353
+  132
   between
   contigs
-  'r0'
+  'r122-584.0'
   and
-  'r2'
+  'r453-805.2'
   to
   be
   (331,
-  79).
+  132).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r0'
+  'r122-584.0'
   and
-  'r2'
+  'r453-805.2'
   has
   size
   132,
-  79
+  132
   matches,
   and
   the
   score
   of
-  3.2952848432591544e+19.
+  2.9848378874123455e+36.
 END 9
 BEGIN 10
-  Contig
-  'r0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  132
+  between
+  contigs
+  'r122-584.0'
+  and
+  'r453-805.2',
+  resulting
+  in
   contig
-  'r2'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -163,25 +173,62 @@ BEGIN 13
   overlap
   of
   size
-  353
+  132
   between
   contigs
   (1)
   and
-  'r2'
+  'r453-805.2'
   to
   be
-  None.
+  (423,
+  132).
 END 13
 BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r453-805.2'
+  has
+  size
+  132,
+  132
+  matches,
+  and
+  the
+  score
+  of
+  2.9848378874123455e+36.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  132
+  between
+  contigs
+  (1)
+  and
+  'r453-805.2',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   555.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -194,29 +241,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   353.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -229,8 +276,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -245,16 +292,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -262,18 +309,55 @@ BEGIN 22
   overlap
   of
   size
-  353
+  132
   between
   contigs
   (1)
   and
-  'r2'
+  'r453-805.2'
   to
   be
-  None.
-END 22
-BEGIN 23
+  (423,
+  132).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r453-805.2'
+  has
+  size
+  132,
+  132
+  matches,
+  and
+  the
+  score
+  of
+  2.9848378874123455e+36.
+END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  132
+  between
+  contigs
+  (1)
+  and
+  'r453-805.2',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 23
+END 27

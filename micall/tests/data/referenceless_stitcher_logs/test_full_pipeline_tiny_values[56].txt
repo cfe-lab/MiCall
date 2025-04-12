@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  445
+  142
   between
   contigs
-  'r2'
+  'r179-681.0'
   and
-  'r0'
+  'r540-993.2'
   to
   be
-  (0,
-  503).
+  (361,
+  142).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r2'
+  'r179-681.0'
   and
-  'r0'
+  'r540-993.2'
   has
   size
-  503,
+  142,
   142
   matches,
   and
   the
   score
   of
-  1670360107.014516.
+  4.829442900495358e+38.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  815
+  142
   between
   contigs
-  'r2'
+  'r179-681.0'
   and
-  'r0',
+  'r540-993.2',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   308
   between
   contigs
-  'r0'
+  'r179-681.0'
   and
-  'r1'
+  'r652-959.1'
   to
   be
   None.
@@ -113,7 +113,7 @@ BEGIN 9
   fittest
   has
   length
-  142
+  815
   and
   consists
   of
@@ -136,25 +136,52 @@ BEGIN 11
   overlap
   of
   size
-  142
+  308
   between
   contigs
-  'r1'
-  and
   (1)
+  and
+  'r652-959.1'
   to
   be
-  None.
+  (473,
+  781).
 END 11
 BEGIN 12
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r652-959.1'
+  has
+  size
+  308,
+  308
+  matches,
+  and
+  the
+  score
+  of
+  2.4308710492663585e+77.
+END 12
+BEGIN 13
+  Contig
+  (1)
+  covers
+  contig
+  'r652-959.1'
+  completely.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  142.
-END 12
-BEGIN 13
+  815.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -167,29 +194,29 @@ BEGIN 13
   still
   to
   process.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   308.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -202,8 +229,8 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -218,16 +245,16 @@ BEGIN 18
   is
   a
   singleton.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -235,18 +262,45 @@ BEGIN 20
   overlap
   of
   size
-  142
+  308
   between
   contigs
-  'r1'
-  and
   (1)
+  and
+  'r652-959.1'
   to
   be
-  None.
-END 20
-BEGIN 21
+  (473,
+  781).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r652-959.1'
+  has
+  size
+  308,
+  308
+  matches,
+  and
+  the
+  score
+  of
+  2.4308710492663585e+77.
+END 23
+BEGIN 24
+  Contig
+  (1)
+  covers
+  contig
+  'r652-959.1'
+  completely.
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 21
+END 25

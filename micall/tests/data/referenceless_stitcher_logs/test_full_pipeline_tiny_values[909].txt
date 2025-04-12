@@ -39,9 +39,9 @@ BEGIN 5
   318
   between
   contigs
-  'r1'
+  'r128-609.1'
   and
-  'r0'
+  'r292-624.0'
   to
   be
   (164,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r128-609.1'
   and
-  'r0'
+  'r292-624.0'
   has
   size
   318,
@@ -75,9 +75,9 @@ BEGIN 7
   318
   between
   contigs
-  'r1'
+  'r128-609.1'
   and
-  'r0',
+  'r292-624.0',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   310
   between
   contigs
-  'r1'
+  'r128-609.1'
   and
-  'r2'
+  'r619-932.2'
   to
   be
   None.
@@ -141,7 +141,7 @@ BEGIN 11
   contigs
   (1)
   and
-  'r2'
+  'r619-932.2'
   to
   be
   None.
@@ -240,7 +240,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r2'
+  'r619-932.2'
   to
   be
   None.

@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  418
+  119
   between
   contigs
-  'r2'
+  'r88-505.1'
   and
-  'r1'
+  'r387-847.2'
   to
   be
-  (0,
-  418).
+  (299,
+  119).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r2'
+  'r88-505.1'
   and
-  'r1'
+  'r387-847.2'
   has
   size
-  418,
+  119,
   119
   matches,
   and
   the
   score
   of
-  286251894.89392394.
+  2.0890444072090588e+33.
 END 6
 BEGIN 7
-  Contig
-  'r2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  119
+  between
+  contigs
+  'r88-505.1'
+  and
+  'r387-847.2',
+  resulting
+  in
   contig
-  'r1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -84,9 +94,9 @@ BEGIN 8
   264
   between
   contigs
-  'r2'
+  'r387-847.2'
   and
-  'r0'
+  'r584-983.0'
   to
   be
   (197,
@@ -96,9 +106,9 @@ BEGIN 9
   Overlap
   between
   contigs
-  'r2'
+  'r387-847.2'
   and
-  'r0'
+  'r584-983.0'
   has
   size
   264,
@@ -120,13 +130,13 @@ BEGIN 10
   264
   between
   contigs
-  'r2'
+  'r387-847.2'
   and
-  'r0',
+  'r584-983.0',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  418
+  119
   between
   contigs
-  (1)
+  'r88-505.1'
   and
-  'r1'
+  (2)
   to
   be
-  (0,
-  418).
+  (299,
+  119).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r88-505.1'
   and
-  'r1'
+  (2)
   has
   size
-  418,
+  119,
   119
   matches,
   and
   the
   score
   of
-  286251894.89392394.
+  2.0890444072090588e+33.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  119
+  between
+  contigs
+  'r88-505.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r1'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -289,42 +309,52 @@ BEGIN 24
   overlap
   of
   size
-  418
+  119
   between
   contigs
-  (1)
+  'r88-505.1'
   and
-  'r1'
+  (2)
   to
   be
-  (0,
-  418).
+  (299,
+  119).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  (1)
+  'r88-505.1'
   and
-  'r1'
+  (2)
   has
   size
-  418,
+  119,
   119
   matches,
   and
   the
   score
   of
-  286251894.89392394.
+  2.0890444072090588e+33.
 END 25
 BEGIN 26
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  119
+  between
+  contigs
+  'r88-505.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r1'
-  completely.
+  (4).
 END 26
 BEGIN 27
   Outputting

@@ -39,9 +39,9 @@ BEGIN 5
   405
   between
   contigs
-  'r0'
+  'r469-913.0'
   and
-  'r1'
+  'r509-933.1'
   to
   be
   (40,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r469-913.0'
   and
-  'r1'
+  'r509-933.1'
   has
   size
   405,
@@ -75,9 +75,9 @@ BEGIN 7
   405
   between
   contigs
-  'r0'
+  'r469-913.0'
   and
-  'r1',
+  'r509-933.1',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   256
   between
   contigs
-  'r2'
+  'r164-424.2'
   and
-  'r0'
+  'r469-913.0'
   to
   be
   None.
@@ -136,12 +136,12 @@ BEGIN 11
   overlap
   of
   size
-  261
+  256
   between
   contigs
-  (1)
+  'r164-424.2'
   and
-  'r2'
+  (1)
   to
   be
   None.
@@ -235,12 +235,12 @@ BEGIN 20
   overlap
   of
   size
-  261
+  256
   between
   contigs
-  (1)
+  'r164-424.2'
   and
-  'r2'
+  (1)
   to
   be
   None.

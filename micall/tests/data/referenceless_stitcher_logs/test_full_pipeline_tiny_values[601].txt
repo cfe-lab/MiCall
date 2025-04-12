@@ -39,9 +39,9 @@ BEGIN 5
   187
   between
   contigs
-  'r1'
+  'r351-854.1'
   and
-  'r0'
+  'r668-997.0'
   to
   be
   (317,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r351-854.1'
   and
-  'r0'
+  'r668-997.0'
   has
   size
   187,
@@ -75,9 +75,9 @@ BEGIN 7
   187
   between
   contigs
-  'r1'
+  'r351-854.1'
   and
-  'r0',
+  'r668-997.0',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   283
   between
   contigs
-  'r1'
+  'r351-854.1'
   and
-  'r2'
+  'r10-292.2'
   to
   be
   None.
@@ -141,7 +141,7 @@ BEGIN 11
   contigs
   (1)
   and
-  'r2'
+  'r10-292.2'
   to
   be
   None.
@@ -240,7 +240,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r2'
+  'r10-292.2'
   to
   be
   None.

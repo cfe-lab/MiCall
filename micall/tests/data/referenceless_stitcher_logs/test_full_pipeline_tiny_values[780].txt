@@ -39,9 +39,9 @@ BEGIN 5
   324
   between
   contigs
-  'r1'
+  'r11-339.1'
   and
-  'r2'
+  'r595-971.2'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   284
   between
   contigs
-  'r2'
+  'r595-971.2'
   and
-  'r0'
+  'r268-555.0'
   to
   be
   None.
@@ -121,9 +121,9 @@ BEGIN 11
   324
   between
   contigs
-  'r1'
+  'r11-339.1'
   and
-  'r2'
+  'r595-971.2'
   to
   be
   None.
@@ -139,9 +139,9 @@ BEGIN 12
   284
   between
   contigs
-  'r2'
+  'r595-971.2'
   and
-  'r0'
+  'r268-555.0'
   to
   be
   None.
@@ -154,42 +154,52 @@ BEGIN 13
   overlap
   of
   size
-  288
+  72
   between
   contigs
-  'r1'
+  'r11-339.1'
   and
-  'r0'
+  'r268-555.0'
   to
   be
   (257,
-  64).
+  72).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r1'
+  'r11-339.1'
   and
-  'r0'
+  'r268-555.0'
   has
   size
   72,
-  64
+  72
   matches,
   and
   the
   score
   of
-  2.8910586128592925e+19.
+  1.2002147851897737e+22.
 END 14
 BEGIN 15
-  Contig
-  'r1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  72
+  between
+  contigs
+  'r11-339.1'
+  and
+  'r268-555.0',
+  resulting
+  in
   contig
-  'r0'
-  completely.
+  (1).
 END 15
 BEGIN 16
   Calculated
@@ -199,12 +209,12 @@ BEGIN 16
   overlap
   of
   size
-  324
+  377
   between
   contigs
-  'r1'
+  (1)
   and
-  'r2'
+  'r595-971.2'
   to
   be
   None.

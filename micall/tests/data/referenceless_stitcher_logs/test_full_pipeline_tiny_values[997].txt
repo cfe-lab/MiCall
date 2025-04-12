@@ -39,21 +39,21 @@ BEGIN 5
   284
   between
   contigs
-  'r1'
+  'r10-625.1'
   and
-  'r2'
+  'r181-464.2'
   to
   be
   (171,
-  284).
+  455).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r10-625.1'
   and
-  'r2'
+  'r181-464.2'
   has
   size
   284,
@@ -67,10 +67,10 @@ BEGIN 6
 END 6
 BEGIN 7
   Contig
-  'r1'
+  'r10-625.1'
   covers
   contig
-  'r2'
+  'r181-464.2'
   completely.
 END 7
 BEGIN 8
@@ -84,9 +84,9 @@ BEGIN 8
   275
   between
   contigs
-  'r1'
+  'r10-625.1'
   and
-  'r0'
+  'r605-879.0'
   to
   be
   None.
@@ -129,9 +129,9 @@ BEGIN 11
   275
   between
   contigs
-  'r1'
+  'r10-625.1'
   and
-  'r0'
+  'r605-879.0'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   275
   between
   contigs
-  'r1'
+  'r10-625.1'
   and
-  'r0'
+  'r605-879.0'
   to
   be
   None.

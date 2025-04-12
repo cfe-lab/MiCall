@@ -39,21 +39,21 @@ BEGIN 5
   300
   between
   contigs
-  'r1'
+  'r254-901.1'
   and
-  'r2'
+  'r577-876.2'
   to
   be
   (323,
-  300).
+  623).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1'
+  'r254-901.1'
   and
-  'r2'
+  'r577-876.2'
   has
   size
   300,
@@ -67,10 +67,10 @@ BEGIN 6
 END 6
 BEGIN 7
   Contig
-  'r1'
+  'r254-901.1'
   covers
   contig
-  'r2'
+  'r577-876.2'
   completely.
 END 7
 BEGIN 8
@@ -84,9 +84,9 @@ BEGIN 8
   260
   between
   contigs
-  'r1'
+  'r254-901.1'
   and
-  'r0'
+  'r12-271.0'
   to
   be
   None.
@@ -129,9 +129,9 @@ BEGIN 11
   260
   between
   contigs
-  'r1'
+  'r254-901.1'
   and
-  'r0'
+  'r12-271.0'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   260
   between
   contigs
-  'r1'
+  'r254-901.1'
   and
-  'r0'
+  'r12-271.0'
   to
   be
   None.

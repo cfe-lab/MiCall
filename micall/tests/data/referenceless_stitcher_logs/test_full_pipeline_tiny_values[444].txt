@@ -39,9 +39,9 @@ BEGIN 5
   311
   between
   contigs
-  'r0'
+  'r3-376.0'
   and
-  'r1'
+  'r579-889.1'
   to
   be
   None.
@@ -57,21 +57,21 @@ BEGIN 6
   304
   between
   contigs
-  'r0'
+  'r3-376.0'
   and
-  'r2'
+  'r10-313.2'
   to
   be
   (7,
-  304).
+  311).
 END 6
 BEGIN 7
   Overlap
   between
   contigs
-  'r0'
+  'r3-376.0'
   and
-  'r2'
+  'r10-313.2'
   has
   size
   304,
@@ -85,10 +85,10 @@ BEGIN 7
 END 7
 BEGIN 8
   Contig
-  'r0'
+  'r3-376.0'
   covers
   contig
-  'r2'
+  'r10-313.2'
   completely.
 END 8
 BEGIN 9
@@ -129,9 +129,9 @@ BEGIN 11
   311
   between
   contigs
-  'r0'
+  'r3-376.0'
   and
-  'r1'
+  'r579-889.1'
   to
   be
   None.
@@ -228,9 +228,9 @@ BEGIN 20
   311
   between
   contigs
-  'r0'
+  'r3-376.0'
   and
-  'r1'
+  'r579-889.1'
   to
   be
   None.

@@ -39,9 +39,9 @@ BEGIN 5
   372
   between
   contigs
-  'r1'
+  'r85-531.1'
   and
-  'r2'
+  'r555-929.2'
   to
   be
   None.
@@ -57,9 +57,9 @@ BEGIN 6
   265
   between
   contigs
-  'r1'
+  'r85-531.1'
   and
-  'r0'
+  'r595-859.0'
   to
   be
   None.
@@ -121,9 +121,9 @@ BEGIN 11
   372
   between
   contigs
-  'r1'
+  'r85-531.1'
   and
-  'r2'
+  'r555-929.2'
   to
   be
   None.
@@ -139,9 +139,9 @@ BEGIN 12
   265
   between
   contigs
-  'r1'
+  'r85-531.1'
   and
-  'r0'
+  'r595-859.0'
   to
   be
   None.
@@ -157,21 +157,21 @@ BEGIN 13
   265
   between
   contigs
-  'r2'
+  'r555-929.2'
   and
-  'r0'
+  'r595-859.0'
   to
   be
   (40,
-  265).
+  305).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r2'
+  'r555-929.2'
   and
-  'r0'
+  'r595-859.0'
   has
   size
   265,
@@ -185,10 +185,10 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r2'
+  'r555-929.2'
   covers
   contig
-  'r0'
+  'r595-859.0'
   completely.
 END 15
 BEGIN 16
@@ -202,9 +202,9 @@ BEGIN 16
   372
   between
   contigs
-  'r1'
+  'r85-531.1'
   and
-  'r2'
+  'r555-929.2'
   to
   be
   None.

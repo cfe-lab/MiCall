@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  293
+  109
   between
   contigs
-  'r0'
+  'r23-369.2'
   and
-  'r2'
+  'r261-571.0'
   to
   be
-  (0,
-  347).
+  (238,
+  109).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r23-369.2'
   and
-  'r2'
+  'r261-571.0'
   has
   size
-  347,
+  109,
   109
   matches,
   and
   the
   score
   of
-  261364916449.06372.
+  1.2304804376329252e+31.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  549
+  109
   between
   contigs
-  'r0'
+  'r23-369.2'
   and
-  'r2',
+  'r261-571.0',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   295
   between
   contigs
-  'r1'
+  'r21-317.1'
   and
-  'r2'
+  'r23-369.2'
   to
   be
   (2,
@@ -106,9 +106,9 @@ BEGIN 9
   Overlap
   between
   contigs
-  'r1'
+  'r21-317.1'
   and
-  'r2'
+  'r23-369.2'
   has
   size
   295,
@@ -130,9 +130,9 @@ BEGIN 10
   295
   between
   contigs
-  'r1'
+  'r21-317.1'
   and
-  'r2',
+  'r23-369.2',
   resulting
   in
   contig
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  295
+  109
   between
   contigs
-  'r0'
-  and
   (2)
+  and
+  'r261-571.0'
   to
   be
-  (0,
-  349).
+  (240,
+  109).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r0'
-  and
   (2)
+  and
+  'r261-571.0'
   has
   size
-  349,
+  109,
   109
   matches,
   and
   the
   score
   of
-  244185401304.38086.
+  1.2304804376329252e+31.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  551
+  109
   between
   contigs
-  'r0'
+  (2)
   and
-  (2),
+  'r261-571.0',
   resulting
   in
   contig
@@ -309,34 +309,34 @@ BEGIN 24
   overlap
   of
   size
-  295
+  109
   between
   contigs
-  'r0'
-  and
   (2)
+  and
+  'r261-571.0'
   to
   be
-  (0,
-  349).
+  (240,
+  109).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  'r0'
-  and
   (2)
+  and
+  'r261-571.0'
   has
   size
-  349,
+  109,
   109
   matches,
   and
   the
   score
   of
-  244185401304.38086.
+  1.2304804376329252e+31.
 END 25
 BEGIN 26
   Found
@@ -345,12 +345,12 @@ BEGIN 26
   overlap
   of
   size
-  551
+  109
   between
   contigs
-  'r0'
+  (2)
   and
-  (2),
+  'r261-571.0',
   resulting
   in
   contig

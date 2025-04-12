@@ -39,9 +39,9 @@ BEGIN 5
   290
   between
   contigs
-  'r2'
+  'r43-429.2'
   and
-  'r1'
+  'r481-770.1'
   to
   be
   None.
@@ -54,12 +54,12 @@ BEGIN 6
   overlap
   of
   size
-  256
+  245
   between
   contigs
-  'r2'
+  'r493-748.0'
   and
-  'r0'
+  'r43-429.2'
   to
   be
   None.
@@ -121,9 +121,9 @@ BEGIN 11
   290
   between
   contigs
-  'r2'
+  'r43-429.2'
   and
-  'r1'
+  'r481-770.1'
   to
   be
   None.
@@ -136,12 +136,12 @@ BEGIN 12
   overlap
   of
   size
-  256
+  245
   between
   contigs
-  'r2'
+  'r493-748.0'
   and
-  'r0'
+  'r43-429.2'
   to
   be
   None.
@@ -157,21 +157,21 @@ BEGIN 13
   256
   between
   contigs
-  'r1'
+  'r481-770.1'
   and
-  'r0'
+  'r493-748.0'
   to
   be
   (12,
-  256).
+  268).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r1'
+  'r481-770.1'
   and
-  'r0'
+  'r493-748.0'
   has
   size
   256,
@@ -185,10 +185,10 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r1'
+  'r481-770.1'
   covers
   contig
-  'r0'
+  'r493-748.0'
   completely.
 END 15
 BEGIN 16
@@ -202,9 +202,9 @@ BEGIN 16
   290
   between
   contigs
-  'r2'
+  'r43-429.2'
   and
-  'r1'
+  'r481-770.1'
   to
   be
   None.

@@ -39,9 +39,9 @@ BEGIN 5
   326
   between
   contigs
-  'r0'
+  'r15-580.0'
   and
-  'r1'
+  'r255-651.1'
   to
   be
   (240,
@@ -51,9 +51,9 @@ BEGIN 6
   Overlap
   between
   contigs
-  'r0'
+  'r15-580.0'
   and
-  'r1'
+  'r255-651.1'
   has
   size
   326,
@@ -75,9 +75,9 @@ BEGIN 7
   326
   between
   contigs
-  'r0'
+  'r15-580.0'
   and
-  'r1',
+  'r255-651.1',
   resulting
   in
   contig
@@ -94,9 +94,9 @@ BEGIN 8
   283
   between
   contigs
-  'r0'
+  'r15-580.0'
   and
-  'r2'
+  'r678-960.2'
   to
   be
   None.
@@ -141,7 +141,7 @@ BEGIN 11
   contigs
   (1)
   and
-  'r2'
+  'r678-960.2'
   to
   be
   None.
@@ -240,7 +240,7 @@ BEGIN 20
   contigs
   (1)
   and
-  'r2'
+  'r678-960.2'
   to
   be
   None.
