@@ -38,29 +38,30 @@ class ContigWithAligner(Contig):
                     overlap: str,
                     ) -> Iterator[Tuple[Alignment, int]]:
 
-        optimistic_number_of_matches = len(overlap)
-        max_length = find_max_overlap_length(M=optimistic_number_of_matches,
-                                             X=minimum_score,
-                                             L_high=len(self.seq),
-                                             )
+        aligner = self.aligner
+        shift = 0
 
-        assert max_length > 0
-        assert max_length >= len(overlap)
-        assert max_length <= len(self.seq)
+        if relation != "cover":
+            optimistic_number_of_matches = len(overlap)
+            max_length = find_max_overlap_length(M=optimistic_number_of_matches,
+                                                 X=minimum_score,
+                                                 L_high=len(self.seq),
+                                                 )
 
-        if max_length < len(self.seq) and relation != "cover":
-            if relation == "left":
-                seq = self.seq[-max_length:]
-                shift = len(self.seq) - max_length
-            elif relation == "right":
-                seq = self.seq[:max_length]
-                shift = 0
-            else:
-                _x: NoReturn = relation
-            aligner = Aligner(seq=seq)
-        else:
-            aligner = self.aligner
-            shift = 0
+            assert max_length > 0
+            assert max_length >= len(overlap)
+            assert max_length <= len(self.seq)
+
+            if max_length < len(self.seq):
+                if relation == "left":
+                    seq = self.seq[-max_length:]
+                    shift = len(self.seq) - max_length
+                elif relation == "right":
+                    seq = self.seq[:max_length]
+                    shift = 0
+                else:
+                    _x: NoReturn = relation
+                aligner = Aligner(seq=seq)
 
         for x in aligner.map(overlap):
             if x.is_primary:
