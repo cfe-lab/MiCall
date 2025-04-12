@@ -91,12 +91,12 @@ BEGIN 8
   overlap
   of
   size
-  262
+  44
   between
   contigs
-  'r593-986.0'
-  and
   'r375-636.2'
+  and
+  'r593-986.0'
   to
   be
   None.

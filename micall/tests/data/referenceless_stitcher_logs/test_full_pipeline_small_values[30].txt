@@ -393,7 +393,7 @@ BEGIN 25
   overlap
   of
   size
-  208
+  74
   between
   contigs
   (3)
@@ -402,7 +402,7 @@ BEGIN 25
   to
   be
   (460,
-  534).
+  74).
 END 25
 BEGIN 26
   Overlap
@@ -413,22 +413,32 @@ BEGIN 26
   'r554-761.2'
   has
   size
-  208,
+  74,
   74
   matches,
   and
   the
   score
   of
-  230551921102.6129.
+  2.623480008802593e+22.
 END 26
 BEGIN 27
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  74
+  between
+  contigs
   (3)
-  covers
+  and
+  'r554-761.2',
+  resulting
+  in
   contig
-  'r554-761.2'
-  completely.
+  (7).
 END 27
 BEGIN 28
   Cycle
@@ -510,7 +520,7 @@ BEGIN 32
   resulting
   in
   contig
-  (7).
+  (8).
 END 32
 BEGIN 33
   Calculated
@@ -565,7 +575,7 @@ BEGIN 35
   resulting
   in
   contig
-  (8).
+  (9).
 END 35
 BEGIN 36
   Calculated
@@ -575,7 +585,7 @@ BEGIN 36
   overlap
   of
   size
-  208
+  74
   between
   contigs
   (5)
@@ -584,7 +594,7 @@ BEGIN 36
   to
   be
   (506,
-  580).
+  74).
 END 36
 BEGIN 37
   Overlap
@@ -595,22 +605,32 @@ BEGIN 37
   'r554-761.2'
   has
   size
-  208,
+  74,
   74
   matches,
   and
   the
   score
   of
-  230551921102.6129.
+  2.623480008802593e+22.
 END 37
 BEGIN 38
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  74
+  between
+  contigs
   (5)
-  covers
+  and
+  'r554-761.2',
+  resulting
+  in
   contig
-  'r554-761.2'
-  completely.
+  (10).
 END 38
 BEGIN 39
   Constructed
@@ -919,7 +939,7 @@ BEGIN 61
   resulting
   in
   contig
-  (9).
+  (11).
 END 61
 BEGIN 62
   Outputting

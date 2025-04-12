@@ -226,7 +226,7 @@ BEGIN 17
   overlap
   of
   size
-  252
+  44
   between
   contigs
   'r142-699.4'
@@ -759,7 +759,7 @@ BEGIN 53
   overlap
   of
   size
-  252
+  39
   between
   contigs
   'r398-694.5'
@@ -868,7 +868,7 @@ BEGIN 61
   overlap
   of
   size
-  252
+  39
   between
   contigs
   'r398-694.5'

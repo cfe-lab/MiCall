@@ -573,34 +573,34 @@ BEGIN 38
   overlap
   of
   size
-  424
+  141
   between
   contigs
-  'r507-964.4'
-  and
   'r186-647.2'
+  and
+  'r507-964.4'
   to
   be
-  (0,
-  462).
+  (321,
+  141).
 END 38
 BEGIN 39
   Overlap
   between
   contigs
-  'r507-964.4'
-  and
   'r186-647.2'
+  and
+  'r507-964.4'
   has
   size
-  462,
+  141,
   141
   matches,
   and
   the
   score
   of
-  3315443339922.908.
+  4.721207210946395e+38.
 END 39
 BEGIN 40
   Found
@@ -612,9 +612,9 @@ BEGIN 40
   141
   between
   contigs
-  'r507-964.4'
+  'r186-647.2'
   and
-  'r186-647.2',
+  'r507-964.4',
   resulting
   in
   contig

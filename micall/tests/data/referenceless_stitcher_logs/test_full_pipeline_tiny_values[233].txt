@@ -91,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  439
+  157
   between
   contigs
-  'r519-958.1'
-  and
   'r153-675.0'
+  and
+  'r519-958.1'
   to
   be
-  (0,
-  523).
+  (366,
+  157).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r519-958.1'
-  and
   'r153-675.0'
+  and
+  'r519-958.1'
   has
   size
-  523,
+  157,
   157
   matches,
   and
   the
   score
   of
-  7385463214047.953.
+  2.7291429039034484e+42.
 END 9
 BEGIN 10
   Found
@@ -130,9 +130,9 @@ BEGIN 10
   157
   between
   contigs
-  'r519-958.1'
+  'r153-675.0'
   and
-  'r153-675.0',
+  'r519-958.1',
   resulting
   in
   contig

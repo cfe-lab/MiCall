@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  269
+  83
   between
   contigs
-  'r226-755.2'
-  and
   'r40-308.0'
+  and
+  'r226-755.2'
   to
   be
-  (0,
+  (186,
   83).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r226-755.2'
-  and
   'r40-308.0'
+  and
+  'r226-755.2'
   has
   size
-  269,
+  83,
   83
   matches,
   and
   the
   score
   of
-  1366282974.6516247.
+  4.869883739551572e+24.
 END 9
 BEGIN 10
-  Contig
-  'r226-755.2'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  83
+  between
+  contigs
   'r40-308.0'
-  completely.
+  and
+  'r226-755.2',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -344,7 +354,7 @@ BEGIN 26
   resulting
   in
   contig
-  (3).
+  (4).
 END 26
 BEGIN 27
   Outputting

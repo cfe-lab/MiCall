@@ -365,7 +365,7 @@ BEGIN 24
   overlap
   of
   size
-  386
+  143
   between
   contigs
   (1)
@@ -374,7 +374,7 @@ BEGIN 24
   to
   be
   (519,
-  662).
+  143).
 END 24
 BEGIN 25
   Overlap
@@ -385,22 +385,32 @@ BEGIN 25
   'r544-929.0'
   has
   size
-  386,
+  143,
   143
   matches,
   and
   the
   score
   of
-  4.148073724174789e+19.
+  9.878726072850401e+38.
 END 25
 BEGIN 26
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  143
+  between
+  contigs
   (1)
-  covers
+  and
+  'r544-929.0',
+  resulting
+  in
   contig
-  'r544-929.0'
-  completely.
+  (5).
 END 26
 BEGIN 27
   Calculated
@@ -455,7 +465,7 @@ BEGIN 29
   resulting
   in
   contig
-  (5).
+  (6).
 END 29
 BEGIN 30
   Calculated
@@ -537,7 +547,7 @@ BEGIN 35
   overlap
   of
   size
-  386
+  152
   between
   contigs
   (4)
@@ -546,7 +556,7 @@ BEGIN 35
   to
   be
   (519,
-  671).
+  152).
 END 35
 BEGIN 36
   Overlap
@@ -557,22 +567,32 @@ BEGIN 36
   'r544-929.0'
   has
   size
-  386,
+  152,
   152
   matches,
   and
   the
   score
   of
-  3.6205792940367513e+22.
+  1.5377279760312904e+41.
 END 36
 BEGIN 37
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  152
+  between
+  contigs
   (4)
-  covers
+  and
+  'r544-929.0',
+  resulting
+  in
   contig
-  'r544-929.0'
-  completely.
+  (7).
 END 37
 BEGIN 38
   Calculated
@@ -627,7 +647,7 @@ BEGIN 40
   resulting
   in
   contig
-  (6).
+  (8).
 END 40
 BEGIN 41
   Calculated
@@ -762,7 +782,7 @@ BEGIN 50
   resulting
   in
   contig
-  (7).
+  (9).
 END 50
 BEGIN 51
   Calculated
@@ -820,7 +840,7 @@ BEGIN 54
   237
   between
   contigs
-  (7)
+  (9)
   and
   'r39-275.3'
   to
@@ -921,7 +941,7 @@ BEGIN 63
   contigs
   (4)
   and
-  (7)
+  (9)
   to
   be
   (450,
@@ -933,7 +953,7 @@ BEGIN 64
   contigs
   (4)
   and
-  (7)
+  (9)
   has
   size
   221,
@@ -957,11 +977,11 @@ BEGIN 65
   contigs
   (4)
   and
-  (7),
+  (9),
   resulting
   in
   contig
-  (8).
+  (10).
 END 65
 BEGIN 66
   Calculated
@@ -974,7 +994,7 @@ BEGIN 66
   237
   between
   contigs
-  (8)
+  (10)
   and
   'r39-275.3'
   to
@@ -986,7 +1006,7 @@ BEGIN 67
   Overlap
   between
   contigs
-  (8)
+  (10)
   and
   'r39-275.3'
   has
@@ -1002,7 +1022,7 @@ BEGIN 67
 END 67
 BEGIN 68
   Contig
-  (8)
+  (10)
   covers
   contig
   'r39-275.3'

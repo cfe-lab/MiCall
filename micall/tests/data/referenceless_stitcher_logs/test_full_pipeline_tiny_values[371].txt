@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  295
+  88
   between
   contigs
-  'r265-877.0'
-  and
   'r58-352.2'
+  and
+  'r265-877.0'
   to
   be
-  (0,
+  (207,
   88).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r265-877.0'
-  and
   'r58-352.2'
+  and
+  'r265-877.0'
   has
   size
-  295,
+  88,
   88
   matches,
   and
   the
   score
   of
-  255825459.478227.
+  9.414156406256686e+25.
 END 9
 BEGIN 10
-  Contig
-  'r265-877.0'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  88
+  between
+  contigs
   'r58-352.2'
-  completely.
+  and
+  'r265-877.0',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -344,7 +354,7 @@ BEGIN 26
   resulting
   in
   contig
-  (3).
+  (4).
 END 26
 BEGIN 27
   Outputting

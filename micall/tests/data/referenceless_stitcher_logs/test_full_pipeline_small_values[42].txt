@@ -598,42 +598,52 @@ BEGIN 41
   overlap
   of
   size
-  266
+  84
   between
   contigs
-  'r376-857.1'
-  and
   'r194-459.4'
+  and
+  'r376-857.1'
   to
   be
-  (0,
+  (182,
   84).
 END 41
 BEGIN 42
   Overlap
   between
   contigs
-  'r376-857.1'
-  and
   'r194-459.4'
+  and
+  'r376-857.1'
   has
   size
-  266,
+  84,
   84
   matches,
   and
   the
   score
   of
-  3759025098.5818906.
+  1.012448963728759e+25.
 END 42
 BEGIN 43
-  Contig
-  'r376-857.1'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  84
+  between
+  contigs
   'r194-459.4'
-  completely.
+  and
+  'r376-857.1',
+  resulting
+  in
+  contig
+  (6).
 END 43
 BEGIN 44
   Calculated
@@ -688,7 +698,7 @@ BEGIN 46
   resulting
   in
   contig
-  (6).
+  (7).
 END 46
 BEGIN 47
   Cycle
@@ -728,7 +738,7 @@ BEGIN 49
   345
   between
   contigs
-  (6)
+  (7)
   and
   'r407-751.3'
   to
@@ -740,7 +750,7 @@ BEGIN 50
   Overlap
   between
   contigs
-  (6)
+  (7)
   and
   'r407-751.3'
   has
@@ -756,7 +766,7 @@ BEGIN 50
 END 50
 BEGIN 51
   Contig
-  (6)
+  (7)
   covers
   contig
   'r407-751.3'
@@ -770,42 +780,52 @@ BEGIN 52
   overlap
   of
   size
-  266
+  93
   between
   contigs
-  (6)
-  and
   'r194-459.4'
+  and
+  (7)
   to
   be
-  (0,
+  (173,
   93).
 END 52
 BEGIN 53
   Overlap
   between
   contigs
-  (6)
-  and
   'r194-459.4'
+  and
+  (7)
   has
   size
-  266,
+  93,
   93
   matches,
   and
   the
   score
   of
-  6782125319849.689.
+  1.8006322583757143e+27.
 END 53
 BEGIN 54
-  Contig
-  (6)
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  93
+  between
+  contigs
   'r194-459.4'
-  completely.
+  and
+  (7),
+  resulting
+  in
+  contig
+  (8).
 END 54
 BEGIN 55
   Constructed
@@ -850,82 +870,111 @@ BEGIN 59
   overlap
   of
   size
-  266
+  53
   between
   contigs
-  'r407-751.3'
-  and
   'r194-459.4'
+  and
+  'r407-751.3'
   to
   be
-  (0,
+  (213,
   53).
 END 59
 BEGIN 60
   Overlap
   between
   contigs
-  'r407-751.3'
-  and
   'r194-459.4'
+  and
+  'r407-751.3'
   has
   size
-  266,
+  53,
   53
   matches,
   and
   the
   score
   of
-  8.11348486371866.
+  2.70304585268633e+17.
 END 60
 BEGIN 61
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  53
+  between
+  contigs
+  'r194-459.4'
+  and
+  'r407-751.3',
+  resulting
+  in
+  contig
+  (9).
+END 61
+BEGIN 62
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  558
+  and
+  consists
+  of
+  2
+  parts.
+END 62
+BEGIN 63
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 63
+BEGIN 64
   Constructed
   a
   path
   of
   length
-  345.
-END 61
-BEGIN 62
+  558.
+END 64
+BEGIN 65
   Removed
-  1
+  2
   components
   from
   the
   working
   list,
   having
-  1
+  0
   still
   to
   process.
-END 62
-BEGIN 63
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 63
-BEGIN 64
+END 65
+BEGIN 66
   Initial
   overlap
   stitching
   produced
-  4
+  3
   contigs.
-END 64
-BEGIN 65
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -938,19 +987,19 @@ BEGIN 65
   contigs
   (1)
   and
-  (6)
+  (7)
   to
   be
   (274,
   289).
-END 65
-BEGIN 66
+END 67
+BEGIN 68
   Overlap
   between
   contigs
   (1)
   and
-  (6)
+  (7)
   has
   size
   289,
@@ -961,8 +1010,8 @@ BEGIN 66
   score
   of
   6.059359273135458e+72.
-END 66
-BEGIN 67
+END 68
+BEGIN 69
   Found
   a
   significant
@@ -974,48 +1023,11 @@ BEGIN 67
   contigs
   (1)
   and
-  (6),
+  (7),
   resulting
   in
   contig
-  (7).
-END 67
-BEGIN 68
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  266
-  between
-  contigs
-  'r407-751.3'
-  and
-  'r194-459.4'
-  to
-  be
-  (0,
-  53).
-END 68
-BEGIN 69
-  Overlap
-  between
-  contigs
-  'r407-751.3'
-  and
-  'r194-459.4'
-  has
-  size
-  266,
-  53
-  matches,
-  and
-  the
-  score
-  of
-  8.11348486371866.
+  (10).
 END 69
 BEGIN 70
   Calculated
@@ -1025,90 +1037,45 @@ BEGIN 70
   overlap
   of
   size
-  345
+  558
   between
   contigs
-  (7)
+  (10)
   and
-  'r407-751.3'
+  (9)
   to
   be
-  (314,
+  (101,
   659).
 END 70
 BEGIN 71
   Overlap
   between
   contigs
-  (7)
+  (10)
   and
-  'r407-751.3'
+  (9)
   has
   size
-  345,
-  345
+  558,
+  558
   matches,
   and
   the
   score
   of
-  4.677479896743723e+85.
+  3.1331810095219665e+134.
 END 71
 BEGIN 72
   Contig
-  (7)
+  (10)
   covers
   contig
-  'r407-751.3'
+  (9)
   completely.
 END 72
 BEGIN 73
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  266
-  between
-  contigs
-  (7)
-  and
-  'r194-459.4'
-  to
-  be
-  (101,
-  367).
-END 73
-BEGIN 74
-  Overlap
-  between
-  contigs
-  (7)
-  and
-  'r194-459.4'
-  has
-  size
-  266,
-  266
-  matches,
-  and
-  the
-  score
-  of
-  3.551093662302419e+67.
-END 74
-BEGIN 75
-  Contig
-  (7)
-  covers
-  contig
-  'r194-459.4'
-  completely.
-END 75
-BEGIN 76
   Outputting
   1
   contigs.
-END 76
+END 73

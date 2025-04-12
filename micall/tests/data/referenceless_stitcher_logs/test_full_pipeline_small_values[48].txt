@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  433
+  148
   between
   contigs
   'r118-655.3'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (390,
-  538).
+  148).
 END 8
 BEGIN 9
   Overlap
@@ -111,22 +111,32 @@ BEGIN 9
   'r508-940.2'
   has
   size
-  433,
+  148,
   148
   matches,
   and
   the
   score
   of
-  4.1152628462423654e+17.
+  1.7647100715619131e+40.
 END 9
 BEGIN 10
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  148
+  between
+  contigs
   'r118-655.3'
-  covers
+  and
+  'r508-940.2',
+  resulting
+  in
   contig
-  'r508-940.2'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Calculated
@@ -181,7 +191,7 @@ BEGIN 13
   resulting
   in
   contig
-  (2).
+  (3).
 END 13
 BEGIN 14
   Calculated
@@ -353,7 +363,7 @@ BEGIN 24
   resulting
   in
   contig
-  (3).
+  (4).
 END 24
 BEGIN 25
   Calculated
@@ -408,7 +418,7 @@ BEGIN 27
   resulting
   in
   contig
-  (4).
+  (5).
 END 27
 BEGIN 28
   Calculated
@@ -538,7 +548,7 @@ BEGIN 36
   261
   between
   contigs
-  (4)
+  (5)
   and
   'r508-940.2'
   to
@@ -550,7 +560,7 @@ BEGIN 37
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r508-940.2'
   has
@@ -574,13 +584,13 @@ BEGIN 38
   261
   between
   contigs
-  (4)
+  (5)
   and
   'r508-940.2',
   resulting
   in
   contig
-  (5).
+  (6).
 END 38
 BEGIN 39
   Calculated
@@ -593,7 +603,7 @@ BEGIN 39
   301
   between
   contigs
-  (4)
+  (5)
   and
   'r284-584.1'
   to
@@ -605,7 +615,7 @@ BEGIN 40
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r284-584.1'
   has
@@ -621,7 +631,7 @@ BEGIN 40
 END 40
 BEGIN 41
   Contig
-  (4)
+  (5)
   covers
   contig
   'r284-584.1'
@@ -638,7 +648,7 @@ BEGIN 42
   272
   between
   contigs
-  (4)
+  (5)
   and
   'r382-653.0'
   to
@@ -650,7 +660,7 @@ BEGIN 43
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r382-653.0'
   has
@@ -666,7 +676,7 @@ BEGIN 43
 END 43
 BEGIN 44
   Contig
-  (4)
+  (5)
   covers
   contig
   'r382-653.0'
@@ -715,7 +725,7 @@ BEGIN 49
   overlap
   of
   size
-  300
+  77
   between
   contigs
   'r284-584.1'
@@ -760,7 +770,7 @@ BEGIN 51
   resulting
   in
   contig
-  (6).
+  (7).
 END 51
 BEGIN 52
   Calculated
@@ -815,7 +825,7 @@ BEGIN 54
   resulting
   in
   contig
-  (7).
+  (8).
 END 54
 BEGIN 55
   Cycle
@@ -857,7 +867,7 @@ BEGIN 57
   contigs
   'r284-584.1'
   and
-  (7)
+  (8)
   to
   be
   (98,
@@ -869,7 +879,7 @@ BEGIN 58
   contigs
   'r284-584.1'
   and
-  (7)
+  (8)
   has
   size
   203,
@@ -893,11 +903,11 @@ BEGIN 59
   contigs
   'r284-584.1'
   and
-  (7),
+  (8),
   resulting
   in
   contig
-  (8).
+  (9).
 END 59
 BEGIN 60
   Cycle
@@ -967,9 +977,9 @@ BEGIN 65
   485
   between
   contigs
-  (4)
+  (5)
   and
-  (8)
+  (9)
   to
   be
   (166,
@@ -979,9 +989,9 @@ BEGIN 66
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
-  (8)
+  (9)
   has
   size
   485,
@@ -1003,13 +1013,13 @@ BEGIN 67
   485
   between
   contigs
-  (4)
+  (5)
   and
-  (8),
+  (9),
   resulting
   in
   contig
-  (9).
+  (10).
 END 67
 BEGIN 68
   Outputting

@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  475
+  158
   between
   contigs
-  'r333-895.0'
-  and
   'r16-490.2'
+  and
+  'r333-895.0'
   to
   be
-  (0,
+  (317,
   158).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r333-895.0'
-  and
   'r16-490.2'
+  and
+  'r333-895.0'
   has
   size
-  475,
+  158,
   158
   matches,
   and
   the
   score
   of
-  2.010602266193651e+17.
+  2.7852040633645794e+42.
 END 6
 BEGIN 7
-  Contig
-  'r333-895.0'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  158
+  between
+  contigs
   'r16-490.2'
-  completely.
+  and
+  'r333-895.0',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -126,7 +136,7 @@ BEGIN 10
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -168,7 +178,7 @@ BEGIN 13
   contigs
   'r16-490.2'
   and
-  (1)
+  (2)
   to
   be
   (193,
@@ -180,7 +190,7 @@ BEGIN 14
   contigs
   'r16-490.2'
   and
-  (1)
+  (2)
   has
   size
   282,
@@ -204,11 +214,11 @@ BEGIN 15
   contigs
   'r16-490.2'
   and
-  (1),
+  (2),
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

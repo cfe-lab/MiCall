@@ -705,12 +705,12 @@ BEGIN 49
   overlap
   of
   size
-  252
+  239
   between
   contigs
-  'r132-404.1'
-  and
   'r440-691.4'
+  and
+  'r132-404.1'
   to
   be
   None.

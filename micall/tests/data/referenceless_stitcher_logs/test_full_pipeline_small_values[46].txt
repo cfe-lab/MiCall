@@ -628,7 +628,7 @@ BEGIN 41
   overlap
   of
   size
-  239
+  90
   between
   contigs
   'r226-623.1'
@@ -637,7 +637,7 @@ BEGIN 41
   to
   be
   (308,
-  398).
+  90).
 END 41
 BEGIN 42
   Overlap
@@ -648,22 +648,32 @@ BEGIN 42
   'r534-772.0'
   has
   size
-  239,
+  90,
   90
   matches,
   and
   the
   score
   of
-  158889363324343.9.
+  2.0246309730395466e+26.
 END 42
 BEGIN 43
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  90
+  between
+  contigs
   'r226-623.1'
-  covers
+  and
+  'r534-772.0',
+  resulting
+  in
   contig
-  'r534-772.0'
-  completely.
+  (9).
 END 43
 BEGIN 44
   Calculated
@@ -745,7 +755,7 @@ BEGIN 49
   overlap
   of
   size
-  239
+  90
   between
   contigs
   (8)
@@ -754,7 +764,7 @@ BEGIN 49
   to
   be
   (409,
-  499).
+  90).
 END 49
 BEGIN 50
   Overlap
@@ -765,22 +775,32 @@ BEGIN 50
   'r534-772.0'
   has
   size
-  239,
+  90,
   90
   matches,
   and
   the
   score
   of
-  158889363324343.9.
+  2.0246309730395466e+26.
 END 50
 BEGIN 51
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  90
+  between
+  contigs
   (8)
-  covers
+  and
+  'r534-772.0',
+  resulting
+  in
   contig
-  'r534-772.0'
-  completely.
+  (10).
 END 51
 BEGIN 52
   Calculated
@@ -979,7 +999,7 @@ BEGIN 66
   resulting
   in
   contig
-  (9).
+  (11).
 END 66
 BEGIN 67
   Calculated
@@ -1010,7 +1030,7 @@ BEGIN 68
   239
   between
   contigs
-  (9)
+  (11)
   and
   'r534-772.0'
   to
@@ -1022,7 +1042,7 @@ BEGIN 69
   Overlap
   between
   contigs
-  (9)
+  (11)
   and
   'r534-772.0'
   has
@@ -1038,7 +1058,7 @@ BEGIN 69
 END 69
 BEGIN 70
   Contig
-  (9)
+  (11)
   covers
   contig
   'r534-772.0'
@@ -1055,7 +1075,7 @@ BEGIN 71
   230
   between
   contigs
-  (9)
+  (11)
   and
   'r314-543.3'
   to
@@ -1067,7 +1087,7 @@ BEGIN 72
   Overlap
   between
   contigs
-  (9)
+  (11)
   and
   'r314-543.3'
   has
@@ -1083,7 +1103,7 @@ BEGIN 72
 END 72
 BEGIN 73
   Contig
-  (9)
+  (11)
   covers
   contig
   'r314-543.3'

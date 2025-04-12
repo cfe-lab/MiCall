@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  367
+  133
   between
   contigs
-  'r241-884.2'
-  and
   'r7-373.1'
+  and
+  'r241-884.2'
   to
   be
-  (0,
+  (234,
   133).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r241-884.2'
-  and
   'r7-373.1'
+  and
+  'r241-884.2'
   has
   size
-  367,
+  133,
   133
   matches,
   and
   the
   score
   of
-  8.95422443666315e+17.
+  6.116083198919513e+36.
 END 9
 BEGIN 10
-  Contig
-  'r241-884.2'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  133
+  between
+  contigs
   'r7-373.1'
-  completely.
+  and
+  'r241-884.2',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -344,7 +354,7 @@ BEGIN 26
   resulting
   in
   contig
-  (3).
+  (4).
 END 26
 BEGIN 27
   Outputting

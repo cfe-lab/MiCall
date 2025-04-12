@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  293
+  86
   between
   contigs
   'r61-761.2'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (615,
-  701).
+  86).
 END 8
 BEGIN 9
   Overlap
@@ -111,22 +111,32 @@ BEGIN 9
   'r676-968.0'
   has
   size
-  293,
+  86,
   86
   matches,
   and
   the
   score
   of
-  45468647.13870945.
+  2.184987225323363e+25.
 END 9
 BEGIN 10
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  86
+  between
+  contigs
   'r61-761.2'
-  covers
+  and
+  'r676-968.0',
+  resulting
+  in
   contig
-  'r676-968.0'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -344,7 +354,7 @@ BEGIN 26
   resulting
   in
   contig
-  (3).
+  (4).
 END 26
 BEGIN 27
   Outputting

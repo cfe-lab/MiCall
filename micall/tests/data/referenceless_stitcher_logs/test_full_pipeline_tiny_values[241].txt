@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  278
+  94
   between
   contigs
-  'r472-947.0'
-  and
   'r288-565.1'
+  and
+  'r472-947.0'
   to
   be
-  (0,
+  (184,
   94).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r472-947.0'
-  and
   'r288-565.1'
+  and
+  'r472-947.0'
   has
   size
-  278,
+  94,
   94
   matches,
   and
   the
   score
   of
-  1347277278566.045.
+  1.863888668441794e+27.
 END 9
 BEGIN 10
-  Contig
-  'r472-947.0'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  94
+  between
+  contigs
   'r288-565.1'
-  completely.
+  and
+  'r472-947.0',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -344,7 +354,7 @@ BEGIN 26
   resulting
   in
   contig
-  (3).
+  (4).
 END 26
 BEGIN 27
   Outputting

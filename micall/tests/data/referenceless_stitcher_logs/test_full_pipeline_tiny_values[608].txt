@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  313
+  96
   between
   contigs
   'r50-673.1'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (528,
-  624).
+  96).
 END 8
 BEGIN 9
   Overlap
@@ -111,22 +111,32 @@ BEGIN 9
   'r578-890.2'
   has
   size
-  313,
+  96,
   96
   matches,
   and
   the
   score
   of
-  8077483197.90611.
+  7.97974595730122e+27.
 END 9
 BEGIN 10
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  96
+  between
+  contigs
   'r50-673.1'
-  covers
+  and
+  'r578-890.2',
+  resulting
+  in
   contig
-  'r578-890.2'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

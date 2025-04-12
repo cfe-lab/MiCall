@@ -146,7 +146,7 @@ BEGIN 11
   overlap
   of
   size
-  427
+  159
   between
   contigs
   'r85-660.5'
@@ -155,7 +155,7 @@ BEGIN 11
   to
   be
   (417,
-  576).
+  159).
 END 11
 BEGIN 12
   Overlap
@@ -166,22 +166,32 @@ BEGIN 12
   'r502-928.4'
   has
   size
-  427,
+  159,
   159
   matches,
   and
   the
   score
   of
-  3.83689211711319e+21.
+  5.684094489508652e+42.
 END 12
 BEGIN 13
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  159
+  between
+  contigs
   'r85-660.5'
-  covers
+  and
+  'r502-928.4',
+  resulting
+  in
   contig
-  'r502-928.4'
-  completely.
+  (3).
 END 13
 BEGIN 14
   Calculated
@@ -281,7 +291,7 @@ BEGIN 19
   resulting
   in
   contig
-  (3).
+  (4).
 END 19
 BEGIN 20
   Cycle
@@ -363,7 +373,7 @@ BEGIN 24
   resulting
   in
   contig
-  (4).
+  (5).
 END 24
 BEGIN 25
   Calculated
@@ -418,7 +428,7 @@ BEGIN 27
   resulting
   in
   contig
-  (5).
+  (6).
 END 27
 BEGIN 28
   Calculated
@@ -518,7 +528,7 @@ BEGIN 33
   resulting
   in
   contig
-  (6).
+  (7).
 END 33
 BEGIN 34
   Cycle
@@ -558,7 +568,7 @@ BEGIN 36
   168
   between
   contigs
-  (4)
+  (5)
   and
   'r502-928.4'
   to
@@ -570,7 +580,7 @@ BEGIN 37
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r502-928.4'
   has
@@ -594,13 +604,13 @@ BEGIN 38
   168
   between
   contigs
-  (4)
+  (5)
   and
   'r502-928.4',
   resulting
   in
   contig
-  (7).
+  (8).
 END 38
 BEGIN 39
   Calculated
@@ -613,7 +623,7 @@ BEGIN 39
   232
   between
   contigs
-  (4)
+  (5)
   and
   'r273-504.3'
   to
@@ -625,7 +635,7 @@ BEGIN 40
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r273-504.3'
   has
@@ -641,7 +651,7 @@ BEGIN 40
 END 40
 BEGIN 41
   Contig
-  (4)
+  (5)
   covers
   contig
   'r273-504.3'
@@ -658,7 +668,7 @@ BEGIN 42
   203
   between
   contigs
-  (4)
+  (5)
   and
   'r467-678.0'
   to
@@ -670,7 +680,7 @@ BEGIN 43
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r467-678.0'
   has
@@ -694,13 +704,13 @@ BEGIN 44
   203
   between
   contigs
-  (4)
+  (5)
   and
   'r467-678.0',
   resulting
   in
   contig
-  (8).
+  (9).
 END 44
 BEGIN 45
   Constructed
@@ -808,7 +818,7 @@ BEGIN 52
   resulting
   in
   contig
-  (9).
+  (10).
 END 52
 BEGIN 53
   Cycle
@@ -848,7 +858,7 @@ BEGIN 55
   232
   between
   contigs
-  (9)
+  (10)
   and
   'r273-504.3'
   to
@@ -947,9 +957,9 @@ BEGIN 64
   203
   between
   contigs
-  (4)
+  (5)
   and
-  (9)
+  (10)
   to
   be
   (453,
@@ -959,9 +969,9 @@ BEGIN 65
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
-  (9)
+  (10)
   has
   size
   203,
@@ -983,13 +993,13 @@ BEGIN 66
   203
   between
   contigs
-  (4)
+  (5)
   and
-  (9),
+  (10),
   resulting
   in
   contig
-  (10).
+  (11).
 END 66
 BEGIN 67
   Calculated
@@ -1002,7 +1012,7 @@ BEGIN 67
   232
   between
   contigs
-  (10)
+  (11)
   and
   'r273-504.3'
   to
@@ -1014,7 +1024,7 @@ BEGIN 68
   Overlap
   between
   contigs
-  (10)
+  (11)
   and
   'r273-504.3'
   has
@@ -1030,7 +1040,7 @@ BEGIN 68
 END 68
 BEGIN 69
   Contig
-  (10)
+  (11)
   covers
   contig
   'r273-504.3'

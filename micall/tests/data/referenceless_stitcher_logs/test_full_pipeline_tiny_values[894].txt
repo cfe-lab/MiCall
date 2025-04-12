@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  389
+  132
   between
   contigs
   'r68-460.2'

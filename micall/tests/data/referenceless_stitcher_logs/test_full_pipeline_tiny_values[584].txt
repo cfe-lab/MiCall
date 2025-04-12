@@ -36,12 +36,12 @@ BEGIN 5
   overlap
   of
   size
-  361
+  345
   between
   contigs
-  'r591-998.2'
-  and
   'r232-592.0'
+  and
+  'r591-998.2'
   to
   be
   None.

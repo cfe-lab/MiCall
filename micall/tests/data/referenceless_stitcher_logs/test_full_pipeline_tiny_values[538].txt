@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  410
+  153
   between
   contigs
   'r171-609.2'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (286,
-  439).
+  153).
 END 8
 BEGIN 9
   Overlap
@@ -111,22 +111,32 @@ BEGIN 9
   'r457-866.0'
   has
   size
-  410,
+  153,
   153
   matches,
   and
   the
   score
   of
-  8.598109518343737e+20.
+  1.5703766529044767e+41.
 END 9
 BEGIN 10
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  153
+  between
+  contigs
   'r171-609.2'
-  covers
+  and
+  'r457-866.0',
+  resulting
+  in
   contig
-  'r457-866.0'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

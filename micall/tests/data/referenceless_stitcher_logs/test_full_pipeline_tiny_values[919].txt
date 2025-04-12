@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  283
+  269
   between
   contigs
   'r614-899.0'

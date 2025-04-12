@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  369
+  130
   between
   contigs
   'r30-645.2'
@@ -45,7 +45,7 @@ BEGIN 5
   to
   be
   (486,
-  616).
+  130).
 END 5
 BEGIN 6
   Overlap
@@ -56,22 +56,32 @@ BEGIN 6
   'r516-884.0'
   has
   size
-  369,
+  130,
   130
   matches,
   and
   the
   score
   of
-  8.57192692972975e+16.
+  7.105106758076837e+35.
 END 6
 BEGIN 7
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  130
+  between
+  contigs
   'r30-645.2'
-  covers
+  and
+  'r516-884.0',
+  resulting
+  in
   contig
-  'r516-884.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -126,7 +136,7 @@ BEGIN 10
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -166,7 +176,7 @@ BEGIN 13
   236
   between
   contigs
-  (1)
+  (2)
   and
   'r516-884.0'
   to
@@ -178,7 +188,7 @@ BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r516-884.0'
   has
@@ -202,13 +212,13 @@ BEGIN 15
   236
   between
   contigs
-  (1)
+  (2)
   and
   'r516-884.0',
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

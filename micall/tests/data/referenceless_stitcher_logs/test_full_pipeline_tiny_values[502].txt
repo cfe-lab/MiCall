@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  528
+  183
   between
   contigs
-  'r371-927.0'
-  and
   'r26-553.1'
+  and
+  'r371-927.0'
   to
   be
-  (0,
+  (345,
   183).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r371-927.0'
-  and
   'r26-553.1'
+  and
+  'r371-927.0'
   has
   size
-  528,
+  183,
   183
   matches,
   and
   the
   score
   of
-  1.845754424905799e+21.
+  2.336254065781434e+48.
 END 9
 BEGIN 10
-  Contig
-  'r371-927.0'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  183
+  between
+  contigs
   'r26-553.1'
-  completely.
+  and
+  'r371-927.0',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

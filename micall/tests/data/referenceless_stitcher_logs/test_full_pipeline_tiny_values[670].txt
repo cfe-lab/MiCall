@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  306
+  116
   between
   contigs
   'r224-785.1'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (446,
-  562).
+  116).
 END 8
 BEGIN 9
   Overlap
@@ -111,22 +111,32 @@ BEGIN 9
   'r670-975.0'
   has
   size
-  306,
+  116,
   116
   matches,
   and
   the
   score
   of
-  1.9037260441886102e+17.
+  4.810866735433101e+32.
 END 9
 BEGIN 10
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  116
+  between
+  contigs
   'r224-785.1'
-  covers
+  and
+  'r670-975.0',
+  resulting
+  in
   contig
-  'r670-975.0'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Constructed
@@ -344,7 +354,7 @@ BEGIN 26
   resulting
   in
   contig
-  (3).
+  (4).
 END 26
 BEGIN 27
   Outputting

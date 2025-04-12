@@ -100,4 +100,4 @@ class ContigWithAligner(Contig):
             y = np.flip(other.alignment_seqs[key])
             total += method(x, y, mode='full')
 
-        return get_overlap_results(total)
+        return get_overlap_results(total, len(self.seq), len(other.seq))

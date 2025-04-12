@@ -146,7 +146,7 @@ BEGIN 11
   overlap
   of
   size
-  280
+  90
   between
   contigs
   'r199-610.2'
@@ -155,7 +155,7 @@ BEGIN 11
   to
   be
   (322,
-  412).
+  90).
 END 11
 BEGIN 12
   Overlap
@@ -166,22 +166,32 @@ BEGIN 12
   'r521-800.4'
   has
   size
-  280,
+  90,
   90
   matches,
   and
   the
   score
   of
-  45546352613.17869.
+  2.0246309730395466e+26.
 END 12
 BEGIN 13
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  90
+  between
+  contigs
   'r199-610.2'
-  covers
+  and
+  'r521-800.4',
+  resulting
+  in
   contig
-  'r521-800.4'
-  completely.
+  (3).
 END 13
 BEGIN 14
   Calculated
@@ -236,7 +246,7 @@ BEGIN 16
   resulting
   in
   contig
-  (3).
+  (4).
 END 16
 BEGIN 17
   Calculated
@@ -336,7 +346,7 @@ BEGIN 22
   resulting
   in
   contig
-  (4).
+  (5).
 END 22
 BEGIN 23
   Calculated
@@ -346,7 +356,7 @@ BEGIN 23
   overlap
   of
   size
-  280
+  102
   between
   contigs
   (1)
@@ -355,7 +365,7 @@ BEGIN 23
   to
   be
   (322,
-  424).
+  102).
 END 23
 BEGIN 24
   Overlap
@@ -366,22 +376,32 @@ BEGIN 24
   'r521-800.4'
   has
   size
-  280,
+  102,
   102
   matches,
   and
   the
   score
   of
-  775074485967075.1.
+  1.552471223060813e+29.
 END 24
 BEGIN 25
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  102
+  between
+  contigs
   (1)
-  covers
+  and
+  'r521-800.4',
+  resulting
+  in
   contig
-  'r521-800.4'
-  completely.
+  (6).
 END 25
 BEGIN 26
   Calculated
@@ -436,7 +456,7 @@ BEGIN 28
   resulting
   in
   contig
-  (5).
+  (7).
 END 28
 BEGIN 29
   Calculated
@@ -491,42 +511,52 @@ BEGIN 32
   overlap
   of
   size
-  280
+  102
   between
   contigs
-  (4)
+  (5)
   and
   'r521-800.4'
   to
   be
   (388,
-  490).
+  102).
 END 32
 BEGIN 33
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r521-800.4'
   has
   size
-  280,
+  102,
   102
   matches,
   and
   the
   score
   of
-  775074485967075.1.
+  1.552471223060813e+29.
 END 33
 BEGIN 34
-  Contig
-  (4)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  102
+  between
+  contigs
+  (5)
+  and
+  'r521-800.4',
+  resulting
+  in
   contig
-  'r521-800.4'
-  completely.
+  (8).
 END 34
 BEGIN 35
   Calculated
@@ -539,7 +569,7 @@ BEGIN 35
   202
   between
   contigs
-  (4)
+  (5)
   and
   'r421-699.0'
   to
@@ -551,7 +581,7 @@ BEGIN 36
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
   'r421-699.0'
   has
@@ -575,13 +605,13 @@ BEGIN 37
   202
   between
   contigs
-  (4)
+  (5)
   and
   'r421-699.0',
   resulting
   in
   contig
-  (6).
+  (9).
 END 37
 BEGIN 38
   Calculated
@@ -594,7 +624,7 @@ BEGIN 38
   233
   between
   contigs
-  (4)
+  (5)
   and
   'r612-844.3'
   to
@@ -689,7 +719,7 @@ BEGIN 45
   resulting
   in
   contig
-  (7).
+  (10).
 END 45
 BEGIN 46
   Calculated
@@ -744,7 +774,7 @@ BEGIN 48
   resulting
   in
   contig
-  (8).
+  (11).
 END 48
 BEGIN 49
   Cycle
@@ -786,7 +816,7 @@ BEGIN 51
   contigs
   'r421-699.0'
   and
-  (8)
+  (11)
   to
   be
   (100,
@@ -798,7 +828,7 @@ BEGIN 52
   contigs
   'r421-699.0'
   and
-  (8)
+  (11)
   has
   size
   179,
@@ -822,11 +852,11 @@ BEGIN 53
   contigs
   'r421-699.0'
   and
-  (8),
+  (11),
   resulting
   in
   contig
-  (9).
+  (12).
 END 53
 BEGIN 54
   Cycle
@@ -896,9 +926,9 @@ BEGIN 59
   202
   between
   contigs
-  (4)
+  (5)
   and
-  (9)
+  (12)
   to
   be
   (288,
@@ -908,9 +938,9 @@ BEGIN 60
   Overlap
   between
   contigs
-  (4)
+  (5)
   and
-  (9)
+  (12)
   has
   size
   202,
@@ -932,13 +962,13 @@ BEGIN 61
   202
   between
   contigs
-  (4)
+  (5)
   and
-  (9),
+  (12),
   resulting
   in
   contig
-  (10).
+  (13).
 END 61
 BEGIN 62
   Outputting

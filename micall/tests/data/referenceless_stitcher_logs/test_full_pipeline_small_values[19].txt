@@ -705,36 +705,54 @@ BEGIN 49
   overlap
   of
   size
-  271
+  44
   between
   contigs
-  'r367-792.4'
-  and
   'r140-410.3'
+  and
+  'r367-792.4'
   to
   be
-  (0,
+  (227,
   44).
 END 49
 BEGIN 50
   Overlap
   between
   contigs
-  'r367-792.4'
-  and
   'r140-410.3'
+  and
+  'r367-792.4'
   has
   size
-  271,
+  44,
   44
   matches,
   and
   the
   score
   of
-  8.99538096143219.
+  1148598229623017.5.
 END 50
 BEGIN 51
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  44
+  between
+  contigs
+  'r140-410.3'
+  and
+  'r367-792.4',
+  resulting
+  in
+  contig
+  (5).
+END 51
+BEGIN 52
   Calculated
   cutoff
   for
@@ -742,108 +760,44 @@ BEGIN 51
   overlap
   of
   size
-  260
+  253
   between
   contigs
-  'r367-792.4'
-  and
   'r127-386.5'
+  and
+  'r367-792.4'
   to
   be
   None.
-END 51
-BEGIN 52
-  Constructed
-  a
-  path
-  of
-  length
-  426.
 END 52
 BEGIN 53
-  Removed
+  Cycle
   1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  666
+  and
+  consists
+  of
+  3
+  parts.
 END 53
 BEGIN 54
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Cycle
+  2
+  started
+  with
+  1
+  paths
 END 54
 BEGIN 55
-  Initial
-  overlap
-  stitching
-  produced
-  4
-  contigs.
-END 55
-BEGIN 56
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  426
-  between
-  contigs
-  (4)
-  and
-  'r367-792.4'
-  to
-  be
-  (304,
-  730).
-END 56
-BEGIN 57
-  Overlap
-  between
-  contigs
-  (4)
-  and
-  'r367-792.4'
-  has
-  size
-  426,
-  426
-  matches,
-  and
-  the
-  score
-  of
-  2.1047640704538415e+104.
-END 57
-BEGIN 58
-  Contig
-  (4)
-  covers
-  contig
-  'r367-792.4'
-  completely.
-END 58
-BEGIN 59
   Calculated
   cutoff
   for
@@ -856,19 +810,19 @@ BEGIN 59
   contigs
   'r127-386.5'
   and
-  'r140-410.3'
+  (5)
   to
   be
   (13,
   247).
-END 59
-BEGIN 60
+END 55
+BEGIN 56
   Overlap
   between
   contigs
   'r127-386.5'
   and
-  'r140-410.3'
+  (5)
   has
   size
   247,
@@ -879,8 +833,8 @@ BEGIN 60
   score
   of
   1.7119305782533366e+63.
-END 60
-BEGIN 61
+END 56
+BEGIN 57
   Found
   a
   significant
@@ -892,13 +846,70 @@ BEGIN 61
   contigs
   'r127-386.5'
   and
-  'r140-410.3',
+  (5),
   resulting
   in
   contig
-  (5).
+  (6).
+END 57
+BEGIN 58
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  666
+  and
+  consists
+  of
+  3
+  parts.
+END 58
+BEGIN 59
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 59
+BEGIN 60
+  Constructed
+  a
+  path
+  of
+  length
+  666.
+END 60
+BEGIN 61
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
 END 61
 BEGIN 62
+  Initial
+  overlap
+  stitching
+  produced
+  2
+  contigs.
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -906,45 +917,45 @@ BEGIN 62
   overlap
   of
   size
-  284
+  666
   between
   contigs
   (4)
   and
-  (5)
+  (6)
   to
   be
   (64,
-  348).
-END 62
-BEGIN 63
+  730).
+END 63
+BEGIN 64
   Overlap
   between
   contigs
   (4)
   and
-  (5)
+  (6)
   has
   size
-  284,
-  284
+  666,
+  666
   matches,
   and
   the
   score
   of
-  7.165351873119225e+71.
-END 63
-BEGIN 64
+  1.3244079811164727e+159.
+END 64
+BEGIN 65
   Contig
   (4)
   covers
   contig
-  (5)
+  (6)
   completely.
-END 64
-BEGIN 65
+END 65
+BEGIN 66
   Outputting
   1
   contigs.
-END 65
+END 66

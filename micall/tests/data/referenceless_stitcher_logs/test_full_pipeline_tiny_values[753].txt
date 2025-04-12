@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  414
+  168
   between
   contigs
   'r132-571.1'

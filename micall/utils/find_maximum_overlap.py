@@ -7,6 +7,7 @@ import numpy as np
 from typing import Sequence, Optional, Tuple, Iterable, Any
 from itertools import chain
 import scipy
+import math
 
 
 @dataclass(frozen=False)
@@ -40,8 +41,19 @@ def choose_convolution_method(len1: int, len2: int) -> Any:
 
 
 def get_overlap_results(total: np.ndarray,
+                        len_1: int, len_2: int,
                         ) -> Tuple[int, float]:
     len_total = len(total)
+
+    # TODO: optimize this loop.
+    max_overlap = min(len_1, len_2)
+    current_overlap_size = 0
+    for i in range(len_total):
+        if current_overlap_size < max_overlap:
+            current_overlap_size += 1
+
+        total[i] = (total[i] * 1024) / math.sqrt(current_overlap_size)
+        total[len_total - i - 1] = (total[len_total - i - 1] * 1024) / math.sqrt(current_overlap_size)
 
     # Return the shift value that yields maximum overlap
     max_value = np.max(total)
@@ -56,8 +68,8 @@ def get_overlap_results(total: np.ndarray,
     else:
         max_offset = right_max
 
-    shift_value = max_offset - len_total
-    return (int(shift_value), float(max_value))
+    shift = max_offset - len_total
+    return (int(shift), float(max_value))
 
 
 def find_maximum_overlap(seq1: str,
@@ -123,7 +135,7 @@ def find_maximum_overlap(seq1: str,
         # Add the convolution to the total results
         total += convo
 
-    return get_overlap_results(total)
+    return get_overlap_results(total, len(bit_arr1), len(bit_arr2))
 
 
 def show_maximum_overlap(arr1: Sequence[object],

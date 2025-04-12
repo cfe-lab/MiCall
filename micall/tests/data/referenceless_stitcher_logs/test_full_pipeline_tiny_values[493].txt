@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  312
+  71
   between
   contigs
   'r11-708.0'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (627,
-  698).
+  71).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r638-949.1'
   has
   size
-  312,
+  71,
   71
   matches,
   and
   the
   score
   of
-  -8.107440138437962.
+  5.734858741699405e+21.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  71
+  between
+  contigs
+  'r11-708.0'
+  and
+  'r638-949.1',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,152 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
-  Cycle
-  2
-  started
-  with
-  1
-  paths
 END 11
 BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  180
-  between
-  contigs
-  (1)
-  and
-  'r638-949.1'
-  to
-  be
-  (627,
-  180).
-END 12
-BEGIN 13
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r638-949.1'
-  has
-  size
-  180,
-  180
-  matches,
-  and
-  the
-  score
-  of
-  5.540048114229015e+47.
-END 13
-BEGIN 14
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  180
-  between
-  contigs
-  (1)
-  and
-  'r638-949.1',
-  resulting
-  in
-  contig
-  (2).
-END 14
-BEGIN 15
-  Constructed
-  a
-  path
-  of
-  length
-  807.
-END 15
-BEGIN 16
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 16
-BEGIN 17
-  Calculating
-  all
-  paths...
-END 17
-BEGIN 18
   Cycle
-  1
+  2
   started
   with
   1
   paths
-END 18
-BEGIN 19
-  Constructed
-  a
-  path
-  of
-  length
-  312.
-END 19
-BEGIN 20
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 20
-BEGIN 21
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 21
-BEGIN 22
-  Initial
-  overlap
-  stitching
-  produced
-  2
-  contigs.
-END 22
-BEGIN 23
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -301,8 +183,8 @@ BEGIN 23
   be
   (627,
   180).
-END 23
-BEGIN 24
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -319,8 +201,8 @@ BEGIN 24
   score
   of
   5.540048114229015e+47.
-END 24
-BEGIN 25
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -337,9 +219,145 @@ BEGIN 25
   in
   contig
   (3).
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  807.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
+END 18
+BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  312.
+END 20
+BEGIN 21
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
+  Initial
+  overlap
+  stitching
+  produced
+  2
+  contigs.
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  180
+  between
+  contigs
+  (1)
+  and
+  'r638-949.1'
+  to
+  be
+  (627,
+  180).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r638-949.1'
+  has
+  size
+  180,
+  180
+  matches,
+  and
+  the
+  score
+  of
+  5.540048114229015e+47.
 END 25
 BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  180
+  between
+  contigs
+  (1)
+  and
+  'r638-949.1',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 26
+END 27
