@@ -235,13 +235,13 @@ def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Itera
     for testcase in sorted(good):
         if testcase in bad:
             reason = reason_fmt.format(testcase=testcase)
-            yield pytest.param(testcase, marks=pytest.mark.xfail(reason=reason, strict=False))
+            yield pytest.param(testcase, marks=pytest.mark.xfail(reason=reason, strict=True))
         else:
             yield testcase
 
 
 # TODO: ensure that every random seed can be stitched.
-@pytest.mark.parametrize("random_seed", params(range(50), [0, 2, 3, 6, 7, 8, 13, 14, 17, 27, 33, 35], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(50), [2, 3, 6, 7, 8, 13], "Probably gaps that are too small."))
 def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2
@@ -251,7 +251,7 @@ def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file
 
 
 # TODO: ensure that every random seed can be stitched.
-@pytest.mark.parametrize("random_seed", params(range(999), [2, 8, 14, 15, 17, 27, 29, 33, 36, 49, 51, 52, 56, 60, 62, 63, 68, 69, 71, 76, 81, 82, 84, 92, 95, 104, 112, 117, 124, 134, 141, 145, 158, 159, 199, 202, 232, 235, 236, 240, 253, 256, 257, 267, 271, 272, 283, 285, 294, 310, 312, 314, 318, 320, 334, 337, 338, 350, 365, 375, 377, 378, 383, 386, 389, 392, 399, 404, 426, 427, 437, 444, 445, 451, 453, 458, 459, 461, 463, 465, 471, 474, 477, 487, 499, 501, 507, 526, 530, 533, 534, 536, 541, 544, 546, 552, 554, 561, 571, 573, 581, 582, 589, 592, 593, 600, 601, 625, 630, 631, 633, 634, 635, 640, 648, 651, 655, 660, 663, 668, 669, 671, 673, 685, 693, 700, 706, 719, 722, 725, 742, 746, 750, 754, 756, 763, 765, 769, 773, 780, 781, 782, 785, 789, 791, 797, 803, 804, 805, 830, 839, 843, 850, 851, 865, 881, 884, 886, 902, 909, 913, 915, 916, 917, 918, 923, 928, 937, 941, 949, 957, 967, 972, 973, 979, 981, 983, 997], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(999), [14, 17, 33, 49, 60, 63, 68, 69, 76, 82, 92, 95, 112, 117, 124, 159, 199, 202, 232, 235, 240, 257, 267, 271, 283, 312, 318, 338, 350, 377, 378, 386, 392, 404, 426, 427, 444, 445, 458, 465, 474, 501, 534, 536, 546, 552, 554, 571, 582, 601, 635, 648, 660, 669, 673, 685, 693, 700, 725, 742, 746, 750, 756, 765, 780, 781, 782, 785, 791, 804, 805, 830, 839, 843, 851, 909, 918, 923, 928, 941, 972, 981, 983, 997], "Probably gaps that are too small."))
 def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2
