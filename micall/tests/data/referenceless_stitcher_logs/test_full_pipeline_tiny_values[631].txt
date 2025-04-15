@@ -44,7 +44,7 @@ BEGIN 5
   'r419-732.2'
   to
   be
-  (0,
+  (145,
   459).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r419-732.2'
   has
   size
-  459,
+  314,
   314
   matches,
   and
   the
   score
   of
-  3.88218051735213e+67.
+  4.135233035190722e+78.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r419-732.2'
   to
   be
-  (0,
+  (318,
   632).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r419-732.2'
   has
   size
-  632,
+  314,
   314
   matches,
   and
   the
   score
   of
-  2.2261523251298577e+54.
+  4.135233035190722e+78.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r419-732.2'
   to
   be
-  (0,
+  (318,
   632).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r419-732.2'
   has
   size
-  632,
+  314,
   314
   matches,
   and
   the
   score
   of
-  2.2261523251298577e+54.
+  4.135233035190722e+78.
 END 25
 BEGIN 26
   Contig

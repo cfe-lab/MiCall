@@ -181,7 +181,7 @@ BEGIN 13
   'r225-506.0'
   to
   be
-  (1,
+  (122,
   404).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r225-506.0'
   has
   size
-  403,
+  282,
   282
   matches,
   and
   the
   score
   of
-  1.0907333453751197e+62.
+  1.751529937039277e+71.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r225-506.0'
   to
   be
-  (1,
+  (122,
   404).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r225-506.0'
   has
   size
-  403,
+  282,
   282
   matches,
   and
   the
   score
   of
-  1.0907333453751197e+62.
+  1.751529937039277e+71.
 END 25
 BEGIN 26
   Contig

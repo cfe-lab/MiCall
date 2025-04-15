@@ -99,7 +99,7 @@ BEGIN 8
   'r272-594.2'
   to
   be
-  (1,
+  (7,
   330).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r272-594.2'
   has
   size
-  329,
+  323,
   323
   matches,
   and
   the
   score
   of
-  1.425293318280865e+80.
+  5.790135795793465e+80.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r272-594.2'
   to
   be
-  (2,
+  (114,
   437).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r272-594.2'
   has
   size
-  435,
+  323,
   323
   matches,
   and
   the
   score
   of
-  1.568178604179561e+72.
+  5.790135795793465e+80.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r272-594.2'
   to
   be
-  (2,
+  (114,
   437).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r272-594.2'
   has
   size
-  435,
+  323,
   323
   matches,
   and
   the
   score
   of
-  1.568178604179561e+72.
+  5.790135795793465e+80.
 END 25
 BEGIN 26
   Contig

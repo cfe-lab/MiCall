@@ -44,7 +44,7 @@ BEGIN 5
   'r330-713.0'
   to
   be
-  (0,
+  (63,
   447).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r330-713.0'
   has
   size
-  447,
+  384,
   384
   matches,
   and
   the
   score
   of
-  9.322588005533526e+89.
+  7.054047544551789e+94.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r330-713.0'
   to
   be
-  (0,
+  (264,
   648).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r330-713.0'
   has
   size
-  648,
+  384,
   384
   matches,
   and
   the
   score
   of
-  4.759033019797556e+74.
+  7.054047544551789e+94.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r330-713.0'
   to
   be
-  (0,
+  (264,
   648).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r330-713.0'
   has
   size
-  648,
+  384,
   384
   matches,
   and
   the
   score
   of
-  4.759033019797556e+74.
+  7.054047544551789e+94.
 END 25
 BEGIN 26
   Contig

@@ -181,7 +181,7 @@ BEGIN 13
   'r422-748.2'
   to
   be
-  (4,
+  (345,
   672).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r422-748.2'
   has
   size
-  668,
+  327,
   327
   matches,
   and
   the
   score
   of
-  3.876337216135132e+55.
+  4.816723752369294e+81.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r422-748.2'
   to
   be
-  (4,
+  (345,
   672).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r422-748.2'
   has
   size
-  668,
+  327,
   327
   matches,
   and
   the
   score
   of
-  3.876337216135132e+55.
+  4.816723752369294e+81.
 END 25
 BEGIN 26
   Contig

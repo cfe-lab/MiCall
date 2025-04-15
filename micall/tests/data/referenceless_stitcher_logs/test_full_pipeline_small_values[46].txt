@@ -209,7 +209,7 @@ BEGIN 14
   'r534-772.0'
   to
   be
-  (0,
+  (208,
   447).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r534-772.0'
   has
   size
-  447,
+  239,
   239
   matches,
   and
   the
   score
   of
-  2.1276077876591033e+45.
+  2.408571302390333e+61.
 END 15
 BEGIN 16
   Contig
@@ -446,7 +446,7 @@ BEGIN 28
   'r534-772.0'
   to
   be
-  (0,
+  (208,
   447).
 END 28
 BEGIN 29
@@ -458,14 +458,14 @@ BEGIN 29
   'r534-772.0'
   has
   size
-  447,
+  239,
   239
   matches,
   and
   the
   score
   of
-  2.1276077876591033e+45.
+  2.408571302390333e+61.
 END 29
 BEGIN 30
   Contig
@@ -691,7 +691,7 @@ BEGIN 44
   'r314-543.3'
   to
   be
-  (3,
+  (88,
   318).
 END 44
 BEGIN 45
@@ -703,14 +703,14 @@ BEGIN 45
   'r314-543.3'
   has
   size
-  315,
+  230,
   230
   matches,
   and
   the
   score
   of
-  5.656678834529232e+52.
+  1.6650558952032708e+59.
 END 45
 BEGIN 46
   Contig
@@ -818,7 +818,7 @@ BEGIN 52
   'r314-543.3'
   to
   be
-  (10,
+  (189,
   419).
 END 52
 BEGIN 53
@@ -830,14 +830,14 @@ BEGIN 53
   'r314-543.3'
   has
   size
-  409,
+  230,
   230
   matches,
   and
   the
   score
   of
-  4.2431576916601673e+45.
+  1.6650558952032708e+59.
 END 53
 BEGIN 54
   Contig
@@ -898,36 +898,17 @@ BEGIN 59
   'r314-543.3'
   to
   be
-  (3,
-  222).
+  None.
 END 59
 BEGIN 60
-  Overlap
-  between
-  contigs
-  'r534-772.0'
-  and
-  'r314-543.3'
-  has
-  size
-  230,
-  4
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999953085.
-END 60
-BEGIN 61
   Constructed
   a
   path
   of
   length
   239.
-END 61
-BEGIN 62
+END 60
+BEGIN 61
   Removed
   1
   components
@@ -940,8 +921,8 @@ BEGIN 62
   still
   to
   process.
-END 62
-BEGIN 63
+END 61
+BEGIN 62
   Giving
   up
   on
@@ -956,16 +937,16 @@ BEGIN 63
   is
   a
   singleton.
-END 63
-BEGIN 64
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 64
-BEGIN 65
+END 63
+BEGIN 64
   Calculated
   cutoff
   for
@@ -983,8 +964,8 @@ BEGIN 65
   be
   (201,
   298).
-END 65
-BEGIN 66
+END 64
+BEGIN 65
   Overlap
   between
   contigs
@@ -1001,8 +982,8 @@ BEGIN 66
   score
   of
   8.550117574725871e+74.
-END 66
-BEGIN 67
+END 65
+BEGIN 66
   Found
   a
   significant
@@ -1019,8 +1000,8 @@ BEGIN 67
   in
   contig
   (11).
-END 67
-BEGIN 68
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -1036,119 +1017,100 @@ BEGIN 68
   'r314-543.3'
   to
   be
-  (3,
-  222).
+  None.
+END 67
+BEGIN 68
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  239
+  between
+  contigs
+  (11)
+  and
+  'r534-772.0'
+  to
+  be
+  (409,
+  648).
 END 68
 BEGIN 69
   Overlap
   between
   contigs
+  (11)
+  and
   'r534-772.0'
+  has
+  size
+  239,
+  239
+  matches,
+  and
+  the
+  score
+  of
+  2.408571302390333e+61.
+END 69
+BEGIN 70
+  Contig
+  (11)
+  covers
+  contig
+  'r534-772.0'
+  completely.
+END 70
+BEGIN 71
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  230
+  between
+  contigs
+  (11)
+  and
+  'r314-543.3'
+  to
+  be
+  (189,
+  419).
+END 71
+BEGIN 72
+  Overlap
+  between
+  contigs
+  (11)
   and
   'r314-543.3'
   has
   size
   230,
-  4
+  230
   matches,
   and
   the
   score
   of
-  8.999999999953085.
-END 69
-BEGIN 70
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  239
-  between
-  contigs
-  (11)
-  and
-  'r534-772.0'
-  to
-  be
-  (0,
-  648).
-END 70
-BEGIN 71
-  Overlap
-  between
-  contigs
-  (11)
-  and
-  'r534-772.0'
-  has
-  size
-  648,
-  239
-  matches,
-  and
-  the
-  score
-  of
-  4.423984673775827e+29.
-END 71
-BEGIN 72
-  Contig
-  (11)
-  covers
-  contig
-  'r534-772.0'
-  completely.
+  1.6650558952032708e+59.
 END 72
 BEGIN 73
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  230
-  between
-  contigs
-  (11)
-  and
-  'r314-543.3'
-  to
-  be
-  (10,
-  419).
-END 73
-BEGIN 74
-  Overlap
-  between
-  contigs
-  (11)
-  and
-  'r314-543.3'
-  has
-  size
-  409,
-  230
-  matches,
-  and
-  the
-  score
-  of
-  4.2431576916601673e+45.
-END 74
-BEGIN 75
   Contig
   (11)
   covers
   contig
   'r314-543.3'
   completely.
-END 75
-BEGIN 76
+END 73
+BEGIN 74
   Outputting
   1
   contigs.
-END 76
+END 74

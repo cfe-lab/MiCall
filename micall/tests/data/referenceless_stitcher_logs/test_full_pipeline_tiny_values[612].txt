@@ -99,7 +99,7 @@ BEGIN 8
   'r394-786.2'
   to
   be
-  (9,
+  (245,
   638).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r394-786.2'
   has
   size
-  629,
+  393,
   393
   matches,
   and
   the
   score
   of
-  9.29657837336785e+78.
+  4.858595149998396e+96.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r394-786.2'
   to
   be
-  (1,
+  (263,
   656).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r394-786.2'
   has
   size
-  655,
+  393,
   393
   matches,
   and
   the
   score
   of
-  6.719905480775738e+76.
+  4.858595149998396e+96.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r394-786.2'
   to
   be
-  (1,
+  (263,
   656).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r394-786.2'
   has
   size
-  655,
+  393,
   393
   matches,
   and
   the
   score
   of
-  6.719905480775738e+76.
+  4.858595149998396e+96.
 END 25
 BEGIN 26
   Contig

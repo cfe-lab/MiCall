@@ -181,7 +181,7 @@ BEGIN 13
   'r253-514.2'
   to
   be
-  (0,
+  (37,
   299).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r253-514.2'
   has
   size
-  299,
+  262,
   262
   matches,
   and
   the
   score
   of
-  7.316391950022866e+63.
+  4.229911291793805e+66.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r253-514.2'
   to
   be
-  (0,
+  (37,
   299).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r253-514.2'
   has
   size
-  299,
+  262,
   262
   matches,
   and
   the
   score
   of
-  7.316391950022866e+63.
+  4.229911291793805e+66.
 END 25
 BEGIN 26
   Contig

@@ -99,8 +99,8 @@ BEGIN 8
   'r7-301.1'
   to
   be
-  (6,
-  726).
+  (0,
+  44).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r7-301.1'
   has
   size
-  720,
-  38
+  295,
+  44
   matches,
   and
   the
   score
   of
-  9.0.
+  8.999856911874128.
 END 9
 BEGIN 10
   Cycle

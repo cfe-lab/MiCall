@@ -99,7 +99,7 @@ BEGIN 8
   'r158-723.2'
   to
   be
-  (6,
+  (26,
   592).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r158-723.2'
   has
   size
-  586,
+  566,
   566
   matches,
   and
   the
   score
   of
-  6.360178098496407e+134.
+  2.097478820739015e+136.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r158-723.2'
   to
   be
-  (6,
+  (26,
   592).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r158-723.2'
   has
   size
-  586,
+  566,
   566
   matches,
   and
   the
   score
   of
-  6.360178098496407e+134.
+  2.097478820739015e+136.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r158-723.2'
   to
   be
-  (6,
+  (26,
   592).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r158-723.2'
   has
   size
-  586,
+  566,
   566
   matches,
   and
   the
   score
   of
-  6.360178098496407e+134.
+  2.097478820739015e+136.
 END 25
 BEGIN 26
   Contig

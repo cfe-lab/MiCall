@@ -44,7 +44,7 @@ BEGIN 5
   'r33-439.2'
   to
   be
-  (7,
+  (9,
   416).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r33-439.2'
   has
   size
-  409,
+  407,
   407
   matches,
   and
   the
   score
   of
-  5.536046706730015e+99.
+  1.1117681455108986e+100.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r33-439.2'
   to
   be
-  (7,
+  (9,
   416).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r33-439.2'
   has
   size
-  409,
+  407,
   407
   matches,
   and
   the
   score
   of
-  5.536046706730015e+99.
+  1.1117681455108986e+100.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r33-439.2'
   to
   be
-  (7,
+  (9,
   416).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r33-439.2'
   has
   size
-  409,
+  407,
   407
   matches,
   and
   the
   score
   of
-  5.536046706730015e+99.
+  1.1117681455108986e+100.
 END 25
 BEGIN 26
   Contig

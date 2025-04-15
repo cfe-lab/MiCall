@@ -44,7 +44,7 @@ BEGIN 5
   'r84-761.0'
   to
   be
-  (2,
+  (14,
   692).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r84-761.0'
   has
   size
-  690,
+  678,
   678
   matches,
   and
   the
   score
   of
-  2.7603935417778014e+159.
+  2.8023279649753228e+159.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r84-761.0'
   to
   be
-  (1,
+  (31,
   709).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r84-761.0'
   has
   size
-  708,
+  678,
   678
   matches,
   and
   the
   score
   of
-  2.6978619274028747e+159.
+  2.8023279649753228e+159.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r84-761.0'
   to
   be
-  (1,
+  (31,
   709).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r84-761.0'
   has
   size
-  708,
+  678,
   678
   matches,
   and
   the
   score
   of
-  2.6978619274028747e+159.
+  2.8023279649753228e+159.
 END 25
 BEGIN 26
   Contig

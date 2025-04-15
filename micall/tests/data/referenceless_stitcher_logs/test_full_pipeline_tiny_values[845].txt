@@ -99,7 +99,7 @@ BEGIN 8
   'r308-653.2'
   to
   be
-  (1,
+  (200,
   546).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r308-653.2'
   has
   size
-  545,
+  346,
   346
   matches,
   and
   the
   score
   of
-  9.536131342315574e+70.
+  9.441280661133626e+85.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r308-653.2'
   to
   be
-  (9,
+  (249,
   595).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r308-653.2'
   has
   size
-  586,
+  346,
   346
   matches,
   and
   the
   score
   of
-  4.051781407773252e+67.
+  9.441280661133626e+85.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r308-653.2'
   to
   be
-  (9,
+  (249,
   595).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r308-653.2'
   has
   size
-  586,
+  346,
   346
   matches,
   and
   the
   score
   of
-  4.051781407773252e+67.
+  9.441280661133626e+85.
 END 25
 BEGIN 26
   Contig

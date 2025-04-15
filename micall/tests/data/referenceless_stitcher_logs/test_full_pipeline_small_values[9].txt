@@ -154,8 +154,8 @@ BEGIN 11
   'r544-929.0'
   to
   be
-  (1,
-  566).
+  (519,
+  576).
 END 11
 BEGIN 12
   Overlap
@@ -166,14 +166,14 @@ BEGIN 12
   'r544-929.0'
   has
   size
-  565,
-  47
+  386,
+  57
   matches,
   and
   the
   score
   of
-  9.0.
+  8.999999659636464.
 END 12
 BEGIN 13
   Calculated
@@ -246,7 +246,7 @@ BEGIN 16
   'r39-275.3'
   to
   be
-  (0,
+  (14,
   251).
 END 16
 BEGIN 17
@@ -258,14 +258,14 @@ BEGIN 17
   'r39-275.3'
   has
   size
-  251,
+  237,
   237
   matches,
   and
   the
   score
   of
-  6.975049325802505e+59.
+  1.172470355771419e+61.
 END 17
 BEGIN 18
   Contig
@@ -483,7 +483,7 @@ BEGIN 30
   'r39-275.3'
   to
   be
-  (0,
+  (14,
   251).
 END 30
 BEGIN 31
@@ -495,14 +495,14 @@ BEGIN 31
   'r39-275.3'
   has
   size
-  251,
+  237,
   237
   matches,
   and
   the
   score
   of
-  6.975049325802505e+59.
+  1.172470355771419e+61.
 END 31
 BEGIN 32
   Contig
@@ -665,7 +665,7 @@ BEGIN 41
   'r39-275.3'
   to
   be
-  (0,
+  (14,
   251).
 END 41
 BEGIN 42
@@ -677,14 +677,14 @@ BEGIN 42
   'r39-275.3'
   has
   size
-  251,
+  237,
   237
   matches,
   and
   the
   score
   of
-  6.975049325802505e+59.
+  1.172470355771419e+61.
 END 42
 BEGIN 43
   Contig
@@ -800,28 +800,9 @@ BEGIN 51
   'r39-275.3'
   to
   be
-  (1,
-  385).
+  None.
 END 51
 BEGIN 52
-  Overlap
-  between
-  contigs
-  'r544-929.0'
-  and
-  'r39-275.3'
-  has
-  size
-  384,
-  25
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999998.
-END 52
-BEGIN 53
   Cycle
   1
   finished
@@ -839,16 +820,16 @@ BEGIN 53
   of
   2
   parts.
-END 53
-BEGIN 54
+END 52
+BEGIN 53
   Cycle
   2
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 53
+BEGIN 54
   Calculated
   cutoff
   for
@@ -864,44 +845,17 @@ BEGIN 55
   'r39-275.3'
   to
   be
-  (4,
-  454).
-END 55
-BEGIN 56
-  Overlap
-  between
-  contigs
-  (9)
-  and
-  'r39-275.3'
-  has
-  size
-  450,
-  23
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 56
-BEGIN 57
-  Contig
-  (9)
-  covers
-  contig
-  'r39-275.3'
-  completely.
-END 57
-BEGIN 58
+  None.
+END 54
+BEGIN 55
   Constructed
   a
   path
   of
   length
   455.
-END 58
-BEGIN 59
+END 55
+BEGIN 56
   Removed
   2
   components
@@ -914,29 +868,29 @@ BEGIN 59
   still
   to
   process.
-END 59
-BEGIN 60
+END 56
+BEGIN 57
   Calculating
   all
   paths...
-END 60
-BEGIN 61
+END 57
+BEGIN 58
   Cycle
   1
   started
   with
   1
   paths
-END 61
-BEGIN 62
+END 58
+BEGIN 59
   Constructed
   a
   path
   of
   length
   237.
-END 62
-BEGIN 63
+END 59
+BEGIN 60
   Removed
   1
   components
@@ -949,8 +903,8 @@ BEGIN 63
   still
   to
   process.
-END 63
-BEGIN 64
+END 60
+BEGIN 61
   Giving
   up
   on
@@ -965,16 +919,16 @@ BEGIN 64
   is
   a
   singleton.
-END 64
-BEGIN 65
+END 61
+BEGIN 62
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 65
-BEGIN 66
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -992,8 +946,8 @@ BEGIN 66
   be
   (450,
   221).
-END 66
-BEGIN 67
+END 63
+BEGIN 64
   Overlap
   between
   contigs
@@ -1010,8 +964,8 @@ BEGIN 67
   score
   of
   2.2907743371320837e+57.
-END 67
-BEGIN 68
+END 64
+BEGIN 65
   Found
   a
   significant
@@ -1028,8 +982,8 @@ BEGIN 68
   in
   contig
   (10).
-END 68
-BEGIN 69
+END 65
+BEGIN 66
   Calculated
   cutoff
   for
@@ -1045,10 +999,10 @@ BEGIN 69
   'r39-275.3'
   to
   be
-  (0,
+  (14,
   251).
-END 69
-BEGIN 70
+END 66
+BEGIN 67
   Overlap
   between
   contigs
@@ -1057,25 +1011,25 @@ BEGIN 70
   'r39-275.3'
   has
   size
-  251,
+  237,
   237
   matches,
   and
   the
   score
   of
-  6.975049325802505e+59.
-END 70
-BEGIN 71
+  1.172470355771419e+61.
+END 67
+BEGIN 68
   Contig
   (10)
   covers
   contig
   'r39-275.3'
   completely.
-END 71
-BEGIN 72
+END 68
+BEGIN 69
   Outputting
   1
   contigs.
-END 72
+END 69

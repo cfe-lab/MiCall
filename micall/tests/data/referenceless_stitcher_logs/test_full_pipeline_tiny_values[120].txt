@@ -44,7 +44,7 @@ BEGIN 5
   'r152-595.0'
   to
   be
-  (1,
+  (119,
   563).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r152-595.0'
   has
   size
-  562,
+  444,
   444
   matches,
   and
   the
   score
   of
-  2.8781921099044717e+99.
+  3.931293414425041e+108.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r245-649.2'
   to
   be
-  (2,
+  (212,
   617).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r245-649.2'
   has
   size
-  615,
+  405,
   405
   matches,
   and
   the
   score
   of
-  3.6754007224587673e+83.
+  5.472750284280459e+99.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r245-649.2'
   to
   be
-  (2,
+  (212,
   617).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r245-649.2'
   has
   size
-  615,
+  405,
   405
   matches,
   and
   the
   score
   of
-  3.6754007224587673e+83.
+  5.472750284280459e+99.
 END 14
 BEGIN 15
   Contig

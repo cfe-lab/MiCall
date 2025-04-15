@@ -181,7 +181,7 @@ BEGIN 13
   'r65-526.2'
   to
   be
-  (4,
+  (37,
   499).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r65-526.2'
   has
   size
-  495,
+  462,
   462
   matches,
   and
   the
   score
   of
-  1.3419635130401167e+110.
+  3.652207275770229e+112.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r65-526.2'
   to
   be
-  (4,
+  (37,
   499).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r65-526.2'
   has
   size
-  495,
+  462,
   462
   matches,
   and
   the
   score
   of
-  1.3419635130401167e+110.
+  3.652207275770229e+112.
 END 25
 BEGIN 26
   Contig

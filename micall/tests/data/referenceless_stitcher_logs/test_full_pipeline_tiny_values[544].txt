@@ -44,7 +44,7 @@ BEGIN 5
   'r171-536.0'
   to
   be
-  (0,
+  (30,
   396).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r171-536.0'
   has
   size
-  396,
+  366,
   366
   matches,
   and
   the
   score
   of
-  2.6934510481593256e+88.
+  3.697474900878441e+90.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r171-536.0'
   to
   be
-  (0,
+  (30,
   396).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r171-536.0'
   has
   size
-  396,
+  366,
   366
   matches,
   and
   the
   score
   of
-  2.6934510481593256e+88.
+  3.697474900878441e+90.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r171-536.0'
   to
   be
-  (0,
+  (30,
   396).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r171-536.0'
   has
   size
-  396,
+  366,
   366
   matches,
   and
   the
   score
   of
-  2.6934510481593256e+88.
+  3.697474900878441e+90.
 END 25
 BEGIN 26
   Contig

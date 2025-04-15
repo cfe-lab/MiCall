@@ -181,7 +181,7 @@ BEGIN 13
   'r459-840.0'
   to
   be
-  (4,
+  (344,
   726).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r459-840.0'
   has
   size
-  722,
+  382,
   382
   matches,
   and
   the
   score
   of
-  1.724597082570692e+68.
+  1.7345577372177434e+94.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r459-840.0'
   to
   be
-  (4,
+  (344,
   726).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r459-840.0'
   has
   size
-  722,
+  382,
   382
   matches,
   and
   the
   score
   of
-  1.724597082570692e+68.
+  1.7345577372177434e+94.
 END 25
 BEGIN 26
   Contig

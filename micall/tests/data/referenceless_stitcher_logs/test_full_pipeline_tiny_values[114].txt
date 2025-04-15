@@ -99,7 +99,7 @@ BEGIN 8
   'r316-720.0'
   to
   be
-  (0,
+  (201,
   606).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r316-720.0'
   has
   size
-  606,
+  405,
   405
   matches,
   and
   the
   score
   of
-  1.5065918191196696e+84.
+  5.472750284280459e+99.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r316-720.0'
   to
   be
-  (1,
+  (243,
   648).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r316-720.0'
   has
   size
-  647,
+  405,
   405
   matches,
   and
   the
   score
   of
-  1.3130254069688644e+81.
+  5.472750284280459e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r316-720.0'
   to
   be
-  (1,
+  (243,
   648).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r316-720.0'
   has
   size
-  647,
+  405,
   405
   matches,
   and
   the
   score
   of
-  1.3130254069688644e+81.
+  5.472750284280459e+99.
 END 25
 BEGIN 26
   Contig

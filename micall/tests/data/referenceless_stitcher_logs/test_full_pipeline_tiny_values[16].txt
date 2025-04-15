@@ -99,7 +99,7 @@ BEGIN 8
   'r435-935.0'
   to
   be
-  (6,
+  (64,
   565).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r435-935.0'
   has
   size
-  559,
+  501,
   501
   matches,
   and
   the
   score
   of
-  1.3983380402304432e+117.
+  5.067582463118794e+121.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r435-935.0'
   to
   be
-  (11,
+  (249,
   750).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r435-935.0'
   has
   size
-  739,
+  501,
   501
   matches,
   and
   the
   score
   of
-  2.783051158919454e+103.
+  5.067582463118794e+121.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r435-935.0'
   to
   be
-  (11,
+  (249,
   750).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r435-935.0'
   has
   size
-  739,
+  501,
   501
   matches,
   and
   the
   score
   of
-  2.783051158919454e+103.
+  5.067582463118794e+121.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r391-692.2'
   to
   be
-  (0,
+  (231,
   533).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r391-692.2'
   has
   size
-  533,
+  302,
   302
   matches,
   and
   the
   score
   of
-  1.1241545027286557e+58.
+  7.1361621731366855e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r391-692.2'
   to
   be
-  (0,
+  (231,
   533).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r391-692.2'
   has
   size
-  533,
+  302,
   302
   matches,
   and
   the
   score
   of
-  1.1241545027286557e+58.
+  7.1361621731366855e+75.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r391-692.2'
   to
   be
-  (0,
+  (231,
   533).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r391-692.2'
   has
   size
-  533,
+  302,
   302
   matches,
   and
   the
   score
   of
-  1.1241545027286557e+58.
+  7.1361621731366855e+75.
 END 25
 BEGIN 26
   Contig

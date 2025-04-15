@@ -181,7 +181,7 @@ BEGIN 13
   'r144-409.2'
   to
   be
-  (0,
+  (13,
   279).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r144-409.2'
   has
   size
-  279,
+  266,
   266
   matches,
   and
   the
   score
   of
-  4.26113279446171e+66.
+  3.551093662302419e+67.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r144-409.2'
   to
   be
-  (0,
+  (13,
   279).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r144-409.2'
   has
   size
-  279,
+  266,
   266
   matches,
   and
   the
   score
   of
-  4.26113279446171e+66.
+  3.551093662302419e+67.
 END 25
 BEGIN 26
   Contig

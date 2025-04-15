@@ -683,7 +683,7 @@ BEGIN 43
   'r327-752.1'
   to
   be
-  (2,
+  (51,
   477).
 END 43
 BEGIN 44
@@ -695,14 +695,14 @@ BEGIN 44
   'r327-752.1'
   has
   size
-  475,
+  426,
   426
   matches,
   and
   the
   score
   of
-  4.651428087516284e+100.
+  2.1047640704538415e+104.
 END 44
 BEGIN 45
   Contig
@@ -728,7 +728,7 @@ BEGIN 46
   'r554-761.2'
   to
   be
-  (5,
+  (278,
   486).
 END 46
 BEGIN 47
@@ -740,14 +740,14 @@ BEGIN 47
   'r554-761.2'
   has
   size
-  481,
+  208,
   208
   matches,
   and
   the
   score
   of
-  1.2808779600014573e+33.
+  1.8437182156211e+54.
 END 47
 BEGIN 48
   Contig
@@ -800,7 +800,7 @@ BEGIN 51
   'r554-761.2'
   to
   be
-  (5,
+  (278,
   486).
 END 51
 BEGIN 52
@@ -812,14 +812,14 @@ BEGIN 52
   'r554-761.2'
   has
   size
-  481,
+  208,
   208
   matches,
   and
   the
   score
   of
-  1.2808779600014573e+33.
+  1.8437182156211e+54.
 END 52
 BEGIN 53
   Contig

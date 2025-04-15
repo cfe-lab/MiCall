@@ -99,7 +99,7 @@ BEGIN 8
   'r491-771.2'
   to
   be
-  (5,
+  (313,
   594).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r491-771.2'
   has
   size
-  589,
+  281,
   281
   matches,
   and
   the
   score
   of
-  3.3059192090169894e+47.
+  8.659270740058138e+70.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r491-771.2'
   to
   be
-  (5,
+  (313,
   594).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r491-771.2'
   has
   size
-  589,
+  281,
   281
   matches,
   and
   the
   score
   of
-  3.3059192090169894e+47.
+  8.659270740058138e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r491-771.2'
   to
   be
-  (5,
+  (313,
   594).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r491-771.2'
   has
   size
-  589,
+  281,
   281
   matches,
   and
   the
   score
   of
-  3.3059192090169894e+47.
+  8.659270740058138e+70.
 END 25
 BEGIN 26
   Contig

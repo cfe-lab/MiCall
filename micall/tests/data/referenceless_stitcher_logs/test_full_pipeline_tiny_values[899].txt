@@ -44,7 +44,7 @@ BEGIN 5
   'r402-945.2'
   to
   be
-  (0,
+  (75,
   619).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r402-945.2'
   has
   size
-  619,
+  544,
   544
   matches,
   and
   the
   score
   of
-  4.772095681591896e+125.
+  2.823675953413335e+131.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r402-945.2'
   to
   be
-  (2,
+  (181,
   725).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r402-945.2'
   has
   size
-  723,
+  544,
   544
   matches,
   and
   the
   score
   of
-  5.91766426513455e+117.
+  2.823675953413335e+131.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r402-945.2'
   to
   be
-  (2,
+  (181,
   725).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r402-945.2'
   has
   size
-  723,
+  544,
   544
   matches,
   and
   the
   score
   of
-  5.91766426513455e+117.
+  2.823675953413335e+131.
 END 25
 BEGIN 26
   Contig

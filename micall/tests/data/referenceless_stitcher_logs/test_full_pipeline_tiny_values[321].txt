@@ -99,7 +99,7 @@ BEGIN 8
   'r225-579.1'
   to
   be
-  (4,
+  (24,
   379).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r225-579.1'
   has
   size
-  375,
+  355,
   355
   matches,
   and
   the
   score
   of
-  3.906384542601121e+86.
+  1.3110718926231885e+88.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r225-579.1'
   to
   be
-  (6,
+  (148,
   503).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r225-579.1'
   has
   size
-  497,
+  355,
   355
   matches,
   and
   the
   score
   of
-  1.3123369478983682e+77.
+  1.3110718926231885e+88.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r225-579.1'
   to
   be
-  (6,
+  (148,
   503).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r225-579.1'
   has
   size
-  497,
+  355,
   355
   matches,
   and
   the
   score
   of
-  1.3123369478983682e+77.
+  1.3110718926231885e+88.
 END 25
 BEGIN 26
   Contig

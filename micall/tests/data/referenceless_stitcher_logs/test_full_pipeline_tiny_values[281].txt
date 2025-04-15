@@ -99,7 +99,7 @@ BEGIN 8
   'r308-633.0'
   to
   be
-  (1,
+  (140,
   466).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r308-633.0'
   has
   size
-  465,
+  326,
   326
   matches,
   and
   the
   score
   of
-  9.296414938627273e+70.
+  2.3850541047003385e+81.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r308-633.0'
   to
   be
-  (0,
+  (179,
   505).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r308-633.0'
   has
   size
-  505,
+  326,
   326
   matches,
   and
   the
   score
   of
-  7.944642934143375e+67.
+  2.3850541047003385e+81.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r308-633.0'
   to
   be
-  (0,
+  (179,
   505).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r308-633.0'
   has
   size
-  505,
+  326,
   326
   matches,
   and
   the
   score
   of
-  7.944642934143375e+67.
+  2.3850541047003385e+81.
 END 25
 BEGIN 26
   Contig

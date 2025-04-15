@@ -99,7 +99,7 @@ BEGIN 8
   'r90-495.2'
   to
   be
-  (1,
+  (54,
   460).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r90-495.2'
   has
   size
-  459,
+  406,
   406
   matches,
   and
   the
   score
   of
-  6.01111538677541e+95.
+  5.515681047775771e+99.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r90-495.2'
   to
   be
-  (1,
+  (54,
   460).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r90-495.2'
   has
   size
-  459,
+  406,
   406
   matches,
   and
   the
   score
   of
-  6.01111538677541e+95.
+  5.515681047775771e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r90-495.2'
   to
   be
-  (1,
+  (54,
   460).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r90-495.2'
   has
   size
-  459,
+  406,
   406
   matches,
   and
   the
   score
   of
-  6.01111538677541e+95.
+  5.515681047775771e+99.
 END 25
 BEGIN 26
   Contig

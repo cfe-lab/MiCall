@@ -99,7 +99,7 @@ BEGIN 8
   'r439-916.1'
   to
   be
-  (1,
+  (79,
   557).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r439-916.1'
   has
   size
-  556,
+  478,
   478
   matches,
   and
   the
   score
   of
-  2.7523252923792294e+110.
+  1.6661031836378835e+116.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r439-916.1'
   to
   be
-  (3,
+  (91,
   569).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r439-916.1'
   has
   size
-  566,
+  478,
   478
   matches,
   and
   the
   score
   of
-  3.3742658134161814e+109.
+  1.6661031836378835e+116.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r439-916.1'
   to
   be
-  (3,
+  (91,
   569).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r439-916.1'
   has
   size
-  566,
+  478,
   478
   matches,
   and
   the
   score
   of
-  3.3742658134161814e+109.
+  1.6661031836378835e+116.
 END 25
 BEGIN 26
   Contig

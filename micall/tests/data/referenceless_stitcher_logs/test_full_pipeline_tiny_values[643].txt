@@ -44,7 +44,7 @@ BEGIN 5
   'r246-612.2'
   to
   be
-  (2,
+  (195,
   562).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r246-612.2'
   has
   size
-  560,
+  367,
   367
   matches,
   and
   the
   score
   of
-  1.5916056205934302e+76.
+  7.459220964213018e+90.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r246-612.2'
   to
   be
-  (2,
+  (195,
   562).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r246-612.2'
   has
   size
-  560,
+  367,
   367
   matches,
   and
   the
   score
   of
-  1.5916056205934302e+76.
+  7.459220964213018e+90.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r246-612.2'
   to
   be
-  (2,
+  (195,
   562).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r246-612.2'
   has
   size
-  560,
+  367,
   367
   matches,
   and
   the
   score
   of
-  1.5916056205934302e+76.
+  7.459220964213018e+90.
 END 25
 BEGIN 26
   Contig

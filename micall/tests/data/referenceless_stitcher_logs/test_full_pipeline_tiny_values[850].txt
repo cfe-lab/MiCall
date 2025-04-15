@@ -44,7 +44,7 @@ BEGIN 5
   'r424-829.2'
   to
   be
-  (6,
+  (100,
   506).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r424-829.2'
   has
   size
-  500,
+  406,
   406
   matches,
   and
   the
   score
   of
-  5.344922675473223e+92.
+  5.515681047775771e+99.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r424-829.2'
   to
   be
-  (1,
+  (271,
   677).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r424-829.2'
   has
   size
-  676,
+  406,
   406
   matches,
   and
   the
   score
   of
-  1.9101672196553584e+79.
+  5.515681047775771e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r424-829.2'
   to
   be
-  (1,
+  (271,
   677).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r424-829.2'
   has
   size
-  676,
+  406,
   406
   matches,
   and
   the
   score
   of
-  1.9101672196553584e+79.
+  5.515681047775771e+99.
 END 25
 BEGIN 26
   Contig

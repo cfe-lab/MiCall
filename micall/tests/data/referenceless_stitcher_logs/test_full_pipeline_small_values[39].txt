@@ -154,7 +154,7 @@ BEGIN 11
   'r464-773.5'
   to
   be
-  (2,
+  (65,
   375).
 END 11
 BEGIN 12
@@ -166,14 +166,14 @@ BEGIN 12
   'r464-773.5'
   has
   size
-  373,
+  310,
   310
   matches,
   and
   the
   score
   of
-  6.331207796092472e+72.
+  4.962749858723358e+77.
 END 12
 BEGIN 13
   Contig
@@ -336,7 +336,7 @@ BEGIN 22
   'r464-773.5'
   to
   be
-  (2,
+  (65,
   375).
 END 22
 BEGIN 23
@@ -348,14 +348,14 @@ BEGIN 23
   'r464-773.5'
   has
   size
-  373,
+  310,
   310
   matches,
   and
   the
   score
   of
-  6.331207796092472e+72.
+  4.962749858723358e+77.
 END 23
 BEGIN 24
   Contig
@@ -518,7 +518,7 @@ BEGIN 33
   'r464-773.5'
   to
   be
-  (1,
+  (227,
   537).
 END 33
 BEGIN 34
@@ -530,14 +530,14 @@ BEGIN 34
   'r464-773.5'
   has
   size
-  536,
+  310,
   310
   matches,
   and
   the
   score
   of
-  3.268432219046959e+60.
+  4.962749858723358e+77.
 END 34
 BEGIN 35
   Contig
@@ -653,28 +653,9 @@ BEGIN 43
   'r464-773.5'
   to
   be
-  (11,
-  303).
+  None.
 END 43
 BEGIN 44
-  Overlap
-  between
-  contigs
-  'r115-459.0'
-  and
-  'r464-773.5'
-  has
-  size
-  310,
-  25
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999906466.
-END 44
-BEGIN 45
   Calculated
   cutoff
   for
@@ -692,8 +673,8 @@ BEGIN 45
   be
   (64,
   281).
-END 45
-BEGIN 46
+END 44
+BEGIN 45
   Overlap
   between
   contigs
@@ -710,8 +691,8 @@ BEGIN 46
   score
   of
   8.659270740058138e+70.
-END 46
-BEGIN 47
+END 45
+BEGIN 46
   Found
   a
   significant
@@ -728,8 +709,8 @@ BEGIN 47
   in
   contig
   (8).
-END 47
-BEGIN 48
+END 46
+BEGIN 47
   Cycle
   1
   finished
@@ -747,16 +728,16 @@ BEGIN 48
   of
   2
   parts.
-END 48
-BEGIN 49
+END 47
+BEGIN 48
   Cycle
   2
   started
   with
   1
   paths
-END 49
-BEGIN 50
+END 48
+BEGIN 49
   Calculated
   cutoff
   for
@@ -772,54 +753,17 @@ BEGIN 50
   'r464-773.5'
   to
   be
-  (11,
-  301).
-END 50
-BEGIN 51
-  Overlap
-  between
-  contigs
-  (8)
-  and
-  'r464-773.5'
-  has
-  size
-  310,
-  25
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999906466.
-END 51
-BEGIN 52
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  571
-  between
-  contigs
-  (8)
-  and
-  'r464-773.5',
-  resulting
-  in
-  contig
-  (9).
-END 52
-BEGIN 53
+  None.
+END 49
+BEGIN 50
   Constructed
   a
   path
   of
   length
   347.
-END 53
-BEGIN 54
+END 50
+BEGIN 51
   Removed
   2
   components
@@ -832,29 +776,29 @@ BEGIN 54
   still
   to
   process.
-END 54
-BEGIN 55
+END 51
+BEGIN 52
   Calculating
   all
   paths...
-END 55
-BEGIN 56
+END 52
+BEGIN 53
   Cycle
   1
   started
   with
   1
   paths
-END 56
-BEGIN 57
+END 53
+BEGIN 54
   Constructed
   a
   path
   of
   length
   310.
-END 57
-BEGIN 58
+END 54
+BEGIN 55
   Removed
   1
   components
@@ -867,8 +811,8 @@ BEGIN 58
   still
   to
   process.
-END 58
-BEGIN 59
+END 55
+BEGIN 56
   Giving
   up
   on
@@ -883,16 +827,16 @@ BEGIN 59
   is
   a
   singleton.
-END 59
-BEGIN 60
+END 56
+BEGIN 57
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 60
-BEGIN 61
+END 57
+BEGIN 58
   Calculated
   cutoff
   for
@@ -910,8 +854,8 @@ BEGIN 61
   be
   (122,
   225).
-END 61
-BEGIN 62
+END 58
+BEGIN 59
   Overlap
   between
   contigs
@@ -928,8 +872,8 @@ BEGIN 62
   score
   of
   9.702443895063588e+57.
-END 62
-BEGIN 63
+END 59
+BEGIN 60
   Found
   a
   significant
@@ -945,9 +889,9 @@ BEGIN 63
   resulting
   in
   contig
-  (10).
-END 63
-BEGIN 64
+  (9).
+END 60
+BEGIN 61
   Calculated
   cutoff
   for
@@ -958,42 +902,42 @@ BEGIN 64
   310
   between
   contigs
-  (10)
+  (9)
   and
   'r464-773.5'
   to
   be
-  (7,
+  (349,
   659).
-END 64
-BEGIN 65
+END 61
+BEGIN 62
   Overlap
   between
   contigs
-  (10)
+  (9)
   and
   'r464-773.5'
   has
   size
-  652,
+  310,
   310
   matches,
   and
   the
   score
   of
-  3.654469871332047e+51.
-END 65
-BEGIN 66
+  4.962749858723358e+77.
+END 62
+BEGIN 63
   Contig
-  (10)
+  (9)
   covers
   contig
   'r464-773.5'
   completely.
-END 66
-BEGIN 67
+END 63
+BEGIN 64
   Outputting
   1
   contigs.
-END 67
+END 64

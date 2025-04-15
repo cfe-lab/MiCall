@@ -99,7 +99,7 @@ BEGIN 8
   'r351-796.1'
   to
   be
-  (5,
+  (137,
   583).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r351-796.1'
   has
   size
-  578,
+  446,
   446
   matches,
   and
   the
   score
   of
-  7.08526190083987e+98.
+  7.975258297830065e+108.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r351-796.1'
   to
   be
-  (5,
+  (137,
   583).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r351-796.1'
   has
   size
-  578,
+  446,
   446
   matches,
   and
   the
   score
   of
-  7.08526190083987e+98.
+  7.975258297830065e+108.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r351-796.1'
   to
   be
-  (5,
+  (137,
   583).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r351-796.1'
   has
   size
-  578,
+  446,
   446
   matches,
   and
   the
   score
   of
-  7.08526190083987e+98.
+  7.975258297830065e+108.
 END 25
 BEGIN 26
   Contig

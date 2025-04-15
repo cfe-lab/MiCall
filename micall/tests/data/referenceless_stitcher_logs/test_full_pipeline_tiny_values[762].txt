@@ -99,28 +99,9 @@ BEGIN 8
   'r92-368.1'
   to
   be
-  (5,
-  549).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r393-950.2'
-  and
-  'r92-368.1'
-  has
-  size
-  544,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 9
-BEGIN 10
   Cycle
   1
   finished
@@ -138,16 +119,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -163,10 +144,10 @@ BEGIN 12
   'r92-368.1'
   to
   be
-  (5,
+  (21,
   298).
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -175,32 +156,32 @@ BEGIN 13
   'r92-368.1'
   has
   size
-  293,
+  277,
   277
   matches,
   and
   the
   score
   of
-  1.231499715095713e+69.
-END 13
-BEGIN 14
+  2.0683224771640222e+70.
+END 12
+BEGIN 13
   Contig
   (1)
   covers
   contig
   'r92-368.1'
   completely.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
   880.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -213,29 +194,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   277.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -248,8 +229,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -264,16 +245,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -289,10 +270,10 @@ BEGIN 23
   'r92-368.1'
   to
   be
-  (5,
+  (21,
   298).
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Overlap
   between
   contigs
@@ -301,25 +282,25 @@ BEGIN 24
   'r92-368.1'
   has
   size
-  293,
+  277,
   277
   matches,
   and
   the
   score
   of
-  1.231499715095713e+69.
-END 24
-BEGIN 25
+  2.0683224771640222e+70.
+END 23
+BEGIN 24
   Contig
   (1)
   covers
   contig
   'r92-368.1'
   completely.
-END 25
-BEGIN 26
+END 24
+BEGIN 25
   Outputting
   1
   contigs.
-END 26
+END 25

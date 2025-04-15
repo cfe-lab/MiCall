@@ -44,7 +44,7 @@ BEGIN 5
   'r61-764.2'
   to
   be
-  (4,
+  (8,
   712).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r61-764.2'
   has
   size
-  708,
+  704,
   704
   matches,
   and
   the
   score
   of
-  3.140295221178263e+159.
+  3.1554918969817253e+159.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r61-764.2'
   to
   be
-  (14,
+  (41,
   745).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r61-764.2'
   has
   size
-  731,
+  704,
   704
   matches,
   and
   the
   score
   of
-  3.05335427218139e+159.
+  3.1554918969817253e+159.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r61-764.2'
   to
   be
-  (14,
+  (41,
   745).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r61-764.2'
   has
   size
-  731,
+  704,
   704
   matches,
   and
   the
   score
   of
-  3.05335427218139e+159.
+  3.1554918969817253e+159.
 END 25
 BEGIN 26
   Contig

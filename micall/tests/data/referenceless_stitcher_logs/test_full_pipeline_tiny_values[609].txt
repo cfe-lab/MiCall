@@ -44,7 +44,7 @@ BEGIN 5
   'r139-707.0'
   to
   be
-  (0,
+  (115,
   684).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r139-707.0'
   has
   size
-  684,
+  569,
   569
   matches,
   and
   the
   score
   of
-  2.652426554249566e+128.
+  8.531206227706676e+136.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r139-707.0'
   to
   be
-  (0,
+  (115,
   684).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r139-707.0'
   has
   size
-  684,
+  569,
   569
   matches,
   and
   the
   score
   of
-  2.652426554249566e+128.
+  8.531206227706676e+136.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r139-707.0'
   to
   be
-  (0,
+  (115,
   684).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r139-707.0'
   has
   size
-  684,
+  569,
   569
   matches,
   and
   the
   score
   of
-  2.652426554249566e+128.
+  8.531206227706676e+136.
 END 25
 BEGIN 26
   Contig

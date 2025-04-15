@@ -181,7 +181,7 @@ BEGIN 13
   'r571-897.2'
   to
   be
-  (8,
+  (454,
   781).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r571-897.2'
   has
   size
-  773,
+  327,
   327
   matches,
   and
   the
   score
   of
-  3.4465731809819743e+47.
+  4.816723752369294e+81.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r571-897.2'
   to
   be
-  (8,
+  (454,
   781).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r571-897.2'
   has
   size
-  773,
+  327,
   327
   matches,
   and
   the
   score
   of
-  3.4465731809819743e+47.
+  4.816723752369294e+81.
 END 25
 BEGIN 26
   Contig

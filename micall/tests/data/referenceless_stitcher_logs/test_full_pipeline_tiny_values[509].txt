@@ -99,7 +99,7 @@ BEGIN 8
   'r45-339.2'
   to
   be
-  (0,
+  (21,
   316).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r45-339.2'
   has
   size
-  316,
+  295,
   295
   matches,
   and
   the
   score
   of
-  6.090755242253891e+72.
+  2.0698818862705537e+74.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r45-339.2'
   to
   be
-  (0,
+  (21,
   316).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r45-339.2'
   has
   size
-  316,
+  295,
   295
   matches,
   and
   the
   score
   of
-  6.090755242253891e+72.
+  2.0698818862705537e+74.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r45-339.2'
   to
   be
-  (0,
+  (21,
   316).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r45-339.2'
   has
   size
-  316,
+  295,
   295
   matches,
   and
   the
   score
   of
-  6.090755242253891e+72.
+  2.0698818862705537e+74.
 END 25
 BEGIN 26
   Contig

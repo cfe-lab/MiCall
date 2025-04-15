@@ -44,7 +44,7 @@ BEGIN 5
   'r308-641.0'
   to
   be
-  (2,
+  (94,
   428).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r308-641.0'
   has
   size
-  426,
+  334,
   334
   matches,
   and
   the
   score
   of
-  1.5330727995628938e+76.
+  1.6485645329756413e+83.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r308-641.0'
   to
   be
-  (2,
+  (94,
   428).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r308-641.0'
   has
   size
-  426,
+  334,
   334
   matches,
   and
   the
   score
   of
-  1.5330727995628938e+76.
+  1.6485645329756413e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r308-641.0'
   to
   be
-  (2,
+  (94,
   428).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r308-641.0'
   has
   size
-  426,
+  334,
   334
   matches,
   and
   the
   score
   of
-  1.5330727995628938e+76.
+  1.6485645329756413e+83.
 END 25
 BEGIN 26
   Contig

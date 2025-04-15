@@ -99,46 +99,9 @@ BEGIN 8
   'r593-986.0'
   to
   be
-  (218,
-  44).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r375-636.2'
-  and
-  'r593-986.0'
-  has
-  size
-  44,
-  44
-  matches,
-  and
-  the
-  score
-  of
-  1148598229623017.5.
-END 9
-BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  44
-  between
-  contigs
-  'r375-636.2'
-  and
-  'r593-986.0',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -156,16 +119,16 @@ BEGIN 11
   of
   2
   parts.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -183,8 +146,8 @@ BEGIN 13
   be
   (146,
   116).
-END 13
-BEGIN 14
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -201,8 +164,144 @@ BEGIN 14
   score
   of
   4.810866735433101e+32.
+END 12
+BEGIN 13
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  116
+  between
+  contigs
+  'r375-636.2'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
+END 13
+BEGIN 14
+  Constructed
+  a
+  path
+  of
+  length
+  466.
 END 14
 BEGIN 15
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  262.
+END 18
+BEGIN 19
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 19
+BEGIN 20
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 20
+BEGIN 21
+  Initial
+  overlap
+  stitching
+  produced
+  2
+  contigs.
+END 21
+BEGIN 22
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  116
+  between
+  contigs
+  'r375-636.2'
+  and
+  (1)
+  to
+  be
+  (146,
+  116).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  'r375-636.2'
+  and
+  (1)
+  has
+  size
+  116,
+  116
+  matches,
+  and
+  the
+  score
+  of
+  4.810866735433101e+32.
+END 23
+BEGIN 24
   Found
   a
   significant
@@ -219,145 +318,9 @@ BEGIN 15
   in
   contig
   (3).
-END 15
-BEGIN 16
-  Constructed
-  a
-  path
-  of
-  length
-  466.
-END 16
-BEGIN 17
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 17
-BEGIN 18
-  Calculating
-  all
-  paths...
-END 18
-BEGIN 19
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 19
-BEGIN 20
-  Constructed
-  a
-  path
-  of
-  length
-  262.
-END 20
-BEGIN 21
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 21
-BEGIN 22
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 22
-BEGIN 23
-  Initial
-  overlap
-  stitching
-  produced
-  2
-  contigs.
-END 23
-BEGIN 24
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  116
-  between
-  contigs
-  'r375-636.2'
-  and
-  (1)
-  to
-  be
-  (146,
-  116).
 END 24
 BEGIN 25
-  Overlap
-  between
-  contigs
-  'r375-636.2'
-  and
-  (1)
-  has
-  size
-  116,
-  116
-  matches,
-  and
-  the
-  score
-  of
-  4.810866735433101e+32.
-END 25
-BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  116
-  between
-  contigs
-  'r375-636.2'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
   Outputting
   1
   contigs.
-END 27
+END 25

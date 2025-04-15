@@ -44,7 +44,7 @@ BEGIN 5
   'r501-874.2'
   to
   be
-  (5,
+  (12,
   386).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r501-874.2'
   has
   size
-  381,
+  374,
   374
   matches,
   and
   the
   score
   of
-  6.237304942995456e+91.
+  2.5343416243767767e+92.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r501-874.2'
   to
   be
-  (8,
+  (26,
   400).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r501-874.2'
   has
   size
-  392,
+  374,
   374
   matches,
   and
   the
   score
   of
-  1.5208162485048272e+91.
+  2.5343416243767767e+92.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r501-874.2'
   to
   be
-  (8,
+  (26,
   400).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r501-874.2'
   has
   size
-  392,
+  374,
   374
   matches,
   and
   the
   score
   of
-  1.5208162485048272e+91.
+  2.5343416243767767e+92.
 END 25
 BEGIN 26
   Contig

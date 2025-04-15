@@ -99,7 +99,7 @@ BEGIN 8
   'r516-954.1'
   to
   be
-  (1,
+  (115,
   554).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r516-954.1'
   has
   size
-  553,
+  439,
   439
   matches,
   and
   the
   score
   of
-  3.4918399321246475e+98.
+  2.3705193024351477e+107.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r516-954.1'
   to
   be
-  (0,
+  (514,
   953).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r516-954.1'
   has
   size
-  953,
+  439,
   439
   matches,
   and
   the
   score
   of
-  8.886042646517952e+67.
+  2.3705193024351477e+107.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r516-954.1'
   to
   be
-  (0,
+  (514,
   953).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r516-954.1'
   has
   size
-  953,
+  439,
   439
   matches,
   and
   the
   score
   of
-  8.886042646517952e+67.
+  2.3705193024351477e+107.
 END 25
 BEGIN 26
   Contig

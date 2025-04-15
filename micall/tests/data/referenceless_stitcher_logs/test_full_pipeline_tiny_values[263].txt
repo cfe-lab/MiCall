@@ -44,7 +44,7 @@ BEGIN 5
   'r285-818.0'
   to
   be
-  (7,
+  (135,
   669).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r285-818.0'
   has
   size
-  662,
+  534,
   534
   matches,
   and
   the
   score
   of
-  1.950583276915955e+119.
+  1.0401803854791448e+129.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r285-818.0'
   to
   be
-  (4,
+  (273,
   807).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r285-818.0'
   has
   size
-  803,
+  534,
   534
   matches,
   and
   the
   score
   of
-  4.322364218764522e+108.
+  1.0401803854791448e+129.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r285-818.0'
   to
   be
-  (4,
+  (273,
   807).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r285-818.0'
   has
   size
-  803,
+  534,
   534
   matches,
   and
   the
   score
   of
-  4.322364218764522e+108.
+  1.0401803854791448e+129.
 END 25
 BEGIN 26
   Contig

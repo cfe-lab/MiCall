@@ -99,7 +99,7 @@ BEGIN 8
   'r329-682.2'
   to
   be
-  (6,
+  (71,
   425).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r329-682.2'
   has
   size
-  419,
+  354,
   354
   matches,
   and
   the
   score
   of
-  8.435721131464187e+82.
+  6.496953930677054e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r329-682.2'
   to
   be
-  (9,
+  (279,
   633).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r329-682.2'
   has
   size
-  624,
+  354,
   354
   matches,
   and
   the
   score
   of
-  1.9999670324686296e+67.
+  6.496953930677054e+87.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r329-682.2'
   to
   be
-  (9,
+  (279,
   633).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r329-682.2'
   has
   size
-  624,
+  354,
   354
   matches,
   and
   the
   score
   of
-  1.9999670324686296e+67.
+  6.496953930677054e+87.
 END 25
 BEGIN 26
   Contig

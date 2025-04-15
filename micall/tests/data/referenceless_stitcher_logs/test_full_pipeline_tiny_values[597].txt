@@ -99,7 +99,7 @@ BEGIN 8
   'r310-720.1'
   to
   be
-  (0,
+  (103,
   514).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r310-720.1'
   has
   size
-  514,
+  411,
   411
   matches,
   and
   the
   score
   of
-  1.091026079313239e+93.
+  9.174050477912727e+100.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r310-720.1'
   to
   be
-  (2,
+  (185,
   596).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r310-720.1'
   has
   size
-  594,
+  411,
   411
   matches,
   and
   the
   score
   of
-  8.539027811674221e+86.
+  9.174050477912727e+100.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r310-720.1'
   to
   be
-  (2,
+  (185,
   596).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r310-720.1'
   has
   size
-  594,
+  411,
   411
   matches,
   and
   the
   score
   of
-  8.539027811674221e+86.
+  9.174050477912727e+100.
 END 25
 BEGIN 26
   Contig

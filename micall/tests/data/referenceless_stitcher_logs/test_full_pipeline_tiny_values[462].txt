@@ -99,7 +99,7 @@ BEGIN 8
   'r414-760.0'
   to
   be
-  (1,
+  (94,
   441).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r414-760.0'
   has
   size
-  440,
+  347,
   347
   matches,
   and
   the
   score
   of
-  1.78454749143737e+79.
+  1.905628592185648e+86.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r414-760.0'
   to
   be
-  (1,
+  (94,
   441).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r414-760.0'
   has
   size
-  440,
+  347,
   347
   matches,
   and
   the
   score
   of
-  1.78454749143737e+79.
+  1.905628592185648e+86.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r414-760.0'
   to
   be
-  (1,
+  (94,
   441).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r414-760.0'
   has
   size
-  440,
+  347,
   347
   matches,
   and
   the
   score
   of
-  1.78454749143737e+79.
+  1.905628592185648e+86.
 END 25
 BEGIN 26
   Contig

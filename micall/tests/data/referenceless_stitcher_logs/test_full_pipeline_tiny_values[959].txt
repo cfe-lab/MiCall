@@ -99,7 +99,7 @@ BEGIN 8
   'r336-674.2'
   to
   be
-  (0,
+  (125,
   464).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r336-674.2'
   has
   size
-  464,
+  339,
   339
   matches,
   and
   the
   score
   of
-  9.150706546406058e+74.
+  2.7650949688780535e+84.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r336-674.2'
   to
   be
-  (0,
+  (125,
   464).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r336-674.2'
   has
   size
-  464,
+  339,
   339
   matches,
   and
   the
   score
   of
-  9.150706546406058e+74.
+  2.7650949688780535e+84.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r336-674.2'
   to
   be
-  (0,
+  (125,
   464).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r336-674.2'
   has
   size
-  464,
+  339,
   339
   matches,
   and
   the
   score
   of
-  9.150706546406058e+74.
+  2.7650949688780535e+84.
 END 25
 BEGIN 26
   Contig

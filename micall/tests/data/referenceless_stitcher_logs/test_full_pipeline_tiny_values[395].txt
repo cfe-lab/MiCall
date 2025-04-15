@@ -181,7 +181,7 @@ BEGIN 13
   'r153-519.0'
   to
   be
-  (10,
+  (21,
   388).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r153-519.0'
   has
   size
-  378,
+  367,
   367
   matches,
   and
   the
   score
   of
-  9.092195319389873e+89.
+  7.459220964213018e+90.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r153-519.0'
   to
   be
-  (10,
+  (21,
   388).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r153-519.0'
   has
   size
-  378,
+  367,
   367
   matches,
   and
   the
   score
   of
-  9.092195319389873e+89.
+  7.459220964213018e+90.
 END 25
 BEGIN 26
   Contig

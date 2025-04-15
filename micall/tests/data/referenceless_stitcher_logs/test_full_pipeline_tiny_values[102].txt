@@ -99,7 +99,7 @@ BEGIN 8
   'r511-829.0'
   to
   be
-  (3,
+  (270,
   589).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r511-829.0'
   has
   size
-  586,
+  319,
   319
   matches,
   and
   the
   score
   of
-  1.95037816332996e+59.
+  6.956841143781247e+79.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r511-829.0'
   to
   be
-  (3,
+  (270,
   589).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r511-829.0'
   has
   size
-  586,
+  319,
   319
   matches,
   and
   the
   score
   of
-  1.95037816332996e+59.
+  6.956841143781247e+79.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r511-829.0'
   to
   be
-  (3,
+  (270,
   589).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r511-829.0'
   has
   size
-  586,
+  319,
   319
   matches,
   and
   the
   score
   of
-  1.95037816332996e+59.
+  6.956841143781247e+79.
 END 25
 BEGIN 26
   Contig

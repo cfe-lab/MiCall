@@ -99,7 +99,7 @@ BEGIN 8
   'r262-766.0'
   to
   be
-  (1,
+  (22,
   527).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r262-766.0'
   has
   size
-  526,
+  505,
   505
   matches,
   and
   the
   score
   of
-  6.26991169169949e+120.
+  2.078655709798398e+122.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r262-766.0'
   to
   be
-  (1,
+  (22,
   527).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r262-766.0'
   has
   size
-  526,
+  505,
   505
   matches,
   and
   the
   score
   of
-  6.26991169169949e+120.
+  2.078655709798398e+122.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r262-766.0'
   to
   be
-  (1,
+  (22,
   527).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r262-766.0'
   has
   size
-  526,
+  505,
   505
   matches,
   and
   the
   score
   of
-  6.26991169169949e+120.
+  2.078655709798398e+122.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r217-593.2'
   to
   be
-  (2,
+  (77,
   454).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r217-593.2'
   has
   size
-  452,
+  377,
   377
   matches,
   and
   the
   score
   of
-  3.326259108058983e+87.
+  1.0397456562333842e+93.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r217-593.2'
   to
   be
-  (0,
+  (180,
   557).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r217-593.2'
   has
   size
-  557,
+  377,
   377
   matches,
   and
   the
   score
   of
-  3.742366542980877e+79.
+  1.0397456562333842e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r217-593.2'
   to
   be
-  (0,
+  (180,
   557).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r217-593.2'
   has
   size
-  557,
+  377,
   377
   matches,
   and
   the
   score
   of
-  3.742366542980877e+79.
+  1.0397456562333842e+93.
 END 25
 BEGIN 26
   Contig

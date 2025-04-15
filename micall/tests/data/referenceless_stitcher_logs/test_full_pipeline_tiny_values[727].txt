@@ -44,7 +44,7 @@ BEGIN 5
   'r220-571.0'
   to
   be
-  (11,
+  (43,
   395).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r220-571.0'
   has
   size
-  384,
+  352,
   352
   matches,
   and
   the
   score
   of
-  1.1531331345710517e+85.
+  3.1906044786508217e+87.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r503-801.2'
   to
   be
-  (2,
+  (326,
   625).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r503-801.2'
   has
   size
-  623,
+  299,
   299
   matches,
   and
   the
   score
   of
-  2.098571035117903e+50.
+  1.7283274919769396e+75.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r503-801.2'
   to
   be
-  (2,
+  (326,
   625).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r503-801.2'
   has
   size
-  623,
+  299,
   299
   matches,
   and
   the
   score
   of
-  2.098571035117903e+50.
+  1.7283274919769396e+75.
 END 14
 BEGIN 15
   Contig

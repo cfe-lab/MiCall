@@ -99,7 +99,7 @@ BEGIN 8
   'r610-894.0'
   to
   be
-  (0,
+  (219,
   504).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r610-894.0'
   has
   size
-  504,
+  285,
   285
   matches,
   and
   the
   score
   of
-  1.8197807238984985e+55.
+  1.449177165052371e+72.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r610-894.0'
   to
   be
-  (2,
+  (447,
   732).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r610-894.0'
   has
   size
-  730,
+  285,
   285
   matches,
   and
   the
   score
   of
-  3.574585431504244e+37.
+  1.449177165052371e+72.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r610-894.0'
   to
   be
-  (2,
+  (447,
   732).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r610-894.0'
   has
   size
-  730,
+  285,
   285
   matches,
   and
   the
   score
   of
-  3.574585431504244e+37.
+  1.449177165052371e+72.
 END 25
 BEGIN 26
   Contig

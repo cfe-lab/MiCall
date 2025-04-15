@@ -99,7 +99,7 @@ BEGIN 8
   'r442-716.2'
   to
   be
-  (0,
+  (95,
   370).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r442-716.2'
   has
   size
-  370,
+  275,
   275
   matches,
   and
   the
   score
   of
-  2.195355315754727e+62.
+  5.052985591895452e+69.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r442-716.2'
   to
   be
-  (0,
+  (184,
   459).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r442-716.2'
   has
   size
-  459,
+  275,
   275
   matches,
   and
   the
   score
   of
-  3.670342677801457e+55.
+  5.052985591895452e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r442-716.2'
   to
   be
-  (0,
+  (184,
   459).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r442-716.2'
   has
   size
-  459,
+  275,
   275
   matches,
   and
   the
   score
   of
-  3.670342677801457e+55.
+  5.052985591895452e+69.
 END 25
 BEGIN 26
   Contig

@@ -181,7 +181,7 @@ BEGIN 13
   'r193-473.0'
   to
   be
-  (4,
+  (105,
   386).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r193-473.0'
   has
   size
-  382,
+  281,
   281
   matches,
   and
   the
   score
   of
-  1.854374140540274e+63.
+  8.659270740058138e+70.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r193-473.0'
   to
   be
-  (4,
+  (105,
   386).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r193-473.0'
   has
   size
-  382,
+  281,
   281
   matches,
   and
   the
   score
   of
-  1.854374140540274e+63.
+  8.659270740058138e+70.
 END 25
 BEGIN 26
   Contig

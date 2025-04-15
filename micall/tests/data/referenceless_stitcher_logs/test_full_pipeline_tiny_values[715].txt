@@ -44,7 +44,7 @@ BEGIN 5
   'r381-731.2'
   to
   be
-  (16,
+  (247,
   598).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r381-731.2'
   has
   size
-  582,
+  351,
   351
   matches,
   and
   the
   score
   of
-  2.8314860678567218e+69.
+  1.5809668014210111e+87.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r249-560.0'
   to
   be
-  (1,
+  (115,
   427).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r249-560.0'
   has
   size
-  426,
+  312,
   312
   matches,
   and
   the
   score
   of
-  2.693026923930984e+69.
+  2.0260717585204003e+78.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r249-560.0'
   to
   be
-  (1,
+  (115,
   427).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r249-560.0'
   has
   size
-  426,
+  312,
   312
   matches,
   and
   the
   score
   of
-  2.693026923930984e+69.
+  2.0260717585204003e+78.
 END 14
 BEGIN 15
   Contig

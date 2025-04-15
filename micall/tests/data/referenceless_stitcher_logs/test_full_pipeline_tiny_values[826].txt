@@ -44,7 +44,7 @@ BEGIN 5
   'r282-855.0'
   to
   be
-  (12,
+  (93,
   667).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r282-855.0'
   has
   size
-  655,
+  574,
   574
   matches,
   and
   the
   score
   of
-  1.1820545058857887e+132.
+  1.4032442602152564e+138.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r282-855.0'
   to
   be
-  (12,
+  (93,
   667).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r282-855.0'
   has
   size
-  655,
+  574,
   574
   matches,
   and
   the
   score
   of
-  1.1820545058857887e+132.
+  1.4032442602152564e+138.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r282-855.0'
   to
   be
-  (12,
+  (93,
   667).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r282-855.0'
   has
   size
-  655,
+  574,
   574
   matches,
   and
   the
   score
   of
-  1.1820545058857887e+132.
+  1.4032442602152564e+138.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r528-900.0'
   to
   be
-  (1,
+  (151,
   524).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r528-900.0'
   has
   size
-  523,
+  373,
   373
   matches,
   and
   the
   score
   of
-  6.271665061320604e+80.
+  2.5129163081324813e+92.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r528-900.0'
   to
   be
-  (1,
+  (458,
   831).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r528-900.0'
   has
   size
-  830,
+  373,
   373
   matches,
   and
   the
   score
   of
-  1.4187729019033566e+57.
+  2.5129163081324813e+92.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r528-900.0'
   to
   be
-  (1,
+  (458,
   831).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r528-900.0'
   has
   size
-  830,
+  373,
   373
   matches,
   and
   the
   score
   of
-  1.4187729019033566e+57.
+  2.5129163081324813e+92.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r268-571.2'
   to
   be
-  (1,
+  (204,
   508).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r268-571.2'
   has
   size
-  507,
+  304,
   304
   matches,
   and
   the
   score
   of
-  6.61836384387079e+60.
+  2.914968515383263e+76.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r268-571.2'
   to
   be
-  (1,
+  (204,
   508).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r268-571.2'
   has
   size
-  507,
+  304,
   304
   matches,
   and
   the
   score
   of
-  6.61836384387079e+60.
+  2.914968515383263e+76.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r268-571.2'
   to
   be
-  (1,
+  (204,
   508).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r268-571.2'
   has
   size
-  507,
+  304,
   304
   matches,
   and
   the
   score
   of
-  6.61836384387079e+60.
+  2.914968515383263e+76.
 END 25
 BEGIN 26
   Contig

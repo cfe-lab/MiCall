@@ -181,7 +181,7 @@ BEGIN 13
   'r320-594.0'
   to
   be
-  (2,
+  (11,
   286).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r320-594.0'
   has
   size
-  284,
+  275,
   275
   matches,
   and
   the
   score
   of
-  1.2292825235716436e+69.
+  5.052985591895452e+69.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r320-594.0'
   to
   be
-  (2,
+  (11,
   286).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r320-594.0'
   has
   size
-  284,
+  275,
   275
   matches,
   and
   the
   score
   of
-  1.2292825235716436e+69.
+  5.052985591895452e+69.
 END 25
 BEGIN 26
   Contig

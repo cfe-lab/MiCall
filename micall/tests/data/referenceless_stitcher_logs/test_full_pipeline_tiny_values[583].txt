@@ -99,7 +99,7 @@ BEGIN 8
   'r290-794.1'
   to
   be
-  (0,
+  (6,
   511).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r290-794.1'
   has
   size
-  511,
+  505,
   505
   matches,
   and
   the
   score
   of
-  1.0289644878393851e+122.
+  2.078655709798398e+122.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r290-794.1'
   to
   be
-  (0,
+  (209,
   714).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r290-794.1'
   has
   size
-  714,
+  505,
   505
   matches,
   and
   the
   score
   of
-  3.1199409402146897e+106.
+  2.078655709798398e+122.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r290-794.1'
   to
   be
-  (0,
+  (209,
   714).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r290-794.1'
   has
   size
-  714,
+  505,
   505
   matches,
   and
   the
   score
   of
-  3.1199409402146897e+106.
+  2.078655709798398e+122.
 END 25
 BEGIN 26
   Contig

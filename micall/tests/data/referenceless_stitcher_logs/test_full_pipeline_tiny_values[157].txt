@@ -99,7 +99,7 @@ BEGIN 8
   'r557-856.2'
   to
   be
-  (2,
+  (83,
   383).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r557-856.2'
   has
   size
-  381,
+  300,
   300
   matches,
   and
   the
   score
   of
-  1.3073191914598352e+69.
+  3.4935292924645634e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r557-856.2'
   to
   be
-  (1,
+  (130,
   430).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r557-856.2'
   has
   size
-  429,
+  300,
   300
   matches,
   and
   the
   score
   of
-  2.7151584457134324e+65.
+  3.4935292924645634e+75.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r557-856.2'
   to
   be
-  (1,
+  (130,
   430).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r557-856.2'
   has
   size
-  429,
+  300,
   300
   matches,
   and
   the
   score
   of
-  2.7151584457134324e+65.
+  3.4935292924645634e+75.
 END 25
 BEGIN 26
   Contig

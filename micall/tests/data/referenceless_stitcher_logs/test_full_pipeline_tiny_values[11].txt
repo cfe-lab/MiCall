@@ -44,7 +44,7 @@ BEGIN 5
   'r120-664.0'
   to
   be
-  (2,
+  (3,
   548).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r120-664.0'
   has
   size
-  546,
+  545,
   545
   matches,
   and
   the
   score
   of
-  2.8357238336104024e+131.
+  2.8401119959448515e+131.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r120-664.0'
   to
   be
-  (2,
+  (3,
   548).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r120-664.0'
   has
   size
-  546,
+  545,
   545
   matches,
   and
   the
   score
   of
-  2.8357238336104024e+131.
+  2.8401119959448515e+131.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r120-664.0'
   to
   be
-  (2,
+  (3,
   548).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r120-664.0'
   has
   size
-  546,
+  545,
   545
   matches,
   and
   the
   score
   of
-  2.8357238336104024e+131.
+  2.8401119959448515e+131.
 END 25
 BEGIN 26
   Contig

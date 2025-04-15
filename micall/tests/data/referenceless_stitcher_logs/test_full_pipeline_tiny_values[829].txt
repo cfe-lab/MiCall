@@ -99,7 +99,7 @@ BEGIN 8
   'r635-917.2'
   to
   be
-  (4,
+  (422,
   705).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r635-917.2'
   has
   size
-  701,
+  283,
   283
   matches,
   and
   the
   score
   of
-  2.6422076678163705e+39.
+  3.5427153390813163e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r635-917.2'
   to
   be
-  (0,
+  (523,
   806).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r635-917.2'
   has
   size
-  806,
+  283,
   283
   matches,
   and
   the
   score
   of
-  8.680436898503667e+30.
+  3.5427153390813163e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r635-917.2'
   to
   be
-  (0,
+  (523,
   806).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r635-917.2'
   has
   size
-  806,
+  283,
   283
   matches,
   and
   the
   score
   of
-  8.680436898503667e+30.
+  3.5427153390813163e+71.
 END 25
 BEGIN 26
   Contig

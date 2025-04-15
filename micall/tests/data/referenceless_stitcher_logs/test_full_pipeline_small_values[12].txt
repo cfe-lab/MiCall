@@ -538,7 +538,7 @@ BEGIN 33
   'r224-498.4'
   to
   be
-  (1,
+  (77,
   352).
 END 33
 BEGIN 34
@@ -550,14 +550,14 @@ BEGIN 34
   'r224-498.4'
   has
   size
-  351,
+  275,
   275
   matches,
   and
   the
   score
   of
-  7.521434087234347e+63.
+  5.052985591895452e+69.
 END 34
 BEGIN 35
   Contig
@@ -610,7 +610,7 @@ BEGIN 38
   'r133-549.0'
   to
   be
-  (5,
+  (41,
   458).
 END 38
 BEGIN 39
@@ -622,14 +622,14 @@ BEGIN 39
   'r133-549.0'
   has
   size
-  453,
+  417,
   417
   matches,
   and
   the
   score
   of
-  5.574567010984156e+99.
+  1.536811601568966e+102.
 END 39
 BEGIN 40
   Contig
@@ -655,7 +655,7 @@ BEGIN 41
   'r224-498.4'
   to
   be
-  (0,
+  (132,
   407).
 END 41
 BEGIN 42
@@ -667,14 +667,14 @@ BEGIN 42
   'r224-498.4'
   has
   size
-  407,
+  275,
   275
   matches,
   and
   the
   score
   of
-  3.72643534215245e+59.
+  5.052985591895452e+69.
 END 42
 BEGIN 43
   Contig
@@ -735,7 +735,7 @@ BEGIN 48
   'r224-498.4'
   to
   be
-  (1,
+  (91,
   366).
 END 48
 BEGIN 49
@@ -747,14 +747,14 @@ BEGIN 49
   'r224-498.4'
   has
   size
-  365,
+  275,
   275
   matches,
   and
   the
   score
   of
-  8.942793737012862e+62.
+  5.052985591895452e+69.
 END 49
 BEGIN 50
   Contig
@@ -837,7 +837,7 @@ BEGIN 56
   'r133-549.0'
   to
   be
-  (5,
+  (41,
   458).
 END 56
 BEGIN 57
@@ -849,14 +849,14 @@ BEGIN 57
   'r133-549.0'
   has
   size
-  453,
+  417,
   417
   matches,
   and
   the
   score
   of
-  5.574567010984156e+99.
+  1.536811601568966e+102.
 END 57
 BEGIN 58
   Contig

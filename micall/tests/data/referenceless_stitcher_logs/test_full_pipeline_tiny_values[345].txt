@@ -99,7 +99,7 @@ BEGIN 8
   'r610-961.0'
   to
   be
-  (2,
+  (167,
   519).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r610-961.0'
   has
   size
-  517,
+  352,
   352
   matches,
   and
   the
   score
   of
-  4.640100428463503e+74.
+  3.1906044786508217e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r610-961.0'
   to
   be
-  (4,
+  (318,
   670).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r610-961.0'
   has
   size
-  666,
+  352,
   352
   matches,
   and
   the
   score
   of
-  2.0273259529311766e+63.
+  3.1906044786508217e+87.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r610-961.0'
   to
   be
-  (4,
+  (318,
   670).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r610-961.0'
   has
   size
-  666,
+  352,
   352
   matches,
   and
   the
   score
   of
-  2.0273259529311766e+63.
+  3.1906044786508217e+87.
 END 25
 BEGIN 26
   Contig

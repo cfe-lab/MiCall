@@ -181,7 +181,7 @@ BEGIN 13
   'r350-652.2'
   to
   be
-  (0,
+  (132,
   435).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r350-652.2'
   has
   size
-  435,
+  303,
   303
   matches,
   and
   the
   score
   of
-  1.1141905755272726e+66.
+  1.4423042520676164e+76.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r350-652.2'
   to
   be
-  (0,
+  (132,
   435).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r350-652.2'
   has
   size
-  435,
+  303,
   303
   matches,
   and
   the
   score
   of
-  1.1141905755272726e+66.
+  1.4423042520676164e+76.
 END 25
 BEGIN 26
   Contig

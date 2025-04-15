@@ -44,7 +44,7 @@ BEGIN 5
   'r546-876.0'
   to
   be
-  (3,
+  (297,
   628).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r546-876.0'
   has
   size
-  625,
+  331,
   331
   matches,
   and
   the
   score
   of
-  8.193087546973325e+59.
+  4.0050347502069994e+82.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r546-876.0'
   to
   be
-  (3,
+  (455,
   786).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r546-876.0'
   has
   size
-  783,
+  331,
   331
   matches,
   and
   the
   score
   of
-  7.1418769558279685e+47.
+  4.0050347502069994e+82.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r546-876.0'
   to
   be
-  (3,
+  (455,
   786).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r546-876.0'
   has
   size
-  783,
+  331,
   331
   matches,
   and
   the
   score
   of
-  7.1418769558279685e+47.
+  4.0050347502069994e+82.
 END 25
 BEGIN 26
   Contig

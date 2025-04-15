@@ -99,7 +99,7 @@ BEGIN 8
   'r473-740.2'
   to
   be
-  (8,
+  (191,
   459).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r473-740.2'
   has
   size
-  451,
+  268,
   268
   matches,
   and
   the
   score
   of
-  1.0397939365880253e+54.
+  1.454700128966913e+68.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r473-740.2'
   to
   be
-  (6,
+  (463,
   731).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r473-740.2'
   has
   size
-  725,
+  268,
   268
   matches,
   and
   the
   score
   of
-  3.298768775040362e+32.
+  1.454700128966913e+68.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r473-740.2'
   to
   be
-  (6,
+  (463,
   731).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r473-740.2'
   has
   size
-  725,
+  268,
   268
   matches,
   and
   the
   score
   of
-  3.298768775040362e+32.
+  1.454700128966913e+68.
 END 25
 BEGIN 26
   Contig

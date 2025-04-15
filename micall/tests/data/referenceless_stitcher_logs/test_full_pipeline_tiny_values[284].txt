@@ -99,7 +99,7 @@ BEGIN 8
   'r526-917.2'
   to
   be
-  (3,
+  (208,
   600).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r526-917.2'
   has
   size
-  597,
+  392,
   392
   matches,
   and
   the
   score
   of
-  6.443754911571383e+80.
+  4.819519351096359e+96.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r526-917.2'
   to
   be
-  (3,
+  (208,
   600).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r526-917.2'
   has
   size
-  597,
+  392,
   392
   matches,
   and
   the
   score
   of
-  6.443754911571383e+80.
+  4.819519351096359e+96.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r526-917.2'
   to
   be
-  (3,
+  (208,
   600).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r526-917.2'
   has
   size
-  597,
+  392,
   392
   matches,
   and
   the
   score
   of
-  6.443754911571383e+80.
+  4.819519351096359e+96.
 END 25
 BEGIN 26
   Contig

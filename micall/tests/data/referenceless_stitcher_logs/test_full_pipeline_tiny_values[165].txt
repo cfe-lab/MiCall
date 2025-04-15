@@ -181,7 +181,7 @@ BEGIN 13
   'r440-887.2'
   to
   be
-  (1,
+  (403,
   851).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r440-887.2'
   has
   size
-  850,
+  448,
   448
   matches,
   and
   the
   score
   of
-  4.8496538948151816e+78.
+  3.2356098940306747e+109.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r440-887.2'
   to
   be
-  (1,
+  (403,
   851).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r440-887.2'
   has
   size
-  850,
+  448,
   448
   matches,
   and
   the
   score
   of
-  4.8496538948151816e+78.
+  3.2356098940306747e+109.
 END 25
 BEGIN 26
   Contig

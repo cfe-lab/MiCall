@@ -44,7 +44,7 @@ BEGIN 5
   'r194-598.0'
   to
   be
-  (1,
+  (51,
   456).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r194-598.0'
   has
   size
-  455,
+  405,
   405
   matches,
   and
   the
   score
   of
-  6.002552800132524e+95.
+  5.472750284280459e+99.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r194-598.0'
   to
   be
-  (7,
+  (134,
   539).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r194-598.0'
   has
   size
-  532,
+  405,
   405
   matches,
   and
   the
   score
   of
-  9.561474241980933e+89.
+  5.472750284280459e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r194-598.0'
   to
   be
-  (7,
+  (134,
   539).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r194-598.0'
   has
   size
-  532,
+  405,
   405
   matches,
   and
   the
   score
   of
-  9.561474241980933e+89.
+  5.472750284280459e+99.
 END 25
 BEGIN 26
   Contig

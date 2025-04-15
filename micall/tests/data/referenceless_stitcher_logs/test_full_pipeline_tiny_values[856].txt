@@ -99,7 +99,7 @@ BEGIN 8
   'r119-580.2'
   to
   be
-  (2,
+  (80,
   542).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r119-580.2'
   has
   size
-  540,
+  462,
   462
   matches,
   and
   the
   score
   of
-  6.00263639446849e+106.
+  3.652207275770229e+112.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r119-580.2'
   to
   be
-  (2,
+  (80,
   542).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r119-580.2'
   has
   size
-  540,
+  462,
   462
   matches,
   and
   the
   score
   of
-  6.00263639446849e+106.
+  3.652207275770229e+112.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r119-580.2'
   to
   be
-  (2,
+  (80,
   542).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r119-580.2'
   has
   size
-  540,
+  462,
   462
   matches,
   and
   the
   score
   of
-  6.00263639446849e+106.
+  3.652207275770229e+112.
 END 25
 BEGIN 26
   Contig

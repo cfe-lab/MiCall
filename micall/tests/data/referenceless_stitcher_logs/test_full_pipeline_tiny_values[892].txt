@@ -99,7 +99,7 @@ BEGIN 8
   'r416-797.0'
   to
   be
-  (2,
+  (223,
   605).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r416-797.0'
   has
   size
-  603,
+  382,
   382
   matches,
   and
   the
   score
   of
-  2.7238763195645807e+77.
+  1.7345577372177434e+94.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r416-797.0'
   to
   be
-  (5,
+  (333,
   715).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r416-797.0'
   has
   size
-  710,
+  382,
   382
   matches,
   and
   the
   score
   of
-  1.4386351384058512e+69.
+  1.7345577372177434e+94.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r416-797.0'
   to
   be
-  (5,
+  (333,
   715).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r416-797.0'
   has
   size
-  710,
+  382,
   382
   matches,
   and
   the
   score
   of
-  1.4386351384058512e+69.
+  1.7345577372177434e+94.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r187-571.2'
   to
   be
-  (4,
+  (138,
   523).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r187-571.2'
   has
   size
-  519,
+  385,
   385
   matches,
   and
   the
   score
   of
-  6.003650811641855e+84.
+  7.11244685088061e+94.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r187-571.2'
   to
   be
-  (2,
+  (147,
   532).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r187-571.2'
   has
   size
-  530,
+  385,
   385
   matches,
   and
   the
   score
   of
-  7.288693557190672e+83.
+  7.11244685088061e+94.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r187-571.2'
   to
   be
-  (2,
+  (147,
   532).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r187-571.2'
   has
   size
-  530,
+  385,
   385
   matches,
   and
   the
   score
   of
-  7.288693557190672e+83.
+  7.11244685088061e+94.
 END 25
 BEGIN 26
   Contig

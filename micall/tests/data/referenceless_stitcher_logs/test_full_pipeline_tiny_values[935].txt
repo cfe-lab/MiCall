@@ -44,7 +44,7 @@ BEGIN 5
   'r293-608.2'
   to
   be
-  (0,
+  (289,
   605).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r293-608.2'
   has
   size
-  605,
+  316,
   316
   matches,
   and
   the
   score
   of
-  6.669044028370772e+56.
+  1.6877907659126485e+79.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r293-608.2'
   to
   be
-  (0,
+  (289,
   605).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r293-608.2'
   has
   size
-  605,
+  316,
   316
   matches,
   and
   the
   score
   of
-  6.669044028370772e+56.
+  1.6877907659126485e+79.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r293-608.2'
   to
   be
-  (0,
+  (289,
   605).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r293-608.2'
   has
   size
-  605,
+  316,
   316
   matches,
   and
   the
   score
   of
-  6.669044028370772e+56.
+  1.6877907659126485e+79.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r558-857.2'
   to
   be
-  (10,
+  (383,
   683).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r558-857.2'
   has
   size
-  673,
+  300,
   300
   matches,
   and
   the
   score
   of
-  8.063676718043406e+46.
+  3.4935292924645634e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r558-857.2'
   to
   be
-  (10,
+  (383,
   683).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r558-857.2'
   has
   size
-  673,
+  300,
   300
   matches,
   and
   the
   score
   of
-  8.063676718043406e+46.
+  3.4935292924645634e+75.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r558-857.2'
   to
   be
-  (10,
+  (383,
   683).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r558-857.2'
   has
   size
-  673,
+  300,
   300
   matches,
   and
   the
   score
   of
-  8.063676718043406e+46.
+  3.4935292924645634e+75.
 END 25
 BEGIN 26
   Contig

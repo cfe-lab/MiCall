@@ -53,8 +53,8 @@ TTT = 40 * 'T'
         #
         # Multiple.
         #
-        # (('AAA' + 'T' * 40,  'T' * 40 + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG'),
-        #  ('AAA' + 40 * 'T' + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG')),
+        (('AAA' + 'T' * 40,  'T' * 40 + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG'),
+         ('AAA' + 40 * 'T' + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG')),
         (('AAA' + 'T' * 40,
           'T' * 40 + 'GGG' + 'A' * 40,
           'A' * 40 + 'CCC' + 'T' * 40,
@@ -233,7 +233,7 @@ def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Itera
             yield testcase
 
 
-@pytest.mark.parametrize("random_seed", params(range(10), [0, 1, 3, 4, 5, 6, 7, 8, 9], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
 def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
     assert not ReferencelessStitcherContext.get().is_debug2
     converted_fasta_file, ref_seqs = random_fasta_file(50, random_seed)

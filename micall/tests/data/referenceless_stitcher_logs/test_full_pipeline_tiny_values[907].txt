@@ -181,7 +181,7 @@ BEGIN 13
   'r595-895.0'
   to
   be
-  (3,
+  (476,
   777).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r595-895.0'
   has
   size
-  774,
+  301,
   301
   matches,
   and
   the
   score
   of
-  1.3317111034820447e+39.
+  7.06134196748755e+75.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r595-895.0'
   to
   be
-  (3,
+  (476,
   777).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r595-895.0'
   has
   size
-  774,
+  301,
   301
   matches,
   and
   the
   score
   of
-  1.3317111034820447e+39.
+  7.06134196748755e+75.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r174-585.2'
   to
   be
-  (13,
+  (38,
   450).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r174-585.2'
   has
   size
-  437,
+  412,
   412
   matches,
   and
   the
   score
   of
-  1.371819192694868e+99.
+  1.8489905651376328e+101.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r174-585.2'
   to
   be
-  (4,
+  (126,
   538).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r174-585.2'
   has
   size
-  534,
+  412,
   412
   matches,
   and
   the
   score
   of
-  6.572955413550229e+91.
+  1.8489905651376328e+101.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r174-585.2'
   to
   be
-  (4,
+  (126,
   538).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r174-585.2'
   has
   size
-  534,
+  412,
   412
   matches,
   and
   the
   score
   of
-  6.572955413550229e+91.
+  1.8489905651376328e+101.
 END 25
 BEGIN 26
   Contig

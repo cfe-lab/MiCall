@@ -44,7 +44,7 @@ BEGIN 5
   'r128-730.1'
   to
   be
-  (0,
+  (58,
   661).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r128-730.1'
   has
   size
-  661,
+  603,
   603
   matches,
   and
   the
   score
   of
-  3.860727815649483e+140.
+  6.87694879418054e+144.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r128-730.1'
   to
   be
-  (4,
+  (124,
   727).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r128-730.1'
   has
   size
-  723,
+  603,
   603
   matches,
   and
   the
   score
   of
-  5.3596637488412146e+135.
+  6.87694879418054e+144.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r128-730.1'
   to
   be
-  (4,
+  (124,
   727).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r128-730.1'
   has
   size
-  723,
+  603,
   603
   matches,
   and
   the
   score
   of
-  5.3596637488412146e+135.
+  6.87694879418054e+144.
 END 25
 BEGIN 26
   Contig

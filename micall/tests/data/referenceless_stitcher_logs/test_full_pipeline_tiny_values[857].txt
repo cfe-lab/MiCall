@@ -99,7 +99,7 @@ BEGIN 8
   'r220-515.2'
   to
   be
-  (6,
+  (103,
   399).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r220-515.2'
   has
   size
-  393,
+  296,
   296
   matches,
   and
   the
   score
   of
-  1.8495945245712575e+67.
+  4.184532592632119e+74.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r220-515.2'
   to
   be
-  (6,
+  (103,
   399).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r220-515.2'
   has
   size
-  393,
+  296,
   296
   matches,
   and
   the
   score
   of
-  1.8495945245712575e+67.
+  4.184532592632119e+74.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r220-515.2'
   to
   be
-  (6,
+  (103,
   399).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r220-515.2'
   has
   size
-  393,
+  296,
   296
   matches,
   and
   the
   score
   of
-  1.8495945245712575e+67.
+  4.184532592632119e+74.
 END 25
 BEGIN 26
   Contig

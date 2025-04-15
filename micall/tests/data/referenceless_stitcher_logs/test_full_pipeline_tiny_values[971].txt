@@ -99,7 +99,7 @@ BEGIN 8
   'r609-898.0'
   to
   be
-  (4,
+  (374,
   664).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r609-898.0'
   has
   size
-  660,
+  290,
   290
   matches,
   and
   the
   score
   of
-  5.362495522722527e+44.
+  1.2252534806378383e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r609-898.0'
   to
   be
-  (6,
+  (388,
   678).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r609-898.0'
   has
   size
-  672,
+  290,
   290
   matches,
   and
   the
   score
   of
-  6.248327547489709e+43.
+  1.2252534806378383e+73.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r609-898.0'
   to
   be
-  (6,
+  (388,
   678).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r609-898.0'
   has
   size
-  672,
+  290,
   290
   matches,
   and
   the
   score
   of
-  6.248327547489709e+43.
+  1.2252534806378383e+73.
 END 25
 BEGIN 26
   Contig

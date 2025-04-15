@@ -99,7 +99,7 @@ BEGIN 8
   'r398-715.2'
   to
   be
-  (1,
+  (106,
   424).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r398-715.2'
   has
   size
-  423,
+  318,
   318
   matches,
   and
   the
   score
   of
-  3.7940487255930806e+71.
+  3.443906909036704e+79.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r398-715.2'
   to
   be
-  (1,
+  (106,
   424).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r398-715.2'
   has
   size
-  423,
+  318,
   318
   matches,
   and
   the
   score
   of
-  3.7940487255930806e+71.
+  3.443906909036704e+79.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r398-715.2'
   to
   be
-  (1,
+  (106,
   424).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r398-715.2'
   has
   size
-  423,
+  318,
   318
   matches,
   and
   the
   score
   of
-  3.7940487255930806e+71.
+  3.443906909036704e+79.
 END 25
 BEGIN 26
   Contig

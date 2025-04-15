@@ -181,7 +181,7 @@ BEGIN 13
   'r159-704.0'
   to
   be
-  (0,
+  (36,
   582).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r159-704.0'
   has
   size
-  582,
+  546,
   546
   matches,
   and
   the
   score
   of
-  1.0544065811236489e+129.
+  5.7132261199194135e+131.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r159-704.0'
   to
   be
-  (0,
+  (36,
   582).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r159-704.0'
   has
   size
-  582,
+  546,
   546
   matches,
   and
   the
   score
   of
-  1.0544065811236489e+129.
+  5.7132261199194135e+131.
 END 25
 BEGIN 26
   Contig

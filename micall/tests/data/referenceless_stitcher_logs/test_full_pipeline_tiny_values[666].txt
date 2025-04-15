@@ -181,7 +181,7 @@ BEGIN 13
   'r333-752.2'
   to
   be
-  (0,
+  (36,
   456).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r333-752.2'
   has
   size
-  456,
+  420,
   420
   matches,
   and
   the
   score
   of
-  2.2822421056873046e+100.
+  1.2576855079646337e+103.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r333-752.2'
   to
   be
-  (0,
+  (36,
   456).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r333-752.2'
   has
   size
-  456,
+  420,
   420
   matches,
   and
   the
   score
   of
-  2.2822421056873046e+100.
+  1.2576855079646337e+103.
 END 25
 BEGIN 26
   Contig

@@ -99,7 +99,7 @@ BEGIN 8
   'r270-751.2'
   to
   be
-  (4,
+  (117,
   599).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r270-751.2'
   has
   size
-  595,
+  482,
   482
   matches,
   and
   the
   score
   of
-  4.1289390436098866e+108.
+  1.3684900604153183e+117.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r270-751.2'
   to
   be
-  (1,
+  (177,
   659).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r270-751.2'
   has
   size
-  658,
+  482,
   482
   matches,
   and
   the
   score
   of
-  5.5335855551774595e+103.
+  1.3684900604153183e+117.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r270-751.2'
   to
   be
-  (1,
+  (177,
   659).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r270-751.2'
   has
   size
-  658,
+  482,
   482
   matches,
   and
   the
   score
   of
-  5.5335855551774595e+103.
+  1.3684900604153183e+117.
 END 25
 BEGIN 26
   Contig

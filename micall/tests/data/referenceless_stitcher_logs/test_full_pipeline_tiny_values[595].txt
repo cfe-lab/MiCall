@@ -99,7 +99,7 @@ BEGIN 8
   'r321-891.1'
   to
   be
-  (0,
+  (85,
   656).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r321-891.1'
   has
   size
-  656,
+  571,
   571
   matches,
   and
   the
   score
   of
-  1.443047442806798e+131.
+  3.4505179079402984e+137.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r321-891.1'
   to
   be
-  (0,
+  (85,
   656).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r321-891.1'
   has
   size
-  656,
+  571,
   571
   matches,
   and
   the
   score
   of
-  1.443047442806798e+131.
+  3.4505179079402984e+137.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r321-891.1'
   to
   be
-  (0,
+  (85,
   656).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r321-891.1'
   has
   size
-  656,
+  571,
   571
   matches,
   and
   the
   score
   of
-  1.443047442806798e+131.
+  3.4505179079402984e+137.
 END 25
 BEGIN 26
   Contig

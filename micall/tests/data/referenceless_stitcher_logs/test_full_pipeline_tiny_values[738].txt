@@ -44,7 +44,7 @@ BEGIN 5
   'r450-880.2'
   to
   be
-  (7,
+  (300,
   731).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r450-880.2'
   has
   size
-  724,
+  431,
   431
   matches,
   and
   the
   score
   of
-  1.856301228955915e+83.
+  3.4943966263251336e+105.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r450-880.2'
   to
   be
-  (2,
+  (361,
   792).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r450-880.2'
   has
   size
-  790,
+  431,
   431
   matches,
   and
   the
   score
   of
-  1.1689460393798074e+78.
+  3.4943966263251336e+105.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r450-880.2'
   to
   be
-  (2,
+  (361,
   792).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r450-880.2'
   has
   size
-  790,
+  431,
   431
   matches,
   and
   the
   score
   of
-  1.1689460393798074e+78.
+  3.4943966263251336e+105.
 END 25
 BEGIN 26
   Contig

@@ -44,7 +44,7 @@ BEGIN 5
   'r317-669.0'
   to
   be
-  (0,
+  (43,
   396).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r317-669.0'
   has
   size
-  396,
+  353,
   353
   matches,
   and
   the
   score
   of
-  2.830244869193805e+84.
+  3.2194520736283604e+87.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r317-669.0'
   to
   be
-  (0,
+  (110,
   463).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r317-669.0'
   has
   size
-  463,
+  353,
   353
   matches,
   and
   the
   score
   of
-  1.805153823620415e+79.
+  3.2194520736283604e+87.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r317-669.0'
   to
   be
-  (0,
+  (110,
   463).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r317-669.0'
   has
   size
-  463,
+  353,
   353
   matches,
   and
   the
   score
   of
-  1.805153823620415e+79.
+  3.2194520736283604e+87.
 END 25
 BEGIN 26
   Contig

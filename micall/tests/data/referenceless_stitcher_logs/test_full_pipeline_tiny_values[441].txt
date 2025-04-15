@@ -99,7 +99,7 @@ BEGIN 8
   'r505-864.0'
   to
   be
-  (1,
+  (336,
   696).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r505-864.0'
   has
   size
-  695,
+  360,
   360
   matches,
   and
   the
   score
   of
-  4.1309589389879596e+63.
+  2.1928844270686562e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r505-864.0'
   to
   be
-  (1,
+  (361,
   721).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r505-864.0'
   has
   size
-  720,
+  360,
   360
   matches,
   and
   the
   score
   of
-  5.85698339422939e+61.
+  2.1928844270686562e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r505-864.0'
   to
   be
-  (1,
+  (361,
   721).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r505-864.0'
   has
   size
-  720,
+  360,
   360
   matches,
   and
   the
   score
   of
-  5.85698339422939e+61.
+  2.1928844270686562e+89.
 END 25
 BEGIN 26
   Contig

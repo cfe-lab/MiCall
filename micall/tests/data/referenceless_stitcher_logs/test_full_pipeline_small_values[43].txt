@@ -656,7 +656,7 @@ BEGIN 41
   'r185-481.5'
   to
   be
-  (0,
+  (142,
   439).
 END 41
 BEGIN 42
@@ -668,14 +668,14 @@ BEGIN 42
   'r185-481.5'
   has
   size
-  439,
+  297,
   297
   matches,
   and
   the
   score
   of
-  7.807666195451834e+63.
+  4.2296305030119733e+74.
 END 42
 BEGIN 43
   Contig
@@ -701,7 +701,7 @@ BEGIN 44
   'r283-491.2'
   to
   be
-  (4,
+  (240,
   449).
 END 44
 BEGIN 45
@@ -713,14 +713,14 @@ BEGIN 45
   'r283-491.2'
   has
   size
-  445,
+  209,
   209
   matches,
   and
   the
   score
   of
-  1.7918677975256855e+36.
+  1.872152693658848e+54.
 END 45
 BEGIN 46
   Contig
@@ -773,7 +773,7 @@ BEGIN 49
   'r185-481.5'
   to
   be
-  (0,
+  (142,
   439).
 END 49
 BEGIN 50
@@ -785,14 +785,14 @@ BEGIN 50
   'r185-481.5'
   has
   size
-  439,
+  297,
   297
   matches,
   and
   the
   score
   of
-  7.807666195451834e+63.
+  4.2296305030119733e+74.
 END 50
 BEGIN 51
   Contig
@@ -818,7 +818,7 @@ BEGIN 52
   'r283-491.2'
   to
   be
-  (4,
+  (240,
   449).
 END 52
 BEGIN 53
@@ -830,14 +830,14 @@ BEGIN 53
   'r283-491.2'
   has
   size
-  445,
+  209,
   209
   matches,
   and
   the
   score
   of
-  1.7918677975256855e+36.
+  1.872152693658848e+54.
 END 53
 BEGIN 54
   Contig
@@ -1065,7 +1065,7 @@ BEGIN 70
   (11)
   to
   be
-  (0,
+  (142,
   449).
 END 70
 BEGIN 71
@@ -1077,14 +1077,14 @@ BEGIN 71
   (11)
   has
   size
-  449,
+  307,
   307
   matches,
   and
   the
   score
   of
-  1.1286666729252804e+66.
+  1.2029420200808194e+77.
 END 71
 BEGIN 72
   Contig

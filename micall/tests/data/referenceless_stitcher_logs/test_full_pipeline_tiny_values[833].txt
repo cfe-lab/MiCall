@@ -44,7 +44,7 @@ BEGIN 5
   'r187-618.2'
   to
   be
-  (1,
+  (6,
   438).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r187-618.2'
   has
   size
-  437,
+  432,
   432
   matches,
   and
   the
   score
   of
-  1.743049850270396e+105.
+  7.040271329247873e+105.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r187-618.2'
   to
   be
-  (1,
+  (6,
   438).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r187-618.2'
   has
   size
-  437,
+  432,
   432
   matches,
   and
   the
   score
   of
-  1.743049850270396e+105.
+  7.040271329247873e+105.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r187-618.2'
   to
   be
-  (1,
+  (6,
   438).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r187-618.2'
   has
   size
-  437,
+  432,
   432
   matches,
   and
   the
   score
   of
-  1.743049850270396e+105.
+  7.040271329247873e+105.
 END 25
 BEGIN 26
   Contig

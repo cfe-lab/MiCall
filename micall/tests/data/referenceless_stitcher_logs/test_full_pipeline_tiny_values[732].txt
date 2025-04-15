@@ -181,7 +181,7 @@ BEGIN 13
   'r379-857.0'
   to
   be
-  (5,
+  (185,
   664).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r379-857.0'
   has
   size
-  659,
+  479,
   479
   matches,
   and
   the
   score
   of
-  6.708140308194878e+102.
+  3.354311321324146e+116.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r379-857.0'
   to
   be
-  (5,
+  (185,
   664).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r379-857.0'
   has
   size
-  659,
+  479,
   479
   matches,
   and
   the
   score
   of
-  6.708140308194878e+102.
+  3.354311321324146e+116.
 END 25
 BEGIN 26
   Contig

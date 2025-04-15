@@ -99,7 +99,7 @@ BEGIN 8
   'r356-649.1'
   to
   be
-  (0,
+  (56,
   350).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r356-649.1'
   has
   size
-  350,
+  294,
   294
   matches,
   and
   the
   score
   of
-  5.288309432516643e+69.
+  1.0238306899084244e+74.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r356-649.1'
   to
   be
-  (0,
+  (302,
   596).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r356-649.1'
   has
   size
-  596,
+  294,
   294
   matches,
   and
   the
   score
   of
-  8.646417920926374e+50.
+  1.0238306899084244e+74.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r356-649.1'
   to
   be
-  (0,
+  (302,
   596).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r356-649.1'
   has
   size
-  596,
+  294,
   294
   matches,
   and
   the
   score
   of
-  8.646417920926374e+50.
+  1.0238306899084244e+74.
 END 25
 BEGIN 26
   Contig

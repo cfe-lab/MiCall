@@ -44,7 +44,7 @@ BEGIN 5
   'r529-836.0'
   to
   be
-  (0,
+  (257,
   565).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r529-836.0'
   has
   size
-  565,
+  308,
   308
   matches,
   and
   the
   score
   of
-  2.7366227582613077e+57.
+  2.4308710492663585e+77.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r529-836.0'
   to
   be
-  (3,
+  (477,
   785).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r529-836.0'
   has
   size
-  782,
+  308,
   308
   matches,
   and
   the
   score
   of
-  4.893245728942295e+40.
+  2.4308710492663585e+77.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r529-836.0'
   to
   be
-  (3,
+  (477,
   785).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r529-836.0'
   has
   size
-  782,
+  308,
   308
   matches,
   and
   the
   score
   of
-  4.893245728942295e+40.
+  2.4308710492663585e+77.
 END 25
 BEGIN 26
   Contig

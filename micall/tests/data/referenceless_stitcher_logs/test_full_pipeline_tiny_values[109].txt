@@ -99,7 +99,7 @@ BEGIN 8
   'r387-697.2'
   to
   be
-  (6,
+  (254,
   565).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r387-697.2'
   has
   size
-  559,
+  311,
   311
   matches,
   and
   the
   score
   of
-  9.470648574139817e+58.
+  1.0027572488259023e+78.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r387-697.2'
   to
   be
-  (6,
+  (254,
   565).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r387-697.2'
   has
   size
-  559,
+  311,
   311
   matches,
   and
   the
   score
   of
-  9.470648574139817e+58.
+  1.0027572488259023e+78.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r387-697.2'
   to
   be
-  (6,
+  (254,
   565).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r387-697.2'
   has
   size
-  559,
+  311,
   311
   matches,
   and
   the
   score
   of
-  9.470648574139817e+58.
+  1.0027572488259023e+78.
 END 25
 BEGIN 26
   Contig

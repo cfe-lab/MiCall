@@ -44,7 +44,7 @@ BEGIN 5
   'r177-583.2'
   to
   be
-  (11,
+  (43,
   450).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r177-583.2'
   has
   size
-  439,
+  407,
   407
   matches,
   and
   the
   score
   of
-  4.0603669943706356e+97.
+  1.1117681455108986e+100.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r322-610.0'
   to
   be
-  (2,
+  (188,
   477).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r322-610.0'
   has
   size
-  475,
+  289,
   289
   matches,
   and
   the
   score
   of
-  4.533238231328504e+58.
+  6.059359273135458e+72.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r322-610.0'
   to
   be
-  (2,
+  (188,
   477).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r322-610.0'
   has
   size
-  475,
+  289,
   289
   matches,
   and
   the
   score
   of
-  4.533238231328504e+58.
+  6.059359273135458e+72.
 END 14
 BEGIN 15
   Contig

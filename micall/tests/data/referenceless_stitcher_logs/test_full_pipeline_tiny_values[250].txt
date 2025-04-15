@@ -99,7 +99,7 @@ BEGIN 8
   'r241-617.0'
   to
   be
-  (0,
+  (53,
   430).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r241-617.0'
   has
   size
-  430,
+  377,
   377
   matches,
   and
   the
   score
   of
-  1.1231716014725833e+89.
+  1.0397456562333842e+93.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r241-617.0'
   to
   be
-  (0,
+  (53,
   430).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r241-617.0'
   has
   size
-  430,
+  377,
   377
   matches,
   and
   the
   score
   of
-  1.1231716014725833e+89.
+  1.0397456562333842e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r241-617.0'
   to
   be
-  (0,
+  (53,
   430).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r241-617.0'
   has
   size
-  430,
+  377,
   377
   matches,
   and
   the
   score
   of
-  1.1231716014725833e+89.
+  1.0397456562333842e+93.
 END 25
 BEGIN 26
   Contig

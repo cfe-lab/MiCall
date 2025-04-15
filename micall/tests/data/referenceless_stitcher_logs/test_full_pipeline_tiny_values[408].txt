@@ -181,7 +181,7 @@ BEGIN 13
   'r245-914.2'
   to
   be
-  (8,
+  (195,
   865).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r245-914.2'
   has
   size
-  857,
+  670,
   670
   matches,
   and
   the
   score
   of
-  1.1877993026255167e+146.
+  2.6993334460166047e+159.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r245-914.2'
   to
   be
-  (8,
+  (195,
   865).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r245-914.2'
   has
   size
-  857,
+  670,
   670
   matches,
   and
   the
   score
   of
-  1.1877993026255167e+146.
+  2.6993334460166047e+159.
 END 25
 BEGIN 26
   Contig

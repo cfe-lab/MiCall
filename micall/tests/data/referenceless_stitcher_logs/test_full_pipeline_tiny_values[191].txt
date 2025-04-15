@@ -181,7 +181,7 @@ BEGIN 13
   'r519-861.0'
   to
   be
-  (2,
+  (96,
   439).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r519-861.0'
   has
   size
-  437,
+  343,
   343
   matches,
   and
   the
   score
   of
-  2.137675044377428e+78.
+  2.295983788650699e+85.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r519-861.0'
   to
   be
-  (2,
+  (96,
   439).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r519-861.0'
   has
   size
-  437,
+  343,
   343
   matches,
   and
   the
   score
   of
-  2.137675044377428e+78.
+  2.295983788650699e+85.
 END 25
 BEGIN 26
   Contig

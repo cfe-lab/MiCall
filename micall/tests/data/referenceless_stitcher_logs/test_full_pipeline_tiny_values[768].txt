@@ -99,7 +99,7 @@ BEGIN 8
   'r535-797.0'
   to
   be
-  (2,
+  (176,
   439).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r535-797.0'
   has
   size
-  437,
+  263,
   263
   matches,
   and
   the
   score
   of
-  5.023501298436203e+53.
+  8.56301343060922e+66.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r535-797.0'
   to
   be
-  (6,
+  (253,
   516).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r535-797.0'
   has
   size
-  510,
+  263,
   263
   matches,
   and
   the
   score
   of
-  6.720368401489587e+47.
+  8.56301343060922e+66.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r535-797.0'
   to
   be
-  (6,
+  (253,
   516).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r535-797.0'
   has
   size
-  510,
+  263,
   263
   matches,
   and
   the
   score
   of
-  6.720368401489587e+47.
+  8.56301343060922e+66.
 END 25
 BEGIN 26
   Contig

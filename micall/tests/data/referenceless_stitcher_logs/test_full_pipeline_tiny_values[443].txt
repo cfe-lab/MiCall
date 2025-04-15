@@ -181,7 +181,7 @@ BEGIN 13
   'r369-660.0'
   to
   be
-  (0,
+  (32,
   324).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r369-660.0'
   has
   size
-  324,
+  292,
   292
   matches,
   and
   the
   score
   of
-  1.7817509244822586e+71.
+  5.0092737823069904e+73.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r369-660.0'
   to
   be
-  (0,
+  (32,
   324).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r369-660.0'
   has
   size
-  324,
+  292,
   292
   matches,
   and
   the
   score
   of
-  1.7817509244822586e+71.
+  5.0092737823069904e+73.
 END 25
 BEGIN 26
   Contig

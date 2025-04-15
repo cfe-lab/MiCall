@@ -209,7 +209,7 @@ BEGIN 14
   'r284-584.1'
   to
   be
-  (3,
+  (166,
   467).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r284-584.1'
   has
   size
-  464,
+  301,
   301
   matches,
   and
   the
   score
   of
-  1.8993937125305915e+63.
+  7.06134196748755e+75.
 END 15
 BEGIN 16
   Contig
@@ -254,7 +254,7 @@ BEGIN 17
   'r382-653.0'
   to
   be
-  (7,
+  (264,
   536).
 END 17
 BEGIN 18
@@ -266,14 +266,14 @@ BEGIN 18
   'r382-653.0'
   has
   size
-  529,
+  272,
   272
   matches,
   and
   the
   score
   of
-  2.373497551930473e+49.
+  1.2199272611365159e+69.
 END 18
 BEGIN 19
   Contig
@@ -436,7 +436,7 @@ BEGIN 28
   'r284-584.1'
   to
   be
-  (3,
+  (166,
   467).
 END 28
 BEGIN 29
@@ -448,14 +448,14 @@ BEGIN 29
   'r284-584.1'
   has
   size
-  464,
+  301,
   301
   matches,
   and
   the
   score
   of
-  1.8993937125305915e+63.
+  7.06134196748755e+75.
 END 29
 BEGIN 30
   Contig
@@ -481,7 +481,7 @@ BEGIN 31
   'r382-653.0'
   to
   be
-  (7,
+  (264,
   536).
 END 31
 BEGIN 32
@@ -493,14 +493,14 @@ BEGIN 32
   'r382-653.0'
   has
   size
-  529,
+  272,
   272
   matches,
   and
   the
   score
   of
-  2.373497551930473e+49.
+  1.2199272611365159e+69.
 END 32
 BEGIN 33
   Contig
@@ -608,7 +608,7 @@ BEGIN 39
   'r284-584.1'
   to
   be
-  (3,
+  (166,
   467).
 END 39
 BEGIN 40
@@ -620,14 +620,14 @@ BEGIN 40
   'r284-584.1'
   has
   size
-  464,
+  301,
   301
   matches,
   and
   the
   score
   of
-  1.8993937125305915e+63.
+  7.06134196748755e+75.
 END 40
 BEGIN 41
   Contig
@@ -653,7 +653,7 @@ BEGIN 42
   'r382-653.0'
   to
   be
-  (7,
+  (264,
   536).
 END 42
 BEGIN 43
@@ -665,14 +665,14 @@ BEGIN 43
   'r382-653.0'
   has
   size
-  529,
+  272,
   272
   matches,
   and
   the
   score
   of
-  2.373497551930473e+49.
+  1.2199272611365159e+69.
 END 43
 BEGIN 44
   Contig

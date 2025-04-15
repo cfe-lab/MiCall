@@ -99,7 +99,7 @@ BEGIN 8
   'r417-681.0'
   to
   be
-  (1,
+  (358,
   623).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r417-681.0'
   has
   size
-  622,
+  265,
   265
   matches,
   and
   the
   score
   of
-  5.445676133046522e+39.
+  1.7543930900246517e+67.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r417-681.0'
   to
   be
-  (1,
+  (358,
   623).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r417-681.0'
   has
   size
-  622,
+  265,
   265
   matches,
   and
   the
   score
   of
-  5.445676133046522e+39.
+  1.7543930900246517e+67.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r417-681.0'
   to
   be
-  (1,
+  (358,
   623).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r417-681.0'
   has
   size
-  622,
+  265,
   265
   matches,
   and
   the
   score
   of
-  5.445676133046522e+39.
+  1.7543930900246517e+67.
 END 25
 BEGIN 26
   Contig

@@ -44,28 +44,9 @@ BEGIN 5
   'r595-971.2'
   to
   be
-  (3,
-  370).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r11-339.1'
-  and
-  'r595-971.2'
-  has
-  size
-  370,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 6
-BEGIN 7
   Calculated
   cutoff
   for
@@ -81,36 +62,17 @@ BEGIN 7
   'r268-555.0'
   to
   be
-  (2,
-  283).
-END 7
-BEGIN 8
-  Overlap
-  between
-  contigs
-  'r595-971.2'
-  and
-  'r268-555.0'
-  has
-  size
-  288,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999996.
-END 8
-BEGIN 9
+  None.
+END 6
+BEGIN 7
   Constructed
   a
   path
   of
   length
   377.
-END 9
-BEGIN 10
+END 7
+BEGIN 8
   Removed
   1
   components
@@ -123,8 +85,8 @@ BEGIN 10
   still
   to
   process.
-END 10
-BEGIN 11
+END 8
+BEGIN 9
   Giving
   up
   on
@@ -139,16 +101,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -164,28 +126,9 @@ BEGIN 13
   'r595-971.2'
   to
   be
-  (3,
-  370).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r11-339.1'
-  and
-  'r595-971.2'
-  has
-  size
-  370,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 14
-BEGIN 15
+  None.
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -201,28 +144,9 @@ BEGIN 15
   'r268-555.0'
   to
   be
-  (2,
-  283).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r595-971.2'
-  and
-  'r268-555.0'
-  has
-  size
-  288,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999996.
-END 16
-BEGIN 17
+  None.
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -240,8 +164,8 @@ BEGIN 17
   be
   (257,
   72).
-END 17
-BEGIN 18
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -258,8 +182,8 @@ BEGIN 18
   score
   of
   1.2002147851897737e+22.
-END 18
-BEGIN 19
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -276,8 +200,8 @@ BEGIN 19
   in
   contig
   (1).
-END 19
-BEGIN 20
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -293,29 +217,10 @@ BEGIN 20
   'r595-971.2'
   to
   be
-  (2,
-  540).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r595-971.2'
-  has
-  size
-  538,
-  2
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 21
-BEGIN 22
+  None.
+END 16
+BEGIN 17
   Outputting
   2
   contigs.
-END 22
+END 17

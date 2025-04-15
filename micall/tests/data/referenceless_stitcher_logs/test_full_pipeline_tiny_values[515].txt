@@ -181,7 +181,7 @@ BEGIN 13
   'r367-810.0'
   to
   be
-  (5,
+  (358,
   802).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r367-810.0'
   has
   size
-  797,
+  444,
   444
   matches,
   and
   the
   score
   of
-  2.761016880655245e+81.
+  3.931293414425041e+108.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r367-810.0'
   to
   be
-  (5,
+  (358,
   802).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r367-810.0'
   has
   size
-  797,
+  444,
   444
   matches,
   and
   the
   score
   of
-  2.761016880655245e+81.
+  3.931293414425041e+108.
 END 25
 BEGIN 26
   Contig

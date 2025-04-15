@@ -44,7 +44,7 @@ BEGIN 5
   'r427-804.2'
   to
   be
-  (1,
+  (133,
   511).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r427-804.2'
   has
   size
-  510,
+  378,
   378
   matches,
   and
   the
   score
   of
-  1.7682880810229108e+83.
+  2.0970307524434095e+93.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r427-804.2'
   to
   be
-  (0,
+  (320,
   698).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r427-804.2'
   has
   size
-  698,
+  378,
   378
   matches,
   and
   the
   score
   of
-  7.069666458546922e+68.
+  2.0970307524434095e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r427-804.2'
   to
   be
-  (0,
+  (320,
   698).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r427-804.2'
   has
   size
-  698,
+  378,
   378
   matches,
   and
   the
   score
   of
-  7.069666458546922e+68.
+  2.0970307524434095e+93.
 END 25
 BEGIN 26
   Contig

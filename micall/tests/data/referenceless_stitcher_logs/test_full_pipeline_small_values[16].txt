@@ -209,7 +209,7 @@ BEGIN 14
   'r435-883.0'
   to
   be
-  (6,
+  (64,
   513).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r435-883.0'
   has
   size
-  507,
+  449,
   449
   matches,
   and
   the
   score
   of
-  1.7772471483192065e+105.
+  3.2585281295944614e+109.
 END 15
 BEGIN 16
   Contig
@@ -446,7 +446,7 @@ BEGIN 28
   'r435-883.0'
   to
   be
-  (3,
+  (70,
   519).
 END 28
 BEGIN 29
@@ -458,14 +458,14 @@ BEGIN 29
   'r435-883.0'
   has
   size
-  516,
+  449,
   449
   matches,
   and
   the
   score
   of
-  4.3628900959666145e+104.
+  3.2585281295944614e+109.
 END 29
 BEGIN 30
   Contig
@@ -691,7 +691,7 @@ BEGIN 44
   'r250-519.5'
   to
   be
-  (11,
+  (64,
   334).
 END 44
 BEGIN 45
@@ -703,14 +703,14 @@ BEGIN 45
   'r250-519.5'
   has
   size
-  323,
+  270,
   270
   matches,
   and
   the
   score
   of
-  3.0622334328608426e+64.
+  2.979044776644523e+68.
 END 45
 BEGIN 46
   Contig
@@ -818,7 +818,7 @@ BEGIN 52
   'r250-519.5'
   to
   be
-  (11,
+  (64,
   334).
 END 52
 BEGIN 53
@@ -830,14 +830,14 @@ BEGIN 53
   'r250-519.5'
   has
   size
-  323,
+  270,
   270
   matches,
   and
   the
   score
   of
-  3.0622334328608426e+64.
+  2.979044776644523e+68.
 END 53
 BEGIN 54
   Contig
@@ -890,7 +890,7 @@ BEGIN 57
   'r250-519.5'
   to
   be
-  (11,
+  (64,
   334).
 END 57
 BEGIN 58
@@ -902,14 +902,14 @@ BEGIN 58
   'r250-519.5'
   has
   size
-  323,
+  270,
   270
   matches,
   and
   the
   score
   of
-  3.0622334328608426e+64.
+  2.979044776644523e+68.
 END 58
 BEGIN 59
   Contig
@@ -1016,7 +1016,7 @@ BEGIN 68
   (1)
   to
   be
-  (0,
+  (179,
   714).
 END 68
 BEGIN 69
@@ -1028,14 +1028,14 @@ BEGIN 69
   (1)
   has
   size
-  714,
+  535,
   535
   matches,
   and
   the
   score
   of
-  4.3617352483064385e+115.
+  2.0926992921573525e+129.
 END 69
 BEGIN 70
   Contig
@@ -1061,7 +1061,7 @@ BEGIN 71
   'r250-519.5'
   to
   be
-  (11,
+  (64,
   334).
 END 71
 BEGIN 72
@@ -1073,14 +1073,14 @@ BEGIN 72
   'r250-519.5'
   has
   size
-  323,
+  270,
   270
   matches,
   and
   the
   score
   of
-  3.0622334328608426e+64.
+  2.979044776644523e+68.
 END 72
 BEGIN 73
   Contig

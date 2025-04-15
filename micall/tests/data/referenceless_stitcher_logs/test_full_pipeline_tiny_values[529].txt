@@ -171,7 +171,7 @@ BEGIN 13
   'r263-663.0'
   to
   be
-  (4,
+  (212,
   613).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r263-663.0'
   has
   size
-  609,
+  401,
   401
   matches,
   and
   the
   score
   of
-  4.451541471376201e+82.
+  3.3145646650686706e+98.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r263-663.0'
   to
   be
-  (4,
+  (212,
   613).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r263-663.0'
   has
   size
-  609,
+  401,
   401
   matches,
   and
   the
   score
   of
-  4.451541471376201e+82.
+  3.3145646650686706e+98.
 END 25
 BEGIN 26
   Contig

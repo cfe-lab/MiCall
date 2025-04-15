@@ -181,7 +181,7 @@ BEGIN 13
   'r152-485.0'
   to
   be
-  (3,
+  (61,
   395).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r152-485.0'
   has
   size
-  392,
+  334,
   334
   matches,
   and
   the
   score
   of
-  8.643416846485573e+78.
+  1.6485645329756413e+83.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r152-485.0'
   to
   be
-  (3,
+  (61,
   395).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r152-485.0'
   has
   size
-  392,
+  334,
   334
   matches,
   and
   the
   score
   of
-  8.643416846485573e+78.
+  1.6485645329756413e+83.
 END 25
 BEGIN 26
   Contig

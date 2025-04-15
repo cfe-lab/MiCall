@@ -181,7 +181,7 @@ BEGIN 13
   'r182-541.2'
   to
   be
-  (3,
+  (46,
   406).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r182-541.2'
   has
   size
-  403,
+  360,
   360
   matches,
   and
   the
   score
   of
-  9.658769894987935e+85.
+  2.1928844270686562e+89.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r182-541.2'
   to
   be
-  (3,
+  (46,
   406).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r182-541.2'
   has
   size
-  403,
+  360,
   360
   matches,
   and
   the
   score
   of
-  9.658769894987935e+85.
+  2.1928844270686562e+89.
 END 25
 BEGIN 26
   Contig

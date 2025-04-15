@@ -181,7 +181,7 @@ BEGIN 13
   'r653-959.0'
   to
   be
-  (1,
+  (559,
   866).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r653-959.0'
   has
   size
-  865,
+  307,
   307
   matches,
   and
   the
   score
   of
-  6.206425642445325e+33.
+  1.2029420200808194e+77.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r653-959.0'
   to
   be
-  (1,
+  (559,
   866).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r653-959.0'
   has
   size
-  865,
+  307,
   307
   matches,
   and
   the
   score
   of
-  6.206425642445325e+33.
+  1.2029420200808194e+77.
 END 25
 BEGIN 26
   Contig

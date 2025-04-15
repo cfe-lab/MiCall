@@ -181,7 +181,7 @@ BEGIN 13
   'r310-682.0'
   to
   be
-  (4,
+  (150,
   523).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r310-682.0'
   has
   size
-  519,
+  373,
   373
   matches,
   and
   the
   score
   of
-  1.2683927649657792e+81.
+  2.5129163081324813e+92.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r310-682.0'
   to
   be
-  (4,
+  (150,
   523).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r310-682.0'
   has
   size
-  519,
+  373,
   373
   matches,
   and
   the
   score
   of
-  1.2683927649657792e+81.
+  2.5129163081324813e+92.
 END 25
 BEGIN 26
   Contig

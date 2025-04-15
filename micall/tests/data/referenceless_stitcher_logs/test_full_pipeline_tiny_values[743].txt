@@ -99,7 +99,7 @@ BEGIN 8
   'r421-781.2'
   to
   be
-  (4,
+  (210,
   571).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r421-781.2'
   has
   size
-  567,
+  361,
   361
   matches,
   and
   the
   score
   of
-  5.612236283548666e+73.
+  2.212265008459979e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r421-781.2'
   to
   be
-  (4,
+  (210,
   571).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r421-781.2'
   has
   size
-  567,
+  361,
   361
   matches,
   and
   the
   score
   of
-  5.612236283548666e+73.
+  2.212265008459979e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r421-781.2'
   to
   be
-  (4,
+  (210,
   571).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r421-781.2'
   has
   size
-  567,
+  361,
   361
   matches,
   and
   the
   score
   of
-  5.612236283548666e+73.
+  2.212265008459979e+89.
 END 25
 BEGIN 26
   Contig

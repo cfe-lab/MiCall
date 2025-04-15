@@ -209,7 +209,7 @@ BEGIN 14
   'r53-341.0'
   to
   be
-  (8,
+  (30,
   319).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r53-341.0'
   has
   size
-  311,
+  289,
   289
   matches,
   and
   the
   score
   of
-  1.7754788708906177e+71.
+  6.059359273135458e+72.
 END 15
 BEGIN 16
   Contig
@@ -446,7 +446,7 @@ BEGIN 28
   'r53-341.0'
   to
   be
-  (8,
+  (30,
   319).
 END 28
 BEGIN 29
@@ -458,14 +458,14 @@ BEGIN 29
   'r53-341.0'
   has
   size
-  311,
+  289,
   289
   matches,
   and
   the
   score
   of
-  1.7754788708906177e+71.
+  6.059359273135458e+72.
 END 29
 BEGIN 30
   Contig
@@ -491,7 +491,7 @@ BEGIN 31
   'r511-797.2'
   to
   be
-  (5,
+  (488,
   775).
 END 31
 BEGIN 32
@@ -503,14 +503,14 @@ BEGIN 32
   'r511-797.2'
   has
   size
-  770,
+  287,
   287
   matches,
   and
   the
   score
   of
-  1.10238760555357e+35.
+  2.9635207903657437e+72.
 END 32
 BEGIN 33
   Contig
@@ -563,7 +563,7 @@ BEGIN 36
   'r442-923.4'
   to
   be
-  (5,
+  (419,
   901).
 END 36
 BEGIN 37
@@ -575,14 +575,14 @@ BEGIN 37
   'r442-923.4'
   has
   size
-  896,
+  482,
   482
   matches,
   and
   the
   score
   of
-  5.3924175391110985e+85.
+  1.3684900604153183e+117.
 END 37
 BEGIN 38
   Contig
@@ -608,7 +608,7 @@ BEGIN 39
   'r53-341.0'
   to
   be
-  (8,
+  (30,
   319).
 END 39
 BEGIN 40
@@ -620,14 +620,14 @@ BEGIN 40
   'r53-341.0'
   has
   size
-  311,
+  289,
   289
   matches,
   and
   the
   score
   of
-  1.7754788708906177e+71.
+  6.059359273135458e+72.
 END 40
 BEGIN 41
   Contig
@@ -653,7 +653,7 @@ BEGIN 42
   'r511-797.2'
   to
   be
-  (5,
+  (488,
   775).
 END 42
 BEGIN 43
@@ -665,14 +665,14 @@ BEGIN 43
   'r511-797.2'
   has
   size
-  770,
+  287,
   287
   matches,
   and
   the
   score
   of
-  1.10238760555357e+35.
+  2.9635207903657437e+72.
 END 43
 BEGIN 44
   Contig
@@ -733,28 +733,9 @@ BEGIN 49
   'r53-341.0'
   to
   be
-  (7,
-  479).
+  None.
 END 49
 BEGIN 50
-  Overlap
-  between
-  contigs
-  'r442-923.4'
-  and
-  'r53-341.0'
-  has
-  size
-  472,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 50
-BEGIN 51
   Calculated
   cutoff
   for
@@ -770,10 +751,10 @@ BEGIN 51
   'r511-797.2'
   to
   be
-  (0,
+  (69,
   356).
-END 51
-BEGIN 52
+END 50
+BEGIN 51
   Overlap
   between
   contigs
@@ -782,24 +763,24 @@ BEGIN 52
   'r511-797.2'
   has
   size
-  356,
+  287,
   287
   matches,
   and
   the
   score
   of
-  1.825991188958312e+67.
-END 52
-BEGIN 53
+  2.9635207903657437e+72.
+END 51
+BEGIN 52
   Contig
   'r442-923.4'
   covers
   contig
   'r511-797.2'
   completely.
-END 53
-BEGIN 54
+END 52
+BEGIN 53
   Cycle
   1
   finished
@@ -817,16 +798,16 @@ BEGIN 54
   of
   2
   parts.
-END 54
-BEGIN 55
+END 53
+BEGIN 54
   Cycle
   2
   started
   with
   1
   paths
-END 55
-BEGIN 56
+END 54
+BEGIN 55
   Calculated
   cutoff
   for
@@ -842,36 +823,17 @@ BEGIN 56
   'r53-341.0'
   to
   be
-  (7,
-  479).
-END 56
-BEGIN 57
-  Overlap
-  between
-  contigs
-  'r442-923.4'
-  and
-  'r53-341.0'
-  has
-  size
-  472,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 57
-BEGIN 58
+  None.
+END 55
+BEGIN 56
   Constructed
   a
   path
   of
   length
   482.
-END 58
-BEGIN 59
+END 56
+BEGIN 57
   Removed
   2
   components
@@ -884,29 +846,29 @@ BEGIN 59
   still
   to
   process.
-END 59
-BEGIN 60
+END 57
+BEGIN 58
   Calculating
   all
   paths...
-END 60
-BEGIN 61
+END 58
+BEGIN 59
   Cycle
   1
   started
   with
   1
   paths
-END 61
-BEGIN 62
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
   289.
-END 62
-BEGIN 63
+END 60
+BEGIN 61
   Removed
   1
   components
@@ -919,8 +881,8 @@ BEGIN 63
   still
   to
   process.
-END 63
-BEGIN 64
+END 61
+BEGIN 62
   Giving
   up
   on
@@ -935,61 +897,61 @@ BEGIN 64
   is
   a
   singleton.
-END 64
-BEGIN 65
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   3
   contigs.
+END 63
+BEGIN 64
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  482
+  between
+  contigs
+  (5)
+  and
+  'r442-923.4'
+  to
+  be
+  (419,
+  901).
+END 64
+BEGIN 65
+  Overlap
+  between
+  contigs
+  (5)
+  and
+  'r442-923.4'
+  has
+  size
+  482,
+  482
+  matches,
+  and
+  the
+  score
+  of
+  1.3684900604153183e+117.
 END 65
 BEGIN 66
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  482
-  between
-  contigs
+  Contig
   (5)
-  and
+  covers
+  contig
   'r442-923.4'
-  to
-  be
-  (5,
-  901).
+  completely.
 END 66
 BEGIN 67
-  Overlap
-  between
-  contigs
-  (5)
-  and
-  'r442-923.4'
-  has
-  size
-  896,
-  482
-  matches,
-  and
-  the
-  score
-  of
-  5.3924175391110985e+85.
-END 67
-BEGIN 68
-  Contig
-  (5)
-  covers
-  contig
-  'r442-923.4'
-  completely.
-END 68
-BEGIN 69
   Calculated
   cutoff
   for
@@ -1005,10 +967,10 @@ BEGIN 69
   'r53-341.0'
   to
   be
-  (8,
+  (30,
   319).
-END 69
-BEGIN 70
+END 67
+BEGIN 68
   Overlap
   between
   contigs
@@ -1017,25 +979,25 @@ BEGIN 70
   'r53-341.0'
   has
   size
-  311,
+  289,
   289
   matches,
   and
   the
   score
   of
-  1.7754788708906177e+71.
-END 70
-BEGIN 71
+  6.059359273135458e+72.
+END 68
+BEGIN 69
   Contig
   (5)
   covers
   contig
   'r53-341.0'
   completely.
-END 71
-BEGIN 72
+END 69
+BEGIN 70
   Outputting
   1
   contigs.
-END 72
+END 70
