@@ -99,7 +99,7 @@ BEGIN 8
   'r505-867.0'
   to
   be
-  (181,
+  (0,
   544).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r505-867.0'
   has
   size
-  363,
+  544,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  1.5843298993153854e+76.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r505-867.0'
   to
   be
-  (284,
+  (5,
   647).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r505-867.0'
   has
   size
-  363,
+  642,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  3.4385087645718225e+68.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r505-867.0'
   to
   be
-  (284,
+  (5,
   647).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r505-867.0'
   has
   size
-  363,
+  642,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  3.4385087645718225e+68.
 END 25
 BEGIN 26
   Contig

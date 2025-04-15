@@ -44,7 +44,7 @@ BEGIN 5
   'r216-538.2'
   to
   be
-  (40,
+  (9,
   363).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r216-538.2'
   has
   size
-  323,
+  354,
   323
   matches,
   and
   the
   score
   of
-  5.790135795793465e+80.
+  2.0837832493949328e+78.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r216-538.2'
   to
   be
-  (87,
+  (1,
   410).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r216-538.2'
   has
   size
-  323,
+  409,
   323
   matches,
   and
   the
   score
   of
-  5.790135795793465e+80.
+  1.0867859126045726e+74.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r216-538.2'
   to
   be
-  (87,
+  (1,
   410).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r216-538.2'
   has
   size
-  323,
+  409,
   323
   matches,
   and
   the
   score
   of
-  5.790135795793465e+80.
+  1.0867859126045726e+74.
 END 25
 BEGIN 26
   Contig

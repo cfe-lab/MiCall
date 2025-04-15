@@ -181,7 +181,7 @@ BEGIN 13
   'r621-900.2'
   to
   be
-  (576,
+  (3,
   856).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r621-900.2'
   has
   size
-  280,
+  853,
   280
   matches,
   and
   the
   score
   of
-  8.561648399947143e+70.
+  1.4646841960809181e+26.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r621-900.2'
   to
   be
-  (576,
+  (3,
   856).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r621-900.2'
   has
   size
-  280,
+  853,
   280
   matches,
   and
   the
   score
   of
-  8.561648399947143e+70.
+  1.4646841960809181e+26.
 END 25
 BEGIN 26
   Contig

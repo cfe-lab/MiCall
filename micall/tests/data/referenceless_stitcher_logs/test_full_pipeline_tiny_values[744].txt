@@ -99,7 +99,7 @@ BEGIN 8
   'r335-631.2'
   to
   be
-  (81,
+  (4,
   378).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r335-631.2'
   has
   size
-  297,
+  374,
   297
   matches,
   and
   the
   score
   of
-  4.2296305030119733e+74.
+  6.397499924370168e+68.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r335-631.2'
   to
   be
-  (114,
+  (0,
   411).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r335-631.2'
   has
   size
-  297,
+  411,
   297
   matches,
   and
   the
   score
   of
-  4.2296305030119733e+74.
+  1.1038108533315373e+66.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r335-631.2'
   to
   be
-  (114,
+  (0,
   411).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r335-631.2'
   has
   size
-  297,
+  411,
   297
   matches,
   and
   the
   score
   of
-  4.2296305030119733e+74.
+  1.1038108533315373e+66.
 END 25
 BEGIN 26
   Contig

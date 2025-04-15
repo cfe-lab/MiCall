@@ -99,7 +99,7 @@ BEGIN 8
   'r192-482.0'
   to
   be
-  (14,
+  (1,
   305).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r192-482.0'
   has
   size
-  291,
+  304,
   291
   matches,
   and
   the
   score
   of
-  2.477471088535763e+73.
+  2.983103249930578e+72.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r192-482.0'
   to
   be
-  (14,
+  (1,
   305).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r192-482.0'
   has
   size
-  291,
+  304,
   291
   matches,
   and
   the
   score
   of
-  2.477471088535763e+73.
+  2.983103249930578e+72.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r192-482.0'
   to
   be
-  (14,
+  (1,
   305).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r192-482.0'
   has
   size
-  291,
+  304,
   291
   matches,
   and
   the
   score
   of
-  2.477471088535763e+73.
+  2.983103249930578e+72.
 END 25
 BEGIN 26
   Contig

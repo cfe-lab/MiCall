@@ -181,7 +181,7 @@ BEGIN 13
   'r359-839.0'
   to
   be
-  (337,
+  (17,
   818).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r359-839.0'
   has
   size
-  481,
+  801,
   481
   matches,
   and
   the
   score
   of
-  6.797640950449077e+116.
+  2.867053251872777e+92.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r359-839.0'
   to
   be
-  (337,
+  (17,
   818).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r359-839.0'
   has
   size
-  481,
+  801,
   481
   matches,
   and
   the
   score
   of
-  6.797640950449077e+116.
+  2.867053251872777e+92.
 END 25
 BEGIN 26
   Contig

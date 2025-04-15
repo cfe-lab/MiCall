@@ -99,7 +99,7 @@ BEGIN 8
   'r463-728.0'
   to
   be
-  (238,
+  (10,
   504).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r463-728.0'
   has
   size
-  266,
+  494,
   266
   matches,
   and
   the
   score
   of
-  3.551093662302419e+67.
+  9.956966399092852e+49.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r463-728.0'
   to
   be
-  (238,
+  (10,
   504).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r463-728.0'
   has
   size
-  266,
+  494,
   266
   matches,
   and
   the
   score
   of
-  3.551093662302419e+67.
+  9.956966399092852e+49.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r463-728.0'
   to
   be
-  (238,
+  (10,
   504).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r463-728.0'
   has
   size
-  266,
+  494,
   266
   matches,
   and
   the
   score
   of
-  3.551093662302419e+67.
+  9.956966399092852e+49.
 END 25
 BEGIN 26
   Contig

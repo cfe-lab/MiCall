@@ -99,7 +99,7 @@ BEGIN 8
   'r356-669.2'
   to
   be
-  (67,
+  (0,
   381).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r356-669.2'
   has
   size
-  314,
+  381,
   314
   matches,
   and
   the
   score
   of
-  4.135233035190722e+78.
+  2.6126182899760827e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r356-669.2'
   to
   be
-  (156,
+  (3,
   470).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r356-669.2'
   has
   size
-  314,
+  467,
   314
   matches,
   and
   the
   score
   of
-  4.135233035190722e+78.
+  9.44223407023381e+66.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r356-669.2'
   to
   be
-  (156,
+  (3,
   470).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r356-669.2'
   has
   size
-  314,
+  467,
   314
   matches,
   and
   the
   score
   of
-  4.135233035190722e+78.
+  9.44223407023381e+66.
 END 25
 BEGIN 26
   Contig

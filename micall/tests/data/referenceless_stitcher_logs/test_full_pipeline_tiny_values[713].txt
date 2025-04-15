@@ -99,7 +99,7 @@ BEGIN 8
   'r169-462.1'
   to
   be
-  (40,
+  (0,
   334).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r169-462.1'
   has
   size
-  294,
+  334,
   294
   matches,
   and
   the
   score
   of
-  1.0238306899084244e+74.
+  8.891844939468204e+70.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r169-462.1'
   to
   be
-  (40,
+  (0,
   334).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r169-462.1'
   has
   size
-  294,
+  334,
   294
   matches,
   and
   the
   score
   of
-  1.0238306899084244e+74.
+  8.891844939468204e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r169-462.1'
   to
   be
-  (40,
+  (0,
   334).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r169-462.1'
   has
   size
-  294,
+  334,
   294
   matches,
   and
   the
   score
   of
-  1.0238306899084244e+74.
+  8.891844939468204e+70.
 END 25
 BEGIN 26
   Contig

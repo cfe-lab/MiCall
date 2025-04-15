@@ -99,7 +99,7 @@ BEGIN 8
   'r124-423.1'
   to
   be
-  (31,
+  (7,
   331).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r124-423.1'
   has
   size
-  300,
+  324,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
+  5.1006837012836705e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r124-423.1'
   to
   be
-  (81,
+  (7,
   381).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r124-423.1'
   has
   size
-  300,
+  374,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
+  5.34798875336427e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r124-423.1'
   to
   be
-  (81,
+  (7,
   381).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r124-423.1'
   has
   size
-  300,
+  374,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
+  5.34798875336427e+69.
 END 25
 BEGIN 26
   Contig

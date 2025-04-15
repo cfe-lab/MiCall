@@ -99,7 +99,7 @@ BEGIN 8
   'r580-852.1'
   to
   be
-  (164,
+  (14,
   437).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r580-852.1'
   has
   size
-  273,
+  423,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  5.271023225728139e+57.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r580-852.1'
   to
   be
-  (335,
+  (7,
   608).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r580-852.1'
   has
   size
-  273,
+  601,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  6.255545403425031e+43.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r580-852.1'
   to
   be
-  (335,
+  (7,
   608).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r580-852.1'
   has
   size
-  273,
+  601,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  6.255545403425031e+43.
 END 25
 BEGIN 26
   Contig

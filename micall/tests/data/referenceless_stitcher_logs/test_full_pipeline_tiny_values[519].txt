@@ -181,7 +181,7 @@ BEGIN 13
   'r483-972.0'
   to
   be
-  (307,
+  (6,
   797).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r483-972.0'
   has
   size
-  490,
+  791,
   490
   matches,
   and
   the
   score
   of
-  9.226486702557315e+118.
+  1.3223000678812697e+96.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r483-972.0'
   to
   be
-  (307,
+  (6,
   797).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r483-972.0'
   has
   size
-  490,
+  791,
   490
   matches,
   and
   the
   score
   of
-  9.226486702557315e+118.
+  1.3223000678812697e+96.
 END 25
 BEGIN 26
   Contig

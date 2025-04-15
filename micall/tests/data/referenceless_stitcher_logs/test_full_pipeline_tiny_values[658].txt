@@ -44,7 +44,7 @@ BEGIN 5
   'r171-537.0'
   to
   be
-  (34,
+  (1,
   401).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r171-537.0'
   has
   size
-  367,
+  400,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  2.697963502905387e+88.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r171-537.0'
   to
   be
-  (47,
+  (0,
   414).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r171-537.0'
   has
   size
-  367,
+  414,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  1.6299988901691017e+87.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r171-537.0'
   to
   be
-  (47,
+  (0,
   414).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r171-537.0'
   has
   size
-  367,
+  414,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  1.6299988901691017e+87.
 END 25
 BEGIN 26
   Contig

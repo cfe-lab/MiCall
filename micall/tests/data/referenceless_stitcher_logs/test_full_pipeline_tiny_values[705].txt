@@ -44,7 +44,7 @@ BEGIN 5
   'r661-994.1'
   to
   be
-  (220,
+  (1,
   554).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r661-994.1'
   has
   size
-  334,
+  553,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  4.740690842264622e+66.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r661-994.1'
   to
   be
-  (250,
+  (9,
   584).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r661-994.1'
   has
   size
-  334,
+  575,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  6.841498305914196e+64.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r661-994.1'
   to
   be
-  (250,
+  (9,
   584).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r661-994.1'
   has
   size
-  334,
+  575,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  6.841498305914196e+64.
 END 25
 BEGIN 26
   Contig

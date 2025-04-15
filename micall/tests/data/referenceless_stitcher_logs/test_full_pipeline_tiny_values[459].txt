@@ -181,7 +181,7 @@ BEGIN 13
   'r497-777.2'
   to
   be
-  (495,
+  (1,
   776).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r497-777.2'
   has
   size
-  281,
+  775,
   281
   matches,
   and
   the
   score
   of
-  8.659270740058138e+70.
+  6.780475198574792e+32.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r497-777.2'
   to
   be
-  (495,
+  (1,
   776).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r497-777.2'
   has
   size
-  281,
+  775,
   281
   matches,
   and
   the
   score
   of
-  8.659270740058138e+70.
+  6.780475198574792e+32.
 END 25
 BEGIN 26
   Contig

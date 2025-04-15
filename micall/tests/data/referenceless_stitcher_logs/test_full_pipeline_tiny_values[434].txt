@@ -44,7 +44,7 @@ BEGIN 5
   'r113-704.0'
   to
   be
-  (53,
+  (1,
   645).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r113-704.0'
   has
   size
-  592,
+  644,
   592
   matches,
   and
   the
   score
   of
-  2.53458754852164e+142.
+  2.8671997182052686e+138.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r113-704.0'
   to
   be
-  (53,
+  (1,
   645).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r113-704.0'
   has
   size
-  592,
+  644,
   592
   matches,
   and
   the
   score
   of
-  2.53458754852164e+142.
+  2.8671997182052686e+138.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r113-704.0'
   to
   be
-  (53,
+  (1,
   645).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r113-704.0'
   has
   size
-  592,
+  644,
   592
   matches,
   and
   the
   score
   of
-  2.53458754852164e+142.
+  2.8671997182052686e+138.
 END 25
 BEGIN 26
   Contig

@@ -44,7 +44,7 @@ BEGIN 5
   'r289-780.0'
   to
   be
-  (2,
+  (0,
   494).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r289-780.0'
   has
   size
-  492,
+  494,
   492
   matches,
   and
   the
   score
   of
-  3.73845227968753e+119.
+  1.8628483563934125e+119.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r289-780.0'
   to
   be
-  (84,
+  (0,
   576).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r289-780.0'
   has
   size
-  492,
+  576,
   492
   matches,
   and
   the
   score
   of
-  3.73845227968753e+119.
+  1.533026479079537e+113.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r289-780.0'
   to
   be
-  (84,
+  (0,
   576).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r289-780.0'
   has
   size
-  492,
+  576,
   492
   matches,
   and
   the
   score
   of
-  3.73845227968753e+119.
+  1.533026479079537e+113.
 END 25
 BEGIN 26
   Contig

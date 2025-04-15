@@ -99,7 +99,7 @@ BEGIN 8
   'r460-768.1'
   to
   be
-  (68,
+  (11,
   377).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r460-768.1'
   has
   size
-  309,
+  366,
   309
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  1.2753662744062427e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r460-768.1'
   to
   be
-  (87,
+  (3,
   396).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r460-768.1'
   has
   size
-  309,
+  393,
   309
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  9.172579397448055e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r460-768.1'
   to
   be
-  (87,
+  (3,
   396).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r460-768.1'
   has
   size
-  309,
+  393,
   309
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  9.172579397448055e+70.
 END 25
 BEGIN 26
   Contig

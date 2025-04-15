@@ -44,7 +44,7 @@ BEGIN 5
   'r352-812.2'
   to
   be
-  (87,
+  (1,
   548).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r352-812.2'
   has
   size
-  461,
+  547,
   461
   matches,
   and
   the
   score
   of
-  3.6272476543578743e+112.
+  7.330381048672625e+105.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r352-812.2'
   to
   be
-  (181,
+  (7,
   642).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r352-812.2'
   has
   size
-  461,
+  635,
   461
   matches,
   and
   the
   score
   of
-  3.6272476543578743e+112.
+  1.4487355765186705e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r352-812.2'
   to
   be
-  (181,
+  (7,
   642).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r352-812.2'
   has
   size
-  461,
+  635,
   461
   matches,
   and
   the
   score
   of
-  3.6272476543578743e+112.
+  1.4487355765186705e+99.
 END 25
 BEGIN 26
   Contig

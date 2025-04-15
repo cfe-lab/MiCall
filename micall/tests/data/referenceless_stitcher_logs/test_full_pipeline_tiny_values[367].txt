@@ -99,8 +99,8 @@ BEGIN 8
   'r515-950.2'
   to
   be
-  (513,
-  576).
+  (0,
+  574).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r515-950.2'
   has
   size
-  436,
-  63
+  574,
+  61
   matches,
   and
   the
   score
   of
-  8.999999991452203.
+  9.0.
 END 9
 BEGIN 10
   Cycle

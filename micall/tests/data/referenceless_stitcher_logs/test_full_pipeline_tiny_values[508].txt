@@ -44,7 +44,7 @@ BEGIN 5
   'r189-674.2'
   to
   be
-  (25,
+  (4,
   511).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r189-674.2'
   has
   size
-  486,
+  507,
   486
   matches,
   and
   the
   score
   of
-  1.123792022129714e+118.
+  3.385114758625028e+116.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r304-753.0'
   to
   be
-  (140,
+  (0,
   590).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r304-753.0'
   has
   size
-  450,
+  590,
   450
   matches,
   and
   the
   score
   of
-  6.563113411185577e+109.
+  1.435826282700072e+99.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r304-753.0'
   to
   be
-  (140,
+  (0,
   590).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r304-753.0'
   has
   size
-  450,
+  590,
   450
   matches,
   and
   the
   score
   of
-  6.563113411185577e+109.
+  1.435826282700072e+99.
 END 14
 BEGIN 15
   Contig

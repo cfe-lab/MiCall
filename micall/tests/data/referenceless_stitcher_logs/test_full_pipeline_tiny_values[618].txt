@@ -181,7 +181,7 @@ BEGIN 13
   'r622-904.2'
   to
   be
-  (436,
+  (5,
   719).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r622-904.2'
   has
   size
-  283,
+  714,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  1.5103025841964504e+38.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r622-904.2'
   to
   be
-  (436,
+  (5,
   719).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r622-904.2'
   has
   size
-  283,
+  714,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  1.5103025841964504e+38.
 END 25
 BEGIN 26
   Contig

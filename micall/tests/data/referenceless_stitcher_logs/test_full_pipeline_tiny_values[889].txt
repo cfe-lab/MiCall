@@ -99,7 +99,7 @@ BEGIN 8
   'r235-594.1'
   to
   be
-  (8,
+  (0,
   368).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r235-594.1'
   has
   size
-  360,
+  368,
   360
   matches,
   and
   the
   score
   of
-  2.1928844270686562e+89.
+  5.3811276514547295e+88.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r235-594.1'
   to
   be
-  (8,
+  (0,
   368).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r235-594.1'
   has
   size
-  360,
+  368,
   360
   matches,
   and
   the
   score
   of
-  2.1928844270686562e+89.
+  5.3811276514547295e+88.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r235-594.1'
   to
   be
-  (8,
+  (0,
   368).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r235-594.1'
   has
   size
-  360,
+  368,
   360
   matches,
   and
   the
   score
   of
-  2.1928844270686562e+89.
+  5.3811276514547295e+88.
 END 25
 BEGIN 26
   Contig

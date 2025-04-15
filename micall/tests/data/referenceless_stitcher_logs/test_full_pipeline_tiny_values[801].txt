@@ -44,7 +44,7 @@ BEGIN 5
   'r377-790.1'
   to
   be
-  (109,
+  (0,
   523).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r377-790.1'
   has
   size
-  414,
+  523,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  2.2055956046331138e+93.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r377-790.1'
   to
   be
-  (262,
+  (0,
   676).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r377-790.1'
   has
   size
-  414,
+  676,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  5.4026830663275396e+81.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r377-790.1'
   to
   be
-  (262,
+  (0,
   676).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r377-790.1'
   has
   size
-  414,
+  676,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  5.4026830663275396e+81.
 END 25
 BEGIN 26
   Contig

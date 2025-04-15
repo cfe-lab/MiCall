@@ -99,7 +99,7 @@ BEGIN 8
   'r477-763.2'
   to
   be
-  (232,
+  (1,
   519).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r477-763.2'
   has
   size
-  287,
+  518,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  4.441130901877851e+54.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r477-763.2'
   to
   be
-  (393,
+  (2,
   680).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r477-763.2'
   has
   size
-  287,
+  678,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  1.7463730215651357e+42.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r477-763.2'
   to
   be
-  (393,
+  (2,
   680).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r477-763.2'
   has
   size
-  287,
+  678,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  1.7463730215651357e+42.
 END 25
 BEGIN 26
   Contig

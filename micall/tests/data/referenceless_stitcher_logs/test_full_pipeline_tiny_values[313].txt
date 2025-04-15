@@ -99,7 +99,7 @@ BEGIN 8
   'r256-707.0'
   to
   be
-  (86,
+  (2,
   538).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r256-707.0'
   has
   size
-  452,
+  536,
   452
   matches,
   and
   the
   score
   of
-  2.662356803553286e+110.
+  1.076885536017007e+104.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r256-707.0'
   to
   be
-  (135,
+  (0,
   587).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r256-707.0'
   has
   size
-  452,
+  587,
   452
   matches,
   and
   the
   score
   of
-  2.662356803553286e+110.
+  1.179358975006353e+100.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r256-707.0'
   to
   be
-  (135,
+  (0,
   587).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r256-707.0'
   has
   size
-  452,
+  587,
   452
   matches,
   and
   the
   score
   of
-  2.662356803553286e+110.
+  1.179358975006353e+100.
 END 25
 BEGIN 26
   Contig

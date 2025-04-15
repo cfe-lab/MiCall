@@ -44,7 +44,7 @@ BEGIN 5
   'r266-714.0'
   to
   be
-  (12,
+  (1,
   461).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r266-714.0'
   has
   size
-  449,
+  460,
   449
   matches,
   and
   the
   score
   of
-  3.2585281295944614e+109.
+  7.979644161589102e+108.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r266-714.0'
   to
   be
-  (87,
+  (3,
   536).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r266-714.0'
   has
   size
-  449,
+  533,
   449
   matches,
   and
   the
   score
   of
-  3.2585281295944614e+109.
+  2.6330780805633445e+103.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r266-714.0'
   to
   be
-  (87,
+  (3,
   536).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r266-714.0'
   has
   size
-  449,
+  533,
   449
   matches,
   and
   the
   score
   of
-  3.2585281295944614e+109.
+  2.6330780805633445e+103.
 END 25
 BEGIN 26
   Contig

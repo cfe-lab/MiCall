@@ -44,7 +44,7 @@ BEGIN 5
   'r245-668.2'
   to
   be
-  (23,
+  (0,
   447).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r245-668.2'
   has
   size
-  424,
+  447,
   424
   matches,
   and
   the
   score
   of
-  1.0368134368976624e+104.
+  1.547010952137605e+102.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r245-668.2'
   to
   be
-  (116,
+  (1,
   540).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r245-668.2'
   has
   size
-  424,
+  539,
   424
   matches,
   and
   the
   score
   of
-  1.0368134368976624e+104.
+  1.5105018053990834e+95.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r245-668.2'
   to
   be
-  (116,
+  (1,
   540).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r245-668.2'
   has
   size
-  424,
+  539,
   424
   matches,
   and
   the
   score
   of
-  1.0368134368976624e+104.
+  1.5105018053990834e+95.
 END 25
 BEGIN 26
   Contig

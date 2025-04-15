@@ -99,7 +99,7 @@ BEGIN 8
   'r297-841.2'
   to
   be
-  (89,
+  (2,
   634).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r297-841.2'
   has
   size
-  545,
+  632,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  1.1762257350351168e+125.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r297-841.2'
   to
   be
-  (235,
+  (3,
   780).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r297-841.2'
   has
   size
-  545,
+  777,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  6.573902591592402e+113.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r297-841.2'
   to
   be
-  (235,
+  (3,
   780).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r297-841.2'
   has
   size
-  545,
+  777,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  6.573902591592402e+113.
 END 25
 BEGIN 26
   Contig

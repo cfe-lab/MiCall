@@ -181,7 +181,7 @@ BEGIN 13
   'r386-660.0'
   to
   be
-  (374,
+  (0,
   649).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r386-660.0'
   has
   size
-  275,
+  649,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  4.788385705308812e+40.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r386-660.0'
   to
   be
-  (374,
+  (0,
   649).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r386-660.0'
   has
   size
-  275,
+  649,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  4.788385705308812e+40.
 END 25
 BEGIN 26
   Contig

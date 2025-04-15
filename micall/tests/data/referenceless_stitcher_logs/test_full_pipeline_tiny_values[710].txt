@@ -44,7 +44,7 @@ BEGIN 5
   'r348-864.0'
   to
   be
-  (168,
+  (6,
   685).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r348-864.0'
   has
   size
-  517,
+  679,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  7.812389606213432e+112.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r348-864.0'
   to
   be
-  (279,
+  (1,
   796).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r348-864.0'
   has
   size
-  517,
+  795,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.1470183986061136e+104.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r348-864.0'
   to
   be
-  (279,
+  (1,
   796).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r348-864.0'
   has
   size
-  517,
+  795,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.1470183986061136e+104.
 END 25
 BEGIN 26
   Contig

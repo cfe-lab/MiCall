@@ -99,9 +99,28 @@ BEGIN 8
   'r557-834.2'
   to
   be
-  None.
+  (4,
+  478).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r13-494.1'
+  and
+  'r557-834.2'
+  has
+  size
+  474,
+  20
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -119,16 +138,16 @@ BEGIN 9
   of
   2
   parts.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -144,10 +163,10 @@ BEGIN 11
   'r557-834.2'
   to
   be
-  (544,
+  (4,
   822).
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -156,32 +175,32 @@ BEGIN 12
   'r557-834.2'
   has
   size
-  278,
+  818,
   278
   matches,
   and
   the
   score
   of
-  2.0921652732166993e+70.
-END 12
-BEGIN 13
+  2.4900672035215083e+28.
+END 13
+BEGIN 14
   Contig
   (1)
   covers
   contig
   'r557-834.2'
   completely.
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   871.
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Removed
   2
   components
@@ -194,29 +213,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Constructed
   a
   path
   of
   length
   278.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -229,8 +248,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -245,16 +264,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -270,10 +289,10 @@ BEGIN 22
   'r557-834.2'
   to
   be
-  (544,
+  (4,
   822).
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -282,25 +301,25 @@ BEGIN 23
   'r557-834.2'
   has
   size
-  278,
+  818,
   278
   matches,
   and
   the
   score
   of
-  2.0921652732166993e+70.
-END 23
-BEGIN 24
+  2.4900672035215083e+28.
+END 24
+BEGIN 25
   Contig
   (1)
   covers
   contig
   'r557-834.2'
   completely.
-END 24
-BEGIN 25
+END 25
+BEGIN 26
   Outputting
   1
   contigs.
-END 25
+END 26

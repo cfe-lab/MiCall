@@ -99,7 +99,7 @@ BEGIN 8
   'r392-649.0'
   to
   be
-  (268,
+  (2,
   526).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r392-649.0'
   has
   size
-  258,
+  524,
   258
   matches,
   and
   the
   score
   of
-  5.034711969272789e+65.
+  2.1700182226776077e+45.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r392-649.0'
   to
   be
-  (344,
+  (1,
   602).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r392-649.0'
   has
   size
-  258,
+  601,
   258
   matches,
   and
   the
   score
   of
-  5.034711969272789e+65.
+  2.5802534532325534e+39.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r392-649.0'
   to
   be
-  (344,
+  (1,
   602).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r392-649.0'
   has
   size
-  258,
+  601,
   258
   matches,
   and
   the
   score
   of
-  5.034711969272789e+65.
+  2.5802534532325534e+39.
 END 25
 BEGIN 26
   Contig

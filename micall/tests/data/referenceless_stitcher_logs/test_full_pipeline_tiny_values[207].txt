@@ -44,7 +44,7 @@ BEGIN 5
   'r232-677.2'
   to
   be
-  (72,
+  (2,
   518).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r232-677.2'
   has
   size
-  446,
+  516,
   446
   matches,
   and
   the
   score
   of
-  7.975258297830065e+108.
+  5.30154555050902e+103.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r442-840.0'
   to
   be
-  (282,
+  (1,
   681).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r442-840.0'
   has
   size
-  399,
+  680,
   399
   matches,
   and
   the
   score
   of
-  1.631230234288389e+98.
+  6.73654367719592e+76.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r442-840.0'
   to
   be
-  (282,
+  (1,
   681).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r442-840.0'
   has
   size
-  399,
+  680,
   399
   matches,
   and
   the
   score
   of
-  1.631230234288389e+98.
+  6.73654367719592e+76.
 END 14
 BEGIN 15
   Contig

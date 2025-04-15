@@ -99,7 +99,7 @@ BEGIN 8
   'r136-592.2'
   to
   be
-  (12,
+  (0,
   469).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r136-592.2'
   has
   size
-  457,
+  469,
   457
   matches,
   and
   the
   score
   of
-  2.2053567452925761e+111.
+  5.392447296562414e+110.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r136-592.2'
   to
   be
-  (12,
+  (0,
   469).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r136-592.2'
   has
   size
-  457,
+  469,
   457
   matches,
   and
   the
   score
   of
-  2.2053567452925761e+111.
+  5.392447296562414e+110.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r136-592.2'
   to
   be
-  (12,
+  (0,
   469).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r136-592.2'
   has
   size
-  457,
+  469,
   457
   matches,
   and
   the
   score
   of
-  2.2053567452925761e+111.
+  5.392447296562414e+110.
 END 25
 BEGIN 26
   Contig

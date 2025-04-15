@@ -99,7 +99,7 @@ BEGIN 8
   'r395-807.2'
   to
   be
-  (229,
+  (2,
   642).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r395-807.2'
   has
   size
-  413,
+  640,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  1.5104227943850281e+84.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r395-807.2'
   to
   be
-  (287,
+  (12,
   700).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r395-807.2'
   has
   size
-  413,
+  688,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  3.2224743420408806e+80.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r395-807.2'
   to
   be
-  (287,
+  (12,
   700).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r395-807.2'
   has
   size
-  413,
+  688,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  3.2224743420408806e+80.
 END 25
 BEGIN 26
   Contig

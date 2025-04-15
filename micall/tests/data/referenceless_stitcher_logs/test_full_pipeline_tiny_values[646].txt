@@ -99,7 +99,7 @@ BEGIN 8
   'r321-620.2'
   to
   be
-  (82,
+  (1,
   382).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r321-620.2'
   has
   size
-  300,
+  381,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
+  1.3073191914598352e+69.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r321-620.2'
   to
   be
-  (82,
+  (1,
   382).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r321-620.2'
   has
   size
-  300,
+  381,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
+  1.3073191914598352e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r321-620.2'
   to
   be
-  (82,
+  (1,
   382).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r321-620.2'
   has
   size
-  300,
+  381,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
+  1.3073191914598352e+69.
 END 25
 BEGIN 26
   Contig

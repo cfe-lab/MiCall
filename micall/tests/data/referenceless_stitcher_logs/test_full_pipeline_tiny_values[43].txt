@@ -99,7 +99,7 @@ BEGIN 8
   'r365-749.1'
   to
   be
-  (82,
+  (2,
   467).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r365-749.1'
   has
   size
-  385,
+  465,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  5.640739408487466e+88.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r365-749.1'
   to
   be
-  (322,
+  (1,
   707).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r365-749.1'
   has
   size
-  385,
+  706,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  2.4376210747411896e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r365-749.1'
   to
   be
-  (322,
+  (1,
   707).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r365-749.1'
   has
   size
-  385,
+  706,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  2.4376210747411896e+70.
 END 25
 BEGIN 26
   Contig

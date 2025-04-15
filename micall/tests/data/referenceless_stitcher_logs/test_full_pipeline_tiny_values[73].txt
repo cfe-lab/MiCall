@@ -99,7 +99,7 @@ BEGIN 8
   'r284-712.1'
   to
   be
-  (196,
+  (0,
   625).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r284-712.1'
   has
   size
-  429,
+  625,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  9.88781646465173e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r284-712.1'
   to
   be
-  (209,
+  (5,
   638).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r284-712.1'
   has
   size
-  429,
+  633,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  2.422692481348765e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r284-712.1'
   to
   be
-  (209,
+  (5,
   638).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r284-712.1'
   has
   size
-  429,
+  633,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  2.422692481348765e+89.
 END 25
 BEGIN 26
   Contig

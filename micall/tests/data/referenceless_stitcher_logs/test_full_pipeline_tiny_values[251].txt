@@ -99,7 +99,7 @@ BEGIN 8
   'r324-671.1'
   to
   be
-  (256,
+  (0,
   604).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r324-671.1'
   has
   size
-  348,
+  604,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  9.799140698528763e+66.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r324-671.1'
   to
   be
-  (256,
+  (0,
   604).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r324-671.1'
   has
   size
-  348,
+  604,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  9.799140698528763e+66.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r324-671.1'
   to
   be
-  (256,
+  (0,
   604).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r324-671.1'
   has
   size
-  348,
+  604,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  9.799140698528763e+66.
 END 25
 BEGIN 26
   Contig

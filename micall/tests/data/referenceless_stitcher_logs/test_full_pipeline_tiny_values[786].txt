@@ -44,7 +44,7 @@ BEGIN 5
   'r204-843.1'
   to
   be
-  (84,
+  (2,
   724).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r204-843.1'
   has
   size
-  640,
+  722,
   640
   matches,
   and
   the
   score
   of
-  2.2278143871071905e+153.
+  9.492188547406022e+146.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r265-568.2'
   to
   be
-  (145,
+  (2,
   449).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r265-568.2'
   has
   size
-  304,
+  447,
   304
   matches,
   and
   the
   score
   of
-  2.914968515383263e+76.
+  2.712275573069479e+65.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r265-568.2'
   to
   be
-  (145,
+  (2,
   449).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r265-568.2'
   has
   size
-  304,
+  447,
   304
   matches,
   and
   the
   score
   of
-  2.914968515383263e+76.
+  2.712275573069479e+65.
 END 14
 BEGIN 15
   Contig

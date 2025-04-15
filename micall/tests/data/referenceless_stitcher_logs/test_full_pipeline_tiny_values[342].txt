@@ -44,7 +44,7 @@ BEGIN 5
   'r365-721.2'
   to
   be
-  (129,
+  (0,
   486).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r365-721.2'
   has
   size
-  357,
+  486,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  4.448429570370581e+78.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r377-729.0'
   to
   be
-  (141,
+  (1,
   494).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r377-729.0'
   has
   size
-  353,
+  493,
   353
   matches,
   and
   the
   score
   of
-  3.2194520736283604e+87.
+  1.2936486277313237e+77.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r377-729.0'
   to
   be
-  (141,
+  (1,
   494).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r377-729.0'
   has
   size
-  353,
+  493,
   353
   matches,
   and
   the
   score
   of
-  3.2194520736283604e+87.
+  1.2936486277313237e+77.
 END 14
 BEGIN 15
   Contig

@@ -44,7 +44,7 @@ BEGIN 5
   'r493-779.0'
   to
   be
-  (317,
+  (2,
   604).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r493-779.0'
   has
   size
-  287,
+  602,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  1.4105841375691652e+48.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r344-626.2'
   to
   be
-  (168,
+  (10,
   451).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r344-626.2'
   has
   size
-  283,
+  441,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  1.8717043353045817e+59.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r344-626.2'
   to
   be
-  (168,
+  (10,
   451).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r344-626.2'
   has
   size
-  283,
+  441,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  1.8717043353045817e+59.
 END 14
 BEGIN 15
   Contig

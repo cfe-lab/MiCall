@@ -711,9 +711,28 @@ BEGIN 44
   'r649-909.3'
   to
   be
-  None.
+  (25,
+  258).
 END 44
 BEGIN 45
+  Overlap
+  between
+  contigs
+  'r168-587.2'
+  and
+  'r649-909.3'
+  has
+  size
+  261,
+  21
+  matches,
+  and
+  the
+  score
+  of
+  8.999999972107572.
+END 45
+BEGIN 46
   Cycle
   1
   finished
@@ -731,16 +750,16 @@ BEGIN 45
   of
   2
   parts.
-END 45
-BEGIN 46
+END 46
+BEGIN 47
   Cycle
   2
   started
   with
   1
   paths
-END 46
-BEGIN 47
+END 47
+BEGIN 48
   Calculated
   cutoff
   for
@@ -758,8 +777,8 @@ BEGIN 47
   be
   (91,
   174).
-END 47
-BEGIN 48
+END 48
+BEGIN 49
   Overlap
   between
   contigs
@@ -776,8 +795,8 @@ BEGIN 48
   score
   of
   1.5534059400699183e+46.
-END 48
-BEGIN 49
+END 49
+BEGIN 50
   Found
   a
   significant
@@ -794,8 +813,8 @@ BEGIN 49
   in
   contig
   (12).
-END 49
-BEGIN 50
+END 50
+BEGIN 51
   Calculated
   cutoff
   for
@@ -811,17 +830,54 @@ BEGIN 50
   'r649-909.3'
   to
   be
-  None.
-END 50
-BEGIN 51
+  (13,
+  258).
+END 51
+BEGIN 52
+  Overlap
+  between
+  contigs
+  (10)
+  and
+  'r649-909.3'
+  has
+  size
+  261,
+  4
+  matches,
+  and
+  the
+  score
+  of
+  8.99999999999972.
+END 52
+BEGIN 53
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  514
+  between
+  contigs
+  (10)
+  and
+  'r649-909.3',
+  resulting
+  in
+  contig
+  (13).
+END 53
+BEGIN 54
   Constructed
   a
   path
   of
   length
   443.
-END 51
-BEGIN 52
+END 54
+BEGIN 55
   Removed
   2
   components
@@ -834,21 +890,21 @@ BEGIN 52
   still
   to
   process.
-END 52
-BEGIN 53
+END 55
+BEGIN 56
   Calculating
   all
   paths...
-END 53
-BEGIN 54
+END 56
+BEGIN 57
   Cycle
   1
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 57
+BEGIN 58
   Calculated
   cutoff
   for
@@ -864,17 +920,36 @@ BEGIN 55
   'r54-318.0'
   to
   be
-  None.
-END 55
-BEGIN 56
+  (0,
+  265).
+END 58
+BEGIN 59
+  Overlap
+  between
+  contigs
+  'r649-909.3'
+  and
+  'r54-318.0'
+  has
+  size
+  265,
+  14
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999820599.
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
   265.
-END 56
-BEGIN 57
+END 60
+BEGIN 61
   Removed
   1
   components
@@ -887,8 +962,8 @@ BEGIN 57
   still
   to
   process.
-END 57
-BEGIN 58
+END 61
+BEGIN 62
   Giving
   up
   on
@@ -903,16 +978,16 @@ BEGIN 58
   is
   a
   singleton.
-END 58
-BEGIN 59
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 59
-BEGIN 60
+END 63
+BEGIN 64
   Calculated
   cutoff
   for
@@ -930,8 +1005,8 @@ BEGIN 60
   be
   (69,
   374).
-END 60
-BEGIN 61
+END 64
+BEGIN 65
   Overlap
   between
   contigs
@@ -948,8 +1023,8 @@ BEGIN 61
   score
   of
   2.5343416243767767e+92.
-END 61
-BEGIN 62
+END 65
+BEGIN 66
   Found
   a
   significant
@@ -965,9 +1040,9 @@ BEGIN 62
   resulting
   in
   contig
-  (13).
-END 62
-BEGIN 63
+  (14).
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -983,9 +1058,28 @@ BEGIN 63
   'r54-318.0'
   to
   be
-  None.
-END 63
-BEGIN 64
+  (0,
+  265).
+END 67
+BEGIN 68
+  Overlap
+  between
+  contigs
+  'r649-909.3'
+  and
+  'r54-318.0'
+  has
+  size
+  265,
+  14
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999820599.
+END 68
+BEGIN 69
   Calculated
   cutoff
   for
@@ -998,19 +1092,19 @@ BEGIN 64
   contigs
   'r54-318.0'
   and
-  (13)
+  (14)
   to
   be
   (91,
   174).
-END 64
-BEGIN 65
+END 69
+BEGIN 70
   Overlap
   between
   contigs
   'r54-318.0'
   and
-  (13)
+  (14)
   has
   size
   174,
@@ -1021,8 +1115,8 @@ BEGIN 65
   score
   of
   1.5534059400699183e+46.
-END 65
-BEGIN 66
+END 70
+BEGIN 71
   Found
   a
   significant
@@ -1034,13 +1128,13 @@ BEGIN 66
   contigs
   'r54-318.0'
   and
-  (13),
+  (14),
   resulting
   in
   contig
-  (14).
-END 66
-BEGIN 67
+  (15).
+END 71
+BEGIN 72
   Calculated
   cutoff
   for
@@ -1051,19 +1145,19 @@ BEGIN 67
   209
   between
   contigs
-  (14)
+  (15)
   and
   'r649-909.3'
   to
   be
   (595,
   209).
-END 67
-BEGIN 68
+END 72
+BEGIN 73
   Overlap
   between
   contigs
-  (14)
+  (15)
   and
   'r649-909.3'
   has
@@ -1076,8 +1170,8 @@ BEGIN 68
   score
   of
   1.872152693658848e+54.
-END 68
-BEGIN 69
+END 73
+BEGIN 74
   Found
   a
   significant
@@ -1087,16 +1181,16 @@ BEGIN 69
   209
   between
   contigs
-  (14)
+  (15)
   and
   'r649-909.3',
   resulting
   in
   contig
-  (15).
-END 69
-BEGIN 70
+  (16).
+END 74
+BEGIN 75
   Outputting
   1
   contigs.
-END 70
+END 75

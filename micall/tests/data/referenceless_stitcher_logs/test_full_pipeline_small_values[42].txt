@@ -209,7 +209,7 @@ BEGIN 14
   'r194-459.4'
   to
   be
-  (93,
+  (3,
   359).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r194-459.4'
   has
   size
-  266,
+  356,
   266
   matches,
   and
   the
   score
   of
-  3.551093662302419e+67.
+  6.2172389558334046e+60.
 END 15
 BEGIN 16
   Contig
@@ -254,7 +254,7 @@ BEGIN 17
   'r367-601.2'
   to
   be
-  (266,
+  (0,
   501).
 END 17
 BEGIN 18
@@ -266,14 +266,14 @@ BEGIN 18
   'r367-601.2'
   has
   size
-  235,
+  501,
   235
   matches,
   and
   the
   score
   of
-  2.8530840255002603e+60.
+  1.0598258581674214e+40.
 END 18
 BEGIN 19
   Contig
@@ -436,7 +436,7 @@ BEGIN 28
   'r194-459.4'
   to
   be
-  (101,
+  (0,
   367).
 END 28
 BEGIN 29
@@ -448,14 +448,14 @@ BEGIN 29
   'r194-459.4'
   has
   size
-  266,
+  367,
   266
   matches,
   and
   the
   score
   of
-  3.551093662302419e+67.
+  7.452698870437472e+59.
 END 29
 BEGIN 30
   Contig
@@ -481,7 +481,7 @@ BEGIN 31
   'r367-601.2'
   to
   be
-  (274,
+  (4,
   509).
 END 31
 BEGIN 32
@@ -493,14 +493,14 @@ BEGIN 32
   'r367-601.2'
   has
   size
-  235,
+  505,
   235
   matches,
   and
   the
   score
   of
-  2.8530840255002603e+60.
+  2.580924476663986e+39.
 END 32
 BEGIN 33
   Contig
@@ -561,7 +561,7 @@ BEGIN 38
   'r407-751.3'
   to
   be
-  (31,
+  (0,
   376).
 END 38
 BEGIN 39
@@ -573,14 +573,14 @@ BEGIN 39
   'r407-751.3'
   has
   size
-  345,
+  376,
   345
   matches,
   and
   the
   score
   of
-  4.677479896743723e+85.
+  3.3843153942233653e+83.
 END 39
 BEGIN 40
   Contig
@@ -743,7 +743,7 @@ BEGIN 49
   'r407-751.3'
   to
   be
-  (40,
+  (0,
   385).
 END 49
 BEGIN 50
@@ -755,14 +755,14 @@ BEGIN 50
   'r407-751.3'
   has
   size
-  345,
+  385,
   345
   matches,
   and
   the
   score
   of
-  4.677479896743723e+85.
+  4.133909209369092e+82.
 END 50
 BEGIN 51
   Contig
@@ -1045,7 +1045,7 @@ BEGIN 70
   (9)
   to
   be
-  (101,
+  (0,
   659).
 END 70
 BEGIN 71
@@ -1057,14 +1057,14 @@ BEGIN 71
   (9)
   has
   size
-  558,
+  659,
   558
   matches,
   and
   the
   score
   of
-  3.1331810095219665e+134.
+  7.949878698904989e+126.
 END 71
 BEGIN 72
   Contig

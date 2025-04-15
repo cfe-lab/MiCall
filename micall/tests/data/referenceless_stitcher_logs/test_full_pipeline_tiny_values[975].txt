@@ -99,7 +99,7 @@ BEGIN 8
   'r381-637.1'
   to
   be
-  (202,
+  (7,
   459).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r381-637.1'
   has
   size
-  257,
+  452,
   257
   matches,
   and
   the
   score
   of
-  2.4864279648468045e+65.
+  4.051377876955968e+50.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r381-637.1'
   to
   be
-  (245,
+  (4,
   502).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r381-637.1'
   has
   size
-  257,
+  498,
   257
   matches,
   and
   the
   score
   of
-  2.4864279648468045e+65.
+  7.823845905750633e+46.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r381-637.1'
   to
   be
-  (245,
+  (4,
   502).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r381-637.1'
   has
   size
-  257,
+  498,
   257
   matches,
   and
   the
   score
   of
-  2.4864279648468045e+65.
+  7.823845905750633e+46.
 END 25
 BEGIN 26
   Contig

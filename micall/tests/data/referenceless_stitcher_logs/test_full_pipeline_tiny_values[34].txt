@@ -99,7 +99,7 @@ BEGIN 8
   'r571-845.1'
   to
   be
-  (351,
+  (3,
   626).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r571-845.1'
   has
   size
-  275,
+  623,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  7.2083613634447e+42.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r571-845.1'
   to
   be
-  (354,
+  (0,
   629).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r571-845.1'
   has
   size
-  275,
+  629,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  3.47475758792976e+42.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r571-845.1'
   to
   be
-  (354,
+  (0,
   629).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r571-845.1'
   has
   size
-  275,
+  629,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  3.47475758792976e+42.
 END 25
 BEGIN 26
   Contig

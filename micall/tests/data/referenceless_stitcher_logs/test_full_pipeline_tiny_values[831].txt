@@ -44,7 +44,7 @@ BEGIN 5
   'r298-842.0'
   to
   be
-  (92,
+  (20,
   637).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r298-842.0'
   has
   size
-  545,
+  617,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  9.650174252514941e+125.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r298-842.0'
   to
   be
-  (92,
+  (20,
   637).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r298-842.0'
   has
   size
-  545,
+  617,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  9.650174252514941e+125.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r298-842.0'
   to
   be
-  (92,
+  (20,
   637).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r298-842.0'
   has
   size
-  545,
+  617,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  9.650174252514941e+125.
 END 25
 BEGIN 26
   Contig

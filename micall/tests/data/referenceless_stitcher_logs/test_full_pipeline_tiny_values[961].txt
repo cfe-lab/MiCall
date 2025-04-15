@@ -44,7 +44,7 @@ BEGIN 5
   'r277-755.0'
   to
   be
-  (10,
+  (5,
   489).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r277-755.0'
   has
   size
-  479,
+  484,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  1.6624833795871672e+116.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r277-755.0'
   to
   be
-  (28,
+  (1,
   507).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r277-755.0'
   has
   size
-  479,
+  506,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  2.4974437483662175e+114.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r277-755.0'
   to
   be
-  (28,
+  (1,
   507).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r277-755.0'
   has
   size
-  479,
+  506,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  2.4974437483662175e+114.
 END 25
 BEGIN 26
   Contig

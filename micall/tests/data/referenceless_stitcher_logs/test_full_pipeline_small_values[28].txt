@@ -840,7 +840,7 @@ BEGIN 50
   'r501-898.0'
   to
   be
-  (361,
+  (1,
   759).
 END 50
 BEGIN 51
@@ -852,14 +852,14 @@ BEGIN 51
   'r501-898.0'
   has
   size
-  398,
+  758,
   398
   matches,
   and
   the
   score
   of
-  8.091547354289617e+97.
+  2.463988986415059e+70.
 END 51
 BEGIN 52
   Contig

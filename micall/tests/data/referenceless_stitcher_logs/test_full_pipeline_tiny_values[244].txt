@@ -44,7 +44,7 @@ BEGIN 5
   'r323-753.2'
   to
   be
-  (137,
+  (4,
   568).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r323-753.2'
   has
   size
-  431,
+  564,
   431
   matches,
   and
   the
   score
   of
-  3.4943966263251336e+105.
+  3.066484968897518e+95.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r403-661.0'
   to
   be
-  (217,
+  (1,
   476).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r403-661.0'
   has
   size
-  259,
+  475,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  2.35801202625612e+49.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r403-661.0'
   to
   be
-  (217,
+  (1,
   476).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r403-661.0'
   has
   size
-  259,
+  475,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  2.35801202625612e+49.
 END 14
 BEGIN 15
   Contig

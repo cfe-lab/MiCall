@@ -44,7 +44,7 @@ BEGIN 5
   'r263-842.0'
   to
   be
-  (46,
+  (9,
   626).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r263-842.0'
   has
   size
-  580,
+  617,
   580
   matches,
   and
   the
   score
   of
-  4.640323807769143e+139.
+  8.579274783568464e+136.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r263-842.0'
   to
   be
-  (241,
+  (4,
   821).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r263-842.0'
   has
   size
-  580,
+  817,
   580
   matches,
   and
   the
   score
   of
-  4.640323807769143e+139.
+  5.46547089463036e+121.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r263-842.0'
   to
   be
-  (241,
+  (4,
   821).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r263-842.0'
   has
   size
-  580,
+  817,
   580
   matches,
   and
   the
   score
   of
-  4.640323807769143e+139.
+  5.46547089463036e+121.
 END 25
 BEGIN 26
   Contig

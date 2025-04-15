@@ -99,7 +99,7 @@ BEGIN 8
   'r563-878.2'
   to
   be
-  (349,
+  (2,
   665).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r563-878.2'
   has
   size
-  316,
+  663,
   316
   matches,
   and
   the
   score
   of
-  1.6877907659126485e+79.
+  3.1301971439824906e+52.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r563-878.2'
   to
   be
-  (528,
+  (7,
   844).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r563-878.2'
   has
   size
-  316,
+  837,
   316
   matches,
   and
   the
   score
   of
-  1.6877907659126485e+79.
+  6.596432490672432e+38.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r563-878.2'
   to
   be
-  (528,
+  (7,
   844).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r563-878.2'
   has
   size
-  316,
+  837,
   316
   matches,
   and
   the
   score
   of
-  1.6877907659126485e+79.
+  6.596432490672432e+38.
 END 25
 BEGIN 26
   Contig

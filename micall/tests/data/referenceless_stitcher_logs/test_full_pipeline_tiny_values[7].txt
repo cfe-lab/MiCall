@@ -99,7 +99,7 @@ BEGIN 8
   'r139-407.0'
   to
   be
-  (5,
+  (4,
   274).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r139-407.0'
   has
   size
-  269,
+  270,
   269
   matches,
   and
   the
   score
   of
-  2.944082014509719e+68.
+  1.467537175447743e+68.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r139-407.0'
   to
   be
-  (27,
+  (8,
   296).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r139-407.0'
   has
   size
-  269,
+  288,
   269
   matches,
   and
   the
   score
   of
-  2.944082014509719e+68.
+  8.668873052466027e+66.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r139-407.0'
   to
   be
-  (27,
+  (8,
   296).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r139-407.0'
   has
   size
-  269,
+  288,
   269
   matches,
   and
   the
   score
   of
-  2.944082014509719e+68.
+  8.668873052466027e+66.
 END 25
 BEGIN 26
   Contig

@@ -209,7 +209,7 @@ BEGIN 14
   'r140-410.3'
   to
   be
-  (77,
+  (0,
   348).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r140-410.3'
   has
   size
-  271,
+  348,
   271
   matches,
   and
   the
   score
   of
-  6.028579506000014e+68.
+  8.907041578836729e+62.
 END 15
 BEGIN 16
   Contig
@@ -254,7 +254,7 @@ BEGIN 17
   'r127-386.5'
   to
   be
-  (64,
+  (0,
   324).
 END 17
 BEGIN 18
@@ -266,14 +266,14 @@ BEGIN 18
   'r127-386.5'
   has
   size
-  260,
+  324,
   260
   matches,
   and
   the
   score
   of
-  2.0639980991678023e+66.
+  2.5311771022839472e+61.
 END 18
 BEGIN 19
   Contig
@@ -381,7 +381,7 @@ BEGIN 25
   'r367-792.4'
   to
   be
-  (304,
+  (6,
   730).
 END 25
 BEGIN 26
@@ -393,14 +393,14 @@ BEGIN 26
   'r367-792.4'
   has
   size
-  426,
+  724,
   426
   matches,
   and
   the
   score
   of
-  2.1047640704538415e+104.
+  5.459464980919529e+81.
 END 26
 BEGIN 27
   Contig
@@ -426,7 +426,7 @@ BEGIN 28
   'r140-410.3'
   to
   be
-  (77,
+  (0,
   348).
 END 28
 BEGIN 29
@@ -438,14 +438,14 @@ BEGIN 29
   'r140-410.3'
   has
   size
-  271,
+  348,
   271
   matches,
   and
   the
   score
   of
-  6.028579506000014e+68.
+  8.907041578836729e+62.
 END 29
 BEGIN 30
   Contig
@@ -471,7 +471,7 @@ BEGIN 31
   'r127-386.5'
   to
   be
-  (64,
+  (0,
   324).
 END 31
 BEGIN 32
@@ -483,14 +483,14 @@ BEGIN 32
   'r127-386.5'
   has
   size
-  260,
+  324,
   260
   matches,
   and
   the
   score
   of
-  2.0639980991678023e+66.
+  2.5311771022839472e+61.
 END 32
 BEGIN 33
   Contig
@@ -543,7 +543,7 @@ BEGIN 36
   'r367-792.4'
   to
   be
-  (304,
+  (6,
   730).
 END 36
 BEGIN 37
@@ -555,14 +555,14 @@ BEGIN 37
   'r367-792.4'
   has
   size
-  426,
+  724,
   426
   matches,
   and
   the
   score
   of
-  2.1047640704538415e+104.
+  5.459464980919529e+81.
 END 37
 BEGIN 38
   Contig
@@ -588,7 +588,7 @@ BEGIN 39
   'r140-410.3'
   to
   be
-  (77,
+  (0,
   348).
 END 39
 BEGIN 40
@@ -600,14 +600,14 @@ BEGIN 40
   'r140-410.3'
   has
   size
-  271,
+  348,
   271
   matches,
   and
   the
   score
   of
-  6.028579506000014e+68.
+  8.907041578836729e+62.
 END 40
 BEGIN 41
   Contig
@@ -633,7 +633,7 @@ BEGIN 42
   'r127-386.5'
   to
   be
-  (64,
+  (0,
   324).
 END 42
 BEGIN 43
@@ -645,14 +645,14 @@ BEGIN 43
   'r127-386.5'
   has
   size
-  260,
+  324,
   260
   matches,
   and
   the
   score
   of
-  2.0639980991678023e+66.
+  2.5311771022839472e+61.
 END 43
 BEGIN 44
   Contig
@@ -768,9 +768,28 @@ BEGIN 52
   'r367-792.4'
   to
   be
-  None.
+  (0,
+  418).
 END 52
 BEGIN 53
+  Overlap
+  between
+  contigs
+  'r127-386.5'
+  and
+  'r367-792.4'
+  has
+  size
+  418,
+  20
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 53
+BEGIN 54
   Cycle
   1
   finished
@@ -788,16 +807,16 @@ BEGIN 53
   of
   3
   parts.
-END 53
-BEGIN 54
+END 54
+BEGIN 55
   Cycle
   2
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 55
+BEGIN 56
   Calculated
   cutoff
   for
@@ -815,8 +834,8 @@ BEGIN 55
   be
   (13,
   247).
-END 55
-BEGIN 56
+END 56
+BEGIN 57
   Overlap
   between
   contigs
@@ -833,8 +852,8 @@ BEGIN 56
   score
   of
   1.7119305782533366e+63.
-END 56
-BEGIN 57
+END 57
+BEGIN 58
   Found
   a
   significant
@@ -851,8 +870,8 @@ BEGIN 57
   in
   contig
   (6).
-END 57
-BEGIN 58
+END 58
+BEGIN 59
   Cycle
   2
   finished
@@ -870,24 +889,24 @@ BEGIN 58
   of
   3
   parts.
-END 58
-BEGIN 59
+END 59
+BEGIN 60
   Cycle
   3
   started
   with
   1
   paths
-END 59
-BEGIN 60
+END 60
+BEGIN 61
   Constructed
   a
   path
   of
   length
   666.
-END 60
-BEGIN 61
+END 61
+BEGIN 62
   Removed
   3
   components
@@ -900,16 +919,16 @@ BEGIN 61
   still
   to
   process.
-END 61
-BEGIN 62
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 62
-BEGIN 63
+END 63
+BEGIN 64
   Calculated
   cutoff
   for
@@ -925,10 +944,10 @@ BEGIN 63
   (6)
   to
   be
-  (64,
+  (0,
   730).
-END 63
-BEGIN 64
+END 64
+BEGIN 65
   Overlap
   between
   contigs
@@ -937,25 +956,25 @@ BEGIN 64
   (6)
   has
   size
-  666,
+  730,
   666
   matches,
   and
   the
   score
   of
-  1.3244079811164727e+159.
-END 64
-BEGIN 65
+  1.8585731854230068e+154.
+END 65
+BEGIN 66
   Contig
   (4)
   covers
   contig
   (6)
   completely.
-END 65
-BEGIN 66
+END 66
+BEGIN 67
   Outputting
   1
   contigs.
-END 66
+END 67

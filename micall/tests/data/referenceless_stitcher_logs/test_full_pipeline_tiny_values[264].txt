@@ -44,7 +44,7 @@ BEGIN 5
   'r283-716.2'
   to
   be
-  (241,
+  (1,
   675).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r283-716.2'
   has
   size
-  434,
+  674,
   434
   matches,
   and
   the
   score
   of
-  1.4288002759092796e+106.
+  7.207925614172181e+87.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r174-558.1'
   to
   be
-  (132,
+  (4,
   517).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r174-558.1'
   has
   size
-  385,
+  513,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  1.2197765962506369e+85.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r174-558.1'
   to
   be
-  (132,
+  (4,
   517).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r174-558.1'
   has
   size
-  385,
+  513,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  1.2197765962506369e+85.
 END 14
 BEGIN 15
   Contig

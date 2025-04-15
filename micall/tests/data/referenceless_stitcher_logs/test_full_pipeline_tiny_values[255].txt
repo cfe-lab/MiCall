@@ -99,7 +99,7 @@ BEGIN 8
   'r277-706.0'
   to
   be
-  (47,
+  (0,
   477).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r277-706.0'
   has
   size
-  430,
+  477,
   430
   matches,
   and
   the
   score
   of
-  1.7343930576237015e+105.
+  3.852487451125661e+101.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r277-706.0'
   to
   be
-  (91,
+  (3,
   521).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r277-706.0'
   has
   size
-  430,
+  518,
   430
   matches,
   and
   the
   score
   of
-  1.7343930576237015e+105.
+  3.4471488742496175e+98.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r277-706.0'
   to
   be
-  (91,
+  (3,
   521).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r277-706.0'
   has
   size
-  430,
+  518,
   430
   matches,
   and
   the
   score
   of
-  1.7343930576237015e+105.
+  3.4471488742496175e+98.
 END 25
 BEGIN 26
   Contig

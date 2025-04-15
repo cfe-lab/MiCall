@@ -181,7 +181,7 @@ BEGIN 13
   'r61-422.0'
   to
   be
-  (24,
+  (0,
   386).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r61-422.0'
   has
   size
-  362,
+  386,
   362
   matches,
   and
   the
   score
   of
-  4.4635240435144426e+89.
+  6.592444517956673e+87.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r61-422.0'
   to
   be
-  (24,
+  (0,
   386).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r61-422.0'
   has
   size
-  362,
+  386,
   362
   matches,
   and
   the
   score
   of
-  4.4635240435144426e+89.
+  6.592444517956673e+87.
 END 25
 BEGIN 26
   Contig

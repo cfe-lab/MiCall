@@ -99,7 +99,7 @@ BEGIN 8
   'r194-520.2'
   to
   be
-  (49,
+  (5,
   376).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r194-520.2'
   has
   size
-  327,
+  371,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  2.0936645965709757e+78.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r194-520.2'
   to
   be
-  (59,
+  (4,
   386).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r194-520.2'
   has
   size
-  327,
+  382,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  2.538327981001494e+77.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r194-520.2'
   to
   be
-  (59,
+  (4,
   386).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r194-520.2'
   has
   size
-  327,
+  382,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  2.538327981001494e+77.
 END 25
 BEGIN 26
   Contig

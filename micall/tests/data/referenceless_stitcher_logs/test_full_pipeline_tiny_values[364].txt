@@ -99,7 +99,7 @@ BEGIN 8
   'r490-795.0'
   to
   be
-  (322,
+  (5,
   628).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r490-795.0'
   has
   size
-  306,
+  623,
   306
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  3.1002685075678095e+52.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r490-795.0'
   to
   be
-  (480,
+  (1,
   786).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r490-795.0'
   has
   size
-  306,
+  785,
   306
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  1.1362385533565507e+40.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r490-795.0'
   to
   be
-  (480,
+  (1,
   786).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r490-795.0'
   has
   size
-  306,
+  785,
   306
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  1.1362385533565507e+40.
 END 25
 BEGIN 26
   Contig

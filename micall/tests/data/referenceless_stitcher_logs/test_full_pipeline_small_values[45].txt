@@ -401,7 +401,7 @@ BEGIN 25
   'r340-672.1'
   to
   be
-  (231,
+  (2,
   564).
 END 25
 BEGIN 26
@@ -413,14 +413,14 @@ BEGIN 26
   'r340-672.1'
   has
   size
-  333,
+  562,
   333
   matches,
   and
   the
   score
   of
-  1.6329465837832323e+83.
+  2.8247946134412197e+65.
 END 26
 BEGIN 27
   Contig
@@ -446,7 +446,7 @@ BEGIN 28
   'r354-679.3'
   to
   be
-  (245,
+  (0,
   571).
 END 28
 BEGIN 29
@@ -458,14 +458,14 @@ BEGIN 29
   'r354-679.3'
   has
   size
-  326,
+  571,
   326
   matches,
   and
   the
   score
   of
-  2.3850541047003385e+81.
+  4.770427612773026e+62.
 END 29
 BEGIN 30
   Contig
@@ -491,7 +491,7 @@ BEGIN 31
   'r419-677.4'
   to
   be
-  (310,
+  (0,
   569).
 END 31
 BEGIN 32
@@ -503,14 +503,14 @@ BEGIN 32
   'r419-677.4'
   has
   size
-  259,
+  569,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  8.335515322507022e+41.
 END 32
 BEGIN 33
   Contig
@@ -818,7 +818,7 @@ BEGIN 52
   'r419-677.4'
   to
   be
-  (65,
+  (0,
   324).
 END 52
 BEGIN 53
@@ -830,14 +830,14 @@ BEGIN 53
   'r419-677.4'
   has
   size
-  259,
+  324,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  1.2444665113321168e+61.
 END 53
 BEGIN 54
   Contig
@@ -890,7 +890,7 @@ BEGIN 57
   'r419-677.4'
   to
   be
-  (79,
+  (7,
   338).
 END 57
 BEGIN 58
@@ -902,14 +902,14 @@ BEGIN 58
   'r419-677.4'
   has
   size
-  259,
+  331,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  3.0313044831384498e+60.
 END 58
 BEGIN 59
   Contig
@@ -1071,7 +1071,7 @@ BEGIN 71
   'r419-677.4'
   to
   be
-  (310,
+  (0,
   569).
 END 71
 BEGIN 72
@@ -1083,14 +1083,14 @@ BEGIN 72
   'r419-677.4'
   has
   size
-  259,
+  569,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  8.335515322507022e+41.
 END 72
 BEGIN 73
   Contig

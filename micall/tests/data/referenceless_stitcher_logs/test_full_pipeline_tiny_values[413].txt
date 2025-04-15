@@ -99,7 +99,7 @@ BEGIN 8
   'r273-789.0'
   to
   be
-  (14,
+  (5,
   531).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r273-789.0'
   has
   size
-  517,
+  526,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  2.8239035867336257e+124.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r273-789.0'
   to
   be
-  (241,
+  (3,
   758).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r273-789.0'
   has
   size
-  517,
+  755,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.2789257153227284e+107.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r273-789.0'
   to
   be
-  (241,
+  (3,
   758).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r273-789.0'
   has
   size
-  517,
+  755,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.2789257153227284e+107.
 END 25
 BEGIN 26
   Contig

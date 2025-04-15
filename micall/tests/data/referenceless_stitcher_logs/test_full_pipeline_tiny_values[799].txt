@@ -44,7 +44,7 @@ BEGIN 5
   'r466-855.0'
   to
   be
-  (45,
+  (1,
   435).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r466-855.0'
   has
   size
-  390,
+  434,
   390
   matches,
   and
   the
   score
   of
-  1.1855028279680234e+96.
+  5.251427738922797e+92.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r466-855.0'
   to
   be
-  (173,
+  (3,
   563).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r466-855.0'
   has
   size
-  390,
+  560,
   390
   matches,
   and
   the
   score
   of
-  1.1855028279680234e+96.
+  1.7840210233829672e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r466-855.0'
   to
   be
-  (173,
+  (3,
   563).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r466-855.0'
   has
   size
-  390,
+  560,
   390
   matches,
   and
   the
   score
   of
-  1.1855028279680234e+96.
+  1.7840210233829672e+83.
 END 25
 BEGIN 26
   Contig

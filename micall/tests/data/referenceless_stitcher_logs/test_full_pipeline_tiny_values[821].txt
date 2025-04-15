@@ -99,7 +99,7 @@ BEGIN 8
   'r413-760.0'
   to
   be
-  (343,
+  (0,
   691).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r413-760.0'
   has
   size
-  348,
+  691,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  1.6784702179785118e+60.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r413-760.0'
   to
   be
-  (355,
+  (2,
   703).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r413-760.0'
   has
   size
-  348,
+  701,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  2.0138567571000737e+59.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r413-760.0'
   to
   be
-  (355,
+  (2,
   703).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r413-760.0'
   has
   size
-  348,
+  701,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  2.0138567571000737e+59.
 END 25
 BEGIN 26
   Contig

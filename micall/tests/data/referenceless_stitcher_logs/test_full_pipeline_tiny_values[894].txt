@@ -99,7 +99,7 @@ BEGIN 8
   'r412-689.0'
   to
   be
-  (83,
+  (7,
   361).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r412-689.0'
   has
   size
-  278,
+  354,
   278
   matches,
   and
   the
   score
   of
-  2.0921652732166993e+70.
+  3.122997262657552e+64.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r412-689.0'
   to
   be
-  (344,
+  (2,
   622).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r412-689.0'
   has
   size
-  278,
+  620,
   278
   matches,
   and
   the
   score
   of
-  2.0921652732166993e+70.
+  1.2648960503567117e+44.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r412-689.0'
   to
   be
-  (344,
+  (2,
   622).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r412-689.0'
   has
   size
-  278,
+  620,
   278
   matches,
   and
   the
   score
   of
-  2.0921652732166993e+70.
+  1.2648960503567117e+44.
 END 25
 BEGIN 26
   Contig

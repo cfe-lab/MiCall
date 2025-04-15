@@ -181,7 +181,7 @@ BEGIN 13
   'r561-899.2'
   to
   be
-  (505,
+  (5,
   844).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r561-899.2'
   has
   size
-  339,
+  839,
   339
   matches,
   and
   the
   score
   of
-  2.7650949688780535e+84.
+  9.837236402659122e+45.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r561-899.2'
   to
   be
-  (505,
+  (5,
   844).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r561-899.2'
   has
   size
-  339,
+  839,
   339
   matches,
   and
   the
   score
   of
-  2.7650949688780535e+84.
+  9.837236402659122e+45.
 END 25
 BEGIN 26
   Contig

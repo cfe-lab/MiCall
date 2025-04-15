@@ -181,7 +181,7 @@ BEGIN 13
   'r226-562.2'
   to
   be
-  (49,
+  (1,
   386).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r226-562.2'
   has
   size
-  337,
+  385,
   337
   matches,
   and
   the
   score
   of
-  6.784116040227335e+83.
+  1.463817826903716e+80.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r226-562.2'
   to
   be
-  (49,
+  (1,
   386).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r226-562.2'
   has
   size
-  337,
+  385,
   337
   matches,
   and
   the
   score
   of
-  6.784116040227335e+83.
+  1.463817826903716e+80.
 END 25
 BEGIN 26
   Contig

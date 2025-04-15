@@ -99,7 +99,7 @@ BEGIN 8
   'r456-796.2'
   to
   be
-  (155,
+  (6,
   496).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r456-796.2'
   has
   size
-  341,
+  490,
   341
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  2.7135907487901162e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r456-796.2'
   to
   be
-  (392,
+  (2,
   733).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r456-796.2'
   has
   size
-  341,
+  731,
   341
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  9.505539504374514e+54.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r456-796.2'
   to
   be
-  (392,
+  (2,
   733).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r456-796.2'
   has
   size
-  341,
+  731,
   341
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  9.505539504374514e+54.
 END 25
 BEGIN 26
   Contig

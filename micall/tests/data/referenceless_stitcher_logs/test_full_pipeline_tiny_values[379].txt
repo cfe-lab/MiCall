@@ -99,7 +99,7 @@ BEGIN 8
   'r373-805.1'
   to
   be
-  (133,
+  (4,
   566).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r373-805.1'
   has
   size
-  433,
+  562,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  1.2579140180709882e+96.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r373-805.1'
   to
   be
-  (207,
+  (1,
   640).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r373-805.1'
   has
   size
-  433,
+  639,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  1.9952989182145543e+90.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r373-805.1'
   to
   be
-  (207,
+  (1,
   640).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r373-805.1'
   has
   size
-  433,
+  639,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  1.9952989182145543e+90.
 END 25
 BEGIN 26
   Contig

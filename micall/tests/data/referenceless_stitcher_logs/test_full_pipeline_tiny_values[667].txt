@@ -99,7 +99,7 @@ BEGIN 8
   'r233-627.2'
   to
   be
-  (101,
+  (1,
   496).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r233-627.2'
   has
   size
-  395,
+  495,
   395
   matches,
   and
   the
   score
   of
-  1.9749573801967826e+97.
+  4.686933268343658e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r233-627.2'
   to
   be
-  (101,
+  (1,
   496).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r233-627.2'
   has
   size
-  395,
+  495,
   395
   matches,
   and
   the
   score
   of
-  1.9749573801967826e+97.
+  4.686933268343658e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r233-627.2'
   to
   be
-  (101,
+  (1,
   496).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r233-627.2'
   has
   size
-  395,
+  495,
   395
   matches,
   and
   the
   score
   of
-  1.9749573801967826e+97.
+  4.686933268343658e+89.
 END 25
 BEGIN 26
   Contig

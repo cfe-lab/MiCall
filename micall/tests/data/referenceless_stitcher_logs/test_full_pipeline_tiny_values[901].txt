@@ -44,7 +44,7 @@ BEGIN 5
   'r409-922.2'
   to
   be
-  (64,
+  (0,
   578).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r409-922.2'
   has
   size
-  514,
+  578,
   514
   matches,
   and
   the
   score
   of
-  2.8135249814291686e+124.
+  3.851021635696223e+119.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r409-922.2'
   to
   be
-  (287,
+  (2,
   801).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r409-922.2'
   has
   size
-  514,
+  799,
   514
   matches,
   and
   the
   score
   of
-  2.8135249814291686e+124.
+  6.906909558873379e+102.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r409-922.2'
   to
   be
-  (287,
+  (2,
   801).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r409-922.2'
   has
   size
-  514,
+  799,
   514
   matches,
   and
   the
   score
   of
-  2.8135249814291686e+124.
+  6.906909558873379e+102.
 END 25
 BEGIN 26
   Contig

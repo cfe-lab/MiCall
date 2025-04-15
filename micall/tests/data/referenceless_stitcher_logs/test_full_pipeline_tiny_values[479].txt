@@ -181,7 +181,7 @@ BEGIN 13
   'r178-604.0'
   to
   be
-  (111,
+  (3,
   538).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r178-604.0'
   has
   size
-  427,
+  535,
   427
   matches,
   and
   the
   score
   of
-  4.24090291234747e+104.
+  2.5155736612886787e+96.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r178-604.0'
   to
   be
-  (111,
+  (3,
   538).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r178-604.0'
   has
   size
-  427,
+  535,
   427
   matches,
   and
   the
   score
   of
-  4.24090291234747e+104.
+  2.5155736612886787e+96.
 END 25
 BEGIN 26
   Contig

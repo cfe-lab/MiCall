@@ -99,7 +99,7 @@ BEGIN 8
   'r269-651.0'
   to
   be
-  (91,
+  (0,
   474).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r269-651.0'
   has
   size
-  383,
+  474,
   383
   matches,
   and
   the
   score
   of
-  3.497987951876251e+94.
+  3.3711509085285087e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r269-651.0'
   to
   be
-  (115,
+  (0,
   498).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r269-651.0'
   has
   size
-  383,
+  498,
   383
   matches,
   and
   the
   score
   of
-  3.497987951876251e+94.
+  4.956027304008623e+85.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r269-651.0'
   to
   be
-  (115,
+  (0,
   498).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r269-651.0'
   has
   size
-  383,
+  498,
   383
   matches,
   and
   the
   score
   of
-  3.497987951876251e+94.
+  4.956027304008623e+85.
 END 25
 BEGIN 26
   Contig

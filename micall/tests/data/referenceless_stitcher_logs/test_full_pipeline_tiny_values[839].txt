@@ -44,9 +44,28 @@ BEGIN 5
   'r53-467.2'
   to
   be
-  None.
+  (0,
+  412).
 END 5
 BEGIN 6
+  Overlap
+  between
+  contigs
+  'r420-809.1'
+  and
+  'r53-467.2'
+  has
+  size
+  412,
+  45
+  matches,
+  and
+  the
+  score
+  of
+  8.99999999999587.
+END 6
+BEGIN 7
   Calculated
   cutoff
   for
@@ -62,17 +81,36 @@ BEGIN 6
   'r546-820.0'
   to
   be
-  None.
-END 6
-BEGIN 7
+  (1,
+  415).
+END 7
+BEGIN 8
+  Overlap
+  between
+  contigs
+  'r53-467.2'
+  and
+  'r546-820.0'
+  has
+  size
+  414,
+  6
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 8
+BEGIN 9
   Constructed
   a
   path
   of
   length
   415.
-END 7
-BEGIN 8
+END 9
+BEGIN 10
   Removed
   1
   components
@@ -85,8 +123,8 @@ BEGIN 8
   still
   to
   process.
-END 8
-BEGIN 9
+END 10
+BEGIN 11
   Giving
   up
   on
@@ -101,16 +139,16 @@ BEGIN 9
   is
   a
   singleton.
-END 9
-BEGIN 10
+END 11
+BEGIN 12
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 10
-BEGIN 11
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -126,9 +164,28 @@ BEGIN 11
   'r53-467.2'
   to
   be
-  None.
-END 11
-BEGIN 12
+  (0,
+  412).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r420-809.1'
+  and
+  'r53-467.2'
+  has
+  size
+  412,
+  45
+  matches,
+  and
+  the
+  score
+  of
+  8.99999999999587.
+END 14
+BEGIN 15
   Calculated
   cutoff
   for
@@ -144,9 +201,28 @@ BEGIN 12
   'r546-820.0'
   to
   be
-  None.
-END 12
-BEGIN 13
+  (1,
+  415).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r53-467.2'
+  and
+  'r546-820.0'
+  has
+  size
+  414,
+  6
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 16
+BEGIN 17
   Calculated
   cutoff
   for
@@ -164,8 +240,8 @@ BEGIN 13
   be
   (126,
   264).
-END 13
-BEGIN 14
+END 17
+BEGIN 18
   Overlap
   between
   contigs
@@ -182,8 +258,8 @@ BEGIN 14
   score
   of
   1.7334119595171544e+67.
-END 14
-BEGIN 15
+END 18
+BEGIN 19
   Found
   a
   significant
@@ -200,8 +276,8 @@ BEGIN 15
   in
   contig
   (1).
-END 15
-BEGIN 16
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -217,10 +293,29 @@ BEGIN 16
   'r53-467.2'
   to
   be
-  None.
-END 16
-BEGIN 17
+  (0,
+  415).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r53-467.2'
+  has
+  size
+  415,
+  48
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999985302.
+END 21
+BEGIN 22
   Outputting
   2
   contigs.
-END 17
+END 22

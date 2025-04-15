@@ -99,7 +99,7 @@ BEGIN 8
   'r318-623.1'
   to
   be
-  (56,
+  (3,
   362).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r318-623.1'
   has
   size
-  306,
+  359,
   306
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  6.246953172422728e+72.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r318-623.1'
   to
   be
-  (88,
+  (1,
   394).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r318-623.1'
   has
   size
-  306,
+  393,
   306
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  2.196491317983223e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r318-623.1'
   to
   be
-  (88,
+  (1,
   394).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r318-623.1'
   has
   size
-  306,
+  393,
   306
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  2.196491317983223e+70.
 END 25
 BEGIN 26
   Contig

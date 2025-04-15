@@ -99,7 +99,7 @@ BEGIN 8
   'r236-569.0'
   to
   be
-  (99,
+  (0,
   433).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r236-569.0'
   has
   size
-  334,
+  433,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  7.509743861287999e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r236-569.0'
   to
   be
-  (145,
+  (2,
   479).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r236-569.0'
   has
   size
-  334,
+  477,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  1.6030930268777155e+72.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r236-569.0'
   to
   be
-  (145,
+  (2,
   479).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r236-569.0'
   has
   size
-  334,
+  477,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  1.6030930268777155e+72.
 END 25
 BEGIN 26
   Contig

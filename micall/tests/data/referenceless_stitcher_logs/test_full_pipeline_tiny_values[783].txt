@@ -99,7 +99,7 @@ BEGIN 8
   'r520-807.0'
   to
   be
-  (356,
+  (1,
   644).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r520-807.0'
   has
   size
-  288,
+  643,
   288
   matches,
   and
   the
   score
   of
-  5.992951331800855e+72.
+  2.254085544589182e+45.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r520-807.0'
   to
   be
-  (361,
+  (4,
   649).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r520-807.0'
   has
   size
-  288,
+  645,
   288
   matches,
   and
   the
   score
   of
-  5.992951331800855e+72.
+  1.1143175582087533e+45.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r520-807.0'
   to
   be
-  (361,
+  (4,
   649).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r520-807.0'
   has
   size
-  288,
+  645,
   288
   matches,
   and
   the
   score
   of
-  5.992951331800855e+72.
+  1.1143175582087533e+45.
 END 25
 BEGIN 26
   Contig

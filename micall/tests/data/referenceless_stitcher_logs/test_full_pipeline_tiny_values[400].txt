@@ -99,7 +99,7 @@ BEGIN 8
   'r257-523.0'
   to
   be
-  (14,
+  (4,
   281).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r257-523.0'
   has
   size
-  267,
+  277,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  1.741667675847128e+67.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r257-523.0'
   to
   be
-  (246,
+  (9,
   513).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r257-523.0'
   has
   size
-  267,
+  504,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  4.838192536367232e+49.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r257-523.0'
   to
   be
-  (246,
+  (9,
   513).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r257-523.0'
   has
   size
-  267,
+  504,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  4.838192536367232e+49.
 END 25
 BEGIN 26
   Contig

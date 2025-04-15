@@ -99,7 +99,7 @@ BEGIN 8
   'r158-492.0'
   to
   be
-  (82,
+  (3,
   417).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r158-492.0'
   has
   size
-  335,
+  414,
   335
   matches,
   and
   the
   score
   of
-  3.3285680406393964e+83.
+  2.5725719625061773e+77.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r158-492.0'
   to
   be
-  (82,
+  (3,
   417).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r158-492.0'
   has
   size
-  335,
+  414,
   335
   matches,
   and
   the
   score
   of
-  3.3285680406393964e+83.
+  2.5725719625061773e+77.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r158-492.0'
   to
   be
-  (82,
+  (3,
   417).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r158-492.0'
   has
   size
-  335,
+  414,
   335
   matches,
   and
   the
   score
   of
-  3.3285680406393964e+83.
+  2.5725719625061773e+77.
 END 25
 BEGIN 26
   Contig

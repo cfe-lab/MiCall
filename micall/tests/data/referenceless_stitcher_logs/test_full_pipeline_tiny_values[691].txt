@@ -44,7 +44,7 @@ BEGIN 5
   'r220-693.0'
   to
   be
-  (139,
+  (0,
   613).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r220-693.0'
   has
   size
-  474,
+  613,
   474
   matches,
   and
   the
   score
   of
-  2.0279865544415254e+115.
+  4.5145804753448625e+104.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r220-693.0'
   to
   be
-  (139,
+  (0,
   613).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r220-693.0'
   has
   size
-  474,
+  613,
   474
   matches,
   and
   the
   score
   of
-  2.0279865544415254e+115.
+  4.5145804753448625e+104.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r220-693.0'
   to
   be
-  (139,
+  (0,
   613).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r220-693.0'
   has
   size
-  474,
+  613,
   474
   matches,
   and
   the
   score
   of
-  2.0279865544415254e+115.
+  4.5145804753448625e+104.
 END 25
 BEGIN 26
   Contig

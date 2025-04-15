@@ -99,7 +99,7 @@ BEGIN 8
   'r221-479.2'
   to
   be
-  (179,
+  (0,
   438).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r221-479.2'
   has
   size
-  259,
+  438,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  1.4435679352652572e+52.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r221-479.2'
   to
   be
-  (179,
+  (0,
   438).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r221-479.2'
   has
   size
-  259,
+  438,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  1.4435679352652572e+52.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r221-479.2'
   to
   be
-  (179,
+  (0,
   438).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r221-479.2'
   has
   size
-  259,
+  438,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  1.4435679352652572e+52.
 END 25
 BEGIN 26
   Contig

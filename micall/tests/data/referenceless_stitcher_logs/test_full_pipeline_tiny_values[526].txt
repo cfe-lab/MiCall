@@ -99,7 +99,7 @@ BEGIN 8
   'r482-755.2'
   to
   be
-  (45,
+  (0,
   319).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r482-755.2'
   has
   size
-  274,
+  319,
   274
   matches,
   and
   the
   score
   of
-  2.4973840504360907e+69.
+  1.0574839111602535e+66.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r482-755.2'
   to
   be
-  (410,
+  (1,
   684).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r482-755.2'
   has
   size
-  274,
+  683,
   274
   matches,
   and
   the
   score
   of
-  2.4973840504360907e+69.
+  7.234001152029646e+37.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r482-755.2'
   to
   be
-  (410,
+  (1,
   684).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r482-755.2'
   has
   size
-  274,
+  683,
   274
   matches,
   and
   the
   score
   of
-  2.4973840504360907e+69.
+  7.234001152029646e+37.
 END 25
 BEGIN 26
   Contig

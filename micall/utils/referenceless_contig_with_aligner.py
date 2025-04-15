@@ -3,8 +3,8 @@ import numpy as np
 
 from typing import Iterator, Tuple, Mapping, Literal, NoReturn
 from dataclasses import dataclass
-from mappy import Aligner
 from functools import cached_property
+from Bio.Align import PairwiseAligner
 
 from micall.utils.referenceless_score import Score
 from micall.utils.contig_stitcher_contigs import Contig
@@ -16,12 +16,55 @@ from micall.utils.find_maximum_overlap import \
 
 OverlapRelation = Literal["left", "right", "cover"]
 
+aligner = PairwiseAligner(mode='local')
+
+
+@dataclass(frozen=True)
+class Aligner:
+    seq: str
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        alignments = aligner.align(self.seq, query)
+        try:
+            first = next(alignments)
+        except StopIteration:
+            return
+
+        (t_coords, q_coords) = first.aligned
+        start = min(start for start, end in t_coords)
+        end = max(end for start, end in t_coords)
+        yield (int(start), int(end))
+
+
+class ReversedAligner:
+    def __init__(self, seq: str) -> None:
+        self.seq = ''.join(reversed(seq))
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        query = ''.join(reversed(query))
+
+        alignments = aligner.align(self.seq, query)
+        try:
+            first = next(alignments)
+        except StopIteration:
+            return
+
+        (t_coords, q_coords) = first.aligned
+        start = min(start for start, end in t_coords)
+        end = max(end for start, end in t_coords)
+        yield (len(self.seq) - int(end), len(self.seq) - int(start))
+
 
 @dataclass(frozen=True)
 class ContigWithAligner(Contig):
     @cached_property
     def aligner(self) -> Aligner:
         return Aligner(seq=self.seq)
+
+    @cached_property
+    def reversed_aligner(self) -> Aligner:
+        ret = ReversedAligner(seq=self.seq)
+        return ret  # type: ignore
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
@@ -42,7 +85,10 @@ class ContigWithAligner(Contig):
         if len(overlap) < 40:
             return
 
-        aligner = self.aligner
+        if relation == "left":
+            aligner = self.reversed_aligner
+        else:
+            aligner = self.aligner
         shift = 0
 
         if relation != "cover":
@@ -60,16 +106,16 @@ class ContigWithAligner(Contig):
                 if relation == "left":
                     seq = self.seq[-max_length:]
                     shift = len(self.seq) - max_length
+                    aligner = ReversedAligner(seq=seq)  # type: ignore
                 elif relation == "right":
                     seq = self.seq[:max_length]
                     shift = 0
+                    aligner = Aligner(seq=seq)
                 else:
                     _x: NoReturn = relation
-                aligner = Aligner(seq=seq)
 
-        for x in aligner.map(overlap):
-            if x.is_primary:
-                yield (x.r_st + shift, x.r_en + shift)
+        for start, end in aligner.map(overlap):
+            yield (start + shift, end + shift)
 
     @cached_property
     def nucleotide_seq(self) -> np.ndarray:

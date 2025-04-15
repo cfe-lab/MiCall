@@ -99,7 +99,7 @@ BEGIN 8
   'r449-759.0'
   to
   be
-  (196,
+  (6,
   507).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r449-759.0'
   has
   size
-  311,
+  501,
   311
   matches,
   and
   the
   score
   of
-  1.0027572488259023e+78.
+  3.893171775863959e+63.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r449-759.0'
   to
   be
-  (323,
+  (0,
   634).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r449-759.0'
   has
   size
-  311,
+  634,
   311
   matches,
   and
   the
   score
   of
-  1.0027572488259023e+78.
+  1.3002742769273814e+53.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r449-759.0'
   to
   be
-  (323,
+  (0,
   634).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r449-759.0'
   has
   size
-  311,
+  634,
   311
   matches,
   and
   the
   score
   of
-  1.0027572488259023e+78.
+  1.3002742769273814e+53.
 END 25
 BEGIN 26
   Contig

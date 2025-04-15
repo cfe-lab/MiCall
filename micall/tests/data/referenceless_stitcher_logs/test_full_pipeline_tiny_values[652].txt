@@ -44,7 +44,7 @@ BEGIN 5
   'r397-706.2'
   to
   be
-  (313,
+  (5,
   623).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r397-706.2'
   has
   size
-  310,
+  618,
   310
   matches,
   and
   the
   score
   of
-  4.962749858723358e+77.
+  1.098568482250126e+54.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r186-452.0'
   to
   be
-  (102,
+  (4,
   369).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r186-452.0'
   has
   size
-  267,
+  365,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  3.0560215001155083e+60.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r186-452.0'
   to
   be
-  (102,
+  (4,
   369).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r186-452.0'
   has
   size
-  267,
+  365,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  3.0560215001155083e+60.
 END 14
 BEGIN 15
   Contig

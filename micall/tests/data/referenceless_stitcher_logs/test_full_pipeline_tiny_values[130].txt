@@ -99,7 +99,7 @@ BEGIN 8
   'r488-792.2'
   to
   be
-  (265,
+  (17,
   570).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r488-792.2'
   has
   size
-  305,
+  553,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  2.7273708390454098e+57.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r488-792.2'
   to
   be
-  (484,
+  (4,
   789).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r488-792.2'
   has
   size
-  305,
+  785,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  2.763480387952301e+39.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r488-792.2'
   to
   be
-  (484,
+  (4,
   789).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r488-792.2'
   has
   size
-  305,
+  785,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  2.763480387952301e+39.
 END 25
 BEGIN 26
   Contig

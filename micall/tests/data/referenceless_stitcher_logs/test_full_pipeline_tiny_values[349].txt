@@ -99,7 +99,7 @@ BEGIN 8
   'r328-665.0'
   to
   be
-  (171,
+  (7,
   509).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r328-665.0'
   has
   size
-  338,
+  502,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  3.9150180370943683e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r328-665.0'
   to
   be
-  (286,
+  (1,
   624).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r328-665.0'
   has
   size
-  338,
+  623,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  2.378480289723022e+62.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r328-665.0'
   to
   be
-  (286,
+  (1,
   624).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r328-665.0'
   has
   size
-  338,
+  623,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  2.378480289723022e+62.
 END 25
 BEGIN 26
   Contig

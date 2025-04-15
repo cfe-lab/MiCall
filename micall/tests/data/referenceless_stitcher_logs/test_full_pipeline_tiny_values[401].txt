@@ -99,7 +99,7 @@ BEGIN 8
   'r298-735.1'
   to
   be
-  (280,
+  (1,
   718).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r298-735.1'
   has
   size
-  438,
+  717,
   438
   matches,
   and
   the
   score
   of
-  1.1767321945906536e+107.
+  5.261545597980918e+85.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r298-735.1'
   to
   be
-  (280,
+  (1,
   718).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r298-735.1'
   has
   size
-  438,
+  717,
   438
   matches,
   and
   the
   score
   of
-  1.1767321945906536e+107.
+  5.261545597980918e+85.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r298-735.1'
   to
   be
-  (280,
+  (1,
   718).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r298-735.1'
   has
   size
-  438,
+  717,
   438
   matches,
   and
   the
   score
   of
-  1.1767321945906536e+107.
+  5.261545597980918e+85.
 END 25
 BEGIN 26
   Contig

@@ -154,7 +154,7 @@ BEGIN 11
   'r660-943.4'
   to
   be
-  (226,
+  (6,
   510).
 END 11
 BEGIN 12
@@ -166,14 +166,14 @@ BEGIN 12
   'r660-943.4'
   has
   size
-  284,
+  504,
   284
   matches,
   and
   the
   score
   of
-  7.165351873119225e+71.
+  8.928036695909754e+54.
 END 12
 BEGIN 13
   Contig
@@ -199,7 +199,7 @@ BEGIN 14
   'r585-813.2'
   to
   be
-  (151,
+  (0,
   380).
 END 14
 BEGIN 15
@@ -211,14 +211,14 @@ BEGIN 15
   'r585-813.2'
   has
   size
-  229,
+  380,
   229
   matches,
   and
   the
   score
   of
-  1.6420907866562525e+59.
+  3.09664813353236e+47.
 END 15
 BEGIN 16
   Contig
@@ -244,7 +244,7 @@ BEGIN 17
   'r678-883.5'
   to
   be
-  (244,
+  (0,
   450).
 END 17
 BEGIN 18
@@ -256,14 +256,14 @@ BEGIN 18
   'r678-883.5'
   has
   size
-  206,
+  450,
   206
   matches,
   and
   the
   score
   of
-  4.469341429546504e+53.
+  4.907740752134629e+34.
 END 18
 BEGIN 19
   Contig
@@ -371,7 +371,7 @@ BEGIN 25
   'r660-943.4'
   to
   be
-  (379,
+  (3,
   663).
 END 25
 BEGIN 26
@@ -383,14 +383,14 @@ BEGIN 26
   'r660-943.4'
   has
   size
-  284,
+  660,
   284
   matches,
   and
   the
   score
   of
-  7.165351873119225e+71.
+  7.227134889652296e+42.
 END 26
 BEGIN 27
   Contig
@@ -416,7 +416,7 @@ BEGIN 28
   'r585-813.2'
   to
   be
-  (304,
+  (1,
   533).
 END 28
 BEGIN 29
@@ -428,14 +428,14 @@ BEGIN 29
   'r585-813.2'
   has
   size
-  229,
+  532,
   229
   matches,
   and
   the
   score
   of
-  1.6420907866562525e+59.
+  4.36669955806923e+35.
 END 29
 BEGIN 30
   Contig
@@ -461,7 +461,7 @@ BEGIN 31
   'r678-883.5'
   to
   be
-  (397,
+  (1,
   603).
 END 31
 BEGIN 32
@@ -473,14 +473,14 @@ BEGIN 32
   'r678-883.5'
   has
   size
-  206,
+  602,
   206
   matches,
   and
   the
   score
   of
-  4.469341429546504e+53.
+  3.890063236298487e+22.
 END 32
 BEGIN 33
   Contig
@@ -533,7 +533,7 @@ BEGIN 36
   'r660-943.4'
   to
   be
-  (477,
+  (11,
   761).
 END 36
 BEGIN 37
@@ -545,14 +545,14 @@ BEGIN 37
   'r660-943.4'
   has
   size
-  284,
+  750,
   284
   matches,
   and
   the
   score
   of
-  7.165351873119225e+71.
+  4.67769599516031e+35.
 END 37
 BEGIN 38
   Contig
@@ -578,7 +578,7 @@ BEGIN 39
   'r585-813.2'
   to
   be
-  (402,
+  (1,
   631).
 END 39
 BEGIN 40
@@ -590,14 +590,14 @@ BEGIN 40
   'r585-813.2'
   has
   size
-  229,
+  630,
   229
   matches,
   and
   the
   score
   of
-  1.6420907866562525e+59.
+  5.506334265427597e+27.
 END 40
 BEGIN 41
   Contig
@@ -623,7 +623,7 @@ BEGIN 42
   'r678-883.5'
   to
   be
-  (495,
+  (1,
   701).
 END 42
 BEGIN 43
@@ -635,14 +635,14 @@ BEGIN 43
   'r678-883.5'
   has
   size
-  206,
+  700,
   206
   matches,
   and
   the
   score
   of
-  4.469341429546504e+53.
+  409140788949287.2.
 END 43
 BEGIN 44
   Contig
@@ -758,7 +758,7 @@ BEGIN 52
   'r678-883.5'
   to
   be
-  (18,
+  (6,
   224).
 END 52
 BEGIN 53
@@ -770,14 +770,14 @@ BEGIN 53
   'r678-883.5'
   has
   size
-  206,
+  218,
   206
   matches,
   and
   the
   score
   of
-  4.469341429546504e+53.
+  5.322668997830993e+52.
 END 53
 BEGIN 54
   Contig
@@ -830,7 +830,7 @@ BEGIN 57
   'r678-883.5'
   to
   be
-  (93,
+  (0,
   299).
 END 57
 BEGIN 58
@@ -842,14 +842,14 @@ BEGIN 58
   'r678-883.5'
   has
   size
-  206,
+  299,
   206
   matches,
   and
   the
   score
   of
-  4.469341429546504e+53.
+  3.4906497442918625e+46.
 END 58
 BEGIN 59
   Contig
@@ -956,7 +956,7 @@ BEGIN 68
   (4)
   to
   be
-  (402,
+  (1,
   761).
 END 68
 BEGIN 69
@@ -968,14 +968,14 @@ BEGIN 69
   (4)
   has
   size
-  359,
+  760,
   359
   matches,
   and
   the
   score
   of
-  1.0868099534318463e+89.
+  2.385709388620685e+58.
 END 69
 BEGIN 70
   Contig
@@ -1001,7 +1001,7 @@ BEGIN 71
   'r678-883.5'
   to
   be
-  (495,
+  (1,
   701).
 END 71
 BEGIN 72
@@ -1013,14 +1013,14 @@ BEGIN 72
   'r678-883.5'
   has
   size
-  206,
+  700,
   206
   matches,
   and
   the
   score
   of
-  4.469341429546504e+53.
+  409140788949287.2.
 END 72
 BEGIN 73
   Contig

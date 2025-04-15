@@ -738,7 +738,7 @@ BEGIN 46
   'r403-759.4'
   to
   be
-  (47,
+  (0,
   404).
 END 46
 BEGIN 47
@@ -750,14 +750,14 @@ BEGIN 47
   'r403-759.4'
   has
   size
-  357,
+  404,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  1.1629427397043274e+85.
 END 47
 BEGIN 48
   Contig
@@ -865,7 +865,7 @@ BEGIN 54
   'r403-759.4'
   to
   be
-  (65,
+  (2,
   422).
 END 54
 BEGIN 55
@@ -877,14 +877,14 @@ BEGIN 55
   'r403-759.4'
   has
   size
-  357,
+  420,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  6.977398879694086e+83.
 END 55
 BEGIN 56
   Contig
@@ -1046,7 +1046,7 @@ BEGIN 68
   'r403-759.4'
   to
   be
-  (311,
+  (0,
   668).
 END 68
 BEGIN 69
@@ -1058,14 +1058,14 @@ BEGIN 69
   'r403-759.4'
   has
   size
-  357,
+  668,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  6.974999389755924e+64.
 END 69
 BEGIN 70
   Contig

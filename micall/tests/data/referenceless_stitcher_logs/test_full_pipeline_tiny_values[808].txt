@@ -181,7 +181,7 @@ BEGIN 13
   'r622-888.2'
   to
   be
-  (551,
+  (10,
   818).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r622-888.2'
   has
   size
-  267,
+  808,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  6.706121833492286e+25.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r622-888.2'
   to
   be
-  (551,
+  (10,
   818).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r622-888.2'
   has
   size
-  267,
+  808,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  6.706121833492286e+25.
 END 25
 BEGIN 26
   Contig

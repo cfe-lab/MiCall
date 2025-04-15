@@ -44,7 +44,7 @@ BEGIN 5
   'r398-925.2'
   to
   be
-  (145,
+  (0,
   673).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r398-925.2'
   has
   size
-  528,
+  673,
   528
   matches,
   and
   the
   score
   of
-  6.273025503046357e+127.
+  7.107085582060355e+116.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r398-925.2'
   to
   be
-  (145,
+  (0,
   673).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r398-925.2'
   has
   size
-  528,
+  673,
   528
   matches,
   and
   the
   score
   of
-  6.273025503046357e+127.
+  7.107085582060355e+116.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r398-925.2'
   to
   be
-  (145,
+  (0,
   673).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r398-925.2'
   has
   size
-  528,
+  673,
   528
   matches,
   and
   the
   score
   of
-  6.273025503046357e+127.
+  7.107085582060355e+116.
 END 25
 BEGIN 26
   Contig

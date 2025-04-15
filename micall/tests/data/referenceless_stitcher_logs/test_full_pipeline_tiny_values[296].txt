@@ -181,7 +181,7 @@ BEGIN 13
   'r224-551.2'
   to
   be
-  (35,
+  (1,
   363).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r224-551.2'
   has
   size
-  328,
+  362,
   328
   matches,
   and
   the
   score
   of
-  9.727297910787411e+81.
+  1.7384709927796357e+79.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r224-551.2'
   to
   be
-  (35,
+  (1,
   363).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r224-551.2'
   has
   size
-  328,
+  362,
   328
   matches,
   and
   the
   score
   of
-  9.727297910787411e+81.
+  1.7384709927796357e+79.
 END 25
 BEGIN 26
   Contig

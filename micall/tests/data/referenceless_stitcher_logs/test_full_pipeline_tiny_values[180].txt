@@ -99,7 +99,7 @@ BEGIN 8
   'r437-709.2'
   to
   be
-  (351,
+  (0,
   624).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r437-709.2'
   has
   size
-  273,
+  624,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  1.702214866734141e+42.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r437-709.2'
   to
   be
-  (351,
+  (0,
   624).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r437-709.2'
   has
   size
-  273,
+  624,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  1.702214866734141e+42.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r437-709.2'
   to
   be
-  (351,
+  (0,
   624).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r437-709.2'
   has
   size
-  273,
+  624,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  1.702214866734141e+42.
 END 25
 BEGIN 26
   Contig

@@ -44,7 +44,7 @@ BEGIN 5
   'r141-691.1'
   to
   be
-  (76,
+  (4,
   627).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r141-691.1'
   has
   size
-  551,
+  623,
   551
   matches,
   and
   the
   score
   of
-  9.408315095413216e+132.
+  3.2008531963666583e+127.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r141-691.1'
   to
   be
-  (137,
+  (0,
   688).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r141-691.1'
   has
   size
-  551,
+  688,
   551
   matches,
   and
   the
   score
   of
-  9.408315095413216e+132.
+  4.3720780553911424e+122.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r141-691.1'
   to
   be
-  (137,
+  (0,
   688).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r141-691.1'
   has
   size
-  551,
+  688,
   551
   matches,
   and
   the
   score
   of
-  9.408315095413216e+132.
+  4.3720780553911424e+122.
 END 25
 BEGIN 26
   Contig

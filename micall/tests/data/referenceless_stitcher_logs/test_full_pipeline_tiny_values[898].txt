@@ -44,7 +44,7 @@ BEGIN 5
   'r342-774.2'
   to
   be
-  (291,
+  (1,
   724).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r342-774.2'
   has
   size
-  433,
+  723,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  7.626100962657114e+83.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r342-774.2'
   to
   be
-  (291,
+  (1,
   724).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r342-774.2'
   has
   size
-  433,
+  723,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  7.626100962657114e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r342-774.2'
   to
   be
-  (291,
+  (1,
   724).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r342-774.2'
   has
   size
-  433,
+  723,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  7.626100962657114e+83.
 END 25
 BEGIN 26
   Contig

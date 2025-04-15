@@ -99,7 +99,7 @@ BEGIN 8
   'r201-559.2'
   to
   be
-  (182,
+  (0,
   541).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r201-559.2'
   has
   size
-  359,
+  541,
   359
   matches,
   and
   the
   score
   of
-  1.0868099534318463e+89.
+  1.8948101250017368e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r201-559.2'
   to
   be
-  (182,
+  (0,
   541).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r201-559.2'
   has
   size
-  359,
+  541,
   359
   matches,
   and
   the
   score
   of
-  1.0868099534318463e+89.
+  1.8948101250017368e+75.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r201-559.2'
   to
   be
-  (182,
+  (0,
   541).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r201-559.2'
   has
   size
-  359,
+  541,
   359
   matches,
   and
   the
   score
   of
-  1.0868099534318463e+89.
+  1.8948101250017368e+75.
 END 25
 BEGIN 26
   Contig

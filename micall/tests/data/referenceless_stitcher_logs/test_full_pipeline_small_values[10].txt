@@ -44,7 +44,7 @@ BEGIN 5
   'r147-615.1'
   to
   be
-  (88,
+  (2,
   557).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r147-615.1'
   has
   size
-  469,
+  555,
   469
   matches,
   and
   the
   score
   of
-  2.4513341154347832e+114.
+  4.96832799563197e+107.
 END 6
 BEGIN 7
   Contig
@@ -144,7 +144,7 @@ BEGIN 11
   'r163-567.0'
   to
   be
-  (104,
+  (2,
   509).
 END 11
 BEGIN 12
@@ -156,14 +156,14 @@ BEGIN 12
   'r163-567.0'
   has
   size
-  405,
+  507,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  6.501218903893217e+91.
 END 12
 BEGIN 13
   Contig
@@ -189,7 +189,7 @@ BEGIN 14
   'r280-596.2'
   to
   be
-  (221,
+  (4,
   538).
 END 14
 BEGIN 15
@@ -201,14 +201,14 @@ BEGIN 15
   'r280-596.2'
   has
   size
-  317,
+  534,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  4.739554582959758e+62.
 END 15
 BEGIN 16
   Contig
@@ -234,7 +234,7 @@ BEGIN 17
   'r114-348.3'
   to
   be
-  (55,
+  (4,
   290).
 END 17
 BEGIN 18
@@ -246,14 +246,14 @@ BEGIN 18
   'r114-348.3'
   has
   size
-  235,
+  286,
   235
   matches,
   and
   the
   score
   of
-  2.8530840255002603e+60.
+  2.8788932577564157e+56.
 END 18
 BEGIN 19
   Contig
@@ -306,7 +306,7 @@ BEGIN 22
   'r147-615.1'
   to
   be
-  (88,
+  (2,
   557).
 END 22
 BEGIN 23
@@ -318,14 +318,14 @@ BEGIN 23
   'r147-615.1'
   has
   size
-  469,
+  555,
   469
   matches,
   and
   the
   score
   of
-  2.4513341154347832e+114.
+  4.96832799563197e+107.
 END 23
 BEGIN 24
   Contig
@@ -351,7 +351,7 @@ BEGIN 25
   'r163-567.0'
   to
   be
-  (104,
+  (2,
   509).
 END 25
 BEGIN 26
@@ -363,14 +363,14 @@ BEGIN 26
   'r163-567.0'
   has
   size
-  405,
+  507,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  6.501218903893217e+91.
 END 26
 BEGIN 27
   Contig
@@ -396,7 +396,7 @@ BEGIN 28
   'r280-596.2'
   to
   be
-  (221,
+  (4,
   538).
 END 28
 BEGIN 29
@@ -408,14 +408,14 @@ BEGIN 29
   'r280-596.2'
   has
   size
-  317,
+  534,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  4.739554582959758e+62.
 END 29
 BEGIN 30
   Contig
@@ -441,7 +441,7 @@ BEGIN 31
   'r114-348.3'
   to
   be
-  (55,
+  (4,
   290).
 END 31
 BEGIN 32
@@ -453,14 +453,14 @@ BEGIN 32
   'r114-348.3'
   has
   size
-  235,
+  286,
   235
   matches,
   and
   the
   score
   of
-  2.8530840255002603e+60.
+  2.8788932577564157e+56.
 END 32
 BEGIN 33
   Contig
@@ -521,7 +521,7 @@ BEGIN 38
   'r163-567.0'
   to
   be
-  (16,
+  (0,
   421).
 END 38
 BEGIN 39
@@ -533,14 +533,14 @@ BEGIN 39
   'r163-567.0'
   has
   size
-  405,
+  421,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  3.3081551264027157e+98.
 END 39
 BEGIN 40
   Contig
@@ -566,7 +566,7 @@ BEGIN 41
   'r280-596.2'
   to
   be
-  (133,
+  (6,
   450).
 END 41
 BEGIN 42
@@ -578,14 +578,14 @@ BEGIN 42
   'r280-596.2'
   has
   size
-  317,
+  444,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  5.462498726688578e+69.
 END 42
 BEGIN 43
   Contig
@@ -693,7 +693,7 @@ BEGIN 49
   'r163-567.0'
   to
   be
-  (49,
+  (6,
   454).
 END 49
 BEGIN 50
@@ -705,14 +705,14 @@ BEGIN 50
   'r163-567.0'
   has
   size
-  405,
+  448,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  2.4384226762037707e+96.
 END 50
 BEGIN 51
   Contig
@@ -738,7 +738,7 @@ BEGIN 52
   'r280-596.2'
   to
   be
-  (166,
+  (0,
   483).
 END 52
 BEGIN 53
@@ -750,14 +750,14 @@ BEGIN 53
   'r280-596.2'
   has
   size
-  317,
+  483,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  4.6750076913858035e+66.
 END 53
 BEGIN 54
   Contig
@@ -930,7 +930,7 @@ BEGIN 67
   (2)
   to
   be
-  (55,
+  (4,
   557).
 END 67
 BEGIN 68
@@ -942,14 +942,14 @@ BEGIN 68
   (2)
   has
   size
-  502,
+  553,
   502
   matches,
   and
   the
   score
   of
-  5.09963960400456e+121.
+  1.140128668821894e+118.
 END 68
 BEGIN 69
   Contig
@@ -975,7 +975,7 @@ BEGIN 70
   (3)
   to
   be
-  (104,
+  (2,
   538).
 END 70
 BEGIN 71
@@ -987,14 +987,14 @@ BEGIN 71
   (3)
   has
   size
-  434,
+  536,
   434
   matches,
   and
   the
   score
   of
-  1.4288002759092796e+106.
+  3.4486611095571493e+98.
 END 71
 BEGIN 72
   Contig

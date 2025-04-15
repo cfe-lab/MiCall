@@ -44,7 +44,7 @@ BEGIN 5
   'r512-868.0'
   to
   be
-  (242,
+  (7,
   599).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r512-868.0'
   has
   size
-  357,
+  592,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  4.778841981464717e+70.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r512-868.0'
   to
   be
-  (339,
+  (2,
   696).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r512-868.0'
   has
   size
-  357,
+  694,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  4.936948497682864e+62.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r512-868.0'
   to
   be
-  (339,
+  (2,
   696).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r512-868.0'
   has
   size
-  357,
+  694,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  4.936948497682864e+62.
 END 25
 BEGIN 26
   Contig

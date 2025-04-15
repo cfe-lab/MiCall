@@ -209,7 +209,7 @@ BEGIN 14
   'r161-430.0'
   to
   be
-  (35,
+  (0,
   305).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r161-430.0'
   has
   size
-  270,
+  305,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  1.0411905349364205e+66.
 END 15
 BEGIN 16
   Contig
@@ -254,9 +254,28 @@ BEGIN 17
   'r615-877.2'
   to
   be
-  None.
+  (0,
+  489).
 END 17
 BEGIN 18
+  Overlap
+  between
+  contigs
+  'r126-614.3'
+  and
+  'r615-877.2'
+  has
+  size
+  489,
+  17
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 18
+BEGIN 19
   Cycle
   1
   finished
@@ -274,16 +293,16 @@ BEGIN 18
   of
   2
   parts.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Cycle
   2
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Calculated
   cutoff
   for
@@ -301,8 +320,8 @@ BEGIN 20
   be
   (385,
   239).
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Overlap
   between
   contigs
@@ -319,8 +338,8 @@ BEGIN 21
   score
   of
   2.408571302390333e+61.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Found
   a
   significant
@@ -337,27 +356,27 @@ BEGIN 22
   in
   contig
   (4).
-END 22
-BEGIN 23
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  304
-  between
-  contigs
-  (1)
-  and
-  'r407-710.5'
-  to
-  be
-  (281,
-  585).
 END 23
 BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  304
+  between
+  contigs
+  (1)
+  and
+  'r407-710.5'
+  to
+  be
+  (9,
+  585).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -366,24 +385,24 @@ BEGIN 24
   'r407-710.5'
   has
   size
-  304,
+  576,
   304
   matches,
   and
   the
   score
   of
-  2.914968515383263e+76.
-END 24
-BEGIN 25
+  3.7881891504859647e+55.
+END 25
+BEGIN 26
   Contig
   (1)
   covers
   contig
   'r407-710.5'
   completely.
-END 25
-BEGIN 26
+END 26
+BEGIN 27
   Calculated
   cutoff
   for
@@ -399,10 +418,10 @@ BEGIN 26
   'r161-430.0'
   to
   be
-  (35,
+  (0,
   305).
-END 26
-BEGIN 27
+END 27
+BEGIN 28
   Overlap
   between
   contigs
@@ -411,24 +430,24 @@ BEGIN 27
   'r161-430.0'
   has
   size
-  270,
+  305,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
-END 27
-BEGIN 28
+  1.0411905349364205e+66.
+END 28
+BEGIN 29
   Contig
   (1)
   covers
   contig
   'r161-430.0'
   completely.
-END 28
-BEGIN 29
+END 29
+BEGIN 30
   Calculated
   cutoff
   for
@@ -446,8 +465,8 @@ BEGIN 29
   be
   (489,
   135).
-END 29
-BEGIN 30
+END 30
+BEGIN 31
   Overlap
   between
   contigs
@@ -464,8 +483,8 @@ BEGIN 30
   score
   of
   1.2832460597120547e+37.
-END 30
-BEGIN 31
+END 31
+BEGIN 32
   Found
   a
   significant
@@ -482,16 +501,16 @@ BEGIN 31
   in
   contig
   (5).
-END 31
-BEGIN 32
+END 32
+BEGIN 33
   Constructed
   a
   path
   of
   length
   624.
-END 32
-BEGIN 33
+END 33
+BEGIN 34
   Removed
   2
   components
@@ -504,21 +523,21 @@ BEGIN 33
   still
   to
   process.
-END 33
-BEGIN 34
+END 34
+BEGIN 35
   Calculating
   all
   paths...
-END 34
-BEGIN 35
+END 35
+BEGIN 36
   Cycle
   1
   started
   with
   1
   paths
-END 35
-BEGIN 36
+END 36
+BEGIN 37
   Calculated
   cutoff
   for
@@ -536,8 +555,8 @@ BEGIN 36
   be
   (104,
   200).
-END 36
-BEGIN 37
+END 37
+BEGIN 38
   Overlap
   between
   contigs
@@ -554,8 +573,8 @@ BEGIN 37
   score
   of
   2.5418296416307405e+52.
-END 37
-BEGIN 38
+END 38
+BEGIN 39
   Found
   a
   significant
@@ -572,8 +591,8 @@ BEGIN 38
   in
   contig
   (6).
-END 38
-BEGIN 39
+END 39
+BEGIN 40
   Calculated
   cutoff
   for
@@ -589,9 +608,28 @@ BEGIN 39
   'r161-430.0'
   to
   be
-  None.
-END 39
-BEGIN 40
+  (1,
+  425).
+END 40
+BEGIN 41
+  Overlap
+  between
+  contigs
+  'r511-947.1'
+  and
+  'r161-430.0'
+  has
+  size
+  424,
+  33
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 41
+BEGIN 42
   Calculated
   cutoff
   for
@@ -607,10 +645,10 @@ BEGIN 40
   'r615-877.2'
   to
   be
-  (104,
+  (1,
   367).
-END 40
-BEGIN 41
+END 42
+BEGIN 43
   Overlap
   between
   contigs
@@ -619,24 +657,24 @@ BEGIN 41
   'r615-877.2'
   has
   size
-  263,
+  366,
   263
   matches,
   and
   the
   score
   of
-  8.56301343060922e+66.
-END 41
-BEGIN 42
+  8.877026430922763e+58.
+END 43
+BEGIN 44
   Contig
   'r511-947.1'
   covers
   contig
   'r615-877.2'
   completely.
-END 42
-BEGIN 43
+END 44
+BEGIN 45
   Cycle
   1
   finished
@@ -654,16 +692,16 @@ BEGIN 43
   of
   2
   parts.
-END 43
-BEGIN 44
+END 45
+BEGIN 46
   Cycle
   2
   started
   with
   1
   paths
-END 44
-BEGIN 45
+END 46
+BEGIN 47
   Calculated
   cutoff
   for
@@ -679,9 +717,36 @@ BEGIN 45
   'r161-430.0'
   to
   be
-  None.
-END 45
-BEGIN 46
+  (1,
+  517).
+END 47
+BEGIN 48
+  Overlap
+  between
+  contigs
+  (6)
+  and
+  'r161-430.0'
+  has
+  size
+  516,
+  23
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 48
+BEGIN 49
+  Contig
+  (6)
+  covers
+  contig
+  'r161-430.0'
+  completely.
+END 49
+BEGIN 50
   Calculated
   cutoff
   for
@@ -697,10 +762,10 @@ BEGIN 46
   'r615-877.2'
   to
   be
-  (208,
+  (1,
   471).
-END 46
-BEGIN 47
+END 50
+BEGIN 51
   Overlap
   between
   contigs
@@ -709,32 +774,32 @@ BEGIN 47
   'r615-877.2'
   has
   size
-  263,
+  470,
   263
   matches,
   and
   the
   score
   of
-  8.56301343060922e+66.
-END 47
-BEGIN 48
+  8.412321048563467e+50.
+END 51
+BEGIN 52
   Contig
   (6)
   covers
   contig
   'r615-877.2'
   completely.
-END 48
-BEGIN 49
+END 52
+BEGIN 53
   Constructed
   a
   path
   of
   length
   541.
-END 49
-BEGIN 50
+END 53
+BEGIN 54
   Removed
   2
   components
@@ -747,21 +812,21 @@ BEGIN 50
   still
   to
   process.
-END 50
-BEGIN 51
+END 54
+BEGIN 55
   Calculating
   all
   paths...
-END 51
-BEGIN 52
+END 55
+BEGIN 56
   Cycle
   1
   started
   with
   1
   paths
-END 52
-BEGIN 53
+END 56
+BEGIN 57
   Calculated
   cutoff
   for
@@ -777,17 +842,36 @@ BEGIN 53
   'r615-877.2'
   to
   be
-  None.
-END 53
-BEGIN 54
+  (0,
+  256).
+END 57
+BEGIN 58
+  Overlap
+  between
+  contigs
+  'r161-430.0'
+  and
+  'r615-877.2'
+  has
+  size
+  263,
+  11
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999974252.
+END 58
+BEGIN 59
   Constructed
   a
   path
   of
   length
   270.
-END 54
-BEGIN 55
+END 59
+BEGIN 60
   Removed
   1
   components
@@ -800,8 +884,8 @@ BEGIN 55
   still
   to
   process.
-END 55
-BEGIN 56
+END 60
+BEGIN 61
   Giving
   up
   on
@@ -816,16 +900,16 @@ BEGIN 56
   is
   a
   singleton.
-END 56
-BEGIN 57
+END 61
+BEGIN 62
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 57
-BEGIN 58
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -843,8 +927,8 @@ BEGIN 58
   be
   (281,
   343).
-END 58
-BEGIN 59
+END 63
+BEGIN 64
   Overlap
   between
   contigs
@@ -861,8 +945,8 @@ BEGIN 59
   score
   of
   2.295983788650699e+85.
-END 59
-BEGIN 60
+END 64
+BEGIN 65
   Found
   a
   significant
@@ -879,8 +963,8 @@ BEGIN 60
   in
   contig
   (7).
-END 60
-BEGIN 61
+END 65
+BEGIN 66
   Calculated
   cutoff
   for
@@ -896,100 +980,119 @@ BEGIN 61
   'r615-877.2'
   to
   be
-  None.
-END 61
-BEGIN 62
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  270
-  between
-  contigs
-  (7)
-  and
-  'r161-430.0'
-  to
-  be
-  (35,
-  305).
-END 62
-BEGIN 63
+  (0,
+  256).
+END 66
+BEGIN 67
   Overlap
   between
   contigs
-  (7)
-  and
   'r161-430.0'
-  has
-  size
-  270,
-  270
-  matches,
-  and
-  the
-  score
-  of
-  2.979044776644523e+68.
-END 63
-BEGIN 64
-  Contig
-  (7)
-  covers
-  contig
-  'r161-430.0'
-  completely.
-END 64
-BEGIN 65
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  263
-  between
-  contigs
-  (7)
-  and
-  'r615-877.2'
-  to
-  be
-  (489,
-  752).
-END 65
-BEGIN 66
-  Overlap
-  between
-  contigs
-  (7)
   and
   'r615-877.2'
   has
   size
   263,
+  11
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999974252.
+END 67
+BEGIN 68
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  270
+  between
+  contigs
+  (7)
+  and
+  'r161-430.0'
+  to
+  be
+  (0,
+  305).
+END 68
+BEGIN 69
+  Overlap
+  between
+  contigs
+  (7)
+  and
+  'r161-430.0'
+  has
+  size
+  305,
+  270
+  matches,
+  and
+  the
+  score
+  of
+  1.0411905349364205e+66.
+END 69
+BEGIN 70
+  Contig
+  (7)
+  covers
+  contig
+  'r161-430.0'
+  completely.
+END 70
+BEGIN 71
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  263
+  between
+  contigs
+  (7)
+  and
+  'r615-877.2'
+  to
+  be
+  (0,
+  752).
+END 71
+BEGIN 72
+  Overlap
+  between
+  contigs
+  (7)
+  and
+  'r615-877.2'
+  has
+  size
+  752,
   263
   matches,
   and
   the
   score
   of
-  8.56301343060922e+66.
-END 66
-BEGIN 67
+  1.0452203727594257e+29.
+END 72
+BEGIN 73
   Contig
   (7)
   covers
   contig
   'r615-877.2'
   completely.
-END 67
-BEGIN 68
+END 73
+BEGIN 74
   Outputting
   1
   contigs.
-END 68
+END 74

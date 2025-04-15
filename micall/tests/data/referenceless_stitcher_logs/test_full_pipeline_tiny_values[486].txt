@@ -99,7 +99,7 @@ BEGIN 8
   'r229-700.0'
   to
   be
-  (88,
+  (1,
   560).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r229-700.0'
   has
   size
-  472,
+  559,
   472
   matches,
   and
   the
   score
   of
-  1.0005176189401994e+115.
+  2.0259790187600962e+108.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r229-700.0'
   to
   be
-  (217,
+  (0,
   689).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r229-700.0'
   has
   size
-  472,
+  689,
   472
   matches,
   and
   the
   score
   of
-  1.0005176189401994e+115.
+  3.5772325572775185e+98.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r229-700.0'
   to
   be
-  (217,
+  (0,
   689).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r229-700.0'
   has
   size
-  472,
+  689,
   472
   matches,
   and
   the
   score
   of
-  1.0005176189401994e+115.
+  3.5772325572775185e+98.
 END 25
 BEGIN 26
   Contig

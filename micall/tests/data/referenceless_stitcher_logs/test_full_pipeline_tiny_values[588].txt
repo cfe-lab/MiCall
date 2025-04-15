@@ -99,7 +99,7 @@ BEGIN 8
   'r385-817.0'
   to
   be
-  (188,
+  (2,
   621).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r385-817.0'
   has
   size
-  433,
+  619,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  6.709114563466795e+91.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r385-817.0'
   to
   be
-  (188,
+  (2,
   621).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r385-817.0'
   has
   size
-  433,
+  619,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  6.709114563466795e+91.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r385-817.0'
   to
   be
-  (188,
+  (2,
   621).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r385-817.0'
   has
   size
-  433,
+  619,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  6.709114563466795e+91.
 END 25
 BEGIN 26
   Contig

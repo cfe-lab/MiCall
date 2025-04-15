@@ -154,7 +154,7 @@ BEGIN 11
   'r323-693.5'
   to
   be
-  (150,
+  (1,
   521).
 END 11
 BEGIN 12
@@ -166,14 +166,14 @@ BEGIN 12
   'r323-693.5'
   has
   size
-  371,
+  520,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  3.084659489035911e+80.
 END 12
 BEGIN 13
   Contig
@@ -281,7 +281,7 @@ BEGIN 19
   'r323-693.5'
   to
   be
-  (150,
+  (1,
   521).
 END 19
 BEGIN 20
@@ -293,14 +293,14 @@ BEGIN 20
   'r323-693.5'
   has
   size
-  371,
+  520,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  3.084659489035911e+80.
 END 20
 BEGIN 21
   Contig
@@ -381,7 +381,7 @@ BEGIN 25
   'r576-782.0'
   to
   be
-  (403,
+  (1,
   610).
 END 25
 BEGIN 26
@@ -393,14 +393,14 @@ BEGIN 26
   'r576-782.0'
   has
   size
-  207,
+  609,
   207
   matches,
   and
   the
   score
   of
-  9.077900303501581e+53.
+  1.8702583074796396e+22.
 END 26
 BEGIN 27
   Contig
@@ -453,7 +453,7 @@ BEGIN 30
   'r323-693.5'
   to
   be
-  (150,
+  (1,
   521).
 END 30
 BEGIN 31
@@ -465,14 +465,14 @@ BEGIN 31
   'r323-693.5'
   has
   size
-  371,
+  520,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  3.084659489035911e+80.
 END 31
 BEGIN 32
   Contig
@@ -498,7 +498,7 @@ BEGIN 33
   'r553-826.3'
   to
   be
-  (380,
+  (1,
   654).
 END 33
 BEGIN 34
@@ -510,14 +510,14 @@ BEGIN 34
   'r553-826.3'
   has
   size
-  274,
+  653,
   274
   matches,
   and
   the
   score
   of
-  2.4973840504360907e+69.
+  1.1354540666777026e+40.
 END 34
 BEGIN 35
   Contig
@@ -543,7 +543,7 @@ BEGIN 36
   'r576-782.0'
   to
   be
-  (403,
+  (1,
   610).
 END 36
 BEGIN 37
@@ -555,14 +555,14 @@ BEGIN 37
   'r576-782.0'
   has
   size
-  207,
+  609,
   207
   matches,
   and
   the
   score
   of
-  9.077900303501581e+53.
+  1.8702583074796396e+22.
 END 37
 BEGIN 38
   Contig
@@ -760,7 +760,7 @@ BEGIN 51
   'r576-782.0'
   to
   be
-  (253,
+  (0,
   460).
 END 51
 BEGIN 52
@@ -772,14 +772,14 @@ BEGIN 52
   'r576-782.0'
   has
   size
-  207,
+  460,
   207
   matches,
   and
   the
   score
   of
-  9.077900303501581e+53.
+  2.3457351202821596e+34.
 END 52
 BEGIN 53
   Contig
@@ -886,7 +886,7 @@ BEGIN 62
   (5)
   to
   be
-  (150,
+  (1,
   654).
 END 62
 BEGIN 63
@@ -898,14 +898,14 @@ BEGIN 63
   (5)
   has
   size
-  504,
+  653,
   504
   matches,
   and
   the
   score
   of
-  2.0656670783768666e+122.
+  5.7323551245167616e+110.
 END 63
 BEGIN 64
   Contig
@@ -931,7 +931,7 @@ BEGIN 65
   'r576-782.0'
   to
   be
-  (403,
+  (1,
   610).
 END 65
 BEGIN 66
@@ -943,14 +943,14 @@ BEGIN 66
   'r576-782.0'
   has
   size
-  207,
+  609,
   207
   matches,
   and
   the
   score
   of
-  9.077900303501581e+53.
+  1.8702583074796396e+22.
 END 66
 BEGIN 67
   Contig

@@ -181,7 +181,7 @@ BEGIN 13
   'r101-364.0'
   to
   be
-  (76,
+  (1,
   340).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r101-364.0'
   has
   size
-  264,
+  339,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  2.5616413221414812e+61.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r101-364.0'
   to
   be
-  (76,
+  (1,
   340).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r101-364.0'
   has
   size
-  264,
+  339,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  2.5616413221414812e+61.
 END 25
 BEGIN 26
   Contig

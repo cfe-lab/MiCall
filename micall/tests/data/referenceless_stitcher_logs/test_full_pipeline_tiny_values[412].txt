@@ -44,7 +44,7 @@ BEGIN 5
   'r291-562.0'
   to
   be
-  (243,
+  (0,
   515).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r291-562.0'
   has
   size
-  272,
+  515,
   272
   matches,
   and
   the
   score
   of
-  1.2199272611365159e+69.
+  2.0366054225073074e+50.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r291-562.0'
   to
   be
-  (243,
+  (0,
   515).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r291-562.0'
   has
   size
-  272,
+  515,
   272
   matches,
   and
   the
   score
   of
-  1.2199272611365159e+69.
+  2.0366054225073074e+50.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r291-562.0'
   to
   be
-  (243,
+  (0,
   515).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r291-562.0'
   has
   size
-  272,
+  515,
   272
   matches,
   and
   the
   score
   of
-  1.2199272611365159e+69.
+  2.0366054225073074e+50.
 END 25
 BEGIN 26
   Contig

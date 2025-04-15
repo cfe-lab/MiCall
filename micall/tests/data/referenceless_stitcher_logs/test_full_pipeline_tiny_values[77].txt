@@ -99,7 +99,7 @@ BEGIN 8
   'r152-695.2'
   to
   be
-  (26,
+  (1,
   570).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r152-695.2'
   has
   size
-  544,
+  569,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  4.242189716222699e+129.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r152-695.2'
   to
   be
-  (152,
+  (6,
   696).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r152-695.2'
   has
   size
-  544,
+  690,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  1.6090961006991994e+120.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r152-695.2'
   to
   be
-  (152,
+  (6,
   696).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r152-695.2'
   has
   size
-  544,
+  690,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  1.6090961006991994e+120.
 END 25
 BEGIN 26
   Contig

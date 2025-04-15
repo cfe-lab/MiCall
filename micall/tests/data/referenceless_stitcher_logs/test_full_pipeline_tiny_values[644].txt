@@ -99,7 +99,7 @@ BEGIN 8
   'r553-817.2'
   to
   be
-  (439,
+  (3,
   704).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r553-817.2'
   has
   size
-  265,
+  701,
   265
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  5.816620637003981e+33.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r553-817.2'
   to
   be
-  (439,
+  (3,
   704).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r553-817.2'
   has
   size
-  265,
+  701,
   265
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  5.816620637003981e+33.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r553-817.2'
   to
   be
-  (439,
+  (3,
   704).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r553-817.2'
   has
   size
-  265,
+  701,
   265
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  5.816620637003981e+33.
 END 25
 BEGIN 26
   Contig

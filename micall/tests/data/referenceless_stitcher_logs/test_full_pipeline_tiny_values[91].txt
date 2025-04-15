@@ -99,7 +99,7 @@ BEGIN 8
   'r141-606.0'
   to
   be
-  (89,
+  (1,
   555).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r141-606.0'
   has
   size
-  466,
+  554,
   466
   matches,
   and
   the
   score
   of
-  3.0025728459853266e+113.
+  6.054715087377235e+106.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r141-606.0'
   to
   be
-  (113,
+  (0,
   579).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r141-606.0'
   has
   size
-  466,
+  579,
   466
   matches,
   and
   the
   score
   of
-  3.0025728459853266e+113.
+  8.990990664670424e+104.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r141-606.0'
   to
   be
-  (113,
+  (0,
   579).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r141-606.0'
   has
   size
-  466,
+  579,
   466
   matches,
   and
   the
   score
   of
-  3.0025728459853266e+113.
+  8.990990664670424e+104.
 END 25
 BEGIN 26
   Contig

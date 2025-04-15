@@ -44,7 +44,7 @@ BEGIN 5
   'r226-723.2'
   to
   be
-  (7,
+  (3,
   505).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r226-723.2'
   has
   size
-  498,
+  502,
   498
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  3.086697683560605e+120.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r226-723.2'
   to
   be
-  (187,
+  (2,
   685).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r226-723.2'
   has
   size
-  498,
+  683,
   498
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  6.240640801291205e+106.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r226-723.2'
   to
   be
-  (187,
+  (2,
   685).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r226-723.2'
   has
   size
-  498,
+  683,
   498
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  6.240640801291205e+106.
 END 25
 BEGIN 26
   Contig

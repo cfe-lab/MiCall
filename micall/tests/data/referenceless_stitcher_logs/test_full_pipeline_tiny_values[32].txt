@@ -99,7 +99,7 @@ BEGIN 8
   'r400-702.0'
   to
   be
-  (86,
+  (2,
   389).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r400-702.0'
   has
   size
-  303,
+  387,
   303
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  5.3592038742391204e+69.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r400-702.0'
   to
   be
-  (118,
+  (1,
   421).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r400-702.0'
   has
   size
-  303,
+  420,
   303
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  1.8772184940020313e+67.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r400-702.0'
   to
   be
-  (118,
+  (1,
   421).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r400-702.0'
   has
   size
-  303,
+  420,
   303
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  1.8772184940020313e+67.
 END 25
 BEGIN 26
   Contig

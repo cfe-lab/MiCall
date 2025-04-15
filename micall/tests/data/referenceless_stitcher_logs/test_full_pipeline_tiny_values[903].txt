@@ -44,7 +44,7 @@ BEGIN 5
   'r503-926.2'
   to
   be
-  (154,
+  (7,
   578).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r503-926.2'
   has
   size
-  424,
+  571,
   424
   matches,
   and
   the
   score
   of
-  1.0368134368976624e+104.
+  5.473467904221824e+92.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r503-926.2'
   to
   be
-  (260,
+  (2,
   684).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r503-926.2'
   has
   size
-  424,
+  682,
   424
   matches,
   and
   the
   score
   of
-  1.0368134368976624e+104.
+  1.534324660704273e+84.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r503-926.2'
   to
   be
-  (260,
+  (2,
   684).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r503-926.2'
   has
   size
-  424,
+  682,
   424
   matches,
   and
   the
   score
   of
-  1.0368134368976624e+104.
+  1.534324660704273e+84.
 END 25
 BEGIN 26
   Contig

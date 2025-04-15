@@ -181,7 +181,7 @@ BEGIN 13
   'r57-338.2'
   to
   be
-  (19,
+  (8,
   301).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r57-338.2'
   has
   size
-  282,
+  293,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  2.1192355743970727e+70.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r57-338.2'
   to
   be
-  (19,
+  (8,
   301).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r57-338.2'
   has
   size
-  282,
+  293,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  2.1192355743970727e+70.
 END 25
 BEGIN 26
   Contig

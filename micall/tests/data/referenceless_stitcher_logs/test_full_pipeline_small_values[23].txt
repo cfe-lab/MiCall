@@ -209,7 +209,7 @@ BEGIN 14
   'r273-504.3'
   to
   be
-  (188,
+  (3,
   420).
 END 14
 BEGIN 15
@@ -221,14 +221,14 @@ BEGIN 15
   'r273-504.3'
   has
   size
-  232,
+  417,
   232
   matches,
   and
   the
   score
   of
-  6.846568080492242e+59.
+  4.25678697937698e+45.
 END 15
 BEGIN 16
   Contig
@@ -446,7 +446,7 @@ BEGIN 28
   'r273-504.3'
   to
   be
-  (188,
+  (3,
   420).
 END 28
 BEGIN 29
@@ -458,14 +458,14 @@ BEGIN 29
   'r273-504.3'
   has
   size
-  232,
+  417,
   232
   matches,
   and
   the
   score
   of
-  6.846568080492242e+59.
+  4.25678697937698e+45.
 END 29
 BEGIN 30
   Contig
@@ -628,7 +628,7 @@ BEGIN 39
   'r273-504.3'
   to
   be
-  (259,
+  (0,
   491).
 END 39
 BEGIN 40
@@ -640,14 +640,14 @@ BEGIN 40
   'r273-504.3'
   has
   size
-  232,
+  491,
   232
   matches,
   and
   the
   score
   of
-  6.846568080492242e+59.
+  5.20995695945102e+39.
 END 40
 BEGIN 41
   Contig
@@ -763,9 +763,28 @@ BEGIN 49
   'r273-504.3'
   to
   be
-  None.
+  (0,
+  426).
 END 49
 BEGIN 50
+  Overlap
+  between
+  contigs
+  'r502-928.4'
+  and
+  'r273-504.3'
+  has
+  size
+  426,
+  3
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 50
+BEGIN 51
   Calculated
   cutoff
   for
@@ -783,8 +802,8 @@ BEGIN 50
   be
   (35,
   177).
-END 50
-BEGIN 51
+END 51
+BEGIN 52
   Overlap
   between
   contigs
@@ -801,8 +820,8 @@ BEGIN 51
   score
   of
   6.562757099404072e+46.
-END 51
-BEGIN 52
+END 52
+BEGIN 53
   Found
   a
   significant
@@ -819,8 +838,8 @@ BEGIN 52
   in
   contig
   (10).
-END 52
-BEGIN 53
+END 53
+BEGIN 54
   Cycle
   1
   finished
@@ -838,16 +857,16 @@ BEGIN 53
   of
   2
   parts.
-END 53
-BEGIN 54
+END 54
+BEGIN 55
   Cycle
   2
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 55
+BEGIN 56
   Calculated
   cutoff
   for
@@ -863,17 +882,44 @@ BEGIN 55
   'r273-504.3'
   to
   be
-  None.
-END 55
-BEGIN 56
+  (2,
+  461).
+END 56
+BEGIN 57
+  Overlap
+  between
+  contigs
+  (10)
+  and
+  'r273-504.3'
+  has
+  size
+  459,
+  36
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 57
+BEGIN 58
+  Contig
+  (10)
+  covers
+  contig
+  'r273-504.3'
+  completely.
+END 58
+BEGIN 59
   Constructed
   a
   path
   of
   length
   462.
-END 56
-BEGIN 57
+END 59
+BEGIN 60
   Removed
   2
   components
@@ -886,29 +932,29 @@ BEGIN 57
   still
   to
   process.
-END 57
-BEGIN 58
+END 60
+BEGIN 61
   Calculating
   all
   paths...
-END 58
-BEGIN 59
+END 61
+BEGIN 62
   Cycle
   1
   started
   with
   1
   paths
-END 59
-BEGIN 60
+END 62
+BEGIN 63
   Constructed
   a
   path
   of
   length
   232.
-END 60
-BEGIN 61
+END 63
+BEGIN 64
   Removed
   1
   components
@@ -921,8 +967,8 @@ BEGIN 61
   still
   to
   process.
-END 61
-BEGIN 62
+END 64
+BEGIN 65
   Giving
   up
   on
@@ -937,16 +983,16 @@ BEGIN 62
   is
   a
   singleton.
-END 62
-BEGIN 63
+END 65
+BEGIN 66
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 63
-BEGIN 64
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -964,8 +1010,8 @@ BEGIN 64
   be
   (453,
   203).
-END 64
-BEGIN 65
+END 67
+BEGIN 68
   Overlap
   between
   contigs
@@ -982,8 +1028,8 @@ BEGIN 65
   score
   of
   1.0662234671521326e+53.
-END 65
-BEGIN 66
+END 68
+BEGIN 69
   Found
   a
   significant
@@ -1000,8 +1046,8 @@ BEGIN 66
   in
   contig
   (11).
-END 66
-BEGIN 67
+END 69
+BEGIN 70
   Calculated
   cutoff
   for
@@ -1017,10 +1063,10 @@ BEGIN 67
   'r273-504.3'
   to
   be
-  (259,
+  (0,
   491).
-END 67
-BEGIN 68
+END 70
+BEGIN 71
   Overlap
   between
   contigs
@@ -1029,25 +1075,25 @@ BEGIN 68
   'r273-504.3'
   has
   size
-  232,
+  491,
   232
   matches,
   and
   the
   score
   of
-  6.846568080492242e+59.
-END 68
-BEGIN 69
+  5.20995695945102e+39.
+END 71
+BEGIN 72
   Contig
   (11)
   covers
   contig
   'r273-504.3'
   completely.
-END 69
-BEGIN 70
+END 72
+BEGIN 73
   Outputting
   1
   contigs.
-END 70
+END 73

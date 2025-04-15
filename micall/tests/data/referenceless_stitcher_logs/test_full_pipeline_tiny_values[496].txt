@@ -44,7 +44,7 @@ BEGIN 5
   'r243-759.1'
   to
   be
-  (73,
+  (8,
   590).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r243-759.1'
   has
   size
-  517,
+  582,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.5672691998462385e+120.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r243-759.1'
   to
   be
-  (131,
+  (0,
   648).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r243-759.1'
   has
   size
-  517,
+  648,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  2.1217024031154093e+115.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r243-759.1'
   to
   be
-  (131,
+  (0,
   648).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r243-759.1'
   has
   size
-  517,
+  648,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  2.1217024031154093e+115.
 END 25
 BEGIN 26
   Contig

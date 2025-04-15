@@ -171,7 +171,7 @@ BEGIN 13
   'r81-451.0'
   to
   be
-  (23,
+  (1,
   394).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r81-451.0'
   has
   size
-  371,
+  393,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  9.176866844317556e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r81-451.0'
   to
   be
-  (23,
+  (1,
   394).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r81-451.0'
   has
   size
-  371,
+  393,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  9.176866844317556e+89.
 END 25
 BEGIN 26
   Contig

@@ -44,7 +44,7 @@ BEGIN 5
   'r288-692.0'
   to
   be
-  (61,
+  (1,
   466).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r288-692.0'
   has
   size
-  405,
+  465,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  7.337371901508045e+94.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r288-692.0'
   to
   be
-  (78,
+  (0,
   483).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r288-692.0'
   has
   size
-  405,
+  483,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  4.401581566117372e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r288-692.0'
   to
   be
-  (78,
+  (0,
   483).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r288-692.0'
   has
   size
-  405,
+  483,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  4.401581566117372e+93.
 END 25
 BEGIN 26
   Contig

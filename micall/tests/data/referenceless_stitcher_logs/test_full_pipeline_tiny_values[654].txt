@@ -99,7 +99,7 @@ BEGIN 8
   'r124-665.2'
   to
   be
-  (43,
+  (7,
   585).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r124-665.2'
   has
   size
-  542,
+  578,
   542
   matches,
   and
   the
   score
   of
-  6.977495971253408e+130.
+  1.287200034845924e+128.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r124-665.2'
   to
   be
-  (43,
+  (7,
   585).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r124-665.2'
   has
   size
-  542,
+  578,
   542
   matches,
   and
   the
   score
   of
-  6.977495971253408e+130.
+  1.287200034845924e+128.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r124-665.2'
   to
   be
-  (43,
+  (7,
   585).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r124-665.2'
   has
   size
-  542,
+  578,
   542
   matches,
   and
   the
   score
   of
-  6.977495971253408e+130.
+  1.287200034845924e+128.
 END 25
 BEGIN 26
   Contig

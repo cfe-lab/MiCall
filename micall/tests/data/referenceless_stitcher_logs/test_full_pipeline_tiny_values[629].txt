@@ -181,7 +181,7 @@ BEGIN 13
   'r268-831.2'
   to
   be
-  (216,
+  (0,
   780).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r268-831.2'
   has
   size
-  564,
+  780,
   564
   matches,
   and
   the
   score
   of
-  1.0370764644636236e+136.
+  4.015838321341196e+119.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r268-831.2'
   to
   be
-  (216,
+  (0,
   780).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r268-831.2'
   has
   size
-  564,
+  780,
   564
   matches,
   and
   the
   score
   of
-  1.0370764644636236e+136.
+  4.015838321341196e+119.
 END 25
 BEGIN 26
   Contig

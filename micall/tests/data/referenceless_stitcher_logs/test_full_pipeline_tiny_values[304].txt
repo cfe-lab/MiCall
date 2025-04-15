@@ -99,7 +99,7 @@ BEGIN 8
   'r650-931.2'
   to
   be
-  (303,
+  (10,
   585).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r650-931.2'
   has
   size
-  282,
+  575,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  5.8206020184867076e+48.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r650-931.2'
   to
   be
-  (609,
+  (1,
   891).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r650-931.2'
   has
   size
-  282,
+  890,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  8.144313980812503e+23.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r650-931.2'
   to
   be
-  (609,
+  (1,
   891).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r650-931.2'
   has
   size
-  282,
+  890,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  8.144313980812503e+23.
 END 25
 BEGIN 26
   Contig

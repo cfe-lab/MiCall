@@ -99,7 +99,7 @@ BEGIN 8
   'r421-789.0'
   to
   be
-  (201,
+  (1,
   570).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r421-789.0'
   has
   size
-  369,
+  569,
   369
   matches,
   and
   the
   score
   of
-  1.5177807209697382e+91.
+  7.951678640896769e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r421-789.0'
   to
   be
-  (378,
+  (0,
   747).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r421-789.0'
   has
   size
-  369,
+  747,
   369
   matches,
   and
   the
   score
   of
-  1.5177807209697382e+91.
+  2.4454622175420405e+62.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r421-789.0'
   to
   be
-  (378,
+  (0,
   747).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r421-789.0'
   has
   size
-  369,
+  747,
   369
   matches,
   and
   the
   score
   of
-  1.5177807209697382e+91.
+  2.4454622175420405e+62.
 END 25
 BEGIN 26
   Contig

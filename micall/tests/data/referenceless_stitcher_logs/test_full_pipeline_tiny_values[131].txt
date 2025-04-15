@@ -44,7 +44,7 @@ BEGIN 5
   'r475-747.2'
   to
   be
-  (137,
+  (1,
   410).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r475-747.2'
   has
   size
-  273,
+  409,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  4.4626372441889735e+58.
 END 6
 BEGIN 7
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r475-747.2'
   to
   be
-  (248,
+  (1,
   521).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r475-747.2'
   has
   size
-  273,
+  520,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  2.0290704128309676e+50.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r475-747.2'
   to
   be
-  (248,
+  (1,
   521).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r475-747.2'
   has
   size
-  273,
+  520,
   273
   matches,
   and
   the
   score
   of
-  1.234252474413844e+69.
+  2.0290704128309676e+50.
 END 25
 BEGIN 26
   Contig

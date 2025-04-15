@@ -99,7 +99,7 @@ BEGIN 8
   'r253-600.2'
   to
   be
-  (207,
+  (4,
   555).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r253-600.2'
   has
   size
-  348,
+  551,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  9.621227046080521e+70.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r253-600.2'
   to
   be
-  (207,
+  (4,
   555).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r253-600.2'
   has
   size
-  348,
+  551,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  9.621227046080521e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r253-600.2'
   to
   be
-  (207,
+  (4,
   555).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r253-600.2'
   has
   size
-  348,
+  551,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  9.621227046080521e+70.
 END 25
 BEGIN 26
   Contig

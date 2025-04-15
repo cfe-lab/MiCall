@@ -44,7 +44,7 @@ BEGIN 5
   'r488-850.2'
   to
   be
-  (37,
+  (2,
   400).
 END 5
 BEGIN 6
@@ -56,14 +56,14 @@ BEGIN 6
   'r488-850.2'
   has
   size
-  363,
+  398,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  1.6193678560197752e+87.
 END 6
 BEGIN 7
   Contig
@@ -89,7 +89,7 @@ BEGIN 8
   'r529-856.1'
   to
   be
-  (78,
+  (0,
   406).
 END 8
 BEGIN 9
@@ -101,14 +101,14 @@ BEGIN 9
   'r529-856.1'
   has
   size
-  328,
+  406,
   328
   matches,
   and
   the
   score
   of
-  9.727297910787411e+81.
+  7.504702585681679e+75.
 END 9
 BEGIN 10
   Contig
@@ -161,7 +161,7 @@ BEGIN 13
   'r529-856.1'
   to
   be
-  (78,
+  (0,
   406).
 END 13
 BEGIN 14
@@ -173,14 +173,14 @@ BEGIN 14
   'r529-856.1'
   has
   size
-  328,
+  406,
   328
   matches,
   and
   the
   score
   of
-  9.727297910787411e+81.
+  7.504702585681679e+75.
 END 14
 BEGIN 15
   Contig

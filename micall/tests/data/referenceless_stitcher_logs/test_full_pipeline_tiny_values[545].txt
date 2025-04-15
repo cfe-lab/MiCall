@@ -181,7 +181,7 @@ BEGIN 13
   'r118-405.0'
   to
   be
-  (100,
+  (0,
   388).
 END 13
 BEGIN 14
@@ -193,14 +193,14 @@ BEGIN 14
   'r118-405.0'
   has
   size
-  288,
+  388,
   288
   matches,
   and
   the
   score
   of
-  5.992951331800855e+72.
+  1.2990618039468262e+65.
 END 14
 BEGIN 15
   Contig
@@ -307,7 +307,7 @@ BEGIN 24
   'r118-405.0'
   to
   be
-  (100,
+  (0,
   388).
 END 24
 BEGIN 25
@@ -319,14 +319,14 @@ BEGIN 25
   'r118-405.0'
   has
   size
-  288,
+  388,
   288
   matches,
   and
   the
   score
   of
-  5.992951331800855e+72.
+  1.2990618039468262e+65.
 END 25
 BEGIN 26
   Contig

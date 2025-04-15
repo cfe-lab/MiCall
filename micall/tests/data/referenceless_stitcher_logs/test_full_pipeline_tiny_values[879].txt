@@ -171,7 +171,7 @@ BEGIN 13
   'r338-788.1'
   to
   be
-  (118,
+  (1,
   569).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r338-788.1'
   has
   size
-  451,
+  568,
   451
   matches,
   and
   the
   score
   of
-  1.3218783613572366e+110.
+  1.947352390476206e+101.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r338-788.1'
   to
   be
-  (118,
+  (1,
   569).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r338-788.1'
   has
   size
-  451,
+  568,
   451
   matches,
   and
   the
   score
   of
-  1.3218783613572366e+110.
+  1.947352390476206e+101.
 END 25
 BEGIN 26
   Contig

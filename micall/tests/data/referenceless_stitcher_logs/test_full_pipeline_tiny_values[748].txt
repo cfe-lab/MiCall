@@ -99,7 +99,7 @@ BEGIN 8
   'r255-581.0'
   to
   be
-  (135,
+  (1,
   462).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r255-581.0'
   has
   size
-  327,
+  461,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  3.8207159338648242e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r255-581.0'
   to
   be
-  (135,
+  (1,
   462).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r255-581.0'
   has
   size
-  327,
+  461,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  3.8207159338648242e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r255-581.0'
   to
   be
-  (135,
+  (1,
   462).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r255-581.0'
   has
   size
-  327,
+  461,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  3.8207159338648242e+71.
 END 25
 BEGIN 26
   Contig

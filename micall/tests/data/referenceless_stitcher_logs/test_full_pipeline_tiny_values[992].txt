@@ -99,7 +99,7 @@ BEGIN 8
   'r498-826.0'
   to
   be
-  (213,
+  (0,
   542).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r498-826.0'
   has
   size
-  329,
+  542,
   329
   matches,
   and
   the
   score
   of
-  9.821769819102729e+81.
+  5.705436863057089e+65.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r498-826.0'
   to
   be
-  (213,
+  (0,
   542).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r498-826.0'
   has
   size
-  329,
+  542,
   329
   matches,
   and
   the
   score
   of
-  9.821769819102729e+81.
+  5.705436863057089e+65.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r498-826.0'
   to
   be
-  (213,
+  (0,
   542).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r498-826.0'
   has
   size
-  329,
+  542,
   329
   matches,
   and
   the
   score
   of
-  9.821769819102729e+81.
+  5.705436863057089e+65.
 END 25
 BEGIN 26
   Contig

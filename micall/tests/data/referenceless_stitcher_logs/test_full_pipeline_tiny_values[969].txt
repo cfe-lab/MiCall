@@ -99,7 +99,7 @@ BEGIN 8
   'r472-858.0'
   to
   be
-  (239,
+  (0,
   626).
 END 8
 BEGIN 9
@@ -111,14 +111,14 @@ BEGIN 9
   'r472-858.0'
   has
   size
-  387,
+  626,
   387
   matches,
   and
   the
   score
   of
-  2.8920929520854733e+95.
+  1.3565868841798387e+77.
 END 9
 BEGIN 10
   Contig
@@ -171,7 +171,7 @@ BEGIN 13
   'r472-858.0'
   to
   be
-  (244,
+  (0,
   631).
 END 13
 BEGIN 14
@@ -183,14 +183,14 @@ BEGIN 14
   'r472-858.0'
   has
   size
-  387,
+  631,
   387
   matches,
   and
   the
   score
   of
-  2.8920929520854733e+95.
+  6.681290919970988e+76.
 END 14
 BEGIN 15
   Contig
@@ -297,7 +297,7 @@ BEGIN 24
   'r472-858.0'
   to
   be
-  (244,
+  (0,
   631).
 END 24
 BEGIN 25
@@ -309,14 +309,14 @@ BEGIN 25
   'r472-858.0'
   has
   size
-  387,
+  631,
   387
   matches,
   and
   the
   score
   of
-  2.8920929520854733e+95.
+  6.681290919970988e+76.
 END 25
 BEGIN 26
   Contig
