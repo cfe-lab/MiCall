@@ -44,8 +44,8 @@ BEGIN 5
   'r363-778.1'
   to
   be
-  (0,
-  416).
+  (15,
+  402).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r363-778.1'
   has
   size
-  416,
-  401
+  402,
+  402
   matches,
   and
   the
   score
   of
-  4.014397995902072e+97.
+  6.681656283090716e+98.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  431
+  402
   between
   contigs
   'r348-764.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r348-764.2'
   to
   be
-  (0,
-  417).
+  (174,
+  116).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r348-764.2'
   has
   size
-  417,
+  116,
   116
   matches,
   and
   the
   score
   of
-  37598064.7258387.
+  4.810866735433101e+32.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  591
+  116
   between
   contigs
   'r174-463.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  431).
+  (174,
+  116).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  431,
+  116,
   116
   matches,
   and
   the
   score
   of
-  795409.6787023321.
+  4.810866735433101e+32.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  605
+  116
   between
   contigs
   'r174-463.0'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  431).
+  (174,
+  116).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   (1)
   has
   size
-  431,
+  116,
   116
   matches,
   and
   the
   score
   of
-  795409.6787023321.
+  4.810866735433101e+32.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  116
+  between
+  contigs
+  'r174-463.0'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

@@ -44,8 +44,8 @@ BEGIN 5
   'r292-888.0'
   to
   be
-  (0,
-  722).
+  (26,
+  623).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r292-888.0'
   has
   size
-  722,
+  597,
   597
   matches,
   and
   the
   score
   of
-  8.035109272345946e+133.
+  4.164491793228164e+143.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r718-978.2'
   to
   be
-  (0,
-  722).
+  (452,
+  713).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r718-978.2'
   has
   size
-  722,
+  261,
   261
   matches,
   and
   the
   score
   of
-  4.1132549389842413e+30.
+  4.1787417464253306e+66.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r718-978.2'
   to
   be
-  (0,
-  722).
+  (452,
+  713).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r718-978.2'
   has
   size
-  722,
+  261,
   261
   matches,
   and
   the
   score
   of
-  4.1132549389842413e+30.
+  4.1787417464253306e+66.
 END 14
 BEGIN 15
   Contig

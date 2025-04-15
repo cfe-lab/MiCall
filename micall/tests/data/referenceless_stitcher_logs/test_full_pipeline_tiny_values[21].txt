@@ -44,8 +44,8 @@ BEGIN 5
   'r485-983.0'
   to
   be
-  (0,
-  499).
+  (236,
+  292).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r485-983.0'
   has
   size
-  499,
-  263
+  292,
+  292
   matches,
   and
   the
   score
   of
-  5.69102387384982e+48.
+  5.0092737823069904e+73.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  735
+  292
   between
   contigs
   'r249-776.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r256-547.1'
   to
   be
-  (0,
-  528).
+  (7,
+  299).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r256-547.1'
   has
   size
-  528,
+  292,
   292
   matches,
   and
   the
   score
   of
-  3.736439084928081e+55.
+  5.0092737823069904e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r256-547.1'
   to
   be
-  (0,
-  735).
+  (7,
+  299).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r256-547.1'
   has
   size
-  735,
+  292,
   292
   matches,
   and
   the
   score
   of
-  2.698582319790045e+39.
+  5.0092737823069904e+73.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r256-547.1'
   to
   be
-  (0,
-  735).
+  (7,
+  299).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r256-547.1'
   has
   size
-  735,
+  292,
   292
   matches,
   and
   the
   score
   of
-  2.698582319790045e+39.
+  5.0092737823069904e+73.
 END 25
 BEGIN 26
   Contig

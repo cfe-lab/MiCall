@@ -44,8 +44,8 @@ BEGIN 5
   'r414-922.2'
   to
   be
-  (0,
-  509).
+  (226,
+  336).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r414-922.2'
   has
   size
-  509,
-  283
+  336,
+  336
   matches,
   and
   the
   score
   of
-  2.1412427921995266e+54.
+  6.720421583718846e+83.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  735
+  336
   between
   contigs
   'r188-749.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r241-617.0'
   to
   be
-  (0,
-  562).
+  (53,
+  430).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r241-617.0'
   has
   size
-  562,
+  377,
   377
   matches,
   and
   the
   score
   of
-  9.221956976183016e+78.
+  1.0397456562333842e+93.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r241-617.0'
   to
   be
-  (0,
-  735).
+  (53,
+  430).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r241-617.0'
   has
   size
-  735,
+  377,
   377
   matches,
   and
   the
   score
   of
-  5.957800584138807e+65.
+  1.0397456562333842e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r241-617.0'
   to
   be
-  (0,
-  735).
+  (53,
+  430).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r241-617.0'
   has
   size
-  735,
+  377,
   377
   matches,
   and
   the
   score
   of
-  5.957800584138807e+65.
+  1.0397456562333842e+93.
 END 25
 BEGIN 26
   Contig

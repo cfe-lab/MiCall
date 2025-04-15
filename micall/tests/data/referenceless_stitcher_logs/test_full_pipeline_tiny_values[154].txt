@@ -44,8 +44,8 @@ BEGIN 5
   'r308-968.2'
   to
   be
-  (0,
-  661).
+  (129,
+  445).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r308-968.2'
   has
   size
-  661,
+  445,
   445
   matches,
   and
   the
   score
   of
-  2.7551239006743394e+92.
+  7.918786043644683e+108.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  790
+  445
   between
   contigs
   'r179-752.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r570-967.0'
   to
   be
-  (0,
-  661).
+  (262,
+  660).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r570-967.0'
   has
   size
-  661,
+  398,
   398
   matches,
   and
   the
   score
   of
-  5.634102936886992e+77.
+  8.091547354289617e+97.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r570-967.0'
   to
   be
-  (0,
-  790).
+  (391,
+  789).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r570-967.0'
   has
   size
-  790,
+  398,
   398
   matches,
   and
   the
   score
   of
-  8.611072067387918e+67.
+  8.091547354289617e+97.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r570-967.0'
   to
   be
-  (0,
-  790).
+  (391,
+  789).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r570-967.0'
   has
   size
-  790,
+  398,
   398
   matches,
   and
   the
   score
   of
-  8.611072067387918e+67.
+  8.091547354289617e+97.
 END 25
 BEGIN 26
   Contig

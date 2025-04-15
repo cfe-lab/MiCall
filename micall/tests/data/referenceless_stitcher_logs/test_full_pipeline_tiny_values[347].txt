@@ -44,8 +44,8 @@ BEGIN 5
   'r78-576.1'
   to
   be
-  (0,
-  499).
+  (54,
+  486).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r78-576.1'
   has
   size
-  499,
-  445
+  486,
+  486
   matches,
   and
   the
   score
   of
-  4.3497299416052206e+104.
+  1.123792022129714e+118.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  553
+  486
   between
   contigs
   'r24-563.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r147-450.0'
   to
   be
-  (0,
-  540).
+  (123,
+  427).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r147-450.0'
   has
   size
-  540,
+  304,
   304
   matches,
   and
   the
   score
   of
-  2.2630141938859914e+58.
+  2.914968515383263e+76.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r147-450.0'
   to
   be
-  (0,
-  553).
+  (123,
+  427).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r147-450.0'
   has
   size
-  553,
+  304,
   304
   matches,
   and
   the
   score
   of
-  2.6785235772902607e+57.
+  2.914968515383263e+76.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r147-450.0'
   to
   be
-  (0,
-  553).
+  (123,
+  427).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r147-450.0'
   has
   size
-  553,
+  304,
   304
   matches,
   and
   the
   score
   of
-  2.6785235772902607e+57.
+  2.914968515383263e+76.
 END 25
 BEGIN 26
   Contig

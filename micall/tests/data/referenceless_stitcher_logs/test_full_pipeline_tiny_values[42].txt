@@ -44,8 +44,8 @@ BEGIN 5
   'r101-858.0'
   to
   be
-  (0,
-  758).
+  (39,
+  420).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r101-858.0'
   has
   size
-  758,
+  420,
   420
   matches,
   and
   the
   score
   of
-  1.396826781640732e+77.
+  1.2576855079646337e+103.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  797
+  420
   between
   contigs
   'r62-520.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r282-634.2'
   to
   be
-  (0,
-  758).
+  (181,
+  534).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r282-634.2'
   has
   size
-  758,
+  353,
   353
   matches,
   and
   the
   score
   of
-  3.373599293095435e+56.
+  3.2194520736283604e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r282-634.2'
   to
   be
-  (0,
-  797).
+  (220,
+  573).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r282-634.2'
   has
   size
-  797,
+  353,
   353
   matches,
   and
   the
   score
   of
-  5.518969591560333e+53.
+  3.2194520736283604e+87.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r282-634.2'
   to
   be
-  (0,
-  797).
+  (220,
+  573).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r282-634.2'
   has
   size
-  797,
+  353,
   353
   matches,
   and
   the
   score
   of
-  5.518969591560333e+53.
+  3.2194520736283604e+87.
 END 25
 BEGIN 26
   Contig

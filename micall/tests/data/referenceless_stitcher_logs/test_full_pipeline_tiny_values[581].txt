@@ -44,8 +44,8 @@ BEGIN 5
   'r421-998.0'
   to
   be
-  (185,
-  329).
+  (421,
+  93).
 END 5
 BEGIN 6
   Overlap
@@ -56,173 +56,116 @@ BEGIN 6
   'r421-998.0'
   has
   size
-  329,
+  93,
   93
   matches,
   and
   the
   score
   of
-  6874299.825338743.
+  1.8006322583757143e+27.
 END 6
 BEGIN 7
-  Calculated
-  cutoff
-  for
-  an
+  Found
+  a
+  significant
   overlap
   of
   size
-  145
+  93
   between
   contigs
-  'r143-565.1'
+  'r0-513.2'
   and
-  'r421-998.0'
-  to
-  be
-  (0,
-  537).
+  'r421-998.0',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
-  Overlap
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  145
   between
   contigs
   'r143-565.1'
   and
   'r421-998.0'
-  has
-  size
-  537,
-  145
-  matches,
-  and
-  the
-  score
-  of
-  7453686.84008426.
+  to
+  be
+  (278,
+  145).
 END 8
 BEGIN 9
-  Constructed
-  a
-  path
+  Overlap
+  between
+  contigs
+  'r143-565.1'
+  and
+  'r421-998.0'
+  has
+  size
+  145,
+  145
+  matches,
+  and
+  the
+  score
   of
-  length
-  578.
+  2.0657249760489504e+39.
 END 9
 BEGIN 10
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  145
+  between
+  contigs
+  'r143-565.1'
+  and
+  'r421-998.0',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  999
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
+  Cycle
+  2
+  started
+  with
+  1
+  paths
 END 12
 BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  93
-  between
-  contigs
-  'r0-513.2'
-  and
-  'r421-998.0'
-  to
-  be
-  (185,
-  329).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r0-513.2'
-  and
-  'r421-998.0'
-  has
-  size
-  329,
-  93
-  matches,
-  and
-  the
-  score
-  of
-  6874299.825338743.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  145
-  between
-  contigs
-  'r143-565.1'
-  and
-  'r421-998.0'
-  to
-  be
-  (0,
-  537).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r143-565.1'
-  and
-  'r421-998.0'
-  has
-  size
-  537,
-  145
-  matches,
-  and
-  the
-  score
-  of
-  7453686.84008426.
-END 16
-BEGIN 17
   Calculated
   cutoff
   for
@@ -235,87 +178,107 @@ BEGIN 17
   contigs
   'r0-513.2'
   and
-  'r143-565.1'
+  (2)
   to
   be
-  (0,
-  423).
-END 17
-BEGIN 18
+  (143,
+  371).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
   'r0-513.2'
   and
-  'r143-565.1'
+  (2)
   has
   size
-  423,
-  280
+  371,
+  371
   matches,
   and
   the
   score
   of
-  7.631382660011978e+59.
-END 18
-BEGIN 19
+  6.176091677553021e+91.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  566
+  371
   between
   contigs
   'r0-513.2'
   and
-  'r143-565.1',
+  (2),
   resulting
   in
   contig
-  (1).
+  (3).
+END 15
+BEGIN 16
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  999
+  and
+  consists
+  of
+  3
+  parts.
+END 16
+BEGIN 17
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  999.
+END 18
+BEGIN 19
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
 END 19
 BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
+  Initial
   overlap
-  of
-  size
-  145
-  between
-  contigs
-  (1)
-  and
-  'r421-998.0'
-  to
-  be
-  (29,
-  537).
+  stitching
+  produced
+  1
+  contigs.
 END 20
 BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r421-998.0'
-  has
-  size
-  537,
-  145
-  matches,
-  and
-  the
-  score
-  of
-  7453686.84008426.
-END 21
-BEGIN 22
   Outputting
-  2
+  1
   contigs.
-END 22
+END 21

@@ -44,8 +44,8 @@ BEGIN 5
   'r173-475.0'
   to
   be
-  (0,
-  303).
+  (122,
+  235).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r173-475.0'
   has
   size
-  303,
-  181
+  235,
+  235
   matches,
   and
   the
   score
   of
-  2.6846503961501064e+38.
+  2.8530840255002603e+60.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  425
+  235
   between
   contigs
   'r51-407.1'
@@ -99,28 +99,9 @@ BEGIN 8
   'r372-646.2'
   to
   be
-  (0,
-  357).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r51-407.1'
-  and
-  'r372-646.2'
-  has
-  size
-  357,
-  36
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999950013.
-END 9
-BEGIN 10
   Cycle
   1
   finished
@@ -138,16 +119,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -163,10 +144,10 @@ BEGIN 12
   'r372-646.2'
   to
   be
-  (0,
-  275).
-END 12
-BEGIN 13
+  (321,
+  104).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -175,23 +156,23 @@ BEGIN 13
   'r372-646.2'
   has
   size
-  275,
-  11
+  104,
+  104
   matches,
   and
   the
   score
   of
-  8.999999999996195.
-END 13
-BEGIN 14
+  6.610944844654316e+29.
+END 12
+BEGIN 13
   Found
   a
   significant
   overlap
   of
   size
-  20
+  104
   between
   contigs
   (1)
@@ -201,16 +182,16 @@ BEGIN 14
   in
   contig
   (2).
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
   425.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -223,29 +204,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   275.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -258,8 +239,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -274,16 +255,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -299,10 +280,10 @@ BEGIN 23
   'r372-646.2'
   to
   be
-  (0,
-  275).
-END 23
-BEGIN 24
+  (321,
+  104).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
@@ -311,17 +292,35 @@ BEGIN 24
   'r372-646.2'
   has
   size
-  275,
-  11
+  104,
+  104
   matches,
   and
   the
   score
   of
-  8.999999999996195.
+  6.610944844654316e+29.
+END 23
+BEGIN 24
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  104
+  between
+  contigs
+  (1)
+  and
+  'r372-646.2',
+  resulting
+  in
+  contig
+  (3).
 END 24
 BEGIN 25
   Outputting
-  2
+  1
   contigs.
 END 25

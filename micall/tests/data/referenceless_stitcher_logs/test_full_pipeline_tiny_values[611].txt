@@ -44,8 +44,8 @@ BEGIN 5
   'r258-987.0'
   to
   be
-  (0,
-  730).
+  (208,
+  283).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r258-987.0'
   has
   size
-  730,
+  283,
   283
   matches,
   and
   the
   score
   of
-  8.422264641352155e+36.
+  3.5427153390813163e+71.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  938
+  283
   between
   contigs
   'r50-540.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r329-682.2'
   to
   be
-  (0,
-  730).
+  (71,
+  425).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r329-682.2'
   has
   size
-  730,
+  354,
   354
   matches,
   and
   the
   score
   of
-  9.91281890675612e+58.
+  6.496953930677054e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r329-682.2'
   to
   be
-  (0,
-  938).
+  (279,
+  633).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r329-682.2'
   has
   size
-  938,
+  354,
   354
   matches,
   and
   the
   score
   of
-  7.714475287769247e+42.
+  6.496953930677054e+87.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r329-682.2'
   to
   be
-  (0,
-  938).
+  (279,
+  633).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r329-682.2'
   has
   size
-  938,
+  354,
   354
   matches,
   and
   the
   score
   of
-  7.714475287769247e+42.
+  6.496953930677054e+87.
 END 25
 BEGIN 26
   Contig

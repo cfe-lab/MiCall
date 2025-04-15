@@ -44,8 +44,8 @@ BEGIN 5
   'r58-522.2'
   to
   be
-  (0,
-  565).
+  (4,
+  469).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r58-522.2'
   has
   size
-  565,
+  465,
   465
   matches,
   and
   the
   score
   of
-  7.333889982410298e+105.
+  1.491115095670708e+113.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r207-528.0'
   to
   be
-  (0,
-  565).
+  (153,
+  475).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r207-528.0'
   has
   size
-  565,
+  322,
   322
   matches,
   and
   the
   score
   of
-  5.712467980860336e+61.
+  2.866700519935748e+80.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r207-528.0'
   to
   be
-  (0,
-  565).
+  (153,
+  475).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r207-528.0'
   has
   size
-  565,
+  322,
   322
   matches,
   and
   the
   score
   of
-  5.712467980860336e+61.
+  2.866700519935748e+80.
 END 14
 BEGIN 15
   Contig

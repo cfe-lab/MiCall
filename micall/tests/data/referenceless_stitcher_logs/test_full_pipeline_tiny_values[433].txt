@@ -44,8 +44,8 @@ BEGIN 5
   'r333-895.0'
   to
   be
-  (0,
-  563).
+  (317,
+  158).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r333-895.0'
   has
   size
-  563,
+  158,
   158
   matches,
   and
   the
   score
   of
-  4079500867.1776133.
+  2.7852040633645794e+42.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  880
+  158
   between
   contigs
   'r16-490.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r333-895.0'
   to
   be
-  (0,
-  563).
+  (124,
+  176).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r333-895.0'
   has
   size
-  563,
+  176,
   176
   matches,
   and
   the
   score
   of
-  9332635834199492.0.
+  6.444928893228163e+46.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  687
+  176
   between
   contigs
   'r209-508.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (0,
-  687).
+  (193,
+  282).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  687,
+  282,
   282
   matches,
   and
   the
   score
   of
-  1.1288667285943514e+40.
+  1.751529937039277e+71.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  880
+  282
   between
   contigs
   'r16-490.2'

@@ -44,8 +44,8 @@ BEGIN 5
   'r501-989.2'
   to
   be
-  (0,
-  489).
+  (260,
+  387).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r501-989.2'
   has
   size
-  489,
-  229
+  387,
+  387
   matches,
   and
   the
   score
   of
-  6.070549264954855e+38.
+  2.8920929520854733e+95.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  749
+  387
   between
   contigs
   'r241-887.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r511-829.0'
   to
   be
-  (0,
-  647).
+  (270,
+  589).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r511-829.0'
   has
   size
-  647,
+  319,
   319
   matches,
   and
   the
   score
   of
-  4.576923347280218e+54.
+  6.956841143781247e+79.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r511-829.0'
   to
   be
-  (0,
-  749).
+  (270,
+  589).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r511-829.0'
   has
   size
-  749,
+  319,
   319
   matches,
   and
   the
   score
   of
-  8.195953356201101e+46.
+  6.956841143781247e+79.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r511-829.0'
   to
   be
-  (0,
-  749).
+  (270,
+  589).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r511-829.0'
   has
   size
-  749,
+  319,
   319
   matches,
   and
   the
   score
   of
-  8.195953356201101e+46.
+  6.956841143781247e+79.
 END 25
 BEGIN 26
   Contig

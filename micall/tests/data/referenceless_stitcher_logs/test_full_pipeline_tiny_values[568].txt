@@ -44,8 +44,8 @@ BEGIN 5
   'r137-803.2'
   to
   be
-  (0,
-  667).
+  (46,
+  443).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r137-803.2'
   has
   size
-  667,
+  443,
   443
   matches,
   and
   the
   score
   of
-  1.6603736171671797e+91.
+  1.9516649877548228e+108.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  713
+  443
   between
   contigs
   'r91-579.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r236-569.0'
   to
   be
-  (0,
-  667).
+  (99,
+  433).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r236-569.0'
   has
   size
-  667,
+  334,
   334
   matches,
   and
   the
   score
   of
-  5.667068521819032e+57.
+  1.6485645329756413e+83.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r236-569.0'
   to
   be
-  (0,
-  713).
+  (145,
+  479).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r236-569.0'
   has
   size
-  713,
+  334,
   334
   matches,
   and
   the
   score
   of
-  2.2568060399766302e+54.
+  1.6485645329756413e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r236-569.0'
   to
   be
-  (0,
-  713).
+  (145,
+  479).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r236-569.0'
   has
   size
-  713,
+  334,
   334
   matches,
   and
   the
   score
   of
-  2.2568060399766302e+54.
+  1.6485645329756413e+83.
 END 25
 BEGIN 26
   Contig

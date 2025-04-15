@@ -44,8 +44,8 @@ BEGIN 5
   'r296-968.2'
   to
   be
-  (0,
-  673).
+  (270,
+  349).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r296-968.2'
   has
   size
-  673,
+  349,
   349
   matches,
   and
   the
   score
   of
-  5.86985347247682e+61.
+  7.762799248856308e+86.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  943
+  349
   between
   contigs
   'r26-644.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r383-802.1'
   to
   be
-  (0,
-  673).
+  (87,
+  507).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r383-802.1'
   has
   size
-  673,
+  420,
   420
   matches,
   and
   the
   score
   of
-  7.498411972904226e+83.
+  1.2576855079646337e+103.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r383-802.1'
   to
   be
-  (0,
-  943).
+  (357,
+  777).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r383-802.1'
   has
   size
-  943,
+  420,
   420
   matches,
   and
   the
   score
   of
-  1.0463361778573845e+63.
+  1.2576855079646337e+103.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r383-802.1'
   to
   be
-  (0,
-  943).
+  (357,
+  777).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r383-802.1'
   has
   size
-  943,
+  420,
   420
   matches,
   and
   the
   score
   of
-  1.0463361778573845e+63.
+  1.2576855079646337e+103.
 END 25
 BEGIN 26
   Contig

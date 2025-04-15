@@ -44,8 +44,8 @@ BEGIN 5
   'r134-717.2'
   to
   be
-  (0,
-  584).
+  (71,
+  556).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r134-717.2'
   has
   size
-  584,
-  513
+  556,
+  556
   matches,
   and
   the
   score
   of
-  9.448613565430209e+118.
+  1.5489176789612625e+134.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  655
+  556
   between
   contigs
   'r63-689.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r363-921.1'
   to
   be
-  (0,
-  559).
+  (300,
+  327).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r363-921.1'
   has
   size
-  559,
-  259
+  327,
+  327
   matches,
   and
   the
   score
   of
-  7.087164284775744e+42.
+  4.816723752369294e+81.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  859
+  327
   between
   contigs
   'r63-689.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r363-921.1'
   to
   be
-  (0,
-  559).
+  (300,
+  355).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r363-921.1'
   has
   size
-  559,
-  259
+  355,
+  355
   matches,
   and
   the
   score
   of
-  7.087164284775744e+42.
+  1.3110718926231885e+88.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  859
+  355
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r363-921.1'
   to
   be
-  (0,
-  559).
+  (300,
+  355).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r363-921.1'
   has
   size
-  559,
-  259
+  355,
+  355
   matches,
   and
   the
   score
   of
-  7.087164284775744e+42.
+  1.3110718926231885e+88.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  859
+  355
   between
   contigs
   (1)

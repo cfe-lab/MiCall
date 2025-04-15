@@ -44,8 +44,8 @@ BEGIN 5
   'r395-948.2'
   to
   be
-  (0,
-  554).
+  (80,
+  461).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r395-948.2'
   has
   size
-  554,
+  461,
   461
   matches,
   and
   the
   score
   of
-  1.806689604774239e+105.
+  3.6272476543578743e+112.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  634
+  461
   between
   contigs
   'r315-855.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r395-948.2'
   to
   be
-  (0,
-  554).
+  (21,
+  371).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r395-948.2'
   has
   size
-  554,
+  371,
   371
   matches,
   and
   the
   score
   of
-  5.463517341754799e+77.
+  6.176091677553021e+91.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  575
+  371
   between
   contigs
   'r374-765.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r374-765.0'
   to
   be
-  (0,
-  634).
+  (59,
+  451).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r374-765.0'
   has
   size
-  634,
+  392,
   392
   matches,
   and
   the
   score
   of
-  1.1304664378146625e+78.
+  4.819519351096359e+96.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r374-765.0'
   to
   be
-  (0,
-  634).
+  (59,
+  451).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r374-765.0'
   has
   size
-  634,
+  392,
   392
   matches,
   and
   the
   score
   of
-  1.1304664378146625e+78.
+  4.819519351096359e+96.
 END 25
 BEGIN 26
   Contig

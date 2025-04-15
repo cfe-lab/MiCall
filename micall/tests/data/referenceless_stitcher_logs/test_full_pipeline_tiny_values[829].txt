@@ -44,8 +44,8 @@ BEGIN 5
   'r213-959.0'
   to
   be
-  (0,
-  747).
+  (101,
+  638).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r213-959.0'
   has
   size
-  747,
+  638,
   638
   matches,
   and
   the
   score
   of
-  3.529760612467158e+144.
+  5.514789728946928e+152.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  848
+  638
   between
   contigs
   'r112-850.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r635-917.2'
   to
   be
-  (0,
-  747).
+  (422,
+  705).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r635-917.2'
   has
   size
-  747,
+  283,
   283
   matches,
   and
   the
   score
   of
-  4.6385352937164455e+35.
+  3.5427153390813163e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r635-917.2'
   to
   be
-  (0,
-  848).
+  (523,
+  806).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r635-917.2'
   has
   size
-  848,
+  283,
   283
   matches,
   and
   the
   score
   of
-  5.639367508235027e+27.
+  3.5427153390813163e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r635-917.2'
   to
   be
-  (0,
-  848).
+  (523,
+  806).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r635-917.2'
   has
   size
-  848,
+  283,
   283
   matches,
   and
   the
   score
   of
-  5.639367508235027e+27.
+  3.5427153390813163e+71.
 END 25
 BEGIN 26
   Contig

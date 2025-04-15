@@ -44,8 +44,8 @@ BEGIN 5
   'r347-969.0'
   to
   be
-  (0,
-  623).
+  (89,
+  513).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r347-969.0'
   has
   size
-  623,
+  513,
   513
   matches,
   and
   the
   score
   of
-  8.596848678883323e+115.
+  1.3981271374513397e+124.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  712
+  513
   between
   contigs
   'r258-859.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r442-716.2'
   to
   be
-  (0,
-  623).
+  (95,
+  370).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r442-716.2'
   has
   size
-  623,
+  275,
   275
   matches,
   and
   the
   score
   of
-  7.2083613634447e+42.
+  5.052985591895452e+69.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r442-716.2'
   to
   be
-  (0,
-  712).
+  (184,
+  459).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r442-716.2'
   has
   size
-  712,
+  275,
   275
   matches,
   and
   the
   score
   of
-  9.42743592187617e+35.
+  5.052985591895452e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r442-716.2'
   to
   be
-  (0,
-  712).
+  (184,
+  459).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r442-716.2'
   has
   size
-  712,
+  275,
   275
   matches,
   and
   the
   score
   of
-  9.42743592187617e+35.
+  5.052985591895452e+69.
 END 25
 BEGIN 26
   Contig

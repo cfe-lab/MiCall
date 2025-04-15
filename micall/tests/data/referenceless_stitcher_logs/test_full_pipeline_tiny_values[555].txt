@@ -44,8 +44,8 @@ BEGIN 5
   'r245-886.1'
   to
   be
-  (0,
-  642).
+  (92,
+  581).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r245-886.1'
   has
   size
-  642,
-  550
+  581,
+  581
   matches,
   and
   the
   score
   of
-  4.808389030390039e+125.
+  9.33128201293856e+139.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  734
+  581
   between
   contigs
   'r153-825.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r417-779.2'
   to
   be
-  (0,
-  673).
+  (264,
+  627).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r417-779.2'
   has
   size
-  673,
+  363,
   363
   matches,
   and
   the
   score
   of
-  1.2033013328875082e+66.
+  9.005503351252367e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r417-779.2'
   to
   be
-  (0,
-  734).
+  (264,
+  627).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r417-779.2'
   has
   size
-  734,
+  363,
   363
   matches,
   and
   the
   score
   of
-  2.912608622691551e+61.
+  9.005503351252367e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r417-779.2'
   to
   be
-  (0,
-  734).
+  (264,
+  627).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r417-779.2'
   has
   size
-  734,
+  363,
   363
   matches,
   and
   the
   score
   of
-  2.912608622691551e+61.
+  9.005503351252367e+89.
 END 25
 BEGIN 26
   Contig

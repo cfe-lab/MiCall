@@ -44,8 +44,8 @@ BEGIN 5
   'r310-838.0'
   to
   be
-  (0,
-  529).
+  (147,
+  178).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r310-838.0'
   has
   size
-  529,
+  178,
   178
   matches,
   and
   the
   score
   of
-  4.157964363715621e+19.
+  1.336409720170483e+47.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  676
+  178
   between
   contigs
   'r163-487.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r411-694.1'
   to
   be
-  (0,
-  529).
+  (101,
+  385).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r411-694.1'
   has
   size
-  529,
+  284,
   284
   matches,
   and
   the
   score
   of
-  1.2452713941106024e+53.
+  7.165351873119225e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r411-694.1'
   to
   be
-  (0,
-  676).
+  (248,
+  532).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r411-694.1'
   has
   size
-  676,
+  284,
   284
   matches,
   and
   the
   score
   of
-  4.0907226597315414e+41.
+  7.165351873119225e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r411-694.1'
   to
   be
-  (0,
-  676).
+  (248,
+  532).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r411-694.1'
   has
   size
-  676,
+  284,
   284
   matches,
   and
   the
   score
   of
-  4.0907226597315414e+41.
+  7.165351873119225e+71.
 END 25
 BEGIN 26
   Contig

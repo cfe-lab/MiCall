@@ -44,8 +44,8 @@ BEGIN 5
   'r434-831.1'
   to
   be
-  (0,
-  398).
+  (256,
+  271).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r434-831.1'
   has
   size
-  398,
-  142
+  271,
+  271
   matches,
   and
   the
   score
   of
-  1.9865132811759114e+18.
+  6.028579506000014e+68.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  654
+  271
   between
   contigs
   'r178-704.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r192-482.0'
   to
   be
-  (0,
-  527).
+  (14,
+  305).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r192-482.0'
   has
   size
-  527,
+  291,
   291
   matches,
   and
   the
   score
   of
-  1.841474136301122e+55.
+  2.477471088535763e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r192-482.0'
   to
   be
-  (0,
-  654).
+  (14,
+  305).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r192-482.0'
   has
   size
-  654,
+  291,
   291
   matches,
   and
   the
   score
   of
-  2.2733608369134412e+45.
+  2.477471088535763e+73.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r192-482.0'
   to
   be
-  (0,
-  654).
+  (14,
+  305).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r192-482.0'
   has
   size
-  654,
+  291,
   291
   matches,
   and
   the
   score
   of
-  2.2733608369134412e+45.
+  2.477471088535763e+73.
 END 25
 BEGIN 26
   Contig

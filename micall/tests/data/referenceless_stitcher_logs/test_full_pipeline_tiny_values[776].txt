@@ -44,8 +44,8 @@ BEGIN 5
   'r288-692.0'
   to
   be
-  (0,
-  726).
+  (61,
+  466).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r288-692.0'
   has
   size
-  726,
+  405,
   405
   matches,
   and
   the
   score
   of
-  9.88275655198296e+74.
+  5.472750284280459e+99.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r227-952.2'
   to
   be
-  (0,
-  726).
+  (17,
+  373).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r227-952.2'
   has
   size
-  726,
+  373,
   373
   matches,
   and
   the
   score
   of
-  1.4465990141829137e+65.
+  2.5129163081324813e+92.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  743
+  373
   between
   contigs
   'r210-599.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r288-692.0'
   to
   be
-  (0,
-  743).
+  (78,
+  483).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r288-692.0'
   has
   size
-  743,
+  405,
   405
   matches,
   and
   the
   score
   of
-  5.851092111618009e+73.
+  5.472750284280459e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r288-692.0'
   to
   be
-  (0,
-  743).
+  (78,
+  483).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r288-692.0'
   has
   size
-  743,
+  405,
   405
   matches,
   and
   the
   score
   of
-  5.851092111618009e+73.
+  5.472750284280459e+99.
 END 25
 BEGIN 26
   Contig

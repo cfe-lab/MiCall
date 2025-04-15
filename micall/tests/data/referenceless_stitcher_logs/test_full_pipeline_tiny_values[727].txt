@@ -44,8 +44,8 @@ BEGIN 5
   'r220-571.0'
   to
   be
-  (0,
-  649).
+  (43,
+  395).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r220-571.0'
   has
   size
-  649,
+  352,
   352
   matches,
   and
   the
   score
   of
-  6.91669878469515e+64.
+  3.1906044786508217e+87.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r503-801.2'
   to
   be
-  (0,
-  649).
+  (326,
+  625).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r503-801.2'
   has
   size
-  649,
+  299,
   299
   matches,
   and
   the
   score
   of
-  1.4349917635999126e+48.
+  1.7283274919769396e+75.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r503-801.2'
   to
   be
-  (0,
-  649).
+  (326,
+  625).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r503-801.2'
   has
   size
-  649,
+  299,
   299
   matches,
   and
   the
   score
   of
-  1.4349917635999126e+48.
+  1.7283274919769396e+75.
 END 14
 BEGIN 15
   Contig

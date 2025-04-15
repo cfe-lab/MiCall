@@ -44,8 +44,8 @@ BEGIN 5
   'r430-787.2'
   to
   be
-  (0,
-  358).
+  (105,
+  229).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r430-787.2'
   has
   size
-  358,
+  229,
   229
   matches,
   and
   the
   score
   of
-  1.1070765607921517e+49.
+  1.6420907866562525e+59.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  463
+  229
   between
   contigs
   'r325-658.0'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (0,
-  358).
+  45).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r142-474.1'
   has
   size
-  358,
+  333,
   45
   matches,
   and
   the
   score
   of
-  8.999999985015165.
+  8.99999879356545.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   (1)
   to
   be
-  (0,
-  463).
+  (183,
+  150).
 END 12
 BEGIN 13
   Overlap
@@ -175,14 +175,14 @@ BEGIN 13
   (1)
   has
   size
-  463,
+  150,
   150
   matches,
   and
   the
   score
   of
-  4145880776749560.0.
+  3.6845706445520873e+40.
 END 13
 BEGIN 14
   Found
@@ -191,7 +191,7 @@ BEGIN 14
   overlap
   of
   size
-  646
+  150
   between
   contigs
   'r142-474.1'
@@ -299,8 +299,8 @@ BEGIN 23
   (1)
   to
   be
-  (0,
-  463).
+  (183,
+  150).
 END 23
 BEGIN 24
   Overlap
@@ -311,14 +311,14 @@ BEGIN 24
   (1)
   has
   size
-  463,
+  150,
   150
   matches,
   and
   the
   score
   of
-  4145880776749560.0.
+  3.6845706445520873e+40.
 END 24
 BEGIN 25
   Found
@@ -327,7 +327,7 @@ BEGIN 25
   overlap
   of
   size
-  646
+  150
   between
   contigs
   'r142-474.1'

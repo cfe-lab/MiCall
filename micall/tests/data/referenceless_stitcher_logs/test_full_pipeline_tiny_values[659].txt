@@ -44,8 +44,8 @@ BEGIN 5
   'r302-732.2'
   to
   be
-  (0,
-  742).
+  (272,
+  703).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r302-732.2'
   has
   size
-  742,
+  431,
   431
   matches,
   and
   the
   score
   of
-  5.51344662892335e+81.
+  3.4943966263251336e+105.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r84-418.0'
   to
   be
-  (0,
-  742).
+  (54,
+  389).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r84-418.0'
   has
   size
-  742,
+  335,
   335
   matches,
   and
   the
   score
   of
-  1.56840985462702e+52.
+  3.3285680406393964e+83.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r84-418.0'
   to
   be
-  (0,
-  742).
+  (54,
+  389).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r84-418.0'
   has
   size
-  742,
+  335,
   335
   matches,
   and
   the
   score
   of
-  1.56840985462702e+52.
+  3.3285680406393964e+83.
 END 14
 BEGIN 15
   Contig

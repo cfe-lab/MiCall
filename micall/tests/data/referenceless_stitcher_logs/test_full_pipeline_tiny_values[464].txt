@@ -44,8 +44,8 @@ BEGIN 5
   'r315-848.2'
   to
   be
-  (0,
-  534).
+  (112,
+  433).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r315-848.2'
   has
   size
-  534,
-  422
+  433,
+  433
   matches,
   and
   the
   score
   of
-  7.482781637914025e+94.
+  7.092007143681742e+105.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  646
+  433
   between
   contigs
   'r203-747.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r203-747.0'
   to
   be
-  (0,
-  545).
+  (42,
+  427).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r203-747.0'
   has
   size
-  545,
+  427,
   427
   matches,
   and
   the
   score
   of
-  3.0736768447813493e+95.
+  4.24090291234747e+104.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  587
+  427
   between
   contigs
   'r161-629.1'
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  433
+  427
   between
   contigs
-  (2)
+  'r161-629.1'
   and
-  'r315-848.2'
+  (1)
   to
   be
-  (0,
-  534).
+  (42,
+  427).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r161-629.1'
   and
-  'r315-848.2'
+  (1)
   has
   size
-  534,
-  380
+  427,
+  427
   matches,
   and
   the
   score
   of
-  1.0607768262861087e+82.
+  4.24090291234747e+104.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  688
+  427
   between
   contigs
-  (2)
+  'r161-629.1'
   and
-  'r315-848.2',
+  (1),
   resulting
   in
   contig

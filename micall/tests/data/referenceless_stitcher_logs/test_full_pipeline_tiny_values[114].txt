@@ -44,8 +44,8 @@ BEGIN 5
   'r115-840.1'
   to
   be
-  (0,
-  726).
+  (42,
+  678).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r115-840.1'
   has
   size
-  726,
+  678,
   678
   matches,
   and
   the
   score
   of
-  1.6473810659761245e+158.
+  2.8023279649753228e+159.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  768
+  678
   between
   contigs
   'r73-792.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r316-720.0'
   to
   be
-  (0,
-  726).
+  (201,
+  606).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r316-720.0'
   has
   size
-  726,
+  405,
   405
   matches,
   and
   the
   score
   of
-  9.88275655198296e+74.
+  5.472750284280459e+99.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r316-720.0'
   to
   be
-  (0,
-  768).
+  (243,
+  648).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r316-720.0'
   has
   size
-  768,
+  405,
   405
   matches,
   and
   the
   score
   of
-  8.423618959166571e+71.
+  5.472750284280459e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r316-720.0'
   to
   be
-  (0,
-  768).
+  (243,
+  648).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r316-720.0'
   has
   size
-  768,
+  405,
   405
   matches,
   and
   the
   score
   of
-  8.423618959166571e+71.
+  5.472750284280459e+99.
 END 25
 BEGIN 26
   Contig

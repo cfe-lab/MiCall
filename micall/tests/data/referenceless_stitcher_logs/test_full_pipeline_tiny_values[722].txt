@@ -44,8 +44,8 @@ BEGIN 5
   'r387-847.2'
   to
   be
-  (0,
-  433).
+  (299,
+  119).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r387-847.2'
   has
   size
-  433,
+  119,
   119
   matches,
   and
   the
   score
   of
-  7199044.575078893.
+  2.0890444072090588e+33.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  119
+  between
+  contigs
+  'r88-505.1'
+  and
+  'r387-847.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r584-983.0'
   to
   be
-  (0,
-  400).
-END 7
-BEGIN 8
+  (197,
+  264).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,23 +111,23 @@ BEGIN 8
   'r584-983.0'
   has
   size
-  400,
-  203
+  264,
+  264
   matches,
   and
   the
   score
   of
-  6.594000699165013e+37.
-END 8
-BEGIN 9
+  1.7334119595171544e+67.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  597
+  264
   between
   contigs
   'r387-847.2'
@@ -118,9 +136,9 @@ BEGIN 9
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -160,57 +178,57 @@ BEGIN 12
   contigs
   'r88-505.1'
   and
-  (1)
+  (2)
   to
   be
-  (0,
-  597).
-END 12
-BEGIN 13
+  (299,
+  119).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
   'r88-505.1'
   and
-  (1)
+  (2)
   has
   size
-  597,
+  119,
   119
   matches,
   and
   the
   score
   of
-  8.999831055334894.
-END 13
-BEGIN 14
+  2.0890444072090588e+33.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  896
+  119
   between
   contigs
   'r88-505.1'
   and
-  (1),
+  (2),
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   597.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -223,29 +241,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   418.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -258,8 +276,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -274,16 +292,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -296,32 +314,50 @@ BEGIN 23
   contigs
   'r88-505.1'
   and
-  (1)
+  (2)
   to
   be
-  (0,
-  597).
-END 23
-BEGIN 24
+  (299,
+  119).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
   'r88-505.1'
   and
-  (1)
+  (2)
   has
   size
-  597,
+  119,
   119
   matches,
   and
   the
   score
   of
-  8.999831055334894.
-END 24
-BEGIN 25
-  Outputting
-  2
-  contigs.
+  2.0890444072090588e+33.
 END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  119
+  between
+  contigs
+  'r88-505.1'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

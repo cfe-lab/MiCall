@@ -44,8 +44,8 @@ BEGIN 5
   'r512-868.0'
   to
   be
-  (0,
-  664).
+  (242,
+  599).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r512-868.0'
   has
   size
-  664,
+  357,
   357
   matches,
   and
   the
   score
   of
-  1.41586530366868e+65.
+  5.338593919506374e+88.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r270-933.2'
   to
   be
-  (0,
-  664).
+  (97,
+  199).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r270-933.2'
   has
   size
-  664,
+  199,
   199
   matches,
   and
   the
   score
   of
-  1961204574318426.8.
+  1.2507373754098828e+52.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  761
+  199
   between
   contigs
   'r173-468.1'
@@ -144,7 +144,7 @@ BEGIN 11
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -171,8 +171,8 @@ BEGIN 13
   'r512-868.0'
   to
   be
-  (0,
-  761).
+  (339,
+  696).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r512-868.0'
   has
   size
-  761,
+  357,
   357
   matches,
   and
   the
   score
   of
-  2.8650016301478793e+57.
+  5.338593919506374e+88.
 END 14
 BEGIN 15
   Contig
@@ -201,43 +201,51 @@ BEGIN 15
   completely.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  761
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
   761.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  357.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -248,17 +256,78 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  357
+  between
+  contigs
+  (1)
+  and
+  'r512-868.0'
+  to
+  be
+  (339,
+  696).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r512-868.0'
+  has
+  size
+  357,
+  357
+  matches,
+  and
+  the
+  score
+  of
+  5.338593919506374e+88.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r512-868.0'
+  completely.
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

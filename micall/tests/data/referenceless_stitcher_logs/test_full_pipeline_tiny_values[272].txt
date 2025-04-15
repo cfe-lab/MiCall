@@ -44,8 +44,8 @@ BEGIN 5
   'r582-984.0'
   to
   be
-  (20,
-  341).
+  (265,
+  96).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r582-984.0'
   has
   size
-  341,
+  96,
   96
   matches,
   and
   the
   score
   of
-  6916640.326199908.
+  7.97974595730122e+27.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  96
+  between
+  contigs
+  'r317-677.2'
+  and
+  'r582-984.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,36 +99,124 @@ BEGIN 7
   'r337-624.1'
   to
   be
-  (0,
-  403).
-END 7
-BEGIN 8
+  None.
+END 8
+BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  668
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  288
+  between
+  contigs
+  (1)
+  and
+  'r337-624.1'
+  to
+  be
+  (20,
+  308).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
-  'r582-984.0'
+  (1)
   and
   'r337-624.1'
   has
   size
-  403,
-  43
+  288,
+  288
   matches,
   and
   the
   score
   of
-  8.999999999995937.
-END 8
-BEGIN 9
+  5.992951331800855e+72.
+END 12
+BEGIN 13
+  Contig
+  (1)
+  covers
+  contig
+  'r337-624.1'
+  completely.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  403.
-END 9
-BEGIN 10
+  668.
+END 14
+BEGIN 15
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  288.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -119,12 +225,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -139,16 +245,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -156,156 +262,45 @@ BEGIN 13
   overlap
   of
   size
-  96
+  288
   between
   contigs
-  'r317-677.2'
+  (1)
   and
-  'r582-984.0'
+  'r337-624.1'
   to
   be
   (20,
-  341).
-END 13
-BEGIN 14
+  308).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  'r317-677.2'
-  and
-  'r582-984.0'
-  has
-  size
-  341,
-  96
-  matches,
-  and
-  the
-  score
-  of
-  6916640.326199908.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  288
-  between
-  contigs
-  'r582-984.0'
-  and
-  'r337-624.1'
-  to
-  be
-  (0,
-  403).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r582-984.0'
+  (1)
   and
   'r337-624.1'
   has
   size
-  403,
-  43
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999995937.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  288
-  between
-  contigs
-  'r317-677.2'
-  and
-  'r337-624.1'
-  to
-  be
-  (0,
-  361).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r317-677.2'
-  and
-  'r337-624.1'
-  has
-  size
-  361,
+  288,
   288
   matches,
   and
   the
   score
   of
-  1.8233790217976042e+67.
-END 18
-BEGIN 19
+  5.992951331800855e+72.
+END 23
+BEGIN 24
   Contig
-  'r317-677.2'
+  (1)
   covers
   contig
   'r337-624.1'
   completely.
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  96
-  between
-  contigs
-  'r317-677.2'
-  and
-  'r582-984.0'
-  to
-  be
-  (20,
-  341).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  'r317-677.2'
-  and
-  'r582-984.0'
-  has
-  size
-  341,
-  96
-  matches,
-  and
-  the
-  score
-  of
-  6916640.326199908.
-END 21
-BEGIN 22
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 22
+END 25

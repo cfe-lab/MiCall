@@ -44,8 +44,8 @@ BEGIN 5
   'r141-862.0'
   to
   be
-  (0,
-  722).
+  (108,
+  502).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r141-862.0'
   has
   size
-  722,
+  502,
   502
   matches,
   and
   the
   score
   of
-  9.324141780382069e+104.
+  5.09963960400456e+121.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  830
+  502
   between
   contigs
   'r33-642.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r459-854.1'
   to
   be
-  (0,
-  722).
+  (318,
+  714).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r459-854.1'
   has
   size
-  722,
+  396,
   396
   matches,
   and
   the
   score
   of
-  3.457238969339756e+72.
+  3.981693768274056e+97.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r459-854.1'
   to
   be
-  (0,
-  830).
+  (426,
+  822).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r459-854.1'
   has
   size
-  830,
+  396,
   396
   matches,
   and
   the
   score
   of
-  1.759475952046011e+64.
+  3.981693768274056e+97.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r459-854.1'
   to
   be
-  (0,
-  830).
+  (426,
+  822).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r459-854.1'
   has
   size
-  830,
+  396,
   396
   matches,
   and
   the
   score
   of
-  1.759475952046011e+64.
+  3.981693768274056e+97.
 END 25
 BEGIN 26
   Contig

@@ -30,7 +30,7 @@ TTT = 40 * 'T'
 
         (('AAAAA' + TTT, TTT + 'GGGGG'), ('AAAAA' + TTT + 'GGGGG',)),
         (('AAAAA' + TTT, TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
-        # (('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCC', TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
+        (('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCC', TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
         (('AAAAA' + TTT, 'GGGGG' + TTT), ("AAAAA" + TTT,)),
         (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT,)),
         (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT,)),
@@ -53,13 +53,13 @@ TTT = 40 * 'T'
         #
         # Multiple.
         #
-        # (('AAA' + 'T' * 40,  'T' * 40 + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG'),
-        #  ('AAA' + 40 * 'T' + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG')),
-        # (('AAA' + 'T' * 40,
-        #   'T' * 40 + 'GGG' + 'A' * 40,
-        #   'A' * 40 + 'CCC' + 'T' * 40,
-        #   'T' * 40 + 'GGG'),
-        #  ('AAA' + 'T' * 40 + 'GGG' + 'A' * 40 + 'CCC' + 'T' * 40,)),
+        (('AAA' + 'T' * 40,  'T' * 40 + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG'),
+         ('AAA' + 40 * 'T' + 'GGG' + 'Y' * 40, 'Y' * 40 + 'CCC' + 'M' * 40, 'M' * 40 + 'GGG')),
+        (('AAA' + 'T' * 40,
+          'T' * 40 + 'GGG' + 'A' * 40,
+          'A' * 40 + 'CCC' + 'T' * 40,
+          'T' * 40 + 'GGG'),
+         ('AAA' + 'T' * 40 + 'GGG' + 'A' * 40 + 'CCC' + 'T' * 40,)),
         (('AAA',), ('AAA',)),
         ((), ()),
 
@@ -233,7 +233,7 @@ def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Itera
             yield testcase
 
 
-@pytest.mark.parametrize("random_seed", params(range(10), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
 def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
     assert not ReferencelessStitcherContext.get().is_debug2
     converted_fasta_file, ref_seqs = random_fasta_file(50, random_seed)
@@ -241,7 +241,7 @@ def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed
 
 
 # TODO: ensure that every random seed can be stitched.
-@pytest.mark.parametrize("random_seed", params(range(50), [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 13, 14, 17, 20, 21, 23, 24, 27, 28, 32, 33, 35, 49], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(50), [2, 3, 6, 7, 8, 13], "Probably gaps that are too small."))
 def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2
@@ -251,7 +251,7 @@ def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file
 
 
 # TODO: ensure that every random seed can be stitched.
-@pytest.mark.parametrize("random_seed", params(range(999), [1, 2, 8, 14, 15, 17, 18, 20, 23, 24, 27, 28, 29, 30, 31, 33, 36, 49, 51, 52, 55, 56, 59, 60, 62, 63, 66, 68, 69, 71, 74, 76, 81, 82, 83, 84, 89, 92, 95, 103, 112, 117, 119, 121, 124, 126, 131, 132, 134, 137, 138, 139, 141, 145, 153, 158, 159, 167, 168, 173, 178, 180, 185, 194, 197, 199, 202, 204, 208, 211, 215, 224, 226, 230, 232, 233, 235, 236, 237, 239, 240, 243, 246, 247, 253, 254, 257, 258, 267, 268, 269, 271, 272, 274, 283, 285, 288, 294, 295, 305, 306, 308, 309, 310, 311, 312, 314, 318, 320, 327, 332, 334, 335, 337, 338, 339, 344, 350, 352, 353, 355, 363, 364, 365, 367, 370, 374, 375, 377, 378, 381, 383, 385, 386, 389, 392, 394, 399, 404, 405, 409, 411, 412, 415, 419, 420, 426, 427, 429, 431, 432, 434, 435, 436, 437, 444, 445, 452, 453, 458, 459, 461, 463, 465, 466, 471, 474, 477, 484, 487, 490, 493, 499, 501, 507, 516, 520, 524, 525, 526, 529, 530, 533, 534, 536, 539, 541, 542, 544, 546, 547, 549, 550, 552, 554, 558, 559, 561, 562, 563, 571, 581, 582, 584, 586, 587, 589, 590, 592, 593, 600, 601, 606, 609, 614, 615, 616, 617, 621, 622, 623, 624, 627, 628, 630, 631, 632, 633, 634, 635, 640, 642, 643, 648, 650, 651, 655, 660, 662, 663, 665, 667, 668, 669, 670, 671, 673, 679, 682, 685, 686, 689, 691, 692, 693, 695, 700, 701, 706, 712, 717, 720, 722, 725, 737, 739, 740, 742, 746, 748, 749, 750, 756, 757, 760, 763, 764, 765, 766, 769, 773, 774, 780, 781, 782, 784, 785, 788, 791, 803, 804, 805, 808, 809, 810, 817, 818, 819, 824, 825, 826, 830, 831, 833, 835, 836, 839, 841, 843, 846, 850, 851, 852, 853, 857, 861, 865, 877, 878, 881, 882, 884, 886, 887, 891, 895, 898, 906, 909, 910, 913, 914, 915, 916, 917, 918, 919, 923, 928, 932, 935, 936, 941, 947, 950, 954, 957, 960, 964, 965, 966, 967, 972, 973, 974, 976, 977, 978, 979, 981, 982, 983, 987, 997], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(999), [14, 17, 33, 49, 60, 63, 68, 69, 76, 82, 92, 95, 112, 117, 124, 159, 199, 202, 232, 235, 240, 257, 267, 271, 283, 312, 318, 338, 350, 377, 378, 386, 392, 404, 426, 427, 444, 445, 458, 465, 474, 501, 534, 536, 546, 552, 554, 571, 582, 601, 635, 648, 660, 669, 673, 685, 693, 700, 725, 742, 746, 750, 756, 765, 780, 781, 782, 785, 791, 804, 805, 830, 839, 843, 851, 909, 918, 923, 928, 941, 972, 981, 983, 997], "Probably gaps that are too small."))
 def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2

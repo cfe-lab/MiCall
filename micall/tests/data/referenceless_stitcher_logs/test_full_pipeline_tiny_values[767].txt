@@ -44,8 +44,8 @@ BEGIN 5
   'r33-439.2'
   to
   be
-  (0,
-  499).
+  (9,
+  416).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r33-439.2'
   has
   size
-  499,
+  407,
   407
   matches,
   and
   the
   score
   of
-  1.0829785349951962e+93.
+  1.1117681455108986e+100.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r223-626.1'
   to
   be
-  (0,
-  404).
+  (199,
+  300).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r223-626.1'
   has
   size
-  404,
-  205
+  300,
+  300
   matches,
   and
   the
   score
   of
-  1.3599294532308316e+38.
+  3.4935292924645634e+75.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  603
+  300
   between
   contigs
   'r24-522.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r33-439.2'
   to
   be
-  (0,
-  603).
+  (9,
+  416).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r33-439.2'
   has
   size
-  603,
+  407,
   407
   matches,
   and
   the
   score
   of
-  1.2440024393387289e+85.
+  1.1117681455108986e+100.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r33-439.2'
   to
   be
-  (0,
-  603).
+  (9,
+  416).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r33-439.2'
   has
   size
-  603,
+  407,
   407
   matches,
   and
   the
   score
   of
-  1.2440024393387289e+85.
+  1.1117681455108986e+100.
 END 25
 BEGIN 26
   Contig

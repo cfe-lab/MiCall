@@ -44,8 +44,8 @@ BEGIN 5
   'r173-680.0'
   to
   be
-  (0,
-  508).
+  (72,
+  497).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r173-680.0'
   has
   size
-  508,
-  436
+  497,
+  497
   matches,
   and
   the
   score
   of
-  1.9131464833825804e+101.
+  3.0879537184781784e+120.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  580
+  497
   between
   contigs
   'r101-669.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r338-704.2'
   to
   be
-  (0,
-  367).
+  (237,
+  332).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r338-704.2'
   has
   size
-  367,
-  130
+  332,
+  332
   matches,
   and
   the
   score
   of
-  8.911220877682066e+16.
+  8.087149113827076e+82.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  604
+  332
   between
   contigs
   'r101-669.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r338-704.2'
   to
   be
-  (0,
-  367).
+  (237,
+  343).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r338-704.2'
   has
   size
-  367,
-  130
+  343,
+  343
   matches,
   and
   the
   score
   of
-  8.911220877682066e+16.
+  2.295983788650699e+85.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  604
+  343
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r338-704.2'
   to
   be
-  (0,
-  367).
+  (237,
+  343).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r338-704.2'
   has
   size
-  367,
-  130
+  343,
+  343
   matches,
   and
   the
   score
   of
-  8.911220877682066e+16.
+  2.295983788650699e+85.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  604
+  343
   between
   contigs
   (1)

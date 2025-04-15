@@ -44,8 +44,8 @@ BEGIN 5
   'r325-736.1'
   to
   be
-  (0,
-  412).
+  (235,
+  128).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r325-736.1'
   has
   size
-  412,
+  128,
   128
   matches,
   and
   the
   score
   of
-  3064224901244.9976.
+  3.3799901672303226e+35.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  647
+  128
   between
   contigs
   'r90-452.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r325-736.1'
   to
   be
-  (0,
-  412).
+  (209,
+  130).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r325-736.1'
   has
   size
-  412,
+  130,
   130
   matches,
   and
   the
   score
   of
-  15474847508601.094.
+  7.105106758076837e+35.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  621
+  130
   between
   contigs
   'r116-454.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (0,
-  621).
+  (26,
+  337).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  621,
+  337,
   337
   matches,
   and
   the
   score
   of
-  2.357754627903775e+62.
+  6.784116040227335e+83.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  647
+  337
   between
   contigs
   'r90-452.2'

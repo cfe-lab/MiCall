@@ -44,8 +44,8 @@ BEGIN 5
   'r483-996.0'
   to
   be
-  (0,
-  514).
+  (100,
+  246).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r483-996.0'
   has
   size
-  514,
+  246,
   246
   matches,
   and
   the
   score
   of
-  1.6723321910825094e+42.
+  8.449773682918507e+62.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  614
+  246
   between
   contigs
   'r383-728.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r488-775.2'
   to
   be
-  (0,
-  514).
+  (5,
+  293).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r488-775.2'
   has
   size
-  514,
+  288,
   288
   matches,
   and
   the
   score
   of
-  1.842816687917144e+55.
+  5.992951331800855e+72.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r488-775.2'
   to
   be
-  (0,
-  614).
+  (105,
+  393).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r488-775.2'
   has
   size
-  614,
+  288,
   288
   matches,
   and
   the
   score
   of
-  3.3838184810382102e+47.
+  5.992951331800855e+72.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r488-775.2'
   to
   be
-  (0,
-  614).
+  (105,
+  393).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r488-775.2'
   has
   size
-  614,
+  288,
   288
   matches,
   and
   the
   score
   of
-  3.3838184810382102e+47.
+  5.992951331800855e+72.
 END 25
 BEGIN 26
   Contig

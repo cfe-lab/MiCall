@@ -44,8 +44,8 @@ BEGIN 5
   'r456-760.1'
   to
   be
-  (0,
-  529).
+  (178,
+  483).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r456-760.1'
   has
   size
-  529,
+  305,
   305
   matches,
   and
   the
   score
   of
-  1.9274952867740388e+59.
+  2.9455457271060856e+76.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r278-806.0'
   to
   be
-  (0,
-  529).
+  (124,
+  174).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r278-806.0'
   has
   size
-  529,
+  174,
   174
   matches,
   and
   the
   score
   of
-  1.971836404296894e+18.
+  1.5534059400699183e+46.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  653
+  174
   between
   contigs
   'r154-451.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r456-760.1'
   to
   be
-  (0,
-  653).
+  (302,
+  607).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r456-760.1'
   has
   size
-  653,
+  305,
   305
   matches,
   and
   the
   score
   of
-  1.0240282007492823e+50.
+  2.9455457271060856e+76.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r456-760.1'
   to
   be
-  (0,
-  653).
+  (302,
+  607).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r456-760.1'
   has
   size
-  653,
+  305,
   305
   matches,
   and
   the
   score
   of
-  1.0240282007492823e+50.
+  2.9455457271060856e+76.
 END 25
 BEGIN 26
   Contig

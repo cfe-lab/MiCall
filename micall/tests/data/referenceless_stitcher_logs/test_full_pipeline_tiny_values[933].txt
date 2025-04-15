@@ -44,8 +44,8 @@ BEGIN 5
   'r169-903.0'
   to
   be
-  (0,
-  735).
+  (144,
+  590).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r169-903.0'
   has
   size
-  735,
+  590,
   590
   matches,
   and
   the
   score
   of
-  7.300980908889578e+130.
+  6.269109967021136e+141.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  879
+  590
   between
   contigs
   'r25-758.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r257-746.2'
   to
   be
-  (0,
-  735).
+  (88,
+  578).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r257-746.2'
   has
   size
-  735,
+  490,
   490
   matches,
   and
   the
   score
   of
-  2.465856646573038e+100.
+  9.226486702557315e+118.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r257-746.2'
   to
   be
-  (0,
-  879).
+  (232,
+  722).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r257-746.2'
   has
   size
-  879,
+  490,
   490
   matches,
   and
   the
   score
   of
-  2.5317149919475429e+89.
+  9.226486702557315e+118.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r257-746.2'
   to
   be
-  (0,
-  879).
+  (232,
+  722).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r257-746.2'
   has
   size
-  879,
+  490,
   490
   matches,
   and
   the
   score
   of
-  2.5317149919475429e+89.
+  9.226486702557315e+118.
 END 25
 BEGIN 26
   Contig

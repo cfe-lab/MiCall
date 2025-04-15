@@ -44,8 +44,8 @@ BEGIN 5
   'r458-821.0'
   to
   be
-  (205,
-  349).
+  (456,
+  98).
 END 5
 BEGIN 6
   Overlap
@@ -56,136 +56,34 @@ BEGIN 6
   'r458-821.0'
   has
   size
-  349,
+  98,
   98
   matches,
   and
   the
   score
   of
-  6944049.824789928.
+  1.7057265669363116e+28.
 END 6
 BEGIN 7
-  Calculated
-  cutoff
-  for
-  an
+  Found
+  a
+  significant
   overlap
   of
   size
-  289
+  98
   between
   contigs
   'r2-555.1'
   and
-  'r691-979.2'
-  to
-  be
-  (0,
-  554).
+  'r458-821.0',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
-  Overlap
-  between
-  contigs
-  'r2-555.1'
-  and
-  'r691-979.2'
-  has
-  size
-  554,
-  23
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 8
-BEGIN 9
-  Constructed
-  a
-  path
-  of
-  length
-  554.
-END 9
-BEGIN 10
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
-END 10
-BEGIN 11
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 11
-BEGIN 12
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  98
-  between
-  contigs
-  'r2-555.1'
-  and
-  'r458-821.0'
-  to
-  be
-  (205,
-  349).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r2-555.1'
-  and
-  'r458-821.0'
-  has
-  size
-  349,
-  98
-  matches,
-  and
-  the
-  score
-  of
-  6944049.824789928.
-END 14
-BEGIN 15
   Calculated
   cutoff
   for
@@ -201,28 +99,36 @@ BEGIN 15
   'r691-979.2'
   to
   be
-  (0,
-  554).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r2-555.1'
-  and
-  'r691-979.2'
+  None.
+END 8
+BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
   has
-  size
-  554,
-  23
-  matches,
+  length
+  978
   and
-  the
-  score
+  consists
   of
-  9.0.
-END 16
-BEGIN 17
+  3
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -233,34 +139,109 @@ BEGIN 17
   131
   between
   contigs
-  'r458-821.0'
+  (1)
   and
   'r691-979.2'
   to
   be
-  (0,
-  289).
-END 17
-BEGIN 18
+  (689,
+  131).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
-  'r458-821.0'
+  (1)
   and
   'r691-979.2'
   has
   size
-  289,
-  56
+  131,
+  131
   matches,
   and
   the
   score
   of
-  8.611361483136843.
+  1.4564209218339215e+36.
+END 12
+BEGIN 13
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  131
+  between
+  contigs
+  (1)
+  and
+  'r691-979.2',
+  resulting
+  in
+  contig
+  (2).
+END 13
+BEGIN 14
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  978
+  and
+  consists
+  of
+  3
+  parts.
+END 14
+BEGIN 15
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  978.
+END 16
+BEGIN 17
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
 END 18
 BEGIN 19
   Outputting
-  3
+  1
   contigs.
 END 19

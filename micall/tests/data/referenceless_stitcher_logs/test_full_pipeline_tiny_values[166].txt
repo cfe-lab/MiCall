@@ -44,8 +44,8 @@ BEGIN 5
   'r206-946.1'
   to
   be
-  (0,
-  741).
+  (93,
+  595).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r206-946.1'
   has
   size
-  741,
+  595,
   595
   matches,
   and
   the
   score
   of
-  1.2001033317844204e+132.
+  1.030148553359994e+143.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  834
+  595
   between
   contigs
   'r113-800.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r498-789.2'
   to
   be
-  (0,
-  741).
+  (292,
+  584).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r498-789.2'
   has
   size
-  741,
+  292,
   292
   matches,
   and
   the
   score
   of
-  6.477196382328553e+38.
+  5.0092737823069904e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r498-789.2'
   to
   be
-  (0,
-  834).
+  (385,
+  677).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r498-789.2'
   has
   size
-  834,
+  292,
   292
   matches,
   and
   the
   score
   of
-  3.7539775022666427e+31.
+  5.0092737823069904e+73.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r498-789.2'
   to
   be
-  (0,
-  834).
+  (385,
+  677).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r498-789.2'
   has
   size
-  834,
+  292,
   292
   matches,
   and
   the
   score
   of
-  3.7539775022666427e+31.
+  5.0092737823069904e+73.
 END 25
 BEGIN 26
   Contig

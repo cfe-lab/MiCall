@@ -44,8 +44,8 @@ BEGIN 5
   'r230-842.2'
   to
   be
-  (0,
-  613).
+  (44,
+  433).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r230-842.2'
   has
   size
-  613,
+  433,
   433
   matches,
   and
   the
   score
   of
-  2.723196044321636e+92.
+  7.092007143681742e+105.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  657
+  433
   between
   contigs
   'r186-662.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r277-706.0'
   to
   be
-  (0,
-  613).
+  (47,
+  477).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r277-706.0'
   has
   size
-  613,
+  430,
   430
   matches,
   and
   the
   score
   of
-  1.6477787398390786e+91.
+  1.7343930576237015e+105.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r277-706.0'
   to
   be
-  (0,
-  657).
+  (91,
+  521).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r277-706.0'
   has
   size
-  657,
+  430,
   430
   matches,
   and
   the
   score
   of
-  1.4400047093972436e+88.
+  1.7343930576237015e+105.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r277-706.0'
   to
   be
-  (0,
-  657).
+  (91,
+  521).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r277-706.0'
   has
   size
-  657,
+  430,
   430
   matches,
   and
   the
   score
   of
-  1.4400047093972436e+88.
+  1.7343930576237015e+105.
 END 25
 BEGIN 26
   Contig

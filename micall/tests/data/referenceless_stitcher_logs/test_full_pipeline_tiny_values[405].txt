@@ -44,8 +44,8 @@ BEGIN 5
   'r472-908.0'
   to
   be
-  (0,
-  437).
+  (246,
+  354).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r472-908.0'
   has
   size
-  437,
-  191
+  354,
+  354
   matches,
   and
   the
   score
   of
-  1.5921886284398054e+31.
+  6.496953930677054e+87.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  683
+  354
   between
   contigs
   'r226-825.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r226-825.1'
   to
   be
-  (0,
-  600).
+  (113,
+  269).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r226-825.1'
   has
   size
-  600,
+  269,
   269
   matches,
   and
   the
   score
   of
-  7.121229082066349e+42.
+  2.944082014509719e+68.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  713
+  269
   between
   contigs
   'r113-494.2'
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  713
+  683
   and
   consists
   of
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  354
+  269
   between
   contigs
-  (2)
+  'r113-494.2'
   and
-  'r472-908.0'
+  (1)
   to
   be
-  (0,
-  437).
+  (113,
+  269).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r113-494.2'
   and
-  'r472-908.0'
+  (1)
   has
   size
-  437,
-  78
+  269,
+  269
   matches,
   and
   the
   score
   of
-  8.999955737713263.
+  2.944082014509719e+68.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  796
+  269
   between
   contigs
-  (2)
+  'r113-494.2'
   and
-  'r472-908.0',
+  (1),
   resulting
   in
   contig
@@ -226,7 +226,7 @@ BEGIN 16
   path
   of
   length
-  713.
+  683.
 END 16
 BEGIN 17
   Removed
@@ -261,7 +261,7 @@ BEGIN 20
   path
   of
   length
-  437.
+  382.
 END 20
 BEGIN 21
   Removed
@@ -309,37 +309,55 @@ BEGIN 24
   overlap
   of
   size
-  354
+  269
   between
   contigs
-  (2)
+  'r113-494.2'
   and
-  'r472-908.0'
+  (1)
   to
   be
-  (0,
-  437).
+  (113,
+  269).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  (2)
+  'r113-494.2'
   and
-  'r472-908.0'
+  (1)
   has
   size
-  437,
-  78
+  269,
+  269
   matches,
   and
   the
   score
   of
-  8.999955737713263.
+  2.944082014509719e+68.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  269
+  between
+  contigs
+  'r113-494.2'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

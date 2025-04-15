@@ -44,8 +44,8 @@ BEGIN 5
   'r259-744.2'
   to
   be
-  (0,
-  486).
+  (159,
+  218).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r259-744.2'
   has
   size
-  486,
+  218,
   218
   matches,
   and
   the
   score
   of
-  4.3717029023626406e+35.
+  2.741339521366806e+56.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  645
+  218
   between
   contigs
   'r100-476.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r598-935.1'
   to
   be
-  (0,
-  338).
+  (339,
+  147).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r598-935.1'
   has
   size
-  338,
-  4
+  147,
+  147
   matches,
   and
   the
   score
   of
-  9.0.
+  8.633867441237909e+39.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  147
+  between
+  contigs
+  'r259-744.2'
+  and
+  'r598-935.1',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r598-935.1'
   to
   be
-  (0,
-  338).
-END 12
-BEGIN 13
+  (498,
+  147).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,23 +193,23 @@ BEGIN 13
   'r598-935.1'
   has
   size
-  338,
-  1
+  147,
+  147
   matches,
   and
   the
   score
   of
-  9.0.
-END 13
-BEGIN 14
+  8.633867441237909e+39.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  675
+  147
   between
   contigs
   (1)
@@ -200,17 +218,17 @@ BEGIN 14
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   645.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -223,29 +241,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   338.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -258,8 +276,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -274,16 +292,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -299,10 +317,10 @@ BEGIN 23
   'r598-935.1'
   to
   be
-  (0,
-  338).
-END 23
-BEGIN 24
+  (498,
+  147).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -311,17 +329,35 @@ BEGIN 24
   'r598-935.1'
   has
   size
-  338,
-  1
+  147,
+  147
   matches,
   and
   the
   score
   of
-  9.0.
-END 24
-BEGIN 25
-  Outputting
-  2
-  contigs.
+  8.633867441237909e+39.
 END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  147
+  between
+  contigs
+  (1)
+  and
+  'r598-935.1',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

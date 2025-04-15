@@ -44,8 +44,8 @@ BEGIN 5
   'r424-779.0'
   to
   be
-  (0,
-  356).
+  (100,
+  290).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r424-779.0'
   has
   size
-  356,
-  256
+  290,
+  290
   matches,
   and
   the
   score
   of
-  5.098199936821821e+57.
+  1.2252534806378383e+73.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  456
+  290
   between
   contigs
   'r324-713.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r324-713.1'
   to
   be
-  (0,
-  390).
+  (56,
+  263).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r324-713.1'
   has
   size
-  390,
+  263,
   263
   matches,
   and
   the
   score
   of
-  1.2596618888598233e+57.
+  8.56301343060922e+66.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  446
+  263
   between
   contigs
   'r268-586.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  456).
+  (56,
+  263).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  456,
+  263,
   263
   matches,
   and
   the
   score
   of
-  1.4385465517948054e+52.
+  8.56301343060922e+66.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  512
+  263
   between
   contigs
   'r268-586.2'

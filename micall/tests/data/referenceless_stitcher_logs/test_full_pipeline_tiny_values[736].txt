@@ -44,8 +44,8 @@ BEGIN 5
   'r406-973.2'
   to
   be
-  (0,
-  568).
+  (336,
+  248).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r406-973.2'
   has
   size
-  568,
-  232
+  248,
+  248
   matches,
   and
   the
   score
   of
-  5.677510820044402e+33.
+  3.468201286469936e+63.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  904
+  248
   between
   contigs
   'r70-653.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r70-653.0'
   to
   be
-  (0,
-  584).
+  (7,
+  387).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r70-653.0'
   has
   size
-  584,
+  387,
   387
   matches,
   and
   the
   score
   of
-  3.1417900034107926e+80.
+  2.8920929520854733e+95.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  591
+  387
   between
   contigs
   'r63-456.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r406-973.2'
   to
   be
-  (0,
-  568).
+  (343,
+  248).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r406-973.2'
   has
   size
-  568,
-  225
+  248,
+  248
   matches,
   and
   the
   score
   of
-  3.4765512542429928e+31.
+  3.468201286469936e+63.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  911
+  248
   between
   contigs
   (2)
@@ -317,8 +317,8 @@ BEGIN 24
   'r406-973.2'
   to
   be
-  (0,
-  568).
+  (343,
+  248).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r406-973.2'
   has
   size
-  568,
-  225
+  248,
+  248
   matches,
   and
   the
   score
   of
-  3.4765512542429928e+31.
+  3.468201286469936e+63.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  911
+  248
   between
   contigs
   (2)

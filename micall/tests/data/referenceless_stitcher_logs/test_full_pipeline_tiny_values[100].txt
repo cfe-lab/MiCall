@@ -44,8 +44,8 @@ BEGIN 5
   'r394-996.0'
   to
   be
-  (0,
-  603).
+  (22,
+  321).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r394-996.0'
   has
   size
-  603,
+  321,
   321
   matches,
   and
   the
   score
   of
-  4.7083471157277474e+58.
+  1.419261637008375e+80.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  625
+  321
   between
   contigs
   'r372-714.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r589-905.2'
   to
   be
-  (0,
-  603).
+  (195,
+  512).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r589-905.2'
   has
   size
-  603,
+  317,
   317
   matches,
   and
   the
   score
   of
-  2.7398449748225335e+57.
+  3.409627511992749e+79.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r589-905.2'
   to
   be
-  (0,
-  625).
+  (217,
+  534).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r589-905.2'
   has
   size
-  625,
+  317,
   317
   matches,
   and
   the
   score
   of
-  3.891046963104347e+55.
+  3.409627511992749e+79.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r589-905.2'
   to
   be
-  (0,
-  625).
+  (217,
+  534).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r589-905.2'
   has
   size
-  625,
+  317,
   317
   matches,
   and
   the
   score
   of
-  3.891046963104347e+55.
+  3.409627511992749e+79.
 END 25
 BEGIN 26
   Contig

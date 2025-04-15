@@ -44,8 +44,8 @@ BEGIN 5
   'r113-677.3'
   to
   be
-  (0,
-  565).
+  (48,
+  524).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r113-677.3'
   has
   size
-  565,
-  517
+  524,
+  524
   matches,
   and
   the
   score
   of
-  5.165366412581522e+121.
+  7.655030133016152e+126.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  613
+  524
   between
   contigs
   'r65-636.4'
@@ -99,8 +99,8 @@ BEGIN 8
   'r226-703.2'
   to
   be
-  (0,
-  478).
+  (161,
+  411).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r226-703.2'
   has
   size
-  478,
-  317
+  411,
+  411
   matches,
   and
   the
   score
   of
-  9.514041265899792e+66.
+  9.174050477912727e+100.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  639
+  411
   between
   contigs
   'r65-636.4'
@@ -154,8 +154,8 @@ BEGIN 11
   'r120-534.1'
   to
   be
-  (0,
-  572).
+  (55,
+  470).
 END 11
 BEGIN 12
   Overlap
@@ -166,14 +166,14 @@ BEGIN 12
   'r120-534.1'
   has
   size
-  572,
+  415,
   415
   matches,
   and
   the
   score
   of
-  9.671676831492262e+89.
+  7.567919118561536e+101.
 END 12
 BEGIN 13
   Contig
@@ -199,8 +199,8 @@ BEGIN 14
   'r95-319.5'
   to
   be
-  (0,
-  572).
+  (30,
+  255).
 END 14
 BEGIN 15
   Overlap
@@ -211,14 +211,14 @@ BEGIN 15
   'r95-319.5'
   has
   size
-  572,
+  225,
   225
   matches,
   and
   the
   score
   of
-  1.6778658165647238e+31.
+  9.702443895063588e+57.
 END 15
 BEGIN 16
   Contig
@@ -244,8 +244,8 @@ BEGIN 17
   'r65-636.4'
   to
   be
-  (0,
-  572).
+  (25,
+  192).
 END 17
 BEGIN 18
   Overlap
@@ -256,14 +256,14 @@ BEGIN 18
   'r65-636.4'
   has
   size
-  572,
+  192,
   192
   matches,
   and
   the
   score
   of
-  4.142170252288712e+20.
+  3.486187487801468e+50.
 END 18
 BEGIN 19
   Found
@@ -272,7 +272,7 @@ BEGIN 19
   overlap
   of
   size
-  597
+  192
   between
   contigs
   'r40-256.0'
@@ -326,8 +326,8 @@ BEGIN 22
   'r226-703.2'
   to
   be
-  (0,
-  478).
+  (161,
+  452).
 END 22
 BEGIN 23
   Overlap
@@ -338,14 +338,14 @@ BEGIN 23
   'r226-703.2'
   has
   size
-  478,
-  317
+  452,
+  452
   matches,
   and
   the
   score
   of
-  9.514041265899792e+66.
+  2.662356803553286e+110.
 END 23
 BEGIN 24
   Found
@@ -354,7 +354,7 @@ BEGIN 24
   overlap
   of
   size
-  639
+  452
   between
   contigs
   (1)
@@ -381,8 +381,8 @@ BEGIN 25
   'r120-534.1'
   to
   be
-  (0,
-  613).
+  (55,
+  470).
 END 25
 BEGIN 26
   Overlap
@@ -393,14 +393,14 @@ BEGIN 26
   'r120-534.1'
   has
   size
-  613,
+  415,
   415
   matches,
   and
   the
   score
   of
-  8.507630676484986e+86.
+  7.567919118561536e+101.
 END 26
 BEGIN 27
   Contig
@@ -426,8 +426,8 @@ BEGIN 28
   'r95-319.5'
   to
   be
-  (0,
-  613).
+  (30,
+  255).
 END 28
 BEGIN 29
   Overlap
@@ -438,14 +438,14 @@ BEGIN 29
   'r95-319.5'
   has
   size
-  613,
+  225,
   225
   matches,
   and
   the
   score
   of
-  1.1081855888668361e+28.
+  9.702443895063588e+57.
 END 29
 BEGIN 30
   Contig
@@ -471,8 +471,8 @@ BEGIN 31
   (1)
   to
   be
-  (0,
-  613).
+  (25,
+  192).
 END 31
 BEGIN 32
   Overlap
@@ -483,14 +483,14 @@ BEGIN 32
   (1)
   has
   size
-  613,
+  192,
   192
   matches,
   and
   the
   score
   of
-  1.0070631592253773e+17.
+  3.486187487801468e+50.
 END 32
 BEGIN 33
   Found
@@ -499,7 +499,7 @@ BEGIN 33
   overlap
   of
   size
-  638
+  192
   between
   contigs
   'r40-256.0'
@@ -561,8 +561,8 @@ BEGIN 38
   'r226-703.2'
   to
   be
-  (0,
-  478).
+  (106,
+  309).
 END 38
 BEGIN 39
   Overlap
@@ -573,14 +573,14 @@ BEGIN 39
   'r226-703.2'
   has
   size
-  478,
+  309,
   309
   matches,
   and
   the
   score
   of
-  3.282325859709657e+64.
+  4.912068917522916e+77.
 END 39
 BEGIN 40
   Found
@@ -589,7 +589,7 @@ BEGIN 40
   overlap
   of
   size
-  584
+  309
   between
   contigs
   'r120-534.1'
@@ -616,8 +616,8 @@ BEGIN 41
   'r226-703.2'
   to
   be
-  (0,
-  333).
+  (131,
+  94).
 END 41
 BEGIN 42
   Overlap
@@ -628,16 +628,34 @@ BEGIN 42
   'r226-703.2'
   has
   size
-  333,
+  94,
   94
   matches,
   and
   the
   score
   of
-  6888582.022202525.
+  1.863888668441794e+27.
 END 42
 BEGIN 43
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  94
+  between
+  contigs
+  'r95-319.5'
+  and
+  'r226-703.2',
+  resulting
+  in
+  contig
+  (7).
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -653,26 +671,7 @@ BEGIN 43
   'r40-256.0'
   to
   be
-  (0,
-  478).
-END 43
-BEGIN 44
-  Overlap
-  between
-  contigs
-  'r226-703.2'
-  and
-  'r40-256.0'
-  has
-  size
-  478,
-  31
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
+  None.
 END 44
 BEGIN 45
   Cycle
@@ -717,8 +716,8 @@ BEGIN 47
   (6)
   to
   be
-  (0,
-  584).
+  (25,
+  200).
 END 47
 BEGIN 48
   Overlap
@@ -729,14 +728,14 @@ BEGIN 48
   (6)
   has
   size
-  584,
+  200,
   200
   matches,
   and
   the
   score
   of
-  1.782397165020423e+22.
+  2.5418296416307405e+52.
 END 48
 BEGIN 49
   Found
@@ -745,7 +744,7 @@ BEGIN 49
   overlap
   of
   size
-  609
+  200
   between
   contigs
   'r95-319.5'
@@ -754,7 +753,7 @@ BEGIN 49
   resulting
   in
   contig
-  (7).
+  (8).
 END 49
 BEGIN 50
   Calculated
@@ -772,8 +771,8 @@ BEGIN 50
   (6)
   to
   be
-  (0,
-  584).
+  (80,
+  137).
 END 50
 BEGIN 51
   Overlap
@@ -784,14 +783,14 @@ BEGIN 51
   (6)
   has
   size
-  584,
+  137,
   137
   matches,
   and
   the
   score
   of
-  -0.8492814605052263.
+  2.6905190841246747e+37.
 END 51
 BEGIN 52
   Found
@@ -800,7 +799,7 @@ BEGIN 52
   overlap
   of
   size
-  664
+  137
   between
   contigs
   'r40-256.0'
@@ -809,7 +808,7 @@ BEGIN 52
   resulting
   in
   contig
-  (8).
+  (9).
 END 52
 BEGIN 53
   Constructed
@@ -862,8 +861,8 @@ BEGIN 57
   'r95-319.5'
   to
   be
-  (0,
-  225).
+  (55,
+  162).
 END 57
 BEGIN 58
   Overlap
@@ -874,14 +873,14 @@ BEGIN 58
   'r95-319.5'
   has
   size
-  225,
+  162,
   162
   matches,
   and
   the
   score
   of
-  5.163914847774876e+38.
+  2.41386156883294e+43.
 END 58
 BEGIN 59
   Found
@@ -890,7 +889,7 @@ BEGIN 59
   overlap
   of
   size
-  280
+  162
   between
   contigs
   'r40-256.0'
@@ -899,7 +898,7 @@ BEGIN 59
   resulting
   in
   contig
-  (9).
+  (10).
 END 59
 BEGIN 60
   Cycle
@@ -974,8 +973,8 @@ BEGIN 65
   (6)
   to
   be
-  (0,
-  584).
+  (55,
+  558).
 END 65
 BEGIN 66
   Overlap
@@ -986,14 +985,14 @@ BEGIN 66
   (6)
   has
   size
-  584,
-  529
+  558,
+  558
   matches,
   and
   the
   score
   of
-  7.038550785329376e+123.
+  3.1331810095219665e+134.
 END 66
 BEGIN 67
   Found
@@ -1002,7 +1001,7 @@ BEGIN 67
   overlap
   of
   size
-  639
+  558
   between
   contigs
   (1)
@@ -1011,7 +1010,7 @@ BEGIN 67
   resulting
   in
   contig
-  (10).
+  (11).
 END 67
 BEGIN 68
   Calculated
@@ -1024,31 +1023,31 @@ BEGIN 68
   255
   between
   contigs
-  (9)
-  and
   (10)
+  and
+  (11)
   to
   be
-  (0,
-  639).
+  (25,
+  255).
 END 68
 BEGIN 69
   Overlap
   between
   contigs
-  (9)
-  and
   (10)
+  and
+  (11)
   has
   size
-  639,
+  255,
   255
   matches,
   and
   the
   score
   of
-  2.194580993713484e+35.
+  1.2126758297886686e+65.
 END 69
 BEGIN 70
   Found
@@ -1057,16 +1056,16 @@ BEGIN 70
   overlap
   of
   size
-  664
+  255
   between
   contigs
-  (9)
+  (10)
   and
-  (10),
+  (11),
   resulting
   in
   contig
-  (11).
+  (12).
 END 70
 BEGIN 71
   Outputting

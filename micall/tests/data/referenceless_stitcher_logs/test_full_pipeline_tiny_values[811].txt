@@ -44,8 +44,8 @@ BEGIN 5
   'r261-713.2'
   to
   be
-  (0,
-  453).
+  (253,
+  384).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r261-713.2'
   has
   size
-  453,
-  200
+  384,
+  384
   matches,
   and
   the
   score
   of
-  3.063686492571928e+32.
+  7.054047544551789e+94.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  706
+  384
   between
   contigs
   'r8-644.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r165-459.1'
   to
   be
-  (0,
-  637).
+  (157,
+  452).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r165-459.1'
   has
   size
-  637,
+  295,
   295
   matches,
   and
   the
   score
   of
-  1.3996456065839629e+48.
+  2.0698818862705537e+74.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r165-459.1'
   to
   be
-  (0,
-  706).
+  (157,
+  452).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r165-459.1'
   has
   size
-  706,
+  295,
   295
   matches,
   and
   the
   score
   of
-  3.6050808106633057e+42.
+  2.0698818862705537e+74.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r165-459.1'
   to
   be
-  (0,
-  706).
+  (157,
+  452).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r165-459.1'
   has
   size
-  706,
+  295,
   295
   matches,
   and
   the
   score
   of
-  3.6050808106633057e+42.
+  2.0698818862705537e+74.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r211-904.0'
   to
   be
-  (0,
-  694).
+  (195,
+  555).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r211-904.0'
   has
   size
-  694,
-  499
+  555,
+  555
   matches,
   and
   the
   score
   of
-  1.5389976147240942e+106.
+  7.700661943316638e+133.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  889
+  555
   between
   contigs
   'r16-765.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r16-765.1'
   to
   be
-  (0,
-  750).
+  (6,
+  548).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r16-765.1'
   has
   size
-  750,
+  548,
   548
   matches,
   and
   the
   score
   of
-  7.270438458757452e+116.
+  2.3118486375381793e+132.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  756
+  548
   between
   contigs
   'r10-563.2'
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  555
+  548
   between
   contigs
-  (2)
+  'r10-563.2'
   and
-  'r211-904.0'
+  (1)
   to
   be
-  (0,
-  694).
+  (6,
+  548).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r10-563.2'
   and
-  'r211-904.0'
+  (1)
   has
   size
-  694,
-  493
+  548,
+  548
   matches,
   and
   the
   score
   of
-  2.274043535757523e+104.
+  2.3118486375381793e+132.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  895
+  548
   between
   contigs
-  (2)
+  'r10-563.2'
   and
-  'r211-904.0',
+  (1),
   resulting
   in
   contig

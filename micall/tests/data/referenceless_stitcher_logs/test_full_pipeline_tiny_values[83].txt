@@ -44,8 +44,8 @@ BEGIN 5
   'r346-692.2'
   to
   be
-  (0,
-  347).
+  (287,
+  251).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r346-692.2'
   has
   size
-  347,
-  60
+  251,
+  251
   matches,
   and
   the
   score
   of
-  8.999141775806178.
+  1.4414282368544858e+64.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  251
+  between
+  contigs
+  'r59-596.0'
+  and
+  'r346-692.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r405-666.1'
   to
   be
-  (0,
-  262).
-END 7
-BEGIN 8
+  (346,
+  192).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,24 +111,149 @@ BEGIN 8
   'r405-666.1'
   has
   size
-  262,
-  7
+  192,
+  192
   matches,
   and
   the
   score
   of
-  8.99999999999804.
-END 8
-BEGIN 9
+  3.486187487801468e+50.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  192
+  between
+  contigs
+  'r59-596.0'
+  and
+  'r405-666.1',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  634
+  and
+  consists
+  of
+  2
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  262
+  between
+  contigs
+  (1)
+  and
+  'r405-666.1'
+  to
+  be
+  (346,
+  608).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r405-666.1'
+  has
+  size
+  262,
+  262
+  matches,
+  and
+  the
+  score
+  of
+  4.229911291793805e+66.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r405-666.1'
+  completely.
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
-  538.
-END 9
-BEGIN 10
+  634.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
+END 18
+BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  262.
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -119,12 +262,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -139,16 +282,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -156,156 +299,45 @@ BEGIN 13
   overlap
   of
   size
-  251
+  262
   between
   contigs
-  'r59-596.0'
-  and
-  'r346-692.2'
-  to
-  be
-  (0,
-  347).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r59-596.0'
-  and
-  'r346-692.2'
-  has
-  size
-  347,
-  60
-  matches,
-  and
-  the
-  score
-  of
-  8.999141775806178.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  192
-  between
-  contigs
-  'r59-596.0'
+  (1)
   and
   'r405-666.1'
   to
   be
-  (0,
-  262).
-END 15
-BEGIN 16
+  (346,
+  608).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  'r59-596.0'
+  (1)
   and
   'r405-666.1'
   has
   size
   262,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  8.99999999999804.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  262
-  between
-  contigs
-  'r346-692.2'
-  and
-  'r405-666.1'
-  to
-  be
-  (0,
-  347).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r346-692.2'
-  and
-  'r405-666.1'
-  has
-  size
-  347,
   262
   matches,
   and
   the
   score
   of
-  1.5020442637417221e+60.
-END 18
-BEGIN 19
+  4.229911291793805e+66.
+END 25
+BEGIN 26
   Contig
-  'r346-692.2'
+  (1)
   covers
   contig
   'r405-666.1'
   completely.
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  251
-  between
-  contigs
-  'r59-596.0'
-  and
-  'r346-692.2'
-  to
-  be
-  (0,
-  347).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  'r59-596.0'
-  and
-  'r346-692.2'
-  has
-  size
-  347,
-  60
-  matches,
-  and
-  the
-  score
-  of
-  8.999141775806178.
-END 21
-BEGIN 22
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 22
+END 27

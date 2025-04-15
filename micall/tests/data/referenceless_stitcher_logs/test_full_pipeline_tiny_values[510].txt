@@ -44,8 +44,8 @@ BEGIN 5
   'r299-975.2'
   to
   be
-  (0,
-  677).
+  (256,
+  215).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r299-975.2'
   has
   size
-  677,
+  215,
   215
   matches,
   and
   the
   score
   of
-  4.3212041423388615e+19.
+  6.557040906636704e+55.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  933
+  215
   between
   contigs
   'r43-513.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r511-785.0'
   to
   be
-  (0,
-  677).
+  (212,
+  487).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r511-785.0'
   has
   size
-  677,
+  275,
   275
   matches,
   and
   the
   score
   of
-  6.21051639359329e+38.
+  5.052985591895452e+69.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r511-785.0'
   to
   be
-  (0,
-  933).
+  (468,
+  743).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r511-785.0'
   has
   size
-  933,
+  275,
   275
   matches,
   and
   the
   score
   of
-  2.1499430983831823e+18.
+  5.052985591895452e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r511-785.0'
   to
   be
-  (0,
-  933).
+  (468,
+  743).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r511-785.0'
   has
   size
-  933,
+  275,
   275
   matches,
   and
   the
   score
   of
-  2.1499430983831823e+18.
+  5.052985591895452e+69.
 END 25
 BEGIN 26
   Contig

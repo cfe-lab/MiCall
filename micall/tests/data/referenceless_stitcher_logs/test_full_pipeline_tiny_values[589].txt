@@ -44,8 +44,8 @@ BEGIN 5
   'r671-975.1'
   to
   be
-  (273,
-  257).
+  (455,
+  75).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r671-975.1'
   has
   size
-  257,
+  75,
   75
   matches,
   and
   the
   score
   of
-  6582531.715642764.
+  5.480311969170387e+22.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  75
+  between
+  contigs
+  'r216-745.2'
+  and
+  'r671-975.1',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r216-745.2'
   to
   be
-  (0,
-  530).
-END 7
-BEGIN 8
+  (64,
+  231).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,23 +111,23 @@ BEGIN 8
   'r216-745.2'
   has
   size
-  530,
+  231,
   231
   matches,
   and
   the
   score
   of
-  1.8859688332075983e+36.
-END 8
-BEGIN 9
+  3.3764785447606923e+59.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  594
+  231
   between
   contigs
   'r152-446.0'
@@ -118,9 +136,9 @@ BEGIN 9
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -158,59 +176,59 @@ BEGIN 12
   75
   between
   contigs
-  (1)
+  (2)
   and
   'r671-975.1'
   to
   be
-  (39,
-  305).
-END 12
-BEGIN 13
+  (519,
+  75).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r671-975.1'
   has
   size
-  305,
-  1
+  75,
+  75
   matches,
   and
   the
   score
   of
-  9.0.
-END 13
-BEGIN 14
+  5.480311969170387e+22.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  1
+  75
   between
   contigs
-  (1)
+  (2)
   and
   'r671-975.1',
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   594.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -223,29 +241,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   305.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -258,8 +276,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -274,16 +292,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -294,34 +312,52 @@ BEGIN 23
   75
   between
   contigs
-  (1)
+  (2)
   and
   'r671-975.1'
   to
   be
-  (39,
-  305).
-END 23
-BEGIN 24
+  (519,
+  75).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r671-975.1'
   has
   size
-  305,
-  1
+  75,
+  75
   matches,
   and
   the
   score
   of
-  9.0.
-END 24
-BEGIN 25
-  Outputting
-  2
-  contigs.
+  5.480311969170387e+22.
 END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  75
+  between
+  contigs
+  (2)
+  and
+  'r671-975.1',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

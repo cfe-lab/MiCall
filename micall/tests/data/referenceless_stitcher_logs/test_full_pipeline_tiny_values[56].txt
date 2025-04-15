@@ -44,8 +44,8 @@ BEGIN 5
   'r540-993.2'
   to
   be
-  (0,
-  454).
+  (361,
+  142).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r540-993.2'
   has
   size
-  454,
-  93
+  142,
+  142
   matches,
   and
   the
   score
   of
-  8.973926644770133.
+  4.829442900495358e+38.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  142
+  between
+  contigs
+  'r179-681.0'
+  and
+  'r540-993.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,36 +99,124 @@ BEGIN 7
   'r652-959.1'
   to
   be
-  (0,
-  503).
-END 7
-BEGIN 8
+  None.
+END 8
+BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  815
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  308
+  between
+  contigs
+  (1)
+  and
+  'r652-959.1'
+  to
+  be
+  (473,
+  781).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
-  'r179-681.0'
+  (1)
   and
   'r652-959.1'
   has
   size
-  503,
-  30
+  308,
+  308
   matches,
   and
   the
   score
   of
-  9.0.
-END 8
-BEGIN 9
+  2.4308710492663585e+77.
+END 12
+BEGIN 13
+  Contig
+  (1)
+  covers
+  contig
+  'r652-959.1'
+  completely.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  503.
-END 9
-BEGIN 10
+  815.
+END 14
+BEGIN 15
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  308.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -119,12 +225,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -139,53 +245,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  142
-  between
-  contigs
-  'r179-681.0'
-  and
-  'r540-993.2'
-  to
-  be
-  (0,
-  454).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r179-681.0'
-  and
-  'r540-993.2'
-  has
-  size
-  454,
-  93
-  matches,
-  and
-  the
-  score
-  of
-  8.973926644770133.
-END 14
-BEGIN 15
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -196,116 +265,42 @@ BEGIN 15
   308
   between
   contigs
-  'r179-681.0'
+  (1)
   and
   'r652-959.1'
   to
   be
-  (0,
-  503).
-END 15
-BEGIN 16
+  (473,
+  781).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  'r179-681.0'
+  (1)
   and
   'r652-959.1'
   has
   size
-  503,
-  30
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  308
-  between
-  contigs
-  'r540-993.2'
-  and
-  'r652-959.1'
-  to
-  be
-  (0,
-  454).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r540-993.2'
-  and
-  'r652-959.1'
-  has
-  size
-  454,
+  308,
   308
   matches,
   and
   the
   score
   of
-  1.1263536445872533e+66.
-END 18
-BEGIN 19
+  2.4308710492663585e+77.
+END 23
+BEGIN 24
   Contig
-  'r540-993.2'
+  (1)
   covers
   contig
   'r652-959.1'
   completely.
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  142
-  between
-  contigs
-  'r179-681.0'
-  and
-  'r540-993.2'
-  to
-  be
-  (0,
-  454).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  'r179-681.0'
-  and
-  'r540-993.2'
-  has
-  size
-  454,
-  93
-  matches,
-  and
-  the
-  score
-  of
-  8.973926644770133.
-END 21
-BEGIN 22
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 22
+END 25

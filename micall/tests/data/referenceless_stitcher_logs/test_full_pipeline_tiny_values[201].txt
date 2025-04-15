@@ -44,8 +44,8 @@ BEGIN 5
   'r245-668.2'
   to
   be
-  (0,
-  500).
+  (23,
+  447).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r245-668.2'
   has
   size
-  500,
+  424,
   424
   matches,
   and
   the
   score
   of
-  1.6882851314855044e+98.
+  1.0368134368976624e+104.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r222-721.1'
   to
   be
-  (0,
-  500).
+  (93,
+  303).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r222-721.1'
   has
   size
-  500,
+  303,
   303
   matches,
   and
   the
   score
   of
-  1.3375850519442587e+61.
+  1.4423042520676164e+76.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  593
+  303
   between
   contigs
   'r129-524.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r245-668.2'
   to
   be
-  (0,
-  593).
+  (116,
+  540).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r245-668.2'
   has
   size
-  593,
+  424,
   424
   matches,
   and
   the
   score
   of
-  1.6215573871520505e+91.
+  1.0368134368976624e+104.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r245-668.2'
   to
   be
-  (0,
-  593).
+  (116,
+  540).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r245-668.2'
   has
   size
-  593,
+  424,
   424
   matches,
   and
   the
   score
   of
-  1.6215573871520505e+91.
+  1.0368134368976624e+104.
 END 25
 BEGIN 26
   Contig

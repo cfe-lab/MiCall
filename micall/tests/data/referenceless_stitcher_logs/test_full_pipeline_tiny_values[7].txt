@@ -44,8 +44,8 @@ BEGIN 5
   'r134-891.2'
   to
   be
-  (0,
-  758).
+  (22,
+  333).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r134-891.2'
   has
   size
-  758,
+  333,
   333
   matches,
   and
   the
   score
   of
-  2.1737915979388428e+50.
+  1.6329465837832323e+83.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  780
+  333
   between
   contigs
   'r112-466.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r139-407.0'
   to
   be
-  (0,
-  758).
+  (5,
+  274).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r139-407.0'
   has
   size
-  758,
+  269,
   269
   matches,
   and
   the
   score
   of
-  1.9953179249499456e+30.
+  2.944082014509719e+68.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r139-407.0'
   to
   be
-  (0,
-  780).
+  (27,
+  296).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r139-407.0'
   has
   size
-  780,
+  269,
   269
   matches,
   and
   the
   score
   of
-  5.046816169212994e+28.
+  2.944082014509719e+68.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r139-407.0'
   to
   be
-  (0,
-  780).
+  (27,
+  296).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r139-407.0'
   has
   size
-  780,
+  269,
   269
   matches,
   and
   the
   score
   of
-  5.046816169212994e+28.
+  2.944082014509719e+68.
 END 25
 BEGIN 26
   Contig

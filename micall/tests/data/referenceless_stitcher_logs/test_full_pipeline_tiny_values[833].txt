@@ -44,8 +44,8 @@ BEGIN 5
   'r187-618.2'
   to
   be
-  (0,
-  660).
+  (6,
+  438).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r187-618.2'
   has
   size
-  660,
+  432,
   432
   matches,
   and
   the
   score
   of
-  2.9229268605160615e+88.
+  7.040271329247873e+105.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r574-874.1'
   to
   be
-  (0,
-  301).
+  (393,
+  267).
 END 8
 BEGIN 9
   Overlap
@@ -101,16 +101,34 @@ BEGIN 9
   'r574-874.1'
   has
   size
-  301,
-  11
+  267,
+  267
   matches,
   and
   the
   score
   of
-  8.999999999999917.
+  7.187495747151675e+67.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  267
+  between
+  contigs
+  'r181-840.0'
+  and
+  'r574-874.1',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -122,22 +140,22 @@ BEGIN 10
   fittest
   has
   length
-  660
+  694
   and
   consists
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -145,44 +163,52 @@ BEGIN 12
   overlap
   of
   size
-  267
+  432
   between
   contigs
-  'r181-840.0'
+  (1)
   and
-  'r574-874.1'
+  'r187-618.2'
   to
   be
-  (0,
-  301).
-END 12
-BEGIN 13
+  (6,
+  438).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r181-840.0'
+  (1)
   and
-  'r574-874.1'
+  'r187-618.2'
   has
   size
-  301,
-  11
+  432,
+  432
   matches,
   and
   the
   score
   of
-  8.999999999999917.
-END 13
-BEGIN 14
+  7.040271329247873e+105.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r187-618.2'
+  completely.
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
-  660.
-END 14
-BEGIN 15
+  694.
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -195,29 +221,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
-  301.
-END 18
-BEGIN 19
+  432.
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -230,8 +256,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -246,16 +272,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -263,37 +289,45 @@ BEGIN 22
   overlap
   of
   size
-  267
+  432
   between
   contigs
-  'r181-840.0'
+  (1)
   and
-  'r574-874.1'
+  'r187-618.2'
   to
   be
-  (0,
-  301).
-END 22
-BEGIN 23
+  (6,
+  438).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  'r181-840.0'
+  (1)
   and
-  'r574-874.1'
+  'r187-618.2'
   has
   size
-  301,
-  11
+  432,
+  432
   matches,
   and
   the
   score
   of
-  8.999999999999917.
-END 23
-BEGIN 24
+  7.040271329247873e+105.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r187-618.2'
+  completely.
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 24
+END 27

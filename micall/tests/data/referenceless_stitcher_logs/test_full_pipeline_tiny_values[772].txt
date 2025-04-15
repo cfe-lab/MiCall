@@ -44,8 +44,8 @@ BEGIN 5
   'r256-717.0'
   to
   be
-  (0,
-  462).
+  (244,
+  277).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r256-717.0'
   has
   size
-  462,
-  218
+  277,
+  277
   matches,
   and
   the
   score
   of
-  3.3270327746356705e+37.
+  2.0683224771640222e+70.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  706
+  277
   between
   contigs
   'r12-532.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r180-512.2'
   to
   be
-  (0,
-  521).
+  (168,
+  501).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r180-512.2'
   has
   size
-  521,
+  333,
   333
   matches,
   and
   the
   score
   of
-  3.3400017636978067e+68.
+  1.6329465837832323e+83.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r180-512.2'
   to
   be
-  (0,
-  706).
+  (168,
+  501).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r180-512.2'
   has
   size
-  706,
+  333,
   333
   matches,
   and
   the
   score
   of
-  2.2861855174985185e+54.
+  1.6329465837832323e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r180-512.2'
   to
   be
-  (0,
-  706).
+  (168,
+  501).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r180-512.2'
   has
   size
-  706,
+  333,
   333
   matches,
   and
   the
   score
   of
-  2.2861855174985185e+54.
+  1.6329465837832323e+83.
 END 25
 BEGIN 26
   Contig

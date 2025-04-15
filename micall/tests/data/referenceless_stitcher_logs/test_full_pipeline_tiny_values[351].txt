@@ -44,8 +44,8 @@ BEGIN 5
   'r195-615.1'
   to
   be
-  (0,
-  421).
+  (88,
+  302).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r195-615.1'
   has
   size
-  421,
+  302,
   302
   matches,
   and
   the
   score
   of
-  4.60641966172509e+66.
+  7.1361621731366855e+75.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  509
+  302
   between
   contigs
   'r107-496.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r195-615.1'
   to
   be
-  (0,
-  421).
+  (135,
+  241).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r195-615.1'
   has
   size
-  421,
+  241,
   241
   matches,
   and
   the
   score
   of
-  1.3100684353104695e+48.
+  4.9467406530147763e+61.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  556
+  241
   between
   contigs
   'r60-435.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  509).
+  (47,
+  329).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  509,
+  329,
   329
   matches,
   and
   the
   score
   of
-  3.2785339552965386e+68.
+  9.821769819102729e+81.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  556
+  329
   between
   contigs
   'r60-435.2'

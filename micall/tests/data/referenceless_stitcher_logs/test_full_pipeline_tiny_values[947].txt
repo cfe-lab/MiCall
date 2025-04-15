@@ -44,8 +44,8 @@ BEGIN 5
   'r255-771.1'
   to
   be
-  (0,
-  517).
+  (210,
+  401).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r255-771.1'
   has
   size
-  517,
-  307
+  401,
+  401
   matches,
   and
   the
   score
   of
-  1.3390987275375524e+61.
+  3.3145646650686706e+98.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  727
+  401
   between
   contigs
   'r45-655.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r378-806.0'
   to
   be
-  (0,
-  429).
+  (333,
+  278).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r378-806.0'
   has
   size
-  429,
-  96
+  278,
+  278
   matches,
   and
   the
   score
   of
-  6.748471843441708.
+  2.0921652732166993e+70.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  278
+  between
+  contigs
+  'r45-655.2'
+  and
+  'r378-806.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -132,22 +150,22 @@ BEGIN 10
   fittest
   has
   length
-  727
+  762
   and
   consists
   of
-  2
+  3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r378-806.0'
   to
   be
-  (0,
-  429).
-END 12
-BEGIN 13
+  (333,
+  394).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,23 +193,23 @@ BEGIN 13
   'r378-806.0'
   has
   size
-  429,
-  96
+  394,
+  394
   matches,
   and
   the
   score
   of
-  6.748471843441708.
-END 13
-BEGIN 14
+  9.795772613575714e+96.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  762
+  394
   between
   contigs
   (1)
@@ -200,54 +218,46 @@ BEGIN 14
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
-  Constructed
-  a
-  path
-  of
-  length
-  727.
+  (3).
 END 15
 BEGIN 16
-  Removed
+  Cycle
   2
-  components
-  from
-  the
-  working
-  list,
-  having
+  finished
+  with
   1
-  still
-  to
-  process.
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  762
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Calculating
-  all
-  paths...
-END 17
-BEGIN 18
   Cycle
-  1
+  3
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  429.
-END 19
-BEGIN 20
+  762.
+END 18
+BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -258,70 +268,17 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 22
-BEGIN 23
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  394
-  between
-  contigs
-  (1)
-  and
-  'r378-806.0'
-  to
-  be
-  (0,
-  429).
-END 23
-BEGIN 24
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r378-806.0'
-  has
-  size
-  429,
-  96
-  matches,
-  and
-  the
-  score
-  of
-  6.748471843441708.
-END 24
-BEGIN 25
+END 20
+BEGIN 21
   Outputting
-  2
+  1
   contigs.
-END 25
+END 21

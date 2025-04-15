@@ -44,8 +44,8 @@ BEGIN 5
   'r422-817.2'
   to
   be
-  (0,
-  735).
+  (291,
+  687).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r422-817.2'
   has
   size
-  735,
+  396,
   396
   matches,
   and
   the
   score
   of
-  4.139916064839202e+71.
+  3.981693768274056e+97.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r324-717.0'
   to
   be
-  (0,
-  735).
+  (193,
+  587).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r324-717.0'
   has
   size
-  735,
+  394,
   394
   matches,
   and
   the
   score
   of
-  1.0059626265641018e+71.
+  9.795772613575714e+96.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r324-717.0'
   to
   be
-  (0,
-  735).
+  (193,
+  587).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r324-717.0'
   has
   size
-  735,
+  394,
   394
   matches,
   and
   the
   score
   of
-  1.0059626265641018e+71.
+  9.795772613575714e+96.
 END 14
 BEGIN 15
   Contig

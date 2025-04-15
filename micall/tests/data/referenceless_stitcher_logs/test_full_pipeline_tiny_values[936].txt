@@ -44,8 +44,8 @@ BEGIN 5
   'r147-768.0'
   to
   be
-  (0,
-  622).
+  (48,
+  461).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r147-768.0'
   has
   size
-  622,
+  461,
   461
   matches,
   and
   the
   score
   of
-  1.1929813115024171e+100.
+  3.6272476543578743e+112.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  670
+  461
   between
   contigs
   'r99-607.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r460-906.1'
   to
   be
-  (0,
-  447).
+  (313,
+  309).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r460-906.1'
   has
   size
-  447,
-  134
+  309,
+  309
   matches,
   and
   the
   score
   of
-  272645859168.59244.
+  4.912068917522916e+77.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  760
+  309
   between
   contigs
   'r147-768.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r460-906.1'
   to
   be
-  (0,
-  447).
+  (361,
+  309).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r460-906.1'
   has
   size
-  447,
-  86
+  309,
+  309
   matches,
   and
   the
   score
   of
-  8.998401137503192.
+  4.912068917522916e+77.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  808
+  309
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r460-906.1'
   to
   be
-  (0,
-  447).
+  (361,
+  309).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   'r460-906.1'
   has
   size
-  447,
-  86
+  309,
+  309
   matches,
   and
   the
   score
   of
-  8.998401137503192.
+  4.912068917522916e+77.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  309
+  between
+  contigs
+  (1)
+  and
+  'r460-906.1',
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

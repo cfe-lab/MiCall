@@ -44,8 +44,8 @@ BEGIN 5
   'r259-630.2'
   to
   be
-  (0,
-  372).
+  (256,
+  287).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r259-630.2'
   has
   size
-  372,
-  116
+  287,
+  287
   matches,
   and
   the
   score
   of
-  584886487788.8241.
+  2.9635207903657437e+72.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  628
+  287
   between
   contigs
   'r3-545.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r407-677.0'
   to
   be
-  (30,
-  271).
+  (404,
+  139).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r407-677.0'
   has
   size
-  271,
-  7
+  139,
+  139
   matches,
   and
   the
   score
   of
-  8.999999999999448.
+  1.1274333663187209e+38.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  139
+  between
+  contigs
+  'r3-545.1'
+  and
+  'r407-677.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -132,22 +150,22 @@ BEGIN 10
   fittest
   has
   length
-  534
+  675
   and
   consists
   of
   3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r407-677.0'
   to
   be
-  (0,
-  271).
-END 12
-BEGIN 13
+  (404,
+  224).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,23 +193,23 @@ BEGIN 13
   'r407-677.0'
   has
   size
-  271,
-  5
+  224,
+  224
   matches,
   and
   the
   score
   of
-  8.999999999999847.
-END 13
-BEGIN 14
+  9.56562969983455e+57.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  534
+  224
   between
   contigs
   (1)
@@ -200,9 +218,9 @@ BEGIN 14
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -214,30 +232,30 @@ BEGIN 15
   fittest
   has
   length
-  534
+  675
   and
   consists
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  534.
-END 17
-BEGIN 18
+  675.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -250,17 +268,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 20
+END 21

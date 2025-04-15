@@ -44,8 +44,8 @@ BEGIN 5
   'r149-822.1'
   to
   be
-  (0,
-  674).
+  (18,
+  604).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r149-822.1'
   has
   size
-  674,
+  604,
   604
   matches,
   and
   the
   score
   of
-  4.76606236180585e+139.
+  1.3826047266942277e+145.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  692
+  604
   between
   contigs
   'r131-752.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r394-786.2'
   to
   be
-  (0,
-  674).
+  (245,
+  638).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r394-786.2'
   has
   size
-  674,
+  393,
   393
   matches,
   and
   the
   score
   of
-  1.980667845732707e+75.
+  4.858595149998396e+96.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r394-786.2'
   to
   be
-  (0,
-  692).
+  (263,
+  656).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r394-786.2'
   has
   size
-  692,
+  393,
   393
   matches,
   and
   the
   score
   of
-  1.169585130514103e+74.
+  4.858595149998396e+96.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r394-786.2'
   to
   be
-  (0,
-  692).
+  (263,
+  656).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r394-786.2'
   has
   size
-  692,
+  393,
   393
   matches,
   and
   the
   score
   of
-  1.169585130514103e+74.
+  4.858595149998396e+96.
 END 25
 BEGIN 26
   Contig

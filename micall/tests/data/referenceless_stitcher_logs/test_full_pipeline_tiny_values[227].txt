@@ -44,8 +44,8 @@ BEGIN 5
   'r219-956.0'
   to
   be
-  (0,
-  738).
+  (77,
+  533).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r219-956.0'
   has
   size
-  738,
+  533,
   533
   matches,
   and
   the
   score
   of
-  1.599573780926495e+113.
+  1.0340359398322641e+129.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  815
+  533
   between
   contigs
   'r142-751.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r553-834.2'
   to
   be
-  (0,
-  738).
+  (334,
+  616).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r553-834.2'
   has
   size
-  738,
+  282,
   282
   matches,
   and
   the
   score
   of
-  9.62655330357457e+35.
+  1.751529937039277e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r553-834.2'
   to
   be
-  (0,
-  815).
+  (411,
+  693).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r553-834.2'
   has
   size
-  815,
+  282,
   282
   matches,
   and
   the
   score
   of
-  9.615775541320989e+29.
+  1.751529937039277e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r553-834.2'
   to
   be
-  (0,
-  815).
+  (411,
+  693).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r553-834.2'
   has
   size
-  815,
+  282,
   282
   matches,
   and
   the
   score
   of
-  9.615775541320989e+29.
+  1.751529937039277e+71.
 END 25
 BEGIN 26
   Contig

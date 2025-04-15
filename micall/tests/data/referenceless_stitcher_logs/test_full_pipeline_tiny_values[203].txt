@@ -44,8 +44,8 @@ BEGIN 5
   'r344-807.1'
   to
   be
-  (0,
-  464).
+  (170,
+  354).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r344-807.1'
   has
   size
-  464,
-  294
+  354,
+  354
   matches,
   and
   the
   score
   of
-  1.3215406105209805e+61.
+  6.496953930677054e+87.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  634
+  354
   between
   contigs
   'r174-697.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r314-688.2'
   to
   be
-  (0,
-  524).
+  (140,
+  515).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r314-688.2'
   has
   size
-  524,
+  375,
   375
   matches,
   and
   the
   score
   of
-  2.5642646337215004e+81.
+  5.1117822283669277e+92.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r314-688.2'
   to
   be
-  (0,
-  634).
+  (140,
+  515).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r314-688.2'
   has
   size
-  634,
+  375,
   375
   matches,
   and
   the
   score
   of
-  6.8730758710658145e+72.
+  5.1117822283669277e+92.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r314-688.2'
   to
   be
-  (0,
-  634).
+  (140,
+  515).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r314-688.2'
   has
   size
-  634,
+  375,
   375
   matches,
   and
   the
   score
   of
-  6.8730758710658145e+72.
+  5.1117822283669277e+92.
 END 25
 BEGIN 26
   Contig

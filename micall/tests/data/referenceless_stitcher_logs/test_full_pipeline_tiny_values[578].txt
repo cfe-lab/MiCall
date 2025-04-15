@@ -44,8 +44,8 @@ BEGIN 5
   'r90-802.0'
   to
   be
-  (0,
-  713).
+  (40,
+  428).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r90-802.0'
   has
   size
-  713,
+  428,
   428
   matches,
   and
   the
   score
   of
-  1.846436164388361e+83.
+  8.544873271173324e+104.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  753
+  428
   between
   contigs
   'r50-517.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r90-802.0'
   to
   be
-  (0,
-  713).
+  (38,
+  325).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r90-802.0'
   has
   size
-  713,
+  325,
   325
   matches,
   and
   the
   score
   of
-  1.8429602695062665e+51.
+  2.3619006179242557e+81.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  751
+  325
   between
   contigs
   'r52-414.2'
@@ -181,8 +181,8 @@ BEGIN 13
   'r52-414.2'
   to
   be
-  (0,
-  753).
+  (2,
+  365).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r52-414.2'
   has
   size
-  753,
+  363,
   363
   matches,
   and
   the
   score
   of
-  8.429797506866286e+59.
+  9.005503351252367e+89.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r52-414.2'
   to
   be
-  (0,
-  753).
+  (2,
+  365).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r52-414.2'
   has
   size
-  753,
+  363,
   363
   matches,
   and
   the
   score
   of
-  8.429797506866286e+59.
+  9.005503351252367e+89.
 END 25
 BEGIN 26
   Contig

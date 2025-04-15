@@ -44,8 +44,8 @@ BEGIN 5
   'r282-855.0'
   to
   be
-  (0,
-  711).
+  (93,
+  667).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r282-855.0'
   has
   size
-  711,
+  574,
   574
   matches,
   and
   the
   score
   of
-  6.582670799810416e+127.
+  1.4032442602152564e+138.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r648-991.1'
   to
   be
-  (0,
-  344).
+  (459,
+  252).
 END 8
 BEGIN 9
   Overlap
@@ -101,16 +101,34 @@ BEGIN 9
   'r648-991.1'
   has
   size
-  344,
-  42
+  252,
+  252
   matches,
   and
   the
   score
   of
-  8.99999997121963.
+  2.919586199699182e+64.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  252
+  between
+  contigs
+  'r189-899.2'
+  and
+  'r648-991.1',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -122,22 +140,22 @@ BEGIN 10
   fittest
   has
   length
-  711
+  803
   and
   consists
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -145,44 +163,52 @@ BEGIN 12
   overlap
   of
   size
-  252
+  574
   between
   contigs
-  'r189-899.2'
+  (1)
   and
-  'r648-991.1'
+  'r282-855.0'
   to
   be
-  (0,
-  344).
-END 12
-BEGIN 13
+  (93,
+  667).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r189-899.2'
+  (1)
   and
-  'r648-991.1'
+  'r282-855.0'
   has
   size
-  344,
-  42
+  574,
+  574
   matches,
   and
   the
   score
   of
-  8.99999997121963.
-END 13
-BEGIN 14
+  1.4032442602152564e+138.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r282-855.0'
+  completely.
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
-  711.
-END 14
-BEGIN 15
+  803.
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -195,29 +221,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
-  344.
-END 18
-BEGIN 19
+  574.
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -230,8 +256,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -246,16 +272,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -263,37 +289,45 @@ BEGIN 22
   overlap
   of
   size
-  252
+  574
   between
   contigs
-  'r189-899.2'
+  (1)
   and
-  'r648-991.1'
+  'r282-855.0'
   to
   be
-  (0,
-  344).
-END 22
-BEGIN 23
+  (93,
+  667).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  'r189-899.2'
+  (1)
   and
-  'r648-991.1'
+  'r282-855.0'
   has
   size
-  344,
-  42
+  574,
+  574
   matches,
   and
   the
   score
   of
-  8.99999997121963.
-END 23
-BEGIN 24
+  1.4032442602152564e+138.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r282-855.0'
+  completely.
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 24
+END 27

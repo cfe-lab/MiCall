@@ -44,8 +44,8 @@ BEGIN 5
   'r295-703.2'
   to
   be
-  (35,
-  297).
+  (247,
+  85).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r295-703.2'
   has
   size
-  297,
+  85,
   85
   matches,
   and
   the
   score
   of
-  6753389.195651399.
+  2.1038994177683307e+25.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  85
+  between
+  contigs
+  'r48-379.0'
+  and
+  'r295-703.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r649-904.1'
   to
   be
-  (232,
-  177).
-END 7
-BEGIN 8
+  (354,
+  55).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,60 +111,59 @@ BEGIN 8
   'r649-904.1'
   has
   size
-  177,
+  55,
   55
   matches,
   and
   the
   score
   of
-  6142536.67478464.
-END 8
-BEGIN 9
-  Constructed
-  a
-  path
-  of
-  length
-  409.
+  6.100778010830523e+17.
 END 9
 BEGIN 10
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  55
+  between
+  contigs
+  'r295-703.2'
+  and
+  'r649-904.1',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  857
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
+  Cycle
+  2
+  started
+  with
+  1
+  paths
 END 12
 BEGIN 13
   Calculated
@@ -156,111 +173,112 @@ BEGIN 13
   overlap
   of
   size
-  85
+  55
   between
   contigs
-  'r48-379.0'
+  (1)
   and
-  'r295-703.2'
+  'r649-904.1'
   to
   be
-  (35,
-  297).
+  (601,
+  55).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r48-379.0'
+  (1)
   and
-  'r295-703.2'
+  'r649-904.1'
   has
   size
-  297,
-  85
+  55,
+  55
   matches,
   and
   the
   score
   of
-  6753389.195651399.
+  6.100778010830523e+17.
 END 14
 BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
+  Found
+  a
+  significant
   overlap
   of
   size
   55
   between
   contigs
-  'r295-703.2'
+  (1)
   and
-  'r649-904.1'
-  to
-  be
-  (232,
-  177).
+  'r649-904.1',
+  resulting
+  in
+  contig
+  (3).
 END 15
 BEGIN 16
-  Overlap
-  between
-  contigs
-  'r295-703.2'
-  and
-  'r649-904.1'
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
   has
-  size
-  177,
-  55
-  matches,
+  length
+  857
   and
-  the
-  score
+  consists
   of
-  6142536.67478464.
+  3
+  parts.
 END 16
 BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  256
-  between
-  contigs
-  'r48-379.0'
-  and
-  'r649-904.1'
-  to
-  be
-  (0,
-  332).
+  Cycle
+  3
+  started
+  with
+  1
+  paths
 END 17
 BEGIN 18
-  Overlap
-  between
-  contigs
-  'r48-379.0'
-  and
-  'r649-904.1'
-  has
-  size
-  332,
-  4
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  9.0.
+  length
+  857.
 END 18
 BEGIN 19
-  Outputting
+  Removed
   3
-  contigs.
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
 END 19
+BEGIN 20
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+END 20
+BEGIN 21
+  Outputting
+  1
+  contigs.
+END 21

@@ -44,8 +44,8 @@ BEGIN 5
   'r308-761.0'
   to
   be
-  (0,
-  454).
+  (30,
+  396).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r308-761.0'
   has
   size
-  454,
+  396,
   396
   matches,
   and
   the
   score
   of
-  1.0693827060450935e+93.
+  3.981693768274056e+97.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  484
+  396
   between
   contigs
   'r278-703.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r446-807.2'
   to
   be
-  (0,
-  362).
+  (138,
+  316).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r446-807.2'
   has
   size
-  362,
-  224
+  316,
+  316
   matches,
   and
   the
   score
   of
-  1.5185562703746607e+47.
+  1.6877907659126485e+79.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  500
+  316
   between
   contigs
   'r308-761.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r446-807.2'
   to
   be
-  (0,
-  362).
+  (168,
+  316).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r446-807.2'
   has
   size
-  362,
-  194
+  316,
+  316
   matches,
   and
   the
   score
   of
-  6.579600840091152e+37.
+  1.6877907659126485e+79.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  530
+  316
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r446-807.2'
   to
   be
-  (0,
-  362).
+  (168,
+  316).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r446-807.2'
   has
   size
-  362,
-  194
+  316,
+  316
   matches,
   and
   the
   score
   of
-  6.579600840091152e+37.
+  1.6877907659126485e+79.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  530
+  316
   between
   contigs
   (1)

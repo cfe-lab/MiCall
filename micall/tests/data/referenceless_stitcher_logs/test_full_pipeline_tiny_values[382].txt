@@ -44,8 +44,8 @@ BEGIN 5
   'r441-897.1'
   to
   be
-  (0,
-  457).
+  (281,
+  273).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r441-897.1'
   has
   size
-  457,
-  176
+  273,
+  273
   matches,
   and
   the
   score
   of
-  6.572395448568567e+24.
+  1.234252474413844e+69.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  738
+  273
   between
   contigs
   'r160-713.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r276-617.0'
   to
   be
-  (0,
-  554).
+  (116,
+  458).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r276-617.0'
   has
   size
-  554,
+  342,
   342
   matches,
   and
   the
   score
   of
-  6.820668564556864e+68.
+  1.1374034731310364e+85.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r276-617.0'
   to
   be
-  (0,
-  738).
+  (116,
+  458).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r276-617.0'
   has
   size
-  738,
+  342,
   342
   matches,
   and
   the
   score
   of
-  4.692169499249834e+54.
+  1.1374034731310364e+85.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r276-617.0'
   to
   be
-  (0,
-  738).
+  (116,
+  458).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r276-617.0'
   has
   size
-  738,
+  342,
   342
   matches,
   and
   the
   score
   of
-  4.692169499249834e+54.
+  1.1374034731310364e+85.
 END 25
 BEGIN 26
   Contig

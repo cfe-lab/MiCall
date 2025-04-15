@@ -44,8 +44,8 @@ BEGIN 5
   'r431-898.0'
   to
   be
-  (0,
-  468).
+  (324,
+  409).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r431-898.0'
   has
   size
-  468,
-  144
+  409,
+  409
   matches,
   and
   the
   score
   of
-  15801522045101.07.
+  2.2583397693581677e+100.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  792
+  409
   between
   contigs
   'r107-839.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r477-904.1'
   to
   be
-  (0,
-  428).
+  (370,
+  363).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r477-904.1'
   has
   size
-  428,
-  58
+  363,
+  363
   matches,
   and
   the
   score
   of
-  8.999999998713749.
+  9.005503351252367e+89.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  363
+  between
+  contigs
+  'r107-839.2'
+  and
+  'r477-904.1',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r477-904.1'
   to
   be
-  (0,
-  428).
-END 12
-BEGIN 13
+  (370,
+  422).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,23 +193,23 @@ BEGIN 13
   'r477-904.1'
   has
   size
-  428,
-  58
+  422,
+  422
   matches,
   and
   the
   score
   of
-  8.999999998713749.
-END 13
-BEGIN 14
+  2.5535062782726194e+103.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  798
+  422
   between
   contigs
   (1)
@@ -200,9 +218,9 @@ BEGIN 14
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -220,24 +238,24 @@ BEGIN 15
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   798.
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -250,17 +268,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 20
+END 21

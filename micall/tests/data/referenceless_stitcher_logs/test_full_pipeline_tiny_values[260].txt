@@ -44,8 +44,8 @@ BEGIN 5
   'r209-882.1'
   to
   be
-  (0,
-  674).
+  (102,
+  510).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r209-882.1'
   has
   size
-  674,
+  510,
   510
   matches,
   and
   the
   score
   of
-  1.1596896173542255e+111.
+  3.43109443207123e+123.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  776
+  510
   between
   contigs
   'r107-718.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r209-882.1'
   to
   be
-  (0,
-  674).
+  (192,
+  294).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r209-882.1'
   has
   size
-  674,
+  294,
   294
   matches,
   and
   the
   score
   of
-  5.444749817437809e+44.
+  1.0238306899084244e+74.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  866
+  294
   between
   contigs
   'r17-502.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  776).
+  (90,
+  396).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  776,
+  396,
   396
   matches,
   and
   the
   score
   of
-  3.5129870570362646e+68.
+  3.981693768274056e+97.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  866
+  396
   between
   contigs
   'r17-502.2'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  776).
+  (90,
+  396).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  776,
+  396,
   396
   matches,
   and
   the
   score
   of
-  3.5129870570362646e+68.
+  3.981693768274056e+97.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  866
+  396
   between
   contigs
   'r17-502.2'

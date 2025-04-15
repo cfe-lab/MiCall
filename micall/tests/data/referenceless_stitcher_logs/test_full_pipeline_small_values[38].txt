@@ -44,8 +44,8 @@ BEGIN 5
   'r467-861.4'
   to
   be
-  (0,
-  395).
+  (301,
+  191).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r467-861.4'
   has
   size
-  395,
-  94
+  191,
+  191
   matches,
   and
   the
   score
   of
-  -14.364899262712814.
+  1.714258815211483e+50.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  191
+  between
+  contigs
+  'r166-657.3'
+  and
+  'r467-861.4',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r599-960.5'
   to
   be
-  (299,
-  193).
-END 7
-BEGIN 8
+  (433,
+  59).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,16 +111,34 @@ BEGIN 8
   'r599-960.5'
   has
   size
-  193,
+  59,
   59
   matches,
   and
   the
   score
   of
-  6244570.204618942.
-END 8
-BEGIN 9
+  6.135673296540518e+18.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  59
+  between
+  contigs
+  'r166-657.3'
+  and
+  'r599-960.5',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -118,10 +154,10 @@ BEGIN 9
   'r376-734.0'
   to
   be
-  (0,
-  359).
-END 9
-BEGIN 10
+  (210,
+  282).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -130,23 +166,23 @@ BEGIN 10
   'r376-734.0'
   has
   size
-  359,
-  149
+  282,
+  282
   matches,
   and
   the
   score
   of
-  6.968731193278461e+23.
-END 10
-BEGIN 11
+  1.751529937039277e+71.
+END 12
+BEGIN 13
   Found
   a
   significant
   overlap
   of
   size
-  569
+  282
   between
   contigs
   'r166-657.3'
@@ -155,9 +191,9 @@ BEGIN 11
   resulting
   in
   contig
-  (1).
-END 11
-BEGIN 12
+  (3).
+END 13
+BEGIN 14
   Calculated
   cutoff
   for
@@ -173,10 +209,10 @@ BEGIN 12
   'r190-484.2'
   to
   be
-  (0,
-  492).
-END 12
-BEGIN 13
+  (24,
+  319).
+END 14
+BEGIN 15
   Overlap
   between
   contigs
@@ -185,59 +221,22 @@ BEGIN 13
   'r190-484.2'
   has
   size
-  492,
+  295,
   295
   matches,
   and
   the
   score
   of
-  1.8805151899234605e+59.
-END 13
-BEGIN 14
+  2.0698818862705537e+74.
+END 15
+BEGIN 16
   Contig
   'r166-657.3'
   covers
   contig
   'r190-484.2'
   completely.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  161
-  between
-  contigs
-  'r166-657.3'
-  and
-  'r497-766.1'
-  to
-  be
-  (0,
-  270).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r166-657.3'
-  and
-  'r497-766.1'
-  has
-  size
-  270,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  8.99999999999996.
 END 16
 BEGIN 17
   Cycle
@@ -251,11 +250,11 @@ BEGIN 17
   fittest
   has
   length
-  569
+  795
   and
   consists
   of
-  2
+  4
   parts.
 END 17
 BEGIN 18
@@ -277,31 +276,31 @@ BEGIN 19
   268
   between
   contigs
-  (1)
+  (3)
   and
   'r467-861.4'
   to
   be
-  (0,
-  395).
+  (301,
+  268).
 END 19
 BEGIN 20
   Overlap
   between
   contigs
-  (1)
+  (3)
   and
   'r467-861.4'
   has
   size
-  395,
-  94
+  268,
+  268
   matches,
   and
   the
   score
   of
-  -14.364899262712814.
+  1.454700128966913e+68.
 END 20
 BEGIN 21
   Found
@@ -310,16 +309,16 @@ BEGIN 21
   overlap
   of
   size
-  696
+  268
   between
   contigs
-  (1)
+  (3)
   and
   'r467-861.4',
   resulting
   in
   contig
-  (2).
+  (4).
 END 21
 BEGIN 22
   Calculated
@@ -332,31 +331,31 @@ BEGIN 22
   136
   between
   contigs
-  (1)
+  (3)
   and
   'r599-960.5'
   to
   be
-  (0,
-  362).
+  (433,
+  136).
 END 22
 BEGIN 23
   Overlap
   between
   contigs
-  (1)
+  (3)
   and
   'r599-960.5'
   has
   size
-  362,
-  15
+  136,
+  136
   matches,
   and
   the
   score
   of
-  9.0.
+  2.628005262083779e+37.
 END 23
 BEGIN 24
   Found
@@ -365,16 +364,16 @@ BEGIN 24
   overlap
   of
   size
-  697
+  136
   between
   contigs
-  (1)
+  (3)
   and
   'r599-960.5',
   resulting
   in
   contig
-  (3).
+  (5).
 END 24
 BEGIN 25
   Calculated
@@ -387,35 +386,35 @@ BEGIN 25
   295
   between
   contigs
-  (1)
+  (3)
   and
   'r190-484.2'
   to
   be
-  (0,
-  569).
+  (24,
+  319).
 END 25
 BEGIN 26
   Overlap
   between
   contigs
-  (1)
+  (3)
   and
   'r190-484.2'
   has
   size
-  569,
+  295,
   295
   matches,
   and
   the
   score
   of
-  1.2848252205778563e+53.
+  2.0698818862705537e+74.
 END 26
 BEGIN 27
   Contig
-  (1)
+  (3)
   covers
   contig
   'r190-484.2'
@@ -432,31 +431,31 @@ BEGIN 28
   238
   between
   contigs
-  (1)
+  (3)
   and
   'r497-766.1'
   to
   be
-  (0,
-  270).
+  (331,
+  238).
 END 28
 BEGIN 29
   Overlap
   between
   contigs
-  (1)
+  (3)
   and
   'r497-766.1'
   has
   size
-  270,
-  3
+  238,
+  238
   matches,
   and
   the
   score
   of
-  8.99999999999996.
+  1.18830533073086e+61.
 END 29
 BEGIN 30
   Found
@@ -465,53 +464,45 @@ BEGIN 30
   overlap
   of
   size
-  5
+  238
   between
   contigs
-  (1)
+  (3)
   and
   'r497-766.1',
   resulting
   in
   contig
-  (4).
+  (6).
 END 30
 BEGIN 31
-  Constructed
-  a
-  path
-  of
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  569.
+  795
+  and
+  consists
+  of
+  4
+  parts.
 END 31
 BEGIN 32
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  4
-  still
-  to
-  process.
-END 32
-BEGIN 33
-  Calculating
-  all
-  paths...
-END 33
-BEGIN 34
   Cycle
-  1
+  3
   started
   with
   1
   paths
-END 34
-BEGIN 35
+END 32
+BEGIN 33
   Calculated
   cutoff
   for
@@ -522,51 +513,51 @@ BEGIN 35
   263
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r599-960.5'
   to
   be
-  (0,
-  362).
-END 35
-BEGIN 36
+  (433,
+  263).
+END 33
+BEGIN 34
   Overlap
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r599-960.5'
   has
   size
-  362,
-  230
+  263,
+  263
   matches,
   and
   the
   score
   of
-  1.1091615904730635e+49.
-END 36
-BEGIN 37
+  8.56301343060922e+66.
+END 34
+BEGIN 35
   Found
   a
   significant
   overlap
   of
   size
-  494
+  263
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r599-960.5',
   resulting
   in
   contig
-  (5).
-END 37
-BEGIN 38
+  (7).
+END 35
+BEGIN 36
   Calculated
   cutoff
   for
@@ -577,33 +568,41 @@ BEGIN 38
   295
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r190-484.2'
   to
   be
-  (0,
-  395).
-END 38
-BEGIN 39
+  (24,
+  319).
+END 36
+BEGIN 37
   Overlap
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r190-484.2'
   has
   size
-  395,
-  18
+  295,
+  295
   matches,
   and
   the
   score
   of
-  9.0.
-END 39
-BEGIN 40
+  2.0698818862705537e+74.
+END 37
+BEGIN 38
+  Contig
+  (4)
+  covers
+  contig
+  'r190-484.2'
+  completely.
+END 38
+BEGIN 39
   Calculated
   cutoff
   for
@@ -614,43 +613,43 @@ BEGIN 40
   270
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r497-766.1'
   to
   be
-  (0,
-  395).
-END 40
-BEGIN 41
+  (331,
+  601).
+END 39
+BEGIN 40
   Overlap
   between
   contigs
-  'r467-861.4'
+  (4)
   and
   'r497-766.1'
   has
   size
-  395,
+  270,
   270
   matches,
   and
   the
   score
   of
-  8.952028742893512e+58.
-END 41
-BEGIN 42
+  2.979044776644523e+68.
+END 40
+BEGIN 41
   Contig
-  'r467-861.4'
+  (4)
   covers
   contig
   'r497-766.1'
   completely.
-END 42
-BEGIN 43
+END 41
+BEGIN 42
   Cycle
-  1
+  3
   finished
   with
   1
@@ -660,22 +659,22 @@ BEGIN 43
   fittest
   has
   length
-  494
+  795
   and
   consists
   of
-  2
+  4
   parts.
-END 43
-BEGIN 44
+END 42
+BEGIN 43
   Cycle
-  2
+  4
   started
   with
   1
   paths
-END 44
-BEGIN 45
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -683,54 +682,44 @@ BEGIN 45
   overlap
   of
   size
-  288
+  295
   between
   contigs
-  (5)
+  (7)
   and
   'r190-484.2'
   to
   be
-  (0,
-  295).
-END 45
-BEGIN 46
+  (24,
+  319).
+END 44
+BEGIN 45
   Overlap
   between
   contigs
-  (5)
+  (7)
   and
   'r190-484.2'
   has
   size
   295,
-  18
+  295
   matches,
   and
   the
   score
   of
-  8.999999999986132.
+  2.0698818862705537e+74.
+END 45
+BEGIN 46
+  Contig
+  (7)
+  covers
+  contig
+  'r190-484.2'
+  completely.
 END 46
 BEGIN 47
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  18
-  between
-  contigs
-  (5)
-  and
-  'r190-484.2',
-  resulting
-  in
-  contig
-  (6).
-END 47
-BEGIN 48
   Calculated
   cutoff
   for
@@ -741,51 +730,51 @@ BEGIN 48
   270
   between
   contigs
-  (5)
+  (7)
   and
   'r497-766.1'
   to
   be
-  (0,
-  494).
-END 48
-BEGIN 49
+  (331,
+  601).
+END 47
+BEGIN 48
   Overlap
   between
   contigs
-  (5)
+  (7)
   and
   'r497-766.1'
   has
   size
-  494,
+  270,
   270
   matches,
   and
   the
   score
   of
-  1.731321902752735e+51.
-END 49
-BEGIN 50
+  2.979044776644523e+68.
+END 48
+BEGIN 49
   Contig
-  (5)
+  (7)
   covers
   contig
   'r497-766.1'
   completely.
-END 50
-BEGIN 51
+END 49
+BEGIN 50
   Constructed
   a
   path
   of
   length
-  494.
-END 51
-BEGIN 52
+  795.
+END 50
+BEGIN 51
   Removed
-  2
+  4
   components
   from
   the
@@ -796,21 +785,21 @@ BEGIN 52
   still
   to
   process.
-END 52
-BEGIN 53
+END 51
+BEGIN 52
   Calculating
   all
   paths...
-END 53
-BEGIN 54
+END 52
+BEGIN 53
   Cycle
   1
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 53
+BEGIN 54
   Calculated
   cutoff
   for
@@ -826,36 +815,17 @@ BEGIN 55
   'r190-484.2'
   to
   be
-  (0,
-  295).
-END 55
-BEGIN 56
-  Overlap
-  between
-  contigs
-  'r497-766.1'
-  and
-  'r190-484.2'
-  has
-  size
-  295,
-  5
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999996.
-END 56
-BEGIN 57
+  None.
+END 54
+BEGIN 55
   Constructed
   a
   path
   of
   length
   295.
-END 57
-BEGIN 58
+END 55
+BEGIN 56
   Removed
   1
   components
@@ -868,8 +838,8 @@ BEGIN 58
   still
   to
   process.
-END 58
-BEGIN 59
+END 56
+BEGIN 57
   Giving
   up
   on
@@ -884,16 +854,16 @@ BEGIN 59
   is
   a
   singleton.
-END 59
-BEGIN 60
+END 57
+BEGIN 58
   Initial
   overlap
   stitching
   produced
-  4
+  3
   contigs.
-END 60
-BEGIN 61
+END 58
+BEGIN 59
   Calculated
   cutoff
   for
@@ -901,136 +871,44 @@ BEGIN 61
   overlap
   of
   size
-  268
+  295
   between
   contigs
-  (1)
-  and
-  (5)
-  to
-  be
-  (0,
-  494).
-END 61
-BEGIN 62
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  (5)
-  has
-  size
-  494,
-  193
-  matches,
-  and
-  the
-  score
-  of
-  1.216297645649921e+27.
-END 62
-BEGIN 63
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  795
-  between
-  contigs
-  (1)
-  and
-  (5),
-  resulting
-  in
-  contig
-  (7).
-END 63
-BEGIN 64
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  260
-  between
-  contigs
-  'r497-766.1'
+  (7)
   and
   'r190-484.2'
   to
   be
-  (0,
-  295).
-END 64
-BEGIN 65
+  (24,
+  319).
+END 59
+BEGIN 60
   Overlap
   between
   contigs
-  'r497-766.1'
+  (7)
   and
   'r190-484.2'
   has
   size
   295,
-  5
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999996.
-END 65
-BEGIN 66
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  295
-  between
-  contigs
-  (7)
-  and
-  'r190-484.2'
-  to
-  be
-  (0,
-  795).
-END 66
-BEGIN 67
-  Overlap
-  between
-  contigs
-  (7)
-  and
-  'r190-484.2'
-  has
-  size
-  795,
   295
   matches,
   and
   the
   score
   of
-  4.682132352305764e+35.
-END 67
-BEGIN 68
+  2.0698818862705537e+74.
+END 60
+BEGIN 61
   Contig
   (7)
   covers
   contig
   'r190-484.2'
   completely.
-END 68
-BEGIN 69
+END 61
+BEGIN 62
   Calculated
   cutoff
   for
@@ -1046,10 +924,10 @@ BEGIN 69
   'r497-766.1'
   to
   be
-  (0,
-  795).
-END 69
-BEGIN 70
+  (331,
+  601).
+END 62
+BEGIN 63
   Overlap
   between
   contigs
@@ -1058,25 +936,25 @@ BEGIN 70
   'r497-766.1'
   has
   size
-  795,
+  270,
   270
   matches,
   and
   the
   score
   of
-  5.644885554816561e+27.
-END 70
-BEGIN 71
+  2.979044776644523e+68.
+END 63
+BEGIN 64
   Contig
   (7)
   covers
   contig
   'r497-766.1'
   completely.
-END 71
-BEGIN 72
+END 64
+BEGIN 65
   Outputting
   1
   contigs.
-END 72
+END 65

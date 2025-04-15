@@ -44,28 +44,9 @@ BEGIN 5
   'r595-971.2'
   to
   be
-  (0,
-  377).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r11-339.1'
-  and
-  'r595-971.2'
-  has
-  size
-  377,
-  14
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 6
-BEGIN 7
   Calculated
   cutoff
   for
@@ -81,36 +62,17 @@ BEGIN 7
   'r268-555.0'
   to
   be
-  (0,
-  288).
-END 7
-BEGIN 8
-  Overlap
-  between
-  contigs
-  'r595-971.2'
-  and
-  'r268-555.0'
-  has
-  size
-  288,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999918.
-END 8
-BEGIN 9
+  None.
+END 6
+BEGIN 7
   Constructed
   a
   path
   of
   length
   377.
-END 9
-BEGIN 10
+END 7
+BEGIN 8
   Removed
   1
   components
@@ -123,8 +85,8 @@ BEGIN 10
   still
   to
   process.
-END 10
-BEGIN 11
+END 8
+BEGIN 9
   Giving
   up
   on
@@ -139,16 +101,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -164,28 +126,9 @@ BEGIN 13
   'r595-971.2'
   to
   be
-  (0,
-  377).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r11-339.1'
-  and
-  'r595-971.2'
-  has
-  size
-  377,
-  14
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 14
-BEGIN 15
+  None.
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -201,28 +144,9 @@ BEGIN 15
   'r268-555.0'
   to
   be
-  (0,
-  288).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r595-971.2'
-  and
-  'r268-555.0'
-  has
-  size
-  288,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999918.
-END 16
-BEGIN 17
+  None.
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -238,10 +162,10 @@ BEGIN 17
   'r268-555.0'
   to
   be
-  (84,
-  245).
-END 17
-BEGIN 18
+  (257,
+  72).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -250,17 +174,53 @@ BEGIN 18
   'r268-555.0'
   has
   size
-  245,
+  72,
   72
   matches,
   and
   the
   score
   of
-  6526073.04534651.
-END 18
-BEGIN 19
+  1.2002147851897737e+22.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  72
+  between
+  contigs
+  'r11-339.1'
+  and
+  'r268-555.0',
+  resulting
+  in
+  contig
+  (1).
+END 15
+BEGIN 16
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  377
+  between
+  contigs
+  (1)
+  and
+  'r595-971.2'
+  to
+  be
+  None.
+END 16
+BEGIN 17
   Outputting
-  3
+  2
   contigs.
-END 19
+END 17

@@ -44,8 +44,8 @@ BEGIN 5
   'r216-538.2'
   to
   be
-  (0,
-  464).
+  (40,
+  363).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r216-538.2'
   has
   size
-  464,
+  323,
   323
   matches,
   and
   the
   score
   of
-  1.1164984233583501e+70.
+  5.790135795793465e+80.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r176-639.0'
   to
   be
-  (0,
-  464).
+  (47,
+  251).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r176-639.0'
   has
   size
-  464,
+  251,
   251
   matches,
   and
   the
   score
   of
-  6.545580874951993e+47.
+  1.4414282368544858e+64.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  511
+  251
   between
   contigs
   'r129-426.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r216-538.2'
   to
   be
-  (0,
-  511).
+  (87,
+  410).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r216-538.2'
   has
   size
-  511,
+  323,
   323
   matches,
   and
   the
   score
   of
-  2.322848894321904e+66.
+  5.790135795793465e+80.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r216-538.2'
   to
   be
-  (0,
-  511).
+  (87,
+  410).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r216-538.2'
   has
   size
-  511,
+  323,
   323
   matches,
   and
   the
   score
   of
-  2.322848894321904e+66.
+  5.790135795793465e+80.
 END 25
 BEGIN 26
   Contig

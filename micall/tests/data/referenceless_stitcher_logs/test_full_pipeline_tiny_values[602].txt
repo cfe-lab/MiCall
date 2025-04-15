@@ -44,8 +44,8 @@ BEGIN 5
   'r196-803.0'
   to
   be
-  (0,
-  742).
+  (105,
+  713).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r196-803.0'
   has
   size
-  742,
+  608,
   608
   matches,
   and
   the
   score
   of
-  5.3903173420129235e+135.
+  1.1293778328531667e+146.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r153-756.2'
   to
   be
-  (0,
-  742).
+  (62,
+  666).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r153-756.2'
   has
   size
-  742,
+  604,
   604
   matches,
   and
   the
   score
   of
-  3.27410969262184e+134.
+  1.3826047266942277e+145.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r153-756.2'
   to
   be
-  (0,
-  742).
+  (62,
+  666).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r153-756.2'
   has
   size
-  742,
+  604,
   604
   matches,
   and
   the
   score
   of
-  3.27410969262184e+134.
+  1.3826047266942277e+145.
 END 14
 BEGIN 15
   Contig

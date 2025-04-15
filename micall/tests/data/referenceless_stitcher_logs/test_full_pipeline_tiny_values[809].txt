@@ -44,8 +44,8 @@ BEGIN 5
   'r231-850.1'
   to
   be
-  (0,
-  620).
+  (156,
+  441).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r231-850.1'
   has
   size
-  620,
+  441,
   441
   matches,
   and
   the
   score
   of
-  1.8656851060753092e+94.
+  4.80976274846251e+107.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  776
+  441
   between
   contigs
   'r75-671.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r484-917.2'
   to
   be
-  (0,
-  434).
+  (253,
+  367).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r484-917.2'
   has
   size
-  434,
-  181
+  367,
+  367
   matches,
   and
   the
   score
   of
-  1.0820423551677756e+28.
+  7.459220964213018e+90.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  687
+  367
   between
   contigs
   'r231-850.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r484-917.2'
   to
   be
-  (0,
-  434).
+  (409,
+  367).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r484-917.2'
   has
   size
-  434,
-  25
+  367,
+  367
   matches,
   and
   the
   score
   of
-  9.0.
+  7.459220964213018e+90.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  843
+  367
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r484-917.2'
   to
   be
-  (0,
-  434).
+  (409,
+  367).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   'r484-917.2'
   has
   size
-  434,
-  25
+  367,
+  367
   matches,
   and
   the
   score
   of
-  9.0.
+  7.459220964213018e+90.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  367
+  between
+  contigs
+  (1)
+  and
+  'r484-917.2',
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

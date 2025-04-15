@@ -44,8 +44,8 @@ BEGIN 5
   'r536-910.1'
   to
   be
-  (184,
-  349).
+  (435,
+  98).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r536-910.1'
   has
   size
-  349,
+  98,
   98
   matches,
   and
   the
   score
   of
-  6944049.824789928.
+  1.7057265669363116e+28.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  98
+  between
+  contigs
+  'r101-633.2'
+  and
+  'r536-910.1',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r383-645.0'
   to
   be
-  (0,
-  263).
-END 7
-BEGIN 8
+  (282,
+  251).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,24 +111,159 @@ BEGIN 8
   'r383-645.0'
   has
   size
-  263,
-  7
+  251,
+  251
   matches,
   and
   the
   score
   of
-  8.999999999998014.
-END 8
-BEGIN 9
+  1.4414282368544858e+64.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  251
+  between
+  contigs
+  'r101-633.2'
+  and
+  'r383-645.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  545
+  and
+  consists
+  of
+  2
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  110
+  between
+  contigs
+  (2)
+  and
+  'r536-910.1'
+  to
+  be
+  (435,
+  110).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r536-910.1'
+  has
+  size
+  110,
+  110
+  matches,
+  and
+  the
+  score
+  of
+  1.2671993766235231e+31.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  110
+  between
+  contigs
+  (2)
+  and
+  'r536-910.1',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
-  533.
-END 9
-BEGIN 10
+  545.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
+END 18
+BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  375.
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -119,12 +272,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -139,90 +292,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  98
-  between
-  contigs
-  'r101-633.2'
-  and
-  'r536-910.1'
-  to
-  be
-  (184,
-  349).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r101-633.2'
-  and
-  'r536-910.1'
-  has
-  size
-  349,
-  98
-  matches,
-  and
-  the
-  score
-  of
-  6944049.824789928.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  251
-  between
-  contigs
-  'r101-633.2'
-  and
-  'r383-645.0'
-  to
-  be
-  (0,
-  263).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r101-633.2'
-  and
-  'r383-645.0'
-  has
-  size
-  263,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999998014.
-END 16
-BEGIN 17
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -233,107 +312,52 @@ BEGIN 17
   110
   between
   contigs
-  'r383-645.0'
+  (2)
   and
   'r536-910.1'
   to
   be
-  (0,
-  375).
-END 17
-BEGIN 18
+  (435,
+  110).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  'r383-645.0'
+  (2)
   and
   'r536-910.1'
   has
   size
-  375,
+  110,
   110
   matches,
   and
   the
   score
   of
-  1591711974.5985157.
-END 18
-BEGIN 19
+  1.2671993766235231e+31.
+END 25
+BEGIN 26
   Found
   a
   significant
   overlap
   of
   size
-  528
+  110
   between
   contigs
-  'r383-645.0'
+  (2)
   and
   'r536-910.1',
   resulting
   in
   contig
-  (1).
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  251
-  between
-  contigs
-  'r101-633.2'
-  and
-  (1)
-  to
-  be
-  (0,
-  528).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  'r101-633.2'
-  and
-  (1)
-  has
-  size
-  528,
-  246
-  matches,
-  and
-  the
-  score
-  of
-  1.916945303713812e+41.
-END 21
-BEGIN 22
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  810
-  between
-  contigs
-  'r101-633.2'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (2).
-END 22
-BEGIN 23
+  (4).
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 23
+END 27

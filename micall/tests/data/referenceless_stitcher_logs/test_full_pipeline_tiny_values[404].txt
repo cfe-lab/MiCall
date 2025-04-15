@@ -44,28 +44,9 @@ BEGIN 5
   'r124-527.1'
   to
   be
-  (0,
-  404).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r473-877.2'
-  and
-  'r124-527.1'
-  has
-  size
-  404,
-  55
-  matches,
-  and
-  the
-  score
-  of
-  8.999999991559116.
-END 6
-BEGIN 7
   Calculated
   cutoff
   for
@@ -81,10 +62,10 @@ BEGIN 7
   'r645-960.0'
   to
   be
-  (0,
-  316).
-END 7
-BEGIN 8
+  (172,
+  233).
+END 6
+BEGIN 7
   Overlap
   between
   contigs
@@ -93,23 +74,23 @@ BEGIN 8
   'r645-960.0'
   has
   size
-  316,
-  144
+  233,
+  233
   matches,
   and
   the
   score
   of
-  5.7677802755316106e+25.
-END 8
-BEGIN 9
+  6.9410609640956635e+59.
+END 7
+BEGIN 8
   Found
   a
   significant
   overlap
   of
   size
-  488
+  233
   between
   contigs
   'r473-877.2'
@@ -119,8 +100,8 @@ BEGIN 9
   in
   contig
   (1).
-END 9
-BEGIN 10
+END 8
+BEGIN 9
   Cycle
   1
   finished
@@ -138,16 +119,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -164,9 +145,9 @@ BEGIN 12
   to
   be
   (0,
-  488).
-END 12
-BEGIN 13
+  55).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -175,32 +156,32 @@ BEGIN 13
   'r124-527.1'
   has
   size
-  488,
+  404,
   55
   matches,
   and
   the
   score
   of
-  8.999999999999988.
-END 13
-BEGIN 14
+  8.999999991559116.
+END 12
+BEGIN 13
   Contig
   (1)
   covers
   contig
   'r124-527.1'
   completely.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
   488.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -213,29 +194,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   404.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -248,8 +229,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -264,16 +245,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -290,9 +271,9 @@ BEGIN 23
   to
   be
   (0,
-  488).
-END 23
-BEGIN 24
+  55).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
@@ -301,17 +282,17 @@ BEGIN 24
   'r124-527.1'
   has
   size
-  488,
+  404,
   55
   matches,
   and
   the
   score
   of
-  8.999999999999988.
-END 24
-BEGIN 25
+  8.999999991559116.
+END 23
+BEGIN 24
   Outputting
   2
   contigs.
-END 25
+END 24

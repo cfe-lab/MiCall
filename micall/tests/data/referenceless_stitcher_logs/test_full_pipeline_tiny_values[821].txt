@@ -44,8 +44,8 @@ BEGIN 5
   'r70-795.2'
   to
   be
-  (0,
-  726).
+  (12,
+  611).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r70-795.2'
   has
   size
-  726,
+  611,
   611
   matches,
   and
   the
   score
   of
-  7.224598437503032e+137.
+  4.5882636811259986e+146.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  738
+  611
   between
   contigs
   'r58-680.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r413-760.0'
   to
   be
-  (0,
-  726).
+  (343,
+  691).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r413-760.0'
   has
   size
-  726,
+  348,
   348
   matches,
   and
   the
   score
   of
-  2.8319064565386942e+57.
+  3.846219397491637e+86.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r413-760.0'
   to
   be
-  (0,
-  738).
+  (355,
+  703).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r413-760.0'
   has
   size
-  738,
+  348,
   348
   matches,
   and
   the
   score
   of
-  3.3600154440167115e+56.
+  3.846219397491637e+86.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r413-760.0'
   to
   be
-  (0,
-  738).
+  (355,
+  703).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r413-760.0'
   has
   size
-  738,
+  348,
   348
   matches,
   and
   the
   score
   of
-  3.3600154440167115e+56.
+  3.846219397491637e+86.
 END 25
 BEGIN 26
   Contig

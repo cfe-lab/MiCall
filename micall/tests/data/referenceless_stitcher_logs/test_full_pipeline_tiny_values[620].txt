@@ -44,8 +44,8 @@ BEGIN 5
   'r397-911.1'
   to
   be
-  (0,
-  515).
+  (75,
+  395).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r397-911.1'
   has
   size
-  515,
+  395,
   395
   matches,
   and
   the
   score
   of
-  1.3939049486220523e+88.
+  1.9749573801967826e+97.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  590
+  395
   between
   contigs
   'r322-791.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r397-911.1'
   to
   be
-  (0,
-  515).
+  (102,
+  310).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r397-911.1'
   has
   size
-  515,
+  310,
   310
   matches,
   and
   the
   score
   of
-  1.1352051251951415e+62.
+  4.962749858723358e+77.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  617
+  310
   between
   contigs
   'r295-706.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  590).
+  (27,
+  385).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  590,
+  385,
   385
   matches,
   and
   the
   score
   of
-  1.8822266376201417e+79.
+  7.11244685088061e+94.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  617
+  385
   between
   contigs
   'r295-706.2'

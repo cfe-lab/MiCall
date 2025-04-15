@@ -44,8 +44,8 @@ BEGIN 5
   'r103-664.0'
   to
   be
-  (0,
-  562).
+  (89,
+  358).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r103-664.0'
   has
   size
-  562,
+  358,
   358
   matches,
   and
   the
   score
   of
-  1.367782610438071e+73.
+  5.386177693147606e+88.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  651
+  358
   between
   contigs
   'r14-460.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r103-664.0'
   to
   be
-  (0,
-  562).
+  (22,
+  368).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r103-664.0'
   has
   size
-  562,
+  368,
   368
   matches,
   and
   the
   score
   of
-  1.6030584397133032e+76.
+  1.5047743670980201e+91.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  584
+  368
   between
   contigs
   'r81-470.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (0,
-  584).
+  (67,
+  380).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  584,
+  380,
   380
   matches,
   and
   the
   score
   of
-  2.246586553218798e+78.
+  8.529646475074733e+93.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  651
+  380
   between
   contigs
   'r14-460.2'

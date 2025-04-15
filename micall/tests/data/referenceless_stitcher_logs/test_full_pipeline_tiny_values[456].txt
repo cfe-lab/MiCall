@@ -44,8 +44,8 @@ BEGIN 5
   'r364-910.0'
   to
   be
-  (0,
-  547).
+  (216,
+  534).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r364-910.0'
   has
   size
-  547,
-  331
+  534,
+  534
   matches,
   and
   the
   score
   of
-  1.1561049844760509e+66.
+  1.0401803854791448e+129.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  763
+  534
   between
   contigs
   'r148-897.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r201-534.2'
   to
   be
-  (0,
-  750).
+  (53,
+  387).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r201-534.2'
   has
   size
-  750,
+  334,
   334
   matches,
   and
   the
   score
   of
-  1.8476392791553257e+51.
+  1.6485645329756413e+83.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r201-534.2'
   to
   be
-  (0,
-  763).
+  (53,
+  387).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r201-534.2'
   has
   size
-  763,
+  334,
   334
   matches,
   and
   the
   score
   of
-  2.164571254499923e+50.
+  1.6485645329756413e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r201-534.2'
   to
   be
-  (0,
-  763).
+  (53,
+  387).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r201-534.2'
   has
   size
-  763,
+  334,
   334
   matches,
   and
   the
   score
   of
-  2.164571254499923e+50.
+  1.6485645329756413e+83.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r335-843.0'
   to
   be
-  (67,
-  305).
+  (285,
+  87).
 END 5
 BEGIN 6
   Overlap
@@ -56,173 +56,116 @@ BEGIN 6
   'r335-843.0'
   has
   size
-  305,
+  87,
   87
   matches,
   and
   the
   score
   of
-  6784792.568535168.
+  4.536381327690125e+25.
 END 6
 BEGIN 7
-  Calculated
-  cutoff
-  for
-  an
+  Found
+  a
+  significant
   overlap
   of
   size
-  119
+  87
   between
   contigs
-  'r137-453.1'
+  'r50-421.2'
   and
-  'r335-843.0'
-  to
-  be
-  (0,
-  433).
+  'r335-843.0',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
-  Overlap
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  119
   between
   contigs
   'r137-453.1'
   and
   'r335-843.0'
-  has
-  size
-  433,
-  119
-  matches,
-  and
-  the
-  score
-  of
-  7199044.575078893.
+  to
+  be
+  (198,
+  119).
 END 8
 BEGIN 9
-  Constructed
-  a
-  path
+  Overlap
+  between
+  contigs
+  'r137-453.1'
+  and
+  'r335-843.0'
+  has
+  size
+  119,
+  119
+  matches,
+  and
+  the
+  score
   of
-  length
-  509.
+  2.0890444072090588e+33.
 END 9
 BEGIN 10
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  119
+  between
+  contigs
+  'r137-453.1'
+  and
+  'r335-843.0',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  794
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
+  Cycle
+  2
+  started
+  with
+  1
+  paths
 END 12
 BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  87
-  between
-  contigs
-  'r50-421.2'
-  and
-  'r335-843.0'
-  to
-  be
-  (67,
-  305).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r50-421.2'
-  and
-  'r335-843.0'
-  has
-  size
-  305,
-  87
-  matches,
-  and
-  the
-  score
-  of
-  6784792.568535168.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  119
-  between
-  contigs
-  'r137-453.1'
-  and
-  'r335-843.0'
-  to
-  be
-  (0,
-  433).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r137-453.1'
-  and
-  'r335-843.0'
-  has
-  size
-  433,
-  119
-  matches,
-  and
-  the
-  score
-  of
-  7199044.575078893.
-END 16
-BEGIN 17
   Calculated
   cutoff
   for
@@ -235,87 +178,107 @@ BEGIN 17
   contigs
   'r50-421.2'
   and
-  'r137-453.1'
+  (2)
   to
   be
-  (0,
-  317).
-END 17
-BEGIN 18
+  (87,
+  285).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
   'r50-421.2'
   and
-  'r137-453.1'
+  (2)
   has
   size
-  317,
-  230
+  285,
+  285
   matches,
   and
   the
   score
   of
-  2.8034058556615877e+52.
-END 18
-BEGIN 19
+  1.449177165052371e+72.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  404
+  285
   between
   contigs
   'r50-421.2'
   and
-  'r137-453.1',
+  (2),
   resulting
   in
   contig
-  (1).
+  (3).
+END 15
+BEGIN 16
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  794
+  and
+  consists
+  of
+  3
+  parts.
+END 16
+BEGIN 17
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  794.
+END 18
+BEGIN 19
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
 END 19
 BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
+  Initial
   overlap
-  of
-  size
-  119
-  between
-  contigs
-  (1)
-  and
-  'r335-843.0'
-  to
-  be
-  (0,
-  433).
+  stitching
+  produced
+  1
+  contigs.
 END 20
 BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r335-843.0'
-  has
-  size
-  433,
-  119
-  matches,
-  and
-  the
-  score
-  of
-  7199044.575078893.
-END 21
-BEGIN 22
   Outputting
-  2
+  1
   contigs.
-END 22
+END 21

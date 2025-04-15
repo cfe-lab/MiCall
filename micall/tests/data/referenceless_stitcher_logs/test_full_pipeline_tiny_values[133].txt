@@ -44,8 +44,8 @@ BEGIN 5
   'r51-614.0'
   to
   be
-  (0,
-  665).
+  (51,
+  615).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r51-614.0'
   has
   size
-  665,
+  564,
   564
   matches,
   and
   the
   score
   of
-  2.6360229684548523e+128.
+  1.0370764644636236e+136.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r150-672.1'
   to
   be
-  (0,
-  523).
+  (150,
+  515).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r150-672.1'
   has
   size
-  523,
-  373
+  515,
+  515
   matches,
   and
   the
   score
   of
-  6.271665061320604e+80.
+  5.661736376134023e+124.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  673
+  515
   between
   contigs
   'r0-664.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r51-614.0'
   to
   be
-  (0,
-  673).
+  (51,
+  615).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r51-614.0'
   has
   size
-  673,
+  564,
   564
   matches,
   and
   the
   score
   of
-  6.503006205084749e+127.
+  1.0370764644636236e+136.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r51-614.0'
   to
   be
-  (0,
-  673).
+  (51,
+  615).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r51-614.0'
   has
   size
-  673,
+  564,
   564
   matches,
   and
   the
   score
   of
-  6.503006205084749e+127.
+  1.0370764644636236e+136.
 END 25
 BEGIN 26
   Contig

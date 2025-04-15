@@ -44,8 +44,8 @@ BEGIN 5
   'r329-816.1'
   to
   be
-  (0,
-  488).
+  (265,
+  310).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r329-816.1'
   has
   size
-  488,
-  223
+  310,
+  310
   matches,
   and
   the
   score
   of
-  1.6055398808962056e+37.
+  4.962749858723358e+77.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  753
+  310
   between
   contigs
   'r64-638.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r268-571.2'
   to
   be
-  (0,
-  575).
+  (204,
+  508).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r268-571.2'
   has
   size
-  575,
+  304,
   304
   matches,
   and
   the
   score
   of
-  3.804963534093738e+55.
+  2.914968515383263e+76.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r268-571.2'
   to
   be
-  (0,
-  753).
+  (204,
+  508).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r268-571.2'
   has
   size
-  753,
+  304,
   304
   matches,
   and
   the
   score
   of
-  8.480804516746389e+41.
+  2.914968515383263e+76.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r268-571.2'
   to
   be
-  (0,
-  753).
+  (204,
+  508).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r268-571.2'
   has
   size
-  753,
+  304,
   304
   matches,
   and
   the
   score
   of
-  8.480804516746389e+41.
+  2.914968515383263e+76.
 END 25
 BEGIN 26
   Contig

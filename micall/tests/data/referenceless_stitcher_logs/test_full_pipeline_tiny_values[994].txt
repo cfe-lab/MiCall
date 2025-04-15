@@ -44,8 +44,8 @@ BEGIN 5
   'r131-649.1'
   to
   be
-  (0,
-  712).
+  (10,
+  529).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r131-649.1'
   has
   size
-  712,
+  519,
   519
   matches,
   and
   the
   score
   of
-  1.1643061826925803e+111.
+  4.6415507810359e+125.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r121-832.2'
   to
   be
-  (0,
-  712).
+  (27,
+  388).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r121-832.2'
   has
   size
-  712,
+  388,
   388
   matches,
   and
   the
   score
   of
-  9.975532471819264e+70.
+  5.831696451262908e+95.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  739
+  388
   between
   contigs
   'r94-508.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r131-649.1'
   to
   be
-  (0,
-  739).
+  (37,
+  556).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r131-649.1'
   has
   size
-  739,
+  519,
   519
   matches,
   and
   the
   score
   of
-  8.614682270226292e+108.
+  4.6415507810359e+125.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r131-649.1'
   to
   be
-  (0,
-  739).
+  (37,
+  556).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r131-649.1'
   has
   size
-  739,
+  519,
   519
   matches,
   and
   the
   score
   of
-  8.614682270226292e+108.
+  4.6415507810359e+125.
 END 25
 BEGIN 26
   Contig

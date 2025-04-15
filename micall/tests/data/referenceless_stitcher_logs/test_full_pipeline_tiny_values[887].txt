@@ -44,8 +44,8 @@ BEGIN 5
   'r431-968.2'
   to
   be
-  (0,
-  538).
+  (236,
+  442).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r431-968.2'
   has
   size
-  538,
-  302
+  442,
+  442
   matches,
   and
   the
   score
   of
-  5.504763455998514e+57.
+  9.688755884906251e+107.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  774
+  442
   between
   contigs
   'r195-872.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r195-872.0'
   to
   be
-  (0,
-  678).
+  (173,
+  192).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r195-872.0'
   has
   size
-  678,
+  192,
   192
   matches,
   and
   the
   score
   of
-  301258228092.84644.
+  3.486187487801468e+50.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  851
+  192
   between
   contigs
   'r22-386.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  774).
+  (173,
+  192).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  774,
+  192,
   192
   matches,
   and
   the
   score
   of
-  0.08620305051485033.
+  3.486187487801468e+50.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  947
+  192
   between
   contigs
   'r22-386.1'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  774).
+  (173,
+  192).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   (1)
   has
   size
-  774,
+  192,
   192
   matches,
   and
   the
   score
   of
-  0.08620305051485033.
+  3.486187487801468e+50.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  192
+  between
+  contigs
+  'r22-386.1'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

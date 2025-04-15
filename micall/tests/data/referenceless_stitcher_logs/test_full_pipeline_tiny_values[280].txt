@@ -44,8 +44,8 @@ BEGIN 5
   'r241-973.0'
   to
   be
-  (0,
-  733).
+  (213,
+  551).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r241-973.0'
   has
   size
-  733,
-  520
+  551,
+  551
   matches,
   and
   the
   score
   of
-  3.5194886099859566e+109.
+  9.408315095413216e+132.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  946
+  551
   between
   contigs
   'r28-791.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r130-683.2'
   to
   be
-  (0,
-  764).
+  (102,
+  656).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r130-683.2'
   has
   size
-  764,
+  554,
   554
   matches,
   and
   the
   score
   of
-  5.95484754818114e+117.
+  3.828452717418304e+133.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r130-683.2'
   to
   be
-  (0,
-  946).
+  (102,
+  656).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r130-683.2'
   has
   size
-  946,
+  554,
   554
   matches,
   and
   the
   score
   of
-  5.842694834524633e+103.
+  3.828452717418304e+133.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r130-683.2'
   to
   be
-  (0,
-  946).
+  (102,
+  656).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r130-683.2'
   has
   size
-  946,
+  554,
   554
   matches,
   and
   the
   score
   of
-  5.842694834524633e+103.
+  3.828452717418304e+133.
 END 25
 BEGIN 26
   Contig

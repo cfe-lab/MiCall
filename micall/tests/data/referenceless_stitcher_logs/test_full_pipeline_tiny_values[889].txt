@@ -44,8 +44,8 @@ BEGIN 5
   'r488-921.0'
   to
   be
-  (0,
-  434).
+  (261,
+  212).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r488-921.0'
   has
   size
-  434,
-  173
+  212,
+  212
   matches,
   and
   the
   score
   of
-  2.9724197441274077e+25.
+  1.567400523137486e+55.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  695
+  212
   between
   contigs
   'r227-699.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r235-594.1'
   to
   be
-  (0,
-  473).
+  (8,
+  368).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r235-594.1'
   has
   size
-  473,
+  360,
   360
   matches,
   and
   the
   score
   of
-  6.133045388906193e+80.
+  2.1928844270686562e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r235-594.1'
   to
   be
-  (0,
-  695).
+  (8,
+  368).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r235-594.1'
   has
   size
-  695,
+  360,
   360
   matches,
   and
   the
   score
   of
-  4.1309589389879596e+63.
+  2.1928844270686562e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r235-594.1'
   to
   be
-  (0,
-  695).
+  (8,
+  368).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r235-594.1'
   has
   size
-  695,
+  360,
   360
   matches,
   and
   the
   score
   of
-  4.1309589389879596e+63.
+  2.1928844270686562e+89.
 END 25
 BEGIN 26
   Contig

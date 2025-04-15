@@ -44,8 +44,8 @@ BEGIN 5
   'r173-502.1'
   to
   be
-  (0,
-  411).
+  (23,
+  353).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r173-502.1'
   has
   size
-  411,
+  330,
   330
   matches,
   and
   the
   score
   of
-  1.5189969389914233e+76.
+  1.9833730825425966e+82.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r172-501.2'
   to
   be
-  (0,
-  411).
+  (22,
+  352).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r172-501.2'
   has
   size
-  411,
+  330,
   330
   matches,
   and
   the
   score
   of
-  1.5189969389914233e+76.
+  1.9833730825425966e+82.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r172-501.2'
   to
   be
-  (0,
-  411).
+  (22,
+  352).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r172-501.2'
   has
   size
-  411,
+  330,
   330
   matches,
   and
   the
   score
   of
-  1.5189969389914233e+76.
+  1.9833730825425966e+82.
 END 14
 BEGIN 15
   Contig

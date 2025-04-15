@@ -44,8 +44,8 @@ BEGIN 5
   'r347-937.0'
   to
   be
-  (0,
-  591).
+  (306,
+  240).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r347-937.0'
   has
   size
-  591,
+  240,
   240
   matches,
   and
   the
   score
   of
-  2.4614011390535873e+34.
+  4.881648102866337e+61.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  897
+  240
   between
   contigs
   'r41-586.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r650-931.2'
   to
   be
-  (0,
-  591).
+  (303,
+  585).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r650-931.2'
   has
   size
-  591,
+  282,
   282
   matches,
   and
   the
   score
   of
-  3.344976940462563e+47.
+  1.751529937039277e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r650-931.2'
   to
   be
-  (0,
-  897).
+  (609,
+  891).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r650-931.2'
   has
   size
-  897,
+  282,
   282
   matches,
   and
   the
   score
   of
-  3.72617336273347e+23.
+  1.751529937039277e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r650-931.2'
   to
   be
-  (0,
-  897).
+  (609,
+  891).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r650-931.2'
   has
   size
-  897,
+  282,
   282
   matches,
   and
   the
   score
   of
-  3.72617336273347e+23.
+  1.751529937039277e+71.
 END 25
 BEGIN 26
   Contig

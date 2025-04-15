@@ -44,8 +44,8 @@ BEGIN 5
   'r300-882.2'
   to
   be
-  (0,
-  583).
+  (231,
+  504).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r300-882.2'
   has
   size
-  583,
-  352
+  504,
+  504
   matches,
   and
   the
   score
   of
-  5.7268188972717916e+69.
+  2.0656670783768666e+122.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  814
+  504
   between
   contigs
   'r69-803.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r350-904.0'
   to
   be
-  (0,
-  555).
+  (281,
+  454).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r350-904.0'
   has
   size
-  555,
-  274
+  454,
+  454
   matches,
   and
   the
   score
   of
-  6.773616278051128e+47.
+  5.3996480679378764e+110.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  836
+  454
   between
   contigs
   'r69-803.1'
@@ -150,11 +150,11 @@ BEGIN 11
   fittest
   has
   length
-  814
+  836
   and
   consists
   of
-  2
+  3
   parts.
 END 11
 BEGIN 12
@@ -181,8 +181,8 @@ BEGIN 13
   'r350-904.0'
   to
   be
-  (0,
-  555).
+  (281,
+  533).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r350-904.0'
   has
   size
-  555,
-  274
+  533,
+  533
   matches,
   and
   the
   score
   of
-  6.773616278051128e+47.
+  1.0340359398322641e+129.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  836
+  533
   between
   contigs
   (1)
@@ -221,51 +221,43 @@ BEGIN 15
   (3).
 END 15
 BEGIN 16
-  Constructed
-  a
-  path
-  of
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  814.
+  836
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 17
-BEGIN 18
-  Calculating
-  all
-  paths...
-END 18
-BEGIN 19
   Cycle
-  1
+  3
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  555.
-END 20
-BEGIN 21
+  836.
+END 18
+BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -276,88 +268,17 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 22
-BEGIN 23
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 23
-BEGIN 24
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  533
-  between
-  contigs
-  (1)
-  and
-  'r350-904.0'
-  to
-  be
-  (0,
-  555).
-END 24
-BEGIN 25
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r350-904.0'
-  has
-  size
-  555,
-  274
-  matches,
-  and
-  the
-  score
-  of
-  6.773616278051128e+47.
-END 25
-BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  836
-  between
-  contigs
-  (1)
-  and
-  'r350-904.0',
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 27
+END 21

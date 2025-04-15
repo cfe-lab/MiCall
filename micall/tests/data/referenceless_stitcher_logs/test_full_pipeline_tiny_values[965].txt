@@ -44,185 +44,91 @@ BEGIN 5
   'r174-447.0'
   to
   be
-  (0,
-  274).
+  None.
 END 5
 BEGIN 6
-  Overlap
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  47
   between
   contigs
+  'r212-472.1'
+  and
   'r426-705.2'
-  and
-  'r174-447.0'
-  has
-  size
-  274,
-  22
-  matches,
-  and
-  the
-  score
-  of
-  8.99999999592224.
+  to
+  be
+  (214,
+  47).
 END 6
 BEGIN 7
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  47
+  Overlap
   between
   contigs
   'r212-472.1'
   and
   'r426-705.2'
-  to
-  be
-  (116,
-  145).
+  has
+  size
+  47,
+  47
+  matches,
+  and
+  the
+  score
+  of
+  5702951836165404.0.
 END 7
 BEGIN 8
-  Overlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  47
   between
   contigs
   'r212-472.1'
   and
-  'r426-705.2'
-  has
-  size
-  145,
-  47
-  matches,
-  and
-  the
-  score
-  of
-  5907616.158226036.
+  'r426-705.2',
+  resulting
+  in
+  contig
+  (1).
 END 8
 BEGIN 9
-  Constructed
-  a
-  path
-  of
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  280.
+  532
+  and
+  consists
+  of
+  3
+  parts.
 END 9
 BEGIN 10
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
+  Cycle
   2
-  still
-  to
-  process.
+  started
+  with
+  1
+  paths
 END 10
 BEGIN 11
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 11
-BEGIN 12
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  261
-  between
-  contigs
-  'r426-705.2'
-  and
-  'r174-447.0'
-  to
-  be
-  (0,
-  274).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r426-705.2'
-  and
-  'r174-447.0'
-  has
-  size
-  274,
-  22
-  matches,
-  and
-  the
-  score
-  of
-  8.99999999592224.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  47
-  between
-  contigs
-  'r212-472.1'
-  and
-  'r426-705.2'
-  to
-  be
-  (116,
-  145).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r212-472.1'
-  and
-  'r426-705.2'
-  has
-  size
-  145,
-  47
-  matches,
-  and
-  the
-  score
-  of
-  5907616.158226036.
-END 16
-BEGIN 17
   Calculated
   cutoff
   for
@@ -235,87 +141,107 @@ BEGIN 17
   contigs
   'r174-447.0'
   and
-  'r212-472.1'
+  (1)
   to
   be
-  (0,
-  261).
-END 17
-BEGIN 18
+  (38,
+  236).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
   'r174-447.0'
   and
-  'r212-472.1'
+  (1)
   has
   size
-  261,
-  223
+  236,
+  236
   matches,
   and
   the
   score
   of
-  7.948900957671833e+54.
-END 18
-BEGIN 19
+  5.7839000908632185e+60.
+END 12
+BEGIN 13
   Found
   a
   significant
   overlap
   of
   size
-  299
+  236
   between
   contigs
   'r174-447.0'
   and
-  'r212-472.1',
+  (1),
   resulting
   in
   contig
-  (1).
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  47
-  between
-  contigs
-  (1)
-  and
-  'r426-705.2'
-  to
-  be
-  (154,
-  145).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r426-705.2'
-  has
-  size
-  145,
-  47
-  matches,
-  and
-  the
-  score
-  of
-  5907616.158226036.
-END 21
-BEGIN 22
-  Outputting
+  (2).
+END 13
+BEGIN 14
+  Cycle
   2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  532
+  and
+  consists
+  of
+  3
+  parts.
+END 14
+BEGIN 15
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  532.
+END 16
+BEGIN 17
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Initial
+  overlap
+  stitching
+  produced
+  1
   contigs.
-END 22
+END 18
+BEGIN 19
+  Outputting
+  1
+  contigs.
+END 19

@@ -44,8 +44,8 @@ BEGIN 5
   'r220-953.0'
   to
   be
-  (0,
-  734).
+  (118,
+  348).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r220-953.0'
   has
   size
-  734,
+  348,
   348
   matches,
   and
   the
   score
   of
-  6.838657249201432e+56.
+  3.846219397491637e+86.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  852
+  348
   between
   contigs
   'r102-567.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r280-741.1'
   to
   be
-  (0,
-  734).
+  (60,
+  522).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r280-741.1'
   has
   size
-  734,
+  462,
   462
   matches,
   and
   the
   score
   of
-  6.905255105247692e+91.
+  3.652207275770229e+112.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r280-741.1'
   to
   be
-  (0,
-  852).
+  (178,
+  640).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r280-741.1'
   has
   size
-  852,
+  462,
   462
   matches,
   and
   the
   score
   of
-  9.39684673509329e+82.
+  3.652207275770229e+112.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r280-741.1'
   to
   be
-  (0,
-  852).
+  (178,
+  640).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r280-741.1'
   has
   size
-  852,
+  462,
   462
   matches,
   and
   the
   score
   of
-  9.39684673509329e+82.
+  3.652207275770229e+112.
 END 25
 BEGIN 26
   Contig

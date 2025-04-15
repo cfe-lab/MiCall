@@ -44,8 +44,8 @@ BEGIN 5
   'r45-632.1'
   to
   be
-  (0,
-  733).
+  (36,
+  624).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r45-632.1'
   has
   size
-  733,
+  588,
   588
   matches,
   and
   the
   score
   of
-  1.8043452529747256e+130.
+  3.1011200908416e+141.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r310-879.0'
   to
   be
-  (0,
-  570).
+  (301,
+  432).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r310-879.0'
   has
   size
-  570,
-  269
+  432,
+  432
   matches,
   and
   the
   score
   of
-  1.0865976045131399e+45.
+  7.040271329247873e+105.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  871
+  432
   between
   contigs
   'r9-741.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r45-632.1'
   to
   be
-  (0,
-  871).
+  (36,
+  624).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r45-632.1'
   has
   size
-  871,
+  588,
   588
   matches,
   and
   the
   score
   of
-  8.247890280926923e+119.
+  3.1011200908416e+141.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r45-632.1'
   to
   be
-  (0,
-  871).
+  (36,
+  624).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r45-632.1'
   has
   size
-  871,
+  588,
   588
   matches,
   and
   the
   score
   of
-  8.247890280926923e+119.
+  3.1011200908416e+141.
 END 25
 BEGIN 26
   Contig

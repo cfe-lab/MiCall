@@ -44,8 +44,8 @@ BEGIN 5
   'r36-661.2'
   to
   be
-  (0,
-  626).
+  (23,
+  385).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r36-661.2'
   has
   size
-  626,
+  385,
   385
   matches,
   and
   the
   score
   of
-  3.303855653249131e+76.
+  7.11244685088061e+94.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  649
+  385
   between
   contigs
   'r13-420.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r228-527.0'
   to
   be
-  (0,
-  626).
+  (192,
+  492).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r228-527.0'
   has
   size
-  626,
+  300,
   300
   matches,
   and
   the
   score
   of
-  2.1111688360100777e+50.
+  3.4935292924645634e+75.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r228-527.0'
   to
   be
-  (0,
-  649).
+  (215,
+  515).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r228-527.0'
   has
   size
-  649,
+  300,
   300
   matches,
   and
   the
   score
   of
-  5.86704663206636e+48.
+  3.4935292924645634e+75.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r228-527.0'
   to
   be
-  (0,
-  649).
+  (215,
+  515).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r228-527.0'
   has
   size
-  649,
+  300,
   300
   matches,
   and
   the
   score
   of
-  5.86704663206636e+48.
+  3.4935292924645634e+75.
 END 25
 BEGIN 26
   Contig

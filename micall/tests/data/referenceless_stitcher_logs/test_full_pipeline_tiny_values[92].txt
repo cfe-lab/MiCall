@@ -44,28 +44,9 @@ BEGIN 5
   'r639-951.1'
   to
   be
-  (0,
-  404).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r639-951.1'
-  has
-  size
-  404,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 6
-BEGIN 7
   Calculated
   cutoff
   for
@@ -81,36 +62,17 @@ BEGIN 7
   'r697-989.0'
   to
   be
-  (0,
-  404).
-END 7
-BEGIN 8
-  Overlap
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r697-989.0'
-  has
-  size
-  404,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 8
-BEGIN 9
+  None.
+END 6
+BEGIN 7
   Constructed
   a
   path
   of
   length
   404.
-END 9
-BEGIN 10
+END 7
+BEGIN 8
   Removed
   1
   components
@@ -123,8 +85,8 @@ BEGIN 10
   still
   to
   process.
-END 10
-BEGIN 11
+END 8
+BEGIN 9
   Giving
   up
   on
@@ -139,16 +101,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -164,28 +126,9 @@ BEGIN 13
   'r639-951.1'
   to
   be
-  (0,
-  404).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r639-951.1'
-  has
-  size
-  404,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 14
-BEGIN 15
+  None.
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -201,28 +144,9 @@ BEGIN 15
   'r697-989.0'
   to
   be
-  (0,
-  404).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r697-989.0'
-  has
-  size
-  404,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 16
-BEGIN 17
+  None.
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -238,10 +162,10 @@ BEGIN 17
   'r697-989.0'
   to
   be
-  (0,
-  293).
-END 17
-BEGIN 18
+  (58,
+  255).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -250,23 +174,23 @@ BEGIN 18
   'r697-989.0'
   has
   size
-  293,
-  235
+  255,
+  255
   matches,
   and
   the
   score
   of
-  1.3995835750412252e+56.
-END 18
-BEGIN 19
+  1.2126758297886686e+65.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  351
+  255
   between
   contigs
   'r639-951.1'
@@ -276,8 +200,8 @@ BEGIN 19
   in
   contig
   (1).
-END 19
-BEGIN 20
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -293,29 +217,10 @@ BEGIN 20
   'r41-444.2'
   to
   be
-  (0,
-  404).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r41-444.2'
-  has
-  size
-  404,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 21
-BEGIN 22
+  None.
+END 16
+BEGIN 17
   Outputting
   2
   contigs.
-END 22
+END 17

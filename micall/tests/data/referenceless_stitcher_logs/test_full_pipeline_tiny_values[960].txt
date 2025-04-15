@@ -44,8 +44,8 @@ BEGIN 5
   'r421-917.2'
   to
   be
-  (0,
-  497).
+  (255,
+  322).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r421-917.2'
   has
   size
-  497,
-  242
+  322,
+  322
   matches,
   and
   the
   score
   of
-  3.348009275602621e+42.
+  2.866700519935748e+80.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  752
+  322
   between
   contigs
   'r166-742.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r166-742.1'
   to
   be
-  (0,
-  577).
+  (143,
+  197).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r166-742.1'
   has
   size
-  577,
+  197,
   197
   matches,
   and
   the
   score
   of
-  4.144438513946042e+21.
+  6.055204234164549e+51.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  720
+  197
   between
   contigs
   'r23-362.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  752).
+  (143,
+  197).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  752,
+  197,
   197
   matches,
   and
   the
   score
   of
-  2272063.3731353637.
+  6.055204234164549e+51.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  895
+  197
   between
   contigs
   'r23-362.0'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  752).
+  (143,
+  197).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   (1)
   has
   size
-  752,
+  197,
   197
   matches,
   and
   the
   score
   of
-  2272063.3731353637.
+  6.055204234164549e+51.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  197
+  between
+  contigs
+  'r23-362.0'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

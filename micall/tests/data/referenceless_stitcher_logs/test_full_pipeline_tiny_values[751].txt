@@ -44,8 +44,8 @@ BEGIN 5
   'r178-924.2'
   to
   be
-  (0,
-  747).
+  (24,
+  374).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r178-924.2'
   has
   size
-  747,
+  374,
   374
   matches,
   and
   the
   score
   of
-  8.488317023525355e+63.
+  2.5343416243767767e+92.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  771
+  374
   between
   contigs
   'r154-551.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r269-651.0'
   to
   be
-  (0,
-  747).
+  (91,
+  474).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r269-651.0'
   has
   size
-  747,
+  383,
   383
   matches,
   and
   the
   score
   of
-  5.004203320698267e+66.
+  3.497987951876251e+94.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r269-651.0'
   to
   be
-  (0,
-  771).
+  (115,
+  498).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r269-651.0'
   has
   size
-  771,
+  383,
   383
   matches,
   and
   the
   score
   of
-  7.156741037653199e+64.
+  3.497987951876251e+94.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r269-651.0'
   to
   be
-  (0,
-  771).
+  (115,
+  498).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r269-651.0'
   has
   size
-  771,
+  383,
   383
   matches,
   and
   the
   score
   of
-  7.156741037653199e+64.
+  3.497987951876251e+94.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r266-714.0'
   to
   be
-  (0,
-  582).
+  (12,
+  461).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r266-714.0'
   has
   size
-  582,
+  449,
   449
   matches,
   and
   the
   score
   of
-  2.8940560326297455e+99.
+  3.2585281295944614e+109.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r254-835.2'
   to
   be
-  (0,
-  582).
+  (75,
+  342).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r254-835.2'
   has
   size
-  582,
+  342,
   342
   matches,
   and
   the
   score
   of
-  4.8341927973001194e+66.
+  1.1374034731310364e+85.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  657
+  342
   between
   contigs
   'r179-595.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r266-714.0'
   to
   be
-  (0,
-  657).
+  (87,
+  536).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r266-714.0'
   has
   size
-  657,
+  449,
   449
   matches,
   and
   the
   score
   of
-  4.644693604972904e+93.
+  3.2585281295944614e+109.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r266-714.0'
   to
   be
-  (0,
-  657).
+  (87,
+  536).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r266-714.0'
   has
   size
-  657,
+  449,
   449
   matches,
   and
   the
   score
   of
-  4.644693604972904e+93.
+  3.2585281295944614e+109.
 END 25
 BEGIN 26
   Contig

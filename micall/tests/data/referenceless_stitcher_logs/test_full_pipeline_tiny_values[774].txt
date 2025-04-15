@@ -44,8 +44,8 @@ BEGIN 5
   'r193-834.1'
   to
   be
-  (0,
-  642).
+  (72,
+  281).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r193-834.1'
   has
   size
-  642,
+  281,
   281
   matches,
   and
   the
   score
   of
-  1.4945145775170418e+43.
+  8.659270740058138e+70.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  714
+  281
   between
   contigs
   'r121-473.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r670-928.2'
   to
   be
-  (24,
-  259).
+  (477,
+  165).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r670-928.2'
   has
   size
-  259,
-  76
+  165,
+  165
   matches,
   and
   the
   score
   of
-  15157804.329805655.
+  2.0479065866558234e+44.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  368
+  165
   between
   contigs
   'r193-834.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r670-928.2'
   to
   be
-  (0,
-  259).
+  (549,
+  165).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r670-928.2'
   has
   size
-  259,
-  13
+  165,
+  165
   matches,
   and
   the
   score
   of
-  8.999999999826388.
+  2.0479065866558234e+44.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  24
+  165
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r670-928.2'
   to
   be
-  (0,
-  259).
+  (549,
+  165).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   'r670-928.2'
   has
   size
-  259,
-  13
+  165,
+  165
   matches,
   and
   the
   score
   of
-  8.999999999826388.
+  2.0479065866558234e+44.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  165
+  between
+  contigs
+  (1)
+  and
+  'r670-928.2',
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

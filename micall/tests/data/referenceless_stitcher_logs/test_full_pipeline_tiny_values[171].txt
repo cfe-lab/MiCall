@@ -44,8 +44,8 @@ BEGIN 5
   'r441-896.1'
   to
   be
-  (0,
-  456).
+  (295,
+  384).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r441-896.1'
   has
   size
-  456,
-  161
+  384,
+  384
   matches,
   and
   the
   score
   of
-  8.807208645792617e+19.
+  7.054047544551789e+94.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  751
+  384
   between
   contigs
   'r146-824.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r371-806.0'
   to
   be
-  (0,
-  679).
+  (225,
+  661).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r371-806.0'
   has
   size
-  679,
+  436,
   436
   matches,
   and
   the
   score
   of
-  1.4554950416446668e+88.
+  5.7990142807563195e+106.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r371-806.0'
   to
   be
-  (0,
-  751).
+  (225,
+  661).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r371-806.0'
   has
   size
-  751,
+  436,
   436
   matches,
   and
   the
   score
   of
-  4.569108084635619e+82.
+  5.7990142807563195e+106.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r371-806.0'
   to
   be
-  (0,
-  751).
+  (225,
+  661).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r371-806.0'
   has
   size
-  751,
+  436,
   436
   matches,
   and
   the
   score
   of
-  4.569108084635619e+82.
+  5.7990142807563195e+106.
 END 25
 BEGIN 26
   Contig

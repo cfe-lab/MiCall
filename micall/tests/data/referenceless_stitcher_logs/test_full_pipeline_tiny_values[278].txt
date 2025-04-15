@@ -44,8 +44,8 @@ BEGIN 5
   'r270-839.0'
   to
   be
-  (0,
-  570).
+  (75,
+  473).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r270-839.0'
   has
   size
-  570,
+  473,
   473
   matches,
   and
   the
   score
   of
-  5.0006006984142274e+107.
+  1.0072400976283155e+115.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  645
+  473
   between
   contigs
   'r195-742.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r270-839.0'
   to
   be
-  (0,
-  570).
+  (187,
+  312).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r270-839.0'
   has
   size
-  570,
+  312,
   312
   matches,
   and
   the
   score
   of
-  2.3027692873193667e+58.
+  2.0260717585204003e+78.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  757
+  312
   between
   contigs
   'r83-581.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  645).
+  (112,
+  387).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  645,
+  387,
   387
   matches,
   and
   the
   score
   of
-  8.001595670556862e+75.
+  2.8920929520854733e+95.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  757
+  387
   between
   contigs
   'r83-581.1'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  645).
+  (112,
+  387).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  645,
+  387,
   387
   matches,
   and
   the
   score
   of
-  8.001595670556862e+75.
+  2.8920929520854733e+95.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  757
+  387
   between
   contigs
   'r83-581.1'

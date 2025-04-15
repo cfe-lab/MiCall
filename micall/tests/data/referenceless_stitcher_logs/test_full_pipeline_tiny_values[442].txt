@@ -44,8 +44,8 @@ BEGIN 5
   'r388-913.2'
   to
   be
-  (0,
-  526).
+  (222,
+  343).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r388-913.2'
   has
   size
-  526,
-  304
+  343,
+  343
   matches,
   and
   the
   score
   of
-  1.9173903538487286e+59.
+  2.295983788650699e+85.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  748
+  343
   between
   contigs
   'r166-730.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r200-562.0'
   to
   be
-  (0,
-  565).
+  (34,
+  397).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r200-562.0'
   has
   size
-  565,
+  363,
   363
   matches,
   and
   the
   score
   of
-  4.642727240108726e+74.
+  9.005503351252367e+89.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r200-562.0'
   to
   be
-  (0,
-  748).
+  (34,
+  397).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r200-562.0'
   has
   size
-  748,
+  363,
   363
   matches,
   and
   the
   score
   of
-  3.4414423004816416e+60.
+  9.005503351252367e+89.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r200-562.0'
   to
   be
-  (0,
-  748).
+  (34,
+  397).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r200-562.0'
   has
   size
-  748,
+  363,
   363
   matches,
   and
   the
   score
   of
-  3.4414423004816416e+60.
+  9.005503351252367e+89.
 END 25
 BEGIN 26
   Contig

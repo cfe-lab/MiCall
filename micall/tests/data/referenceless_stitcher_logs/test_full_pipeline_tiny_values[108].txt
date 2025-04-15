@@ -44,8 +44,8 @@ BEGIN 5
   'r148-591.0'
   to
   be
-  (0,
-  444).
+  (142,
+  392).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r148-591.0'
   has
   size
-  444,
-  302
+  392,
+  392
   matches,
   and
   the
   score
   of
-  1.3283591818174802e+65.
+  4.819519351096359e+96.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  586
+  392
   between
   contigs
   'r6-539.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r203-485.1'
   to
   be
-  (0,
-  534).
+  (197,
+  480).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r203-485.1'
   has
   size
-  534,
+  283,
   283
   matches,
   and
   the
   score
   of
-  1.4904888998943534e+52.
+  3.5427153390813163e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r203-485.1'
   to
   be
-  (0,
-  586).
+  (197,
+  480).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r203-485.1'
   has
   size
-  586,
+  283,
   283
   matches,
   and
   the
   score
   of
-  1.4046587313026207e+48.
+  3.5427153390813163e+71.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r203-485.1'
   to
   be
-  (0,
-  586).
+  (197,
+  480).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r203-485.1'
   has
   size
-  586,
+  283,
   283
   matches,
   and
   the
   score
   of
-  1.4046587313026207e+48.
+  3.5427153390813163e+71.
 END 25
 BEGIN 26
   Contig

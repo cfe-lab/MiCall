@@ -44,8 +44,8 @@ BEGIN 5
   'r381-839.1'
   to
   be
-  (0,
-  459).
+  (199,
+  388).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r381-839.1'
   has
   size
-  459,
-  260
+  388,
+  388
   matches,
   and
   the
   score
   of
-  8.336826001191488e+50.
+  5.831696451262908e+95.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  658
+  388
   between
   contigs
   'r182-768.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r394-765.0'
   to
   be
-  (0,
-  587).
+  (212,
+  584).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r394-765.0'
   has
   size
-  587,
+  372,
   372
   matches,
   and
   the
   score
   of
-  3.916466351024813e+75.
+  1.2458073920450627e+92.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r394-765.0'
   to
   be
-  (0,
-  658).
+  (212,
+  584).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r394-765.0'
   has
   size
-  658,
+  372,
   372
   matches,
   and
   the
   score
   of
-  1.1884634536766503e+70.
+  1.2458073920450627e+92.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r394-765.0'
   to
   be
-  (0,
-  658).
+  (212,
+  584).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r394-765.0'
   has
   size
-  658,
+  372,
   372
   matches,
   and
   the
   score
   of
-  1.1884634536766503e+70.
+  1.2458073920450627e+92.
 END 25
 BEGIN 26
   Contig

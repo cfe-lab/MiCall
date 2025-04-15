@@ -44,8 +44,8 @@ BEGIN 5
   'r234-655.0'
   to
   be
-  (0,
-  405).
+  (212,
+  112).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r234-655.0'
   has
   size
-  405,
+  112,
   112
   matches,
   and
   the
   score
   of
-  7119988.086217171.
+  5.371496717820165e+31.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  112
+  between
+  contigs
+  'r22-345.2'
+  and
+  'r234-655.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,36 +99,97 @@ BEGIN 7
   'r694-970.1'
   to
   be
-  (0,
-  422).
-END 7
-BEGIN 8
-  Overlap
-  between
-  contigs
-  'r234-655.0'
-  and
-  'r694-970.1'
-  has
-  size
-  422,
-  22
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
+  None.
 END 8
 BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  634
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  277
+  between
+  contigs
+  (1)
+  and
+  'r694-970.1'
+  to
+  be
+  None.
+END 11
+BEGIN 12
   Constructed
   a
   path
   of
   length
-  422.
-END 9
-BEGIN 10
+  634.
+END 12
+BEGIN 13
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  277.
+END 16
+BEGIN 17
   Removed
   1
   components
@@ -119,12 +198,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 17
+BEGIN 18
   Giving
   up
   on
@@ -139,53 +218,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  112
-  between
-  contigs
-  'r22-345.2'
-  and
-  'r234-655.0'
-  to
-  be
-  (0,
-  405).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r22-345.2'
-  and
-  'r234-655.0'
-  has
-  size
-  405,
-  112
-  matches,
-  and
-  the
-  score
-  of
-  7119988.086217171.
-END 14
-BEGIN 15
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -196,71 +238,15 @@ BEGIN 15
   277
   between
   contigs
-  'r234-655.0'
+  (1)
   and
   'r694-970.1'
   to
   be
-  (0,
-  422).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r234-655.0'
-  and
-  'r694-970.1'
-  has
-  size
-  422,
-  22
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  265
-  between
-  contigs
-  'r22-345.2'
-  and
-  'r694-970.1'
-  to
-  be
-  (0,
-  277).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r22-345.2'
-  and
-  'r694-970.1'
-  has
-  size
-  277,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999716.
-END 18
-BEGIN 19
+  None.
+END 20
+BEGIN 21
   Outputting
-  3
+  2
   contigs.
-END 19
+END 21

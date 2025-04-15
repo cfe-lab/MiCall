@@ -44,8 +44,8 @@ BEGIN 5
   'r668-997.0'
   to
   be
-  (0,
-  330).
+  (317,
+  187).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r668-997.0'
   has
   size
-  330,
-  13
+  187,
+  187
   matches,
   and
   the
   score
   of
-  8.999999999999998.
+  2.002717969013387e+49.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  187
+  between
+  contigs
+  'r351-854.1'
+  and
+  'r668-997.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,36 +99,97 @@ BEGIN 7
   'r10-292.2'
   to
   be
-  (0,
-  504).
-END 7
-BEGIN 8
-  Overlap
-  between
-  contigs
-  'r351-854.1'
-  and
-  'r10-292.2'
-  has
-  size
-  504,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
+  None.
 END 8
 BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  647
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  283
+  between
+  contigs
+  (1)
+  and
+  'r10-292.2'
+  to
+  be
+  None.
+END 11
+BEGIN 12
   Constructed
   a
   path
   of
   length
-  504.
-END 9
-BEGIN 10
+  647.
+END 12
+BEGIN 13
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  283.
+END 16
+BEGIN 17
   Removed
   1
   components
@@ -119,12 +198,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 17
+BEGIN 18
   Giving
   up
   on
@@ -139,128 +218,35 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  3
-  contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  187
-  between
-  contigs
-  'r351-854.1'
-  and
-  'r668-997.0'
-  to
-  be
-  (0,
-  330).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r351-854.1'
-  and
-  'r668-997.0'
-  has
-  size
-  330,
-  13
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999998.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  283
-  between
-  contigs
-  'r351-854.1'
-  and
-  'r10-292.2'
-  to
-  be
-  (0,
-  504).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r351-854.1'
-  and
-  'r10-292.2'
-  has
-  size
-  504,
-  7
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  283
-  between
-  contigs
-  'r668-997.0'
-  and
-  'r10-292.2'
-  to
-  be
-  (0,
-  330).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r668-997.0'
-  and
-  'r10-292.2'
-  has
-  size
-  330,
-  41
-  matches,
-  and
-  the
-  score
-  of
-  8.99999990399448.
-END 18
-BEGIN 19
-  Outputting
-  3
+  2
   contigs.
 END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  283
+  between
+  contigs
+  (1)
+  and
+  'r10-292.2'
+  to
+  be
+  None.
+END 20
+BEGIN 21
+  Outputting
+  2
+  contigs.
+END 21

@@ -44,8 +44,8 @@ BEGIN 5
   'r342-857.0'
   to
   be
-  (0,
-  572).
+  (41,
+  557).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r342-857.0'
   has
   size
-  572,
+  516,
   516
   matches,
   and
   the
   score
   of
-  6.328133561242294e+120.
+  1.1393136223631754e+125.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r301-872.2'
   to
   be
-  (0,
-  572).
+  (198,
+  181).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r301-872.2'
   has
   size
-  572,
+  181,
   181
   matches,
   and
   the
   score
   of
-  9.39128457753818e+16.
+  1.1278079246769216e+48.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  770
+  181
   between
   contigs
   'r103-481.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r342-857.0'
   to
   be
-  (0,
-  770).
+  (239,
+  755).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r342-857.0'
   has
   size
-  770,
+  516,
   516
   matches,
   and
   the
   score
   of
-  3.8368502809440623e+105.
+  1.1393136223631754e+125.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r342-857.0'
   to
   be
-  (0,
-  770).
+  (239,
+  755).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r342-857.0'
   has
   size
-  770,
+  516,
   516
   matches,
   and
   the
   score
   of
-  3.8368502809440623e+105.
+  1.1393136223631754e+125.
 END 25
 BEGIN 26
   Contig

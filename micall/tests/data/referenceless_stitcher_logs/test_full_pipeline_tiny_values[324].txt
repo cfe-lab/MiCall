@@ -44,8 +44,8 @@ BEGIN 5
   'r338-733.0'
   to
   be
-  (0,
-  626).
+  (136,
+  532).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r338-733.0'
   has
   size
-  626,
+  396,
   396
   matches,
   and
   the
   score
   of
-  7.792458491896699e+79.
+  3.981693768274056e+97.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r273-632.2'
   to
   be
-  (0,
-  626).
+  (71,
+  431).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r273-632.2'
   has
   size
-  626,
+  360,
   360
   matches,
   and
   the
   score
   of
-  6.952331584031334e+68.
+  2.1928844270686562e+89.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r273-632.2'
   to
   be
-  (0,
-  626).
+  (71,
+  431).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r273-632.2'
   has
   size
-  626,
+  360,
   360
   matches,
   and
   the
   score
   of
-  6.952331584031334e+68.
+  2.1928844270686562e+89.
 END 14
 BEGIN 15
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r341-719.2'
   to
   be
-  (0,
-  514).
+  (74,
+  453).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r341-719.2'
   has
   size
-  514,
+  379,
   379
   matches,
   and
   the
   score
   of
-  1.770498965248273e+83.
+  4.229341505346789e+93.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r267-780.0'
   to
   be
-  (0,
-  514).
+  (135,
+  216).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r267-780.0'
   has
   size
-  514,
+  216,
   216
   matches,
   and
   the
   score
   of
-  6.417715082606019e+32.
+  1.330963529101512e+56.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  649
+  216
   between
   contigs
   'r132-482.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r341-719.2'
   to
   be
-  (0,
-  649).
+  (209,
+  588).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r341-719.2'
   has
   size
-  649,
+  379,
   379
   matches,
   and
   the
   score
   of
-  6.921891849588765e+72.
+  4.229341505346789e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r341-719.2'
   to
   be
-  (0,
-  649).
+  (209,
+  588).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r341-719.2'
   has
   size
-  649,
+  379,
   379
   matches,
   and
   the
   score
   of
-  6.921891849588765e+72.
+  4.229341505346789e+93.
 END 25
 BEGIN 26
   Contig

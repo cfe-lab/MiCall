@@ -44,8 +44,8 @@ BEGIN 5
   'r427-804.2'
   to
   be
-  (0,
-  558).
+  (133,
+  511).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r427-804.2'
   has
   size
-  558,
+  378,
   378
   matches,
   and
   the
   score
   of
-  3.77900220301003e+79.
+  2.0970307524434095e+93.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r294-851.1'
   to
   be
-  (0,
-  558).
+  (187,
+  169).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r294-851.1'
   has
   size
-  558,
+  169,
   169
   matches,
   and
   the
   score
   of
-  84993738947109.0.
+  8.844209081861935e+44.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  745
+  169
   between
   contigs
   'r107-462.0'
@@ -144,7 +144,7 @@ BEGIN 11
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -171,8 +171,8 @@ BEGIN 13
   'r427-804.2'
   to
   be
-  (0,
-  745).
+  (320,
+  698).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r427-804.2'
   has
   size
-  745,
+  378,
   378
   matches,
   and
   the
   score
   of
-  2.915931620217086e+65.
+  2.0970307524434095e+93.
 END 14
 BEGIN 15
   Contig
@@ -201,43 +201,51 @@ BEGIN 15
   completely.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  745
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
   745.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  378.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -248,17 +256,78 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  378
+  between
+  contigs
+  (1)
+  and
+  'r427-804.2'
+  to
+  be
+  (320,
+  698).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r427-804.2'
+  has
+  size
+  378,
+  378
+  matches,
+  and
+  the
+  score
+  of
+  2.0970307524434095e+93.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r427-804.2'
+  completely.
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

@@ -44,8 +44,8 @@ BEGIN 5
   'r153-836.2'
   to
   be
-  (0,
-  684).
+  (78,
+  457).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r153-836.2'
   has
   size
-  684,
+  457,
   457
   matches,
   and
   the
   score
   of
-  1.8941396924959898e+94.
+  2.2053567452925761e+111.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  762
+  457
   between
   contigs
   'r75-609.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r248-723.1'
   to
   be
-  (0,
-  684).
+  (95,
+  571).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r248-723.1'
   has
   size
-  684,
+  476,
   476
   matches,
   and
   the
   score
   of
-  1.204631868630597e+100.
+  8.220736288859545e+115.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r248-723.1'
   to
   be
-  (0,
-  762).
+  (173,
+  649).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r248-723.1'
   has
   size
-  762,
+  476,
   476
   matches,
   and
   the
   score
   of
-  9.576667855591974e+93.
+  8.220736288859545e+115.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r248-723.1'
   to
   be
-  (0,
-  762).
+  (173,
+  649).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r248-723.1'
   has
   size
-  762,
+  476,
   476
   matches,
   and
   the
   score
   of
-  9.576667855591974e+93.
+  8.220736288859545e+115.
 END 25
 BEGIN 26
   Contig

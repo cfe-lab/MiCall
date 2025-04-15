@@ -44,8 +44,8 @@ BEGIN 5
   'r249-967.2'
   to
   be
-  (0,
-  719).
+  (94,
+  669).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r249-967.2'
   has
   size
-  719,
-  625
+  669,
+  669
   matches,
   and
   the
   score
   of
-  5.267500343012377e+142.
+  2.6866431501004565e+159.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  813
+  669
   between
   contigs
   'r155-917.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r544-867.0'
   to
   be
-  (0,
-  763).
+  (389,
+  713).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r544-867.0'
   has
   size
-  763,
+  324,
   324
   matches,
   and
   the
   score
   of
-  1.7006648693803913e+47.
+  1.1694504353782261e+81.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r544-867.0'
   to
   be
-  (0,
-  813).
+  (389,
+  713).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r544-867.0'
   has
   size
-  813,
+  324,
   324
   matches,
   and
   the
   score
   of
-  1.5586997853197297e+43.
+  1.1694504353782261e+81.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r544-867.0'
   to
   be
-  (0,
-  813).
+  (389,
+  713).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r544-867.0'
   has
   size
-  813,
+  324,
   324
   matches,
   and
   the
   score
   of
-  1.5586997853197297e+43.
+  1.1694504353782261e+81.
 END 25
 BEGIN 26
   Contig

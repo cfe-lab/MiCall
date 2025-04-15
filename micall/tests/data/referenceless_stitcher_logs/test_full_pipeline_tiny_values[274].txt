@@ -44,8 +44,8 @@ BEGIN 5
   'r254-927.2'
   to
   be
-  (0,
-  674).
+  (26,
+  354).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r254-927.2'
   has
   size
-  674,
+  354,
   354
   matches,
   and
   the
   score
   of
-  2.0310429862934797e+63.
+  6.496953930677054e+87.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  700
+  354
   between
   contigs
   'r228-607.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r649-977.0'
   to
   be
-  (0,
-  329).
+  (395,
+  279).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r649-977.0'
   has
   size
-  329,
-  52
+  279,
+  279
   matches,
   and
   the
   score
   of
-  8.999846764392009.
+  4.232389777003019e+70.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  279
+  between
+  contigs
+  'r254-927.2'
+  and
+  'r649-977.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r649-977.0'
   to
   be
-  (0,
-  329).
-END 12
-BEGIN 13
+  (421,
+  279).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,23 +193,23 @@ BEGIN 13
   'r649-977.0'
   has
   size
-  329,
-  66
+  279,
+  279
   matches,
   and
   the
   score
   of
-  8.602504744103722.
-END 13
-BEGIN 14
+  4.232389777003019e+70.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  124
+  279
   between
   contigs
   (1)
@@ -200,17 +218,17 @@ BEGIN 14
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   700.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -223,29 +241,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   329.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -258,8 +276,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -274,16 +292,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -299,10 +317,10 @@ BEGIN 23
   'r649-977.0'
   to
   be
-  (0,
-  329).
-END 23
-BEGIN 24
+  (421,
+  279).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -311,17 +329,35 @@ BEGIN 24
   'r649-977.0'
   has
   size
-  329,
-  66
+  279,
+  279
   matches,
   and
   the
   score
   of
-  8.602504744103722.
-END 24
-BEGIN 25
-  Outputting
-  2
-  contigs.
+  4.232389777003019e+70.
 END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  279
+  between
+  contigs
+  (1)
+  and
+  'r649-977.0',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

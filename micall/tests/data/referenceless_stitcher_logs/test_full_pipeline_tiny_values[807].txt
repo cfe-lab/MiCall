@@ -44,8 +44,8 @@ BEGIN 5
   'r295-820.0'
   to
   be
-  (0,
-  526).
+  (268,
+  480).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r295-820.0'
   has
   size
-  526,
-  258
+  480,
+  480
   matches,
   and
   the
   score
   of
-  1.0728702586393841e+45.
+  6.753031889314215e+116.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  794
+  480
   between
   contigs
   'r27-774.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r262-660.2'
   to
   be
-  (0,
-  748).
+  (235,
+  634).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r262-660.2'
   has
   size
-  748,
+  399,
   399
   matches,
   and
   the
   score
   of
-  4.136229163298573e+71.
+  1.631230234288389e+98.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r262-660.2'
   to
   be
-  (0,
-  794).
+  (235,
+  634).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r262-660.2'
   has
   size
-  794,
+  399,
   399
   matches,
   and
   the
   score
   of
-  8.617580919917727e+67.
+  1.631230234288389e+98.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r262-660.2'
   to
   be
-  (0,
-  794).
+  (235,
+  634).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r262-660.2'
   has
   size
-  794,
+  399,
   399
   matches,
   and
   the
   score
   of
-  8.617580919917727e+67.
+  1.631230234288389e+98.
 END 25
 BEGIN 26
   Contig

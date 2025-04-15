@@ -44,8 +44,8 @@ BEGIN 5
   'r481-863.2'
   to
   be
-  (180,
-  205).
+  (323,
+  62).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r481-863.2'
   has
   size
-  205,
+  62,
   62
   matches,
   and
   the
   score
   of
-  6315716.0334925195.
+  2.884324159431802e+19.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  62
+  between
+  contigs
+  'r158-542.0'
+  and
+  'r481-863.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r322-676.1'
   to
   be
-  (0,
-  355).
-END 7
-BEGIN 8
+  (164,
+  221).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,23 +111,23 @@ BEGIN 8
   'r322-676.1'
   has
   size
-  355,
-  191
+  221,
+  221
   matches,
   and
   the
   score
   of
-  3.161278978214453e+37.
-END 8
-BEGIN 9
+  2.2907743371320837e+57.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  519
+  221
   between
   contigs
   'r158-542.0'
@@ -118,9 +136,9 @@ BEGIN 9
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -132,22 +150,22 @@ BEGIN 10
   fittest
   has
   length
-  519
+  706
   and
   consists
   of
-  2
+  3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -158,96 +176,88 @@ BEGIN 12
   196
   between
   contigs
-  (1)
+  (2)
   and
   'r481-863.2'
   to
   be
-  (0,
-  383).
-END 12
-BEGIN 13
+  (323,
+  196).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r481-863.2'
   has
   size
-  383,
-  60
+  196,
+  196
   matches,
   and
   the
   score
   of
-  8.999995959905515.
-END 13
-BEGIN 14
+  2.9787979785928234e+51.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  706
+  196
   between
   contigs
-  (1)
+  (2)
   and
   'r481-863.2',
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
-  Constructed
-  a
-  path
-  of
-  length
-  519.
+  (3).
 END 15
 BEGIN 16
-  Removed
+  Cycle
   2
-  components
-  from
-  the
-  working
-  list,
-  having
+  finished
+  with
   1
-  still
-  to
-  process.
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  706
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Calculating
-  all
-  paths...
-END 17
-BEGIN 18
   Cycle
-  1
+  3
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  383.
-END 19
-BEGIN 20
+  706.
+END 18
+BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -258,70 +268,17 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 22
-BEGIN 23
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  196
-  between
-  contigs
-  (1)
-  and
-  'r481-863.2'
-  to
-  be
-  (0,
-  383).
-END 23
-BEGIN 24
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r481-863.2'
-  has
-  size
-  383,
-  60
-  matches,
-  and
-  the
-  score
-  of
-  8.999995959905515.
-END 24
-BEGIN 25
+END 20
+BEGIN 21
   Outputting
-  2
+  1
   contigs.
-END 25
+END 21

@@ -44,8 +44,8 @@ BEGIN 5
   'r279-915.0'
   to
   be
-  (0,
-  637).
+  (43,
+  633).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r279-915.0'
   has
   size
-  637,
-  594
+  633,
+  633
   matches,
   and
   the
   score
   of
-  2.3502185503591435e+139.
+  3.3622054587479616e+151.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  680
+  633
   between
   contigs
   'r236-911.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r321-891.1'
   to
   be
-  (0,
-  676).
+  (85,
+  656).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r321-891.1'
   has
   size
-  676,
+  571,
   571
   matches,
   and
   the
   score
   of
-  4.3653429227866243e+129.
+  3.4505179079402984e+137.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r321-891.1'
   to
   be
-  (0,
-  680).
+  (85,
+  656).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r321-891.1'
   has
   size
-  680,
+  571,
   571
   matches,
   and
   the
   score
   of
-  2.1683713926609474e+129.
+  3.4505179079402984e+137.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r321-891.1'
   to
   be
-  (0,
-  680).
+  (85,
+  656).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r321-891.1'
   has
   size
-  680,
+  571,
   571
   matches,
   and
   the
   score
   of
-  2.1683713926609474e+129.
+  3.4505179079402984e+137.
 END 25
 BEGIN 26
   Contig

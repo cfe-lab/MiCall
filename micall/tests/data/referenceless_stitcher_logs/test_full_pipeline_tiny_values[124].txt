@@ -44,28 +44,9 @@ BEGIN 5
   'r615-905.2'
   to
   be
-  (0,
-  291).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r204-533.0'
-  and
-  'r615-905.2'
-  has
-  size
-  291,
-  57
-  matches,
-  and
-  the
-  score
-  of
-  8.645202887358233.
-END 6
-BEGIN 7
   Calculated
   cutoff
   for
@@ -81,36 +62,17 @@ BEGIN 7
   'r562-847.1'
   to
   be
-  (0,
-  286).
-END 7
-BEGIN 8
-  Overlap
-  between
-  contigs
-  'r204-533.0'
-  and
-  'r562-847.1'
-  has
-  size
-  286,
-  37
-  matches,
-  and
-  the
-  score
-  of
-  8.999993088198167.
-END 8
-BEGIN 9
+  None.
+END 6
+BEGIN 7
   Constructed
   a
   path
   of
   length
   330.
-END 9
-BEGIN 10
+END 7
+BEGIN 8
   Removed
   1
   components
@@ -123,8 +85,8 @@ BEGIN 10
   still
   to
   process.
-END 10
-BEGIN 11
+END 8
+BEGIN 9
   Giving
   up
   on
@@ -139,16 +101,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -164,28 +126,9 @@ BEGIN 13
   'r615-905.2'
   to
   be
-  (0,
-  291).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r204-533.0'
-  and
-  'r615-905.2'
-  has
-  size
-  291,
-  57
-  matches,
-  and
-  the
-  score
-  of
-  8.645202887358233.
-END 14
-BEGIN 15
+  None.
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -201,28 +144,9 @@ BEGIN 15
   'r562-847.1'
   to
   be
-  (0,
-  286).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r204-533.0'
-  and
-  'r562-847.1'
-  has
-  size
-  286,
-  37
-  matches,
-  and
-  the
-  score
-  of
-  8.999993088198167.
-END 16
-BEGIN 17
+  None.
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -238,10 +162,10 @@ BEGIN 17
   'r615-905.2'
   to
   be
-  (0,
-  291).
-END 17
-BEGIN 18
+  (53,
+  233).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -250,23 +174,23 @@ BEGIN 18
   'r615-905.2'
   has
   size
-  291,
+  233,
   233
   matches,
   and
   the
   score
   of
-  3.3982812064725086e+55.
-END 18
-BEGIN 19
+  6.9410609640956635e+59.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  344
+  233
   between
   contigs
   'r562-847.1'
@@ -276,8 +200,8 @@ BEGIN 19
   in
   contig
   (1).
-END 19
-BEGIN 20
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -293,29 +217,10 @@ BEGIN 20
   'r204-533.0'
   to
   be
-  (0,
-  344).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r204-533.0'
-  has
-  size
-  344,
-  58
-  matches,
-  and
-  the
-  score
-  of
-  8.999509214382345.
-END 21
-BEGIN 22
+  None.
+END 16
+BEGIN 17
   Outputting
   2
   contigs.
-END 22
+END 17

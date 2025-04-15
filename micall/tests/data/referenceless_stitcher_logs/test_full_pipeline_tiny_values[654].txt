@@ -44,8 +44,8 @@ BEGIN 5
   'r184-772.0'
   to
   be
-  (0,
-  589).
+  (103,
+  554).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r184-772.0'
   has
   size
-  589,
-  486
+  554,
+  554
   matches,
   and
   the
   score
   of
-  1.3856181815888236e+110.
+  3.828452717418304e+133.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  692
+  554
   between
   contigs
   'r81-737.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r124-665.2'
   to
   be
-  (0,
-  657).
+  (43,
+  585).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r124-665.2'
   has
   size
-  657,
+  542,
   542
   matches,
   and
   the
   score
   of
-  2.149219233410892e+122.
+  6.977495971253408e+130.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r124-665.2'
   to
   be
-  (0,
-  692).
+  (43,
+  585).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r124-665.2'
   has
   size
-  692,
+  542,
   542
   matches,
   and
   the
   score
   of
-  3.943761363074092e+119.
+  6.977495971253408e+130.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r124-665.2'
   to
   be
-  (0,
-  692).
+  (43,
+  585).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r124-665.2'
   has
   size
-  692,
+  542,
   542
   matches,
   and
   the
   score
   of
-  3.943761363074092e+119.
+  6.977495971253408e+130.
 END 25
 BEGIN 26
   Contig

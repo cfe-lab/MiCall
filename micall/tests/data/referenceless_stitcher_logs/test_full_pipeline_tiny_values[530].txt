@@ -44,8 +44,8 @@ BEGIN 5
   'r464-809.0'
   to
   be
-  (148,
-  285).
+  (351,
+  82).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r464-809.0'
   has
   size
-  285,
+  82,
   82
   matches,
   and
   the
   score
   of
-  6704666.940480339.
+  2.3412961501234668e+24.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  82
+  between
+  contigs
+  'r113-545.1'
+  and
+  'r464-809.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r113-545.1'
   to
   be
-  (0,
-  433).
-END 7
-BEGIN 8
+  (46,
+  219).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,23 +111,23 @@ BEGIN 8
   'r113-545.1'
   has
   size
-  433,
+  219,
   219
   matches,
   and
   the
   score
   of
-  1.0636354975379468e+40.
-END 8
-BEGIN 9
+  5.563291115278581e+56.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  479
+  219
   between
   contigs
   'r67-331.2'
@@ -118,9 +136,9 @@ BEGIN 9
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -158,59 +176,59 @@ BEGIN 12
   82
   between
   contigs
-  (1)
+  (2)
   and
   'r464-809.0'
   to
   be
-  (0,
-  346).
-END 12
-BEGIN 13
+  (397,
+  82).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r464-809.0'
   has
   size
-  346,
-  70
+  82,
+  82
   matches,
   and
   the
   score
   of
-  8.790279809380632.
-END 13
-BEGIN 14
+  2.3412961501234668e+24.
+END 14
+BEGIN 15
   Found
   a
   significant
   overlap
   of
   size
-  111
+  82
   between
   contigs
-  (1)
+  (2)
   and
   'r464-809.0',
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   479.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -223,29 +241,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   346.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -258,8 +276,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -274,16 +292,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -294,34 +312,52 @@ BEGIN 23
   82
   between
   contigs
-  (1)
+  (2)
   and
   'r464-809.0'
   to
   be
-  (0,
-  346).
-END 23
-BEGIN 24
+  (397,
+  82).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r464-809.0'
   has
   size
-  346,
-  70
+  82,
+  82
   matches,
   and
   the
   score
   of
-  8.790279809380632.
-END 24
-BEGIN 25
-  Outputting
-  2
-  contigs.
+  2.3412961501234668e+24.
 END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  82
+  between
+  contigs
+  (2)
+  and
+  'r464-809.0',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

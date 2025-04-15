@@ -44,8 +44,8 @@ BEGIN 5
   'r535-947.0'
   to
   be
-  (0,
-  413).
+  (136,
+  305).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r535-947.0'
   has
   size
-  413,
-  277
+  305,
+  305
   matches,
   and
   the
   score
   of
-  7.535935121442232e+59.
+  2.9455457271060856e+76.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  549
+  305
   between
   contigs
   'r399-839.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r399-839.2'
   to
   be
-  (0,
-  441).
+  (184,
+  199).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r399-839.2'
   has
   size
-  441,
+  199,
   199
   matches,
   and
   the
   score
   of
-  1.306712737072347e+33.
+  1.2507373754098828e+52.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  625
+  199
   between
   contigs
   'r215-597.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  549).
+  (184,
+  199).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  549,
+  199,
   199
   matches,
   and
   the
   score
   of
-  6.768755285355652e+24.
+  1.2507373754098828e+52.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  733
+  199
   between
   contigs
   'r215-597.1'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  549).
+  (184,
+  199).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  549,
+  199,
   199
   matches,
   and
   the
   score
   of
-  6.768755285355652e+24.
+  1.2507373754098828e+52.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  733
+  199
   between
   contigs
   'r215-597.1'

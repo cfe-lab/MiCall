@@ -44,8 +44,8 @@ BEGIN 5
   'r72-623.0'
   to
   be
-  (0,
-  552).
+  (10,
+  550).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r72-623.0'
   has
   size
-  552,
-  542
+  550,
+  550
   matches,
   and
   the
   score
   of
-  1.717330285627374e+130.
+  4.677232405720446e+132.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  562
+  550
   between
   contigs
   'r62-621.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r62-621.2'
   to
   be
-  (0,
-  560).
+  (37,
+  243).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r62-621.2'
   has
   size
-  560,
+  243,
   243
   matches,
   and
   the
   score
   of
-  6.963372150910123e+37.
+  2.031479304369335e+62.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  597
+  243
   between
   contigs
   'r25-304.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  562).
+  (37,
+  243).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  562,
+  243,
   243
   matches,
   and
   the
   score
   of
-  3.4330345269630355e+37.
+  2.031479304369335e+62.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  599
+  243
   between
   contigs
   'r25-304.1'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (0,
-  562).
+  (37,
+  243).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  562,
+  243,
   243
   matches,
   and
   the
   score
   of
-  3.4330345269630355e+37.
+  2.031479304369335e+62.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  599
+  243
   between
   contigs
   'r25-304.1'

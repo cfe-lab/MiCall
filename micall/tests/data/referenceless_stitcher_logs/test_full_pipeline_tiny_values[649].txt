@@ -44,8 +44,8 @@ BEGIN 5
   'r110-822.2'
   to
   be
-  (0,
-  713).
+  (29,
+  491).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r110-822.2'
   has
   size
-  713,
+  491,
   491
   matches,
   and
   the
   score
   of
-  1.6731406238211318e+102.
+  1.857235492818894e+119.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  742
+  491
   between
   contigs
   'r81-600.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r110-822.2'
   to
   be
-  (0,
-  713).
+  (39,
+  446).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r110-822.2'
   has
   size
-  713,
+  446,
   446
   matches,
   and
   the
   score
   of
-  5.965322515775074e+88.
+  7.975258297830065e+108.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  752
+  446
   between
   contigs
   'r71-555.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (0,
-  742).
+  (10,
+  475).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  742,
+  475,
   475
   matches,
   and
   the
   score
   of
-  1.5912412876344748e+95.
+  4.083108927839348e+115.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  752
+  475
   between
   contigs
   'r71-555.1'

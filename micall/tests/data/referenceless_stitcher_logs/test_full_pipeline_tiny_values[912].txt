@@ -44,8 +44,8 @@ BEGIN 5
   'r431-983.1'
   to
   be
-  (0,
-  553).
+  (343,
+  407).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r431-983.1'
   has
   size
-  553,
-  210
+  407,
+  407
   matches,
   and
   the
   score
   of
-  1.0904355761496283e+28.
+  1.1117681455108986e+100.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  896
+  407
   between
   contigs
   'r88-837.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r421-876.0'
   to
   be
-  (0,
-  456).
+  (333,
+  417).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r421-876.0'
   has
   size
-  456,
-  123
+  417,
+  417
   matches,
   and
   the
   score
   of
-  2100775.4030767125.
+  1.536811601568966e+102.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  417
+  between
+  contigs
+  'r88-837.2'
+  and
+  'r421-876.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -136,18 +154,18 @@ BEGIN 10
   and
   consists
   of
-  2
+  3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -155,89 +173,91 @@ BEGIN 12
   overlap
   of
   size
-  456
+  446
   between
   contigs
-  (1)
+  (2)
   and
-  'r421-876.0'
+  'r431-983.1'
   to
   be
-  (0,
-  896).
-END 12
-BEGIN 13
+  (343,
+  446).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r421-876.0'
+  'r431-983.1'
   has
   size
-  896,
-  456
+  446,
+  446
   matches,
   and
   the
   score
   of
-  5.840725983932279e+77.
-END 13
-BEGIN 14
-  Contig
-  (1)
-  covers
-  contig
-  'r421-876.0'
-  completely.
+  7.975258297830065e+108.
 END 14
 BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  446
+  between
+  contigs
+  (2)
+  and
+  'r431-983.1',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  896
+  and
+  consists
+  of
+  3
+  parts.
+END 16
+BEGIN 17
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   896.
-END 15
-BEGIN 16
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 16
-BEGIN 17
-  Calculating
-  all
-  paths...
-END 17
-BEGIN 18
-  Cycle
-  1
-  started
-  with
-  1
-  paths
 END 18
 BEGIN 19
-  Constructed
-  a
-  path
-  of
-  length
-  456.
-END 19
-BEGIN 20
   Removed
-  1
+  3
   components
   from
   the
@@ -248,78 +268,17 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 22
-BEGIN 23
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  456
-  between
-  contigs
-  (1)
-  and
-  'r421-876.0'
-  to
-  be
-  (0,
-  896).
-END 23
-BEGIN 24
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r421-876.0'
-  has
-  size
-  896,
-  456
-  matches,
-  and
-  the
-  score
-  of
-  5.840725983932279e+77.
-END 24
-BEGIN 25
-  Contig
-  (1)
-  covers
-  contig
-  'r421-876.0'
-  completely.
-END 25
-BEGIN 26
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 26
+END 21

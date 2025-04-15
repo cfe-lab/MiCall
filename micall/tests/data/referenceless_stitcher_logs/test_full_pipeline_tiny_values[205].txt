@@ -44,8 +44,8 @@ BEGIN 5
   'r141-691.1'
   to
   be
-  (0,
-  665).
+  (76,
+  627).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r141-691.1'
   has
   size
-  665,
+  551,
   551
   matches,
   and
   the
   score
   of
-  1.45615258062254e+124.
+  9.408315095413216e+132.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r65-729.0'
   to
   be
-  (0,
-  665).
+  (61,
+  353).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r65-729.0'
   has
   size
-  665,
+  353,
   353
   matches,
   and
   the
   score
   of
-  4.1363303705835445e+63.
+  3.2194520736283604e+87.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  726
+  353
   between
   contigs
   'r4-417.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r141-691.1'
   to
   be
-  (0,
-  726).
+  (137,
+  688).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r141-691.1'
   has
   size
-  726,
+  551,
   551
   matches,
   and
   the
   score
   of
-  3.988821237545392e+119.
+  9.408315095413216e+132.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r141-691.1'
   to
   be
-  (0,
-  726).
+  (137,
+  688).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r141-691.1'
   has
   size
-  726,
+  551,
   551
   matches,
   and
   the
   score
   of
-  3.988821237545392e+119.
+  9.408315095413216e+132.
 END 25
 BEGIN 26
   Contig

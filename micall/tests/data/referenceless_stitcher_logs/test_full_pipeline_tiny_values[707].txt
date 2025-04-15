@@ -44,8 +44,8 @@ BEGIN 5
   'r372-936.2'
   to
   be
-  (0,
-  565).
+  (360,
+  211).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r372-936.2'
   has
   size
-  565,
-  205
+  211,
+  211
   matches,
   and
   the
   score
   of
-  2.9938762075911777e+25.
+  7.719669011833917e+54.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  925
+  211
   between
   contigs
   'r12-582.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r386-660.0'
   to
   be
-  (0,
-  275).
+  (374,
+  197).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r386-660.0'
   has
   size
-  275,
-  41
+  197,
+  197
   matches,
   and
   the
   score
   of
-  8.999540377259983.
+  6.055204234164549e+51.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  197
+  between
+  contigs
+  'r12-582.1'
+  and
+  'r386-660.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r386-660.0'
   to
   be
-  (0,
-  925).
-END 12
-BEGIN 13
+  (374,
+  649).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,32 +193,32 @@ BEGIN 13
   'r386-660.0'
   has
   size
-  925,
+  275,
   275
   matches,
   and
   the
   score
   of
-  9.891539043314313e+18.
-END 13
-BEGIN 14
+  5.052985591895452e+69.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
   'r386-660.0'
   completely.
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   925.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -213,29 +231,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   275.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -248,8 +266,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -264,16 +282,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -289,10 +307,10 @@ BEGIN 23
   'r386-660.0'
   to
   be
-  (0,
-  925).
-END 23
-BEGIN 24
+  (374,
+  649).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -301,25 +319,25 @@ BEGIN 24
   'r386-660.0'
   has
   size
-  925,
+  275,
   275
   matches,
   and
   the
   score
   of
-  9.891539043314313e+18.
-END 24
-BEGIN 25
+  5.052985591895452e+69.
+END 25
+BEGIN 26
   Contig
   (1)
   covers
   contig
   'r386-660.0'
   completely.
-END 25
-BEGIN 26
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 26
+END 27

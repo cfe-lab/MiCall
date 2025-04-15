@@ -44,8 +44,8 @@ BEGIN 5
   'r356-926.1'
   to
   be
-  (0,
-  571).
+  (203,
+  555).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r356-926.1'
   has
   size
-  571,
-  368
+  555,
+  555
   matches,
   and
   the
   score
   of
-  3.899522344439251e+75.
+  7.700661943316638e+133.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  774
+  555
   between
   contigs
   'r153-910.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r269-822.0'
   to
   be
-  (0,
-  758).
+  (116,
+  670).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r269-822.0'
   has
   size
-  758,
+  554,
   554
   matches,
   and
   the
   score
   of
-  1.204375013727549e+118.
+  3.828452717418304e+133.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r269-822.0'
   to
   be
-  (0,
-  774).
+  (116,
+  670).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r269-822.0'
   has
   size
-  774,
+  554,
   554
   matches,
   and
   the
   score
   of
-  7.304979300969005e+116.
+  3.828452717418304e+133.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r269-822.0'
   to
   be
-  (0,
-  774).
+  (116,
+  670).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r269-822.0'
   has
   size
-  774,
+  554,
   554
   matches,
   and
   the
   score
   of
-  7.304979300969005e+116.
+  3.828452717418304e+133.
 END 25
 BEGIN 26
   Contig

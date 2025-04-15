@@ -44,28 +44,9 @@ BEGIN 5
   'r648-927.0'
   to
   be
-  (0,
-  639).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r49-687.1'
-  and
-  'r648-927.0'
-  has
-  size
-  639,
-  40
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 6
-BEGIN 7
   Calculated
   cutoff
   for
@@ -81,10 +62,10 @@ BEGIN 7
   'r465-732.2'
   to
   be
-  (0,
-  268).
-END 7
-BEGIN 8
+  (416,
+  223).
+END 6
+BEGIN 7
   Overlap
   between
   contigs
@@ -93,24 +74,159 @@ BEGIN 8
   'r465-732.2'
   has
   size
-  268,
-  20
+  223,
+  223
   matches,
   and
   the
   score
   of
-  8.999999995806531.
+  4.715069224095957e+57.
+END 7
+BEGIN 8
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  223
+  between
+  contigs
+  'r49-687.1'
+  and
+  'r465-732.2',
+  resulting
+  in
+  contig
+  (1).
 END 8
 BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  684
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  85
+  between
+  contigs
+  (1)
+  and
+  'r648-927.0'
+  to
+  be
+  (599,
+  85).
+END 11
+BEGIN 12
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r648-927.0'
+  has
+  size
+  85,
+  85
+  matches,
+  and
+  the
+  score
+  of
+  2.1038994177683307e+25.
+END 12
+BEGIN 13
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  85
+  between
+  contigs
+  (1)
+  and
+  'r648-927.0',
+  resulting
+  in
+  contig
+  (2).
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  639.
-END 9
-BEGIN 10
+  684.
+END 14
+BEGIN 15
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  280.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -119,12 +235,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -139,90 +255,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  280
-  between
-  contigs
-  'r49-687.1'
-  and
-  'r648-927.0'
-  to
-  be
-  (0,
-  639).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r49-687.1'
-  and
-  'r648-927.0'
-  has
-  size
-  639,
-  40
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  223
-  between
-  contigs
-  'r49-687.1'
-  and
-  'r465-732.2'
-  to
-  be
-  (0,
-  268).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r49-687.1'
-  and
-  'r465-732.2'
-  has
-  size
-  268,
-  20
-  matches,
-  and
-  the
-  score
-  of
-  8.999999995806531.
-END 16
-BEGIN 17
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -233,89 +275,52 @@ BEGIN 17
   85
   between
   contigs
-  'r465-732.2'
+  (1)
   and
   'r648-927.0'
   to
   be
-  (0,
-  280).
-END 17
-BEGIN 18
+  (599,
+  85).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  'r465-732.2'
+  (1)
   and
   'r648-927.0'
   has
   size
-  280,
+  85,
   85
   matches,
   and
   the
   score
   of
-  592895826.5401448.
-END 18
-BEGIN 19
+  2.1038994177683307e+25.
+END 23
+BEGIN 24
   Found
   a
   significant
   overlap
   of
   size
-  463
+  85
   between
   contigs
-  'r465-732.2'
+  (1)
   and
   'r648-927.0',
   resulting
   in
   contig
-  (1).
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  223
-  between
-  contigs
-  'r49-687.1'
-  and
-  (1)
-  to
-  be
-  (0,
-  463).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  'r49-687.1'
-  and
-  (1)
-  has
-  size
-  463,
-  47
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999999996.
-END 21
-BEGIN 22
+  (3).
+END 24
+BEGIN 25
   Outputting
-  2
+  1
   contigs.
-END 22
+END 25

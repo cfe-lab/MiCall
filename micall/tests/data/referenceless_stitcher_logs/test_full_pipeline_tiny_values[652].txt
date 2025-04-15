@@ -44,8 +44,8 @@ BEGIN 5
   'r397-706.2'
   to
   be
-  (0,
-  689).
+  (313,
+  623).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r397-706.2'
   has
   size
-  689,
+  310,
   310
   matches,
   and
   the
   score
   of
-  5.921142205614463e+48.
+  4.962749858723358e+77.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r186-452.0'
   to
   be
-  (0,
-  689).
+  (102,
+  369).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r186-452.0'
   has
   size
-  689,
+  267,
   267
   matches,
   and
   the
   score
   of
-  1.0926297299495945e+35.
+  7.187495747151675e+67.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r186-452.0'
   to
   be
-  (0,
-  689).
+  (102,
+  369).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r186-452.0'
   has
   size
-  689,
+  267,
   267
   matches,
   and
   the
   score
   of
-  1.0926297299495945e+35.
+  7.187495747151675e+67.
 END 14
 BEGIN 15
   Contig

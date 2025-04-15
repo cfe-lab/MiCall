@@ -44,8 +44,8 @@ BEGIN 5
   'r438-788.0'
   to
   be
-  (0,
-  351).
+  (336,
+  187).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r438-788.0'
   has
   size
-  351,
-  15
+  187,
+  187
   matches,
   and
   the
   score
   of
-  9.0.
+  2.002717969013387e+49.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  187
+  between
+  contigs
+  'r102-624.2'
+  and
+  'r438-788.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -81,10 +99,10 @@ BEGIN 7
   'r212-548.1'
   to
   be
-  (0,
-  523).
-END 7
-BEGIN 8
+  (110,
+  447).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -93,24 +111,24 @@ BEGIN 8
   'r212-548.1'
   has
   size
-  523,
+  337,
   337
   matches,
   and
   the
   score
   of
-  5.629354208102436e+69.
-END 8
-BEGIN 9
+  6.784116040227335e+83.
+END 9
+BEGIN 10
   Contig
   'r102-624.2'
   covers
   contig
   'r212-548.1'
   completely.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -122,22 +140,22 @@ BEGIN 10
   fittest
   has
   length
-  523
+  687
   and
   consists
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -145,44 +163,52 @@ BEGIN 12
   overlap
   of
   size
-  187
+  337
   between
   contigs
-  'r102-624.2'
+  (1)
   and
-  'r438-788.0'
+  'r212-548.1'
   to
   be
-  (0,
-  351).
-END 12
-BEGIN 13
+  (110,
+  447).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r102-624.2'
+  (1)
   and
-  'r438-788.0'
+  'r212-548.1'
   has
   size
-  351,
-  15
+  337,
+  337
   matches,
   and
   the
   score
   of
-  9.0.
-END 13
-BEGIN 14
+  6.784116040227335e+83.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r212-548.1'
+  completely.
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
-  523.
-END 14
-BEGIN 15
+  687.
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -195,29 +221,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
-  351.
-END 18
-BEGIN 19
+  337.
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -230,8 +256,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -246,16 +272,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -263,37 +289,45 @@ BEGIN 22
   overlap
   of
   size
-  187
+  337
   between
   contigs
-  'r102-624.2'
+  (1)
   and
-  'r438-788.0'
+  'r212-548.1'
   to
   be
-  (0,
-  351).
-END 22
-BEGIN 23
+  (110,
+  447).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  'r102-624.2'
+  (1)
   and
-  'r438-788.0'
+  'r212-548.1'
   has
   size
-  351,
-  15
+  337,
+  337
   matches,
   and
   the
   score
   of
-  9.0.
-END 23
-BEGIN 24
+  6.784116040227335e+83.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r212-548.1'
+  completely.
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 24
+END 27

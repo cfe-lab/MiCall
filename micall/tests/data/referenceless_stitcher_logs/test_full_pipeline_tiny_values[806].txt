@@ -44,8 +44,8 @@ BEGIN 5
   'r262-774.2'
   to
   be
-  (0,
-  513).
+  (204,
+  295).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r262-774.2'
   has
   size
-  513,
+  295,
   295
   matches,
   and
   the
   score
   of
-  2.6950156516782774e+57.
+  2.0698818862705537e+74.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  717
+  295
   between
   contigs
   'r58-556.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r262-774.2'
   to
   be
-  (0,
-  513).
+  (45,
+  334).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r262-774.2'
   has
   size
-  513,
+  334,
   334
   matches,
   and
   the
   score
   of
-  5.571265860006002e+69.
+  1.6485645329756413e+83.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  558
+  334
   between
   contigs
   'r217-595.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (0,
-  558).
+  (159,
+  340).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  558,
+  340,
   340
   matches,
   and
   the
   score
   of
-  8.163119537824199e+67.
+  5.5821337219087155e+84.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  717
+  340
   between
   contigs
   'r58-556.0'

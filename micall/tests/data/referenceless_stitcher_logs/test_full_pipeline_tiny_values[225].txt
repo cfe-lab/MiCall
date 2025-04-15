@@ -44,8 +44,8 @@ BEGIN 5
   'r211-715.2'
   to
   be
-  (0,
-  505).
+  (129,
+  470).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r211-715.2'
   has
   size
-  505,
-  376
+  470,
+  470
   matches,
   and
   the
   score
   of
-  1.749673910029455e+83.
+  2.467911168515203e+114.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  634
+  470
   between
   contigs
   'r82-680.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r111-453.1'
   to
   be
-  (0,
-  599).
+  (29,
+  372).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r111-453.1'
   has
   size
-  599,
+  343,
   343
   matches,
   and
   the
   score
   of
-  5.773413523096561e+65.
+  2.295983788650699e+85.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r111-453.1'
   to
   be
-  (0,
-  634).
+  (29,
+  372).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r111-453.1'
   has
   size
-  634,
+  343,
   343
   matches,
   and
   the
   score
   of
-  9.897953700690585e+62.
+  2.295983788650699e+85.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r111-453.1'
   to
   be
-  (0,
-  634).
+  (29,
+  372).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r111-453.1'
   has
   size
-  634,
+  343,
   343
   matches,
   and
   the
   score
   of
-  9.897953700690585e+62.
+  2.295983788650699e+85.
 END 25
 BEGIN 26
   Contig

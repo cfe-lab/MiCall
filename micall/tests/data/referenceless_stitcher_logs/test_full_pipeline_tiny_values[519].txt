@@ -44,8 +44,8 @@ BEGIN 5
   'r337-982.2'
   to
   be
-  (0,
-  646).
+  (161,
+  514).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r337-982.2'
   has
   size
-  646,
-  485
+  514,
+  514
   matches,
   and
   the
   score
   of
-  3.7356479881309025e+105.
+  2.8135249814291686e+124.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  807
+  514
   between
   contigs
   'r176-850.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r483-972.0'
   to
   be
-  (0,
-  490).
+  (307,
+  368).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r483-972.0'
   has
   size
-  490,
-  183
+  368,
+  368
   matches,
   and
   the
   score
   of
-  1.5624762751324614e+24.
+  1.5047743670980201e+91.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  797
+  368
   between
   contigs
   'r176-850.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r483-972.0'
   to
   be
-  (0,
-  807).
+  (307,
+  797).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r483-972.0'
   has
   size
-  807,
+  490,
   490
   matches,
   and
   the
   score
   of
-  7.953135584255405e+94.
+  9.226486702557315e+118.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r483-972.0'
   to
   be
-  (0,
-  807).
+  (307,
+  797).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r483-972.0'
   has
   size
-  807,
+  490,
   490
   matches,
   and
   the
   score
   of
-  7.953135584255405e+94.
+  9.226486702557315e+118.
 END 25
 BEGIN 26
   Contig

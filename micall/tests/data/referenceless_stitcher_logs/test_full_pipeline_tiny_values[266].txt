@@ -44,8 +44,8 @@ BEGIN 5
   'r249-777.1'
   to
   be
-  (0,
-  529).
+  (200,
+  502).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r249-777.1'
   has
   size
-  529,
-  329
+  502,
+  502
   matches,
   and
   the
   score
   of
-  4.780062626486775e+66.
+  5.09963960400456e+121.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  729
+  502
   between
   contigs
   'r49-750.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r124-524.0'
   to
   be
-  (0,
-  702).
+  (75,
+  476).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r124-524.0'
   has
   size
-  702,
+  401,
   401
   matches,
   and
   the
   score
   of
-  4.039613028541352e+75.
+  3.3145646650686706e+98.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r124-524.0'
   to
   be
-  (0,
-  729).
+  (75,
+  476).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r124-524.0'
   has
   size
-  729,
+  401,
   401
   matches,
   and
   the
   score
   of
-  2.8972060801875564e+73.
+  3.3145646650686706e+98.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r124-524.0'
   to
   be
-  (0,
-  729).
+  (75,
+  476).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r124-524.0'
   has
   size
-  729,
+  401,
   401
   matches,
   and
   the
   score
   of
-  2.8972060801875564e+73.
+  3.3145646650686706e+98.
 END 25
 BEGIN 26
   Contig

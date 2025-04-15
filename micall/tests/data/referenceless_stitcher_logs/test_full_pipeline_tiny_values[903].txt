@@ -44,8 +44,8 @@ BEGIN 5
   'r503-926.2'
   to
   be
-  (0,
-  629).
+  (154,
+  578).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r503-926.2'
   has
   size
-  629,
+  424,
   424
   matches,
   and
   the
   score
   of
-  1.4465781818087194e+88.
+  1.0368134368976624e+104.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r349-977.1'
   to
   be
-  (0,
-  629).
+  (106,
+  174).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r349-977.1'
   has
   size
-  629,
+  174,
   174
   matches,
   and
   the
   score
   of
-  1897593522.158734.
+  1.5534059400699183e+46.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  735
+  174
   between
   contigs
   'r243-522.0'
@@ -144,7 +144,7 @@ BEGIN 11
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -171,8 +171,8 @@ BEGIN 13
   'r503-926.2'
   to
   be
-  (0,
-  735).
+  (260,
+  684).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r503-926.2'
   has
   size
-  735,
+  424,
   424
   matches,
   and
   the
   score
   of
-  1.6123434475441925e+80.
+  1.0368134368976624e+104.
 END 14
 BEGIN 15
   Contig
@@ -201,43 +201,51 @@ BEGIN 15
   completely.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  735
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
   735.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  424.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -248,17 +256,78 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  424
+  between
+  contigs
+  (1)
+  and
+  'r503-926.2'
+  to
+  be
+  (260,
+  684).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r503-926.2'
+  has
+  size
+  424,
+  424
+  matches,
+  and
+  the
+  score
+  of
+  1.0368134368976624e+104.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r503-926.2'
+  completely.
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

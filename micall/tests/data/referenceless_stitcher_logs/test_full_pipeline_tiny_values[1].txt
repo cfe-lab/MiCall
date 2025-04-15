@@ -44,8 +44,8 @@ BEGIN 5
   'r199-662.2'
   to
   be
-  (0,
-  464).
+  (66,
+  321).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r199-662.2'
   has
   size
-  464,
+  321,
   321
   matches,
   and
   the
   score
   of
-  2.711023607529225e+69.
+  1.419261637008375e+80.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  530
+  321
   between
   contigs
   'r133-519.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r421-751.0'
   to
   be
-  (0,
-  331).
+  (222,
+  242).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r421-751.0'
   has
   size
-  331,
-  109
+  242,
+  242
   matches,
   and
   the
   score
   of
-  6847188006793.495.
+  1.0024846185357737e+62.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  553
+  242
   between
   contigs
   'r199-662.2'
@@ -181,8 +181,8 @@ BEGIN 13
   'r421-751.0'
   to
   be
-  (0,
-  331).
+  (288,
+  242).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r421-751.0'
   has
   size
-  331,
-  43
+  242,
+  242
   matches,
   and
   the
   score
   of
-  8.999999662096672.
+  1.0024846185357737e+62.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  619
+  242
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r421-751.0'
   to
   be
-  (0,
-  331).
+  (288,
+  242).
 END 24
 BEGIN 25
   Overlap
@@ -329,17 +329,35 @@ BEGIN 25
   'r421-751.0'
   has
   size
-  331,
-  43
+  242,
+  242
   matches,
   and
   the
   score
   of
-  8.999999662096672.
+  1.0024846185357737e+62.
 END 25
 BEGIN 26
-  Outputting
-  2
-  contigs.
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  242
+  between
+  contigs
+  (1)
+  and
+  'r421-751.0',
+  resulting
+  in
+  contig
+  (4).
 END 26
+BEGIN 27
+  Outputting
+  1
+  contigs.
+END 27

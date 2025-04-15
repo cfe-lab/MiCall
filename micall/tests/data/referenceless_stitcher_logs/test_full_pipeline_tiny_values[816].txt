@@ -44,8 +44,8 @@ BEGIN 5
   'r168-783.0'
   to
   be
-  (0,
-  616).
+  (138,
+  329).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r168-783.0'
   has
   size
-  616,
+  329,
   329
   matches,
   and
   the
   score
   of
-  1.6419694522671223e+60.
+  9.821769819102729e+81.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  754
+  329
   between
   contigs
   'r30-496.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r256-672.1'
   to
   be
-  (0,
-  616).
+  (88,
+  505).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r256-672.1'
   has
   size
-  616,
+  417,
   417
   matches,
   and
   the
   score
   of
-  1.7273538503269211e+87.
+  1.536811601568966e+102.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r256-672.1'
   to
   be
-  (0,
-  754).
+  (226,
+  643).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r256-672.1'
   has
   size
-  754,
+  417,
   417
   matches,
   and
   the
   score
   of
-  3.399146190738505e+76.
+  1.536811601568966e+102.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r256-672.1'
   to
   be
-  (0,
-  754).
+  (226,
+  643).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r256-672.1'
   has
   size
-  754,
+  417,
   417
   matches,
   and
   the
   score
   of
-  3.399146190738505e+76.
+  1.536811601568966e+102.
 END 25
 BEGIN 26
   Contig

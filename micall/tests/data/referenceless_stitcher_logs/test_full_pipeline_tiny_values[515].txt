@@ -44,8 +44,8 @@ BEGIN 5
   'r362-994.2'
   to
   be
-  (0,
-  633).
+  (353,
+  285).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r362-994.2'
   has
   size
-  633,
-  280
+  285,
+  285
   matches,
   and
   the
   score
   of
-  6.152986450306065e+43.
+  1.449177165052371e+72.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  986
+  285
   between
   contigs
   'r9-646.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r367-810.0'
   to
   be
-  (0,
-  444).
+  (358,
+  280).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r367-810.0'
   has
   size
-  444,
-  86
+  280,
+  280
   matches,
   and
   the
   score
   of
-  8.997074319035285.
+  8.561648399947143e+70.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  280
+  between
+  contigs
+  'r9-646.1'
+  and
+  'r367-810.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -163,10 +181,10 @@ BEGIN 12
   'r367-810.0'
   to
   be
-  (0,
-  986).
-END 12
-BEGIN 13
+  (358,
+  802).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,32 +193,32 @@ BEGIN 13
   'r367-810.0'
   has
   size
-  986,
+  444,
   444
   matches,
   and
   the
   score
   of
-  1.0628541393834187e+67.
-END 13
-BEGIN 14
+  3.931293414425041e+108.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
   'r367-810.0'
   completely.
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   986.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   2
   components
@@ -213,29 +231,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Constructed
   a
   path
   of
   length
   444.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Removed
   1
   components
@@ -248,8 +266,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Giving
   up
   on
@@ -264,16 +282,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -289,10 +307,10 @@ BEGIN 23
   'r367-810.0'
   to
   be
-  (0,
-  986).
-END 23
-BEGIN 24
+  (358,
+  802).
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -301,25 +319,25 @@ BEGIN 24
   'r367-810.0'
   has
   size
-  986,
+  444,
   444
   matches,
   and
   the
   score
   of
-  1.0628541393834187e+67.
-END 24
-BEGIN 25
+  3.931293414425041e+108.
+END 25
+BEGIN 26
   Contig
   (1)
   covers
   contig
   'r367-810.0'
   completely.
-END 25
-BEGIN 26
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 26
+END 27

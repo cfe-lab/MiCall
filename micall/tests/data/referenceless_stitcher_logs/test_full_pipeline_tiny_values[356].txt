@@ -44,8 +44,8 @@ BEGIN 5
   'r503-909.2'
   to
   be
-  (0,
-  741).
+  (249,
+  656).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r503-909.2'
   has
   size
-  741,
+  407,
   407
   matches,
   and
   the
   score
   of
-  4.841042886176371e+74.
+  1.1117681455108986e+100.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r571-940.0'
   to
   be
-  (0,
-  741).
+  (317,
+  687).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r571-940.0'
   has
   size
-  741,
+  370,
   370
   matches,
   and
   the
   score
   of
-  1.0178107056210828e+63.
+  3.0617269847869217e+91.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r571-940.0'
   to
   be
-  (0,
-  741).
+  (317,
+  687).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r571-940.0'
   has
   size
-  741,
+  370,
   370
   matches,
   and
   the
   score
   of
-  1.0178107056210828e+63.
+  3.0617269847869217e+91.
 END 14
 BEGIN 15
   Contig
