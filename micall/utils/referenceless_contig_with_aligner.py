@@ -3,7 +3,7 @@ import numpy as np
 
 from typing import Iterator, Tuple, Mapping, Literal, NoReturn
 from dataclasses import dataclass
-from mappy import Aligner
+from mappy import Aligner as OriginalMappyAligner
 from functools import cached_property
 
 from micall.utils.referenceless_score import Score
@@ -17,11 +17,21 @@ from micall.utils.find_maximum_overlap import \
 OverlapRelation = Literal["left", "right", "cover"]
 
 
+class MappyAligner:
+    def __init__(self, seq: str) -> None:
+        self.aligner = OriginalMappyAligner(seq=seq)
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        for x in self.aligner.map(query):
+            if x.is_primary:
+                yield (x.r_st, x.r_en)
+
+
 @dataclass(frozen=True)
 class ContigWithAligner(Contig):
     @cached_property
-    def aligner(self) -> Aligner:
-        return Aligner(seq=self.seq)
+    def mappy_aligner(self) -> MappyAligner:
+        return MappyAligner(seq=self.seq)
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
@@ -42,7 +52,7 @@ class ContigWithAligner(Contig):
         if len(overlap) < 40:
             return
 
-        aligner = self.aligner
+        aligner = self.mappy_aligner
         shift = 0
 
         if relation != "cover":
@@ -60,16 +70,16 @@ class ContigWithAligner(Contig):
                 if relation == "left":
                     seq = self.seq[-max_length:]
                     shift = len(self.seq) - max_length
+                    aligner = MappyAligner(seq=seq)
                 elif relation == "right":
                     seq = self.seq[:max_length]
                     shift = 0
+                    aligner = MappyAligner(seq=seq)
                 else:
                     _x: NoReturn = relation
-                aligner = Aligner(seq=seq)
 
-        for x in aligner.map(overlap):
-            if x.is_primary:
-                yield (x.r_st + shift, x.r_en + shift)
+        for start, end in aligner.map(overlap):
+            yield (start + shift, end + shift)
 
     @cached_property
     def nucleotide_seq(self) -> np.ndarray:
