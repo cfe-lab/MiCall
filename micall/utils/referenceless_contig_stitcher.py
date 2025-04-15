@@ -186,43 +186,43 @@ def find_overlap_cutoffs(minimum_score: Score,
 
     elif len(left.seq) == len(left_initial_overlap):
         overlap_alignments = tuple(right.map_overlap(minimum_score, "cover", left_initial_overlap))
-        right_cutoff = max((al.r_en + shift for al, shift in overlap_alignments), default=-1)
+        right_cutoff = max((end for start, end in overlap_alignments), default=-1)
         if right_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
 
-        left_cutoff = min((al.r_st + shift for al, shift in overlap_alignments), default=-1)
+        left_cutoff = min((start for start, end in overlap_alignments), default=-1)
 
     elif len(right.seq) == len(right_initial_overlap):
         overlap_alignments = tuple(left.map_overlap(minimum_score, "cover", right_initial_overlap))
-        left_cutoff = min((al.r_st + shift for al, shift in overlap_alignments), default=-1)
+        left_cutoff = min((start for start, end in overlap_alignments), default=-1)
         if left_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
 
-        right_cutoff = max((al.r_en + shift for al, shift in overlap_alignments), default=-1)
+        right_cutoff = max((end for start, end in overlap_alignments), default=-1)
 
     elif len(left.seq) < len(right.seq):
         left_overlap_alignments = left.map_overlap(minimum_score, "left", right_initial_overlap)
-        left_cutoff = min((al.r_st + shift for al, shift in left_overlap_alignments), default=-1)
+        left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
 
         right_overlap_alignments = right.map_overlap(minimum_score, "right", left_initial_overlap)
-        right_cutoff = max((al.r_en + shift for al, shift in right_overlap_alignments), default=-1)
+        right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
     else:
         right_overlap_alignments = right.map_overlap(minimum_score, "right", left_initial_overlap)
-        right_cutoff = max((al.r_en + shift for al, shift in right_overlap_alignments), default=-1)
+        right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None
 
         left_overlap_alignments = left.map_overlap(minimum_score, "left", right_initial_overlap)
-        left_cutoff = min((al.r_st + shift for al, shift in left_overlap_alignments), default=-1)
+        left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
             CUTOFFS_CACHE[key] = None
             return None

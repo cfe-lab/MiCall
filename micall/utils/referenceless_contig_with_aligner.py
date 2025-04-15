@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from mappy import Aligner
 from functools import cached_property
 
-from micall.utils.consensus_aligner import Alignment
 from micall.utils.referenceless_score import Score
 from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.overlap_stitcher import \
@@ -36,7 +35,12 @@ class ContigWithAligner(Contig):
                     minimum_score: Score,
                     relation: OverlapRelation,
                     overlap: str,
-                    ) -> Iterator[Tuple[Alignment, int]]:
+                    ) -> Iterator[Tuple[int, int]]:
+
+        # TODO: Remove this requirement below.
+        #       It is here only to preserve the mappy behaviour.
+        if len(overlap) < 40:
+            return
 
         aligner = self.aligner
         shift = 0
@@ -65,7 +69,7 @@ class ContigWithAligner(Contig):
 
         for x in aligner.map(overlap):
             if x.is_primary:
-                yield (x, shift)
+                yield (x.r_st + shift, x.r_en + shift)
 
     @cached_property
     def nucleotide_seq(self) -> np.ndarray:
