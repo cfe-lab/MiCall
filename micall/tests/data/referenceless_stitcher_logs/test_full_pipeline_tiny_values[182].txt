@@ -44,8 +44,8 @@ BEGIN 5
   'r420-826.0'
   to
   be
-  (260,
-  304).
+  (0,
+  407).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r420-826.0'
   has
   size
-  304,
-  304
+  407,
+  147
   matches,
   and
   the
   score
   of
-  2.914968515383263e+76.
+  1.927317998267892e+19.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  304
+  667
   between
   contigs
   'r160-723.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r391-692.2'
   to
   be
-  (231,
-  533).
+  (0,
+  564).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r391-692.2'
   has
   size
-  302,
+  564,
   302
   matches,
   and
   the
   score
   of
-  7.1361621731366855e+75.
+  7.69403239374255e+55.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r391-692.2'
   to
   be
-  (231,
-  533).
+  (0,
+  667).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r391-692.2'
   has
   size
-  302,
+  667,
   302
   matches,
   and
   the
   score
   of
-  7.1361621731366855e+75.
+  6.970284338610914e+47.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r391-692.2'
   to
   be
-  (231,
-  533).
+  (0,
+  667).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r391-692.2'
   has
   size
-  302,
+  667,
   302
   matches,
   and
   the
   score
   of
-  7.1361621731366855e+75.
+  6.970284338610914e+47.
 END 25
 BEGIN 26
   Contig

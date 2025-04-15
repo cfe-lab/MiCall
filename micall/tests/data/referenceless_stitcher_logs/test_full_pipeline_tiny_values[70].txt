@@ -44,8 +44,8 @@ BEGIN 5
   'r61-577.0'
   to
   be
-  (6,
-  523).
+  (0,
+  570).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r61-577.0'
   has
   size
-  517,
+  570,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.2802622340674008e+121.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r327-820.2'
   to
   be
-  (272,
-  298).
+  (0,
+  494).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r327-820.2'
   has
   size
-  298,
-  298
+  494,
+  222
   matches,
   and
   the
   score
   of
-  8.550117574725871e+74.
+  1.8648679462946017e+36.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  298
+  766
   between
   contigs
   'r55-624.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r61-577.0'
   to
   be
-  (6,
-  523).
+  (0,
+  766).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r61-577.0'
   has
   size
-  517,
+  766,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.5621804792601355e+106.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r61-577.0'
   to
   be
-  (6,
-  523).
+  (0,
+  766).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r61-577.0'
   has
   size
-  517,
+  766,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.5621804792601355e+106.
 END 25
 BEGIN 26
   Contig

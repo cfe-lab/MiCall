@@ -44,8 +44,8 @@ BEGIN 5
   'r49-635.1'
   to
   be
-  (9,
-  385).
+  (0,
+  587).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r49-635.1'
   has
   size
-  385,
+  587,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  3.797236616096574e+79.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  385
+  596
   between
   contigs
   'r40-433.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r187-571.2'
   to
   be
-  (138,
-  523).
+  (0,
+  587).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r187-571.2'
   has
   size
-  385,
+  587,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  3.797236616096574e+79.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r187-571.2'
   to
   be
-  (147,
-  532).
+  (0,
+  596).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r187-571.2'
   has
   size
-  385,
+  596,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  9.248370411649163e+78.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r187-571.2'
   to
   be
-  (147,
-  532).
+  (0,
+  596).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r187-571.2'
   has
   size
-  385,
+  596,
   385
   matches,
   and
   the
   score
   of
-  7.11244685088061e+94.
+  9.248370411649163e+78.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r357-955.1'
   to
   be
-  (117,
-  596).
+  (0,
+  599).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r357-955.1'
   has
   size
-  596,
-  596
+  599,
+  482
   matches,
   and
   the
   score
   of
-  2.0712517101188187e+143.
+  2.0480680684541421e+108.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  596
+  716
   between
   contigs
   'r240-952.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r262-766.0'
   to
   be
-  (22,
-  527).
+  (0,
+  713).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r262-766.0'
   has
   size
-  505,
+  713,
   505
   matches,
   and
   the
   score
   of
-  2.078655709798398e+122.
+  3.1264527896259066e+106.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r262-766.0'
   to
   be
-  (22,
-  527).
+  (0,
+  716).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r262-766.0'
   has
   size
-  505,
+  716,
   505
   matches,
   and
   the
   score
   of
-  2.078655709798398e+122.
+  3.106938281507556e+106.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r262-766.0'
   to
   be
-  (22,
-  527).
+  (0,
+  716).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r262-766.0'
   has
   size
-  505,
+  716,
   505
   matches,
   and
   the
   score
   of
-  2.078655709798398e+122.
+  3.106938281507556e+106.
 END 25
 BEGIN 26
   Contig

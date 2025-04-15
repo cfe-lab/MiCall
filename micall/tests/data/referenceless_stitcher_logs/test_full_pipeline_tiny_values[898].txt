@@ -44,8 +44,8 @@ BEGIN 5
   'r342-774.2'
   to
   be
-  (291,
-  724).
+  (0,
+  737).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r342-774.2'
   has
   size
-  433,
+  737,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  4.5837558182226056e+82.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r651-932.0'
   to
   be
-  (600,
-  137).
+  (232,
+  282).
 END 8
 BEGIN 9
   Overlap
@@ -101,34 +101,16 @@ BEGIN 9
   'r651-932.0'
   has
   size
-  137,
-  137
+  282,
+  23
   matches,
   and
   the
   score
   of
-  2.6905190841246747e+37.
+  8.999999997816372.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  137
-  between
-  contigs
-  'r51-787.1'
-  and
-  'r651-932.0',
-  resulting
-  in
-  contig
-  (1).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +122,22 @@ BEGIN 11
   fittest
   has
   length
-  882
+  737
   and
   consists
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -163,52 +145,44 @@ BEGIN 13
   overlap
   of
   size
-  433
+  137
   between
   contigs
-  (1)
+  'r51-787.1'
   and
-  'r342-774.2'
+  'r651-932.0'
   to
   be
-  (291,
-  724).
-END 13
-BEGIN 14
+  (232,
+  282).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (1)
+  'r51-787.1'
   and
-  'r342-774.2'
+  'r651-932.0'
   has
   size
-  433,
-  433
+  282,
+  23
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r342-774.2'
-  completely.
-END 15
-BEGIN 16
+  8.999999997816372.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  882.
-END 16
-BEGIN 17
+  737.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -221,29 +195,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  433.
-END 20
-BEGIN 21
+  282.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -256,8 +230,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -272,16 +246,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -289,45 +263,37 @@ BEGIN 24
   overlap
   of
   size
-  433
+  137
   between
   contigs
-  (1)
+  'r51-787.1'
   and
-  'r342-774.2'
+  'r651-932.0'
   to
   be
-  (291,
-  724).
-END 24
-BEGIN 25
+  (232,
+  282).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  (1)
+  'r51-787.1'
   and
-  'r342-774.2'
+  'r651-932.0'
   has
   size
-  433,
-  433
+  282,
+  23
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
-END 25
-BEGIN 26
-  Contig
-  (1)
-  covers
-  contig
-  'r342-774.2'
-  completely.
-END 26
-BEGIN 27
+  8.999999997816372.
+END 23
+BEGIN 24
   Outputting
-  1
+  2
   contigs.
-END 27
+END 24

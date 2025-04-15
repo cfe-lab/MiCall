@@ -44,8 +44,8 @@ BEGIN 5
   'r171-537.0'
   to
   be
-  (34,
-  401).
+  (0,
+  766).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r171-537.0'
   has
   size
-  367,
+  766,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  1.712198141266853e+60.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r137-902.1'
   to
   be
-  (13,
-  286).
+  (0,
+  766).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r137-902.1'
   has
   size
-  286,
+  766,
   286
   matches,
   and
   the
   score
   of
-  1.4654070056000339e+72.
+  1.1015250277075406e+35.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  286
+  779
   between
   contigs
   'r124-422.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r171-537.0'
   to
   be
-  (47,
-  414).
+  (0,
+  779).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r171-537.0'
   has
   size
-  367,
+  779,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  2.0284895680687137e+59.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r171-537.0'
   to
   be
-  (47,
-  414).
+  (0,
+  779).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r171-537.0'
   has
   size
-  367,
+  779,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  2.0284895680687137e+59.
 END 25
 BEGIN 26
   Contig

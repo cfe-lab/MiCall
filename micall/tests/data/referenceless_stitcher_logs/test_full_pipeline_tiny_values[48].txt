@@ -44,8 +44,8 @@ BEGIN 5
   'r508-992.2'
   to
   be
-  (224,
-  129).
+  (0,
+  473).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,98 @@ BEGIN 6
   'r508-992.2'
   has
   size
-  129,
+  473,
   129
   matches,
   and
   the
   score
   of
-  3.4655371417301126e+35.
+  7303553.448795917.
 END 6
 BEGIN 7
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  198
+  between
+  contigs
+  'r382-705.0'
+  and
+  'r508-992.2'
+  to
+  be
+  (0,
+  485).
+END 7
+BEGIN 8
+  Overlap
+  between
+  contigs
+  'r382-705.0'
+  and
+  'r508-992.2'
+  has
+  size
+  485,
+  198
+  matches,
+  and
+  the
+  score
+  of
+  2.092611164312763e+29.
+END 8
+BEGIN 9
   Found
   a
   significant
   overlap
   of
   size
-  129
+  611
   between
   contigs
-  'r284-636.1'
+  'r382-705.0'
   and
   'r508-992.2',
   resulting
   in
   contig
   (1).
-END 7
-BEGIN 8
+END 9
+BEGIN 10
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  709
+  and
+  consists
+  of
+  3
+  parts.
+END 10
+BEGIN 11
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -91,56 +155,56 @@ BEGIN 8
   overlap
   of
   size
-  198
+  255
   between
   contigs
-  'r382-705.0'
+  'r284-636.1'
   and
-  'r508-992.2'
+  (1)
   to
   be
-  (126,
-  198).
-END 8
-BEGIN 9
+  (0,
+  611).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  'r382-705.0'
+  'r284-636.1'
   and
-  'r508-992.2'
+  (1)
   has
   size
-  198,
-  198
+  611,
+  255
   matches,
   and
   the
   score
   of
-  6.153899064693768e+51.
-END 9
-BEGIN 10
+  3.452820433611198e+37.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  198
+  709
   between
   contigs
-  'r382-705.0'
+  'r284-636.1'
   and
-  'r508-992.2',
+  (1),
   resulting
   in
   contig
   (2).
-END 10
-BEGIN 11
+END 14
+BEGIN 15
   Cycle
-  1
+  2
   finished
   with
   1
@@ -156,106 +220,24 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  255
-  between
-  contigs
-  'r284-636.1'
-  and
-  (2)
-  to
-  be
-  (98,
-  255).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r284-636.1'
-  and
-  (2)
-  has
-  size
-  255,
-  255
-  matches,
-  and
-  the
-  score
-  of
-  1.2126758297886686e+65.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  255
-  between
-  contigs
-  'r284-636.1'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (3).
 END 15
 BEGIN 16
   Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  709
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
   3
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   709.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Removed
   3
   components
@@ -268,17 +250,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 21
+END 20

@@ -44,8 +44,8 @@ BEGIN 5
   'r168-639.2'
   to
   be
-  (46,
-  317).
+  (0,
+  472).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r168-639.2'
   has
   size
-  317,
+  472,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  3.885147212648718e+67.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  317
+  518
   between
   contigs
   'r122-484.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r377-659.0'
   to
   be
-  (209,
-  263).
+  (0,
+  283).
 END 8
 BEGIN 9
   Overlap
@@ -111,34 +111,16 @@ BEGIN 9
   'r377-659.0'
   has
   size
-  263,
-  263
+  283,
+  74
   matches,
   and
   the
   score
   of
-  8.56301343060922e+66.
+  1229.1784354428205.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  263
-  between
-  contigs
-  'r168-639.2'
-  and
-  'r377-659.0',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -150,22 +132,22 @@ BEGIN 11
   fittest
   has
   length
-  538
+  518
   and
   consists
   of
-  3
+  2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -181,10 +163,10 @@ BEGIN 13
   'r377-659.0'
   to
   be
-  (255,
-  263).
-END 13
-BEGIN 14
+  (0,
+  283).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,23 +175,23 @@ BEGIN 14
   'r377-659.0'
   has
   size
-  263,
-  263
+  283,
+  28
   matches,
   and
   the
   score
   of
-  8.56301343060922e+66.
-END 14
-BEGIN 15
+  8.99999994893949.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  263
+  538
   between
   contigs
   (1)
@@ -218,46 +200,54 @@ BEGIN 15
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  538
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
+  (2).
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  538.
+  518.
+END 15
+BEGIN 16
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 16
+BEGIN 17
+  Calculating
+  all
+  paths...
+END 17
+BEGIN 18
+  Cycle
+  1
+  started
+  with
+  1
+  paths
 END 18
 BEGIN 19
+  Constructed
+  a
+  path
+  of
+  length
+  283.
+END 19
+BEGIN 20
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +258,70 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  263
+  between
+  contigs
+  (1)
+  and
+  'r377-659.0'
+  to
+  be
+  (0,
+  283).
+END 23
+BEGIN 24
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r377-659.0'
+  has
+  size
+  283,
+  28
+  matches,
+  and
+  the
+  score
+  of
+  8.99999994893949.
+END 24
+BEGIN 25
   Outputting
-  1
+  2
   contigs.
-END 21
+END 25

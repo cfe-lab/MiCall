@@ -44,8 +44,8 @@ BEGIN 5
   'r123-804.2'
   to
   be
-  (76,
-  419).
+  (0,
+  682).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r123-804.2'
   has
   size
-  419,
+  682,
   419
   matches,
   and
   the
   score
   of
-  6.241124346934461e+102.
+  4.516340700186129e+82.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  419
+  758
   between
   contigs
   'r47-541.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r123-804.2'
   to
   be
-  (123,
-  319).
+  (0,
+  682).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r123-804.2'
   has
   size
-  319,
+  682,
   319
   matches,
   and
   the
   score
   of
-  6.956841143781247e+79.
+  7.587583171942455e+51.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  319
+  805
   between
   contigs
   'r0-441.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (47,
-  395).
+  (0,
+  758).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  395,
+  758,
   395
   matches,
   and
   the
   score
   of
-  1.9749573801967826e+97.
+  2.9487859080126008e+69.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  395
+  805
   between
   contigs
   'r0-441.0'

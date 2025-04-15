@@ -44,8 +44,8 @@ BEGIN 5
   'r276-776.5'
   to
   be
-  (180,
-  352).
+  (0,
+  501).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r276-776.5'
   has
   size
-  352,
-  352
+  501,
+  321
   matches,
   and
   the
   score
   of
-  3.1906044786508217e+87.
+  4.6667234591770296e+66.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  352
+  681
   between
   contigs
   'r96-627.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r96-627.0'
   to
   be
-  (48,
-  420).
+  (0,
+  532).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r96-627.0'
   has
   size
-  420,
+  532,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  3.6810898309061374e+94.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  420
+  580
   between
   contigs
   'r48-515.3'
@@ -154,8 +154,8 @@ BEGIN 11
   'r96-627.0'
   to
   be
-  (2,
-  464).
+  (0,
+  532).
 END 11
 BEGIN 12
   Overlap
@@ -166,14 +166,14 @@ BEGIN 12
   'r96-627.0'
   has
   size
-  464,
+  532,
   464
   matches,
   and
   the
   score
   of
-  1.4809908115939891e+113.
+  9.937691345733763e+107.
 END 12
 BEGIN 13
   Found
@@ -182,7 +182,7 @@ BEGIN 13
   overlap
   of
   size
-  464
+  534
   between
   contigs
   'r94-559.4'
@@ -236,8 +236,8 @@ BEGIN 16
   'r276-776.5'
   to
   be
-  (182,
-  352).
+  (0,
+  501).
 END 16
 BEGIN 17
   Overlap
@@ -248,14 +248,14 @@ BEGIN 17
   'r276-776.5'
   has
   size
-  352,
-  352
+  501,
+  319
   matches,
   and
   the
   score
   of
-  3.1906044786508217e+87.
+  1.1312398557625898e+66.
 END 17
 BEGIN 18
   Found
@@ -264,7 +264,7 @@ BEGIN 18
   overlap
   of
   size
-  352
+  683
   between
   contigs
   (3)
@@ -291,8 +291,8 @@ BEGIN 19
   (3)
   to
   be
-  (46,
-  422).
+  (0,
+  534).
 END 19
 BEGIN 20
   Overlap
@@ -303,14 +303,14 @@ BEGIN 20
   (3)
   has
   size
-  422,
+  534,
   422
   matches,
   and
   the
   score
   of
-  2.5535062782726194e+103.
+  7.482781637914025e+94.
 END 20
 BEGIN 21
   Found
@@ -319,7 +319,7 @@ BEGIN 21
   overlap
   of
   size
-  422
+  580
   between
   contigs
   'r48-515.3'
@@ -346,8 +346,8 @@ BEGIN 22
   'r327-752.1'
   to
   be
-  (233,
-  301).
+  (0,
+  426).
 END 22
 BEGIN 23
   Overlap
@@ -358,14 +358,14 @@ BEGIN 23
   'r327-752.1'
   has
   size
-  301,
-  301
+  426,
+  193
   matches,
   and
   the
   score
   of
-  7.06134196748755e+75.
+  3.0067618081325753e+32.
 END 23
 BEGIN 24
   Found
@@ -374,7 +374,7 @@ BEGIN 24
   overlap
   of
   size
-  301
+  659
   between
   contigs
   (3)
@@ -401,8 +401,8 @@ BEGIN 25
   'r554-761.2'
   to
   be
-  (460,
-  74).
+  (231,
+  208).
 END 25
 BEGIN 26
   Overlap
@@ -413,14 +413,14 @@ BEGIN 26
   'r554-761.2'
   has
   size
-  74,
-  74
+  208,
+  10
   matches,
   and
   the
   score
   of
-  2.623480008802593e+22.
+  8.999999908388208.
 END 26
 BEGIN 27
   Found
@@ -429,7 +429,7 @@ BEGIN 27
   overlap
   of
   size
-  74
+  399
   between
   contigs
   (3)
@@ -483,8 +483,8 @@ BEGIN 30
   'r276-776.5'
   to
   be
-  (228,
-  352).
+  (0,
+  501).
 END 30
 BEGIN 31
   Overlap
@@ -495,14 +495,14 @@ BEGIN 31
   'r276-776.5'
   has
   size
-  352,
-  352
+  501,
+  273
   matches,
   and
   the
   score
   of
-  3.1906044786508217e+87.
+  7.120459983728946e+51.
 END 31
 BEGIN 32
   Found
@@ -511,7 +511,7 @@ BEGIN 32
   overlap
   of
   size
-  352
+  729
   between
   contigs
   (5)
@@ -538,8 +538,8 @@ BEGIN 33
   'r327-752.1'
   to
   be
-  (279,
-  301).
+  (0,
+  426).
 END 33
 BEGIN 34
   Overlap
@@ -550,14 +550,14 @@ BEGIN 34
   'r327-752.1'
   has
   size
-  301,
-  301
+  426,
+  147
   matches,
   and
   the
   score
   of
-  7.06134196748755e+75.
+  4.342497404437455e+17.
 END 34
 BEGIN 35
   Found
@@ -566,7 +566,7 @@ BEGIN 35
   overlap
   of
   size
-  301
+  705
   between
   contigs
   (5)
@@ -593,8 +593,8 @@ BEGIN 36
   'r554-761.2'
   to
   be
-  (506,
-  74).
+  (29,
+  208).
 END 36
 BEGIN 37
   Overlap
@@ -605,14 +605,14 @@ BEGIN 37
   'r554-761.2'
   has
   size
-  74,
-  74
+  208,
+  2
   matches,
   and
   the
   score
   of
-  2.623480008802593e+22.
+  8.999999999397941.
 END 37
 BEGIN 38
   Found
@@ -621,7 +621,7 @@ BEGIN 38
   overlap
   of
   size
-  74
+  414
   between
   contigs
   (5)
@@ -683,8 +683,8 @@ BEGIN 43
   'r327-752.1'
   to
   be
-  (51,
-  477).
+  (0,
+  501).
 END 43
 BEGIN 44
   Overlap
@@ -695,14 +695,14 @@ BEGIN 44
   'r327-752.1'
   has
   size
-  426,
+  501,
   426
   matches,
   and
   the
   score
   of
-  2.1047640704538415e+104.
+  3.4373579440487e+98.
 END 44
 BEGIN 45
   Contig
@@ -728,8 +728,8 @@ BEGIN 46
   'r554-761.2'
   to
   be
-  (278,
-  486).
+  (0,
+  501).
 END 46
 BEGIN 47
   Overlap
@@ -740,14 +740,14 @@ BEGIN 47
   'r554-761.2'
   has
   size
-  208,
+  501,
   208
   matches,
   and
   the
   score
   of
-  1.8437182156211e+54.
+  1.6885507613900592e+31.
 END 47
 BEGIN 48
   Contig
@@ -800,8 +800,8 @@ BEGIN 51
   'r554-761.2'
   to
   be
-  (278,
-  486).
+  (0,
+  501).
 END 51
 BEGIN 52
   Overlap
@@ -812,14 +812,14 @@ BEGIN 52
   'r554-761.2'
   has
   size
-  208,
+  501,
   208
   matches,
   and
   the
   score
   of
-  1.8437182156211e+54.
+  1.6885507613900592e+31.
 END 52
 BEGIN 53
   Contig
@@ -902,8 +902,8 @@ BEGIN 59
   'r276-776.5'
   to
   be
-  (228,
-  352).
+  (0,
+  501).
 END 59
 BEGIN 60
   Overlap
@@ -914,14 +914,14 @@ BEGIN 60
   'r276-776.5'
   has
   size
-  352,
-  352
+  501,
+  273
   matches,
   and
   the
   score
   of
-  3.1906044786508217e+87.
+  7.120459983728946e+51.
 END 60
 BEGIN 61
   Found
@@ -930,7 +930,7 @@ BEGIN 61
   overlap
   of
   size
-  352
+  729
   between
   contigs
   (5)

@@ -44,8 +44,8 @@ BEGIN 5
   'r402-945.2'
   to
   be
-  (75,
-  619).
+  (0,
+  656).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r402-945.2'
   has
   size
-  544,
+  656,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  8.749462807946673e+122.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r327-982.0'
   to
   be
-  (106,
-  397).
+  (0,
+  656).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r327-982.0'
   has
   size
-  397,
+  656,
   397
   matches,
   and
   the
   score
   of
-  8.027293145241135e+97.
+  1.1291398843248093e+78.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  397
+  762
   between
   contigs
   'r221-723.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r402-945.2'
   to
   be
-  (181,
-  725).
+  (0,
+  762).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r402-945.2'
   has
   size
-  544,
+  762,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  5.368138133678963e+114.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r402-945.2'
   to
   be
-  (181,
-  725).
+  (0,
+  762).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r402-945.2'
   has
   size
-  544,
+  762,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  5.368138133678963e+114.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r462-853.1'
   to
   be
-  (197,
-  359).
+  (0,
+  392).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r462-853.1'
   has
   size
-  359,
-  359
+  392,
+  195
   matches,
   and
   the
   score
   of
-  1.0868099534318463e+89.
+  8.572626014342819e+35.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  359
+  589
   between
   contigs
   'r265-820.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r425-781.0'
   to
   be
-  (160,
-  517).
+  (0,
+  556).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r425-781.0'
   has
   size
-  357,
+  556,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  2.7498364547248626e+73.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r425-781.0'
   to
   be
-  (160,
-  517).
+  (0,
+  589).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r425-781.0'
   has
   size
-  357,
+  589,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  9.65339753618105e+70.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r425-781.0'
   to
   be
-  (160,
-  517).
+  (0,
+  589).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r425-781.0'
   has
   size
-  357,
+  589,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  9.65339753618105e+70.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r95-735.0'
   to
   be
-  (13,
-  528).
+  (0,
+  641).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r95-735.0'
   has
   size
-  528,
+  641,
   528
   matches,
   and
   the
   score
   of
-  6.273025503046357e+127.
+  1.9290847451640446e+119.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  528
+  654
   between
   contigs
   'r82-622.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r417-728.2'
   to
   be
-  (322,
-  634).
+  (0,
+  641).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r417-728.2'
   has
   size
-  312,
+  641,
   312
   matches,
   and
   the
   score
   of
-  2.0260717585204003e+78.
+  1.2833293050200416e+53.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r417-728.2'
   to
   be
-  (335,
-  647).
+  (0,
+  654).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r417-728.2'
   has
   size
-  312,
+  654,
   312
   matches,
   and
   the
   score
   of
-  2.0260717585204003e+78.
+  7.538917941218897e+51.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r417-728.2'
   to
   be
-  (335,
-  647).
+  (0,
+  654).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r417-728.2'
   has
   size
-  312,
+  654,
   312
   matches,
   and
   the
   score
   of
-  2.0260717585204003e+78.
+  7.538917941218897e+51.
 END 25
 BEGIN 26
   Contig

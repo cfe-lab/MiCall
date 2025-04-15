@@ -44,8 +44,8 @@ BEGIN 5
   'r190-527.0'
   to
   be
-  (141,
-  479).
+  (0,
+  621).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r190-527.0'
   has
   size
-  338,
+  621,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  2.396940890201006e+62.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r252-585.2'
   to
   be
-  (203,
-  537).
+  (0,
+  621).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r252-585.2'
   has
   size
-  334,
+  621,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  1.4017268636966558e+61.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r252-585.2'
   to
   be
-  (203,
-  537).
+  (0,
+  621).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r252-585.2'
   has
   size
-  334,
+  621,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  1.4017268636966558e+61.
 END 14
 BEGIN 15
   Contig

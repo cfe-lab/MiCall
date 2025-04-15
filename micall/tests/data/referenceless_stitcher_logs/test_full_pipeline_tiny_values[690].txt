@@ -44,8 +44,8 @@ BEGIN 5
   'r84-761.0'
   to
   be
-  (14,
-  692).
+  (0,
+  765).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r84-761.0'
   has
   size
-  678,
+  765,
   678
   matches,
   and
   the
   score
   of
-  2.8023279649753228e+159.
+  1.5278186943705972e+155.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r70-834.2'
   to
   be
-  (17,
-  479).
+  (0,
+  765).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r70-834.2'
   has
   size
-  479,
+  765,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  7.84869931562867e+94.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  479
+  782
   between
   contigs
   'r53-548.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r84-761.0'
   to
   be
-  (31,
-  709).
+  (0,
+  782).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r84-761.0'
   has
   size
-  678,
+  782,
   678
   matches,
   and
   the
   score
   of
-  2.8023279649753228e+159.
+  9.331534827605082e+153.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r84-761.0'
   to
   be
-  (31,
-  709).
+  (0,
+  782).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r84-761.0'
   has
   size
-  678,
+  782,
   678
   matches,
   and
   the
   score
   of
-  2.8023279649753228e+159.
+  9.331534827605082e+153.
 END 25
 BEGIN 26
   Contig

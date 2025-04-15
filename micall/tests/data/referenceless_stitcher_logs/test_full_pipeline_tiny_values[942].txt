@@ -44,8 +44,8 @@ BEGIN 5
   'r503-966.0'
   to
   be
-  (282,
-  393).
+  (0,
+  464).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r503-966.0'
   has
   size
-  393,
-  393
+  464,
+  182
   matches,
   and
   the
   score
   of
-  4.858595149998396e+96.
+  1.2881885727965294e+26.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  393
+  746
   between
   contigs
   'r221-895.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r396-692.2'
   to
   be
-  (175,
-  472).
+  (0,
+  675).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r396-692.2'
   has
   size
-  297,
+  675,
   297
   matches,
   and
   the
   score
   of
-  4.2296305030119733e+74.
+  4.650110766504436e+45.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r396-692.2'
   to
   be
-  (175,
-  472).
+  (0,
+  746).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r396-692.2'
   has
   size
-  297,
+  746,
   297
   matches,
   and
   the
   score
   of
-  4.2296305030119733e+74.
+  1.1508933825093293e+40.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r396-692.2'
   to
   be
-  (175,
-  472).
+  (0,
+  746).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r396-692.2'
   has
   size
-  297,
+  746,
   297
   matches,
   and
   the
   score
   of
-  4.2296305030119733e+74.
+  1.1508933825093293e+40.
 END 25
 BEGIN 26
   Contig

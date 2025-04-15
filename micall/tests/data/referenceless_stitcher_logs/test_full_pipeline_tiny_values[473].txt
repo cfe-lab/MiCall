@@ -44,8 +44,8 @@ BEGIN 5
   'r381-920.0'
   to
   be
-  (162,
-  275).
+  (0,
+  540).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r381-920.0'
   has
   size
-  275,
+  540,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  2.3940957121331467e+49.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  275
+  702
   between
   contigs
   'r219-655.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r381-920.0'
   to
   be
-  (48,
-  325).
+  (0,
+  540).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r381-920.0'
   has
   size
-  325,
+  540,
   325
   matches,
   and
   the
   score
   of
-  2.3619006179242557e+81.
+  6.747318266903432e+64.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  325
+  588
   between
   contigs
   'r333-705.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (114,
-  323).
+  (0,
+  588).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  323,
+  588,
   323
   matches,
   and
   the
   score
   of
-  5.790135795793465e+80.
+  3.316490608495552e+60.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  323
+  702
   between
   contigs
   'r219-655.1'

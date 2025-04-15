@@ -44,8 +44,8 @@ BEGIN 5
   'r285-818.0'
   to
   be
-  (135,
-  669).
+  (0,
+  678).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r285-818.0'
   has
   size
-  534,
+  678,
   534
   matches,
   and
   the
   score
   of
-  1.0401803854791448e+129.
+  1.1841482290886252e+118.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r150-827.1'
   to
   be
-  (138,
-  224).
+  (0,
+  678).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r150-827.1'
   has
   size
-  224,
+  678,
   224
   matches,
   and
   the
   score
   of
-  9.56562969983455e+57.
+  1.8754606664025855e+22.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  224
+  816
   between
   contigs
   'r12-373.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r285-818.0'
   to
   be
-  (273,
-  807).
+  (0,
+  816).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r285-818.0'
   has
   size
-  534,
+  816,
   534
   matches,
   and
   the
   score
   of
-  1.0401803854791448e+129.
+  5.25887874440639e+107.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r285-818.0'
   to
   be
-  (273,
-  807).
+  (0,
+  816).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r285-818.0'
   has
   size
-  534,
+  816,
   534
   matches,
   and
   the
   score
   of
-  1.0401803854791448e+129.
+  5.25887874440639e+107.
 END 25
 BEGIN 26
   Contig

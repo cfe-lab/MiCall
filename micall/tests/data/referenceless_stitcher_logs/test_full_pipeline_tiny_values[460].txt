@@ -44,8 +44,8 @@ BEGIN 5
   'r345-943.0'
   to
   be
-  (139,
-  466).
+  (0,
+  599).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r345-943.0'
   has
   size
-  466,
-  466
+  599,
+  460
   matches,
   and
   the
   score
   of
-  3.0025728459853266e+113.
+  3.975166394582266e+101.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  466
+  738
   between
   contigs
   'r206-810.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r399-930.2'
   to
   be
-  (193,
-  412).
+  (0,
+  532).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r399-930.2'
   has
   size
-  412,
-  412
+  532,
+  339
   matches,
   and
   the
   score
   of
-  1.8489905651376328e+101.
+  5.624138653950547e+69.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  412
+  725
   between
   contigs
   'r206-810.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r399-930.2'
   to
   be
-  (193,
-  725).
+  (0,
+  738).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r399-930.2'
   has
   size
-  532,
+  738,
   532
   matches,
   and
   the
   score
   of
-  5.139581280571574e+128.
+  7.929168904603331e+112.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r399-930.2'
   to
   be
-  (193,
-  725).
+  (0,
+  738).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r399-930.2'
   has
   size
-  532,
+  738,
   532
   matches,
   and
   the
   score
   of
-  5.139581280571574e+128.
+  7.929168904603331e+112.
 END 25
 BEGIN 26
   Contig

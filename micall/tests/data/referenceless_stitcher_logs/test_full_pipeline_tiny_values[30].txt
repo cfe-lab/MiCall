@@ -44,8 +44,8 @@ BEGIN 5
   'r327-804.0'
   to
   be
-  (279,
-  241).
+  (0,
+  478).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r327-804.0'
   has
   size
-  241,
-  241
+  478,
+  199
   matches,
   and
   the
   score
   of
-  4.9467406530147763e+61.
+  1.856830749263484e+30.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  241
+  757
   between
   contigs
   'r48-567.2'
@@ -99,9 +99,28 @@ BEGIN 8
   'r554-813.1'
   to
   be
-  None.
+  (0,
+  520).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r48-567.2'
+  and
+  'r554-813.1'
+  has
+  size
+  520,
+  14
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -113,22 +132,22 @@ BEGIN 9
   fittest
   has
   length
-  766
+  757
   and
   consists
   of
-  3
+  2
   parts.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -144,10 +163,10 @@ BEGIN 11
   'r554-813.1'
   to
   be
-  (506,
-  251).
-END 11
-BEGIN 12
+  (0,
+  260).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -156,23 +175,23 @@ BEGIN 12
   'r554-813.1'
   has
   size
-  251,
-  251
+  260,
+  3
   matches,
   and
   the
   score
   of
-  1.4414282368544858e+64.
-END 12
-BEGIN 13
+  8.999999999999709.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  251
+  3
   between
   contigs
   (1)
@@ -182,45 +201,53 @@ BEGIN 13
   in
   contig
   (2).
-END 13
-BEGIN 14
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  766
-  and
-  consists
-  of
-  3
-  parts.
 END 14
 BEGIN 15
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 15
-BEGIN 16
   Constructed
   a
   path
   of
   length
-  766.
+  757.
+END 15
+BEGIN 16
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 16
 BEGIN 17
+  Calculating
+  all
+  paths...
+END 17
+BEGIN 18
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 18
+BEGIN 19
+  Constructed
+  a
+  path
+  of
+  length
+  260.
+END 19
+BEGIN 20
   Removed
-  3
+  1
   components
   from
   the
@@ -231,17 +258,70 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 18
-BEGIN 19
+END 22
+BEGIN 23
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  251
+  between
+  contigs
+  (1)
+  and
+  'r554-813.1'
+  to
+  be
+  (0,
+  260).
+END 23
+BEGIN 24
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r554-813.1'
+  has
+  size
+  260,
+  3
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999999709.
+END 24
+BEGIN 25
   Outputting
-  1
+  2
   contigs.
-END 19
+END 25

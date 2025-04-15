@@ -44,8 +44,8 @@ BEGIN 5
   'r193-879.1'
   to
   be
-  (110,
-  460).
+  (0,
+  687).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r193-879.1'
   has
   size
-  460,
+  687,
   460
   matches,
   and
   the
   score
   of
-  1.8012022421400682e+112.
+  7.762137097651749e+94.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  460
+  797
   between
   contigs
   'r83-652.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r416-797.0'
   to
   be
-  (223,
-  605).
+  (0,
+  687).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r416-797.0'
   has
   size
-  382,
+  687,
   382
   matches,
   and
   the
   score
   of
-  1.7345577372177434e+94.
+  9.956852378429547e+70.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r416-797.0'
   to
   be
-  (333,
-  715).
+  (0,
+  797).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r416-797.0'
   has
   size
-  382,
+  797,
   382
   matches,
   and
   the
   score
   of
-  1.7345577372177434e+94.
+  2.489782136797605e+62.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r416-797.0'
   to
   be
-  (333,
-  715).
+  (0,
+  797).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r416-797.0'
   has
   size
-  382,
+  797,
   382
   matches,
   and
   the
   score
   of
-  1.7345577372177434e+94.
+  2.489782136797605e+62.
 END 25
 BEGIN 26
   Contig

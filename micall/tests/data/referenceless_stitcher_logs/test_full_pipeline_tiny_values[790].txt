@@ -44,8 +44,8 @@ BEGIN 5
   'r392-910.0'
   to
   be
-  (19,
-  351).
+  (0,
+  519).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r392-910.0'
   has
   size
-  351,
+  519,
   351
   matches,
   and
   the
   score
   of
-  1.5809668014210111e+87.
+  2.274845215108583e+74.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  351
+  538
   between
   contigs
   'r373-742.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r460-768.1'
   to
   be
-  (68,
-  377).
+  (0,
+  519).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r460-768.1'
   has
   size
-  309,
+  519,
   309
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  2.748364345162428e+61.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r460-768.1'
   to
   be
-  (87,
-  396).
+  (0,
+  538).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r460-768.1'
   has
   size
-  309,
+  538,
   309
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  7.968353865621724e+59.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r460-768.1'
   to
   be
-  (87,
-  396).
+  (0,
+  538).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r460-768.1'
   has
   size
-  309,
+  538,
   309
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  7.968353865621724e+59.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r112-600.1'
   to
   be
-  (69,
-  484).
+  (0,
+  489).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r112-600.1'
   has
   size
-  484,
-  484
+  489,
+  420
   matches,
   and
   the
   score
   of
-  5.54613742521804e+117.
+  8.306139912416567e+97.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  484
+  558
   between
   contigs
   'r43-595.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r43-595.0'
   to
   be
-  (16,
-  429).
+  (0,
+  553).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r43-595.0'
   has
   size
-  429,
+  553,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  3.08077053317834e+95.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  429
+  569
   between
   contigs
   'r27-471.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (16,
-  429).
+  (0,
+  558).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  429,
+  558,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  1.5227489155964143e+95.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  429
+  574
   between
   contigs
   'r27-471.2'

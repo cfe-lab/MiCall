@@ -44,8 +44,8 @@ BEGIN 5
   'r277-755.0'
   to
   be
-  (10,
-  489).
+  (0,
+  560).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r277-755.0'
   has
   size
-  479,
+  560,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  2.7554402810989483e+110.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r267-826.1'
   to
   be
-  (18,
-  239).
+  (0,
+  560).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r267-826.1'
   has
   size
-  239,
+  560,
   239
   matches,
   and
   the
   score
   of
-  2.408571302390333e+61.
+  3.863362365381903e+36.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  239
+  578
   between
   contigs
   'r249-505.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r277-755.0'
   to
   be
-  (28,
-  507).
+  (0,
+  578).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r277-755.0'
   has
   size
-  479,
+  578,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  8.313403236152547e+108.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r277-755.0'
   to
   be
-  (28,
-  507).
+  (0,
+  578).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r277-755.0'
   has
   size
-  479,
+  578,
   479
   matches,
   and
   the
   score
   of
-  3.354311321324146e+116.
+  8.313403236152547e+108.
 END 25
 BEGIN 26
   Contig

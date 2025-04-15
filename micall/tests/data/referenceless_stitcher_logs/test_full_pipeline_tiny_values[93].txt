@@ -44,8 +44,8 @@ BEGIN 5
   'r330-762.0'
   to
   be
-  (121,
-  554).
+  (0,
+  746).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r330-762.0'
   has
   size
-  433,
+  746,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  1.117139547290761e+82.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r209-954.2'
   to
   be
-  (105,
-  200).
+  (0,
+  746).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r209-954.2'
   has
   size
-  200,
+  746,
   200
   matches,
   and
   the
   score
   of
-  2.5418296416307405e+52.
+  126077440.88057837.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  200
+  851
   between
   contigs
   'r104-408.1'
@@ -144,7 +144,7 @@ BEGIN 11
   and
   consists
   of
-  2
+  3
   parts.
 END 11
 BEGIN 12
@@ -171,8 +171,8 @@ BEGIN 13
   'r330-762.0'
   to
   be
-  (226,
-  659).
+  (0,
+  851).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r330-762.0'
   has
   size
-  433,
+  851,
   433
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  1.2106414826182386e+74.
 END 14
 BEGIN 15
   Contig
@@ -201,51 +201,43 @@ BEGIN 15
   completely.
 END 15
 BEGIN 16
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  851
+  and
+  consists
+  of
+  3
+  parts.
+END 16
+BEGIN 17
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   851.
-END 16
-BEGIN 17
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 17
-BEGIN 18
-  Calculating
-  all
-  paths...
 END 18
 BEGIN 19
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 19
-BEGIN 20
-  Constructed
-  a
-  path
-  of
-  length
-  433.
-END 20
-BEGIN 21
   Removed
-  1
+  3
   components
   from
   the
@@ -256,78 +248,17 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 22
-BEGIN 23
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 23
-BEGIN 24
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  433
-  between
-  contigs
-  (1)
-  and
-  'r330-762.0'
-  to
-  be
-  (226,
-  659).
-END 24
-BEGIN 25
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r330-762.0'
-  has
-  size
-  433,
-  433
-  matches,
-  and
-  the
-  score
-  of
-  7.092007143681742e+105.
-END 25
-BEGIN 26
-  Contig
-  (1)
-  covers
-  contig
-  'r330-762.0'
-  completely.
-END 26
-BEGIN 27
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 27
+END 21

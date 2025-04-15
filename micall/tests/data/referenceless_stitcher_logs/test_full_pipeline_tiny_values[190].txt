@@ -44,8 +44,8 @@ BEGIN 5
   'r352-851.0'
   to
   be
-  (94,
-  594).
+  (0,
+  615).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r352-851.0'
   has
   size
-  500,
+  615,
   500
   matches,
   and
   the
   score
   of
-  2.517831420374864e+121.
+  3.8138307529752777e+112.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r258-872.2'
   to
   be
-  (167,
-  271).
+  (0,
+  615).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r258-872.2'
   has
   size
-  271,
+  615,
   271
   matches,
   and
   the
   score
   of
-  6.028579506000014e+68.
+  1.709313403675888e+42.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  271
+  782
   between
   contigs
   'r91-528.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r352-851.0'
   to
   be
-  (261,
-  761).
+  (0,
+  782).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r352-851.0'
   has
   size
-  500,
+  782,
   500
   matches,
   and
   the
   score
   of
-  2.517831420374864e+121.
+  6.116301771392899e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r352-851.0'
   to
   be
-  (261,
-  761).
+  (0,
+  782).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r352-851.0'
   has
   size
-  500,
+  782,
   500
   matches,
   and
   the
   score
   of
-  2.517831420374864e+121.
+  6.116301771392899e+99.
 END 25
 BEGIN 26
   Contig

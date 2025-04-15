@@ -44,8 +44,8 @@ BEGIN 5
   'r384-875.2'
   to
   be
-  (329,
-  229).
+  (0,
+  492).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r384-875.2'
   has
   size
-  229,
-  229
+  492,
+  163
   matches,
   and
   the
   score
   of
-  1.6420907866562525e+59.
+  4.2819203048305466e+17.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  229
+  821
   between
   contigs
   'r55-612.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r160-436.1'
   to
   be
-  (105,
-  382).
+  (0,
+  558).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r160-436.1'
   has
   size
-  277,
+  558,
   277
   matches,
   and
   the
   score
   of
-  2.0683224771640222e+70.
+  2.849613203942725e+48.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r160-436.1'
   to
   be
-  (105,
-  382).
+  (0,
+  821).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r160-436.1'
   has
   size
-  277,
+  821,
   277
   matches,
   and
   the
   score
   of
-  2.0683224771640222e+70.
+  1.1585451492191884e+28.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r160-436.1'
   to
   be
-  (105,
-  382).
+  (0,
+  821).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r160-436.1'
   has
   size
-  277,
+  821,
   277
   matches,
   and
   the
   score
   of
-  2.0683224771640222e+70.
+  1.1585451492191884e+28.
 END 25
 BEGIN 26
   Contig

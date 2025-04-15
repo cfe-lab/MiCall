@@ -3,7 +3,6 @@ import numpy as np
 
 from typing import Iterator, Tuple, Mapping, Literal, NoReturn
 from dataclasses import dataclass
-from mappy import Aligner
 from functools import cached_property
 
 from micall.utils.referenceless_score import Score
@@ -12,9 +11,41 @@ from micall.utils.overlap_stitcher import \
     exp_dropoff_array, find_max_overlap_length
 from micall.utils.find_maximum_overlap import \
     get_overlap_results, choose_convolution_method
+from micall.utils.overlap_stitcher import align_queries
+from gotoh import align_it
+from aligntools import Cigar, CigarHit
 
 
 OverlapRelation = Literal["left", "right", "cover"]
+
+
+def align_overlaps(left_overlap: str, right_overlap: str) -> Tuple[str, str]:
+    gap_open_penalty = 2
+    gap_extend_penalty = 1
+    use_terminal_gap_penalty = 0
+    aseq1, aseq2, score = \
+        align_it(
+            left_overlap, right_overlap,
+            gap_open_penalty,
+            gap_extend_penalty,
+            use_terminal_gap_penalty)
+    return aseq1, aseq2
+
+
+@dataclass(frozen=True)
+class Aligner:
+    seq: str
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        aligned_ref, aligned_query = align_queries(self.seq, query)
+        # TODO: optimize this extraction of start & end coordinates.
+        cigar = Cigar.from_msa(aligned_ref, aligned_query)
+        hit = CigarHit(cigar,
+                       r_st=0, r_ei=len(self.seq)-1,
+                       q_st=0, q_ei=len(query)-1,
+                       )
+        hit = hit.lstrip_query().rstrip_query()
+        yield (hit.r_st, hit.r_ei + 1)
 
 
 @dataclass(frozen=True)
@@ -67,9 +98,8 @@ class ContigWithAligner(Contig):
                     _x: NoReturn = relation
                 aligner = Aligner(seq=seq)
 
-        for x in aligner.map(overlap):
-            if x.is_primary:
-                yield (x.r_st + shift, x.r_en + shift)
+        for start, end in aligner.map(overlap):
+            yield (start + shift, end + shift)
 
     @cached_property
     def nucleotide_seq(self) -> np.ndarray:

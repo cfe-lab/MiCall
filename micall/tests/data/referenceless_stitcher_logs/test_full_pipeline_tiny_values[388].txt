@@ -44,8 +44,8 @@ BEGIN 5
   'r324-945.2'
   to
   be
-  (103,
-  377).
+  (0,
+  622).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r324-945.2'
   has
   size
-  377,
+  622,
   377
   matches,
   and
   the
   score
   of
-  1.0397456562333842e+93.
+  2.3485338535937276e+74.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  377
+  725
   between
   contigs
   'r221-700.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r505-867.0'
   to
   be
-  (181,
-  544).
+  (0,
+  622).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r505-867.0'
   has
   size
-  363,
+  622,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  1.1781773384602089e+70.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r505-867.0'
   to
   be
-  (284,
-  647).
+  (0,
+  725).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r505-867.0'
   has
   size
-  363,
+  725,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  2.4144211371611285e+62.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r505-867.0'
   to
   be
-  (284,
-  647).
+  (0,
+  725).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r505-867.0'
   has
   size
-  363,
+  725,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  2.4144211371611285e+62.
 END 25
 BEGIN 26
   Contig

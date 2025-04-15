@@ -44,8 +44,8 @@ BEGIN 5
   'r88-806.2'
   to
   be
-  (13,
-  480).
+  (0,
+  719).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r88-806.2'
   has
   size
-  480,
+  719,
   480
   matches,
   and
   the
   score
   of
-  6.753031889314215e+116.
+  3.618586282375849e+98.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  480
+  732
   between
   contigs
   'r75-567.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r284-712.1'
   to
   be
-  (196,
-  625).
+  (0,
+  719).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r284-712.1'
   has
   size
-  429,
+  719,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  9.188474846059511e+82.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r284-712.1'
   to
   be
-  (209,
-  638).
+  (0,
+  732).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r284-712.1'
   has
   size
-  429,
+  732,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  1.1071732609056248e+82.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r284-712.1'
   to
   be
-  (209,
-  638).
+  (0,
+  732).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r284-712.1'
   has
   size
-  429,
+  732,
   429
   matches,
   and
   the
   score
   of
-  1.7216518948970604e+105.
+  1.1071732609056248e+82.
 END 25
 BEGIN 26
   Contig

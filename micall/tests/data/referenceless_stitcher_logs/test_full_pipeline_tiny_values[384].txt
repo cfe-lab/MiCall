@@ -44,8 +44,8 @@ BEGIN 5
   'r166-705.1'
   to
   be
-  (122,
-  202).
+  (0,
+  540).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r166-705.1'
   has
   size
-  202,
+  540,
   202
   matches,
   and
   the
   score
   of
-  5.247738044989604e+52.
+  2.762168611650424e+26.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  202
+  662
   between
   contigs
   'r44-367.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r166-705.1'
   to
   be
-  (62,
-  248).
+  (0,
+  540).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r166-705.1'
   has
   size
-  248,
+  540,
   248
   matches,
   and
   the
   score
   of
-  3.468201286469936e+63.
+  9.367545858961553e+40.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  248
+  602
   between
   contigs
   'r104-413.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (60,
-  264).
+  (0,
+  602).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  264,
+  602,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  9.656376594247227e+40.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  264
+  662
   between
   contigs
   'r44-367.2'

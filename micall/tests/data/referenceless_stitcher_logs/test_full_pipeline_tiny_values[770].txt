@@ -44,8 +44,8 @@ BEGIN 5
   'r323-698.1'
   to
   be
-  (160,
-  305).
+  (0,
+  376).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r323-698.1'
   has
   size
-  305,
-  305
+  376,
+  216
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  5.692269759759932e+43.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  305
+  536
   between
   contigs
   'r163-627.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r322-646.2'
   to
   be
-  (159,
-  306).
+  (0,
+  325).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r322-646.2'
   has
   size
-  306,
-  306
+  325,
+  166
   matches,
   and
   the
   score
   of
-  5.95268192754118e+76.
+  6.7536032490526045e+31.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  306
+  484
   between
   contigs
   'r163-627.0'
@@ -154,7 +154,7 @@ BEGIN 11
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -173,91 +173,89 @@ BEGIN 13
   overlap
   of
   size
-  324
+  325
   between
   contigs
-  (2)
+  (1)
   and
-  'r323-698.1'
+  'r322-646.2'
   to
   be
-  (160,
-  324).
+  (0,
+  536).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
-  'r323-698.1'
+  'r322-646.2'
   has
   size
-  324,
-  324
+  536,
+  325
   matches,
   and
   the
   score
   of
-  1.1694504353782261e+81.
+  1.3692951084816586e+65.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  324
-  between
-  contigs
-  (2)
-  and
-  'r323-698.1',
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r322-646.2'
+  completely.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  536
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
   536.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  325.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +266,78 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  325
+  between
+  contigs
+  (1)
+  and
+  'r322-646.2'
+  to
+  be
+  (0,
+  536).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r322-646.2'
+  has
+  size
+  536,
+  325
+  matches,
+  and
+  the
+  score
+  of
+  1.3692951084816586e+65.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r322-646.2'
+  completely.
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

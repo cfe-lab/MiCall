@@ -44,8 +44,8 @@ BEGIN 5
   'r299-843.2'
   to
   be
-  (198,
-  124).
+  (0,
+  453).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r299-843.2'
   has
   size
-  124,
+  453,
   124
   matches,
   and
   the
   score
   of
-  3.8152836710513073e+34.
+  7252450.3633357985.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  124
-  between
-  contigs
-  'r101-422.1'
-  and
-  'r299-843.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r693-984.0'
   to
   be
-  (394,
-  151).
-END 8
-BEGIN 9
+  (0,
+  292).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,59 +93,60 @@ BEGIN 9
   'r693-984.0'
   has
   size
-  151,
-  151
+  292,
+  9
   matches,
   and
   the
   score
   of
-  7.527731891820076e+40.
+  8.999999999999918.
+END 8
+BEGIN 9
+  Constructed
+  a
+  path
+  of
+  length
+  545.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  151
-  between
-  contigs
-  'r299-843.2'
-  and
-  'r693-984.0',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 10
 BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  884
-  and
-  consists
-  of
-  3
-  parts.
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 11
 BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
+  Initial
+  overlap
+  stitching
+  produced
+  3
+  contigs.
 END 12
 BEGIN 13
   Calculated
@@ -178,11 +161,11 @@ BEGIN 13
   contigs
   'r101-422.1'
   and
-  (2)
+  'r299-843.2'
   to
   be
-  (198,
-  124).
+  (0,
+  453).
 END 13
 BEGIN 14
   Overlap
@@ -190,95 +173,94 @@ BEGIN 14
   contigs
   'r101-422.1'
   and
-  (2)
+  'r299-843.2'
   has
   size
-  124,
+  453,
   124
   matches,
   and
   the
   score
   of
-  3.8152836710513073e+34.
+  7252450.3633357985.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  124
+  151
+  between
+  contigs
+  'r299-843.2'
+  and
+  'r693-984.0'
+  to
+  be
+  (0,
+  292).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r299-843.2'
+  and
+  'r693-984.0'
+  has
+  size
+  292,
+  9
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999999918.
+END 16
+BEGIN 17
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  273
   between
   contigs
   'r101-422.1'
   and
-  (2),
-  resulting
-  in
-  contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  884
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
+  'r693-984.0'
+  to
+  be
+  (0,
+  292).
 END 17
 BEGIN 18
-  Constructed
-  a
-  path
+  Overlap
+  between
+  contigs
+  'r101-422.1'
+  and
+  'r693-984.0'
+  has
+  size
+  292,
+  12
+  matches,
+  and
+  the
+  score
   of
-  length
-  884.
+  8.999999999999433.
 END 18
 BEGIN 19
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 19
-BEGIN 20
-  Initial
-  overlap
-  stitching
-  produced
-  1
-  contigs.
-END 20
-BEGIN 21
   Outputting
-  1
+  3
   contigs.
-END 21
+END 19

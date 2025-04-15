@@ -44,8 +44,8 @@ BEGIN 5
   'r120-664.0'
   to
   be
-  (3,
-  548).
+  (0,
+  719).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r120-664.0'
   has
   size
-  545,
+  719,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  2.4043820655082875e+118.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r338-861.2'
   to
   be
-  (221,
-  498).
+  (0,
+  524).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r338-861.2'
   has
   size
-  498,
-  498
+  524,
+  303
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  1.8995884439058594e+59.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  498
+  745
   between
   contigs
   'r117-835.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r120-664.0'
   to
   be
-  (3,
-  548).
+  (0,
+  745).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r120-664.0'
   has
   size
-  545,
+  745,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  1.7894425531441485e+116.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r120-664.0'
   to
   be
-  (3,
-  548).
+  (0,
+  745).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r120-664.0'
   has
   size
-  545,
+  745,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  1.7894425531441485e+116.
 END 25
 BEGIN 26
   Contig

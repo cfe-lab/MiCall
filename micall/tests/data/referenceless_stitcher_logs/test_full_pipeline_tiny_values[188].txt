@@ -44,8 +44,8 @@ BEGIN 5
   'r210-684.2'
   to
   be
-  (50,
-  441).
+  (0,
+  475).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r210-684.2'
   has
   size
-  441,
-  441
+  475,
+  425
   matches,
   and
   the
   score
   of
-  4.80976274846251e+107.
+  2.3030611448649362e+100.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  441
+  525
   between
   contigs
   'r160-650.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r310-682.0'
   to
   be
-  (150,
-  341).
+  (0,
+  373).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r310-682.0'
   has
   size
-  341,
-  341
+  373,
+  223
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  1.7512274005044383e+46.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  341
+  523
   between
   contigs
   'r160-650.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r310-682.0'
   to
   be
-  (150,
-  523).
+  (0,
+  525).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r310-682.0'
   has
   size
-  373,
+  525,
   373
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
+  6.236663482753535e+80.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r310-682.0'
   to
   be
-  (150,
-  523).
+  (0,
+  525).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r310-682.0'
   has
   size
-  373,
+  525,
   373
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
+  6.236663482753535e+80.
 END 25
 BEGIN 26
   Contig

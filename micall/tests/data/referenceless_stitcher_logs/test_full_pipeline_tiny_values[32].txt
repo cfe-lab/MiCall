@@ -44,8 +44,8 @@ BEGIN 5
   'r314-949.2'
   to
   be
-  (32,
-  326).
+  (0,
+  636).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r314-949.2'
   has
   size
-  326,
+  636,
   326
   matches,
   and
   the
   score
   of
-  2.3850541047003385e+81.
+  5.600439331103157e+57.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  326
+  668
   between
   contigs
   'r282-639.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r400-702.0'
   to
   be
-  (86,
-  389).
+  (0,
+  636).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r400-702.0'
   has
   size
-  303,
+  636,
   303
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  4.277186909525426e+50.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r400-702.0'
   to
   be
-  (118,
-  421).
+  (0,
+  668).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r400-702.0'
   has
   size
-  303,
+  668,
   303
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  1.4177464522095934e+48.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r400-702.0'
   to
   be
-  (118,
-  421).
+  (0,
+  668).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r400-702.0'
   has
   size
-  303,
+  668,
   303
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  1.4177464522095934e+48.
 END 25
 BEGIN 26
   Contig

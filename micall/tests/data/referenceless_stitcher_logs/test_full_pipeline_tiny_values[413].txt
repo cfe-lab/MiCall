@@ -44,8 +44,8 @@ BEGIN 5
   'r259-880.2'
   to
   be
-  (227,
-  379).
+  (0,
+  622).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r259-880.2'
   has
   size
-  379,
+  622,
   379
   matches,
   and
   the
   score
   of
-  4.229341505346789e+93.
+  9.651201449039442e+74.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  379
+  849
   between
   contigs
   'r32-637.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r273-789.0'
   to
   be
-  (14,
-  531).
+  (0,
+  622).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r273-789.0'
   has
   size
-  517,
+  622,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.42485262544337e+117.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r273-789.0'
   to
   be
-  (241,
-  758).
+  (0,
+  849).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r273-789.0'
   has
   size
-  517,
+  849,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  6.206942818719648e+99.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r273-789.0'
   to
   be
-  (241,
-  758).
+  (0,
+  849).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r273-789.0'
   has
   size
-  517,
+  849,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  6.206942818719648e+99.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r163-619.0'
   to
   be
-  (16,
-  473).
+  (0,
+  521).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r163-619.0'
   has
   size
-  457,
+  521,
   457
   matches,
   and
   the
   score
   of
-  2.2053567452925761e+111.
+  2.9774236428830507e+106.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r280-648.2'
   to
   be
-  (133,
-  502).
+  (0,
+  521).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r280-648.2'
   has
   size
-  369,
+  521,
   369
   matches,
   and
   the
   score
   of
-  1.5177807209697382e+91.
+  3.749873415742727e+79.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r280-648.2'
   to
   be
-  (133,
-  502).
+  (0,
+  521).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r280-648.2'
   has
   size
-  369,
+  521,
   369
   matches,
   and
   the
   score
   of
-  1.5177807209697382e+91.
+  3.749873415742727e+79.
 END 14
 BEGIN 15
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r493-902.2'
   to
   be
-  (354,
-  101).
+  (94,
+  361).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r493-902.2'
   has
   size
-  101,
+  361,
   101
   matches,
   and
   the
   score
   of
-  1.503937226913016e+29.
+  6984011.181851964.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  101
-  between
-  contigs
-  'r139-593.0'
-  and
-  'r493-902.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r410-756.1'
   to
   be
-  (271,
-  184).
-END 8
-BEGIN 9
+  (0,
+  347).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,59 +93,60 @@ BEGIN 9
   'r410-756.1'
   has
   size
-  184,
-  184
+  347,
+  76
   matches,
   and
   the
   score
   of
-  4.754603767881652e+48.
+  5.196639892295007.
+END 8
+BEGIN 9
+  Constructed
+  a
+  path
+  of
+  length
+  455.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  184
-  between
-  contigs
-  'r139-593.0'
-  and
-  'r410-756.1',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 10
 BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  764
-  and
-  consists
-  of
-  3
-  parts.
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 11
 BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
+  Initial
+  overlap
+  stitching
+  produced
+  3
+  contigs.
 END 12
 BEGIN 13
   Calculated
@@ -173,112 +156,184 @@ BEGIN 13
   overlap
   of
   size
-  264
+  101
   between
   contigs
-  (2)
+  'r139-593.0'
   and
   'r493-902.2'
   to
   be
-  (354,
-  264).
+  (94,
+  361).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r139-593.0'
   and
   'r493-902.2'
   has
   size
-  264,
+  361,
+  101
+  matches,
+  and
+  the
+  score
+  of
+  6984011.181851964.
+END 14
+BEGIN 15
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  184
+  between
+  contigs
+  'r139-593.0'
+  and
+  'r410-756.1'
+  to
+  be
+  (0,
+  347).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r139-593.0'
+  and
+  'r410-756.1'
+  has
+  size
+  347,
+  76
+  matches,
+  and
+  the
+  score
+  of
+  5.196639892295007.
+END 16
+BEGIN 17
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  264
+  between
+  contigs
+  'r410-756.1'
+  and
+  'r493-902.2'
+  to
+  be
+  (0,
+  410).
+END 17
+BEGIN 18
+  Overlap
+  between
+  contigs
+  'r410-756.1'
+  and
+  'r493-902.2'
+  has
+  size
+  410,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
-END 14
-BEGIN 15
+  7.376043392873583e+55.
+END 18
+BEGIN 19
   Found
   a
   significant
   overlap
   of
   size
-  264
+  493
   between
   contigs
-  (2)
+  'r410-756.1'
   and
   'r493-902.2',
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  764
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
-  Constructed
-  a
-  path
-  of
-  length
-  764.
-END 18
-BEGIN 19
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
+  (1).
 END 19
 BEGIN 20
-  Initial
+  Calculated
+  cutoff
+  for
+  an
   overlap
-  stitching
-  produced
-  1
-  contigs.
+  of
+  size
+  184
+  between
+  contigs
+  'r139-593.0'
+  and
+  (1)
+  to
+  be
+  (0,
+  493).
 END 20
 BEGIN 21
+  Overlap
+  between
+  contigs
+  'r139-593.0'
+  and
+  (1)
+  has
+  size
+  493,
+  184
+  matches,
+  and
+  the
+  score
+  of
+  1.583562189526722e+24.
+END 21
+BEGIN 22
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  764
+  between
+  contigs
+  'r139-593.0'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
+END 22
+BEGIN 23
   Outputting
   1
   contigs.
-END 21
+END 23

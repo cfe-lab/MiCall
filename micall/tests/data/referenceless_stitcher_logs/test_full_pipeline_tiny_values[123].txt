@@ -44,8 +44,8 @@ BEGIN 5
   'r349-776.2'
   to
   be
-  (284,
-  350).
+  (0,
+  428).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r349-776.2'
   has
   size
-  350,
-  350
+  428,
+  144
   matches,
   and
   the
   score
   of
-  7.833597172128599e+86.
+  4.134841748989852e+16.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  350
+  712
   between
   contigs
   'r65-698.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r252-534.1'
   to
   be
-  (187,
-  470).
+  (0,
+  634).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r252-534.1'
   has
   size
-  283,
+  634,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  2.6327667275337306e+44.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r252-534.1'
   to
   be
-  (187,
-  470).
+  (0,
+  712).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r252-534.1'
   has
   size
-  283,
+  712,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  3.0629698954956384e+38.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r252-534.1'
   to
   be
-  (187,
-  470).
+  (0,
+  712).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r252-534.1'
   has
   size
-  283,
+  712,
   283
   matches,
   and
   the
   score
   of
-  3.5427153390813163e+71.
+  3.0629698954956384e+38.
 END 25
 BEGIN 26
   Contig

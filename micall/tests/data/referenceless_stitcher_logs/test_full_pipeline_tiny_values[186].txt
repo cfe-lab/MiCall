@@ -44,8 +44,8 @@ BEGIN 5
   'r392-873.0'
   to
   be
-  (203,
-  343).
+  (0,
+  482).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r392-873.0'
   has
   size
-  343,
-  343
+  482,
+  279
   matches,
   and
   the
   score
   of
-  2.295983788650699e+85.
+  8.94870345202787e+54.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  343
+  685
   between
   contigs
   'r189-734.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r456-854.1'
   to
   be
-  (267,
-  279).
+  (0,
+  399).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r456-854.1'
   has
   size
-  279,
-  279
+  399,
+  132
   matches,
   and
   the
   score
   of
-  4.232389777003019e+70.
+  843223671929979.1.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  279
+  666
   between
   contigs
   'r189-734.2'
@@ -181,8 +181,8 @@ BEGIN 13
   'r456-854.1'
   to
   be
-  (267,
-  666).
+  (0,
+  685).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r456-854.1'
   has
   size
-  399,
+  685,
   399
   matches,
   and
   the
   score
   of
-  1.631230234288389e+98.
+  3.3170709478434706e+76.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r456-854.1'
   to
   be
-  (267,
-  666).
+  (0,
+  685).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r456-854.1'
   has
   size
-  399,
+  685,
   399
   matches,
   and
   the
   score
   of
-  1.631230234288389e+98.
+  3.3170709478434706e+76.
 END 25
 BEGIN 26
   Contig

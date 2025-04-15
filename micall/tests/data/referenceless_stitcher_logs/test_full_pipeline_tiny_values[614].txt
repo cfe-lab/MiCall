@@ -44,8 +44,8 @@ BEGIN 5
   'r207-867.1'
   to
   be
-  (200,
-  354).
+  (0,
+  661).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r207-867.1'
   has
   size
-  354,
+  661,
   354
   matches,
   and
   the
   score
   of
-  6.496953930677054e+87.
+  1.7067509771077483e+64.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  354
+  861
   between
   contigs
   'r7-560.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r435-923.2'
   to
   be
-  (228,
-  433).
+  (0,
+  489).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r435-923.2'
   has
   size
-  433,
-  433
+  489,
+  261
   matches,
   and
   the
   score
   of
-  7.092007143681742e+105.
+  5.734404785307899e+48.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  433
+  717
   between
   contigs
   'r207-867.1'
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  717
+  861
   and
   consists
   of
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  354
+  433
   between
   contigs
-  'r7-560.0'
+  (1)
   and
-  (2)
+  'r435-923.2'
   to
   be
-  (200,
-  354).
+  (0,
+  489).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r7-560.0'
+  (1)
   and
-  (2)
+  'r435-923.2'
   has
   size
-  354,
-  354
+  489,
+  61
   matches,
   and
   the
   score
   of
-  6.496953930677054e+87.
+  8.999999999999687.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  354
+  917
   between
   contigs
-  'r7-560.0'
+  (1)
   and
-  (2),
+  'r435-923.2',
   resulting
   in
   contig
@@ -226,7 +226,7 @@ BEGIN 16
   path
   of
   length
-  717.
+  861.
 END 16
 BEGIN 17
   Removed
@@ -261,7 +261,7 @@ BEGIN 20
   path
   of
   length
-  554.
+  489.
 END 20
 BEGIN 21
   Removed
@@ -309,55 +309,37 @@ BEGIN 24
   overlap
   of
   size
-  354
+  433
   between
   contigs
-  'r7-560.0'
+  (1)
   and
-  (2)
+  'r435-923.2'
   to
   be
-  (200,
-  354).
+  (0,
+  489).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  'r7-560.0'
+  (1)
   and
-  (2)
+  'r435-923.2'
   has
   size
-  354,
-  354
+  489,
+  61
   matches,
   and
   the
   score
   of
-  6.496953930677054e+87.
+  8.999999999999687.
 END 25
 BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  354
-  between
-  contigs
-  'r7-560.0'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
   Outputting
-  1
+  2
   contigs.
-END 27
+END 26

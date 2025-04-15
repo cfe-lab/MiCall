@@ -44,8 +44,8 @@ BEGIN 5
   'r332-902.1'
   to
   be
-  (221,
-  411).
+  (0,
+  571).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r332-902.1'
   has
   size
-  411,
-  411
+  571,
+  350
   matches,
   and
   the
   score
   of
-  9.174050477912727e+100.
+  1.1583371182810635e+70.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  411
+  792
   between
   contigs
   'r111-742.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r111-742.2'
   to
   be
-  (109,
-  363).
+  (0,
+  632).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r111-742.2'
   has
   size
-  363,
+  632,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  2.847162340332502e+69.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  363
+  741
   between
   contigs
   'r2-473.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (109,
-  363).
+  (0,
+  792).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  363,
+  792,
   363
   matches,
   and
   the
   score
   of
-  9.005503351252367e+89.
+  1.3961445399743548e+57.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  363
+  901
   between
   contigs
   'r2-473.0'

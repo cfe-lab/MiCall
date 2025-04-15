@@ -44,8 +44,8 @@ BEGIN 5
   'r226-723.2'
   to
   be
-  (7,
-  505).
+  (0,
+  678).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r226-723.2'
   has
   size
-  498,
+  678,
   498
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  1.2610774179774795e+107.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r219-896.0'
   to
   be
-  (180,
-  215).
+  (0,
+  678).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r219-896.0'
   has
   size
-  215,
+  678,
   215
   matches,
   and
   the
   score
   of
-  6.557040906636704e+55.
+  2.125663534387724e+19.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  215
+  858
   between
   contigs
   'r39-433.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r226-723.2'
   to
   be
-  (187,
-  685).
+  (0,
+  858).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r226-723.2'
   has
   size
-  498,
+  858,
   498
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  2.3860157978785366e+93.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r226-723.2'
   to
   be
-  (187,
-  685).
+  (0,
+  858).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r226-723.2'
   has
   size
-  498,
+  858,
   498
   matches,
   and
   the
   score
   of
-  6.215293621765755e+120.
+  2.3860157978785366e+93.
 END 25
 BEGIN 26
   Contig

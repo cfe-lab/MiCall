@@ -44,8 +44,8 @@ BEGIN 5
   'r348-900.1'
   to
   be
-  (198,
-  508).
+  (0,
+  553).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r348-900.1'
   has
   size
-  508,
-  508
+  553,
+  355
   matches,
   and
   the
   score
   of
-  1.6943641302828454e+123.
+  6.751106583106899e+72.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  508
+  751
   between
   contigs
   'r150-855.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r229-609.0'
   to
   be
-  (79,
-  460).
+  (0,
+  706).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r229-609.0'
   has
   size
-  381,
+  706,
   381
   matches,
   and
   the
   score
   of
-  1.720202925156099e+94.
+  1.4373991334298935e+69.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r229-609.0'
   to
   be
-  (79,
-  460).
+  (0,
+  751).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r229-609.0'
   has
   size
-  381,
+  751,
   381
   matches,
   and
   the
   score
   of
-  1.720202925156099e+94.
+  5.977210554663019e+65.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r229-609.0'
   to
   be
-  (79,
-  460).
+  (0,
+  751).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r229-609.0'
   has
   size
-  381,
+  751,
   381
   matches,
   and
   the
   score
   of
-  1.720202925156099e+94.
+  5.977210554663019e+65.
 END 25
 BEGIN 26
   Contig

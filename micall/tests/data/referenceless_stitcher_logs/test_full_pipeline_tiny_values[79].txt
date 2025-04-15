@@ -44,8 +44,8 @@ BEGIN 5
   'r320-962.2'
   to
   be
-  (301,
-  451).
+  (0,
+  643).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r320-962.2'
   has
   size
-  451,
-  451
+  643,
+  342
   matches,
   and
   the
   score
   of
-  1.3218783613572366e+110.
+  1.1754785849430935e+62.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  451
+  944
   between
   contigs
   'r19-770.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r48-357.0'
   to
   be
-  (29,
-  339).
+  (0,
+  752).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r48-357.0'
   has
   size
-  310,
+  752,
   310
   matches,
   and
   the
   score
   of
-  4.962749858723358e+77.
+  6.356103800743835e+43.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r48-357.0'
   to
   be
-  (29,
-  339).
+  (0,
+  944).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r48-357.0'
   has
   size
-  310,
+  944,
   310
   matches,
   and
   the
   score
   of
-  4.962749858723358e+77.
+  5.191244013090372e+28.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r48-357.0'
   to
   be
-  (29,
-  339).
+  (0,
+  944).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r48-357.0'
   has
   size
-  310,
+  944,
   310
   matches,
   and
   the
   score
   of
-  4.962749858723358e+77.
+  5.191244013090372e+28.
 END 25
 BEGIN 26
   Contig

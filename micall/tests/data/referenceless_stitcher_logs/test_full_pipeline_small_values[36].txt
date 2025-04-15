@@ -44,8 +44,8 @@ BEGIN 5
   'r356-855.0'
   to
   be
-  (268,
-  232).
+  (0,
+  500).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r356-855.0'
   has
   size
-  232,
+  500,
   232
   matches,
   and
   the
   score
   of
-  6.846568080492242e+59.
+  1.2270620861329419e+39.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  232
+  768
   between
   contigs
   'r88-587.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r361-806.3'
   to
   be
-  (5,
-  451).
+  (0,
+  500).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r361-806.3'
   has
   size
-  446,
+  500,
   446
   matches,
   and
   the
   score
   of
-  7.975258297830065e+108.
+  8.763588031896378e+104.
 END 9
 BEGIN 10
   Contig
@@ -144,8 +144,8 @@ BEGIN 11
   'r356-855.0'
   to
   be
-  (272,
-  125).
+  (0,
+  457).
 END 11
 BEGIN 12
   Overlap
@@ -156,34 +156,16 @@ BEGIN 12
   'r356-855.0'
   has
   size
-  125,
+  457,
   125
   matches,
   and
   the
   score
   of
-  7.830077002057772e+34.
+  7262848.745802429.
 END 12
 BEGIN 13
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  125
-  between
-  contigs
-  'r84-480.4'
-  and
-  'r356-855.0',
-  resulting
-  in
-  contig
-  (2).
-END 13
-BEGIN 14
   Calculated
   cutoff
   for
@@ -199,10 +181,10 @@ BEGIN 14
   'r388-727.5'
   to
   be
-  (32,
-  372).
-END 14
-BEGIN 15
+  (0,
+  500).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -211,24 +193,24 @@ BEGIN 15
   'r388-727.5'
   has
   size
-  340,
+  500,
   340
   matches,
   and
   the
   score
   of
-  5.5821337219087155e+84.
-END 15
-BEGIN 16
+  3.2419173268704257e+72.
+END 14
+BEGIN 15
   Contig
   'r356-855.0'
   covers
   contig
   'r388-727.5'
   completely.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -244,7 +226,26 @@ BEGIN 17
   'r106-381.1'
   to
   be
-  None.
+  (0,
+  500).
+END 16
+BEGIN 17
+  Overlap
+  between
+  contigs
+  'r356-855.0'
+  and
+  'r106-381.1'
+  has
+  size
+  500,
+  26
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
 END 17
 BEGIN 18
   Cycle
@@ -289,8 +290,8 @@ BEGIN 20
   'r361-806.3'
   to
   be
-  (273,
-  719).
+  (0,
+  768).
 END 20
 BEGIN 21
   Overlap
@@ -301,14 +302,14 @@ BEGIN 21
   'r361-806.3'
   has
   size
-  446,
+  768,
   446
   matches,
   and
   the
   score
   of
-  7.975258297830065e+108.
+  3.142953691279886e+84.
 END 21
 BEGIN 22
   Contig
@@ -334,8 +335,8 @@ BEGIN 23
   (1)
   to
   be
-  (4,
-  393).
+  (0,
+  768).
 END 23
 BEGIN 24
   Overlap
@@ -346,14 +347,14 @@ BEGIN 24
   (1)
   has
   size
-  393,
+  768,
   393
   matches,
   and
   the
   score
   of
-  4.858595149998396e+96.
+  1.7278129351910688e+68.
 END 24
 BEGIN 25
   Found
@@ -362,7 +363,7 @@ BEGIN 25
   overlap
   of
   size
-  393
+  772
   between
   contigs
   'r84-480.4'
@@ -371,7 +372,7 @@ BEGIN 25
   resulting
   in
   contig
-  (3).
+  (2).
 END 25
 BEGIN 26
   Calculated
@@ -389,8 +390,8 @@ BEGIN 26
   'r388-727.5'
   to
   be
-  (300,
-  640).
+  (0,
+  768).
 END 26
 BEGIN 27
   Overlap
@@ -401,14 +402,14 @@ BEGIN 27
   'r388-727.5'
   has
   size
-  340,
+  768,
   340
   matches,
   and
   the
   score
   of
-  5.5821337219087155e+84.
+  7.647557616335667e+51.
 END 27
 BEGIN 28
   Contig
@@ -434,8 +435,8 @@ BEGIN 29
   'r106-381.1'
   to
   be
-  (18,
-  294).
+  (0,
+  768).
 END 29
 BEGIN 30
   Overlap
@@ -446,14 +447,14 @@ BEGIN 30
   'r106-381.1'
   has
   size
-  276,
+  768,
   276
   matches,
   and
   the
   score
   of
-  1.0223328618750815e+70.
+  7.550487859495827e+31.
 END 30
 BEGIN 31
   Contig
@@ -501,35 +502,35 @@ BEGIN 34
   446
   between
   contigs
-  (3)
+  (2)
   and
   'r361-806.3'
   to
   be
-  (277,
-  723).
+  (0,
+  772).
 END 34
 BEGIN 35
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r361-806.3'
   has
   size
-  446,
+  772,
   446
   matches,
   and
   the
   score
   of
-  7.975258297830065e+108.
+  1.554183395102993e+84.
 END 35
 BEGIN 36
   Contig
-  (3)
+  (2)
   covers
   contig
   'r361-806.3'
@@ -546,35 +547,35 @@ BEGIN 37
   340
   between
   contigs
-  (3)
+  (2)
   and
   'r388-727.5'
   to
   be
-  (304,
-  644).
+  (0,
+  772).
 END 37
 BEGIN 38
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r388-727.5'
   has
   size
-  340,
+  772,
   340
   matches,
   and
   the
   score
   of
-  5.5821337219087155e+84.
+  3.7495880916449997e+51.
 END 38
 BEGIN 39
   Contig
-  (3)
+  (2)
   covers
   contig
   'r388-727.5'
@@ -591,35 +592,35 @@ BEGIN 40
   276
   between
   contigs
-  (3)
+  (2)
   and
   'r106-381.1'
   to
   be
-  (22,
-  298).
+  (0,
+  772).
 END 40
 BEGIN 41
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r106-381.1'
   has
   size
-  276,
+  772,
   276
   matches,
   and
   the
   score
   of
-  1.0223328618750815e+70.
+  3.6444627554864303e+31.
 END 41
 BEGIN 42
   Contig
-  (3)
+  (2)
   covers
   contig
   'r106-381.1'
@@ -676,8 +677,8 @@ BEGIN 47
   'r388-727.5'
   to
   be
-  (27,
-  367).
+  (0,
+  446).
 END 47
 BEGIN 48
   Overlap
@@ -688,14 +689,14 @@ BEGIN 48
   'r388-727.5'
   has
   size
-  340,
+  446,
   340
   matches,
   and
   the
   score
   of
-  5.5821337219087155e+84.
+  3.130281020794949e+76.
 END 48
 BEGIN 49
   Contig
@@ -721,9 +722,28 @@ BEGIN 50
   'r106-381.1'
   to
   be
-  None.
+  (0,
+  276).
 END 50
 BEGIN 51
+  Overlap
+  between
+  contigs
+  'r361-806.3'
+  and
+  'r106-381.1'
+  has
+  size
+  276,
+  21
+  matches,
+  and
+  the
+  score
+  of
+  8.999999997755607.
+END 51
+BEGIN 52
   Cycle
   1
   finished
@@ -741,16 +761,16 @@ BEGIN 51
   of
   2
   parts.
-END 51
-BEGIN 52
+END 52
+BEGIN 53
   Cycle
   2
   started
   with
   1
   paths
-END 52
-BEGIN 53
+END 53
+BEGIN 54
   Calculated
   cutoff
   for
@@ -766,17 +786,36 @@ BEGIN 53
   'r106-381.1'
   to
   be
-  None.
-END 53
-BEGIN 54
+  (0,
+  276).
+END 54
+BEGIN 55
+  Overlap
+  between
+  contigs
+  'r361-806.3'
+  and
+  'r106-381.1'
+  has
+  size
+  276,
+  21
+  matches,
+  and
+  the
+  score
+  of
+  8.999999997755607.
+END 55
+BEGIN 56
   Constructed
   a
   path
   of
   length
   446.
-END 54
-BEGIN 55
+END 56
+BEGIN 57
   Removed
   2
   components
@@ -789,29 +828,29 @@ BEGIN 55
   still
   to
   process.
-END 55
-BEGIN 56
+END 57
+BEGIN 58
   Calculating
   all
   paths...
-END 56
-BEGIN 57
+END 58
+BEGIN 59
   Cycle
   1
   started
   with
   1
   paths
-END 57
-BEGIN 58
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
   276.
-END 58
-BEGIN 59
+END 60
+BEGIN 61
   Removed
   1
   components
@@ -824,8 +863,8 @@ BEGIN 59
   still
   to
   process.
-END 59
-BEGIN 60
+END 61
+BEGIN 62
   Giving
   up
   on
@@ -840,61 +879,61 @@ BEGIN 60
   is
   a
   singleton.
-END 60
-BEGIN 61
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 61
-BEGIN 62
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  446
-  between
-  contigs
-  (3)
-  and
-  'r361-806.3'
-  to
-  be
-  (277,
-  723).
-END 62
-BEGIN 63
-  Overlap
-  between
-  contigs
-  (3)
-  and
-  'r361-806.3'
-  has
-  size
-  446,
-  446
-  matches,
-  and
-  the
-  score
-  of
-  7.975258297830065e+108.
 END 63
 BEGIN 64
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  446
+  between
+  contigs
+  (2)
+  and
+  'r361-806.3'
+  to
+  be
+  (0,
+  772).
+END 64
+BEGIN 65
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r361-806.3'
+  has
+  size
+  772,
+  446
+  matches,
+  and
+  the
+  score
+  of
+  1.554183395102993e+84.
+END 65
+BEGIN 66
   Contig
-  (3)
+  (2)
   covers
   contig
   'r361-806.3'
   completely.
-END 64
-BEGIN 65
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -905,42 +944,42 @@ BEGIN 65
   276
   between
   contigs
-  (3)
+  (2)
   and
   'r106-381.1'
   to
   be
-  (22,
-  298).
-END 65
-BEGIN 66
+  (0,
+  772).
+END 67
+BEGIN 68
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r106-381.1'
   has
   size
-  276,
+  772,
   276
   matches,
   and
   the
   score
   of
-  1.0223328618750815e+70.
-END 66
-BEGIN 67
+  3.6444627554864303e+31.
+END 68
+BEGIN 69
   Contig
-  (3)
+  (2)
   covers
   contig
   'r106-381.1'
   completely.
-END 67
-BEGIN 68
+END 69
+BEGIN 70
   Outputting
   1
   contigs.
-END 68
+END 70

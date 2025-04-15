@@ -44,8 +44,8 @@ BEGIN 5
   'r301-829.0'
   to
   be
-  (237,
-  180).
+  (0,
+  529).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r301-829.0'
   has
   size
-  180,
+  529,
   180
   matches,
   and
   the
   score
   of
-  5.540048114229015e+47.
+  1.892288687510894e+20.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  180
+  766
   between
   contigs
   'r64-480.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r456-796.2'
   to
   be
-  (155,
-  496).
+  (0,
+  529).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r456-796.2'
   has
   size
-  341,
+  529,
   341
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  2.3389667516384296e+70.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r456-796.2'
   to
   be
-  (392,
-  733).
+  (0,
+  766).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r456-796.2'
   has
   size
-  341,
+  766,
   341
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  1.5759523184882894e+52.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r456-796.2'
   to
   be
-  (392,
-  733).
+  (0,
+  766).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r456-796.2'
   has
   size
-  341,
+  766,
   341
   matches,
   and
   the
   score
   of
-  1.1268818313767641e+85.
+  1.5759523184882894e+52.
 END 25
 BEGIN 26
   Contig

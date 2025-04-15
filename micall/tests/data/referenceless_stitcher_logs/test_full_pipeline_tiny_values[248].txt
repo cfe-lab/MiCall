@@ -44,8 +44,8 @@ BEGIN 5
   'r383-997.2'
   to
   be
-  (254,
-  471).
+  (0,
+  615).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r383-997.2'
   has
   size
-  471,
-  471
+  615,
+  361
   matches,
   and
   the
   score
   of
-  4.969128834668857e+114.
+  1.1718573790633118e+70.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  471
+  869
   between
   contigs
   'r129-853.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r455-834.0'
   to
   be
-  (326,
-  706).
+  (0,
+  725).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r455-834.0'
   has
   size
-  380,
+  725,
   380
   matches,
   and
   the
   score
   of
-  8.529646475074733e+93.
+  2.0698772931977e+67.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r455-834.0'
   to
   be
-  (326,
-  706).
+  (0,
+  869).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r455-834.0'
   has
   size
-  380,
+  869,
   380
   matches,
   and
   the
   score
   of
-  8.529646475074733e+93.
+  1.6978971963015155e+56.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r455-834.0'
   to
   be
-  (326,
-  706).
+  (0,
+  869).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r455-834.0'
   has
   size
-  380,
+  869,
   380
   matches,
   and
   the
   score
   of
-  8.529646475074733e+93.
+  1.6978971963015155e+56.
 END 25
 BEGIN 26
   Contig

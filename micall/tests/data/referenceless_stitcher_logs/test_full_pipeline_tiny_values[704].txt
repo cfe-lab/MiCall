@@ -44,8 +44,8 @@ BEGIN 5
   'r420-919.2'
   to
   be
-  (164,
-  499).
+  (0,
+  500).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r420-919.2'
   has
   size
-  499,
-  499
+  500,
+  336
   matches,
   and
   the
   score
   of
-  1.250970105835149e+121.
+  1.9150723472054166e+71.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  499
+  664
   between
   contigs
   'r256-918.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r452-773.0'
   to
   be
-  (196,
-  518).
+  (0,
+  663).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r452-773.0'
   has
   size
-  322,
+  663,
   322
   matches,
   and
   the
   score
   of
-  2.866700519935748e+80.
+  2.253469491307981e+54.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r452-773.0'
   to
   be
-  (196,
-  518).
+  (0,
+  664).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r452-773.0'
   has
   size
-  322,
+  664,
   322
   matches,
   and
   the
   score
   of
-  2.866700519935748e+80.
+  2.2431722163598713e+54.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r452-773.0'
   to
   be
-  (196,
-  518).
+  (0,
+  664).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r452-773.0'
   has
   size
-  322,
+  664,
   322
   matches,
   and
   the
   score
   of
-  2.866700519935748e+80.
+  2.2431722163598713e+54.
 END 25
 BEGIN 26
   Contig

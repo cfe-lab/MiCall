@@ -44,8 +44,8 @@ BEGIN 5
   'r392-939.2'
   to
   be
-  (55,
-  298).
+  (0,
+  548).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r392-939.2'
   has
   size
-  298,
+  548,
   298
   matches,
   and
   the
   score
   of
-  8.550117574725871e+74.
+  7.659152359727345e+55.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  298
+  603
   between
   contigs
   'r337-689.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r392-939.2'
   to
   be
-  (23,
-  269).
+  (0,
+  548).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r392-939.2'
   has
   size
-  269,
+  548,
   269
   matches,
   and
   the
   score
   of
-  2.944082014509719e+68.
+  7.85434116234435e+46.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  269
+  571
   between
   contigs
   'r369-660.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r369-660.0'
   to
   be
-  (32,
-  324).
+  (0,
+  603).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r369-660.0'
   has
   size
-  292,
+  603,
   292
   matches,
   and
   the
   score
   of
-  5.0092737823069904e+73.
+  5.003906344418045e+49.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r369-660.0'
   to
   be
-  (32,
-  324).
+  (0,
+  603).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r369-660.0'
   has
   size
-  292,
+  603,
   292
   matches,
   and
   the
   score
   of
-  5.0092737823069904e+73.
+  5.003906344418045e+49.
 END 25
 BEGIN 26
   Contig

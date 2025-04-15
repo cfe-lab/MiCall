@@ -44,8 +44,8 @@ BEGIN 5
   'r521-928.1'
   to
   be
-  (115,
-  523).
+  (0,
+  527).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r521-928.1'
   has
   size
-  408,
+  527,
   408
   matches,
   and
   the
   score
   of
-  2.240891988169688e+100.
+  1.6003353165219417e+91.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r406-932.2'
   to
   be
-  (223,
-  117).
+  (0,
+  425).
 END 8
 BEGIN 9
   Overlap
@@ -101,34 +101,16 @@ BEGIN 9
   'r406-932.2'
   has
   size
-  117,
+  425,
   117
   matches,
   and
   the
   score
   of
-  9.891097550879934e+32.
+  7176989.836582483.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  117
-  between
-  contigs
-  'r183-522.0'
-  and
-  'r406-932.2',
-  resulting
-  in
-  contig
-  (1).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +122,22 @@ BEGIN 11
   fittest
   has
   length
-  750
+  527
   and
   consists
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -163,52 +145,44 @@ BEGIN 13
   overlap
   of
   size
-  408
+  117
   between
   contigs
-  (1)
+  'r183-522.0'
   and
-  'r521-928.1'
+  'r406-932.2'
   to
   be
-  (338,
-  746).
-END 13
-BEGIN 14
+  (0,
+  425).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (1)
+  'r183-522.0'
   and
-  'r521-928.1'
+  'r406-932.2'
   has
   size
-  408,
-  408
+  425,
+  117
   matches,
   and
   the
   score
   of
-  2.240891988169688e+100.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r521-928.1'
-  completely.
-END 15
-BEGIN 16
+  7176989.836582483.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  750.
-END 16
-BEGIN 17
+  527.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -221,29 +195,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  408.
-END 20
-BEGIN 21
+  340.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -256,8 +230,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -272,16 +246,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -289,45 +263,37 @@ BEGIN 24
   overlap
   of
   size
-  408
+  117
   between
   contigs
-  (1)
+  'r183-522.0'
   and
-  'r521-928.1'
+  'r406-932.2'
   to
   be
-  (338,
-  746).
-END 24
-BEGIN 25
+  (0,
+  425).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  (1)
+  'r183-522.0'
   and
-  'r521-928.1'
+  'r406-932.2'
   has
   size
-  408,
-  408
+  425,
+  117
   matches,
   and
   the
   score
   of
-  2.240891988169688e+100.
-END 25
-BEGIN 26
-  Contig
-  (1)
-  covers
-  contig
-  'r521-928.1'
-  completely.
-END 26
-BEGIN 27
+  7176989.836582483.
+END 23
+BEGIN 24
   Outputting
-  1
+  2
   contigs.
-END 27
+END 24

@@ -44,8 +44,8 @@ BEGIN 5
   'r233-833.0'
   to
   be
-  (74,
-  546).
+  (0,
+  601).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r233-833.0'
   has
   size
-  546,
-  546
+  601,
+  527
   matches,
   and
   the
   score
   of
-  5.7132261199194135e+131.
+  5.257396779312486e+121.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  546
+  675
   between
   contigs
   'r159-778.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r235-654.2'
   to
   be
-  (76,
-  496).
+  (0,
+  620).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r235-654.2'
   has
   size
-  420,
+  620,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  7.075507973743648e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r235-654.2'
   to
   be
-  (76,
-  496).
+  (0,
+  675).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r235-654.2'
   has
   size
-  420,
+  675,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  3.728584760221348e+83.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r235-654.2'
   to
   be
-  (76,
-  496).
+  (0,
+  675).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r235-654.2'
   has
   size
-  420,
+  675,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  3.728584760221348e+83.
 END 25
 BEGIN 26
   Contig

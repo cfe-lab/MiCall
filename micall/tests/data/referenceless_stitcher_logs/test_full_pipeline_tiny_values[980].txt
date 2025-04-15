@@ -44,8 +44,8 @@ BEGIN 5
   'r385-866.1'
   to
   be
-  (276,
-  468).
+  (0,
+  482).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r385-866.1'
   has
   size
-  468,
-  468
+  482,
+  206
   matches,
   and
   the
   score
   of
-  1.2174165363422873e+114.
+  1.4812297967872256e+32.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  468
+  758
   between
   contigs
   'r109-852.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r295-757.2'
   to
   be
-  (186,
-  649).
+  (0,
+  744).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r295-757.2'
   has
   size
-  463,
+  744,
   463
   matches,
   and
   the
   score
   of
-  7.354567275188196e+112.
+  3.404046172755472e+91.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r295-757.2'
   to
   be
-  (186,
-  649).
+  (0,
+  758).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r295-757.2'
   has
   size
-  463,
+  758,
   463
   matches,
   and
   the
   score
   of
-  7.354567275188196e+112.
+  2.053591045978569e+90.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r295-757.2'
   to
   be
-  (186,
-  649).
+  (0,
+  758).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r295-757.2'
   has
   size
-  463,
+  758,
   463
   matches,
   and
   the
   score
   of
-  7.354567275188196e+112.
+  2.053591045978569e+90.
 END 25
 BEGIN 26
   Contig

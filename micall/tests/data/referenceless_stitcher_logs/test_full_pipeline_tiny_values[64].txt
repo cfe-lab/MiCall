@@ -44,8 +44,8 @@ BEGIN 5
   'r208-938.1'
   to
   be
-  (146,
-  581).
+  (0,
+  731).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r208-938.1'
   has
   size
-  581,
+  731,
   581
   matches,
   and
   the
   score
   of
-  9.33128201293856e+139.
+  2.6844399030650497e+128.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  581
+  877
   between
   contigs
   'r62-788.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r297-841.2'
   to
   be
-  (89,
-  634).
+  (0,
+  731).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r297-841.2'
   has
   size
-  545,
+  731,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  2.9393434685330495e+117.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r297-841.2'
   to
   be
-  (235,
-  780).
+  (0,
+  877).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r297-841.2'
   has
   size
-  545,
+  877,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  3.195291505614416e+106.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r297-841.2'
   to
   be
-  (235,
-  780).
+  (0,
+  877).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r297-841.2'
   has
   size
-  545,
+  877,
   545
   matches,
   and
   the
   score
   of
-  2.8401119959448515e+131.
+  3.195291505614416e+106.
 END 25
 BEGIN 26
   Contig

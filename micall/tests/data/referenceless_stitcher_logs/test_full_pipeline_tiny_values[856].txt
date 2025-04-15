@@ -44,8 +44,8 @@ BEGIN 5
   'r306-823.1'
   to
   be
-  (267,
-  346).
+  (0,
+  518).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r306-823.1'
   has
   size
-  346,
-  346
+  518,
+  251
   matches,
   and
   the
   score
   of
-  9.441280661133626e+85.
+  2.962695444551123e+43.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  346
+  785
   between
   contigs
   'r39-651.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r119-580.2'
   to
   be
-  (80,
-  542).
+  (0,
+  613).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r119-580.2'
   has
   size
-  462,
+  613,
   462
   matches,
   and
   the
   score
   of
-  3.652207275770229e+112.
+  9.829668111667544e+100.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r119-580.2'
   to
   be
-  (80,
-  542).
+  (0,
+  785).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r119-580.2'
   has
   size
-  462,
+  785,
   462
   matches,
   and
   the
   score
   of
-  3.652207275770229e+112.
+  1.4794492206744438e+88.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r119-580.2'
   to
   be
-  (80,
-  542).
+  (0,
+  785).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r119-580.2'
   has
   size
-  462,
+  785,
   462
   matches,
   and
   the
   score
   of
-  3.652207275770229e+112.
+  1.4794492206744438e+88.
 END 25
 BEGIN 26
   Contig

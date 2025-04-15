@@ -44,8 +44,8 @@ BEGIN 5
   'r141-845.1'
   to
   be
-  (82,
-  536).
+  (0,
+  705).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r141-845.1'
   has
   size
-  536,
+  705,
   536
   matches,
   and
   the
   score
   of
-  4.210175098667303e+129.
+  7.157699955993358e+116.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  536
+  787
   between
   contigs
   'r59-676.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r141-845.1'
   to
   be
-  (112,
-  494).
+  (0,
+  705).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r141-845.1'
   has
   size
-  494,
+  705,
   494
   matches,
   and
   the
   score
   of
-  7.573461627615506e+119.
+  1.1211098701152303e+104.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  494
+  817
   between
   contigs
   'r29-634.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (30,
-  576).
+  (0,
+  787).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  576,
+  787,
   576
   matches,
   and
   the
   score
   of
-  5.6749875714620656e+138.
+  4.470737171676483e+122.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  576
+  817
   between
   contigs
   'r29-634.0'

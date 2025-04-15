@@ -44,8 +44,8 @@ BEGIN 5
   'r452-746.0'
   to
   be
-  (127,
-  178).
+  (0,
+  295).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r452-746.0'
   has
   size
-  178,
-  178
+  295,
+  168
   matches,
   and
   the
   score
   of
-  1.336409720170483e+47.
+  9.3614442311089e+34.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  178
+  422
   between
   contigs
   'r325-629.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r361-634.1'
   to
   be
-  (36,
-  269).
+  (0,
+  274).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r361-634.1'
   has
   size
-  269,
-  269
+  274,
+  238
   matches,
   and
   the
   score
   of
-  2.944082014509719e+68.
+  2.0377083475413064e+58.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  269
+  310
   between
   contigs
   'r325-629.2'
@@ -181,8 +181,8 @@ BEGIN 13
   'r452-746.0'
   to
   be
-  (127,
-  183).
+  (0,
+  295).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r452-746.0'
   has
   size
-  183,
-  183
+  295,
+  168
   matches,
   and
   the
   score
   of
-  2.336254065781434e+48.
+  9.3614442311089e+34.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  183
+  422
   between
   contigs
   (2)
@@ -317,8 +317,8 @@ BEGIN 24
   'r452-746.0'
   to
   be
-  (127,
-  183).
+  (0,
+  295).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r452-746.0'
   has
   size
-  183,
-  183
+  295,
+  168
   matches,
   and
   the
   score
   of
-  2.336254065781434e+48.
+  9.3614442311089e+34.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  183
+  422
   between
   contigs
   (2)

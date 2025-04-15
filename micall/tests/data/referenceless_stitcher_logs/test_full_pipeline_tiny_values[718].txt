@@ -44,8 +44,8 @@ BEGIN 5
   'r439-898.2'
   to
   be
-  (381,
-  215).
+  (0,
+  460).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r439-898.2'
   has
   size
-  215,
-  215
+  460,
+  79
   matches,
   and
   the
   score
   of
-  6.557040906636704e+55.
+  8.999995748469107.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  215
-  between
-  contigs
-  'r58-653.0'
-  and
-  'r439-898.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r409-855.1'
   to
   be
-  (351,
-  245).
-END 8
-BEGIN 9
+  (0,
+  447).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,59 +93,60 @@ BEGIN 9
   'r409-855.1'
   has
   size
-  245,
-  245
+  447,
+  96
   matches,
   and
   the
   score
   of
-  8.340861035890401e+62.
+  8.618450422974064.
+END 8
+BEGIN 9
+  Constructed
+  a
+  path
+  of
+  length
+  596.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  245
-  between
-  contigs
-  'r58-653.0'
-  and
-  'r409-855.1',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 10
 BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  841
-  and
-  consists
-  of
-  3
-  parts.
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 11
 BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
+  Initial
+  overlap
+  stitching
+  produced
+  3
+  contigs.
 END 12
 BEGIN 13
   Calculated
@@ -173,112 +156,184 @@ BEGIN 13
   overlap
   of
   size
-  417
+  215
   between
   contigs
-  (2)
+  'r58-653.0'
   and
   'r439-898.2'
   to
   be
-  (381,
-  417).
+  (0,
+  460).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r58-653.0'
   and
   'r439-898.2'
   has
   size
-  417,
+  460,
+  79
+  matches,
+  and
+  the
+  score
+  of
+  8.999995748469107.
+END 14
+BEGIN 15
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  245
+  between
+  contigs
+  'r58-653.0'
+  and
+  'r409-855.1'
+  to
+  be
+  (0,
+  447).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r58-653.0'
+  and
+  'r409-855.1'
+  has
+  size
+  447,
+  96
+  matches,
+  and
+  the
+  score
+  of
+  8.618450422974064.
+END 16
+BEGIN 17
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  417
+  between
+  contigs
+  'r409-855.1'
+  and
+  'r439-898.2'
+  to
+  be
+  (0,
+  460).
+END 17
+BEGIN 18
+  Overlap
+  between
+  contigs
+  'r409-855.1'
+  and
+  'r439-898.2'
+  has
+  size
+  460,
   417
   matches,
   and
   the
   score
   of
-  1.536811601568966e+102.
-END 14
-BEGIN 15
+  1.3730984506773197e+99.
+END 18
+BEGIN 19
   Found
   a
   significant
   overlap
   of
   size
-  417
+  490
   between
   contigs
-  (2)
+  'r409-855.1'
   and
   'r439-898.2',
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  841
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
-  Constructed
-  a
-  path
-  of
-  length
-  841.
-END 18
-BEGIN 19
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
+  (1).
 END 19
 BEGIN 20
-  Initial
+  Calculated
+  cutoff
+  for
+  an
   overlap
-  stitching
-  produced
-  1
-  contigs.
+  of
+  size
+  245
+  between
+  contigs
+  'r58-653.0'
+  and
+  (1)
+  to
+  be
+  (0,
+  490).
 END 20
 BEGIN 21
+  Overlap
+  between
+  contigs
+  'r58-653.0'
+  and
+  (1)
+  has
+  size
+  490,
+  139
+  matches,
+  and
+  the
+  score
+  of
+  1742539240.8418639.
+END 21
+BEGIN 22
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  841
+  between
+  contigs
+  'r58-653.0'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
+END 22
+BEGIN 23
   Outputting
   1
   contigs.
-END 21
+END 23

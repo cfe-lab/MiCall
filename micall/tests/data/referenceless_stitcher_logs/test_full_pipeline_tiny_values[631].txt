@@ -44,8 +44,8 @@ BEGIN 5
   'r419-732.2'
   to
   be
-  (145,
-  459).
+  (0,
+  635).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r419-732.2'
   has
   size
-  314,
+  635,
   314
   matches,
   and
   the
   score
   of
-  4.135233035190722e+78.
+  1.0978778628327356e+54.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r274-908.0'
   to
   be
-  (173,
-  87).
+  (0,
+  305).
 END 8
 BEGIN 9
   Overlap
@@ -101,34 +101,16 @@ BEGIN 9
   'r274-908.0'
   has
   size
-  87,
+  305,
   87
   matches,
   and
   the
   score
   of
-  4.536381327690125e+25.
+  6784792.568535168.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  87
-  between
-  contigs
-  'r101-360.1'
-  and
-  'r274-908.0',
-  resulting
-  in
-  contig
-  (1).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +122,22 @@ BEGIN 11
   fittest
   has
   length
-  808
+  635
   and
   consists
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -163,52 +145,44 @@ BEGIN 13
   overlap
   of
   size
-  314
+  87
   between
   contigs
-  (1)
+  'r101-360.1'
   and
-  'r419-732.2'
+  'r274-908.0'
   to
   be
-  (318,
-  632).
-END 13
-BEGIN 14
+  (0,
+  305).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (1)
+  'r101-360.1'
   and
-  'r419-732.2'
+  'r274-908.0'
   has
   size
-  314,
-  314
+  305,
+  87
   matches,
   and
   the
   score
   of
-  4.135233035190722e+78.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r419-732.2'
-  completely.
-END 15
-BEGIN 16
+  6784792.568535168.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  808.
-END 16
-BEGIN 17
+  635.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -221,29 +195,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  314.
-END 20
-BEGIN 21
+  260.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -256,8 +230,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -272,16 +246,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -289,45 +263,37 @@ BEGIN 24
   overlap
   of
   size
-  314
+  87
   between
   contigs
-  (1)
+  'r101-360.1'
   and
-  'r419-732.2'
+  'r274-908.0'
   to
   be
-  (318,
-  632).
-END 24
-BEGIN 25
+  (0,
+  305).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  (1)
+  'r101-360.1'
   and
-  'r419-732.2'
+  'r274-908.0'
   has
   size
-  314,
-  314
+  305,
+  87
   matches,
   and
   the
   score
   of
-  4.135233035190722e+78.
-END 25
-BEGIN 26
-  Contig
-  (1)
-  covers
-  contig
-  'r419-732.2'
-  completely.
-END 26
-BEGIN 27
+  6784792.568535168.
+END 23
+BEGIN 24
   Outputting
-  1
+  2
   contigs.
-END 27
+END 24

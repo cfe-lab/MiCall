@@ -44,8 +44,8 @@ BEGIN 5
   'r81-451.0'
   to
   be
-  (2,
-  373).
+  (0,
+  397).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r81-451.0'
   has
   size
-  371,
+  397,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  9.091547820183632e+89.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r79-475.1'
   to
   be
-  (21,
-  321).
+  (0,
+  397).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r79-475.1'
   has
   size
-  321,
+  397,
   321
   matches,
   and
   the
   score
   of
-  1.419261637008375e+80.
+  4.384799445055527e+74.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  321
+  418
   between
   contigs
   'r58-399.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r81-451.0'
   to
   be
-  (23,
-  394).
+  (0,
+  418).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r81-451.0'
   has
   size
-  371,
+  418,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  1.351236973570364e+88.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r81-451.0'
   to
   be
-  (23,
-  394).
+  (0,
+  418).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r81-451.0'
   has
   size
-  371,
+  418,
   371
   matches,
   and
   the
   score
   of
-  6.176091677553021e+91.
+  1.351236973570364e+88.
 END 25
 BEGIN 26
   Contig

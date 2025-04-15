@@ -44,8 +44,8 @@ BEGIN 5
   'r251-786.2'
   to
   be
-  (55,
-  591).
+  (0,
+  632).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r251-786.2'
   has
   size
-  536,
+  632,
   536
   matches,
   and
   the
   score
   of
-  4.210175098667303e+129.
+  2.1406376922094608e+122.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r201-641.1'
   to
   be
-  (5,
-  446).
+  (0,
+  632).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r201-641.1'
   has
   size
-  441,
+  632,
   441
   matches,
   and
   the
   score
   of
-  4.80976274846251e+107.
+  2.2661466018334274e+93.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r201-641.1'
   to
   be
-  (5,
-  446).
+  (0,
+  632).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r201-641.1'
   has
   size
-  441,
+  632,
   441
   matches,
   and
   the
   score
   of
-  4.80976274846251e+107.
+  2.2661466018334274e+93.
 END 14
 BEGIN 15
   Contig

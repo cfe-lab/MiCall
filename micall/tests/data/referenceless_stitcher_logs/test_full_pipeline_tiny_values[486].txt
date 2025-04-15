@@ -44,8 +44,8 @@ BEGIN 5
   'r141-786.2'
   to
   be
-  (129,
-  413).
+  (0,
+  646).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r141-786.2'
   has
   size
-  413,
+  646,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  3.7145727508377277e+83.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  413
+  775
   between
   contigs
   'r12-553.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r229-700.0'
   to
   be
-  (88,
-  560).
+  (0,
+  646).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r229-700.0'
   has
   size
-  472,
+  646,
   472
   matches,
   and
   the
   score
   of
-  1.0005176189401994e+115.
+  4.03177021303475e+101.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r229-700.0'
   to
   be
-  (217,
-  689).
+  (0,
+  775).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r229-700.0'
   has
   size
-  472,
+  775,
   472
   matches,
   and
   the
   score
   of
-  1.0005176189401994e+115.
+  6.943300051140858e+91.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r229-700.0'
   to
   be
-  (217,
-  689).
+  (0,
+  775).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r229-700.0'
   has
   size
-  472,
+  775,
   472
   matches,
   and
   the
   score
   of
-  1.0005176189401994e+115.
+  6.943300051140858e+91.
 END 25
 BEGIN 26
   Contig

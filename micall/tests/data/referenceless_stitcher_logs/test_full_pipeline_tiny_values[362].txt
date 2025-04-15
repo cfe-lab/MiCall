@@ -44,8 +44,8 @@ BEGIN 5
   'r283-924.0'
   to
   be
-  (224,
-  450).
+  (0,
+  642).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r283-924.0'
   has
   size
-  450,
-  450
+  642,
+  418
   matches,
   and
   the
   score
   of
-  6.563113411185577e+109.
+  2.5492971276283242e+85.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  450
+  866
   between
   contigs
   'r59-732.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r88-355.1'
   to
   be
-  (29,
-  297).
+  (0,
+  674).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r88-355.1'
   has
   size
-  268,
+  674,
   268
   matches,
   and
   the
   score
   of
-  1.454700128966913e+68.
+  4.0369780163688215e+36.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r88-355.1'
   to
   be
-  (29,
-  297).
+  (0,
+  866).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r88-355.1'
   has
   size
-  268,
+  866,
   268
   matches,
   and
   the
   score
   of
-  1.454700128966913e+68.
+  2.0506034852530684e+21.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r88-355.1'
   to
   be
-  (29,
-  297).
+  (0,
+  866).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r88-355.1'
   has
   size
-  268,
+  866,
   268
   matches,
   and
   the
   score
   of
-  1.454700128966913e+68.
+  2.0506034852530684e+21.
 END 25
 BEGIN 26
   Contig

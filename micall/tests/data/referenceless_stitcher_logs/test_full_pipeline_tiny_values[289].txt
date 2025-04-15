@@ -44,8 +44,8 @@ BEGIN 5
   'r378-967.1'
   to
   be
-  (59,
-  478).
+  (0,
+  590).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r378-967.1'
   has
   size
-  478,
+  590,
   478
   matches,
   and
   the
   score
   of
-  1.6661031836378835e+116.
+  5.027722828977353e+107.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  478
+  649
   between
   contigs
   'r319-855.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r378-967.1'
   to
   be
-  (103,
-  277).
+  (0,
+  590).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r378-967.1'
   has
   size
-  277,
+  590,
   277
   matches,
   and
   the
   score
   of
-  2.0683224771640222e+70.
+  9.377895211559535e+45.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  277
+  693
   between
   contigs
   'r275-654.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (44,
-  336).
+  (0,
+  649).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  336,
+  649,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  8.10008780847903e+59.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  336
+  693
   between
   contigs
   'r275-654.0'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (44,
-  336).
+  (0,
+  649).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  336,
+  649,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  8.10008780847903e+59.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  336
+  693
   between
   contigs
   'r275-654.0'

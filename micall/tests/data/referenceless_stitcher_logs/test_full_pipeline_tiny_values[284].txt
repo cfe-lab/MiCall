@@ -44,8 +44,8 @@ BEGIN 5
   'r526-951.0'
   to
   be
-  (208,
-  422).
+  (0,
+  426).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r526-951.0'
   has
   size
-  422,
-  422
+  426,
+  218
   matches,
   and
   the
   score
   of
-  2.5535062782726194e+103.
+  2.1650686151447732e+40.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  422
+  634
   between
   contigs
   'r318-947.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r526-917.2'
   to
   be
-  (208,
-  600).
+  (0,
+  630).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r526-917.2'
   has
   size
-  392,
+  630,
   392
   matches,
   and
   the
   score
   of
-  4.819519351096359e+96.
+  2.287894834835955e+78.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r526-917.2'
   to
   be
-  (208,
-  600).
+  (0,
+  634).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r526-917.2'
   has
   size
-  392,
+  634,
   392
   matches,
   and
   the
   score
   of
-  4.819519351096359e+96.
+  1.1304664378146625e+78.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r526-917.2'
   to
   be
-  (208,
-  600).
+  (0,
+  634).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r526-917.2'
   has
   size
-  392,
+  634,
   392
   matches,
   and
   the
   score
   of
-  4.819519351096359e+96.
+  1.1304664378146625e+78.
 END 25
 BEGIN 26
   Contig

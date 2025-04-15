@@ -44,8 +44,8 @@ BEGIN 5
   'r313-816.2'
   to
   be
-  (125,
-  413).
+  (0,
+  504).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r313-816.2'
   has
   size
-  413,
-  413
+  504,
+  379
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  1.4546916425534052e+84.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  413
+  629
   between
   contigs
   'r188-725.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r247-516.1'
   to
   be
-  (59,
-  329).
+  (0,
+  538).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r247-516.1'
   has
   size
-  270,
+  538,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  6.777854513865203e+47.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r247-516.1'
   to
   be
-  (59,
-  329).
+  (0,
+  629).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r247-516.1'
   has
   size
-  270,
+  629,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  4.765280892722762e+40.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r247-516.1'
   to
   be
-  (59,
-  329).
+  (0,
+  629).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r247-516.1'
   has
   size
-  270,
+  629,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  4.765280892722762e+40.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r243-889.2'
   to
   be
-  (109,
-  756).
+  (0,
+  761).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r243-889.2'
   has
   size
-  647,
+  761,
   647
   matches,
   and
   the
   score
   of
-  7.377997019363914e+154.
+  1.1746358408874947e+146.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r252-667.0'
   to
   be
-  (118,
-  534).
+  (0,
+  761).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r252-667.0'
   has
   size
-  416,
+  761,
   416
   matches,
   and
   the
   score
   of
-  1.5251675822816893e+102.
+  8.205811538278953e+75.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r252-667.0'
   to
   be
-  (118,
-  534).
+  (0,
+  761).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r252-667.0'
   has
   size
-  416,
+  761,
   416
   matches,
   and
   the
   score
   of
-  1.5251675822816893e+102.
+  8.205811538278953e+75.
 END 14
 BEGIN 15
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r348-792.0'
   to
   be
-  (228,
-  367).
+  (0,
+  445).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r348-792.0'
   has
   size
-  367,
-  367
+  445,
+  217
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  5.811516320202343e+38.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  367
+  673
   between
   contigs
   'r120-714.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r138-550.1'
   to
   be
-  (18,
-  431).
+  (0,
+  595).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r138-550.1'
   has
   size
-  413,
+  595,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  3.4853616688127614e+87.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r138-550.1'
   to
   be
-  (18,
-  431).
+  (0,
+  673).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r138-550.1'
   has
   size
-  413,
+  673,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  2.691237058117266e+81.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r138-550.1'
   to
   be
-  (18,
-  431).
+  (0,
+  673).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r138-550.1'
   has
   size
-  413,
+  673,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  2.691237058117266e+81.
 END 25
 BEGIN 26
   Contig

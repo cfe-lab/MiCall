@@ -44,8 +44,8 @@ BEGIN 5
   'r273-792.2'
   to
   be
-  (141,
-  298).
+  (0,
+  520).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r273-792.2'
   has
   size
-  298,
+  520,
   298
   matches,
   and
   the
   score
   of
-  8.550117574725871e+74.
+  1.1048574426312617e+58.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  298
+  661
   between
   contigs
   'r132-570.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r273-792.2'
   to
   be
-  (120,
-  247).
+  (0,
+  520).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r273-792.2'
   has
   size
-  247,
+  520,
   247
   matches,
   and
   the
   score
   of
-  1.7119305782533366e+63.
+  1.654091568456407e+42.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  247
+  640
   between
   contigs
   'r153-519.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r153-519.0'
   to
   be
-  (21,
-  388).
+  (0,
+  661).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r153-519.0'
   has
   size
-  367,
+  661,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  3.4157115420645925e+68.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r153-519.0'
   to
   be
-  (21,
-  388).
+  (0,
+  661).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r153-519.0'
   has
   size
-  367,
+  661,
   367
   matches,
   and
   the
   score
   of
-  7.459220964213018e+90.
+  3.4157115420645925e+68.
 END 25
 BEGIN 26
   Contig

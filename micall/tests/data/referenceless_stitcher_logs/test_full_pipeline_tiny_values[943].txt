@@ -44,8 +44,8 @@ BEGIN 5
   'r221-940.0'
   to
   be
-  (183,
-  357).
+  (0,
+  720).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r221-940.0'
   has
   size
-  357,
+  720,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  6.960742625661596e+60.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  357
+  903
   between
   contigs
   'r38-577.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r221-940.0'
   to
   be
-  (89,
-  442).
+  (0,
+  720).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r221-940.0'
   has
   size
-  442,
+  720,
   442
   matches,
   and
   the
   score
   of
-  9.688755884906251e+107.
+  8.745547663548895e+86.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  442
+  809
   between
   contigs
   'r132-662.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (94,
-  446).
+  (0,
+  809).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  446,
+  809,
   446
   matches,
   and
   the
   score
   of
-  7.975258297830065e+108.
+  2.733369590889074e+81.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  446
+  903
   between
   contigs
   'r38-577.1'

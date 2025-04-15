@@ -44,8 +44,8 @@ BEGIN 5
   'r145-791.2'
   to
   be
-  (5,
-  595).
+  (0,
+  647).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r145-791.2'
   has
   size
-  595,
+  647,
   595
   matches,
   and
   the
   score
   of
-  1.030148553359994e+143.
+  1.1657815403372613e+139.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  595
+  652
   between
   contigs
   'r140-739.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r145-791.2'
   to
   be
-  (107,
-  204).
+  (0,
+  647).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r145-791.2'
   has
   size
-  204,
+  647,
   204
   matches,
   and
   the
   score
   of
-  2.166158711825215e+53.
+  2.1094685344570483e+18.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  204
+  754
   between
   contigs
   'r38-348.0'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (102,
-  209).
+  (0,
+  652).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  209,
+  652,
   209
   matches,
   and
   the
   score
   of
-  1.872152693658848e+54.
+  4.367508804486176e+19.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  209
+  754
   between
   contigs
   'r38-348.0'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (102,
-  209).
+  (0,
+  652).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  209,
+  652,
   209
   matches,
   and
   the
   score
   of
-  1.872152693658848e+54.
+  4.367508804486176e+19.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  209
+  754
   between
   contigs
   'r38-348.0'

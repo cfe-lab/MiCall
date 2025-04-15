@@ -44,8 +44,8 @@ BEGIN 5
   'r253-857.2'
   to
   be
-  (92,
-  331).
+  (0,
+  605).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r253-857.2'
   has
   size
-  331,
+  605,
   331
   matches,
   and
   the
   score
   of
-  4.0050347502069994e+82.
+  5.678572397823594e+61.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  331
+  697
   between
   contigs
   'r161-583.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r253-857.2'
   to
   be
-  (189,
-  225).
+  (0,
+  605).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r253-857.2'
   has
   size
-  225,
+  605,
   225
   matches,
   and
   the
   score
   of
-  9.702443895063588e+57.
+  4.805386071453204e+28.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  225
+  794
   between
   contigs
   'r64-477.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (97,
-  317).
+  (0,
+  697).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  317,
+  697,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  1.0563970499699628e+50.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  317
+  794
   between
   contigs
   'r64-477.1'

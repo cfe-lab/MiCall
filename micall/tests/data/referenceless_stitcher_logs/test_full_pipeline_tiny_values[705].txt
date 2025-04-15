@@ -44,8 +44,8 @@ BEGIN 5
   'r661-994.1'
   to
   be
-  (220,
-  554).
+  (0,
+  555).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r661-994.1'
   has
   size
-  334,
+  555,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  2.3535469097958216e+66.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r441-995.2'
   to
   be
-  (30,
-  269).
+  (0,
+  555).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r441-995.2'
   has
   size
-  269,
+  555,
   269
   matches,
   and
   the
   score
   of
-  2.944082014509719e+68.
+  1.89016346122013e+46.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  269
+  585
   between
   contigs
   'r411-709.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r661-994.1'
   to
   be
-  (250,
-  584).
+  (0,
+  585).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r661-994.1'
   has
   size
-  334,
+  585,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  1.6481954516690974e+64.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r661-994.1'
   to
   be
-  (250,
-  584).
+  (0,
+  585).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r661-994.1'
   has
   size
-  334,
+  585,
   334
   matches,
   and
   the
   score
   of
-  1.6485645329756413e+83.
+  1.6481954516690974e+64.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r317-669.0'
   to
   be
-  (43,
-  396).
+  (0,
+  470).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r317-669.0'
   has
   size
-  353,
+  470,
   353
   matches,
   and
   the
   score
   of
-  3.2194520736283604e+87.
+  4.424415668479691e+78.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r274-743.2'
   to
   be
-  (67,
-  201).
+  (0,
+  470).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r274-743.2'
   has
   size
-  201,
+  470,
   201
   matches,
   and
   the
   score
   of
-  2.5826268732670743e+52.
+  3.4344754074919453e+31.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  201
+  537
   between
   contigs
   'r207-474.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r317-669.0'
   to
   be
-  (110,
-  463).
+  (0,
+  537).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r317-669.0'
   has
   size
-  353,
+  537,
   353
   matches,
   and
   the
   score
   of
-  3.2194520736283604e+87.
+  2.763097072607538e+73.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r317-669.0'
   to
   be
-  (110,
-  463).
+  (0,
+  537).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r317-669.0'
   has
   size
-  353,
+  537,
   353
   matches,
   and
   the
   score
   of
-  3.2194520736283604e+87.
+  2.763097072607538e+73.
 END 25
 BEGIN 26
   Contig

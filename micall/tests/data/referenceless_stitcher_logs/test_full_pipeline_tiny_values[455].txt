@@ -44,8 +44,8 @@ BEGIN 5
   'r394-770.0'
   to
   be
-  (214,
-  236).
+  (0,
+  377).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r394-770.0'
   has
   size
-  236,
-  236
+  377,
+  163
   matches,
   and
   the
   score
   of
-  5.7839000908632185e+60.
+  5.6302074951959374e+26.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  236
+  591
   between
   contigs
   'r180-629.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r331-612.2'
   to
   be
-  (151,
-  433).
+  (0,
+  450).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r331-612.2'
   has
   size
-  282,
+  450,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  2.217179193683769e+58.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r331-612.2'
   to
   be
-  (151,
-  433).
+  (0,
+  591).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r331-612.2'
   has
   size
-  282,
+  591,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  3.344976940462563e+47.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r331-612.2'
   to
   be
-  (151,
-  433).
+  (0,
+  591).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r331-612.2'
   has
   size
-  282,
+  591,
   282
   matches,
   and
   the
   score
   of
-  1.751529937039277e+71.
+  3.344976940462563e+47.
 END 25
 BEGIN 26
   Contig

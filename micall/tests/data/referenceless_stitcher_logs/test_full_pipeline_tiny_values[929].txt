@@ -44,8 +44,8 @@ BEGIN 5
   'r389-949.2'
   to
   be
-  (274,
-  374).
+  (0,
+  561).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r389-949.2'
   has
   size
-  374,
-  374
+  561,
+  287
   matches,
   and
   the
   score
   of
-  2.5343416243767767e+92.
+  1.7758201481501994e+51.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  374
+  835
   between
   contigs
   'r115-762.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r459-840.0'
   to
   be
-  (344,
-  304).
+  (0,
+  382).
 END 8
 BEGIN 9
   Overlap
@@ -111,34 +111,16 @@ BEGIN 9
   'r459-840.0'
   has
   size
-  304,
-  304
+  382,
+  38
   matches,
   and
   the
   score
   of
-  2.914968515383263e+76.
+  8.999999999996026.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  304
-  between
-  contigs
-  'r115-762.1'
-  and
-  'r459-840.0',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -156,16 +138,16 @@ BEGIN 11
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -181,10 +163,10 @@ BEGIN 13
   'r459-840.0'
   to
   be
-  (344,
-  726).
-END 13
-BEGIN 14
+  (0,
+  835).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,32 +175,32 @@ BEGIN 14
   'r459-840.0'
   has
   size
-  382,
+  835,
   382
   matches,
   and
   the
   score
   of
-  1.7345577372177434e+94.
-END 14
-BEGIN 15
+  4.171133762741527e+59.
+END 13
+BEGIN 14
   Contig
   (1)
   covers
   contig
   'r459-840.0'
   completely.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   835.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Removed
   2
   components
@@ -231,29 +213,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Constructed
   a
   path
   of
   length
   382.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -266,8 +248,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -282,16 +264,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -307,10 +289,10 @@ BEGIN 24
   'r459-840.0'
   to
   be
-  (344,
-  726).
-END 24
-BEGIN 25
+  (0,
+  835).
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -319,25 +301,25 @@ BEGIN 25
   'r459-840.0'
   has
   size
-  382,
+  835,
   382
   matches,
   and
   the
   score
   of
-  1.7345577372177434e+94.
-END 25
-BEGIN 26
+  4.171133762741527e+59.
+END 24
+BEGIN 25
   Contig
   (1)
   covers
   contig
   'r459-840.0'
   completely.
-END 26
-BEGIN 27
+END 25
+BEGIN 26
   Outputting
   1
   contigs.
-END 27
+END 26

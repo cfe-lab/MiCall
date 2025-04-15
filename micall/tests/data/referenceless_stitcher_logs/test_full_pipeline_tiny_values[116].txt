@@ -44,8 +44,8 @@ BEGIN 5
   'r367-653.1'
   to
   be
-  (77,
-  364).
+  (0,
+  562).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r367-653.1'
   has
   size
-  287,
+  562,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  1.7672404957861897e+51.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r290-851.2'
   to
   be
-  (69,
-  203).
+  (0,
+  562).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r290-851.2'
   has
   size
-  203,
+  562,
   203
   matches,
   and
   the
   score
   of
-  1.0662234671521326e+53.
+  7.045413090319185e+24.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  203
+  631
   between
   contigs
   'r221-492.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r367-653.1'
   to
   be
-  (146,
-  433).
+  (0,
+  631).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r367-653.1'
   has
   size
-  287,
+  631,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  9.421574788477832e+45.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r367-653.1'
   to
   be
-  (146,
-  433).
+  (0,
+  631).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r367-653.1'
   has
   size
-  287,
+  631,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  9.421574788477832e+45.
 END 25
 BEGIN 26
   Contig

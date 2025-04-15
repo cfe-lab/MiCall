@@ -44,8 +44,8 @@ BEGIN 5
   'r112-788.2'
   to
   be
-  (56,
-  653).
+  (0,
+  677).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r112-788.2'
   has
   size
-  653,
-  653
+  677,
+  621
   matches,
   and
   the
   score
   of
-  2.4307437444209984e+156.
+  6.977857518276951e+144.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  653
+  733
   between
   contigs
   'r56-764.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r265-654.0'
   to
   be
-  (209,
-  599).
+  (0,
+  709).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r265-654.0'
   has
   size
-  390,
+  709,
   390
   matches,
   and
   the
   score
   of
-  1.1855028279680234e+96.
+  4.1465618010013775e+71.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r265-654.0'
   to
   be
-  (209,
-  599).
+  (0,
+  733).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r265-654.0'
   has
   size
-  390,
+  733,
   390
   matches,
   and
   the
   score
   of
-  1.1855028279680234e+96.
+  5.975649140748833e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r265-654.0'
   to
   be
-  (209,
-  599).
+  (0,
+  733).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r265-654.0'
   has
   size
-  390,
+  733,
   390
   matches,
   and
   the
   score
   of
-  1.1855028279680234e+96.
+  5.975649140748833e+69.
 END 25
 BEGIN 26
   Contig

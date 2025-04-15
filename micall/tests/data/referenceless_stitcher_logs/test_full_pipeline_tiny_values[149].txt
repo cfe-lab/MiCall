@@ -44,8 +44,8 @@ BEGIN 5
   'r149-668.1'
   to
   be
-  (85,
-  605).
+  (0,
+  736).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r149-668.1'
   has
   size
-  520,
+  736,
   520
   matches,
   and
   the
   score
   of
-  9.339767559974493e+125.
+  3.4981690920226647e+109.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r468-754.2'
   to
   be
-  (404,
-  691).
+  (0,
+  736).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r468-754.2'
   has
   size
-  287,
+  736,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  7.263555113827087e+37.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r468-754.2'
   to
   be
-  (404,
-  691).
+  (0,
+  736).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r468-754.2'
   has
   size
-  287,
+  736,
   287
   matches,
   and
   the
   score
   of
-  2.9635207903657437e+72.
+  7.263555113827087e+37.
 END 14
 BEGIN 15
   Contig

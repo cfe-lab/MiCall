@@ -44,8 +44,8 @@ BEGIN 5
   'r381-731.2'
   to
   be
-  (247,
-  598).
+  (0,
+  749).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r381-731.2'
   has
   size
-  351,
+  749,
   351
   matches,
   and
   the
   score
   of
-  1.5809668014210111e+87.
+  6.7660523223158e+56.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r249-560.0'
   to
   be
-  (115,
-  427).
+  (0,
+  749).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r249-560.0'
   has
   size
-  312,
+  749,
   312
   matches,
   and
   the
   score
   of
-  2.0260717585204003e+78.
+  2.7170041929899266e+44.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r249-560.0'
   to
   be
-  (115,
-  427).
+  (0,
+  749).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r249-560.0'
   has
   size
-  312,
+  749,
   312
   matches,
   and
   the
   score
   of
-  2.0260717585204003e+78.
+  2.7170041929899266e+44.
 END 14
 BEGIN 15
   Contig

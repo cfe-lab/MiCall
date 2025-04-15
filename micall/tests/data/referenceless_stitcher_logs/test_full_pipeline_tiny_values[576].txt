@@ -44,8 +44,8 @@ BEGIN 5
   'r501-874.2'
   to
   be
-  (12,
-  386).
+  (0,
+  418).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r501-874.2'
   has
   size
-  374,
+  418,
   374
   matches,
   and
   the
   score
   of
-  2.5343416243767767e+92.
+  1.1179433419060131e+89.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r489-906.1'
   to
   be
-  (14,
-  259).
+  (0,
+  418).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r489-906.1'
   has
   size
-  259,
+  418,
   259
   matches,
   and
   the
   score
   of
-  1.0194181919090811e+66.
+  5.060328079316974e+53.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  259
+  432
   between
   contigs
   'r475-747.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r501-874.2'
   to
   be
-  (26,
-  400).
+  (0,
+  432).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r501-874.2'
   has
   size
-  374,
+  432,
   374
   matches,
   and
   the
   score
   of
-  2.5343416243767767e+92.
+  1.35095267878763e+88.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r501-874.2'
   to
   be
-  (26,
-  400).
+  (0,
+  432).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r501-874.2'
   has
   size
-  374,
+  432,
   374
   matches,
   and
   the
   score
   of
-  2.5343416243767767e+92.
+  1.35095267878763e+88.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r352-806.0'
   to
   be
-  (46,
-  434).
+  (0,
+  455).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r352-806.0'
   has
   size
-  434,
-  434
+  455,
+  409
   matches,
   and
   the
   score
   of
-  1.4288002759092796e+106.
+  1.0005598058210194e+97.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  434
+  501
   between
   contigs
   'r306-785.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r477-875.2'
   to
   be
-  (171,
-  309).
+  (0,
+  399).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r477-875.2'
   has
   size
-  309,
-  309
+  399,
+  228
   matches,
   and
   the
   score
   of
-  4.912068917522916e+77.
+  4.275651975394713e+45.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  309
+  570
   between
   contigs
   'r306-785.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r477-875.2'
   to
   be
-  (171,
-  330).
+  (0,
+  399).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r477-875.2'
   has
   size
-  330,
-  330
+  399,
+  228
   matches,
   and
   the
   score
   of
-  1.9833730825425966e+82.
+  4.275651975394713e+45.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  330
+  570
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r477-875.2'
   to
   be
-  (171,
-  330).
+  (0,
+  399).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r477-875.2'
   has
   size
-  330,
-  330
+  399,
+  228
   matches,
   and
   the
   score
   of
-  1.9833730825425966e+82.
+  4.275651975394713e+45.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  330
+  570
   between
   contigs
   (1)

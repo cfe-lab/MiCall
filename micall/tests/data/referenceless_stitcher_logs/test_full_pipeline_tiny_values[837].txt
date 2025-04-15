@@ -44,8 +44,8 @@ BEGIN 5
   'r192-815.2'
   to
   be
-  (65,
-  620).
+  (0,
+  624).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r192-815.2'
   has
   size
-  620,
-  620
+  624,
+  559
   matches,
   and
   the
   score
   of
-  6.150452184640329e+148.
+  8.68818617586736e+129.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  620
+  689
   between
   contigs
   'r127-811.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r127-811.0'
   to
   be
-  (93,
-  509).
+  (0,
+  685).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r127-811.0'
   has
   size
-  509,
+  685,
   509
   matches,
   and
   the
   score
   of
-  3.409866536795511e+123.
+  1.4058254855540905e+110.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  509
+  778
   between
   contigs
   'r34-635.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (93,
-  509).
+  (0,
+  689).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  509,
+  689,
   509
   matches,
   and
   the
   score
   of
-  3.409866536795511e+123.
+  3.4865166547395056e+109.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  509
+  782
   between
   contigs
   'r34-635.1'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (93,
-  509).
+  (0,
+  689).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (1)
   has
   size
-  509,
+  689,
   509
   matches,
   and
   the
   score
   of
-  3.409866536795511e+123.
+  3.4865166547395056e+109.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  509
+  782
   between
   contigs
   'r34-635.1'

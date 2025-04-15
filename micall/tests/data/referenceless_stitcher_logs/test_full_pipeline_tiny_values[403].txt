@@ -44,8 +44,8 @@ BEGIN 5
   'r433-907.0'
   to
   be
-  (317,
-  310).
+  (0,
+  475).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r433-907.0'
   has
   size
-  310,
-  310
+  475,
+  158
   matches,
   and
   the
   score
   of
-  4.962749858723358e+77.
+  2.010602266193651e+17.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  310
+  792
   between
   contigs
   'r116-742.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r155-586.2'
   to
   be
-  (39,
-  471).
+  (0,
+  627).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r155-586.2'
   has
   size
-  432,
+  627,
   432
   matches,
   and
   the
   score
   of
-  7.040271329247873e+105.
+  8.13399730089062e+90.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r155-586.2'
   to
   be
-  (39,
-  471).
+  (0,
+  792).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r155-586.2'
   has
   size
-  432,
+  792,
   432
   matches,
   and
   the
   score
   of
-  7.040271329247873e+105.
+  2.3538493933691893e+78.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r155-586.2'
   to
   be
-  (39,
-  471).
+  (0,
+  792).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r155-586.2'
   has
   size
-  432,
+  792,
   432
   matches,
   and
   the
   score
   of
-  7.040271329247873e+105.
+  2.3538493933691893e+78.
 END 25
 BEGIN 26
   Contig

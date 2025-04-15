@@ -44,8 +44,8 @@ BEGIN 5
   'r275-987.1'
   to
   be
-  (21,
-  708).
+  (0,
+  713).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r275-987.1'
   has
   size
-  708,
-  708
+  713,
+  692
   matches,
   and
   the
   score
   of
-  3.2123795606854713e+159.
+  2.9123455823247608e+159.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  708
+  734
   between
   contigs
   'r254-982.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r508-854.2'
   to
   be
-  (254,
-  601).
+  (0,
+  729).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r508-854.2'
   has
   size
-  347,
+  729,
   347
   matches,
   and
   the
   score
   of
-  1.905628592185648e+86.
+  6.862826270323316e+56.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r508-854.2'
   to
   be
-  (254,
-  601).
+  (0,
+  734).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r508-854.2'
   has
   size
-  347,
+  734,
   347
   matches,
   and
   the
   score
   of
-  1.905628592185648e+86.
+  3.357254596425843e+56.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r508-854.2'
   to
   be
-  (254,
-  601).
+  (0,
+  734).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r508-854.2'
   has
   size
-  347,
+  734,
   347
   matches,
   and
   the
   score
   of
-  1.905628592185648e+86.
+  3.357254596425843e+56.
 END 25
 BEGIN 26
   Contig

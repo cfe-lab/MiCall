@@ -44,8 +44,8 @@ BEGIN 5
   'r399-782.1'
   to
   be
-  (182,
-  566).
+  (0,
+  747).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r399-782.1'
   has
   size
-  384,
+  747,
   384
   matches,
   and
   the
   score
   of
-  7.054047544551789e+94.
+  1.0162379449298567e+67.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r272-641.2'
   to
   be
-  (55,
-  425).
+  (0,
+  747).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r272-641.2'
   has
   size
-  370,
+  747,
   370
   matches,
   and
   the
   score
   of
-  3.0617269847869217e+91.
+  4.9719878449401475e+62.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r272-641.2'
   to
   be
-  (55,
-  425).
+  (0,
+  747).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r272-641.2'
   has
   size
-  370,
+  747,
   370
   matches,
   and
   the
   score
   of
-  3.0617269847869217e+91.
+  4.9719878449401475e+62.
 END 14
 BEGIN 15
   Contig

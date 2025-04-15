@@ -44,8 +44,8 @@ BEGIN 5
   'r253-840.2'
   to
   be
-  (127,
-  288).
+  (0,
+  588).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r253-840.2'
   has
   size
-  288,
+  588,
   288
   matches,
   and
   the
   score
   of
-  5.992951331800855e+72.
+  4.957790067544605e+49.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  288
+  715
   between
   contigs
   'r126-540.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r449-759.0'
   to
   be
-  (196,
-  507).
+  (0,
+  588).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r449-759.0'
   has
   size
-  311,
+  588,
   311
   matches,
   and
   the
   score
   of
-  1.0027572488259023e+78.
+  6.549026515137114e+56.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r449-759.0'
   to
   be
-  (323,
-  634).
+  (0,
+  715).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r449-759.0'
   has
   size
-  311,
+  715,
   311
   matches,
   and
   the
   score
   of
-  1.0027572488259023e+78.
+  8.231704873806857e+46.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r449-759.0'
   to
   be
-  (323,
-  634).
+  (0,
+  715).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r449-759.0'
   has
   size
-  311,
+  715,
   311
   matches,
   and
   the
   score
   of
-  1.0027572488259023e+78.
+  8.231704873806857e+46.
 END 25
 BEGIN 26
   Contig

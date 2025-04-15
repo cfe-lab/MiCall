@@ -44,8 +44,8 @@ BEGIN 5
   'r373-855.1'
   to
   be
-  (96,
-  579).
+  (0,
+  598).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r373-855.1'
   has
   size
-  483,
+  598,
   483
   matches,
   and
   the
   score
   of
-  2.7549841681376585e+117.
+  4.1414969356354905e+108.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r277-874.2'
   to
   be
-  (169,
-  238).
+  (0,
+  598).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r277-874.2'
   has
   size
-  238,
+  598,
   238
   matches,
   and
   the
   score
   of
-  1.18830533073086e+61.
+  1.3603231050449884e+33.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  238
+  767
   between
   contigs
   'r108-514.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r373-855.1'
   to
   be
-  (265,
-  748).
+  (0,
+  767).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r373-855.1'
   has
   size
-  483,
+  767,
   483
   matches,
   and
   the
   score
   of
-  2.7549841681376585e+117.
+  6.513637485081895e+95.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r373-855.1'
   to
   be
-  (265,
-  748).
+  (0,
+  767).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r373-855.1'
   has
   size
-  483,
+  767,
   483
   matches,
   and
   the
   score
   of
-  2.7549841681376585e+117.
+  6.513637485081895e+95.
 END 25
 BEGIN 26
   Contig

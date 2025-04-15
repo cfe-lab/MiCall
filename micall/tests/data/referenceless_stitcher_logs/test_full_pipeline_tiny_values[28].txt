@@ -44,8 +44,8 @@ BEGIN 5
   'r216-865.1'
   to
   be
-  (76,
-  560).
+  (0,
+  650).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r216-865.1'
   has
   size
-  560,
+  650,
   560
   matches,
   and
   the
   score
   of
-  1.2675200986533023e+135.
+  1.3109167291762118e+128.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  560
+  726
   between
   contigs
   'r140-775.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r501-950.0'
   to
   be
-  (285,
-  365).
+  (0,
+  450).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r501-950.0'
   has
   size
-  365,
-  365
+  450,
+  165
   matches,
   and
   the
   score
   of
-  3.665528579640115e+90.
+  3.9261252847367215e+21.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  365
+  735
   between
   contigs
   'r216-865.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r501-950.0'
   to
   be
-  (361,
-  365).
+  (0,
+  450).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r501-950.0'
   has
   size
-  365,
-  365
+  450,
+  89
   matches,
   and
   the
   score
   of
-  3.665528579640115e+90.
+  8.9951200379895.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  365
+  811
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r501-950.0'
   to
   be
-  (361,
-  365).
+  (0,
+  450).
 END 24
 BEGIN 25
   Overlap
@@ -329,35 +329,17 @@ BEGIN 25
   'r501-950.0'
   has
   size
-  365,
-  365
+  450,
+  89
   matches,
   and
   the
   score
   of
-  3.665528579640115e+90.
+  8.9951200379895.
 END 25
 BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  365
-  between
-  contigs
-  (1)
-  and
-  'r501-950.0',
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
   Outputting
-  1
+  2
   contigs.
-END 27
+END 26

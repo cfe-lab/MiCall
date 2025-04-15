@@ -44,8 +44,8 @@ BEGIN 5
   'r244-877.0'
   to
   be
-  (123,
-  437).
+  (0,
+  634).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r244-877.0'
   has
   size
-  437,
+  634,
   437
   matches,
   and
   the
   score
   of
-  1.1682466327466642e+107.
+  6.75224263510519e+91.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  437
+  757
   between
   contigs
   'r121-680.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r244-877.0'
   to
   be
-  (226,
-  285).
+  (0,
+  634).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r244-877.0'
   has
   size
-  285,
+  634,
   285
   matches,
   and
   the
   score
   of
-  1.449177165052371e+72.
+  1.104783909194525e+45.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  285
+  860
   between
   contigs
   'r18-528.1'
@@ -150,11 +150,11 @@ BEGIN 11
   fittest
   has
   length
-  860
+  757
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (103,
-  408).
+  (0,
+  757).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  408,
+  757,
   408
   matches,
   and
   the
   score
   of
-  2.240891988169688e+100.
+  2.913745860686866e+73.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  408
+  860
   between
   contigs
   'r18-528.1'
@@ -221,43 +221,51 @@ BEGIN 15
   (3).
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  860
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
-  860.
+  757.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  511.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +276,88 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  408
+  between
+  contigs
+  'r18-528.1'
+  and
+  (1)
+  to
+  be
+  (0,
+  757).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  'r18-528.1'
+  and
+  (1)
+  has
+  size
+  757,
+  408
+  matches,
+  and
+  the
+  score
+  of
+  2.913745860686866e+73.
+END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  860
+  between
+  contigs
+  'r18-528.1'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

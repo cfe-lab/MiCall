@@ -44,8 +44,8 @@ BEGIN 5
   'r217-912.0'
   to
   be
-  (52,
-  593).
+  (0,
+  696).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r217-912.0'
   has
   size
-  593,
+  696,
   593
   matches,
   and
   the
   score
   of
-  2.5481329333527916e+142.
+  6.508197883106083e+134.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  593
+  748
   between
   contigs
   'r165-809.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r394-990.1'
   to
   be
-  (177,
-  519).
+  (0,
+  597).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r394-990.1'
   has
   size
-  519,
-  519
+  597,
+  420
   matches,
   and
   the
   score
   of
-  4.6415507810359e+125.
+  2.400741897310705e+89.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  519
+  774
   between
   contigs
   'r217-912.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r394-990.1'
   to
   be
-  (229,
-  519).
+  (0,
+  597).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r394-990.1'
   has
   size
-  519,
-  519
+  597,
+  368
   matches,
   and
   the
   score
   of
-  4.6415507810359e+125.
+  2.8095593637585047e+73.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  519
+  826
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r394-990.1'
   to
   be
-  (229,
-  519).
+  (0,
+  597).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r394-990.1'
   has
   size
-  519,
-  519
+  597,
+  368
   matches,
   and
   the
   score
   of
-  4.6415507810359e+125.
+  2.8095593637585047e+73.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  519
+  826
   between
   contigs
   (1)

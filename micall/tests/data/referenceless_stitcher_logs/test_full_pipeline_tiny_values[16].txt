@@ -44,8 +44,8 @@ BEGIN 5
   'r371-951.1'
   to
   be
-  (185,
-  329).
+  (0,
+  581).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r371-951.1'
   has
   size
-  329,
+  581,
   329
   matches,
   and
   the
   score
   of
-  9.821769819102729e+81.
+  9.645530872581271e+62.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  329
+  766
   between
   contigs
   'r186-699.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r435-935.0'
   to
   be
-  (64,
-  565).
+  (0,
+  581).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r435-935.0'
   has
   size
-  501,
+  581,
   501
   matches,
   and
   the
   score
   of
-  5.067582463118794e+121.
+  4.198517802917028e+115.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r435-935.0'
   to
   be
-  (249,
-  750).
+  (0,
+  766).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r435-935.0'
   has
   size
-  501,
+  766,
   501
   matches,
   and
   the
   score
   of
-  5.067582463118794e+121.
+  2.0489364345262373e+101.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r435-935.0'
   to
   be
-  (249,
-  750).
+  (0,
+  766).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r435-935.0'
   has
   size
-  501,
+  766,
   501
   matches,
   and
   the
   score
   of
-  5.067582463118794e+121.
+  2.0489364345262373e+101.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r170-814.2'
   to
   be
-  (49,
-  465).
+  (0,
+  645).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r170-814.2'
   has
   size
-  465,
+  645,
   465
   matches,
   and
   the
   score
   of
-  1.491115095670708e+113.
+  5.895935334277988e+99.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  465
+  694
   between
   contigs
   'r121-634.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r256-707.0'
   to
   be
-  (86,
-  538).
+  (0,
+  645).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r256-707.0'
   has
   size
-  452,
+  645,
   452
   matches,
   and
   the
   score
   of
-  2.662356803553286e+110.
+  3.155695541574213e+95.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r256-707.0'
   to
   be
-  (135,
-  587).
+  (0,
+  694).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r256-707.0'
   has
   size
-  452,
+  694,
   452
   matches,
   and
   the
   score
   of
-  2.662356803553286e+110.
+  6.846707171794751e+91.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r256-707.0'
   to
   be
-  (135,
-  587).
+  (0,
+  694).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r256-707.0'
   has
   size
-  452,
+  694,
   452
   matches,
   and
   the
   score
   of
-  2.662356803553286e+110.
+  6.846707171794751e+91.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r365-945.0'
   to
   be
-  (260,
-  376).
+  (0,
+  581).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r365-945.0'
   has
   size
-  376,
-  376
+  581,
+  321
   matches,
   and
   the
   score
   of
-  1.0310260636178371e+93.
+  3.2961679083165764e+60.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  376
+  841
   between
   contigs
   'r105-740.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r442-814.2'
   to
   be
-  (337,
-  299).
+  (0,
+  373).
 END 8
 BEGIN 9
   Overlap
@@ -111,34 +111,16 @@ BEGIN 9
   'r442-814.2'
   has
   size
-  299,
-  299
+  373,
+  36
   matches,
   and
   the
   score
   of
-  1.7283274919769396e+75.
+  8.999999999996092.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  299
-  between
-  contigs
-  'r105-740.1'
-  and
-  'r442-814.2',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -156,16 +138,16 @@ BEGIN 11
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -181,10 +163,10 @@ BEGIN 13
   'r442-814.2'
   to
   be
-  (337,
-  710).
-END 13
-BEGIN 14
+  (0,
+  841).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,32 +175,32 @@ BEGIN 14
   'r442-814.2'
   has
   size
-  373,
+  841,
   373
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
-END 14
-BEGIN 15
+  1.6896909908106645e+56.
+END 13
+BEGIN 14
   Contig
   (1)
   covers
   contig
   'r442-814.2'
   completely.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   841.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Removed
   2
   components
@@ -231,29 +213,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Constructed
   a
   path
   of
   length
   373.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -266,8 +248,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -282,16 +264,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -307,10 +289,10 @@ BEGIN 24
   'r442-814.2'
   to
   be
-  (337,
-  710).
-END 24
-BEGIN 25
+  (0,
+  841).
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -319,25 +301,25 @@ BEGIN 25
   'r442-814.2'
   has
   size
-  373,
+  841,
   373
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
-END 25
-BEGIN 26
+  1.6896909908106645e+56.
+END 24
+BEGIN 25
   Contig
   (1)
   covers
   contig
   'r442-814.2'
   completely.
-END 26
-BEGIN 27
+END 25
+BEGIN 26
   Outputting
   1
   contigs.
-END 27
+END 26

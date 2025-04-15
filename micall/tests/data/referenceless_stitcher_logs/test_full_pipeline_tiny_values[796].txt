@@ -44,8 +44,8 @@ BEGIN 5
   'r279-790.2'
   to
   be
-  (274,
-  384).
+  (0,
+  512).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r279-790.2'
   has
   size
-  384,
-  384
+  512,
+  238
   matches,
   and
   the
   score
   of
-  7.054047544551789e+94.
+  1.0708210439914274e+40.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  384
+  786
   between
   contigs
   'r5-662.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r181-600.0'
   to
   be
-  (176,
-  596).
+  (0,
+  658).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r181-600.0'
   has
   size
-  420,
+  658,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  6.2494134505831725e+84.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r181-600.0'
   to
   be
-  (176,
-  596).
+  (0,
+  786).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r181-600.0'
   has
   size
-  420,
+  786,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  1.0001701587787934e+75.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r181-600.0'
   to
   be
-  (176,
-  596).
+  (0,
+  786).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r181-600.0'
   has
   size
-  420,
+  786,
   420
   matches,
   and
   the
   score
   of
-  1.2576855079646337e+103.
+  1.0001701587787934e+75.
 END 25
 BEGIN 26
   Contig

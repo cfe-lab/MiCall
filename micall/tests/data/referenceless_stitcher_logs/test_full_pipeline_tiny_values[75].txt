@@ -44,8 +44,8 @@ BEGIN 5
   'r128-730.1'
   to
   be
-  (58,
-  661).
+  (0,
+  751).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r128-730.1'
   has
   size
-  603,
+  751,
   603
   matches,
   and
   the
   score
   of
-  6.87694879418054e+144.
+  4.005253007341758e+133.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r70-820.2'
   to
   be
-  (66,
-  402).
+  (0,
+  751).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r70-820.2'
   has
   size
-  402,
+  751,
   402
   matches,
   and
   the
   score
   of
-  6.681656283090716e+98.
+  1.7088260526861844e+72.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  402
+  817
   between
   contigs
   'r4-471.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r128-730.1'
   to
   be
-  (124,
-  727).
+  (0,
+  817).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r128-730.1'
   has
   size
-  603,
+  817,
   603
   matches,
   and
   the
   score
   of
-  6.87694879418054e+144.
+  2.7399500378894473e+128.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r128-730.1'
   to
   be
-  (124,
-  727).
+  (0,
+  817).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r128-730.1'
   has
   size
-  603,
+  817,
   603
   matches,
   and
   the
   score
   of
-  6.87694879418054e+144.
+  2.7399500378894473e+128.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r702-985.0'
   to
   be
-  (462,
-  746).
+  (0,
+  759).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r702-985.0'
   has
   size
-  284,
+  759,
   284
   matches,
   and
   the
   score
   of
-  7.165351873119225e+71.
+  1.0912744806156939e+35.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r723-986.2'
   to
   be
-  (483,
-  747).
+  (0,
+  759).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r723-986.2'
   has
   size
-  264,
+  759,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  5.077450340076293e+28.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r723-986.2'
   to
   be
-  (483,
-  747).
+  (0,
+  759).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r723-986.2'
   has
   size
-  264,
+  759,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  5.077450340076293e+28.
 END 14
 BEGIN 15
   Contig

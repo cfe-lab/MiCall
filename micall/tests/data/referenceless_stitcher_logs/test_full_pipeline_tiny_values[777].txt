@@ -44,8 +44,8 @@ BEGIN 5
   'r260-782.0'
   to
   be
-  (250,
-  301).
+  (0,
+  523).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r260-782.0'
   has
   size
-  301,
-  301
+  523,
+  273
   matches,
   and
   the
   score
   of
-  7.06134196748755e+75.
+  9.99544711245201e+49.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  301
+  773
   between
   contigs
   'r10-560.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r10-560.2'
   to
   be
-  (1,
-  455).
+  (0,
+  551).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r10-560.2'
   has
   size
-  455,
+  551,
   455
   matches,
   and
   the
   score
   of
-  1.087476653669479e+111.
+  5.369822149514652e+103.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  455
+  552
   between
   contigs
   'r9-464.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r260-782.0'
   to
   be
-  (251,
-  301).
+  (0,
+  523).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r260-782.0'
   has
   size
-  301,
-  301
+  523,
+  272
   matches,
   and
   the
   score
   of
-  7.06134196748755e+75.
+  4.892879663173043e+49.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  301
+  774
   between
   contigs
   (2)
@@ -317,8 +317,8 @@ BEGIN 24
   'r260-782.0'
   to
   be
-  (251,
-  301).
+  (0,
+  523).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r260-782.0'
   has
   size
-  301,
-  301
+  523,
+  272
   matches,
   and
   the
   score
   of
-  7.06134196748755e+75.
+  4.892879663173043e+49.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  301
+  774
   between
   contigs
   (2)

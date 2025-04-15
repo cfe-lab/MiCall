@@ -44,8 +44,8 @@ BEGIN 5
   'r326-744.2'
   to
   be
-  (65,
-  336).
+  (0,
+  419).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r326-744.2'
   has
   size
-  336,
+  419,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  2.569331792468819e+77.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  336
+  484
   between
   contigs
   'r261-661.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r326-744.2'
   to
   be
-  (92,
-  240).
+  (0,
+  419).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r326-744.2'
   has
   size
-  240,
+  419,
   240
   matches,
   and
   the
   score
   of
-  4.881648102866337e+61.
+  6.473005453007938e+47.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  240
+  511
   between
   contigs
   'r234-565.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (27,
-  305).
+  (0,
+  484).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  305,
+  484,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  9.407650671621049e+62.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  305
+  511
   between
   contigs
   'r234-565.1'

@@ -44,8 +44,8 @@ BEGIN 5
   'r243-759.1'
   to
   be
-  (73,
-  590).
+  (0,
+  633).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r243-759.1'
   has
   size
-  517,
+  633,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  1.7454346033165052e+116.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r170-802.0'
   to
   be
-  (58,
-  222).
+  (0,
+  633).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r170-802.0'
   has
   size
-  222,
+  633,
   222
   matches,
   and
   the
   score
   of
-  2.323990820571997e+57.
+  3.0474637777055565e+25.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  222
+  691
   between
   contigs
   'r112-391.2'
@@ -171,8 +171,8 @@ BEGIN 13
   'r243-759.1'
   to
   be
-  (131,
-  648).
+  (0,
+  691).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r243-759.1'
   has
   size
-  517,
+  691,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  9.539905848950149e+111.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r243-759.1'
   to
   be
-  (131,
-  648).
+  (0,
+  691).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r243-759.1'
   has
   size
-  517,
+  691,
   517
   matches,
   and
   the
   score
   of
-  2.2926181968659492e+125.
+  9.539905848950149e+111.
 END 25
 BEGIN 26
   Contig

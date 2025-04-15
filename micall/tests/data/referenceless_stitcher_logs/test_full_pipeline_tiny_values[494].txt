@@ -44,8 +44,8 @@ BEGIN 5
   'r476-930.0'
   to
   be
-  (116,
-  246).
+  (0,
+  455).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r476-930.0'
   has
   size
-  246,
+  455,
   246
   matches,
   and
   the
   score
   of
-  8.449773682918507e+62.
+  7.666718279546126e+46.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  246
+  571
   between
   contigs
   'r360-721.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r476-930.0'
   to
   be
-  (5,
-  357).
+  (0,
+  455).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r476-930.0'
   has
   size
-  357,
+  455,
   357
   matches,
   and
   the
   score
   of
-  5.338593919506374e+88.
+  1.2417553817221778e+81.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  357
+  460
   between
   contigs
   'r471-832.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (111,
-  251).
+  (0,
+  460).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  251,
+  460,
   251
   matches,
   and
   the
   score
   of
-  1.4414282368544858e+64.
+  1.3365957485032744e+48.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  251
+  571
   between
   contigs
   'r360-721.1'
@@ -317,8 +317,8 @@ BEGIN 24
   (2)
   to
   be
-  (111,
-  251).
+  (0,
+  460).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (2)
   has
   size
-  251,
+  460,
   251
   matches,
   and
   the
   score
   of
-  1.4414282368544858e+64.
+  1.3365957485032744e+48.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  251
+  571
   between
   contigs
   'r360-721.1'

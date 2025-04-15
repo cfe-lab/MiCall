@@ -44,8 +44,8 @@ BEGIN 5
   'r247-817.1'
   to
   be
-  (181,
-  381).
+  (0,
+  571).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r247-817.1'
   has
   size
-  381,
+  571,
   381
   matches,
   and
   the
   score
   of
-  1.720202925156099e+94.
+  3.7808084391474105e+79.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  381
+  752
   between
   contigs
   'r66-627.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r247-817.1'
   to
   be
-  (135,
-  382).
+  (0,
+  571).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r247-817.1'
   has
   size
-  382,
+  571,
   382
   matches,
   and
   the
   score
   of
-  1.7345577372177434e+94.
+  7.657332418744593e+79.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  382
+  706
   between
   contigs
   'r112-628.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (46,
-  516).
+  (0,
+  706).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  516,
+  706,
   516
   matches,
   and
   the
   score
   of
-  1.1393136223631754e+125.
+  2.8687993030862792e+110.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  516
+  752
   between
   contigs
   'r66-627.0'

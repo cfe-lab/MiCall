@@ -44,8 +44,8 @@ BEGIN 5
   'r326-876.2'
   to
   be
-  (100,
-  350).
+  (0,
+  551).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r326-876.2'
   has
   size
-  350,
+  551,
   350
   matches,
   and
   the
   score
   of
-  7.833597172128599e+86.
+  3.9594982318158775e+71.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  350
+  651
   between
   contigs
   'r226-675.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r534-824.0'
   to
   be
-  (208,
-  499).
+  (0,
+  551).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r534-824.0'
   has
   size
-  291,
+  551,
   291
   matches,
   and
   the
   score
   of
-  2.477471088535763e+73.
+  2.581886334324788e+53.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r534-824.0'
   to
   be
-  (308,
-  599).
+  (0,
+  651).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r534-824.0'
   has
   size
-  291,
+  651,
   291
   matches,
   and
   the
   score
   of
-  2.477471088535763e+73.
+  4.624314324820809e+45.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r534-824.0'
   to
   be
-  (308,
-  599).
+  (0,
+  651).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r534-824.0'
   has
   size
-  291,
+  651,
   291
   matches,
   and
   the
   score
   of
-  2.477471088535763e+73.
+  4.624314324820809e+45.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r344-806.2'
   to
   be
-  (277,
-  392).
+  (0,
+  463).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r344-806.2'
   has
   size
-  392,
-  392
+  463,
+  186
   matches,
   and
   the
   score
   of
-  4.819519351096359e+96.
+  2.486302815303993e+27.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  392
+  740
   between
   contigs
   'r67-735.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r67-735.0'
   to
   be
-  (13,
-  313).
+  (0,
+  669).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r67-735.0'
   has
   size
-  313,
+  669,
   313
   matches,
   and
   the
   score
   of
-  2.046772255343918e+78.
+  1.7880007165615548e+51.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  313
+  682
   between
   contigs
   'r54-379.1'
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  740
+  682
   and
   consists
   of
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  313
+  392
   between
   contigs
-  'r54-379.1'
+  (2)
   and
-  (1)
+  'r344-806.2'
   to
   be
-  (13,
-  313).
+  (0,
+  463).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r54-379.1'
+  (2)
   and
-  (1)
+  'r344-806.2'
   has
   size
-  313,
-  313
+  463,
+  173
   matches,
   and
   the
   score
   of
-  2.046772255343918e+78.
+  1.6386814031558642e+23.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  313
+  753
   between
   contigs
-  'r54-379.1'
+  (2)
   and
-  (1),
+  'r344-806.2',
   resulting
   in
   contig
@@ -226,7 +226,7 @@ BEGIN 16
   path
   of
   length
-  740.
+  682.
 END 16
 BEGIN 17
   Removed
@@ -261,7 +261,7 @@ BEGIN 20
   path
   of
   length
-  326.
+  463.
 END 20
 BEGIN 21
   Removed
@@ -309,34 +309,34 @@ BEGIN 24
   overlap
   of
   size
-  313
+  392
   between
   contigs
-  'r54-379.1'
+  (2)
   and
-  (1)
+  'r344-806.2'
   to
   be
-  (13,
-  313).
+  (0,
+  463).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  'r54-379.1'
+  (2)
   and
-  (1)
+  'r344-806.2'
   has
   size
-  313,
-  313
+  463,
+  173
   matches,
   and
   the
   score
   of
-  2.046772255343918e+78.
+  1.6386814031558642e+23.
 END 25
 BEGIN 26
   Found
@@ -345,12 +345,12 @@ BEGIN 26
   overlap
   of
   size
-  313
+  753
   between
   contigs
-  'r54-379.1'
+  (2)
   and
-  (1),
+  'r344-806.2',
   resulting
   in
   contig

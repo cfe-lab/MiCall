@@ -44,8 +44,8 @@ BEGIN 5
   'r221-616.1'
   to
   be
-  (197,
-  395).
+  (0,
+  396).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r221-616.1'
   has
   size
-  395,
-  395
+  396,
+  199
   matches,
   and
   the
   score
   of
-  1.9749573801967826e+97.
+  7.528790975164809e+36.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  395
+  593
   between
   contigs
   'r24-615.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r45-339.2'
   to
   be
-  (21,
-  316).
+  (0,
+  592).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r45-339.2'
   has
   size
-  295,
+  592,
   295
   matches,
   and
   the
   score
   of
-  2.0698818862705537e+74.
+  3.600126958041811e+51.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r45-339.2'
   to
   be
-  (21,
-  316).
+  (0,
+  593).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r45-339.2'
   has
   size
-  295,
+  593,
   295
   matches,
   and
   the
   score
   of
-  2.0698818862705537e+74.
+  1.7913520753876827e+51.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r45-339.2'
   to
   be
-  (21,
-  316).
+  (0,
+  593).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r45-339.2'
   has
   size
-  295,
+  593,
   295
   matches,
   and
   the
   score
   of
-  2.0698818862705537e+74.
+  1.7913520753876827e+51.
 END 25
 BEGIN 26
   Contig

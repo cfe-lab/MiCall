@@ -44,8 +44,8 @@ BEGIN 5
   'r157-874.2'
   to
   be
-  (115,
-  378).
+  (0,
+  718).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r157-874.2'
   has
   size
-  378,
+  718,
   378
   matches,
   and
   the
   score
   of
-  2.0970307524434095e+93.
+  2.0590336539106964e+67.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  378
+  833
   between
   contigs
   'r42-534.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r328-665.0'
   to
   be
-  (171,
-  509).
+  (0,
+  718).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r328-665.0'
   has
   size
-  338,
+  718,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  9.524785115912123e+54.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r328-665.0'
   to
   be
-  (286,
-  624).
+  (0,
+  833).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r328-665.0'
   has
   size
-  338,
+  833,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  1.9882943342081046e+46.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r328-665.0'
   to
   be
-  (286,
-  624).
+  (0,
+  833).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r328-665.0'
   has
   size
-  338,
+  833,
   338
   matches,
   and
   the
   score
   of
-  1.3696441704709212e+84.
+  1.9882943342081046e+46.
 END 25
 BEGIN 26
   Contig

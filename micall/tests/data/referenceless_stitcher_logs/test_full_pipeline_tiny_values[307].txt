@@ -44,8 +44,8 @@ BEGIN 5
   'r59-433.2'
   to
   be
-  (37,
-  412).
+  (0,
+  573).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r59-433.2'
   has
   size
-  375,
+  573,
   375
   matches,
   and
   the
   score
   of
-  5.1117822283669277e+92.
+  5.439581649814794e+77.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r84-379.0'
   to
   be
-  (62,
-  358).
+  (0,
+  573).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r84-379.0'
   has
   size
-  296,
+  573,
   296
   matches,
   and
   the
   score
   of
-  4.184532592632119e+74.
+  1.2862411271719779e+53.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r84-379.0'
   to
   be
-  (62,
-  358).
+  (0,
+  573).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r84-379.0'
   has
   size
-  296,
+  573,
   296
   matches,
   and
   the
   score
   of
-  4.184532592632119e+74.
+  1.2862411271719779e+53.
 END 14
 BEGIN 15
   Contig

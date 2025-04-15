@@ -44,8 +44,8 @@ BEGIN 5
   'r258-983.0'
   to
   be
-  (48,
-  362).
+  (0,
+  726).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r258-983.0'
   has
   size
-  362,
+  726,
   362
   matches,
   and
   the
   score
   of
-  4.4635240435144426e+89.
+  5.913433280981559e+61.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  362
+  774
   between
   contigs
   'r210-619.2'
@@ -100,7 +100,7 @@ BEGIN 8
   to
   be
   (0,
-  44).
+  726).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r7-301.1'
   has
   size
-  295,
+  726,
   44
   matches,
   and
   the
   score
   of
-  8.999856911874128.
+  9.0.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   (1)
   to
   be
-  (203,
-  92).
+  (0,
+  622).
 END 12
 BEGIN 13
   Overlap
@@ -175,14 +175,14 @@ BEGIN 13
   (1)
   has
   size
-  92,
+  622,
   92
   matches,
   and
   the
   score
   of
-  8.694310662380813e+26.
+  8.99999999999991.
 END 13
 BEGIN 14
   Found
@@ -191,7 +191,7 @@ BEGIN 14
   overlap
   of
   size
-  92
+  825
   between
   contigs
   'r7-301.1'
@@ -299,8 +299,8 @@ BEGIN 23
   (1)
   to
   be
-  (203,
-  92).
+  (0,
+  622).
 END 23
 BEGIN 24
   Overlap
@@ -311,35 +311,17 @@ BEGIN 24
   (1)
   has
   size
-  92,
+  622,
   92
   matches,
   and
   the
   score
   of
-  8.694310662380813e+26.
+  8.99999999999991.
 END 24
 BEGIN 25
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  92
-  between
-  contigs
-  'r7-301.1'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (3).
-END 25
-BEGIN 26
   Outputting
-  1
+  2
   contigs.
-END 26
+END 25

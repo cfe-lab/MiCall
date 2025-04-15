@@ -44,8 +44,8 @@ BEGIN 5
   'r292-989.2'
   to
   be
-  (53,
-  681).
+  (0,
+  698).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r292-989.2'
   has
   size
-  681,
-  681
+  698,
+  645
   matches,
   and
   the
   score
   of
-  2.841630210288948e+159.
+  2.076359344629419e+150.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  681
+  751
   between
   contigs
   'r239-972.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r540-857.1'
   to
   be
-  (301,
-  619).
+  (0,
+  734).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r540-857.1'
   has
   size
-  318,
+  734,
   318
   matches,
   and
   the
   score
   of
-  3.443906909036704e+79.
+  3.4777448495617674e+47.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r540-857.1'
   to
   be
-  (301,
-  619).
+  (0,
+  751).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r540-857.1'
   has
   size
-  318,
+  751,
   318
   matches,
   and
   the
   score
   of
-  3.443906909036704e+79.
+  1.980464024319927e+46.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r540-857.1'
   to
   be
-  (301,
-  619).
+  (0,
+  751).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r540-857.1'
   has
   size
-  318,
+  751,
   318
   matches,
   and
   the
   score
   of
-  3.443906909036704e+79.
+  1.980464024319927e+46.
 END 25
 BEGIN 26
   Contig

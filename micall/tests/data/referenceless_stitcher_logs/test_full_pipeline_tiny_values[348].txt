@@ -44,8 +44,8 @@ BEGIN 5
   'r535-899.1'
   to
   be
-  (289,
-  654).
+  (0,
+  724).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r535-899.1'
   has
   size
-  365,
+  724,
   365
   matches,
   and
   the
   score
   of
-  3.665528579640115e+90.
+  1.0019228722485082e+63.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r606-941.2'
   to
   be
-  (360,
-  696).
+  (0,
+  724).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r606-941.2'
   has
   size
-  336,
+  724,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  1.1147419543141993e+54.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r606-941.2'
   to
   be
-  (360,
-  696).
+  (0,
+  724).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r606-941.2'
   has
   size
-  336,
+  724,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  1.1147419543141993e+54.
 END 14
 BEGIN 15
   Contig

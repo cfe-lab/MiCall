@@ -44,8 +44,8 @@ BEGIN 5
   'r39-695.0'
   to
   be
-  (9,
-  322).
+  (0,
+  657).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r39-695.0'
   has
   size
-  322,
+  657,
   322
   matches,
   and
   the
   score
   of
-  2.866700519935748e+80.
+  9.263443965850153e+54.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  322
+  666
   between
   contigs
   'r30-360.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r222-517.2'
   to
   be
-  (183,
-  479).
+  (0,
+  657).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r222-517.2'
   has
   size
-  296,
+  657,
   296
   matches,
   and
   the
   score
   of
-  4.184532592632119e+74.
+  8.033932447077478e+46.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r222-517.2'
   to
   be
-  (192,
-  488).
+  (0,
+  666).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r222-517.2'
   has
   size
-  296,
+  666,
   296
   matches,
   and
   the
   score
   of
-  4.184532592632119e+74.
+  9.555663069421356e+45.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r222-517.2'
   to
   be
-  (192,
-  488).
+  (0,
+  666).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r222-517.2'
   has
   size
-  296,
+  666,
   296
   matches,
   and
   the
   score
   of
-  4.184532592632119e+74.
+  9.555663069421356e+45.
 END 25
 BEGIN 26
   Contig

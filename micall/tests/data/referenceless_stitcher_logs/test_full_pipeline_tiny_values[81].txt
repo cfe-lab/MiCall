@@ -44,8 +44,8 @@ BEGIN 5
   'r377-928.1'
   to
   be
-  (307,
-  68).
+  (146,
+  229).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r377-928.1'
   has
   size
-  68,
+  229,
   68
   matches,
   and
   the
   score
   of
-  1.24623429006501e+21.
+  6446351.717432028.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  68
-  between
-  contigs
-  'r70-444.2'
-  and
-  'r377-928.1',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r528-900.0'
   to
   be
-  (151,
-  524).
-END 8
-BEGIN 9
+  (0,
+  552).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,24 +93,24 @@ BEGIN 9
   'r528-900.0'
   has
   size
-  373,
+  552,
   373
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
-END 9
-BEGIN 10
+  4.510905805650015e+78.
+END 8
+BEGIN 9
   Contig
   'r377-928.1'
   covers
   contig
   'r528-900.0'
   completely.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -140,22 +122,22 @@ BEGIN 11
   fittest
   has
   length
-  859
+  552
   and
   consists
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -163,52 +145,44 @@ BEGIN 13
   overlap
   of
   size
-  373
+  68
   between
   contigs
-  (1)
+  'r70-444.2'
   and
-  'r528-900.0'
+  'r377-928.1'
   to
   be
-  (458,
-  831).
-END 13
-BEGIN 14
+  (146,
+  229).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (1)
+  'r70-444.2'
   and
-  'r528-900.0'
+  'r377-928.1'
   has
   size
-  373,
-  373
+  229,
+  68
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r528-900.0'
-  completely.
-END 15
-BEGIN 16
+  6446351.717432028.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  859.
-END 16
-BEGIN 17
+  552.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -221,29 +195,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  373.
-END 20
-BEGIN 21
+  375.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -256,8 +230,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -272,16 +246,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -289,45 +263,37 @@ BEGIN 24
   overlap
   of
   size
-  373
+  68
   between
   contigs
-  (1)
+  'r70-444.2'
   and
-  'r528-900.0'
+  'r377-928.1'
   to
   be
-  (458,
-  831).
-END 24
-BEGIN 25
+  (146,
+  229).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  (1)
+  'r70-444.2'
   and
-  'r528-900.0'
+  'r377-928.1'
   has
   size
-  373,
-  373
+  229,
+  68
   matches,
   and
   the
   score
   of
-  2.5129163081324813e+92.
-END 25
-BEGIN 26
-  Contig
-  (1)
-  covers
-  contig
-  'r528-900.0'
-  completely.
-END 26
-BEGIN 27
+  6446351.717432028.
+END 23
+BEGIN 24
   Outputting
-  1
+  2
   contigs.
-END 27
+END 24

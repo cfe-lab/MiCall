@@ -44,8 +44,8 @@ BEGIN 5
   'r184-850.2'
   to
   be
-  (83,
-  208).
+  (0,
+  667).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r184-850.2'
   has
   size
-  208,
+  667,
   208
   matches,
   and
   the
   score
   of
-  1.8437182156211e+54.
+  9.857826424595068e+17.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  208
+  750
   between
   contigs
   'r101-391.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r215-484.1'
   to
   be
-  (31,
-  301).
+  (0,
+  667).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r215-484.1'
   has
   size
-  270,
+  667,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  7.207771363457719e+37.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r215-484.1'
   to
   be
-  (114,
-  384).
+  (0,
+  750).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r215-484.1'
   has
   size
-  270,
+  750,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  1.7816301744808622e+31.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r215-484.1'
   to
   be
-  (114,
-  384).
+  (0,
+  750).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r215-484.1'
   has
   size
-  270,
+  750,
   270
   matches,
   and
   the
   score
   of
-  2.979044776644523e+68.
+  1.7816301744808622e+31.
 END 25
 BEGIN 26
   Contig

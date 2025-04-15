@@ -44,8 +44,8 @@ BEGIN 5
   'r207-898.2'
   to
   be
-  (93,
-  528).
+  (0,
+  692).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r207-898.2'
   has
   size
-  528,
+  692,
   528
   matches,
   and
   the
   score
   of
-  6.273025503046357e+127.
+  2.143195624955081e+115.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  528
+  785
   between
   contigs
   'r114-734.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r380-965.1'
   to
   be
-  (173,
-  519).
+  (0,
+  586).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r380-965.1'
   has
   size
-  519,
-  519
+  586,
+  413
   matches,
   and
   the
   score
   of
-  4.6415507810359e+125.
+  1.4266898643953718e+88.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  519
+  759
   between
   contigs
   'r207-898.2'
@@ -150,11 +150,11 @@ BEGIN 11
   fittest
   has
   length
-  852
+  785
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -181,8 +181,8 @@ BEGIN 13
   'r380-965.1'
   to
   be
-  (266,
-  519).
+  (0,
+  586).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r380-965.1'
   has
   size
-  519,
-  519
+  586,
+  320
   matches,
   and
   the
   score
   of
-  4.6415507810359e+125.
+  3.9690892041751528e+59.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  519
+  852
   between
   contigs
   (1)
@@ -221,43 +221,51 @@ BEGIN 15
   (3).
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  852
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
-  852.
+  785.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  586.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +276,88 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  519
+  between
+  contigs
+  (1)
+  and
+  'r380-965.1'
+  to
+  be
+  (0,
+  586).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r380-965.1'
+  has
+  size
+  586,
+  320
+  matches,
+  and
+  the
+  score
+  of
+  3.9690892041751528e+59.
+END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  852
+  between
+  contigs
+  (1)
+  and
+  'r380-965.1',
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

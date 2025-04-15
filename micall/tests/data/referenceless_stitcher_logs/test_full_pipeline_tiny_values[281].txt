@@ -44,8 +44,8 @@ BEGIN 5
   'r168-892.2'
   to
   be
-  (39,
-  662).
+  (0,
+  725).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r168-892.2'
   has
   size
-  662,
+  725,
   662
   matches,
   and
   the
   score
   of
-  1.6243411040072521e+158.
+  2.2814030628410307e+153.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  662
+  764
   between
   contigs
   'r129-829.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r308-633.0'
   to
   be
-  (140,
-  466).
+  (0,
+  725).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r308-633.0'
   has
   size
-  326,
+  725,
   326
   matches,
   and
   the
   score
   of
-  2.3850541047003385e+81.
+  4.432480589429118e+50.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r308-633.0'
   to
   be
-  (179,
-  505).
+  (0,
+  764).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r308-633.0'
   has
   size
-  326,
+  764,
   326
   matches,
   and
   the
   score
   of
-  2.3850541047003385e+81.
+  7.076128229114014e+47.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r308-633.0'
   to
   be
-  (179,
-  505).
+  (0,
+  764).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r308-633.0'
   has
   size
-  326,
+  764,
   326
   matches,
   and
   the
   score
   of
-  2.3850541047003385e+81.
+  7.076128229114014e+47.
 END 25
 BEGIN 26
   Contig

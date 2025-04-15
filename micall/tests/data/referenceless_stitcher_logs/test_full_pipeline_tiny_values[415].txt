@@ -44,8 +44,8 @@ BEGIN 5
   'r548-940.2'
   to
   be
-  (340,
-  181).
+  (0,
+  393).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r548-940.2'
   has
   size
-  181,
-  181
+  393,
+  53
   matches,
   and
   the
   score
   of
-  1.1278079246769216e+48.
+  8.99999999199999.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  181
-  between
-  contigs
-  'r208-728.1'
-  and
-  'r548-940.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r518-845.0'
   to
   be
-  (310,
-  211).
-END 8
-BEGIN 9
+  (0,
+  328).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,59 +93,60 @@ BEGIN 9
   'r518-845.0'
   has
   size
-  211,
-  211
+  328,
+  18
   matches,
   and
   the
   score
   of
-  7.719669011833917e+54.
+  8.999999999999917.
+END 8
+BEGIN 9
+  Constructed
+  a
+  path
+  of
+  length
+  521.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  211
-  between
-  contigs
-  'r208-728.1'
-  and
-  'r518-845.0',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 10
 BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  733
-  and
-  consists
-  of
-  3
-  parts.
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 11
 BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
+  Initial
+  overlap
+  stitching
+  produced
+  3
+  contigs.
 END 12
 BEGIN 13
   Calculated
@@ -173,112 +156,166 @@ BEGIN 13
   overlap
   of
   size
-  298
+  181
   between
   contigs
-  (2)
+  'r208-728.1'
   and
   'r548-940.2'
   to
   be
-  (340,
-  298).
+  (0,
+  393).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r208-728.1'
   and
   'r548-940.2'
   has
   size
-  298,
+  393,
+  53
+  matches,
+  and
+  the
+  score
+  of
+  8.99999999199999.
+END 14
+BEGIN 15
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  211
+  between
+  contigs
+  'r208-728.1'
+  and
+  'r518-845.0'
+  to
+  be
+  (0,
+  328).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r208-728.1'
+  and
+  'r518-845.0'
+  has
+  size
+  328,
+  18
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999999917.
+END 16
+BEGIN 17
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  298
+  between
+  contigs
+  'r518-845.0'
+  and
+  'r548-940.2'
+  to
+  be
+  (0,
+  393).
+END 17
+BEGIN 18
+  Overlap
+  between
+  contigs
+  'r518-845.0'
+  and
+  'r548-940.2'
+  has
+  size
+  393,
   298
   matches,
   and
   the
   score
   of
-  8.550117574725871e+74.
-END 14
-BEGIN 15
+  7.625422694081481e+67.
+END 18
+BEGIN 19
   Found
   a
   significant
   overlap
   of
   size
-  298
+  423
   between
   contigs
-  (2)
+  'r518-845.0'
   and
   'r548-940.2',
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  733
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
-  Constructed
-  a
-  path
-  of
-  length
-  733.
-END 18
-BEGIN 19
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
+  (1).
 END 19
 BEGIN 20
-  Initial
+  Calculated
+  cutoff
+  for
+  an
   overlap
-  stitching
-  produced
-  1
-  contigs.
+  of
+  size
+  211
+  between
+  contigs
+  'r208-728.1'
+  and
+  (1)
+  to
+  be
+  (0,
+  423).
 END 20
 BEGIN 21
-  Outputting
-  1
-  contigs.
+  Overlap
+  between
+  contigs
+  'r208-728.1'
+  and
+  (1)
+  has
+  size
+  423,
+  113
+  matches,
+  and
+  the
+  score
+  of
+  265616.49761850387.
 END 21
+BEGIN 22
+  Outputting
+  2
+  contigs.
+END 22

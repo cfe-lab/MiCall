@@ -44,8 +44,8 @@ BEGIN 5
   'r304-811.2'
   to
   be
-  (279,
-  189).
+  (0,
+  508).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r304-811.2'
   has
   size
-  189,
+  508,
   189
   matches,
   and
   the
   score
   of
-  8.287847676461768e+49.
+  6.767515853241613e+24.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  189
+  787
   between
   contigs
   'r25-492.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r304-811.2'
   to
   be
-  (203,
-  61).
+  (63,
+  201).
 END 8
 BEGIN 9
   Overlap
@@ -111,34 +111,16 @@ BEGIN 9
   'r304-811.2'
   has
   size
-  61,
+  201,
   61
   matches,
   and
   the
   score
   of
-  2.7356630266103996e+19.
+  6292471.994640968.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  61
-  between
-  contigs
-  'r101-364.0'
-  and
-  'r304-811.2',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -156,16 +138,16 @@ BEGIN 11
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -181,10 +163,10 @@ BEGIN 13
   'r101-364.0'
   to
   be
-  (76,
-  340).
-END 13
-BEGIN 14
+  (0,
+  787).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,32 +175,32 @@ BEGIN 14
   'r101-364.0'
   has
   size
-  264,
+  787,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
-END 14
-BEGIN 15
+  2.9602423679360328e+26.
+END 13
+BEGIN 14
   Contig
   (1)
   covers
   contig
   'r101-364.0'
   completely.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   787.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Removed
   2
   components
@@ -231,29 +213,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Constructed
   a
   path
   of
   length
   264.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -266,8 +248,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -282,16 +264,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -307,10 +289,10 @@ BEGIN 24
   'r101-364.0'
   to
   be
-  (76,
-  340).
-END 24
-BEGIN 25
+  (0,
+  787).
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -319,25 +301,25 @@ BEGIN 25
   'r101-364.0'
   has
   size
-  264,
+  787,
   264
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
-END 25
-BEGIN 26
+  2.9602423679360328e+26.
+END 24
+BEGIN 25
   Contig
   (1)
   covers
   contig
   'r101-364.0'
   completely.
-END 26
-BEGIN 27
+END 25
+BEGIN 26
   Outputting
   1
   contigs.
-END 27
+END 26

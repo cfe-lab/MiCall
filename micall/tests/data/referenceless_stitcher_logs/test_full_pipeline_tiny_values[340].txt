@@ -44,8 +44,8 @@ BEGIN 5
   'r238-989.1'
   to
   be
-  (231,
-  471).
+  (0,
+  752).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r238-989.1'
   has
   size
-  471,
+  752,
   471
   matches,
   and
   the
   score
   of
-  4.969128834668857e+114.
+  2.327133049826762e+93.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  471
+  983
   between
   contigs
   'r7-708.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r238-989.1'
   to
   be
-  (99,
-  538).
+  (0,
+  752).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r238-989.1'
   has
   size
-  538,
+  752,
   538
   matches,
   and
   the
   score
   of
-  8.52005478411159e+129.
+  6.499744006540974e+113.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  538
+  851
   between
   contigs
   'r139-775.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (132,
-  570).
+  (0,
+  851).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  570,
+  851,
   570
   matches,
   and
   the
   score
   of
-  1.7157321603543824e+137.
+  9.01283795417595e+115.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  570
+  983
   between
   contigs
   'r7-708.0'

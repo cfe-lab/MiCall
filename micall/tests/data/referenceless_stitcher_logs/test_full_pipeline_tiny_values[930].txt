@@ -44,8 +44,8 @@ BEGIN 5
   'r145-861.1'
   to
   be
-  (10,
-  519).
+  (0,
+  717).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r145-861.1'
   has
   size
-  519,
+  717,
   519
   matches,
   and
   the
   score
   of
-  4.6415507810359e+125.
+  5.763823541215059e+110.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  519
+  727
   between
   contigs
   'r135-663.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r194-520.2'
   to
   be
-  (49,
-  376).
+  (0,
+  717).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r194-520.2'
   has
   size
-  327,
+  717,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  7.530229874780946e+51.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r194-520.2'
   to
   be
-  (59,
-  386).
+  (0,
+  727).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r194-520.2'
   has
   size
-  327,
+  727,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  8.961044454731478e+50.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r194-520.2'
   to
   be
-  (59,
-  386).
+  (0,
+  727).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r194-520.2'
   has
   size
-  327,
+  727,
   327
   matches,
   and
   the
   score
   of
-  4.816723752369294e+81.
+  8.961044454731478e+50.
 END 25
 BEGIN 26
   Contig

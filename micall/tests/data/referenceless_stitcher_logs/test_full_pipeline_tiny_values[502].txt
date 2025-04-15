@@ -44,8 +44,8 @@ BEGIN 5
   'r371-927.0'
   to
   be
-  (153,
-  378).
+  (0,
+  557).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r371-927.0'
   has
   size
-  378,
+  557,
   378
   matches,
   and
   the
   score
   of
-  2.0970307524434095e+93.
+  3.789837860766329e+79.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  378
+  710
   between
   contigs
   'r218-748.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r371-927.0'
   to
   be
-  (345,
-  183).
+  (0,
+  557).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r371-927.0'
   has
   size
-  183,
+  557,
   183
   matches,
   and
   the
   score
   of
-  2.336254065781434e+48.
+  9.158072810510446e+18.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  183
+  902
   between
   contigs
   'r26-553.1'
@@ -150,11 +150,11 @@ BEGIN 11
   fittest
   has
   length
-  902
+  710
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (192,
-  336).
+  (0,
+  710).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  336,
+  710,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  9.508583477066475e+54.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  336
+  902
   between
   contigs
   'r26-553.1'
@@ -221,43 +221,51 @@ BEGIN 15
   (3).
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  902
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
-  902.
+  710.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  528.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +276,88 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  336
+  between
+  contigs
+  'r26-553.1'
+  and
+  (1)
+  to
+  be
+  (0,
+  710).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  'r26-553.1'
+  and
+  (1)
+  has
+  size
+  710,
+  336
+  matches,
+  and
+  the
+  score
+  of
+  9.508583477066475e+54.
+END 25
+BEGIN 26
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  902
+  between
+  contigs
+  'r26-553.1'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (4).
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

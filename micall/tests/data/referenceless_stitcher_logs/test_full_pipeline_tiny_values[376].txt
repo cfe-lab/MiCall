@@ -44,8 +44,8 @@ BEGIN 5
   'r113-656.0'
   to
   be
-  (79,
-  480).
+  (0,
+  544).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r113-656.0'
   has
   size
-  480,
-  480
+  544,
+  465
   matches,
   and
   the
   score
   of
-  6.753031889314215e+116.
+  2.4482771161037492e+107.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  480
+  623
   between
   contigs
   'r34-592.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r268-807.2'
   to
   be
-  (234,
-  325).
+  (0,
+  540).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r268-807.2'
   has
   size
-  325,
-  325
+  540,
+  306
   matches,
   and
   the
   score
   of
-  2.3619006179242557e+81.
+  9.377737282139107e+58.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  325
+  774
   between
   contigs
   'r34-592.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r268-807.2'
   to
   be
-  (234,
-  389).
+  (0,
+  540).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r268-807.2'
   has
   size
-  389,
-  389
+  540,
+  306
   matches,
   and
   the
   score
   of
-  1.1758944536308546e+96.
+  9.377737282139107e+58.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  389
+  774
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r268-807.2'
   to
   be
-  (234,
-  389).
+  (0,
+  540).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r268-807.2'
   has
   size
-  389,
-  389
+  540,
+  306
   matches,
   and
   the
   score
   of
-  1.1758944536308546e+96.
+  9.377737282139107e+58.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  389
+  774
   between
   contigs
   (1)

@@ -44,8 +44,8 @@ BEGIN 5
   'r391-985.2'
   to
   be
-  (228,
-  322).
+  (0,
+  595).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r391-985.2'
   has
   size
-  322,
+  595,
   322
   matches,
   and
   the
   score
   of
-  2.866700519935748e+80.
+  3.96136421418875e+59.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  322
+  823
   between
   contigs
   'r163-712.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r610-894.0'
   to
   be
-  (219,
-  504).
+  (0,
+  595).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r610-894.0'
   has
   size
-  285,
+  595,
   285
   matches,
   and
   the
   score
   of
-  1.449177165052371e+72.
+  1.4002750483111361e+48.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r610-894.0'
   to
   be
-  (447,
-  732).
+  (0,
+  823).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r610-894.0'
   has
   size
-  285,
+  823,
   285
   matches,
   and
   the
   score
   of
-  1.449177165052371e+72.
+  2.0009825385528008e+30.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r610-894.0'
   to
   be
-  (447,
-  732).
+  (0,
+  823).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r610-894.0'
   has
   size
-  285,
+  823,
   285
   matches,
   and
   the
   score
   of
-  1.449177165052371e+72.
+  2.0009825385528008e+30.
 END 25
 BEGIN 26
   Contig

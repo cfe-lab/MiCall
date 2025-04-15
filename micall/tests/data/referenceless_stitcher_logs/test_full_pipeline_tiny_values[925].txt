@@ -44,8 +44,8 @@ BEGIN 5
   'r151-826.2'
   to
   be
-  (23,
-  561).
+  (0,
+  676).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r151-826.2'
   has
   size
-  561,
+  676,
   561
   matches,
   and
   the
   score
   of
-  1.2746851236936625e+135.
+  3.952553601258589e+126.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  561
+  699
   between
   contigs
   'r128-711.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r195-530.1'
   to
   be
-  (44,
-  380).
+  (0,
+  676).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r195-530.1'
   has
   size
-  336,
+  676,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  5.653263859663659e+57.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r195-530.1'
   to
   be
-  (67,
-  403).
+  (0,
+  699).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r195-530.1'
   has
   size
-  336,
+  699,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  7.99134453726826e+55.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r195-530.1'
   to
   be
-  (67,
-  403).
+  (0,
+  699).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r195-530.1'
   has
   size
-  336,
+  699,
   336
   matches,
   and
   the
   score
   of
-  6.720421583718846e+83.
+  7.99134453726826e+55.
 END 25
 BEGIN 26
   Contig

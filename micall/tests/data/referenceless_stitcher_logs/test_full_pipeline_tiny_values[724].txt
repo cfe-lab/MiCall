@@ -44,8 +44,8 @@ BEGIN 5
   'r136-871.0'
   to
   be
-  (88,
-  541).
+  (0,
+  736).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r136-871.0'
   has
   size
-  541,
+  736,
   541
   matches,
   and
   the
   score
   of
-  6.936891485121077e+130.
+  8.800646737774277e+115.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  541
+  824
   between
   contigs
   'r48-676.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r174-585.2'
   to
   be
-  (38,
-  450).
+  (0,
+  736).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r174-585.2'
   has
   size
-  412,
+  736,
   412
   matches,
   and
   the
   score
   of
-  1.8489905651376328e+101.
+  3.364560635399007e+76.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r174-585.2'
   to
   be
-  (126,
-  538).
+  (0,
+  824).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r174-585.2'
   has
   size
-  412,
+  824,
   412
   matches,
   and
   the
   score
   of
-  1.8489905651376328e+101.
+  6.015468408503525e+69.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r174-585.2'
   to
   be
-  (126,
-  538).
+  (0,
+  824).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r174-585.2'
   has
   size
-  412,
+  824,
   412
   matches,
   and
   the
   score
   of
-  1.8489905651376328e+101.
+  6.015468408503525e+69.
 END 25
 BEGIN 26
   Contig

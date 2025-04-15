@@ -44,8 +44,8 @@ BEGIN 5
   'r319-958.1'
   to
   be
-  (131,
-  536).
+  (0,
+  640).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r319-958.1'
   has
   size
-  536,
-  536
+  640,
+  509
   matches,
   and
   the
   score
   of
-  4.210175098667303e+129.
+  3.1437447049333986e+113.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  536
+  771
   between
   contigs
   'r188-854.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r542-846.0'
   to
   be
-  (354,
-  659).
+  (0,
+  667).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r542-846.0'
   has
   size
-  305,
+  667,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  5.956298239851035e+48.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r542-846.0'
   to
   be
-  (354,
-  659).
+  (0,
+  771).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r542-846.0'
   has
   size
-  305,
+  771,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  4.850303404399946e+40.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r542-846.0'
   to
   be
-  (354,
-  659).
+  (0,
+  771).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r542-846.0'
   has
   size
-  305,
+  771,
   305
   matches,
   and
   the
   score
   of
-  2.9455457271060856e+76.
+  4.850303404399946e+40.
 END 25
 BEGIN 26
   Contig

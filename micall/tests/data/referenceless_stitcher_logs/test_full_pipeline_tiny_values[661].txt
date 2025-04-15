@@ -44,8 +44,8 @@ BEGIN 5
   'r315-953.0'
   to
   be
-  (90,
-  560).
+  (0,
+  639).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r315-953.0'
   has
   size
-  560,
-  560
+  639,
+  549
   matches,
   and
   the
   score
   of
-  1.2675200986533023e+135.
+  4.7956593575252944e+125.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  560
+  729
   between
   contigs
   'r225-874.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r314-738.2'
   to
   be
-  (89,
-  514).
+  (0,
+  650).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r314-738.2'
   has
   size
-  425,
+  650,
   425
   matches,
   and
   the
   score
   of
-  1.044577973694157e+104.
+  8.65925370381469e+86.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r314-738.2'
   to
   be
-  (89,
-  514).
+  (0,
+  729).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r314-738.2'
   has
   size
-  425,
+  729,
   425
   matches,
   and
   the
   score
   of
-  1.044577973694157e+104.
+  6.644773607512827e+80.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r314-738.2'
   to
   be
-  (89,
-  514).
+  (0,
+  729).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r314-738.2'
   has
   size
-  425,
+  729,
   425
   matches,
   and
   the
   score
   of
-  1.044577973694157e+104.
+  6.644773607512827e+80.
 END 25
 BEGIN 26
   Contig

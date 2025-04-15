@@ -44,8 +44,8 @@ BEGIN 5
   'r475-832.0'
   to
   be
-  (166,
-  161).
+  (0,
+  358).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r475-832.0'
   has
   size
-  161,
+  358,
   161
   matches,
   and
   the
   score
   of
-  1.1832411536999465e+43.
+  5.024663069036033e+27.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  161
+  524
   between
   contigs
   'r309-635.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r475-832.0'
   to
   be
-  (74,
-  247).
+  (0,
+  358).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r475-832.0'
   has
   size
-  247,
+  358,
   247
   matches,
   and
   the
   score
   of
-  1.7119305782533366e+63.
+  4.179303673490561e+54.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  247
+  432
   between
   contigs
   'r401-721.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (92,
-  235).
+  (0,
+  432).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  235,
+  432,
   235
   matches,
   and
   the
   score
   of
-  2.8530840255002603e+60.
+  2.103269015087503e+45.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  235
+  524
   between
   contigs
   'r309-635.2'

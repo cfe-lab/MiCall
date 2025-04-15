@@ -44,8 +44,8 @@ BEGIN 5
   'r226-836.0'
   to
   be
-  (123,
-  588).
+  (0,
+  611).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r226-836.0'
   has
   size
-  588,
-  588
+  611,
+  488
   matches,
   and
   the
   score
   of
-  3.1011200908416e+141.
+  1.6884837629924809e+109.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  588
+  734
   between
   contigs
   'r103-813.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r109-540.2'
   to
   be
-  (6,
-  438).
+  (0,
+  711).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r109-540.2'
   has
   size
-  432,
+  711,
   432
   matches,
   and
   the
   score
   of
-  7.040271329247873e+105.
+  3.1157194421536312e+84.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r109-540.2'
   to
   be
-  (6,
-  438).
+  (0,
+  734).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r109-540.2'
   has
   size
-  432,
+  734,
   432
   matches,
   and
   the
   score
   of
-  7.040271329247873e+105.
+  4.5671167131682884e+82.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r109-540.2'
   to
   be
-  (6,
-  438).
+  (0,
+  734).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r109-540.2'
   has
   size
-  432,
+  734,
   432
   matches,
   and
   the
   score
   of
-  7.040271329247873e+105.
+  4.5671167131682884e+82.
 END 25
 BEGIN 26
   Contig

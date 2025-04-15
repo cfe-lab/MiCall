@@ -44,8 +44,8 @@ BEGIN 5
   'r203-934.0'
   to
   be
-  (153,
-  594).
+  (0,
+  732).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r203-934.0'
   has
   size
-  594,
-  594
+  732,
+  579
   matches,
   and
   the
   score
   of
-  5.123455026953438e+142.
+  6.599288722174245e+127.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  594
+  885
   between
   contigs
   'r50-796.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r245-914.2'
   to
   be
-  (195,
-  552).
+  (0,
+  670).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r245-914.2'
   has
   size
-  552,
-  552
+  670,
+  475
   matches,
   and
   the
   score
   of
-  1.8924752125946328e+133.
+  4.922471508593972e+100.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  552
+  865
   between
   contigs
   'r50-796.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r245-914.2'
   to
   be
-  (195,
-  865).
+  (0,
+  885).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r245-914.2'
   has
   size
-  670,
+  885,
   670
   matches,
   and
   the
   score
   of
-  2.6993334460166047e+159.
+  4.450257454351198e+143.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r245-914.2'
   to
   be
-  (195,
-  865).
+  (0,
+  885).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r245-914.2'
   has
   size
-  670,
+  885,
   670
   matches,
   and
   the
   score
   of
-  2.6993334460166047e+159.
+  4.450257454351198e+143.
 END 25
 BEGIN 26
   Contig

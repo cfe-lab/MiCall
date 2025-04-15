@@ -44,8 +44,8 @@ BEGIN 5
   'r292-658.0'
   to
   be
-  (248,
-  138).
+  (0,
+  367).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r292-658.0'
   has
   size
-  138,
-  138
+  367,
+  119
   matches,
   and
   the
   score
   of
-  5.508084491121119e+37.
+  15608018054332.447.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  138
+  615
   between
   contigs
   'r44-429.1'
@@ -99,9 +99,28 @@ BEGIN 8
   'r408-755.2'
   to
   be
-  None.
+  (0,
+  348).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r44-429.1'
+  and
+  'r408-755.2'
+  has
+  size
+  348,
+  46
+  matches,
+  and
+  the
+  score
+  of
+  8.999999813115075.
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -113,22 +132,22 @@ BEGIN 9
   fittest
   has
   length
-  712
+  79
   and
   consists
   of
   3
   parts.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -144,10 +163,10 @@ BEGIN 11
   'r408-755.2'
   to
   be
-  (364,
-  251).
-END 11
-BEGIN 12
+  (0,
+  348).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -156,23 +175,23 @@ BEGIN 12
   'r408-755.2'
   has
   size
-  251,
-  251
+  348,
+  46
   matches,
   and
   the
   score
   of
-  1.4414282368544858e+64.
-END 12
-BEGIN 13
+  8.999999813115075.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  251
+  79
   between
   contigs
   (1)
@@ -182,8 +201,8 @@ BEGIN 13
   in
   contig
   (2).
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -195,30 +214,30 @@ BEGIN 14
   fittest
   has
   length
-  712
+  79
   and
   consists
   of
   3
   parts.
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
-  712.
-END 16
-BEGIN 17
+  79.
+END 17
+BEGIN 18
   Removed
   3
   components
@@ -231,17 +250,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 19
+END 20

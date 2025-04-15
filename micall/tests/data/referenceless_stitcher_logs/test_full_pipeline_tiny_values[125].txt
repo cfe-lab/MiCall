@@ -44,8 +44,8 @@ BEGIN 5
   'r248-990.0'
   to
   be
-  (138,
-  317).
+  (0,
+  743).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r248-990.0'
   has
   size
-  317,
+  743,
   317
   matches,
   and
   the
   score
   of
-  3.409627511992749e+79.
+  4.0464936119217295e+46.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  317
+  881
   between
   contigs
   'r110-564.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r297-710.2'
   to
   be
-  (49,
-  463).
+  (0,
+  743).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r297-710.2'
   has
   size
-  414,
+  743,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  3.380485617657555e+76.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r297-710.2'
   to
   be
-  (187,
-  601).
+  (0,
+  881).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r297-710.2'
   has
   size
-  414,
+  881,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  1.2337641616312256e+66.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r297-710.2'
   to
   be
-  (187,
-  601).
+  (0,
+  881).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r297-710.2'
   has
   size
-  414,
+  881,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  1.2337641616312256e+66.
 END 25
 BEGIN 26
   Contig

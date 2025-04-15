@@ -44,8 +44,8 @@ BEGIN 5
   'r377-790.1'
   to
   be
-  (109,
-  523).
+  (0,
+  731).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r377-790.1'
   has
   size
-  414,
+  731,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  2.80563475891618e+77.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r268-998.2'
   to
   be
-  (153,
-  233).
+  (0,
+  731).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r268-998.2'
   has
   size
-  233,
+  731,
   233
   matches,
   and
   the
   score
   of
-  6.9410609640956635e+59.
+  9.282735832779294e+20.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  233
+  884
   between
   contigs
   'r115-500.0'
@@ -171,8 +171,8 @@ BEGIN 13
   'r377-790.1'
   to
   be
-  (262,
-  676).
+  (0,
+  884).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r377-790.1'
   has
   size
-  414,
+  884,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  6.100420722832246e+65.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r377-790.1'
   to
   be
-  (262,
-  676).
+  (0,
+  884).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r377-790.1'
   has
   size
-  414,
+  884,
   414
   matches,
   and
   the
   score
   of
-  3.7551503995379965e+101.
+  6.100420722832246e+65.
 END 25
 BEGIN 26
   Contig

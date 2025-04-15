@@ -44,8 +44,8 @@ BEGIN 5
   'r558-994.1'
   to
   be
-  (131,
-  226).
+  (0,
+  437).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r558-994.1'
   has
   size
-  226,
+  437,
   226
   matches,
   and
   the
   score
   of
-  1.9681175791921932e+58.
+  7.98949483384276e+41.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  226
+  568
   between
   contigs
   'r427-783.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r558-994.1'
   to
   be
-  (142,
-  154).
+  (0,
+  437).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r558-994.1'
   has
   size
-  154,
+  437,
   154
   matches,
   and
   the
   score
   of
-  3.206992029063452e+41.
+  9.428918661473837e+18.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  154
+  579
   between
   contigs
   'r416-711.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (11,
-  285).
+  (0,
+  568).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  285,
+  568,
   285
   matches,
   and
   the
   score
   of
-  1.449177165052371e+72.
+  2.0576557575844553e+50.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  285
+  579
   between
   contigs
   'r416-711.2'

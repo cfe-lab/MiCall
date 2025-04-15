@@ -44,8 +44,8 @@ BEGIN 5
   'r467-882.2'
   to
   be
-  (44,
-  380).
+  (0,
+  416).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r467-882.2'
   has
   size
-  380,
-  380
+  416,
+  372
   matches,
   and
   the
   score
   of
-  8.529646475074733e+93.
+  5.492458808317189e+88.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  380
+  460
   between
   contigs
   'r423-846.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r519-861.0'
   to
   be
-  (96,
-  328).
+  (0,
+  343).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r519-861.0'
   has
   size
-  328,
-  328
+  343,
+  247
   matches,
   and
   the
   score
   of
-  9.727297910787411e+81.
+  7.124714919632121e+55.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  328
+  439
   between
   contigs
   'r423-846.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r519-861.0'
   to
   be
-  (96,
-  439).
+  (0,
+  460).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r519-861.0'
   has
   size
-  343,
+  460,
   343
   matches,
   and
   the
   score
   of
-  2.295983788650699e+85.
+  3.12546988448451e+76.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r519-861.0'
   to
   be
-  (96,
-  439).
+  (0,
+  460).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r519-861.0'
   has
   size
-  343,
+  460,
   343
   matches,
   and
   the
   score
   of
-  2.295983788650699e+85.
+  3.12546988448451e+76.
 END 25
 BEGIN 26
   Contig

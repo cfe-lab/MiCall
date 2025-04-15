@@ -44,8 +44,8 @@ BEGIN 5
   'r338-871.0'
   to
   be
-  (270,
-  466).
+  (0,
+  534).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r338-871.0'
   has
   size
-  466,
-  466
+  534,
+  264
   matches,
   and
   the
   score
   of
-  3.0025728459853266e+113.
+  1.8895091744369925e+46.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  466
+  804
   between
   contigs
   'r68-803.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r324-671.1'
   to
   be
-  (256,
-  604).
+  (0,
+  736).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r324-671.1'
   has
   size
-  348,
+  736,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  6.779183756221893e+56.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r324-671.1'
   to
   be
-  (256,
-  604).
+  (0,
+  804).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r324-671.1'
   has
   size
-  348,
+  804,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  3.772458620636745e+51.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r324-671.1'
   to
   be
-  (256,
-  604).
+  (0,
+  804).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r324-671.1'
   has
   size
-  348,
+  804,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  3.772458620636745e+51.
 END 25
 BEGIN 26
   Contig

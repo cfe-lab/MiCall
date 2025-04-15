@@ -44,8 +44,8 @@ BEGIN 5
   'r105-657.0'
   to
   be
-  (6,
-  559).
+  (0,
+  645).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r105-657.0'
   has
   size
-  553,
+  645,
   553
   matches,
   and
   the
   score
   of
-  1.9033296300537857e+133.
+  3.916620953194527e+126.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r351-755.2'
   to
   be
-  (252,
-  393).
+  (0,
+  405).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r351-755.2'
   has
   size
-  393,
-  393
+  405,
+  153
   matches,
   and
   the
   score
   of
-  4.858595149998396e+96.
+  3.6948118325415316e+21.
 END 9
 BEGIN 10
   Found
@@ -117,7 +117,7 @@ BEGIN 10
   overlap
   of
   size
-  393
+  657
   between
   contigs
   'r99-743.1'
@@ -171,8 +171,8 @@ BEGIN 13
   'r105-657.0'
   to
   be
-  (6,
-  559).
+  (0,
+  657).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r105-657.0'
   has
   size
-  553,
+  657,
   553
   matches,
   and
   the
   score
   of
-  1.9033296300537857e+133.
+  2.3988488079106835e+125.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r105-657.0'
   to
   be
-  (6,
-  559).
+  (0,
+  657).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r105-657.0'
   has
   size
-  553,
+  657,
   553
   matches,
   and
   the
   score
   of
-  1.9033296300537857e+133.
+  2.3988488079106835e+125.
 END 25
 BEGIN 26
   Contig

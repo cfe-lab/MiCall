@@ -44,8 +44,8 @@ BEGIN 5
   'r305-946.0'
   to
   be
-  (207,
-  100).
+  (0,
+  357).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r305-946.0'
   has
   size
-  100,
+  357,
   100
   matches,
   and
   the
   score
   of
-  7.282262207651403e+28.
+  6970839.846343282.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  100
-  between
-  contigs
-  'r98-404.2'
-  and
-  'r305-946.0',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r336-635.1'
   to
   be
-  (31,
-  331).
-END 8
-BEGIN 9
+  (0,
+  642).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,24 +93,24 @@ BEGIN 9
   'r336-635.1'
   has
   size
-  300,
+  642,
   300
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
-END 9
-BEGIN 10
+  1.2167474073663135e+49.
+END 8
+BEGIN 9
   Contig
   'r305-946.0'
   covers
   contig
   'r336-635.1'
   completely.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -140,22 +122,22 @@ BEGIN 11
   fittest
   has
   length
-  849
+  642
   and
   consists
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -163,52 +145,44 @@ BEGIN 13
   overlap
   of
   size
-  300
+  100
   between
   contigs
-  (1)
+  'r98-404.2'
   and
-  'r336-635.1'
+  'r305-946.0'
   to
   be
-  (238,
-  538).
-END 13
-BEGIN 14
+  (0,
+  357).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (1)
+  'r98-404.2'
   and
-  'r336-635.1'
+  'r305-946.0'
   has
   size
-  300,
-  300
+  357,
+  100
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r336-635.1'
-  completely.
-END 15
-BEGIN 16
+  6970839.846343282.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  849.
-END 16
-BEGIN 17
+  642.
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -221,29 +195,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  300.
-END 20
-BEGIN 21
+  307.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -256,8 +230,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -272,16 +246,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -289,45 +263,37 @@ BEGIN 24
   overlap
   of
   size
-  300
+  100
   between
   contigs
-  (1)
+  'r98-404.2'
   and
-  'r336-635.1'
+  'r305-946.0'
   to
   be
-  (238,
-  538).
-END 24
-BEGIN 25
+  (0,
+  357).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  (1)
+  'r98-404.2'
   and
-  'r336-635.1'
+  'r305-946.0'
   has
   size
-  300,
-  300
+  357,
+  100
   matches,
   and
   the
   score
   of
-  3.4935292924645634e+75.
-END 25
-BEGIN 26
-  Contig
-  (1)
-  covers
-  contig
-  'r336-635.1'
-  completely.
-END 26
-BEGIN 27
+  6970839.846343282.
+END 23
+BEGIN 24
   Outputting
-  1
+  2
   contigs.
-END 27
+END 24

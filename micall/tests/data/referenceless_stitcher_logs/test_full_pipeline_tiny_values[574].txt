@@ -44,8 +44,8 @@ BEGIN 5
   'r535-958.0'
   to
   be
-  (8,
-  348).
+  (0,
+  424).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r535-958.0'
   has
   size
-  348,
+  424,
   348
   matches,
   and
   the
   score
   of
-  3.846219397491637e+86.
+  6.043154770560121e+80.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  348
+  432
   between
   contigs
   'r527-882.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r695-960.1'
   to
   be
-  (160,
-  264).
+  (0,
+  266).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r695-960.1'
   has
   size
-  264,
-  264
+  266,
+  106
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  1.857320336625987e+17.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  264
+  426
   between
   contigs
   'r535-958.0'
@@ -181,8 +181,8 @@ BEGIN 13
   'r695-960.1'
   to
   be
-  (168,
-  264).
+  (0,
+  266).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r695-960.1'
   has
   size
-  264,
-  264
+  266,
+  98
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  366165928076927.75.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  264
+  434
   between
   contigs
   (1)
@@ -317,8 +317,8 @@ BEGIN 24
   'r695-960.1'
   to
   be
-  (168,
-  264).
+  (0,
+  266).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r695-960.1'
   has
   size
-  264,
-  264
+  266,
+  98
   matches,
   and
   the
   score
   of
-  1.7334119595171544e+67.
+  366165928076927.75.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  264
+  434
   between
   contigs
   (1)

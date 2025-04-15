@@ -44,8 +44,8 @@ BEGIN 5
   'r288-769.2'
   to
   be
-  (38,
-  404).
+  (0,
+  482).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r288-769.2'
   has
   size
-  404,
+  482,
   404
   matches,
   and
   the
   score
   of
-  2.7150238952321647e+99.
+  2.182670475714926e+93.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  404
+  520
   between
   contigs
   'r250-691.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r340-709.1'
   to
   be
-  (52,
-  422).
+  (0,
+  482).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r340-709.1'
   has
   size
-  370,
+  482,
   370
   matches,
   and
   the
   score
   of
-  3.0617269847869217e+91.
+  8.656933206642629e+82.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r340-709.1'
   to
   be
-  (90,
-  460).
+  (0,
+  520).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r340-709.1'
   has
   size
-  370,
+  520,
   370
   matches,
   and
   the
   score
   of
-  3.0617269847869217e+91.
+  1.5231904017088063e+80.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r340-709.1'
   to
   be
-  (90,
-  460).
+  (0,
+  520).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r340-709.1'
   has
   size
-  370,
+  520,
   370
   matches,
   and
   the
   score
   of
-  3.0617269847869217e+91.
+  1.5231904017088063e+80.
 END 25
 BEGIN 26
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r216-923.0'
   to
   be
-  (131,
-  576).
+  (0,
+  708).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r216-923.0'
   has
   size
-  576,
+  708,
   576
   matches,
   and
   the
   score
   of
-  5.6749875714620656e+138.
+  5.3731550333959154e+128.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  576
+  839
   between
   contigs
   'r85-791.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r250-514.1'
   to
   be
-  (34,
-  299).
+  (0,
+  708).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r250-514.1'
   has
   size
-  265,
+  708,
   265
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  1.3725873982571256e+33.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r250-514.1'
   to
   be
-  (165,
-  430).
+  (0,
+  839).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r250-514.1'
   has
   size
-  265,
+  839,
   265
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  4.0361971060100334e+22.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r250-514.1'
   to
   be
-  (165,
-  430).
+  (0,
+  839).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r250-514.1'
   has
   size
-  265,
+  839,
   265
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  4.0361971060100334e+22.
 END 25
 BEGIN 26
   Contig

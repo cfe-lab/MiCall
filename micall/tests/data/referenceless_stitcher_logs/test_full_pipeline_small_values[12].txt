@@ -44,8 +44,8 @@ BEGIN 5
   'r326-930.2'
   to
   be
-  (179,
-  370).
+  (0,
+  605).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r326-930.2'
   has
   size
-  370,
+  605,
   370
   matches,
   and
   the
   score
   of
-  3.0617269847869217e+91.
+  2.815399100453121e+73.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  370
+  784
   between
   contigs
   'r147-695.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r326-930.2'
   to
   be
-  (43,
-  421).
+  (0,
+  605).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r326-930.2'
   has
   size
-  421,
+  605,
   421
   matches,
   and
   the
   score
   of
-  2.5343897737363684e+103.
+  2.3791494659268998e+89.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  421
+  648
   between
   contigs
   'r283-746.5'
@@ -150,11 +150,11 @@ BEGIN 11
   fittest
   has
   length
-  839
+  784
   and
   consists
   of
-  4
+  3
   parts.
 END 11
 BEGIN 12
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (136,
-  413).
+  (0,
+  648).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  413,
+  648,
   413
   matches,
   and
   the
   score
   of
-  3.7264910614891897e+101.
+  3.6942010882774793e+83.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  413
+  784
   between
   contigs
   'r147-695.1'
@@ -236,8 +236,8 @@ BEGIN 16
   (2)
   to
   be
-  (191,
-  272).
+  (0,
+  648).
 END 16
 BEGIN 17
   Overlap
@@ -248,14 +248,14 @@ BEGIN 17
   (2)
   has
   size
-  272,
+  648,
   272
   matches,
   and
   the
   score
   of
-  1.2199272611365159e+69.
+  1.1111735753417746e+40.
 END 17
 BEGIN 18
   Found
@@ -264,7 +264,7 @@ BEGIN 18
   overlap
   of
   size
-  272
+  839
   between
   contigs
   'r92-554.3'
@@ -291,8 +291,8 @@ BEGIN 19
   (2)
   to
   be
-  (150,
-  267).
+  (0,
+  648).
 END 19
 BEGIN 20
   Overlap
@@ -303,14 +303,14 @@ BEGIN 20
   (2)
   has
   size
-  267,
+  648,
   267
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  3.01912041488373e+38.
 END 20
 BEGIN 21
   Found
@@ -319,7 +319,7 @@ BEGIN 21
   overlap
   of
   size
-  267
+  798
   between
   contigs
   'r133-549.0'
@@ -346,8 +346,8 @@ BEGIN 22
   (2)
   to
   be
-  (59,
-  216).
+  (0,
+  648).
 END 22
 BEGIN 23
   Overlap
@@ -358,14 +358,14 @@ BEGIN 23
   (2)
   has
   size
-  216,
+  648,
   216
   matches,
   and
   the
   score
   of
-  1.330963529101512e+56.
+  1.8114400552425666e+22.
 END 23
 BEGIN 24
   Found
@@ -374,7 +374,7 @@ BEGIN 24
   overlap
   of
   size
-  216
+  707
   between
   contigs
   'r224-498.4'
@@ -397,11 +397,11 @@ BEGIN 25
   fittest
   has
   length
-  839
+  784
   and
   consists
   of
-  4
+  3
   parts.
 END 25
 BEGIN 26
@@ -428,8 +428,8 @@ BEGIN 27
   (3)
   to
   be
-  (55,
-  408).
+  (0,
+  784).
 END 27
 BEGIN 28
   Overlap
@@ -440,14 +440,14 @@ BEGIN 28
   (3)
   has
   size
-  408,
+  784,
   408
   matches,
   and
   the
   score
   of
-  2.240891988169688e+100.
+  4.165566198557787e+71.
 END 28
 BEGIN 29
   Found
@@ -456,7 +456,7 @@ BEGIN 29
   overlap
   of
   size
-  408
+  839
   between
   contigs
   'r92-554.3'
@@ -483,8 +483,8 @@ BEGIN 30
   (3)
   to
   be
-  (14,
-  403).
+  (0,
+  784).
 END 30
 BEGIN 31
   Overlap
@@ -495,14 +495,14 @@ BEGIN 31
   (3)
   has
   size
-  403,
+  784,
   403
   matches,
   and
   the
   score
   of
-  1.346893229981757e+99.
+  1.211686753118657e+70.
 END 31
 BEGIN 32
   Found
@@ -511,7 +511,7 @@ BEGIN 32
   overlap
   of
   size
-  403
+  798
   between
   contigs
   'r133-549.0'
@@ -538,8 +538,8 @@ BEGIN 33
   'r224-498.4'
   to
   be
-  (77,
-  352).
+  (0,
+  784).
 END 33
 BEGIN 34
   Overlap
@@ -550,14 +550,14 @@ BEGIN 34
   'r224-498.4'
   has
   size
-  275,
+  784,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  1.9677324500577458e+30.
 END 34
 BEGIN 35
   Contig
@@ -568,8 +568,133 @@ BEGIN 35
   completely.
 END 35
 BEGIN 36
-  Cycle
+  Constructed
+  a
+  path
+  of
+  length
+  784.
+END 36
+BEGIN 37
+  Removed
   3
+  components
+  from
+  the
+  working
+  list,
+  having
+  3
+  still
+  to
+  process.
+END 37
+BEGIN 38
+  Calculating
+  all
+  paths...
+END 38
+BEGIN 39
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 39
+BEGIN 40
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  417
+  between
+  contigs
+  'r92-554.3'
+  and
+  'r133-549.0'
+  to
+  be
+  (0,
+  463).
+END 40
+BEGIN 41
+  Overlap
+  between
+  contigs
+  'r92-554.3'
+  and
+  'r133-549.0'
+  has
+  size
+  463,
+  417
+  matches,
+  and
+  the
+  score
+  of
+  6.821633564682462e+98.
+END 41
+BEGIN 42
+  Contig
+  'r92-554.3'
+  covers
+  contig
+  'r133-549.0'
+  completely.
+END 42
+BEGIN 43
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  275
+  between
+  contigs
+  'r92-554.3'
+  and
+  'r224-498.4'
+  to
+  be
+  (0,
+  463).
+END 43
+BEGIN 44
+  Overlap
+  between
+  contigs
+  'r92-554.3'
+  and
+  'r224-498.4'
+  has
+  size
+  463,
+  275
+  matches,
+  and
+  the
+  score
+  of
+  1.8035196926525955e+55.
+END 44
+BEGIN 45
+  Contig
+  'r92-554.3'
+  covers
+  contig
+  'r224-498.4'
+  completely.
+END 45
+BEGIN 46
+  Cycle
+  1
   finished
   with
   1
@@ -579,141 +704,16 @@ BEGIN 36
   fittest
   has
   length
-  839
+  463
   and
   consists
   of
-  4
+  3
   parts.
-END 36
-BEGIN 37
-  Cycle
-  4
-  started
-  with
-  1
-  paths
-END 37
-BEGIN 38
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  417
-  between
-  contigs
-  (7)
-  and
-  'r133-549.0'
-  to
-  be
-  (41,
-  458).
-END 38
-BEGIN 39
-  Overlap
-  between
-  contigs
-  (7)
-  and
-  'r133-549.0'
-  has
-  size
-  417,
-  417
-  matches,
-  and
-  the
-  score
-  of
-  1.536811601568966e+102.
-END 39
-BEGIN 40
-  Contig
-  (7)
-  covers
-  contig
-  'r133-549.0'
-  completely.
-END 40
-BEGIN 41
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  275
-  between
-  contigs
-  (7)
-  and
-  'r224-498.4'
-  to
-  be
-  (132,
-  407).
-END 41
-BEGIN 42
-  Overlap
-  between
-  contigs
-  (7)
-  and
-  'r224-498.4'
-  has
-  size
-  275,
-  275
-  matches,
-  and
-  the
-  score
-  of
-  5.052985591895452e+69.
-END 42
-BEGIN 43
-  Contig
-  (7)
-  covers
-  contig
-  'r224-498.4'
-  completely.
-END 43
-BEGIN 44
-  Constructed
-  a
-  path
-  of
-  length
-  839.
-END 44
-BEGIN 45
-  Removed
-  4
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
-END 45
-BEGIN 46
-  Calculating
-  all
-  paths...
 END 46
 BEGIN 47
   Cycle
-  1
+  2
   started
   with
   1
@@ -730,35 +730,35 @@ BEGIN 48
   275
   between
   contigs
-  'r133-549.0'
+  'r92-554.3'
   and
   'r224-498.4'
   to
   be
-  (91,
-  366).
+  (0,
+  463).
 END 48
 BEGIN 49
   Overlap
   between
   contigs
-  'r133-549.0'
+  'r92-554.3'
   and
   'r224-498.4'
   has
   size
-  275,
+  463,
   275
   matches,
   and
   the
   score
   of
-  5.052985591895452e+69.
+  1.8035196926525955e+55.
 END 49
 BEGIN 50
   Contig
-  'r133-549.0'
+  'r92-554.3'
   covers
   contig
   'r224-498.4'
@@ -766,7 +766,7 @@ BEGIN 50
 END 50
 BEGIN 51
   Cycle
-  1
+  2
   finished
   with
   1
@@ -776,16 +776,16 @@ BEGIN 51
   fittest
   has
   length
-  417
+  463
   and
   consists
   of
-  2
+  3
   parts.
 END 51
 BEGIN 52
   Cycle
-  2
+  3
   started
   with
   1
@@ -797,11 +797,11 @@ BEGIN 53
   path
   of
   length
-  417.
+  463.
 END 53
 BEGIN 54
   Removed
-  2
+  3
   components
   from
   the
@@ -829,42 +829,52 @@ BEGIN 56
   overlap
   of
   size
-  417
+  408
   between
   contigs
-  (7)
+  'r92-554.3'
   and
-  'r133-549.0'
+  (3)
   to
   be
-  (41,
-  458).
+  (0,
+  784).
 END 56
 BEGIN 57
   Overlap
   between
   contigs
-  (7)
+  'r92-554.3'
   and
-  'r133-549.0'
+  (3)
   has
   size
-  417,
-  417
+  784,
+  408
   matches,
   and
   the
   score
   of
-  1.536811601568966e+102.
+  4.165566198557787e+71.
 END 57
 BEGIN 58
-  Contig
-  (7)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  839
+  between
+  contigs
+  'r92-554.3'
+  and
+  (3),
+  resulting
+  in
   contig
-  'r133-549.0'
-  completely.
+  (9).
 END 58
 BEGIN 59
   Outputting

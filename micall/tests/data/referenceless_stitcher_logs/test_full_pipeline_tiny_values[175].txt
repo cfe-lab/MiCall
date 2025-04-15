@@ -44,8 +44,8 @@ BEGIN 5
   'r525-958.0'
   to
   be
-  (215,
-  158).
+  (0,
+  434).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r525-958.0'
   has
   size
-  158,
+  434,
   158
   matches,
   and
   the
   score
   of
-  2.7852040633645794e+42.
+  4.085634488794569e+20.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  158
+  649
   between
   contigs
   'r310-682.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r525-958.0'
   to
   be
-  (35,
-  276).
+  (0,
+  434).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r525-958.0'
   has
   size
-  276,
+  434,
   276
   matches,
   and
   the
   score
   of
-  1.0223328618750815e+70.
+  5.317147085181998e+57.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  276
+  469
   between
   contigs
   'r490-800.1'
@@ -181,8 +181,8 @@ BEGIN 13
   (2)
   to
   be
-  (180,
-  193).
+  (0,
+  469).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (2)
   has
   size
-  193,
+  469,
   193
   matches,
   and
   the
   score
   of
-  3.5445163961362388e+50.
+  2.0007304086700995e+29.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  193
+  649
   between
   contigs
   'r310-682.2'
@@ -317,8 +317,8 @@ BEGIN 24
   (2)
   to
   be
-  (180,
-  193).
+  (0,
+  469).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   (2)
   has
   size
-  193,
+  469,
   193
   matches,
   and
   the
   score
   of
-  3.5445163961362388e+50.
+  2.0007304086700995e+29.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  193
+  649
   between
   contigs
   'r310-682.2'

@@ -44,8 +44,8 @@ BEGIN 5
   'r114-871.1'
   to
   be
-  (35,
-  394).
+  (0,
+  758).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r114-871.1'
   has
   size
-  394,
+  758,
   394
   matches,
   and
   the
   score
   of
-  9.795772613575714e+96.
+  1.4529475768623493e+69.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  394
+  793
   between
   contigs
   'r79-507.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r205-537.0'
   to
   be
-  (91,
-  424).
+  (0,
+  758).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r205-537.0'
   has
   size
-  333,
+  758,
   333
   matches,
   and
   the
   score
   of
-  1.6329465837832323e+83.
+  2.1737915979388428e+50.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r205-537.0'
   to
   be
-  (126,
-  459).
+  (0,
+  793).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r205-537.0'
   has
   size
-  333,
+  793,
   333
   matches,
   and
   the
   score
   of
-  1.6329465837832323e+83.
+  3.538124222459575e+47.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r205-537.0'
   to
   be
-  (126,
-  459).
+  (0,
+  793).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r205-537.0'
   has
   size
-  333,
+  793,
   333
   matches,
   and
   the
   score
   of
-  1.6329465837832323e+83.
+  3.538124222459575e+47.
 END 25
 BEGIN 26
   Contig

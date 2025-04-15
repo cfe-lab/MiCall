@@ -44,8 +44,8 @@ BEGIN 5
   'r491-935.2'
   to
   be
-  (236,
-  265).
+  (0,
+  445).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r491-935.2'
   has
   size
-  265,
-  265
+  445,
+  209
   matches,
   and
   the
   score
   of
-  1.7543930900246517e+67.
+  1.7918677975256855e+36.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  265
+  681
   between
   contigs
   'r255-755.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r356-764.0'
   to
   be
-  (101,
-  400).
+  (0,
+  409).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r356-764.0'
   has
   size
-  400,
-  400
+  409,
+  308
   matches,
   and
   the
   score
   of
-  3.2884422419082675e+98.
+  5.369498905581696e+69.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  400
+  510
   between
   contigs
   'r255-755.1'
@@ -181,8 +181,8 @@ BEGIN 13
   'r491-935.2'
   to
   be
-  (236,
-  274).
+  (0,
+  445).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r491-935.2'
   has
   size
-  274,
-  274
+  445,
+  209
   matches,
   and
   the
   score
   of
-  2.4973840504360907e+69.
+  1.7918677975256855e+36.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  274
+  681
   between
   contigs
   (2)
@@ -317,8 +317,8 @@ BEGIN 24
   'r491-935.2'
   to
   be
-  (236,
-  274).
+  (0,
+  445).
 END 24
 BEGIN 25
   Overlap
@@ -329,14 +329,14 @@ BEGIN 25
   'r491-935.2'
   has
   size
-  274,
-  274
+  445,
+  209
   matches,
   and
   the
   score
   of
-  2.4973840504360907e+69.
+  1.7918677975256855e+36.
 END 25
 BEGIN 26
   Found
@@ -345,7 +345,7 @@ BEGIN 26
   overlap
   of
   size
-  274
+  681
   between
   contigs
   (2)

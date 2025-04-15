@@ -44,8 +44,8 @@ BEGIN 5
   'r169-723.0'
   to
   be
-  (90,
-  398).
+  (0,
+  555).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r169-723.0'
   has
   size
-  398,
+  555,
   398
   matches,
   and
   the
   score
   of
-  8.091547354289617e+97.
+  1.017274222082151e+86.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  398
+  645
   between
   contigs
   'r79-566.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r421-757.1'
   to
   be
-  (252,
-  303).
+  (0,
+  337).
 END 8
 BEGIN 9
   Overlap
@@ -111,34 +111,16 @@ BEGIN 9
   'r421-757.1'
   has
   size
-  303,
-  303
+  337,
+  85
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
+  9.727880736935377.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  303
-  between
-  contigs
-  'r169-723.0'
-  and
-  'r421-757.1',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -156,16 +138,16 @@ BEGIN 11
   of
   2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -181,10 +163,10 @@ BEGIN 13
   'r421-757.1'
   to
   be
-  (342,
-  303).
-END 13
-BEGIN 14
+  (0,
+  337).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,23 +175,23 @@ BEGIN 14
   'r421-757.1'
   has
   size
-  303,
-  303
+  337,
+  27
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
-END 14
-BEGIN 15
+  8.99999999999616.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  303
+  617
   between
   contigs
   (1)
@@ -218,17 +200,17 @@ BEGIN 15
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
+  (2).
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   645.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Removed
   2
   components
@@ -241,29 +223,29 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Calculating
   all
   paths...
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Cycle
   1
   started
   with
   1
   paths
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Constructed
   a
   path
   of
   length
   337.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -276,8 +258,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -292,16 +274,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -317,10 +299,10 @@ BEGIN 24
   'r421-757.1'
   to
   be
-  (342,
-  303).
-END 24
-BEGIN 25
+  (0,
+  337).
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -329,35 +311,17 @@ BEGIN 25
   'r421-757.1'
   has
   size
-  303,
-  303
+  337,
+  27
   matches,
   and
   the
   score
   of
-  1.4423042520676164e+76.
-END 25
-BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  303
-  between
-  contigs
-  (1)
-  and
-  'r421-757.1',
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
+  8.99999999999616.
+END 24
+BEGIN 25
   Outputting
-  1
+  2
   contigs.
-END 27
+END 25

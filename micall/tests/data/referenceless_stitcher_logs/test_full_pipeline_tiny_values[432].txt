@@ -44,8 +44,8 @@ BEGIN 5
   'r167-874.0'
   to
   be
-  (48,
-  395).
+  (0,
+  708).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r167-874.0'
   has
   size
-  395,
+  708,
   395
   matches,
   and
   the
   score
   of
-  1.9749573801967826e+97.
+  2.8547794329462526e+73.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  395
+  756
   between
   contigs
   'r119-561.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r486-889.2'
   to
   be
-  (319,
-  389).
+  (0,
+  404).
 END 8
 BEGIN 9
   Overlap
@@ -111,34 +111,16 @@ BEGIN 9
   'r486-889.2'
   has
   size
-  389,
-  389
+  404,
+  85
   matches,
   and
   the
   score
   of
-  1.1758944536308546e+96.
+  8.606891277836768.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  389
-  between
-  contigs
-  'r167-874.0'
-  and
-  'r486-889.2',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -150,22 +132,22 @@ BEGIN 11
   fittest
   has
   length
-  771
+  756
   and
   consists
   of
-  3
+  2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -181,10 +163,10 @@ BEGIN 13
   'r486-889.2'
   to
   be
-  (367,
-  389).
-END 13
-BEGIN 14
+  (0,
+  404).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,23 +175,23 @@ BEGIN 14
   'r486-889.2'
   has
   size
-  389,
-  389
+  404,
+  37
   matches,
   and
   the
   score
   of
-  1.1758944536308546e+96.
-END 14
-BEGIN 15
+  8.999999999999913.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  389
+  771
   between
   contigs
   (1)
@@ -218,46 +200,54 @@ BEGIN 15
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  771
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
+  (2).
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  771.
+  756.
+END 15
+BEGIN 16
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 16
+BEGIN 17
+  Calculating
+  all
+  paths...
+END 17
+BEGIN 18
+  Cycle
+  1
+  started
+  with
+  1
+  paths
 END 18
 BEGIN 19
+  Constructed
+  a
+  path
+  of
+  length
+  404.
+END 19
+BEGIN 20
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +258,70 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  389
+  between
+  contigs
+  (1)
+  and
+  'r486-889.2'
+  to
+  be
+  (0,
+  404).
+END 23
+BEGIN 24
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r486-889.2'
+  has
+  size
+  404,
+  37
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999999913.
+END 24
+BEGIN 25
   Outputting
-  1
+  2
   contigs.
-END 21
+END 25

@@ -44,8 +44,8 @@ BEGIN 5
   'r441-831.1'
   to
   be
-  (210,
-  267).
+  (0,
+  391).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r441-831.1'
   has
   size
-  267,
-  267
+  391,
+  181
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  3.3020985664065146e+31.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  267
+  601
   between
   contigs
   'r231-707.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r231-707.0'
   to
   be
-  (193,
-  156).
+  (0,
+  477).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r231-707.0'
   has
   size
-  156,
+  477,
   156
   matches,
   and
   the
   score
   of
-  1.3369289851494103e+42.
+  2.061655992232396e+16.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  156
+  670
   between
   contigs
   'r38-386.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (193,
-  156).
+  (0,
+  601).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  156,
+  601,
   156
   matches,
   and
   the
   score
   of
-  1.3369289851494103e+42.
+  68158.94127764832.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  156
+  794
   between
   contigs
   'r38-386.2'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (193,
-  156).
+  (0,
+  601).
 END 24
 BEGIN 25
   Overlap
@@ -329,35 +329,17 @@ BEGIN 25
   (1)
   has
   size
-  156,
+  601,
   156
   matches,
   and
   the
   score
   of
-  1.3369289851494103e+42.
+  68158.94127764832.
 END 25
 BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  156
-  between
-  contigs
-  'r38-386.2'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
   Outputting
-  1
+  2
   contigs.
-END 27
+END 26

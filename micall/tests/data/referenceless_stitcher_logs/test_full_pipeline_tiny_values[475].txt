@@ -44,8 +44,8 @@ BEGIN 5
   'r658-985.0'
   to
   be
-  (277,
-  169).
+  (0,
+  328).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r658-985.0'
   has
   size
-  169,
-  169
+  328,
+  51
   matches,
   and
   the
   score
   of
-  8.844209081861935e+44.
+  8.999917633065383.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  169
-  between
-  contigs
-  'r381-826.2'
-  and
-  'r658-985.0',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r601-860.1'
   to
   be
-  (220,
-  226).
-END 8
-BEGIN 9
+  (0,
+  260).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,59 +93,60 @@ BEGIN 9
   'r601-860.1'
   has
   size
-  226,
-  226
+  260,
+  40
   matches,
   and
   the
   score
   of
-  1.9681175791921932e+58.
+  8.99733030286609.
+END 8
+BEGIN 9
+  Constructed
+  a
+  path
+  of
+  length
+  446.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  226
-  between
-  contigs
-  'r381-826.2'
-  and
-  'r601-860.1',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 10
 BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  605
-  and
-  consists
-  of
-  3
-  parts.
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 11
 BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
+  Initial
+  overlap
+  stitching
+  produced
+  3
+  contigs.
 END 12
 BEGIN 13
   Calculated
@@ -173,112 +156,184 @@ BEGIN 13
   overlap
   of
   size
-  203
+  169
   between
   contigs
-  (2)
+  'r381-826.2'
   and
   'r658-985.0'
   to
   be
-  (277,
-  203).
+  (0,
+  328).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r381-826.2'
   and
   'r658-985.0'
   has
   size
-  203,
+  328,
+  51
+  matches,
+  and
+  the
+  score
+  of
+  8.999917633065383.
+END 14
+BEGIN 15
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  226
+  between
+  contigs
+  'r381-826.2'
+  and
+  'r601-860.1'
+  to
+  be
+  (0,
+  260).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r381-826.2'
+  and
+  'r601-860.1'
+  has
+  size
+  260,
+  40
+  matches,
+  and
+  the
+  score
+  of
+  8.99733030286609.
+END 16
+BEGIN 17
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  203
+  between
+  contigs
+  'r601-860.1'
+  and
+  'r658-985.0'
+  to
+  be
+  (0,
+  328).
+END 17
+BEGIN 18
+  Overlap
+  between
+  contigs
+  'r601-860.1'
+  and
+  'r658-985.0'
+  has
+  size
+  328,
   203
   matches,
   and
   the
   score
   of
-  1.0662234671521326e+53.
-END 14
-BEGIN 15
+  2.712836360138453e+43.
+END 18
+BEGIN 19
   Found
   a
   significant
   overlap
   of
   size
-  203
+  385
   between
   contigs
-  (2)
+  'r601-860.1'
   and
   'r658-985.0',
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  605
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
-  Constructed
-  a
-  path
-  of
-  length
-  605.
-END 18
-BEGIN 19
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
+  (1).
 END 19
 BEGIN 20
-  Initial
+  Calculated
+  cutoff
+  for
+  an
   overlap
-  stitching
-  produced
-  1
-  contigs.
+  of
+  size
+  226
+  between
+  contigs
+  'r381-826.2'
+  and
+  (1)
+  to
+  be
+  (0,
+  385).
 END 20
 BEGIN 21
+  Overlap
+  between
+  contigs
+  'r381-826.2'
+  and
+  (1)
+  has
+  size
+  385,
+  165
+  matches,
+  and
+  the
+  score
+  of
+  5.650075484492816e+26.
+END 21
+BEGIN 22
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  605
+  between
+  contigs
+  'r381-826.2'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
+END 22
+BEGIN 23
   Outputting
   1
   contigs.
-END 21
+END 23

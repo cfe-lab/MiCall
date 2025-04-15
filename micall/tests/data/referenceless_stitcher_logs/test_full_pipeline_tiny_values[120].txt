@@ -44,8 +44,8 @@ BEGIN 5
   'r152-595.0'
   to
   be
-  (119,
-  563).
+  (0,
+  707).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r152-595.0'
   has
   size
-  444,
+  707,
   444
   matches,
   and
   the
   score
   of
-  3.931293414425041e+108.
+  2.962158157871684e+88.
 END 6
 BEGIN 7
   Contig
@@ -89,8 +89,8 @@ BEGIN 8
   'r245-649.2'
   to
   be
-  (212,
-  617).
+  (0,
+  707).
 END 8
 BEGIN 9
   Overlap
@@ -101,14 +101,14 @@ BEGIN 9
   'r245-649.2'
   has
   size
-  405,
+  707,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  3.355128584130662e+76.
 END 9
 BEGIN 10
   Contig
@@ -161,8 +161,8 @@ BEGIN 13
   'r245-649.2'
   to
   be
-  (212,
-  617).
+  (0,
+  707).
 END 13
 BEGIN 14
   Overlap
@@ -173,14 +173,14 @@ BEGIN 14
   'r245-649.2'
   has
   size
-  405,
+  707,
   405
   matches,
   and
   the
   score
   of
-  5.472750284280459e+99.
+  3.355128584130662e+76.
 END 14
 BEGIN 15
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r366-922.0'
   to
   be
-  (363,
-  137).
+  (0,
+  505).
 END 5
 BEGIN 6
   Overlap
@@ -56,218 +56,75 @@ BEGIN 6
   'r366-922.0'
   has
   size
-  137,
+  505,
   137
   matches,
   and
   the
   score
   of
-  2.6905190841246747e+37.
+  7380995.380066716.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  137
+  96
   between
   contigs
-  'r3-502.2'
+  'r182-461.1'
   and
-  'r366-922.0',
-  resulting
-  in
-  contig
-  (1).
+  'r366-922.0'
+  to
+  be
+  (0,
+  341).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  96
+  Overlap
   between
   contigs
   'r182-461.1'
   and
   'r366-922.0'
-  to
-  be
-  (184,
-  96).
+  has
+  size
+  341,
+  96
+  matches,
+  and
+  the
+  score
+  of
+  6916640.326199908.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r182-461.1'
-  and
-  'r366-922.0'
-  has
-  size
-  96,
-  96
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  7.97974595730122e+27.
+  length
+  557.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  96
-  between
-  contigs
-  'r182-461.1'
-  and
-  'r366-922.0',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 10
 BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  920
-  and
-  consists
-  of
-  2
-  parts.
-END 11
-BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  280
-  between
-  contigs
-  (1)
-  and
-  'r182-461.1'
-  to
-  be
-  (179,
-  459).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r182-461.1'
-  has
-  size
-  280,
-  280
-  matches,
-  and
-  the
-  score
-  of
-  8.561648399947143e+70.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r182-461.1'
-  completely.
-END 15
-BEGIN 16
-  Constructed
-  a
-  path
-  of
-  length
-  920.
-END 16
-BEGIN 17
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 17
-BEGIN 18
-  Calculating
-  all
-  paths...
-END 18
-BEGIN 19
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 19
-BEGIN 20
-  Constructed
-  a
-  path
-  of
-  length
-  280.
-END 20
-BEGIN 21
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 21
-BEGIN 22
   Giving
   up
   on
@@ -282,16 +139,90 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 11
+BEGIN 12
   Initial
   overlap
   stitching
   produced
-  2
+  3
   contigs.
-END 23
-BEGIN 24
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  137
+  between
+  contigs
+  'r3-502.2'
+  and
+  'r366-922.0'
+  to
+  be
+  (0,
+  505).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r3-502.2'
+  and
+  'r366-922.0'
+  has
+  size
+  505,
+  137
+  matches,
+  and
+  the
+  score
+  of
+  7380995.380066716.
+END 14
+BEGIN 15
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  96
+  between
+  contigs
+  'r182-461.1'
+  and
+  'r366-922.0'
+  to
+  be
+  (0,
+  341).
+END 15
+BEGIN 16
+  Overlap
+  between
+  contigs
+  'r182-461.1'
+  and
+  'r366-922.0'
+  has
+  size
+  341,
+  96
+  matches,
+  and
+  the
+  score
+  of
+  6916640.326199908.
+END 16
+BEGIN 17
   Calculated
   cutoff
   for
@@ -302,42 +233,79 @@ BEGIN 24
   280
   between
   contigs
-  (1)
+  'r3-502.2'
   and
   'r182-461.1'
   to
   be
-  (179,
-  459).
-END 24
-BEGIN 25
+  (0,
+  500).
+END 17
+BEGIN 18
   Overlap
   between
   contigs
-  (1)
+  'r3-502.2'
   and
   'r182-461.1'
   has
   size
-  280,
+  500,
   280
   matches,
   and
   the
   score
   of
-  8.561648399947143e+70.
-END 25
-BEGIN 26
+  1.0521911662015173e+54.
+END 18
+BEGIN 19
   Contig
-  (1)
+  'r3-502.2'
   covers
   contig
   'r182-461.1'
   completely.
-END 26
-BEGIN 27
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  137
+  between
+  contigs
+  'r3-502.2'
+  and
+  'r366-922.0'
+  to
+  be
+  (0,
+  505).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  'r3-502.2'
+  and
+  'r366-922.0'
+  has
+  size
+  505,
+  137
+  matches,
+  and
+  the
+  score
+  of
+  7380995.380066716.
+END 21
+BEGIN 22
   Outputting
-  1
+  2
   contigs.
-END 27
+END 22

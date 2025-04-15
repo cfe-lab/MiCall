@@ -44,8 +44,8 @@ BEGIN 5
   'r512-862.0'
   to
   be
-  (212,
-  343).
+  (0,
+  351).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r512-862.0'
   has
   size
-  343,
-  343
+  351,
+  139
   matches,
   and
   the
   score
   of
-  2.295983788650699e+85.
+  1.7514871377687303e+21.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  343
+  563
   between
   contigs
   'r300-854.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r300-854.2'
   to
   be
-  (10,
-  252).
+  (0,
+  555).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r300-854.2'
   has
   size
-  252,
+  555,
   252
   matches,
   and
   the
   score
   of
-  2.919586199699182e+64.
+  9.470975448560273e+40.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  252
+  565
   between
   contigs
   'r290-551.1'
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  563
+  565
   and
   consists
   of
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  252
+  343
   between
   contigs
-  'r290-551.1'
+  (2)
   and
-  (1)
+  'r512-862.0'
   to
   be
-  (10,
-  252).
+  (0,
+  351).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r290-551.1'
+  (2)
   and
-  (1)
+  'r512-862.0'
   has
   size
-  252,
-  252
+  351,
+  129
   matches,
   and
   the
   score
   of
-  2.919586199699182e+64.
+  8.886853842372225e+17.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  252
+  573
   between
   contigs
-  'r290-551.1'
+  (2)
   and
-  (1),
+  'r512-862.0',
   resulting
   in
   contig
@@ -226,7 +226,7 @@ BEGIN 16
   path
   of
   length
-  563.
+  565.
 END 16
 BEGIN 17
   Removed
@@ -261,7 +261,7 @@ BEGIN 20
   path
   of
   length
-  262.
+  351.
 END 20
 BEGIN 21
   Removed
@@ -309,34 +309,34 @@ BEGIN 24
   overlap
   of
   size
-  252
+  343
   between
   contigs
-  'r290-551.1'
+  (2)
   and
-  (1)
+  'r512-862.0'
   to
   be
-  (10,
-  252).
+  (0,
+  351).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  'r290-551.1'
+  (2)
   and
-  (1)
+  'r512-862.0'
   has
   size
-  252,
-  252
+  351,
+  129
   matches,
   and
   the
   score
   of
-  2.919586199699182e+64.
+  8.886853842372225e+17.
 END 25
 BEGIN 26
   Found
@@ -345,12 +345,12 @@ BEGIN 26
   overlap
   of
   size
-  252
+  573
   between
   contigs
-  'r290-551.1'
+  (2)
   and
-  (1),
+  'r512-862.0',
   resulting
   in
   contig

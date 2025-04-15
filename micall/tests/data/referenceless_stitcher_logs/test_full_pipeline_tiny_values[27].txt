@@ -44,8 +44,8 @@ BEGIN 5
   'r478-900.0'
   to
   be
-  (209,
-  248).
+  (0,
+  423).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r478-900.0'
   has
   size
-  248,
-  248
+  423,
+  214
   matches,
   and
   the
   score
   of
-  3.468201286469936e+63.
+  2.4731305299314355e+39.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  248
+  632
   between
   contigs
   'r269-725.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r269-725.1'
   to
   be
-  (265,
-  142).
+  (0,
+  457).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r269-725.1'
   has
   size
-  142,
+  457,
   142
   matches,
   and
   the
   score
   of
-  4.829442900495358e+38.
+  34203974014056.535.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  142
+  722
   between
   contigs
   'r4-410.2'
@@ -181,8 +181,8 @@ BEGIN 13
   (1)
   to
   be
-  (265,
-  142).
+  (0,
+  632).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   (1)
   has
   size
-  142,
+  632,
   142
   matches,
   and
   the
   score
   of
-  4.829442900495358e+38.
+  8.577650919036545.
 END 14
 BEGIN 15
   Found
@@ -209,7 +209,7 @@ BEGIN 15
   overlap
   of
   size
-  142
+  897
   between
   contigs
   'r4-410.2'
@@ -317,8 +317,8 @@ BEGIN 24
   (1)
   to
   be
-  (265,
-  142).
+  (0,
+  632).
 END 24
 BEGIN 25
   Overlap
@@ -329,35 +329,17 @@ BEGIN 25
   (1)
   has
   size
-  142,
+  632,
   142
   matches,
   and
   the
   score
   of
-  4.829442900495358e+38.
+  8.577650919036545.
 END 25
 BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  142
-  between
-  contigs
-  'r4-410.2'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (4).
-END 26
-BEGIN 27
   Outputting
-  1
+  2
   contigs.
-END 27
+END 26

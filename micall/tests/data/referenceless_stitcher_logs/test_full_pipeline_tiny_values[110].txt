@@ -44,8 +44,8 @@ BEGIN 5
   'r397-967.0'
   to
   be
-  (343,
-  267).
+  (0,
+  571).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r397-967.0'
   has
   size
-  267,
-  267
+  571,
+  228
   matches,
   and
   the
   score
   of
-  7.187495747151675e+67.
+  1.5084163913548808e+32.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  267
+  914
   between
   contigs
   'r54-663.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r383-925.1'
   to
   be
-  (329,
-  281).
+  (0,
+  543).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r383-925.1'
   has
   size
-  281,
-  281
+  543,
+  214
   matches,
   and
   the
   score
   of
-  8.659270740058138e+70.
+  9.034239069530765e+29.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  281
+  872
   between
   contigs
   'r54-663.2'
@@ -154,7 +154,7 @@ BEGIN 11
   and
   consists
   of
-  3
+  2
   parts.
 END 11
 BEGIN 12
@@ -173,91 +173,89 @@ BEGIN 13
   overlap
   of
   size
-  529
+  543
   between
   contigs
-  (2)
+  (1)
   and
-  'r397-967.0'
+  'r383-925.1'
   to
   be
-  (343,
-  529).
+  (0,
+  914).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
-  'r397-967.0'
+  'r383-925.1'
   has
   size
-  529,
-  529
+  914,
+  543
   matches,
   and
   the
   score
   of
-  6.310657790506667e+127.
+  7.062530750817391e+102.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  529
-  between
-  contigs
-  (2)
-  and
-  'r397-967.0',
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r383-925.1'
+  completely.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  914
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
   Constructed
   a
   path
   of
   length
   914.
+END 16
+BEGIN 17
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 17
+BEGIN 18
+  Calculating
+  all
+  paths...
 END 18
 BEGIN 19
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 19
+BEGIN 20
+  Constructed
+  a
+  path
+  of
+  length
+  543.
+END 20
+BEGIN 21
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +266,78 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  543
+  between
+  contigs
+  (1)
+  and
+  'r383-925.1'
+  to
+  be
+  (0,
+  914).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r383-925.1'
+  has
+  size
+  914,
+  543
+  matches,
+  and
+  the
+  score
+  of
+  7.062530750817391e+102.
+END 25
+BEGIN 26
+  Contig
+  (1)
+  covers
+  contig
+  'r383-925.1'
+  completely.
+END 26
+BEGIN 27
   Outputting
   1
   contigs.
-END 21
+END 27

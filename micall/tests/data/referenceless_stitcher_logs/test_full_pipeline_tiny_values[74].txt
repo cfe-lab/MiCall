@@ -44,8 +44,8 @@ BEGIN 5
   'r492-880.2'
   to
   be
-  (314,
-  88).
+  (93,
+  309).
 END 5
 BEGIN 6
   Overlap
@@ -56,34 +56,16 @@ BEGIN 6
   'r492-880.2'
   has
   size
-  88,
+  309,
   88
   matches,
   and
   the
   score
   of
-  9.414156406256686e+25.
+  6800187.694010214.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  88
-  between
-  contigs
-  'r178-579.1'
-  and
-  'r492-880.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -99,10 +81,10 @@ BEGIN 8
   'r415-783.0'
   to
   be
-  (237,
-  165).
-END 8
-BEGIN 9
+  (0,
+  369).
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -111,23 +93,23 @@ BEGIN 9
   'r415-783.0'
   has
   size
-  165,
-  165
+  369,
+  132
   matches,
   and
   the
   score
   of
-  2.0479065866558234e+44.
-END 9
-BEGIN 10
+  4.007153096539995e+17.
+END 8
+BEGIN 9
   Found
   a
   significant
   overlap
   of
   size
-  165
+  606
   between
   contigs
   'r178-579.1'
@@ -136,9 +118,9 @@ BEGIN 10
   resulting
   in
   contig
-  (2).
-END 10
-BEGIN 11
+  (1).
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -150,22 +132,22 @@ BEGIN 11
   fittest
   has
   length
-  703
+  606
   and
   consists
   of
-  3
+  2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -176,88 +158,96 @@ BEGIN 13
   292
   between
   contigs
-  (2)
+  (1)
   and
   'r492-880.2'
   to
   be
-  (314,
-  292).
-END 13
-BEGIN 14
+  (0,
+  389).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
   'r492-880.2'
   has
   size
-  292,
-  292
+  389,
+  75
   matches,
   and
   the
   score
   of
-  5.0092737823069904e+73.
-END 14
-BEGIN 15
+  8.983797516775052.
+END 13
+BEGIN 14
   Found
   a
   significant
   overlap
   of
   size
-  292
+  703
   between
   contigs
-  (2)
+  (1)
   and
   'r492-880.2',
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  703
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 17
-BEGIN 18
+  (2).
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  703.
+  606.
+END 15
+BEGIN 16
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 16
+BEGIN 17
+  Calculating
+  all
+  paths...
+END 17
+BEGIN 18
+  Cycle
+  1
+  started
+  with
+  1
+  paths
 END 18
 BEGIN 19
+  Constructed
+  a
+  path
+  of
+  length
+  389.
+END 19
+BEGIN 20
   Removed
-  3
+  1
   components
   from
   the
@@ -268,17 +258,70 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 22
+BEGIN 23
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  292
+  between
+  contigs
+  (1)
+  and
+  'r492-880.2'
+  to
+  be
+  (0,
+  389).
+END 23
+BEGIN 24
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r492-880.2'
+  has
+  size
+  389,
+  75
+  matches,
+  and
+  the
+  score
+  of
+  8.983797516775052.
+END 24
+BEGIN 25
   Outputting
-  1
+  2
   contigs.
-END 21
+END 25

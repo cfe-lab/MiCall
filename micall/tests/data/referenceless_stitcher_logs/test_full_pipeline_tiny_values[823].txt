@@ -44,8 +44,8 @@ BEGIN 5
   'r253-925.0'
   to
   be
-  (162,
-  562).
+  (0,
+  673).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r253-925.0'
   has
   size
-  562,
-  562
+  673,
+  511
   matches,
   and
   the
   score
   of
-  2.5637553501186333e+135.
+  2.3444267417992697e+111.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  562
+  835
   between
   contigs
   'r91-814.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r180-723.1'
   to
   be
-  (89,
-  633).
+  (0,
+  724).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r180-723.1'
   has
   size
-  544,
+  724,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  5.906683967041797e+117.
 END 9
 BEGIN 10
   Contig
@@ -171,8 +171,8 @@ BEGIN 13
   'r180-723.1'
   to
   be
-  (89,
-  633).
+  (0,
+  835).
 END 13
 BEGIN 14
   Overlap
@@ -183,14 +183,14 @@ BEGIN 14
   'r180-723.1'
   has
   size
-  544,
+  835,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  1.7705554260636728e+109.
 END 14
 BEGIN 15
   Contig
@@ -297,8 +297,8 @@ BEGIN 24
   'r180-723.1'
   to
   be
-  (89,
-  633).
+  (0,
+  835).
 END 24
 BEGIN 25
   Overlap
@@ -309,14 +309,14 @@ BEGIN 25
   'r180-723.1'
   has
   size
-  544,
+  835,
   544
   matches,
   and
   the
   score
   of
-  2.823675953413335e+131.
+  1.7705554260636728e+109.
 END 25
 BEGIN 26
   Contig

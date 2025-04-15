@@ -44,8 +44,8 @@ BEGIN 5
   'r379-966.0'
   to
   be
-  (243,
-  251).
+  (0,
+  588).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r379-966.0'
   has
   size
-  251,
+  588,
   251
   matches,
   and
   the
   score
   of
-  1.4414282368544858e+64.
+  1.4447656219134874e+38.
 END 6
 BEGIN 7
   Found
@@ -72,7 +72,7 @@ BEGIN 7
   overlap
   of
   size
-  251
+  831
   between
   contigs
   'r136-629.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r379-966.0'
   to
   be
-  (197,
-  163).
+  (0,
+  588).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r379-966.0'
   has
   size
-  163,
+  588,
   163
   matches,
   and
   the
   score
   of
-  4.923770075305821e+43.
+  1633184092.910173.
 END 9
 BEGIN 10
   Found
@@ -127,7 +127,7 @@ BEGIN 10
   overlap
   of
   size
-  163
+  785
   between
   contigs
   'r182-541.2'
@@ -181,8 +181,8 @@ BEGIN 13
   'r182-541.2'
   to
   be
-  (46,
-  406).
+  (0,
+  831).
 END 13
 BEGIN 14
   Overlap
@@ -193,14 +193,14 @@ BEGIN 14
   'r182-541.2'
   has
   size
-  360,
+  831,
   360
   matches,
   and
   the
   score
   of
-  2.1928844270686562e+89.
+  1.3480530612134925e+53.
 END 14
 BEGIN 15
   Contig
@@ -307,8 +307,8 @@ BEGIN 24
   'r182-541.2'
   to
   be
-  (46,
-  406).
+  (0,
+  831).
 END 24
 BEGIN 25
   Overlap
@@ -319,14 +319,14 @@ BEGIN 25
   'r182-541.2'
   has
   size
-  360,
+  831,
   360
   matches,
   and
   the
   score
   of
-  2.1928844270686562e+89.
+  1.3480530612134925e+53.
 END 25
 BEGIN 26
   Contig
