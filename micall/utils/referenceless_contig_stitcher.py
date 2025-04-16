@@ -57,33 +57,33 @@ class Pool:
         if self.size > 0:
             smallest_path = self.paths[0]
             self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
-                                      smallest_path.probability)
+                                      smallest_path.score)
         else:
             self.smallest_score = ACCEPTABLE_STITCHING_SCORE
 
     def add(self, path: ContigsPath) -> bool:
         key = path.whole.seq
         alternative = self.existing.get(key)
-        if alternative is not None and alternative.score() >= path.score():
+        if alternative is not None and alternative.get_score() >= path.get_score():
             return False
 
         if self.size > 0:
             smallest_path = self.paths[0]
             if self.size >= self.capacity:
-                if smallest_path.score() >= path.score():
+                if smallest_path.get_score() >= path.get_score():
                     return False
 
                 del self.paths[0]
                 self.size -= 1
 
-            if path.score() < smallest_path.score():
+            if path.get_score() < smallest_path.get_score():
                 smallest_path = path
 
             self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
-                                      smallest_path.probability)
+                                      smallest_path.score)
         else:
             self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
-                                      path.score())
+                                      path.get_score())
 
         self.size += 1
         self.paths.add(path)
@@ -135,13 +135,13 @@ def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[O
     return ret
 
 
-def combine_probability(current: Score, new: Score) -> Score:
+def combine_scores(current: Score, new: Score) -> Score:
     return current + new
 
 
-def get_minimum_score(current: Score, minimum: Score) -> Score:
+def get_minimum_base_score(current: Score, minimum: Score) -> Score:
     """
-    Returns minimum probability that is still acceptable.
+    Returns minimum score that when combined with current is still acceptable.
     """
 
     return minimum - current
@@ -233,17 +233,17 @@ def find_overlap_cutoffs(minimum_score: Score,
 
 
 def try_combine_contigs(is_debug2: bool,
-                        current_prob: Score,
+                        current_score: Score,
                         pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Score]]:
 
-    minimum_score = get_minimum_score(current_prob, pool.min_acceptable_score)
+    minimum_base_score = get_minimum_base_score(current_score, pool.min_acceptable_score)
 
     maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
-    maximum_result_probability = calculate_overlap_score(L=maximum_overlap_size, M=maximum_number_of_matches)
-    if maximum_result_probability < minimum_score:
+    maximum_result_score = calculate_overlap_score(L=maximum_overlap_size, M=maximum_number_of_matches)
+    if maximum_result_score < minimum_base_score:
         return None
 
     overlap = get_overlap(a, b)
@@ -252,8 +252,8 @@ def try_combine_contigs(is_debug2: bool,
 
     optimistic_overlap_size = overlap.size
     optimistic_number_of_matches = optimistic_overlap_size
-    optimistic_result_probability = calculate_overlap_score(L=optimistic_overlap_size, M=optimistic_number_of_matches)
-    if optimistic_result_probability < minimum_score:
+    optimistic_result_score = calculate_overlap_score(L=optimistic_overlap_size, M=optimistic_number_of_matches)
+    if optimistic_result_score < minimum_base_score:
         return None
 
     if abs(overlap.shift) < len(a.seq):
@@ -270,9 +270,9 @@ def try_combine_contigs(is_debug2: bool,
 
     assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size}"
     assert len(left_initial_overlap) == overlap.size, f"{len(left_initial_overlap)} == {overlap.size}"
-    assert calculate_overlap_score(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_score
+    assert calculate_overlap_score(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_base_score
 
-    cutoffs = find_overlap_cutoffs(minimum_score,
+    cutoffs = find_overlap_cutoffs(minimum_base_score,
                                    left, right,
                                    left_initial_overlap,
                                    right_initial_overlap,
@@ -318,12 +318,12 @@ def try_combine_contigs(is_debug2: bool,
                             if x == y and x != '-')
 
     # Note that result_length is not necessarily == len(left_overlap_chunk) + len(right_overlap_chunk).
-    # The addition would give a more precise value for the result_probability, but it's much more expensive to calculate.
-    result_probability = calculate_overlap_score(L=result_length, M=number_of_matches)
+    # The addition would give a more precise value for the result_score, but it's much more expensive to calculate.
+    result_score = calculate_overlap_score(L=result_length, M=number_of_matches)
     if is_debug2:
-        log(events.DeterminedOverlap(left.unique_name, right.unique_name, result_length, number_of_matches, result_probability))
+        log(events.DeterminedOverlap(left.unique_name, right.unique_name, result_length, number_of_matches, result_score))
 
-    if result_probability < minimum_score:
+    if result_score < minimum_base_score:
         return None
 
     if is_covered:
@@ -346,7 +346,7 @@ def try_combine_contigs(is_debug2: bool,
                                         result_contig=result_contig.unique_name,
                                         overlap_size=len(left_overlap_chunk) + len(right_overlap_chunk),
                                         ))
-        return (result_contig, result_probability)
+        return (result_contig, result_score)
 
 
 def extend_by_1(is_debug2: bool,
@@ -357,14 +357,14 @@ def extend_by_1(is_debug2: bool,
     if path.has_contig(candidate):
         return False
 
-    combination = try_combine_contigs(is_debug2, path.probability, pool, path.whole, candidate)
+    combination = try_combine_contigs(is_debug2, path.score, pool, path.whole, candidate)
     if combination is None:
         return False
 
-    (combined, prob) = combination
-    probability = combine_probability(path.probability, prob)
+    (combined, additional_score) = combination
+    score = combine_scores(path.score, additional_score)
     new_elements = path.parts_ids.union([candidate.id])
-    new_path = ContigsPath(combined, new_elements, probability)
+    new_path = ContigsPath(combined, new_elements, score)
     return pool.add(new_path)
 
 
@@ -419,7 +419,7 @@ def find_most_probable_path(seeds: Sequence[ContigsPath],
                             contigs: Sequence[ContigWithAligner],
                             ) -> ContigsPath:
     paths = calculate_all_paths(seeds, contigs)
-    return max(paths, key=lambda path: path.score())
+    return max(paths, key=ContigsPath.get_score)
 
 
 def contig_size_fun(contig: Contig) -> int:
@@ -463,12 +463,12 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
 
             pool = Pool.empty()
             result = try_combine_contigs(is_debug2=is_debug2,
-                                         current_prob=SCORE_NOTHING,
+                                         current_score=SCORE_NOTHING,
                                          pool=pool,
                                          a=first, b=second,
                                          )
             if result is not None:
-                (combined, prob) = result
+                (combined, additional_score) = result
                 return (first, second, combined)
 
     return None

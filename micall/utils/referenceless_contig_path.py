@@ -13,24 +13,24 @@ class ContigsPath:
     # Id's of contigs that comprise this path.
     parts_ids: FrozenSet[int]
 
-    # Higher is better. This is an estimated probability that
-    # all the components in this path came together by accident.
-    probability: Score
+    # Higher is better. The lower the score is, the higher the probability
+    # that all the components of `whole` came together on accident.
+    score: Score
 
-    def score(self) -> Score:
-        return self.probability
+    def get_score(self) -> Score:
+        return self.score
 
     def __lt__(self, other: 'ContigsPath') -> bool:
-        return self.score() < other.score()
+        return self.get_score() < other.get_score()
 
     def __le__(self, other: 'ContigsPath') -> bool:
-        return self.score() <= other.score()
+        return self.get_score() <= other.get_score()
 
     def __gt__(self, other: 'ContigsPath') -> bool:
-        return self.score() > other.score()
+        return self.get_score() > other.get_score()
 
     def __ge__(self, other: 'ContigsPath') -> bool:
-        return self.score() >= other.score()
+        return self.get_score() >= other.get_score()
 
     def has_contig(self, contig: Contig) -> bool:
         return contig.id in self.parts_ids
@@ -39,5 +39,5 @@ class ContigsPath:
     def singleton(contig: ContigWithAligner) -> 'ContigsPath':
         return ContigsPath(whole=contig,
                            parts_ids=frozenset((contig.id,)),
-                           probability=SCORE_NOTHING,
+                           score=SCORE_NOTHING,
                            )

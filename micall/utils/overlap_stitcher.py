@@ -188,9 +188,6 @@ def calculate_overlap_score(L: int, M: int) -> Score:
 
     L += 1
 
-    if L <= 0:
-        raise ValueError("Overlap length L must be greater than 0.")
-
     # Compute z-score for a four-letter alphabet where P(match)=1/4:
     # Expected matches = L / 4 and standard deviation = sqrt(3L) / 4.
     z = (4 * M - L) / math.sqrt(3 * L)
