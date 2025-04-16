@@ -33,11 +33,60 @@ class MappyAligner(LocalAligner):
                 yield (x.r_st, x.r_en)
 
 
+PADDING = 0
+
+
+class ForwardAligner(LocalAligner):
+    def __init__(self, seq: str) -> None:
+        if seq.startswith('A'):
+            self.seq = 'C' * PADDING + seq
+        else:
+            self.seq = 'A' * PADDING + seq
+        self.aligner = OriginalMappyAligner(seq=self.seq)
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        if self.seq.startswith('A'):
+            query = 'A' * PADDING + query
+        else:
+            query = 'C' * PADDING + query
+
+        for x in self.aligner.map(query):
+            if x.is_primary:
+                yield (x.r_st - PADDING, x.r_en - PADDING)
+
+
+class ReversedAligner(LocalAligner):
+    def __init__(self, seq: str) -> None:
+        if seq.endswith('A'):
+            self.seq = seq + 'C' * PADDING
+        else:
+            self.seq = seq + 'A' * PADDING
+        self.aligner = OriginalMappyAligner(seq=self.seq)
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        if self.seq.endswith('A'):
+            query = query + 'A' * PADDING
+        else:
+            query = query + 'C' * PADDING
+
+        for x in self.aligner.map(query):
+            if x.is_primary:
+                yield (x.r_st - PADDING, x.r_en - PADDING)
+
+
 @dataclass(frozen=True)
 class ContigWithAligner(Contig):
     @cached_property
     def mappy_aligner(self) -> LocalAligner:
         return MappyAligner(seq=self.seq)
+
+    @cached_property
+    def forward_aligner(self) -> LocalAligner:
+        return ForwardAligner(seq=self.seq)
+
+    @cached_property
+    def reversed_aligner(self) -> LocalAligner:
+        return ReversedAligner(seq=self.seq)
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
@@ -58,7 +107,12 @@ class ContigWithAligner(Contig):
         if len(overlap) < 40:
             return
 
-        aligner = self.mappy_aligner
+        if relation == "left":
+            aligner = self.reversed_aligner
+        elif relation == "right":
+            aligner = self.forward_aligner
+        else:
+            aligner = self.mappy_aligner
         shift = 0
 
         if relation != "cover":
@@ -76,11 +130,11 @@ class ContigWithAligner(Contig):
                 if relation == "left":
                     seq = self.seq[-max_length:]
                     shift = len(self.seq) - max_length
-                    aligner = MappyAligner(seq=seq)
+                    aligner = ReversedAligner(seq=seq)
                 elif relation == "right":
                     seq = self.seq[:max_length]
                     shift = 0
-                    aligner = MappyAligner(seq=seq)
+                    aligner = ForwardAligner(seq=seq)
                 else:
                     _x: NoReturn = relation
 
