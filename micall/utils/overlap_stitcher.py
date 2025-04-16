@@ -190,9 +190,7 @@ def calculate_overlap_score(L: int, M: int) -> Score:
 
     # Compute z-score for a four-letter alphabet where P(match)=1/4:
     # Expected matches = L / 4 and standard deviation = sqrt(3L) / 4.
-    z = (4 * M - L) / math.sqrt(3 * L)
-
-    return z
+    return 1024 * (4 * M - L) / math.sqrt(3 * L)
 
 
 def find_max_overlap_length(M: int, X: Score, L_low: int = -1, L_high: int = -1) -> int:

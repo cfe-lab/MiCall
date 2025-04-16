@@ -181,7 +181,7 @@ BEGIN 14
   the
   score
   of
-  27.568475353804633.
+  28230.118762295944.
 END 14
 BEGIN 15
   Found
@@ -236,7 +236,7 @@ BEGIN 17
   the
   score
   of
-  0.8164965809277261.
+  836.0924988699916.
 END 17
 BEGIN 18
   Outputting

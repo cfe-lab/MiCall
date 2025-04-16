@@ -20,7 +20,7 @@ from micall.utils.contig_stitcher_contigs import Contig
 logger = logging.getLogger(__name__)
 
 
-ACCEPTABLE_STITCHING_SCORE: Score = calculate_overlap_score(L=15, M=15)
+ACCEPTABLE_STITCHING_SCORE: Score = calculate_overlap_score(L=10, M=10)
 MAX_ALTERNATIVES = 30
 
 

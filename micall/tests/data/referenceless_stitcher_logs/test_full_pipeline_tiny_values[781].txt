@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  20.59215960109665.
+  21086.37143152297.
 END 7
 BEGIN 8
   Found
