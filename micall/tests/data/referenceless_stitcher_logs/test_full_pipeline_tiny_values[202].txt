@@ -181,7 +181,7 @@ BEGIN 14
   the
   score
   of
-  2.45576024731656e+65.
+  27.62283027261652.
 END 14
 BEGIN 15
   Contig

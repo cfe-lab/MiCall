@@ -181,7 +181,7 @@ BEGIN 14
   the
   score
   of
-  6.9410609640956635e+59.
+  26.34431232776426.
 END 14
 BEGIN 15
   Found

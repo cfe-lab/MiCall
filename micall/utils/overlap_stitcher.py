@@ -2,7 +2,7 @@ from fractions import Fraction
 from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
 from gotoh import align_it
-from functools import lru_cache
+from functools import cache
 import numpy as np
 import math
 
@@ -153,15 +153,48 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
     exp_dropoff_array_iter(array=array, direction=-1, factor=factor)
 
 
-@lru_cache(maxsize=99999)
+@cache
 def calc_overlap_pvalue(L: int, M: int) -> float:
-    L += 1
-    baseline = L / 4
-    extra = M - baseline
-    exp = 2.0 ** round(min(500, extra))
-    triple = extra * extra * extra
+    """
+    Computes a monotonic scoring metric for an overlap event between
+    two sequences using a four-letter alphabet. This function returns
+    a z-score that quantifies how far the observed number of matching
+    characters deviates from the expected value under the assumption
+    that each character match occurs with a probability of 1/4.
 
-    return 9 + triple * exp * math.log(L)
+    Given:
+        - M: the observed number of matching characters in the overlap,
+        - L: the length of the overlap.
+
+    Under the uniform model for a four-letter alphabet:
+        - The probability of a match per position is 1/4.
+        - Expected number of matches: L / 4.
+        - Variance: L * (1/4) * (3/4) = 3L / 16.
+        - Standard deviation: sqrt(3L) / 4.
+
+    The z-score is computed using the formula:
+        z = (4*M - L) / sqrt(3*L)
+
+    This z-score provides a monotonic measure for ranking overlap
+    events: a higher z-score indicates a larger deviation from the
+    expected match count and thus a rarer event.
+
+    :param M: Number of matching characters.
+    :param L: Length of the overlap (must be greater than 0).
+    :return: A z-score as a float that serves as a ranking metric for the event.
+    :raises ValueError: If L is not greater than 0.
+    """
+
+    L += 1
+
+    if L <= 0:
+        raise ValueError("Overlap length L must be greater than 0.")
+
+    # Compute z-score for a four-letter alphabet where P(match)=1/4:
+    # Expected matches = L / 4 and standard deviation = sqrt(3L) / 4.
+    z = (4 * M - L) / math.sqrt(3 * L)
+
+    return z
 
 
 def find_max_overlap_length(M: int, X: float, L_low: int = -1, L_high: int = -1) -> int:

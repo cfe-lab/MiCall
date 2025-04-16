@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  2.467911168515203e+114.
+  37.48348067382932.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  5.052985591895452e+69.
+  28.635979530504933.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  4.810866735433101e+32.
+  18.521489790121745.
 END 12
 BEGIN 13
   Found
@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  1.4652669525183568e+51.
+  24.083754086195817.
 END 15
 BEGIN 16
   Found
@@ -283,7 +283,7 @@ BEGIN 18
   the
   score
   of
-  1.0807317553058652e+24.
+  15.331857148480061.
 END 18
 BEGIN 19
   Found
@@ -315,11 +315,11 @@ BEGIN 20
   fittest
   has
   length
-  496
+  841
   and
   consists
   of
-  2
+  6
   parts.
 END 20
 BEGIN 21
@@ -365,7 +365,7 @@ BEGIN 23
   the
   score
   of
-  5.052985591895452e+69.
+  28.635979530504933.
 END 23
 BEGIN 24
   Found
@@ -420,7 +420,7 @@ BEGIN 26
   the
   score
   of
-  4.810866735433101e+32.
+  18.521489790121745.
 END 26
 BEGIN 27
   Found
@@ -475,7 +475,7 @@ BEGIN 29
   the
   score
   of
-  1.4652669525183568e+51.
+  24.083754086195817.
 END 29
 BEGIN 30
   Found
@@ -530,7 +530,7 @@ BEGIN 32
   the
   score
   of
-  1.0807317553058652e+24.
+  15.331857148480061.
 END 32
 BEGIN 33
   Found
@@ -551,41 +551,33 @@ BEGIN 33
   (9).
 END 33
 BEGIN 34
-  Constructed
-  a
-  path
-  of
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  496.
+  841
+  and
+  consists
+  of
+  6
+  parts.
 END 34
 BEGIN 35
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  4
-  still
-  to
-  process.
-END 35
-BEGIN 36
-  Calculating
-  all
-  paths...
-END 36
-BEGIN 37
   Cycle
-  1
+  3
   started
   with
   1
   paths
-END 37
-BEGIN 38
+END 35
+BEGIN 36
   Calculated
   cutoff
   for
@@ -596,19 +588,19 @@ BEGIN 38
   313
   between
   contigs
-  'r338-809.4'
+  (6)
   and
   'r497-937.0'
   to
   be
-  (159,
+  (380,
   313).
-END 38
-BEGIN 39
+END 36
+BEGIN 37
   Overlap
   between
   contigs
-  'r338-809.4'
+  (6)
   and
   'r497-937.0'
   has
@@ -620,9 +612,9 @@ BEGIN 39
   the
   score
   of
-  2.046772255343918e+78.
-END 39
-BEGIN 40
+  30.5616914639554.
+END 37
+BEGIN 38
   Found
   a
   significant
@@ -632,15 +624,15 @@ BEGIN 40
   313
   between
   contigs
-  'r338-809.4'
+  (6)
   and
   'r497-937.0',
   resulting
   in
   contig
   (10).
-END 40
-BEGIN 41
+END 38
+BEGIN 39
   Calculated
   cutoff
   for
@@ -651,19 +643,19 @@ BEGIN 41
   392
   between
   contigs
-  'r338-809.4'
+  (6)
   and
   'r418-843.1'
   to
   be
-  (80,
+  (301,
   392).
-END 41
-BEGIN 42
+END 39
+BEGIN 40
   Overlap
   between
   contigs
-  'r338-809.4'
+  (6)
   and
   'r418-843.1'
   has
@@ -675,9 +667,9 @@ BEGIN 42
   the
   score
   of
-  4.819519351096359e+96.
-END 42
-BEGIN 43
+  34.22007555255732.
+END 40
+BEGIN 41
   Found
   a
   significant
@@ -687,17 +679,17 @@ BEGIN 43
   392
   between
   contigs
-  'r338-809.4'
+  (6)
   and
   'r418-843.1',
   resulting
   in
   contig
   (11).
-END 43
-BEGIN 44
+END 41
+BEGIN 42
   Cycle
-  1
+  3
   finished
   with
   1
@@ -707,22 +699,22 @@ BEGIN 44
   fittest
   has
   length
-  620
+  841
   and
   consists
   of
-  4
+  6
   parts.
-END 44
-BEGIN 45
+END 42
+BEGIN 43
   Cycle
-  2
+  4
   started
   with
   1
   paths
-END 45
-BEGIN 46
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -738,10 +730,10 @@ BEGIN 46
   'r497-937.0'
   to
   be
-  (159,
+  (380,
   347).
-END 46
-BEGIN 47
+END 44
+BEGIN 45
   Overlap
   between
   contigs
@@ -757,9 +749,9 @@ BEGIN 47
   the
   score
   of
-  1.905628592185648e+86.
-END 47
-BEGIN 48
+  32.18719195068899.
+END 45
+BEGIN 46
   Found
   a
   significant
@@ -776,8 +768,8 @@ BEGIN 48
   in
   contig
   (12).
-END 48
-BEGIN 49
+END 46
+BEGIN 47
   Calculated
   cutoff
   for
@@ -793,10 +785,10 @@ BEGIN 49
   'r533-957.5'
   to
   be
-  (195,
+  (416,
   311).
-END 49
-BEGIN 50
+END 47
+BEGIN 48
   Overlap
   between
   contigs
@@ -812,9 +804,9 @@ BEGIN 50
   the
   score
   of
-  1.0027572488259023e+78.
-END 50
-BEGIN 51
+  30.463372991464585.
+END 48
+BEGIN 49
   Found
   a
   significant
@@ -831,10 +823,10 @@ BEGIN 51
   in
   contig
   (13).
-END 51
-BEGIN 52
+END 49
+BEGIN 50
   Cycle
-  2
+  4
   finished
   with
   1
@@ -844,22 +836,22 @@ BEGIN 52
   fittest
   has
   length
-  620
+  841
   and
   consists
   of
-  4
+  6
   parts.
-END 52
-BEGIN 53
+END 50
+BEGIN 51
   Cycle
-  3
+  5
   started
   with
   1
   paths
-END 53
-BEGIN 54
+END 51
+BEGIN 52
   Calculated
   cutoff
   for
@@ -875,10 +867,10 @@ BEGIN 54
   'r533-957.5'
   to
   be
-  (195,
+  (416,
   405).
-END 54
-BEGIN 55
+END 52
+BEGIN 53
   Overlap
   between
   contigs
@@ -894,9 +886,9 @@ BEGIN 55
   the
   score
   of
-  5.472750284280459e+99.
-END 55
-BEGIN 56
+  34.785243082218045.
+END 53
+BEGIN 54
   Found
   a
   significant
@@ -913,10 +905,10 @@ BEGIN 56
   in
   contig
   (14).
-END 56
-BEGIN 57
+END 54
+BEGIN 55
   Cycle
-  3
+  5
   finished
   with
   1
@@ -926,32 +918,32 @@ BEGIN 57
   fittest
   has
   length
-  620
+  841
   and
   consists
   of
-  4
+  6
   parts.
-END 57
-BEGIN 58
+END 55
+BEGIN 56
   Cycle
-  4
+  6
   started
   with
   1
   paths
-END 58
-BEGIN 59
+END 56
+BEGIN 57
   Constructed
   a
   path
   of
   length
-  620.
-END 59
-BEGIN 60
+  841.
+END 57
+BEGIN 58
   Removed
-  4
+  6
   components
   from
   the
@@ -962,72 +954,17 @@ BEGIN 60
   still
   to
   process.
-END 60
-BEGIN 61
+END 58
+BEGIN 59
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 61
-BEGIN 62
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  275
-  between
-  contigs
-  (1)
-  and
-  (14)
-  to
-  be
-  (221,
-  275).
-END 62
-BEGIN 63
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  (14)
-  has
-  size
-  275,
-  275
-  matches,
-  and
-  the
-  score
-  of
-  5.052985591895452e+69.
-END 63
-BEGIN 64
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  275
-  between
-  contigs
-  (1)
-  and
-  (14),
-  resulting
-  in
-  contig
-  (15).
-END 64
-BEGIN 65
+END 59
+BEGIN 60
   Outputting
   1
   contigs.
-END 65
+END 60

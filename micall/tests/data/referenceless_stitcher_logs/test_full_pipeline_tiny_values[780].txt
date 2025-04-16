@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  9.01716581701044.
+  0.3333333333333333.
 END 6
 BEGIN 7
   Calculated
@@ -100,7 +100,7 @@ BEGIN 8
   the
   score
   of
-  8.76826147035907.
+  -1.0.
 END 8
 BEGIN 9
   Constructed
@@ -183,7 +183,7 @@ BEGIN 14
   the
   score
   of
-  9.01716581701044.
+  0.3333333333333333.
 END 14
 BEGIN 15
   Calculated
@@ -220,7 +220,7 @@ BEGIN 16
   the
   score
   of
-  8.76826147035907.
+  -1.0.
 END 16
 BEGIN 17
   Calculated
@@ -257,7 +257,7 @@ BEGIN 18
   the
   score
   of
-  1.2002147851897737e+22.
+  14.528353635588948.
 END 18
 BEGIN 19
   Found

@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  3.443906909036704e+79.
+  30.806114959748992.
 END 7
 BEGIN 8
   Contig

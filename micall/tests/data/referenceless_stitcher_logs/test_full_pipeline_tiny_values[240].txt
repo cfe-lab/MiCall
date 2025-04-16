@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  1.0223328618750815e+70.
+  28.688312148171956.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  7.428283288638574.
+  -1.2909944487358056.
 END 9
 BEGIN 10
   Cycle

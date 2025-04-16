@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  1.6943641302828454e+123.
+  38.974484962107695.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.1164935779209243e+118.
+  38.079009623897775.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  7.040271329247873e+105.
+  35.930659848756626.
 END 12
 BEGIN 13
   Found
@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  1.0128020678459069e+74.
+  29.563797803894705.
 END 15
 BEGIN 16
   Found
@@ -283,7 +283,7 @@ BEGIN 18
   the
   score
   of
-  2.046772255343918e+78.
+  30.5616914639554.
 END 18
 BEGIN 19
   Found
@@ -315,11 +315,11 @@ BEGIN 20
   fittest
   has
   length
-  796
+  848
   and
   consists
   of
-  4
+  6
   parts.
 END 20
 BEGIN 21
@@ -365,7 +365,7 @@ BEGIN 23
   the
   score
   of
-  1.1164935779209243e+118.
+  38.079009623897775.
 END 23
 BEGIN 24
   Found
@@ -420,7 +420,7 @@ BEGIN 26
   the
   score
   of
-  7.040271329247873e+105.
+  35.930659848756626.
 END 26
 BEGIN 27
   Found
@@ -475,7 +475,7 @@ BEGIN 29
   the
   score
   of
-  1.0128020678459069e+74.
+  29.563797803894705.
 END 29
 BEGIN 30
   Found
@@ -530,7 +530,7 @@ BEGIN 32
   the
   score
   of
-  2.046772255343918e+78.
+  30.5616914639554.
 END 32
 BEGIN 33
   Found
@@ -562,11 +562,11 @@ BEGIN 34
   fittest
   has
   length
-  796
+  848
   and
   consists
   of
-  4
+  6
   parts.
 END 34
 BEGIN 35
@@ -612,7 +612,7 @@ BEGIN 37
   the
   score
   of
-  1.6943641302828454e+123.
+  38.974484962107695.
 END 37
 BEGIN 38
   Found
@@ -667,7 +667,7 @@ BEGIN 40
   the
   score
   of
-  1.5177807209697382e+91.
+  33.196602452877826.
 END 40
 BEGIN 41
   Found
@@ -722,7 +722,7 @@ BEGIN 43
   the
   score
   of
-  1.1758944536308546e+96.
+  34.0883216837332.
 END 43
 BEGIN 44
   Found
@@ -754,11 +754,11 @@ BEGIN 45
   fittest
   has
   length
-  796
+  848
   and
   consists
   of
-  4
+  6
   parts.
 END 45
 BEGIN 46
@@ -804,7 +804,7 @@ BEGIN 48
   the
   score
   of
-  7.567919118561536e+101.
+  35.213815761896925.
 END 48
 BEGIN 49
   Found
@@ -859,7 +859,7 @@ BEGIN 51
   the
   score
   of
-  8.091547354289617e+97.
+  34.48207312140917.
 END 51
 BEGIN 52
   Contig
@@ -870,98 +870,8 @@ BEGIN 52
   completely.
 END 52
 BEGIN 53
-  Constructed
-  a
-  path
-  of
-  length
-  796.
-END 53
-BEGIN 54
-  Removed
+  Cycle
   4
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
-END 54
-BEGIN 55
-  Calculating
-  all
-  paths...
-END 55
-BEGIN 56
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 56
-BEGIN 57
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  378
-  between
-  contigs
-  'r501-898.0'
-  and
-  'r521-987.4'
-  to
-  be
-  (20,
-  378).
-END 57
-BEGIN 58
-  Overlap
-  between
-  contigs
-  'r501-898.0'
-  and
-  'r521-987.4'
-  has
-  size
-  378,
-  378
-  matches,
-  and
-  the
-  score
-  of
-  2.0970307524434095e+93.
-END 58
-BEGIN 59
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  378
-  between
-  contigs
-  'r501-898.0'
-  and
-  'r521-987.4',
-  resulting
-  in
-  contig
-  (14).
-END 59
-BEGIN 60
-  Cycle
-  1
   finished
   with
   1
@@ -971,32 +881,104 @@ BEGIN 60
   fittest
   has
   length
-  487
+  848
   and
   consists
   of
-  2
+  6
   parts.
-END 60
-BEGIN 61
+END 53
+BEGIN 54
   Cycle
-  2
+  5
   started
   with
   1
   paths
-END 61
-BEGIN 62
+END 54
+BEGIN 55
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  398
+  between
+  contigs
+  (13)
+  and
+  'r501-898.0'
+  to
+  be
+  (361,
+  759).
+END 55
+BEGIN 56
+  Overlap
+  between
+  contigs
+  (13)
+  and
+  'r501-898.0'
+  has
+  size
+  398,
+  398
+  matches,
+  and
+  the
+  score
+  of
+  34.48207312140917.
+END 56
+BEGIN 57
+  Contig
+  (13)
+  covers
+  contig
+  'r501-898.0'
+  completely.
+END 57
+BEGIN 58
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  848
+  and
+  consists
+  of
+  6
+  parts.
+END 58
+BEGIN 59
+  Cycle
+  6
+  started
+  with
+  1
+  paths
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
-  487.
-END 62
-BEGIN 63
+  848.
+END 60
+BEGIN 61
   Removed
-  2
+  6
   components
   from
   the
@@ -1007,72 +989,17 @@ BEGIN 63
   still
   to
   process.
-END 63
-BEGIN 64
+END 61
+BEGIN 62
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 64
-BEGIN 65
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  435
-  between
-  contigs
-  (10)
-  and
-  (14)
-  to
-  be
-  (361,
-  435).
-END 65
-BEGIN 66
-  Overlap
-  between
-  contigs
-  (10)
-  and
-  (14)
-  has
-  size
-  435,
-  435
-  matches,
-  and
-  the
-  score
-  of
-  2.878501888254521e+106.
-END 66
-BEGIN 67
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  435
-  between
-  contigs
-  (10)
-  and
-  (14),
-  resulting
-  in
-  contig
-  (15).
-END 67
-BEGIN 68
+END 62
+BEGIN 63
   Outputting
   1
   contigs.
-END 68
+END 63

@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  1.720202925156099e+94.
+  33.73446252136804.
 END 6
 BEGIN 7
   Contig

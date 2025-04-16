@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  3.9920274275296087e+58.
+  26.000449838663666.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.751529937039277e+71.
+  29.000324924056017.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  1.1374034731310364e+85.
+  31.953333927413166.
 END 12
 BEGIN 13
   Found
@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  5.95268192754118e+76.
+  30.216177329723248.
 END 15
 BEGIN 16
   Contig
@@ -254,7 +254,7 @@ BEGIN 17
   and
   consists
   of
-  4
+  6
   parts.
 END 17
 BEGIN 18
@@ -300,7 +300,7 @@ BEGIN 20
   the
   score
   of
-  3.9920274275296087e+58.
+  26.000449838663666.
 END 20
 BEGIN 21
   Found
@@ -355,7 +355,7 @@ BEGIN 23
   the
   score
   of
-  1.751529937039277e+71.
+  29.000324924056017.
 END 23
 BEGIN 24
   Found
@@ -410,7 +410,7 @@ BEGIN 26
   the
   score
   of
-  5.95268192754118e+76.
+  30.216177329723248.
 END 26
 BEGIN 27
   Contig
@@ -455,7 +455,7 @@ BEGIN 29
   the
   score
   of
-  1.4414282368544858e+64.
+  27.34997557624438.
 END 29
 BEGIN 30
   Contig
@@ -481,7 +481,7 @@ BEGIN 31
   and
   consists
   of
-  4
+  6
   parts.
 END 31
 BEGIN 32
@@ -527,7 +527,7 @@ BEGIN 34
   the
   score
   of
-  5.95268192754118e+76.
+  30.216177329723248.
 END 34
 BEGIN 35
   Found
@@ -582,7 +582,7 @@ BEGIN 37
   the
   score
   of
-  5.95268192754118e+76.
+  30.216177329723248.
 END 37
 BEGIN 38
   Contig
@@ -627,7 +627,7 @@ BEGIN 40
   the
   score
   of
-  1.4414282368544858e+64.
+  27.34997557624438.
 END 40
 BEGIN 41
   Contig
@@ -653,7 +653,7 @@ BEGIN 42
   and
   consists
   of
-  4
+  6
   parts.
 END 42
 BEGIN 43
@@ -699,7 +699,7 @@ BEGIN 45
   the
   score
   of
-  5.95268192754118e+76.
+  30.216177329723248.
 END 45
 BEGIN 46
   Contig
@@ -744,7 +744,7 @@ BEGIN 48
   the
   score
   of
-  1.4414282368544858e+64.
+  27.34997557624438.
 END 48
 BEGIN 49
   Contig
@@ -755,98 +755,8 @@ BEGIN 49
   completely.
 END 49
 BEGIN 50
-  Constructed
-  a
-  path
-  of
-  length
-  779.
-END 50
-BEGIN 51
-  Removed
+  Cycle
   4
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
-END 51
-BEGIN 52
-  Calculating
-  all
-  paths...
-END 52
-BEGIN 53
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 53
-BEGIN 54
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  237
-  between
-  contigs
-  'r400-650.0'
-  and
-  'r414-719.4'
-  to
-  be
-  (14,
-  237).
-END 54
-BEGIN 55
-  Overlap
-  between
-  contigs
-  'r400-650.0'
-  and
-  'r414-719.4'
-  has
-  size
-  237,
-  237
-  matches,
-  and
-  the
-  score
-  of
-  1.172470355771419e+61.
-END 55
-BEGIN 56
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  237
-  between
-  contigs
-  'r400-650.0'
-  and
-  'r414-719.4',
-  resulting
-  in
-  contig
-  (7).
-END 56
-BEGIN 57
-  Cycle
-  1
   finished
   with
   1
@@ -856,32 +766,104 @@ BEGIN 57
   fittest
   has
   length
-  320
+  779
   and
   consists
   of
-  2
+  6
   parts.
-END 57
-BEGIN 58
+END 50
+BEGIN 51
   Cycle
-  2
+  5
   started
   with
   1
   paths
-END 58
-BEGIN 59
+END 51
+BEGIN 52
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  251
+  between
+  contigs
+  (6)
+  and
+  'r400-650.0'
+  to
+  be
+  (353,
+  604).
+END 52
+BEGIN 53
+  Overlap
+  between
+  contigs
+  (6)
+  and
+  'r400-650.0'
+  has
+  size
+  251,
+  251
+  matches,
+  and
+  the
+  score
+  of
+  27.34997557624438.
+END 53
+BEGIN 54
+  Contig
+  (6)
+  covers
+  contig
+  'r400-650.0'
+  completely.
+END 54
+BEGIN 55
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  779
+  and
+  consists
+  of
+  6
+  parts.
+END 55
+BEGIN 56
+  Cycle
+  6
+  started
+  with
+  1
+  paths
+END 56
+BEGIN 57
   Constructed
   a
   path
   of
   length
-  320.
-END 59
-BEGIN 60
+  779.
+END 57
+BEGIN 58
   Removed
-  2
+  6
   components
   from
   the
@@ -892,62 +874,17 @@ BEGIN 60
   still
   to
   process.
-END 60
-BEGIN 61
+END 58
+BEGIN 59
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 61
-BEGIN 62
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  320
-  between
-  contigs
-  (6)
-  and
-  (7)
-  to
-  be
-  (353,
-  673).
-END 62
-BEGIN 63
-  Overlap
-  between
-  contigs
-  (6)
-  and
-  (7)
-  has
-  size
-  320,
-  320
-  matches,
-  and
-  the
-  score
-  of
-  1.4052677399359747e+80.
-END 63
-BEGIN 64
-  Contig
-  (6)
-  covers
-  contig
-  (7)
-  completely.
-END 64
-BEGIN 65
+END 59
+BEGIN 60
   Outputting
   1
   contigs.
-END 65
+END 60

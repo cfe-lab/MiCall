@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  7.116108359361298e+63.
+  27.295077364608684.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  6.264927513981833e+36.
+  19.925850199498125.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  6.264927513981833e+36.
+  19.925850199498125.
 END 12
 BEGIN 13
   Found
@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  6.059359273135458e+72.
+  29.36014970678109.
 END 15
 BEGIN 16
   Contig
@@ -273,7 +273,7 @@ BEGIN 18
   the
   score
   of
-  1.3453746586681396e+20.
+  13.786979657662808.
 END 18
 BEGIN 19
   Found
@@ -309,7 +309,7 @@ BEGIN 20
   and
   consists
   of
-  3
+  6
   parts.
 END 20
 BEGIN 21
@@ -355,7 +355,7 @@ BEGIN 23
   the
   score
   of
-  9.174050477912727e+100.
+  35.04301563769617.
 END 23
 BEGIN 24
   Found
@@ -410,7 +410,7 @@ BEGIN 26
   the
   score
   of
-  9.174050477912727e+100.
+  35.04301563769617.
 END 26
 BEGIN 27
   Found
@@ -465,7 +465,7 @@ BEGIN 29
   the
   score
   of
-  6.059359273135458e+72.
+  29.36014970678109.
 END 29
 BEGIN 30
   Contig
@@ -510,7 +510,7 @@ BEGIN 32
   the
   score
   of
-  2.9635207903657437e+72.
+  29.257794149910183.
 END 32
 BEGIN 33
   Contig
@@ -536,7 +536,7 @@ BEGIN 34
   and
   consists
   of
-  3
+  6
   parts.
 END 34
 BEGIN 35
@@ -582,7 +582,7 @@ BEGIN 37
   the
   score
   of
-  1.3684900604153183e+117.
+  37.960651233850015.
 END 37
 BEGIN 38
   Contig
@@ -627,7 +627,7 @@ BEGIN 40
   the
   score
   of
-  6.059359273135458e+72.
+  29.36014970678109.
 END 40
 BEGIN 41
   Contig
@@ -672,7 +672,7 @@ BEGIN 43
   the
   score
   of
-  2.9635207903657437e+72.
+  29.257794149910183.
 END 43
 BEGIN 44
   Contig
@@ -683,106 +683,8 @@ BEGIN 44
   completely.
 END 44
 BEGIN 45
-  Constructed
-  a
-  path
-  of
-  length
-  923.
-END 45
-BEGIN 46
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  3
-  still
-  to
-  process.
-END 46
-BEGIN 47
-  Calculating
-  all
-  paths...
-END 47
-BEGIN 48
   Cycle
-  1
-  started
-  with
-  1
-  paths
-END 48
-BEGIN 49
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  289
-  between
-  contigs
-  'r442-923.4'
-  and
-  'r53-341.0'
-  to
-  be
-  None.
-END 49
-BEGIN 50
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  287
-  between
-  contigs
-  'r442-923.4'
-  and
-  'r511-797.2'
-  to
-  be
-  (69,
-  356).
-END 50
-BEGIN 51
-  Overlap
-  between
-  contigs
-  'r442-923.4'
-  and
-  'r511-797.2'
-  has
-  size
-  287,
-  287
-  matches,
-  and
-  the
-  score
-  of
-  2.9635207903657437e+72.
-END 51
-BEGIN 52
-  Contig
-  'r442-923.4'
-  covers
-  contig
-  'r511-797.2'
-  completely.
-END 52
-BEGIN 53
-  Cycle
-  1
+  3
   finished
   with
   1
@@ -792,166 +694,22 @@ BEGIN 53
   fittest
   has
   length
-  482
+  923
   and
   consists
   of
-  2
+  6
   parts.
-END 53
-BEGIN 54
+END 45
+BEGIN 46
   Cycle
-  2
+  4
   started
   with
   1
   paths
-END 54
-BEGIN 55
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  289
-  between
-  contigs
-  'r442-923.4'
-  and
-  'r53-341.0'
-  to
-  be
-  None.
-END 55
-BEGIN 56
-  Constructed
-  a
-  path
-  of
-  length
-  482.
-END 56
-BEGIN 57
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 57
-BEGIN 58
-  Calculating
-  all
-  paths...
-END 58
-BEGIN 59
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 59
-BEGIN 60
-  Constructed
-  a
-  path
-  of
-  length
-  289.
-END 60
-BEGIN 61
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 61
-BEGIN 62
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 62
-BEGIN 63
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
-END 63
-BEGIN 64
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  482
-  between
-  contigs
-  (5)
-  and
-  'r442-923.4'
-  to
-  be
-  (419,
-  901).
-END 64
-BEGIN 65
-  Overlap
-  between
-  contigs
-  (5)
-  and
-  'r442-923.4'
-  has
-  size
-  482,
-  482
-  matches,
-  and
-  the
-  score
-  of
-  1.3684900604153183e+117.
-END 65
-BEGIN 66
-  Contig
-  (5)
-  covers
-  contig
-  'r442-923.4'
-  completely.
-END 66
-BEGIN 67
+END 46
+BEGIN 47
   Calculated
   cutoff
   for
@@ -969,8 +727,8 @@ BEGIN 67
   be
   (30,
   319).
-END 67
-BEGIN 68
+END 47
+BEGIN 48
   Overlap
   between
   contigs
@@ -986,18 +744,192 @@ BEGIN 68
   the
   score
   of
-  6.059359273135458e+72.
-END 68
-BEGIN 69
+  29.36014970678109.
+END 48
+BEGIN 49
   Contig
   (5)
   covers
   contig
   'r53-341.0'
   completely.
-END 69
-BEGIN 70
+END 49
+BEGIN 50
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  287
+  between
+  contigs
+  (5)
+  and
+  'r511-797.2'
+  to
+  be
+  (488,
+  775).
+END 50
+BEGIN 51
+  Overlap
+  between
+  contigs
+  (5)
+  and
+  'r511-797.2'
+  has
+  size
+  287,
+  287
+  matches,
+  and
+  the
+  score
+  of
+  29.257794149910183.
+END 51
+BEGIN 52
+  Contig
+  (5)
+  covers
+  contig
+  'r511-797.2'
+  completely.
+END 52
+BEGIN 53
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  923
+  and
+  consists
+  of
+  6
+  parts.
+END 53
+BEGIN 54
+  Cycle
+  5
+  started
+  with
+  1
+  paths
+END 54
+BEGIN 55
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  287
+  between
+  contigs
+  (5)
+  and
+  'r511-797.2'
+  to
+  be
+  (488,
+  775).
+END 55
+BEGIN 56
+  Overlap
+  between
+  contigs
+  (5)
+  and
+  'r511-797.2'
+  has
+  size
+  287,
+  287
+  matches,
+  and
+  the
+  score
+  of
+  29.257794149910183.
+END 56
+BEGIN 57
+  Contig
+  (5)
+  covers
+  contig
+  'r511-797.2'
+  completely.
+END 57
+BEGIN 58
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  923
+  and
+  consists
+  of
+  6
+  parts.
+END 58
+BEGIN 59
+  Cycle
+  6
+  started
+  with
+  1
+  paths
+END 59
+BEGIN 60
+  Constructed
+  a
+  path
+  of
+  length
+  923.
+END 60
+BEGIN 61
+  Removed
+  6
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 61
+BEGIN 62
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+END 62
+BEGIN 63
   Outputting
   1
   contigs.
-END 70
+END 63

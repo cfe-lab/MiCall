@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  1.3369289851494103e+42.
+  21.51822414317707.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  3.486187487801468e+50.
+  23.896184504047252.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  2.919586199699182e+64.
+  27.404763826183697.
 END 12
 BEGIN 13
   Found
@@ -246,7 +246,7 @@ BEGIN 16
   the
   score
   of
-  1.3507170332792747e+56.
+  25.41701132768769.
 END 16
 BEGIN 17
   Contig
@@ -272,7 +272,7 @@ BEGIN 18
   and
   consists
   of
-  4
+  5
   parts.
 END 18
 BEGIN 19
@@ -318,7 +318,7 @@ BEGIN 21
   the
   score
   of
-  3.1642771643799346e+46.
+  22.804172930196415.
 END 21
 BEGIN 22
   Found
@@ -373,7 +373,7 @@ BEGIN 24
   the
   score
   of
-  7.719669011833917e+54.
+  25.060430108693353.
 END 24
 BEGIN 25
   Found
@@ -446,7 +446,7 @@ BEGIN 28
   the
   score
   of
-  1.3507170332792747e+56.
+  25.41701132768769.
 END 28
 BEGIN 29
   Contig
@@ -472,7 +472,7 @@ BEGIN 30
   and
   consists
   of
-  4
+  5
   parts.
 END 30
 BEGIN 31
@@ -518,7 +518,7 @@ BEGIN 33
   the
   score
   of
-  3.512931686159641e+63.
+  27.24006852659026.
 END 33
 BEGIN 34
   Found
@@ -591,7 +591,7 @@ BEGIN 37
   the
   score
   of
-  1.3507170332792747e+56.
+  25.41701132768769.
 END 37
 BEGIN 38
   Contig
@@ -617,7 +617,7 @@ BEGIN 39
   and
   consists
   of
-  4
+  5
   parts.
 END 39
 BEGIN 40
@@ -681,7 +681,7 @@ BEGIN 43
   the
   score
   of
-  1.3507170332792747e+56.
+  25.41701132768769.
 END 43
 BEGIN 44
   Contig
@@ -692,41 +692,33 @@ BEGIN 44
   completely.
 END 44
 BEGIN 45
-  Constructed
-  a
-  path
-  of
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  515.
+  515
+  and
+  consists
+  of
+  5
+  parts.
 END 45
 BEGIN 46
-  Removed
-  4
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
-END 46
-BEGIN 47
-  Calculating
-  all
-  paths...
-END 47
-BEGIN 48
   Cycle
-  1
+  5
   started
   with
   1
   paths
-END 48
-BEGIN 49
+END 46
+BEGIN 47
   Calculated
   cutoff
   for
@@ -734,27 +726,27 @@ BEGIN 49
   overlap
   of
   size
-  217
+  260
   between
   contigs
-  'r709-968.1'
+  (6)
   and
-  'r139-355.0'
+  'r709-968.1'
   to
   be
   None.
-END 49
-BEGIN 50
+END 47
+BEGIN 48
   Constructed
   a
   path
   of
   length
-  260.
-END 50
-BEGIN 51
+  515.
+END 48
+BEGIN 49
   Removed
-  1
+  5
   components
   from
   the
@@ -765,8 +757,43 @@ BEGIN 51
   still
   to
   process.
+END 49
+BEGIN 50
+  Calculating
+  all
+  paths...
+END 50
+BEGIN 51
+  Cycle
+  1
+  started
+  with
+  1
+  paths
 END 51
 BEGIN 52
+  Constructed
+  a
+  path
+  of
+  length
+  260.
+END 52
+BEGIN 53
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 53
+BEGIN 54
   Giving
   up
   on
@@ -781,50 +808,14 @@ BEGIN 52
   is
   a
   singleton.
-END 52
-BEGIN 53
+END 54
+BEGIN 55
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 53
-BEGIN 54
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  260
-  between
-  contigs
-  (6)
-  and
-  'r709-968.1'
-  to
-  be
-  None.
-END 54
-BEGIN 55
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  217
-  between
-  contigs
-  'r709-968.1'
-  and
-  'r139-355.0'
-  to
-  be
-  None.
 END 55
 BEGIN 56
   Calculated
@@ -834,51 +825,6 @@ BEGIN 56
   overlap
   of
   size
-  217
-  between
-  contigs
-  (6)
-  and
-  'r139-355.0'
-  to
-  be
-  (72,
-  289).
-END 56
-BEGIN 57
-  Overlap
-  between
-  contigs
-  (6)
-  and
-  'r139-355.0'
-  has
-  size
-  217,
-  217
-  matches,
-  and
-  the
-  score
-  of
-  1.3507170332792747e+56.
-END 57
-BEGIN 58
-  Contig
-  (6)
-  covers
-  contig
-  'r139-355.0'
-  completely.
-END 58
-BEGIN 59
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
   260
   between
   contigs
@@ -888,9 +834,9 @@ BEGIN 59
   to
   be
   None.
-END 59
-BEGIN 60
+END 56
+BEGIN 57
   Outputting
   2
   contigs.
-END 60
+END 57

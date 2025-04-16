@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  5.7990142807563195e+106.
+  36.097260345130124.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  3.497987951876251e+94.
+  33.82327436675653.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  1.6485645329756413e+83.
+  31.575558908719415.
 END 12
 BEGIN 13
   Found
@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  1.4414282368544858e+64.
+  27.34997557624438.
 END 15
 BEGIN 16
   Found
@@ -283,7 +283,7 @@ BEGIN 18
   the
   score
   of
-  1.234252474413844e+69.
+  28.53102635237987.
 END 18
 BEGIN 19
   Found
@@ -315,11 +315,11 @@ BEGIN 20
   fittest
   has
   length
-  571
+  665
   and
   consists
   of
-  3
+  6
   parts.
 END 20
 BEGIN 21
@@ -365,7 +365,7 @@ BEGIN 23
   the
   score
   of
-  3.497987951876251e+94.
+  33.82327436675653.
 END 23
 BEGIN 24
   Found
@@ -420,7 +420,7 @@ BEGIN 26
   the
   score
   of
-  1.6485645329756413e+83.
+  31.575558908719415.
 END 26
 BEGIN 27
   Found
@@ -475,7 +475,7 @@ BEGIN 29
   the
   score
   of
-  1.4414282368544858e+64.
+  27.34997557624438.
 END 29
 BEGIN 30
   Found
@@ -530,7 +530,7 @@ BEGIN 32
   the
   score
   of
-  1.234252474413844e+69.
+  28.53102635237987.
 END 32
 BEGIN 33
   Found
@@ -562,11 +562,11 @@ BEGIN 34
   fittest
   has
   length
-  571
+  665
   and
   consists
   of
-  3
+  6
   parts.
 END 34
 BEGIN 35
@@ -612,7 +612,7 @@ BEGIN 37
   the
   score
   of
-  4.677479896743723e+85.
+  32.09385321612518.
 END 37
 BEGIN 38
   Found
@@ -667,7 +667,7 @@ BEGIN 40
   the
   score
   of
-  4.229911291793805e+66.
+  27.9467400394745.
 END 40
 BEGIN 41
   Found
@@ -722,7 +722,7 @@ BEGIN 43
   the
   score
   of
-  7.165351873119225e+71.
+  29.10358592081554.
 END 43
 BEGIN 44
   Found
@@ -743,153 +743,8 @@ BEGIN 44
   (12).
 END 44
 BEGIN 45
-  Constructed
-  a
-  path
-  of
-  length
-  571.
-END 45
-BEGIN 46
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  3
-  still
-  to
-  process.
-END 46
-BEGIN 47
-  Calculating
-  all
-  paths...
-END 47
-BEGIN 48
   Cycle
-  1
-  started
-  with
-  1
-  paths
-END 48
-BEGIN 49
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  274
-  between
-  contigs
-  'r274-629.4'
-  and
-  'r356-712.0'
-  to
-  be
-  (82,
-  274).
-END 49
-BEGIN 50
-  Overlap
-  between
-  contigs
-  'r274-629.4'
-  and
-  'r356-712.0'
-  has
-  size
-  274,
-  274
-  matches,
-  and
-  the
-  score
-  of
-  2.4973840504360907e+69.
-END 50
-BEGIN 51
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  274
-  between
-  contigs
-  'r274-629.4'
-  and
-  'r356-712.0',
-  resulting
-  in
-  contig
-  (13).
-END 51
-BEGIN 52
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  296
-  between
-  contigs
-  'r321-651.1'
-  and
-  'r356-712.0'
-  to
-  be
-  (35,
-  296).
-END 52
-BEGIN 53
-  Overlap
-  between
-  contigs
-  'r321-651.1'
-  and
-  'r356-712.0'
-  has
-  size
-  296,
-  296
-  matches,
-  and
-  the
-  score
-  of
-  4.184532592632119e+74.
-END 53
-BEGIN 54
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  296
-  between
-  contigs
-  'r321-651.1'
-  and
-  'r356-712.0',
-  resulting
-  in
-  contig
-  (14).
-END 54
-BEGIN 55
-  Cycle
-  1
+  3
   finished
   with
   1
@@ -899,22 +754,159 @@ BEGIN 55
   fittest
   has
   length
-  439
+  665
   and
   consists
   of
-  3
+  6
   parts.
-END 55
-BEGIN 56
+END 45
+BEGIN 46
   Cycle
-  2
+  4
   started
   with
   1
   paths
-END 56
-BEGIN 57
+END 46
+BEGIN 47
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  274
+  between
+  contigs
+  'r274-629.4'
+  and
+  (10)
+  to
+  be
+  (82,
+  274).
+END 47
+BEGIN 48
+  Overlap
+  between
+  contigs
+  'r274-629.4'
+  and
+  (10)
+  has
+  size
+  274,
+  274
+  matches,
+  and
+  the
+  score
+  of
+  28.583551107925587.
+END 48
+BEGIN 49
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  274
+  between
+  contigs
+  'r274-629.4'
+  and
+  (10),
+  resulting
+  in
+  contig
+  (13).
+END 49
+BEGIN 50
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  296
+  between
+  contigs
+  'r321-651.1'
+  and
+  (10)
+  to
+  be
+  (35,
+  296).
+END 50
+BEGIN 51
+  Overlap
+  between
+  contigs
+  'r321-651.1'
+  and
+  (10)
+  has
+  size
+  296,
+  296
+  matches,
+  and
+  the
+  score
+  of
+  29.715618071164034.
+END 51
+BEGIN 52
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  296
+  between
+  contigs
+  'r321-651.1'
+  and
+  (10),
+  resulting
+  in
+  contig
+  (14).
+END 52
+BEGIN 53
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  665
+  and
+  consists
+  of
+  6
+  parts.
+END 53
+BEGIN 54
+  Cycle
+  5
+  started
+  with
+  1
+  paths
+END 54
+BEGIN 55
   Calculated
   cutoff
   for
@@ -932,8 +924,8 @@ BEGIN 57
   be
   (47,
   309).
-END 57
-BEGIN 58
+END 55
+BEGIN 56
   Overlap
   between
   contigs
@@ -949,9 +941,9 @@ BEGIN 58
   the
   score
   of
-  4.912068917522916e+77.
-END 58
-BEGIN 59
+  30.364736196797022.
+END 56
+BEGIN 57
   Found
   a
   significant
@@ -968,10 +960,10 @@ BEGIN 59
   in
   contig
   (15).
-END 59
-BEGIN 60
+END 57
+BEGIN 58
   Cycle
-  2
+  5
   finished
   with
   1
@@ -981,32 +973,32 @@ BEGIN 60
   fittest
   has
   length
-  439
+  665
   and
   consists
   of
-  3
+  6
   parts.
-END 60
-BEGIN 61
+END 58
+BEGIN 59
   Cycle
-  3
+  6
   started
   with
   1
   paths
-END 61
-BEGIN 62
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
-  439.
-END 62
-BEGIN 63
+  665.
+END 60
+BEGIN 61
   Removed
-  3
+  6
   components
   from
   the
@@ -1017,72 +1009,17 @@ BEGIN 63
   still
   to
   process.
-END 63
-BEGIN 64
+END 61
+BEGIN 62
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 64
-BEGIN 65
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  345
-  between
-  contigs
-  (15)
-  and
-  (6)
-  to
-  be
-  (94,
-  345).
-END 65
-BEGIN 66
-  Overlap
-  between
-  contigs
-  (15)
-  and
-  (6)
-  has
-  size
-  345,
-  345
-  matches,
-  and
-  the
-  score
-  of
-  4.677479896743723e+85.
-END 66
-BEGIN 67
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  345
-  between
-  contigs
-  (15)
-  and
-  (6),
-  resulting
-  in
-  contig
-  (16).
-END 67
-BEGIN 68
+END 62
+BEGIN 63
   Outputting
   1
   contigs.
-END 68
+END 63
