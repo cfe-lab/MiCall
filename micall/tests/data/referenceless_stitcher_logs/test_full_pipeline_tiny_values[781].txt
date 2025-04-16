@@ -144,54 +144,17 @@ BEGIN 11
   (1)
   to
   be
-  (0,
-  466).
+  None.
 END 11
 BEGIN 12
-  Overlap
-  between
-  contigs
-  'r697-978.2'
-  and
-  (1)
-  has
-  size
-  466,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 12
-BEGIN 13
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  14
-  between
-  contigs
-  'r697-978.2'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (2).
-END 13
-BEGIN 14
   Constructed
   a
   path
   of
   length
   474.
-END 14
-BEGIN 15
+END 12
+BEGIN 13
   Removed
   2
   components
@@ -204,29 +167,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 13
+BEGIN 14
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 14
+BEGIN 15
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   282.
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Removed
   1
   components
@@ -239,8 +202,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Giving
   up
   on
@@ -255,16 +218,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -280,29 +243,10 @@ BEGIN 22
   (1)
   to
   be
-  (0,
-  466).
-END 22
-BEGIN 23
-  Overlap
-  between
-  contigs
-  'r697-978.2'
-  and
-  (1)
-  has
-  size
-  466,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 23
-BEGIN 24
+  None.
+END 20
+BEGIN 21
   Outputting
   2
   contigs.
-END 24
+END 21

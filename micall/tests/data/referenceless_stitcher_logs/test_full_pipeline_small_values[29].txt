@@ -777,36 +777,17 @@ BEGIN 53
   'r615-877.2'
   to
   be
-  (0,
-  256).
+  None.
 END 53
 BEGIN 54
-  Overlap
-  between
-  contigs
-  'r161-430.0'
-  and
-  'r615-877.2'
-  has
-  size
-  263,
-  11
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999974252.
-END 54
-BEGIN 55
   Constructed
   a
   path
   of
   length
   270.
-END 55
-BEGIN 56
+END 54
+BEGIN 55
   Removed
   1
   components
@@ -819,8 +800,8 @@ BEGIN 56
   still
   to
   process.
-END 56
-BEGIN 57
+END 55
+BEGIN 56
   Giving
   up
   on
@@ -835,16 +816,16 @@ BEGIN 57
   is
   a
   singleton.
-END 57
-BEGIN 58
+END 56
+BEGIN 57
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 58
-BEGIN 59
+END 57
+BEGIN 58
   Calculated
   cutoff
   for
@@ -862,8 +843,8 @@ BEGIN 59
   be
   (281,
   343).
-END 59
-BEGIN 60
+END 58
+BEGIN 59
   Overlap
   between
   contigs
@@ -880,8 +861,8 @@ BEGIN 60
   score
   of
   2.295983788650699e+85.
-END 60
-BEGIN 61
+END 59
+BEGIN 60
   Found
   a
   significant
@@ -898,8 +879,8 @@ BEGIN 61
   in
   contig
   (7).
-END 61
-BEGIN 62
+END 60
+BEGIN 61
   Calculated
   cutoff
   for
@@ -915,28 +896,9 @@ BEGIN 62
   'r615-877.2'
   to
   be
-  (0,
-  256).
-END 62
-BEGIN 63
-  Overlap
-  between
-  contigs
-  'r161-430.0'
-  and
-  'r615-877.2'
-  has
-  size
-  263,
-  11
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999974252.
-END 63
-BEGIN 64
+  None.
+END 61
+BEGIN 62
   Calculated
   cutoff
   for
@@ -954,8 +916,8 @@ BEGIN 64
   be
   (35,
   305).
-END 64
-BEGIN 65
+END 62
+BEGIN 63
   Overlap
   between
   contigs
@@ -972,16 +934,16 @@ BEGIN 65
   score
   of
   2.979044776644523e+68.
-END 65
-BEGIN 66
+END 63
+BEGIN 64
   Contig
   (7)
   covers
   contig
   'r161-430.0'
   completely.
-END 66
-BEGIN 67
+END 64
+BEGIN 65
   Calculated
   cutoff
   for
@@ -999,8 +961,8 @@ BEGIN 67
   be
   (489,
   752).
-END 67
-BEGIN 68
+END 65
+BEGIN 66
   Overlap
   between
   contigs
@@ -1017,17 +979,17 @@ BEGIN 68
   score
   of
   8.56301343060922e+66.
-END 68
-BEGIN 69
+END 66
+BEGIN 67
   Contig
   (7)
   covers
   contig
   'r615-877.2'
   completely.
-END 69
-BEGIN 70
+END 67
+BEGIN 68
   Outputting
   1
   contigs.
-END 70
+END 68

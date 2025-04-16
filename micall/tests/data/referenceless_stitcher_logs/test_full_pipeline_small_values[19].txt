@@ -768,28 +768,9 @@ BEGIN 52
   'r367-792.4'
   to
   be
-  (0,
-  418).
+  None.
 END 52
 BEGIN 53
-  Overlap
-  between
-  contigs
-  'r127-386.5'
-  and
-  'r367-792.4'
-  has
-  size
-  418,
-  20
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 53
-BEGIN 54
   Cycle
   1
   finished
@@ -807,16 +788,16 @@ BEGIN 54
   of
   3
   parts.
-END 54
-BEGIN 55
+END 53
+BEGIN 54
   Cycle
   2
   started
   with
   1
   paths
-END 55
-BEGIN 56
+END 54
+BEGIN 55
   Calculated
   cutoff
   for
@@ -834,8 +815,8 @@ BEGIN 56
   be
   (13,
   247).
-END 56
-BEGIN 57
+END 55
+BEGIN 56
   Overlap
   between
   contigs
@@ -852,8 +833,8 @@ BEGIN 57
   score
   of
   1.7119305782533366e+63.
-END 57
-BEGIN 58
+END 56
+BEGIN 57
   Found
   a
   significant
@@ -870,8 +851,8 @@ BEGIN 58
   in
   contig
   (6).
-END 58
-BEGIN 59
+END 57
+BEGIN 58
   Cycle
   2
   finished
@@ -889,24 +870,24 @@ BEGIN 59
   of
   3
   parts.
-END 59
-BEGIN 60
+END 58
+BEGIN 59
   Cycle
   3
   started
   with
   1
   paths
-END 60
-BEGIN 61
+END 59
+BEGIN 60
   Constructed
   a
   path
   of
   length
   666.
-END 61
-BEGIN 62
+END 60
+BEGIN 61
   Removed
   3
   components
@@ -919,16 +900,16 @@ BEGIN 62
   still
   to
   process.
-END 62
-BEGIN 63
+END 61
+BEGIN 62
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 63
-BEGIN 64
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -946,8 +927,8 @@ BEGIN 64
   be
   (64,
   730).
-END 64
-BEGIN 65
+END 63
+BEGIN 64
   Overlap
   between
   contigs
@@ -964,17 +945,17 @@ BEGIN 65
   score
   of
   1.3244079811164727e+159.
-END 65
-BEGIN 66
+END 64
+BEGIN 65
   Contig
   (4)
   covers
   contig
   (6)
   completely.
-END 66
-BEGIN 67
+END 65
+BEGIN 66
   Outputting
   1
   contigs.
-END 67
+END 66

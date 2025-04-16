@@ -217,29 +217,10 @@ BEGIN 16
   (1)
   to
   be
-  (1,
-  452).
+  None.
 END 16
 BEGIN 17
-  Overlap
-  between
-  contigs
-  'r496-977.0'
-  and
-  (1)
-  has
-  size
-  452,
-  8
-  matches,
-  and
-  the
-  score
-  of
-  9.0.
-END 17
-BEGIN 18
   Outputting
   2
   contigs.
-END 18
+END 17

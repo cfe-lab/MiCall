@@ -898,36 +898,17 @@ BEGIN 59
   'r314-543.3'
   to
   be
-  (3,
-  222).
+  None.
 END 59
 BEGIN 60
-  Overlap
-  between
-  contigs
-  'r534-772.0'
-  and
-  'r314-543.3'
-  has
-  size
-  230,
-  4
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999953085.
-END 60
-BEGIN 61
   Constructed
   a
   path
   of
   length
   239.
-END 61
-BEGIN 62
+END 60
+BEGIN 61
   Removed
   1
   components
@@ -940,8 +921,8 @@ BEGIN 62
   still
   to
   process.
-END 62
-BEGIN 63
+END 61
+BEGIN 62
   Giving
   up
   on
@@ -956,16 +937,16 @@ BEGIN 63
   is
   a
   singleton.
-END 63
-BEGIN 64
+END 62
+BEGIN 63
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 64
-BEGIN 65
+END 63
+BEGIN 64
   Calculated
   cutoff
   for
@@ -983,8 +964,8 @@ BEGIN 65
   be
   (201,
   298).
-END 65
-BEGIN 66
+END 64
+BEGIN 65
   Overlap
   between
   contigs
@@ -1001,8 +982,8 @@ BEGIN 66
   score
   of
   8.550117574725871e+74.
-END 66
-BEGIN 67
+END 65
+BEGIN 66
   Found
   a
   significant
@@ -1019,8 +1000,8 @@ BEGIN 67
   in
   contig
   (11).
-END 67
-BEGIN 68
+END 66
+BEGIN 67
   Calculated
   cutoff
   for
@@ -1036,28 +1017,9 @@ BEGIN 68
   'r314-543.3'
   to
   be
-  (3,
-  222).
-END 68
-BEGIN 69
-  Overlap
-  between
-  contigs
-  'r534-772.0'
-  and
-  'r314-543.3'
-  has
-  size
-  230,
-  4
-  matches,
-  and
-  the
-  score
-  of
-  8.999999999953085.
-END 69
-BEGIN 70
+  None.
+END 67
+BEGIN 68
   Calculated
   cutoff
   for
@@ -1075,8 +1037,8 @@ BEGIN 70
   be
   (409,
   648).
-END 70
-BEGIN 71
+END 68
+BEGIN 69
   Overlap
   between
   contigs
@@ -1093,16 +1055,16 @@ BEGIN 71
   score
   of
   2.408571302390333e+61.
-END 71
-BEGIN 72
+END 69
+BEGIN 70
   Contig
   (11)
   covers
   contig
   'r534-772.0'
   completely.
-END 72
-BEGIN 73
+END 70
+BEGIN 71
   Calculated
   cutoff
   for
@@ -1120,8 +1082,8 @@ BEGIN 73
   be
   (189,
   419).
-END 73
-BEGIN 74
+END 71
+BEGIN 72
   Overlap
   between
   contigs
@@ -1138,17 +1100,17 @@ BEGIN 74
   score
   of
   1.6650558952032708e+59.
-END 74
-BEGIN 75
+END 72
+BEGIN 73
   Contig
   (11)
   covers
   contig
   'r314-543.3'
   completely.
-END 75
-BEGIN 76
+END 73
+BEGIN 74
   Outputting
   1
   contigs.
-END 76
+END 74
