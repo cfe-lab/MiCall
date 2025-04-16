@@ -312,6 +312,7 @@ def try_combine_contigs(is_debug2: bool,
         aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
         result_length = max(len(left_overlap), len(right_overlap)) # TODO: take len(aligned_1) to be the result_length.
 
+    assert result_length > 0, "The overlap cannot be empty."
     number_of_matches = sum(1 for x, y
                             in zip(aligned_1, aligned_2)
                             if x == y and x != '-')
