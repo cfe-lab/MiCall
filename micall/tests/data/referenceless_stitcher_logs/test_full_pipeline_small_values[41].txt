@@ -851,17 +851,36 @@ BEGIN 57
   'r165-403.4'
   to
   be
-  None.
+  (2,
+  237).
 END 57
 BEGIN 58
+  Overlap
+  between
+  contigs
+  'r466-803.1'
+  and
+  'r165-403.4'
+  has
+  size
+  239,
+  7
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999909413.
+END 58
+BEGIN 59
   Constructed
   a
   path
   of
   length
   338.
-END 58
-BEGIN 59
+END 59
+BEGIN 60
   Removed
   1
   components
@@ -874,8 +893,8 @@ BEGIN 59
   still
   to
   process.
-END 59
-BEGIN 60
+END 60
+BEGIN 61
   Giving
   up
   on
@@ -890,16 +909,16 @@ BEGIN 60
   is
   a
   singleton.
-END 60
-BEGIN 61
+END 61
+BEGIN 62
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 61
-BEGIN 62
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -917,8 +936,8 @@ BEGIN 62
   be
   (192,
   442).
-END 62
-BEGIN 63
+END 63
+BEGIN 64
   Overlap
   between
   contigs
@@ -935,8 +954,8 @@ BEGIN 63
   score
   of
   9.688755884906251e+107.
-END 63
-BEGIN 64
+END 64
+BEGIN 65
   Found
   a
   significant
@@ -953,8 +972,8 @@ BEGIN 64
   in
   contig
   (9).
-END 64
-BEGIN 65
+END 65
+BEGIN 66
   Calculated
   cutoff
   for
@@ -970,9 +989,28 @@ BEGIN 65
   'r165-403.4'
   to
   be
-  None.
-END 65
-BEGIN 66
+  (2,
+  237).
+END 66
+BEGIN 67
+  Overlap
+  between
+  contigs
+  'r466-803.1'
+  and
+  'r165-403.4'
+  has
+  size
+  239,
+  7
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999909413.
+END 67
+BEGIN 68
   Calculated
   cutoff
   for
@@ -990,8 +1028,8 @@ BEGIN 66
   be
   (347,
   685).
-END 66
-BEGIN 67
+END 68
+BEGIN 69
   Overlap
   between
   contigs
@@ -1008,16 +1046,16 @@ BEGIN 67
   score
   of
   1.3696441704709212e+84.
-END 67
-BEGIN 68
+END 69
+BEGIN 70
   Contig
   (9)
   covers
   contig
   'r466-803.1'
   completely.
-END 68
-BEGIN 69
+END 70
+BEGIN 71
   Calculated
   cutoff
   for
@@ -1035,8 +1073,8 @@ BEGIN 69
   be
   (46,
   285).
-END 69
-BEGIN 70
+END 71
+BEGIN 72
   Overlap
   between
   contigs
@@ -1053,17 +1091,17 @@ BEGIN 70
   score
   of
   2.408571302390333e+61.
-END 70
-BEGIN 71
+END 72
+BEGIN 73
   Contig
   (9)
   covers
   contig
   'r165-403.4'
   completely.
-END 71
-BEGIN 72
+END 73
+BEGIN 74
   Outputting
   1
   contigs.
-END 72
+END 74

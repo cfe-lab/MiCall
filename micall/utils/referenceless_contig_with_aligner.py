@@ -6,6 +6,7 @@ from typing import Iterator, Tuple, Mapping, Literal, NoReturn
 from dataclasses import dataclass
 from mappy import Aligner as OriginalMappyAligner
 from functools import cached_property
+from Bio.Align import PairwiseAligner
 
 from micall.utils.referenceless_score import Score
 from micall.utils.contig_stitcher_contigs import Contig
@@ -16,6 +17,8 @@ from micall.utils.find_maximum_overlap import \
 
 
 OverlapRelation = Literal["left", "right", "cover"]
+
+ALIGNER = PairwiseAligner(mode='local')
 
 
 class LocalAligner(ABC):
@@ -34,10 +37,54 @@ class MappyAligner(LocalAligner):
 
 
 @dataclass(frozen=True)
+class ForwardAligner(LocalAligner):
+    seq: str
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        alignments = ALIGNER.align(self.seq, query)
+        try:
+            first = next(alignments)
+        except StopIteration:
+            return
+
+        (t_coords, q_coords) = first.aligned
+        start = min(start for start, end in t_coords)
+        end = max(end for start, end in t_coords)
+        yield (int(start), int(end))
+
+
+class ReversedAligner(LocalAligner):
+    def __init__(self, seq: str) -> None:
+        self.seq = ''.join(reversed(seq))
+
+    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+        query = ''.join(reversed(query))
+
+        alignments = ALIGNER.align(self.seq, query)
+        try:
+            first = next(alignments)
+        except StopIteration:
+            return
+
+        (t_coords, q_coords) = first.aligned
+        start = min(start for start, end in t_coords)
+        end = max(end for start, end in t_coords)
+        yield (len(self.seq) - int(end), len(self.seq) - int(start))
+
+
+@dataclass(frozen=True)
 class ContigWithAligner(Contig):
     @cached_property
     def mappy_aligner(self) -> LocalAligner:
         return MappyAligner(seq=self.seq)
+
+    @cached_property
+    def forward_aligner(self) -> LocalAligner:
+        return ForwardAligner(seq=self.seq)
+
+    @cached_property
+    def reversed_aligner(self) -> LocalAligner:
+        return ReversedAligner(seq=self.seq)
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
@@ -58,7 +105,12 @@ class ContigWithAligner(Contig):
         if len(overlap) < 40:
             return
 
-        aligner = self.mappy_aligner
+        if relation == "left":
+            aligner = self.reversed_aligner
+        elif relation == "right":
+            aligner = self.forward_aligner
+        else:
+            aligner = self.mappy_aligner
         shift = 0
 
         if relation != "cover":
@@ -76,11 +128,11 @@ class ContigWithAligner(Contig):
                 if relation == "left":
                     seq = self.seq[-max_length:]
                     shift = len(self.seq) - max_length
-                    aligner = MappyAligner(seq=seq)
+                    aligner = ReversedAligner(seq=seq)
                 elif relation == "right":
                     seq = self.seq[:max_length]
                     shift = 0
-                    aligner = MappyAligner(seq=seq)
+                    aligner = ForwardAligner(seq=seq)
                 else:
                     _x: NoReturn = relation
 

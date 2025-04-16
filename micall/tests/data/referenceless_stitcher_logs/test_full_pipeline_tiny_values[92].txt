@@ -217,10 +217,29 @@ BEGIN 16
   'r41-444.2'
   to
   be
-  None.
+  (4,
+  402).
 END 16
 BEGIN 17
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r41-444.2'
+  has
+  size
+  402,
+  6
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 17
+BEGIN 18
   Outputting
   2
   contigs.
-END 17
+END 18

@@ -815,17 +815,36 @@ BEGIN 54
   'r190-484.2'
   to
   be
-  None.
+  (0,
+  295).
 END 54
 BEGIN 55
+  Overlap
+  between
+  contigs
+  'r497-766.1'
+  and
+  'r190-484.2'
+  has
+  size
+  295,
+  5
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999999996.
+END 55
+BEGIN 56
   Constructed
   a
   path
   of
   length
   295.
-END 55
-BEGIN 56
+END 56
+BEGIN 57
   Removed
   1
   components
@@ -838,8 +857,8 @@ BEGIN 56
   still
   to
   process.
-END 56
-BEGIN 57
+END 57
+BEGIN 58
   Giving
   up
   on
@@ -854,16 +873,16 @@ BEGIN 57
   is
   a
   singleton.
-END 57
-BEGIN 58
+END 58
+BEGIN 59
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 58
-BEGIN 59
+END 59
+BEGIN 60
   Calculated
   cutoff
   for
@@ -881,8 +900,8 @@ BEGIN 59
   be
   (24,
   319).
-END 59
-BEGIN 60
+END 60
+BEGIN 61
   Overlap
   between
   contigs
@@ -899,16 +918,16 @@ BEGIN 60
   score
   of
   2.0698818862705537e+74.
-END 60
-BEGIN 61
+END 61
+BEGIN 62
   Contig
   (7)
   covers
   contig
   'r190-484.2'
   completely.
-END 61
-BEGIN 62
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -926,8 +945,8 @@ BEGIN 62
   be
   (331,
   601).
-END 62
-BEGIN 63
+END 63
+BEGIN 64
   Overlap
   between
   contigs
@@ -944,17 +963,17 @@ BEGIN 63
   score
   of
   2.979044776644523e+68.
-END 63
-BEGIN 64
+END 64
+BEGIN 65
   Contig
   (7)
   covers
   contig
   'r497-766.1'
   completely.
-END 64
-BEGIN 65
+END 65
+BEGIN 66
   Outputting
   1
   contigs.
-END 65
+END 66

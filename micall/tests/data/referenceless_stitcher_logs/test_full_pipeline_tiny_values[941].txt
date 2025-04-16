@@ -44,9 +44,28 @@ BEGIN 5
   'r487-917.2'
   to
   be
-  None.
+  (2,
+  428).
 END 5
 BEGIN 6
+  Overlap
+  between
+  contigs
+  'r154-519.1'
+  and
+  'r487-917.2'
+  has
+  size
+  428,
+  33
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 6
+BEGIN 7
   Calculated
   cutoff
   for
@@ -63,16 +82,16 @@ BEGIN 6
   to
   be
   None.
-END 6
-BEGIN 7
+END 7
+BEGIN 8
   Constructed
   a
   path
   of
   length
   431.
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Removed
   1
   components
@@ -85,8 +104,8 @@ BEGIN 8
   still
   to
   process.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Giving
   up
   on
@@ -101,16 +120,16 @@ BEGIN 9
   is
   a
   singleton.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -126,9 +145,28 @@ BEGIN 11
   'r487-917.2'
   to
   be
-  None.
-END 11
-BEGIN 12
+  (2,
+  428).
+END 12
+BEGIN 13
+  Overlap
+  between
+  contigs
+  'r154-519.1'
+  and
+  'r487-917.2'
+  has
+  size
+  428,
+  33
+  matches,
+  and
+  the
+  score
+  of
+  9.0.
+END 13
+BEGIN 14
   Calculated
   cutoff
   for
@@ -145,8 +183,8 @@ BEGIN 12
   to
   be
   None.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Calculated
   cutoff
   for
@@ -164,8 +202,8 @@ BEGIN 13
   be
   (153,
   165).
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Overlap
   between
   contigs
@@ -182,8 +220,8 @@ BEGIN 14
   score
   of
   2.0479065866558234e+44.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Found
   a
   significant
@@ -200,8 +238,8 @@ BEGIN 15
   in
   contig
   (1).
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -218,9 +256,9 @@ BEGIN 16
   to
   be
   None.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Outputting
   2
   contigs.
-END 17
+END 19

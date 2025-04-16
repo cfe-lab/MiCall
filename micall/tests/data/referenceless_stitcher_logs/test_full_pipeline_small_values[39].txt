@@ -653,9 +653,28 @@ BEGIN 43
   'r464-773.5'
   to
   be
-  None.
+  (11,
+  303).
 END 43
 BEGIN 44
+  Overlap
+  between
+  contigs
+  'r115-459.0'
+  and
+  'r464-773.5'
+  has
+  size
+  310,
+  25
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999906466.
+END 44
+BEGIN 45
   Calculated
   cutoff
   for
@@ -673,8 +692,8 @@ BEGIN 44
   be
   (64,
   281).
-END 44
-BEGIN 45
+END 45
+BEGIN 46
   Overlap
   between
   contigs
@@ -691,8 +710,8 @@ BEGIN 45
   score
   of
   8.659270740058138e+70.
-END 45
-BEGIN 46
+END 46
+BEGIN 47
   Found
   a
   significant
@@ -709,8 +728,8 @@ BEGIN 46
   in
   contig
   (8).
-END 46
-BEGIN 47
+END 47
+BEGIN 48
   Cycle
   1
   finished
@@ -728,16 +747,16 @@ BEGIN 47
   of
   2
   parts.
-END 47
-BEGIN 48
+END 48
+BEGIN 49
   Cycle
   2
   started
   with
   1
   paths
-END 48
-BEGIN 49
+END 49
+BEGIN 50
   Calculated
   cutoff
   for
@@ -753,17 +772,54 @@ BEGIN 49
   'r464-773.5'
   to
   be
-  None.
-END 49
-BEGIN 50
+  (11,
+  301).
+END 50
+BEGIN 51
+  Overlap
+  between
+  contigs
+  (8)
+  and
+  'r464-773.5'
+  has
+  size
+  310,
+  25
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999906466.
+END 51
+BEGIN 52
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  571
+  between
+  contigs
+  (8)
+  and
+  'r464-773.5',
+  resulting
+  in
+  contig
+  (9).
+END 52
+BEGIN 53
   Constructed
   a
   path
   of
   length
   347.
-END 50
-BEGIN 51
+END 53
+BEGIN 54
   Removed
   2
   components
@@ -776,29 +832,29 @@ BEGIN 51
   still
   to
   process.
-END 51
-BEGIN 52
+END 54
+BEGIN 55
   Calculating
   all
   paths...
-END 52
-BEGIN 53
+END 55
+BEGIN 56
   Cycle
   1
   started
   with
   1
   paths
-END 53
-BEGIN 54
+END 56
+BEGIN 57
   Constructed
   a
   path
   of
   length
   310.
-END 54
-BEGIN 55
+END 57
+BEGIN 58
   Removed
   1
   components
@@ -811,8 +867,8 @@ BEGIN 55
   still
   to
   process.
-END 55
-BEGIN 56
+END 58
+BEGIN 59
   Giving
   up
   on
@@ -827,16 +883,16 @@ BEGIN 56
   is
   a
   singleton.
-END 56
-BEGIN 57
+END 59
+BEGIN 60
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 57
-BEGIN 58
+END 60
+BEGIN 61
   Calculated
   cutoff
   for
@@ -854,8 +910,8 @@ BEGIN 58
   be
   (122,
   225).
-END 58
-BEGIN 59
+END 61
+BEGIN 62
   Overlap
   between
   contigs
@@ -872,8 +928,8 @@ BEGIN 59
   score
   of
   9.702443895063588e+57.
-END 59
-BEGIN 60
+END 62
+BEGIN 63
   Found
   a
   significant
@@ -889,9 +945,9 @@ BEGIN 60
   resulting
   in
   contig
-  (9).
-END 60
-BEGIN 61
+  (10).
+END 63
+BEGIN 64
   Calculated
   cutoff
   for
@@ -902,19 +958,19 @@ BEGIN 61
   310
   between
   contigs
-  (9)
+  (10)
   and
   'r464-773.5'
   to
   be
   (349,
   659).
-END 61
-BEGIN 62
+END 64
+BEGIN 65
   Overlap
   between
   contigs
-  (9)
+  (10)
   and
   'r464-773.5'
   has
@@ -927,17 +983,17 @@ BEGIN 62
   score
   of
   4.962749858723358e+77.
-END 62
-BEGIN 63
+END 65
+BEGIN 66
   Contig
-  (9)
+  (10)
   covers
   contig
   'r464-773.5'
   completely.
-END 63
-BEGIN 64
+END 66
+BEGIN 67
   Outputting
   1
   contigs.
-END 64
+END 67

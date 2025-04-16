@@ -541,9 +541,28 @@ BEGIN 37
   'r51-313.0'
   to
   be
-  None.
+  (1,
+  262).
 END 37
 BEGIN 38
+  Overlap
+  between
+  contigs
+  'r718-967.5'
+  and
+  'r51-313.0'
+  has
+  size
+  262,
+  27
+  matches,
+  and
+  the
+  score
+  of
+  8.999999410249384.
+END 38
+BEGIN 39
   Calculated
   cutoff
   for
@@ -559,17 +578,36 @@ BEGIN 38
   'r692-928.4'
   to
   be
-  None.
-END 38
-BEGIN 39
+  (2,
+  231).
+END 39
+BEGIN 40
+  Overlap
+  between
+  contigs
+  'r51-313.0'
+  and
+  'r692-928.4'
+  has
+  size
+  237,
+  6
+  matches,
+  and
+  the
+  score
+  of
+  8.999999999953483.
+END 40
+BEGIN 41
   Constructed
   a
   path
   of
   length
   263.
-END 39
-BEGIN 40
+END 41
+BEGIN 42
   Removed
   1
   components
@@ -582,8 +620,8 @@ BEGIN 40
   still
   to
   process.
-END 40
-BEGIN 41
+END 42
+BEGIN 43
   Giving
   up
   on
@@ -598,16 +636,16 @@ BEGIN 41
   is
   a
   singleton.
-END 41
-BEGIN 42
+END 43
+BEGIN 44
   Initial
   overlap
   stitching
   produced
   4
   contigs.
-END 42
-BEGIN 43
+END 44
+BEGIN 45
   Calculated
   cutoff
   for
@@ -625,8 +663,8 @@ BEGIN 43
   be
   (6,
   269).
-END 43
-BEGIN 44
+END 45
+BEGIN 46
   Overlap
   between
   contigs
@@ -643,16 +681,16 @@ BEGIN 44
   score
   of
   8.56301343060922e+66.
-END 44
-BEGIN 45
+END 46
+BEGIN 47
   Contig
   (3)
   covers
   contig
   'r51-313.0'
   completely.
-END 45
-BEGIN 46
+END 47
+BEGIN 48
   Calculated
   cutoff
   for
@@ -670,8 +708,8 @@ BEGIN 46
   be
   (26,
   211).
-END 46
-BEGIN 47
+END 48
+BEGIN 49
   Overlap
   between
   contigs
@@ -688,8 +726,8 @@ BEGIN 47
   score
   of
   7.719669011833917e+54.
-END 47
-BEGIN 48
+END 49
+BEGIN 50
   Found
   a
   significant
@@ -706,8 +744,8 @@ BEGIN 48
   in
   contig
   (4).
-END 48
-BEGIN 49
+END 50
+BEGIN 51
   Calculated
   cutoff
   for
@@ -724,9 +762,9 @@ BEGIN 49
   to
   be
   None.
-END 49
-BEGIN 50
+END 51
+BEGIN 52
   Outputting
   2
   contigs.
-END 50
+END 52
