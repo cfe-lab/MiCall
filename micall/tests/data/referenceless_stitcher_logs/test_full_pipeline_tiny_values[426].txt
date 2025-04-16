@@ -99,9 +99,28 @@ BEGIN 8
   'r38-333.2'
   to
   be
-  None.
+  (-228,
+  68).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r379-758.0'
+  and
+  'r38-333.2'
+  has
+  size
+  296,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10188.671355971788.
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -117,18 +136,18 @@ BEGIN 9
   and
   consists
   of
-  2
+  3
   parts.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -144,54 +163,73 @@ BEGIN 11
   'r38-333.2'
   to
   be
-  None.
-END 11
-BEGIN 12
+  (-142,
+  154).
+END 12
+BEGIN 13
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r38-333.2'
+  has
+  size
+  296,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10188.671355971788.
+END 13
+BEGIN 14
+  Contig
+  (1)
+  covers
+  contig
+  'r38-333.2'
+  completely.
+END 14
+BEGIN 15
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  466
+  and
+  consists
+  of
+  3
+  parts.
+END 15
+BEGIN 16
+  Cycle
+  3
+  started
+  with
+  1
+  paths
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   466.
-END 12
-BEGIN 13
+END 17
+BEGIN 18
   Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 13
-BEGIN 14
-  Calculating
-  all
-  paths...
-END 14
-BEGIN 15
-  Cycle
-  1
-  started
-  with
-  1
-  paths
-END 15
-BEGIN 16
-  Constructed
-  a
-  path
-  of
-  length
-  296.
-END 16
-BEGIN 17
-  Removed
-  1
+  3
   components
   from
   the
@@ -202,51 +240,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
 END 18
 BEGIN 19
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
 END 19
 BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  296
-  between
-  contigs
-  (1)
-  and
-  'r38-333.2'
-  to
-  be
-  None.
-END 20
-BEGIN 21
   Outputting
-  2
+  1
   contigs.
-END 21
+END 20

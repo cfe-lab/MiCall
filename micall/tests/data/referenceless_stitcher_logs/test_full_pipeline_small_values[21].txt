@@ -456,9 +456,28 @@ BEGIN 28
   'r222-425.3'
   to
   be
-  None.
+  (42,
+  246).
 END 28
 BEGIN 29
+  Overlap
+  between
+  contigs
+  (4)
+  and
+  'r222-425.3'
+  has
+  size
+  204,
+  5
+  matches,
+  and
+  the
+  score
+  of
+  -7638.958086703087.
+END 29
+BEGIN 30
   Cycle
   2
   finished
@@ -476,16 +495,16 @@ BEGIN 29
   of
   6
   parts.
-END 29
-BEGIN 30
+END 30
+BEGIN 31
   Cycle
   3
   started
   with
   1
   paths
-END 30
-BEGIN 31
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -503,8 +522,8 @@ BEGIN 31
   be
   (177,
   275).
-END 31
-BEGIN 32
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -521,8 +540,8 @@ BEGIN 32
   score
   of
   29323.24303923705.
-END 32
-BEGIN 33
+END 33
+BEGIN 34
   Found
   a
   significant
@@ -539,8 +558,8 @@ BEGIN 33
   in
   contig
   (8).
-END 33
-BEGIN 34
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -558,8 +577,8 @@ BEGIN 34
   be
   (89,
   359).
-END 34
-BEGIN 35
+END 35
+BEGIN 36
   Overlap
   between
   contigs
@@ -576,8 +595,8 @@ BEGIN 35
   score
   of
   33527.43662225401.
-END 35
-BEGIN 36
+END 36
+BEGIN 37
   Found
   a
   significant
@@ -594,8 +613,8 @@ BEGIN 36
   in
   contig
   (9).
-END 36
-BEGIN 37
+END 37
+BEGIN 38
   Cycle
   3
   finished
@@ -613,16 +632,16 @@ BEGIN 37
   of
   6
   parts.
-END 37
-BEGIN 38
+END 38
+BEGIN 39
   Cycle
   4
   started
   with
   1
   paths
-END 38
-BEGIN 39
+END 39
+BEGIN 40
   Calculated
   cutoff
   for
@@ -640,8 +659,8 @@ BEGIN 39
   be
   (88,
   364).
-END 39
-BEGIN 40
+END 40
+BEGIN 41
   Overlap
   between
   contigs
@@ -658,8 +677,8 @@ BEGIN 40
   score
   of
   33761.18234982963.
-END 40
-BEGIN 41
+END 41
+BEGIN 42
   Found
   a
   significant
@@ -676,8 +695,8 @@ BEGIN 41
   in
   contig
   (10).
-END 41
-BEGIN 42
+END 42
+BEGIN 43
   Calculated
   cutoff
   for
@@ -695,8 +714,8 @@ BEGIN 42
   be
   (62,
   266).
-END 42
-BEGIN 43
+END 43
+BEGIN 44
   Overlap
   between
   contigs
@@ -713,16 +732,16 @@ BEGIN 43
   score
   of
   25229.207518786956.
-END 43
-BEGIN 44
+END 44
+BEGIN 45
   Contig
   (9)
   covers
   contig
   'r222-425.3'
   completely.
-END 44
-BEGIN 45
+END 45
+BEGIN 46
   Cycle
   4
   finished
@@ -740,16 +759,16 @@ BEGIN 45
   of
   6
   parts.
-END 45
-BEGIN 46
+END 46
+BEGIN 47
   Cycle
   5
   started
   with
   1
   paths
-END 46
-BEGIN 47
+END 47
+BEGIN 48
   Calculated
   cutoff
   for
@@ -767,8 +786,8 @@ BEGIN 47
   be
   (150,
   354).
-END 47
-BEGIN 48
+END 48
+BEGIN 49
   Overlap
   between
   contigs
@@ -785,16 +804,16 @@ BEGIN 48
   score
   of
   25229.207518786956.
-END 48
-BEGIN 49
+END 49
+BEGIN 50
   Contig
   (10)
   covers
   contig
   'r222-425.3'
   completely.
-END 49
-BEGIN 50
+END 50
+BEGIN 51
   Cycle
   5
   finished
@@ -812,24 +831,24 @@ BEGIN 50
   of
   6
   parts.
-END 50
-BEGIN 51
+END 51
+BEGIN 52
   Cycle
   6
   started
   with
   1
   paths
-END 51
-BEGIN 52
+END 52
+BEGIN 53
   Constructed
   a
   path
   of
   length
   860.
-END 52
-BEGIN 53
+END 53
+BEGIN 54
   Removed
   6
   components
@@ -842,17 +861,17 @@ BEGIN 53
   still
   to
   process.
-END 53
-BEGIN 54
+END 54
+BEGIN 55
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 54
-BEGIN 55
+END 55
+BEGIN 56
   Outputting
   1
   contigs.
-END 55
+END 56

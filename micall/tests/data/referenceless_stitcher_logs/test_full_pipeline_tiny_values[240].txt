@@ -136,7 +136,7 @@ BEGIN 10
   and
   consists
   of
-  2
+  3
   parts.
 END 10
 BEGIN 11
@@ -163,38 +163,57 @@ BEGIN 12
   'r565-842.0'
   to
   be
-  None.
+  (-155,
+  123).
 END 12
 BEGIN 13
-  Constructed
-  a
-  path
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r565-842.0'
+  has
+  size
+  278,
+  0
+  matches,
+  and
+  the
+  score
   of
-  length
-  469.
+  -9875.098379256786.
 END 13
 BEGIN 14
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Contig
+  (1)
+  covers
+  contig
+  'r565-842.0'
+  completely.
 END 14
 BEGIN 15
-  Calculating
-  all
-  paths...
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  469
+  and
+  consists
+  of
+  3
+  parts.
 END 15
 BEGIN 16
   Cycle
-  1
+  3
   started
   with
   1
@@ -206,11 +225,11 @@ BEGIN 17
   path
   of
   length
-  278.
+  469.
 END 17
 BEGIN 18
   Removed
-  1
+  3
   components
   from
   the
@@ -223,49 +242,15 @@ BEGIN 18
   process.
 END 18
 BEGIN 19
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 19
-BEGIN 20
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 19
+BEGIN 20
+  Outputting
+  1
   contigs.
 END 20
-BEGIN 21
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  278
-  between
-  contigs
-  (1)
-  and
-  'r565-842.0'
-  to
-  be
-  None.
-END 21
-BEGIN 22
-  Outputting
-  2
-  contigs.
-END 22

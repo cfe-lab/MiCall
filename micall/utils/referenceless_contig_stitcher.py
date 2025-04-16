@@ -169,6 +169,7 @@ CUTOFFS_CACHE: CutoffsCache = {}
 def find_overlap_cutoffs(minimum_score: Score,
                          left: ContigWithAligner,
                          right: ContigWithAligner,
+                         shift: int,
                          left_initial_overlap: str,
                          right_initial_overlap: str,
                          ) -> CutoffsCacheResult:
@@ -188,8 +189,9 @@ def find_overlap_cutoffs(minimum_score: Score,
         overlap_alignments = tuple(right.map_overlap(minimum_score, "cover", left_initial_overlap))
         right_cutoff = max((end for start, end in overlap_alignments), default=-1)
         if right_cutoff < 0:
-            CUTOFFS_CACHE[key] = None
-            return None
+            ret = (len(right.seq) - abs(shift) - len(left_initial_overlap) + 1, len(right.seq) - abs(shift) + 1)
+            CUTOFFS_CACHE[key] = ret
+            return ret
 
         left_cutoff = min((start for start, end in overlap_alignments), default=-1)
 
@@ -197,8 +199,9 @@ def find_overlap_cutoffs(minimum_score: Score,
         overlap_alignments = tuple(left.map_overlap(minimum_score, "cover", right_initial_overlap))
         left_cutoff = min((start for start, end in overlap_alignments), default=-1)
         if left_cutoff < 0:
-            CUTOFFS_CACHE[key] = None
-            return None
+            ret = (len(left.seq) - abs(shift) - len(right_initial_overlap) + 1, len(left.seq) - abs(shift) + 1)
+            CUTOFFS_CACHE[key] = ret
+            return ret
 
         right_cutoff = max((end for start, end in overlap_alignments), default=-1)
 
@@ -273,7 +276,7 @@ def try_combine_contigs(is_debug2: bool,
     assert calculate_overlap_score(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_base_score
 
     cutoffs = find_overlap_cutoffs(minimum_base_score,
-                                   left, right,
+                                   left, right, shift,
                                    left_initial_overlap,
                                    right_initial_overlap,
                                    )

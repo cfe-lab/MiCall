@@ -62,17 +62,36 @@ BEGIN 6
   'r258-556.1'
   to
   be
-  None.
+  (-286,
+  13).
 END 6
 BEGIN 7
+  Overlap
+  between
+  contigs
+  'r583-968.2'
+  and
+  'r258-556.1'
+  has
+  size
+  299,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10240.0.
+END 7
+BEGIN 8
   Constructed
   a
   path
   of
   length
   386.
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Removed
   1
   components
@@ -85,8 +104,8 @@ BEGIN 8
   still
   to
   process.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Giving
   up
   on
@@ -101,16 +120,16 @@ BEGIN 9
   is
   a
   singleton.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -127,8 +146,8 @@ BEGIN 11
   to
   be
   None.
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -144,9 +163,28 @@ BEGIN 12
   'r258-556.1'
   to
   be
-  None.
-END 12
-BEGIN 13
+  (-286,
+  13).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r583-968.2'
+  and
+  'r258-556.1'
+  has
+  size
+  299,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10240.0.
+END 14
+BEGIN 15
   Calculated
   cutoff
   for
@@ -164,8 +202,8 @@ BEGIN 13
   be
   (237,
   133).
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Overlap
   between
   contigs
@@ -182,8 +220,8 @@ BEGIN 14
   score
   of
   20326.8462474669.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Found
   a
   significant
@@ -200,8 +238,8 @@ BEGIN 15
   in
   contig
   (1).
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -217,10 +255,29 @@ BEGIN 16
   'r583-968.2'
   to
   be
-  None.
-END 16
-BEGIN 17
+  (-266,
+  120).
+END 18
+BEGIN 19
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r583-968.2'
+  has
+  size
+  386,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -11630.40429219896.
+END 19
+BEGIN 20
   Outputting
   2
   contigs.
-END 17
+END 20

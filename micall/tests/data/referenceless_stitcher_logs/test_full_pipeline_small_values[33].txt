@@ -154,9 +154,28 @@ BEGIN 11
   'r15-314.3'
   to
   be
-  None.
+  (-269,
+  31).
 END 11
 BEGIN 12
+  Overlap
+  between
+  contigs
+  'r336-739.5'
+  and
+  'r15-314.3'
+  has
+  size
+  300,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10257.05246809888.
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -174,8 +193,8 @@ BEGIN 12
   be
   (242,
   47).
-END 12
-BEGIN 13
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -192,8 +211,8 @@ BEGIN 13
   score
   of
   11946.666666666666.
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -210,8 +229,8 @@ BEGIN 14
   in
   contig
   (3).
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -227,9 +246,28 @@ BEGIN 15
   'r3-239.4'
   to
   be
-  None.
-END 15
-BEGIN 16
+  (-104,
+  133).
+END 16
+BEGIN 17
+  Overlap
+  between
+  contigs
+  'r336-739.5'
+  and
+  'r3-239.4'
+  has
+  size
+  237,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -9120.692371379124.
+END 17
+BEGIN 18
   Cycle
   1
   finished
@@ -247,16 +285,16 @@ BEGIN 16
   of
   6
   parts.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Cycle
   2
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -274,8 +312,8 @@ BEGIN 18
   be
   (203,
   120).
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Overlap
   between
   contigs
@@ -292,8 +330,8 @@ BEGIN 19
   score
   of
   19294.83605076486.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Found
   a
   significant
@@ -310,8 +348,8 @@ BEGIN 20
   in
   contig
   (4).
-END 20
-BEGIN 21
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -327,9 +365,28 @@ BEGIN 21
   'r15-314.3'
   to
   be
-  None.
-END 21
-BEGIN 22
+  (-155,
+  145).
+END 23
+BEGIN 24
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r15-314.3'
+  has
+  size
+  300,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10257.05246809888.
+END 24
+BEGIN 25
   Calculated
   cutoff
   for
@@ -347,8 +404,8 @@ BEGIN 22
   be
   (242,
   47).
-END 22
-BEGIN 23
+END 25
+BEGIN 26
   Overlap
   between
   contigs
@@ -365,8 +422,8 @@ BEGIN 23
   score
   of
   11946.666666666666.
-END 23
-BEGIN 24
+END 26
+BEGIN 27
   Found
   a
   significant
@@ -383,8 +440,8 @@ BEGIN 24
   in
   contig
   (5).
-END 24
-BEGIN 25
+END 27
+BEGIN 28
   Calculated
   cutoff
   for
@@ -400,9 +457,28 @@ BEGIN 25
   'r3-239.4'
   to
   be
-  None.
-END 25
-BEGIN 26
+  (-104,
+  133).
+END 28
+BEGIN 29
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r3-239.4'
+  has
+  size
+  237,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -9120.692371379124.
+END 29
+BEGIN 30
   Cycle
   2
   finished
@@ -420,16 +496,16 @@ BEGIN 26
   of
   6
   parts.
-END 26
-BEGIN 27
+END 30
+BEGIN 31
   Cycle
   3
   started
   with
   1
   paths
-END 27
-BEGIN 28
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -447,8 +523,8 @@ BEGIN 28
   be
   (118,
   182).
-END 28
-BEGIN 29
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -465,8 +541,8 @@ BEGIN 29
   score
   of
   23818.273984316864.
-END 29
-BEGIN 30
+END 33
+BEGIN 34
   Found
   a
   significant
@@ -483,8 +559,8 @@ BEGIN 30
   in
   contig
   (6).
-END 30
-BEGIN 31
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -502,8 +578,8 @@ BEGIN 31
   be
   (39,
   250).
-END 31
-BEGIN 32
+END 35
+BEGIN 36
   Overlap
   between
   contigs
@@ -520,8 +596,8 @@ BEGIN 32
   score
   of
   27950.159221359292.
-END 32
-BEGIN 33
+END 36
+BEGIN 37
   Found
   a
   significant
@@ -538,8 +614,8 @@ BEGIN 33
   in
   contig
   (7).
-END 33
-BEGIN 34
+END 37
+BEGIN 38
   Cycle
   3
   finished
@@ -557,16 +633,16 @@ BEGIN 34
   of
   6
   parts.
-END 34
-BEGIN 35
+END 38
+BEGIN 39
   Cycle
   4
   started
   with
   1
   paths
-END 35
-BEGIN 36
+END 39
+BEGIN 40
   Calculated
   cutoff
   for
@@ -584,8 +660,8 @@ BEGIN 36
   be
   (79,
   221).
-END 36
-BEGIN 37
+END 40
+BEGIN 41
   Overlap
   between
   contigs
@@ -602,8 +678,8 @@ BEGIN 37
   score
   of
   26267.626444256723.
-END 37
-BEGIN 38
+END 41
+BEGIN 42
   Found
   a
   significant
@@ -620,8 +696,8 @@ BEGIN 38
   in
   contig
   (8).
-END 38
-BEGIN 39
+END 42
+BEGIN 43
   Calculated
   cutoff
   for
@@ -639,8 +715,8 @@ BEGIN 39
   be
   (91,
   146).
-END 39
-BEGIN 40
+END 43
+BEGIN 44
   Overlap
   between
   contigs
@@ -657,8 +733,8 @@ BEGIN 40
   score
   of
   21308.95238095238.
-END 40
-BEGIN 41
+END 44
+BEGIN 45
   Found
   a
   significant
@@ -675,8 +751,8 @@ BEGIN 41
   in
   contig
   (9).
-END 41
-BEGIN 42
+END 45
+BEGIN 46
   Cycle
   4
   finished
@@ -694,16 +770,16 @@ BEGIN 42
   of
   6
   parts.
-END 42
-BEGIN 43
+END 46
+BEGIN 47
   Cycle
   5
   started
   with
   1
   paths
-END 43
-BEGIN 44
+END 47
+BEGIN 48
   Calculated
   cutoff
   for
@@ -721,8 +797,8 @@ BEGIN 44
   be
   (12,
   225).
-END 44
-BEGIN 45
+END 48
+BEGIN 49
   Overlap
   between
   contigs
@@ -739,8 +815,8 @@ BEGIN 45
   score
   of
   26506.049595447872.
-END 45
-BEGIN 46
+END 49
+BEGIN 50
   Found
   a
   significant
@@ -757,8 +833,8 @@ BEGIN 46
   in
   contig
   (10).
-END 46
-BEGIN 47
+END 50
+BEGIN 51
   Cycle
   5
   finished
@@ -776,24 +852,24 @@ BEGIN 47
   of
   6
   parts.
-END 47
-BEGIN 48
+END 51
+BEGIN 52
   Cycle
   6
   started
   with
   1
   paths
-END 48
-BEGIN 49
+END 52
+BEGIN 53
   Constructed
   a
   path
   of
   length
   896.
-END 49
-BEGIN 50
+END 53
+BEGIN 54
   Removed
   6
   components
@@ -806,17 +882,17 @@ BEGIN 50
   still
   to
   process.
-END 50
-BEGIN 51
+END 54
+BEGIN 55
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 51
-BEGIN 52
+END 55
+BEGIN 56
   Outputting
   1
   contigs.
-END 52
+END 56

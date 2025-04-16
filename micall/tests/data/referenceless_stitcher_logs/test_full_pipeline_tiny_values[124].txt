@@ -217,10 +217,29 @@ BEGIN 16
   'r204-533.0'
   to
   be
-  None.
+  (-325,
+  5).
 END 16
 BEGIN 17
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r204-533.0'
+  has
+  size
+  330,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -10756.062724497908.
+END 17
+BEGIN 18
   Outputting
   2
   contigs.
-END 17
+END 18

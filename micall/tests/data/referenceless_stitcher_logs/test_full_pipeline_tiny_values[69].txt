@@ -44,9 +44,28 @@ BEGIN 5
   'r81-456.1'
   to
   be
-  None.
+  (-338,
+  38).
 END 5
 BEGIN 6
+  Overlap
+  between
+  contigs
+  'r504-941.0'
+  and
+  'r81-456.1'
+  has
+  size
+  376,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -11479.157228066295.
+END 6
+BEGIN 7
   Calculated
   cutoff
   for
@@ -64,8 +83,8 @@ BEGIN 6
   be
   (78,
   371).
-END 6
-BEGIN 7
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -82,16 +101,16 @@ BEGIN 7
   score
   of
   30273.328951188178.
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Contig
   'r504-941.0'
   covers
   contig
   'r582-874.2'
   completely.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -109,16 +128,16 @@ BEGIN 9
   of
   2
   parts.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -134,17 +153,36 @@ BEGIN 11
   'r81-456.1'
   to
   be
-  None.
-END 11
-BEGIN 12
+  (-338,
+  38).
+END 12
+BEGIN 13
+  Overlap
+  between
+  contigs
+  'r504-941.0'
+  and
+  'r81-456.1'
+  has
+  size
+  376,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -11479.157228066295.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
   438.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -157,29 +195,29 @@ BEGIN 13
   still
   to
   process.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   376.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -192,8 +230,8 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -208,16 +246,16 @@ BEGIN 18
   is
   a
   singleton.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 19
-BEGIN 20
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -233,10 +271,29 @@ BEGIN 20
   'r81-456.1'
   to
   be
-  None.
-END 20
-BEGIN 21
+  (-338,
+  38).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  'r504-941.0'
+  and
+  'r81-456.1'
+  has
+  size
+  376,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -11479.157228066295.
+END 23
+BEGIN 24
   Outputting
   2
   contigs.
-END 21
+END 24
