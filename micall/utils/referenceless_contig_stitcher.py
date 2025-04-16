@@ -9,7 +9,7 @@ import itertools
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.overlap_stitcher import align_queries, \
-    calculate_concordance, sort_concordance_indexes, calc_overlap_pvalue
+    calculate_concordance, sort_concordance_indexes, calculate_overlap_score
 import micall.utils.referenceless_contig_stitcher_events as events
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -20,7 +20,7 @@ from micall.utils.contig_stitcher_contigs import Contig
 logger = logging.getLogger(__name__)
 
 
-ACCEPTABLE_STITCHING_SCORE: Score = calc_overlap_pvalue(L=15, M=15)
+ACCEPTABLE_STITCHING_SCORE: Score = calculate_overlap_score(L=15, M=15)
 MAX_ALTERNATIVES = 30
 
 
@@ -242,7 +242,7 @@ def try_combine_contigs(is_debug2: bool,
 
     maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
-    maximum_result_probability = calc_overlap_pvalue(L=maximum_overlap_size, M=maximum_number_of_matches)
+    maximum_result_probability = calculate_overlap_score(L=maximum_overlap_size, M=maximum_number_of_matches)
     if maximum_result_probability < minimum_score:
         return None
 
@@ -252,7 +252,7 @@ def try_combine_contigs(is_debug2: bool,
 
     optimistic_overlap_size = overlap.size
     optimistic_number_of_matches = optimistic_overlap_size
-    optimistic_result_probability = calc_overlap_pvalue(L=optimistic_overlap_size, M=optimistic_number_of_matches)
+    optimistic_result_probability = calculate_overlap_score(L=optimistic_overlap_size, M=optimistic_number_of_matches)
     if optimistic_result_probability < minimum_score:
         return None
 
@@ -270,7 +270,7 @@ def try_combine_contigs(is_debug2: bool,
 
     assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size}"
     assert len(left_initial_overlap) == overlap.size, f"{len(left_initial_overlap)} == {overlap.size}"
-    assert calc_overlap_pvalue(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_score
+    assert calculate_overlap_score(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_score
 
     cutoffs = find_overlap_cutoffs(minimum_score,
                                    left, right,
@@ -319,7 +319,7 @@ def try_combine_contigs(is_debug2: bool,
 
     # Note that result_length is not necessarily == len(left_overlap_chunk) + len(right_overlap_chunk).
     # The addition would give a more precise value for the result_probability, but it's much more expensive to calculate.
-    result_probability = calc_overlap_pvalue(L=result_length, M=number_of_matches)
+    result_probability = calculate_overlap_score(L=result_length, M=number_of_matches)
     if is_debug2:
         log(events.DeterminedOverlap(left.unique_name, right.unique_name, result_length, number_of_matches, result_probability))
 

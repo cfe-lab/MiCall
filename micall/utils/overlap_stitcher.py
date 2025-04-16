@@ -154,7 +154,7 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
 
 
 @cache
-def calc_overlap_pvalue(L: int, M: int) -> float:
+def calculate_overlap_score(L: int, M: int) -> float:
     """
     Computes a monotonic scoring metric for an overlap event between
     two sequences using a four-letter alphabet. This function returns
@@ -230,7 +230,7 @@ def find_max_overlap_length(M: int, X: float, L_low: int = -1, L_high: int = -1)
         if L_high >= 0 and ret >= L_high:
             return L_high
 
-        score = calc_overlap_pvalue(L=ret, M=M)
+        score = calculate_overlap_score(L=ret, M=M)
         if score < X:
             return ret
 
