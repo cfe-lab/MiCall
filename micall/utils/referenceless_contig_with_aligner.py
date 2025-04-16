@@ -1,6 +1,7 @@
 
 import numpy as np
 
+from abc import ABC, abstractmethod
 from typing import Iterator, Tuple, Mapping, Literal, NoReturn
 from dataclasses import dataclass
 from mappy import Aligner as OriginalMappyAligner
@@ -17,7 +18,12 @@ from micall.utils.find_maximum_overlap import \
 OverlapRelation = Literal["left", "right", "cover"]
 
 
-class MappyAligner:
+class LocalAligner(ABC):
+    @abstractmethod
+    def map(self, query: str) -> Iterator[Tuple[int, int]]: ...
+
+
+class MappyAligner(LocalAligner):
     def __init__(self, seq: str) -> None:
         self.aligner = OriginalMappyAligner(seq=seq)
 
@@ -30,7 +36,7 @@ class MappyAligner:
 @dataclass(frozen=True)
 class ContigWithAligner(Contig):
     @cached_property
-    def mappy_aligner(self) -> MappyAligner:
+    def mappy_aligner(self) -> LocalAligner:
         return MappyAligner(seq=self.seq)
 
     @staticmethod
