@@ -233,13 +233,6 @@ def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Itera
             yield testcase
 
 
-@pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
-def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
-    assert not ReferencelessStitcherContext.get().is_debug2
-    converted_fasta_file, ref_seqs = random_fasta_file(50, random_seed)
-    run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
-
-
 # TODO: ensure that every random seed can be stitched.
 @pytest.mark.parametrize("random_seed", params(range(50), [2, 3, 6, 7, 8, 13], "Probably gaps that are too small."))
 def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
@@ -257,4 +250,11 @@ def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file,
     assert not ReferencelessStitcherContext.get().is_debug2
     ReferencelessStitcherContext.get().is_debug2 = True
     converted_fasta_file, ref_seqs = random_fasta_file(3, random_seed)
+    run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
+
+
+@pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
+def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
+    assert not ReferencelessStitcherContext.get().is_debug2
+    converted_fasta_file, ref_seqs = random_fasta_file(50, random_seed)
     run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
