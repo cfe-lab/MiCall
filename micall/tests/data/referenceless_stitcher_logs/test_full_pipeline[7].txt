@@ -596,14 +596,41 @@ BEGIN 46
   paths
 END 46
 BEGIN 47
+  Cycle
+  22
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  957
+  and
+  consists
+  of
+  50
+  parts.
+END 47
+BEGIN 48
+  Cycle
+  23
+  started
+  with
+  30
+  paths
+END 48
+BEGIN 49
   Constructed
   a
   path
   of
   length
   957.
-END 47
-BEGIN 48
+END 49
+BEGIN 50
   Removed
   50
   components
@@ -616,17 +643,17 @@ BEGIN 48
   still
   to
   process.
-END 48
-BEGIN 49
+END 50
+BEGIN 51
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 49
-BEGIN 50
+END 51
+BEGIN 52
   Outputting
   1
   contigs.
-END 50
+END 52

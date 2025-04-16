@@ -623,14 +623,203 @@ BEGIN 48
   paths
 END 48
 BEGIN 49
+  Cycle
+  23
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 49
+BEGIN 50
+  Cycle
+  24
+  started
+  with
+  30
+  paths
+END 50
+BEGIN 51
+  Cycle
+  24
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 51
+BEGIN 52
+  Cycle
+  25
+  started
+  with
+  30
+  paths
+END 52
+BEGIN 53
+  Cycle
+  25
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 53
+BEGIN 54
+  Cycle
+  26
+  started
+  with
+  30
+  paths
+END 54
+BEGIN 55
+  Cycle
+  26
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 55
+BEGIN 56
+  Cycle
+  27
+  started
+  with
+  30
+  paths
+END 56
+BEGIN 57
+  Cycle
+  27
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 57
+BEGIN 58
+  Cycle
+  28
+  started
+  with
+  30
+  paths
+END 58
+BEGIN 59
+  Cycle
+  28
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 59
+BEGIN 60
+  Cycle
+  29
+  started
+  with
+  30
+  paths
+END 60
+BEGIN 61
+  Cycle
+  29
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  959
+  and
+  consists
+  of
+  50
+  parts.
+END 61
+BEGIN 62
+  Cycle
+  30
+  started
+  with
+  30
+  paths
+END 62
+BEGIN 63
   Constructed
   a
   path
   of
   length
   959.
-END 49
-BEGIN 50
+END 63
+BEGIN 64
   Removed
   50
   components
@@ -643,17 +832,17 @@ BEGIN 50
   still
   to
   process.
-END 50
-BEGIN 51
+END 64
+BEGIN 65
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 51
-BEGIN 52
+END 65
+BEGIN 66
   Outputting
   1
   contigs.
-END 52
+END 66

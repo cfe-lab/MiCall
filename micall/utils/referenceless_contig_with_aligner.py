@@ -106,11 +106,6 @@ class ContigWithAligner(Contig):
                     overlap: str,
                     ) -> Iterator[Tuple[int, int]]:
 
-        # TODO: Remove this requirement below.
-        #       It is here only to preserve the mappy behaviour.
-        if len(overlap) < 40:
-            return
-
         if relation == "left":
             aligner = self.reversed_aligner
         elif relation == "right":
