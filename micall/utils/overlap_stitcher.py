@@ -5,6 +5,7 @@ from gotoh import align_it
 from functools import cache
 import numpy as np
 import math
+from micall.utils.referenceless_score import Score
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -154,7 +155,7 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
 
 
 @cache
-def calculate_overlap_score(L: int, M: int) -> float:
+def calculate_overlap_score(L: int, M: int) -> Score:
     """
     Computes a monotonic scoring metric for an overlap event between
     two sequences using a four-letter alphabet. This function returns
@@ -181,7 +182,7 @@ def calculate_overlap_score(L: int, M: int) -> float:
 
     :param M: Number of matching characters.
     :param L: Length of the overlap (must be greater than 0).
-    :return: A z-score as a float that serves as a ranking metric for the event.
+    :return: A z-score as a Score that serves as a ranking metric for the event.
     :raises ValueError: If L is not greater than 0.
     """
 
@@ -197,7 +198,7 @@ def calculate_overlap_score(L: int, M: int) -> float:
     return z
 
 
-def find_max_overlap_length(M: int, X: float, L_low: int = -1, L_high: int = -1) -> int:
+def find_max_overlap_length(M: int, X: Score, L_low: int = -1, L_high: int = -1) -> int:
     """
     Find the maximum integer L for which calc_overlap_pvalue(L, M) is
     greater than a given threshold X using binary search.
@@ -209,7 +210,7 @@ def find_max_overlap_length(M: int, X: float, L_low: int = -1, L_high: int = -1)
 
     Args:
         M (int): The parameter M used in calc_overlap_pvalue.
-        X (float): The threshold value; the function finds the maximum
+        X (Score): The threshold value; the function finds the maximum
         L such that calc_overlap_pvalue(L, M) > X.
         L_low (int, optional): The lower bound of the search interval
         for L. Defaults to M.
