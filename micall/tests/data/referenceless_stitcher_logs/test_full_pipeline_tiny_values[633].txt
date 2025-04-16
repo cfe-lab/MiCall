@@ -99,9 +99,28 @@ BEGIN 8
   'r139-411.2'
   to
   be
-  None.
+  (539,
+  1).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r387-930.0'
+  and
+  'r139-411.2'
+  has
+  size
+  5,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  8.776030066346493.
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -119,16 +138,16 @@ BEGIN 9
   of
   2
   parts.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -146,8 +165,8 @@ BEGIN 11
   be
   (174,
   99).
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -164,8 +183,8 @@ BEGIN 12
   score
   of
   3.5250113743433053e+28.
-END 12
-BEGIN 13
+END 13
+BEGIN 14
   Found
   a
   significant
@@ -182,16 +201,16 @@ BEGIN 13
   in
   contig
   (2).
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   618.
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Removed
   2
   components
@@ -204,29 +223,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Cycle
   1
   started
   with
   1
   paths
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Constructed
   a
   path
   of
   length
   273.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -239,8 +258,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -255,16 +274,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -282,8 +301,8 @@ BEGIN 22
   be
   (174,
   99).
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -300,8 +319,8 @@ BEGIN 23
   score
   of
   3.5250113743433053e+28.
-END 23
-BEGIN 24
+END 24
+BEGIN 25
   Found
   a
   significant
@@ -318,9 +337,9 @@ BEGIN 24
   in
   contig
   (3).
-END 24
-BEGIN 25
+END 25
+BEGIN 26
   Outputting
   1
   contigs.
-END 25
+END 26

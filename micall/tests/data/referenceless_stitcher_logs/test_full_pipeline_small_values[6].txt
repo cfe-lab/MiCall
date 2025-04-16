@@ -525,9 +525,28 @@ BEGIN 35
   'r650-980.3'
   to
   be
-  None.
+  (259,
+  1).
 END 35
 BEGIN 36
+  Overlap
+  between
+  contigs
+  'r367-632.5'
+  and
+  'r650-980.3'
+  has
+  size
+  7,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  4.8411169166403285.
+END 36
+BEGIN 37
   Calculated
   cutoff
   for
@@ -544,16 +563,16 @@ BEGIN 36
   to
   be
   None.
-END 36
-BEGIN 37
+END 37
+BEGIN 38
   Constructed
   a
   path
   of
   length
   331.
-END 37
-BEGIN 38
+END 38
+BEGIN 39
   Removed
   1
   components
@@ -566,8 +585,8 @@ BEGIN 38
   still
   to
   process.
-END 38
-BEGIN 39
+END 39
+BEGIN 40
   Giving
   up
   on
@@ -582,16 +601,16 @@ BEGIN 39
   is
   a
   singleton.
-END 39
-BEGIN 40
+END 40
+BEGIN 41
   Initial
   overlap
   stitching
   produced
   5
   contigs.
-END 40
-BEGIN 41
+END 41
+BEGIN 42
   Calculated
   cutoff
   for
@@ -608,8 +627,8 @@ BEGIN 41
   to
   be
   None.
-END 41
-BEGIN 42
+END 42
+BEGIN 43
   Calculated
   cutoff
   for
@@ -626,8 +645,8 @@ BEGIN 42
   to
   be
   None.
-END 42
-BEGIN 43
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -643,9 +662,28 @@ BEGIN 43
   'r650-980.3'
   to
   be
-  None.
-END 43
-BEGIN 44
+  (259,
+  1).
+END 44
+BEGIN 45
+  Overlap
+  between
+  contigs
+  'r367-632.5'
+  and
+  'r650-980.3'
+  has
+  size
+  7,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  4.8411169166403285.
+END 45
+BEGIN 46
   Calculated
   cutoff
   for
@@ -662,8 +700,8 @@ BEGIN 44
   to
   be
   None.
-END 44
-BEGIN 45
+END 46
+BEGIN 47
   Calculated
   cutoff
   for
@@ -681,8 +719,8 @@ BEGIN 45
   be
   (29,
   285).
-END 45
-BEGIN 46
+END 47
+BEGIN 48
   Overlap
   between
   contigs
@@ -699,8 +737,8 @@ BEGIN 46
   score
   of
   1.449177165052371e+72.
-END 46
-BEGIN 47
+END 48
+BEGIN 49
   Found
   a
   significant
@@ -717,8 +755,8 @@ BEGIN 47
   in
   contig
   (6).
-END 47
-BEGIN 48
+END 49
+BEGIN 50
   Calculated
   cutoff
   for
@@ -734,9 +772,28 @@ BEGIN 48
   'r650-980.3'
   to
   be
-  None.
-END 48
-BEGIN 49
+  (259,
+  1).
+END 50
+BEGIN 51
+  Overlap
+  between
+  contigs
+  'r367-632.5'
+  and
+  'r650-980.3'
+  has
+  size
+  7,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  4.8411169166403285.
+END 51
+BEGIN 52
   Calculated
   cutoff
   for
@@ -753,8 +810,8 @@ BEGIN 49
   to
   be
   None.
-END 49
-BEGIN 50
+END 52
+BEGIN 53
   Calculated
   cutoff
   for
@@ -771,8 +828,8 @@ BEGIN 50
   to
   be
   None.
-END 50
-BEGIN 51
+END 53
+BEGIN 54
   Calculated
   cutoff
   for
@@ -789,8 +846,8 @@ BEGIN 51
   to
   be
   None.
-END 51
-BEGIN 52
+END 54
+BEGIN 55
   Calculated
   cutoff
   for
@@ -808,8 +865,8 @@ BEGIN 52
   be
   (197,
   463).
-END 52
-BEGIN 53
+END 55
+BEGIN 56
   Overlap
   between
   contigs
@@ -826,16 +883,16 @@ BEGIN 53
   score
   of
   3.551093662302419e+67.
-END 53
-BEGIN 54
+END 56
+BEGIN 57
   Contig
   (6)
   covers
   contig
   'r367-632.5'
   completely.
-END 54
-BEGIN 55
+END 57
+BEGIN 58
   Calculated
   cutoff
   for
@@ -852,8 +909,8 @@ BEGIN 55
   to
   be
   None.
-END 55
-BEGIN 56
+END 58
+BEGIN 59
   Calculated
   cutoff
   for
@@ -870,8 +927,8 @@ BEGIN 56
   to
   be
   None.
-END 56
-BEGIN 57
+END 59
+BEGIN 60
   Calculated
   cutoff
   for
@@ -889,8 +946,8 @@ BEGIN 57
   be
   (77,
   175).
-END 57
-BEGIN 58
+END 60
+BEGIN 61
   Overlap
   between
   contigs
@@ -907,8 +964,8 @@ BEGIN 58
   score
   of
   3.1642771643799346e+46.
-END 58
-BEGIN 59
+END 61
+BEGIN 62
   Found
   a
   significant
@@ -925,8 +982,8 @@ BEGIN 59
   in
   contig
   (7).
-END 59
-BEGIN 60
+END 62
+BEGIN 63
   Calculated
   cutoff
   for
@@ -943,9 +1000,9 @@ BEGIN 60
   to
   be
   None.
-END 60
-BEGIN 61
+END 63
+BEGIN 64
   Outputting
   2
   contigs.
-END 61
+END 64

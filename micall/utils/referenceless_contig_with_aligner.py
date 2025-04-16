@@ -33,7 +33,7 @@ class MappyAligner(LocalAligner):
                 yield (x.r_st, x.r_en)
 
 
-PADDING = 0
+PADDING = 40
 
 
 class ForwardAligner(LocalAligner):
@@ -52,7 +52,9 @@ class ForwardAligner(LocalAligner):
 
         for x in self.aligner.map(query):
             if x.is_primary:
-                yield (x.r_st - PADDING, x.r_en - PADDING)
+                end = x.r_en - PADDING
+                if end > 0:
+                    yield (-99999999999, end)
 
 
 class ReversedAligner(LocalAligner):
@@ -71,7 +73,9 @@ class ReversedAligner(LocalAligner):
 
         for x in self.aligner.map(query):
             if x.is_primary:
-                yield (x.r_st - PADDING, x.r_en - PADDING)
+                start = x.r_st
+                if start < len(self.seq) - PADDING:
+                    yield (start, -99999999999999999)
 
 
 @dataclass(frozen=True)

@@ -217,10 +217,29 @@ BEGIN 16
   'r53-467.2'
   to
   be
-  None.
+  (400,
+  4).
 END 16
 BEGIN 17
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r53-467.2'
+  has
+  size
+  4,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  8.974852532618216.
+END 17
+BEGIN 18
   Outputting
   2
   contigs.
-END 17
+END 18

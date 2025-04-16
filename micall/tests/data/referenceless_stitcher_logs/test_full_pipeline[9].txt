@@ -44,7 +44,7 @@ BEGIN 5
   and
   consists
   of
-  18
+  19
   parts.
 END 5
 BEGIN 6
@@ -71,7 +71,7 @@ BEGIN 7
   and
   consists
   of
-  18
+  19
   parts.
 END 7
 BEGIN 8
@@ -98,7 +98,7 @@ BEGIN 9
   and
   consists
   of
-  18
+  19
   parts.
 END 9
 BEGIN 10
@@ -125,7 +125,7 @@ BEGIN 11
   and
   consists
   of
-  18
+  19
   parts.
 END 11
 BEGIN 12
@@ -152,7 +152,7 @@ BEGIN 13
   and
   consists
   of
-  18
+  19
   parts.
 END 13
 BEGIN 14
@@ -179,7 +179,7 @@ BEGIN 15
   and
   consists
   of
-  18
+  19
   parts.
 END 15
 BEGIN 16
@@ -200,14 +200,14 @@ BEGIN 17
 END 17
 BEGIN 18
   Removed
-  17
+  18
   components
   from
   the
   working
   list,
   having
-  33
+  32
   still
   to
   process.
@@ -237,11 +237,11 @@ BEGIN 21
   fittest
   has
   length
-  727
+  976
   and
   consists
   of
-  13
+  20
   parts.
 END 21
 BEGIN 22
@@ -264,11 +264,11 @@ BEGIN 23
   fittest
   has
   length
-  727
+  976
   and
   consists
   of
-  13
+  20
   parts.
 END 23
 BEGIN 24
@@ -291,11 +291,11 @@ BEGIN 25
   fittest
   has
   length
-  727
+  976
   and
   consists
   of
-  13
+  20
   parts.
 END 25
 BEGIN 26
@@ -318,11 +318,11 @@ BEGIN 27
   fittest
   has
   length
-  727
+  976
   and
   consists
   of
-  13
+  20
   parts.
 END 27
 BEGIN 28
@@ -334,43 +334,8 @@ BEGIN 28
   paths
 END 28
 BEGIN 29
-  Constructed
-  a
-  path
-  of
-  length
-  409.
-END 29
-BEGIN 30
-  Removed
-  10
-  components
-  from
-  the
-  working
-  list,
-  having
-  23
-  still
-  to
-  process.
-END 30
-BEGIN 31
-  Calculating
-  all
-  paths...
-END 31
-BEGIN 32
   Cycle
-  1
-  started
-  with
-  23
-  paths
-END 32
-BEGIN 33
-  Cycle
-  1
+  5
   finished
   with
   30
@@ -380,16 +345,70 @@ BEGIN 33
   fittest
   has
   length
-  636
+  976
   and
   consists
   of
-  13
+  20
+  parts.
+END 29
+BEGIN 30
+  Cycle
+  6
+  started
+  with
+  30
+  paths
+END 30
+BEGIN 31
+  Cycle
+  6
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  976
+  and
+  consists
+  of
+  20
+  parts.
+END 31
+BEGIN 32
+  Cycle
+  7
+  started
+  with
+  30
+  paths
+END 32
+BEGIN 33
+  Cycle
+  7
+  finished
+  with
+  30
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  976
+  and
+  consists
+  of
+  20
   parts.
 END 33
 BEGIN 34
   Cycle
-  2
+  8
   started
   with
   30
@@ -397,7 +416,7 @@ BEGIN 34
 END 34
 BEGIN 35
   Cycle
-  2
+  8
   finished
   with
   30
@@ -407,78 +426,59 @@ BEGIN 35
   fittest
   has
   length
-  636
+  976
   and
   consists
   of
-  13
+  20
   parts.
 END 35
 BEGIN 36
   Cycle
-  3
+  9
   started
   with
   30
   paths
 END 36
 BEGIN 37
-  Cycle
-  3
-  finished
-  with
-  30
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  636
-  and
-  consists
+  Constructed
+  a
+  path
   of
-  13
-  parts.
+  length
+  934.
 END 37
 BEGIN 38
-  Cycle
-  4
-  started
-  with
-  30
-  paths
+  Removed
+  19
+  components
+  from
+  the
+  working
+  list,
+  having
+  13
+  still
+  to
+  process.
 END 38
 BEGIN 39
-  Cycle
-  4
-  finished
-  with
-  30
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  636
-  and
-  consists
-  of
-  13
-  parts.
+  Calculating
+  all
+  paths...
 END 39
 BEGIN 40
   Cycle
-  5
+  1
   started
   with
-  30
+  13
   paths
 END 40
 BEGIN 41
   Cycle
-  5
+  1
   finished
   with
   30
@@ -488,16 +488,16 @@ BEGIN 41
   fittest
   has
   length
-  636
+  382
   and
   consists
   of
-  13
+  6
   parts.
 END 41
 BEGIN 42
   Cycle
-  6
+  2
   started
   with
   30
@@ -505,7 +505,7 @@ BEGIN 42
 END 42
 BEGIN 43
   Cycle
-  6
+  2
   finished
   with
   30
@@ -515,16 +515,16 @@ BEGIN 43
   fittest
   has
   length
-  636
+  382
   and
   consists
   of
-  13
+  6
   parts.
 END 43
 BEGIN 44
   Cycle
-  7
+  3
   started
   with
   30
@@ -532,7 +532,7 @@ BEGIN 44
 END 44
 BEGIN 45
   Cycle
-  7
+  3
   finished
   with
   30
@@ -542,210 +542,121 @@ BEGIN 45
   fittest
   has
   length
-  636
+  382
   and
   consists
   of
-  13
+  6
   parts.
 END 45
 BEGIN 46
-  Cycle
-  8
-  started
-  with
-  30
-  paths
-END 46
-BEGIN 47
-  Constructed
-  a
-  path
-  of
-  length
-  506.
-END 47
-BEGIN 48
-  Removed
-  10
-  components
-  from
-  the
-  working
-  list,
-  having
-  13
-  still
-  to
-  process.
-END 48
-BEGIN 49
-  Calculating
-  all
-  paths...
-END 49
-BEGIN 50
-  Cycle
-  1
-  started
-  with
-  13
-  paths
-END 50
-BEGIN 51
-  Cycle
-  1
-  finished
-  with
-  30
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  290
-  and
-  consists
-  of
-  7
-  parts.
-END 51
-BEGIN 52
-  Cycle
-  2
-  started
-  with
-  30
-  paths
-END 52
-BEGIN 53
-  Cycle
-  2
-  finished
-  with
-  30
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  290
-  and
-  consists
-  of
-  7
-  parts.
-END 53
-BEGIN 54
-  Cycle
-  3
-  started
-  with
-  30
-  paths
-END 54
-BEGIN 55
-  Cycle
-  3
-  finished
-  with
-  30
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  290
-  and
-  consists
-  of
-  7
-  parts.
-END 55
-BEGIN 56
   Cycle
   4
   started
   with
   30
   paths
-END 56
-BEGIN 57
-  Constructed
-  a
-  path
-  of
-  length
-  281.
-END 57
-BEGIN 58
-  Removed
-  6
-  components
-  from
-  the
-  working
-  list,
-  having
-  7
-  still
-  to
-  process.
-END 58
-BEGIN 59
-  Calculating
-  all
-  paths...
-END 59
-BEGIN 60
+END 46
+BEGIN 47
   Cycle
-  1
-  started
-  with
-  7
-  paths
-END 60
-BEGIN 61
-  Cycle
-  1
+  4
   finished
   with
-  13
+  30
   new
   paths.
   The
   fittest
   has
   length
-  185
+  382
   and
   consists
   of
-  2
+  6
   parts.
-END 61
-BEGIN 62
+END 47
+BEGIN 48
   Cycle
-  2
+  5
   started
   with
-  13
+  30
   paths
-END 62
-BEGIN 63
+END 48
+BEGIN 49
   Constructed
   a
   path
   of
   length
-  185.
-END 63
-BEGIN 64
+  264.
+END 49
+BEGIN 50
   Removed
+  5
+  components
+  from
+  the
+  working
+  list,
+  having
+  8
+  still
+  to
+  process.
+END 50
+BEGIN 51
+  Calculating
+  all
+  paths...
+END 51
+BEGIN 52
+  Cycle
+  1
+  started
+  with
+  8
+  paths
+END 52
+BEGIN 53
+  Cycle
+  1
+  finished
+  with
+  18
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  223
+  and
+  consists
+  of
+  3
+  parts.
+END 53
+BEGIN 54
+  Cycle
   2
+  started
+  with
+  18
+  paths
+END 54
+BEGIN 55
+  Constructed
+  a
+  path
+  of
+  length
+  223.
+END 55
+BEGIN 56
+  Removed
+  3
   components
   from
   the
@@ -756,21 +667,21 @@ BEGIN 64
   still
   to
   process.
-END 64
-BEGIN 65
+END 56
+BEGIN 57
   Calculating
   all
   paths...
-END 65
-BEGIN 66
+END 57
+BEGIN 58
   Cycle
   1
   started
   with
   5
   paths
-END 66
-BEGIN 67
+END 58
+BEGIN 59
   Cycle
   1
   finished
@@ -788,24 +699,24 @@ BEGIN 67
   of
   3
   parts.
-END 67
-BEGIN 68
+END 59
+BEGIN 60
   Cycle
   2
   started
   with
   10
   paths
-END 68
-BEGIN 69
+END 60
+BEGIN 61
   Constructed
   a
   path
   of
   length
   263.
-END 69
-BEGIN 70
+END 61
+BEGIN 62
   Removed
   3
   components
@@ -818,79 +729,68 @@ BEGIN 70
   still
   to
   process.
-END 70
-BEGIN 71
+END 62
+BEGIN 63
   Calculating
   all
   paths...
-END 71
-BEGIN 72
+END 63
+BEGIN 64
   Cycle
   1
   started
   with
   2
   paths
-END 72
-BEGIN 73
-  Cycle
-  1
-  finished
-  with
-  3
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  218
-  and
-  consists
-  of
-  2
-  parts.
-END 73
-BEGIN 74
-  Cycle
-  2
-  started
-  with
-  3
-  paths
-END 74
-BEGIN 75
+END 64
+BEGIN 65
   Constructed
   a
   path
   of
   length
-  218.
-END 75
-BEGIN 76
+  211.
+END 65
+BEGIN 66
   Removed
-  2
+  1
   components
   from
   the
   working
   list,
   having
-  0
+  1
   still
   to
   process.
-END 76
-BEGIN 77
+END 66
+BEGIN 67
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 67
+BEGIN 68
   Initial
   overlap
   stitching
   produced
   7
   contigs.
-END 77
-BEGIN 78
+END 68
+BEGIN 69
   Outputting
   1
   contigs.
-END 78
+END 69
