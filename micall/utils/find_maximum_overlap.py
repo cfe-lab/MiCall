@@ -7,7 +7,6 @@ import numpy as np
 from typing import Sequence, Optional, Tuple, Iterable, Any
 from itertools import chain
 import scipy
-import math
 
 
 @dataclass(frozen=False)
@@ -45,15 +44,22 @@ def get_overlap_results(total: np.ndarray,
                         ) -> Tuple[int, float]:
     len_total = len(total)
 
-    # TODO: optimize this loop.
     max_overlap = min(len_1, len_2)
-    current_overlap_size = 0
-    for i in range(len_total):
-        if current_overlap_size < max_overlap:
-            current_overlap_size += 1
+    def clip(arr):
+        return np.clip(arr, 0, max_overlap)
 
-        total[i] = (total[i] * 1024) / math.sqrt(current_overlap_size)
-        total[len_total - i - 1] = (total[len_total - i - 1] * 1024) / math.sqrt(current_overlap_size)
+    overlap_sizes = np.zeros(len(total))
+    left_size = len(total) // 2
+    right_size = len(total) - (len(total) // 2)
+    overlap_sizes[:left_size] = clip(1 + np.arange(left_size))
+    overlap_sizes[-right_size:] = np.flip(clip(1 + np.arange(right_size)))
+
+    assert len(overlap_sizes[:left_size]) + len(overlap_sizes[-right_size:]) == len(total)
+    assert max(overlap_sizes[:left_size]) <= max_overlap
+    assert max(overlap_sizes[-right_size:]) <= max_overlap
+    assert min(overlap_sizes[:left_size]) == min(overlap_sizes[-right_size:]) == 1
+
+    total = total / overlap_sizes ** 0.5
 
     # Return the shift value that yields maximum overlap
     max_value = np.max(total)
