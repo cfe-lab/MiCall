@@ -89,8 +89,8 @@ BEGIN 8
   'r658-922.2'
   to
   be
-  (-232,
-  33).
+  (33,
+  298).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   265,
-  0
+  26
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -5872.371543837479.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r658-922.2'
   to
   be
-  (-232,
-  33).
+  (33,
+  298).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   265,
-  0
+  26
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -5872.371543837479.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r658-922.2'
   to
   be
-  (-232,
-  33).
+  (33,
+  298).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   265,
-  0
+  26
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -5872.371543837479.
 END 23
 BEGIN 24
   Outputting

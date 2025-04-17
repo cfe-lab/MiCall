@@ -244,8 +244,8 @@ BEGIN 17
   'r106-381.1'
   to
   be
-  (-63,
-  213).
+  (213,
+  489).
 END 17
 BEGIN 18
   Overlap
@@ -257,13 +257,13 @@ BEGIN 18
   has
   size
   276,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -9839.640101819443.
+  -9271.285438898465.
 END 18
 BEGIN 19
   Cycle

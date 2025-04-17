@@ -199,8 +199,8 @@ BEGIN 14
   'r718-967.5'
   to
   be
-  (-138,
-  112).
+  (112,
+  362).
 END 14
 BEGIN 15
   Overlap
@@ -212,13 +212,13 @@ BEGIN 15
   has
   size
   250,
-  0
+  16
   matches,
   and
   the
   score
   of
-  -9366.475253085691.
+  -6978.210646721212.
 END 15
 BEGIN 16
   Calculated
@@ -236,8 +236,8 @@ BEGIN 16
   'r692-928.4'
   to
   be
-  (-46,
-  191).
+  (191,
+  428).
 END 16
 BEGIN 17
   Overlap
@@ -249,13 +249,13 @@ BEGIN 17
   has
   size
   237,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9120.692371379124.
+  -8660.825529124713.
 END 17
 BEGIN 18
   Cycle
@@ -400,8 +400,8 @@ BEGIN 26
   'r718-967.5'
   to
   be
-  (-138,
-  112).
+  (112,
+  362).
 END 26
 BEGIN 27
   Overlap
@@ -413,13 +413,13 @@ BEGIN 27
   has
   size
   250,
-  0
+  16
   matches,
   and
   the
   score
   of
-  -9366.475253085691.
+  -6978.210646721212.
 END 27
 BEGIN 28
   Calculated
@@ -437,8 +437,8 @@ BEGIN 28
   'r692-928.4'
   to
   be
-  (-46,
-  191).
+  (191,
+  428).
 END 28
 BEGIN 29
   Overlap
@@ -450,13 +450,13 @@ BEGIN 29
   has
   size
   237,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9120.692371379124.
+  -8660.825529124713.
 END 29
 BEGIN 30
   Cycle
@@ -546,8 +546,8 @@ BEGIN 35
   'r718-967.5'
   to
   be
-  (-138,
-  112).
+  (112,
+  362).
 END 35
 BEGIN 36
   Overlap
@@ -559,13 +559,13 @@ BEGIN 36
   has
   size
   250,
-  0
+  16
   matches,
   and
   the
   score
   of
-  -9366.475253085691.
+  -6978.210646721212.
 END 36
 BEGIN 37
   Calculated
@@ -583,8 +583,8 @@ BEGIN 37
   'r692-928.4'
   to
   be
-  (-46,
-  191).
+  (191,
+  428).
 END 37
 BEGIN 38
   Overlap
@@ -596,13 +596,13 @@ BEGIN 38
   has
   size
   237,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9120.692371379124.
+  -8660.825529124713.
 END 38
 BEGIN 39
   Cycle
@@ -647,8 +647,8 @@ BEGIN 41
   'r718-967.5'
   to
   be
-  (-138,
-  112).
+  (112,
+  362).
 END 41
 BEGIN 42
   Overlap
@@ -660,13 +660,13 @@ BEGIN 42
   has
   size
   250,
-  0
+  16
   matches,
   and
   the
   score
   of
-  -9366.475253085691.
+  -6978.210646721212.
 END 42
 BEGIN 43
   Calculated
@@ -684,8 +684,8 @@ BEGIN 43
   'r692-928.4'
   to
   be
-  (-46,
-  191).
+  (191,
+  428).
 END 43
 BEGIN 44
   Overlap
@@ -697,13 +697,13 @@ BEGIN 44
   has
   size
   237,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9120.692371379124.
+  -8660.825529124713.
 END 44
 BEGIN 45
   Constructed
@@ -868,8 +868,8 @@ BEGIN 57
   (4)
   to
   be
-  (-190,
-  86).
+  (86,
+  362).
 END 57
 BEGIN 58
   Overlap
@@ -881,13 +881,13 @@ BEGIN 58
   has
   size
   276,
-  0
+  5
   matches,
   and
   the
   score
   of
-  -9839.640101819443.
+  -9129.19677316822.
 END 58
 BEGIN 59
   Outputting

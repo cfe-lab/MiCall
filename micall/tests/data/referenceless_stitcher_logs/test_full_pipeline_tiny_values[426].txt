@@ -99,8 +99,8 @@ BEGIN 8
   'r38-333.2'
   to
   be
-  (-228,
-  68).
+  (68,
+  364).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   296,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -10188.671355971788.
+  -8404.796236407703.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r38-333.2'
   to
   be
-  (-142,
-  154).
+  (154,
+  450).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   296,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -10188.671355971788.
+  -8404.796236407703.
 END 13
 BEGIN 14
   Contig

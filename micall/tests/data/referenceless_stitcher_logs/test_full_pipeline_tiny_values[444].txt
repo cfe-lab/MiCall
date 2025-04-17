@@ -44,8 +44,8 @@ BEGIN 5
   'r579-889.1'
   to
   be
-  (-309,
-  2).
+  (2,
+  313).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   311,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -10442.791963838023.
+  -8702.326636531685.
 END 6
 BEGIN 7
   Calculated
@@ -153,8 +153,8 @@ BEGIN 12
   'r579-889.1'
   to
   be
-  (-309,
-  2).
+  (2,
+  313).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   311,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -10442.791963838023.
+  -8702.326636531685.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r579-889.1'
   to
   be
-  (-309,
-  2).
+  (2,
+  313).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   311,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -10442.791963838023.
+  -8702.326636531685.
 END 23
 BEGIN 24
   Outputting

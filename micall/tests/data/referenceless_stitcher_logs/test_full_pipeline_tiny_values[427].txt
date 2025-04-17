@@ -89,8 +89,8 @@ BEGIN 8
   'r141-401.2'
   to
   be
-  (7,
-  268).
+  (268,
+  529).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   261,
-  49
+  23
   matches,
   and
   the
   score
   of
-  -2410.6414464217.
+  -6209.227968055894.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r141-401.2'
   to
   be
-  (7,
-  268).
+  (268,
+  529).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   261,
-  49
+  23
   matches,
   and
   the
   score
   of
-  -2410.6414464217.
+  -6209.227968055894.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r141-401.2'
   to
   be
-  (7,
-  268).
+  (268,
+  529).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   261,
-  49
+  23
   matches,
   and
   the
   score
   of
-  -2410.6414464217.
+  -6209.227968055894.
 END 23
 BEGIN 24
   Outputting

@@ -62,8 +62,8 @@ BEGIN 6
   'r4-305.0'
   to
   be
-  (-284,
-  18).
+  (18,
+  320).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   302,
-  0
+  11
   matches,
   and
   the
   score
   of
-  -10291.072636027791.
+  -8796.659447957749.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r4-305.0'
   to
   be
-  (-284,
-  18).
+  (18,
+  320).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   302,
-  0
+  11
   matches,
   and
   the
   score
   of
-  -10291.072636027791.
+  -8796.659447957749.
 END 14
 BEGIN 15
   Calculated

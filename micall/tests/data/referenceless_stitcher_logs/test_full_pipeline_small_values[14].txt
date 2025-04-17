@@ -154,8 +154,8 @@ BEGIN 11
   'r118-465.4'
   to
   be
-  (-281,
-  67).
+  (67,
+  415).
 END 11
 BEGIN 12
   Overlap
@@ -167,13 +167,13 @@ BEGIN 12
   has
   size
   348,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -11044.652159906771.
+  -10285.134532864471.
 END 12
 BEGIN 13
   Cycle
@@ -273,8 +273,8 @@ BEGIN 18
   'r118-465.4'
   to
   be
-  (-240,
-  108).
+  (108,
+  456).
 END 18
 BEGIN 19
   Overlap
@@ -286,13 +286,13 @@ BEGIN 19
   has
   size
   348,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -11044.652159906771.
+  -10285.134532864471.
 END 19
 BEGIN 20
   Calculated
@@ -365,8 +365,8 @@ BEGIN 23
   'r179-402.1'
   to
   be
-  (47,
-  271).
+  (271,
+  495).
 END 23
 BEGIN 24
   Overlap
@@ -378,13 +378,13 @@ BEGIN 24
   has
   size
   224,
-  5
+  3
   matches,
   and
   the
   score
   of
-  -8079.824567219082.
+  -8395.13479423251.
 END 24
 BEGIN 25
   Cycle
@@ -529,8 +529,8 @@ BEGIN 33
   'r179-402.1'
   to
   be
-  (116,
-  340).
+  (340,
+  564).
 END 33
 BEGIN 34
   Overlap
@@ -542,13 +542,13 @@ BEGIN 34
   has
   size
   224,
-  5
+  3
   matches,
   and
   the
   score
   of
-  -8079.824567219082.
+  -8395.13479423251.
 END 34
 BEGIN 35
   Cycle

@@ -44,8 +44,8 @@ BEGIN 5
   'r509-795.0'
   to
   be
-  (-266,
-  21).
+  (21,
+  308).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   287,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -10033.109986439897.
+  -8082.227489076584.
 END 6
 BEGIN 7
   Calculated
@@ -163,8 +163,8 @@ BEGIN 12
   'r509-795.0'
   to
   be
-  (-259,
-  28).
+  (28,
+  315).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   287,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -10033.109986439897.
+  -8082.227489076584.
 END 13
 BEGIN 14
   Contig

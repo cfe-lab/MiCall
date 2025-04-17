@@ -44,8 +44,8 @@ BEGIN 5
   'r648-927.0'
   to
   be
-  (-220,
-  60).
+  (60,
+  340).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   280,
-  0
+  16
   matches,
   and
   the
   score
   of
-  -9910.42979222731.
+  -7653.250053072336.
 END 6
 BEGIN 7
   Calculated

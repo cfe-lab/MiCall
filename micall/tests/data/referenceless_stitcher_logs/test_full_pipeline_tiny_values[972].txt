@@ -44,8 +44,8 @@ BEGIN 5
   'r106-453.0'
   to
   be
-  (-269,
-  79).
+  (79,
+  427).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   348,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -11044.652159906771.
+  -9778.789448169606.
 END 6
 BEGIN 7
   Calculated
@@ -81,8 +81,8 @@ BEGIN 7
   'r116-456.1'
   to
   be
-  (-249,
-  92).
+  (92,
+  433).
 END 7
 BEGIN 8
   Overlap
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   341,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -10933.328130080065.
+  -10166.07703323234.
 END 8
 BEGIN 9
   Constructed
@@ -164,8 +164,8 @@ BEGIN 13
   'r106-453.0'
   to
   be
-  (-269,
-  79).
+  (79,
+  427).
 END 13
 BEGIN 14
   Overlap
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   348,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -11044.652159906771.
+  -9778.789448169606.
 END 14
 BEGIN 15
   Calculated
@@ -201,8 +201,8 @@ BEGIN 15
   'r116-456.1'
   to
   be
-  (-249,
-  92).
+  (92,
+  433).
 END 15
 BEGIN 16
   Overlap
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   341,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -10933.328130080065.
+  -10166.07703323234.
 END 16
 BEGIN 17
   Calculated
@@ -293,8 +293,8 @@ BEGIN 20
   (1)
   to
   be
-  (-313,
-  38).
+  (38,
+  389).
 END 20
 BEGIN 21
   Overlap
@@ -306,13 +306,13 @@ BEGIN 21
   has
   size
   351,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -11092.02043512963.
+  -10587.837688078283.
 END 21
 BEGIN 22
   Outputting

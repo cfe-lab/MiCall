@@ -99,8 +99,8 @@ BEGIN 8
   'r708-974.1'
   to
   be
-  (-167,
-  100).
+  (100,
+  367).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   267,
-  0
+  11
   matches,
   and
   the
   score
   of
-  -9678.470402565343.
+  -8089.467799159092.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r708-974.1'
   to
   be
-  (-79,
-  188).
+  (188,
+  455).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   267,
-  0
+  11
   matches,
   and
   the
   score
   of
-  -9678.470402565343.
+  -8089.467799159092.
 END 13
 BEGIN 14
   Contig

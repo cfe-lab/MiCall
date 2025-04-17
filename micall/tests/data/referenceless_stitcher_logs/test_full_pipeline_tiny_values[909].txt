@@ -144,8 +144,8 @@ BEGIN 11
   'r619-932.2'
   to
   be
-  (-141,
-  173).
+  (173,
+  487).
 END 11
 BEGIN 12
   Overlap
@@ -157,13 +157,13 @@ BEGIN 12
   has
   size
   314,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -10492.877584342628.
+  -9693.42024458319.
 END 12
 BEGIN 13
   Contig

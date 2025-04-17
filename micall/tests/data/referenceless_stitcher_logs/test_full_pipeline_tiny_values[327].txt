@@ -99,8 +99,8 @@ BEGIN 8
   'r27-387.1'
   to
   be
-  (-186,
-  175).
+  (175,
+  536).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   361,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -11248.474148375266.
+  -10875.596552296529.
 END 9
 BEGIN 10
   Cycle

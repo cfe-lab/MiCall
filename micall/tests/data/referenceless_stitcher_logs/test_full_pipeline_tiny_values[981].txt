@@ -89,8 +89,8 @@ BEGIN 8
   'r683-982.1'
   to
   be
-  (-133,
-  167).
+  (167,
+  467).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   300,
-  0
+  24
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -6985.700185914519.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r683-982.1'
   to
   be
-  (-133,
-  167).
+  (167,
+  467).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   300,
-  0
+  24
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -6985.700185914519.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r683-982.1'
   to
   be
-  (-133,
-  167).
+  (167,
+  467).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   300,
-  0
+  24
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -6985.700185914519.
 END 23
 BEGIN 24
   Outputting

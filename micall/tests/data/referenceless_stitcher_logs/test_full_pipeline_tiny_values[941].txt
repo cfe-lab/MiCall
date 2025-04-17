@@ -62,8 +62,8 @@ BEGIN 6
   'r1-318.0'
   to
   be
-  (-272,
-  46).
+  (46,
+  364).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   318,
-  0
+  31
   matches,
   and
   the
   score
   of
-  -10559.288864944141.
+  -6454.737707410995.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r1-318.0'
   to
   be
-  (-272,
-  46).
+  (46,
+  364).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   318,
-  0
+  31
   matches,
   and
   the
   score
   of
-  -10559.288864944141.
+  -6454.737707410995.
 END 14
 BEGIN 15
   Calculated
@@ -255,8 +255,8 @@ BEGIN 18
   'r487-917.2'
   to
   be
-  (-375,
-  56).
+  (56,
+  487).
 END 18
 BEGIN 19
   Overlap
@@ -268,13 +268,13 @@ BEGIN 19
   has
   size
   431,
-  0
+  27
   matches,
   and
   the
   score
   of
-  -12288.0.
+  -9216.0.
 END 19
 BEGIN 20
   Outputting

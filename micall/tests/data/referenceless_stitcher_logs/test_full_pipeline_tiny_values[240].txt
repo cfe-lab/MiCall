@@ -163,8 +163,8 @@ BEGIN 12
   'r565-842.0'
   to
   be
-  (-155,
-  123).
+  (123,
+  401).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   278,
-  0
+  65
   matches,
   and
   the
   score
   of
-  -9875.098379256786.
+  -672.4977390891718.
 END 13
 BEGIN 14
   Contig

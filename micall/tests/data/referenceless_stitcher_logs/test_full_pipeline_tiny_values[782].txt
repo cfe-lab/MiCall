@@ -44,8 +44,8 @@ BEGIN 5
   'r586-888.0'
   to
   be
-  (-289,
-  14).
+  (14,
+  317).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   303,
-  0
+  20
   matches,
   and
   the
   score
   of
-  -10308.040615622996.
+  -7595.398348353787.
 END 6
 BEGIN 7
   Calculated
@@ -145,8 +145,8 @@ BEGIN 12
   'r586-888.0'
   to
   be
-  (-289,
-  14).
+  (14,
+  317).
 END 12
 BEGIN 13
   Overlap
@@ -158,13 +158,13 @@ BEGIN 13
   has
   size
   303,
-  0
+  20
   matches,
   and
   the
   score
   of
-  -10308.040615622996.
+  -7595.398348353787.
 END 13
 BEGIN 14
   Calculated

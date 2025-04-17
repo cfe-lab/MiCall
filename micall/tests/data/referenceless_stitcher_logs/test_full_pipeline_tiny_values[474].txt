@@ -44,8 +44,8 @@ BEGIN 5
   'r26-386.1'
   to
   be
-  (-232,
-  129).
+  (129,
+  490).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   361,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -11248.474148375266.
+  -10751.304020270281.
 END 6
 BEGIN 7
   Calculated
@@ -81,8 +81,8 @@ BEGIN 7
   'r48-306.2'
   to
   be
-  (-108,
-  151).
+  (151,
+  410).
 END 7
 BEGIN 8
   Overlap
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   259,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -9532.92120321293.
+  -7479.676636367069.
 END 8
 BEGIN 9
   Constructed
@@ -164,8 +164,8 @@ BEGIN 13
   'r26-386.1'
   to
   be
-  (-232,
-  129).
+  (129,
+  490).
 END 13
 BEGIN 14
   Overlap
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   361,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -11248.474148375266.
+  -10751.304020270281.
 END 14
 BEGIN 15
   Calculated
@@ -201,8 +201,8 @@ BEGIN 15
   'r48-306.2'
   to
   be
-  (-108,
-  151).
+  (151,
+  410).
 END 15
 BEGIN 16
   Overlap
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   259,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -9532.92120321293.
+  -7479.676636367069.
 END 16
 BEGIN 17
   Calculated
@@ -283,8 +283,8 @@ BEGIN 20
   'r26-386.1'
   to
   be
-  (-232,
-  129).
+  (129,
+  490).
 END 20
 BEGIN 21
   Overlap
@@ -296,13 +296,13 @@ BEGIN 21
   has
   size
   361,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -11248.474148375266.
+  -10751.304020270281.
 END 21
 BEGIN 22
   Outputting

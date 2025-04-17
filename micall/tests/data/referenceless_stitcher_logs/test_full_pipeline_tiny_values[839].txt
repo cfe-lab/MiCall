@@ -62,8 +62,8 @@ BEGIN 6
   'r546-820.0'
   to
   be
-  (-142,
-  133).
+  (133,
+  408).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   275,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -9537.171279751856.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r546-820.0'
   to
   be
-  (-142,
-  133).
+  (133,
+  408).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   275,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -9537.171279751856.
 END 14
 BEGIN 15
   Calculated

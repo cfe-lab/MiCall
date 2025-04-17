@@ -99,8 +99,8 @@ BEGIN 8
   'r625-902.2'
   to
   be
-  (-162,
-  116).
+  (116,
+  394).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   278,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -9875.098379256786.
+  -7751.421308448875.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r625-902.2'
   to
   be
-  (-162,
-  116).
+  (116,
+  394).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   278,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -9875.098379256786.
+  -7751.421308448875.
 END 13
 BEGIN 14
   Contig

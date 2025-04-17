@@ -99,8 +99,8 @@ BEGIN 8
   'r597-871.0'
   to
   be
-  (-226,
-  49).
+  (49,
+  324).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   275,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -9537.171279751856.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r597-871.0'
   to
   be
-  (-203,
-  72).
+  (72,
+  347).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   275,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -9537.171279751856.
 END 13
 BEGIN 14
   Contig

@@ -99,8 +99,8 @@ BEGIN 8
   'r699-991.0'
   to
   be
-  (-138,
-  155).
+  (155,
+  448).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   293,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10137.082815090345.
+  -9585.4048387589.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r699-991.0'
   to
   be
-  (-138,
-  155).
+  (155,
+  448).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   293,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10137.082815090345.
+  -9585.4048387589.
 END 13
 BEGIN 14
   Contig

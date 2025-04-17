@@ -62,8 +62,8 @@ BEGIN 6
   'r258-556.1'
   to
   be
-  (-286,
-  13).
+  (13,
+  312).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   299,
-  0
+  51
   matches,
   and
   the
   score
   of
-  -10240.0.
+  -3276.8.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r258-556.1'
   to
   be
-  (-286,
-  13).
+  (13,
+  312).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   299,
-  0
+  51
   matches,
   and
   the
   score
   of
-  -10240.0.
+  -3276.8.
 END 14
 BEGIN 15
   Calculated
@@ -255,8 +255,8 @@ BEGIN 18
   'r583-968.2'
   to
   be
-  (-266,
-  120).
+  (120,
+  506).
 END 18
 BEGIN 19
   Overlap
@@ -268,13 +268,13 @@ BEGIN 19
   has
   size
   386,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -11630.40429219896.
+  -9947.451733121075.
 END 19
 BEGIN 20
   Outputting

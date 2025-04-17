@@ -217,8 +217,8 @@ BEGIN 16
   'r573-963.0'
   to
   be
-  (-309,
-  82).
+  (82,
+  473).
 END 16
 BEGIN 17
   Overlap
@@ -230,13 +230,13 @@ BEGIN 17
   has
   size
   391,
-  0
+  36
   matches,
   and
   the
   score
   of
-  -11705.29498417988.
+  -7405.390704277067.
 END 17
 BEGIN 18
   Outputting

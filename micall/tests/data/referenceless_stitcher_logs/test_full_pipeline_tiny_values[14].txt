@@ -99,8 +99,8 @@ BEGIN 8
   'r179-454.1'
   to
   be
-  (-153,
-  123).
+  (123,
+  399).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   276,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -9839.640101819443.
+  -9271.285438898465.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r179-454.1'
   to
   be
-  (-132,
-  144).
+  (144,
+  420).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   276,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -9839.640101819443.
+  -9271.285438898465.
 END 13
 BEGIN 14
   Contig

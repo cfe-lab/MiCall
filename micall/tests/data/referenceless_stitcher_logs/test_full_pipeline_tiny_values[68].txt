@@ -44,8 +44,8 @@ BEGIN 5
   'r603-940.1'
   to
   be
-  (-316,
-  22).
+  (22,
+  360).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   338,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -10885.26931224028.
+  -8958.672973790673.
 END 6
 BEGIN 7
   Calculated
@@ -163,8 +163,8 @@ BEGIN 12
   'r603-940.1'
   to
   be
-  (-316,
-  22).
+  (22,
+  360).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   338,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -10885.26931224028.
+  -8958.672973790673.
 END 13
 BEGIN 14
   Contig

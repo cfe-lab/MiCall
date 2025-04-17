@@ -44,8 +44,8 @@ BEGIN 5
   'r639-951.1'
   to
   be
-  (-223,
-  90).
+  (90,
+  403).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   313,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -10476.208983533435.
+  -8474.385610883735.
 END 6
 BEGIN 7
   Calculated
@@ -81,8 +81,8 @@ BEGIN 7
   'r697-989.0'
   to
   be
-  (-241,
-  52).
+  (52,
+  345).
 END 7
 BEGIN 8
   Overlap
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   293,
-  0
+  7
   matches,
   and
   the
   score
   of
-  -10137.082815090345.
+  -9171.646356510313.
 END 8
 BEGIN 9
   Constructed
@@ -164,8 +164,8 @@ BEGIN 13
   'r639-951.1'
   to
   be
-  (-223,
-  90).
+  (90,
+  403).
 END 13
 BEGIN 14
   Overlap
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   313,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -10476.208983533435.
+  -8474.385610883735.
 END 14
 BEGIN 15
   Calculated
@@ -201,8 +201,8 @@ BEGIN 15
   'r697-989.0'
   to
   be
-  (-241,
-  52).
+  (52,
+  345).
 END 15
 BEGIN 16
   Overlap
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   293,
-  0
+  7
   matches,
   and
   the
   score
   of
-  -10137.082815090345.
+  -9171.646356510313.
 END 16
 BEGIN 17
   Calculated

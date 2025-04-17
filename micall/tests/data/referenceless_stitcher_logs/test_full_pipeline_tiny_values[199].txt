@@ -44,8 +44,8 @@ BEGIN 5
   'r566-926.1'
   to
   be
-  (-352,
-  5).
+  (5,
+  362).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   357,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -11186.155252513408.
+  -9561.350578963975.
 END 6
 BEGIN 7
   Calculated
@@ -163,8 +163,8 @@ BEGIN 12
   'r135-491.2'
   to
   be
-  (-308,
-  49).
+  (49,
+  406).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   357,
-  0
+  15
   matches,
   and
   the
   score
   of
-  -11186.155252513408.
+  -9311.380629187139.
 END 13
 BEGIN 14
   Contig

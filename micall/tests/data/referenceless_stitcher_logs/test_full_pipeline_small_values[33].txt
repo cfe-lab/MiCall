@@ -154,8 +154,8 @@ BEGIN 11
   'r15-314.3'
   to
   be
-  (-269,
-  31).
+  (31,
+  331).
 END 11
 BEGIN 12
   Overlap
@@ -167,13 +167,13 @@ BEGIN 12
   has
   size
   300,
-  0
+  24
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -6985.700185914519.
 END 12
 BEGIN 13
   Calculated
@@ -246,8 +246,8 @@ BEGIN 16
   'r3-239.4'
   to
   be
-  (-104,
-  133).
+  (133,
+  370).
 END 16
 BEGIN 17
   Overlap
@@ -259,13 +259,13 @@ BEGIN 17
   has
   size
   237,
-  0
+  7
   matches,
   and
   the
   score
   of
-  -9120.692371379124.
+  -8047.669739452167.
 END 17
 BEGIN 18
   Cycle
@@ -365,8 +365,8 @@ BEGIN 23
   'r15-314.3'
   to
   be
-  (-155,
-  145).
+  (145,
+  445).
 END 23
 BEGIN 24
   Overlap
@@ -378,13 +378,13 @@ BEGIN 24
   has
   size
   300,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -9439.21439755279.
 END 24
 BEGIN 25
   Calculated
@@ -457,8 +457,8 @@ BEGIN 28
   'r3-239.4'
   to
   be
-  (-104,
-  133).
+  (133,
+  370).
 END 28
 BEGIN 29
   Overlap
@@ -470,13 +470,13 @@ BEGIN 29
   has
   size
   237,
-  0
+  7
   matches,
   and
   the
   score
   of
-  -9120.692371379124.
+  -8047.669739452167.
 END 29
 BEGIN 30
   Cycle

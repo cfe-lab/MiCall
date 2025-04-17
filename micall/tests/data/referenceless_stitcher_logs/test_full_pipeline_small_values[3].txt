@@ -334,8 +334,8 @@ BEGIN 23
   'r629-923.3'
   to
   be
-  (-57,
-  238).
+  (238,
+  533).
 END 23
 BEGIN 24
   Overlap
@@ -347,13 +347,13 @@ BEGIN 24
   has
   size
   295,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -9621.693207548253.
 END 24
 BEGIN 25
   Calculated
@@ -543,8 +543,8 @@ BEGIN 36
   'r629-923.3'
   to
   be
-  (-17,
-  278).
+  (278,
+  573).
 END 36
 BEGIN 37
   Overlap
@@ -556,13 +556,13 @@ BEGIN 37
   has
   size
   295,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -9621.693207548253.
 END 37
 BEGIN 38
   Calculated
@@ -652,8 +652,8 @@ BEGIN 43
   'r629-923.3'
   to
   be
-  (-17,
-  278).
+  (278,
+  573).
 END 43
 BEGIN 44
   Overlap
@@ -665,13 +665,13 @@ BEGIN 44
   has
   size
   295,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -9621.693207548253.
 END 44
 BEGIN 45
   Calculated
@@ -761,8 +761,8 @@ BEGIN 50
   'r629-923.3'
   to
   be
-  (-17,
-  278).
+  (278,
+  573).
 END 50
 BEGIN 51
   Overlap
@@ -774,13 +774,13 @@ BEGIN 51
   has
   size
   295,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -9621.693207548253.
 END 51
 BEGIN 52
   Constructed
@@ -879,8 +879,8 @@ BEGIN 60
   'r629-923.3'
   to
   be
-  (-17,
-  278).
+  (278,
+  573).
 END 60
 BEGIN 61
   Overlap
@@ -892,13 +892,13 @@ BEGIN 61
   has
   size
   295,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -9621.693207548253.
 END 61
 BEGIN 62
   Outputting

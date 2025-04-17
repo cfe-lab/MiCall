@@ -44,8 +44,8 @@ BEGIN 5
   'r49-322.0'
   to
   be
-  (-249,
-  25).
+  (25,
+  299).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   274,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -9804.053583424902.
+  -8948.427088871456.
 END 6
 BEGIN 7
   Calculated
@@ -153,8 +153,8 @@ BEGIN 12
   'r49-322.0'
   to
   be
-  (-249,
-  25).
+  (25,
+  299).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   274,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -9804.053583424902.
+  -8948.427088871456.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r49-322.0'
   to
   be
-  (-249,
-  25).
+  (25,
+  299).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   274,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -9804.053583424902.
+  -8948.427088871456.
 END 23
 BEGIN 24
   Outputting

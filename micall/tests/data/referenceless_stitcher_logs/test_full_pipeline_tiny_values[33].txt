@@ -62,8 +62,8 @@ BEGIN 6
   'r94-434.1'
   to
   be
-  (-258,
-  83).
+  (83,
+  424).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   341,
-  0
+  5
   matches,
   and
   the
   score
   of
-  -10933.328130080065.
+  -10293.952216040294.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r94-434.1'
   to
   be
-  (-258,
-  83).
+  (83,
+  424).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   341,
-  0
+  5
   matches,
   and
   the
   score
   of
-  -10933.328130080065.
+  -10293.952216040294.
 END 14
 BEGIN 15
   Calculated

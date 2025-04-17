@@ -89,8 +89,8 @@ BEGIN 8
   'r12-271.0'
   to
   be
-  (-124,
-  136).
+  (136,
+  396).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   260,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -9258.47795418324.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r12-271.0'
   to
   be
-  (-124,
-  136).
+  (136,
+  396).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   260,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -9258.47795418324.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r12-271.0'
   to
   be
-  (-124,
-  136).
+  (136,
+  396).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   260,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -9258.47795418324.
 END 23
 BEGIN 24
   Outputting

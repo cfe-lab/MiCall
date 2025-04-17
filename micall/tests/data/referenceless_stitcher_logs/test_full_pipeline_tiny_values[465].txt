@@ -62,8 +62,8 @@ BEGIN 6
   'r595-859.0'
   to
   be
-  (-149,
-  116).
+  (116,
+  381).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   265,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -9207.298593424195.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r595-859.0'
   to
   be
-  (-149,
-  116).
+  (116,
+  381).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   265,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -9207.298593424195.
 END 14
 BEGIN 15
   Calculated

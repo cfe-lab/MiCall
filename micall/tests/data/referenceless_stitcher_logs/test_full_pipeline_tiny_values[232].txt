@@ -99,8 +99,8 @@ BEGIN 8
   'r131-394.0'
   to
   be
-  (-55,
-  209).
+  (209,
+  473).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   264,
-  0
+  5
   matches,
   and
   the
   score
   of
-  -9624.147408125737.
+  -8897.796660342663.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r131-394.0'
   to
   be
-  (-25,
-  239).
+  (239,
+  503).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   264,
-  0
+  5
   matches,
   and
   the
   score
   of
-  -9624.147408125737.
+  -8897.796660342663.
 END 13
 BEGIN 14
   Contig

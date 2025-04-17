@@ -99,8 +99,8 @@ BEGIN 8
   'r17-325.2'
   to
   be
-  (-154,
-  155).
+  (155,
+  464).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   309,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -10409.267665562902.
+  -9066.136353877366.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r17-325.2'
   to
   be
-  (-154,
-  155).
+  (155,
+  464).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   309,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -10409.267665562902.
+  -9066.136353877366.
 END 13
 BEGIN 14
   Contig

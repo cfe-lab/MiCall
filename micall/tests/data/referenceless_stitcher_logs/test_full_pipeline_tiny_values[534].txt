@@ -44,8 +44,8 @@ BEGIN 5
   'r518-851.0'
   to
   be
-  (-328,
-  6).
+  (6,
+  340).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   334,
-  0
+  1
   matches,
   and
   the
   score
   of
-  -10820.85886917793.
+  -10691.65458417282.
 END 6
 BEGIN 7
   Calculated
@@ -81,8 +81,8 @@ BEGIN 7
   'r723-988.1'
   to
   be
-  (-185,
-  81).
+  (81,
+  347).
 END 7
 BEGIN 8
   Overlap
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   266,
-  0
+  12
   matches,
   and
   the
   score
   of
-  -9660.396679225962.
+  -7923.696152623542.
 END 8
 BEGIN 9
   Constructed
@@ -164,8 +164,8 @@ BEGIN 13
   'r518-851.0'
   to
   be
-  (-328,
-  6).
+  (6,
+  340).
 END 13
 BEGIN 14
   Overlap
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   334,
-  0
+  1
   matches,
   and
   the
   score
   of
-  -10820.85886917793.
+  -10691.65458417282.
 END 14
 BEGIN 15
   Calculated
@@ -201,8 +201,8 @@ BEGIN 15
   'r723-988.1'
   to
   be
-  (-185,
-  81).
+  (81,
+  347).
 END 15
 BEGIN 16
   Overlap
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   266,
-  0
+  12
   matches,
   and
   the
   score
   of
-  -9660.396679225962.
+  -7923.696152623542.
 END 16
 BEGIN 17
   Calculated

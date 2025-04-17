@@ -89,8 +89,8 @@ BEGIN 8
   'r633-964.2'
   to
   be
-  (-319,
-  13).
+  (13,
+  345).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   332,
-  0
+  9
   matches,
   and
   the
   score
   of
-  -10788.509442921206.
+  -9622.184097740534.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r633-964.2'
   to
   be
-  (-319,
-  13).
+  (13,
+  345).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   332,
-  0
+  9
   matches,
   and
   the
   score
   of
-  -10788.509442921206.
+  -9622.184097740534.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r633-964.2'
   to
   be
-  (-319,
-  13).
+  (13,
+  345).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   332,
-  0
+  9
   matches,
   and
   the
   score
   of
-  -10788.509442921206.
+  -9622.184097740534.
 END 23
 BEGIN 24
   Outputting

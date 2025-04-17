@@ -209,8 +209,8 @@ BEGIN 14
   'r709-968.1'
   to
   be
-  (-258,
-  2).
+  (2,
+  262).
 END 14
 BEGIN 15
   Overlap
@@ -222,13 +222,13 @@ BEGIN 15
   has
   size
   260,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -7648.307875194851.
 END 15
 BEGIN 16
   Calculated
@@ -428,8 +428,8 @@ BEGIN 27
   'r709-968.1'
   to
   be
-  (-258,
-  2).
+  (2,
+  262).
 END 27
 BEGIN 28
   Overlap
@@ -441,13 +441,13 @@ BEGIN 28
   has
   size
   260,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -7648.307875194851.
 END 28
 BEGIN 29
   Calculated
@@ -592,8 +592,8 @@ BEGIN 37
   'r709-968.1'
   to
   be
-  (-258,
-  2).
+  (2,
+  262).
 END 37
 BEGIN 38
   Overlap
@@ -605,13 +605,13 @@ BEGIN 38
   has
   size
   260,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -7648.307875194851.
 END 38
 BEGIN 39
   Calculated
@@ -701,8 +701,8 @@ BEGIN 44
   'r709-968.1'
   to
   be
-  (-258,
-  2).
+  (2,
+  262).
 END 44
 BEGIN 45
   Overlap
@@ -714,13 +714,13 @@ BEGIN 45
   has
   size
   260,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -9551.236150362947.
+  -7648.307875194851.
 END 45
 BEGIN 46
   Contig

@@ -293,8 +293,8 @@ BEGIN 20
   'r595-971.2'
   to
   be
-  (-290,
-  87).
+  (87,
+  464).
 END 20
 BEGIN 21
   Overlap
@@ -306,13 +306,13 @@ BEGIN 21
   has
   size
   377,
-  0
+  6
   matches,
   and
   the
   score
   of
-  -11494.371492169548.
+  -10764.570127587354.
 END 21
 BEGIN 22
   Outputting

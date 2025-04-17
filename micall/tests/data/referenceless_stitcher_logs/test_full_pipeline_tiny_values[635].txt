@@ -62,8 +62,8 @@ BEGIN 6
   'r29-301.1'
   to
   be
-  (-193,
-  80).
+  (80,
+  353).
 END 6
 BEGIN 7
   Overlap
@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   273,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9786.211796876938.
+  -9357.618579495465.
 END 7
 BEGIN 8
   Constructed
@@ -163,8 +163,8 @@ BEGIN 13
   'r29-301.1'
   to
   be
-  (-193,
-  80).
+  (80,
+  353).
 END 13
 BEGIN 14
   Overlap
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   273,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9786.211796876938.
+  -9357.618579495465.
 END 14
 BEGIN 15
   Calculated
@@ -255,8 +255,8 @@ BEGIN 18
   (1)
   to
   be
-  (-287,
-  22).
+  (22,
+  331).
 END 18
 BEGIN 19
   Overlap
@@ -268,13 +268,13 @@ BEGIN 19
   has
   size
   309,
-  0
+  41
   matches,
   and
   the
   score
   of
-  -10409.267665562902.
+  -4902.429287652205.
 END 19
 BEGIN 20
   Outputting

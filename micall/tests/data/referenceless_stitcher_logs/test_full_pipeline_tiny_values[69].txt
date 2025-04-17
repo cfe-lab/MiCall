@@ -44,8 +44,8 @@ BEGIN 5
   'r81-456.1'
   to
   be
-  (-338,
-  38).
+  (38,
+  414).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   376,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -11479.157228066295.
+  -11235.567684765154.
 END 6
 BEGIN 7
   Calculated
@@ -153,8 +153,8 @@ BEGIN 12
   'r81-456.1'
   to
   be
-  (-338,
-  38).
+  (38,
+  414).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   376,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -11479.157228066295.
+  -11235.567684765154.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r81-456.1'
   to
   be
-  (-338,
-  38).
+  (38,
+  414).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   376,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -11479.157228066295.
+  -11235.567684765154.
 END 23
 BEGIN 24
   Outputting

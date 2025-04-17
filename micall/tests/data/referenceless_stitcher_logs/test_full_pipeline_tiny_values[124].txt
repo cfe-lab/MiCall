@@ -217,8 +217,8 @@ BEGIN 16
   'r204-533.0'
   to
   be
-  (-325,
-  5).
+  (5,
+  335).
 END 16
 BEGIN 17
   Overlap
@@ -230,13 +230,13 @@ BEGIN 17
   has
   size
   330,
-  0
+  56
   matches,
   and
   the
   score
   of
-  -10756.062724497908.
+  -3477.0353822395045.
 END 17
 BEGIN 18
   Outputting

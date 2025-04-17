@@ -446,8 +446,8 @@ BEGIN 28
   'r20-431.5'
   to
   be
-  (-371,
-  41).
+  (41,
+  453).
 END 28
 BEGIN 29
   Overlap
@@ -459,13 +459,13 @@ BEGIN 29
   has
   size
   412,
-  0
+  8
   matches,
   and
   the
   score
   of
-  -12014.73939237413.
+  -11083.815274805189.
 END 29
 BEGIN 30
   Contig
@@ -491,8 +491,8 @@ BEGIN 31
   'r27-434.2'
   to
   be
-  (-360,
-  48).
+  (48,
+  456).
 END 31
 BEGIN 32
   Overlap
@@ -504,13 +504,13 @@ BEGIN 32
   has
   size
   408,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -11956.415070301522.
+  -10787.08352308377.
 END 32
 BEGIN 33
   Calculated
@@ -610,8 +610,8 @@ BEGIN 38
   'r20-431.5'
   to
   be
-  (-342,
-  70).
+  (70,
+  482).
 END 38
 BEGIN 39
   Overlap
@@ -623,13 +623,13 @@ BEGIN 39
   has
   size
   412,
-  0
+  8
   matches,
   and
   the
   score
   of
-  -12014.73939237413.
+  -11083.815274805189.
 END 39
 BEGIN 40
   Contig
@@ -655,8 +655,8 @@ BEGIN 41
   'r27-434.2'
   to
   be
-  (-331,
-  77).
+  (77,
+  485).
 END 41
 BEGIN 42
   Overlap
@@ -668,13 +668,13 @@ BEGIN 42
   has
   size
   408,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -11956.415070301522.
+  -10787.08352308377.
 END 42
 BEGIN 43
   Cycle
@@ -719,8 +719,8 @@ BEGIN 45
   'r27-434.2'
   to
   be
-  (-331,
-  77).
+  (77,
+  485).
 END 45
 BEGIN 46
   Overlap
@@ -732,13 +732,13 @@ BEGIN 46
   has
   size
   408,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -11956.415070301522.
+  -10787.08352308377.
 END 46
 BEGIN 47
   Constructed
@@ -837,8 +837,8 @@ BEGIN 55
   'r27-434.2'
   to
   be
-  (-331,
-  77).
+  (77,
+  485).
 END 55
 BEGIN 56
   Overlap
@@ -850,13 +850,13 @@ BEGIN 56
   has
   size
   408,
-  0
+  10
   matches,
   and
   the
   score
   of
-  -11956.415070301522.
+  -10787.08352308377.
 END 56
 BEGIN 57
   Outputting

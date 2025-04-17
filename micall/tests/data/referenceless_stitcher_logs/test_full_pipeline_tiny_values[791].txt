@@ -99,8 +99,8 @@ BEGIN 8
   'r703-997.1'
   to
   be
-  (-149,
-  146).
+  (146,
+  441).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   295,
-  0
+  20
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -7422.4490458229375.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r703-997.1'
   to
   be
-  (-149,
-  146).
+  (146,
+  441).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   295,
-  0
+  20
   matches,
   and
   the
   score
   of
-  -10171.504247979581.
+  -7422.4490458229375.
 END 13
 BEGIN 14
   Contig

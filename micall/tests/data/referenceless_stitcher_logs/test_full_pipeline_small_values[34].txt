@@ -99,8 +99,8 @@ BEGIN 8
   'r39-432.1'
   to
   be
-  (-371,
-  23).
+  (23,
+  417).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   394,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -11750.00028368794.
+  -11512.025594398057.
 END 9
 BEGIN 10
   Calculated
@@ -181,8 +181,8 @@ BEGIN 13
   'r242-471.4'
   to
   be
-  (-65,
-  165).
+  (165,
+  395).
 END 13
 BEGIN 14
   Overlap
@@ -194,13 +194,13 @@ BEGIN 14
   has
   size
   230,
-  0
+  28
   matches,
   and
   the
   score
   of
-  -8985.563532689534.
+  -4628.926668355214.
 END 14
 BEGIN 15
   Calculated
@@ -218,8 +218,8 @@ BEGIN 15
   'r277-497.5'
   to
   be
-  (-10,
-  211).
+  (211,
+  432).
 END 15
 BEGIN 16
   Overlap
@@ -231,13 +231,13 @@ BEGIN 16
   has
   size
   221,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -8808.78107345165.
+  -8332.630745156966.
 END 16
 BEGIN 17
   Cycle

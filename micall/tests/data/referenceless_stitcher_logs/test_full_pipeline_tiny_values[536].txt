@@ -89,8 +89,8 @@ BEGIN 8
   'r176-457.2'
   to
   be
-  (-172,
-  110).
+  (110,
+  392).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   282,
-  0
+  22
   matches,
   and
   the
   score
   of
-  -9945.635692771646.
+  -6852.999858976929.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r176-457.2'
   to
   be
-  (-172,
-  110).
+  (110,
+  392).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   282,
-  0
+  22
   matches,
   and
   the
   score
   of
-  -9945.635692771646.
+  -6852.999858976929.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r176-457.2'
   to
   be
-  (-172,
-  110).
+  (110,
+  392).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   282,
-  0
+  22
   matches,
   and
   the
   score
   of
-  -9945.635692771646.
+  -6852.999858976929.
 END 23
 BEGIN 24
   Outputting

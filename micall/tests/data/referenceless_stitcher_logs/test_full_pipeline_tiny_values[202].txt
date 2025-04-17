@@ -44,8 +44,8 @@ BEGIN 5
   'r481-770.1'
   to
   be
-  (-236,
-  54).
+  (54,
+  344).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   290,
-  0
+  12
   matches,
   and
   the
   score
   of
-  -10085.23038903921.
+  -8421.687232084289.
 END 6
 BEGIN 7
   Calculated
@@ -145,8 +145,8 @@ BEGIN 12
   'r481-770.1'
   to
   be
-  (-236,
-  54).
+  (54,
+  344).
 END 12
 BEGIN 13
   Overlap
@@ -158,13 +158,13 @@ BEGIN 13
   has
   size
   290,
-  0
+  12
   matches,
   and
   the
   score
   of
-  -10085.23038903921.
+  -8421.687232084289.
 END 13
 BEGIN 14
   Calculated
@@ -245,8 +245,8 @@ BEGIN 18
   'r481-770.1'
   to
   be
-  (-236,
-  54).
+  (54,
+  344).
 END 18
 BEGIN 19
   Overlap
@@ -258,13 +258,13 @@ BEGIN 19
   has
   size
   290,
-  0
+  12
   matches,
   and
   the
   score
   of
-  -10085.23038903921.
+  -8421.687232084289.
 END 19
 BEGIN 20
   Outputting

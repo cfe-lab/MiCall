@@ -209,8 +209,8 @@ BEGIN 14
   'r675-912.1'
   to
   be
-  (-125,
-  113).
+  (113,
+  351).
 END 14
 BEGIN 15
   Overlap
@@ -222,13 +222,13 @@ BEGIN 15
   has
   size
   238,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -9139.833404754523.
+  -8680.929635478145.
 END 15
 BEGIN 16
   Cycle

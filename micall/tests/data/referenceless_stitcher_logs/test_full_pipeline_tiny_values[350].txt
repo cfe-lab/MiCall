@@ -44,8 +44,8 @@ BEGIN 5
   'r688-987.1'
   to
   be
-  (-215,
-  85).
+  (85,
+  385).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   300,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -9848.133432825834.
 END 6
 BEGIN 7
   Calculated
@@ -81,8 +81,8 @@ BEGIN 7
   'r709-973.2'
   to
   be
-  (-261,
-  4).
+  (4,
+  269).
 END 7
 BEGIN 8
   Overlap
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   265,
-  0
+  23
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -6307.362028566181.
 END 8
 BEGIN 9
   Constructed
@@ -164,8 +164,8 @@ BEGIN 13
   'r688-987.1'
   to
   be
-  (-215,
-  85).
+  (85,
+  385).
 END 13
 BEGIN 14
   Overlap
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   300,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -9848.133432825834.
 END 14
 BEGIN 15
   Calculated
@@ -201,8 +201,8 @@ BEGIN 15
   'r709-973.2'
   to
   be
-  (-261,
-  4).
+  (4,
+  269).
 END 15
 BEGIN 16
   Overlap
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   265,
-  0
+  23
   matches,
   and
   the
   score
   of
-  -9642.289078152899.
+  -6307.362028566181.
 END 16
 BEGIN 17
   Calculated
@@ -283,8 +283,8 @@ BEGIN 20
   'r688-987.1'
   to
   be
-  (-215,
-  85).
+  (85,
+  385).
 END 20
 BEGIN 21
   Overlap
@@ -296,13 +296,13 @@ BEGIN 21
   has
   size
   300,
-  0
+  3
   matches,
   and
   the
   score
   of
-  -10257.05246809888.
+  -9848.133432825834.
 END 21
 BEGIN 22
   Outputting

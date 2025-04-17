@@ -44,8 +44,8 @@ BEGIN 5
   'r51-448.2'
   to
   be
-  (-370,
-  28).
+  (28,
+  426).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   398,
-  0
+  13
   matches,
   and
   the
   score
   of
-  -11809.344096942896.
+  -10270.281708368884.
 END 6
 BEGIN 7
   Calculated

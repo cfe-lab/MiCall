@@ -99,8 +99,8 @@ BEGIN 8
   'r0-315.2'
   to
   be
-  (-241,
-  75).
+  (75,
+  391).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   316,
-  0
+  36
   matches,
   and
   the
   score
   of
-  -10526.135599861265.
+  -5744.54718856782.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r0-315.2'
   to
   be
-  (-290,
-  26).
+  (26,
+  342).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   316,
-  0
+  12
   matches,
   and
   the
   score
   of
-  -10526.135599861265.
+  -8932.272796096782.
 END 13
 BEGIN 14
   Contig

@@ -99,8 +99,8 @@ BEGIN 8
   'r164-444.2'
   to
   be
-  (-248,
-  33).
+  (33,
+  314).
 END 8
 BEGIN 9
   Overlap
@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   281,
-  0
+  24
   matches,
   and
   the
   score
   of
-  -9928.048347988642.
+  -6548.287208247828.
 END 9
 BEGIN 10
   Cycle
@@ -163,8 +163,8 @@ BEGIN 12
   'r164-444.2'
   to
   be
-  (-117,
-  164).
+  (164,
+  445).
 END 12
 BEGIN 13
   Overlap
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   281,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -9928.048347988642.
+  -7956.521016473167.
 END 13
 BEGIN 14
   Contig

@@ -44,8 +44,8 @@ BEGIN 5
   'r73-459.1'
   to
   be
-  (-384,
-  3).
+  (3,
+  390).
 END 5
 BEGIN 6
   Overlap
@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   387,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -11645.420959902367.
+  -11165.197415164124.
 END 6
 BEGIN 7
   Calculated
@@ -81,8 +81,8 @@ BEGIN 7
   'r8-344.2'
   to
   be
-  (-295,
-  42).
+  (42,
+  379).
 END 7
 BEGIN 8
   Overlap
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   337,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -10869.202485309888.
+  -10611.943254888352.
 END 8
 BEGIN 9
   Constructed
@@ -164,8 +164,8 @@ BEGIN 13
   'r73-459.1'
   to
   be
-  (-384,
-  3).
+  (3,
+  390).
 END 13
 BEGIN 14
   Overlap
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   387,
-  0
+  4
   matches,
   and
   the
   score
   of
-  -11645.420959902367.
+  -11165.197415164124.
 END 14
 BEGIN 15
   Calculated
@@ -201,8 +201,8 @@ BEGIN 15
   'r8-344.2'
   to
   be
-  (-295,
-  42).
+  (42,
+  379).
 END 15
 BEGIN 16
   Overlap
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   337,
-  0
+  2
   matches,
   and
   the
   score
   of
-  -10869.202485309888.
+  -10611.943254888352.
 END 16
 BEGIN 17
   Calculated

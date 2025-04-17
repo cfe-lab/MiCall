@@ -264,8 +264,8 @@ BEGIN 17
   'r612-844.3'
   to
   be
-  (-65,
-  168).
+  (168,
+  401).
 END 17
 BEGIN 18
   Overlap
@@ -277,13 +277,13 @@ BEGIN 18
   has
   size
   233,
-  0
+  11
   matches,
   and
   the
   score
   of
-  -9043.723127119716.
+  -7343.193992105752.
 END 18
 BEGIN 19
   Cycle
@@ -493,8 +493,8 @@ BEGIN 30
   'r612-844.3'
   to
   be
-  (-65,
-  168).
+  (168,
+  401).
 END 30
 BEGIN 31
   Overlap
@@ -506,13 +506,13 @@ BEGIN 31
   has
   size
   233,
-  0
+  11
   matches,
   and
   the
   score
   of
-  -9043.723127119716.
+  -7343.193992105752.
 END 31
 BEGIN 32
   Cycle
@@ -667,8 +667,8 @@ BEGIN 40
   'r612-844.3'
   to
   be
-  (1,
-  234).
+  (234,
+  467).
 END 40
 BEGIN 41
   Overlap
@@ -680,13 +680,13 @@ BEGIN 41
   has
   size
   233,
-  8
+  11
   matches,
   and
   the
   score
   of
-  -7806.974665291378.
+  -7343.193992105752.
 END 41
 BEGIN 42
   Cycle

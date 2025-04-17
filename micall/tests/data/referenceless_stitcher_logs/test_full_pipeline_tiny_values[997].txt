@@ -89,8 +89,8 @@ BEGIN 8
   'r605-879.0'
   to
   be
-  (-212,
-  63).
+  (63,
+  338).
 END 8
 BEGIN 9
   Overlap
@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   275,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -7829.021199796301.
 END 9
 BEGIN 10
   Cycle
@@ -153,8 +153,8 @@ BEGIN 12
   'r605-879.0'
   to
   be
-  (-212,
-  63).
+  (63,
+  338).
 END 12
 BEGIN 13
   Overlap
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   275,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -7829.021199796301.
 END 13
 BEGIN 14
   Constructed
@@ -271,8 +271,8 @@ BEGIN 22
   'r605-879.0'
   to
   be
-  (-212,
-  63).
+  (63,
+  338).
 END 22
 BEGIN 23
   Overlap
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   275,
-  0
+  14
   matches,
   and
   the
   score
   of
-  -9821.862959744449.
+  -7829.021199796301.
 END 23
 BEGIN 24
   Outputting
