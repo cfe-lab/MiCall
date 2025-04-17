@@ -4,8 +4,8 @@ from operator import itemgetter
 from gotoh import align_it
 from functools import cache
 import numpy as np
-import math
 from micall.utils.referenceless_score import Score
+import math
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -186,11 +186,9 @@ def calculate_overlap_score(L: int, M: int) -> Score:
     :raises ValueError: If L is not greater than 0.
     """
 
-    L += 1
-
     # Compute z-score for a four-letter alphabet where P(match)=1/4:
     # Expected matches = L / 4 and standard deviation = sqrt(3L) / 4.
-    return 1024 * (4 * M - L) / math.sqrt(3 * L)
+    return (4 * M - L) / math.sqrt(3 * L)
 
 
 def find_max_overlap_length(M: int, X: Score, L_low: int = -1, L_high: int = -1) -> int:
