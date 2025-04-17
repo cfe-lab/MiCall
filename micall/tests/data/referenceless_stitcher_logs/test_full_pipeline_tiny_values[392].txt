@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  278
+  264
   between
   contigs
   'r67-462.1'
@@ -99,8 +99,8 @@ BEGIN 8
   'r625-902.2'
   to
   be
-  (116,
-  394).
+  (395,
+  1).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r625-902.2'
   has
   size
-  278,
-  15
+  1,
+  0
   matches,
   and
   the
   score
   of
-  -7751.421308448875.
+  -836.0924988699916.
 END 9
 BEGIN 10
   Cycle
@@ -136,7 +136,7 @@ BEGIN 10
   and
   consists
   of
-  3
+  2
   parts.
 END 10
 BEGIN 11
@@ -155,65 +155,46 @@ BEGIN 12
   overlap
   of
   size
-  278
+  271
   between
   contigs
-  (1)
-  and
   'r625-902.2'
+  and
+  (1)
   to
   be
-  (116,
-  394).
+  None.
 END 12
 BEGIN 13
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r625-902.2'
-  has
-  size
-  278,
-  15
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  -7751.421308448875.
+  length
+  431.
 END 13
 BEGIN 14
-  Contig
-  (1)
-  covers
-  contig
-  'r625-902.2'
-  completely.
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 14
 BEGIN 15
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  431
-  and
-  consists
-  of
-  3
-  parts.
+  Calculating
+  all
+  paths...
 END 15
 BEGIN 16
   Cycle
-  3
+  1
   started
   with
   1
@@ -225,11 +206,11 @@ BEGIN 17
   path
   of
   length
-  431.
+  278.
 END 17
 BEGIN 18
   Removed
-  3
+  1
   components
   from
   the
@@ -242,15 +223,49 @@ BEGIN 18
   process.
 END 18
 BEGIN 19
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 19
-BEGIN 20
-  Outputting
-  1
+  2
   contigs.
 END 20
+BEGIN 21
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  271
+  between
+  contigs
+  'r625-902.2'
+  and
+  (1)
+  to
+  be
+  None.
+END 21
+BEGIN 22
+  Outputting
+  2
+  contigs.
+END 22

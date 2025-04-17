@@ -36,12 +36,12 @@ BEGIN 5
   overlap
   of
   size
-  377
+  343
   between
   contigs
-  'r50-439.2'
-  and
   'r615-995.1'
+  and
+  'r50-439.2'
   to
   be
   None.

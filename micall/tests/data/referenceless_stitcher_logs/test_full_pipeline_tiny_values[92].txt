@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  313
+  276
   between
   contigs
   'r41-444.2'
@@ -44,8 +44,8 @@ BEGIN 5
   'r639-951.1'
   to
   be
-  (90,
-  403).
+  (403,
+  3).
 END 5
 BEGIN 6
   Overlap
@@ -56,14 +56,14 @@ BEGIN 6
   'r639-951.1'
   has
   size
-  313,
-  15
+  3,
+  1
   matches,
   and
   the
   score
   of
-  -8474.385610883735.
+  0.0.
 END 6
 BEGIN 7
   Calculated
@@ -156,7 +156,7 @@ BEGIN 13
   overlap
   of
   size
-  313
+  276
   between
   contigs
   'r41-444.2'
@@ -164,8 +164,8 @@ BEGIN 13
   'r639-951.1'
   to
   be
-  (90,
-  403).
+  (403,
+  3).
 END 13
 BEGIN 14
   Overlap
@@ -176,14 +176,14 @@ BEGIN 14
   'r639-951.1'
   has
   size
-  313,
-  15
+  3,
+  1
   matches,
   and
   the
   score
   of
-  -8474.385610883735.
+  0.0.
 END 14
 BEGIN 15
   Calculated

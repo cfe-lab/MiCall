@@ -132,7 +132,7 @@ BEGIN 10
   fittest
   has
   length
-  589
+  827
   and
   consists
   of
@@ -155,42 +155,52 @@ BEGIN 12
   overlap
   of
   size
-  264
+  26
   between
   contigs
-  (1)
-  and
   'r131-394.0'
+  and
+  (1)
   to
   be
-  (239,
-  503).
+  (238,
+  26).
 END 12
 BEGIN 13
   Overlap
   between
   contigs
-  (1)
-  and
   'r131-394.0'
+  and
+  (1)
   has
   size
-  264,
-  5
+  26,
+  26
   matches,
   and
   the
   score
   of
-  -8897.796660342663.
+  8760.888888888889.
 END 13
 BEGIN 14
-  Contig
-  (1)
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  26
+  between
+  contigs
   'r131-394.0'
-  completely.
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
 END 14
 BEGIN 15
   Cycle
@@ -204,7 +214,7 @@ BEGIN 15
   fittest
   has
   length
-  589
+  827
   and
   consists
   of
@@ -225,7 +235,7 @@ BEGIN 17
   path
   of
   length
-  589.
+  827.
 END 17
 BEGIN 18
   Removed

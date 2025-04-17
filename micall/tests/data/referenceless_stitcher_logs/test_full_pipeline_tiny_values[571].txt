@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  381
+  362
   between
   contigs
   'r50-553.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r581-961.1'
   to
   be
-  (112,
-  493).
+  (503,
+  1).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r581-961.1'
   has
   size
-  381,
-  8
+  1,
+  1
   matches,
   and
   the
   score
   of
-  -10587.06774751165.
+  836.0924988699916.
 END 9
 BEGIN 10
   Cycle
@@ -132,7 +132,7 @@ BEGIN 10
   fittest
   has
   length
-  581
+  912
   and
   consists
   of
@@ -155,7 +155,7 @@ BEGIN 12
   overlap
   of
   size
-  381
+  50
   between
   contigs
   (1)
@@ -164,7 +164,7 @@ BEGIN 12
   to
   be
   (531,
-  581).
+  50).
 END 12
 BEGIN 13
   Overlap
@@ -175,22 +175,32 @@ BEGIN 13
   'r581-961.1'
   has
   size
-  381,
+  50,
   50
   matches,
   and
   the
   score
   of
-  -5505.2752287060575.
+  12335.038508514514.
 END 13
 BEGIN 14
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  50
+  between
+  contigs
   (1)
-  covers
+  and
+  'r581-961.1',
+  resulting
+  in
   contig
-  'r581-961.1'
-  completely.
+  (2).
 END 14
 BEGIN 15
   Cycle
@@ -204,7 +214,7 @@ BEGIN 15
   fittest
   has
   length
-  581
+  912
   and
   consists
   of
@@ -225,7 +235,7 @@ BEGIN 17
   path
   of
   length
-  581.
+  912.
 END 17
 BEGIN 18
   Removed

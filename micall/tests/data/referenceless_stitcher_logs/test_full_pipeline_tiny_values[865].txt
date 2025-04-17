@@ -36,36 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  340
+  17
   between
   contigs
-  'r398-853.0'
-  and
   'r75-414.1'
+  and
+  'r398-853.0'
   to
   be
-  (26,
-  366).
+  (323,
+  17).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r398-853.0'
-  and
   'r75-414.1'
+  and
+  'r398-853.0'
   has
   size
-  340,
-  26
+  17,
+  17
   matches,
   and
   the
   score
   of
-  -7587.705839458878.
+  6967.437490583262.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  17
+  between
+  contigs
+  'r75-414.1'
+  and
+  'r398-853.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -83,8 +101,8 @@ BEGIN 7
   be
   (104,
   175).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -101,8 +119,8 @@ BEGIN 8
   score
   of
   23351.47308052113.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Found
   a
   significant
@@ -118,9 +136,9 @@ BEGIN 9
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -160,19 +178,19 @@ BEGIN 12
   contigs
   'r75-414.1'
   and
-  (1)
+  (2)
   to
   be
   (219,
   121).
-END 12
-BEGIN 13
+END 13
+BEGIN 14
   Overlap
   between
   contigs
   'r75-414.1'
   and
-  (1)
+  (2)
   has
   size
   121,
@@ -183,8 +201,8 @@ BEGIN 13
   score
   of
   19376.17215520078.
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -196,13 +214,13 @@ BEGIN 14
   contigs
   'r75-414.1'
   and
-  (1),
+  (2),
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -220,24 +238,24 @@ BEGIN 15
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   779.
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -250,17 +268,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 20
+END 21

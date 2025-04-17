@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  371
+  301
   between
   contigs
   'r9-562.2'
@@ -99,8 +99,8 @@ BEGIN 8
   'r611-981.1'
   to
   be
-  (41,
-  412).
+  (553,
+  1).
 END 8
 BEGIN 9
   Overlap
@@ -111,14 +111,14 @@ BEGIN 9
   'r611-981.1'
   has
   size
-  371,
-  29
+  1,
+  0
   matches,
   and
   the
   score
   of
-  -7847.075382417813.
+  -836.0924988699916.
 END 9
 BEGIN 10
   Cycle

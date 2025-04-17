@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  325
+  40
   between
   contigs
   'r251-673.2'
@@ -44,8 +44,8 @@ BEGIN 5
   'r634-959.0'
   to
   be
-  (422,
-  1).
+  (383,
+  40).
 END 5
 BEGIN 6
   Overlap
@@ -56,16 +56,34 @@ BEGIN 6
   'r634-959.0'
   has
   size
-  1,
-  0
+  40,
+  40
   matches,
   and
   the
   score
   of
-  -836.0924988699916.
+  10987.385500203462.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  40
+  between
+  contigs
+  'r251-673.2'
+  and
+  'r634-959.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -83,8 +101,8 @@ BEGIN 7
   be
   (121,
   302).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -101,8 +119,8 @@ BEGIN 8
   score
   of
   30737.362163713373.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Found
   a
   significant
@@ -118,9 +136,9 @@ BEGIN 9
   resulting
   in
   contig
-  (1).
-END 9
-BEGIN 10
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -158,19 +176,19 @@ BEGIN 12
   63
   between
   contigs
-  (1)
+  (2)
   and
   'r634-959.0'
   to
   be
   (383,
   63).
-END 12
-BEGIN 13
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r634-959.0'
   has
@@ -183,8 +201,8 @@ BEGIN 13
   score
   of
   13893.356877779155.
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -194,15 +212,15 @@ BEGIN 14
   63
   between
   contigs
-  (1)
+  (2)
   and
   'r634-959.0',
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -220,24 +238,24 @@ BEGIN 15
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   709.
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -250,17 +268,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 20
+END 21

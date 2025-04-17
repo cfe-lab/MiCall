@@ -132,7 +132,7 @@ BEGIN 10
   fittest
   has
   length
-  568
+  862
   and
   consists
   of
@@ -155,7 +155,7 @@ BEGIN 12
   overlap
   of
   size
-  338
+  44
   between
   contigs
   (1)
@@ -163,8 +163,8 @@ BEGIN 12
   'r603-940.1'
   to
   be
-  (22,
-  360).
+  (524,
+  44).
 END 12
 BEGIN 13
   Overlap
@@ -175,22 +175,32 @@ BEGIN 13
   'r603-940.1'
   has
   size
-  338,
-  15
+  44,
+  44
   matches,
   and
   the
   score
   of
-  -8958.672973790673.
+  11545.277288747728.
 END 13
 BEGIN 14
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  44
+  between
+  contigs
   (1)
-  covers
+  and
+  'r603-940.1',
+  resulting
+  in
   contig
-  'r603-940.1'
-  completely.
+  (2).
 END 14
 BEGIN 15
   Cycle
@@ -204,7 +214,7 @@ BEGIN 15
   fittest
   has
   length
-  568
+  862
   and
   consists
   of
@@ -225,7 +235,7 @@ BEGIN 17
   path
   of
   length
-  568.
+  862.
 END 17
 BEGIN 18
   Removed

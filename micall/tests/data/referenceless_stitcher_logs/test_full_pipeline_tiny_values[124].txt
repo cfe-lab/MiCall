@@ -209,37 +209,18 @@ BEGIN 16
   overlap
   of
   size
-  330
+  306
   between
   contigs
-  (1)
-  and
   'r204-533.0'
+  and
+  (1)
   to
   be
-  (5,
-  335).
+  None.
 END 16
 BEGIN 17
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r204-533.0'
-  has
-  size
-  330,
-  56
-  matches,
-  and
-  the
-  score
-  of
-  -3477.0353822395045.
-END 17
-BEGIN 18
   Outputting
   2
   contigs.
-END 18
+END 17

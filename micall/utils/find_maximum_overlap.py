@@ -50,7 +50,7 @@ def get_overlap_results(total: np.ndarray,
 
     overlap_sizes = np.zeros(len(total))
     left_size = len(total) // 2
-    right_size = len(total) - (len(total) // 2)
+    right_size = len(total) - left_size
     overlap_sizes[:left_size] = clip(1 + np.arange(left_size))
     overlap_sizes[-right_size:] = np.flip(clip(1 + np.arange(right_size)))
 
@@ -59,7 +59,8 @@ def get_overlap_results(total: np.ndarray,
     assert max(overlap_sizes[-right_size:]) <= max_overlap
     assert min(overlap_sizes[:left_size]) == min(overlap_sizes[-right_size:]) == 1
 
-    total = total / overlap_sizes ** 0.5
+    # Same formula as in `calculate_overlap_score`.
+    total = (4 * total - overlap_sizes) / (3 * overlap_sizes) ** 0.5
 
     # Return the shift value that yields maximum overlap
     max_value = np.max(total)

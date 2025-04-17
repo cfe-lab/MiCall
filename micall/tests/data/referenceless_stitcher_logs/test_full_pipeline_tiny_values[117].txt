@@ -36,12 +36,12 @@ BEGIN 5
   overlap
   of
   size
-  306
+  236
   between
   contigs
-  'r603-940.1'
-  and
   'r98-417.2'
+  and
+  'r603-940.1'
   to
   be
   None.
@@ -136,7 +136,7 @@ BEGIN 11
   overlap
   of
   size
-  317
+  248
   between
   contigs
   'r98-417.2'
@@ -235,7 +235,7 @@ BEGIN 20
   overlap
   of
   size
-  317
+  248
   between
   contigs
   'r98-417.2'

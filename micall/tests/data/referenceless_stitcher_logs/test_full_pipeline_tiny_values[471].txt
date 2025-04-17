@@ -36,17 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  433
+  48
   between
   contigs
-  'r482-929.2'
-  and
   'r19-529.1'
+  and
+  'r482-929.2'
   to
   be
-  None.
+  (463,
+  48).
 END 5
 BEGIN 6
+  Overlap
+  between
+  contigs
+  'r19-529.1'
+  and
+  'r482-929.2'
+  has
+  size
+  48,
+  48
+  matches,
+  and
+  the
+  score
+  of
+  12077.507802567898.
+END 6
+BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  48
+  between
+  contigs
+  'r19-529.1'
+  and
+  'r482-929.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -64,8 +101,8 @@ BEGIN 6
   be
   (155,
   356).
-END 6
-BEGIN 7
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -82,8 +119,8 @@ BEGIN 7
   score
   of
   33386.4037147.
-END 7
-BEGIN 8
+END 9
+BEGIN 10
   Found
   a
   significant
@@ -99,9 +136,9 @@ BEGIN 8
   resulting
   in
   contig
-  (1).
-END 8
-BEGIN 9
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -119,16 +156,16 @@ BEGIN 9
   of
   3
   parts.
-END 9
-BEGIN 10
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 10
-BEGIN 11
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -139,19 +176,19 @@ BEGIN 11
   76
   between
   contigs
-  (1)
+  (2)
   and
   'r482-929.2'
   to
   be
   (463,
   76).
-END 11
-BEGIN 12
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r482-929.2'
   has
@@ -164,8 +201,8 @@ BEGIN 12
   score
   of
   15293.955559000839.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -175,15 +212,15 @@ BEGIN 13
   76
   between
   contigs
-  (1)
+  (2)
   and
   'r482-929.2',
   resulting
   in
   contig
-  (2).
-END 13
-BEGIN 14
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -201,24 +238,24 @@ BEGIN 14
   of
   3
   parts.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   911.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -231,17 +268,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 19
+END 21

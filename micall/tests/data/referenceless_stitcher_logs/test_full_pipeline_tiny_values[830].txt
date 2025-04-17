@@ -81,7 +81,7 @@ BEGIN 8
   overlap
   of
   size
-  332
+  40
   between
   contigs
   'r16-672.0'
@@ -89,8 +89,8 @@ BEGIN 8
   'r633-964.2'
   to
   be
-  (13,
-  345).
+  (617,
+  40).
 END 8
 BEGIN 9
   Overlap
@@ -101,16 +101,34 @@ BEGIN 9
   'r633-964.2'
   has
   size
-  332,
-  9
+  40,
+  40
   matches,
   and
   the
   score
   of
-  -9622.184097740534.
+  10987.385500203462.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  40
+  between
+  contigs
+  'r16-672.0'
+  and
+  'r633-964.2',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -122,22 +140,22 @@ BEGIN 10
   fittest
   has
   length
-  657
+  949
   and
   consists
   of
-  2
+  3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -145,65 +163,65 @@ BEGIN 12
   overlap
   of
   size
-  332
+  363
   between
   contigs
-  'r16-672.0'
+  (1)
   and
-  'r633-964.2'
+  'r44-406.1'
   to
   be
-  (13,
-  345).
-END 12
-BEGIN 13
+  (28,
+  391).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r16-672.0'
+  (1)
   and
-  'r633-964.2'
+  'r44-406.1'
   has
   size
-  332,
-  9
+  363,
+  363
   matches,
   and
   the
   score
   of
-  -9622.184097740534.
-END 13
-BEGIN 14
-  Constructed
-  a
-  path
-  of
-  length
-  657.
+  33714.56284383524.
 END 14
 BEGIN 15
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Contig
+  (1)
+  covers
+  contig
+  'r44-406.1'
+  completely.
 END 15
 BEGIN 16
-  Calculating
-  all
-  paths...
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  949
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
   Cycle
-  1
+  3
   started
   with
   1
@@ -215,11 +233,11 @@ BEGIN 18
   path
   of
   length
-  332.
+  949.
 END 18
 BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -232,68 +250,15 @@ BEGIN 19
   process.
 END 19
 BEGIN 20
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 20
-BEGIN 21
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 20
+BEGIN 21
+  Outputting
+  1
   contigs.
 END 21
-BEGIN 22
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  332
-  between
-  contigs
-  'r16-672.0'
-  and
-  'r633-964.2'
-  to
-  be
-  (13,
-  345).
-END 22
-BEGIN 23
-  Overlap
-  between
-  contigs
-  'r16-672.0'
-  and
-  'r633-964.2'
-  has
-  size
-  332,
-  9
-  matches,
-  and
-  the
-  score
-  of
-  -9622.184097740534.
-END 23
-BEGIN 24
-  Outputting
-  2
-  contigs.
-END 24

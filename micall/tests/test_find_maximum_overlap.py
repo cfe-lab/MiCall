@@ -8,7 +8,8 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum
         ('aaaaaxxxx', 'xxxbbbbb', -3),
         ('xxxbbbbb', 'aaaaaxxxx', -14),
         ('aaaaaxxxx', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -3),
-        ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -23),
+        ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 0),
+        ('aaaaaxxxxxxxxxxxxxxxxxxxxxxxxcccccccccccccccccccc', 'xxxxxxxxxxxxxxxxxxxxxxxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', -44),
         ('aaaaaxxxxx', 'bbbbbxxx', -10),
         ('bbbbbxxx', 'aaaaaxxxxx', -10),
         ('aaaaaxxx', 'bbbbbxxxxx', -10),
@@ -76,8 +77,12 @@ aaaaaxxxx-------------------------------
 ------xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 '''),
         ('aaaaaxxxxcccccccccccccccccccc', 'xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '''\
-aaaaaxxxxcccccccccccccccccccc-----------
-------xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+aaaaaxxxxcccccccccccccccccccc----------------------------------
+-----------------------------xxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+'''),
+        ('aaaaaxxxxxxxxxxxxxxxxxxxxxxxxcccccccccccccccccccc', 'xxxxxxxxxxxxxxxxxxxxxxxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '''\
+aaaaaxxxxxxxxxxxxxxxxxxxxxxxxcccccccccccccccccccc-----------
+-----xxxxxxxxxxxxxxxxxxxxxxxxbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 '''),
         ('aaaa', 'bbbb', '''\
 aaaa----

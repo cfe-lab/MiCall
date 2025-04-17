@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  281
+  200
   between
   contigs
   'r495-809.0'
@@ -99,28 +99,9 @@ BEGIN 8
   'r164-444.2'
   to
   be
-  (33,
-  314).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r495-809.0'
-  and
-  'r164-444.2'
-  has
-  size
-  281,
-  24
-  matches,
-  and
-  the
-  score
-  of
-  -6548.287208247828.
-END 9
-BEGIN 10
   Cycle
   1
   finished
@@ -138,16 +119,16 @@ BEGIN 10
   of
   3
   parts.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -165,8 +146,8 @@ BEGIN 12
   be
   (164,
   445).
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -183,16 +164,16 @@ BEGIN 13
   score
   of
   -7956.521016473167.
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Contig
   (1)
   covers
   contig
   'r164-444.2'
   completely.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Cycle
   2
   finished
@@ -210,24 +191,24 @@ BEGIN 15
   of
   3
   parts.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   470.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Removed
   3
   components
@@ -240,17 +221,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Outputting
   1
   contigs.
-END 20
+END 19

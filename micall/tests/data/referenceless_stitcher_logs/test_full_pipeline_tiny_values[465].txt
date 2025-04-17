@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  372
+  337
   between
   contigs
   'r85-531.1'
@@ -137,7 +137,7 @@ BEGIN 12
   overlap
   of
   size
-  372
+  337
   between
   contigs
   'r85-531.1'
@@ -237,7 +237,7 @@ BEGIN 18
   overlap
   of
   size
-  372
+  337
   between
   contigs
   'r85-531.1'

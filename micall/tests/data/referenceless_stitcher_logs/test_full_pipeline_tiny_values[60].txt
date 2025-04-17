@@ -285,12 +285,12 @@ BEGIN 20
   overlap
   of
   size
-  441
+  389
   between
   contigs
-  'r496-977.0'
-  and
   (1)
+  and
+  'r496-977.0'
   to
   be
   None.

@@ -91,36 +91,54 @@ BEGIN 8
   overlap
   of
   size
-  333
+  45
   between
   contigs
-  'r430-787.2'
-  and
   'r142-474.1'
+  and
+  'r430-787.2'
   to
   be
-  (0,
+  (288,
   45).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r430-787.2'
-  and
   'r142-474.1'
+  and
+  'r430-787.2'
   has
   size
-  333,
+  45,
   45
   matches,
   and
   the
   score
   of
-  -4981.806061333032.
+  11680.601612459246.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  45
+  between
+  contigs
+  'r142-474.1'
+  and
+  'r430-787.2',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -138,16 +156,16 @@ BEGIN 10
   of
   3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -165,8 +183,8 @@ BEGIN 12
   be
   (183,
   150).
-END 12
-BEGIN 13
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -183,8 +201,8 @@ BEGIN 13
   score
   of
   21602.160905726756.
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -200,9 +218,9 @@ BEGIN 14
   resulting
   in
   contig
-  (2).
-END 14
-BEGIN 15
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -220,24 +238,24 @@ BEGIN 15
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   646.
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -250,17 +268,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 20
+END 21

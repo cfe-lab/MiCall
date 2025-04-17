@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  295
+  16
   between
   contigs
   'r171-718.0'
@@ -99,8 +99,8 @@ BEGIN 8
   'r703-997.1'
   to
   be
-  (146,
-  441).
+  (532,
+  16).
 END 8
 BEGIN 9
   Overlap
@@ -111,16 +111,34 @@ BEGIN 9
   'r703-997.1'
   has
   size
-  295,
-  20
+  16,
+  16
   matches,
   and
   the
   score
   of
-  -7422.4490458229375.
+  6739.267988410005.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  16
+  between
+  contigs
+  'r171-718.0'
+  and
+  'r703-997.1',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -132,22 +150,22 @@ BEGIN 10
   fittest
   has
   length
-  580
+  827
   and
   consists
   of
   3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -155,7 +173,7 @@ BEGIN 12
   overlap
   of
   size
-  295
+  48
   between
   contigs
   (1)
@@ -163,10 +181,10 @@ BEGIN 12
   'r703-997.1'
   to
   be
-  (146,
-  441).
-END 12
-BEGIN 13
+  (532,
+  48).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -175,24 +193,34 @@ BEGIN 13
   'r703-997.1'
   has
   size
-  295,
-  20
+  48,
+  48
   matches,
   and
   the
   score
   of
-  -7422.4490458229375.
-END 13
-BEGIN 14
-  Contig
-  (1)
-  covers
-  contig
-  'r703-997.1'
-  completely.
+  12077.507802567898.
 END 14
 BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  48
+  between
+  contigs
+  (1)
+  and
+  'r703-997.1',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -204,30 +232,30 @@ BEGIN 15
   fittest
   has
   length
-  580
+  827
   and
   consists
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  580.
-END 17
-BEGIN 18
+  827.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -240,17 +268,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 20
+END 21

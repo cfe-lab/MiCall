@@ -448,42 +448,52 @@ BEGIN 28
   overlap
   of
   size
-  204
+  22
   between
   contigs
-  (4)
-  and
   'r222-425.3'
+  and
+  (4)
   to
   be
-  (246,
-  450).
+  (182,
+  22).
 END 28
 BEGIN 29
   Overlap
   between
   contigs
-  (4)
-  and
   'r222-425.3'
+  and
+  (4)
   has
   size
-  204,
-  58
+  22,
+  22
   matches,
   and
   the
   score
   of
-  1114.8749640053154.
+  8012.882381388798.
 END 29
 BEGIN 30
-  Contig
-  (4)
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  22
+  between
+  contigs
   'r222-425.3'
-  completely.
+  and
+  (4),
+  resulting
+  in
+  contig
+  (8).
 END 30
 BEGIN 31
   Cycle
@@ -565,7 +575,7 @@ BEGIN 35
   resulting
   in
   contig
-  (8).
+  (9).
 END 35
 BEGIN 36
   Calculated
@@ -620,7 +630,7 @@ BEGIN 38
   resulting
   in
   contig
-  (9).
+  (10).
 END 38
 BEGIN 39
   Cycle
@@ -662,7 +672,7 @@ BEGIN 41
   contigs
   'r72-523.1'
   and
-  (9)
+  (10)
   to
   be
   (88,
@@ -674,7 +684,7 @@ BEGIN 42
   contigs
   'r72-523.1'
   and
-  (9)
+  (10)
   has
   size
   364,
@@ -698,11 +708,11 @@ BEGIN 43
   contigs
   'r72-523.1'
   and
-  (9),
+  (10),
   resulting
   in
   contig
-  (10).
+  (11).
 END 43
 BEGIN 44
   Calculated
@@ -715,7 +725,7 @@ BEGIN 44
   204
   between
   contigs
-  (9)
+  (10)
   and
   'r222-425.3'
   to
@@ -727,7 +737,7 @@ BEGIN 45
   Overlap
   between
   contigs
-  (9)
+  (10)
   and
   'r222-425.3'
   has
@@ -743,7 +753,7 @@ BEGIN 45
 END 45
 BEGIN 46
   Contig
-  (9)
+  (10)
   covers
   contig
   'r222-425.3'
@@ -787,7 +797,7 @@ BEGIN 49
   204
   between
   contigs
-  (10)
+  (11)
   and
   'r222-425.3'
   to
@@ -799,7 +809,7 @@ BEGIN 50
   Overlap
   between
   contigs
-  (10)
+  (11)
   and
   'r222-425.3'
   has
@@ -815,7 +825,7 @@ BEGIN 50
 END 50
 BEGIN 51
   Contig
-  (10)
+  (11)
   covers
   contig
   'r222-425.3'

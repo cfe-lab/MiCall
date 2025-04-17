@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  342
+  299
   between
   contigs
   'r7-520.1'
@@ -126,7 +126,7 @@ BEGIN 11
   overlap
   of
   size
-  342
+  299
   between
   contigs
   'r7-520.1'
@@ -225,7 +225,7 @@ BEGIN 20
   overlap
   of
   size
-  342
+  299
   between
   contigs
   'r7-520.1'
