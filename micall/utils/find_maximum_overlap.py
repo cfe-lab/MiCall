@@ -7,6 +7,7 @@ import numpy as np
 from typing import Sequence, Optional, Tuple, Iterable, Any
 from itertools import chain
 import scipy
+from micall.utils.overlap_stitcher import calculate_overlap_score
 
 
 @dataclass(frozen=False)
@@ -59,8 +60,7 @@ def get_overlap_results(total: np.ndarray,
     assert max(overlap_sizes[-right_size:]) <= max_overlap
     assert min(overlap_sizes[:left_size]) == min(overlap_sizes[-right_size:]) == 1
 
-    # Same formula as in `calculate_overlap_score`.
-    total = (4 * total - overlap_sizes) / (3 * overlap_sizes) ** 0.5
+    total = calculate_overlap_score(L=overlap_sizes, M=total)  # type: ignore
 
     # Return the shift value that yields maximum overlap
     max_value = np.max(total)
