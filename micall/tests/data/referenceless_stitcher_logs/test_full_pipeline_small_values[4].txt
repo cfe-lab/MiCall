@@ -310,7 +310,7 @@ BEGIN 20
   the
   score
   of
-  34223.88500858558.
+  34147.85506695492.
 END 20
 BEGIN 21
   Contig
@@ -437,7 +437,7 @@ BEGIN 28
   the
   score
   of
-  35487.37314787206.
+  35414.012288214886.
 END 28
 BEGIN 29
   Contig
@@ -482,7 +482,7 @@ BEGIN 31
   the
   score
   of
-  34223.88500858558.
+  34147.85506695492.
 END 31
 BEGIN 32
   Contig
@@ -527,7 +527,7 @@ BEGIN 34
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 34
 BEGIN 35
   Contig
@@ -599,7 +599,7 @@ BEGIN 39
   the
   score
   of
-  34223.88500858558.
+  34147.85506695492.
 END 39
 BEGIN 40
   Contig
@@ -644,7 +644,7 @@ BEGIN 42
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 42
 BEGIN 43
   Contig
@@ -716,7 +716,7 @@ BEGIN 47
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 47
 BEGIN 48
   Contig

@@ -312,7 +312,7 @@ BEGIN 21
   the
   score
   of
-  -10764.570127587354.
+  -10780.727714842144.
 END 21
 BEGIN 22
   Outputting

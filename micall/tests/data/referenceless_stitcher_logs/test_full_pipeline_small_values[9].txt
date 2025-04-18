@@ -283,7 +283,7 @@ BEGIN 18
   the
   score
   of
-  27208.788166719234.
+  27113.56436807932.
 END 18
 BEGIN 19
   Contig
@@ -520,7 +520,7 @@ BEGIN 32
   the
   score
   of
-  27208.788166719234.
+  27113.56436807932.
 END 32
 BEGIN 33
   Contig
@@ -702,7 +702,7 @@ BEGIN 43
   the
   score
   of
-  27208.788166719234.
+  27113.56436807932.
 END 43
 BEGIN 44
   Contig
@@ -829,7 +829,7 @@ BEGIN 51
   the
   score
   of
-  27208.788166719234.
+  27113.56436807932.
 END 51
 BEGIN 52
   Contig
@@ -901,7 +901,7 @@ BEGIN 56
   the
   score
   of
-  27208.788166719234.
+  27113.56436807932.
 END 56
 BEGIN 57
   Contig

@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  32430.515300786996.
+  32350.34822550813.
 END 9
 BEGIN 10
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  32430.515300786996.
+  32350.34822550813.
 END 14
 BEGIN 15
   Contig

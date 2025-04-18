@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  34544.08962188087.
+  34468.754174208545.
 END 6
 BEGIN 7
   Contig
@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  -9854.34379953964.
+  -9872.015140888687.
 END 9
 BEGIN 10
   Cycle
@@ -172,7 +172,7 @@ BEGIN 13
   the
   score
   of
-  -9854.34379953964.
+  -9872.015140888687.
 END 13
 BEGIN 14
   Constructed
@@ -290,7 +290,7 @@ BEGIN 23
   the
   score
   of
-  -9854.34379953964.
+  -9872.015140888687.
 END 23
 BEGIN 24
   Outputting

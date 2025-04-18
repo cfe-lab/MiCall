@@ -246,7 +246,7 @@ BEGIN 16
   the
   score
   of
-  -8047.669739452167.
+  -8069.057943109642.
 END 16
 BEGIN 17
   Cycle
@@ -365,7 +365,7 @@ BEGIN 23
   the
   score
   of
-  -9439.21439755279.
+  -9457.593722032974.
 END 23
 BEGIN 24
   Calculated

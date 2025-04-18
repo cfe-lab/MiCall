@@ -859,7 +859,7 @@ BEGIN 51
   the
   score
   of
-  35309.64287632299.
+  35235.917868750534.
 END 51
 BEGIN 52
   Contig
@@ -931,7 +931,7 @@ BEGIN 56
   the
   score
   of
-  35309.64287632299.
+  35235.917868750534.
 END 56
 BEGIN 57
   Contig

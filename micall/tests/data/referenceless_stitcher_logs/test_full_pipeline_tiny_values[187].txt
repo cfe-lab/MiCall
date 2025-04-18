@@ -200,7 +200,7 @@ BEGIN 14
   the
   score
   of
-  33007.3702085466.
+  32928.581767270356.
 END 14
 BEGIN 15
   Contig

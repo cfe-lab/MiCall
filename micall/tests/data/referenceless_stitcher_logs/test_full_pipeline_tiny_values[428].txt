@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  40223.91807160999.
+  40159.09700923526.
 END 6
 BEGIN 7
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  40223.91807160999.
+  40159.09700923526.
 END 14
 BEGIN 15
   Contig

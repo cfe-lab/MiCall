@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  37512.68344930028.
+  37443.23319436106.
 END 15
 BEGIN 16
   Contig
@@ -465,7 +465,7 @@ BEGIN 29
   the
   score
   of
-  37512.68344930028.
+  37443.23319436106.
 END 29
 BEGIN 30
   Contig
@@ -592,7 +592,7 @@ BEGIN 37
   the
   score
   of
-  37512.68344930028.
+  37443.23319436106.
 END 37
 BEGIN 38
   Contig
@@ -719,7 +719,7 @@ BEGIN 45
   the
   score
   of
-  37512.68344930028.
+  37443.23319436106.
 END 45
 BEGIN 46
   Contig
@@ -764,7 +764,7 @@ BEGIN 48
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 48
 BEGIN 49
   Contig
@@ -836,7 +836,7 @@ BEGIN 53
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 53
 BEGIN 54
   Contig

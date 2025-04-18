@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  39513.80608376162.
+  39447.83293468307.
 END 6
 BEGIN 7
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  39513.80608376162.
+  39447.83293468307.
 END 14
 BEGIN 15
   Contig

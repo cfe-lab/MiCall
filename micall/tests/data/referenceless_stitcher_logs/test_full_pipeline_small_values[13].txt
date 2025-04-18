@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  28672.36940598972.
+  28581.90192526398.
 END 12
 BEGIN 13
   Contig
@@ -218,7 +218,7 @@ BEGIN 15
   the
   score
   of
-  -6978.210646721212.
+  -7001.593747518561.
 END 15
 BEGIN 16
   Calculated
@@ -255,7 +255,7 @@ BEGIN 17
   the
   score
   of
-  -8660.825529124713.
+  -8680.929635478145.
 END 17
 BEGIN 18
   Cycle
@@ -374,7 +374,7 @@ BEGIN 24
   the
   score
   of
-  28672.36940598972.
+  28581.90192526398.
 END 24
 BEGIN 25
   Contig
@@ -419,7 +419,7 @@ BEGIN 27
   the
   score
   of
-  -6978.210646721212.
+  -7001.593747518561.
 END 27
 BEGIN 28
   Calculated
@@ -501,7 +501,7 @@ BEGIN 32
   the
   score
   of
-  28672.36940598972.
+  28581.90192526398.
 END 32
 BEGIN 33
   Contig

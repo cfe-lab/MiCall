@@ -465,7 +465,7 @@ BEGIN 29
   the
   score
   of
-  -11083.815274805189.
+  -11099.47715412794.
 END 29
 BEGIN 30
   Contig
@@ -510,7 +510,7 @@ BEGIN 32
   the
   score
   of
-  -10787.08352308377.
+  -10803.118128615137.
 END 32
 BEGIN 33
   Calculated

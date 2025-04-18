@@ -100,7 +100,7 @@ BEGIN 8
   the
   score
   of
-  -9171.646356510313.
+  -9190.509380398153.
 END 8
 BEGIN 9
   Constructed
@@ -220,7 +220,7 @@ BEGIN 16
   the
   score
   of
-  -9171.646356510313.
+  -9190.509380398153.
 END 16
 BEGIN 17
   Calculated

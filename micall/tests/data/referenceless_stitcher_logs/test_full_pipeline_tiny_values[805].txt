@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  -5744.54718856782.
+  -5768.660993712263.
 END 9
 BEGIN 10
   Cycle
@@ -182,7 +182,7 @@ BEGIN 13
   the
   score
   of
-  -8932.272796096782.
+  -8951.370507484546.
 END 13
 BEGIN 14
   Contig

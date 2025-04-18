@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  33900.656228952605.
+  33823.91222611655.
 END 6
 BEGIN 7
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  33900.656228952605.
+  33823.91222611655.
 END 14
 BEGIN 15
   Contig

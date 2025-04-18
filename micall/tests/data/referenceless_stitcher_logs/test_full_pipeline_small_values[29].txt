@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 15
 BEGIN 16
   Contig
@@ -273,7 +273,7 @@ BEGIN 18
   the
   score
   of
-  -9023.791386656663.
+  -9043.066809899277.
 END 18
 BEGIN 19
   Cycle
@@ -392,7 +392,7 @@ BEGIN 25
   the
   score
   of
-  30839.532547611536.
+  30755.302881579475.
 END 25
 BEGIN 26
   Contig
@@ -437,7 +437,7 @@ BEGIN 28
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 28
 BEGIN 29
   Contig
@@ -564,7 +564,7 @@ BEGIN 36
   the
   score
   of
-  30839.532547611536.
+  30755.302881579475.
 END 36
 BEGIN 37
   Contig
@@ -609,7 +609,7 @@ BEGIN 39
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 39
 BEGIN 40
   Contig
@@ -654,7 +654,7 @@ BEGIN 42
   the
   score
   of
-  28672.36940598972.
+  28581.90192526398.
 END 42
 BEGIN 43
   Contig
@@ -726,7 +726,7 @@ BEGIN 47
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 47
 BEGIN 48
   Contig
@@ -771,7 +771,7 @@ BEGIN 50
   the
   score
   of
-  28672.36940598972.
+  28581.90192526398.
 END 50
 BEGIN 51
   Contig
@@ -843,7 +843,7 @@ BEGIN 55
   the
   score
   of
-  28672.36940598972.
+  28581.90192526398.
 END 55
 BEGIN 56
   Contig

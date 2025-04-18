@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  33667.878787878784.
+  33590.61224514467.
 END 9
 BEGIN 10
   Contig
@@ -163,7 +163,7 @@ BEGIN 12
   the
   score
   of
-  -4972.849112825804.
+  -4999.230019199955.
 END 12
 BEGIN 13
   Calculated
@@ -200,7 +200,7 @@ BEGIN 14
   the
   score
   of
-  3214.449130361038.
+  3172.948250635696.
 END 14
 BEGIN 15
   Calculated
@@ -319,7 +319,7 @@ BEGIN 21
   the
   score
   of
-  33667.878787878784.
+  33590.61224514467.
 END 21
 BEGIN 22
   Contig
@@ -364,7 +364,7 @@ BEGIN 24
   the
   score
   of
-  -4972.849112825804.
+  -4999.230019199955.
 END 24
 BEGIN 25
   Calculated
@@ -401,7 +401,7 @@ BEGIN 26
   the
   score
   of
-  3214.449130361038.
+  3172.948250635696.
 END 26
 BEGIN 27
   Contig
@@ -528,7 +528,7 @@ BEGIN 34
   the
   score
   of
-  33667.878787878784.
+  33590.61224514467.
 END 34
 BEGIN 35
   Contig
@@ -573,7 +573,7 @@ BEGIN 37
   the
   score
   of
-  -4972.849112825804.
+  -4999.230019199955.
 END 37
 BEGIN 38
   Calculated
@@ -610,7 +610,7 @@ BEGIN 39
   the
   score
   of
-  3214.449130361038.
+  3172.948250635696.
 END 39
 BEGIN 40
   Contig
@@ -682,7 +682,7 @@ BEGIN 44
   the
   score
   of
-  -4972.849112825804.
+  -4999.230019199955.
 END 44
 BEGIN 45
   Calculated
@@ -719,7 +719,7 @@ BEGIN 46
   the
   score
   of
-  3214.449130361038.
+  3172.948250635696.
 END 46
 BEGIN 47
   Contig
@@ -791,7 +791,7 @@ BEGIN 51
   the
   score
   of
-  -4972.849112825804.
+  -4999.230019199955.
 END 51
 BEGIN 52
   Constructed
@@ -909,7 +909,7 @@ BEGIN 61
   the
   score
   of
-  -4972.849112825804.
+  -4999.230019199955.
 END 61
 BEGIN 62
   Outputting

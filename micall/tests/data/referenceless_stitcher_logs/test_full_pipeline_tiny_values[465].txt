@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  -9207.298593424195.
+  -9226.221547575356.
 END 7
 BEGIN 8
   Constructed
@@ -182,7 +182,7 @@ BEGIN 14
   the
   score
   of
-  -9207.298593424195.
+  -9226.221547575356.
 END 14
 BEGIN 15
   Calculated
@@ -219,7 +219,7 @@ BEGIN 16
   the
   score
   of
-  28781.870406215792.
+  28691.739949910818.
 END 16
 BEGIN 17
   Contig

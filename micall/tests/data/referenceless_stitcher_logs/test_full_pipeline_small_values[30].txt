@@ -584,7 +584,7 @@ BEGIN 36
   the
   score
   of
-  36535.603799143566.
+  36464.32000559458.
 END 36
 BEGIN 37
   Contig
@@ -629,7 +629,7 @@ BEGIN 39
   the
   score
   of
-  25477.348800851614.
+  25375.818922871225.
 END 39
 BEGIN 40
   Contig
@@ -701,7 +701,7 @@ BEGIN 44
   the
   score
   of
-  25477.348800851614.
+  25375.818922871225.
 END 44
 BEGIN 45
   Contig

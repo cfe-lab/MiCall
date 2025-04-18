@@ -831,7 +831,7 @@ BEGIN 50
   the
   score
   of
-  33433.48078265181.
+  33355.680879318505.
 END 50
 BEGIN 51
   Contig

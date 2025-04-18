@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  -9357.618579495465.
+  -9376.24033614818.
 END 7
 BEGIN 8
   Constructed
@@ -182,7 +182,7 @@ BEGIN 14
   the
   score
   of
-  -9357.618579495465.
+  -9376.24033614818.
 END 14
 BEGIN 15
   Calculated

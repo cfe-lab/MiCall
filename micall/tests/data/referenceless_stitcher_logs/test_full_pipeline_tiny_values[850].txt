@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  35664.21776169561.
+  35591.215707014955.
 END 6
 BEGIN 7
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  35664.21776169561.
+  35591.215707014955.
 END 14
 BEGIN 15
   Contig

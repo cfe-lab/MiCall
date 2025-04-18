@@ -283,7 +283,7 @@ BEGIN 18
   the
   score
   of
-  -7343.193992105752.
+  -7366.119589711335.
 END 18
 BEGIN 19
   Cycle
@@ -512,7 +512,7 @@ BEGIN 31
   the
   score
   of
-  -7343.193992105752.
+  -7366.119589711335.
 END 31
 BEGIN 32
   Cycle
@@ -686,7 +686,7 @@ BEGIN 41
   the
   score
   of
-  -7343.193992105752.
+  -7366.119589711335.
 END 41
 BEGIN 42
   Cycle

@@ -694,7 +694,7 @@ BEGIN 42
   the
   score
   of
-  30480.43802934679.
+  30395.234343348435.
 END 42
 BEGIN 43
   Contig
@@ -739,7 +739,7 @@ BEGIN 45
   the
   score
   of
-  25539.007468999014.
+  25437.716272549256.
 END 45
 BEGIN 46
   Contig
@@ -811,7 +811,7 @@ BEGIN 50
   the
   score
   of
-  25539.007468999014.
+  25437.716272549256.
 END 50
 BEGIN 51
   Contig

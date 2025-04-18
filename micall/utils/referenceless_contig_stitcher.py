@@ -23,11 +23,10 @@ logger = logging.getLogger(__name__)
 
 @cache
 def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
-    L += 1
     return 1024 * calculate_overlap_score(L=L, M=M)
 
 
-ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=10, M=10)
+ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=11, M=10)
 MAX_ALTERNATIVES = 30
 
 
@@ -252,7 +251,7 @@ def try_combine_contigs(is_debug2: bool,
 
     maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
-    maximum_result_score = calculate_referenceless_overlap_score(L=maximum_overlap_size, M=maximum_number_of_matches)
+    maximum_result_score = calculate_referenceless_overlap_score(L=maximum_overlap_size+1, M=maximum_number_of_matches)
     if maximum_result_score < minimum_base_score:
         return None
 
@@ -262,7 +261,7 @@ def try_combine_contigs(is_debug2: bool,
 
     optimistic_overlap_size = overlap.size
     optimistic_number_of_matches = optimistic_overlap_size
-    optimistic_result_score = calculate_referenceless_overlap_score(L=optimistic_overlap_size, M=optimistic_number_of_matches)
+    optimistic_result_score = calculate_referenceless_overlap_score(L=optimistic_overlap_size+1, M=optimistic_number_of_matches)
     if optimistic_result_score < minimum_base_score:
         return None
 
@@ -280,7 +279,7 @@ def try_combine_contigs(is_debug2: bool,
 
     assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size}"
     assert len(left_initial_overlap) == overlap.size, f"{len(left_initial_overlap)} == {overlap.size}"
-    assert calculate_referenceless_overlap_score(L=len(left_initial_overlap), M=len(left_initial_overlap)) >= minimum_base_score
+    assert calculate_referenceless_overlap_score(L=len(left_initial_overlap)+1, M=len(left_initial_overlap)) >= minimum_base_score
 
     cutoffs = find_overlap_cutoffs(minimum_base_score,
                                    left, right, shift,
@@ -312,7 +311,7 @@ def try_combine_contigs(is_debug2: bool,
         covered_overlap = covered.seq
         bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
         aligned_1, aligned_2 = align_overlaps(covered_overlap, bigger_overlap)
-        result_length = max(len(bigger_overlap), len(covered_overlap)) # NOTE: bigger_overlap is not always bigger than covered_overlap.
+        result_length = max(len(bigger_overlap), len(covered_overlap)) + 2
 
     else:
         left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
@@ -320,7 +319,7 @@ def try_combine_contigs(is_debug2: bool,
         right_overlap = right.seq[:right_cutoff]
         right_remainder = right.seq[right_cutoff:]
         aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
-        result_length = max(len(left_overlap), len(right_overlap)) # TODO: take len(aligned_1) to be the result_length.
+        result_length = max(len(left_overlap), len(right_overlap)) + 1
 
     assert result_length > 0, "The overlap cannot be empty."
     number_of_matches = sum(1 for x, y
@@ -331,7 +330,9 @@ def try_combine_contigs(is_debug2: bool,
     # The addition would give a more precise value for the result_score, but it's much more expensive to calculate.
     result_score = calculate_referenceless_overlap_score(L=result_length, M=number_of_matches)
     if is_debug2:
-        log(events.DeterminedOverlap(left.unique_name, right.unique_name, result_length, number_of_matches, result_score))
+        log(events.DeterminedOverlap(left.unique_name, right.unique_name,
+                                     result_length - is_covered - 1,
+                                     number_of_matches, result_score))
 
     if result_score < minimum_base_score:
         return None

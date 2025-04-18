@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  40380.024937874485.
+  40315.4517980478.
 END 9
 BEGIN 10
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  40380.024937874485.
+  40315.4517980478.
 END 14
 BEGIN 15
   Contig

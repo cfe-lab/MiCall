@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 12
 BEGIN 13
   Contig
@@ -355,7 +355,7 @@ BEGIN 23
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 23
 BEGIN 24
   Contig
@@ -537,7 +537,7 @@ BEGIN 34
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 34
 BEGIN 35
   Contig
@@ -719,7 +719,7 @@ BEGIN 45
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 45
 BEGIN 46
   Contig
@@ -791,7 +791,7 @@ BEGIN 50
   the
   score
   of
-  31144.032847573195.
+  31060.6119950054.
 END 50
 BEGIN 51
   Contig

@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  30377.059983830914.
+  30291.571741828582.
 END 15
 BEGIN 16
   Contig
@@ -410,7 +410,7 @@ BEGIN 26
   the
   score
   of
-  30377.059983830914.
+  30291.571741828582.
 END 26
 BEGIN 27
   Contig
@@ -592,7 +592,7 @@ BEGIN 37
   the
   score
   of
-  30377.059983830914.
+  30291.571741828582.
 END 37
 BEGIN 38
   Contig
@@ -637,7 +637,7 @@ BEGIN 40
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 40
 BEGIN 41
   Contig
@@ -709,7 +709,7 @@ BEGIN 45
   the
   score
   of
-  30377.059983830914.
+  30291.571741828582.
 END 45
 BEGIN 46
   Contig
@@ -754,7 +754,7 @@ BEGIN 48
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 48
 BEGIN 49
   Contig
@@ -826,7 +826,7 @@ BEGIN 53
   the
   score
   of
-  29053.81758361613.
+  28964.513482102575.
 END 53
 BEGIN 54
   Contig

@@ -228,7 +228,7 @@ BEGIN 15
   the
   score
   of
-  26918.209779619967.
+  26821.98226590206.
 END 15
 BEGIN 16
   Contig
@@ -465,7 +465,7 @@ BEGIN 29
   the
   score
   of
-  26918.209779619967.
+  26821.98226590206.
 END 29
 BEGIN 30
   Contig
@@ -647,7 +647,7 @@ BEGIN 40
   the
   score
   of
-  26918.209779619967.
+  26821.98226590206.
 END 40
 BEGIN 41
   Contig
@@ -829,7 +829,7 @@ BEGIN 51
   the
   score
   of
-  26918.209779619967.
+  26821.98226590206.
 END 51
 BEGIN 52
   Contig
@@ -901,7 +901,7 @@ BEGIN 56
   the
   score
   of
-  26918.209779619967.
+  26821.98226590206.
 END 56
 BEGIN 57
   Contig

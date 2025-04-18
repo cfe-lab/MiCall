@@ -163,7 +163,7 @@ BEGIN 12
   the
   score
   of
-  -9693.42024458319.
+  -9711.328374722367.
 END 12
 BEGIN 13
   Contig

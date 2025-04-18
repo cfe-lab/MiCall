@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  -8082.227489076584.
+  -8103.009142734776.
 END 6
 BEGIN 7
   Calculated
@@ -182,7 +182,7 @@ BEGIN 13
   the
   score
   of
-  -8082.227489076584.
+  -8103.009142734776.
 END 13
 BEGIN 14
   Contig
