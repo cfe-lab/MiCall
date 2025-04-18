@@ -246,34 +246,34 @@ BEGIN 17
   overlap
   of
   size
-  263
+  259
   between
   contigs
-  'r126-614.3'
-  and
   'r615-877.2'
+  and
+  'r126-614.3'
   to
   be
-  (12,
-  275).
+  (262,
+  5).
 END 17
 BEGIN 18
   Overlap
   between
   contigs
-  'r126-614.3'
-  and
   'r615-877.2'
+  and
+  'r126-614.3'
   has
   size
-  263,
-  4
+  5,
+  1
   matches,
   and
   the
   score
   of
-  -9043.066809899277.
+  -482.7182292900165.
 END 18
 BEGIN 19
   Cycle
