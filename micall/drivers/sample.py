@@ -421,7 +421,7 @@ class Sample:
                Path(self.trimmed2_fastq),
                Path(self.unstitched_contigs_fasta),
                Path(self.scratch_path),
-               Path(self.merged_contigs_csv),
+               None,
                )
 
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
