@@ -67,7 +67,7 @@ RUN apt-get install -y build-essential sudo git ronn cmake && \
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools
 
 ## Install just the dependencies of MiCall (for faster build times in development).
 COPY pyproject.toml README.md /opt/micall/

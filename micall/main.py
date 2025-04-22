@@ -88,6 +88,9 @@ EXECUTABLES = [
     "micall/monitor/update_qai.py",
     "micall/monitor/micall_watcher.py",
     "micall/tcr/igblast.py",
+    "micall/utils/fasta_to_fastq.py",
+    "micall/utils/append_primers.py",
+    "micall/utils/randomize_fastq.py",
 ]
 
 

@@ -2,6 +2,7 @@
 title: Steps and their input / output files
 subtitle: Where the data goes
 ---
+
 Individual files are described after the list of steps.
 
 * `micall_basespace.summarize_run`: extract phiX error rates from MiSeq data.
@@ -131,6 +132,7 @@ Individual files are described after the list of steps.
 [genome coverage]: genome_coverage.md
 
 ## File descriptions ##
+
 * aligned.csv and g2p_aligned.csv
   * refname - seed reference the reads mapped to
   * qcut - minimum Phred quality score to include a nucleotide

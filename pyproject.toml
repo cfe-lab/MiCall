@@ -22,30 +22,31 @@ classifiers = [
 
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
-    "pytz==2024.2",
-    "biopython==1.84",
+    "pytz==2025.2",
+    "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
-    "numpy==2.2.1",
-    "scipy==1.14.1",
-    "matplotlib==3.10.0",
+    "numpy==2.2.4",
+    "scipy==1.15.2",
+    "matplotlib==3.10.1",
     "cutadapt==5.0",
-    "python-Levenshtein==0.26.1",
+    "python-Levenshtein==0.27.1",
     "PyYAML==6.0.2",
-    "reportlab==4.2.5",
-    "pysam==0.22.1",
+    "reportlab==4.4.0",
+    "pysam==0.23.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
-    "mappy==2.28",
+    "mappy==2.29",
     "drawsvg==2.4.0",
     "cairosvg==2.7.1",
     "aligntools==1.2.1",
+    "multicsv==1.0.4",
 ]
 
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest==8.3.4",
-    "coverage==7.6.10",
+    "pytest==8.3.5",
+    "coverage==7.8.0",
     "pandas==2.2.3",
     "seaborn==0.13.2",
     "ete3",
@@ -58,10 +59,10 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.8.5",
-    "mypy==1.14.1",
+    "ruff==0.11.6",
+    "mypy==1.15.0",
     "mypy-extensions==1.0.0",
-    "gprof2dot==2024.6.6",
+    "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
 ]
 denovo = []
@@ -225,7 +226,6 @@ exclude = '''(?x)
     ^micall/utils/sample_fastq[.]py$|
     ^micall/utils/sample_project_summary[.]py$|
     ^micall/utils/samples_from_454[.]py$|
-    ^micall/utils/sample_sheet_parser[.]py$|
     ^micall/utils/scan_run_folders[.]py$|
     ^micall/utils/seed_alignments[.]py$|
     ^micall/utils/spring_beads[.]py$|
