@@ -46,13 +46,14 @@ class SortedRing(Sequence, MutableSet, Generic[T]):
         if self._capacity == self._size and item <= self._data[0]:
             return False
 
-        self._data.add(item)
-        self._size += 1
         # enforce capacity: remove smallest items if over capacity
-        if self._size > self._capacity:
+        if self._size >= self._capacity:
             # remove the smallest element (first in sorted order)
             self._data.pop(0)
             self._size -= 1
+
+        self._data.add(item)
+        self._size += 1
 
         return True
 
