@@ -43,12 +43,11 @@ class SortedRing(Sequence, MutableSet, Generic[T]):
     def insert(self, item: T) -> bool:
         """Insert an item, keep sorted via SortedList, and enforce capacity."""
 
-        if self._capacity == self._size and item <= self._data[0]:
-            return False
-
-        # enforce capacity: remove smallest items if over capacity
         if self._size >= self._capacity:
-            # remove the smallest element (first in sorted order)
+            if item <= self._data[0]:
+                return False
+
+            # enforce capacity: remove the smallest item if over capacity.
             self._data.pop(0)
             self._size -= 1
 
