@@ -17,11 +17,9 @@ T = TypeVar('T')
 
 class SortedRing(Sequence, MutableSet, Generic[T]):
     """
-    A minimal generic sorted ring data structure with optional capacity.
-
-    When a capacity is set, inserting beyond capacity automatically removes
-    the smallest items to maintain the maximum size. This data structure
-    remains generic and unaware of any duplicate-handling logic.
+    A minimal generic sorted ring data structure with fixed capacity.
+    Inserting beyond capacity automatically removes the smallest items
+    to maintain the maximum size.
     """
 
     def __init__(self, capacity: int) -> None:
