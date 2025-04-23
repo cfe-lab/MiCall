@@ -1,3 +1,19 @@
+
+"""
+Test referenceless contig stitcher regression tests.
+
+This module includes tests for the referenceless contig stitcher. Some tests
+produce detailed logs of every action taken by the stitcher and assert an
+exact match against previously recorded outputs. These tests are intentionally
+brittle to catch any behavioural changes from refactoring or other
+non-semantic modifications.
+
+If these brittle tests fail due to unexpected log changes, you may revert
+the logs to their prior state with:
+
+    git checkout HEAD micall/tests/data
+"""
+
 import pytest
 from pathlib import Path
 from typing import Callable, Tuple, Iterator, AbstractSet, Iterable
@@ -142,6 +158,10 @@ def log_check(request, tmp_path: Path):
     It overwrites the expected test results after the first run.
     This way, you will only have to commit them in case that
     the stitcher behaviour is actually supposed to change.
+
+    If this test fails due to unexpected log changes, you may revert the logs with:
+
+        git checkout HEAD micall/tests/data
     """
 
     ReferencelessStitcherContext.set(ReferencelessStitcherContext())
