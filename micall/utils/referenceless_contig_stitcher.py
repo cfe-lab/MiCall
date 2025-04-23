@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from Bio import SeqIO, Seq
 from Bio.SeqRecord import SeqRecord
 import logging
-from sortedcontainers import SortedList
+from micall.utils.sorted_ring import SortedRing
 import itertools
 from functools import cache
 
@@ -37,33 +37,33 @@ def log(e: events.EventType) -> None:
 
 @dataclass
 class Pool:
-    # TODO: Factor out a SortedRing structure out of here.
-    paths: SortedList[ContigsPath]
+    paths: SortedRing[ContigsPath]
     existing: MutableMapping[str, ContigsPath]
-    size: int
-    capacity: int
     smallest_score: Score
 
     @staticmethod
     def empty() -> 'Pool':
-        return Pool(SortedList(), {}, 0, 999999, ACCEPTABLE_STITCHING_SCORE)
+        # initial capacity is large; smallest_score starts at threshold
+        ring: SortedRing[ContigsPath] = SortedRing(capacity=999999)
+        return Pool(ring, {}, ACCEPTABLE_STITCHING_SCORE)
 
     @property
     def min_acceptable_score(self) -> Score:
         return self.smallest_score
 
     def resize(self, new_capacity: int) -> None:
-        if new_capacity < self.size:
-            stop = self.size - new_capacity
-            del self.paths[:stop]
-            self.size = new_capacity
-
-        self.capacity = new_capacity
-
-        if self.size > 0:
+        """
+        Resize the pool to a new capacity, trimming smallest paths if needed.
+        """
+        # adjust underlying sorted ring capacity and trim
+        self.paths.resize(new_capacity)
+        # update smallest acceptable score based on remaining paths
+        if len(self.paths) > 0:
             smallest_path = self.paths[0]
-            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
-                                      smallest_path.score)
+            self.smallest_score = max(
+                ACCEPTABLE_STITCHING_SCORE,
+                smallest_path.score,
+            )
         else:
             self.smallest_score = ACCEPTABLE_STITCHING_SCORE
 
@@ -73,25 +73,33 @@ class Pool:
         if alternative is not None and alternative.get_score() >= path.get_score():
             return False
 
-        if self.size > 0:
+        current_size = len(self.paths)
+        # if pool not empty, enforce capacity and update score
+        if current_size > 0:
             smallest_path = self.paths[0]
-            if self.size >= self.capacity:
+            cap = self.paths.capacity
+            if cap is not None and current_size >= cap:
+                # full; reject if new path is worse than current smallest
                 if smallest_path.get_score() >= path.get_score():
                     return False
+                # remove the smallest path to make room
+                self.paths.pop_smallest()
 
-                del self.paths[0]
-                self.size -= 1
-
-            if path.get_score() < smallest_path.get_score():
-                smallest_path = path
-
-            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
-                                      smallest_path.score)
+            # compute new smallest_score candidate
+            new_smallest = (path if path.get_score() < smallest_path.get_score()
+                            else smallest_path)
+            self.smallest_score = max(
+                ACCEPTABLE_STITCHING_SCORE,
+                new_smallest.score,
+            )
         else:
-            self.smallest_score = max(ACCEPTABLE_STITCHING_SCORE,
-                                      path.get_score())
+            # first insertion sets smallest_score
+            self.smallest_score = max(
+                ACCEPTABLE_STITCHING_SCORE,
+                path.get_score(),
+            )
 
-        self.size += 1
+        # insert the new path and record it
         self.paths.add(path)
         self.existing[key] = path
         return True
@@ -410,18 +418,22 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
     pool.resize(MAX_ALTERNATIVES)
 
     for path in sorted(paths):
-        if pool.size >= pool.capacity:
+        # stop if we reached capacity
+        cap = pool.paths.capacity
+        if cap is not None and len(pool.paths) >= cap:
             break
         pool.add(path)
 
     log(events.CalculatingAll())
     for cycle in itertools.count(1):
-        log(events.CycleStart(cycle, pool.size))
+        # log start with current pool size
+        log(events.CycleStart(cycle, len(pool.paths)))
 
         if not calc_multiple_extensions(is_debug2, pool, pool.paths, contigs):
             break
 
-        log(events.CycleEnd(cycle, pool.size, pool))
+        # log end with updated pool size
+        log(events.CycleEnd(cycle, len(pool.paths), pool))
 
     return pool.paths
 
