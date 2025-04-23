@@ -61,8 +61,7 @@ class Pool:
         # if pool not empty, enforce capacity and update score
         if current_size > 0:
             smallest_path = self.paths[0]
-            cap = self.paths.capacity
-            if cap is not None and current_size >= cap:
+            if current_size >= self.paths.capacity:
                 # full; reject if new path is worse than current smallest
                 if smallest_path.get_score() >= path.get_score():
                     return False
@@ -401,8 +400,7 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
     pool = Pool.empty(MAX_ALTERNATIVES)
     for path in sorted(paths):
         # stop if we reached capacity
-        cap = pool.paths.capacity
-        if cap is not None and len(pool.paths) >= cap:
+        if len(pool.paths) >= pool.paths.capacity:
             break
         pool.add(path)
 
