@@ -42,30 +42,14 @@ class Pool:
     smallest_score: Score
 
     @staticmethod
-    def empty() -> 'Pool':
+    def empty(capacity: int) -> 'Pool':
         # initial capacity is large; smallest_score starts at threshold
-        ring: SortedRing[ContigsPath] = SortedRing(capacity=999999)
+        ring: SortedRing[ContigsPath] = SortedRing(capacity=capacity)
         return Pool(ring, {}, ACCEPTABLE_STITCHING_SCORE)
 
     @property
     def min_acceptable_score(self) -> Score:
         return self.smallest_score
-
-    def resize(self, new_capacity: int) -> None:
-        """
-        Resize the pool to a new capacity, trimming smallest paths if needed.
-        """
-        # adjust underlying sorted ring capacity and trim
-        self.paths.resize(new_capacity)
-        # update smallest acceptable score based on remaining paths
-        if len(self.paths) > 0:
-            smallest_path = self.paths[0]
-            self.smallest_score = max(
-                ACCEPTABLE_STITCHING_SCORE,
-                smallest_path.score,
-            )
-        else:
-            self.smallest_score = ACCEPTABLE_STITCHING_SCORE
 
     def add(self, path: ContigsPath) -> bool:
         key = path.whole.seq
@@ -414,9 +398,7 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
                         ) -> Iterable[ContigsPath]:
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
 
-    pool = Pool.empty()
-    pool.resize(MAX_ALTERNATIVES)
-
+    pool = Pool.empty(MAX_ALTERNATIVES)
     for path in sorted(paths):
         # stop if we reached capacity
         cap = pool.paths.capacity
@@ -484,7 +466,7 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
             if first.id >= second.id:
                 continue
 
-            pool = Pool.empty()
+            pool = Pool.empty(MAX_ALTERNATIVES)
             result = try_combine_contigs(is_debug2=is_debug2,
                                          current_score=SCORE_NOTHING,
                                          pool=pool,
