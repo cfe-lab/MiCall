@@ -91,61 +91,6 @@ BEGIN 8
   overlap
   of
   size
-  86
-  between
-  contigs
-  'r183-519.0'
-  and
-  'r434-966.1'
-  to
-  be
-  (251,
-  86).
-END 8
-BEGIN 9
-  Overlap
-  between
-  contigs
-  'r183-519.0'
-  and
-  'r434-966.1'
-  has
-  size
-  86,
-  86
-  matches,
-  and
-  the
-  score
-  of
-  16289.690252459462.
-END 9
-BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  86
-  between
-  contigs
-  'r183-519.0'
-  and
-  'r434-966.1',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
   284
   between
   contigs
@@ -156,8 +101,8 @@ BEGIN 11
   be
   (226,
   510).
-END 11
-BEGIN 12
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -174,106 +119,16 @@ BEGIN 12
   score
   of
   29714.966051792948.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Contig
   'r434-966.1'
   covers
   contig
   'r660-943.4'
   completely.
-END 13
-BEGIN 14
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  229
-  between
-  contigs
-  'r434-966.1'
-  and
-  'r585-813.2'
-  to
-  be
-  (151,
-  380).
-END 14
-BEGIN 15
-  Overlap
-  between
-  contigs
-  'r434-966.1'
-  and
-  'r585-813.2'
-  has
-  size
-  229,
-  229
-  matches,
-  and
-  the
-  score
-  of
-  26645.502250616148.
-END 15
-BEGIN 16
-  Contig
-  'r434-966.1'
-  covers
-  contig
-  'r585-813.2'
-  completely.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  206
-  between
-  contigs
-  'r434-966.1'
-  and
-  'r678-883.5'
-  to
-  be
-  (244,
-  450).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r434-966.1'
-  and
-  'r678-883.5'
-  has
-  size
-  206,
-  206
-  matches,
-  and
-  the
-  score
-  of
-  25251.56934244702.
-END 18
-BEGIN 19
-  Contig
-  'r434-966.1'
-  covers
-  contig
-  'r678-883.5'
-  completely.
-END 19
-BEGIN 20
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -291,16 +146,16 @@ BEGIN 20
   of
   6
   parts.
-END 20
-BEGIN 21
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 21
-BEGIN 22
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -318,8 +173,8 @@ BEGIN 22
   be
   (98,
   239).
-END 22
-BEGIN 23
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -336,8 +191,8 @@ BEGIN 23
   score
   of
   27324.15440025343.
-END 23
-BEGIN 24
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -353,9 +208,9 @@ BEGIN 24
   resulting
   in
   contig
-  (3).
-END 24
-BEGIN 25
+  (2).
+END 15
+BEGIN 16
   Calculated
   cutoff
   for
@@ -373,8 +228,8 @@ BEGIN 25
   be
   (379,
   663).
-END 25
-BEGIN 26
+END 16
+BEGIN 17
   Overlap
   between
   contigs
@@ -391,106 +246,16 @@ BEGIN 26
   score
   of
   29714.966051792948.
-END 26
-BEGIN 27
+END 17
+BEGIN 18
   Contig
   (1)
   covers
   contig
   'r660-943.4'
   completely.
-END 27
-BEGIN 28
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  229
-  between
-  contigs
-  (1)
-  and
-  'r585-813.2'
-  to
-  be
-  (304,
-  533).
-END 28
-BEGIN 29
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r585-813.2'
-  has
-  size
-  229,
-  229
-  matches,
-  and
-  the
-  score
-  of
-  26645.502250616148.
-END 29
-BEGIN 30
-  Contig
-  (1)
-  covers
-  contig
-  'r585-813.2'
-  completely.
-END 30
-BEGIN 31
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  206
-  between
-  contigs
-  (1)
-  and
-  'r678-883.5'
-  to
-  be
-  (397,
-  603).
-END 31
-BEGIN 32
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r678-883.5'
-  has
-  size
-  206,
-  206
-  matches,
-  and
-  the
-  score
-  of
-  25251.56934244702.
-END 32
-BEGIN 33
-  Contig
-  (1)
-  covers
-  contig
-  'r678-883.5'
-  completely.
-END 33
-BEGIN 34
+END 18
+BEGIN 19
   Cycle
   2
   finished
@@ -508,16 +273,16 @@ BEGIN 34
   of
   6
   parts.
-END 34
-BEGIN 35
+END 19
+BEGIN 20
   Cycle
   3
   started
   with
   1
   paths
-END 35
-BEGIN 36
+END 20
+BEGIN 21
   Calculated
   cutoff
   for
@@ -528,19 +293,19 @@ BEGIN 36
   284
   between
   contigs
-  (3)
+  (2)
   and
   'r660-943.4'
   to
   be
   (477,
   761).
-END 36
-BEGIN 37
+END 21
+BEGIN 22
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r660-943.4'
   has
@@ -553,16 +318,16 @@ BEGIN 37
   score
   of
   29714.966051792948.
-END 37
-BEGIN 38
+END 22
+BEGIN 23
   Contig
-  (3)
+  (2)
   covers
   contig
   'r660-943.4'
   completely.
-END 38
-BEGIN 39
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -573,19 +338,19 @@ BEGIN 39
   229
   between
   contigs
-  (3)
+  (2)
   and
   'r585-813.2'
   to
   be
   (402,
   631).
-END 39
-BEGIN 40
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r585-813.2'
   has
@@ -598,16 +363,16 @@ BEGIN 40
   score
   of
   26645.502250616148.
-END 40
-BEGIN 41
+END 25
+BEGIN 26
   Contig
-  (3)
+  (2)
   covers
   contig
   'r585-813.2'
   completely.
-END 41
-BEGIN 42
+END 26
+BEGIN 27
   Calculated
   cutoff
   for
@@ -618,19 +383,19 @@ BEGIN 42
   206
   between
   contigs
-  (3)
+  (2)
   and
   'r678-883.5'
   to
   be
   (495,
   701).
-END 42
-BEGIN 43
+END 27
+BEGIN 28
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r678-883.5'
   has
@@ -643,16 +408,16 @@ BEGIN 43
   score
   of
   25251.56934244702.
-END 43
-BEGIN 44
+END 28
+BEGIN 29
   Contig
-  (3)
+  (2)
   covers
   contig
   'r678-883.5'
   completely.
-END 44
-BEGIN 45
+END 29
+BEGIN 30
   Cycle
   3
   finished
@@ -670,16 +435,16 @@ BEGIN 45
   of
   6
   parts.
-END 45
-BEGIN 46
+END 30
+BEGIN 31
   Cycle
   4
   started
   with
   1
   paths
-END 46
-BEGIN 47
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -690,19 +455,19 @@ BEGIN 47
   229
   between
   contigs
-  (3)
+  (2)
   and
   'r585-813.2'
   to
   be
   (402,
   631).
-END 47
-BEGIN 48
+END 32
+BEGIN 33
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r585-813.2'
   has
@@ -715,16 +480,16 @@ BEGIN 48
   score
   of
   26645.502250616148.
-END 48
-BEGIN 49
+END 33
+BEGIN 34
   Contig
-  (3)
+  (2)
   covers
   contig
   'r585-813.2'
   completely.
-END 49
-BEGIN 50
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -735,19 +500,19 @@ BEGIN 50
   206
   between
   contigs
-  (3)
+  (2)
   and
   'r678-883.5'
   to
   be
   (495,
   701).
-END 50
-BEGIN 51
+END 35
+BEGIN 36
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r678-883.5'
   has
@@ -760,16 +525,16 @@ BEGIN 51
   score
   of
   25251.56934244702.
-END 51
-BEGIN 52
+END 36
+BEGIN 37
   Contig
-  (3)
+  (2)
   covers
   contig
   'r678-883.5'
   completely.
-END 52
-BEGIN 53
+END 37
+BEGIN 38
   Cycle
   4
   finished
@@ -787,16 +552,16 @@ BEGIN 53
   of
   6
   parts.
-END 53
-BEGIN 54
+END 38
+BEGIN 39
   Cycle
   5
   started
   with
   1
   paths
-END 54
-BEGIN 55
+END 39
+BEGIN 40
   Calculated
   cutoff
   for
@@ -807,19 +572,19 @@ BEGIN 55
   206
   between
   contigs
-  (3)
+  (2)
   and
   'r678-883.5'
   to
   be
   (495,
   701).
-END 55
-BEGIN 56
+END 40
+BEGIN 41
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r678-883.5'
   has
@@ -832,16 +597,16 @@ BEGIN 56
   score
   of
   25251.56934244702.
-END 56
-BEGIN 57
+END 41
+BEGIN 42
   Contig
-  (3)
+  (2)
   covers
   contig
   'r678-883.5'
   completely.
-END 57
-BEGIN 58
+END 42
+BEGIN 43
   Cycle
   5
   finished
@@ -859,24 +624,24 @@ BEGIN 58
   of
   6
   parts.
-END 58
-BEGIN 59
+END 43
+BEGIN 44
   Cycle
   6
   started
   with
   1
   paths
-END 59
-BEGIN 60
+END 44
+BEGIN 45
   Constructed
   a
   path
   of
   length
   784.
-END 60
-BEGIN 61
+END 45
+BEGIN 46
   Removed
   6
   components
@@ -889,17 +654,17 @@ BEGIN 61
   still
   to
   process.
-END 61
-BEGIN 62
+END 46
+BEGIN 47
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 62
-BEGIN 63
+END 47
+BEGIN 48
   Outputting
   1
   contigs.
-END 63
+END 48

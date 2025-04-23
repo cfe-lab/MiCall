@@ -221,161 +221,6 @@ BEGIN 15
   (3).
 END 15
 BEGIN 16
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  350
-  between
-  contigs
-  (2)
-  and
-  'r308-709.0'
-  to
-  be
-  (271,
-  350).
-END 16
-BEGIN 17
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r308-709.0'
-  has
-  size
-  350,
-  350
-  matches,
-  and
-  the
-  score
-  of
-  33102.535443357316.
-END 17
-BEGIN 18
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  350
-  between
-  contigs
-  (2)
-  and
-  'r308-709.0',
-  resulting
-  in
-  contig
-  (4).
-END 18
-BEGIN 19
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  374
-  between
-  contigs
-  (2)
-  and
-  'r278-651.1'
-  to
-  be
-  (241,
-  615).
-END 19
-BEGIN 20
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r278-651.1'
-  has
-  size
-  374,
-  374
-  matches,
-  and
-  the
-  score
-  of
-  34147.85506695492.
-END 20
-BEGIN 21
-  Contig
-  (2)
-  covers
-  contig
-  'r278-651.1'
-  completely.
-END 21
-BEGIN 22
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  212
-  between
-  contigs
-  (2)
-  and
-  'r446-755.2'
-  to
-  be
-  (409,
-  212).
-END 22
-BEGIN 23
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r446-755.2'
-  has
-  size
-  212,
-  212
-  matches,
-  and
-  the
-  score
-  of
-  25723.096847465706.
-END 23
-BEGIN 24
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  212
-  between
-  contigs
-  (2)
-  and
-  'r446-755.2',
-  resulting
-  in
-  contig
-  (5).
-END 24
-BEGIN 25
   Cycle
   2
   finished
@@ -393,16 +238,16 @@ BEGIN 25
   of
   6
   parts.
-END 25
-BEGIN 26
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths
-END 26
-BEGIN 27
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -420,8 +265,8 @@ BEGIN 27
   be
   (271,
   673).
-END 27
-BEGIN 28
+END 18
+BEGIN 19
   Overlap
   between
   contigs
@@ -438,16 +283,16 @@ BEGIN 28
   score
   of
   35414.012288214886.
-END 28
-BEGIN 29
+END 19
+BEGIN 20
   Contig
   (3)
   covers
   contig
   'r308-709.0'
   completely.
-END 29
-BEGIN 30
+END 20
+BEGIN 21
   Calculated
   cutoff
   for
@@ -465,8 +310,8 @@ BEGIN 30
   be
   (241,
   615).
-END 30
-BEGIN 31
+END 21
+BEGIN 22
   Overlap
   between
   contigs
@@ -483,16 +328,16 @@ BEGIN 31
   score
   of
   34147.85506695492.
-END 31
-BEGIN 32
+END 22
+BEGIN 23
   Contig
   (3)
   covers
   contig
   'r278-651.1'
   completely.
-END 32
-BEGIN 33
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -510,8 +355,8 @@ BEGIN 33
   be
   (409,
   719).
-END 33
-BEGIN 34
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -528,16 +373,16 @@ BEGIN 34
   score
   of
   31060.6119950054.
-END 34
-BEGIN 35
+END 25
+BEGIN 26
   Contig
   (3)
   covers
   contig
   'r446-755.2'
   completely.
-END 35
-BEGIN 36
+END 26
+BEGIN 27
   Cycle
   3
   finished
@@ -555,16 +400,16 @@ BEGIN 36
   of
   6
   parts.
-END 36
-BEGIN 37
+END 27
+BEGIN 28
   Cycle
   4
   started
   with
   1
   paths
-END 37
-BEGIN 38
+END 28
+BEGIN 29
   Calculated
   cutoff
   for
@@ -582,8 +427,8 @@ BEGIN 38
   be
   (241,
   615).
-END 38
-BEGIN 39
+END 29
+BEGIN 30
   Overlap
   between
   contigs
@@ -600,16 +445,16 @@ BEGIN 39
   score
   of
   34147.85506695492.
-END 39
-BEGIN 40
+END 30
+BEGIN 31
   Contig
   (3)
   covers
   contig
   'r278-651.1'
   completely.
-END 40
-BEGIN 41
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -627,8 +472,8 @@ BEGIN 41
   be
   (409,
   719).
-END 41
-BEGIN 42
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -645,16 +490,16 @@ BEGIN 42
   score
   of
   31060.6119950054.
-END 42
-BEGIN 43
+END 33
+BEGIN 34
   Contig
   (3)
   covers
   contig
   'r446-755.2'
   completely.
-END 43
-BEGIN 44
+END 34
+BEGIN 35
   Cycle
   4
   finished
@@ -672,16 +517,16 @@ BEGIN 44
   of
   6
   parts.
-END 44
-BEGIN 45
+END 35
+BEGIN 36
   Cycle
   5
   started
   with
   1
   paths
-END 45
-BEGIN 46
+END 36
+BEGIN 37
   Calculated
   cutoff
   for
@@ -699,8 +544,8 @@ BEGIN 46
   be
   (409,
   719).
-END 46
-BEGIN 47
+END 37
+BEGIN 38
   Overlap
   between
   contigs
@@ -717,16 +562,16 @@ BEGIN 47
   score
   of
   31060.6119950054.
-END 47
-BEGIN 48
+END 38
+BEGIN 39
   Contig
   (3)
   covers
   contig
   'r446-755.2'
   completely.
-END 48
-BEGIN 49
+END 39
+BEGIN 40
   Cycle
   5
   finished
@@ -744,24 +589,24 @@ BEGIN 49
   of
   6
   parts.
-END 49
-BEGIN 50
+END 40
+BEGIN 41
   Cycle
   6
   started
   with
   1
   paths
-END 50
-BEGIN 51
+END 41
+BEGIN 42
   Constructed
   a
   path
   of
   length
   744.
-END 51
-BEGIN 52
+END 42
+BEGIN 43
   Removed
   6
   components
@@ -774,17 +619,17 @@ BEGIN 52
   still
   to
   process.
-END 52
-BEGIN 53
+END 43
+BEGIN 44
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 53
-BEGIN 54
+END 44
+BEGIN 45
   Outputting
   1
   contigs.
-END 54
+END 45

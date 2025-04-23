@@ -185,32 +185,14 @@ BEGIN 13
   -1121.7357977705801.
 END 13
 BEGIN 14
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  9
-  between
-  contigs
-  'r132-451.0'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (2).
-END 14
-BEGIN 15
   Constructed
   a
   path
   of
   length
   440.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Removed
   2
   components
@@ -223,29 +205,29 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Calculating
   all
   paths...
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Cycle
   1
   started
   with
   1
   paths
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   320.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -258,8 +240,8 @@ BEGIN 20
   still
   to
   process.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -274,16 +256,16 @@ BEGIN 21
   is
   a
   singleton.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -301,8 +283,8 @@ BEGIN 23
   be
   (311,
   2).
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Overlap
   between
   contigs
@@ -319,9 +301,9 @@ BEGIN 24
   score
   of
   -1121.7357977705801.
-END 24
-BEGIN 25
+END 23
+BEGIN 24
   Outputting
   2
   contigs.
-END 25
+END 24

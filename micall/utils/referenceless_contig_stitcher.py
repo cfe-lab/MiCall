@@ -57,35 +57,13 @@ class Pool:
         if alternative is not None and alternative.get_score() >= path.get_score():
             return False
 
-        current_size = len(self.paths)
-        # if pool not empty, enforce capacity and update score
-        if current_size > 0:
-            smallest_path = self.paths[0]
-            if current_size >= self.paths.capacity:
-                # full; reject if new path is worse than current smallest
-                if smallest_path.get_score() >= path.get_score():
-                    return False
-                # remove the smallest path to make room
-                self.paths.pop_smallest()
-
-            # compute new smallest_score candidate
-            new_smallest = (path if path.get_score() < smallest_path.get_score()
-                            else smallest_path)
-            self.smallest_score = max(
-                ACCEPTABLE_STITCHING_SCORE,
-                new_smallest.score,
-            )
-        else:
-            # first insertion sets smallest_score
-            self.smallest_score = max(
-                ACCEPTABLE_STITCHING_SCORE,
-                path.get_score(),
-            )
-
         # insert the new path and record it
-        self.paths.add(path)
         self.existing[key] = path
-        return True
+        if self.paths.insert(path):
+            self.smallest_score = max(self.paths[0].get_score(), ACCEPTABLE_STITCHING_SCORE)
+            return True
+
+        return False
 
 
 @dataclass(frozen=True)
