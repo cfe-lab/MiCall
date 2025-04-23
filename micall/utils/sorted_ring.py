@@ -42,11 +42,11 @@ class SortedRing(Sequence, MutableSet, Generic[T]):
     def __iter__(self) -> Iterator[T]:
         return iter(self._data)
 
-    def insert(self, item: T) -> None:
+    def insert(self, item: T) -> bool:
         """Insert an item, keep sorted via SortedList, and enforce capacity."""
 
-        if self._capacity == self._size and item < self._data[0]:
-            return
+        if self._capacity == self._size and item <= self._data[0]:
+            return False
 
         self._data.add(item)
         self._size += 1
@@ -55,6 +55,8 @@ class SortedRing(Sequence, MutableSet, Generic[T]):
             # remove the smallest element (first in sorted order)
             self._data.pop(0)
             self._size -= 1
+
+        return True
 
     def remove(self, item: T) -> None:
         """Remove an item and update size."""
