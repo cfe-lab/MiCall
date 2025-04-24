@@ -21,7 +21,7 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     """
 
     # do the alignment, grab top hit
-    aln = ALIGNER.align(seq1, seq2)[0]
+    aln = next(iter(ALIGNER.align(seq1, seq2)))
 
     # aln.aligned is a tuple of two lists of (start,end) pairs:
     #    aln.aligned[0] describes the aligned blocks on seq1
