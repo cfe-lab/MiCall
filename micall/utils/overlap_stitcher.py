@@ -6,21 +6,22 @@ from micall.utils.referenceless_score import Score
 from Bio.Align import PairwiseAligner
 
 
+# set up the aligner
+ALIGNER = PairwiseAligner()
+ALIGNER.mode = "global"
+# By default end gaps are free (score 0).
+# Make them penalized by picking -1 per gap position at ends.
+ALIGNER.end_gap_score = -1
+
+
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     """
     Globally align two query sequences against each other
     and return the resulting aligned sequences in MSA format.
     """
 
-    # set up the aligner
-    aligner = PairwiseAligner()
-    aligner.mode = "global"
-    # By default end gaps are free (score 0).
-    # Make them penalized by picking -1 per gap position at ends.
-    aligner.end_gap_score = -1
-
     # do the alignment, grab top hit
-    aln = aligner.align(seq1, seq2)[0]
+    aln = ALIGNER.align(seq1, seq2)[0]
 
     # aln.aligned is a tuple of two lists of (start,end) pairs:
     #    aln.aligned[0] describes the aligned blocks on seq1
