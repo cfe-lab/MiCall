@@ -66,6 +66,24 @@ BEGIN 6
   341.3333333333333.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
+  'r11-339.1'
+  and
+  'r595-971.2',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -83,8 +101,8 @@ BEGIN 7
   be
   (375,
   1).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -101,16 +119,115 @@ BEGIN 8
   score
   of
   -1024.0.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  704
+  and
+  consists
+  of
+  2
+  parts.
+END 10
+BEGIN 11
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 11
+BEGIN 12
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  288
+  between
+  contigs
+  (1)
+  and
+  'r268-555.0'
+  to
+  be
+  (257,
+  329).
+END 12
+BEGIN 13
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r268-555.0'
+  has
+  size
+  288,
+  71
+  matches,
+  and
+  the
+  score
+  of
+  -208.30110831231295.
+END 13
+BEGIN 14
   Constructed
   a
   path
   of
   length
-  377.
-END 9
-BEGIN 10
+  704.
+END 14
+BEGIN 15
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  288.
+END 18
+BEGIN 19
   Removed
   1
   components
@@ -119,12 +236,12 @@ BEGIN 10
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 10
-BEGIN 11
+END 19
+BEGIN 20
   Giving
   up
   on
@@ -139,16 +256,16 @@ BEGIN 11
   is
   a
   singleton.
-END 11
-BEGIN 12
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  3
+  2
   contigs.
-END 12
-BEGIN 13
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -156,174 +273,37 @@ BEGIN 13
   overlap
   of
   size
-  324
+  288
   between
   contigs
-  'r11-339.1'
-  and
-  'r595-971.2'
-  to
-  be
-  (327,
-  1).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r11-339.1'
-  and
-  'r595-971.2'
-  has
-  size
-  2,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  341.3333333333333.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  284
-  between
-  contigs
-  'r595-971.2'
-  and
-  'r268-555.0'
-  to
-  be
-  (375,
-  1).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r595-971.2'
-  and
-  'r268-555.0'
-  has
-  size
-  2,
-  0
-  matches,
-  and
-  the
-  score
-  of
-  -1024.0.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  72
-  between
-  contigs
-  'r11-339.1'
+  (1)
   and
   'r268-555.0'
   to
   be
   (257,
-  72).
-END 17
-BEGIN 18
+  329).
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  'r11-339.1'
+  (1)
   and
   'r268-555.0'
   has
   size
-  72,
-  72
+  288,
+  71
   matches,
   and
   the
   score
   of
-  14877.034122843083.
-END 18
-BEGIN 19
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  72
-  between
-  contigs
-  'r11-339.1'
-  and
-  'r268-555.0',
-  resulting
-  in
-  contig
-  (1).
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  377
-  between
-  contigs
-  (1)
-  and
-  'r595-971.2'
-  to
-  be
-  (87,
-  464).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r595-971.2'
-  has
-  size
-  377,
-  242
-  matches,
-  and
-  the
-  score
-  of
-  17886.89753251274.
-END 21
-BEGIN 22
-  Contig
-  (1)
-  covers
-  contig
-  'r595-971.2'
-  completely.
-END 22
-BEGIN 23
-  Outputting
-  1
-  contigs.
+  -208.30110831231295.
 END 23
+BEGIN 24
+  Outputting
+  2
+  contigs.
+END 24

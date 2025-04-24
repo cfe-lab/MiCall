@@ -26,12 +26,13 @@ from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, \
     referenceless_contig_stitcher_with_ctx, read_contigs
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
+from micall.utils.referenceless_score import SCORE_NOTHING
 import micall.utils.registry as registry
 
 
 @pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
-    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", 0)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", SCORE_NOTHING)
 
 
 TTT = 40 * 'T'
@@ -64,7 +65,7 @@ TTT = 40 * 'T'
         ((TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         (('AAAA', 'GGGG'), ('AAAA', 'GGGG',)),
-        (('AAAAT', 'TGGGG'), ('AAAAT', 'TGGGG')),
+        (('AAAAT', 'TGGGG'), ('AAAATGGGG',)),
 
         #
         # Multiple.
@@ -82,7 +83,7 @@ TTT = 40 * 'T'
 
     ],
 )
-def test_stitch_simple_cases(seqs, expected):
+def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check):
     contigs = [ContigWithAligner(None, seq) for seq in seqs]
     with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
@@ -256,7 +257,7 @@ def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Itera
 
 # TODO: ensure that every random seed can be stitched.
 @pytest.mark.parametrize("random_seed", params(range(50), [2, 3, 7, 13], "Probably gaps that are too small."))
-def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
+def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch, disable_acceptable_prob_check):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2
     ReferencelessStitcherContext.get().is_debug2 = True
@@ -266,7 +267,7 @@ def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file
 
 # TODO: ensure that every random seed can be stitched.
 @pytest.mark.parametrize("random_seed", params(range(999), [14, 17, 33, 60, 69, 76, 82, 92, 95, 112, 117, 124, 159, 202, 235, 240, 257, 267, 312, 318, 338, 350, 377, 386, 392, 427, 444, 445, 458, 465, 501, 534, 536, 546, 552, 582, 601, 635, 648, 660, 669, 673, 693, 700, 742, 746, 756, 765, 780, 781, 782, 805, 851, 909, 918, 923, 928, 972, 983], "Probably gaps that are too small."))
-def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
+def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch, disable_acceptable_prob_check):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2
     ReferencelessStitcherContext.get().is_debug2 = True
@@ -275,7 +276,7 @@ def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file,
 
 
 @pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
-def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int):
+def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int, disable_acceptable_prob_check):
     assert not ReferencelessStitcherContext.get().is_debug2
     converted_fasta_file, ref_seqs = random_fasta_file(50, random_seed)
     run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
