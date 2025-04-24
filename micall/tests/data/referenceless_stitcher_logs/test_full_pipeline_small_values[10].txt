@@ -26,7 +26,7 @@ BEGIN 4
   started
   with
   1
-  paths
+  paths.
 END 4
 BEGIN 5
   Calculated
@@ -288,7 +288,7 @@ BEGIN 21
   started
   with
   1
-  paths
+  paths.
 END 21
 BEGIN 22
   Calculated
@@ -495,7 +495,7 @@ BEGIN 35
   started
   with
   1
-  paths
+  paths.
 END 35
 BEGIN 36
   Calculated
@@ -657,7 +657,7 @@ BEGIN 46
   started
   with
   1
-  paths
+  paths.
 END 46
 BEGIN 47
   Calculated
@@ -774,7 +774,7 @@ BEGIN 54
   started
   with
   1
-  paths
+  paths.
 END 54
 BEGIN 55
   Calculated
@@ -846,7 +846,7 @@ BEGIN 59
   started
   with
   1
-  paths
+  paths.
 END 59
 BEGIN 60
   Constructed

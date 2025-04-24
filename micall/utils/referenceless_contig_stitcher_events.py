@@ -32,7 +32,7 @@ class CycleStart:
     n_paths: int
 
     def __str__(self) -> str:
-        return f"Cycle {self.i_cycle} started with {self.n_paths} paths"
+        return f"Cycle {self.i_cycle} started with {self.n_paths} paths."
 
 
 class CycleEnd:
