@@ -1,9 +1,9 @@
 from fractions import Fraction
 from typing import Sequence, Iterator, Tuple, TypeVar
 from operator import itemgetter
-from gotoh import align_it
 import numpy as np
 from micall.utils.referenceless_score import Score
+from Bio.Align import PairwiseAligner
 
 
 def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
@@ -12,16 +12,60 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     and return the resulting aligned sequences in MSA format.
     """
 
-    gap_open_penalty = 15
+    gap_open_penalty   = 15
     gap_extend_penalty = 3
-    use_terminal_gap_penalty = 1
-    aseq1, aseq2, score = \
-        align_it(
-            seq1, seq2,
-            gap_open_penalty,
-            gap_extend_penalty,
-            use_terminal_gap_penalty)
+    use_terminal_gap_penalty = True  # your 1/0 flag -> bool
 
+    # set up the aligner
+    aligner = PairwiseAligner()
+    aligner.mode = "global"
+    aligner.open_gap_score   = -gap_open_penalty
+    aligner.extend_gap_score = -gap_extend_penalty
+
+    # By default end gaps are free (score 0).  Make them penalized if you asked for it.
+    if use_terminal_gap_penalty:
+        # here we pick -1 per gap position at ends, but you can tune
+        aligner.end_gap_score = -1
+
+    # do the alignment, grab top hit
+    aln = aligner.align(seq1, seq2)[0]
+
+    # aln.aligned is a tuple of two lists of (start,end) pairs:
+    #    aln.aligned[0] describes the aligned blocks on seq1
+    #    aln.aligned[1] describes the aligned blocks on seq2
+    blocks1, blocks2 = aln.aligned
+
+    g1 = []
+    g2 = []
+    i = j = 0
+
+    for (a0, a1), (b0, b1) in zip(blocks1, blocks2):
+        # handle any gap in seq1 before this block
+        if b0 > j:
+            g1.append("-" * (b0 - j))
+            g2.append(seq2[j:b0])
+        # handle any gap in seq2 before this block
+        if a0 > i:
+            g1.append(seq1[i:a0])
+            g2.append("-" * (a0 - i))
+
+        # handle the matching/mismatching block
+        g1.append(seq1[a0:a1])
+        g2.append(seq2[b0:b1])
+
+        i = a1
+        j = b1
+
+    # tail-end gaps
+    if i < len(seq1):
+        g1.append(seq1[i:])
+        g2.append("-" * (len(seq1) - i))
+    if j < len(seq2):
+        g1.append("-" * (len(seq2) - j))
+        g2.append(seq2[j:])
+
+    aseq1 = "".join(g1)
+    aseq2 = "".join(g2)
     return aseq1, aseq2
 
 

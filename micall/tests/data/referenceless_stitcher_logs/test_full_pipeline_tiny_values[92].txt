@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   293,
-  7
+  89
   matches,
   and
   the
   score
   of
-  -9190.509380398153.
+  2099.7043902782298.
 END 8
 BEGIN 9
   Constructed
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   293,
-  7
+  89
   matches,
   and
   the
   score
   of
-  -9190.509380398153.
+  2099.7043902782298.
 END 16
 BEGIN 17
   Calculated

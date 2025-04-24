@@ -404,15 +404,23 @@ BEGIN 26
   has
   size
   412,
-  8
+  125
   matches,
   and
   the
   score
   of
-  -11099.47715412794.
+  2498.8351708246146.
 END 26
 BEGIN 27
+  Contig
+  (4)
+  covers
+  contig
+  'r20-431.5'
+  completely.
+END 27
+BEGIN 28
   Calculated
   cutoff
   for
@@ -430,8 +438,8 @@ BEGIN 27
   be
   (48,
   456).
-END 27
-BEGIN 28
+END 28
+BEGIN 29
   Overlap
   between
   contigs
@@ -441,15 +449,23 @@ BEGIN 28
   has
   size
   408,
-  10
+  128
   matches,
   and
   the
   score
   of
-  -10803.118128615137.
-END 28
-BEGIN 29
+  2978.1568895101186.
+END 29
+BEGIN 30
+  Contig
+  (4)
+  covers
+  contig
+  'r27-434.2'
+  completely.
+END 30
+BEGIN 31
   Calculated
   cutoff
   for
@@ -467,8 +483,8 @@ BEGIN 29
   be
   (29,
   280).
-END 29
-BEGIN 30
+END 31
+BEGIN 32
   Overlap
   between
   contigs
@@ -485,8 +501,8 @@ BEGIN 30
   score
   of
   29590.21564298475.
-END 30
-BEGIN 31
+END 32
+BEGIN 33
   Found
   a
   significant
@@ -503,8 +519,8 @@ BEGIN 31
   in
   contig
   (5).
-END 31
-BEGIN 32
+END 33
+BEGIN 34
   Cycle
   3
   finished
@@ -522,16 +538,16 @@ BEGIN 32
   of
   6
   parts.
-END 32
-BEGIN 33
+END 34
+BEGIN 35
   Cycle
   4
   started
   with
   1
   paths
-END 33
-BEGIN 34
+END 35
+BEGIN 36
   Calculated
   cutoff
   for
@@ -549,8 +565,8 @@ BEGIN 34
   be
   (396,
   16).
-END 34
-BEGIN 35
+END 36
+BEGIN 37
   Overlap
   between
   contigs
@@ -567,8 +583,8 @@ BEGIN 35
   score
   of
   6739.267988410005.
-END 35
-BEGIN 36
+END 37
+BEGIN 38
   Found
   a
   significant
@@ -585,8 +601,8 @@ BEGIN 36
   in
   contig
   (6).
-END 36
-BEGIN 37
+END 38
+BEGIN 39
   Calculated
   cutoff
   for
@@ -604,8 +620,8 @@ BEGIN 37
   be
   (389,
   19).
-END 37
-BEGIN 38
+END 39
+BEGIN 40
   Overlap
   between
   contigs
@@ -622,8 +638,8 @@ BEGIN 38
   score
   of
   7403.078566830603.
-END 38
-BEGIN 39
+END 40
+BEGIN 41
   Found
   a
   significant
@@ -640,8 +656,8 @@ BEGIN 39
   in
   contig
   (7).
-END 39
-BEGIN 40
+END 41
+BEGIN 42
   Cycle
   4
   finished
@@ -659,16 +675,16 @@ BEGIN 40
   of
   6
   parts.
-END 40
-BEGIN 41
+END 42
+BEGIN 43
   Cycle
   5
   started
   with
   1
   paths
-END 41
-BEGIN 42
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -686,8 +702,8 @@ BEGIN 42
   be
   (7,
   405).
-END 42
-BEGIN 43
+END 44
+BEGIN 45
   Overlap
   between
   contigs
@@ -704,8 +720,8 @@ BEGIN 43
   score
   of
   35620.08891619128.
-END 43
-BEGIN 44
+END 45
+BEGIN 46
   Found
   a
   significant
@@ -722,8 +738,8 @@ BEGIN 44
   in
   contig
   (8).
-END 44
-BEGIN 45
+END 46
+BEGIN 47
   Cycle
   5
   finished
@@ -741,24 +757,24 @@ BEGIN 45
   of
   6
   parts.
-END 45
-BEGIN 46
+END 47
+BEGIN 48
   Cycle
   6
   started
   with
   1
   paths
-END 46
-BEGIN 47
+END 48
+BEGIN 49
   Constructed
   a
   path
   of
   length
   920.
-END 47
-BEGIN 48
+END 49
+BEGIN 50
   Removed
   6
   components
@@ -771,17 +787,17 @@ BEGIN 48
   still
   to
   process.
-END 48
-BEGIN 49
+END 50
+BEGIN 51
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 49
-BEGIN 50
+END 51
+BEGIN 52
   Outputting
   1
   contigs.
-END 50
+END 52

@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   311,
-  13
+  101
   matches,
   and
   the
   score
   of
-  -8721.831012148357.
+  3040.9449122816113.
 END 6
 BEGIN 7
   Calculated
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   311,
-  13
+  101
   matches,
   and
   the
   score
   of
-  -8721.831012148357.
+  3040.9449122816113.
 END 13
 BEGIN 14
   Constructed
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   311,
-  13
+  101
   matches,
   and
   the
   score
   of
-  -8721.831012148357.
+  3040.9449122816113.
 END 23
 BEGIN 24
   Outputting

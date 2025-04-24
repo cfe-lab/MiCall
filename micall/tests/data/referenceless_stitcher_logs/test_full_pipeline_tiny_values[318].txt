@@ -102,13 +102,13 @@ BEGIN 9
   has
   size
   308,
-  4
+  95
   matches,
   and
   the
   score
   of
-  -9872.015140888687.
+  2350.4797954496876.
 END 9
 BEGIN 10
   Cycle
@@ -166,13 +166,13 @@ BEGIN 13
   has
   size
   308,
-  4
+  95
   matches,
   and
   the
   score
   of
-  -9872.015140888687.
+  2350.4797954496876.
 END 13
 BEGIN 14
   Constructed
@@ -284,13 +284,13 @@ BEGIN 23
   has
   size
   308,
-  4
+  95
   matches,
   and
   the
   score
   of
-  -9872.015140888687.
+  2350.4797954496876.
 END 23
 BEGIN 24
   Outputting

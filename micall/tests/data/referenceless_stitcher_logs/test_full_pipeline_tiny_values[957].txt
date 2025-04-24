@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   453,
-  6
+  139
   matches,
   and
   the
   score
   of
-  -11945.680670980631.
+  2799.335841691517.
 END 6
 BEGIN 7
   Calculated

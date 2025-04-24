@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   392,
-  6
+  115
   matches,
   and
   the
   score
   of
-  -11020.287951378716.
+  1965.7810940297168.
 END 9
 BEGIN 10
   Cycle

@@ -57,13 +57,13 @@ BEGIN 6
   has
   size
   387,
-  4
+  121
   matches,
   and
   the
   score
   of
-  -11180.812395045194.
+  2847.6599933761217.
 END 6
 BEGIN 7
   Calculated
@@ -94,13 +94,13 @@ BEGIN 8
   has
   size
   337,
-  2
+  109
   matches,
   and
   the
   score
   of
-  -10628.389800447.
+  3114.6640804935314.
 END 8
 BEGIN 9
   Constructed
@@ -177,13 +177,13 @@ BEGIN 14
   has
   size
   387,
-  4
+  121
   matches,
   and
   the
   score
   of
-  -11180.812395045194.
+  2847.6599933761217.
 END 14
 BEGIN 15
   Calculated
@@ -214,13 +214,13 @@ BEGIN 16
   has
   size
   337,
-  2
+  109
   matches,
   and
   the
   score
   of
-  -10628.389800447.
+  3114.6640804935314.
 END 16
 BEGIN 17
   Calculated

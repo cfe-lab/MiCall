@@ -306,13 +306,13 @@ BEGIN 21
   has
   size
   377,
-  6
+  123
   matches,
   and
   the
   score
   of
-  -10780.727714842144.
+  3431.6119204990487.
 END 21
 BEGIN 22
   Outputting

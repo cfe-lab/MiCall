@@ -222,13 +222,13 @@ BEGIN 15
   has
   size
   260,
-  13
+  84
   matches,
   and
   the
   score
   of
-  -7670.222784069046.
+  2702.8404096243303.
 END 15
 BEGIN 16
   Cycle
@@ -246,7 +246,7 @@ BEGIN 16
   and
   consists
   of
-  5
+  6
   parts.
 END 16
 BEGIN 17
@@ -396,13 +396,13 @@ BEGIN 25
   has
   size
   260,
-  13
+  84
   matches,
   and
   the
   score
   of
-  -7670.222784069046.
+  2702.8404096243303.
 END 25
 BEGIN 26
   Calculated
@@ -465,7 +465,7 @@ BEGIN 29
   and
   consists
   of
-  5
+  6
   parts.
 END 29
 BEGIN 30
@@ -560,13 +560,13 @@ BEGIN 35
   has
   size
   260,
-  13
+  84
   matches,
   and
   the
   score
   of
-  -7670.222784069046.
+  2702.8404096243303.
 END 35
 BEGIN 36
   Cycle
@@ -584,7 +584,7 @@ BEGIN 36
   and
   consists
   of
-  5
+  6
   parts.
 END 36
 BEGIN 37
@@ -624,15 +624,23 @@ BEGIN 39
   has
   size
   260,
-  13
+  84
   matches,
   and
   the
   score
   of
-  -7670.222784069046.
+  2702.8404096243303.
 END 39
 BEGIN 40
+  Contig
+  (6)
+  covers
+  contig
+  'r709-968.1'
+  completely.
+END 40
+BEGIN 41
   Calculated
   cutoff
   for
@@ -650,8 +658,8 @@ BEGIN 40
   be
   (72,
   289).
-END 40
-BEGIN 41
+END 41
+BEGIN 42
   Overlap
   between
   contigs
@@ -668,16 +676,16 @@ BEGIN 41
   score
   of
   25927.579146338558.
-END 41
-BEGIN 42
+END 42
+BEGIN 43
   Contig
   (6)
   covers
   contig
   'r139-355.0'
   completely.
-END 42
-BEGIN 43
+END 43
+BEGIN 44
   Cycle
   4
   finished
@@ -693,18 +701,18 @@ BEGIN 43
   and
   consists
   of
-  5
+  6
   parts.
-END 43
-BEGIN 44
+END 44
+BEGIN 45
   Cycle
   5
   started
   with
   1
   paths
-END 44
-BEGIN 45
+END 45
+BEGIN 46
   Calculated
   cutoff
   for
@@ -712,65 +720,65 @@ BEGIN 45
   overlap
   of
   size
-  260
+  217
   between
   contigs
   (6)
   and
-  'r709-968.1'
+  'r139-355.0'
   to
   be
-  (2,
-  262).
-END 45
-BEGIN 46
+  (72,
+  289).
+END 46
+BEGIN 47
   Overlap
   between
   contigs
   (6)
   and
-  'r709-968.1'
+  'r139-355.0'
   has
   size
-  260,
-  13
+  217,
+  217
   matches,
   and
   the
   score
   of
-  -7670.222784069046.
-END 46
-BEGIN 47
-  Constructed
-  a
-  path
-  of
-  length
-  515.
+  25927.579146338558.
 END 47
 BEGIN 48
-  Removed
-  5
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Contig
+  (6)
+  covers
+  contig
+  'r139-355.0'
+  completely.
 END 48
 BEGIN 49
-  Calculating
-  all
-  paths...
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  515
+  and
+  consists
+  of
+  6
+  parts.
 END 49
 BEGIN 50
   Cycle
-  1
+  6
   started
   with
   1
@@ -782,11 +790,11 @@ BEGIN 51
   path
   of
   length
-  260.
+  515.
 END 51
 BEGIN 52
   Removed
-  1
+  6
   components
   from
   the
@@ -799,68 +807,15 @@ BEGIN 52
   process.
 END 52
 BEGIN 53
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 53
-BEGIN 54
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 53
+BEGIN 54
+  Outputting
+  1
   contigs.
 END 54
-BEGIN 55
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  260
-  between
-  contigs
-  (6)
-  and
-  'r709-968.1'
-  to
-  be
-  (2,
-  262).
-END 55
-BEGIN 56
-  Overlap
-  between
-  contigs
-  (6)
-  and
-  'r709-968.1'
-  has
-  size
-  260,
-  13
-  matches,
-  and
-  the
-  score
-  of
-  -7670.222784069046.
-END 56
-BEGIN 57
-  Outputting
-  2
-  contigs.
-END 57

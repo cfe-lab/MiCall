@@ -75,13 +75,13 @@ BEGIN 7
   has
   size
   341,
-  5
+  105
   matches,
   and
   the
   score
   of
-  -10310.857661619279.
+  2458.0063156182177.
 END 7
 BEGIN 8
   Constructed
@@ -176,13 +176,13 @@ BEGIN 14
   has
   size
   341,
-  5
+  105
   matches,
   and
   the
   score
   of
-  -10310.857661619279.
+  2458.0063156182177.
 END 14
 BEGIN 15
   Calculated

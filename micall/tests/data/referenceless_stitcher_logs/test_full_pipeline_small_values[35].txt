@@ -449,13 +449,13 @@ BEGIN 29
   has
   size
   226,
-  8
+  77
   matches,
   and
   the
   score
   of
-  -7674.109241792871.
+  3132.28948644607.
 END 29
 BEGIN 30
   Cycle

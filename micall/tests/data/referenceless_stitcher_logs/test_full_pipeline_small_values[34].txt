@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   394,
-  2
+  117
   matches,
   and
   the
   score
   of
-  -11527.190273845037.
+  2139.066236383615.
 END 9
 BEGIN 10
   Calculated
@@ -194,13 +194,13 @@ BEGIN 14
   has
   size
   230,
-  28
+  77
   matches,
   and
   the
   score
   of
-  -4657.754379748782.
+  2949.9111071742286.
 END 14
 BEGIN 15
   Cycle
