@@ -1,21 +1,25 @@
-from typing import Iterable, Iterator, Optional, Tuple, \
-    Sequence, TextIO, MutableMapping, Literal, Union
-from dataclasses import dataclass
-from Bio import SeqIO, Seq
-from Bio.SeqRecord import SeqRecord
-import logging
-from micall.utils.sorted_ring import SortedRing
 import itertools
+import logging
+from dataclasses import dataclass
 from functools import cache
+from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Literal, Union
+
+from Bio import Seq, SeqIO
+from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.overlap_stitcher import align_queries, \
-    calculate_concordance, sort_concordance_indexes, calculate_overlap_score
-import micall.utils.referenceless_contig_stitcher_events as events
-from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
-from micall.utils.referenceless_contig_path import ContigsPath
-from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 from micall.utils.contig_stitcher_contigs import Contig
+from micall.utils.overlap_stitcher import (
+    align_queries,
+    calculate_concordance,
+    sort_concordance_indexes,
+    calculate_overlap_score,
+)
+from micall.utils.sorted_ring import SortedRing
+import micall.utils.referenceless_contig_stitcher_events as events
+from micall.utils.referenceless_contig_path import ContigsPath
+from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
+from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +35,9 @@ MAX_ALTERNATIVES = 30
 
 
 def log(e: events.EventType) -> None:
+    """
+    Emit an event to the current stitching context and log it at debug level.
+    """
     ReferencelessStitcherContext.get().emit(e)
     logger.debug("%s", e)
 
@@ -111,14 +118,17 @@ def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[O
 
 
 def combine_scores(current: Score, new: Score) -> Score:
+    """
+    Combine two scores by summing them.
+    """
     return current + new
 
 
 def get_minimum_base_score(current: Score, minimum: Score) -> Score:
     """
-    Returns minimum score that when combined with current is still acceptable.
+    Calculate the minimum additional score required so that
+    current + additional >= minimum.
     """
-
     return minimum - current
 
 
@@ -334,6 +344,11 @@ def extend_by_1(is_debug2: bool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
                 ) -> bool:
+    """
+    Attempt to extend a contig path by one candidate contig.
+    If a valid combination is found and added to the pool, return True.
+    Otherwise return False.
+    """
     if path.has_contig(candidate):
         return False
 
@@ -341,7 +356,7 @@ def extend_by_1(is_debug2: bool,
     if combination is None:
         return False
 
-    (combined, additional_score) = combination
+    combined, additional_score = combination
     score = combine_scores(path.score, additional_score)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, score)
@@ -353,6 +368,10 @@ def calc_extension(is_debug2: bool,
                    contigs: Sequence[ContigWithAligner],
                    path: ContigsPath,
                    ) -> bool:
+    """
+    Try to extend a single path with each contig in contigs.
+    Return True if any extension was added to the pool.
+    """
     ret = False
     for contig in contigs:
         ret = extend_by_1(is_debug2, pool, path, contig) or ret
@@ -364,6 +383,10 @@ def calc_multiple_extensions(is_debug2: bool,
                              paths: Iterable[ContigsPath],
                              contigs: Sequence[ContigWithAligner],
                              ) -> bool:
+    """
+    Attempt to extend multiple paths with a set of contigs.
+    Returns True if any new extensions were added to the pool.
+    """
     ret = False
     for path in paths:
         ret = calc_extension(is_debug2, pool, contigs, path) or ret
@@ -373,6 +396,10 @@ def calc_multiple_extensions(is_debug2: bool,
 def calculate_all_paths(paths: Sequence[ContigsPath],
                         contigs: Sequence[ContigWithAligner],
                         ) -> Iterable[ContigsPath]:
+    """
+    Iteratively extend seed paths with contigs to generate candidate contig paths.
+    Returns an iterable of best paths up to MAX_ALTERNATIVES.
+    """
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
 
     pool = Pool.empty(MAX_ALTERNATIVES)
@@ -399,15 +426,25 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
 def find_most_probable_path(seeds: Sequence[ContigsPath],
                             contigs: Sequence[ContigWithAligner],
                             ) -> ContigsPath:
+    """
+    Select the single most probable contig path from seeds extended by contigs.
+    """
     paths = calculate_all_paths(seeds, contigs)
     return max(paths, key=ContigsPath.get_score)
 
 
 def contig_size_fun(contig: Contig) -> int:
+    """
+    Sorting key to order contigs by descending sequence length.
+    """
     return -len(contig.seq)
 
 
 def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[ContigWithAligner]:
+    """
+    Produce a consensus stitching of contigs based on overlaps.
+    Iteratively selects and stitches the most probable contig paths.
+    """
     remaining = tuple(sorted(contigs, key=contig_size_fun))
 
     log(events.InitializingSeeds())
@@ -443,14 +480,16 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
                 continue
 
             pool = Pool.empty(MAX_ALTERNATIVES)
-            result = try_combine_contigs(is_debug2=is_debug2,
-                                         current_score=SCORE_NOTHING,
-                                         pool=pool,
-                                         a=first, b=second,
-                                         )
+            result = try_combine_contigs(
+                is_debug2=is_debug2,
+                current_score=SCORE_NOTHING,
+                pool=pool,
+                a=first,
+                b=second,
+            )
             if result is not None:
-                (combined, additional_score) = result
-                return (first, second, combined)
+                combined, additional_score = result
+                return first, second, combined
 
     return None
 
@@ -474,6 +513,10 @@ def o2_loop(contigs: Iterable[ContigWithAligner],
 
 def stitch_consensus(contigs: Iterable[ContigWithAligner],
                      ) -> Iterator[ContigWithAligner]:
+    """
+    Execute the full referenceless contig stitching algorithm.
+    First perform consensus overlap stitching, then O2 greedy merging.
+    """
     contigs = tuple(stitch_consensus_overlaps(contigs))
     log(events.InitiallyProduced(len(contigs)))
     contigs = o2_loop(contigs)
@@ -481,6 +524,9 @@ def stitch_consensus(contigs: Iterable[ContigWithAligner],
 
 
 def write_contigs(output_fasta: TextIO, contigs: Iterable[ContigWithAligner]):
+    """
+    Write an iterable of contigs to the given output FASTA file handle.
+    """
     records = (SeqRecord(Seq.Seq(contig.seq),
                          description='',
                          id=contig.unique_name,
@@ -490,6 +536,9 @@ def write_contigs(output_fasta: TextIO, contigs: Iterable[ContigWithAligner]):
 
 
 def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
+    """
+    Read contigs from a FASTA file handle, yielding ContigWithAligner objects.
+    """
     for record in SeqIO.parse(input_fasta, "fasta"):
         yield ContigWithAligner(name=record.name, seq=str(record.seq))
 
@@ -498,6 +547,11 @@ def referenceless_contig_stitcher_with_ctx(
         input_fasta: TextIO,
         output_fasta: Optional[TextIO],
 ) -> int:
+    """
+    Main entrypoint for referenceless contig stitching with context.
+    Reads input contigs, performs stitching if output is specified, and writes results.
+    Returns the number of contigs (stitched or original).
+    """
     contigs = tuple(read_contigs(input_fasta))
     log(events.Loaded(len(contigs)))
 
@@ -514,6 +568,9 @@ def referenceless_contig_stitcher_with_ctx(
 def referenceless_contig_stitcher(input_fasta: TextIO,
                                   output_fasta: Optional[TextIO],
                                   ) -> int:
+    """
+    Wrapper that initializes a fresh stitching context and calls the core stitching function.
+    """
     with ReferencelessStitcherContext.fresh() as ctx:
         if logger.level == logging.DEBUG - 1:
             ctx.is_debug2 = True
