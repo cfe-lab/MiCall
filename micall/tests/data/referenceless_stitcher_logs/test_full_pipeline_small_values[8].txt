@@ -404,13 +404,13 @@ BEGIN 26
   has
   size
   412,
-  125
+  264
   matches,
   and
   the
   score
   of
-  2498.8351708246146.
+  18654.095112434916.
 END 26
 BEGIN 27
   Contig
@@ -449,13 +449,13 @@ BEGIN 29
   has
   size
   408,
-  128
+  262
   matches,
   and
   the
   score
   of
-  2978.1568895101186.
+  18628.079367720155.
 END 29
 BEGIN 30
   Contig

@@ -167,13 +167,13 @@ BEGIN 12
   has
   size
   348,
-  113
+  219
   matches,
   and
   the
   score
   of
-  3223.3352593681157.
+  16622.29751399636.
 END 12
 BEGIN 13
   Cycle
@@ -286,13 +286,13 @@ BEGIN 19
   has
   size
   348,
-  113
+  219
   matches,
   and
   the
   score
   of
-  3223.3352593681157.
+  16622.29751399636.
 END 19
 BEGIN 20
   Cycle
@@ -450,13 +450,13 @@ BEGIN 29
   has
   size
   224,
-  73
+  141
   matches,
   and
   the
   score
   of
-  2595.5478832337676.
+  13292.351280803236.
 END 29
 BEGIN 30
   Cycle

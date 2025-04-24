@@ -184,13 +184,13 @@ BEGIN 14
   has
   size
   295,
-  96
+  187
   matches,
   and
   the
   score
   of
-  2984.560296193756.
+  15471.686133142344.
 END 14
 BEGIN 15
   Contig
@@ -401,13 +401,13 @@ BEGIN 28
   has
   size
   295,
-  96
+  187
   matches,
   and
   the
   score
   of
-  2984.560296193756.
+  15471.686133142344.
 END 28
 BEGIN 29
   Contig
@@ -518,13 +518,13 @@ BEGIN 36
   has
   size
   295,
-  96
+  187
   matches,
   and
   the
   score
   of
-  2984.560296193756.
+  15471.686133142344.
 END 36
 BEGIN 37
   Contig

@@ -222,13 +222,13 @@ BEGIN 15
   has
   size
   260,
-  84
+  167
   matches,
   and
   the
   score
   of
-  2702.8404096243303.
+  14829.097382533488.
 END 15
 BEGIN 16
   Cycle
@@ -396,13 +396,13 @@ BEGIN 25
   has
   size
   260,
-  84
+  167
   matches,
   and
   the
   score
   of
-  2702.8404096243303.
+  14829.097382533488.
 END 25
 BEGIN 26
   Calculated
@@ -560,13 +560,13 @@ BEGIN 35
   has
   size
   260,
-  84
+  167
   matches,
   and
   the
   score
   of
-  2702.8404096243303.
+  14829.097382533488.
 END 35
 BEGIN 36
   Cycle
@@ -624,13 +624,13 @@ BEGIN 39
   has
   size
   260,
-  84
+  167
   matches,
   and
   the
   score
   of
-  2702.8404096243303.
+  14829.097382533488.
 END 39
 BEGIN 40
   Contig

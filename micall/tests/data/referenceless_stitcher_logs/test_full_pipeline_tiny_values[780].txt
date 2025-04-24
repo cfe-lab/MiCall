@@ -306,16 +306,24 @@ BEGIN 21
   has
   size
   377,
-  123
+  242
   matches,
   and
   the
   score
   of
-  3431.6119204990487.
+  17886.89753251274.
 END 21
 BEGIN 22
-  Outputting
-  2
-  contigs.
+  Contig
+  (1)
+  covers
+  contig
+  'r595-971.2'
+  completely.
 END 22
+BEGIN 23
+  Outputting
+  1
+  contigs.
+END 23

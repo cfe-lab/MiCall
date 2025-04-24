@@ -12,20 +12,12 @@ def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
     and return the resulting aligned sequences in MSA format.
     """
 
-    gap_open_penalty   = 15
-    gap_extend_penalty = 3
-    use_terminal_gap_penalty = True  # your 1/0 flag -> bool
-
     # set up the aligner
     aligner = PairwiseAligner()
     aligner.mode = "global"
-    aligner.open_gap_score   = -gap_open_penalty
-    aligner.extend_gap_score = -gap_extend_penalty
-
-    # By default end gaps are free (score 0).  Make them penalized if you asked for it.
-    if use_terminal_gap_penalty:
-        # here we pick -1 per gap position at ends, but you can tune
-        aligner.end_gap_score = -1
+    # By default end gaps are free (score 0).
+    # Make them penalized by picking -1 per gap position at ends.
+    aligner.end_gap_score = -1
 
     # do the alignment, grab top hit
     aln = aligner.align(seq1, seq2)[0]

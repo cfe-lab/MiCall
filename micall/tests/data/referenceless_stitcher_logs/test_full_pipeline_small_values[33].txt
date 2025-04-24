@@ -130,13 +130,13 @@ BEGIN 10
   has
   size
   237,
-  78
+  149
   matches,
   and
   the
   score
   of
-  2791.664596431298.
+  13652.387135972238.
 END 10
 BEGIN 11
   Cycle
@@ -249,13 +249,13 @@ BEGIN 17
   has
   size
   300,
-  97
+  192
   matches,
   and
   the
   score
   of
-  2925.730431995812.
+  15853.37652686103.
 END 17
 BEGIN 18
   Calculated

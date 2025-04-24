@@ -139,13 +139,13 @@ BEGIN 11
   has
   size
   314,
-  100
+  206
   matches,
   and
   the
   score
   of
-  2793.669806426982.
+  16895.050734106037.
 END 11
 BEGIN 12
   Contig

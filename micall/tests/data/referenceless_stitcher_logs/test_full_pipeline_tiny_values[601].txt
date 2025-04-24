@@ -112,13 +112,13 @@ BEGIN 9
   has
   size
   283,
-  92
+  179
   matches,
   and
   the
   score
   of
-  2906.665070014047.
+  15093.646327422342.
 END 9
 BEGIN 10
   Cycle
@@ -176,13 +176,13 @@ BEGIN 13
   has
   size
   283,
-  92
+  179
   matches,
   and
   the
   score
   of
-  2906.665070014047.
+  15093.646327422342.
 END 13
 BEGIN 14
   Contig

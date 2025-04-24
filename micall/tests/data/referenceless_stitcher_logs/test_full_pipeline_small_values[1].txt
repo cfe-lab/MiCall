@@ -331,13 +331,13 @@ BEGIN 22
   has
   size
   233,
-  80
+  147
   matches,
   and
   the
   score
   of
-  3278.1160477772955.
+  13613.823116063357.
 END 22
 BEGIN 23
   Cycle

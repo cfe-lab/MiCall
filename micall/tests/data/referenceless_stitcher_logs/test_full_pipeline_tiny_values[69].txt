@@ -57,15 +57,23 @@ BEGIN 6
   has
   size
   376,
-  117
+  238
   matches,
   and
   the
   score
   of
-  2736.7551171832256.
+  17454.415969590795.
 END 6
 BEGIN 7
+  Contig
+  'r504-941.0'
+  covers
+  contig
+  'r81-456.1'
+  completely.
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -83,8 +91,8 @@ BEGIN 7
   be
   (78,
   371).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -101,16 +109,16 @@ BEGIN 8
   score
   of
   30187.55328318045.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Contig
   'r504-941.0'
   covers
   contig
   'r582-874.2'
   completely.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -126,18 +134,18 @@ BEGIN 10
   and
   consists
   of
-  2
+  3
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -145,65 +153,65 @@ BEGIN 12
   overlap
   of
   size
-  376
+  293
   between
   contigs
   'r504-941.0'
   and
-  'r81-456.1'
+  'r582-874.2'
   to
   be
-  (38,
-  414).
-END 12
-BEGIN 13
+  (78,
+  371).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
   'r504-941.0'
   and
-  'r81-456.1'
+  'r582-874.2'
   has
   size
-  376,
-  117
+  293,
+  293
   matches,
   and
   the
   score
   of
-  2736.7551171832256.
-END 13
-BEGIN 14
-  Constructed
-  a
-  path
-  of
-  length
-  438.
+  30187.55328318045.
 END 14
 BEGIN 15
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Contig
+  'r504-941.0'
+  covers
+  contig
+  'r582-874.2'
+  completely.
 END 15
 BEGIN 16
-  Calculating
-  all
-  paths...
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  438
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
   Cycle
-  1
+  3
   started
   with
   1
@@ -215,11 +223,11 @@ BEGIN 18
   path
   of
   length
-  376.
+  438.
 END 18
 BEGIN 19
   Removed
-  1
+  3
   components
   from
   the
@@ -232,68 +240,15 @@ BEGIN 19
   process.
 END 19
 BEGIN 20
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 20
-BEGIN 21
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 20
+BEGIN 21
+  Outputting
+  1
   contigs.
 END 21
-BEGIN 22
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  376
-  between
-  contigs
-  'r504-941.0'
-  and
-  'r81-456.1'
-  to
-  be
-  (38,
-  414).
-END 22
-BEGIN 23
-  Overlap
-  between
-  contigs
-  'r504-941.0'
-  and
-  'r81-456.1'
-  has
-  size
-  376,
-  117
-  matches,
-  and
-  the
-  score
-  of
-  2736.7551171832256.
-END 23
-BEGIN 24
-  Outputting
-  2
-  contigs.
-END 24

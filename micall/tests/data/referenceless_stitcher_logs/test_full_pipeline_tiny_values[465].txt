@@ -75,23 +75,111 @@ BEGIN 7
   has
   size
   265,
-  80
+  167
   matches,
   and
   the
   score
   of
-  1917.606831456839.
+  14508.685649324385.
 END 7
 BEGIN 8
+  Contig
+  'r85-531.1'
+  covers
+  contig
+  'r595-859.0'
+  completely.
+END 8
+BEGIN 9
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  447
+  and
+  consists
+  of
+  2
+  parts.
+END 9
+BEGIN 10
+  Cycle
+  2
+  started
+  with
+  1
+  paths
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  337
+  between
+  contigs
+  'r85-531.1'
+  and
+  'r555-929.2'
+  to
+  be
+  None.
+END 11
+BEGIN 12
   Constructed
   a
   path
   of
   length
   447.
-END 8
-BEGIN 9
+END 12
+BEGIN 13
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  375.
+END 16
+BEGIN 17
   Removed
   1
   components
@@ -100,12 +188,12 @@ BEGIN 9
   working
   list,
   having
-  2
+  0
   still
   to
   process.
-END 9
-BEGIN 10
+END 17
+BEGIN 18
   Giving
   up
   on
@@ -120,135 +208,35 @@ BEGIN 10
   is
   a
   singleton.
-END 10
-BEGIN 11
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  3
-  contigs.
-END 11
-BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  337
-  between
-  contigs
-  'r85-531.1'
-  and
-  'r555-929.2'
-  to
-  be
-  None.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  265
-  between
-  contigs
-  'r85-531.1'
-  and
-  'r595-859.0'
-  to
-  be
-  (116,
-  381).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r85-531.1'
-  and
-  'r595-859.0'
-  has
-  size
-  265,
-  80
-  matches,
-  and
-  the
-  score
-  of
-  1917.606831456839.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  265
-  between
-  contigs
-  'r555-929.2'
-  and
-  'r595-859.0'
-  to
-  be
-  (40,
-  305).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  'r555-929.2'
-  and
-  'r595-859.0'
-  has
-  size
-  265,
-  265
-  matches,
-  and
-  the
-  score
-  of
-  28691.739949910818.
-END 16
-BEGIN 17
-  Contig
-  'r555-929.2'
-  covers
-  contig
-  'r595-859.0'
-  completely.
-END 17
-BEGIN 18
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  337
-  between
-  contigs
-  'r85-531.1'
-  and
-  'r555-929.2'
-  to
-  be
-  None.
-END 18
-BEGIN 19
-  Outputting
   2
   contigs.
 END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  337
+  between
+  contigs
+  'r85-531.1'
+  and
+  'r555-929.2'
+  to
+  be
+  None.
+END 20
+BEGIN 21
+  Outputting
+  2
+  contigs.
+END 21

@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  723
+  449
   and
   consists
   of
-  3
+  2
   parts.
 END 8
 BEGIN 9
@@ -139,70 +139,60 @@ BEGIN 11
   has
   size
   5,
-  2
+  1
   matches,
   and
   the
   score
   of
-  482.7182292900165.
+  -482.7182292900165.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  5
-  between
-  contigs
-  (1)
-  and
-  'r179-454.1',
-  resulting
-  in
-  contig
-  (2).
-END 12
-BEGIN 13
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  723
-  and
-  consists
-  of
-  3
-  parts.
-END 13
-BEGIN 14
-  Cycle
-  3
-  started
-  with
-  1
-  paths
-END 14
-BEGIN 15
   Constructed
   a
   path
   of
   length
-  723.
+  449.
+END 12
+BEGIN 13
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths
 END 15
 BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  276.
+END 16
+BEGIN 17
   Removed
-  3
+  1
   components
   from
   the
@@ -213,17 +203,70 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  260
+  between
+  contigs
+  (1)
+  and
+  'r179-454.1'
+  to
+  be
+  (444,
+  2).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r179-454.1'
+  has
+  size
+  5,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  -482.7182292900165.
+END 21
+BEGIN 22
   Outputting
-  1
+  2
   contigs.
-END 18
+END 22

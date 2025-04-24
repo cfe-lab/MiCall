@@ -184,13 +184,13 @@ BEGIN 14
   has
   size
   280,
-  92
+  179
   matches,
   and
   the
   score
   of
-  3027.7026876844798.
+  15279.336819244932.
 END 14
 BEGIN 15
   Contig
@@ -229,13 +229,13 @@ BEGIN 17
   has
   size
   273,
-  91
+  172
   matches,
   and
   the
   score
   of
-  3172.948250635696.
+  14723.905927107216.
 END 17
 BEGIN 18
   Contig
@@ -401,13 +401,13 @@ BEGIN 28
   has
   size
   280,
-  92
+  179
   matches,
   and
   the
   score
   of
-  3027.7026876844798.
+  15279.336819244932.
 END 28
 BEGIN 29
   Contig
@@ -446,13 +446,13 @@ BEGIN 31
   has
   size
   273,
-  91
+  172
   matches,
   and
   the
   score
   of
-  3172.948250635696.
+  14723.905927107216.
 END 31
 BEGIN 32
   Contig
@@ -518,13 +518,13 @@ BEGIN 36
   has
   size
   280,
-  92
+  179
   matches,
   and
   the
   score
   of
-  3027.7026876844798.
+  15279.336819244932.
 END 36
 BEGIN 37
   Contig
@@ -563,13 +563,13 @@ BEGIN 39
   has
   size
   273,
-  91
+  172
   matches,
   and
   the
   score
   of
-  3172.948250635696.
+  14723.905927107216.
 END 39
 BEGIN 40
   Contig
@@ -635,13 +635,13 @@ BEGIN 44
   has
   size
   273,
-  91
+  172
   matches,
   and
   the
   score
   of
-  3172.948250635696.
+  14723.905927107216.
 END 44
 BEGIN 45
   Contig

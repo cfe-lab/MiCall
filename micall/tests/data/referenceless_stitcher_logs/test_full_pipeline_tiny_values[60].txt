@@ -57,15 +57,23 @@ BEGIN 6
   has
   size
   387,
-  121
+  250
   matches,
   and
   the
   score
   of
-  2847.6599933761217.
+  18314.950062661163.
 END 6
 BEGIN 7
+  Contig
+  'r496-977.0'
+  covers
+  contig
+  'r73-459.1'
+  completely.
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -83,8 +91,8 @@ BEGIN 7
   be
   (42,
   379).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -94,59 +102,48 @@ BEGIN 8
   has
   size
   337,
-  109
+  219
   matches,
   and
   the
   score
   of
-  3114.6640804935314.
-END 8
-BEGIN 9
-  Constructed
-  a
-  path
-  of
-  length
-  482.
+  17243.037229123984.
 END 9
 BEGIN 10
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
+  Contig
+  'r496-977.0'
+  covers
+  contig
+  'r8-344.2'
+  completely.
 END 10
 BEGIN 11
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  482
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
+  Cycle
+  2
+  started
+  with
+  1
+  paths
 END 12
 BEGIN 13
   Calculated
@@ -156,43 +153,6 @@ BEGIN 13
   overlap
   of
   size
-  387
-  between
-  contigs
-  'r496-977.0'
-  and
-  'r73-459.1'
-  to
-  be
-  (3,
-  390).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r496-977.0'
-  and
-  'r73-459.1'
-  has
-  size
-  387,
-  121
-  matches,
-  and
-  the
-  score
-  of
-  2847.6599933761217.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
   337
   between
   contigs
@@ -203,8 +163,8 @@ BEGIN 15
   be
   (42,
   379).
-END 15
-BEGIN 16
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -214,89 +174,81 @@ BEGIN 16
   has
   size
   337,
-  109
+  219
   matches,
   and
   the
   score
   of
-  3114.6640804935314.
+  17243.037229123984.
+END 14
+BEGIN 15
+  Contig
+  'r496-977.0'
+  covers
+  contig
+  'r8-344.2'
+  completely.
+END 15
+BEGIN 16
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  482
+  and
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  272
-  between
-  contigs
-  'r8-344.2'
-  and
-  'r73-459.1'
-  to
-  be
-  (65,
-  272).
+  Cycle
+  3
+  started
+  with
+  1
+  paths
 END 17
 BEGIN 18
-  Overlap
-  between
-  contigs
-  'r8-344.2'
-  and
-  'r73-459.1'
-  has
-  size
-  272,
-  272
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  29161.886444488136.
+  length
+  482.
 END 18
 BEGIN 19
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  272
-  between
-  contigs
-  'r8-344.2'
-  and
-  'r73-459.1',
-  resulting
-  in
-  contig
-  (1).
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
 END 19
 BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
+  Initial
   overlap
-  of
-  size
-  389
-  between
-  contigs
-  (1)
-  and
-  'r496-977.0'
-  to
-  be
-  None.
+  stitching
+  produced
+  1
+  contigs.
 END 20
 BEGIN 21
   Outputting
-  2
+  1
   contigs.
 END 21

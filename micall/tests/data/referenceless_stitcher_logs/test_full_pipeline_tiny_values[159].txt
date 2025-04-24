@@ -157,13 +157,13 @@ BEGIN 12
   has
   size
   326,
-  109
+  212
   matches,
   and
   the
   score
   of
-  3525.5441925550354.
+  16974.842408598317.
 END 12
 BEGIN 13
   Contig
