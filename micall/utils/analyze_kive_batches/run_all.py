@@ -7,6 +7,8 @@ from micall.utils.dir_path import DirPath
 from micall.utils.user_error import UserError
 from .batch import BatchName
 from .generate_setup_stage_ninjafile import generate_setup_stage_ninjafile
+from .download import download
+from .generate_processing_stage_ninjafile import generate_processing_stage_ninjafile
 
 
 def read_batches(batches_list: Path) -> Iterator[BatchName]:
@@ -31,3 +33,11 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
         subprocess.check_call(["ninja", "-f", str(setup_stage_ninjafile)])
     except BaseException as ex:
         raise UserError("Work failed: %s", str(ex)) from ex
+
+    download(root, runs_json)
+
+    processing_stage_ninjafile = root / "processing.ninja"
+    generate_processing_stage_ninjafile(root,
+                                        target=processing_stage_ninjafile,
+                                        runs_json=runs_json,
+                                        )

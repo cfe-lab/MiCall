@@ -38,12 +38,13 @@ def generate_statements(root: DirPath,
                         pairs: Iterable[Tuple[BatchName, Path]],
                         ) -> Iterator[Statement]:
     yield Rule(name="get",
-               command=Command(head="micall", arguments=[
+               command=Command.make(
+                   "micall",
                    "analyze_kive_batches",
                    "get-batch-runs",
                    "--batch", Deref("batch"),
                    "--target", Deref("out"),
-               ]),
+               ),
                description=Description("get {}", [Deref("batch")]),
                )
     yield Rule(name="combine",

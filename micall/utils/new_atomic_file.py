@@ -20,5 +20,9 @@ def new_atomic_text_file(path: Path) -> Iterator[TextIO]:
     temporary_name = f".newatomicfile-{random_name_part}.{path.name}~"
     temporary_path = path.parent / temporary_name
     with temporary_path.open("w+t") as writer:
-        yield writer
+        try:
+            yield writer
+        except:
+            temporary_path.unlink()
+            raise
     temporary_path.rename(path)
