@@ -4,11 +4,12 @@ that only materialize if they are fully initialized.
 """
 
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Iterator
 import random
 import string
 import shutil
+
+from micall.utils.dir_path import DirPath
 
 
 def random_string(length: int) -> str:
@@ -17,7 +18,7 @@ def random_string(length: int) -> str:
 
 
 @contextmanager
-def new_atomic_text_file(path: Path) -> Iterator[Path]:
+def new_atomic_directory(path: DirPath) -> Iterator[DirPath]:
     random_name_part = random_string(9)
     temporary_name = f".newatomicdir-{random_name_part}.{path.name}~"
     temporary_path = path.parent / temporary_name
