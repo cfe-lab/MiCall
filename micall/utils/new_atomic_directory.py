@@ -23,9 +23,14 @@ def new_atomic_directory(path: DirPath) -> Iterator[DirPath]:
     temporary_name = f".newatomicdir-{random_name_part}.{path.name}~"
     temporary_path = path.parent / temporary_name
     temporary_path.mkdir(exist_ok=False, parents=True)
+
     try:
         yield temporary_path
     except:
         shutil.rmtree(temporary_path)
         raise
+
+    if path.exists():
+        shutil.rmtree(path)
+
     shutil.move(src=temporary_path, dst=path)

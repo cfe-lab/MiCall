@@ -30,6 +30,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> None:
                                "--filefilter", FILEFILTER,
                                ])
 
+        info_path = output / "info.json"
         with info_path.open("w") as writer:
             json.dump(info, writer, indent='\t')
 
