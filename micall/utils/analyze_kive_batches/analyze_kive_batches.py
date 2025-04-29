@@ -29,16 +29,24 @@ def cli_parser() -> argparse.ArgumentParser:
                                          required=True,
                                          )
 
+    all = mode_parsers.add_parser("all", help="The main entry to this script. Runs all other subentries.")
+    all.add_argument("--batches-list", type=Path, required=True,
+                     help="Path to a text-file containing the list of batches to be analyzed.")
+    all.add_argument("--root", type=dir_path, required=True,
+                     help="Root directory for all output subdirectories.")
+    all.add_argument("--properties", type=Path, required=True,
+                     help="Additional properties associated with particular images.")
+
     download = mode_parsers.add_parser("download")
-    download.add_argument("--json-file", type=Path,
+    download.add_argument("--json-file", type=Path, required=True,
                           help="The big json file with all the run infos.")
-    download.add_argument("--root", type=dir_path,
+    download.add_argument("--root", type=dir_path, required=True,
                           help="Root directory for all output subdirectories.")
 
     make_stats_1 = mode_parsers.add_parser("make-stats-1")
-    make_stats_1.add_argument("--input", type=dir_path,
+    make_stats_1.add_argument("--input", type=dir_path, required=True,
                               help="Input directory with all the input/output files of a MiCall run.")
-    make_stats_1.add_argument("--output", type=Path,
+    make_stats_1.add_argument("--output", type=Path, required=True,
                               help="Output stats file.")
 
     verbosity_group = parser.add_mutually_exclusive_group()
