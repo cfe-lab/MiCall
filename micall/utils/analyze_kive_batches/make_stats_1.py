@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 import csv
 import math
+from datetime import datetime
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 from micall.utils.dir_path import DirPath
@@ -13,6 +14,18 @@ from .logger import logger
 
 Row = Mapping[str, Optional[Union[str, int, float]]]
 Rows = Iterable[Row]
+
+
+def calculate_seconds_between(start_time: str, end_time: str) -> float:
+    # Parse the start and end times into datetime objects
+    start_dt = datetime.fromisoformat(start_time)
+    end_dt = datetime.fromisoformat(end_time)
+
+    # Calculate the difference between the two datetime objects
+    duration = end_dt - start_dt
+
+    # Return the total seconds as a float
+    return duration.total_seconds()
 
 
 def read_coverage_rows(path_to_file: Path) -> Rows:
@@ -137,8 +150,8 @@ def avg_contigs_lengths(rows: Rows) -> float:
         return 0
 
 
-def get_stats(directory: DirPath) -> Row:
-    def find_file(directory: Path, pattern: str) -> Path:
+def get_stats(info_file: Path) -> Optional[Row]:
+    def find_file(directory: DirPath, pattern: str) -> Path:
         for subdir in directory.iterdir():
             name = subdir.name
             if re.findall(pattern, name):
@@ -146,7 +159,18 @@ def get_stats(directory: DirPath) -> Row:
         raise ValueError(f"Cannot find file {pattern!r}"
                          f" in directory {str(directory)!r}.")
 
-    logger.debug("Processing %r.", str(directory))
+    with info_file.open() as reader:
+        obj = json.load(reader)
+
+    run_id = obj["id"]
+    logger.debug("Processing %r.", run_id)
+
+    state = obj['state']
+    if state != 'C':
+        logger.debug("Run %r is incomplete.", run_id)
+        return None
+
+    directory = DirPath(info_file.parent)
 
     o: MutableMapping[str, Optional[Union[int, str, float]]] = {}
 
@@ -176,12 +200,38 @@ def get_stats(directory: DirPath) -> Row:
         o["number_of_contigs"] = count_contigs(ro(contigs_csv_path))
         o["avg_contigs_size"] = avg_contigs_lengths(ro(contigs_csv_path))
 
-    logger.debug("Processed %r.", str(directory))
+    #
+    # Copying from `info.json`.
+    #
+    app_name = obj['app_name']
+    start_time = obj['start_time']
+    end_time = obj['end_time']
+    run_time = calculate_seconds_between(start_time, end_time)
+    category = app_name.replace(':', '-') \
+                       .replace('/', '-') \
+                       .replace(' ', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-')
+
+    for subdir in directory.iterdir():
+        if subdir.name.endswith("_info.csv"):
+            sample = subdir.name[:-len("_info.csv")]
+            break
+    else:
+        sample = None
+
+    o['assembler'] = category
+    o['run_time'] = run_time
+    o["sample"] = sample
+
+    logger.debug("Processed %r.", run_id)
     return o
 
 
 def make_stats_1(input: Path, output: Path) -> None:
-    input_dir = DirPath(input.parent)
-    result: Row = get_stats(input_dir)
-    with new_atomic_text_file(output) as stats_file:
-        json.dump(result, stats_file, indent='\t')
+    result = get_stats(input)
+    if result:
+        with new_atomic_text_file(output) as stats_file:
+            json.dump(result, stats_file, indent='\t')
