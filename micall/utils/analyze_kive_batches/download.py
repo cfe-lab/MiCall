@@ -15,8 +15,9 @@ FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)).*'
 def process_info(root: DirPath, info: Mapping[str, object]) -> None:
     id = info["id"]
     output = root / "runs" / str(id)
+    info_path = output / "info.json"
 
-    if output.exists():
+    if info_path.exists():
         logger.debug("Directory for RUN_ID %s already exists. Skipping...", id)
         return
 
@@ -29,7 +30,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> None:
                                "--filefilter", FILEFILTER,
                                ])
 
-        with (output / "info.json").open("w") as writer:
+        with info_path.open("w") as writer:
             json.dump(info, writer, indent='\t')
 
 

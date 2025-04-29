@@ -41,3 +41,8 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
                                         target=processing_stage_ninjafile,
                                         runs_json=runs_json,
                                         )
+
+    try:
+        subprocess.check_call(["ninja", "-f", str(processing_stage_ninjafile)])
+    except BaseException as ex:
+        raise UserError("Work failed: %s", str(ex)) from ex

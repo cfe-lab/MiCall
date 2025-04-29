@@ -48,7 +48,8 @@ def generate_statements(root: DirPath,
                description=Description("get {}", [Deref("batch")]),
                )
     yield Rule(name="combine",
-               command=Command.make("micall",
+               command=Command.make(
+                   "micall",
                    "analyze_kive_batches",
                    "combine-batches-runs",
                    "--batches", Deref("in"),

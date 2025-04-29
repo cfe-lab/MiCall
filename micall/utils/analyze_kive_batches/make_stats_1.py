@@ -180,7 +180,8 @@ def get_stats(directory: DirPath) -> Row:
     return o
 
 
-def make_stats_1(input: DirPath, output: Path) -> None:
-    result: Row = get_stats(input)
+def make_stats_1(input: Path, output: Path) -> None:
+    input_dir = DirPath(input.parent)
+    result: Row = get_stats(input_dir)
     with new_atomic_text_file(output) as stats_file:
         json.dump(result, stats_file, indent='\t')

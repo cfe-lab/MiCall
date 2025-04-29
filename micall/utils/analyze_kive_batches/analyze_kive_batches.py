@@ -59,8 +59,8 @@ def cli_parser() -> argparse.ArgumentParser:
                           help="Root directory for all output subdirectories.")
 
     make_stats_1 = mode_parsers.add_parser("make-stats-1")
-    make_stats_1.add_argument("--input", type=dir_path, required=True,
-                              help="Input directory with all the input/output files of a MiCall run.")
+    make_stats_1.add_argument("--input", type=Path, required=True,
+                              help="Input json file with the run info.")
     make_stats_1.add_argument("--output", type=Path, required=True,
                               help="Output stats file.")
 

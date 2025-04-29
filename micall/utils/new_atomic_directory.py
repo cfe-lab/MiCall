@@ -28,4 +28,4 @@ def new_atomic_directory(path: DirPath) -> Iterator[DirPath]:
     except:
         shutil.rmtree(temporary_path)
         raise
-    temporary_path.rename(path)
+    shutil.move(src=temporary_path, dst=path)
