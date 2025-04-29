@@ -17,6 +17,7 @@ from .run_all import run_all
 from .combine_batches_runs import combine_batches_runs
 from .combine_runs_stats import combine_runs_stats
 from .extract_run_ids import extract_run_ids
+from .aggregate_runs_stats import aggregate_runs_stats
 
 
 def dir_path(string: str) -> DirPath:
@@ -74,6 +75,12 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
 
+    sub = mode_parsers.add_parser("aggregate-runs-stats")
+    sub.add_argument("--input", type=Path, required=True,
+                     help="Input json file with the run stats.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output stats file.")
+
     sub = mode_parsers.add_parser("extract-run-ids")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input json file with the run info.")
@@ -109,6 +116,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         make_stats_1(input=args.input, output=args.output)
     elif args.subcommand == 'extract-run-ids':
         extract_run_ids(input=args.input, output=args.output)
+    elif args.subcommand == 'aggregate-runs-stats':
+        aggregate_runs_stats(input=args.input, output=args.output)
     else:
         raise UserError("Unrecognized subcommand %r.", args.subcommand)
 

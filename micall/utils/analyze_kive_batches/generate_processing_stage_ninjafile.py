@@ -16,7 +16,7 @@ def generate_builds(root: DirPath,
         output = dir / "stats.json"
         input = dir / "info.json"
         yield Build(outputs=[output],
-                    rule="analyze",
+                    rule="stats",
                     inputs=[input],
                     )
 
@@ -24,7 +24,7 @@ def generate_statements(root: DirPath,
                         runs_txt: Path,
                         ) -> Iterator[Statement]:
 
-    yield Rule(name="analyze",
+    yield Rule(name="stats",
                command=Command.make(
                    "micall",
                    "analyze_kive_batches",
@@ -35,7 +35,7 @@ def generate_statements(root: DirPath,
                description=Description.make("analyze {}", Deref("in")),
                )
 
-    yield Rule(name="combine",
+    yield Rule(name="combine_stats",
                command=Command.make(
                    "micall",
                    "analyze_kive_batches",
@@ -44,16 +44,34 @@ def generate_statements(root: DirPath,
                    "--runs-txt", runs_txt,
                    "--target", Deref("out"),
                ),
-               description=Description.make("combine"),
+               description=Description.make("combine stats"),
+               )
+
+    yield Rule(name="aggregate_stats",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "aggregate-runs-stats",
+                   "--input", Deref("in"),
+                   "--output", Deref("out"),
+               ),
+               description=Description.make("aggregate stats"),
                )
 
     builds = tuple(generate_builds(root, runs_txt))
 
     inputs = [input for build in builds for input in build.outputs]
-    output = root / "stats.csv"
-    yield Build(rule="combine",
-                outputs=[output],
+    stats = root / "stats.csv"
+    aggregated_stats = root / "agg-stats.csv"
+
+    yield Build(rule="combine_stats",
+                outputs=[stats],
                 inputs=inputs,
+                )
+
+    yield Build(rule="aggregate_stats",
+                outputs=[aggregated_stats],
+                inputs=[stats],
                 )
 
     yield from builds
