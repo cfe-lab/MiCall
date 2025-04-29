@@ -12,7 +12,7 @@ from .generate_setup_stage_ninjafile import generate_setup_stage_ninjafile
 def read_batches(batches_list: Path) -> Iterator[BatchName]:
     with batches_list.open() as reader:
         for line in reader:
-            yield BatchName(line)
+            yield BatchName(line.strip())
 
 
 def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
