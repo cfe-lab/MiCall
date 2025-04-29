@@ -12,6 +12,7 @@ from .logger import logger
 
 from .download import download
 from .make_stats_1 import make_stats_1
+from .get_batch_runs import get_batch_runs
 
 
 def dir_path(string: str) -> DirPath:
@@ -36,6 +37,12 @@ def cli_parser() -> argparse.ArgumentParser:
                      help="Root directory for all output subdirectories.")
     all.add_argument("--properties", type=Path, required=True,
                      help="Additional properties associated with particular images.")
+
+    get_batch_runs = mode_parsers.add_parser("get_batch_runs", help="The main entry to this script. Runs get_batch_runs other subentries.")
+    get_batch_runs.add_argument("--batch", type=str, required=True,
+                                help="The name of the batch to download the runs info for.")
+    get_batch_runs.add_argument("--target", type=dir_path, required=True,
+                                help="Target file where to put the runs info to.")
 
     download = mode_parsers.add_parser("download")
     download.add_argument("--json-file", type=Path, required=True,
@@ -64,7 +71,11 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
 
 def main_typed(subcommand: str, args: argparse.Namespace) -> None:
-    if args.subcommand == 'download':
+    if args.subcommand == 'all':
+        raise NotImplementedError()
+    elif args.subcommand == 'get-batch-runs':
+        get_batch_runs(batch=args.batch, target=args.target)
+    elif args.subcommand == 'download':
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':
         make_stats_1(input=args.input, output=args.output)
