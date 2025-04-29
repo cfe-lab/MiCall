@@ -25,7 +25,7 @@ def generate_statements(root: DirPath, batches: Iterable[BatchName]) -> Iterator
     yield Rule(name="get",
                command=Command(head="micall", arguments=[
                    "analyze_kive_batches",
-                   "get_batch_runs",
+                   "get-batch-runs",
                    "--batch", Deref("batch"),
                    "--target", Deref("out"),
                ]),

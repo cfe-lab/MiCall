@@ -39,10 +39,10 @@ def cli_parser() -> argparse.ArgumentParser:
     all.add_argument("--properties", type=Path, required=True,
                      help="Additional properties associated with particular images.")
 
-    get_batch_runs = mode_parsers.add_parser("get_batch_runs", help="The main entry to this script. Runs get_batch_runs other subentries.")
+    get_batch_runs = mode_parsers.add_parser("get-batch-runs", help="The main entry to this script. Runs get_batch_runs other subentries.")
     get_batch_runs.add_argument("--batch", type=str, required=True,
                                 help="The name of the batch to download the runs info for.")
-    get_batch_runs.add_argument("--target", type=dir_path, required=True,
+    get_batch_runs.add_argument("--target", type=Path, required=True,
                                 help="Target file where to put the runs info to.")
 
     download = mode_parsers.add_parser("download")
