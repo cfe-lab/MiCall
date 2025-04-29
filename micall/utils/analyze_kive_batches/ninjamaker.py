@@ -163,7 +163,7 @@ class Build:
         if self.bindings:
             bindings_s = "\n  ".join(VariableDefinition(name=name, value=value).compile()
                                      for name, value in self.bindings.items())
-            whole += "\n" + bindings_s
+            whole += "\n  " + bindings_s
 
         return whole
 
