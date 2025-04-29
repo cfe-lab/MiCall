@@ -10,7 +10,7 @@ from .ninjamaker import Build, Deref, Command, Statement, Rule, Description, Rec
 def get_outputs(root: DirPath, batches: Iterable[BatchName]) -> Iterator[Tuple[BatchName, Path]]:
     for batch in batches:
         filename = str(batch) + ".json"
-        output = root / filename
+        output = root / "batches" / filename
         yield (batch, output)
 
 
