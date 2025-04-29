@@ -91,6 +91,7 @@ EXECUTABLES = [
     "micall/utils/fasta_to_fastq.py",
     "micall/utils/append_primers.py",
     "micall/utils/randomize_fastq.py",
+    "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
 ]
 
 
