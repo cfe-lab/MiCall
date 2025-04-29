@@ -13,7 +13,7 @@ FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)).*'
 
 def process_info(root: DirPath, info: Mapping[str, object]) -> None:
     id = info["id"]
-    output = root / str(id)
+    output = root / "runs" / str(id)
     if output.exists():
         logger.debug("Directory for RUN_ID %s already exists. Skipping...", id)
         return
