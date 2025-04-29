@@ -23,10 +23,12 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
 
     setup_stage_ninjafile = root / "setup.ninja"
     runs_json = root / "runs.json"
+    runs_txt = root / "runs.txt"
     generate_setup_stage_ninjafile(root,
                                    batches,
                                    target=setup_stage_ninjafile,
                                    runs_json=runs_json,
+                                   runs_txt=runs_txt,
                                    )
 
     try:

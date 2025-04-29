@@ -16,6 +16,7 @@ from .get_batch import get_batch
 from .run_all import run_all
 from .combine_batches_runs import combine_batches_runs
 from .combine_runs_stats import combine_runs_stats
+from .extract_run_ids import extract_run_ids
 
 
 def dir_path(string: str) -> DirPath:
@@ -41,11 +42,11 @@ def cli_parser() -> argparse.ArgumentParser:
     all.add_argument("--properties", type=Path, required=True,
                      help="Additional properties associated with particular images.")
 
-    get_batch = mode_parsers.add_parser("get-batch", help="The main entry to this script. Runs get_batch other subentries.")
-    get_batch.add_argument("--batch", type=str, required=True,
-                           help="The name of the batch to download the runs info for.")
-    get_batch.add_argument("--target", type=Path, required=True,
-                           help="Target file where to put the runs info to.")
+    sub = mode_parsers.add_parser("get-batch", help="Downloads a batch info.")
+    sub.add_argument("--batch", type=str, required=True,
+                     help="The name of the batch to download the runs info for.")
+    sub.add_argument("--target", type=Path, required=True,
+                     help="Target file where to put the runs info to.")
 
     sub = mode_parsers.add_parser("combine-batches-runs", help="Extract batches run infos and combine them.")
     sub.add_argument("--batches", type=Path, required=True, nargs=argparse.ONE_OR_MORE,
@@ -61,17 +62,23 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--target", type=Path, required=True,
                      help="Target file where to put the combine stats to.")
 
-    download = mode_parsers.add_parser("download")
-    download.add_argument("--json-file", type=Path, required=True,
-                          help="The big json file with all the run infos.")
-    download.add_argument("--root", type=dir_path, required=True,
-                          help="Root directory for all output subdirectories.")
+    sub = mode_parsers.add_parser("download")
+    sub.add_argument("--json-file", type=Path, required=True,
+                     help="The big json file with all the run infos.")
+    sub.add_argument("--root", type=dir_path, required=True,
+                     help="Root directory for all output subdirectories.")
 
-    make_stats_1 = mode_parsers.add_parser("make-stats-1")
-    make_stats_1.add_argument("--input", type=Path, required=True,
-                              help="Input json file with the run info.")
-    make_stats_1.add_argument("--output", type=Path, required=True,
-                              help="Output stats file.")
+    sub = mode_parsers.add_parser("make-stats-1")
+    sub.add_argument("--input", type=Path, required=True,
+                     help="Input json file with the run info.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output stats file.")
+
+    sub = mode_parsers.add_parser("extract-run-ids")
+    sub.add_argument("--input", type=Path, required=True,
+                     help="Input json file with the run info.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output ids file.")
 
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
@@ -100,6 +107,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':
         make_stats_1(input=args.input, output=args.output)
+    elif args.subcommand == 'extract-run-ids':
+        extract_run_ids(input=args.input, output=args.output)
     else:
         raise UserError("Unrecognized subcommand %r.", args.subcommand)
 
