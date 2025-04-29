@@ -220,6 +220,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
             sample = subdir.name[:-len("_info.csv")]
             break
     else:
+        logger.warning("Cannot determine sample name for run %r.", run_id)
         sample = None
 
     o['assembler'] = category
