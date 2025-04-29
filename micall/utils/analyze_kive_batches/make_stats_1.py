@@ -226,6 +226,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
     o['assembler'] = category
     o['run_time'] = run_time
     o["sample"] = sample
+    o["run_id"] = run_id
 
     logger.debug("Processed %r.", run_id)
     return o

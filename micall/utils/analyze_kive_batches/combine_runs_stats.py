@@ -16,7 +16,7 @@ FIELDNAMES = ("assembler",
               "number_of_contigs",
               "avg_contigs_size",
               "run_time",
-              "runid",
+              "run_id",
               "sample",
               )
 
