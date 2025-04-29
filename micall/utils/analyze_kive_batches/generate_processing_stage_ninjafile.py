@@ -36,10 +36,31 @@ def generate_statements(root: DirPath,
                    "--input", Deref("in"),
                    "--output", Deref("out"),
                ),
-               description=Description("analyze {}", [Deref("in")]),
+               description=Description.make("analyze {}", Deref("in")),
                )
 
-    yield from generate_builds(root, runs_json)
+    yield Rule(name="combine",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "combine-runs-stats",
+                   "--root", root,
+                   "--runs-json", runs_json,
+                   "--target", Deref("out"),
+               ),
+               description=Description.make("combine"),
+               )
+
+    builds = tuple(generate_builds(root, runs_json))
+
+    inputs = [input for build in builds for input in build.outputs]
+    output = root / "stats.csv"
+    yield Build(rule="combine",
+                outputs=[output],
+                inputs=inputs,
+                )
+
+    yield from builds
 
 
 def generate_processing_stage_ninjafile(

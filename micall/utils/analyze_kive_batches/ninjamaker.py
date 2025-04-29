@@ -113,6 +113,10 @@ class Description:
         escaped_arguments = map(compile_value, self.arguments)
         return self.format.format(*escaped_arguments)
 
+    @staticmethod
+    def make(format: str, *arguments: Value) -> 'Description':
+        return Description(format=format, arguments=arguments)
+
 
 #
 # == RULE DEFINITIONS ==

@@ -15,6 +15,7 @@ from .make_stats_1 import make_stats_1
 from .get_batch import get_batch
 from .run_all import run_all
 from .combine_batches_runs import combine_batches_runs
+from .combine_runs_stats import combine_runs_stats
 
 
 def dir_path(string: str) -> DirPath:
@@ -42,15 +43,23 @@ def cli_parser() -> argparse.ArgumentParser:
 
     get_batch = mode_parsers.add_parser("get-batch", help="The main entry to this script. Runs get_batch other subentries.")
     get_batch.add_argument("--batch", type=str, required=True,
-                                help="The name of the batch to download the runs info for.")
+                           help="The name of the batch to download the runs info for.")
     get_batch.add_argument("--target", type=Path, required=True,
-                                help="Target file where to put the runs info to.")
+                           help="Target file where to put the runs info to.")
 
-    get_batch = mode_parsers.add_parser("combine-batches-runs", help="Extract batches run infos and combine them.")
-    get_batch.add_argument("--batches", type=Path, required=True, nargs=argparse.ONE_OR_MORE,
-                                help="The downloaded batches files.")
-    get_batch.add_argument("--target", type=Path, required=True,
-                                help="Target file where to put the runs info to.")
+    sub = mode_parsers.add_parser("combine-batches-runs", help="Extract batches run infos and combine them.")
+    sub.add_argument("--batches", type=Path, required=True, nargs=argparse.ONE_OR_MORE,
+                     help="The downloaded batches files.")
+    sub.add_argument("--target", type=Path, required=True,
+                     help="Target file where to put the runs info to.")
+
+    sub = mode_parsers.add_parser("combine-runs-stats", help="Combine all stats.json files into one.")
+    sub.add_argument("--root", type=dir_path, required=True,
+                     help="Root directory for all output subdirectories.")
+    sub.add_argument("--runs-json", type=Path, required=True,
+                     help="The big json file with all the run infos.")
+    sub.add_argument("--target", type=Path, required=True,
+                     help="Target file where to put the combine stats to.")
 
     download = mode_parsers.add_parser("download")
     download.add_argument("--json-file", type=Path, required=True,
@@ -85,6 +94,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         get_batch(batch=args.batch, target=args.target)
     elif args.subcommand == 'combine-batches-runs':
         combine_batches_runs(batches=args.batches, target=args.target)
+    elif args.subcommand == 'combine-runs-stats':
+        combine_runs_stats(root=args.root, runs_json=args.runs_json, target=args.target)
     elif args.subcommand == 'download':
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':
