@@ -6,7 +6,7 @@ from micall.utils.user_error import UserError
 from .batch import BatchName
 
 
-def get_batch_runs(batch: BatchName, target: Path) -> None:
+def get_batch(batch: BatchName, target: Path) -> None:
     with target.open("wt") as writer:
         try:
             subprocess.check_call(

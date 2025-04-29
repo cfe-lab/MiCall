@@ -12,7 +12,7 @@ from .logger import logger
 
 from .download import download
 from .make_stats_1 import make_stats_1
-from .get_batch_runs import get_batch_runs
+from .get_batch import get_batch
 from .run_all import run_all
 from .combine_batches_runs import combine_batches_runs
 
@@ -40,16 +40,16 @@ def cli_parser() -> argparse.ArgumentParser:
     all.add_argument("--properties", type=Path, required=True,
                      help="Additional properties associated with particular images.")
 
-    get_batch_runs = mode_parsers.add_parser("get-batch-runs", help="The main entry to this script. Runs get_batch_runs other subentries.")
-    get_batch_runs.add_argument("--batch", type=str, required=True,
+    get_batch = mode_parsers.add_parser("get-batch", help="The main entry to this script. Runs get_batch other subentries.")
+    get_batch.add_argument("--batch", type=str, required=True,
                                 help="The name of the batch to download the runs info for.")
-    get_batch_runs.add_argument("--target", type=Path, required=True,
+    get_batch.add_argument("--target", type=Path, required=True,
                                 help="Target file where to put the runs info to.")
 
-    get_batch_runs = mode_parsers.add_parser("combine-batches-runs", help="Extract batches run infos and combine them.")
-    get_batch_runs.add_argument("--batches", type=Path, required=True, nargs=argparse.ONE_OR_MORE,
+    get_batch = mode_parsers.add_parser("combine-batches-runs", help="Extract batches run infos and combine them.")
+    get_batch.add_argument("--batches", type=Path, required=True, nargs=argparse.ONE_OR_MORE,
                                 help="The downloaded batches files.")
-    get_batch_runs.add_argument("--target", type=Path, required=True,
+    get_batch.add_argument("--target", type=Path, required=True,
                                 help="Target file where to put the runs info to.")
 
     download = mode_parsers.add_parser("download")
@@ -81,8 +81,8 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     if args.subcommand == 'all':
         run_all(batches_list=args.batches_list, root=args.root, properties=args.properties)
-    elif args.subcommand == 'get-batch-runs':
-        get_batch_runs(batch=args.batch, target=args.target)
+    elif args.subcommand == 'get-batch':
+        get_batch(batch=args.batch, target=args.target)
     elif args.subcommand == 'combine-batches-runs':
         combine_batches_runs(batches=args.batches, target=args.target)
     elif args.subcommand == 'download':

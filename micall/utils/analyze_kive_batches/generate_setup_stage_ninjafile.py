@@ -41,7 +41,7 @@ def generate_statements(root: DirPath,
                command=Command.make(
                    "micall",
                    "analyze_kive_batches",
-                   "get-batch-runs",
+                   "get-batch",
                    "--batch", Deref("batch"),
                    "--target", Deref("out"),
                ),
