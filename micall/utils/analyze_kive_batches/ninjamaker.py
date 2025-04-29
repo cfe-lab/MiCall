@@ -186,14 +186,18 @@ class Default:
 #
 # == THE WHOLE NINJA FILE ==
 #
-Statement = Union[VariableDefinition, Rule, Build, Default]
+Statement = Union[VariableDefinition, Rule, Build]
 
 
 @dataclass(frozen=True)
 class Recipe:
     statements: Sequence[Statement]
+    default: Sequence[Value] = ()
 
     def compile(self) -> str:
         # join with a blank line between top‐level statements
-        chunks = (stmt.compile() for stmt in self.statements)
+        chunks = list(stmt.compile() for stmt in self.statements)
+        if self.default:
+            chunks.append(Default(self.default).compile())
+
         return "\n\n".join(chunks) + "\n"
