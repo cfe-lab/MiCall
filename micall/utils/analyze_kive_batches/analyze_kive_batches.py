@@ -14,6 +14,7 @@ from .download import download
 from .make_stats_1 import make_stats_1
 from .get_batch_runs import get_batch_runs
 from .run_all import run_all
+from .combine_batches_runs import combine_batches_runs
 
 
 def dir_path(string: str) -> DirPath:
@@ -42,6 +43,12 @@ def cli_parser() -> argparse.ArgumentParser:
     get_batch_runs = mode_parsers.add_parser("get-batch-runs", help="The main entry to this script. Runs get_batch_runs other subentries.")
     get_batch_runs.add_argument("--batch", type=str, required=True,
                                 help="The name of the batch to download the runs info for.")
+    get_batch_runs.add_argument("--target", type=Path, required=True,
+                                help="Target file where to put the runs info to.")
+
+    get_batch_runs = mode_parsers.add_parser("combine-batches-runs", help="Extract batches run infos and combine them.")
+    get_batch_runs.add_argument("--batches", type=Path, required=True, nargs=argparse.ONE_OR_MORE,
+                                help="The downloaded batches files.")
     get_batch_runs.add_argument("--target", type=Path, required=True,
                                 help="Target file where to put the runs info to.")
 
@@ -76,6 +83,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         run_all(batches_list=args.batches_list, root=args.root, properties=args.properties)
     elif args.subcommand == 'get-batch-runs':
         get_batch_runs(batch=args.batch, target=args.target)
+    elif args.subcommand == 'combine-batches-runs':
+        combine_batches_runs(batches=args.batches, target=args.target)
     elif args.subcommand == 'download':
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':

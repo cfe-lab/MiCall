@@ -14,16 +14,29 @@ def get_outputs(root: DirPath, batches: Iterable[BatchName]) -> Iterator[Tuple[B
         yield (batch, output)
 
 
-def generate_builds(root: DirPath, batches: Iterable[Tuple[BatchName, Path]]) -> Iterator[Build]:
-    for batch, output in batches:
+def generate_builds(root: DirPath,
+                    runs_json: Path,
+                    pairs: Iterable[Tuple[BatchName, Path]],
+                    ) -> Iterator[Build]:
+
+    for batch, output in pairs:
         yield Build(outputs=[output],
                     rule="get",
                     inputs=[],
                     bindings=[("batch", str(batch))],
                     )
 
+    outputs = tuple(output for batch, output in pairs)
+    yield Build(rule="combine",
+                outputs=[runs_json],
+                inputs=outputs,
+                )
 
-def generate_statements(root: DirPath, pairs: Iterable[Tuple[BatchName, Path]]) -> Iterator[Statement]:
+
+def generate_statements(root: DirPath,
+                        runs_json: Path,
+                        pairs: Iterable[Tuple[BatchName, Path]],
+                        ) -> Iterator[Statement]:
     yield Rule(name="get",
                command=Command(head="micall", arguments=[
                    "analyze_kive_batches",
@@ -33,17 +46,25 @@ def generate_statements(root: DirPath, pairs: Iterable[Tuple[BatchName, Path]]) 
                ]),
                description=Description("get {}", [Deref("batch")]),
                )
-    yield from generate_builds(root, pairs)
+    yield Rule(name="combine",
+               command=Command.make("micall",
+                   "analyze_kive_batches",
+                   "combine-batches-runs",
+                   "--batches", Deref("in"),
+                   "--target", Deref("out"),
+               ),
+               description=Description("combine {}", [Deref("in")]),
+               )
+    yield from generate_builds(root, runs_json, pairs)
 
 
 def generate_setup_stage_ninjafile(
         root: DirPath,
         batches: Iterable[BatchName],
         target: Path,
-) -> Iterator[Path]:
+        runs_json: Path,
+) -> None:
     outputs_batches_pairs = tuple(get_outputs(root, batches))
-    outputs = tuple(output for batch, output in outputs_batches_pairs)
-    recipe = Recipe(tuple(generate_statements(root, outputs_batches_pairs)),
-                    default=outputs)
+    recipe = Recipe(tuple(generate_statements(root, runs_json, outputs_batches_pairs)),
+                    default=[runs_json])
     target.write_text(recipe.compile())
-    yield from outputs

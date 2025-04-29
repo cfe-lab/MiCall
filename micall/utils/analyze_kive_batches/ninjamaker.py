@@ -15,6 +15,7 @@ def escape(s: str) -> str:
 
 Value = Union[str, Path, 'Deref']
 CommandArg = Union[str, Path, 'Deref']
+CommandArgs = Union[CommandArg, Sequence[CommandArg]]
 
 
 def compile_value(v: Value) -> str:
@@ -87,6 +88,17 @@ class Command:
         head_s = compile_value(self.head)
         args_s = " ".join(compile_command_arg(a) for a in self.arguments)
         return head_s + ((" " + args_s) if args_s else "")
+
+    @staticmethod
+    def make(head: Union[str, Deref], *arguments: CommandArgs) -> 'Command':
+        flattened: list[CommandArg] = []
+        for arg in arguments:
+            if isinstance(arg, (Deref, Path, str)):
+                flattened.append(arg)
+            else:
+                flattened.extend(arg)
+
+        return Command(head, tuple(flattened))
 
 
 #
