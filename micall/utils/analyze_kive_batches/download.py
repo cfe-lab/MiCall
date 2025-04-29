@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 from micall.utils.dir_path import DirPath
-from micall.utils.analyze_kive_batches.logger import logger
+from .logger import logger
 
 
 FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)).*'
@@ -31,7 +31,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> None:
         json.dump(info, writer, indent='\t')
 
 
-def main_typed(root: DirPath, json_file: Path) -> None:
+def download(root: DirPath, json_file: Path) -> None:
     with json_file.open() as reader:
         for info in json.load(reader):
             process_info(root, info)

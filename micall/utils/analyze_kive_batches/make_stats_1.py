@@ -8,7 +8,7 @@ import math
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 from micall.utils.dir_path import DirPath
-from micall.utils.analyze_kive_batches.logger import logger
+from .logger import logger
 
 
 Row = Mapping[str, Optional[Union[str, int, float]]]
@@ -180,7 +180,7 @@ def get_stats(directory: DirPath) -> Row:
     return o
 
 
-def main_typed(input: DirPath, output: Path) -> None:
+def make_stats_1(input: DirPath, output: Path) -> None:
     result: Row = get_stats(input)
     with new_atomic_text_file(output) as stats_file:
         json.dump(result, stats_file, indent='\t')

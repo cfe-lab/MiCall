@@ -8,10 +8,10 @@ import logging
 
 from micall.utils.dir_path import DirPath
 from micall.utils.user_error import UserError
-from micall.utils.analyze_kive_batches.logger import logger
+from .logger import logger
 
-import micall.utils.analyze_kive_batches.download
-import micall.utils.analyze_kive_batches.make_stats_1
+from .download import download
+from .make_stats_1 import make_stats_1
 
 
 def dir_path(string: str) -> DirPath:
@@ -23,7 +23,7 @@ def dir_path(string: str) -> DirPath:
 
 
 def cli_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser("Analyze a kive run.")
+    parser = argparse.ArgumentParser(description="Analyze a kive run.")
     mode_parsers = parser.add_subparsers(dest='subcommand',
                                          title='subcommands',
                                          required=True,
@@ -55,17 +55,18 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main_typed(args: argparse.Namespace) -> None:
+def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     if args.subcommand == 'download':
-        micall.utils.analyze_kive_batches.download.main_typed(json_file=args.json_file, root=args.root)
+        download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':
-        micall.utils.analyze_kive_batches.make_stats_1.main_typed(input=args.input, output=args.output)
+        make_stats_1(input=args.input, output=args.output)
     else:
         raise UserError("Unrecognized subcommand %r.", args.subcommand)
 
 
 def main(argv: Sequence[str]) -> int:
     args = parse_args(argv)
+    subcommand: str = args.subcommand
 
     if args.quiet:
         logger.setLevel(logging.ERROR)
@@ -77,7 +78,7 @@ def main(argv: Sequence[str]) -> int:
         logger.setLevel(logging.WARN)
 
     try:
-        main_typed(args)
+        main_typed(subcommand, args)
         logger.debug("Done.")
         return 0
     except BrokenPipeError:
