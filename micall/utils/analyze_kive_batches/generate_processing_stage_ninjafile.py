@@ -1,20 +1,16 @@
 
 from typing import Iterator
 from pathlib import Path
-import json
 
 from micall.utils.dir_path import DirPath
 from .ninjamaker import Build, Deref, Command, Statement, Rule, Description, Recipe
 
 
 def generate_builds(root: DirPath,
-                    runs_json: Path,
+                    runs_txt: Path,
                     ) -> Iterator[Build]:
 
-    with runs_json.open() as reader:
-        runs = json.load(reader)
-        run_ids = tuple(run["id"] for run in runs)
-
+    run_ids = runs_txt.read_text().splitlines()
     for run_id in run_ids:
         dir = root / "runs" / str(run_id)
         output = dir / "stats.json"
@@ -25,7 +21,7 @@ def generate_builds(root: DirPath,
                     )
 
 def generate_statements(root: DirPath,
-                        runs_json: Path,
+                        runs_txt: Path,
                         ) -> Iterator[Statement]:
 
     yield Rule(name="analyze",
@@ -45,13 +41,13 @@ def generate_statements(root: DirPath,
                    "analyze_kive_batches",
                    "combine-runs-stats",
                    "--root", root,
-                   "--runs-json", runs_json,
+                   "--runs-txt", runs_txt,
                    "--target", Deref("out"),
                ),
                description=Description.make("combine"),
                )
 
-    builds = tuple(generate_builds(root, runs_json))
+    builds = tuple(generate_builds(root, runs_txt))
 
     inputs = [input for build in builds for input in build.outputs]
     output = root / "stats.csv"
@@ -66,9 +62,9 @@ def generate_statements(root: DirPath,
 def generate_processing_stage_ninjafile(
         root: DirPath,
         target: Path,
-        runs_json: Path,
+        runs_txt: Path,
 ) -> None:
-    statements = tuple(generate_statements(root, runs_json))
+    statements = tuple(generate_statements(root, runs_txt))
     builds = [s for s in statements if isinstance(s, Build)]
     outputs = [o for build in builds for o in build.outputs]
     recipe = Recipe(statements, default=outputs)

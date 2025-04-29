@@ -57,8 +57,8 @@ def cli_parser() -> argparse.ArgumentParser:
     sub = mode_parsers.add_parser("combine-runs-stats", help="Combine all stats.json files into one.")
     sub.add_argument("--root", type=dir_path, required=True,
                      help="Root directory for all output subdirectories.")
-    sub.add_argument("--runs-json", type=Path, required=True,
-                     help="The big json file with all the run infos.")
+    sub.add_argument("--runs-txt", type=Path, required=True,
+                     help="The txt file with all the run ids in it.")
     sub.add_argument("--target", type=Path, required=True,
                      help="Target file where to put the combine stats to.")
 
@@ -102,7 +102,7 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     elif args.subcommand == 'combine-batches-runs':
         combine_batches_runs(batches=args.batches, target=args.target)
     elif args.subcommand == 'combine-runs-stats':
-        combine_runs_stats(root=args.root, runs_json=args.runs_json, target=args.target)
+        combine_runs_stats(root=args.root, runs_txt=args.runs_txt, target=args.target)
     elif args.subcommand == 'download':
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':

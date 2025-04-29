@@ -41,7 +41,7 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
     processing_stage_ninjafile = root / "processing.ninja"
     generate_processing_stage_ninjafile(root,
                                         target=processing_stage_ninjafile,
-                                        runs_json=runs_json,
+                                        runs_txt=runs_txt,
                                         )
 
     try:

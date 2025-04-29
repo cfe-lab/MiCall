@@ -21,11 +21,8 @@ FIELDNAMES = ("assembler",
               )
 
 
-def combine_runs_stats(root: DirPath, runs_json: Path, target: Path) -> None:
-    with runs_json.open() as reader:
-        runs = json.load(reader)
-        run_ids = tuple(x["id"] for x in runs)
-
+def combine_runs_stats(root: DirPath, runs_txt: Path, target: Path) -> None:
+    run_ids = runs_txt.read_text().splitlines()
     with new_atomic_text_file(target) as writer:
         dwriter = csv.DictWriter(writer, fieldnames=FIELDNAMES)
         dwriter.writeheader()
