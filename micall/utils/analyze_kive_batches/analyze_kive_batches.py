@@ -13,6 +13,7 @@ from .logger import logger
 from .download import download
 from .make_stats_1 import make_stats_1
 from .get_batch_runs import get_batch_runs
+from .run_all import run_all
 
 
 def dir_path(string: str) -> DirPath:
@@ -72,7 +73,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
 def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     if args.subcommand == 'all':
-        raise NotImplementedError()
+        run_all(batches_list=args.batches_list, root=args.root, properties=args.properties)
     elif args.subcommand == 'get-batch-runs':
         get_batch_runs(batch=args.batch, target=args.target)
     elif args.subcommand == 'download':

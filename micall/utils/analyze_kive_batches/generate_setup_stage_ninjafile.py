@@ -14,7 +14,7 @@ def generate_builds(root: DirPath, batches: Iterable[BatchName]) -> Iterator[Bui
         yield Build(outputs=[output],
                     rule="get",
                     inputs=[],
-                    bindings={ "batch":  str(batch) },
+                    bindings=[("batch", str(batch))],
                     )
 
 

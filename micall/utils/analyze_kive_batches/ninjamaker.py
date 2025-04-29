@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from typing import Sequence, Union, NoReturn, Optional, Mapping
+from typing import Sequence, Union, NoReturn, Optional, Tuple
 from pathlib import Path
 import shlex
 
@@ -140,9 +140,9 @@ class Build:
     outputs: Sequence[Value]
     rule: str
     inputs: Sequence[Value]
-    bindings: Mapping[str, Value] = {}
-    implicit: Sequence[Value]     = ()
-    order_only: Sequence[Value]   = ()
+    bindings: Sequence[Tuple[str, Value]] = ()
+    implicit: Sequence[Value]             = ()
+    order_only: Sequence[Value]           = ()
 
     def compile(self) -> str:
         out_s = " ".join(compile_value(v) for v in self.outputs)
@@ -162,7 +162,7 @@ class Build:
 
         if self.bindings:
             bindings_s = "\n  ".join(VariableDefinition(name=name, value=value).compile()
-                                     for name, value in self.bindings.items())
+                                     for name, value in self.bindings)
             whole += "\n  " + bindings_s
 
         return whole
