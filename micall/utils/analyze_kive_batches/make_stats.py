@@ -250,13 +250,8 @@ def get_stats(info_file: Path) -> Optional[Row]:
     o['app'] = safe_app
     o["run_id"] = run_id
     o["state"] = state
-
-    if state in ['N', 'L', 'R']:
-        logger.warning("Run %r is still going.", run_id)
-        return None
-
     if state != 'C':
-        logger.warning("Run %r is incomplete.", run_id)
+        logger.error("Should only be processing runs with state 'C', but got state %s.", state)
         return o
 
     start_time = obj['start_time']

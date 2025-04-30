@@ -36,10 +36,6 @@ def combine_runs_stats(root: DirPath, runs_txt: Path, target: Path) -> None:
             with open(stats) as stats_reader:
                 stats_object = json.load(stats_reader)
 
-            if stats_object["state"] != 'C':
-                logger.debug("Run %s is not good.", run_id)
-                continue
-
             selected = {key: value for key, value in stats_object.items()
                         if key in FIELDNAMES}
             dwriter.writerow(selected)
