@@ -18,21 +18,33 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> None:
     info_path = output / "info.json"
 
     if info_path.exists():
-        logger.debug("Directory for RUN_ID %s already exists. Skipping...", id)
-        return
+        logger.debug("Directory for RUN_ID %s already exists.", id)
 
-    with new_atomic_directory(output) as output:
-        subprocess.check_call(["kivecli",
-                               "download",
-                               "--debug",
-                               "--run_id", str(id),
-                               "--output", str(output),
-                               "--filefilter", FILEFILTER,
-                               ])
+        with info_path.open() as reader:
+            existing_info = json.load(reader)
 
-        info_path = output / "info.json"
-        with info_path.open("w") as writer:
-            json.dump(info, writer, indent='\t')
+        if existing_info["state"] == info["state"]:
+            logger.debug("Run %s has no updates.", id)
+            return
+        else:
+            logger.info("Run %s has new updates.", id)
+
+    try:
+        with new_atomic_directory(output) as output:
+            subprocess.check_call(["kivecli",
+                                   "download",
+                                   "--debug",
+                                   "--run_id", str(id),
+                                   "--output", str(output),
+                                   "--filefilter", FILEFILTER,
+                                   ])
+
+            info_path = output / "info.json"
+            with info_path.open("w") as writer:
+                json.dump(info, writer, indent='\t')
+
+    except BaseException as ex:
+        logger.warning("Could not download run %s: %s", id, ex)
 
 
 def download(root: DirPath, json_file: Path) -> None:
