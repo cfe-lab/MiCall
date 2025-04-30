@@ -149,12 +149,12 @@ def collect_values(column: str, rows: Rows) -> Iterator[float]:
         yield numeric_value
 
 
-def calculate_avg(column: str, rows: Rows) -> str:
+def calculate_avg(column: str, rows: Rows) -> Optional[float]:
     num = average(collect_values(column, rows))
     if math.isnan(num):
-        return ""
+        return None
     else:
-        return str(num)
+        return num
 
 
 def count_matches(rows: Rows) -> Optional[int]:
@@ -284,7 +284,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
             overlaps.append({
                 "overlap_size": overlap_size,
                 "overlap_mismatches": overlap_mismatches,
-                "overlap_pvalue": "{:.10f}".format(overlap_pvalue),
+                "overlap_pvalue": overlap_pvalue,
             })
 
     o["overlaps"] = overlaps
