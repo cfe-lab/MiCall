@@ -28,6 +28,7 @@ def generate_builds(root: DirPath,
 
 def generate_statements(root: DirPath,
                         runs_txt: Path,
+                        properties: Path,
                         ) -> Iterator[Statement]:
 
     yield Rule(name="stats",
@@ -98,6 +99,17 @@ def generate_statements(root: DirPath,
                description=Description.make("aggregate overlaps"),
                )
 
+    yield Rule(name="make_properties",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "make-properties",
+                   "--input", Deref("in"),
+                   "--output", Deref("out"),
+               ),
+               description=Description.make("reshape properties"),
+               )
+
     builds = tuple(generate_builds(root, runs_txt))
 
     stats = root / "stats.csv"
@@ -105,6 +117,7 @@ def generate_statements(root: DirPath,
     overlaps = root / "overlaps.csv"
     aggregated_stats = root / "agg-stats.csv"
     aggregated_overlaps = root / "agg-overlaps.csv"
+    properties_file = root / "properties.csv"
 
     yield Build(rule="combine_stats",
                 outputs=[stats],
@@ -126,6 +139,11 @@ def generate_statements(root: DirPath,
                 inputs=[overlaps],
                 )
 
+    yield Build(rule="make_properties",
+                outputs=[properties_file],
+                inputs=[properties],
+                )
+
     yield from builds
 
 
@@ -133,8 +151,9 @@ def generate_processing_stage_ninjafile(
         root: DirPath,
         target: Path,
         runs_txt: Path,
+        properties: Path,
 ) -> None:
-    statements = tuple(generate_statements(root, runs_txt))
+    statements = tuple(generate_statements(root, runs_txt, properties))
     builds = [s for s in statements if isinstance(s, Build)]
     outputs = [o for build in builds for o in build.outputs]
     recipe = Recipe(statements, default=outputs)

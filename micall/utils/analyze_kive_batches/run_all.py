@@ -42,6 +42,7 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
     generate_processing_stage_ninjafile(root,
                                         target=processing_stage_ninjafile,
                                         runs_txt=runs_txt,
+                                        properties=properties,
                                         )
 
     try:
