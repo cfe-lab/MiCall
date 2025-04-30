@@ -14,15 +14,16 @@ def generate_builds(root: DirPath,
     for run_id in run_ids:
         dir = root / "runs" / str(run_id)
         stats_output = dir / "stats.json"
-        overlaps_output = dir / "overlaps.json"
+        stitcher_output = dir / "stitched"
         input = dir / "info.json"
+        yield Build(outputs=[stitcher_output],
+                    rule="stitch",
+                    inputs=[input],
+                    )
         yield Build(outputs=[stats_output],
                     rule="stats",
                     inputs=[input],
-                    )
-        yield Build(outputs=[overlaps_output],
-                    rule="overlaps",
-                    inputs=[input],
+                    implicit=[stitcher_output],
                     )
 
 def generate_statements(root: DirPath,
@@ -40,15 +41,15 @@ def generate_statements(root: DirPath,
                description=Description.make("make stats {}", Deref("in")),
                )
 
-    yield Rule(name="overlaps",
+    yield Rule(name="stitch",
                command=Command.make(
                    "micall",
                    "analyze_kive_batches",
-                   "calculate-overlaps",
-                   "--input", Deref("in"),
+                   "stitch-contigs",
+                   "--info-file", Deref("in"),
                    "--output", Deref("out"),
                ),
-               description=Description.make("calculate overlaps {}", Deref("in")),
+               description=Description.make("stitch contigs {}", Deref("in")),
                )
 
     yield Rule(name="combine_stats",

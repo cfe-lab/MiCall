@@ -18,7 +18,7 @@ from .combine_batches_runs import combine_batches_runs
 from .combine_runs_stats import combine_runs_stats
 from .extract_run_ids import extract_run_ids
 from .aggregate_runs_stats import aggregate_runs_stats
-from .calculate_overlaps import calculate_overlaps
+from .stitch_contigs import stitch_contigs
 
 
 def dir_path(string: str) -> DirPath:
@@ -76,11 +76,11 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
 
-    sub = mode_parsers.add_parser("calculate-overlaps")
-    sub.add_argument("--input", type=Path, required=True,
+    sub = mode_parsers.add_parser("stitch-contigs")
+    sub.add_argument("--info-file", type=Path, required=True,
                      help="Input json file with the run info.")
     sub.add_argument("--output", type=Path, required=True,
-                     help="Output stats file.")
+                     help="Output file.")
 
     sub = mode_parsers.add_parser("aggregate-runs-stats")
     sub.add_argument("--input", type=Path, required=True,
@@ -121,8 +121,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats-1':
         make_stats_1(input=args.input, output=args.output)
-    elif args.subcommand == 'calculate-overlaps':
-        calculate_overlaps(input=args.input, output=args.output)
+    elif args.subcommand == 'stitch-contigs':
+        stitch_contigs(info_file=args.info_file, output=args.output)
     elif args.subcommand == 'extract-run-ids':
         extract_run_ids(input=args.input, output=args.output)
     elif args.subcommand == 'aggregate-runs-stats':
