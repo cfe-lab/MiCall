@@ -12,9 +12,13 @@ def make_properties(input: Path, output: Path) -> None:
         obj = tomllib.load(reader)
 
     def collect_properties() -> Iterator[str]:
+        seen = set()
         yield "app"  # The index key.
         for app, props in obj.items():
-            yield from props.keys()
+            for key in props.keys():
+                if key not in seen:
+                    seen.add(key)
+                    yield key
 
     fieldnames = tuple(collect_properties())
     with new_atomic_text_file(output) as writer:
