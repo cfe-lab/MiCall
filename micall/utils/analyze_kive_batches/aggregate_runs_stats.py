@@ -24,9 +24,8 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
             avg_total_mlen        = ('total_mlen',        'mean'),
             avg_overlap_count     = ('overlap_count',     'mean'),
             avg_number_of_contigs = ('number_of_contigs', 'mean'),
-            avg_avg_contigs_size  = ('avg_contigs_size',  'mean'),
+            avg_contigs_size      = ('avg_contigs_size',  'mean'),
             avg_run_time          = ('run_time',          'mean'),
-            sum_run_time          = ('run_time',          'sum'),
             count                 = ('assembler',         'count'),
         )
         .reset_index()
