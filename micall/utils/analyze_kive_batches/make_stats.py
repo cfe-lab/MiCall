@@ -250,6 +250,10 @@ def get_stats(info_file: Path) -> Optional[Row]:
     o["run_id"] = run_id
 
     state = obj['state']
+    if state == 'R':
+        logger.warning("Run %r is still going.", run_id)
+        return None
+
     if state != 'C':
         logger.warning("Run %r is incomplete.", run_id)
         return o
