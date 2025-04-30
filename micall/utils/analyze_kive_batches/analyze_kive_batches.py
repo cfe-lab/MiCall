@@ -19,6 +19,7 @@ from .combine_runs_stats import combine_runs_stats
 from .combine_runs_overlaps import combine_runs_overlaps
 from .extract_run_ids import extract_run_ids
 from .aggregate_runs_stats import aggregate_runs_stats
+from .aggregate_runs_overlaps import aggregate_runs_overlaps
 from .stitch_contigs import stitch_contigs
 
 
@@ -75,31 +76,37 @@ def cli_parser() -> argparse.ArgumentParser:
 
     sub = mode_parsers.add_parser("download")
     sub.add_argument("--json-file", type=Path, required=True,
-                     help="The big json file with all the run infos.")
+                     help="The big JSON file with all the run infos.")
     sub.add_argument("--root", type=dir_path, required=True,
                      help="Root directory for all output subdirectories.")
 
     sub = mode_parsers.add_parser("make-stats")
     sub.add_argument("--input", type=Path, required=True,
-                     help="Input json file with the run info.")
+                     help="Input JSON file with the run info.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
 
     sub = mode_parsers.add_parser("stitch-contigs")
     sub.add_argument("--info-file", type=Path, required=True,
-                     help="Input json file with the run info.")
+                     help="Input JSON file with the run info.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output file.")
 
     sub = mode_parsers.add_parser("aggregate-runs-stats")
     sub.add_argument("--input", type=Path, required=True,
-                     help="Input json file with the run stats.")
+                     help="Input CSV file with the run stats.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output stats file.")
+
+    sub = mode_parsers.add_parser("aggregate-runs-overlaps")
+    sub.add_argument("--input", type=Path, required=True,
+                     help="Input CSV file with the run overlaps.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
 
     sub = mode_parsers.add_parser("extract-run-ids")
     sub.add_argument("--input", type=Path, required=True,
-                     help="Input json file with the run info.")
+                     help="Input JSON file with the run info.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output ids file.")
 
@@ -138,6 +145,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         extract_run_ids(input=args.input, output=args.output)
     elif args.subcommand == 'aggregate-runs-stats':
         aggregate_runs_stats(input=args.input, output=args.output)
+    elif args.subcommand == 'aggregate-runs-overlaps':
+        aggregate_runs_overlaps(input=args.input, output=args.output)
     else:
         raise UserError("Unrecognized subcommand %r.", args.subcommand)
 
