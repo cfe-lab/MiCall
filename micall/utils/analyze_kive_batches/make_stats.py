@@ -250,7 +250,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
     o["run_id"] = run_id
 
     state = obj['state']
-    if state == 'R':
+    if state in ['N', 'L', 'R']:
         logger.warning("Run %r is still going.", run_id)
         return None
 
