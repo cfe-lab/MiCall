@@ -34,7 +34,7 @@ def generate_statements(root: DirPath,
                command=Command.make(
                    "micall",
                    "analyze_kive_batches",
-                   "make-stats-1",
+                   "make-stats",
                    "--input", Deref("in"),
                    "--output", Deref("out"),
                ),

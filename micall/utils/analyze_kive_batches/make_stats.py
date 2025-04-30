@@ -321,7 +321,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
     return o
 
 
-def make_stats_1(input: Path, output: Path) -> None:
+def make_stats(input: Path, output: Path) -> None:
     result = get_stats(input)
     if result:
         with new_atomic_text_file(output) as stats_file:

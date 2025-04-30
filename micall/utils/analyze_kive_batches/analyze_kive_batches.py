@@ -11,7 +11,7 @@ from micall.utils.user_error import UserError
 from .logger import logger
 
 from .download import download
-from .make_stats_1 import make_stats_1
+from .make_stats import make_stats
 from .get_batch import get_batch
 from .run_all import run_all
 from .combine_batches_runs import combine_batches_runs
@@ -70,7 +70,7 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--root", type=dir_path, required=True,
                      help="Root directory for all output subdirectories.")
 
-    sub = mode_parsers.add_parser("make-stats-1")
+    sub = mode_parsers.add_parser("make-stats")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input json file with the run info.")
     sub.add_argument("--output", type=Path, required=True,
@@ -119,8 +119,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         combine_runs_stats(root=args.root, runs_txt=args.runs_txt, target=args.target)
     elif args.subcommand == 'download':
         download(json_file=args.json_file, root=args.root)
-    elif args.subcommand == 'make-stats-1':
-        make_stats_1(input=args.input, output=args.output)
+    elif args.subcommand == 'make-stats':
+        make_stats(input=args.input, output=args.output)
     elif args.subcommand == 'stitch-contigs':
         stitch_contigs(info_file=args.info_file, output=args.output)
     elif args.subcommand == 'extract-run-ids':
