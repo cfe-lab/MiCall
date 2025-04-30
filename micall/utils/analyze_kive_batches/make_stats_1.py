@@ -1,6 +1,6 @@
 import json
 from typing import Iterator, \
-    Iterable, Optional, Union, Mapping, MutableMapping
+    Iterable, Optional, Union, MutableMapping
 from pathlib import Path
 import re
 import csv
@@ -12,7 +12,7 @@ from micall.utils.dir_path import DirPath
 from .logger import logger
 
 
-Row = Mapping[str, Optional[Union[str, int, float]]]
+Row = MutableMapping[str, Optional[Union[str, int, float]]]
 Rows = Iterable[Row]
 
 
@@ -171,8 +171,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
         return None
 
     directory = DirPath(info_file.parent)
-
-    o: MutableMapping[str, Optional[Union[int, str, float]]] = {}
+    o: Row = {}
 
     try:
         the_csv_path = find_file(directory, "genome_coverage.*[.]csv$")

@@ -13,10 +13,15 @@ def generate_builds(root: DirPath,
     run_ids = runs_txt.read_text().splitlines()
     for run_id in run_ids:
         dir = root / "runs" / str(run_id)
-        output = dir / "stats.json"
+        stats_output = dir / "stats.json"
+        overlaps_output = dir / "overlaps.json"
         input = dir / "info.json"
-        yield Build(outputs=[output],
+        yield Build(outputs=[stats_output],
                     rule="stats",
+                    inputs=[input],
+                    )
+        yield Build(outputs=[overlaps_output],
+                    rule="overlaps",
                     inputs=[input],
                     )
 
@@ -32,7 +37,18 @@ def generate_statements(root: DirPath,
                    "--input", Deref("in"),
                    "--output", Deref("out"),
                ),
-               description=Description.make("analyze {}", Deref("in")),
+               description=Description.make("make stats {}", Deref("in")),
+               )
+
+    yield Rule(name="overlaps",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "calculate-overlaps",
+                   "--input", Deref("in"),
+                   "--output", Deref("out"),
+               ),
+               description=Description.make("calculate overlaps {}", Deref("in")),
                )
 
     yield Rule(name="combine_stats",
