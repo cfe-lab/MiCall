@@ -167,7 +167,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     state = obj['state']
     if state != 'C':
-        logger.debug("Run %r is incomplete.", run_id)
+        logger.warning("Run %r is incomplete.", run_id)
         return None
 
     directory = DirPath(info_file.parent)

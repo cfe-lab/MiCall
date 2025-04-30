@@ -6,6 +6,7 @@ import re
 from itertools import tee
 import ast
 import math
+import subprocess
 
 from .logger import logger
 from micall.utils.new_atomic_file import new_atomic_text_file
@@ -106,17 +107,57 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     state = obj['state']
     if state != 'C':
-        logger.debug("Run %r is incomplete.", run_id)
+        logger.warning("Run %r is incomplete.", run_id)
         return None
 
     directory = DirPath(info_file.parent)
     o: Row = {}
 
     try:
+        the_unstitched_contigs_path = find_file(directory, ".*unstitched.*contig.*[.]csv$")
+    except ValueError:
+        try:
+            the_unstitched_contigs_path = find_file(directory, ".*contigs.*[.]csv$")
+        except ValueError as ex:
+            logger.error("%s", ex)
+            return None
+
+    plot = directory / "stitcher_plot.svg"
+    log = directory / "stitcher.log"
+    if log.exists() and plot.exists():
+        logger.debug("Run %r already stitched.", run_id)
+    else:
+        with open(log, "w") as log_writer:
+            subprocess.check_call(
+                ["micall", "contig_stitcher",
+                 "--debug",
+                 "--plot", str(plot),
+                 str(the_unstitched_contigs_path),
+                 "/dev/null",
+                 ],
+                stderr=log_writer,
+            )
+
+    try:
         the_log_path = find_file(directory, ".*stitcher.*[.]log$")
     except ValueError as ex:
         the_log_path = None
         logger.error("%s", ex)
+
+    #
+    # Copying from `info.json`.
+    #
+    app_name = obj['app_name']
+    category = app_name.replace(':', '-') \
+                       .replace('/', '-') \
+                       .replace(' ', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-')
+
+    o['assembler'] = category
+    o["run_id"] = run_id
 
     if the_log_path:
         for overlap in find_overlaps(the_log_path):
