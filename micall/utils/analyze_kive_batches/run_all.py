@@ -36,7 +36,7 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
     except BaseException as ex:
         raise UserError("Work failed: %s", str(ex)) from ex
 
-    download(root, runs_json)
+    download(root, runs_json, runs_txt)
 
     processing_stage_ninjafile = root / "processing.ninja"
     generate_processing_stage_ninjafile(root,

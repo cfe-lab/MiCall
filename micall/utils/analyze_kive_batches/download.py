@@ -47,7 +47,10 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> None:
         logger.warning("Could not download run %s: %s", id, ex)
 
 
-def download(root: DirPath, json_file: Path) -> None:
-    with json_file.open() as reader:
+def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
+    run_ids = frozenset(runs_txt.read_text().splitlines())
+    with runs_json.open() as reader:
         for info in json.load(reader):
-            process_info(root, info)
+            run_id = str(info["id"])
+            if run_id in run_ids:
+                process_info(root, info)
