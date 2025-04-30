@@ -10,7 +10,6 @@ from micall.utils.dir_path import DirPath
 from micall.utils.user_error import UserError
 from .logger import logger
 
-from .download import download
 from .make_stats import make_stats
 from .get_batch import get_batch
 from .run_all import run_all
@@ -75,12 +74,6 @@ def cli_parser() -> argparse.ArgumentParser:
                      help="The txt file with all the run ids in it.")
     sub.add_argument("--target", type=Path, required=True,
                      help="Target file where to put the combine overlaps to.")
-
-    sub = mode_parsers.add_parser("download")
-    sub.add_argument("--json-file", type=Path, required=True,
-                     help="The big JSON file with all the run infos.")
-    sub.add_argument("--root", type=dir_path, required=True,
-                     help="Root directory for all output subdirectories.")
 
     sub = mode_parsers.add_parser("make-stats")
     sub.add_argument("--input", type=Path, required=True,
@@ -151,8 +144,6 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         combine_runs_stats(root=args.root, runs_txt=args.runs_txt, target=args.target)
     elif args.subcommand == 'combine-runs-overlaps':
         combine_runs_overlaps(root=args.root, runs_txt=args.runs_txt, target=args.target)
-    elif args.subcommand == 'download':
-        download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats':
         make_stats(input=args.input, output=args.output)
     elif args.subcommand == 'stitch-contigs':
