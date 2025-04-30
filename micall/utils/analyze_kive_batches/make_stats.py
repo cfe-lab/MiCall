@@ -232,14 +232,43 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     run_id = obj["id"]
     logger.debug("Processing %r.", run_id)
+    o: Row = {}
+
+    #
+    # Copying from `info.json`.
+    #
+    app_name = obj['app_name']
+    safe_app = app_name.replace(':', '-') \
+                       .replace('/', '-') \
+                       .replace(' ', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-') \
+                       .replace('--', '-')
+
+    o['app'] = safe_app
+    o["run_id"] = run_id
 
     state = obj['state']
     if state != 'C':
         logger.warning("Run %r is incomplete.", run_id)
-        return None
+        return o
+
+    start_time = obj['start_time']
+    end_time = obj['end_time']
+    run_time = calculate_seconds_between(start_time, end_time)
+    o['run_time'] = run_time
 
     directory = DirPath(info_file.parent)
-    o: Row = {}
+
+    for subdir in directory.iterdir():
+        if subdir.name.endswith("_info.csv"):
+            sample = subdir.name[:-len("_info.csv")]
+            break
+    else:
+        logger.warning("Cannot determine sample name for run %r.", run_id)
+        sample = None
+    o["sample"] = sample
 
     try:
         the_csv_path = find_file(directory, "genome_coverage.*[.]csv$")
@@ -287,34 +316,6 @@ def get_stats(info_file: Path) -> Optional[Row]:
                 "overlap_mismatches": overlap_mismatches,
                 "overlap_pvalue": overlap_pvalue,
             })
-
-    #
-    # Copying from `info.json`.
-    #
-    app_name = obj['app_name']
-    start_time = obj['start_time']
-    end_time = obj['end_time']
-    run_time = calculate_seconds_between(start_time, end_time)
-    safe_app = app_name.replace(':', '-') \
-                       .replace('/', '-') \
-                       .replace(' ', '-') \
-                       .replace('--', '-') \
-                       .replace('--', '-') \
-                       .replace('--', '-') \
-                       .replace('--', '-')
-
-    for subdir in directory.iterdir():
-        if subdir.name.endswith("_info.csv"):
-            sample = subdir.name[:-len("_info.csv")]
-            break
-    else:
-        logger.warning("Cannot determine sample name for run %r.", run_id)
-        sample = None
-
-    o['app'] = safe_app
-    o['run_time'] = run_time
-    o["sample"] = sample
-    o["run_id"] = run_id
 
     logger.debug("Processed %r.", run_id)
     return o
