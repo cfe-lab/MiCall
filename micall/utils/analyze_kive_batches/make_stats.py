@@ -312,7 +312,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
         logger.warning("Cannot determine sample name for run %r.", run_id)
         sample = None
 
-    o['assembler'] = category
+    o['app'] = category
     o['run_time'] = run_time
     o["sample"] = sample
     o["run_id"] = run_id

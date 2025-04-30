@@ -7,15 +7,15 @@ def aggregate_runs_overlaps(input: Path, output: Path) -> None:
     # 1. Read the CSV
     df = pd.read_csv(input)
 
-    # 2. Group by "assembler" and compute the stats.
+    # 2. Group by "app" and compute the stats.
     grouped = (
         df
-        .groupby('assembler')
+        .groupby('app')
         .agg(
             avg_overlap_size       = ('overlap_size',       'mean'),
             avg_overlap_mismatches = ('overlap_mismatches', 'mean'),
             avg_overlap_pvalue     = ('overlap_pvalue',     'mean'),
-            count                  = ('assembler',          'count'),
+            count                  = ('app',                'count'),
         )
         .reset_index()
     )

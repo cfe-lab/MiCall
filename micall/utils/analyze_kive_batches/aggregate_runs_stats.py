@@ -7,10 +7,10 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
     # 1. Read the CSV
     df = pd.read_csv(input)
 
-    # 2. Group by "assembler" and compute the stats.
+    # 2. Group by "app" and compute the stats.
     grouped = (
         df
-        .groupby('assembler')
+        .groupby('app')
         .agg(
             avg_concordance       = ('concordance',       'mean'),
             avg_depth             = ('depth',             'mean'),
@@ -20,7 +20,7 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
             avg_number_of_contigs = ('number_of_contigs', 'mean'),
             avg_contigs_size      = ('avg_contigs_size',  'mean'),
             avg_run_time          = ('run_time',          'mean'),
-            count                 = ('assembler',         'count'),
+            count                 = ('app',               'count'),
         )
         .reset_index()
     )

@@ -7,7 +7,7 @@ from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_file import new_atomic_text_file
 
 
-FIELDNAMES = ("assembler",
+FIELDNAMES = ("app",
               "overlap_size",
               "overlap_mismatches",
               "overlap_pvalue",
@@ -28,7 +28,7 @@ def combine_runs_overlaps(root: DirPath, runs_txt: Path, target: Path) -> None:
 
             overlaps = stats_object.get("overlaps", [])
             for overlap in overlaps:
-                overlap["assembler"] = stats_object["assembler"]
+                overlap["app"] = stats_object["app"]
                 overlap["run_id"] = stats_object["run_id"]
                 overlap["sample"] = stats_object["sample"]
                 dwriter.writerow(overlap)

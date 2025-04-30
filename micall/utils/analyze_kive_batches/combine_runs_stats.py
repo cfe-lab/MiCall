@@ -7,7 +7,7 @@ from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_file import new_atomic_text_file
 
 
-FIELDNAMES = ("assembler",
+FIELDNAMES = ("app",
               "concordance",
               "depth",
               "mlen",
