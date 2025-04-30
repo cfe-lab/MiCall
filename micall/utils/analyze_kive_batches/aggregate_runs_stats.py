@@ -7,13 +7,7 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
     # 1. Read the CSV
     df = pd.read_csv(input)
 
-    # 2. Group by "assembler" and compute the same stats you had in SQL:
-    #    AVG(concordance), AVG(depth), AVG(mlen),
-    #    AVG(total_mlen), AVG(overlap_count),
-    #    AVG(number_of_contigs), AVG(avg_contigs_size),
-    #    AVG(run_time), SUM(run_time), COUNT(assembler)
-    #
-    # We can use Pandas "named aggregation" (pandas>=0.25):
+    # 2. Group by "assembler" and compute the stats.
     grouped = (
         df
         .groupby('assembler')
