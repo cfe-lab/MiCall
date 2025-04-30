@@ -273,8 +273,9 @@ def get_stats(info_file: Path) -> Optional[Row]:
         o["number_of_contigs"] = count_contigs(ro(contigs_csv_path))
         o["avg_contigs_size"] = avg_contigs_lengths(ro(contigs_csv_path))
 
+    overlaps: list[Row] = []
+    o["overlaps"] = overlaps
     if the_log_path:
-        overlaps: list[Row] = []
         for overlap in find_overlaps(the_log_path):
             overlap_size = len(overlap)
             overlap_mismatches = find_number_of_mismatches(overlap)
@@ -286,8 +287,6 @@ def get_stats(info_file: Path) -> Optional[Row]:
                 "overlap_mismatches": overlap_mismatches,
                 "overlap_pvalue": overlap_pvalue,
             })
-
-    o["overlaps"] = overlaps
 
     #
     # Copying from `info.json`.
