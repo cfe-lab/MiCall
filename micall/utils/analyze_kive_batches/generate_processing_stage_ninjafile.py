@@ -135,11 +135,13 @@ def generate_statements(root: DirPath,
     yield Build(rule="combine_stats",
                 outputs=[stats],
                 inputs=inputs,
+                implicit=[runs_txt],
                 )
 
     yield Build(rule="combine_overlaps",
                 outputs=[overlaps],
                 inputs=inputs,
+                implicit=[runs_txt],
                 )
 
     yield Build(rule="aggregate_stats",
