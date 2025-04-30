@@ -29,6 +29,7 @@ def stitch_contigs(info_file: Path, output: Path) -> None:
             with open(log, "w") as log_writer:
                 subprocess.check_call(
                     ["micall", "contig_stitcher",
+                     "with-references",
                      "--debug",
                      "--plot", str(plot),
                      str(the_unstitched_contigs_path),
