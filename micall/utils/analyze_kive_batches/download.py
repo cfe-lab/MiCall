@@ -9,7 +9,7 @@ from micall.utils.new_atomic_directory import new_atomic_directory
 from .logger import logger
 
 
-FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)).*'
+FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*'
 
 
 def process_info(root: DirPath, info: Mapping[str, object]) -> None:
