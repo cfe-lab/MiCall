@@ -33,10 +33,10 @@ dependencies = [
     "cutadapt==5.0",
     "python-Levenshtein==0.26.1",
     "PyYAML==6.0.2",
-    "reportlab==4.3.1",
+    "reportlab==4.4.0",
     "pysam==0.23.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
-    "mappy==2.28",
+    "mappy==2.29",
     "drawsvg==2.4.0",
     "cairosvg==2.7.1",
     "aligntools==1.2.1",
@@ -60,11 +60,12 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.11.4",
+    "ruff==0.11.7",
     "mypy==1.15.0",
-    "mypy-extensions==1.0.0",
-    "gprof2dot==2024.6.6",
+    "mypy-extensions==1.1.0",
+    "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
+    "pandas-stubs==2.2.3.250308",
 ]
 denovo = [
     # Requirements for running De-Novo pipeline (only problematic ones).

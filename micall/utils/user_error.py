@@ -1,5 +1,5 @@
 
-class UserError(BaseException):
+class UserError(RuntimeError):
     """
     Base class for all exceptions that are to be presented to a user.
     """
