@@ -237,6 +237,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
     #
     # Copying from `info.json`.
     #
+    state = obj['state']
     app_name = obj['app_name']
     safe_app = app_name.replace(':', '-') \
                        .replace('/', '-') \
@@ -248,8 +249,8 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     o['app'] = safe_app
     o["run_id"] = run_id
+    o["state"] = state
 
-    state = obj['state']
     if state in ['N', 'L', 'R']:
         logger.warning("Run %r is still going.", run_id)
         return None
