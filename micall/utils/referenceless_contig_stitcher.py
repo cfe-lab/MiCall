@@ -31,13 +31,41 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
 
 ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=71, M=70)
-MAX_ALTERNATIVES = 30
+MAX_ALTERNATIVES = 999
 MIN_ALTERNATIVES = 1
 
 
-def intrapolate_number_of_alternatives(n_paths: int, n_candidates: int) -> int:
-    x = n_paths * n_candidates
-    ret = MAX_ALTERNATIVES / max(1, x - 2)
+def intrapolate_number_of_alternatives(n_candidates: int) -> int:
+    """
+    Compute how many alternative paths to explore in one stitching cycle.
+
+    To avoid exponential blow-up in comparisons when extending
+    contig-paths, we limit the total work per cycle:
+
+        T(cycle) ≈ n_candidates × N_alt  ≤  CONSTANT
+
+    Solving for the per-cycle alternative count:
+
+        N_alt ≈ CONSTANT / max(1, n_candidates - 2)
+
+    We pick CONSTANT = 999 experimentally.  The "-2" in the
+    denominator compensates for the fact that at very small
+    n_candidates (≤ 2) we still want at least one alternative,
+    and we avoid division by zero.
+
+    Finally, the result is clamped into [MIN_ALTERNATIVES, MAX_ALTERNATIVES]
+    = [1, 999] and rounded to the nearest integer.
+
+    Args:
+        n_candidates: Number of contigs available for extension
+                      in the current cycle.
+
+    Returns:
+        The (rounded and clamped) maximum number of alternative
+        contig-paths to consider for this cycle.
+    """
+
+    ret = MAX_ALTERNATIVES / max(1, n_candidates - 2)
     clamped = max(MIN_ALTERNATIVES, min(MAX_ALTERNATIVES, ret))
     rounded = round(clamped)
     return rounded
@@ -411,7 +439,7 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
     """
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
 
-    max_alternatives = intrapolate_number_of_alternatives(len(paths), len(contigs))
+    max_alternatives = intrapolate_number_of_alternatives(len(contigs))
     pool = Pool.empty(max_alternatives)
     for path in sorted(paths):
         # stop if we reached capacity
