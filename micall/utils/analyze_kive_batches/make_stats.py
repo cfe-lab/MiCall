@@ -296,7 +296,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
     start_time = obj['start_time']
     end_time = obj['end_time']
     run_time = calculate_seconds_between(start_time, end_time)
-    category = app_name.replace(':', '-') \
+    safe_app = app_name.replace(':', '-') \
                        .replace('/', '-') \
                        .replace(' ', '-') \
                        .replace('--', '-') \
@@ -312,7 +312,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
         logger.warning("Cannot determine sample name for run %r.", run_id)
         sample = None
 
-    o['app'] = category
+    o['app'] = safe_app
     o['run_time'] = run_time
     o["sample"] = sample
     o["run_id"] = run_id
