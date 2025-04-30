@@ -16,6 +16,7 @@ from .get_batch import get_batch
 from .run_all import run_all
 from .combine_batches_runs import combine_batches_runs
 from .combine_runs_stats import combine_runs_stats
+from .combine_runs_overlaps import combine_runs_overlaps
 from .extract_run_ids import extract_run_ids
 from .aggregate_runs_stats import aggregate_runs_stats
 from .stitch_contigs import stitch_contigs
@@ -63,6 +64,14 @@ def cli_parser() -> argparse.ArgumentParser:
                      help="The txt file with all the run ids in it.")
     sub.add_argument("--target", type=Path, required=True,
                      help="Target file where to put the combine stats to.")
+
+    sub = mode_parsers.add_parser("combine-runs-overlaps", help="Combine all stats.json:overlaps data into one file.")
+    sub.add_argument("--root", type=dir_path, required=True,
+                     help="Root directory for all output subdirectories.")
+    sub.add_argument("--runs-txt", type=Path, required=True,
+                     help="The txt file with all the run ids in it.")
+    sub.add_argument("--target", type=Path, required=True,
+                     help="Target file where to put the combine overlaps to.")
 
     sub = mode_parsers.add_parser("download")
     sub.add_argument("--json-file", type=Path, required=True,
@@ -117,6 +126,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         combine_batches_runs(batches=args.batches, target=args.target)
     elif args.subcommand == 'combine-runs-stats':
         combine_runs_stats(root=args.root, runs_txt=args.runs_txt, target=args.target)
+    elif args.subcommand == 'combine-runs-overlaps':
+        combine_runs_overlaps(root=args.root, runs_txt=args.runs_txt, target=args.target)
     elif args.subcommand == 'download':
         download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats':

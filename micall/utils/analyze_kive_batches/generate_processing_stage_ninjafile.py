@@ -64,6 +64,18 @@ def generate_statements(root: DirPath,
                description=Description.make("combine stats"),
                )
 
+    yield Rule(name="combine_overlaps",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "combine-runs-overlaps",
+                   "--root", root,
+                   "--runs-txt", runs_txt,
+                   "--target", Deref("out"),
+               ),
+               description=Description.make("combine overlaps"),
+               )
+
     yield Rule(name="aggregate_stats",
                command=Command.make(
                    "micall",
@@ -77,12 +89,18 @@ def generate_statements(root: DirPath,
 
     builds = tuple(generate_builds(root, runs_txt))
 
-    inputs = [input for build in builds for input in build.outputs]
     stats = root / "stats.csv"
+    inputs = [input for build in builds for input in build.outputs if build.rule == "stats"]
+    overlaps = root / "overlaps.csv"
     aggregated_stats = root / "agg-stats.csv"
 
     yield Build(rule="combine_stats",
                 outputs=[stats],
+                inputs=inputs,
+                )
+
+    yield Build(rule="combine_overlaps",
+                outputs=[overlaps],
                 inputs=inputs,
                 )
 
