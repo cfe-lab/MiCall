@@ -25,7 +25,7 @@ BEGIN 4
   1
   started
   with
-  30
+  1
   paths.
 END 4
 BEGIN 5
@@ -33,7 +33,7 @@ BEGIN 5
   1
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -52,7 +52,7 @@ BEGIN 6
   2
   started
   with
-  30
+  1
   paths.
 END 6
 BEGIN 7
@@ -60,7 +60,7 @@ BEGIN 7
   2
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -79,7 +79,7 @@ BEGIN 8
   3
   started
   with
-  30
+  1
   paths.
 END 8
 BEGIN 9
@@ -87,7 +87,7 @@ BEGIN 9
   3
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -106,7 +106,7 @@ BEGIN 10
   4
   started
   with
-  30
+  1
   paths.
 END 10
 BEGIN 11
@@ -114,7 +114,7 @@ BEGIN 11
   4
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -133,7 +133,7 @@ BEGIN 12
   5
   started
   with
-  30
+  1
   paths.
 END 12
 BEGIN 13
@@ -141,7 +141,7 @@ BEGIN 13
   5
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -160,7 +160,7 @@ BEGIN 14
   6
   started
   with
-  30
+  1
   paths.
 END 14
 BEGIN 15
@@ -168,7 +168,7 @@ BEGIN 15
   6
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -187,7 +187,7 @@ BEGIN 16
   7
   started
   with
-  30
+  1
   paths.
 END 16
 BEGIN 17
@@ -195,7 +195,7 @@ BEGIN 17
   7
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -214,7 +214,7 @@ BEGIN 18
   8
   started
   with
-  30
+  1
   paths.
 END 18
 BEGIN 19
@@ -222,7 +222,7 @@ BEGIN 19
   8
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -241,7 +241,7 @@ BEGIN 20
   9
   started
   with
-  30
+  1
   paths.
 END 20
 BEGIN 21
@@ -249,7 +249,7 @@ BEGIN 21
   9
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -268,7 +268,7 @@ BEGIN 22
   10
   started
   with
-  30
+  1
   paths.
 END 22
 BEGIN 23
@@ -276,7 +276,7 @@ BEGIN 23
   10
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -295,7 +295,7 @@ BEGIN 24
   11
   started
   with
-  30
+  1
   paths.
 END 24
 BEGIN 25
@@ -303,7 +303,7 @@ BEGIN 25
   11
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -322,7 +322,7 @@ BEGIN 26
   12
   started
   with
-  30
+  1
   paths.
 END 26
 BEGIN 27
@@ -330,7 +330,7 @@ BEGIN 27
   12
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -349,7 +349,7 @@ BEGIN 28
   13
   started
   with
-  30
+  1
   paths.
 END 28
 BEGIN 29
@@ -357,7 +357,7 @@ BEGIN 29
   13
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -376,7 +376,7 @@ BEGIN 30
   14
   started
   with
-  30
+  1
   paths.
 END 30
 BEGIN 31
@@ -384,7 +384,7 @@ BEGIN 31
   14
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -403,7 +403,7 @@ BEGIN 32
   15
   started
   with
-  30
+  1
   paths.
 END 32
 BEGIN 33
@@ -411,7 +411,7 @@ BEGIN 33
   15
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -430,7 +430,7 @@ BEGIN 34
   16
   started
   with
-  30
+  1
   paths.
 END 34
 BEGIN 35
@@ -438,7 +438,7 @@ BEGIN 35
   16
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -457,7 +457,7 @@ BEGIN 36
   17
   started
   with
-  30
+  1
   paths.
 END 36
 BEGIN 37
@@ -465,7 +465,7 @@ BEGIN 37
   17
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -484,7 +484,7 @@ BEGIN 38
   18
   started
   with
-  30
+  1
   paths.
 END 38
 BEGIN 39
@@ -492,7 +492,7 @@ BEGIN 39
   18
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -511,7 +511,7 @@ BEGIN 40
   19
   started
   with
-  30
+  1
   paths.
 END 40
 BEGIN 41
@@ -519,7 +519,7 @@ BEGIN 41
   19
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -538,7 +538,7 @@ BEGIN 42
   20
   started
   with
-  30
+  1
   paths.
 END 42
 BEGIN 43
@@ -546,7 +546,7 @@ BEGIN 43
   20
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -565,7 +565,7 @@ BEGIN 44
   21
   started
   with
-  30
+  1
   paths.
 END 44
 BEGIN 45
@@ -573,7 +573,7 @@ BEGIN 45
   21
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -592,7 +592,7 @@ BEGIN 46
   22
   started
   with
-  30
+  1
   paths.
 END 46
 BEGIN 47
@@ -600,7 +600,7 @@ BEGIN 47
   22
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -619,7 +619,7 @@ BEGIN 48
   23
   started
   with
-  30
+  1
   paths.
 END 48
 BEGIN 49
@@ -627,7 +627,7 @@ BEGIN 49
   23
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -646,7 +646,7 @@ BEGIN 50
   24
   started
   with
-  30
+  1
   paths.
 END 50
 BEGIN 51
@@ -654,7 +654,7 @@ BEGIN 51
   24
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -673,7 +673,7 @@ BEGIN 52
   25
   started
   with
-  30
+  1
   paths.
 END 52
 BEGIN 53
@@ -681,7 +681,7 @@ BEGIN 53
   25
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -700,7 +700,7 @@ BEGIN 54
   26
   started
   with
-  30
+  1
   paths.
 END 54
 BEGIN 55
@@ -708,7 +708,7 @@ BEGIN 55
   26
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -727,7 +727,7 @@ BEGIN 56
   27
   started
   with
-  30
+  1
   paths.
 END 56
 BEGIN 57
@@ -735,7 +735,7 @@ BEGIN 57
   27
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -754,7 +754,7 @@ BEGIN 58
   28
   started
   with
-  30
+  1
   paths.
 END 58
 BEGIN 59
@@ -762,7 +762,7 @@ BEGIN 59
   28
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -781,7 +781,7 @@ BEGIN 60
   29
   started
   with
-  30
+  1
   paths.
 END 60
 BEGIN 61
@@ -789,7 +789,7 @@ BEGIN 61
   29
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -808,7 +808,7 @@ BEGIN 62
   30
   started
   with
-  30
+  1
   paths.
 END 62
 BEGIN 63
@@ -816,7 +816,7 @@ BEGIN 63
   30
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -835,7 +835,7 @@ BEGIN 64
   31
   started
   with
-  30
+  1
   paths.
 END 64
 BEGIN 65
@@ -843,7 +843,7 @@ BEGIN 65
   31
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -862,7 +862,7 @@ BEGIN 66
   32
   started
   with
-  30
+  1
   paths.
 END 66
 BEGIN 67
@@ -870,7 +870,7 @@ BEGIN 67
   32
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -889,7 +889,7 @@ BEGIN 68
   33
   started
   with
-  30
+  1
   paths.
 END 68
 BEGIN 69
@@ -897,7 +897,7 @@ BEGIN 69
   33
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -916,7 +916,7 @@ BEGIN 70
   34
   started
   with
-  30
+  1
   paths.
 END 70
 BEGIN 71
@@ -924,7 +924,7 @@ BEGIN 71
   34
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -943,7 +943,7 @@ BEGIN 72
   35
   started
   with
-  30
+  1
   paths.
 END 72
 BEGIN 73
@@ -951,7 +951,7 @@ BEGIN 73
   35
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -970,7 +970,7 @@ BEGIN 74
   36
   started
   with
-  30
+  1
   paths.
 END 74
 BEGIN 75
@@ -978,7 +978,7 @@ BEGIN 75
   36
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -997,7 +997,7 @@ BEGIN 76
   37
   started
   with
-  30
+  1
   paths.
 END 76
 BEGIN 77
@@ -1005,7 +1005,7 @@ BEGIN 77
   37
   finished
   with
-  30
+  1
   new
   paths.
   The
@@ -1024,18 +1024,342 @@ BEGIN 78
   38
   started
   with
-  30
+  1
   paths.
 END 78
 BEGIN 79
+  Cycle
+  38
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 79
+BEGIN 80
+  Cycle
+  39
+  started
+  with
+  1
+  paths.
+END 80
+BEGIN 81
+  Cycle
+  39
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 81
+BEGIN 82
+  Cycle
+  40
+  started
+  with
+  1
+  paths.
+END 82
+BEGIN 83
+  Cycle
+  40
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 83
+BEGIN 84
+  Cycle
+  41
+  started
+  with
+  1
+  paths.
+END 84
+BEGIN 85
+  Cycle
+  41
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 85
+BEGIN 86
+  Cycle
+  42
+  started
+  with
+  1
+  paths.
+END 86
+BEGIN 87
+  Cycle
+  42
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 87
+BEGIN 88
+  Cycle
+  43
+  started
+  with
+  1
+  paths.
+END 88
+BEGIN 89
+  Cycle
+  43
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 89
+BEGIN 90
+  Cycle
+  44
+  started
+  with
+  1
+  paths.
+END 90
+BEGIN 91
+  Cycle
+  44
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 91
+BEGIN 92
+  Cycle
+  45
+  started
+  with
+  1
+  paths.
+END 92
+BEGIN 93
+  Cycle
+  45
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 93
+BEGIN 94
+  Cycle
+  46
+  started
+  with
+  1
+  paths.
+END 94
+BEGIN 95
+  Cycle
+  46
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 95
+BEGIN 96
+  Cycle
+  47
+  started
+  with
+  1
+  paths.
+END 96
+BEGIN 97
+  Cycle
+  47
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 97
+BEGIN 98
+  Cycle
+  48
+  started
+  with
+  1
+  paths.
+END 98
+BEGIN 99
+  Cycle
+  48
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 99
+BEGIN 100
+  Cycle
+  49
+  started
+  with
+  1
+  paths.
+END 100
+BEGIN 101
+  Cycle
+  49
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  988
+  and
+  consists
+  of
+  50
+  parts.
+END 101
+BEGIN 102
+  Cycle
+  50
+  started
+  with
+  1
+  paths.
+END 102
+BEGIN 103
   Constructed
   a
   path
   of
   length
   988.
-END 79
-BEGIN 80
+END 103
+BEGIN 104
   Removed
   50
   components
@@ -1048,17 +1372,17 @@ BEGIN 80
   still
   to
   process.
-END 80
-BEGIN 81
+END 104
+BEGIN 105
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 81
-BEGIN 82
+END 105
+BEGIN 106
   Outputting
   1
   contigs.
-END 82
+END 106

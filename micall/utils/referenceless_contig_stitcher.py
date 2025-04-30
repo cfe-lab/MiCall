@@ -32,6 +32,15 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
 ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=71, M=70)
 MAX_ALTERNATIVES = 30
+MIN_ALTERNATIVES = 1
+
+
+def intrapolate_number_of_alternatives(n_paths: int, n_candidates: int) -> int:
+    x = n_paths * n_candidates
+    ret = MAX_ALTERNATIVES / max(1, x - 2)
+    clamped = max(MIN_ALTERNATIVES, min(MAX_ALTERNATIVES, ret))
+    rounded = round(clamped)
+    return rounded
 
 
 def log(e: events.EventType) -> None:
@@ -398,11 +407,12 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
                         ) -> Iterable[ContigsPath]:
     """
     Iteratively extend seed paths with contigs to generate candidate contig paths.
-    Returns an iterable of best paths up to MAX_ALTERNATIVES.
+    Returns an iterable of best paths up to a max number of alternatives.
     """
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
 
-    pool = Pool.empty(MAX_ALTERNATIVES)
+    max_alternatives = intrapolate_number_of_alternatives(len(paths), len(contigs))
+    pool = Pool.empty(max_alternatives)
     for path in sorted(paths):
         # stop if we reached capacity
         if len(pool.paths) >= pool.paths.capacity:
@@ -479,7 +489,7 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
             if first.id >= second.id:
                 continue
 
-            pool = Pool.empty(MAX_ALTERNATIVES)
+            pool = Pool.empty(1)
             result = try_combine_contigs(
                 is_debug2=is_debug2,
                 current_score=SCORE_NOTHING,
