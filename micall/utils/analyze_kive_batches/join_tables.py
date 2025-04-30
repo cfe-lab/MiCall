@@ -16,6 +16,7 @@ def join_tables(inputs: Iterable[Path], column: str, output: Path) -> None:
       - No two CSVs may share a non-index column name; if they do, a ValueError is raised.
       - Missing values in the output are written as empty strings.
     """
+
     inputs = list(inputs)
     if not inputs:
         raise ValueError("At least one input file must be provided.")

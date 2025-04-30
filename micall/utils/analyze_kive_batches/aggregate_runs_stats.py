@@ -20,7 +20,7 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
             avg_number_of_contigs = ('number_of_contigs', 'mean'),
             avg_contigs_size      = ('avg_contigs_size',  'mean'),
             avg_run_time          = ('run_time',          'mean'),
-            count                 = ('app',               'count'),
+            run_count             = ('app',               'count'),
         )
         .reset_index()
     )
