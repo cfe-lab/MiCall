@@ -1,0 +1,12 @@
+["micall:v7.17.0-818-ga64b78005 / denovo"]
+is_denovo = true
+is_haploflow = true
+haploflow_kmer = 41
+with_referenceless = true
+referenceless_minimum_matches = 98
+
+["micall:v7.17.0-728-g9eb594078 / denovo"]
+is_denovo = true
+is_haploflow = false
+with_referenceless = true
+referenceless_minimum_matches = 14
