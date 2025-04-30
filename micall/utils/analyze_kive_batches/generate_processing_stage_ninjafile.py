@@ -110,6 +110,18 @@ def generate_statements(root: DirPath,
                description=Description.make("reshape properties"),
                )
 
+    yield Rule(name="join_tables",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "join-tables",
+                   "--inputs", Deref("in"),
+                   "--column", "app",
+                   "--output", Deref("out"),
+               ),
+               description=Description.make("join tables"),
+               )
+
     builds = tuple(generate_builds(root, runs_txt))
 
     stats = root / "stats.csv"
@@ -118,6 +130,7 @@ def generate_statements(root: DirPath,
     aggregated_stats = root / "agg-stats.csv"
     aggregated_overlaps = root / "agg-overlaps.csv"
     properties_file = root / "properties.csv"
+    join_file = root / "combined.csv"
 
     yield Build(rule="combine_stats",
                 outputs=[stats],
@@ -142,6 +155,11 @@ def generate_statements(root: DirPath,
     yield Build(rule="make_properties",
                 outputs=[properties_file],
                 inputs=[properties],
+                )
+
+    yield Build(rule="join_tables",
+                outputs=[join_file],
+                inputs=[aggregated_stats, aggregated_overlaps, properties_file],
                 )
 
     yield from builds

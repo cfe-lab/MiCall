@@ -22,6 +22,7 @@ from .aggregate_runs_stats import aggregate_runs_stats
 from .aggregate_runs_overlaps import aggregate_runs_overlaps
 from .stitch_contigs import stitch_contigs
 from .make_properties import make_properties
+from .join_tables import join_tables
 
 
 def dir_path(string: str) -> DirPath:
@@ -117,6 +118,14 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--output", type=Path, required=True,
                      help="Output ids file.")
 
+    sub = mode_parsers.add_parser("join-tables")
+    sub.add_argument("--inputs", type=Path, nargs=argparse.ONE_OR_MORE,
+                     help="Input CSV files to union.")
+    sub.add_argument("--column", type=str, required=True,
+                     help="The column that will serve as the index.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output CSV file.")
+
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
@@ -156,6 +165,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         aggregate_runs_overlaps(input=args.input, output=args.output)
     elif args.subcommand == 'make-properties':
         make_properties(input=args.input, output=args.output)
+    elif args.subcommand == 'join-tables':
+        join_tables(inputs=args.inputs, column=args.column, output=args.output)
     else:
         raise UserError("Unrecognized subcommand %r.", args.subcommand)
 
