@@ -238,16 +238,9 @@ def get_stats(info_file: Path) -> Optional[Row]:
     # Copying from `info.json`.
     #
     state = obj['state']
-    app_name = obj['app_name']
-    safe_app = app_name.replace(':', '-') \
-                       .replace('/', '-') \
-                       .replace(' ', '-') \
-                       .replace('--', '-') \
-                       .replace('--', '-') \
-                       .replace('--', '-') \
-                       .replace('--', '-')
+    app = obj['app_name']
 
-    o['app'] = safe_app
+    o['app'] = app
     o["run_id"] = run_id
     o["state"] = state
     if state != 'C':
