@@ -21,6 +21,7 @@ from .extract_run_ids import extract_run_ids
 from .aggregate_runs_stats import aggregate_runs_stats
 from .aggregate_runs_overlaps import aggregate_runs_overlaps
 from .stitch_contigs import stitch_contigs
+from .make_properties import make_properties
 
 
 def dir_path(string: str) -> DirPath:
@@ -104,6 +105,12 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
 
+    sub = mode_parsers.add_parser("make-properties")
+    sub.add_argument("--input", type=Path, required=True,
+                     help="Input TOML file with the apps properties.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output CSV file.")
+
     sub = mode_parsers.add_parser("extract-run-ids")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input JSON file with the run info.")
@@ -147,6 +154,8 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         aggregate_runs_stats(input=args.input, output=args.output)
     elif args.subcommand == 'aggregate-runs-overlaps':
         aggregate_runs_overlaps(input=args.input, output=args.output)
+    elif args.subcommand == 'make-properties':
+        make_properties(input=args.input, output=args.output)
     else:
         raise UserError("Unrecognized subcommand %r.", args.subcommand)
 
