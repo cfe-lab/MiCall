@@ -64,7 +64,7 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
         for info in data:
             run_id = process_info(root, info)
             if run_id is not None:
-                yield run_id
+                yield run_id + "\n"
 
     with new_atomic_text_file(runs_txt) as writer:
         writer.writelines(collect_run_ids())
