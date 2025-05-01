@@ -13,6 +13,13 @@ from .logger import logger
 FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*'
 
 
+RunState = str
+
+
+def is_active_state(state: RunState) -> bool:
+    return state in ['R', 'N', 'L']
+
+
 def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
     run_id = str(info["id"])
     end_time = info.get("end_time")
@@ -34,11 +41,14 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
         with info_path.open() as reader:
             existing_info = json.load(reader)
 
-        if existing_info["state"] == info["state"]:
-            logger.debug("Run %s has no updates.", run_id)
-            return True
+        if is_active_state(str(existing_info["state"])):
+            logger.debug("Run %s may have new updates.", run_id)
         else:
-            logger.info("Run %s has new updates.", run_id)
+            if existing_info["state"] == info["state"]:
+                logger.debug("Run %s has no updates.", run_id)
+                return True
+            else:
+                logger.info("Run %s has new updates.", run_id)
 
     try:
         with new_atomic_directory(output) as output:
