@@ -23,12 +23,10 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
 
     setup_stage_ninjafile = root / "setup.ninja"
     runs_json = root / "runs.json"
-    runs_txt = root / "runs.txt"
     generate_setup_stage_ninjafile(root,
                                    batches,
                                    target=setup_stage_ninjafile,
                                    runs_json=runs_json,
-                                   runs_txt=runs_txt,
                                    )
 
     try:
@@ -36,6 +34,7 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
     except BaseException as ex:
         raise UserError("Work failed: %s", str(ex)) from ex
 
+    runs_txt = root / "runs.txt"
     download(root, runs_json, runs_txt)
 
     processing_stage_ninjafile = root / "processing.ninja"
