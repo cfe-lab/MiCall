@@ -17,13 +17,6 @@ FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
     '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*')
 
 
-RunState = str
-
-
-def is_active_state(state: RunState) -> bool:
-    return state in ['R', 'N', 'L']
-
-
 def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
     run_id = str(info["id"])
     end_time = info.get("end_time")
@@ -45,10 +38,10 @@ def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
         with info_path.open() as reader:
             existing_info = json.load(reader)
 
-        if is_active_state(str(existing_info["state"])):
-            logger.debug("Run %s may have new updates.", run_id)
-        else:
+        if existing_info["end_time"]:
             return True
+        else:
+            logger.debug("Run %s may have new updates.", run_id)
 
     try:
         with new_atomic_directory(output) as output:
