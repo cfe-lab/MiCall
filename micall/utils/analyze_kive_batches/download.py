@@ -6,6 +6,8 @@ import kivecli.download
 from kivecli.login import login
 import kivecli.dirpath
 import kivecli.runfilesfilter
+import kivecli.logger
+import logging
 
 from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_directory import new_atomic_directory
@@ -15,6 +17,9 @@ from .logger import logger
 
 FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
     '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*')
+
+
+kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
 def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
