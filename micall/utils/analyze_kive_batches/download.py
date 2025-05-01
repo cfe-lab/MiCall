@@ -17,6 +17,11 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[str]:
     run_id = str(info["id"])
     output = root / "runs" / run_id
     info_path = output / "info.json"
+    failed_path = output / "failed"
+
+    if failed_path.exists():
+        logger.warning("Skipping RUN_ID %s - download failed last time.", run_id)
+        return None
 
     if info_path.exists():
         logger.debug("Directory for RUN_ID %s already exists.", run_id)
@@ -47,6 +52,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[str]:
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run_id, ex)
+        failed_path.touch()
         return None
 
 
