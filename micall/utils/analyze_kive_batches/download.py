@@ -1,6 +1,6 @@
 
 import json
-from typing import Mapping, Optional, Iterator
+from typing import Mapping, Iterator
 from pathlib import Path
 import subprocess
 
@@ -13,15 +13,20 @@ from .logger import logger
 FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*'
 
 
-def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[str]:
+def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
     run_id = str(info["id"])
+    end_time = info.get("end_time")
     output = root / "runs" / run_id
     info_path = output / "info.json"
     failed_path = output / "failed"
 
     if failed_path.exists():
         logger.warning("Skipping RUN_ID %s - download failed last time.", run_id)
-        return None
+        return False
+
+    if not end_time:
+        logger.debug("Run with RUN_ID %s is still going.", run_id)
+        return False
 
     if info_path.exists():
         logger.debug("Directory for RUN_ID %s already exists.", run_id)
@@ -31,7 +36,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[str]:
 
         if existing_info["state"] == info["state"]:
             logger.debug("Run %s has no updates.", run_id)
-            return run_id
+            return True
         else:
             logger.info("Run %s has new updates.", run_id)
 
@@ -48,12 +53,12 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[str]:
             info_path = output / "info.json"
             with info_path.open("w") as writer:
                 json.dump(info, writer, indent='\t')
-            return run_id
+            return True
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run_id, ex)
         failed_path.touch()
-        return None
+        return False
 
 
 def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
@@ -62,9 +67,14 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
 
     def collect_run_ids() -> Iterator[str]:
         for info in data:
-            run_id = process_info(root, info)
-            if run_id is not None:
-                yield run_id + "\n"
+            if process_info(root, info):
+                run_id = info["id"]
+                state = info["state"]
+                if state != "C":
+                    logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
+                    continue
+
+                yield str(run_id) + "\n"
 
     with new_atomic_text_file(runs_txt) as writer:
         writer.writelines(collect_run_ids())

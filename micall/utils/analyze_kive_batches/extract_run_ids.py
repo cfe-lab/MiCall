@@ -14,7 +14,7 @@ def extract_run_ids(input: Path, output: Path) -> None:
                 run_id = run["id"]
                 state = run["state"]
                 if state != "C":
-                    logger.warning("Skipping run %s: state %s != 'C'.", run_id, state)
+                    logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
                     continue
 
                 writer.write(str(run_id) + "\n")
