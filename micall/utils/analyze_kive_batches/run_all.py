@@ -14,7 +14,11 @@ from .generate_processing_stage_ninjafile import generate_processing_stage_ninja
 def read_batches(batches_list: Path) -> Iterator[BatchName]:
     with batches_list.open() as reader:
         for line in reader:
-            yield BatchName(line.strip())
+            line = line.strip()
+            if line.startswith("#"):
+                continue
+
+            yield BatchName(line)
 
 
 def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
