@@ -2,7 +2,10 @@
 import json
 from typing import Mapping, Iterator
 from pathlib import Path
-import subprocess
+import kivecli.download
+from kivecli.login import login
+import kivecli.dirpath
+import kivecli.runfilesfilter
 
 from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_directory import new_atomic_directory
@@ -10,7 +13,8 @@ from micall.utils.new_atomic_file import new_atomic_text_file
 from .logger import logger
 
 
-FILEFILTER = '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*'
+FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
+    '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)).*')
 
 
 RunState = str
@@ -20,7 +24,7 @@ def is_active_state(state: RunState) -> bool:
     return state in ['R', 'N', 'L']
 
 
-def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
+def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
     run_id = str(info["id"])
     end_time = info.get("end_time")
     output = root / "runs" / run_id
@@ -48,13 +52,13 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
 
     try:
         with new_atomic_directory(output) as output:
-            subprocess.check_call(["kivecli",
-                                   "download",
-                                   "--debug",
-                                   "--run_id", str(run_id),
-                                   "--output", str(output),
-                                   "--filefilter", FILEFILTER,
-                                   ])
+            kivecli.download.main_parsed(
+                kive=kive,
+                output=kivecli.dirpath.DirPath(output),
+                run_id=int(run_id),
+                nowait=False,
+                filefilter=FILEFILTER,
+            )
 
             info_path = output / "info.json"
             with info_path.open("w") as writer:
@@ -72,15 +76,16 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
         data = json.load(reader)
 
     def collect_run_ids() -> Iterator[str]:
-        for info in data:
-            if process_info(root, info):
-                run_id = info["id"]
-                state = info["state"]
-                if state != "C":
-                    logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
-                    continue
+        with login() as kive:
+            for info in data:
+                if process_info(kive, root, info):
+                    run_id = info["id"]
+                    state = info["state"]
+                    if state != "C":
+                        logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
+                        continue
 
-                yield str(run_id)
+                    yield str(run_id)
 
     new_content = '\n'.join(collect_run_ids())
 
