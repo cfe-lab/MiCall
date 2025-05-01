@@ -25,7 +25,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
         return False
 
     if not end_time:
-        logger.debug("Run with RUN_ID %s is still going.", run_id)
+        logger.warning("Run with RUN_ID %s is still going.", run_id)
         return False
 
     if info_path.exists():
