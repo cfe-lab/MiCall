@@ -74,7 +74,14 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
                     logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
                     continue
 
-                yield str(run_id) + "\n"
+                yield str(run_id)
+
+    new_content = '\n'.join(collect_run_ids())
+
+    if runs_txt.exists():
+        previous_content = runs_txt.read_text()
+        if previous_content == new_content:
+            return
 
     with new_atomic_text_file(runs_txt) as writer:
-        writer.writelines(collect_run_ids())
+        writer.write(new_content)
