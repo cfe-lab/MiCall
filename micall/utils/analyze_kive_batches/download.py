@@ -44,11 +44,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
         if is_active_state(str(existing_info["state"])):
             logger.debug("Run %s may have new updates.", run_id)
         else:
-            if existing_info["state"] == info["state"]:
-                logger.debug("Run %s has no updates.", run_id)
-                return True
-            else:
-                logger.info("Run %s has new updates.", run_id)
+            return True
 
     try:
         with new_atomic_directory(output) as output:
