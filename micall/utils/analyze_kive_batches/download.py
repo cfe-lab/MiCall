@@ -24,8 +24,8 @@ kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
 def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
-    run_id = str(info["id"])
-    output = root / "runs" / run_id
+    run_id = int(str(info["id"]))
+    output = root / "runs" / str(run_id)
     info_path = output / "info.json"
     failed_path = output / "failed"
 
@@ -33,27 +33,31 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
         logger.warning("Skipping RUN_ID %s - download failed last time.", run_id)
         return False
 
-    if info_path.exists():
-        logger.debug("Directory for RUN_ID %s already exists.", run_id)
+    if info["end_time"]:
+        if info_path.exists():
+            logger.debug("Directory for RUN_ID %s already exists.", run_id)
+            return True
 
-        with info_path.open() as reader:
-            info = json.load(reader)
+    else:
+        if info_path.exists():
+            with info_path.open() as reader:
+                info = json.load(reader)
 
         if info["end_time"]:
             # Already processed this, no changes possible.
             return True
         else:
-            info = kivecli.findrun.find_run(run_id=int(run_id))
+            info = kivecli.findrun.find_run(run_id=run_id)
 
-    if not info["end_time"]:
-        logger.warning("Run %s is still processing.", run_id)
-        return False
+        if not info["end_time"]:
+            logger.warning("Run %s is still processing.", run_id)
+            return False
 
     try:
         with new_atomic_directory(output) as output:
             kivecli.download.main_parsed(
                 output=kivecli.dirpath.DirPath(output),
-                run_id=int(run_id),
+                run_id=run_id,
                 nowait=False,
                 filefilter=FILEFILTER,
             )
