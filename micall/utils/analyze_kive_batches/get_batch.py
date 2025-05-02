@@ -5,11 +5,12 @@ import kivecli.findbatches
 import kivecli.login
 
 from micall.utils.user_error import UserError
+from micall.utils.new_atomic_file import new_atomic_text_file
 from .batch import BatchName
 
 
 def get_batch(batch: BatchName, target: Path) -> None:
-    with target.open("wt") as writer:
+    with new_atomic_text_file(target) as writer:
         try:
             with kivecli.login.login():
                 batches = list(kivecli.findbatches.findbatches(name=str(batch)))
