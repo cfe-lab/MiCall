@@ -43,12 +43,11 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
             with info_path.open() as reader:
                 info = json.load(reader)
 
-        if info["end_time"]:
-            # Already processed this, no changes possible.
-            return True
-        else:
-            info = kivecli.findrun.find_run(run_id=run_id)
+            if info["end_time"]:
+                logger.debug("Directory for RUN_ID %s already exists.", run_id)
+                return True
 
+        info = kivecli.findrun.find_run(run_id=run_id)
         if not info["end_time"]:
             logger.warning("Run %s is still processing.", run_id)
             return False
