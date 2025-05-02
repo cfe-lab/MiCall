@@ -65,7 +65,7 @@ dev = [
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
-    "kivecli @ git+https://github.com/Donaim/kivecli@dfc4127286fca0799030864bf8c66be29407334c",
+    "kivecli @ git+https://github.com/Donaim/kivecli@e6049871d19e9d35ae7bb0963f7dc680cc4455e1",
     "pandas-stubs==2.2.3.250308",
 ]
 denovo = [

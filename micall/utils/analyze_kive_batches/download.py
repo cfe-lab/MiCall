@@ -23,7 +23,7 @@ FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
 kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
-def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
+def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
     run_id = str(info["id"])
     output = root / "runs" / run_id
     info_path = output / "info.json"
@@ -43,7 +43,7 @@ def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
             # Already processed this, no changes possible.
             return True
         else:
-            info = kivecli.findrun.find_run(kive=kive, run_id=int(run_id))
+            info = kivecli.findrun.find_run(run_id=int(run_id))
 
     if not info["end_time"]:
         logger.warning("Run %s is still processing.", run_id)
@@ -52,7 +52,6 @@ def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
     try:
         with new_atomic_directory(output) as output:
             kivecli.download.main_parsed(
-                kive=kive,
                 output=kivecli.dirpath.DirPath(output),
                 run_id=int(run_id),
                 nowait=False,
@@ -75,9 +74,9 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
         data = json.load(reader)
 
     def collect_run_ids() -> Iterator[str]:
-        with login() as kive:
+        with login():
             for info in data:
-                if process_info(kive, root, info):
+                if process_info(root, info):
                     run_id = info["id"]
                     state = info["state"]
                     if state != "C":
