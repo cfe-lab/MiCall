@@ -7,6 +7,7 @@ from kivecli.login import login
 import kivecli.dirpath
 import kivecli.runfilesfilter
 import kivecli.logger
+import kivecli.findrun
 import logging
 
 from micall.utils.dir_path import DirPath
@@ -24,7 +25,6 @@ kivecli.logger.logger.setLevel(logging.DEBUG)
 
 def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
     run_id = str(info["id"])
-    end_time = info.get("end_time")
     output = root / "runs" / run_id
     info_path = output / "info.json"
     failed_path = output / "failed"
@@ -33,20 +33,21 @@ def process_info(kive, root: DirPath, info: Mapping[str, object]) -> bool:
         logger.warning("Skipping RUN_ID %s - download failed last time.", run_id)
         return False
 
-    if not end_time:
-        logger.warning("Run with RUN_ID %s is still going.", run_id)
-        return False
-
     if info_path.exists():
         logger.debug("Directory for RUN_ID %s already exists.", run_id)
 
         with info_path.open() as reader:
-            existing_info = json.load(reader)
+            info = json.load(reader)
 
-        if existing_info["end_time"]:
+        if info["end_time"]:
+            # Already processed this, no changes possible.
             return True
         else:
-            logger.debug("Run %s may have new updates.", run_id)
+            info = kivecli.findrun.find_run(kive=kive, run_id=int(run_id))
+
+    if not info["end_time"]:
+        logger.warning("Run %s is still processing.", run_id)
+        return False
 
     try:
         with new_atomic_directory(output) as output:
