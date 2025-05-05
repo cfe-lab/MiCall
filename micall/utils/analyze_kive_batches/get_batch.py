@@ -14,6 +14,6 @@ def get_batch(batch: BatchName, target: Path) -> None:
         try:
             with kivecli.login.login():
                 batches = list(kivecli.findbatches.findbatches(name=str(batch)))
-                json.dump(batches, writer, indent='\t')
+                json.dump([b.raw for b in batches], writer, indent='\t')
         except BaseException as ex:
             raise UserError("Work failed: %s", str(ex)) from ex
