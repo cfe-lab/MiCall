@@ -9,6 +9,7 @@ from .batch import BatchName
 from .generate_setup_stage_ninjafile import generate_setup_stage_ninjafile
 from .download import download
 from .generate_processing_stage_ninjafile import generate_processing_stage_ninjafile
+from .extract_run_ids import extract_run_ids
 
 
 def read_batches(batches_list: Path) -> Iterator[BatchName]:
@@ -38,8 +39,10 @@ def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
     except BaseException as ex:
         raise UserError("Work failed: %s", str(ex)) from ex
 
+    downloaded_runs_json = root / "downloaded_runs.json"
+    download(root, runs_json, downloaded_runs_json)
     runs_txt = root / "runs.txt"
-    download(root, runs_json, runs_txt)
+    extract_run_ids(downloaded_runs_json, runs_txt)
 
     processing_stage_ninjafile = root / "processing.ninja"
     generate_processing_stage_ninjafile(root,
