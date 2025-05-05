@@ -1,6 +1,6 @@
 
 import json
-from typing import Mapping, Iterator, Optional
+from typing import Iterator, Optional, Sequence
 from pathlib import Path
 import kivecli.download
 from kivecli.login import login
@@ -8,6 +8,8 @@ import kivecli.dirpath
 import kivecli.runfilesfilter
 import kivecli.logger
 import kivecli.findrun
+from kivecli.kiverun import KiveRun
+from kivecli.runstate import RunState
 import logging
 
 from micall.utils.dir_path import DirPath
@@ -23,8 +25,8 @@ FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
 kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
-def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[int]:
-    run_id = int(str(info["id"]))
+def process_info(root: DirPath, info: KiveRun) -> Optional[KiveRun]:
+    run_id = info.id
     output = root / "runs" / str(run_id)
     info_path = output / "info.json"
     failed_path = output / "failed"
@@ -33,40 +35,38 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[int]:
         logger.warning("Skipping RUN_ID %s - download failed last time.", run_id)
         return None
 
-    if info["end_time"]:
+    if info.is_finished:
         if info_path.exists():
             logger.debug("Directory for RUN_ID %s already exists.", run_id)
-            state = info["state"]
-            if state != "C":
-                logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
+            if info.state != RunState.COMPLETE:
+                logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, info.state.value)
                 return None
 
-            return run_id
+            return info
 
     else:
         if info_path.exists():
             with info_path.open() as reader:
                 info = json.load(reader)
 
-            if info["end_time"]:
+            if info.is_finished:
                 logger.debug("Directory for RUN_ID %s already exists.", run_id)
-                return run_id
+                return info
 
-        info = kivecli.findrun.find_run(run_id=run_id)
-        if not info["end_time"]:
+        info = kivecli.findrun.find_run(run_id=run_id.value)
+        if not info.is_finished:
             logger.warning("Run %s is still processing.", run_id)
             return None
 
-    state = info["state"]
-    if state != "C":
-        logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
+    if info.state != RunState.COMPLETE:
+        logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, info.state.value)
         return None
 
     try:
         with new_atomic_directory(output) as output:
             kivecli.download.main_parsed(
                 output=kivecli.dirpath.DirPath(output),
-                run_id=run_id,
+                run_id=run_id.value,
                 nowait=False,
                 filefilter=FILEFILTER,
             )
@@ -74,7 +74,7 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[int]:
             info_path = output / "info.json"
             with info_path.open("w") as writer:
                 json.dump(info, writer, indent='\t')
-            return run_id
+            return info
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run_id, ex)
@@ -84,16 +84,17 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[int]:
 
 def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
     with runs_json.open() as reader:
-        data = json.load(reader)
+        data: Sequence[KiveRun] = json.load(reader)
 
-    def collect_run_ids() -> Iterator[str]:
+    def collect_run_ids() -> Iterator[KiveRun]:
         with login():
             for info in data:
-                run_id = process_info(root, info)
-                if run_id:
-                    yield str(run_id)
+                ret = process_info(root, info)
+                if ret is not None:
+                    yield ret
 
-    new_content = '\n'.join(collect_run_ids())
+    new_runs = list(collect_run_ids())
+    new_content = json.dumps(list(run.raw for run in new_runs), indent='\t')
 
     if runs_txt.exists():
         previous_content = runs_txt.read_text()
