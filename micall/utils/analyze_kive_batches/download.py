@@ -1,6 +1,6 @@
 
 import json
-from typing import Iterator, Optional, Sequence
+from typing import Iterator, Optional, Iterable
 from pathlib import Path
 import kivecli.download
 from kivecli.login import login
@@ -82,18 +82,20 @@ def process_info(root: DirPath, info: KiveRun) -> Optional[KiveRun]:
         return None
 
 
+def collect_run_ids(root: DirPath, runs: Iterable[KiveRun]) -> Iterator[KiveRun]:
+    with login():
+        for info in runs:
+            ret = process_info(root, info)
+            if ret is not None:
+                yield ret
+
+
 def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
     with runs_json.open() as reader:
-        data: Sequence[KiveRun] = json.load(reader)
+        runs_raw = json.load(reader)
 
-    def collect_run_ids() -> Iterator[KiveRun]:
-        with login():
-            for info in data:
-                ret = process_info(root, info)
-                if ret is not None:
-                    yield ret
-
-    new_runs = list(collect_run_ids())
+    runs: Iterable[KiveRun] = tuple(KiveRun.from_json(run) for run in runs_raw)
+    new_runs = tuple(collect_run_ids(root, runs))
     new_content = json.dumps(list(run.raw for run in new_runs), indent='\t')
 
     if runs_txt.exists():
