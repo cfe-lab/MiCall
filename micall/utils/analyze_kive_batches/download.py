@@ -1,6 +1,6 @@
 
 import json
-from typing import Mapping, Iterator
+from typing import Mapping, Iterator, Optional
 from pathlib import Path
 import kivecli.download
 from kivecli.login import login
@@ -23,7 +23,7 @@ FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
 kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
-def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
+def process_info(root: DirPath, info: Mapping[str, object]) -> Optional[int]:
     run_id = int(str(info["id"]))
     output = root / "runs" / str(run_id)
     info_path = output / "info.json"
@@ -31,12 +31,17 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
 
     if failed_path.exists():
         logger.warning("Skipping RUN_ID %s - download failed last time.", run_id)
-        return False
+        return None
 
     if info["end_time"]:
         if info_path.exists():
             logger.debug("Directory for RUN_ID %s already exists.", run_id)
-            return True
+            state = info["state"]
+            if state != "C":
+                logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
+                return None
+
+            return run_id
 
     else:
         if info_path.exists():
@@ -45,12 +50,17 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
 
             if info["end_time"]:
                 logger.debug("Directory for RUN_ID %s already exists.", run_id)
-                return True
+                return run_id
 
         info = kivecli.findrun.find_run(run_id=run_id)
         if not info["end_time"]:
             logger.warning("Run %s is still processing.", run_id)
-            return False
+            return None
+
+    state = info["state"]
+    if state != "C":
+        logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
+        return None
 
     try:
         with new_atomic_directory(output) as output:
@@ -64,12 +74,12 @@ def process_info(root: DirPath, info: Mapping[str, object]) -> bool:
             info_path = output / "info.json"
             with info_path.open("w") as writer:
                 json.dump(info, writer, indent='\t')
-            return True
+            return run_id
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run_id, ex)
         failed_path.touch()
-        return False
+        return None
 
 
 def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
@@ -79,13 +89,8 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
     def collect_run_ids() -> Iterator[str]:
         with login():
             for info in data:
-                if process_info(root, info):
-                    run_id = info["id"]
-                    state = info["state"]
-                    if state != "C":
-                        logger.warning("Skipping run %s: state '%s' != 'C'.", run_id, state)
-                        continue
-
+                run_id = process_info(root, info)
+                if run_id:
                     yield str(run_id)
 
     new_content = '\n'.join(collect_run_ids())
