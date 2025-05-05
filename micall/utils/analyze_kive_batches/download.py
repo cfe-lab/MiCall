@@ -78,7 +78,9 @@ def process_info(root: DirPath, info: KiveRun) -> Optional[KiveRun]:
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run_id, ex)
-        failed_path.touch()
+        with new_atomic_directory(output) as output:
+            failed_path = output / "failed"
+            failed_path.touch()
         return None
 
 
