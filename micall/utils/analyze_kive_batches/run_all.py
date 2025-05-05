@@ -15,10 +15,10 @@ def read_batches(batches_list: Path) -> Iterator[BatchName]:
     with batches_list.open() as reader:
         for line in reader:
             line = line.strip()
-            if line.startswith("#"):
-                continue
-
-            yield BatchName(line)
+            not_commented_part, _comment, _commented_part = line.partition("#")
+            not_commented_part = not_commented_part.strip()
+            if not_commented_part:
+                yield BatchName(not_commented_part)
 
 
 def run_all(batches_list: Path, root: DirPath, properties: Path) -> None:
