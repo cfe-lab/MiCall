@@ -47,7 +47,7 @@ def process_info(root: DirPath, info: KiveRun) -> Optional[KiveRun]:
     else:
         if info_path.exists():
             with info_path.open() as reader:
-                info = json.load(reader)
+                info = KiveRun.from_json(json.load(reader))
 
             if info.is_finished:
                 logger.debug("Directory for RUN_ID %s already exists.", run_id)
