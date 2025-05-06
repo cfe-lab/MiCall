@@ -25,6 +25,12 @@ FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
 kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
+def mark_run_as_failed(root: DirPath, run: KiveRun) -> None:
+    output = root / "runs" / str(run.id)
+    with new_atomic_directory(output) as tmpout:
+        failed_path = tmpout / "failed"
+        failed_path.touch()
+
 
 def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
@@ -38,9 +44,6 @@ def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
 
 
 def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
-    output = root / "runs" / str(run.id)
-    failed_path = output / "failed"
-
     if run.is_finished:
         return run
 
@@ -50,9 +53,7 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
 
     except BaseException as ex:
         logger.warning("Could not fetch run info %s: %s", run.id, ex)
-        with new_atomic_directory(output) as output:
-            failed_path = output / "failed"
-            failed_path.touch()
+        mark_run_as_failed(root, run)
         return None
 
     if not run.is_finished:
@@ -71,6 +72,21 @@ def skip_incomplete(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     return run
 
 
+def download_run_files(root: DirPath, run: KiveRun) -> None:
+    output = root / "runs" / str(run.id)
+    with new_atomic_directory(output) as tmpout:
+        kivecli.download.main_parsed(
+            output=kivecli.dirpath.DirPath(tmpout),
+            run_id=run.id.value,
+            nowait=False,
+            filefilter=FILEFILTER,
+        )
+
+        info_path = tmpout / "info.json"
+        with info_path.open("w") as writer:
+            run.dump(writer)
+
+
 def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
     info_path = output / "info.json"
@@ -80,25 +96,11 @@ def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
         return run
 
     try:
-        with new_atomic_directory(output) as tmpout:
-            kivecli.download.main_parsed(
-                output=kivecli.dirpath.DirPath(tmpout),
-                run_id=run.id.value,
-                nowait=False,
-                filefilter=FILEFILTER,
-            )
-
-            info_path = tmpout / "info.json"
-            with info_path.open("w") as writer:
-                run.dump(writer)
-
+        download_run_files(root, run)
         return run
-
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run.id, ex)
-        with new_atomic_directory(output) as tmpout:
-            failed_path = tmpout / "failed"
-            failed_path.touch()
+        mark_run_as_failed(root, run)
         return None
 
 
