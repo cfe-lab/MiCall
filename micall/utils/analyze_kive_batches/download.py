@@ -32,9 +32,14 @@ def mark_run_as_failed(root: DirPath, run: KiveRun) -> None:
         failed_path.touch()
 
 
-def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
+def skip_if_processed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
+    download_path = output / "downloaded"
     failed_path = output / "failed"
+
+    if download_path.exists():
+        logger.warning("Skipping run %s - downloaded last time.", run.id)
+        return run
 
     if failed_path.exists():
         logger.warning("Skipping run %s - download failed last time.", run.id)
@@ -43,18 +48,41 @@ def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     return run
 
 
+def save_run_info(root: DirPath, run: KiveRun) -> None:
+    info_path = root / "runs" / f"{run.id}.json"
+    with new_atomic_text_file(info_path) as writer:
+        run.dump(writer)
+
+
+def try_load_run_info(root: DirPath, run: KiveRun) -> KiveRun:
+    info_path = root / "runs" / f"{run.id}.json"
+    if info_path.exists():
+        with info_path.open() as reader:
+            data = json.load(reader)
+            return KiveRun.from_json(data)
+    else:
+        return run
+
+
 def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
+    if run.is_finished:
+        return run
+
+    run = try_load_run_info(root, run)
     if run.is_finished:
         return run
 
     try:
         logger.debug("Fetching run info for %s - it has not finished last time.", run.id)
-        return kivecli.findrun.find_run(run_id=run.id.value)
+        run = run.update()
 
     except BaseException as ex:
         logger.warning("Could not fetch run info %s: %s", run.id, ex)
         mark_run_as_failed(root, run)
         return None
+
+    save_run_info(root, run)
+    return run
 
 
 def skip_incomplete(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
@@ -75,20 +103,10 @@ def download_run_files(root: DirPath, run: KiveRun) -> None:
             nowait=False,
             filefilter=FILEFILTER,
         )
-
-        info_path = tmpout / "info.json"
-        with info_path.open("w") as writer:
-            run.dump(writer)
+        (tmpout / "downloaded").touch()
 
 
 def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
-    output = root / "runs" / str(run.id)
-    info_path = output / "info.json"
-
-    if info_path.exists():
-        logger.warning("Skipping run %s - downloaded last time.", run.id)
-        return run
-
     try:
         download_run_files(root, run)
         return run
@@ -114,7 +132,7 @@ def pipeline(root: DirPath,
 def collect_run_ids(root: DirPath, runs: Iterable[KiveRun]) -> Iterator[KiveRun]:
     with login():
         yield from pipeline(root, runs,
-                            skip_if_failed,
+                            skip_if_processed,
                             try_fetch_info,
                             skip_incomplete,
                             try_download,
