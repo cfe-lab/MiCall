@@ -49,18 +49,12 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
 
     try:
         logger.debug("Fetching run info for %s - it has not finished last time.", run.id)
-        run = kivecli.findrun.find_run(run_id=run.id.value)
+        return kivecli.findrun.find_run(run_id=run.id.value)
 
     except BaseException as ex:
         logger.warning("Could not fetch run info %s: %s", run.id, ex)
         mark_run_as_failed(root, run)
         return None
-
-    if not run.is_finished:
-        logger.warning("Run %s is still processing.", run.id)
-        return None
-
-    return run
 
 
 def skip_incomplete(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
