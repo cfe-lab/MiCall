@@ -90,7 +90,7 @@ def try_download(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
 
             info_path = output / "info.json"
             with info_path.open("w") as writer:
-                json.dump(run, writer, indent='\t')
+                run.dump(writer)
 
             yield run
 
