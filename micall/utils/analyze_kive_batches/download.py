@@ -54,7 +54,7 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
         with new_atomic_directory(output) as output:
             failed_path = output / "failed"
             failed_path.touch()
-            return
+        return
 
     if not run.is_finished:
         logger.warning("Run %s is still processing.", run.id)
@@ -92,13 +92,15 @@ def try_download(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
             with info_path.open("w") as writer:
                 run.dump(writer)
 
-            yield run
+        yield run
+        return
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run.id, ex)
         with new_atomic_directory(output) as output:
             failed_path = output / "failed"
             failed_path.touch()
+        return
 
 
 def pipeline(root: DirPath,
