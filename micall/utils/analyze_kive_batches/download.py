@@ -80,15 +80,15 @@ def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
         return run
 
     try:
-        with new_atomic_directory(output) as output:
+        with new_atomic_directory(output) as tmpout:
             kivecli.download.main_parsed(
-                output=kivecli.dirpath.DirPath(output),
+                output=kivecli.dirpath.DirPath(tmpout),
                 run_id=run.id.value,
                 nowait=False,
                 filefilter=FILEFILTER,
             )
 
-            info_path = output / "info.json"
+            info_path = tmpout / "info.json"
             with info_path.open("w") as writer:
                 run.dump(writer)
 
@@ -96,8 +96,8 @@ def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run.id, ex)
-        with new_atomic_directory(output) as output:
-            failed_path = output / "failed"
+        with new_atomic_directory(output) as tmpout:
+            failed_path = tmpout / "failed"
             failed_path.touch()
         return None
 
