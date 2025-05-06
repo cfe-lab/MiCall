@@ -1,6 +1,6 @@
 
 import json
-from typing import Iterator, Iterable, Callable
+from typing import Iterator, Iterable, Callable, Optional
 from pathlib import Path
 import kivecli.download
 from kivecli.login import login
@@ -26,24 +26,23 @@ kivecli.logger.logger.setLevel(logging.DEBUG)
 
 
 
-def skip_if_failed(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
+def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
     failed_path = output / "failed"
 
     if failed_path.exists():
         logger.warning("Skipping run %s - download failed last time.", run.id)
-        return
+        return None
 
-    yield run
+    return run
 
 
-def try_fetch_info(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
+def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
     failed_path = output / "failed"
 
     if run.is_finished:
-        yield run
-        return
+        return run
 
     try:
         logger.debug("Fetching run info for %s - it has not finished last time.", run.id)
@@ -54,31 +53,31 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
         with new_atomic_directory(output) as output:
             failed_path = output / "failed"
             failed_path.touch()
-        return
+        return None
 
     if not run.is_finished:
         logger.warning("Run %s is still processing.", run.id)
-        return
+        return None
 
-    yield run
+    return run
 
 
-def skip_incomplete(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
+def skip_incomplete(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     if run.state != RunState.COMPLETE:
         logger.warning("Skipping run %s: state '%s' != '%s'.",
                        run.id, run.state.value, RunState.COMPLETE.value)
-        return
+        return None
 
-    yield run
+    return run
 
 
-def try_download(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
+def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
     info_path = output / "info.json"
 
     if info_path.exists():
         logger.warning("Skipping run %s - downloaded last time.", run.id)
-        return
+        return run
 
     try:
         with new_atomic_directory(output) as output:
@@ -93,25 +92,25 @@ def try_download(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
             with info_path.open("w") as writer:
                 run.dump(writer)
 
-        yield run
-        return
+        return run
 
     except BaseException as ex:
         logger.warning("Could not download run %s: %s", run.id, ex)
         with new_atomic_directory(output) as output:
             failed_path = output / "failed"
             failed_path.touch()
-        return
+        return None
 
 
 def pipeline(root: DirPath,
              runs: Iterable[KiveRun],
-             *fns: Callable[[DirPath, KiveRun], Iterator[KiveRun]],
+             *fns: Callable[[DirPath, KiveRun], Optional[KiveRun]],
              ) -> Iterator[KiveRun]:
 
     runs = tuple(runs)
     for fn in fns:
-        runs = tuple(result for run in runs for result in fn(root, run))
+        maybes = tuple(fn(root, run) for run in runs)
+        runs = tuple(mayberun for mayberun in maybes if mayberun is not None)
 
     yield from runs
 
