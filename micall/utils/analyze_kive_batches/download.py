@@ -58,6 +58,7 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> Iterator[KiveRun]:
 
     if not run.is_finished:
         logger.warning("Run %s is still processing.", run.id)
+        return
 
     yield run
 
