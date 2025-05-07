@@ -8,7 +8,8 @@ from .logger import logger
 
 
 def stitch_contigs(info_file: Path, output: Path) -> None:
-    directory = DirPath(info_file.parent)
+    assert info_file.name.endswith(".json")
+    directory = DirPath(info_file.with_suffix(""))
 
     try:
         the_unstitched_contigs_path = find_file(directory, ".*unstitched.*contig.*[.]csv$")
