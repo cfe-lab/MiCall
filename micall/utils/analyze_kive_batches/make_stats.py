@@ -252,7 +252,8 @@ def get_stats(info_file: Path) -> Optional[Row]:
     run_time = calculate_seconds_between(start_time, end_time)
     o['run_time'] = run_time
 
-    directory = DirPath(info_file.parent)
+    assert info_file.name.endswith(".json")
+    directory = DirPath(info_file.with_suffix(""))
 
     for subdir in directory.iterdir():
         if subdir.name.endswith("_info.csv"):
