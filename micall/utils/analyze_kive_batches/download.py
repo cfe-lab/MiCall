@@ -144,7 +144,7 @@ def collect_run_ids(root: DirPath, runs: Iterable[KiveRun]) -> Iterator[KiveRun]
                             )
 
 
-def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
+def download(root: DirPath, runs_json: Path, downloaded_runs_json: Path) -> None:
     with runs_json.open() as reader:
         runs_raw = json.load(reader)
 
@@ -152,10 +152,10 @@ def download(root: DirPath, runs_json: Path, runs_txt: Path) -> None:
     new_runs = tuple(collect_run_ids(root, runs))
     new_content = json.dumps(list(run.raw for run in new_runs), indent='\t')
 
-    if runs_txt.exists():
-        previous_content = runs_txt.read_text()
+    if downloaded_runs_json.exists():
+        previous_content = downloaded_runs_json.read_text()
         if previous_content == new_content:
             return
 
-    with new_atomic_text_file(runs_txt) as writer:
+    with new_atomic_text_file(downloaded_runs_json) as writer:
         writer.write(new_content)
