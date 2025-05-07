@@ -32,14 +32,15 @@ def mark_run_as_failed(root: DirPath, run: KiveRun) -> None:
         failed_path.touch()
 
 
-def skip_if_processed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
+def is_downloaded(root: DirPath, run: KiveRun) -> bool:
     output = root / "runs" / str(run.id)
     download_path = output / "downloaded"
-    failed_path = output / "failed"
+    return download_path.exists()
 
-    if download_path.exists():
-        logger.warning("Skipping run %s - downloaded last time.", run.id)
-        return None
+
+def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
+    output = root / "runs" / str(run.id)
+    failed_path = output / "failed"
 
     if failed_path.exists():
         logger.warning("Skipping run %s - download failed last time.", run.id)
@@ -122,6 +123,10 @@ def pipeline(root: DirPath,
              ) -> Iterator[KiveRun]:
 
     runs = tuple(runs)
+
+    yield from (run for run in runs if is_downloaded(root, run))
+    runs = tuple(run for run in runs if not is_downloaded(root, run))
+
     for fn in fns:
         maybes = tuple(fn(root, run) for run in runs)
         runs = tuple(mayberun for mayberun in maybes if mayberun is not None)
@@ -132,7 +137,7 @@ def pipeline(root: DirPath,
 def collect_run_ids(root: DirPath, runs: Iterable[KiveRun]) -> Iterator[KiveRun]:
     with login():
         yield from pipeline(root, runs,
-                            skip_if_processed,
+                            skip_if_failed,
                             try_fetch_info,
                             skip_incomplete,
                             try_download,
