@@ -235,7 +235,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
     o: Row = {}
 
     #
-    # Copying from `info.json`.
+    # Copying from `$DIR.json`.
     #
     state = obj['state']
     app = obj['app_name']

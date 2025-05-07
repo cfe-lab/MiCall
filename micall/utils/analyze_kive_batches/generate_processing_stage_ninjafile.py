@@ -15,7 +15,7 @@ def generate_builds(root: DirPath,
         dir = root / "runs" / str(run_id)
         stats_output = dir / "stats.json"
         stitcher_output = dir / "stitched"
-        input = dir / "info.json"
+        input = "${dir}.json"
         yield Build(outputs=[stitcher_output],
                     rule="stitch",
                     inputs=[input],
