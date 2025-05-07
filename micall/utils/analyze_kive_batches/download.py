@@ -39,7 +39,7 @@ def skip_if_processed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
 
     if download_path.exists():
         logger.warning("Skipping run %s - downloaded last time.", run.id)
-        return run
+        return None
 
     if failed_path.exists():
         logger.warning("Skipping run %s - download failed last time.", run.id)
