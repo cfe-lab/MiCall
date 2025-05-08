@@ -2,17 +2,19 @@ from pathlib import Path
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
+from micall.utils.user_error import UserError
+
 
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
     # 1) Read everything
     df = pd.read_csv(input)
-    cols = list(df.columns)  # keep the original column order
+    cols = tuple(df.columns)  # keep the original column order
 
     # 2) Fail fast if either app is not present
     apps_present = set(df['app'])
     missing = {app1, app2} - apps_present
     if missing:
-        raise ValueError(f"App(s) not found in input: {', '.join(missing)}")
+        raise UserError("App(s) not found in input: %s.", ', '.join(map(repr, missing)))
 
     # 3) Split into the two apps
     df1 = df[df['app'] == app1]
