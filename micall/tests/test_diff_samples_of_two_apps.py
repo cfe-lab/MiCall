@@ -346,7 +346,7 @@ def test_same_app_diffing_itself(tmp_path):
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
     # we should get two rows, both with size=0, tag unchanged
-    assert list(df["size"]) == ["0"]
+    assert list(df["size"]) == ["10.0"]
     assert list(df["tag"])  == ["X+Y"]
     assert list(df["app"])  == ["bob"]
 
@@ -369,7 +369,7 @@ def test_same_app_diffing_itself2(tmp_path):
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
     # we should get two rows, both with size=0, tag unchanged
-    assert list(df["size"]) == ["0"]
+    assert list(df["size"]) == ["10.0"]
     assert list(df["tag"])  == ["X+Y+X"]
     assert list(df["tag2"])  == ["a+b+c"]
     assert list(df["app"])  == ["bob"]

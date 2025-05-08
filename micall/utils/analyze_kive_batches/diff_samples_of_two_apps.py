@@ -37,14 +37,24 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     def concat_all(xs: pd.Series) -> str:
         return '+'.join(map(tostr, xs.tolist()))
 
-    agg_map: dict[str, Union[str, Callable[[pd.Series], str]]] = {}
+    def diff_all(xs: pd.Series) -> float:
+        if len(xs) == 1:
+            return 0
+
+        diffs = (abs(a - b) for a, b in zip(xs, xs[1:]))
+        return sum(diffs) / (len(xs) - 1)
+
+    agg_map: dict[str, Union[str, Callable[[pd.Series], Union[float, str]]]] = {}
     for c in cols:
         if c == 'sample':
             continue
         elif c == 'app':
             agg_map[c] = 'first'
         elif is_numeric_dtype(df[c]):
-            agg_map[c] = 'mean'
+            if app1 == app2:
+                agg_map[c] = diff_all
+            else:
+                agg_map[c] = 'mean'
         else:
             agg_map[c] = concat_all
 
@@ -87,6 +97,10 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
                 a = rowA[col]
                 b = rowB[col]
                 column = df[col]
+
+                if app1 == app2:
+                    rec[col] = a
+                    continue
 
                 # only treat ints and floats as numeric; exclude bools
                 if is_numeric_dtype(column):
