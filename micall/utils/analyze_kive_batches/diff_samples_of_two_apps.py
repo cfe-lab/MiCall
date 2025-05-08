@@ -3,6 +3,7 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
 from micall.utils.user_error import UserError
+from .logger import logger
 
 
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
@@ -39,8 +40,10 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
         n = min(len(A), len(B))
 
         if len(A) != len(B):
-            print(f"Warning: sample {sample} has {len(A)} rows in {app1} "
-                  f"but {len(B)} rows in {app2}; using first {n} pairs.")
+            logger.warning("Sample %r has %s rows in %r "
+                           "but %s rows in %r; using first %s pairs.",
+                           str(sample), len(A), app1, len(B), app2, n,
+                           )
 
         for i in range(n):
             rowA = A.iloc[i]
