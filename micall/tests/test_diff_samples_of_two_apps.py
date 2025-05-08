@@ -368,7 +368,6 @@ def test_empty_input_header_only_raises(tmp_path):
         diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
 
 
-@pytest.mark.xfail
 def test_missing_non_numeric_values(tmp_path):
     """
     If a non‐numeric column is empty on one side but present on the other,

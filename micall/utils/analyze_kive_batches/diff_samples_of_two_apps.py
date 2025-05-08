@@ -64,6 +64,10 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
                 else:
                     # non‐numeric: "L/R" or just "L" if equal
                     sa, sb = str(a), str(b)
+                    if pd.isna(a):
+                        sa = ''
+                    if pd.isna(b):
+                        sb = ''
                     rec[col] = sa if sa == sb else f"{sa}/{sb}"
 
             out_recs.append(rec)
