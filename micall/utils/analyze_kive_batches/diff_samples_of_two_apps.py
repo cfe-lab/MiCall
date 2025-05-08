@@ -4,45 +4,67 @@ from pandas.api.types import is_numeric_dtype
 
 
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
-    # 1. Read
+    # 1) Read everything
     df = pd.read_csv(input)
 
-    # 2. (Optional) If you know certain columns must be numeric,
-    #    you can coerce them here.  E.g.:
-    # for c in ['size', 'depth', 'run_time']:
-    #     df[c] = pd.to_numeric(df[c], errors='coerce')
+    # 2) Split into the two apps
+    df1 = df[df['app'] == app1]
+    df2 = df[df['app'] == app2]
 
-    # 3. Split into the two apps, index by sample
-    df1 = df[df['app'] == app1].set_index('sample')
-    df2 = df[df['app'] == app2].set_index('sample')
+    # 3) Find the set of samples that appear in both
+    common_samples = sorted(
+        set(df1['sample']).intersection(df2['sample'])
+    )
 
-    # 4. Keep only samples present in both
-    common = df1.index.intersection(df2.index)
-    df1 = df1.loc[common]
-    df2 = df2.loc[common]
+    # 4) Prepare buckets by sample
+    grouped1 = { s: grp.reset_index(drop=True)
+                 for s, grp in df1.groupby('sample') if s in common_samples }
+    grouped2 = { s: grp.reset_index(drop=True)
+                 for s, grp in df2.groupby('sample') if s in common_samples }
 
-    # 5. Build the output
-    out = pd.DataFrame(index=common)
-    out['sample'] = out.index  # restore 'sample' as column
+    # 5) Prepare output records
+    out_recs = []
+    cols = list(df.columns)          # preserve original column order
+    for sample in common_samples:
+        A = grouped1[sample]
+        B = grouped2[sample]
+        n = min(len(A), len(B))
 
-    # Loop over every column in the original
-    for col in df.columns:
-        if col == 'sample':
-            continue
+        if len(A) != len(B):
+            print(f"Warning: sample {sample} has {len(A)} rows in {app1} "
+                  f"but {len(B)} rows in {app2}; using first {n} pairs.")
 
-        left  = df1[col]
-        right = df2[col]
+        for i in range(n):
+            rowA = A.iloc[i]
+            rowB = B.iloc[i]
+            rec = {'sample': sample}
 
-        # if the original column was numeric → subtract
-        if is_numeric_dtype(df[col]):
-            out[col] = left - right
+            for col in cols:
+                if col == 'sample':
+                    continue
 
-        # otherwise build "L/R" or just "L" if L==R
-        else:
-            ls = left.astype(str)
-            rs = right.astype(str)
-            out[col] = ls.where(ls == rs, ls + '/' + rs)
+                a = rowA[col]
+                b = rowB[col]
 
-    # 6. Reorder to original column order and write out
-    out = out[df.columns]
-    out.to_csv(output, index=False)
+                # Numeric? subtract
+                if is_numeric_dtype(df[col]):
+                    try:
+                        rec[col] = a - b
+                    except Exception:
+                        # fallback if dtype inference was wonky
+                        rec[col] = pd.to_numeric(a, errors='coerce') \
+                                 - pd.to_numeric(b, errors='coerce')
+                else:
+                    # Non‐numeric: "L/R" or just "L" if equal
+                    sa = str(a)
+                    sb = str(b)
+                    rec[col] = sa if sa == sb else f"{sa}/{sb}"
+
+            out_recs.append(rec)
+
+    # 6) Build DataFrame and write CSV
+    out_df = pd.DataFrame(out_recs)
+
+    # ensure same column order
+    out_df = out_df[cols]
+    out_df.to_csv(output, index=False)
