@@ -6,25 +6,31 @@ from pandas.api.types import is_numeric_dtype
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
     # 1) Read everything
     df = pd.read_csv(input)
+    cols = list(df.columns)  # keep the original column order
 
-    # 2) Split into the two apps
+    # 2) Fail fast if either app is not present
+    apps_present = set(df['app'])
+    missing = {app1, app2} - apps_present
+    if missing:
+        raise ValueError(f"App(s) not found in input: {', '.join(missing)}")
+
+    # 3) Split into the two apps
     df1 = df[df['app'] == app1]
     df2 = df[df['app'] == app2]
 
-    # 3) Find the set of samples that appear in both
+    # 4) Find the set of samples that appear in both
     common_samples = sorted(
         set(df1['sample']).intersection(df2['sample'])
     )
 
-    # 4) Prepare buckets by sample
+    # 5) Group by sample, reset index so we can pair‐up later
     grouped1 = { s: grp.reset_index(drop=True)
                  for s, grp in df1.groupby('sample') if s in common_samples }
     grouped2 = { s: grp.reset_index(drop=True)
                  for s, grp in df2.groupby('sample') if s in common_samples }
 
-    # 5) Prepare output records
+    # 6) Build output records by pairing rows of each sample
     out_recs = []
-    cols = list(df.columns)          # preserve original column order
     for sample in common_samples:
         A = grouped1[sample]
         B = grouped2[sample]
@@ -46,25 +52,19 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
                 a = rowA[col]
                 b = rowB[col]
 
-                # Numeric? subtract
                 if is_numeric_dtype(df[col]):
-                    try:
-                        rec[col] = a - b
-                    except Exception:
-                        # fallback if dtype inference was wonky
-                        rec[col] = pd.to_numeric(a, errors='coerce') \
-                                 - pd.to_numeric(b, errors='coerce')
+                    # numeric diff
+                    rec[col] = pd.to_numeric(a, errors='coerce') - \
+                               pd.to_numeric(b, errors='coerce')
                 else:
-                    # Non‐numeric: "L/R" or just "L" if equal
-                    sa = str(a)
-                    sb = str(b)
+                    # non‐numeric: "L/R" or just "L" if equal
+                    sa, sb = str(a), str(b)
                     rec[col] = sa if sa == sb else f"{sa}/{sb}"
 
             out_recs.append(rec)
 
-    # 6) Build DataFrame and write CSV
-    out_df = pd.DataFrame(out_recs)
+    # 7) Build the final DataFrame, forcing the original columns even if out_recs=[]
+    out_df = pd.DataFrame(out_recs, columns=cols)
 
-    # ensure same column order
-    out_df = out_df[cols]
+    # 8) Write to CSV
     out_df.to_csv(output, index=False)
