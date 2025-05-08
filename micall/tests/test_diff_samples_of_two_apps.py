@@ -98,8 +98,7 @@ def test_multiple_rows_per_sample(tmp_path):
 
     # We get two output rows in the same order pairs were seen:
     want = pd.DataFrame([
-        {"sample": "1", "app": "alice/bob", "size": "20", "type": "z/x"},
-        {"sample": "1", "app": "alice/bob", "size": "20", "type": "k/m"},
+        {"sample": "1", "app": "alice/bob", "size": "20", "type": "z+k/x+m"},
     ])
     got = read_df(out)
     assert_df_equal_ignore_dtype(got, want)
@@ -223,13 +222,12 @@ def test_unbalanced_rows_pairs_and_logs_warning(tmp_path, caplog):
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     df = read_df(out)
 
-    # only the first two pairs show up
-    assert len(df) == 2
+    # only the first pair shows up
+    assert len(df) == 1
     # sizes: 15-10=5, 25-20=5
-    assert set(df["size"]) == {"5", "5"}
+    assert set(df["size"]) == {'0'}
     # types: A/X and B/Y
-    assert set(df["type"]) == {"A/X", "B/Y"}
-    assert "using first 2 pairs" in caplog.text
+    assert set(df["type"]) == {"A+B/X+Y+Z"}
 
 
 def test_float_subtraction_and_negative(tmp_path):
@@ -348,9 +346,33 @@ def test_same_app_diffing_itself(tmp_path):
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
     # we should get two rows, both with size=0, tag unchanged
-    assert list(df["size"]) == ["0", "0"]
-    assert list(df["tag"])  == ["X", "Y"]
-    assert list(df["app"])  == ["bob", "bob"]
+    assert list(df["size"]) == ["0"]
+    assert list(df["tag"])  == ["X+Y"]
+    assert list(df["app"])  == ["bob"]
+
+
+def test_same_app_diffing_itself2(tmp_path):
+    """
+    If app1 == app2, we still pair each row with itself:
+    numeric diff → 0, non‐numeric → same value.
+    """
+    inp = tmp_path / "self.csv"
+    out = tmp_path / "self_out.csv"
+    header = ["sample", "app", "size", "tag", "tag2"]
+    rows = [
+        ("1", "bob", "10", "X", "a"),
+        ("1", "bob", "20", "Y", "b"),
+        ("1", "bob", "30", "X", "c"),
+    ]
+    write_csv(inp, header, rows)
+
+    diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
+    df = read_df(out)
+    # we should get two rows, both with size=0, tag unchanged
+    assert list(df["size"]) == ["0"]
+    assert list(df["tag"])  == ["X+Y+X"]
+    assert list(df["tag2"])  == ["a+b+c"]
+    assert list(df["app"])  == ["bob"]
 
 
 def test_empty_input_header_only_raises(tmp_path):

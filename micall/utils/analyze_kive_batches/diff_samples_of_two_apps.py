@@ -1,8 +1,13 @@
 from pathlib import Path
+from typing import Callable, Union
 import pandas as pd
 
 from micall.utils.user_error import UserError
 from .logger import logger
+
+
+def is_numeric_dtype(col: pd.Series) -> bool:
+    return col.dtype.kind in ('i','u','f')
 
 
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
@@ -19,6 +24,32 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     # 3) Split into the two apps
     df1 = df[df['app'] == app1]
     df2 = df[df['app'] == app2]
+
+    def tostr(x: pd.DataFrame) -> str:
+        if pd.isna(x):
+            return ''
+        else:
+            return str(x)
+
+    # 4) If there are multiple rows per (sample, app), collapse them:
+    #    - numeric cols → mean
+    #    - non-numeric cols → concat all values
+    def concat_all(xs: pd.Series) -> str:
+        return '+'.join(map(tostr, xs.tolist()))
+
+    agg_map: dict[str, Union[str, Callable[[pd.Series], str]]] = {}
+    for c in cols:
+        if c == 'sample':
+            continue
+        elif c == 'app':
+            agg_map[c] = 'first'
+        elif is_numeric_dtype(df[c]):
+            agg_map[c] = 'mean'
+        else:
+            agg_map[c] = concat_all
+
+    df1 = df1.groupby('sample', as_index=False).agg(agg_map)
+    df2 = df2.groupby('sample', as_index=False).agg(agg_map)
 
     # 4) Find the set of samples that appear in both
     common_samples = sorted(
@@ -55,20 +86,18 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
 
                 a = rowA[col]
                 b = rowB[col]
-                dt = df[col].dtype
+                column = df[col]
 
                 # only treat ints and floats as numeric; exclude bools
-                if dt.kind in ('i','u','f'):
+                if is_numeric_dtype(column):
                     # numeric diff
                     rec[col] = pd.to_numeric(a, errors='coerce') - \
                                pd.to_numeric(b, errors='coerce')
+                    if float.is_integer(rec[col]):
+                        rec[col] = int(rec[col])
                 else:
                     # non‐numeric: "L/R" or just "L" if equal
-                    sa, sb = str(a), str(b)
-                    if pd.isna(a):
-                        sa = ''
-                    if pd.isna(b):
-                        sb = ''
+                    sa, sb = tostr(a), tostr(b)
                     rec[col] = sa if sa == sb else f"{sa}/{sb}"
 
             out_recs.append(rec)
