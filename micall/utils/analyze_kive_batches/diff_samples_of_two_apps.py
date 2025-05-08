@@ -1,6 +1,5 @@
 from pathlib import Path
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 
 from micall.utils.user_error import UserError
 from .logger import logger
@@ -56,8 +55,10 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
 
                 a = rowA[col]
                 b = rowB[col]
+                dt = df[col].dtype
 
-                if is_numeric_dtype(df[col]):
+                # only treat ints and floats as numeric; exclude bools
+                if dt.kind in ('i','u','f'):
                     # numeric diff
                     rec[col] = pd.to_numeric(a, errors='coerce') - \
                                pd.to_numeric(b, errors='coerce')

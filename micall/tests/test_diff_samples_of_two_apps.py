@@ -291,7 +291,6 @@ def test_column_order_is_preserved(tmp_path):
     }
 
 
-@pytest.mark.xfail
 def test_boolean_and_nonstring_columns(tmp_path):
     """
     A boolean column should be treated like a non‐numeric
