@@ -1,37 +1,49 @@
-
 from pathlib import Path
-# import pandas as pd
+import pandas as pd
+import numpy as np
 
 
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
     # 1. Read the CSV
-    # df = pd.read_csv(input)
+    df = pd.read_csv(input)
 
-    # TODO:
-    #
-    #   This function is based on sample names. Column "sample" is the "primary unique key".
-    #
-    #   Select samples that are in both `app1` and `app2`. I.e. rows where "app" == "app1" and "app" == "app2" for a single "sample".
-    #   Let $LEFT be the value of a column for `app1`'s version of sample.
-    #   Let $RIGHT be the value of a column for `app2`'s version of sample.
-    #   For each numeric column, compute the difference, `$LEFT - $RIGHT`, and store in that column for the resulting table.
-    #   For each non-numeric column, set the value to be `"$LEFT/$RIGHT"`. If `$LEFT == $RIGHT`, then just `$LEFT`, without slash comparison.
-    #
-    #   For example for `input` like
-    #
-    #      | sample | app   | size | type |
-    #      | 1      | bob   | 50   | x    |
-    #      | 1      | celia | 60   | y    |
-    #      | 1      | alice | 70   | z    |
-    #
-    #   And `app1 == alice` and `app2 = bob`
-    #
-    #   The output should be
-    #
-    #      | sample | app         | size | type |
-    #      | 1      | alice/bob   | 20   | x/z  |
-    #
+    # 2. Split out the two apps
+    df1 = df[df['app'] == app1]
+    df2 = df[df['app'] == app2]
 
-    # 3. Write out to CSV
-    # result.to_csv(output, index=False)
-    raise NotImplementedError()
+    # 3. Restrict to samples that appear in both
+    common = set(df1['sample']).intersection(df2['sample'])
+    df1 = df1[df1['sample'].isin(common)].set_index('sample')
+    df2 = df2[df2['sample'].isin(common)].set_index('sample')
+
+    # 4. Give them distinct suffixes and join on sample
+    df1 = df1.add_suffix('_left')
+    df2 = df2.add_suffix('_right')
+    merged = df1.join(df2, how='inner')
+
+    # 5. Build the result by iterating original columns
+    result = pd.DataFrame()
+    # bring sample back as a column
+    result['sample'] = merged.index
+
+    # figure out which columns were numeric in the original df
+    numeric_cols = df.select_dtypes(include='number').columns
+
+    for col in df.columns:
+        if col == 'sample':
+            continue
+        left = merged[f"{col}_left"]
+        right = merged[f"{col}_right"]
+
+        if col in numeric_cols:
+            # numeric → subtract
+            result[col] = left - right
+        else:
+            # non‐numeric → "Left/Right", or just "Left" if equal
+            lstr = left.astype(str)
+            rstr = right.astype(str)
+            result[col] = np.where(lstr == rstr, lstr, lstr + '/' + rstr)
+
+    # 6. Reorder to original column order and write out
+    result = result[df.columns]
+    result.to_csv(output, index=False)
