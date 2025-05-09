@@ -18,7 +18,9 @@ def introduce_errors(seq: str,
                      subst_rate: float,
                      ins_rate: float,
                      del_rate: float,
-                     ins_quality: int) -> Tuple[str, Sequence[int]]:
+                     ins_quality: int,
+                     rng: random.Random,
+                     ) -> Tuple[str, Sequence[int]]:
 
     """
     Introduce substitution, insertion, and deletion errors into a sequence.
@@ -43,17 +45,17 @@ def introduce_errors(seq: str,
 
     for base, q in zip(seq, qualities):
         # First, decide whether to drop (delete) this base.
-        if random.random() < del_rate:
+        if rng.random() < del_rate:
             # Base is dropped (no substitution or insertion for this
             # base).  You could decide to also sometimes insert an
             # extra unwanted base even if deletion occurs.
             continue
 
         # Otherwise, decide whether to substitute the base.
-        if random.random() < subst_rate:
+        if rng.random() < subst_rate:
             # Choose a new nucleotide that is different from the original.
             possible = tuple(nuc for nuc in NUCLEOTIDES if nuc != base.upper())
-            new_base = random.choice(possible)
+            new_base = rng.choice(possible)
         else:
             new_base = base
 
@@ -62,8 +64,8 @@ def introduce_errors(seq: str,
 
         # Now, decide whether to insert an extra (random) nucleotide
         # *after* this base.
-        if random.random() < ins_rate:
-            inserted_base = random.choice(NUCLEOTIDES)
+        while rng.random() < ins_rate:
+            inserted_base = rng.choice(NUCLEOTIDES)
             new_seq_chars.append(inserted_base)
             new_quals.append(ins_quality)
 
@@ -89,7 +91,8 @@ def process_records(input_handle: TextIO,
                                                   subst_rate,
                                                   ins_rate,
                                                   del_rate,
-                                                  ins_quality)
+                                                  ins_quality,
+                                                  rng)
 
         # Create a new SeqRecord with updated sequence and quality.
         new_record = SeqRecord(Seq(new_seq_str),
@@ -143,11 +146,11 @@ def get_parser() -> argparse.ArgumentParser:
                         help="Input FASTQ file containing original reads.")
     parser.add_argument("out_fastq", type=Path,
                         help="Output FASTQ file that will contain reads with errors.")
-    parser.add_argument("--subst_rate", type=float, default=0.005,
+    parser.add_argument("--subst_rate", type=float, default=1/500,
                         help="Per-base substitution error rate.")
-    parser.add_argument("--ins_rate", type=float, default=0.0,
+    parser.add_argument("--ins_rate", type=float, default=1/5000,
                         help="Per-base insertion error rate.")
-    parser.add_argument("--del_rate", type=float, default=0.0,
+    parser.add_argument("--del_rate", type=float, default=1/5000,
                         help="Per-base deletion error rate.")
     parser.add_argument("--ins_quality", type=int, default=20,
                         help="Quality score assigned to any inserted bases.")

@@ -88,9 +88,14 @@ EXECUTABLES = [
     "micall/monitor/update_qai.py",
     "micall/monitor/micall_watcher.py",
     "micall/tcr/igblast.py",
+    "micall/utils/find_maximum_overlap.py",
+    "micall/utils/csv_to_fasta.py",
+    "micall/utils/cat.py",
     "micall/utils/fasta_to_fastq.py",
     "micall/utils/append_primers.py",
     "micall/utils/randomize_fastq.py",
+    "micall/utils/calculate_kmer_frequencies.py",
+    "micall/utils/fastq_to_fasta.py",
     "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
 ]
 
@@ -120,10 +125,10 @@ def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
 
 
 def get_version() -> str:
-    if __package__ is None:
-        return "development"
-    else:
+    try:
         return str(version(__package__))
+    except BaseException:
+        return "development"
 
 
 def get_parser() -> argparse.ArgumentParser:
