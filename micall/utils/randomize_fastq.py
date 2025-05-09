@@ -64,7 +64,7 @@ def introduce_errors(seq: str,
 
         # Now, decide whether to insert an extra (random) nucleotide
         # *after* this base.
-        if rng.random() < ins_rate:
+        while rng.random() < ins_rate:
             inserted_base = rng.choice(NUCLEOTIDES)
             new_seq_chars.append(inserted_base)
             new_quals.append(ins_quality)
