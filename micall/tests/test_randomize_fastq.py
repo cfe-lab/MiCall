@@ -23,11 +23,13 @@ def test_introduce_errors_no_error():
     seq = "ACGTACGT"
     qualities = [30] * len(seq)
     # no errors: all error rates set to 0.
+    rng = random.Random(42)
     new_seq, new_quals = introduce_errors(seq, qualities,
                                           subst_rate=0.0,
                                           ins_rate=0.0,
                                           del_rate=0.0,
-                                          ins_quality=20)
+                                          ins_quality=20,
+                                          rng=rng)
     assert new_seq == seq
     assert new_quals == qualities
 
@@ -35,11 +37,13 @@ def test_introduce_errors_no_error():
 def test_introduce_errors_full_deletion():
     seq = "ACGTACGT"
     qualities = [30] * len(seq)
+    rng = random.Random(42)
     new_seq, new_quals = introduce_errors(seq, qualities,
                                           subst_rate=0.0,
                                           ins_rate=0.0,
                                           del_rate=1.0,
-                                          ins_quality=20)
+                                          ins_quality=20,
+                                          rng=rng)
     # With full deletion, expect empty sequence and empty quality list.
     assert new_seq == ""
     assert new_quals == []
@@ -49,11 +53,13 @@ def test_introduce_errors_full_substitution():
     seq = "ACGT"
     qualities = [30, 31, 32, 33]
     # Set subst_rate=1 so every base is substituted.
+    rng = random.Random(42)
     new_seq, new_quals = introduce_errors(seq, qualities,
                                           subst_rate=1.0,
                                           ins_rate=0.0,
                                           del_rate=0.0,
-                                          ins_quality=20)
+                                          ins_quality=20,
+                                          rng=rng)
     assert len(new_seq) == len(seq)
     # for each base, new base should be different than original.
     for original, new in zip(seq, new_seq):
@@ -65,11 +71,13 @@ def test_introduce_errors_full_substitution():
 def test_introduce_errors_full_insertion():
     seq = "ACGT"
     qualities = [30] * len(seq)
+    rng = random.Random(42)
     new_seq, new_quals = introduce_errors(seq, qualities,
                                           subst_rate=0.0,
                                           ins_rate=1.0,
                                           del_rate=0.0,
-                                          ins_quality=15)
+                                          ins_quality=15,
+                                          rng=rng)
     # Every base should be followed by an inserted base: length 2*len(seq)
     assert len(new_seq) == 2 * len(seq)
     # And the bases at even indices (0-indexed) should be the original bases.
