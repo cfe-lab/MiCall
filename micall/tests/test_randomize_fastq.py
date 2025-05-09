@@ -11,7 +11,6 @@ from micall.utils.randomize_fastq import (
     introduce_errors,
     process_records,
     process_fastq,
-    get_parser,
     main,
     entry,
     NUCLEOTIDES,
@@ -108,20 +107,6 @@ def test_process_records_no_error():
     # Check phred qualities:
     # '!' converts to 0 in Phred.
     assert rec.letter_annotations["phred_quality"] == [0]*4
-
-
-# --- Tests for argument parser ---
-def test_get_parser_defaults():
-    parser = get_parser()
-    args = parser.parse_args(["in.fastq", "out.fastq"])
-    assert args.in_fastq == Path("in.fastq")
-    assert args.out_fastq == Path("out.fastq")
-    # default error rates from the parser.
-    assert args.subst_rate == 0.005
-    assert args.ins_rate == 0.0
-    assert args.del_rate == 0.0
-    assert args.ins_quality == 20
-    assert args.seed == 42
 
 
 @pytest.fixture

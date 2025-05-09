@@ -146,11 +146,11 @@ def get_parser() -> argparse.ArgumentParser:
                         help="Input FASTQ file containing original reads.")
     parser.add_argument("out_fastq", type=Path,
                         help="Output FASTQ file that will contain reads with errors.")
-    parser.add_argument("--subst_rate", type=float, default=0.005,
+    parser.add_argument("--subst_rate", type=float, default=1/500,
                         help="Per-base substitution error rate.")
-    parser.add_argument("--ins_rate", type=float, default=0.0,
+    parser.add_argument("--ins_rate", type=float, default=1/5000,
                         help="Per-base insertion error rate.")
-    parser.add_argument("--del_rate", type=float, default=0.0,
+    parser.add_argument("--del_rate", type=float, default=1/5000,
                         help="Per-base deletion error rate.")
     parser.add_argument("--ins_quality", type=int, default=20,
                         help="Quality score assigned to any inserted bases.")
