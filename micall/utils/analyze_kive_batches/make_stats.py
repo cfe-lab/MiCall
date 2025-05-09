@@ -8,11 +8,24 @@ import math
 from datetime import datetime
 from itertools import tee
 import ast
+from Bio.Align import PairwiseAligner
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 from micall.utils.dir_path import DirPath
+from micall.core.project_config import ProjectConfig
 from .logger import logger
 from .find_file import find_file
+
+
+# set up the aligner
+ALIGNER = PairwiseAligner()
+ALIGNER.mode = "global"
+# By default end gaps are free (score 0).
+# Make them penalized by picking -1 per gap position at ends.
+ALIGNER.end_gap_score = -1
+
+
+PROJECTS = ProjectConfig.loadDefault()
 
 
 Row = MutableMapping[str, Optional[Union[str, int, float, Sequence['Row']]]]
@@ -126,6 +139,43 @@ def read_contigs_rows(path_to_file: Path) -> Rows:
             yield row
 
 
+def read_conseqs_rows(path_to_file: Path) -> Rows:
+    with open(path_to_file) as fd:
+        reader = csv.DictReader(fd)
+        for row in reader:
+            ref = row["region"]
+            if "unknown" in ref.lower():
+                continue
+
+            index, _dash, _rest = ref.partition('-')
+            try:
+                #
+                # Only parse the actual assembled contigs.
+                # They are distinguished via a prefix "$n-" where $n is a number.
+                #
+                int(index, 10)
+            except BaseException:
+                continue
+
+            cutoff = row["consensus-percent-cutoff"]
+            if cutoff != "MAX":
+                continue
+
+            yield row
+
+
+def read_contigs_or_conseqs_rows(path_to_file: Path) -> Rows:
+    with open(path_to_file) as fd:
+        reader = csv.DictReader(fd)
+        fieldnames = reader.fieldnames
+        assert fieldnames is not None, f"Unexpected file {path_to_file} without columns."
+
+    if "consensus-percent-cutoff" in fieldnames:
+        yield from read_conseqs_rows(path_to_file)
+    else:
+        yield from read_contigs_rows(path_to_file)
+
+
 def average(values: Iterable[float]) -> float:
     total = 0.0
     count = 0
@@ -226,6 +276,29 @@ def avg_contigs_lengths(rows: Rows) -> float:
         return 0
 
 
+def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
+    def collect_scores() -> Iterator[float]:
+        for row in rows:
+            # This field called "region" by mistake.
+            region = str(row["region"])
+            _index, _dash, ref_name = region.partition('-')
+            try:
+                # ref_name = "HIV1-B-ZA-KP109515-seed"
+                reference = PROJECTS.getReference(ref_name)
+                assert reference is not None
+            except BaseException:
+                logger.warning("Invalid reference name %r in run %s.", ref_name, run_id)
+                continue
+
+            query = str(row["sequence"])
+            # do the alignment, grab top hit
+            aln = next(iter(ALIGNER.align(reference, query)))
+            yield aln.score
+
+    scores = collect_scores()
+    return max(scores, default=None)
+
+
 def get_stats(info_file: Path) -> Optional[Row]:
     with info_file.open() as reader:
         obj = json.load(reader)
@@ -282,8 +355,14 @@ def get_stats(info_file: Path) -> Optional[Row]:
         the_log_path = None
         logger.error("%s", ex)
 
+    try:
+        conseqs_csv_path = find_file(directory, "^conseq.*[.]csv$")
+    except ValueError as ex:
+        conseqs_csv_path = None
+        logger.error("%s", ex)
+
     rc = read_coverage_rows
-    ro = read_contigs_rows
+    ro = read_contigs_or_conseqs_rows
 
     if the_csv_path:
         o["concordance"] = calculate_avg("concordance", rc(the_csv_path))
@@ -295,6 +374,9 @@ def get_stats(info_file: Path) -> Optional[Row]:
     if contigs_csv_path:
         o["number_of_contigs"] = count_contigs(ro(contigs_csv_path))
         o["avg_contigs_size"] = avg_contigs_lengths(ro(contigs_csv_path))
+
+    if conseqs_csv_path:
+        o["alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_csv_path))
 
     overlaps: list[Row] = []
     o["overlaps"] = overlaps
