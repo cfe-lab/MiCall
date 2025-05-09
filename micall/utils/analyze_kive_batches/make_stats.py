@@ -147,16 +147,6 @@ def read_conseqs_rows(path_to_file: Path) -> Rows:
             if "unknown" in ref.lower():
                 continue
 
-            index, _dash, _rest = ref.partition('-')
-            try:
-                #
-                # Only parse the actual assembled contigs.
-                # They are distinguished via a prefix "$n-" where $n is a number.
-                #
-                int(index, 10)
-            except BaseException:
-                continue
-
             cutoff = row["consensus-percent-cutoff"]
             if cutoff != "MAX":
                 continue
@@ -281,7 +271,17 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
         for row in rows:
             # This field called "region" by mistake.
             region = str(row["region"])
-            _index, _dash, ref_name = region.partition('-')
+
+            try:
+                #
+                # Some region names are prefix with "1-" or "2-" or "n-".
+                # Strip that here.
+                #
+                index, _dash, ref_name = region.partition('-')
+                int(index, 10)
+            except BaseException:
+                ref_name = region
+
             if ref_name.endswith('-partial'):
                 ref_name = ref_name[:-len('-partial')]
 
