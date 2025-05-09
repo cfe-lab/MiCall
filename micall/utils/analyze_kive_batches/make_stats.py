@@ -282,6 +282,9 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
             # This field called "region" by mistake.
             region = str(row["region"])
             _index, _dash, ref_name = region.partition('-')
+            if ref_name.endswith('-partial'):
+                ref_name = ref_name[:-len('-partial')]
+
             try:
                 # ref_name = "HIV1-B-ZA-KP109515-seed"
                 reference = PROJECTS.getReference(ref_name)
