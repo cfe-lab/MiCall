@@ -156,3 +156,18 @@ From: python:3.11
 %apphelp denovo
     Standard pipeline with de novo assembly instead of mapping to reference
     sequences.
+
+%apprun free
+    exec /bin/sh "$@"
+
+%applabels free
+    KIVE_INPUTS  script_sh argument_zip
+    KIVE_OUTPUTS
+    KIVE_THREADS 2
+    KIVE_MEMORY 6000
+
+%apphelp free
+    Execute an arbitrary shell‐script inside the container, passing it
+    a single ZIP-file.  Usage:
+        singularity exec micall.sif free script.sh argument.zip
+    This app is useful for testing the image on Kive.
