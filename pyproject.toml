@@ -83,7 +83,7 @@ basespace = [
 ]
 
 [project.scripts]
-micall = "micall.main:cli"
+micall = "micall.__main__:cli"
 
 [tool.hatch.build]
 include = [
