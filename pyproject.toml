@@ -37,7 +37,7 @@ dependencies = [
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy==2.29",
     "drawsvg==2.4.0",
-    "cairosvg==2.7.1",
+    "cairosvg==2.8.2",
     "aligntools==1.2.1",
     "multicsv==1.0.4",
 ]
