@@ -11,6 +11,10 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 NUCLEOTIDES = "ACGT"
+SNP_POSSIBILITIES = {
+    base: tuple(nuc for nuc in NUCLEOTIDES if nuc != base)
+    for base in NUCLEOTIDES
+}
 
 
 def introduce_errors(seq: str,
@@ -54,8 +58,7 @@ def introduce_errors(seq: str,
         # Otherwise, decide whether to substitute the base.
         if rng.random() < subst_rate:
             # Choose a new nucleotide that is different from the original.
-            possible = tuple(nuc for nuc in NUCLEOTIDES if nuc != base.upper())
-            new_base = rng.choice(possible)
+            new_base = rng.choice(SNP_POSSIBILITIES[base])
         else:
             new_base = base
 
