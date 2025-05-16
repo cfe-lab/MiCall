@@ -75,8 +75,8 @@ def normalize_array(array: Sequence[float]) -> Sequence[Fraction]:
             value = 0
         return (Fraction(value),) * len(array)
 
-    diff = high - low
-    return tuple(Fraction(x - low) / Fraction(diff) for x in array)
+    diff = Fraction(high - low)
+    return tuple(Fraction(x - low) / diff for x in array)
 
 
 def calculate_concordance_norm(left: Sequence[object], right: Sequence[object],
