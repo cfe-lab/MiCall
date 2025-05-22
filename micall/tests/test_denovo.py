@@ -2,7 +2,7 @@ from io import StringIO
 from pathlib import Path
 import re
 
-import pytest
+from pytest import mark
 
 from micall.core.denovo import denovo
 from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
@@ -20,7 +20,7 @@ def normalize_fasta(content: str) -> str:
     return result
 
 
-@pytest.mark.iva()  # skip with -k-iva
+@mark.iva()  # skip with -k-iva
 def test_denovo_iva(tmpdir, hcv_db):
     microtest_path = Path(__file__).parent / 'microtest'
     contigs_fasta = StringIO()
@@ -44,6 +44,4 @@ CCGCTCAGCGGGTGGAGTTTCTCTTGAAGGCATGGGCGGATAAGAGAGACCCTATGGGTTTTTCGTATGATACCCGATGC
 
     result = contigs_fasta.getvalue()
     expected = expected_contigs_fasta
-
-    pytest.xfail(reason="Megahit integration is not finished.")  # FIXME: remove this when it is done.
     assert normalize_fasta(result) == normalize_fasta(expected)
