@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 from typing import Optional, TextIO, cast, BinaryIO
-from csv import DictReader
 from datetime import datetime
 from glob import glob
 from shutil import rmtree, copyfileobj
@@ -10,12 +9,8 @@ from subprocess import PIPE, CalledProcessError, STDOUT
 import subprocess
 from tempfile import mkdtemp
 
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 
-
-IVA = "iva"
+MEGAHIT = "megahit"
 logger = logging.getLogger(__name__)
 
 
@@ -40,6 +35,10 @@ def denovo(fastq1_path: str,
         amplicon reads
     """
 
+    if merged_contigs_csv is not None:
+        # TODO: implement this.
+        logger.error("Megahit implementation does not support contig extensions yet.")
+
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
@@ -55,22 +54,11 @@ def denovo(fastq1_path: str,
                     '--interleave',
                     '-o', joined_path],
                    check=True)
-    iva_out_path = os.path.join(tmp_dir, 'iva_out')
-    contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
-    if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
-    iva_args.append(iva_out_path)
+    output_path = os.path.join(tmp_dir, 'assembler_output')
+    contigs_fasta_path = os.path.join(output_path, 'final.contigs.fa')
+    megahit_cmd = [MEGAHIT, '--12', joined_path, '-o', output_path]
     try:
-        subprocess.run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
+        subprocess.run(megahit_cmd, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
         output = ex.output and ex.output.decode('UTF8')
         if output != 'Failed to make first seed. Cannot continue\n':
