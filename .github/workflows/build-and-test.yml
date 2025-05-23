@@ -52,6 +52,20 @@ jobs:
           # Add to system path
           echo "/opt/bowtie2" >> $GITHUB_PATH
 
+      - name: Install MEGAHIT and its dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -q -y bzip2 cmake gzip g++ libgomp1 make zlib1g-dev
+          mkdir -p /tmp/megahit
+          cd /tmp/megahit
+          git clone https://github.com/voutcn/megahit
+          cd megahit
+          rm -rf build
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          sudo make -j install
+
       - name: Install MiCall's Python dependencies
         run: |
           python -m pip install --upgrade pip

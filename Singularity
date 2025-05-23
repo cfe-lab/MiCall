@@ -91,6 +91,25 @@ From: python:3.11
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
 
+    echo ===== Install MEGAHIT and its dependencies ==== >/dev/null
+    apt-get update -qq
+    apt-get install -q -y \
+        bzip2 \
+        cmake \
+        gzip \
+        g++ \
+        libgomp1 \
+        make \
+        zlib1g-dev
+
+    git clone https://github.com/voutcn/megahit
+    cd megahit
+    rm -rf build
+    mkdir -p build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make -j install
+
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev

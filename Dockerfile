@@ -94,6 +94,25 @@ RUN pip install /opt/micall[denovo,basespace]
 ## Trigger matplotlib to build its font cache
 RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+## Install MEGAHIT and its dependencies
+RUN apt-get update -qq
+RUN apt-get install -q -y \
+    bzip2 \
+    cmake \
+    gzip \
+    g++ \
+    libgomp1 \
+    make \
+    zlib1g-dev
+
+RUN git clone https://github.com/voutcn/megahit && \
+    cd megahit && \
+    rm -rf build && \
+    mkdir -p build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make -j install
+
 COPY . /opt/micall/
 
 RUN pip install /opt/micall[denovo,basespace]
