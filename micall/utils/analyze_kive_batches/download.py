@@ -67,7 +67,10 @@ def try_load_run_info(root: DirPath, run: KiveRun) -> KiveRun:
 
 def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     info_path = root / "runs" / f"{run.id}.json"
-    if run.is_finished and info_path.exists():
+    if not info_path.exists():
+        run = try_load_run_info(root, run)
+
+    if run.is_finished:
         return run
 
     run = try_load_run_info(root, run)
