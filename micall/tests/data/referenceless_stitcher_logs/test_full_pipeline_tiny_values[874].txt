@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  29269.5563345158.
+  14954.46031649501.
 END 6
 BEGIN 7
   Found
@@ -117,7 +117,7 @@ BEGIN 9
   and
   consists
   of
-  3
+  2
   parts.
 END 9
 BEGIN 10
@@ -136,7 +136,7 @@ BEGIN 11
   overlap
   of
   size
-  297
+  117
   between
   contigs
   (1)
@@ -144,57 +144,38 @@ BEGIN 11
   'r22-318.2'
   to
   be
-  (152,
-  449).
+  None.
 END 11
 BEGIN 12
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r22-318.2'
-  has
-  size
-  297,
-  192
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  16035.281110270433.
+  length
+  511.
 END 12
 BEGIN 13
-  Contig
-  (1)
-  covers
-  contig
-  'r22-318.2'
-  completely.
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 13
 BEGIN 14
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  511
-  and
-  consists
-  of
-  3
-  parts.
+  Calculating
+  all
+  paths...
 END 14
 BEGIN 15
   Cycle
-  3
+  1
   started
   with
   1
@@ -206,11 +187,11 @@ BEGIN 16
   path
   of
   length
-  511.
+  297.
 END 16
 BEGIN 17
   Removed
-  3
+  1
   components
   from
   the
@@ -223,15 +204,49 @@ BEGIN 17
   process.
 END 17
 BEGIN 18
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 18
-BEGIN 19
-  Outputting
-  1
+  2
   contigs.
 END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  117
+  between
+  contigs
+  (1)
+  and
+  'r22-318.2'
+  to
+  be
+  None.
+END 20
+BEGIN 21
+  Outputting
+  2
+  contigs.
+END 21

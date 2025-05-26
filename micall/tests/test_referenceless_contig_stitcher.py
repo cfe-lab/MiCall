@@ -275,7 +275,7 @@ def test_full_pipeline_small_values(log_check, tmp_path: Path, random_fasta_file
 
 
 # TODO: ensure that every random seed can be stitched.
-@pytest.mark.parametrize("random_seed", params(range(999), [8, 23, 42, 56, 57, 59, 64, 67, 88, 95, 103, 116, 122, 146, 177, 180, 226, 233, 240, 260, 282, 312, 324, 331, 335, 342, 368, 473, 492, 494, 520, 531, 552, 561, 569, 581, 631, 639, 657, 666, 673, 732, 768, 860, 861, 874, 876, 900, 956, 966, 988], "Probably gaps that are too small."))
+@pytest.mark.parametrize("random_seed", params(range(999), [8, 23, 42, 56, 57, 59, 64, 67, 88, 95, 103, 116, 122, 146, 177, 180, 233, 282, 312, 324, 331, 335, 342, 368, 473, 492, 494, 520, 531, 552, 561, 569, 581, 631, 639, 666, 673, 732, 860, 861, 874, 876, 900, 956, 966, 988], "Probably gaps that are too small."))
 def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch, disable_acceptable_prob_check):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MAX_ALTERNATIVES", 1)
     assert not ReferencelessStitcherContext.get().is_debug2

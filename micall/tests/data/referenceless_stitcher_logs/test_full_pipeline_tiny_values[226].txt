@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  344
+  19
   between
   contigs
-  'r376-806.2'
-  and
   'r51-394.1'
+  and
+  'r376-806.2'
   to
   be
-  (14,
-  358).
+  (325,
+  19).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r376-806.2'
-  and
   'r51-394.1'
+  and
+  'r376-806.2'
   has
   size
-  344,
-  232
+  19,
+  19
   matches,
   and
   the
   score
   of
-  18497.978252908793.
+  4915.834276152019.
 END 6
 BEGIN 7
-  Contig
-  'r376-806.2'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  19
+  between
+  contigs
   'r51-394.1'
-  completely.
+  and
+  'r376-806.2',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -108,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  29072.906579043167.
+  14859.39991028352.
 END 9
 BEGIN 10
   Contig
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  431
+  756
   and
   consists
   of
@@ -156,19 +166,19 @@ BEGIN 13
   272
   between
   contigs
-  'r376-806.2'
+  (1)
   and
   'r495-766.0'
   to
   be
-  (119,
-  391).
+  (444,
+  716).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r376-806.2'
+  (1)
   and
   'r495-766.0'
   has
@@ -180,11 +190,11 @@ BEGIN 14
   the
   score
   of
-  29072.906579043167.
+  14859.39991028352.
 END 14
 BEGIN 15
   Contig
-  'r376-806.2'
+  (1)
   covers
   contig
   'r495-766.0'
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  431
+  756
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  431.
+  756.
 END 18
 BEGIN 19
   Removed

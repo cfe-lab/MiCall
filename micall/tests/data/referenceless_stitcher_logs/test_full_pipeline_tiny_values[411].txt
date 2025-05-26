@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  14770.967480036516.
+  8629.061552193825.
 END 6
 BEGIN 7
   Found
@@ -91,7 +91,7 @@ BEGIN 8
   overlap
   of
   size
-  269
+  228
   between
   contigs
   'r618-973.2'
@@ -99,36 +99,9 @@ BEGIN 8
   'r221-489.0'
   to
   be
-  (21,
-  290).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r618-973.2'
-  and
-  'r221-489.0'
-  has
-  size
-  269,
-  177
-  matches,
-  and
-  the
-  score
-  of
-  15694.089349864338.
-END 9
-BEGIN 10
-  Contig
-  'r618-973.2'
-  covers
-  contig
-  'r221-489.0'
-  completely.
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -146,16 +119,16 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -173,8 +146,8 @@ BEGIN 13
   be
   (113,
   156).
-END 13
-BEGIN 14
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -190,9 +163,9 @@ BEGIN 14
   the
   score
   of
-  22034.661522613318.
-END 14
-BEGIN 15
+  11907.05316972373.
+END 12
+BEGIN 13
   Found
   a
   significant
@@ -209,8 +182,8 @@ BEGIN 15
   in
   contig
   (2).
-END 15
-BEGIN 16
+END 13
+BEGIN 14
   Cycle
   2
   finished
@@ -228,24 +201,24 @@ BEGIN 16
   of
   3
   parts.
-END 16
-BEGIN 17
+END 14
+BEGIN 15
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   753.
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Removed
   3
   components
@@ -258,17 +231,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 18
+BEGIN 19
   Outputting
   1
   contigs.
-END 21
+END 19

@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  385
+  358
   between
   contigs
   'r535-944.1'
@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  836.0924988699916.
+  698.938883781707.
 END 7
 BEGIN 8
   Found
@@ -163,7 +163,7 @@ BEGIN 12
   the
   score
   of
-  20540.330797979812.
+  10179.452610458357.
 END 12
 BEGIN 13
   Found

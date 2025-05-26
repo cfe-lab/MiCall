@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  18799.434608827847.
+  10480.03851186075.
 END 7
 BEGIN 8
   Found
@@ -163,7 +163,7 @@ BEGIN 12
   the
   score
   of
-  10399.734327860982.
+  6493.666000162368.
 END 12
 BEGIN 13
   Found

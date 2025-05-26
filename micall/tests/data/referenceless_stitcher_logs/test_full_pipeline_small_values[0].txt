@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  34085.73369237738.
+  16896.868614247316.
 END 6
 BEGIN 7
   Found
@@ -118,42 +118,52 @@ BEGIN 10
   overlap
   of
   size
-  336
+  11
   between
   contigs
-  (1)
-  and
   'r41-376.0'
+  and
+  (1)
   to
   be
-  (167,
-  503).
+  (325,
+  11).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  (1)
-  and
   'r41-376.0'
+  and
+  (1)
   has
   size
-  336,
-  218
+  11,
+  11
   matches,
   and
   the
   score
   of
-  17172.053630637514.
+  3816.5278379845186.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  11
+  between
+  contigs
   'r41-376.0'
-  completely.
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
 END 12
 BEGIN 13
   Calculated
@@ -190,7 +200,7 @@ BEGIN 14
   the
   score
   of
-  29323.24303923705.
+  14976.4529433955.
 END 14
 BEGIN 15
   Found
@@ -208,7 +218,7 @@ BEGIN 15
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -245,42 +255,52 @@ BEGIN 18
   overlap
   of
   size
-  336
+  11
   between
   contigs
-  (2)
-  and
   'r41-376.0'
+  and
+  (3)
   to
   be
-  (167,
-  503).
+  (325,
+  11).
 END 18
 BEGIN 19
   Overlap
   between
   contigs
-  (2)
-  and
   'r41-376.0'
+  and
+  (3)
   has
   size
-  336,
-  218
+  11,
+  11
   matches,
   and
   the
   score
   of
-  17172.053630637514.
+  3816.5278379845186.
 END 19
 BEGIN 20
-  Contig
-  (2)
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  11
+  between
+  contigs
   'r41-376.0'
-  completely.
+  and
+  (3),
+  resulting
+  in
+  contig
+  (4).
 END 20
 BEGIN 21
   Calculated
@@ -293,7 +313,7 @@ BEGIN 21
   275
   between
   contigs
-  (2)
+  (3)
   and
   'r516-790.3'
   to
@@ -305,7 +325,7 @@ BEGIN 22
   Overlap
   between
   contigs
-  (2)
+  (3)
   and
   'r516-790.3'
   has
@@ -317,11 +337,11 @@ BEGIN 22
   the
   score
   of
-  29234.74297399784.
+  14925.853601613062.
 END 22
 BEGIN 23
   Contig
-  (2)
+  (3)
   covers
   contig
   'r516-790.3'
@@ -340,7 +360,7 @@ BEGIN 24
   contigs
   'r288-562.4'
   and
-  (2)
+  (3)
   to
   be
   (78,
@@ -352,7 +372,7 @@ BEGIN 25
   contigs
   'r288-562.4'
   and
-  (2)
+  (3)
   has
   size
   197,
@@ -362,7 +382,7 @@ BEGIN 25
   the
   score
   of
-  24788.985063357886.
+  13088.205379019186.
 END 25
 BEGIN 26
   Found
@@ -376,11 +396,11 @@ BEGIN 26
   contigs
   'r288-562.4'
   and
-  (2),
+  (3),
   resulting
   in
   contig
-  (3).
+  (5).
 END 26
 BEGIN 27
   Cycle
@@ -422,7 +442,7 @@ BEGIN 29
   contigs
   'r41-376.0'
   and
-  (3)
+  (5)
   to
   be
   (247,
@@ -434,7 +454,7 @@ BEGIN 30
   contigs
   'r41-376.0'
   and
-  (3)
+  (5)
   has
   size
   89,
@@ -444,7 +464,7 @@ BEGIN 30
   the
   score
   of
-  16576.762344831906.
+  9470.291233513073.
 END 30
 BEGIN 31
   Found
@@ -458,11 +478,11 @@ BEGIN 31
   contigs
   'r41-376.0'
   and
-  (3),
+  (5),
   resulting
   in
   contig
-  (4).
+  (6).
 END 31
 BEGIN 32
   Calculated
@@ -475,7 +495,7 @@ BEGIN 32
   275
   between
   contigs
-  (3)
+  (5)
   and
   'r516-790.3'
   to
@@ -487,7 +507,7 @@ BEGIN 33
   Overlap
   between
   contigs
-  (3)
+  (5)
   and
   'r516-790.3'
   has
@@ -499,11 +519,11 @@ BEGIN 33
   the
   score
   of
-  29234.74297399784.
+  14925.853601613062.
 END 33
 BEGIN 34
   Contig
-  (3)
+  (5)
   covers
   contig
   'r516-790.3'
@@ -547,7 +567,7 @@ BEGIN 37
   275
   between
   contigs
-  (4)
+  (6)
   and
   'r516-790.3'
   to
@@ -559,7 +579,7 @@ BEGIN 38
   Overlap
   between
   contigs
-  (4)
+  (6)
   and
   'r516-790.3'
   has
@@ -571,11 +591,11 @@ BEGIN 38
   the
   score
   of
-  29234.74297399784.
+  14925.853601613062.
 END 38
 BEGIN 39
   Contig
-  (4)
+  (6)
   covers
   contig
   'r516-790.3'

@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  28672.36940598972.
+  14709.268148239822.
 END 6
 BEGIN 7
   Found
@@ -99,7 +99,7 @@ BEGIN 8
   and
   consists
   of
-  3
+  2
   parts.
 END 8
 BEGIN 9
@@ -118,65 +118,46 @@ BEGIN 10
   overlap
   of
   size
-  276
+  175
   between
   contigs
-  (1)
-  and
   'r687-962.0'
+  and
+  (1)
   to
   be
-  (109,
-  385).
+  None.
 END 10
 BEGIN 11
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r687-962.0'
-  has
-  size
-  276,
-  182
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  15956.199038924784.
+  length
+  420.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
-  'r687-962.0'
-  completely.
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 12
 BEGIN 13
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  420
-  and
-  consists
-  of
-  3
-  parts.
+  Calculating
+  all
+  paths...
 END 13
 BEGIN 14
   Cycle
-  3
+  1
   started
   with
   1
@@ -188,11 +169,11 @@ BEGIN 15
   path
   of
   length
-  420.
+  276.
 END 15
 BEGIN 16
   Removed
-  3
+  1
   components
   from
   the
@@ -205,15 +186,49 @@ BEGIN 16
   process.
 END 16
 BEGIN 17
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 17
-BEGIN 18
-  Outputting
-  1
+  2
   contigs.
 END 18
+BEGIN 19
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  175
+  between
+  contigs
+  'r687-962.0'
+  and
+  (1)
+  to
+  be
+  None.
+END 19
+BEGIN 20
+  Outputting
+  2
+  contigs.
+END 20

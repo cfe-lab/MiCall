@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  38259.95354916216.
+  18535.64604620975.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  20249.327498966504.
+  11125.340578533998.
 END 11
 BEGIN 12
   Found
@@ -173,24 +173,6 @@ BEGIN 13
   overlap
   of
   size
-  229
-  between
-  contigs
-  (1)
-  and
-  'r647-877.4'
-  to
-  be
-  None.
-END 13
-BEGIN 14
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
   224
   between
   contigs
@@ -201,8 +183,8 @@ BEGIN 14
   be
   (271,
   495).
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -218,17 +200,17 @@ BEGIN 15
   the
   score
   of
-  26348.743663130674.
-END 15
-BEGIN 16
+  13728.937976947389.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
   'r409-632.0'
   completely.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -246,16 +228,16 @@ BEGIN 17
   of
   6
   parts.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -272,8 +254,8 @@ BEGIN 19
   to
   be
   None.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Calculated
   cutoff
   for
@@ -291,8 +273,8 @@ BEGIN 20
   be
   (378,
   602).
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Overlap
   between
   contigs
@@ -308,17 +290,17 @@ BEGIN 21
   the
   score
   of
-  26348.743663130674.
-END 21
-BEGIN 22
+  13728.937976947389.
+END 20
+BEGIN 21
   Contig
   (2)
   covers
   contig
   'r409-632.0'
   completely.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -336,8 +318,8 @@ BEGIN 23
   be
   (519,
   107).
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Overlap
   between
   contigs
@@ -353,9 +335,9 @@ BEGIN 24
   the
   score
   of
-  18204.444444444445.
-END 24
-BEGIN 25
+  10212.285057216963.
+END 23
+BEGIN 24
   Found
   a
   significant
@@ -372,8 +354,8 @@ BEGIN 25
   in
   contig
   (3).
-END 25
-BEGIN 26
+END 24
+BEGIN 25
   Cycle
   3
   finished
@@ -391,16 +373,16 @@ BEGIN 26
   of
   6
   parts.
-END 26
-BEGIN 27
+END 25
+BEGIN 26
   Cycle
   4
   started
   with
   1
   paths.
-END 27
-BEGIN 28
+END 26
+BEGIN 27
   Calculated
   cutoff
   for
@@ -418,8 +400,8 @@ BEGIN 28
   be
   (616,
   123).
-END 28
-BEGIN 29
+END 27
+BEGIN 28
   Overlap
   between
   contigs
@@ -435,9 +417,9 @@ BEGIN 29
   the
   score
   of
-  19537.829051432782.
-END 29
-BEGIN 30
+  10809.90833776375.
+END 28
+BEGIN 29
   Found
   a
   significant
@@ -454,8 +436,8 @@ BEGIN 30
   in
   contig
   (4).
-END 30
-BEGIN 31
+END 29
+BEGIN 30
   Calculated
   cutoff
   for
@@ -473,8 +455,8 @@ BEGIN 31
   be
   (378,
   602).
-END 31
-BEGIN 32
+END 30
+BEGIN 31
   Overlap
   between
   contigs
@@ -490,17 +472,17 @@ BEGIN 32
   the
   score
   of
-  26348.743663130674.
-END 32
-BEGIN 33
+  13728.937976947389.
+END 31
+BEGIN 32
   Contig
   (3)
   covers
   contig
   'r409-632.0'
   completely.
-END 33
-BEGIN 34
+END 32
+BEGIN 33
   Cycle
   4
   finished
@@ -518,16 +500,16 @@ BEGIN 34
   of
   6
   parts.
-END 34
-BEGIN 35
+END 33
+BEGIN 34
   Cycle
   5
   started
   with
   1
   paths.
-END 35
-BEGIN 36
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -545,8 +527,8 @@ BEGIN 36
   be
   (378,
   602).
-END 36
-BEGIN 37
+END 35
+BEGIN 36
   Overlap
   between
   contigs
@@ -562,17 +544,17 @@ BEGIN 37
   the
   score
   of
-  26348.743663130674.
-END 37
-BEGIN 38
+  13728.937976947389.
+END 36
+BEGIN 37
   Contig
   (4)
   covers
   contig
   'r409-632.0'
   completely.
-END 38
-BEGIN 39
+END 37
+BEGIN 38
   Cycle
   5
   finished
@@ -590,24 +572,24 @@ BEGIN 39
   of
   6
   parts.
-END 39
-BEGIN 40
+END 38
+BEGIN 39
   Cycle
   6
   started
   with
   1
   paths.
-END 40
-BEGIN 41
+END 39
+BEGIN 40
   Constructed
   a
   path
   of
   length
   847.
-END 41
-BEGIN 42
+END 40
+BEGIN 41
   Removed
   6
   components
@@ -620,17 +602,17 @@ BEGIN 42
   still
   to
   process.
-END 42
-BEGIN 43
+END 41
+BEGIN 42
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 43
-BEGIN 44
+END 42
+BEGIN 43
   Outputting
   1
   contigs.
-END 44
+END 43

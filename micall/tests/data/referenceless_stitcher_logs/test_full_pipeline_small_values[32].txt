@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  -836.0924988699916.
+  -698.938883781707.
 END 7
 BEGIN 8
   Calculated
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  16688.671967478276.
+  8411.59971075472.
 END 9
 BEGIN 10
   Contig
@@ -163,7 +163,7 @@ BEGIN 12
   the
   score
   of
-  22105.92253154037.
+  11937.978971922925.
 END 12
 BEGIN 13
   Found
@@ -218,7 +218,7 @@ BEGIN 15
   the
   score
   of
-  25166.78997710344.
+  13248.07208830295.
 END 15
 BEGIN 16
   Found
@@ -291,7 +291,7 @@ BEGIN 20
   overlap
   of
   size
-  304
+  255
   between
   contigs
   (2)
@@ -336,7 +336,7 @@ BEGIN 22
   the
   score
   of
-  16688.671967478276.
+  8411.59971075472.
 END 22
 BEGIN 23
   Contig
@@ -381,7 +381,7 @@ BEGIN 25
   the
   score
   of
-  22105.92253154037.
+  11937.978971922925.
 END 25
 BEGIN 26
   Found
@@ -463,7 +463,7 @@ BEGIN 30
   the
   score
   of
-  18514.193480392027.
+  9177.795542271024.
 END 30
 BEGIN 31
   Contig
@@ -508,7 +508,7 @@ BEGIN 33
   the
   score
   of
-  341.3333333333333.
+  274.00245308082543.
 END 33
 BEGIN 34
   Found
@@ -563,7 +563,7 @@ BEGIN 36
   the
   score
   of
-  16688.671967478276.
+  8411.59971075472.
 END 36
 BEGIN 37
   Contig
@@ -635,7 +635,7 @@ BEGIN 41
   the
   score
   of
-  28200.427155564015.
+  13979.423673657851.
 END 41
 BEGIN 42
   Contig
@@ -680,7 +680,7 @@ BEGIN 44
   the
   score
   of
-  21885.144675914624.
+  11030.780459013675.
 END 44
 BEGIN 45
   Contig
@@ -752,7 +752,7 @@ BEGIN 49
   the
   score
   of
-  21885.144675914624.
+  11030.780459013675.
 END 49
 BEGIN 50
   Contig
