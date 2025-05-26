@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  17
+  246
   between
   contigs
-  'r75-414.1'
+  'r16-654.2'
   and
-  'r398-853.0'
+  'r409-925.0'
   to
   be
-  (323,
-  17).
+  (393,
+  246).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r75-414.1'
+  'r16-654.2'
   and
-  'r398-853.0'
+  'r409-925.0'
   has
   size
-  17,
-  17
+  246,
+  246
   matches,
   and
   the
   score
   of
-  6967.437490583262.
+  27724.15642210127.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  17
+  246
   between
   contigs
-  'r75-414.1'
+  'r16-654.2'
   and
-  'r398-853.0',
+  'r409-925.0',
   resulting
   in
   contig
@@ -91,52 +91,42 @@ BEGIN 8
   overlap
   of
   size
-  175
+  399
   between
   contigs
-  'r294-572.2'
+  'r16-414.1'
   and
-  'r398-853.0'
+  'r16-654.2'
   to
   be
-  (104,
-  175).
+  (0,
+  399).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r294-572.2'
+  'r16-414.1'
   and
-  'r398-853.0'
+  'r16-654.2'
   has
   size
-  175,
-  175
+  399,
+  399
   matches,
   and
   the
   score
   of
-  23351.47308052113.
+  35280.52574143211.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  175
-  between
-  contigs
-  'r294-572.2'
-  and
-  'r398-853.0',
-  resulting
-  in
+  Contig
+  'r16-414.1'
+  covers
   contig
-  (2).
+  'r16-654.2'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  779
+  910
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  121
+  399
   between
   contigs
-  'r75-414.1'
+  'r16-414.1'
   and
-  (2)
+  (1)
   to
   be
-  (219,
-  121).
+  (0,
+  399).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r75-414.1'
+  'r16-414.1'
   and
-  (2)
+  (1)
   has
   size
-  121,
-  121
+  399,
+  399
   matches,
   and
   the
   score
   of
-  19376.17215520078.
+  35280.52574143211.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  121
-  between
-  contigs
-  'r75-414.1'
-  and
-  (2),
-  resulting
-  in
+  Contig
+  'r16-414.1'
+  covers
   contig
-  (3).
+  (1)
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  779
+  910
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  779.
+  910.
 END 18
 BEGIN 19
   Removed

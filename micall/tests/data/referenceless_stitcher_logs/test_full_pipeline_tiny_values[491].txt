@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  182
+  380
   between
   contigs
-  'r2-439.2'
+  'r404-900.0'
   and
-  'r258-818.0'
+  'r438-817.2'
   to
   be
-  (256,
-  182).
+  (34,
+  414).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r2-439.2'
+  'r404-900.0'
   and
-  'r258-818.0'
+  'r438-817.2'
   has
   size
-  182,
-  182
+  380,
+  380
   matches,
   and
   the
   score
   of
-  23818.273984316864.
+  34423.09456190931.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  182
-  between
-  contigs
-  'r2-439.2'
-  and
-  'r258-818.0',
-  resulting
-  in
+  Contig
+  'r404-900.0'
+  covers
   contig
-  (1).
+  'r438-817.2'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  300
+  276
   between
   contigs
-  'r176-557.1'
+  'r343-679.1'
   and
-  'r258-818.0'
+  'r404-900.0'
   to
   be
-  (82,
-  300).
+  (61,
+  276).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r176-557.1'
+  'r343-679.1'
   and
-  'r258-818.0'
+  'r404-900.0'
   has
   size
-  300,
-  300
+  276,
+  276
   matches,
   and
   the
   score
   of
-  30634.851059205626.
+  29376.831639728083.
 END 9
 BEGIN 10
   Found
@@ -127,16 +117,16 @@ BEGIN 10
   overlap
   of
   size
-  300
+  276
   between
   contigs
-  'r176-557.1'
+  'r343-679.1'
   and
-  'r258-818.0',
+  'r404-900.0',
   resulting
   in
   contig
-  (2).
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  817
+  558
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  264
+  380
   between
   contigs
-  'r2-439.2'
+  (1)
   and
-  (2)
+  'r438-817.2'
   to
   be
-  (174,
-  264).
+  (95,
+  475).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r2-439.2'
+  (1)
   and
-  (2)
+  'r438-817.2'
   has
   size
-  264,
-  264
+  380,
+  380
   matches,
   and
   the
   score
   of
-  28727.172074820595.
+  34423.09456190931.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  264
-  between
-  contigs
-  'r2-439.2'
-  and
-  (2),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r438-817.2'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  817
+  558
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  817.
+  558.
 END 18
 BEGIN 19
   Removed

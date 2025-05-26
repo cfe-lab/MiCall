@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  502
+  345
   between
   contigs
-  'r49-750.2'
+  'r199-735.1'
   and
-  'r249-777.1'
+  'r391-859.2'
   to
   be
-  (200,
-  502).
+  (192,
+  345).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r49-750.2'
+  'r199-735.1'
   and
-  'r249-777.1'
+  'r391-859.2'
   has
   size
-  502,
-  502
+  345,
+  345
   matches,
   and
   the
   score
   of
-  39672.70716880882.
+  32864.10569331219.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  502
+  345
   between
   contigs
-  'r49-750.2'
+  'r199-735.1'
   and
-  'r249-777.1',
+  'r391-859.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  729
+  799
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  401
+  169
   between
   contigs
   (1)
   and
-  'r124-524.0'
+  'r691-997.0'
   to
   be
-  (75,
-  476).
+  (492,
+  169).
 END 10
 BEGIN 11
   Overlap
@@ -135,25 +135,35 @@ BEGIN 11
   contigs
   (1)
   and
-  'r124-524.0'
+  'r691-997.0'
   has
   size
-  401,
-  401
+  169,
+  169
   matches,
   and
   the
   score
   of
-  35369.57273908245.
+  22943.801962664358.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  169
+  between
+  contigs
   (1)
-  covers
+  and
+  'r691-997.0',
+  resulting
+  in
   contig
-  'r124-524.0'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  729
+  799
   and
   consists
   of
@@ -188,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  729.
+  799.
 END 15
 BEGIN 16
   Removed

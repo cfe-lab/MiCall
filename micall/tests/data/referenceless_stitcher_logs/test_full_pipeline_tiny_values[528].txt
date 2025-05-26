@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  434
+  319
   between
   contigs
-  'r306-785.1'
+  'r97-798.1'
   and
-  'r352-806.0'
+  'r480-985.2'
   to
   be
-  (46,
-  434).
+  (383,
+  319).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r306-785.1'
+  'r97-798.1'
   and
-  'r352-806.0'
+  'r480-985.2'
   has
   size
-  434,
-  434
+  319,
+  319
   matches,
   and
   the
   score
   of
-  36878.393784222964.
+  31595.281740580613.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  434
+  319
   between
   contigs
-  'r306-785.1'
+  'r97-798.1'
   and
-  'r352-806.0',
+  'r480-985.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  570
+  896
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  330
+  405
   between
   contigs
   (1)
   and
-  'r477-875.2'
+  'r581-992.0'
   to
   be
-  (171,
-  330).
+  (484,
+  405).
 END 10
 BEGIN 11
   Overlap
@@ -135,17 +135,17 @@ BEGIN 11
   contigs
   (1)
   and
-  'r477-875.2'
+  'r581-992.0'
   has
   size
-  330,
-  330
+  405,
+  405
   matches,
   and
   the
   score
   of
-  32138.205542381966.
+  35620.08891619128.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  330
+  405
   between
   contigs
   (1)
   and
-  'r477-875.2',
+  'r581-992.0',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  570
+  896
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  570.
+  896.
 END 15
 BEGIN 16
   Removed

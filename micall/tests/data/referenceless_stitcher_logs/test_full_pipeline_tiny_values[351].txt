@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  302
+  368
   between
   contigs
-  'r107-496.0'
+  'r278-696.1'
   and
-  'r195-615.1'
+  'r329-956.0'
   to
   be
-  (88,
-  302).
+  (51,
+  368).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r107-496.0'
+  'r278-696.1'
   and
-  'r195-615.1'
+  'r329-956.0'
   has
   size
-  302,
-  302
+  368,
+  368
   matches,
   and
   the
   score
   of
-  30737.362163713373.
+  33947.02018690314.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  302
+  368
   between
   contigs
-  'r107-496.0'
+  'r278-696.1'
   and
-  'r195-615.1',
+  'r329-956.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  556
+  679
   and
   consists
   of
@@ -118,52 +118,42 @@ BEGIN 10
   overlap
   of
   size
-  329
+  368
   between
   contigs
-  'r60-435.2'
-  and
   (1)
+  and
+  'r398-765.2'
   to
   be
-  (47,
-  329).
+  (120,
+  488).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r60-435.2'
-  and
   (1)
+  and
+  'r398-765.2'
   has
   size
-  329,
-  329
+  368,
+  368
   matches,
   and
   the
   score
   of
-  32089.228390268723.
+  33870.37942562846.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  329
-  between
-  contigs
-  'r60-435.2'
-  and
-  (1),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (2).
+  'r398-765.2'
+  completely.
 END 12
 BEGIN 13
   Cycle
@@ -177,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  556
+  679
   and
   consists
   of
@@ -198,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  556.
+  679.
 END 15
 BEGIN 16
   Removed

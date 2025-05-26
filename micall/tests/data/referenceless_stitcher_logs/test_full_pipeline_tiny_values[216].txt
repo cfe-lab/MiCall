@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  567
+  107
   between
   contigs
-  'r94-852.2'
+  'r386-696.1'
   and
-  'r286-962.1'
+  'r590-857.2'
   to
   be
-  (192,
-  567).
+  (204,
+  107).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r94-852.2'
+  'r386-696.1'
   and
-  'r286-962.1'
+  'r590-857.2'
   has
   size
-  567,
-  567
+  107,
+  107
   matches,
   and
   the
   score
   of
-  42171.01779402576.
+  18204.444444444445.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  567
+  107
   between
   contigs
-  'r94-852.2'
+  'r386-696.1'
   and
-  'r286-962.1',
+  'r590-857.2',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  869
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +91,136 @@ BEGIN 10
   overlap
   of
   size
-  307
+  210
   between
   contigs
-  (1)
+  'r386-696.1'
   and
-  'r653-959.0'
+  'r487-751.0'
   to
   be
-  (559,
-  866).
-END 10
-BEGIN 11
+  (101,
+  210).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r386-696.1'
   and
-  'r653-959.0'
+  'r487-751.0'
   has
   size
-  307,
-  307
+  210,
+  210
   matches,
   and
   the
   score
   of
-  30908.3343064059.
+  25600.51765669357.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  210
+  between
+  contigs
+  'r386-696.1'
+  and
+  'r487-751.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  472
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
-  'r653-959.0'
-  completely.
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  162
+  between
+  contigs
+  (2)
+  and
+  'r590-857.2'
+  to
+  be
+  (204,
+  162).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r590-857.2'
+  has
+  size
+  162,
+  162
+  matches,
+  and
+  the
+  score
+  of
+  22458.837130073625.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  162
+  between
+  contigs
+  (2)
+  and
+  'r590-857.2',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +232,30 @@ BEGIN 13
   fittest
   has
   length
-  869
+  472
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  869.
-END 15
-BEGIN 16
+  472.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +268,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

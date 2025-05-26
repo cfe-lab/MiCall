@@ -36,99 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  449
+  556
   between
   contigs
-  'r254-835.2'
+  'r176-775.1'
   and
-  'r266-714.0'
+  'r220-853.2'
   to
   be
-  (12,
-  461).
+  (44,
+  556).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r254-835.2'
+  'r176-775.1'
   and
-  'r266-714.0'
+  'r220-853.2'
   has
   size
-  449,
-  449
+  556,
+  556
   matches,
   and
   the
   score
   of
-  37443.23319436106.
+  41758.734753641846.
 END 6
 BEGIN 7
-  Contig
-  'r254-835.2'
-  covers
-  contig
-  'r266-714.0'
-  completely.
-END 7
-BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  342
-  between
-  contigs
-  'r179-595.1'
-  and
-  'r254-835.2'
-  to
-  be
-  (75,
-  342).
-END 8
-BEGIN 9
-  Overlap
-  between
-  contigs
-  'r179-595.1'
-  and
-  'r254-835.2'
-  has
-  size
-  342,
-  342
-  matches,
-  and
-  the
-  score
-  of
-  32720.21394167108.
-END 9
-BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  342
+  556
   between
   contigs
-  'r179-595.1'
+  'r176-775.1'
   and
-  'r254-835.2',
+  'r220-853.2',
   resulting
   in
   contig
   (1).
-END 10
-BEGIN 11
+END 7
+BEGIN 8
   Cycle
   1
   finished
@@ -140,22 +95,22 @@ BEGIN 11
   fittest
   has
   length
-  657
+  678
   and
   consists
   of
   3
   parts.
-END 11
-BEGIN 12
+END 8
+BEGIN 9
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -163,44 +118,44 @@ BEGIN 13
   overlap
   of
   size
-  449
+  333
   between
   contigs
   (1)
   and
-  'r266-714.0'
+  'r413-745.0'
   to
   be
-  (87,
-  536).
-END 13
-BEGIN 14
+  (237,
+  570).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
   (1)
   and
-  'r266-714.0'
+  'r413-745.0'
   has
   size
-  449,
-  449
+  333,
+  333
   matches,
   and
   the
   score
   of
-  37443.23319436106.
-END 14
-BEGIN 15
+  32204.16803752357.
+END 11
+BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r266-714.0'
+  'r413-745.0'
   completely.
-END 15
-BEGIN 16
+END 12
+BEGIN 13
   Cycle
   2
   finished
@@ -212,30 +167,30 @@ BEGIN 16
   fittest
   has
   length
-  657
+  678
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  657.
-END 18
-BEGIN 19
+  678.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -248,17 +203,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

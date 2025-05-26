@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  379
+  140
   between
   contigs
-  'r32-637.1'
+  'r82-618.1'
   and
-  'r259-880.2'
+  'r479-827.0'
   to
   be
-  (227,
-  379).
+  (397,
+  140).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r32-637.1'
+  'r82-618.1'
   and
-  'r259-880.2'
+  'r479-827.0'
   has
   size
-  379,
-  379
+  140,
+  140
   matches,
   and
   the
   score
   of
-  34452.90624687764.
+  20861.416597373547.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  379
+  140
   between
   contigs
-  'r32-637.1'
+  'r82-618.1'
   and
-  'r259-880.2',
+  'r479-827.0',
   resulting
   in
   contig
@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  517
+  320
   between
   contigs
-  'r259-880.2'
+  'r82-618.1'
   and
-  'r273-789.0'
+  'r299-644.2'
   to
   be
-  (14,
-  531).
+  (217,
+  320).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r259-880.2'
+  'r82-618.1'
   and
-  'r273-789.0'
+  'r299-644.2'
   has
   size
-  517,
-  517
+  320,
+  320
   matches,
   and
   the
   score
   of
-  40198.242715196546.
+  31645.023334222213.
 END 9
 BEGIN 10
-  Contig
-  'r259-880.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  320
+  between
+  contigs
+  'r82-618.1'
+  and
+  'r299-644.2',
+  resulting
+  in
   contig
-  'r273-789.0'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  849
+  746
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  517
+  166
   between
   contigs
-  (1)
+  (2)
   and
-  'r273-789.0'
+  'r479-827.0'
   to
   be
-  (241,
-  758).
+  (397,
+  166).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r273-789.0'
+  'r479-827.0'
   has
   size
-  517,
-  517
+  166,
+  166
   matches,
   and
   the
   score
   of
-  40198.242715196546.
+  22737.226204114824.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  166
+  between
+  contigs
+  (2)
+  and
+  'r479-827.0',
+  resulting
+  in
   contig
-  'r273-789.0'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  849
+  746
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  849.
+  746.
 END 18
 BEGIN 19
   Removed

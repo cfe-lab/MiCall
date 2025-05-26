@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  697
+  296
   between
   contigs
-  'r41-770.0'
+  'r44-565.1'
   and
-  'r74-815.2'
+  'r270-804.0'
   to
   be
-  (33,
-  697).
+  (226,
+  296).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r41-770.0'
+  'r44-565.1'
   and
-  'r74-815.2'
+  'r270-804.0'
   has
   size
-  697,
-  697
+  296,
+  296
   matches,
   and
   the
   score
   of
-  46768.980617948306.
+  30428.79290487197.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  697
+  296
   between
   contigs
-  'r41-770.0'
+  'r44-565.1'
   and
-  'r74-815.2',
+  'r270-804.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  845
+  934
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  372
+  93
   between
   contigs
   (1)
   and
-  'r444-885.1'
+  'r712-977.2'
   to
   be
-  (403,
-  372).
+  (668,
+  93).
 END 10
 BEGIN 11
   Overlap
@@ -135,17 +135,17 @@ BEGIN 11
   contigs
   (1)
   and
-  'r444-885.1'
+  'r712-977.2'
   has
   size
-  372,
-  372
+  93,
+  93
   matches,
   and
   the
   score
   of
-  34131.84625893814.
+  16951.970908238338.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  372
+  93
   between
   contigs
   (1)
   and
-  'r444-885.1',
+  'r712-977.2',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  845
+  934
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  845.
+  934.
 END 15
 BEGIN 16
   Removed

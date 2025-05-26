@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  608
+  134
   between
   contigs
-  'r91-832.1'
+  'r40-475.2'
   and
-  'r196-803.0'
+  'r342-868.1'
   to
   be
-  (105,
-  713).
+  (302,
+  134).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r91-832.1'
+  'r40-475.2'
   and
-  'r196-803.0'
+  'r342-868.1'
   has
   size
-  608,
-  608
+  134,
+  134
   matches,
   and
   the
   score
   of
-  43613.68518607872.
+  20404.07060428608.
 END 6
 BEGIN 7
-  Contig
-  'r91-832.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  134
+  between
+  contigs
+  'r40-475.2'
+  and
+  'r342-868.1',
+  resulting
+  in
   contig
-  'r196-803.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  604
+  350
   between
   contigs
-  'r91-832.1'
+  'r342-868.1'
   and
-  'r153-756.2'
+  'r410-759.0'
   to
   be
-  (62,
-  666).
+  (68,
+  418).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r91-832.1'
+  'r342-868.1'
   and
-  'r153-756.2'
+  'r410-759.0'
   has
   size
-  604,
-  604
+  350,
+  350
   matches,
   and
   the
   score
   of
-  43469.19444349707.
+  33023.96993186322.
 END 9
 BEGIN 10
   Contig
-  'r91-832.1'
+  'r342-868.1'
   covers
   contig
-  'r153-756.2'
+  'r410-759.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  742
+  829
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  604
+  350
   between
   contigs
-  'r91-832.1'
+  (1)
   and
-  'r153-756.2'
+  'r410-759.0'
   to
   be
-  (62,
-  666).
+  (370,
+  720).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r91-832.1'
+  (1)
   and
-  'r153-756.2'
+  'r410-759.0'
   has
   size
-  604,
-  604
+  350,
+  350
   matches,
   and
   the
   score
   of
-  43469.19444349707.
+  33023.96993186322.
 END 14
 BEGIN 15
   Contig
-  'r91-832.1'
+  (1)
   covers
   contig
-  'r153-756.2'
+  'r410-759.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  742
+  829
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  742.
+  829.
 END 18
 BEGIN 19
   Removed

@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  411
+  622
   between
   contigs
-  'r202-864.0'
+  'r45-731.0'
   and
-  'r454-927.2'
+  'r74-695.2'
   to
   be
-  (252,
-  411).
+  (29,
+  651).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r202-864.0'
+  'r45-731.0'
   and
-  'r454-927.2'
+  'r74-695.2'
   has
   size
-  411,
-  411
+  622,
+  622
   matches,
   and
   the
   score
   of
-  35884.04801300088.
+  44115.67640592329.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  411
-  between
-  contigs
-  'r202-864.0'
-  and
-  'r454-927.2',
-  resulting
-  in
+  Contig
+  'r45-731.0'
+  covers
   contig
-  (1).
+  'r74-695.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  767
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  276
+  341
   between
   contigs
-  (1)
+  'r45-731.0'
   and
-  'r652-968.1'
+  'r240-580.1'
   to
   be
-  (450,
-  276).
-END 10
-BEGIN 11
+  (195,
+  536).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r45-731.0'
   and
-  'r652-968.1'
+  'r240-580.1'
   has
   size
-  276,
-  276
+  341,
+  341
   matches,
   and
   the
   score
   of
-  29376.831639728083.
+  32592.52530189871.
+END 9
+BEGIN 10
+  Contig
+  'r45-731.0'
+  covers
+  contig
+  'r240-580.1'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  687
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  276
+  341
   between
   contigs
-  (1)
+  'r45-731.0'
   and
-  'r652-968.1',
-  resulting
-  in
+  'r240-580.1'
+  to
+  be
+  (195,
+  536).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r45-731.0'
+  and
+  'r240-580.1'
+  has
+  size
+  341,
+  341
+  matches,
+  and
+  the
+  score
+  of
+  32592.52530189871.
+END 14
+BEGIN 15
+  Contig
+  'r45-731.0'
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r240-580.1'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  767
+  687
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  767.
-END 15
-BEGIN 16
+  687.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

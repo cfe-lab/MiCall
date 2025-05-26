@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  210
+  292
   between
   contigs
-  'r226-611.0'
+  'r22-341.1'
   and
-  'r402-743.1'
+  'r50-349.2'
   to
   be
-  (176,
-  210).
+  (28,
+  292).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r226-611.0'
+  'r22-341.1'
   and
-  'r402-743.1'
+  'r50-349.2'
   has
   size
-  210,
-  210
+  292,
+  292
   matches,
   and
   the
   score
   of
-  25600.51765669357.
+  30221.32992949884.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  210
+  292
   between
   contigs
-  'r226-611.0'
+  'r22-341.1'
   and
-  'r402-743.1',
+  'r50-349.2',
   resulting
   in
   contig
@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  658
+  328
   and
   consists
   of
-  3
+  2
   parts.
 END 8
 BEGIN 9
@@ -118,75 +118,46 @@ BEGIN 10
   overlap
   of
   size
-  149
+  220
   between
   contigs
-  (1)
+  'r695-975.0'
   and
-  'r595-883.2'
+  (1)
   to
   be
-  (369,
-  149).
+  None.
 END 10
 BEGIN 11
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r595-883.2'
-  has
-  size
-  149,
-  149
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  21529.233026334732.
+  length
+  328.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  149
-  between
-  contigs
-  (1)
-  and
-  'r595-883.2',
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 12
 BEGIN 13
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  658
-  and
-  consists
-  of
-  3
-  parts.
+  Calculating
+  all
+  paths...
 END 13
 BEGIN 14
   Cycle
-  3
+  1
   started
   with
   1
@@ -198,11 +169,11 @@ BEGIN 15
   path
   of
   length
-  658.
+  281.
 END 15
 BEGIN 16
   Removed
-  3
+  1
   components
   from
   the
@@ -215,15 +186,49 @@ BEGIN 16
   process.
 END 16
 BEGIN 17
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 17
-BEGIN 18
-  Outputting
-  1
+  2
   contigs.
 END 18
+BEGIN 19
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  220
+  between
+  contigs
+  'r695-975.0'
+  and
+  (1)
+  to
+  be
+  None.
+END 19
+BEGIN 20
+  Outputting
+  2
+  contigs.
+END 20

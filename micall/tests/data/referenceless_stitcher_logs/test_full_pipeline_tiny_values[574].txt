@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  348
+  394
   between
   contigs
-  'r527-882.2'
+  'r237-711.2'
   and
-  'r535-958.0'
+  'r318-865.0'
   to
   be
-  (8,
-  348).
+  (81,
+  394).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r527-882.2'
+  'r237-711.2'
   and
-  'r535-958.0'
+  'r318-865.0'
   has
   size
-  348,
-  348
+  394,
+  394
   matches,
   and
   the
   score
   of
-  33007.3702085466.
+  35131.01350641887.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  348
+  394
   between
   contigs
-  'r527-882.2'
+  'r237-711.2'
   and
-  'r535-958.0',
+  'r318-865.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  434
+  763
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  264
+  280
   between
   contigs
-  (1)
+  'r103-516.1'
   and
-  'r695-960.1'
+  (1)
   to
   be
-  (168,
-  264).
+  (134,
+  280).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  (1)
+  'r103-516.1'
   and
-  'r695-960.1'
+  (1)
   has
   size
-  264,
-  264
+  280,
+  280
   matches,
   and
   the
   score
   of
-  28727.172074820595.
+  29590.21564298475.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  264
+  280
   between
   contigs
-  (1)
+  'r103-516.1'
   and
-  'r695-960.1',
+  (1),
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  434
+  763
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  434.
+  763.
 END 15
 BEGIN 16
   Removed

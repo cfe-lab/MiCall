@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  411
+  356
   between
   contigs
-  'r111-742.2'
+  'r131-775.1'
   and
-  'r332-902.1'
+  'r420-995.2'
   to
   be
-  (221,
-  411).
+  (289,
+  356).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r111-742.2'
+  'r131-775.1'
   and
-  'r332-902.1'
+  'r420-995.2'
   has
   size
-  411,
-  411
+  356,
+  356
   matches,
   and
   the
   score
   of
-  35884.04801300088.
+  33386.4037147.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  411
+  356
   between
   contigs
-  'r111-742.2'
+  'r131-775.1'
   and
-  'r332-902.1',
+  'r420-995.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  901
+  953
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  363
+  347
   between
   contigs
-  'r2-473.0'
+  'r43-477.0'
   and
   (1)
   to
   be
-  (109,
-  363).
+  (88,
+  347).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r2-473.0'
+  'r43-477.0'
   and
   (1)
   has
   size
-  363,
-  363
+  347,
+  347
   matches,
   and
   the
   score
   of
-  33714.56284383524.
+  32959.68455750553.
 END 11
 BEGIN 12
   Found
@@ -154,10 +154,10 @@ BEGIN 12
   overlap
   of
   size
-  363
+  347
   between
   contigs
-  'r2-473.0'
+  'r43-477.0'
   and
   (1),
   resulting
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  901
+  953
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  901.
+  953.
 END 15
 BEGIN 16
   Removed

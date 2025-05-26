@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  555
+  502
   between
   contigs
-  'r153-910.2'
+  'r80-727.2'
   and
-  'r356-926.1'
+  'r226-907.0'
   to
   be
-  (203,
-  555).
+  (146,
+  502).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r153-910.2'
+  'r80-727.2'
   and
-  'r356-926.1'
+  'r226-907.0'
   has
   size
-  555,
-  555
+  502,
+  502
   matches,
   and
   the
   score
   of
-  41721.052458956176.
+  39672.70716880882.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  555
+  502
   between
   contigs
-  'r153-910.2'
+  'r80-727.2'
   and
-  'r356-926.1',
+  'r226-907.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  774
+  828
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  554
+  434
   between
   contigs
   (1)
   and
-  'r269-822.0'
+  'r470-903.1'
   to
   be
-  (116,
-  670).
+  (390,
+  824).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r269-822.0'
+  'r470-903.1'
   has
   size
-  554,
-  554
+  434,
+  434
   matches,
   and
   the
   score
   of
-  41620.76146746831.
+  36807.76410583707.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r269-822.0'
+  'r470-903.1'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  774
+  828
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  774.
+  828.
 END 15
 BEGIN 16
   Removed

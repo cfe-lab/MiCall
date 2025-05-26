@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  280
+  146
   between
   contigs
-  'r367-992.0'
+  'r97-390.2'
   and
-  'r628-907.1'
+  'r245-606.0'
   to
   be
-  (261,
-  541).
+  (148,
+  146).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r367-992.0'
+  'r97-390.2'
   and
-  'r628-907.1'
+  'r245-606.0'
   has
   size
-  280,
-  280
+  146,
+  146
   matches,
   and
   the
   score
   of
-  29502.49828232086.
+  21308.95238095238.
 END 6
 BEGIN 7
-  Contig
-  'r367-992.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  146
+  between
+  contigs
+  'r97-390.2'
+  and
+  'r245-606.0',
+  resulting
+  in
   contig
-  'r628-907.1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  267
+  212
   between
   contigs
-  'r367-992.0'
+  'r193-456.1'
   and
-  'r543-809.2'
+  'r245-606.0'
   to
   be
-  (176,
-  443).
+  (52,
+  212).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r367-992.0'
+  'r193-456.1'
   and
-  'r543-809.2'
+  'r245-606.0'
   has
   size
-  267,
-  267
+  212,
+  212
   matches,
   and
   the
   score
   of
-  28801.15925520392.
+  25723.096847465706.
 END 9
 BEGIN 10
-  Contig
-  'r367-992.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  212
+  between
+  contigs
+  'r193-456.1'
+  and
+  'r245-606.0',
+  resulting
+  in
   contig
-  'r543-809.2'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  626
+  510
   and
   consists
   of
@@ -153,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  267
+  198
   between
   contigs
-  'r367-992.0'
+  'r97-390.2'
   and
-  'r543-809.2'
+  (2)
   to
   be
-  (176,
-  443).
+  (96,
+  198).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r367-992.0'
+  'r97-390.2'
   and
-  'r543-809.2'
+  (2)
   has
   size
-  267,
-  267
+  198,
+  198
   matches,
   and
   the
   score
   of
-  28801.15925520392.
+  24852.351328181474.
 END 14
 BEGIN 15
-  Contig
-  'r367-992.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  198
+  between
+  contigs
+  'r97-390.2'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r543-809.2'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -202,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  626
+  510
   and
   consists
   of
@@ -223,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  626.
+  510.
 END 18
 BEGIN 19
   Removed

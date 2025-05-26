@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  373
+  427
   between
   contigs
-  'r96-754.0'
+  'r46-803.1'
   and
-  'r115-487.1'
+  'r362-788.0'
   to
   be
-  (19,
-  392).
+  (316,
+  743).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r96-754.0'
+  'r46-803.1'
   and
-  'r115-487.1'
+  'r362-788.0'
   has
   size
-  373,
-  373
+  427,
+  427
   matches,
   and
   the
   score
   of
-  34101.765882774394.
+  36507.42718460823.
 END 6
 BEGIN 7
   Contig
-  'r96-754.0'
+  'r46-803.1'
   covers
   contig
-  'r115-487.1'
+  'r362-788.0'
   completely.
 END 7
 BEGIN 8
@@ -81,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  260
+  249
   between
   contigs
-  'r96-754.0'
+  'r46-803.1'
   and
-  'r273-532.2'
+  'r555-949.2'
   to
   be
-  (177,
-  437).
+  (509,
+  249).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r96-754.0'
+  'r46-803.1'
   and
-  'r273-532.2'
+  'r555-949.2'
   has
   size
-  260,
-  260
+  249,
+  249
   matches,
   and
   the
   score
   of
-  28416.349171455797.
+  27893.830171228426.
 END 9
 BEGIN 10
-  Contig
-  'r96-754.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  249
+  between
+  contigs
+  'r46-803.1'
+  and
+  'r555-949.2',
+  resulting
+  in
   contig
-  'r273-532.2'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  659
+  904
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  260
+  427
   between
   contigs
-  'r96-754.0'
+  (1)
   and
-  'r273-532.2'
+  'r362-788.0'
   to
   be
-  (177,
-  437).
+  (316,
+  743).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r96-754.0'
+  (1)
   and
-  'r273-532.2'
+  'r362-788.0'
   has
   size
-  260,
-  260
+  427,
+  427
   matches,
   and
   the
   score
   of
-  28416.349171455797.
+  36507.42718460823.
 END 14
 BEGIN 15
   Contig
-  'r96-754.0'
+  (1)
   covers
   contig
-  'r273-532.2'
+  'r362-788.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  659
+  904
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  659.
+  904.
 END 18
 BEGIN 19
   Removed

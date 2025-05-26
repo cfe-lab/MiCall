@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  276
+  349
   between
   contigs
-  'r41-444.2'
+  'r431-950.0'
   and
-  'r639-951.1'
+  'r602-993.1'
   to
   be
-  (403,
-  3).
+  (171,
+  349).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r41-444.2'
+  'r431-950.0'
   and
-  'r639-951.1'
+  'r602-993.1'
   has
   size
-  3,
-  1
+  349,
+  349
   matches,
   and
   the
   score
   of
-  0.0.
+  33054.9870715593.
 END 6
 BEGIN 7
   Found
@@ -72,63 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  2
+  349
   between
   contigs
-  'r41-444.2'
+  'r431-950.0'
   and
-  'r639-951.1',
+  'r602-993.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  293
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r697-989.0'
-  to
-  be
-  (52,
-  345).
-END 8
-BEGIN 9
-  Overlap
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r697-989.0'
-  has
-  size
-  293,
-  188
-  matches,
-  and
-  the
-  score
-  of
-  15730.57223536313.
-END 9
-BEGIN 10
-  Contig
-  'r41-444.2'
-  covers
-  contig
-  'r697-989.0'
-  completely.
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +95,22 @@ BEGIN 11
   fittest
   has
   length
-  404
+  563
   and
   consists
   of
-  2
+  3
   parts.
-END 11
-BEGIN 12
+END 8
+BEGIN 9
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -163,99 +118,81 @@ BEGIN 13
   overlap
   of
   size
-  276
+  337
   between
   contigs
-  'r41-444.2'
+  (1)
   and
-  'r639-951.1'
+  'r482-818.2'
   to
   be
-  (403,
-  3).
-END 13
-BEGIN 14
+  (51,
+  388).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  'r41-444.2'
+  (1)
   and
-  'r639-951.1'
+  'r482-818.2'
   has
   size
-  3,
-  1
+  337,
+  337
   matches,
   and
   the
   score
   of
-  0.0.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  2
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r639-951.1',
-  resulting
-  in
+  32398.92842492756.
+END 11
+BEGIN 12
+  Contig
+  (1)
+  covers
   contig
-  (2).
-END 15
-BEGIN 16
-  Constructed
-  a
-  path
-  of
-  length
-  404.
-END 16
-BEGIN 17
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 17
-BEGIN 18
-  Calculating
-  all
-  paths...
-END 18
-BEGIN 19
+  'r482-818.2'
+  completely.
+END 12
+BEGIN 13
   Cycle
+  2
+  finished
+  with
   1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  563
+  and
+  consists
+  of
+  3
+  parts.
+END 13
+BEGIN 14
+  Cycle
+  3
   started
   with
   1
   paths.
-END 19
-BEGIN 20
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  313.
-END 20
-BEGIN 21
+  563.
+END 15
+BEGIN 16
   Removed
-  1
+  3
   components
   from
   the
@@ -266,88 +203,17 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 22
-BEGIN 23
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
-  2
-  contigs.
-END 23
-BEGIN 24
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  276
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r639-951.1'
-  to
-  be
-  (403,
-  3).
-END 24
-BEGIN 25
-  Overlap
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r639-951.1'
-  has
-  size
-  3,
   1
-  matches,
-  and
-  the
-  score
-  of
-  0.0.
-END 25
-BEGIN 26
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  2
-  between
-  contigs
-  'r41-444.2'
-  and
-  'r639-951.1',
-  resulting
-  in
-  contig
-  (3).
-END 26
-BEGIN 27
+  contigs.
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 27
+END 18

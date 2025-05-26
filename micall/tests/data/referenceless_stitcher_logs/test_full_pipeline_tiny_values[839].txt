@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  48
+  518
   between
   contigs
-  'r53-467.2'
+  'r117-801.0'
   and
-  'r420-809.1'
+  'r284-865.1'
   to
   be
-  (367,
-  48).
+  (167,
+  518).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r53-467.2'
+  'r117-801.0'
   and
-  'r420-809.1'
+  'r284-865.1'
   has
   size
-  48,
-  48
+  518,
+  518
   matches,
   and
   the
   score
   of
-  12077.507802567898.
+  40302.0470863139.
 END 6
 BEGIN 7
   Found
@@ -72,90 +72,45 @@ BEGIN 7
   overlap
   of
   size
-  48
+  518
   between
   contigs
-  'r53-467.2'
+  'r117-801.0'
   and
-  'r420-809.1',
+  'r284-865.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  275
-  between
-  contigs
-  'r53-467.2'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  749
   and
-  'r546-820.0'
-  to
-  be
-  (133,
-  408).
+  consists
+  of
+  3
+  parts.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r53-467.2'
-  and
-  'r546-820.0'
-  has
-  size
-  275,
-  174
-  matches,
-  and
-  the
-  score
-  of
-  14883.78773524313.
-END 9
-BEGIN 10
-  Contig
-  'r53-467.2'
-  covers
-  contig
-  'r546-820.0'
-  completely.
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  768
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -163,54 +118,44 @@ BEGIN 13
   overlap
   of
   size
-  264
+  372
   between
   contigs
   (1)
   and
-  'r546-820.0'
+  'r219-590.2'
   to
   be
-  (493,
-  264).
-END 13
-BEGIN 14
+  (102,
+  474).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
   (1)
   and
-  'r546-820.0'
+  'r219-590.2'
   has
   size
-  264,
-  264
+  372,
+  372
   matches,
   and
   the
   score
   of
-  28727.172074820595.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  264
-  between
-  contigs
+  34055.61433628451.
+END 11
+BEGIN 12
+  Contig
   (1)
-  and
-  'r546-820.0',
-  resulting
-  in
+  covers
   contig
-  (2).
-END 15
-BEGIN 16
+  'r219-590.2'
+  completely.
+END 12
+BEGIN 13
   Cycle
   2
   finished
@@ -222,30 +167,30 @@ BEGIN 16
   fittest
   has
   length
-  768
+  749
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  768.
-END 18
-BEGIN 19
+  749.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -258,17 +203,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

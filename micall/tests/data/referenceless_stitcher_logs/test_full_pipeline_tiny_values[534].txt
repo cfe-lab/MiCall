@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  334
+  73
   between
   contigs
-  'r1-347.2'
+  'r158-541.2'
   and
-  'r518-851.0'
+  'r469-988.1'
   to
   be
-  (6,
-  340).
+  (311,
+  73).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r1-347.2'
+  'r158-541.2'
   and
-  'r518-851.0'
+  'r469-988.1'
   has
   size
-  334,
-  214
+  73,
+  73
   matches,
   and
   the
   score
   of
-  16771.54354899611.
+  14982.350851753708.
 END 6
 BEGIN 7
-  Contig
-  'r1-347.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  73
+  between
+  contigs
+  'r158-541.2'
+  and
+  'r469-988.1',
+  resulting
+  in
   contig
-  'r518-851.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  266
+  357
   between
   contigs
-  'r1-347.2'
+  'r469-988.1'
   and
-  'r723-988.1'
+  'r564-920.0'
   to
   be
-  (81,
-  347).
+  (95,
+  452).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r1-347.2'
+  'r469-988.1'
   and
-  'r723-988.1'
+  'r564-920.0'
   has
   size
-  266,
-  170
+  357,
+  357
   matches,
   and
   the
   score
   of
-  14878.842559167615.
+  33355.680879318505.
 END 9
 BEGIN 10
   Contig
-  'r1-347.2'
+  'r469-988.1'
   covers
   contig
-  'r723-988.1'
+  'r564-920.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  347
+  831
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  266
+  357
   between
   contigs
-  'r1-347.2'
+  (1)
   and
-  'r723-988.1'
+  'r564-920.0'
   to
   be
-  (81,
-  347).
+  (406,
+  763).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r1-347.2'
+  (1)
   and
-  'r723-988.1'
+  'r564-920.0'
   has
   size
-  266,
-  170
+  357,
+  357
   matches,
   and
   the
   score
   of
-  14878.842559167615.
+  33355.680879318505.
 END 14
 BEGIN 15
   Contig
-  'r1-347.2'
+  (1)
   covers
   contig
-  'r723-988.1'
+  'r564-920.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  347
+  831
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  347.
+  831.
 END 18
 BEGIN 19
   Removed

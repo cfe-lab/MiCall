@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  335
+  422
   between
   contigs
-  'r35-548.0'
+  'r50-538.1'
   and
-  'r214-920.1'
+  'r117-717.0'
   to
   be
-  (179,
-  335).
+  (67,
+  422).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r35-548.0'
+  'r50-538.1'
   and
-  'r214-920.1'
+  'r117-717.0'
   has
   size
-  335,
-  335
+  422,
+  422
   matches,
   and
   the
   score
   of
-  32381.98023690787.
+  36362.997082424205.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  335
+  422
   between
   contigs
-  'r35-548.0'
+  'r50-538.1'
   and
-  'r214-920.1',
+  'r117-717.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  886
+  668
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  316
+  274
   between
   contigs
   (1)
   and
-  'r563-878.2'
+  'r193-466.2'
   to
   be
-  (528,
-  844).
+  (143,
+  417).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r563-878.2'
+  'r193-466.2'
   has
   size
-  316,
-  316
+  274,
+  274
   matches,
   and
   the
   score
   of
-  31362.950000297707.
+  29180.897199240757.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r563-878.2'
+  'r193-466.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  886
+  668
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  886.
+  668.
 END 15
 BEGIN 16
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  210
+  274
   between
   contigs
-  'r18-538.2'
+  'r362-804.1'
   and
-  'r329-774.1'
+  'r531-872.0'
   to
   be
-  (311,
-  210).
+  (169,
+  274).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r18-538.2'
+  'r362-804.1'
   and
-  'r329-774.1'
+  'r531-872.0'
   has
   size
-  210,
-  210
+  274,
+  274
   matches,
   and
   the
   score
   of
-  25600.51765669357.
+  29269.5563345158.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  210
+  274
   between
   contigs
-  'r18-538.2'
+  'r362-804.1'
   and
-  'r329-774.1',
+  'r531-872.0',
   resulting
   in
   contig
@@ -91,44 +91,17 @@ BEGIN 8
   overlap
   of
   size
-  288
+  292
   between
   contigs
-  'r18-538.2'
+  'r362-804.1'
   and
-  'r102-389.0'
+  'r22-318.2'
   to
   be
-  (84,
-  372).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r18-538.2'
-  and
-  'r102-389.0'
-  has
-  size
-  288,
-  288
-  matches,
-  and
-  the
-  score
-  of
-  29925.925894202297.
-END 9
-BEGIN 10
-  Contig
-  'r18-538.2'
-  covers
-  contig
-  'r102-389.0'
-  completely.
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +113,22 @@ BEGIN 11
   fittest
   has
   length
-  757
+  511
   and
   consists
   of
   3
   parts.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -163,44 +136,44 @@ BEGIN 13
   overlap
   of
   size
-  288
+  297
   between
   contigs
   (1)
   and
-  'r102-389.0'
+  'r22-318.2'
   to
   be
-  (84,
-  372).
-END 13
-BEGIN 14
+  (152,
+  449).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
   (1)
   and
-  'r102-389.0'
+  'r22-318.2'
   has
   size
-  288,
-  288
+  297,
+  192
   matches,
   and
   the
   score
   of
-  29925.925894202297.
-END 14
-BEGIN 15
+  16035.281110270433.
+END 12
+BEGIN 13
   Contig
   (1)
   covers
   contig
-  'r102-389.0'
+  'r22-318.2'
   completely.
-END 15
-BEGIN 16
+END 13
+BEGIN 14
   Cycle
   2
   finished
@@ -212,30 +185,30 @@ BEGIN 16
   fittest
   has
   length
-  757
+  511
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 14
+BEGIN 15
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
-  757.
-END 18
-BEGIN 19
+  511.
+END 16
+BEGIN 17
   Removed
   3
   components
@@ -248,17 +221,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 18
+BEGIN 19
   Outputting
   1
   contigs.
-END 21
+END 19

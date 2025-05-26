@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  21
+  560
   between
   contigs
-  'r27-445.2'
+  'r72-679.1'
   and
-  'r425-939.1'
+  'r120-764.0'
   to
   be
-  (398,
-  21).
+  (48,
+  560).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r27-445.2'
+  'r72-679.1'
   and
-  'r425-939.1'
+  'r120-764.0'
   has
   size
-  21,
-  21
+  560,
+  560
   matches,
   and
   the
   score
   of
-  7814.832579295876.
+  41909.125123735976.
 END 6
 BEGIN 7
   Found
@@ -72,18 +72,45 @@ BEGIN 7
   overlap
   of
   size
-  21
+  560
   between
   contigs
-  'r27-445.2'
+  'r72-679.1'
   and
-  'r425-939.1',
+  'r120-764.0',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  710
+  and
+  consists
+  of
+  3
+  parts.
+END 8
+BEGIN 9
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -91,136 +118,54 @@ BEGIN 8
   overlap
   of
   size
-  120
+  556
   between
   contigs
-  'r242-544.0'
+  (1)
   and
-  'r425-939.1'
+  'r209-781.2'
   to
   be
-  (183,
-  120).
-END 8
-BEGIN 9
+  (137,
+  556).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  'r242-544.0'
+  (1)
   and
-  'r425-939.1'
+  'r209-781.2'
   has
   size
-  120,
-  120
+  556,
+  556
   matches,
   and
   the
   score
   of
-  19294.83605076486.
-END 9
-BEGIN 10
+  41758.734753641846.
+END 11
+BEGIN 12
   Found
   a
   significant
   overlap
   of
   size
-  120
+  556
   between
   contigs
-  'r242-544.0'
+  (1)
   and
-  'r425-939.1',
+  'r209-781.2',
   resulting
   in
   contig
   (2).
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  913
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
 END 12
 BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  204
-  between
-  contigs
-  'r27-445.2'
-  and
-  (2)
-  to
-  be
-  (215,
-  204).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r27-445.2'
-  and
-  (2)
-  has
-  size
-  204,
-  204
-  matches,
-  and
-  the
-  score
-  of
-  25229.207518786956.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  204
-  between
-  contigs
-  'r27-445.2'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (3).
-END 15
-BEGIN 16
   Cycle
   2
   finished
@@ -232,30 +177,30 @@ BEGIN 16
   fittest
   has
   length
-  913
+  710
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  913.
-END 18
-BEGIN 19
+  710.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -268,17 +213,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

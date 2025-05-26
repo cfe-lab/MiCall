@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  334
+  407
   between
   contigs
-  'r315-951.2'
+  'r83-848.1'
   and
-  'r403-736.0'
+  'r183-589.2'
   to
   be
-  (88,
-  422).
+  (100,
+  507).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r315-951.2'
+  'r83-848.1'
   and
-  'r403-736.0'
+  'r183-589.2'
   has
   size
-  334,
-  334
+  407,
+  407
   matches,
   and
   the
   score
   of
-  32252.968363454056.
+  35635.378901461016.
 END 6
 BEGIN 7
   Contig
-  'r315-951.2'
+  'r83-848.1'
   covers
   contig
-  'r403-736.0'
+  'r183-589.2'
   completely.
 END 7
 BEGIN 8
@@ -81,41 +81,41 @@ BEGIN 8
   overlap
   of
   size
-  328
+  298
   between
   contigs
-  'r315-951.2'
+  'r83-848.1'
   and
-  'r597-924.1'
+  'r415-712.0'
   to
   be
-  (282,
-  610).
+  (332,
+  630).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r315-951.2'
+  'r83-848.1'
   and
-  'r597-924.1'
+  'r415-712.0'
   has
   size
-  328,
-  328
+  298,
+  298
   matches,
   and
   the
   score
   of
-  31959.04896475039.
+  30446.933333333334.
 END 9
 BEGIN 10
   Contig
-  'r315-951.2'
+  'r83-848.1'
   covers
   contig
-  'r597-924.1'
+  'r415-712.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  637
+  766
   and
   consists
   of
@@ -153,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  328
+  298
   between
   contigs
-  'r315-951.2'
+  'r83-848.1'
   and
-  'r597-924.1'
+  'r415-712.0'
   to
   be
-  (282,
-  610).
+  (332,
+  630).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r315-951.2'
+  'r83-848.1'
   and
-  'r597-924.1'
+  'r415-712.0'
   has
   size
-  328,
-  328
+  298,
+  298
   matches,
   and
   the
   score
   of
-  31959.04896475039.
+  30446.933333333334.
 END 14
 BEGIN 15
   Contig
-  'r315-951.2'
+  'r83-848.1'
   covers
   contig
-  'r597-924.1'
+  'r415-712.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  637
+  766
   and
   consists
   of
@@ -223,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  637.
+  766.
 END 18
 BEGIN 19
   Removed

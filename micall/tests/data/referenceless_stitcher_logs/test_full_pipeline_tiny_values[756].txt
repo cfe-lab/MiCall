@@ -36,62 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  299
+  497
   between
   contigs
-  'r7-520.1'
+  'r233-773.2'
   and
-  'r605-966.0'
+  'r277-848.0'
   to
   be
-  None.
+  (44,
+  497).
 END 5
 BEGIN 6
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  318
-  between
-  contigs
-  'r7-520.1'
-  and
-  'r140-457.2'
-  to
-  be
-  (133,
-  451).
-END 6
-BEGIN 7
   Overlap
   between
   contigs
-  'r7-520.1'
+  'r233-773.2'
   and
-  'r140-457.2'
+  'r277-848.0'
   has
   size
-  318,
-  318
+  497,
+  497
   matches,
   and
   the
   score
   of
-  31463.083909030065.
+  39473.98087005648.
+END 6
+BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  497
+  between
+  contigs
+  'r233-773.2'
+  and
+  'r277-848.0',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
-  Contig
-  'r7-520.1'
-  covers
-  contig
-  'r140-457.2'
-  completely.
-END 8
-BEGIN 9
   Cycle
   1
   finished
@@ -103,22 +95,22 @@ BEGIN 9
   fittest
   has
   length
-  514
+  745
   and
   consists
   of
-  2
+  3
   parts.
-END 9
-BEGIN 10
+END 8
+BEGIN 9
   Cycle
   2
   started
   with
   1
   paths.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -126,62 +118,91 @@ BEGIN 11
   overlap
   of
   size
-  299
+  177
   between
   contigs
-  'r7-520.1'
+  'r104-409.1'
   and
-  'r605-966.0'
+  (1)
   to
   be
-  None.
+  (129,
+  177).
+END 10
+BEGIN 11
+  Overlap
+  between
+  contigs
+  'r104-409.1'
+  and
+  (1)
+  has
+  size
+  177,
+  177
+  matches,
+  and
+  the
+  score
+  of
+  23485.791321722387.
 END 11
 BEGIN 12
-  Constructed
+  Found
   a
-  path
+  significant
+  overlap
   of
-  length
-  514.
+  size
+  177
+  between
+  contigs
+  'r104-409.1'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
 END 12
 BEGIN 13
-  Removed
+  Cycle
   2
-  components
-  from
-  the
-  working
-  list,
-  having
+  finished
+  with
   1
-  still
-  to
-  process.
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  745
+  and
+  consists
+  of
+  3
+  parts.
 END 13
 BEGIN 14
-  Calculating
-  all
-  paths...
-END 14
-BEGIN 15
   Cycle
-  1
+  3
   started
   with
   1
   paths.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  362.
-END 16
-BEGIN 17
+  745.
+END 15
+BEGIN 16
   Removed
-  1
+  3
   components
   from
   the
@@ -192,51 +213,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  299
-  between
-  contigs
-  'r7-520.1'
-  and
-  'r605-966.0'
-  to
-  be
-  None.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
-  2
+  1
   contigs.
-END 21
+END 18

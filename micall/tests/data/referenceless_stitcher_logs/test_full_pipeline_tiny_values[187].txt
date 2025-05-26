@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  442
+  446
   between
   contigs
-  'r157-705.0'
+  'r24-696.1'
   and
-  'r264-980.2'
+  'r251-759.2'
   to
   be
-  (107,
-  442).
+  (227,
+  446).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r157-705.0'
+  'r24-696.1'
   and
-  'r264-980.2'
+  'r251-759.2'
   has
   size
-  442,
-  442
+  446,
+  446
   matches,
   and
   the
   score
   of
-  37218.02681416365.
+  37386.6863866524.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  442
+  446
   between
   contigs
-  'r157-705.0'
+  'r24-696.1'
   and
-  'r264-980.2',
+  'r251-759.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  824
+  917
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  348
+  153
   between
   contigs
   (1)
   and
-  'r262-609.1'
+  'r607-940.0'
   to
   be
-  (105,
-  453).
+  (583,
+  153).
 END 10
 BEGIN 11
   Overlap
@@ -135,25 +135,35 @@ BEGIN 11
   contigs
   (1)
   and
-  'r262-609.1'
+  'r607-940.0'
   has
   size
-  348,
-  348
+  153,
+  153
   matches,
   and
   the
   score
   of
-  32928.581767270356.
+  21819.48254015998.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  153
+  between
+  contigs
   (1)
-  covers
+  and
+  'r607-940.0',
+  resulting
+  in
   contig
-  'r262-609.1'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  824
+  917
   and
   consists
   of
@@ -188,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  824.
+  917.
 END 15
 BEGIN 16
   Removed

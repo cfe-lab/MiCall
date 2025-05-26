@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  550
+  446
   between
   contigs
-  'r62-621.2'
+  'r116-646.1'
   and
-  'r72-623.0'
+  'r201-854.0'
   to
   be
-  (10,
-  550).
+  (85,
+  446).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r62-621.2'
+  'r116-646.1'
   and
-  'r72-623.0'
+  'r201-854.0'
   has
   size
-  550,
-  550
+  446,
+  446
   matches,
   and
   the
   score
   of
-  41532.128160689754.
+  37386.6863866524.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  550
+  446
   between
   contigs
-  'r62-621.2'
+  'r116-646.1'
   and
-  'r72-623.0',
+  'r201-854.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  599
+  741
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  243
+  425
   between
   contigs
-  'r25-304.1'
+  'r114-540.2'
   and
   (1)
   to
   be
-  (37,
-  243).
+  (2,
+  425).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r25-304.1'
+  'r114-540.2'
   and
   (1)
   has
   size
-  243,
-  243
+  425,
+  425
   matches,
   and
   the
   score
   of
-  27553.437965052366.
+  36492.52865604205.
 END 11
 BEGIN 12
   Found
@@ -154,10 +154,10 @@ BEGIN 12
   overlap
   of
   size
-  243
+  425
   between
   contigs
-  'r25-304.1'
+  'r114-540.2'
   and
   (1),
   resulting
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  599
+  741
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  599.
+  741.
 END 15
 BEGIN 16
   Removed

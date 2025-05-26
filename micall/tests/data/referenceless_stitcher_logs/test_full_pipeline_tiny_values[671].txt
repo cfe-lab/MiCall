@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  445
+  430
   between
   contigs
-  'r360-869.2'
+  'r139-820.0'
   and
-  'r425-982.0'
+  'r391-999.1'
   to
   be
-  (65,
-  445).
+  (252,
+  430).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r360-869.2'
+  'r139-820.0'
   and
-  'r425-982.0'
+  'r391-999.1'
   has
   size
-  445,
-  445
+  430,
+  430
   matches,
   and
   the
   score
   of
-  37344.59290212455.
+  36707.39891926976.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  445
+  430
   between
   contigs
-  'r360-869.2'
+  'r139-820.0'
   and
-  'r425-982.0',
+  'r391-999.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  843
+  861
   and
   consists
   of
@@ -118,52 +118,42 @@ BEGIN 10
   overlap
   of
   size
-  105
+  448
   between
   contigs
-  'r140-464.1'
-  and
   (1)
+  and
+  'r465-912.2'
   to
   be
-  (220,
-  105).
+  (326,
+  774).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r140-464.1'
-  and
   (1)
+  and
+  'r465-912.2'
   has
   size
-  105,
-  105
+  448,
+  448
   matches,
   and
   the
   score
   of
-  18030.843533813957.
+  37401.20444945095.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  105
-  between
-  contigs
-  'r140-464.1'
-  and
-  (1),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (2).
+  'r465-912.2'
+  completely.
 END 12
 BEGIN 13
   Cycle
@@ -177,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  843
+  861
   and
   consists
   of
@@ -198,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  843.
+  861.
 END 15
 BEGIN 16
   Removed

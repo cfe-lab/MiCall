@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  580
+  298
   between
   contigs
-  'r217-904.1'
+  'r231-558.1'
   and
-  'r263-842.0'
+  'r250-547.2'
   to
   be
-  (46,
-  626).
+  (19,
+  317).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r217-904.1'
+  'r231-558.1'
   and
-  'r263-842.0'
+  'r250-547.2'
   has
   size
-  580,
-  580
+  298,
+  298
   matches,
   and
   the
   score
   of
-  42591.95834632973.
+  30446.933333333334.
 END 6
 BEGIN 7
   Contig
-  'r217-904.1'
+  'r231-558.1'
   covers
   contig
-  'r263-842.0'
+  'r250-547.2'
   completely.
 END 7
 BEGIN 8
@@ -81,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  222
+  79
   between
   contigs
-  'r22-438.2'
+  'r46-309.0'
   and
-  'r217-904.1'
+  'r231-558.1'
   to
   be
-  (195,
-  222).
+  (185,
+  79).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r22-438.2'
+  'r46-309.0'
   and
-  'r217-904.1'
+  'r231-558.1'
   has
   size
-  222,
-  222
+  79,
+  79
   matches,
   and
   the
   score
   of
-  26327.434627225306.
+  15599.344122964487.
 END 9
 BEGIN 10
   Found
@@ -117,12 +117,12 @@ BEGIN 10
   overlap
   of
   size
-  222
+  79
   between
   contigs
-  'r22-438.2'
+  'r46-309.0'
   and
-  'r217-904.1',
+  'r231-558.1',
   resulting
   in
   contig
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  883
+  513
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  580
+  298
   between
   contigs
   (1)
   and
-  'r263-842.0'
+  'r250-547.2'
   to
   be
-  (241,
-  821).
+  (204,
+  502).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r263-842.0'
+  'r250-547.2'
   has
   size
-  580,
-  580
+  298,
+  298
   matches,
   and
   the
   score
   of
-  42591.95834632973.
+  30446.933333333334.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r263-842.0'
+  'r250-547.2'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  883
+  513
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  883.
+  513.
 END 18
 BEGIN 19
   Removed

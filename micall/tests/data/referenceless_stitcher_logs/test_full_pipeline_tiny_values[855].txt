@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  186
+  495
   between
   contigs
-  'r293-644.0'
+  'r163-749.1'
   and
-  'r459-999.1'
+  'r255-950.0'
   to
   be
-  (166,
-  186).
+  (92,
+  495).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r293-644.0'
+  'r163-749.1'
   and
-  'r459-999.1'
+  'r255-950.0'
   has
   size
-  186,
-  186
+  495,
+  495
   matches,
   and
   the
   score
   of
-  24080.95583466058.
+  39394.20966348675.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  186
+  495
   between
   contigs
-  'r293-644.0'
+  'r163-749.1'
   and
-  'r459-999.1',
+  'r255-950.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  813
+  825
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  188
+  269
   between
   contigs
-  'r187-480.2'
+  'r126-431.2'
   and
   (1)
   to
   be
-  (106,
-  188).
+  (37,
+  269).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r187-480.2'
+  'r126-431.2'
   and
   (1)
   has
   size
-  188,
-  188
+  269,
+  269
   matches,
   and
   the
   score
   of
-  24211.228251499513.
+  28999.632146155676.
 END 11
 BEGIN 12
   Found
@@ -154,10 +154,10 @@ BEGIN 12
   overlap
   of
   size
-  188
+  269
   between
   contigs
-  'r187-480.2'
+  'r126-431.2'
   and
   (1),
   resulting
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  813
+  825
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  813.
+  825.
 END 15
 BEGIN 16
   Removed

@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  284
+  426
   between
   contigs
-  'r67-756.2'
+  'r478-927.2'
   and
-  'r473-886.0'
+  'r33-458.0'
   to
   be
-  (406,
-  284).
+  (20,
+  446).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r67-756.2'
+  'r478-927.2'
   and
-  'r473-886.0'
+  'r33-458.0'
   has
   size
-  284,
-  284
+  426,
+  282
   matches,
   and
   the
   score
   of
-  29802.071982915113.
+  20003.937307144362.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  284
-  between
-  contigs
-  'r67-756.2'
-  and
-  'r473-886.0',
-  resulting
-  in
+  Contig
+  'r478-927.2'
+  covers
   contig
-  (1).
+  'r33-458.0'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  888
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  208
+  421
   between
   contigs
-  (1)
+  'r478-927.2'
   and
-  'r679-954.1'
+  'r499-919.1'
   to
   be
-  (612,
-  208).
-END 10
-BEGIN 11
+  (21,
+  442).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r478-927.2'
   and
-  'r679-954.1'
+  'r499-919.1'
   has
   size
-  208,
-  208
+  421,
+  421
   matches,
   and
   the
   score
   of
-  25477.348800851614.
+  36248.01527346792.
+END 9
+BEGIN 10
+  Contig
+  'r478-927.2'
+  covers
+  contig
+  'r499-919.1'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  450
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  208
+  421
   between
   contigs
-  (1)
+  'r478-927.2'
   and
-  'r679-954.1',
-  resulting
-  in
+  'r499-919.1'
+  to
+  be
+  (21,
+  442).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r478-927.2'
+  and
+  'r499-919.1'
+  has
+  size
+  421,
+  421
+  matches,
+  and
+  the
+  score
+  of
+  36248.01527346792.
+END 14
+BEGIN 15
+  Contig
+  'r478-927.2'
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r499-919.1'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  888
+  450
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  888.
-END 15
-BEGIN 16
+  450.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

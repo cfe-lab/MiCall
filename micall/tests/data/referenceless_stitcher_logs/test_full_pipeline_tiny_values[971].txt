@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  477
+  336
   between
   contigs
-  'r221-711.2'
+  'r269-640.0'
   and
-  'r235-937.1'
+  'r270-605.1'
   to
   be
-  (14,
-  477).
+  (1,
+  337).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r221-711.2'
+  'r269-640.0'
   and
-  'r235-937.1'
+  'r270-605.1'
   has
   size
-  477,
-  477
+  336,
+  336
   matches,
   and
   the
   score
   of
-  38668.864420781065.
+  32350.34822550813.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  477
-  between
-  contigs
-  'r221-711.2'
-  and
-  'r235-937.1',
-  resulting
-  in
+  Contig
+  'r269-640.0'
+  covers
   contig
-  (1).
+  'r270-605.1'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  717
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  290
+  90
   between
   contigs
-  (1)
+  'r71-358.2'
   and
-  'r609-898.0'
+  'r269-640.0'
   to
   be
-  (388,
-  678).
-END 10
-BEGIN 11
+  (198,
+  90).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r71-358.2'
   and
-  'r609-898.0'
+  'r269-640.0'
   has
   size
-  290,
-  290
+  90,
+  90
   matches,
   and
   the
   score
   of
-  30030.850275878594.
+  16671.355523881764.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  90
+  between
+  contigs
+  'r71-358.2'
+  and
+  'r269-640.0',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  570
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  336
+  between
+  contigs
+  (1)
+  and
+  'r270-605.1'
+  to
+  be
+  (199,
+  535).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r270-605.1'
+  has
+  size
+  336,
+  336
+  matches,
+  and
+  the
+  score
+  of
+  32350.34822550813.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r609-898.0'
+  'r270-605.1'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  717
+  570
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  717.
-END 15
-BEGIN 16
+  570.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

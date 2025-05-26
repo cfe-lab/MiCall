@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  179
+  365
   between
   contigs
-  'r77-386.0'
+  'r467-848.1'
   and
-  'r208-549.1'
+  'r484-856.2'
   to
   be
-  (131,
-  179).
+  (17,
+  365).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r77-386.0'
+  'r467-848.1'
   and
-  'r208-549.1'
+  'r484-856.2'
   has
   size
-  179,
-  179
+  365,
+  365
   matches,
   and
   the
   score
   of
-  23619.345903697642.
+  33807.73757286921.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  179
+  365
   between
   contigs
-  'r77-386.0'
+  'r467-848.1'
   and
-  'r208-549.1',
+  'r484-856.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  616
+  405
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  118
+  271
   between
   contigs
   (1)
   and
-  'r432-692.2'
+  'r586-871.0'
   to
   be
-  (355,
-  118).
+  (119,
+  271).
 END 10
 BEGIN 11
   Overlap
@@ -135,17 +135,17 @@ BEGIN 11
   contigs
   (1)
   and
-  'r432-692.2'
+  'r586-871.0'
   has
   size
-  118,
-  118
+  271,
+  271
   matches,
   and
   the
   score
   of
-  19131.126966355147.
+  29107.902162707043.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  118
+  271
   between
   contigs
   (1)
   and
-  'r432-692.2',
+  'r586-871.0',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  616
+  405
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  616.
+  405.
 END 15
 BEGIN 16
   Removed

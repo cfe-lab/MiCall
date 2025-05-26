@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  543
+  418
   between
   contigs
-  'r52-798.0'
+  'r297-819.1'
   and
-  'r256-864.1'
+  'r402-947.0'
   to
   be
-  (204,
-  543).
+  (105,
+  418).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r52-798.0'
+  'r297-819.1'
   and
-  'r256-864.1'
+  'r402-947.0'
   has
   size
-  543,
-  543
+  418,
+  418
   matches,
   and
   the
   score
   of
-  41266.18111913026.
+  36189.567157254525.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  543
+  418
   between
   contigs
-  'r52-798.0'
+  'r297-819.1'
   and
-  'r256-864.1',
+  'r402-947.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  813
+  651
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  391
+  363
   between
   contigs
   (1)
   and
-  'r55-445.2'
+  'r466-828.2'
   to
   be
-  (3,
-  394).
+  (169,
+  532).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r55-445.2'
+  'r466-828.2'
   has
   size
-  391,
-  391
+  363,
+  363
   matches,
   and
   the
   score
   of
-  34922.0676386159.
+  33637.40166293749.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r55-445.2'
+  'r466-828.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  813
+  651
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  813.
+  651.
 END 15
 BEGIN 16
   Removed

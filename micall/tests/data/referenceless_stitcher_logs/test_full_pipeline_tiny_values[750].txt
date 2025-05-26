@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  205
+  494
   between
   contigs
-  'r332-691.0'
+  'r142-905.1'
   and
-  'r487-891.1'
+  'r247-740.2'
   to
   be
-  (155,
-  205).
+  (105,
+  599).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r332-691.0'
+  'r142-905.1'
   and
-  'r487-891.1'
+  'r247-740.2'
   has
   size
-  205,
-  205
+  494,
+  494
   matches,
   and
   the
   score
   of
-  25291.471044577567.
+  39288.02580994635.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  205
-  between
-  contigs
-  'r332-691.0'
-  and
-  'r487-891.1',
-  resulting
-  in
+  Contig
+  'r142-905.1'
+  covers
   contig
-  (1).
+  'r247-740.2'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,17 +81,44 @@ BEGIN 8
   overlap
   of
   size
-  249
+  474
   between
   contigs
-  'r31-363.2'
+  'r142-905.1'
   and
-  'r487-891.1'
+  'r334-807.0'
   to
   be
-  None.
+  (192,
+  666).
 END 8
 BEGIN 9
+  Overlap
+  between
+  contigs
+  'r142-905.1'
+  and
+  'r334-807.0'
+  has
+  size
+  474,
+  474
+  matches,
+  and
+  the
+  score
+  of
+  38479.03724111092.
+END 9
+BEGIN 10
+  Contig
+  'r142-905.1'
+  covers
+  contig
+  'r334-807.0'
+  completely.
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -113,22 +130,22 @@ BEGIN 9
   fittest
   has
   length
-  861
+  764
   and
   consists
   of
   3
   parts.
-END 9
-BEGIN 10
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 10
-BEGIN 11
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -136,54 +153,44 @@ BEGIN 11
   overlap
   of
   size
-  32
+  474
   between
   contigs
-  'r31-363.2'
+  'r142-905.1'
   and
-  (1)
+  'r334-807.0'
   to
   be
-  (301,
-  32).
-END 11
-BEGIN 12
+  (192,
+  666).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r31-363.2'
+  'r142-905.1'
   and
-  (1)
+  'r334-807.0'
   has
   size
-  32,
-  32
+  474,
+  474
   matches,
   and
   the
   score
   of
-  9777.007866841615.
-END 12
-BEGIN 13
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  32
-  between
-  contigs
-  'r31-363.2'
-  and
-  (1),
-  resulting
-  in
+  38479.03724111092.
+END 14
+BEGIN 15
+  Contig
+  'r142-905.1'
+  covers
   contig
-  (2).
-END 13
-BEGIN 14
+  'r334-807.0'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -195,30 +202,30 @@ BEGIN 14
   fittest
   has
   length
-  861
+  764
   and
   consists
   of
   3
   parts.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  861.
-END 16
-BEGIN 17
+  764.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -231,17 +238,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 19
+END 21

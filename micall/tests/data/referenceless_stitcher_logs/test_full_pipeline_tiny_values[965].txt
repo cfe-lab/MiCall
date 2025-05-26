@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  22
+  509
   between
   contigs
-  'r174-447.0'
+  'r200-773.2'
   and
-  'r426-705.2'
+  'r235-743.0'
   to
   be
-  (252,
-  22).
+  (35,
+  544).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r174-447.0'
+  'r200-773.2'
   and
-  'r426-705.2'
+  'r235-743.0'
   has
   size
-  22,
-  22
+  509,
+  509
   matches,
   and
   the
   score
   of
-  8012.882381388798.
+  39884.00140616527.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  22
-  between
-  contigs
-  'r174-447.0'
-  and
-  'r426-705.2',
-  resulting
-  in
+  Contig
+  'r200-773.2'
+  covers
   contig
-  (1).
+  'r235-743.0'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  47
+  443
   between
   contigs
-  'r212-472.1'
+  'r200-773.2'
   and
-  'r426-705.2'
+  'r331-815.1'
   to
   be
-  (214,
-  47).
+  (131,
+  443).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r212-472.1'
+  'r200-773.2'
   and
-  'r426-705.2'
+  'r331-815.1'
   has
   size
-  47,
-  47
+  443,
+  443
   matches,
   and
   the
   score
   of
-  11946.666666666666.
+  37260.26327748514.
 END 9
 BEGIN 10
   Found
@@ -127,16 +117,16 @@ BEGIN 10
   overlap
   of
   size
-  47
+  443
   between
   contigs
-  'r212-472.1'
+  'r200-773.2'
   and
-  'r426-705.2',
+  'r331-815.1',
   resulting
   in
   contig
-  (2).
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  532
+  616
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  236
+  509
   between
   contigs
-  'r174-447.0'
+  (1)
   and
-  (2)
+  'r235-743.0'
   to
   be
-  (38,
-  236).
+  (35,
+  544).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r174-447.0'
+  (1)
   and
-  (2)
+  'r235-743.0'
   has
   size
-  236,
-  236
+  509,
+  509
   matches,
   and
   the
   score
   of
-  27150.921248587056.
+  39884.00140616527.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  236
-  between
-  contigs
-  'r174-447.0'
-  and
-  (2),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r235-743.0'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  532
+  616
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  532.
+  616.
 END 18
 BEGIN 19
   Removed

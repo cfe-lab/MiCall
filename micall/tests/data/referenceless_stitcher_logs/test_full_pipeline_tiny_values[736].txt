@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  248
+  291
   between
   contigs
-  'r70-653.0'
+  'r100-550.2'
   and
-  'r406-973.2'
+  'r259-549.0'
   to
   be
-  (336,
-  248).
+  (159,
+  450).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r70-653.0'
+  'r100-550.2'
   and
-  'r406-973.2'
+  'r259-549.0'
   has
   size
-  248,
-  248
+  291,
+  291
   matches,
   and
   the
   score
   of
-  27837.387152158695.
+  30083.17527839256.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  248
-  between
-  contigs
-  'r70-653.0'
-  and
-  'r406-973.2',
-  resulting
-  in
+  Contig
+  'r100-550.2'
+  covers
   contig
-  (1).
+  'r259-549.0'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  387
+  247
   between
   contigs
-  'r63-456.1'
+  'r72-346.1'
   and
-  'r70-653.0'
+  'r100-550.2'
   to
   be
-  (7,
-  387).
+  (28,
+  247).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r63-456.1'
+  'r72-346.1'
   and
-  'r70-653.0'
+  'r100-550.2'
   has
   size
-  387,
-  387
+  247,
+  247
   matches,
   and
   the
   score
   of
-  34816.20699352254.
+  27780.82946964517.
 END 9
 BEGIN 10
   Found
@@ -127,16 +117,16 @@ BEGIN 10
   overlap
   of
   size
-  387
+  247
   between
   contigs
-  'r63-456.1'
+  'r72-346.1'
   and
-  'r70-653.0',
+  'r100-550.2',
   resulting
   in
   contig
-  (2).
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  911
+  479
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  248
+  291
   between
   contigs
-  (2)
+  (1)
   and
-  'r406-973.2'
+  'r259-549.0'
   to
   be
-  (343,
-  248).
+  (187,
+  478).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
-  'r406-973.2'
+  'r259-549.0'
   has
   size
-  248,
-  248
+  291,
+  291
   matches,
   and
   the
   score
   of
-  27837.387152158695.
+  30083.17527839256.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  248
-  between
-  contigs
-  (2)
-  and
-  'r406-973.2',
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r259-549.0'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  911
+  479
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  911.
+  479.
 END 18
 BEGIN 19
   Removed

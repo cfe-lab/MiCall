@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  271
+  296
   between
   contigs
-  'r86-720.1'
+  'r124-682.2'
   and
-  'r450-881.0'
+  'r147-442.0'
   to
   be
-  (364,
-  271).
+  (23,
+  319).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r86-720.1'
+  'r124-682.2'
   and
-  'r450-881.0'
+  'r147-442.0'
   has
   size
-  271,
-  271
+  296,
+  296
   matches,
   and
   the
   score
   of
-  29107.902162707043.
+  30343.447296630624.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  271
-  between
-  contigs
-  'r86-720.1'
-  and
-  'r450-881.0',
-  resulting
-  in
+  Contig
+  'r124-682.2'
+  covers
   contig
-  (1).
+  'r147-442.0'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,44 +81,17 @@ BEGIN 8
   overlap
   of
   size
-  273
+  212
   between
   contigs
-  'r86-720.1'
+  'r124-682.2'
   and
-  'r437-709.2'
+  'r690-950.1'
   to
   be
-  (351,
-  624).
+  None.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r86-720.1'
-  and
-  'r437-709.2'
-  has
-  size
-  273,
-  273
-  matches,
-  and
-  the
-  score
-  of
-  29126.95191875689.
-END 9
-BEGIN 10
-  Contig
-  'r86-720.1'
-  covers
-  contig
-  'r437-709.2'
-  completely.
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +103,22 @@ BEGIN 11
   fittest
   has
   length
-  796
+  559
   and
   consists
   of
-  3
+  2
   parts.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -163,81 +126,62 @@ BEGIN 13
   overlap
   of
   size
-  273
+  212
   between
   contigs
-  (1)
+  'r124-682.2'
   and
-  'r437-709.2'
+  'r690-950.1'
   to
   be
-  (351,
-  624).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r437-709.2'
-  has
-  size
-  273,
-  273
-  matches,
-  and
-  the
-  score
-  of
-  29126.95191875689.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r437-709.2'
-  completely.
-END 15
-BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  796
-  and
-  consists
-  of
-  3
-  parts.
-END 16
-BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 17
-BEGIN 18
+  None.
+END 11
+BEGIN 12
   Constructed
   a
   path
   of
   length
-  796.
-END 18
-BEGIN 19
+  559.
+END 12
+BEGIN 13
   Removed
-  3
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
+END 15
+BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  261.
+END 16
+BEGIN 17
+  Removed
+  1
   components
   from
   the
@@ -248,17 +192,51 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 17
+BEGIN 18
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  212
+  between
+  contigs
+  'r124-682.2'
+  and
+  'r690-950.1'
+  to
+  be
+  None.
 END 20
 BEGIN 21
   Outputting
-  1
+  2
   contigs.
 END 21

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  331
+  180
   between
   contigs
-  'r22-657.2'
+  'r31-713.1'
   and
-  'r327-847.1'
+  'r534-969.0'
   to
   be
-  (305,
-  331).
+  (503,
+  180).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r22-657.2'
+  'r31-713.1'
   and
-  'r327-847.1'
+  'r534-969.0'
   has
   size
-  331,
-  331
+  180,
+  180
   matches,
   and
   the
   score
   of
-  32187.108173838446.
+  23685.840860459968.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  331
+  180
   between
   contigs
-  'r22-657.2'
+  'r31-713.1'
   and
-  'r327-847.1',
+  'r534-969.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  826
+  939
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  481
+  289
   between
   contigs
   (1)
   and
-  'r359-839.0'
+  'r610-898.2'
   to
   be
-  (337,
-  818).
+  (579,
+  868).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r359-839.0'
+  'r610-898.2'
   has
   size
-  481,
-  481
+  289,
+  289
   matches,
   and
   the
   score
   of
-  38764.10352266391.
+  29978.433974291813.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r359-839.0'
+  'r610-898.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  826
+  939
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  826.
+  939.
 END 15
 BEGIN 16
   Removed

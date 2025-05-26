@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  262
+  529
   between
   contigs
-  'r281-695.3'
+  'r130-730.3'
   and
-  'r434-966.1'
+  'r175-703.5'
   to
   be
-  (153,
-  262).
+  (45,
+  574).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r281-695.3'
+  'r130-730.3'
   and
-  'r434-966.1'
+  'r175-703.5'
   has
   size
-  262,
-  262
+  529,
+  529
   matches,
   and
   the
   score
   of
-  28617.461800421886.
+  40665.05230965705.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  262
-  between
-  contigs
-  'r281-695.3'
-  and
-  'r434-966.1',
-  resulting
-  in
+  Contig
+  'r130-730.3'
+  covers
   contig
-  (1).
+  'r175-703.5'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  284
+  289
   between
   contigs
-  'r434-966.1'
+  'r130-730.3'
   and
-  'r660-943.4'
+  'r442-952.1'
   to
   be
-  (226,
-  510).
+  (312,
+  289).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r434-966.1'
+  'r130-730.3'
   and
-  'r660-943.4'
+  'r442-952.1'
   has
   size
-  284,
-  284
+  289,
+  289
   matches,
   and
   the
   score
   of
-  29714.966051792948.
+  30064.793299743837.
 END 9
 BEGIN 10
-  Contig
-  'r434-966.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  289
+  between
+  contigs
+  'r130-730.3'
+  and
+  'r442-952.1',
+  resulting
+  in
   contig
-  'r660-943.4'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  784
+  854
   and
   consists
   of
@@ -163,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  239
+  529
   between
   contigs
-  'r183-519.0'
-  and
   (1)
+  and
+  'r175-703.5'
   to
   be
-  (98,
-  239).
+  (45,
+  574).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r183-519.0'
-  and
   (1)
+  and
+  'r175-703.5'
   has
   size
-  239,
-  239
+  529,
+  529
   matches,
   and
   the
   score
   of
-  27324.15440025343.
+  40665.05230965705.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  239
-  between
-  contigs
-  'r183-519.0'
-  and
-  (1),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (2).
+  'r175-703.5'
+  completely.
 END 15
 BEGIN 16
   Calculated
@@ -218,16 +208,16 @@ BEGIN 16
   overlap
   of
   size
-  284
+  278
   between
   contigs
   (1)
   and
-  'r660-943.4'
+  'r675-983.0'
   to
   be
-  (379,
-  663).
+  (545,
+  278).
 END 16
 BEGIN 17
   Overlap
@@ -235,25 +225,35 @@ BEGIN 17
   contigs
   (1)
   and
-  'r660-943.4'
+  'r675-983.0'
   has
   size
-  284,
-  284
+  278,
+  278
   matches,
   and
   the
   score
   of
-  29714.966051792948.
+  29483.716666383163.
 END 17
 BEGIN 18
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  278
+  between
+  contigs
   (1)
-  covers
+  and
+  'r675-983.0',
+  resulting
+  in
   contig
-  'r660-943.4'
-  completely.
+  (2).
 END 18
 BEGIN 19
   Cycle
@@ -267,7 +267,7 @@ BEGIN 19
   fittest
   has
   length
-  784
+  854
   and
   consists
   of
@@ -290,16 +290,16 @@ BEGIN 21
   overlap
   of
   size
-  284
+  529
   between
   contigs
   (2)
   and
-  'r660-943.4'
+  'r175-703.5'
   to
   be
-  (477,
-  761).
+  (45,
+  574).
 END 21
 BEGIN 22
   Overlap
@@ -307,24 +307,24 @@ BEGIN 22
   contigs
   (2)
   and
-  'r660-943.4'
+  'r175-703.5'
   has
   size
-  284,
-  284
+  529,
+  529
   matches,
   and
   the
   score
   of
-  29714.966051792948.
+  40665.05230965705.
 END 22
 BEGIN 23
   Contig
   (2)
   covers
   contig
-  'r660-943.4'
+  'r175-703.5'
   completely.
 END 23
 BEGIN 24
@@ -335,16 +335,16 @@ BEGIN 24
   overlap
   of
   size
-  229
+  233
   between
   contigs
   (2)
   and
-  'r585-813.2'
+  'r557-789.2'
   to
   be
-  (402,
-  631).
+  (427,
+  660).
 END 24
 BEGIN 25
   Overlap
@@ -352,24 +352,24 @@ BEGIN 25
   contigs
   (2)
   and
-  'r585-813.2'
+  'r557-789.2'
   has
   size
-  229,
-  229
+  233,
+  233
   matches,
   and
   the
   score
   of
-  26645.502250616148.
+  26880.551591773823.
 END 25
 BEGIN 26
   Contig
   (2)
   covers
   contig
-  'r585-813.2'
+  'r557-789.2'
   completely.
 END 26
 BEGIN 27
@@ -380,16 +380,16 @@ BEGIN 27
   overlap
   of
   size
-  206
+  225
   between
   contigs
   (2)
   and
-  'r678-883.5'
+  'r488-712.4'
   to
   be
-  (495,
-  701).
+  (358,
+  583).
 END 27
 BEGIN 28
   Overlap
@@ -397,24 +397,24 @@ BEGIN 28
   contigs
   (2)
   and
-  'r678-883.5'
+  'r488-712.4'
   has
   size
-  206,
-  206
+  225,
+  225
   matches,
   and
   the
   score
   of
-  25251.56934244702.
+  26408.362020151333.
 END 28
 BEGIN 29
   Contig
   (2)
   covers
   contig
-  'r678-883.5'
+  'r488-712.4'
   completely.
 END 29
 BEGIN 30
@@ -429,7 +429,7 @@ BEGIN 30
   fittest
   has
   length
-  784
+  854
   and
   consists
   of
@@ -452,16 +452,16 @@ BEGIN 32
   overlap
   of
   size
-  229
+  233
   between
   contigs
   (2)
   and
-  'r585-813.2'
+  'r557-789.2'
   to
   be
-  (402,
-  631).
+  (427,
+  660).
 END 32
 BEGIN 33
   Overlap
@@ -469,24 +469,24 @@ BEGIN 33
   contigs
   (2)
   and
-  'r585-813.2'
+  'r557-789.2'
   has
   size
-  229,
-  229
+  233,
+  233
   matches,
   and
   the
   score
   of
-  26645.502250616148.
+  26880.551591773823.
 END 33
 BEGIN 34
   Contig
   (2)
   covers
   contig
-  'r585-813.2'
+  'r557-789.2'
   completely.
 END 34
 BEGIN 35
@@ -497,16 +497,16 @@ BEGIN 35
   overlap
   of
   size
-  206
+  225
   between
   contigs
   (2)
   and
-  'r678-883.5'
+  'r488-712.4'
   to
   be
-  (495,
-  701).
+  (358,
+  583).
 END 35
 BEGIN 36
   Overlap
@@ -514,24 +514,24 @@ BEGIN 36
   contigs
   (2)
   and
-  'r678-883.5'
+  'r488-712.4'
   has
   size
-  206,
-  206
+  225,
+  225
   matches,
   and
   the
   score
   of
-  25251.56934244702.
+  26408.362020151333.
 END 36
 BEGIN 37
   Contig
   (2)
   covers
   contig
-  'r678-883.5'
+  'r488-712.4'
   completely.
 END 37
 BEGIN 38
@@ -546,7 +546,7 @@ BEGIN 38
   fittest
   has
   length
-  784
+  854
   and
   consists
   of
@@ -569,16 +569,16 @@ BEGIN 40
   overlap
   of
   size
-  206
+  225
   between
   contigs
   (2)
   and
-  'r678-883.5'
+  'r488-712.4'
   to
   be
-  (495,
-  701).
+  (358,
+  583).
 END 40
 BEGIN 41
   Overlap
@@ -586,24 +586,24 @@ BEGIN 41
   contigs
   (2)
   and
-  'r678-883.5'
+  'r488-712.4'
   has
   size
-  206,
-  206
+  225,
+  225
   matches,
   and
   the
   score
   of
-  25251.56934244702.
+  26408.362020151333.
 END 41
 BEGIN 42
   Contig
   (2)
   covers
   contig
-  'r678-883.5'
+  'r488-712.4'
   completely.
 END 42
 BEGIN 43
@@ -618,7 +618,7 @@ BEGIN 43
   fittest
   has
   length
-  784
+  854
   and
   consists
   of
@@ -639,7 +639,7 @@ BEGIN 45
   path
   of
   length
-  784.
+  854.
 END 45
 BEGIN 46
   Removed

@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  550
+  212
   between
   contigs
-  'r120-770.2'
+  'r64-399.1'
   and
-  'r216-765.0'
+  'r188-634.0'
   to
   be
-  (96,
-  646).
+  (124,
+  212).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r120-770.2'
+  'r64-399.1'
   and
-  'r216-765.0'
+  'r188-634.0'
   has
   size
-  550,
-  550
+  212,
+  212
   matches,
   and
   the
   score
   of
-  41469.3279988515.
+  25723.096847465706.
 END 6
 BEGIN 7
-  Contig
-  'r120-770.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  212
+  between
+  contigs
+  'r64-399.1'
+  and
+  'r188-634.0',
+  resulting
+  in
   contig
-  'r216-765.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  302
+  328
   between
   contigs
-  'r120-770.2'
+  'r188-634.0'
   and
-  'r320-621.1'
+  'r276-603.2'
   to
   be
-  (200,
-  502).
+  (88,
+  416).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r120-770.2'
+  'r188-634.0'
   and
-  'r320-621.1'
+  'r276-603.2'
   has
   size
-  302,
-  302
+  328,
+  328
   matches,
   and
   the
   score
   of
-  30652.85762014207.
+  31959.04896475039.
 END 9
 BEGIN 10
   Contig
-  'r120-770.2'
+  'r188-634.0'
   covers
   contig
-  'r320-621.1'
+  'r276-603.2'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  651
+  571
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  302
+  328
   between
   contigs
-  'r120-770.2'
+  (1)
   and
-  'r320-621.1'
+  'r276-603.2'
   to
   be
-  (200,
-  502).
+  (212,
+  540).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r120-770.2'
+  (1)
   and
-  'r320-621.1'
+  'r276-603.2'
   has
   size
-  302,
-  302
+  328,
+  328
   matches,
   and
   the
   score
   of
-  30652.85762014207.
+  31959.04896475039.
 END 14
 BEGIN 15
   Contig
-  'r120-770.2'
+  (1)
   covers
   contig
-  'r320-621.1'
+  'r276-603.2'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  651
+  571
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  651.
+  571.
 END 18
 BEGIN 19
   Removed

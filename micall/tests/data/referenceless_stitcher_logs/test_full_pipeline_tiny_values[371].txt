@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  340
+  456
   between
   contigs
-  'r99-604.1'
+  'r318-879.0'
   and
-  'r265-877.0'
+  'r424-889.1'
   to
   be
-  (166,
-  340).
+  (106,
+  456).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r99-604.1'
+  'r318-879.0'
   and
-  'r265-877.0'
+  'r424-889.1'
   has
   size
-  340,
-  340
+  456,
+  456
   matches,
   and
   the
   score
   of
-  32623.933546027834.
+  37805.043647783226.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  340
+  456
   between
   contigs
-  'r99-604.1'
+  'r318-879.0'
   and
-  'r265-877.0',
+  'r424-889.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  820
+  644
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  254
+  346
   between
   contigs
-  'r58-352.2'
+  'r246-663.2'
   and
   (1)
   to
   be
-  (41,
-  254).
+  (72,
+  346).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r58-352.2'
+  'r246-663.2'
   and
   (1)
   has
   size
-  254,
-  254
+  346,
+  346
   matches,
   and
   the
   score
   of
-  28174.349380266216.
+  32911.9298194725.
 END 11
 BEGIN 12
   Found
@@ -154,10 +154,10 @@ BEGIN 12
   overlap
   of
   size
-  254
+  346
   between
   contigs
-  'r58-352.2'
+  'r246-663.2'
   and
   (1),
   resulting
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  820
+  644
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  820.
+  644.
 END 15
 BEGIN 16
   Removed

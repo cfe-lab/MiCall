@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  334
+  279
   between
   contigs
-  'r214-803.1'
+  'r89-512.1'
   and
-  'r308-641.0'
+  'r234-909.0'
   to
   be
-  (94,
-  428).
+  (145,
+  279).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r214-803.1'
+  'r89-512.1'
   and
-  'r308-641.0'
+  'r234-909.0'
   has
   size
-  334,
-  334
+  279,
+  279
   matches,
   and
   the
   score
   of
-  32252.968363454056.
+  29537.01414964266.
 END 6
 BEGIN 7
-  Contig
-  'r214-803.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  279
+  between
+  contigs
+  'r89-512.1'
+  and
+  'r234-909.0',
+  resulting
+  in
   contig
-  'r308-641.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,52 +91,42 @@ BEGIN 8
   overlap
   of
   size
-  135
+  421
   between
   contigs
-  'r214-803.1'
+  'r234-909.0'
   and
-  'r669-995.2'
+  'r434-854.2'
   to
   be
-  (455,
-  135).
+  (200,
+  621).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r214-803.1'
+  'r234-909.0'
   and
-  'r669-995.2'
+  'r434-854.2'
   has
   size
-  135,
-  135
+  421,
+  421
   matches,
   and
   the
   score
   of
-  20481.003896963914.
+  36248.01527346792.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  135
-  between
-  contigs
-  'r214-803.1'
-  and
-  'r669-995.2',
-  resulting
-  in
+  Contig
+  'r234-909.0'
+  covers
   contig
-  (1).
+  'r434-854.2'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  782
+  821
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  334
+  421
   between
   contigs
   (1)
   and
-  'r308-641.0'
+  'r434-854.2'
   to
   be
-  (94,
-  428).
+  (345,
+  766).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r308-641.0'
+  'r434-854.2'
   has
   size
-  334,
-  334
+  421,
+  421
   matches,
   and
   the
   score
   of
-  32252.968363454056.
+  36248.01527346792.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r308-641.0'
+  'r434-854.2'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  782
+  821
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  782.
+  821.
 END 18
 BEGIN 19
   Removed

@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  622
+  298
   between
   contigs
-  'r60-766.1'
+  'r135-503.2'
   and
-  'r105-726.2'
+  'r500-797.1'
   to
   be
-  (45,
-  667).
+  (30,
+  328).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r60-766.1'
+  'r135-503.2'
   and
-  'r105-726.2'
+  'r500-797.1'
   has
   size
-  622,
-  622
+  298,
+  195
   matches,
   and
   the
   score
   of
-  44115.67640592329.
+  16384.0.
 END 6
 BEGIN 7
   Contig
-  'r60-766.1'
+  'r135-503.2'
   covers
   contig
-  'r105-726.2'
+  'r500-797.1'
   completely.
 END 7
 BEGIN 8
@@ -81,52 +81,42 @@ BEGIN 8
   overlap
   of
   size
-  207
+  295
   between
   contigs
-  'r60-766.1'
+  'r135-503.2'
   and
-  'r560-994.0'
+  'r705-999.0'
   to
   be
-  (500,
-  207).
+  (46,
+  341).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r60-766.1'
+  'r135-503.2'
   and
-  'r560-994.0'
+  'r705-999.0'
   has
   size
-  207,
-  207
+  295,
+  193
   matches,
   and
   the
   score
   of
-  25415.54057194343.
+  16295.013111402692.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  207
-  between
-  contigs
-  'r60-766.1'
-  and
-  'r560-994.0',
-  resulting
-  in
+  Contig
+  'r135-503.2'
+  covers
   contig
-  (1).
+  'r705-999.0'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  935
+  369
   and
   consists
   of
@@ -163,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  622
+  295
   between
   contigs
-  (1)
+  'r135-503.2'
   and
-  'r105-726.2'
+  'r705-999.0'
   to
   be
-  (45,
-  667).
+  (46,
+  341).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r135-503.2'
   and
-  'r105-726.2'
+  'r705-999.0'
   has
   size
-  622,
-  622
+  295,
+  193
   matches,
   and
   the
   score
   of
-  44115.67640592329.
+  16295.013111402692.
 END 14
 BEGIN 15
   Contig
-  (1)
+  'r135-503.2'
   covers
   contig
-  'r105-726.2'
+  'r705-999.0'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  935
+  369
   and
   consists
   of
@@ -233,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  935.
+  369.
 END 18
 BEGIN 19
   Removed

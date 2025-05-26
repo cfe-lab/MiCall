@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  708
+  212
   between
   contigs
-  'r254-982.0'
+  'r180-629.1'
   and
-  'r275-987.1'
+  'r418-939.0'
   to
   be
-  (21,
-  708).
+  (238,
+  212).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r254-982.0'
+  'r180-629.1'
   and
-  'r275-987.1'
+  'r418-939.0'
   has
   size
-  708,
-  708
+  212,
+  212
   matches,
   and
   the
   score
   of
-  47137.46314489907.
+  25723.096847465706.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  708
+  212
   between
   contigs
-  'r254-982.0'
+  'r180-629.1'
   and
-  'r275-987.1',
+  'r418-939.0',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  734
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +91,136 @@ BEGIN 10
   overlap
   of
   size
-  347
+  216
   between
   contigs
-  (1)
+  'r230-633.2'
   and
-  'r508-854.2'
+  'r418-939.0'
   to
   be
-  (254,
-  601).
-END 10
-BEGIN 11
+  (188,
+  216).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r230-633.2'
   and
-  'r508-854.2'
+  'r418-939.0'
   has
   size
-  347,
-  347
+  216,
+  216
   matches,
   and
   the
   score
   of
-  32880.78393737288.
+  25966.51958682852.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  216
+  between
+  contigs
+  'r230-633.2'
+  and
+  'r418-939.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  760
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
-  'r508-854.2'
-  completely.
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  400
+  between
+  contigs
+  'r180-629.1'
+  and
+  (2)
+  to
+  be
+  (50,
+  400).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r180-629.1'
+  and
+  (2)
+  has
+  size
+  400,
+  400
+  matches,
+  and
+  the
+  score
+  of
+  35398.61955144527.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  400
+  between
+  contigs
+  'r180-629.1'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +232,30 @@ BEGIN 13
   fittest
   has
   length
-  734
+  760
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  734.
-END 15
-BEGIN 16
+  760.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +268,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

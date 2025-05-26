@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  260
+  507
   between
   contigs
-  'r102-674.2'
+  'r231-738.2'
   and
-  'r415-782.0'
+  'r232-745.0'
   to
   be
-  (313,
-  260).
+  (1,
+  507).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r102-674.2'
+  'r231-738.2'
   and
-  'r415-782.0'
+  'r232-745.0'
   has
   size
-  260,
-  260
+  507,
+  507
   matches,
   and
   the
   score
   of
-  28507.32935299899.
+  39870.44299568185.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  260
+  507
   between
   contigs
-  'r102-674.2'
+  'r231-738.2'
   and
-  'r415-782.0',
+  'r232-745.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  753
+  671
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  185
+  291
   between
   contigs
   (1)
   and
-  'r598-854.1'
+  'r455-901.1'
   to
   be
-  (496,
-  185).
+  (224,
+  291).
 END 10
 BEGIN 11
   Overlap
@@ -135,17 +135,17 @@ BEGIN 11
   contigs
   (1)
   and
-  'r598-854.1'
+  'r455-901.1'
   has
   size
-  185,
-  185
+  291,
+  291
   matches,
   and
   the
   score
   of
-  24015.55468223336.
+  30169.24129097481.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  185
+  291
   between
   contigs
   (1)
   and
-  'r598-854.1',
+  'r455-901.1',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  753
+  671
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  753.
+  671.
 END 15
 BEGIN 16
   Removed

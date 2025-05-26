@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  348
+  299
   between
   contigs
-  'r53-752.2'
+  'r478-948.1'
   and
-  'r405-894.0'
+  'r39-337.2'
   to
   be
-  (352,
-  348).
+  (53,
+  352).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r53-752.2'
+  'r478-948.1'
   and
-  'r405-894.0'
+  'r39-337.2'
   has
   size
-  348,
-  348
+  299,
+  193
   matches,
   and
   the
   score
   of
-  33007.3702085466.
+  16050.072134467018.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  348
-  between
-  contigs
-  'r53-752.2'
-  and
-  'r405-894.0',
-  resulting
-  in
+  Contig
+  'r478-948.1'
+  covers
   contig
-  (1).
+  'r39-337.2'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  415
+  215
   between
   contigs
-  'r53-752.2'
+  'r478-948.1'
   and
-  'r219-633.1'
+  'r734-1000.0'
   to
   be
-  (166,
-  581).
+  (256,
+  215).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r53-752.2'
+  'r478-948.1'
   and
-  'r219-633.1'
+  'r734-1000.0'
   has
   size
-  415,
-  415
+  215,
+  215
   matches,
   and
   the
   score
   of
-  35986.733724747224.
+  25905.878305230883.
 END 9
 BEGIN 10
-  Contig
-  'r53-752.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  215
+  between
+  contigs
+  'r478-948.1'
+  and
+  'r734-1000.0',
+  resulting
+  in
   contig
-  'r219-633.1'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  842
+  523
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  415
+  299
   between
   contigs
   (1)
   and
-  'r219-633.1'
+  'r39-337.2'
   to
   be
-  (166,
-  581).
+  (53,
+  352).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r219-633.1'
+  'r39-337.2'
   has
   size
-  415,
-  415
+  299,
+  193
   matches,
   and
   the
   score
   of
-  35986.733724747224.
+  16050.072134467018.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r219-633.1'
+  'r39-337.2'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  842
+  523
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  842.
+  523.
 END 18
 BEGIN 19
   Removed

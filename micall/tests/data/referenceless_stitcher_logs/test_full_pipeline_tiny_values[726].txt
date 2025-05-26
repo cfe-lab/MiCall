@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  462
+  520
   between
   contigs
-  'r196-763.0'
+  'r77-788.1'
   and
-  'r302-925.2'
+  'r269-909.0'
   to
   be
-  (106,
-  462).
+  (192,
+  520).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r196-763.0'
+  'r77-788.1'
   and
-  'r302-925.2'
+  'r269-909.0'
   has
   size
-  462,
-  462
+  520,
+  520
   matches,
   and
   the
   score
   of
-  38053.85045733519.
+  40380.024937874485.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  462
+  520
   between
   contigs
-  'r196-763.0'
+  'r77-788.1'
   and
-  'r302-925.2',
+  'r269-909.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  797
+  911
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  309
+  503
   between
   contigs
-  'r129-504.1'
-  and
   (1)
+  and
+  'r407-987.2'
   to
   be
-  (67,
-  309).
+  (330,
+  503).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r129-504.1'
-  and
   (1)
+  and
+  'r407-987.2'
   has
   size
-  309,
-  309
+  503,
+  503
   matches,
   and
   the
   score
   of
-  31093.48986552015.
+  39712.33309744377.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  309
+  503
   between
   contigs
-  'r129-504.1'
+  (1)
   and
-  (1),
+  'r407-987.2',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  797
+  911
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  797.
+  911.
 END 15
 BEGIN 16
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  560
+  434
   between
   contigs
-  'r225-874.1'
+  'r87-750.1'
   and
-  'r315-953.0'
+  'r317-998.0'
   to
   be
-  (90,
-  560).
+  (230,
+  434).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r225-874.1'
+  'r87-750.1'
   and
-  'r315-953.0'
+  'r317-998.0'
   has
   size
-  560,
-  560
+  434,
+  434
   matches,
   and
   the
   score
   of
-  41909.125123735976.
+  36878.393784222964.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  560
+  434
   between
   contigs
-  'r225-874.1'
+  'r87-750.1'
   and
-  'r315-953.0',
+  'r317-998.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  729
+  912
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  425
+  420
   between
   contigs
   (1)
   and
-  'r314-738.2'
+  'r185-604.2'
   to
   be
-  (89,
-  514).
+  (98,
+  518).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r314-738.2'
+  'r185-604.2'
   has
   size
-  425,
-  425
+  420,
+  420
   matches,
   and
   the
   score
   of
-  36421.16181386825.
+  36204.599273867934.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r314-738.2'
+  'r185-604.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  729
+  912
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  729.
+  912.
 END 15
 BEGIN 16
   Removed

@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  314
+  344
   between
   contigs
-  'r274-908.0'
+  'r617-981.2'
   and
-  'r419-732.2'
+  'r215-558.0'
   to
   be
-  (145,
-  459).
+  (16,
+  360).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r274-908.0'
+  'r617-981.2'
   and
-  'r419-732.2'
+  'r215-558.0'
   has
   size
-  314,
-  314
+  344,
+  223
   matches,
   and
   the
   score
   of
-  31262.495452873372.
+  17353.77341252268.
 END 6
 BEGIN 7
   Contig
-  'r274-908.0'
+  'r617-981.2'
   covers
   contig
-  'r419-732.2'
+  'r215-558.0'
   completely.
 END 7
 BEGIN 8
@@ -81,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  87
+  322
   between
   contigs
-  'r101-360.1'
+  'r615-938.1'
   and
-  'r274-908.0'
+  'r617-981.2'
   to
   be
-  (173,
-  87).
+  (2,
+  322).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r101-360.1'
+  'r615-938.1'
   and
-  'r274-908.0'
+  'r617-981.2'
   has
   size
-  87,
-  87
+  322,
+  322
   matches,
   and
   the
   score
   of
-  16385.93927916877.
+  31744.27271096946.
 END 9
 BEGIN 10
   Found
@@ -117,12 +117,12 @@ BEGIN 10
   overlap
   of
   size
-  87
+  322
   between
   contigs
-  'r101-360.1'
+  'r615-938.1'
   and
-  'r274-908.0',
+  'r617-981.2',
   resulting
   in
   contig
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  808
+  367
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  314
+  344
   between
   contigs
   (1)
   and
-  'r419-732.2'
+  'r215-558.0'
   to
   be
-  (318,
-  632).
+  (18,
+  362).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r419-732.2'
+  'r215-558.0'
   has
   size
-  314,
-  314
+  344,
+  223
   matches,
   and
   the
   score
   of
-  31262.495452873372.
+  17353.77341252268.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r419-732.2'
+  'r215-558.0'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  808
+  367
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  808.
+  367.
 END 18
 BEGIN 19
   Removed

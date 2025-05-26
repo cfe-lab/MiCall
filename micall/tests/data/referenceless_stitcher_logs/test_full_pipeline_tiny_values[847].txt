@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  376
+  476
   between
   contigs
-  'r105-740.1'
+  'r99-661.2'
   and
-  'r365-945.0'
+  'r186-722.0'
   to
   be
-  (260,
-  376).
+  (87,
+  476).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r105-740.1'
+  'r99-661.2'
   and
-  'r365-945.0'
+  'r186-722.0'
   has
   size
-  376,
-  376
+  476,
+  476
   matches,
   and
   the
   score
   of
-  34315.67691254831.
+  38628.16811758222.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  376
+  476
   between
   contigs
-  'r105-740.1'
+  'r99-661.2'
   and
-  'r365-945.0',
+  'r186-722.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  841
+  624
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  373
+  306
   between
   contigs
   (1)
   and
-  'r442-814.2'
+  'r313-618.1'
   to
   be
-  (337,
-  710).
+  (214,
+  520).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r442-814.2'
+  'r313-618.1'
   has
   size
-  373,
-  373
+  306,
+  306
   matches,
   and
   the
   score
   of
-  34101.765882774394.
+  30857.4081322572.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r442-814.2'
+  'r313-618.1'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  841
+  624
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  841.
+  624.
 END 15
 BEGIN 16
   Removed

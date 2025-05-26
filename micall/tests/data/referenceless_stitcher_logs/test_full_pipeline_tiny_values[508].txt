@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  486
+  117
   between
   contigs
-  'r164-879.1'
+  'r103-491.1'
   and
-  'r189-674.2'
+  'r375-971.2'
   to
   be
-  (25,
-  511).
+  (272,
+  117).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r164-879.1'
+  'r103-491.1'
   and
-  'r189-674.2'
+  'r375-971.2'
   has
   size
-  486,
-  486
+  117,
+  117
   matches,
   and
   the
   score
   of
-  38966.445660182784.
+  19048.745083745984.
 END 6
 BEGIN 7
-  Contig
-  'r164-879.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  117
+  between
+  contigs
+  'r103-491.1'
+  and
+  'r375-971.2',
+  resulting
+  in
   contig
-  'r189-674.2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  450
+  291
   between
   contigs
-  'r164-879.1'
+  'r375-971.2'
   and
-  'r304-753.0'
+  'r506-796.0'
   to
   be
-  (140,
-  590).
+  (131,
+  422).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r164-879.1'
+  'r375-971.2'
   and
-  'r304-753.0'
+  'r506-796.0'
   has
   size
-  450,
-  450
+  291,
+  291
   matches,
   and
   the
   score
   of
-  37485.21482281627.
+  30083.17527839256.
 END 9
 BEGIN 10
   Contig
-  'r164-879.1'
+  'r375-971.2'
   covers
   contig
-  'r304-753.0'
+  'r506-796.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  716
+  869
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  450
+  291
   between
   contigs
-  'r164-879.1'
+  (1)
   and
-  'r304-753.0'
+  'r506-796.0'
   to
   be
-  (140,
-  590).
+  (403,
+  694).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r164-879.1'
+  (1)
   and
-  'r304-753.0'
+  'r506-796.0'
   has
   size
-  450,
-  450
+  291,
+  291
   matches,
   and
   the
   score
   of
-  37485.21482281627.
+  30083.17527839256.
 END 14
 BEGIN 15
   Contig
-  'r164-879.1'
+  (1)
   covers
   contig
-  'r304-753.0'
+  'r506-796.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  716
+  869
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  716.
+  869.
 END 18
 BEGIN 19
   Removed

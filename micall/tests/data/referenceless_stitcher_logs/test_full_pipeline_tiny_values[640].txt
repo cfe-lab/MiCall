@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  452
+  442
   between
   contigs
-  'r393-959.1'
+  'r18-613.0'
   and
-  'r508-963.2'
+  'r59-500.2'
   to
   be
-  (115,
-  452).
+  (41,
+  483).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r393-959.1'
+  'r18-613.0'
   and
-  'r508-963.2'
+  'r59-500.2'
   has
   size
-  452,
-  452
+  442,
+  442
   matches,
   and
   the
   score
   of
-  37638.2587438053.
+  37148.03356881801.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  452
-  between
-  contigs
-  'r393-959.1'
-  and
-  'r508-963.2',
-  resulting
-  in
+  Contig
+  'r18-613.0'
+  covers
   contig
-  (1).
+  'r59-500.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  860
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  113
+  148
   between
   contigs
-  'r104-505.0'
+  'r18-613.0'
   and
-  (1)
+  'r466-812.1'
   to
   be
-  (289,
-  113).
-END 10
-BEGIN 11
+  (448,
+  148).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r104-505.0'
+  'r18-613.0'
   and
-  (1)
+  'r466-812.1'
   has
   size
-  113,
-  113
+  148,
+  148
   matches,
   and
   the
   score
   of
-  18715.59350347016.
-END 11
-BEGIN 12
+  21456.05734802413.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  113
+  148
   between
   contigs
-  'r104-505.0'
+  'r18-613.0'
   and
-  (1),
+  'r466-812.1',
   resulting
   in
   contig
-  (2).
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  795
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  442
+  between
+  contigs
+  (1)
+  and
+  'r59-500.2'
+  to
+  be
+  (41,
+  483).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r59-500.2'
+  has
+  size
+  442,
+  442
+  matches,
+  and
+  the
+  score
+  of
+  37148.03356881801.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r59-500.2'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  860
+  795
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  860.
-END 15
-BEGIN 16
+  795.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

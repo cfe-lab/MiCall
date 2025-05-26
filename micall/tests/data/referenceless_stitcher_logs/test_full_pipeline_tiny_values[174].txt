@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  432
+  304
   between
   contigs
-  'r56-746.0'
+  'r24-533.0'
   and
-  'r315-926.1'
+  'r230-925.2'
   to
   be
-  (259,
-  432).
+  (206,
+  304).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r56-746.0'
+  'r24-533.0'
   and
-  'r315-926.1'
+  'r230-925.2'
   has
   size
-  432,
-  432
+  304,
+  304
   matches,
   and
   the
   score
   of
-  36792.995685126785.
+  30839.532547611536.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  432
+  304
   between
   contigs
-  'r56-746.0'
+  'r24-533.0'
   and
-  'r315-926.1',
+  'r230-925.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  871
+  902
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  339
+  290
   between
   contigs
   (1)
   and
-  'r561-899.2'
+  'r368-657.1'
   to
   be
-  (505,
-  844).
+  (344,
+  634).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r561-899.2'
+  'r368-657.1'
   has
   size
-  339,
-  339
+  290,
+  290
   matches,
   and
   the
   score
   of
-  32495.87100021418.
+  30030.850275878594.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r561-899.2'
+  'r368-657.1'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  871
+  902
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  871.
+  902.
 END 15
 BEGIN 16
   Removed

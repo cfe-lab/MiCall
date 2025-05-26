@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  528
+  392
   between
   contigs
-  'r114-734.0'
+  'r260-656.0'
   and
-  'r207-898.2'
+  'r265-813.1'
   to
   be
-  (93,
-  528).
+  (5,
+  392).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r114-734.0'
+  'r260-656.0'
   and
-  'r207-898.2'
+  'r265-813.1'
   has
   size
-  528,
-  528
+  392,
+  392
   matches,
   and
   the
   score
   of
-  40690.442067575204.
+  35041.357365818694.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  528
+  392
   between
   contigs
-  'r114-734.0'
+  'r260-656.0'
   and
-  'r207-898.2',
+  'r265-813.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  852
+  669
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  519
+  267
   between
   contigs
-  (1)
+  'r145-526.2'
   and
-  'r380-965.1'
+  (1)
   to
   be
-  (266,
-  519).
+  (115,
+  267).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  (1)
+  'r145-526.2'
   and
-  'r380-965.1'
+  (1)
   has
   size
-  519,
-  519
+  267,
+  267
   matches,
   and
   the
   score
   of
-  40341.05485266395.
+  28890.956425568183.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  519
+  267
   between
   contigs
-  (1)
+  'r145-526.2'
   and
-  'r380-965.1',
+  (1),
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  852
+  669
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  852.
+  669.
 END 15
 BEGIN 16
   Removed

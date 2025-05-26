@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  388
+  350
   between
   contigs
-  'r157-647.0'
+  'r189-615.1'
   and
-  'r260-860.1'
+  'r266-990.2'
   to
   be
-  (103,
-  388).
+  (77,
+  350).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r157-647.0'
+  'r189-615.1'
   and
-  'r260-860.1'
+  'r266-990.2'
   has
   size
-  388,
-  388
+  350,
+  350
   matches,
   and
   the
   score
   of
-  34861.35339259399.
+  33102.535443357316.
 END 6
 BEGIN 7
   Found
@@ -72,90 +72,45 @@ BEGIN 7
   overlap
   of
   size
-  388
+  350
   between
   contigs
-  'r157-647.0'
+  'r189-615.1'
   and
-  'r260-860.1',
+  'r266-990.2',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  488
-  between
-  contigs
-  'r260-860.1'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  983
   and
-  'r330-817.2'
-  to
-  be
-  (70,
-  558).
+  consists
+  of
+  3
+  parts.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r260-860.1'
-  and
-  'r330-817.2'
-  has
-  size
-  488,
-  488
-  matches,
-  and
-  the
-  score
-  of
-  39047.0889604902.
-END 9
-BEGIN 10
-  Contig
-  'r260-860.1'
-  covers
-  contig
-  'r330-817.2'
-  completely.
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  704
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -163,44 +118,54 @@ BEGIN 13
   overlap
   of
   size
-  488
+  115
   between
   contigs
-  (1)
+  'r8-303.0'
   and
-  'r330-817.2'
+  (1)
   to
   be
-  (173,
-  661).
-END 13
-BEGIN 14
+  (181,
+  115).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  (1)
+  'r8-303.0'
   and
-  'r330-817.2'
+  (1)
   has
   size
-  488,
-  488
+  115,
+  115
   matches,
   and
   the
   score
   of
-  39047.0889604902.
-END 14
-BEGIN 15
-  Contig
-  (1)
-  covers
+  18882.90365359111.
+END 11
+BEGIN 12
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  115
+  between
+  contigs
+  'r8-303.0'
+  and
+  (1),
+  resulting
+  in
   contig
-  'r330-817.2'
-  completely.
-END 15
-BEGIN 16
+  (2).
+END 12
+BEGIN 13
   Cycle
   2
   finished
@@ -212,30 +177,30 @@ BEGIN 16
   fittest
   has
   length
-  704
+  983
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  704.
-END 18
-BEGIN 19
+  983.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -248,17 +213,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

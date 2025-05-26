@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  246
+  352
   between
   contigs
-  'r360-721.1'
+  'r446-842.2'
   and
-  'r476-930.0'
+  'r491-886.1'
   to
   be
-  (116,
-  246).
+  (45,
+  352).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r360-721.1'
+  'r446-842.2'
   and
-  'r476-930.0'
+  'r491-886.1'
   has
   size
-  246,
-  246
+  352,
+  352
   matches,
   and
   the
   score
   of
-  27724.15642210127.
+  33197.42788994392.
 END 6
 BEGIN 7
   Found
@@ -72,100 +72,45 @@ BEGIN 7
   overlap
   of
   size
-  246
+  352
   between
   contigs
-  'r360-721.1'
+  'r446-842.2'
   and
-  'r476-930.0',
+  'r491-886.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  357
-  between
-  contigs
-  'r471-832.2'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  441
   and
-  'r476-930.0'
-  to
-  be
-  (5,
-  357).
+  consists
+  of
+  3
+  parts.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r471-832.2'
-  and
-  'r476-930.0'
-  has
-  size
-  357,
-  357
-  matches,
-  and
-  the
-  score
-  of
-  33433.48078265181.
-END 9
-BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  357
-  between
-  contigs
-  'r471-832.2'
-  and
-  'r476-930.0',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  571
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -173,54 +118,44 @@ BEGIN 13
   overlap
   of
   size
-  251
+  269
   between
   contigs
-  'r360-721.1'
+  (1)
   and
-  (2)
+  'r19-287.0'
   to
   be
-  (111,
-  251).
-END 13
-BEGIN 14
+  (65,
+  334).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  'r360-721.1'
+  (1)
   and
-  (2)
+  'r19-287.0'
   has
   size
-  251,
-  251
+  269,
+  173
   matches,
   and
   the
   score
   of
-  28006.374990074244.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  251
-  between
-  contigs
-  'r360-721.1'
-  and
-  (2),
-  resulting
-  in
+  15119.47738282125.
+END 11
+BEGIN 12
+  Contig
+  (1)
+  covers
   contig
-  (3).
-END 15
-BEGIN 16
+  'r19-287.0'
+  completely.
+END 12
+BEGIN 13
   Cycle
   2
   finished
@@ -232,30 +167,30 @@ BEGIN 16
   fittest
   has
   length
-  571
+  441
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  571.
-END 18
-BEGIN 19
+  441.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -268,17 +203,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

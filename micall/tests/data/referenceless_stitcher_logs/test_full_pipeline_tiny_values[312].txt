@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  413
+  423
   between
   contigs
-  'r63-540.2'
+  'r33-665.1'
   and
-  'r524-936.0'
+  'r151-573.2'
   to
   be
-  (10,
-  423).
+  (118,
+  541).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r63-540.2'
+  'r33-665.1'
   and
-  'r524-936.0'
+  'r151-573.2'
   has
   size
-  413,
-  264
+  423,
+  423
   matches,
   and
   the
   score
   of
-  18602.58554936074.
+  36334.69166517225.
 END 6
 BEGIN 7
   Contig
-  'r63-540.2'
+  'r33-665.1'
   covers
   contig
-  'r524-936.0'
+  'r151-573.2'
   completely.
 END 7
 BEGIN 8
@@ -81,41 +81,41 @@ BEGIN 8
   overlap
   of
   size
-  264
+  330
   between
   contigs
-  'r63-540.2'
+  'r33-665.1'
   and
-  'r70-333.1'
+  'r665-994.0'
   to
   be
-  (7,
-  271).
+  (108,
+  438).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r63-540.2'
+  'r33-665.1'
   and
-  'r70-333.1'
+  'r665-994.0'
   has
   size
-  264,
-  264
+  330,
+  220
   matches,
   and
   the
   score
   of
-  28636.873577972892.
+  17780.781531515593.
 END 9
 BEGIN 10
   Contig
-  'r63-540.2'
+  'r33-665.1'
   covers
   contig
-  'r70-333.1'
+  'r665-994.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  478
+  633
   and
   consists
   of
@@ -153,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  264
+  330
   between
   contigs
-  'r63-540.2'
+  'r33-665.1'
   and
-  'r70-333.1'
+  'r665-994.0'
   to
   be
-  (7,
-  271).
+  (108,
+  438).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r63-540.2'
+  'r33-665.1'
   and
-  'r70-333.1'
+  'r665-994.0'
   has
   size
-  264,
-  264
+  330,
+  220
   matches,
   and
   the
   score
   of
-  28636.873577972892.
+  17780.781531515593.
 END 14
 BEGIN 15
   Contig
-  'r63-540.2'
+  'r33-665.1'
   covers
   contig
-  'r70-333.1'
+  'r665-994.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  478
+  633
   and
   consists
   of
@@ -223,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  478.
+  633.
 END 18
 BEGIN 19
   Removed

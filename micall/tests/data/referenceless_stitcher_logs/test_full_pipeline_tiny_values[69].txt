@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  376
+  290
   between
   contigs
-  'r504-941.0'
+  'r98-763.1'
   and
-  'r81-456.1'
+  'r170-459.2'
   to
   be
-  (38,
-  414).
+  (72,
+  362).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r504-941.0'
+  'r98-763.1'
   and
-  'r81-456.1'
+  'r170-459.2'
   has
   size
-  376,
-  238
+  290,
+  290
   matches,
   and
   the
   score
   of
-  17454.415969590795.
+  30030.850275878594.
 END 6
 BEGIN 7
   Contig
-  'r504-941.0'
+  'r98-763.1'
   covers
   contig
-  'r81-456.1'
+  'r170-459.2'
   completely.
 END 7
 BEGIN 8
@@ -81,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  293
+  64
   between
   contigs
-  'r504-941.0'
+  'r98-763.1'
   and
-  'r582-874.2'
+  'r700-974.0'
   to
   be
-  (78,
-  371).
+  (602,
+  64).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r504-941.0'
+  'r98-763.1'
   and
-  'r582-874.2'
+  'r700-974.0'
   has
   size
-  293,
-  293
+  64,
+  64
   matches,
   and
   the
   score
   of
-  30187.55328318045.
+  14006.061152412845.
 END 9
 BEGIN 10
-  Contig
-  'r504-941.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  64
+  between
+  contigs
+  'r98-763.1'
+  and
+  'r700-974.0',
+  resulting
+  in
   contig
-  'r582-874.2'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  438
+  877
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  293
+  290
   between
   contigs
-  'r504-941.0'
+  (1)
   and
-  'r582-874.2'
+  'r170-459.2'
   to
   be
-  (78,
-  371).
+  (72,
+  362).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r504-941.0'
+  (1)
   and
-  'r582-874.2'
+  'r170-459.2'
   has
   size
-  293,
-  293
+  290,
+  290
   matches,
   and
   the
   score
   of
-  30187.55328318045.
+  30030.850275878594.
 END 14
 BEGIN 15
   Contig
-  'r504-941.0'
+  (1)
   covers
   contig
-  'r582-874.2'
+  'r170-459.2'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  438
+  877
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  438.
+  877.
 END 18
 BEGIN 19
   Removed

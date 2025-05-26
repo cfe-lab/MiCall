@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  483
+  491
   between
   contigs
-  'r66-638.0'
+  'r98-605.0'
   and
-  'r156-652.1'
+  'r115-671.2'
   to
   be
-  (90,
-  483).
+  (17,
+  491).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r66-638.0'
+  'r98-605.0'
   and
-  'r156-652.1'
+  'r115-671.2'
   has
   size
-  483,
-  483
+  491,
+  491
   matches,
   and
   the
   score
   of
-  38912.14847006618.
+  39234.18069333814.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  483
+  491
   between
   contigs
-  'r66-638.0'
+  'r98-605.0'
   and
-  'r156-652.1',
+  'r115-671.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  587
+  574
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  318
+  457
   between
   contigs
   (1)
   and
-  'r329-646.2'
+  'r148-604.1'
   to
   be
-  (263,
-  581).
+  (50,
+  507).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r329-646.2'
+  'r148-604.1'
   has
   size
-  318,
-  318
+  457,
+  457
   matches,
   and
   the
   score
   of
-  31463.083909030065.
+  37777.78013010373.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r329-646.2'
+  'r148-604.1'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  587
+  574
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  587.
+  574.
 END 15
 BEGIN 16
   Removed

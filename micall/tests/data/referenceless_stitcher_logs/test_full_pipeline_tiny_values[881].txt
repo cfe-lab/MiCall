@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  184
+  441
   between
   contigs
-  'r14-503.1'
+  'r174-849.0'
   and
-  'r320-912.0'
+  'r409-948.1'
   to
   be
-  (306,
-  184).
+  (235,
+  441).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r14-503.1'
+  'r174-849.0'
   and
-  'r320-912.0'
+  'r409-948.1'
   has
   size
-  184,
-  184
+  441,
+  441
   matches,
   and
   the
   score
   of
-  23949.97497322321.
+  37175.742366504994.
 END 6
 BEGIN 7
   Found
@@ -72,18 +72,45 @@ BEGIN 7
   overlap
   of
   size
-  184
+  441
   between
   contigs
-  'r14-503.1'
+  'r174-849.0'
   and
-  'r320-912.0',
+  'r409-948.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  945
+  and
+  consists
+  of
+  3
+  parts.
+END 8
+BEGIN 9
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -91,136 +118,54 @@ BEGIN 8
   overlap
   of
   size
-  289
+  157
   between
   contigs
-  'r320-912.0'
+  'r4-330.2'
   and
-  'r624-942.2'
+  (1)
   to
   be
-  (304,
-  289).
-END 8
-BEGIN 9
+  (170,
+  157).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  'r320-912.0'
+  'r4-330.2'
   and
-  'r624-942.2'
+  (1)
   has
   size
-  289,
-  289
+  157,
+  157
   matches,
   and
   the
   score
   of
-  30064.793299743837.
-END 9
-BEGIN 10
+  22105.92253154037.
+END 11
+BEGIN 12
   Found
   a
   significant
   overlap
   of
   size
-  289
+  157
   between
   contigs
-  'r320-912.0'
+  'r4-330.2'
   and
-  'r624-942.2',
+  (1),
   resulting
   in
   contig
   (2).
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  929
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
 END 12
 BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  184
-  between
-  contigs
-  'r14-503.1'
-  and
-  (2)
-  to
-  be
-  (306,
-  184).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r14-503.1'
-  and
-  (2)
-  has
-  size
-  184,
-  184
-  matches,
-  and
-  the
-  score
-  of
-  23949.97497322321.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  184
-  between
-  contigs
-  'r14-503.1'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (3).
-END 15
-BEGIN 16
   Cycle
   2
   finished
@@ -232,30 +177,30 @@ BEGIN 16
   fittest
   has
   length
-  929
+  945
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  929.
-END 18
-BEGIN 19
+  945.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -268,17 +213,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

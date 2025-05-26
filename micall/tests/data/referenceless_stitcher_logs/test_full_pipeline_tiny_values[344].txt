@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  206
+  123
   between
   contigs
-  'r19-768.1'
+  'r104-507.1'
   and
-  'r563-957.0'
+  'r385-836.0'
   to
   be
-  (544,
-  206).
+  (281,
+  123).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r19-768.1'
+  'r104-507.1'
   and
-  'r563-957.0'
+  'r385-836.0'
   has
   size
-  206,
-  206
+  123,
+  123
   matches,
   and
   the
   score
   of
-  25353.58168880456.
+  19537.829051432782.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  206
+  123
   between
   contigs
-  'r19-768.1'
+  'r104-507.1'
   and
-  'r563-957.0',
+  'r385-836.0',
   resulting
   in
   contig
@@ -91,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  359
+  351
   between
   contigs
-  'r19-768.1'
+  'r335-735.2'
   and
-  'r201-559.2'
+  'r385-836.0'
   to
   be
-  (182,
-  541).
+  (50,
+  351).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r19-768.1'
+  'r335-735.2'
   and
-  'r201-559.2'
+  'r385-836.0'
   has
   size
-  359,
-  359
+  351,
+  351
   matches,
   and
   the
   score
   of
-  33449.85138547053.
+  33150.01561862606.
 END 9
 BEGIN 10
-  Contig
-  'r19-768.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  351
+  between
+  contigs
+  'r335-735.2'
+  and
+  'r385-836.0',
+  resulting
+  in
   contig
-  'r201-559.2'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  939
+  733
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  359
+  173
   between
   contigs
-  (1)
+  'r104-507.1'
   and
-  'r201-559.2'
+  (2)
   to
   be
-  (182,
-  541).
+  (231,
+  173).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r104-507.1'
   and
-  'r201-559.2'
+  (2)
   has
   size
-  359,
-  359
+  173,
+  173
   matches,
   and
   the
   score
   of
-  33449.85138547053.
+  23216.37793154945.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  173
+  between
+  contigs
+  'r104-507.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r201-559.2'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  939
+  733
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  939.
+  733.
 END 18
 BEGIN 19
   Removed

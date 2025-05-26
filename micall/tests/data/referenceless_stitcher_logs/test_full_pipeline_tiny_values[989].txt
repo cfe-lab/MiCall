@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  336
+  419
   between
   contigs
-  'r261-661.0'
+  'r92-709.1'
   and
-  'r326-744.2'
+  'r291-761.2'
   to
   be
-  (65,
-  336).
+  (199,
+  419).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r261-661.0'
+  'r92-709.1'
   and
-  'r326-744.2'
+  'r291-761.2'
   has
   size
-  336,
-  336
+  419,
+  419
   matches,
   and
   the
   score
   of
-  32430.515300786996.
+  36233.00245978511.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  336
+  419
   between
   contigs
-  'r261-661.0'
+  'r92-709.1'
   and
-  'r326-744.2',
+  'r291-761.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  511
+  867
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  305
+  80
   between
   contigs
-  'r234-565.1'
-  and
   (1)
+  and
+  'r682-958.0'
   to
   be
-  (27,
-  305).
+  (590,
+  80).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r234-565.1'
-  and
   (1)
+  and
+  'r682-958.0'
   has
   size
-  305,
-  305
+  80,
+  80
   matches,
   and
   the
   score
   of
-  30890.49102611389.
+  15699.821720043583.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  305
+  80
   between
   contigs
-  'r234-565.1'
+  (1)
   and
-  (1),
+  'r682-958.0',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  511
+  867
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  511.
+  867.
 END 15
 BEGIN 16
   Removed

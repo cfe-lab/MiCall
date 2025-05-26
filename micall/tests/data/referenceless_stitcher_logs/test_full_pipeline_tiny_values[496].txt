@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  517
+  558
   between
   contigs
-  'r170-802.0'
+  'r124-771.1'
   and
-  'r243-759.1'
+  'r182-739.2'
   to
   be
-  (73,
-  590).
+  (58,
+  616).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r170-802.0'
+  'r124-771.1'
   and
-  'r243-759.1'
+  'r182-739.2'
   has
   size
-  517,
-  517
+  558,
+  558
   matches,
   and
   the
   score
   of
-  40198.242715196546.
+  41771.64600243066.
 END 6
 BEGIN 7
   Contig
-  'r170-802.0'
+  'r124-771.1'
   covers
   contig
-  'r243-759.1'
+  'r182-739.2'
   completely.
 END 7
 BEGIN 8
@@ -81,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  222
+  310
   between
   contigs
-  'r112-391.2'
+  'r124-771.1'
   and
-  'r170-802.0'
+  'r462-910.0'
   to
   be
-  (58,
-  222).
+  (338,
+  310).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r112-391.2'
+  'r124-771.1'
   and
-  'r170-802.0'
+  'r462-910.0'
   has
   size
-  222,
-  222
+  310,
+  310
   matches,
   and
   the
   score
   of
-  26327.434627225306.
+  31144.032847573195.
 END 9
 BEGIN 10
   Found
@@ -117,12 +117,12 @@ BEGIN 10
   overlap
   of
   size
-  222
+  310
   between
   contigs
-  'r112-391.2'
+  'r124-771.1'
   and
-  'r170-802.0',
+  'r462-910.0',
   resulting
   in
   contig
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  691
+  787
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  517
+  558
   between
   contigs
   (1)
   and
-  'r243-759.1'
+  'r182-739.2'
   to
   be
-  (131,
-  648).
+  (58,
+  616).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r243-759.1'
+  'r182-739.2'
   has
   size
-  517,
-  517
+  558,
+  558
   matches,
   and
   the
   score
   of
-  40198.242715196546.
+  41771.64600243066.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r243-759.1'
+  'r182-739.2'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  691
+  787
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  691.
+  787.
 END 18
 BEGIN 19
   Removed

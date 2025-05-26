@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  273
+  223
   between
   contigs
-  'r338-942.0'
+  'r89-545.1'
   and
-  'r475-747.2'
+  'r323-768.0'
   to
   be
-  (137,
-  410).
+  (234,
+  223).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r338-942.0'
+  'r89-545.1'
   and
-  'r475-747.2'
+  'r323-768.0'
   has
   size
-  273,
-  273
+  223,
+  223
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  26387.107270317414.
 END 6
 BEGIN 7
-  Contig
-  'r338-942.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  223
+  between
+  contigs
+  'r89-545.1'
+  and
+  'r323-768.0',
+  resulting
+  in
   contig
-  'r475-747.2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  155
+  253
   between
   contigs
-  'r227-492.1'
+  'r89-545.1'
   and
-  'r338-942.0'
+  'r293-556.2'
   to
   be
-  (111,
-  155).
+  (204,
+  253).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r227-492.1'
+  'r89-545.1'
   and
-  'r338-942.0'
+  'r293-556.2'
   has
   size
-  155,
-  155
+  253,
+  253
   matches,
   and
   the
   score
   of
-  21963.169369472536.
+  28118.4693990237.
 END 9
 BEGIN 10
   Found
@@ -117,16 +127,16 @@ BEGIN 10
   overlap
   of
   size
-  155
+  253
   between
   contigs
-  'r227-492.1'
+  'r89-545.1'
   and
-  'r338-942.0',
+  'r293-556.2',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  716
+  680
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  273
+  234
   between
   contigs
-  (1)
+  (2)
   and
-  'r475-747.2'
+  'r323-768.0'
   to
   be
-  (248,
-  521).
+  (234,
+  234).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r475-747.2'
+  'r323-768.0'
   has
   size
-  273,
-  273
+  234,
+  234
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  27034.81587637511.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  234
+  between
+  contigs
+  (2)
+  and
+  'r323-768.0',
+  resulting
+  in
   contig
-  'r475-747.2'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  716
+  680
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  716.
+  680.
 END 18
 BEGIN 19
   Removed

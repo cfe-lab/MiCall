@@ -36,172 +36,81 @@ BEGIN 5
   overlap
   of
   size
-  286
+  401
   between
   contigs
-  'r457-959.2'
+  'r221-670.0'
   and
-  'r106-453.0'
+  'r270-835.1'
   to
   be
-  None.
+  (49,
+  401).
 END 5
 BEGIN 6
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  276
-  between
-  contigs
-  'r457-959.2'
-  and
-  'r116-456.1'
-  to
-  be
-  None.
-END 6
-BEGIN 7
-  Constructed
-  a
-  path
-  of
-  length
-  503.
-END 7
-BEGIN 8
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
-  to
-  process.
-END 8
-BEGIN 9
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 9
-BEGIN 10
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
-END 10
-BEGIN 11
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  286
-  between
-  contigs
-  'r457-959.2'
-  and
-  'r106-453.0'
-  to
-  be
-  None.
-END 11
-BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  276
-  between
-  contigs
-  'r457-959.2'
-  and
-  'r116-456.1'
-  to
-  be
-  None.
-END 12
-BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  338
-  between
-  contigs
-  'r106-453.0'
-  and
-  'r116-456.1'
-  to
-  be
-  (10,
-  338).
-END 13
-BEGIN 14
   Overlap
   between
   contigs
-  'r106-453.0'
+  'r221-670.0'
   and
-  'r116-456.1'
+  'r270-835.1'
   has
   size
-  338,
-  338
+  401,
+  401
   matches,
   and
   the
   score
   of
-  32527.3681808242.
-END 14
-BEGIN 15
+  35443.02412966554.
+END 6
+BEGIN 7
   Found
   a
   significant
   overlap
   of
   size
-  338
+  401
   between
   contigs
-  'r106-453.0'
+  'r221-670.0'
   and
-  'r116-456.1',
+  'r270-835.1',
   resulting
   in
   contig
   (1).
-END 15
-BEGIN 16
+END 7
+BEGIN 8
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  615
+  and
+  consists
+  of
+  3
+  parts.
+END 8
+BEGIN 9
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -209,18 +118,102 @@ BEGIN 16
   overlap
   of
   size
-  286
+  418
   between
   contigs
-  'r457-959.2'
-  and
   (1)
+  and
+  'r250-667.2'
   to
   be
-  None.
+  (29,
+  447).
+END 10
+BEGIN 11
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r250-667.2'
+  has
+  size
+  418,
+  418
+  matches,
+  and
+  the
+  score
+  of
+  36117.61073220617.
+END 11
+BEGIN 12
+  Contig
+  (1)
+  covers
+  contig
+  'r250-667.2'
+  completely.
+END 12
+BEGIN 13
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  615
+  and
+  consists
+  of
+  3
+  parts.
+END 13
+BEGIN 14
+  Cycle
+  3
+  started
+  with
+  1
+  paths.
+END 14
+BEGIN 15
+  Constructed
+  a
+  path
+  of
+  length
+  615.
+END 15
+BEGIN 16
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
 END 16
 BEGIN 17
-  Outputting
-  2
+  Initial
+  overlap
+  stitching
+  produced
+  1
   contigs.
 END 17
+BEGIN 18
+  Outputting
+  1
+  contigs.
+END 18

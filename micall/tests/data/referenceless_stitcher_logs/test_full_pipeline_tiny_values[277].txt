@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  344
+  161
   between
   contigs
-  'r82-712.2'
+  'r40-382.1'
   and
-  'r179-522.1'
+  'r222-816.0'
   to
   be
-  (97,
-  441).
+  (182,
+  161).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r82-712.2'
+  'r40-382.1'
   and
-  'r179-522.1'
+  'r222-816.0'
   has
   size
-  344,
-  344
+  161,
+  161
   matches,
   and
   the
   score
   of
-  32736.971822158175.
+  22388.69913640755.
 END 6
 BEGIN 7
-  Contig
-  'r82-712.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  161
+  between
+  contigs
+  'r40-382.1'
+  and
+  'r222-816.0',
+  resulting
+  in
   contig
-  'r179-522.1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  314
+  215
   between
   contigs
-  'r82-712.2'
+  'r222-816.0'
   and
-  'r262-575.0'
+  'r602-921.2'
   to
   be
-  (180,
-  494).
+  (380,
+  215).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r82-712.2'
+  'r222-816.0'
   and
-  'r262-575.0'
+  'r602-921.2'
   has
   size
-  314,
-  314
+  215,
+  215
   matches,
   and
   the
   score
   of
-  31262.495452873372.
+  25905.878305230883.
 END 9
 BEGIN 10
-  Contig
-  'r82-712.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  215
+  between
+  contigs
+  'r222-816.0'
+  and
+  'r602-921.2',
+  resulting
+  in
   contig
-  'r262-575.0'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  631
+  882
   and
   consists
   of
@@ -153,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  314
+  161
   between
   contigs
-  'r82-712.2'
+  'r40-382.1'
   and
-  'r262-575.0'
+  (2)
   to
   be
-  (180,
-  494).
+  (182,
+  161).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r82-712.2'
+  'r40-382.1'
   and
-  'r262-575.0'
+  (2)
   has
   size
-  314,
-  314
+  161,
+  161
   matches,
   and
   the
   score
   of
-  31262.495452873372.
+  22388.69913640755.
 END 14
 BEGIN 15
-  Contig
-  'r82-712.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  161
+  between
+  contigs
+  'r40-382.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r262-575.0'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -202,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  631
+  882
   and
   consists
   of
@@ -223,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  631.
+  882.
 END 18
 BEGIN 19
   Removed

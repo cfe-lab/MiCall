@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  426
+  277
   between
   contigs
-  'r231-912.0'
+  'r292-731.1'
   and
-  'r487-936.2'
+  'r455-918.0'
   to
   be
-  (256,
-  426).
+  (163,
+  277).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r231-912.0'
+  'r292-731.1'
   and
-  'r487-936.2'
+  'r455-918.0'
   has
   size
-  426,
-  426
+  277,
+  277
   matches,
   and
   the
   score
   of
-  36535.603799143566.
+  29430.3226717946.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  426
+  277
   between
   contigs
-  'r231-912.0'
+  'r292-731.1'
   and
-  'r487-936.2',
+  'r455-918.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  706
+  627
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  285
+  355
   between
   contigs
   (1)
   and
-  'r566-850.1'
+  'r322-676.2'
   to
   be
-  (335,
-  620).
+  (30,
+  385).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r566-850.1'
+  'r322-676.2'
   has
   size
-  285,
-  285
+  355,
+  355
   matches,
   and
   the
   score
   of
-  29767.846125164564.
+  33261.243813239074.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r566-850.1'
+  'r322-676.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  706
+  627
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  706.
+  627.
 END 15
 BEGIN 16
   Removed

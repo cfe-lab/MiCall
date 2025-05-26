@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  593
+  262
   between
   contigs
-  'r18-704.2'
+  'r32-490.0'
   and
-  'r56-648.0'
+  'r229-840.2'
   to
   be
-  (38,
-  631).
+  (197,
+  262).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r18-704.2'
+  'r32-490.0'
   and
-  'r56-648.0'
+  'r229-840.2'
   has
   size
-  593,
-  593
+  262,
+  262
   matches,
   and
   the
   score
   of
-  43069.3457113321.
+  28617.461800421886.
 END 6
 BEGIN 7
-  Contig
-  'r18-704.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  262
+  between
+  contigs
+  'r32-490.0'
+  and
+  'r229-840.2',
+  resulting
+  in
   contig
-  'r56-648.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  273
+  365
   between
   contigs
-  'r18-704.2'
+  'r229-840.2'
   and
-  'r243-515.1'
+  'r289-653.1'
   to
   be
-  (225,
-  498).
+  (60,
+  425).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r18-704.2'
+  'r229-840.2'
   and
-  'r243-515.1'
+  'r289-653.1'
   has
   size
-  273,
-  273
+  365,
+  365
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  33730.785829071414.
 END 9
 BEGIN 10
   Contig
-  'r18-704.2'
+  'r229-840.2'
   covers
   contig
-  'r243-515.1'
+  'r289-653.1'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  687
+  809
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  273
+  365
   between
   contigs
-  'r18-704.2'
+  (1)
   and
-  'r243-515.1'
+  'r289-653.1'
   to
   be
-  (225,
-  498).
+  (257,
+  622).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r18-704.2'
+  (1)
   and
-  'r243-515.1'
+  'r289-653.1'
   has
   size
-  273,
-  273
+  365,
+  365
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  33730.785829071414.
 END 14
 BEGIN 15
   Contig
-  'r18-704.2'
+  (1)
   covers
   contig
-  'r243-515.1'
+  'r289-653.1'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  687
+  809
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  687.
+  809.
 END 18
 BEGIN 19
   Removed

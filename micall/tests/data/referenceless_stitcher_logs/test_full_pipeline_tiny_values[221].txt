@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  353
+  315
   between
   contigs
-  'r274-743.2'
+  'r95-601.1'
   and
-  'r317-669.0'
+  'r287-827.2'
   to
   be
-  (43,
-  396).
+  (192,
+  315).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r274-743.2'
+  'r95-601.1'
   and
-  'r317-669.0'
+  'r287-827.2'
   has
   size
-  353,
-  353
+  315,
+  315
   matches,
   and
   the
   score
   of
-  33166.53791124181.
+  31395.527348417516.
 END 6
 BEGIN 7
-  Contig
-  'r274-743.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  315
+  between
+  contigs
+  'r95-601.1'
+  and
+  'r287-827.2',
+  resulting
+  in
   contig
-  'r317-669.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  201
+  437
   between
   contigs
-  'r207-474.1'
+  'r251-723.0'
   and
-  'r274-743.2'
+  'r287-827.2'
   to
   be
-  (67,
-  201).
+  (36,
+  437).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r207-474.1'
+  'r251-723.0'
   and
-  'r274-743.2'
+  'r287-827.2'
   has
   size
-  201,
-  201
+  437,
+  437
   matches,
   and
   the
   score
   of
-  25041.48823802047.
+  37006.121440225346.
 END 9
 BEGIN 10
   Found
@@ -117,16 +127,16 @@ BEGIN 10
   overlap
   of
   size
-  201
+  437
   between
   contigs
-  'r207-474.1'
+  'r251-723.0'
   and
-  'r274-743.2',
+  'r287-827.2',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  537
+  733
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  353
+  351
   between
   contigs
-  (1)
+  'r95-601.1'
   and
-  'r317-669.0'
+  (2)
   to
   be
-  (110,
-  463).
+  (156,
+  351).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r95-601.1'
   and
-  'r317-669.0'
+  (2)
   has
   size
-  353,
-  353
+  351,
+  351
   matches,
   and
   the
   score
   of
-  33166.53791124181.
+  33150.01561862606.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  351
+  between
+  contigs
+  'r95-601.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r317-669.0'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  537
+  733
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  537.
+  733.
 END 18
 BEGIN 19
   Removed

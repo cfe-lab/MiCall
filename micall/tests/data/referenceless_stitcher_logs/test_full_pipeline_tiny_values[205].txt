@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  551
+  502
   between
   contigs
-  'r65-729.0'
+  'r230-982.1'
   and
-  'r141-691.1'
+  'r444-945.0'
   to
   be
-  (76,
-  627).
+  (214,
+  716).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r65-729.0'
+  'r230-982.1'
   and
-  'r141-691.1'
+  'r444-945.0'
   has
   size
-  551,
-  551
+  502,
+  502
   matches,
   and
   the
   score
   of
-  41507.23815667354.
+  39606.99534386965.
 END 6
 BEGIN 7
   Contig
-  'r65-729.0'
+  'r230-982.1'
   covers
   contig
-  'r141-691.1'
+  'r444-945.0'
   completely.
 END 7
 BEGIN 8
@@ -81,52 +81,42 @@ BEGIN 8
   overlap
   of
   size
-  353
+  348
   between
   contigs
-  'r4-417.2'
+  'r230-982.1'
   and
-  'r65-729.0'
+  'r530-877.2'
   to
   be
-  (61,
-  353).
+  (300,
+  648).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r4-417.2'
+  'r230-982.1'
   and
-  'r65-729.0'
+  'r530-877.2'
   has
   size
-  353,
-  353
+  348,
+  348
   matches,
   and
   the
   score
   of
-  33244.77254780334.
+  32928.581767270356.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  353
-  between
-  contigs
-  'r4-417.2'
-  and
-  'r65-729.0',
-  resulting
-  in
+  Contig
+  'r230-982.1'
+  covers
   contig
-  (1).
+  'r530-877.2'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  726
+  753
   and
   consists
   of
@@ -163,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  551
+  348
   between
   contigs
-  (1)
+  'r230-982.1'
   and
-  'r141-691.1'
+  'r530-877.2'
   to
   be
-  (137,
-  688).
+  (300,
+  648).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r230-982.1'
   and
-  'r141-691.1'
+  'r530-877.2'
   has
   size
-  551,
-  551
+  348,
+  348
   matches,
   and
   the
   score
   of
-  41507.23815667354.
+  32928.581767270356.
 END 14
 BEGIN 15
   Contig
-  (1)
+  'r230-982.1'
   covers
   contig
-  'r141-691.1'
+  'r530-877.2'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  726
+  753
   and
   consists
   of
@@ -233,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  726.
+  753.
 END 18
 BEGIN 19
   Removed

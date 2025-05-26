@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  96
+  305
   between
   contigs
-  'r317-677.2'
+  'r64-652.1'
   and
-  'r582-984.0'
+  'r348-791.2'
   to
   be
-  (265,
-  96).
+  (284,
+  305).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r317-677.2'
+  'r64-652.1'
   and
-  'r582-984.0'
+  'r348-791.2'
   has
   size
-  96,
-  96
+  305,
+  305
   matches,
   and
   the
   score
   of
-  17228.01966748443.
+  30890.49102611389.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  96
+  305
   between
   contigs
-  'r317-677.2'
+  'r64-652.1'
   and
-  'r582-984.0',
+  'r348-791.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  668
+  863
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  288
+  304
   between
   contigs
   (1)
   and
-  'r337-624.1'
+  'r488-926.0'
   to
   be
-  (20,
-  308).
+  (424,
+  304).
 END 10
 BEGIN 11
   Overlap
@@ -135,25 +135,35 @@ BEGIN 11
   contigs
   (1)
   and
-  'r337-624.1'
+  'r488-926.0'
   has
   size
-  288,
-  288
+  304,
+  304
   matches,
   and
   the
   score
   of
-  29925.925894202297.
+  30839.532547611536.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  304
+  between
+  contigs
   (1)
-  covers
+  and
+  'r488-926.0',
+  resulting
+  in
   contig
-  'r337-624.1'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  668
+  863
   and
   consists
   of
@@ -188,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  668.
+  863.
 END 15
 BEGIN 16
   Removed

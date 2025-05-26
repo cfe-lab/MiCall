@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  306
+  406
   between
   contigs
-  'r195-733.2'
+  'r193-909.0'
   and
-  'r428-804.0'
+  'r218-623.2'
   to
   be
-  (233,
-  306).
+  (25,
+  431).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r195-733.2'
+  'r193-909.0'
   and
-  'r428-804.0'
+  'r218-623.2'
   has
   size
-  306,
-  306
+  406,
+  406
   matches,
   and
   the
   score
   of
-  30941.365585636606.
+  35591.215707014955.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  306
-  between
-  contigs
-  'r195-733.2'
-  and
-  'r428-804.0',
-  resulting
-  in
+  Contig
+  'r193-909.0'
+  covers
   contig
-  (1).
+  'r218-623.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  674
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  275
+  219
   between
   contigs
-  (1)
+  'r32-411.1'
   and
-  'r530-868.1'
+  'r193-909.0'
   to
   be
-  (335,
-  275).
-END 10
-BEGIN 11
+  (161,
+  219).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r32-411.1'
   and
-  'r530-868.1'
+  'r193-909.0'
   has
   size
-  275,
-  275
+  219,
+  219
   matches,
   and
   the
   score
   of
-  29323.24303923705.
-END 11
-BEGIN 12
+  26147.599737341905.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  275
+  219
+  between
+  contigs
+  'r32-411.1'
+  and
+  'r193-909.0',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  878
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  406
   between
   contigs
   (1)
   and
-  'r530-868.1',
-  resulting
-  in
+  'r218-623.2'
+  to
+  be
+  (186,
+  592).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r218-623.2'
+  has
+  size
+  406,
+  406
+  matches,
+  and
+  the
+  score
+  of
+  35591.215707014955.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r218-623.2'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  674
+  878
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  674.
-END 15
-BEGIN 16
+  878.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

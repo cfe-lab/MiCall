@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  113
+  710
   between
   contigs
-  'r176-517.0'
+  'r0-742.1'
   and
-  'r405-909.1'
+  'r16-725.2'
   to
   be
-  (229,
-  113).
+  (16,
+  726).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r176-517.0'
+  'r0-742.1'
   and
-  'r405-909.1'
+  'r16-725.2'
   has
   size
-  113,
-  113
+  710,
+  710
   matches,
   and
   the
   score
   of
-  18715.59350347016.
+  47148.83389870306.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  113
-  between
-  contigs
-  'r176-517.0'
-  and
-  'r405-909.1',
-  resulting
-  in
+  Contig
+  'r0-742.1'
+  covers
   contig
-  (1).
+  'r16-725.2'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,41 +81,41 @@ BEGIN 8
   overlap
   of
   size
-  308
+  402
   between
   contigs
-  'r405-909.1'
+  'r0-742.1'
   and
-  'r555-862.2'
+  'r193-594.0'
   to
   be
-  (150,
-  458).
+  (193,
+  595).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r405-909.1'
+  'r0-742.1'
   and
-  'r555-862.2'
+  'r193-594.0'
   has
   size
-  308,
-  308
+  402,
+  402
   matches,
   and
   the
   score
   of
-  30959.176734351597.
+  35414.012288214886.
 END 9
 BEGIN 10
   Contig
-  'r405-909.1'
+  'r0-742.1'
   covers
   contig
-  'r555-862.2'
+  'r193-594.0'
   completely.
 END 10
 BEGIN 11
@@ -140,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  734
+  743
   and
   consists
   of
@@ -163,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  308
+  402
   between
   contigs
-  (1)
+  'r0-742.1'
   and
-  'r555-862.2'
+  'r193-594.0'
   to
   be
-  (379,
-  687).
+  (193,
+  595).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r0-742.1'
   and
-  'r555-862.2'
+  'r193-594.0'
   has
   size
-  308,
-  308
+  402,
+  402
   matches,
   and
   the
   score
   of
-  30959.176734351597.
+  35414.012288214886.
 END 14
 BEGIN 15
   Contig
-  (1)
+  'r0-742.1'
   covers
   contig
-  'r555-862.2'
+  'r193-594.0'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  734
+  743
   and
   consists
   of
@@ -233,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  734.
+  743.
 END 18
 BEGIN 19
   Removed

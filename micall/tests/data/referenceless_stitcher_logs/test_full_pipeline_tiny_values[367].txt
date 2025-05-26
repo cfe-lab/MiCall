@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  321
+  703
   between
   contigs
-  'r2-577.0'
+  'r22-737.1'
   and
-  'r257-821.1'
+  'r35-774.0'
   to
   be
-  (255,
-  321).
+  (13,
+  703).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r2-577.0'
+  'r22-737.1'
   and
-  'r257-821.1'
+  'r35-774.0'
   has
   size
-  321,
-  321
+  703,
+  703
   matches,
   and
   the
   score
   of
-  31694.68686891269.
+  46970.32944059021.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  321
+  703
   between
   contigs
-  'r2-577.0'
+  'r22-737.1'
   and
-  'r257-821.1',
+  'r35-774.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  949
+  753
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  307
+  257
   between
   contigs
   (1)
   and
-  'r515-950.2'
+  'r236-492.2'
   to
   be
-  (513,
-  307).
+  (214,
+  471).
 END 10
 BEGIN 11
   Overlap
@@ -135,35 +135,25 @@ BEGIN 11
   contigs
   (1)
   and
-  'r515-950.2'
+  'r236-492.2'
   has
   size
-  307,
-  307
+  257,
+  257
   matches,
   and
   the
   score
   of
-  30992.156639384957.
+  28249.826640075815.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  307
-  between
-  contigs
+  Contig
   (1)
-  and
-  'r515-950.2',
-  resulting
-  in
+  covers
   contig
-  (2).
+  'r236-492.2'
+  completely.
 END 12
 BEGIN 13
   Cycle
@@ -177,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  949
+  753
   and
   consists
   of
@@ -198,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  949.
+  753.
 END 15
 BEGIN 16
   Removed

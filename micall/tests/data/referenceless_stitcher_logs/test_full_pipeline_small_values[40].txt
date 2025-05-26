@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  369
+  436
   between
   contigs
-  'r76-580.3'
+  'r131-724.4'
   and
-  'r212-763.5'
+  'r289-832.2'
   to
   be
-  (136,
-  369).
+  (158,
+  436).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r76-580.3'
+  'r131-724.4'
   and
-  'r212-763.5'
+  'r289-832.2'
   has
   size
-  369,
-  369
+  436,
+  436
   matches,
   and
   the
   score
   of
-  33993.320911746894.
+  36963.59459341325.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  369
+  436
   between
   contigs
-  'r76-580.3'
+  'r131-724.4'
   and
-  'r212-763.5',
+  'r289-832.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  689
+  957
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  422
+  364
   between
   contigs
-  'r75-497.0'
-  and
   (1)
+  and
+  'r469-968.0'
   to
   be
-  (1,
-  422).
+  (338,
+  364).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r75-497.0'
-  and
   (1)
+  and
+  'r469-968.0'
   has
   size
-  422,
-  422
+  364,
+  364
   matches,
   and
   the
   score
   of
-  36362.997082424205.
+  33761.18234982963.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  422
+  364
   between
   contigs
-  'r75-497.0'
+  (1)
   and
-  (1),
+  'r469-968.0',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  689
+  957
   and
   consists
   of
@@ -200,16 +200,16 @@ BEGIN 15
   overlap
   of
   size
-  273
+  345
   between
   contigs
   (2)
   and
-  'r132-404.1'
+  'r356-700.5'
   to
   be
-  (57,
-  330).
+  (225,
+  570).
 END 15
 BEGIN 16
   Overlap
@@ -217,24 +217,24 @@ BEGIN 16
   contigs
   (2)
   and
-  'r132-404.1'
+  'r356-700.5'
   has
   size
-  273,
-  273
+  345,
+  345
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  32784.97927050635.
 END 16
 BEGIN 17
   Contig
   (2)
   covers
   contig
-  'r132-404.1'
+  'r356-700.5'
   completely.
 END 17
 BEGIN 18
@@ -245,42 +245,52 @@ BEGIN 18
   overlap
   of
   size
-  252
+  230
   between
   contigs
-  (2)
+  'r32-360.1'
   and
-  'r440-691.4'
+  (2)
   to
   be
-  (365,
-  617).
+  (99,
+  230).
 END 18
 BEGIN 19
   Overlap
   between
   contigs
-  (2)
+  'r32-360.1'
   and
-  'r440-691.4'
+  (2)
   has
   size
-  252,
-  252
+  230,
+  230
   matches,
   and
   the
   score
   of
-  27970.086974754442.
+  26801.096424342373.
 END 19
 BEGIN 20
-  Contig
-  (2)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  230
+  between
+  contigs
+  'r32-360.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r440-691.4'
-  completely.
+  (3).
 END 20
 BEGIN 21
   Calculated
@@ -290,16 +300,16 @@ BEGIN 21
   overlap
   of
   size
-  239
+  289
   between
   contigs
   (2)
   and
-  'r228-466.2'
+  'r680-988.3'
   to
   be
-  (153,
-  392).
+  (549,
+  289).
 END 21
 BEGIN 22
   Overlap
@@ -307,25 +317,35 @@ BEGIN 22
   contigs
   (2)
   and
-  'r228-466.2'
+  'r680-988.3'
   has
   size
-  239,
-  239
+  289,
+  289
   matches,
   and
   the
   score
   of
-  27229.32338501147.
+  30064.793299743837.
 END 22
 BEGIN 23
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  289
+  between
+  contigs
   (2)
-  covers
+  and
+  'r680-988.3',
+  resulting
+  in
   contig
-  'r228-466.2'
-  completely.
+  (4).
 END 23
 BEGIN 24
   Cycle
@@ -339,7 +359,7 @@ BEGIN 24
   fittest
   has
   length
-  689
+  957
   and
   consists
   of
@@ -362,41 +382,41 @@ BEGIN 26
   overlap
   of
   size
-  252
+  345
   between
   contigs
-  (2)
+  (4)
   and
-  'r440-691.4'
+  'r356-700.5'
   to
   be
-  (365,
-  617).
+  (225,
+  570).
 END 26
 BEGIN 27
   Overlap
   between
   contigs
-  (2)
+  (4)
   and
-  'r440-691.4'
+  'r356-700.5'
   has
   size
-  252,
-  252
+  345,
+  345
   matches,
   and
   the
   score
   of
-  27970.086974754442.
+  32784.97927050635.
 END 27
 BEGIN 28
   Contig
-  (2)
+  (4)
   covers
   contig
-  'r440-691.4'
+  'r356-700.5'
   completely.
 END 28
 BEGIN 29
@@ -407,42 +427,52 @@ BEGIN 29
   overlap
   of
   size
-  239
+  230
   between
   contigs
-  (2)
+  'r32-360.1'
   and
-  'r228-466.2'
+  (4)
   to
   be
-  (153,
-  392).
+  (99,
+  230).
 END 29
 BEGIN 30
   Overlap
   between
   contigs
-  (2)
+  'r32-360.1'
   and
-  'r228-466.2'
+  (4)
   has
   size
-  239,
-  239
+  230,
+  230
   matches,
   and
   the
   score
   of
-  27229.32338501147.
+  26801.096424342373.
 END 30
 BEGIN 31
-  Contig
-  (2)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  230
+  between
+  contigs
+  'r32-360.1'
+  and
+  (4),
+  resulting
+  in
   contig
-  'r228-466.2'
-  completely.
+  (5).
 END 31
 BEGIN 32
   Cycle
@@ -456,7 +486,7 @@ BEGIN 32
   fittest
   has
   length
-  689
+  957
   and
   consists
   of
@@ -479,41 +509,41 @@ BEGIN 34
   overlap
   of
   size
-  239
+  345
   between
   contigs
-  (2)
+  (5)
   and
-  'r228-466.2'
+  'r356-700.5'
   to
   be
-  (153,
-  392).
+  (324,
+  669).
 END 34
 BEGIN 35
   Overlap
   between
   contigs
-  (2)
+  (5)
   and
-  'r228-466.2'
+  'r356-700.5'
   has
   size
-  239,
-  239
+  345,
+  345
   matches,
   and
   the
   score
   of
-  27229.32338501147.
+  32784.97927050635.
 END 35
 BEGIN 36
   Contig
-  (2)
+  (5)
   covers
   contig
-  'r228-466.2'
+  'r356-700.5'
   completely.
 END 36
 BEGIN 37
@@ -528,7 +558,7 @@ BEGIN 37
   fittest
   has
   length
-  689
+  957
   and
   consists
   of
@@ -549,7 +579,7 @@ BEGIN 39
   path
   of
   length
-  689.
+  957.
 END 39
 BEGIN 40
   Removed

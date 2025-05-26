@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  419
+  202
   between
   contigs
-  'r24-449.2'
+  'r441-857.1'
   and
-  'r31-734.0'
+  'r656-998.0'
   to
   be
-  (7,
-  419).
+  (215,
+  202).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r24-449.2'
+  'r441-857.1'
   and
-  'r31-734.0'
+  'r656-998.0'
   has
   size
-  419,
-  419
+  202,
+  202
   matches,
   and
   the
   score
   of
-  36233.00245978511.
+  25104.217271102985.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  419
+  202
   between
   contigs
-  'r24-449.2'
+  'r441-857.1'
   and
-  'r31-734.0',
+  'r656-998.0',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  879
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +91,136 @@ BEGIN 10
   overlap
   of
   size
-  167
+  207
   between
   contigs
-  (1)
+  'r441-857.1'
   and
-  'r568-902.1'
+  'r651-916.2'
   to
   be
-  (544,
-  167).
-END 10
-BEGIN 11
+  (210,
+  207).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r441-857.1'
   and
-  'r568-902.1'
+  'r651-916.2'
   has
   size
-  167,
-  167
+  207,
+  207
   matches,
   and
   the
   score
   of
-  22806.29264319355.
-END 11
-BEGIN 12
+  25415.54057194343.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  167
+  207
   between
   contigs
-  (1)
+  'r441-857.1'
   and
-  'r568-902.1',
+  'r651-916.2',
   resulting
   in
   contig
   (2).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  558
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  261
+  between
+  contigs
+  (2)
+  and
+  'r656-998.0'
+  to
+  be
+  (215,
+  261).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r656-998.0'
+  has
+  size
+  261,
+  261
+  matches,
+  and
+  the
+  score
+  of
+  28562.448653057112.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  261
+  between
+  contigs
+  (2)
+  and
+  'r656-998.0',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +232,30 @@ BEGIN 13
   fittest
   has
   length
-  879
+  558
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  879.
-END 15
-BEGIN 16
+  558.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +268,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

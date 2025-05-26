@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  381
+  64
   between
   contigs
-  'r66-627.0'
+  'r181-581.2'
   and
-  'r247-817.1'
+  'r518-830.0'
   to
   be
-  (181,
-  381).
+  (337,
+  64).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r66-627.0'
+  'r181-581.2'
   and
-  'r247-817.1'
+  'r518-830.0'
   has
   size
-  381,
-  381
+  64,
+  64
   matches,
   and
   the
   score
   of
-  34544.08962188087.
+  14006.061152412845.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  381
+  64
   between
   contigs
-  'r66-627.0'
+  'r181-581.2'
   and
-  'r247-817.1',
+  'r518-830.0',
   resulting
   in
   contig
@@ -91,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  382
+  245
   between
   contigs
-  'r112-628.2'
+  'r130-425.1'
   and
-  'r247-817.1'
+  'r181-581.2'
   to
   be
-  (135,
-  382).
+  (51,
+  245).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r112-628.2'
+  'r130-425.1'
   and
-  'r247-817.1'
+  'r181-581.2'
   has
   size
-  382,
-  382
+  245,
+  245
   matches,
   and
   the
   score
   of
-  34589.59117394284.
+  27667.367300757287.
 END 9
 BEGIN 10
   Found
@@ -127,12 +127,12 @@ BEGIN 10
   overlap
   of
   size
-  382
+  245
   between
   contigs
-  'r112-628.2'
+  'r130-425.1'
   and
-  'r247-817.1',
+  'r181-581.2',
   resulting
   in
   contig
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  752
+  701
   and
   consists
   of
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  516
+  64
   between
   contigs
-  'r66-627.0'
-  and
   (2)
+  and
+  'r518-830.0'
   to
   be
-  (46,
-  516).
+  (388,
+  64).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r66-627.0'
-  and
   (2)
+  and
+  'r518-830.0'
   has
   size
-  516,
-  516
+  64,
+  64
   matches,
   and
   the
   score
   of
-  40223.91807160999.
+  14006.061152412845.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  516
+  64
   between
   contigs
-  'r66-627.0'
+  (2)
   and
-  (2),
+  'r518-830.0',
   resulting
   in
   contig
@@ -232,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  752
+  701
   and
   consists
   of
@@ -253,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  752.
+  701.
 END 18
 BEGIN 19
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  357
+  424
   between
   contigs
-  'r91-552.2'
+  'r156-624.1'
   and
-  'r196-731.1'
+  'r201-774.0'
   to
   be
-  (105,
-  357).
+  (45,
+  424).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r91-552.2'
+  'r156-624.1'
   and
-  'r196-731.1'
+  'r201-774.0'
   has
   size
-  357,
-  357
+  424,
+  424
   matches,
   and
   the
   score
   of
-  33433.48078265181.
+  36449.40260965582.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  357
+  424
   between
   contigs
-  'r91-552.2'
+  'r156-624.1'
   and
-  'r196-731.1',
+  'r201-774.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  641
+  619
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  334
+  269
   between
   contigs
   (1)
   and
-  'r152-485.0'
+  'r289-557.2'
   to
   be
-  (61,
-  395).
+  (133,
+  402).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r152-485.0'
+  'r289-557.2'
   has
   size
-  334,
-  334
+  269,
+  269
   matches,
   and
   the
   score
   of
-  32252.968363454056.
+  28910.16459185536.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r152-485.0'
+  'r289-557.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  641
+  619
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  641.
+  619.
 END 15
 BEGIN 16
   Removed

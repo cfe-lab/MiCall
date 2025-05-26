@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  325
+  385
   between
   contigs
-  'r166-669.2'
+  'r286-791.0'
   and
-  'r345-863.0'
+  'r407-864.2'
   to
   be
-  (179,
-  325).
+  (121,
+  385).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r166-669.2'
+  'r286-791.0'
   and
-  'r345-863.0'
+  'r407-864.2'
   has
   size
-  325,
-  325
+  385,
+  385
   matches,
   and
   the
   score
   of
-  31892.567701857857.
+  34725.73812169755.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  325
+  385
   between
   contigs
-  'r166-669.2'
+  'r286-791.0'
   and
-  'r345-863.0',
+  'r407-864.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  698
+  618
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  319
+  240
   between
   contigs
   (1)
   and
-  'r172-490.1'
+  'r625-903.1'
   to
   be
-  (6,
-  325).
+  (339,
+  240).
 END 10
 BEGIN 11
   Overlap
@@ -135,25 +135,35 @@ BEGIN 11
   contigs
   (1)
   and
-  'r172-490.1'
+  'r625-903.1'
   has
   size
-  319,
-  319
+  240,
+  240
   matches,
   and
   the
   score
   of
-  31513.031578917846.
+  27381.65526408846.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  240
+  between
+  contigs
   (1)
-  covers
+  and
+  'r625-903.1',
+  resulting
+  in
   contig
-  'r172-490.1'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  698
+  618
   and
   consists
   of
@@ -188,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  698.
+  618.
 END 15
 BEGIN 16
   Removed

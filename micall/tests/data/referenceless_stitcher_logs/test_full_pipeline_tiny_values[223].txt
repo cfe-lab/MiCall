@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  385
+  329
   between
   contigs
-  'r13-420.1'
+  'r340-778.0'
   and
-  'r36-661.2'
+  'r450-801.1'
   to
   be
-  (23,
-  385).
+  (110,
+  329).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r13-420.1'
+  'r340-778.0'
   and
-  'r36-661.2'
+  'r450-801.1'
   has
   size
-  385,
-  385
+  329,
+  329
   matches,
   and
   the
   score
   of
-  34725.73812169755.
+  32089.228390268723.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  385
+  329
   between
   contigs
-  'r13-420.1'
+  'r340-778.0'
   and
-  'r36-661.2',
+  'r450-801.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  649
+  597
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  300
+  122
   between
   contigs
   (1)
   and
-  'r228-527.0'
+  'r680-936.2'
   to
   be
-  (215,
-  515).
+  (340,
+  122).
 END 10
 BEGIN 11
   Overlap
@@ -135,25 +135,35 @@ BEGIN 11
   contigs
   (1)
   and
-  'r228-527.0'
+  'r680-936.2'
   has
   size
-  300,
-  300
+  122,
+  122
   matches,
   and
   the
   score
   of
-  30550.068929444646.
+  19457.168414495136.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  122
+  between
+  contigs
   (1)
-  covers
+  and
+  'r680-936.2',
+  resulting
+  in
   contig
-  'r228-527.0'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  649
+  597
   and
   consists
   of
@@ -188,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  649.
+  597.
 END 15
 BEGIN 16
   Removed

@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  423
+  301
   between
   contigs
-  'r188-764.1'
+  'r97-562.2'
   and
-  'r308-730.0'
+  'r262-671.1'
   to
   be
-  (120,
-  543).
+  (165,
+  301).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r188-764.1'
+  'r97-562.2'
   and
-  'r308-730.0'
+  'r262-671.1'
   has
   size
-  423,
-  423
+  301,
+  301
   matches,
   and
   the
   score
   of
-  36334.69166517225.
+  30686.14941465375.
 END 6
 BEGIN 7
-  Contig
-  'r188-764.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  301
+  between
+  contigs
+  'r97-562.2'
+  and
+  'r262-671.1',
+  resulting
+  in
   contig
-  'r308-730.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  303
+  382
   between
   contigs
-  'r188-764.1'
+  'r97-562.2'
   and
-  'r462-883.2'
+  'r181-566.0'
   to
   be
-  (274,
-  303).
+  (84,
+  382).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r188-764.1'
+  'r97-562.2'
   and
-  'r462-883.2'
+  'r181-566.0'
   has
   size
-  303,
-  303
+  382,
+  382
   matches,
   and
   the
   score
   of
-  30788.48973350553.
+  34589.59117394284.
 END 9
 BEGIN 10
   Found
@@ -117,16 +127,16 @@ BEGIN 10
   overlap
   of
   size
-  303
+  382
   between
   contigs
-  'r188-764.1'
+  'r97-562.2'
   and
-  'r462-883.2',
+  'r181-566.0',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  696
+  575
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  423
+  305
   between
   contigs
-  (1)
+  (2)
   and
-  'r308-730.0'
+  'r262-671.1'
   to
   be
-  (120,
-  543).
+  (165,
+  305).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r308-730.0'
+  'r262-671.1'
   has
   size
-  423,
-  423
+  305,
+  305
   matches,
   and
   the
   score
   of
-  36334.69166517225.
+  30890.49102611389.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  305
+  between
+  contigs
+  (2)
+  and
+  'r262-671.1',
+  resulting
+  in
   contig
-  'r308-730.0'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  696
+  575
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  696.
+  575.
 END 18
 BEGIN 19
   Removed

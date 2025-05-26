@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  379
+  200
   between
   contigs
-  'r361-877.1'
+  'r148-591.0'
   and
-  'r499-896.0'
+  'r392-924.2'
   to
   be
-  (138,
-  379).
+  (244,
+  200).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r361-877.1'
+  'r148-591.0'
   and
-  'r499-896.0'
+  'r392-924.2'
   has
   size
-  379,
-  379
+  200,
+  200
   matches,
   and
   the
   score
   of
-  34452.90624687764.
+  24978.601700497693.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  379
+  200
   between
   contigs
-  'r361-877.1'
+  'r148-591.0'
   and
-  'r499-896.0',
+  'r392-924.2',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  536
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +91,116 @@ BEGIN 10
   overlap
   of
   size
-  284
+  279
   between
   contigs
-  (1)
+  'r392-924.2'
   and
-  'r56-339.2'
+  'r424-702.1'
   to
   be
-  (218,
-  502).
-END 10
-BEGIN 11
+  (32,
+  311).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r392-924.2'
   and
-  'r56-339.2'
+  'r424-702.1'
   has
   size
-  284,
-  180
+  279,
+  279
   matches,
   and
   the
   score
   of
-  15172.112078209577.
+  29449.141909287562.
+END 9
+BEGIN 10
+  Contig
+  'r392-924.2'
+  covers
+  contig
+  'r424-702.1'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  777
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  279
+  between
+  contigs
+  (1)
+  and
+  'r424-702.1'
+  to
+  be
+  (276,
+  555).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r424-702.1'
+  has
+  size
+  279,
+  279
+  matches,
+  and
+  the
+  score
+  of
+  29449.141909287562.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r56-339.2'
+  'r424-702.1'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  536
+  777
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  536.
-END 15
-BEGIN 16
+  777.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

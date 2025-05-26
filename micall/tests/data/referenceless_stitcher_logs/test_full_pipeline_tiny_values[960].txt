@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  322
+  498
   between
   contigs
-  'r166-742.1'
+  'r177-894.1'
   and
-  'r421-917.2'
+  'r397-934.0'
   to
   be
-  (255,
-  322).
+  (220,
+  498).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r166-742.1'
+  'r177-894.1'
   and
-  'r421-917.2'
+  'r397-934.0'
   has
   size
-  322,
-  322
+  498,
+  498
   matches,
   and
   the
   score
   of
-  31744.27271096946.
+  39513.80608376162.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  322
+  498
   between
   contigs
-  'r166-742.1'
+  'r177-894.1'
   and
-  'r421-917.2',
+  'r397-934.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  895
+  815
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  197
+  445
   between
   contigs
-  'r23-362.0'
-  and
   (1)
+  and
+  'r490-991.2'
   to
   be
-  (143,
-  197).
+  (313,
+  445).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r23-362.0'
-  and
   (1)
+  and
+  'r490-991.2'
   has
   size
-  197,
-  197
+  445,
+  445
   matches,
   and
   the
   score
   of
-  24788.985063357886.
+  37344.59290212455.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  197
+  445
   between
   contigs
-  'r23-362.0'
+  (1)
   and
-  (1),
+  'r490-991.2',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  895
+  815
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  895.
+  815.
 END 15
 BEGIN 16
   Removed

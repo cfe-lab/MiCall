@@ -36,116 +36,81 @@ BEGIN 5
   overlap
   of
   size
-  354
+  631
   between
   contigs
-  'r60-812.2'
+  'r80-781.1'
   and
-  'r388-741.0'
+  'r151-792.0'
   to
   be
-  (328,
-  682).
+  (71,
+  631).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r60-812.2'
+  'r80-781.1'
   and
-  'r388-741.0'
+  'r151-792.0'
   has
   size
-  354,
-  354
+  631,
+  631
   matches,
   and
   the
   score
   of
-  33213.92461024414.
+  44494.04832944083.
 END 6
 BEGIN 7
-  Contig
-  'r60-812.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  631
+  between
+  contigs
+  'r80-781.1'
+  and
+  'r151-792.0',
+  resulting
+  in
   contig
-  'r388-741.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  276
-  between
-  contigs
-  'r60-812.2'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  836
   and
-  'r287-562.1'
-  to
-  be
-  (227,
-  503).
+  consists
+  of
+  3
+  parts.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r60-812.2'
-  and
-  'r287-562.1'
-  has
-  size
-  276,
-  276
-  matches,
-  and
-  the
-  score
-  of
-  29288.489791448603.
-END 9
-BEGIN 10
-  Contig
-  'r60-812.2'
-  covers
-  contig
-  'r287-562.1'
-  completely.
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  753
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -153,44 +118,54 @@ BEGIN 13
   overlap
   of
   size
-  276
+  391
   between
   contigs
-  'r60-812.2'
+  (1)
   and
-  'r287-562.1'
+  'r402-915.2'
   to
   be
-  (227,
-  503).
-END 13
-BEGIN 14
+  (322,
+  391).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  'r60-812.2'
+  (1)
   and
-  'r287-562.1'
+  'r402-915.2'
   has
   size
-  276,
-  276
+  391,
+  391
   matches,
   and
   the
   score
   of
-  29288.489791448603.
-END 14
-BEGIN 15
-  Contig
-  'r60-812.2'
-  covers
+  34996.443166986784.
+END 11
+BEGIN 12
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  391
+  between
+  contigs
+  (1)
+  and
+  'r402-915.2',
+  resulting
+  in
   contig
-  'r287-562.1'
-  completely.
-END 15
-BEGIN 16
+  (2).
+END 12
+BEGIN 13
   Cycle
   2
   finished
@@ -202,30 +177,30 @@ BEGIN 16
   fittest
   has
   length
-  753
+  836
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  753.
-END 18
-BEGIN 19
+  836.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -238,17 +213,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

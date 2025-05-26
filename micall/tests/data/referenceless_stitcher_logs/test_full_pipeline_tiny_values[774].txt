@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  281
+  371
   between
   contigs
-  'r121-473.0'
+  'r122-796.1'
   and
-  'r193-834.1'
+  'r161-531.2'
   to
   be
-  (72,
-  281).
+  (39,
+  410).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r121-473.0'
+  'r122-796.1'
   and
-  'r193-834.1'
+  'r161-531.2'
   has
   size
-  281,
-  281
+  371,
+  371
   matches,
   and
   the
   score
   of
-  29643.321663143393.
+  34009.40017370428.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  281
-  between
-  contigs
-  'r121-473.0'
-  and
-  'r193-834.1',
-  resulting
-  in
+  Contig
+  'r122-796.1'
+  covers
   contig
-  (1).
+  'r161-531.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  808
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  165
+  262
   between
   contigs
-  (1)
+  'r122-796.1'
   and
-  'r670-928.2'
+  'r308-569.0'
   to
   be
-  (549,
-  165).
-END 10
-BEGIN 11
+  (186,
+  448).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r122-796.1'
   and
-  'r670-928.2'
+  'r308-569.0'
   has
   size
-  165,
-  165
+  262,
+  262
   matches,
   and
   the
   score
   of
-  22667.94938208472.
+  28526.82438362429.
+END 9
+BEGIN 10
+  Contig
+  'r122-796.1'
+  covers
+  contig
+  'r308-569.0'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  675
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  165
+  262
   between
   contigs
-  (1)
+  'r122-796.1'
   and
-  'r670-928.2',
-  resulting
-  in
+  'r308-569.0'
+  to
+  be
+  (186,
+  448).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r122-796.1'
+  and
+  'r308-569.0'
+  has
+  size
+  262,
+  262
+  matches,
+  and
+  the
+  score
+  of
+  28526.82438362429.
+END 14
+BEGIN 15
+  Contig
+  'r122-796.1'
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r308-569.0'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  808
+  675
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  808.
-END 15
-BEGIN 16
+  675.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

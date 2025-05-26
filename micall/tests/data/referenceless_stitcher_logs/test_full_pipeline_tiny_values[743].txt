@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  374
+  554
   between
   contigs
-  'r211-815.0'
+  'r249-909.2'
   and
-  'r442-889.1'
+  'r290-843.0'
   to
   be
-  (231,
-  374).
+  (41,
+  595).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r211-815.0'
+  'r249-909.2'
   and
-  'r442-889.1'
+  'r290-843.0'
   has
   size
-  374,
-  374
+  554,
+  554
   matches,
   and
   the
   score
   of
-  34223.88500858558.
+  41620.76146746831.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  374
-  between
-  contigs
-  'r211-815.0'
-  and
-  'r442-889.1',
-  resulting
-  in
+  Contig
+  'r249-909.2'
+  covers
   contig
-  (1).
+  'r290-843.0'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  679
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  361
+  232
   between
   contigs
-  (1)
+  'r24-480.1'
   and
-  'r421-781.2'
+  'r249-909.2'
   to
   be
-  (210,
-  571).
-END 10
-BEGIN 11
+  (225,
+  232).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r24-480.1'
   and
-  'r421-781.2'
+  'r249-909.2'
   has
   size
-  361,
-  361
+  232,
+  232
   matches,
   and
   the
   score
   of
-  33543.757575757576.
+  26918.209779619967.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  232
+  between
+  contigs
+  'r24-480.1'
+  and
+  'r249-909.2',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  886
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  554
+  between
+  contigs
+  (1)
+  and
+  'r290-843.0'
+  to
+  be
+  (266,
+  820).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r290-843.0'
+  has
+  size
+  554,
+  554
+  matches,
+  and
+  the
+  score
+  of
+  41620.76146746831.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r421-781.2'
+  'r290-843.0'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  679
+  886
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  679.
-END 15
-BEGIN 16
+  886.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

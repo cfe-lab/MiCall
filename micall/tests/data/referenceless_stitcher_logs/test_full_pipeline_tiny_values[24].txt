@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  297
+  367
   between
   contigs
-  'r97-495.0'
+  'r173-771.2'
   and
-  'r199-882.2'
+  'r186-552.0'
   to
   be
-  (102,
-  297).
+  (13,
+  380).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r97-495.0'
+  'r173-771.2'
   and
-  'r199-882.2'
+  'r186-552.0'
   has
   size
-  297,
-  297
+  367,
+  367
   matches,
   and
   the
   score
   of
-  30480.43802934679.
+  33823.91222611655.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  297
-  between
-  contigs
-  'r97-495.0'
-  and
-  'r199-882.2',
-  resulting
-  in
+  Contig
+  'r173-771.2'
+  covers
   contig
-  (1).
+  'r186-552.0'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  896
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  263
+  353
   between
   contigs
-  (1)
+  'r171-525.1'
   and
-  'r620-992.1'
+  'r173-771.2'
   to
   be
-  (523,
-  263).
-END 10
-BEGIN 11
+  (2,
+  353).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r171-525.1'
   and
-  'r620-992.1'
+  'r173-771.2'
   has
   size
-  263,
-  263
+  353,
+  353
   matches,
   and
   the
   score
   of
-  28672.36940598972.
-END 11
-BEGIN 12
+  33244.77254780334.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  263
+  353
+  between
+  contigs
+  'r171-525.1'
+  and
+  'r173-771.2',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  601
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  367
   between
   contigs
   (1)
   and
-  'r620-992.1',
-  resulting
-  in
+  'r186-552.0'
+  to
+  be
+  (15,
+  382).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r186-552.0'
+  has
+  size
+  367,
+  367
+  matches,
+  and
+  the
+  score
+  of
+  33823.91222611655.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r186-552.0'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  896
+  601
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  896.
-END 15
-BEGIN 16
+  601.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

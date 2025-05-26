@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  128
+  471
   between
   contigs
-  'r90-452.2'
+  'r6-657.0'
   and
-  'r325-736.1'
+  'r187-887.2'
   to
   be
-  (235,
-  128).
+  (181,
+  471).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r90-452.2'
+  'r6-657.0'
   and
-  'r325-736.1'
+  'r187-887.2'
   has
   size
-  128,
-  128
+  471,
+  471
   matches,
   and
   the
   score
   of
-  19936.239765294966.
+  38424.040083213324.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  128
+  471
   between
   contigs
-  'r90-452.2'
+  'r6-657.0'
   and
-  'r325-736.1',
+  'r187-887.2',
   resulting
   in
   contig
@@ -91,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  130
+  493
   between
   contigs
-  'r116-454.0'
+  'r147-679.1'
   and
-  'r325-736.1'
+  'r187-887.2'
   to
   be
-  (209,
-  130).
+  (40,
+  493).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r116-454.0'
+  'r147-679.1'
   and
-  'r325-736.1'
+  'r187-887.2'
   has
   size
-  130,
-  130
+  493,
+  493
   matches,
   and
   the
   score
   of
-  20093.393195701126.
+  39314.27660098262.
 END 9
 BEGIN 10
   Found
@@ -127,12 +127,12 @@ BEGIN 10
   overlap
   of
   size
-  130
+  493
   between
   contigs
-  'r116-454.0'
+  'r147-679.1'
   and
-  'r325-736.1',
+  'r187-887.2',
   resulting
   in
   contig
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  647
+  882
   and
   consists
   of
@@ -173,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  337
+  511
   between
   contigs
-  'r90-452.2'
+  'r6-657.0'
   and
   (2)
   to
   be
-  (26,
-  337).
+  (141,
+  511).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r90-452.2'
+  'r6-657.0'
   and
   (2)
   has
   size
-  337,
-  337
+  511,
+  511
   matches,
   and
   the
   score
   of
-  32478.977840718897.
+  40027.928383400846.
 END 14
 BEGIN 15
   Found
@@ -209,10 +209,10 @@ BEGIN 15
   overlap
   of
   size
-  337
+  511
   between
   contigs
-  'r90-452.2'
+  'r6-657.0'
   and
   (2),
   resulting
@@ -232,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  647
+  882
   and
   consists
   of
@@ -253,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  647.
+  882.
 END 18
 BEGIN 19
   Removed

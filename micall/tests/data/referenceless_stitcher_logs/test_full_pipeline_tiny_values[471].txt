@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  48
+  90
   between
   contigs
-  'r19-529.1'
+  'r59-643.2'
   and
-  'r482-929.2'
+  'r554-993.1'
   to
   be
-  (463,
-  48).
+  (495,
+  90).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r19-529.1'
+  'r59-643.2'
   and
-  'r482-929.2'
+  'r554-993.1'
   has
   size
-  48,
-  48
+  90,
+  90
   matches,
   and
   the
   score
   of
-  12077.507802567898.
+  16671.355523881764.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  48
+  90
   between
   contigs
-  'r19-529.1'
+  'r59-643.2'
   and
-  'r482-929.2',
+  'r554-993.1',
   resulting
   in
   contig
@@ -91,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  356
+  281
   between
   contigs
-  'r19-529.1'
+  'r59-643.2'
   and
-  'r174-557.0'
+  'r363-743.0'
   to
   be
-  (155,
-  356).
+  (304,
+  281).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r19-529.1'
+  'r59-643.2'
   and
-  'r174-557.0'
+  'r363-743.0'
   has
   size
-  356,
-  356
+  281,
+  281
   matches,
   and
   the
   score
   of
-  33386.4037147.
+  29643.321663143393.
 END 9
 BEGIN 10
   Found
@@ -127,12 +127,12 @@ BEGIN 10
   overlap
   of
   size
-  356
+  281
   between
   contigs
-  'r19-529.1'
+  'r59-643.2'
   and
-  'r174-557.0',
+  'r363-743.0',
   resulting
   in
   contig
@@ -150,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  911
+  935
   and
   consists
   of
@@ -173,16 +173,16 @@ BEGIN 13
   overlap
   of
   size
-  76
+  190
   between
   contigs
   (2)
   and
-  'r482-929.2'
+  'r554-993.1'
   to
   be
-  (463,
-  76).
+  (495,
+  190).
 END 13
 BEGIN 14
   Overlap
@@ -190,17 +190,17 @@ BEGIN 14
   contigs
   (2)
   and
-  'r482-929.2'
+  'r554-993.1'
   has
   size
-  76,
-  76
+  190,
+  190
   matches,
   and
   the
   score
   of
-  15293.955559000839.
+  24340.803594151836.
 END 14
 BEGIN 15
   Found
@@ -209,12 +209,12 @@ BEGIN 15
   overlap
   of
   size
-  76
+  190
   between
   contigs
   (2)
   and
-  'r482-929.2',
+  'r554-993.1',
   resulting
   in
   contig
@@ -232,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  911
+  935
   and
   consists
   of
@@ -253,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  911.
+  935.
 END 18
 BEGIN 19
   Removed

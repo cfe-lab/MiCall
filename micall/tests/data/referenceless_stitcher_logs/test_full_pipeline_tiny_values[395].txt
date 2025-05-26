@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  298
+  630
   between
   contigs
-  'r132-570.1'
+  'r21-757.1'
   and
-  'r273-792.2'
+  'r128-893.2'
   to
   be
-  (141,
-  298).
+  (107,
+  630).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r132-570.1'
+  'r21-757.1'
   and
-  'r273-792.2'
+  'r128-893.2'
   has
   size
-  298,
-  298
+  630,
+  630
   matches,
   and
   the
   score
   of
-  30531.99580271108.
+  44458.68444709065.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  298
+  630
   between
   contigs
-  'r132-570.1'
+  'r21-757.1'
   and
-  'r273-792.2',
+  'r128-893.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  661
+  873
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  367
+  428
   between
   contigs
   (1)
   and
-  'r153-519.0'
+  'r379-806.0'
   to
   be
-  (21,
-  388).
+  (358,
+  786).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r153-519.0'
+  'r379-806.0'
   has
   size
-  367,
-  367
+  428,
+  428
   matches,
   and
   the
   score
   of
-  33823.91222611655.
+  36550.483531345984.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r153-519.0'
+  'r379-806.0'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  661
+  873
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  661.
+  873.
 END 15
 BEGIN 16
   Removed

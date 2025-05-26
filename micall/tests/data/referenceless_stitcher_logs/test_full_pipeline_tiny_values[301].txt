@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  434
+  575
   between
   contigs
-  'r122-818.0'
+  'r241-982.1'
   and
-  'r385-992.1'
+  'r408-983.0'
   to
   be
-  (263,
-  434).
+  (167,
+  575).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r122-818.0'
+  'r241-982.1'
   and
-  'r385-992.1'
+  'r408-983.0'
   has
   size
-  434,
-  434
+  575,
+  575
   matches,
   and
   the
   score
   of
-  36878.393784222964.
+  42468.346200871034.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  434
+  575
   between
   contigs
-  'r122-818.0'
+  'r241-982.1'
   and
-  'r385-992.1',
+  'r408-983.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  943
+  743
   and
   consists
   of
@@ -118,52 +118,42 @@ BEGIN 10
   overlap
   of
   size
-  311
+  316
   between
   contigs
-  'r50-432.2'
-  and
   (1)
+  and
+  'r260-575.2'
   to
   be
-  (72,
-  311).
+  (19,
+  335).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r50-432.2'
-  and
   (1)
+  and
+  'r260-575.2'
   has
   size
-  311,
-  311
+  316,
+  316
   matches,
   and
   the
   score
   of
-  31194.493943259735.
+  31362.950000297707.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  311
-  between
-  contigs
-  'r50-432.2'
-  and
-  (1),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (2).
+  'r260-575.2'
+  completely.
 END 12
 BEGIN 13
   Cycle
@@ -177,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  943
+  743
   and
   consists
   of
@@ -198,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  943.
+  743.
 END 15
 BEGIN 16
   Removed

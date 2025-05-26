@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  390
+  213
   between
   contigs
-  'r421-897.1'
+  'r3-600.1'
   and
-  'r466-855.0'
+  'r388-886.0'
   to
   be
-  (45,
-  435).
+  (385,
+  213).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r421-897.1'
+  'r3-600.1'
   and
-  'r466-855.0'
+  'r388-886.0'
   has
   size
-  390,
-  390
+  213,
+  213
   matches,
   and
   the
   score
   of
-  34877.001381433925.
+  25784.167947312213.
 END 6
 BEGIN 7
-  Contig
-  'r421-897.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  213
+  between
+  contigs
+  'r3-600.1'
+  and
+  'r388-886.0',
+  resulting
+  in
   contig
-  'r466-855.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  147
+  417
   between
   contigs
-  'r293-567.2'
+  'r3-600.1'
   and
-  'r421-897.1'
+  'r184-640.2'
   to
   be
-  (128,
-  147).
+  (181,
+  417).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r293-567.2'
+  'r3-600.1'
   and
-  'r421-897.1'
+  'r184-640.2'
   has
   size
-  147,
-  147
+  417,
+  417
   matches,
   and
   the
   score
   of
-  21382.631328312298.
+  36146.079662393924.
 END 9
 BEGIN 10
   Found
@@ -117,16 +127,16 @@ BEGIN 10
   overlap
   of
   size
-  147
+  417
   between
   contigs
-  'r293-567.2'
+  'r3-600.1'
   and
-  'r421-897.1',
+  'r184-640.2',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  605
+  884
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  390
+  253
   between
   contigs
-  (1)
+  (2)
   and
-  'r466-855.0'
+  'r388-886.0'
   to
   be
-  (173,
-  563).
+  (385,
+  253).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r466-855.0'
+  'r388-886.0'
   has
   size
-  390,
-  390
+  253,
+  253
   matches,
   and
   the
   score
   of
-  34877.001381433925.
+  28118.4693990237.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  253
+  between
+  contigs
+  (2)
+  and
+  'r388-886.0',
+  resulting
+  in
   contig
-  'r466-855.0'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  605
+  884
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  605.
+  884.
 END 18
 BEGIN 19
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  218
+  292
   between
   contigs
-  'r100-476.0'
+  'r17-485.1'
   and
-  'r259-744.2'
+  'r194-698.2'
   to
   be
-  (159,
-  218).
+  (177,
+  292).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r100-476.0'
+  'r17-485.1'
   and
-  'r259-744.2'
+  'r194-698.2'
   has
   size
-  218,
-  218
+  292,
+  292
   matches,
   and
   the
   score
   of
-  26087.379325977006.
+  30221.32992949884.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  218
+  292
   between
   contigs
-  'r100-476.0'
+  'r17-485.1'
   and
-  'r259-744.2',
+  'r194-698.2',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  836
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +91,116 @@ BEGIN 10
   overlap
   of
   size
-  147
+  420
   between
   contigs
-  (1)
+  'r194-698.2'
   and
-  'r598-935.1'
+  'r273-692.0'
   to
   be
-  (498,
-  147).
-END 10
-BEGIN 11
+  (79,
+  499).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r194-698.2'
   and
-  'r598-935.1'
+  'r273-692.0'
   has
   size
-  147,
-  147
+  420,
+  420
   matches,
   and
   the
   score
   of
-  21382.631328312298.
+  36204.599273867934.
+END 9
+BEGIN 10
+  Contig
+  'r194-698.2'
+  covers
+  contig
+  'r273-692.0'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  682
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  147
+  420
   between
   contigs
   (1)
   and
-  'r598-935.1',
-  resulting
-  in
+  'r273-692.0'
+  to
+  be
+  (256,
+  676).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r273-692.0'
+  has
+  size
+  420,
+  420
+  matches,
+  and
+  the
+  score
+  of
+  36204.599273867934.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r273-692.0'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  836
+  682
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  836.
-END 15
-BEGIN 16
+  682.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  455
+  353
   between
   contigs
-  'r214-811.2'
+  'r204-765.1'
   and
-  'r357-903.0'
+  'r413-862.0'
   to
   be
-  (143,
-  455).
+  (209,
+  353).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r214-811.2'
+  'r204-765.1'
   and
-  'r357-903.0'
+  'r413-862.0'
   has
   size
-  455,
-  455
+  353,
+  353
   matches,
   and
   the
   score
   of
-  37763.416477416125.
+  33244.77254780334.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  455
+  353
   between
   contigs
-  'r214-811.2'
+  'r204-765.1'
   and
-  'r357-903.0',
+  'r413-862.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  690
+  680
   and
   consists
   of
@@ -118,42 +118,52 @@ BEGIN 10
   overlap
   of
   size
-  446
+  352
   between
   contigs
-  (1)
+  'r183-555.2'
   and
-  'r351-796.1'
+  (1)
   to
   be
-  (137,
-  583).
+  (21,
+  352).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  (1)
+  'r183-555.2'
   and
-  'r351-796.1'
+  (1)
   has
   size
-  446,
-  446
+  352,
+  352
   matches,
   and
   the
   score
   of
-  37317.004973476585.
+  33197.42788994392.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  352
+  between
+  contigs
+  'r183-555.2'
+  and
+  (1),
+  resulting
+  in
   contig
-  'r351-796.1'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  690
+  680
   and
   consists
   of
@@ -188,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  690.
+  680.
 END 15
 BEGIN 16
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  251
+  368
   between
   contigs
-  'r36-589.0'
+  'r17-415.1'
   and
-  'r339-710.1'
+  'r48-725.2'
   to
   be
-  (303,
-  251).
+  (31,
+  368).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r36-589.0'
+  'r17-415.1'
   and
-  'r339-710.1'
+  'r48-725.2'
   has
   size
-  251,
-  251
+  368,
+  368
   matches,
   and
   the
   score
   of
-  28006.374990074244.
+  33947.02018690314.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  251
+  368
   between
   contigs
-  'r36-589.0'
+  'r17-415.1'
   and
-  'r339-710.1',
+  'r48-725.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  675
+  709
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  290
+  271
   between
   contigs
   (1)
   and
-  'r368-657.2'
+  'r55-325.0'
   to
   be
-  (332,
-  622).
+  (38,
+  309).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r368-657.2'
+  'r55-325.0'
   has
   size
-  290,
-  290
+  271,
+  271
   matches,
   and
   the
   score
   of
-  30030.850275878594.
+  29018.760621447705.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r368-657.2'
+  'r55-325.0'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  675
+  709
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  675.
+  709.
 END 15
 BEGIN 16
   Removed

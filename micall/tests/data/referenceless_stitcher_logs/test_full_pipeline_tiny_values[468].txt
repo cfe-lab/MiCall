@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  420
+  406
   between
   contigs
-  'r26-765.0'
+  'r59-614.1'
   and
-  'r346-954.1'
+  'r209-658.0'
   to
   be
-  (320,
-  420).
+  (150,
+  406).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r26-765.0'
+  'r59-614.1'
   and
-  'r346-954.1'
+  'r209-658.0'
   has
   size
-  420,
-  420
+  406,
+  406
   matches,
   and
   the
   score
   of
-  36276.38575744722.
+  35664.21776169561.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  420
+  406
   between
   contigs
-  'r26-765.0'
+  'r59-614.1'
   and
-  'r346-954.1',
+  'r209-658.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  929
+  600
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  300
+  351
   between
   contigs
   (1)
   and
-  'r82-381.2'
+  'r95-445.2'
   to
   be
-  (56,
-  356).
+  (36,
+  387).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r82-381.2'
+  'r95-445.2'
   has
   size
-  300,
-  300
+  351,
+  351
   matches,
   and
   the
   score
   of
-  30550.068929444646.
+  33071.56086476878.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r82-381.2'
+  'r95-445.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  929
+  600
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  929.
+  600.
 END 15
 BEGIN 16
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  593
+  254
   between
   contigs
-  'r165-809.2'
+  'r42-658.1'
   and
-  'r217-912.0'
+  'r405-971.0'
   to
   be
-  (52,
-  593).
+  (363,
+  254).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r165-809.2'
+  'r42-658.1'
   and
-  'r217-912.0'
+  'r405-971.0'
   has
   size
-  593,
-  593
+  254,
+  254
   matches,
   and
   the
   score
   of
-  43129.84162762244.
+  28174.349380266216.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  593
+  254
   between
   contigs
-  'r165-809.2'
+  'r42-658.1'
   and
-  'r217-912.0',
+  'r405-971.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  826
+  930
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  519
+  286
   between
   contigs
   (1)
   and
-  'r394-990.1'
+  'r597-882.2'
   to
   be
-  (229,
-  519).
+  (555,
+  841).
 END 10
 BEGIN 11
   Overlap
@@ -135,35 +135,25 @@ BEGIN 11
   contigs
   (1)
   and
-  'r394-990.1'
+  'r597-882.2'
   has
   size
-  519,
-  519
+  286,
+  286
   matches,
   and
   the
   score
   of
-  40341.05485266395.
+  29820.63245969636.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  519
-  between
-  contigs
+  Contig
   (1)
-  and
-  'r394-990.1',
-  resulting
-  in
+  covers
   contig
-  (2).
+  'r597-882.2'
+  completely.
 END 12
 BEGIN 13
   Cycle
@@ -177,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  826
+  930
   and
   consists
   of
@@ -198,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  826.
+  930.
 END 15
 BEGIN 16
   Removed

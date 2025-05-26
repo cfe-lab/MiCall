@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  304
+  152
   between
   contigs
-  'r160-723.1'
+  'r239-613.1'
   and
-  'r420-826.0'
+  'r462-897.0'
   to
   be
-  (260,
-  304).
+  (223,
+  152).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r160-723.1'
+  'r239-613.1'
   and
-  'r420-826.0'
+  'r462-897.0'
   has
   size
-  304,
-  304
+  152,
+  152
   matches,
   and
   the
   score
   of
-  30839.532547611536.
+  21747.28322501101.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  304
+  152
   between
   contigs
-  'r160-723.1'
+  'r239-613.1'
   and
-  'r420-826.0',
+  'r462-897.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  667
+  659
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  302
+  295
   between
   contigs
   (1)
   and
-  'r391-692.2'
+  'r290-584.2'
   to
   be
-  (231,
-  533).
+  (51,
+  346).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r391-692.2'
+  'r290-584.2'
   has
   size
-  302,
-  302
+  295,
+  295
   matches,
   and
   the
   score
   of
-  30652.85762014207.
+  30291.571741828582.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r391-692.2'
+  'r290-584.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  667
+  659
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  667.
+  659.
 END 15
 BEGIN 16
   Removed

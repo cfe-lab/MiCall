@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  588
+  276
   between
   contigs
-  'r72-826.1'
+  'r144-731.0'
   and
-  'r85-672.2'
+  'r343-618.2'
   to
   be
-  (13,
-  601).
+  (199,
+  475).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r72-826.1'
+  'r144-731.0'
   and
-  'r85-672.2'
+  'r343-618.2'
   has
   size
-  588,
-  588
+  276,
+  276
   matches,
   and
   the
   score
   of
-  42886.36401716086.
+  29288.489791448603.
 END 6
 BEGIN 7
   Contig
-  'r72-826.1'
+  'r144-731.0'
   covers
   contig
-  'r85-672.2'
+  'r343-618.2'
   completely.
 END 7
 BEGIN 8
@@ -81,41 +81,41 @@ BEGIN 8
   overlap
   of
   size
-  297
+  272
   between
   contigs
-  'r72-826.1'
+  'r144-731.0'
   and
-  'r217-513.0'
+  'r341-612.1'
   to
   be
-  (145,
-  442).
+  (197,
+  469).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r72-826.1'
+  'r144-731.0'
   and
-  'r217-513.0'
+  'r341-612.1'
   has
   size
-  297,
-  297
+  272,
+  272
   matches,
   and
   the
   score
   of
-  30395.234343348435.
+  29072.906579043167.
 END 9
 BEGIN 10
   Contig
-  'r72-826.1'
+  'r144-731.0'
   covers
   contig
-  'r217-513.0'
+  'r341-612.1'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  755
+  588
   and
   consists
   of
@@ -153,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  297
+  272
   between
   contigs
-  'r72-826.1'
+  'r144-731.0'
   and
-  'r217-513.0'
+  'r341-612.1'
   to
   be
-  (145,
-  442).
+  (197,
+  469).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r72-826.1'
+  'r144-731.0'
   and
-  'r217-513.0'
+  'r341-612.1'
   has
   size
-  297,
-  297
+  272,
+  272
   matches,
   and
   the
   score
   of
-  30395.234343348435.
+  29072.906579043167.
 END 14
 BEGIN 15
   Contig
-  'r72-826.1'
+  'r144-731.0'
   covers
   contig
-  'r217-513.0'
+  'r341-612.1'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  755
+  588
   and
   consists
   of
@@ -223,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  755.
+  588.
 END 18
 BEGIN 19
   Removed

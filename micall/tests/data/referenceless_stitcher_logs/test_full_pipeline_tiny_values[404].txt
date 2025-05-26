@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  55
+  605
   between
   contigs
-  'r124-527.1'
+  'r89-820.0'
   and
-  'r473-877.2'
+  'r95-699.2'
   to
   be
-  (349,
-  55).
+  (6,
+  611).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r124-527.1'
+  'r89-820.0'
   and
-  'r473-877.2'
+  'r95-699.2'
   has
   size
-  55,
-  55
+  605,
+  605
   matches,
   and
   the
   score
   of
-  12956.543689616934.
+  43505.36211495581.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  55
-  between
-  contigs
-  'r124-527.1'
-  and
-  'r473-877.2',
-  resulting
-  in
+  Contig
+  'r89-820.0'
+  covers
   contig
-  (1).
+  'r95-699.2'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  233
+  435
   between
   contigs
-  'r473-877.2'
+  'r3-523.1'
   and
-  'r645-960.0'
+  'r89-820.0'
   to
   be
-  (172,
-  233).
+  (86,
+  435).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r473-877.2'
+  'r3-523.1'
   and
-  'r645-960.0'
+  'r89-820.0'
   has
   size
-  233,
-  233
+  435,
+  435
   matches,
   and
   the
   score
   of
-  26976.575823630603.
+  36921.01876462426.
 END 9
 BEGIN 10
   Found
@@ -127,16 +117,16 @@ BEGIN 10
   overlap
   of
   size
-  233
+  435
   between
   contigs
-  'r473-877.2'
+  'r3-523.1'
   and
-  'r645-960.0',
+  'r89-820.0',
   resulting
   in
   contig
-  (2).
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  837
+  818
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  55
+  605
   between
   contigs
-  'r124-527.1'
+  (1)
   and
-  (2)
+  'r95-699.2'
   to
   be
-  (349,
-  55).
+  (92,
+  697).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r124-527.1'
+  (1)
   and
-  (2)
+  'r95-699.2'
   has
   size
-  55,
-  55
+  605,
+  605
   matches,
   and
   the
   score
   of
-  12956.543689616934.
+  43505.36211495581.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  55
-  between
-  contigs
-  'r124-527.1'
-  and
-  (2),
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r95-699.2'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  837
+  818
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  837.
+  818.
 END 18
 BEGIN 19
   Removed

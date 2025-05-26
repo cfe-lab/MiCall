@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  109
+  553
   between
   contigs
-  'r23-369.2'
+  'r1-729.2'
   and
-  'r261-571.0'
+  'r30-582.0'
   to
   be
-  (238,
-  109).
+  (29,
+  582).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r23-369.2'
+  'r1-729.2'
   and
-  'r261-571.0'
+  'r30-582.0'
   has
   size
-  109,
-  109
+  553,
+  553
   matches,
   and
   the
   score
   of
-  18376.406396477112.
+  41582.954796695536.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  109
-  between
-  contigs
-  'r23-369.2'
-  and
-  'r261-571.0',
-  resulting
-  in
+  Contig
+  'r1-729.2'
+  covers
   contig
-  (1).
+  'r30-582.0'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,52 +81,42 @@ BEGIN 8
   overlap
   of
   size
-  295
+  549
   between
   contigs
-  'r21-317.1'
+  'r1-729.2'
   and
-  'r23-369.2'
+  'r181-729.1'
   to
   be
-  (2,
-  295).
+  (180,
+  729).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r21-317.1'
+  'r1-729.2'
   and
-  'r23-369.2'
+  'r181-729.1'
   has
   size
-  295,
-  295
+  549,
+  549
   matches,
   and
   the
   score
   of
-  30377.059983830914.
+  41431.383156054966.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  295
-  between
-  contigs
-  'r21-317.1'
-  and
-  'r23-369.2',
-  resulting
-  in
+  Contig
+  'r1-729.2'
+  covers
   contig
-  (2).
+  'r181-729.1'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  551
+  729
   and
   consists
   of
@@ -173,52 +153,42 @@ BEGIN 13
   overlap
   of
   size
-  109
+  549
   between
   contigs
-  (2)
+  'r1-729.2'
   and
-  'r261-571.0'
+  'r181-729.1'
   to
   be
-  (240,
-  109).
+  (180,
+  729).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  'r1-729.2'
   and
-  'r261-571.0'
+  'r181-729.1'
   has
   size
-  109,
-  109
+  549,
+  549
   matches,
   and
   the
   score
   of
-  18376.406396477112.
+  41431.383156054966.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  109
-  between
-  contigs
-  (2)
-  and
-  'r261-571.0',
-  resulting
-  in
+  Contig
+  'r1-729.2'
+  covers
   contig
-  (3).
+  'r181-729.1'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  551
+  729
   and
   consists
   of
@@ -253,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  551.
+  729.
 END 18
 BEGIN 19
   Removed

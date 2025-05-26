@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  561
+  582
   between
   contigs
-  'r64-638.2'
+  'r18-730.2'
   and
-  'r78-779.0'
+  'r136-717.0'
   to
   be
-  (14,
-  561).
+  (118,
+  700).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r64-638.2'
+  'r18-730.2'
   and
-  'r78-779.0'
+  'r136-717.0'
   has
   size
-  561,
-  561
+  582,
+  582
   matches,
   and
   the
   score
   of
-  41946.63846959813.
+  42665.75020020296.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  561
-  between
-  contigs
-  'r64-638.2'
-  and
-  'r78-779.0',
-  resulting
-  in
+  Contig
+  'r18-730.2'
+  covers
   contig
-  (1).
+  'r136-717.0'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  780
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  413
+  396
   between
   contigs
-  'r0-476.1'
+  'r18-730.2'
   and
-  (1)
+  'r271-666.1'
   to
   be
-  (64,
-  413).
-END 10
-BEGIN 11
+  (253,
+  649).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r0-476.1'
+  'r18-730.2'
   and
-  (1)
+  'r271-666.1'
   has
   size
-  413,
-  413
+  396,
+  396
   matches,
   and
   the
   score
   of
-  35971.60397070782.
+  35146.53230517524.
+END 9
+BEGIN 10
+  Contig
+  'r18-730.2'
+  covers
+  contig
+  'r271-666.1'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  713
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  413
+  396
   between
   contigs
-  'r0-476.1'
+  'r18-730.2'
   and
-  (1),
-  resulting
-  in
+  'r271-666.1'
+  to
+  be
+  (253,
+  649).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r18-730.2'
+  and
+  'r271-666.1'
+  has
+  size
+  396,
+  396
+  matches,
+  and
+  the
+  score
+  of
+  35146.53230517524.
+END 14
+BEGIN 15
+  Contig
+  'r18-730.2'
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r271-666.1'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  780
+  713
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  780.
-END 15
-BEGIN 16
+  713.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

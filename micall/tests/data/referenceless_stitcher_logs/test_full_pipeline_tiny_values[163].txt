@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  356
+  297
   between
   contigs
-  'r265-680.2'
+  'r291-656.1'
   and
-  'r325-843.1'
+  'r360-720.2'
   to
   be
-  (60,
-  356).
+  (69,
+  297).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r265-680.2'
+  'r291-656.1'
   and
-  'r325-843.1'
+  'r360-720.2'
   has
   size
-  356,
-  356
+  297,
+  297
   matches,
   and
   the
   score
   of
-  33386.4037147.
+  30480.43802934679.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  356
+  297
   between
   contigs
-  'r265-680.2'
+  'r291-656.1'
   and
-  'r325-843.1',
+  'r360-720.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  673
+  651
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  321
+  123
   between
   contigs
   (1)
   and
-  'r523-937.0'
+  'r598-941.0'
   to
   be
-  (258,
-  321).
+  (307,
+  123).
 END 10
 BEGIN 11
   Overlap
@@ -135,17 +135,17 @@ BEGIN 11
   contigs
   (1)
   and
-  'r523-937.0'
+  'r598-941.0'
   has
   size
-  321,
-  321
+  123,
+  123
   matches,
   and
   the
   score
   of
-  31694.68686891269.
+  19537.829051432782.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  321
+  123
   between
   contigs
   (1)
   and
-  'r523-937.0',
+  'r598-941.0',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  673
+  651
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  673.
+  651.
 END 15
 BEGIN 16
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  340
+  204
   between
   contigs
-  'r61-782.2'
+  'r246-707.2'
   and
-  'r443-882.1'
+  'r504-988.1'
   to
   be
-  (382,
-  340).
+  (258,
+  204).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r61-782.2'
+  'r246-707.2'
   and
-  'r443-882.1'
+  'r504-988.1'
   has
   size
-  340,
-  340
+  204,
+  204
   matches,
   and
   the
   score
   of
-  32623.933546027834.
+  25229.207518786956.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  340
+  204
   between
   contigs
-  'r61-782.2'
+  'r246-707.2'
   and
-  'r443-882.1',
+  'r504-988.1',
   resulting
   in
   contig
@@ -91,52 +91,42 @@ BEGIN 8
   overlap
   of
   size
-  370
+  284
   between
   contigs
-  'r11-430.0'
+  'r504-988.1'
   and
-  'r61-782.2'
+  'r630-913.0'
   to
   be
-  (50,
-  370).
+  (126,
+  410).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r11-430.0'
+  'r504-988.1'
   and
-  'r61-782.2'
+  'r630-913.0'
   has
   size
-  370,
-  370
+  284,
+  284
   matches,
   and
   the
   score
   of
-  34039.55866148712.
+  29714.966051792948.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  370
-  between
-  contigs
-  'r11-430.0'
-  and
-  'r61-782.2',
-  resulting
-  in
+  Contig
+  'r504-988.1'
+  covers
   contig
-  (2).
+  'r630-913.0'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  872
+  743
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  340
+  284
   between
   contigs
-  (2)
+  (1)
   and
-  'r443-882.1'
+  'r630-913.0'
   to
   be
-  (432,
-  340).
+  (384,
+  668).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
-  'r443-882.1'
+  'r630-913.0'
   has
   size
-  340,
-  340
+  284,
+  284
   matches,
   and
   the
   score
   of
-  32623.933546027834.
+  29714.966051792948.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  340
-  between
-  contigs
-  (2)
-  and
-  'r443-882.1',
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r630-913.0'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  872
+  743
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  872.
+  743.
 END 18
 BEGIN 19
   Removed

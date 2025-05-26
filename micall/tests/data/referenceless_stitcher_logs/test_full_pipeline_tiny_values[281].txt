@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  662
+  412
   between
   contigs
-  'r129-829.1'
+  'r456-938.2'
   and
-  'r168-892.2'
+  'r20-431.0'
   to
   be
-  (39,
-  662).
+  (56,
+  468).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r129-829.1'
+  'r456-938.2'
   and
-  'r168-892.2'
+  'r20-431.0'
   has
   size
-  662,
-  662
+  412,
+  267
   matches,
   and
   the
   score
   of
-  45576.72093295548.
+  19002.7697874337.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  662
-  between
-  contigs
-  'r129-829.1'
-  and
-  'r168-892.2',
-  resulting
-  in
+  Contig
+  'r456-938.2'
+  covers
   contig
-  (1).
+  'r20-431.0'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  764
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,136 @@ BEGIN 10
   overlap
   of
   size
-  326
+  117
   between
   contigs
-  (1)
+  'r258-572.1'
   and
-  'r308-633.0'
+  'r456-938.2'
   to
   be
-  (179,
-  505).
-END 10
-BEGIN 11
+  (198,
+  117).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r258-572.1'
   and
-  'r308-633.0'
+  'r456-938.2'
   has
   size
-  326,
-  326
+  117,
+  117
   matches,
   and
   the
   score
   of
-  31860.473443830688.
+  19048.745083745984.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  117
+  between
+  contigs
+  'r258-572.1'
+  and
+  'r456-938.2',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  919
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
-  'r308-633.0'
-  completely.
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  174
+  between
+  contigs
+  'r20-431.0'
+  and
+  (1)
+  to
+  be
+  (238,
+  174).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r20-431.0'
+  and
+  (1)
+  has
+  size
+  174,
+  174
+  matches,
+  and
+  the
+  score
+  of
+  23284.023462492576.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  174
+  between
+  contigs
+  'r20-431.0'
+  and
+  (1),
+  resulting
+  in
+  contig
+  (2).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +222,30 @@ BEGIN 13
   fittest
   has
   length
-  764
+  919
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  764.
-END 15
-BEGIN 16
+  919.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +258,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

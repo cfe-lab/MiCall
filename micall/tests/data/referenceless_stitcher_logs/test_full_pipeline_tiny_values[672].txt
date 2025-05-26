@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  536
+  591
   between
   contigs
-  'r188-854.2'
+  'r178-842.2'
   and
-  'r319-958.1'
+  'r218-808.1'
   to
   be
-  (131,
-  536).
+  (40,
+  631).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r188-854.2'
+  'r178-842.2'
   and
-  'r319-958.1'
+  'r218-808.1'
   has
   size
-  536,
-  536
+  591,
+  591
   matches,
   and
   the
   score
   of
-  40998.509023653925.
+  42996.24647340247.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  536
-  between
-  contigs
-  'r188-854.2'
-  and
-  'r319-958.1',
-  resulting
-  in
+  Contig
+  'r178-842.2'
+  covers
   contig
-  (1).
+  'r218-808.1'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  771
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  305
+  150
   between
   contigs
-  (1)
+  'r18-327.0'
   and
-  'r542-846.0'
+  'r178-842.2'
   to
   be
-  (354,
-  659).
-END 10
-BEGIN 11
+  (160,
+  150).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r18-327.0'
   and
-  'r542-846.0'
+  'r178-842.2'
   has
   size
-  305,
-  305
+  150,
+  150
   matches,
   and
   the
   score
   of
-  30806.39779682249.
+  21602.160905726756.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  150
+  between
+  contigs
+  'r18-327.0'
+  and
+  'r178-842.2',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  825
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  591
+  between
+  contigs
+  (1)
+  and
+  'r218-808.1'
+  to
+  be
+  (200,
+  791).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r218-808.1'
+  has
+  size
+  591,
+  591
+  matches,
+  and
+  the
+  score
+  of
+  42996.24647340247.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r542-846.0'
+  'r218-808.1'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  771
+  825
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  771.
-END 15
-BEGIN 16
+  825.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

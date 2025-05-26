@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  681
+  587
   between
   contigs
-  'r239-972.0'
+  'r143-789.1'
   and
-  'r292-989.2'
+  'r203-907.2'
   to
   be
-  (53,
-  681).
+  (60,
+  587).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r239-972.0'
+  'r143-789.1'
   and
-  'r292-989.2'
+  'r203-907.2'
   has
   size
-  681,
-  681
+  587,
+  587
   matches,
   and
   the
   score
   of
-  46227.76317331199.
+  42910.47619047619.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  681
+  587
   between
   contigs
-  'r239-972.0'
+  'r143-789.1'
   and
-  'r292-989.2',
+  'r203-907.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  751
+  765
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  318
+  351
   between
   contigs
   (1)
   and
-  'r540-857.1'
+  'r220-570.0'
   to
   be
-  (301,
-  619).
+  (77,
+  428).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r540-857.1'
+  'r220-570.0'
   has
   size
-  318,
-  318
+  351,
+  351
   matches,
   and
   the
   score
   of
-  31463.083909030065.
+  33071.56086476878.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r540-857.1'
+  'r220-570.0'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  751
+  765
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  751.
+  765.
 END 15
 BEGIN 16
   Removed

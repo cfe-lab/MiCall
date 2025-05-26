@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  420
+  379
   between
   contigs
-  'r62-520.1'
+  'r25-659.1'
   and
-  'r101-858.0'
+  'r281-661.2'
   to
   be
-  (39,
-  420).
+  (256,
+  379).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r62-520.1'
+  'r25-659.1'
   and
-  'r101-858.0'
+  'r281-661.2'
   has
   size
-  420,
-  420
+  379,
+  379
   matches,
   and
   the
   score
   of
-  36276.38575744722.
+  34452.90624687764.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  420
+  379
   between
   contigs
-  'r62-520.1'
+  'r25-659.1'
   and
-  'r101-858.0',
+  'r281-661.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  797
+  637
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  353
+  313
   between
   contigs
   (1)
   and
-  'r282-634.2'
+  'r654-966.0'
   to
   be
-  (220,
-  573).
+  (213,
+  526).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r282-634.2'
+  'r654-966.0'
   has
   size
-  353,
-  353
+  313,
+  204
   matches,
   and
   the
   score
   of
-  33166.53791124181.
+  16688.671967478276.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r282-634.2'
+  'r654-966.0'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  797
+  637
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  797.
+  637.
 END 15
 BEGIN 16
   Removed

@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  410
+  71
   between
   contigs
-  'r123-636.2'
+  'r86-586.1'
   and
-  'r215-624.1'
+  'r516-821.0'
   to
   be
-  (92,
-  502).
+  (430,
+  71).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r123-636.2'
+  'r86-586.1'
   and
-  'r215-624.1'
+  'r516-821.0'
   has
   size
-  410,
-  410
+  71,
+  71
   matches,
   and
   the
   score
   of
-  35767.54136360802.
+  14770.967480036516.
 END 6
 BEGIN 7
-  Contig
-  'r123-636.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  71
+  between
+  contigs
+  'r86-586.1'
+  and
+  'r516-821.0',
+  resulting
+  in
   contig
-  'r215-624.1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,52 +91,42 @@ BEGIN 8
   overlap
   of
   size
-  181
+  285
   between
   contigs
-  'r123-636.2'
+  'r86-586.1'
   and
-  'r456-846.0'
+  'r299-583.2'
   to
   be
-  (333,
-  181).
+  (213,
+  498).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r123-636.2'
+  'r86-586.1'
   and
-  'r456-846.0'
+  'r299-583.2'
   has
   size
-  181,
-  181
+  285,
+  285
   matches,
   and
   the
   score
   of
-  23752.149702749673.
+  29767.846125164564.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  181
-  between
-  contigs
-  'r123-636.2'
-  and
-  'r456-846.0',
-  resulting
-  in
+  Contig
+  'r86-586.1'
+  covers
   contig
-  (1).
+  'r299-583.2'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  724
+  736
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  410
+  285
   between
   contigs
   (1)
   and
-  'r215-624.1'
+  'r299-583.2'
   to
   be
-  (92,
-  502).
+  (213,
+  498).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r215-624.1'
+  'r299-583.2'
   has
   size
-  410,
-  410
+  285,
+  285
   matches,
   and
   the
   score
   of
-  35767.54136360802.
+  29767.846125164564.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r215-624.1'
+  'r299-583.2'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  724
+  736
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  724.
+  736.
 END 18
 BEGIN 19
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  581
+  346
   between
   contigs
-  'r153-825.0'
+  'r157-542.2'
   and
-  'r245-886.1'
+  'r197-592.0'
   to
   be
-  (92,
-  581).
+  (40,
+  346).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r153-825.0'
+  'r157-542.2'
   and
-  'r245-886.1'
+  'r197-592.0'
   has
   size
-  581,
-  581
+  346,
+  346
   matches,
   and
   the
   score
   of
-  42689.98356691968.
+  32911.9298194725.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  581
+  346
   between
   contigs
-  'r153-825.0'
+  'r157-542.2'
   and
-  'r245-886.1',
+  'r197-592.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  734
+  436
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  363
+  321
   between
   contigs
   (1)
   and
-  'r417-779.2'
+  'r164-484.1'
   to
   be
-  (264,
-  627).
+  (7,
+  328).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r417-779.2'
+  'r164-484.1'
   has
   size
-  363,
-  363
+  321,
+  321
   matches,
   and
   the
   score
   of
-  33637.40166293749.
+  31612.69023341104.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r417-779.2'
+  'r164-484.1'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  734
+  436
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  734.
+  436.
 END 15
 BEGIN 16
   Removed

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  313
+  242
   between
   contigs
-  'r131-525.2'
+  'r16-375.0'
   and
-  'r213-771.0'
+  'r134-894.1'
   to
   be
-  (82,
-  313).
+  (118,
+  242).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r131-525.2'
+  'r16-375.0'
   and
-  'r213-771.0'
+  'r134-894.1'
   has
   size
-  313,
-  313
+  242,
+  242
   matches,
   and
   the
   score
   of
-  31295.172059090328.
+  27496.296296296296.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  313
+  242
   between
   contigs
-  'r131-525.2'
+  'r16-375.0'
   and
-  'r213-771.0',
+  'r134-894.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  641
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +91,136 @@ BEGIN 10
   overlap
   of
   size
-  259
+  263
   between
   contigs
-  (1)
+  'r134-894.1'
   and
-  'r269-527.1'
+  'r632-979.2'
   to
   be
-  (138,
-  397).
-END 10
-BEGIN 11
+  (498,
+  263).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r134-894.1'
   and
-  'r269-527.1'
+  'r632-979.2'
   has
   size
-  259,
-  259
+  263,
+  263
   matches,
   and
   the
   score
   of
-  28360.950254909134.
+  28672.36940598972.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  263
+  between
+  contigs
+  'r134-894.1'
+  and
+  'r632-979.2',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  964
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
-  'r269-527.1'
-  completely.
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  242
+  between
+  contigs
+  'r16-375.0'
+  and
+  (2)
+  to
+  be
+  (118,
+  242).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r16-375.0'
+  and
+  (2)
+  has
+  size
+  242,
+  242
+  matches,
+  and
+  the
+  score
+  of
+  27496.296296296296.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  242
+  between
+  contigs
+  'r16-375.0'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +232,30 @@ BEGIN 13
   fittest
   has
   length
-  641
+  964
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  641.
-END 15
-BEGIN 16
+  964.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +268,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

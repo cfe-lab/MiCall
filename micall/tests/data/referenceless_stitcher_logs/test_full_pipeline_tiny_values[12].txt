@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  276
+  451
   between
   contigs
-  'r133-601.0'
+  'r11-776.2'
   and
-  'r326-982.2'
+  'r146-596.1'
   to
   be
-  (193,
-  276).
+  (135,
+  586).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r133-601.0'
+  'r11-776.2'
   and
-  'r326-982.2'
+  'r146-596.1'
   has
   size
-  276,
-  276
+  451,
+  451
   matches,
   and
   the
   score
   of
-  29376.831639728083.
+  37527.14949290108.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  276
-  between
-  contigs
-  'r133-601.0'
-  and
-  'r326-982.2',
-  resulting
-  in
+  Contig
+  'r11-776.2'
+  covers
   contig
-  (1).
+  'r146-596.1'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  850
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  329
+  292
   between
   contigs
-  (1)
+  'r11-776.2'
   and
-  'r165-493.1'
+  'r485-877.0'
   to
   be
-  (32,
-  361).
-END 10
-BEGIN 11
+  (474,
+  292).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r11-776.2'
   and
-  'r165-493.1'
+  'r485-877.0'
   has
   size
-  329,
-  329
+  292,
+  292
   matches,
   and
   the
   score
   of
-  32008.222911270208.
+  30221.32992949884.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  292
+  between
+  contigs
+  'r11-776.2'
+  and
+  'r485-877.0',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  867
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  451
+  between
+  contigs
+  (1)
+  and
+  'r146-596.1'
+  to
+  be
+  (135,
+  586).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r146-596.1'
+  has
+  size
+  451,
+  451
+  matches,
+  and
+  the
+  score
+  of
+  37527.14949290108.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r165-493.1'
+  'r146-596.1'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  850
+  867
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  850.
-END 15
-BEGIN 16
+  867.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

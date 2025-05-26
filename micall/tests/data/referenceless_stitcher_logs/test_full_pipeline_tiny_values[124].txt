@@ -36,115 +36,114 @@ BEGIN 5
   overlap
   of
   size
-  281
+  399
   between
   contigs
-  'r204-533.0'
+  'r181-921.1'
   and
-  'r615-905.2'
+  'r426-824.2'
   to
   be
-  None.
+  (245,
+  644).
 END 5
 BEGIN 6
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  277
+  Overlap
   between
   contigs
-  'r204-533.0'
+  'r181-921.1'
   and
-  'r562-847.1'
-  to
-  be
-  None.
+  'r426-824.2'
+  has
+  size
+  399,
+  399
+  matches,
+  and
+  the
+  score
+  of
+  35280.52574143211.
 END 6
 BEGIN 7
-  Constructed
-  a
-  path
-  of
-  length
-  330.
+  Contig
+  'r181-921.1'
+  covers
+  contig
+  'r426-824.2'
+  completely.
 END 7
 BEGIN 8
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  258
+  between
+  contigs
+  'r181-921.1'
+  and
+  'r561-818.0'
   to
-  process.
+  be
+  (380,
+  638).
 END 8
 BEGIN 9
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Overlap
+  between
+  contigs
+  'r181-921.1'
+  and
+  'r561-818.0'
+  has
+  size
+  258,
+  258
+  matches,
+  and
+  the
+  score
+  of
+  28305.44295723224.
 END 9
 BEGIN 10
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
+  Contig
+  'r181-921.1'
+  covers
+  contig
+  'r561-818.0'
+  completely.
 END 10
 BEGIN 11
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  281
-  between
-  contigs
-  'r204-533.0'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  741
   and
-  'r615-905.2'
-  to
-  be
-  None.
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  277
-  between
-  contigs
-  'r204-533.0'
-  and
-  'r562-847.1'
-  to
-  be
-  None.
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
   Calculated
@@ -154,73 +153,102 @@ BEGIN 13
   overlap
   of
   size
-  233
+  258
   between
   contigs
-  'r562-847.1'
+  'r181-921.1'
   and
-  'r615-905.2'
+  'r561-818.0'
   to
   be
-  (53,
-  233).
+  (380,
+  638).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r562-847.1'
+  'r181-921.1'
   and
-  'r615-905.2'
+  'r561-818.0'
   has
   size
-  233,
-  233
+  258,
+  258
   matches,
   and
   the
   score
   of
-  26976.575823630603.
+  28305.44295723224.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  233
-  between
-  contigs
-  'r562-847.1'
-  and
-  'r615-905.2',
-  resulting
-  in
+  Contig
+  'r181-921.1'
+  covers
   contig
-  (1).
+  'r561-818.0'
+  completely.
 END 15
 BEGIN 16
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  306
-  between
-  contigs
-  'r204-533.0'
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  741
   and
-  (1)
-  to
-  be
-  None.
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Outputting
-  2
-  contigs.
+  Cycle
+  3
+  started
+  with
+  1
+  paths.
 END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  741.
+END 18
+BEGIN 19
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 19
+BEGIN 20
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+END 20
+BEGIN 21
+  Outputting
+  1
+  contigs.
+END 21

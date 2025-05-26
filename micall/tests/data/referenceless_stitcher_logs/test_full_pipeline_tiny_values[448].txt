@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  404
+  383
   between
   contigs
-  'r37-758.1'
+  'r120-860.1'
   and
-  'r332-735.0'
+  'r287-669.0'
   to
   be
-  (295,
-  699).
+  (167,
+  550).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r37-758.1'
+  'r120-860.1'
   and
-  'r332-735.0'
+  'r287-669.0'
   has
   size
-  404,
-  404
+  383,
+  383
   matches,
   and
   the
   score
   of
-  35502.724537554735.
+  34559.892460951814.
 END 6
 BEGIN 7
   Contig
-  'r37-758.1'
+  'r120-860.1'
   covers
   contig
-  'r332-735.0'
+  'r287-669.0'
   completely.
 END 7
 BEGIN 8
@@ -81,41 +81,41 @@ BEGIN 8
   overlap
   of
   size
-  342
+  336
   between
   contigs
-  'r37-758.1'
+  'r120-860.1'
   and
-  'r413-754.2'
+  'r301-636.2'
   to
   be
-  (376,
-  718).
+  (181,
+  517).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r37-758.1'
+  'r120-860.1'
   and
-  'r413-754.2'
+  'r301-636.2'
   has
   size
-  342,
-  342
+  336,
+  336
   matches,
   and
   the
   score
   of
-  32640.745150333078.
+  32350.34822550813.
 END 9
 BEGIN 10
   Contig
-  'r37-758.1'
+  'r120-860.1'
   covers
   contig
-  'r413-754.2'
+  'r301-636.2'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  722
+  741
   and
   consists
   of
@@ -153,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  342
+  336
   between
   contigs
-  'r37-758.1'
+  'r120-860.1'
   and
-  'r413-754.2'
+  'r301-636.2'
   to
   be
-  (376,
-  718).
+  (181,
+  517).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r37-758.1'
+  'r120-860.1'
   and
-  'r413-754.2'
+  'r301-636.2'
   has
   size
-  342,
-  342
+  336,
+  336
   matches,
   and
   the
   score
   of
-  32640.745150333078.
+  32350.34822550813.
 END 14
 BEGIN 15
   Contig
-  'r37-758.1'
+  'r120-860.1'
   covers
   contig
-  'r413-754.2'
+  'r301-636.2'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  722
+  741
   and
   consists
   of
@@ -223,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  722.
+  741.
 END 18
 BEGIN 19
   Removed

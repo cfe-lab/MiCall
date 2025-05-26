@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  374
+  690
   between
   contigs
-  'r115-762.1'
+  'r65-813.2'
   and
-  'r389-949.2'
+  'r68-757.1'
   to
   be
-  (274,
-  374).
+  (3,
+  693).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r115-762.1'
+  'r65-813.2'
   and
-  'r389-949.2'
+  'r68-757.1'
   has
   size
-  374,
-  374
+  690,
+  690
   matches,
   and
   the
   score
   of
-  34223.88500858558.
+  46476.863986744946.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  374
-  between
-  contigs
-  'r115-762.1'
-  and
-  'r389-949.2',
-  resulting
-  in
+  Contig
+  'r65-813.2'
+  covers
   contig
-  (1).
+  'r68-757.1'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  835
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  382
+  527
   between
   contigs
-  (1)
+  'r65-813.2'
   and
-  'r459-840.0'
+  'r197-723.0'
   to
   be
-  (344,
-  726).
-END 10
-BEGIN 11
+  (132,
+  659).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r65-813.2'
   and
-  'r459-840.0'
+  'r197-723.0'
   has
   size
-  382,
-  382
+  527,
+  527
   matches,
   and
   the
   score
   of
-  34514.353394236176.
-END 11
-BEGIN 12
+  40587.62351528822.
+END 9
+BEGIN 10
   Contig
-  (1)
+  'r65-813.2'
   covers
   contig
-  'r459-840.0'
+  'r197-723.0'
   completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  749
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  527
+  between
+  contigs
+  'r65-813.2'
+  and
+  'r197-723.0'
+  to
+  be
+  (132,
+  659).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r65-813.2'
+  and
+  'r197-723.0'
+  has
+  size
+  527,
+  527
+  matches,
+  and
+  the
+  score
+  of
+  40587.62351528822.
+END 14
+BEGIN 15
+  Contig
+  'r65-813.2'
+  covers
+  contig
+  'r197-723.0'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  835
+  749
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  835.
-END 15
-BEGIN 16
+  749.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

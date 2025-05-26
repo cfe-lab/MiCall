@@ -40,7 +40,7 @@ BEGIN 5
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -67,7 +67,7 @@ BEGIN 7
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -94,7 +94,7 @@ BEGIN 9
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -121,7 +121,7 @@ BEGIN 11
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -148,7 +148,7 @@ BEGIN 13
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -175,7 +175,7 @@ BEGIN 15
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -202,7 +202,7 @@ BEGIN 17
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -229,7 +229,7 @@ BEGIN 19
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -256,7 +256,7 @@ BEGIN 21
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -283,7 +283,7 @@ BEGIN 23
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -310,7 +310,7 @@ BEGIN 25
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -337,7 +337,7 @@ BEGIN 27
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -364,7 +364,7 @@ BEGIN 29
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -391,7 +391,7 @@ BEGIN 31
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -418,7 +418,7 @@ BEGIN 33
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -445,7 +445,7 @@ BEGIN 35
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -472,7 +472,7 @@ BEGIN 37
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -499,7 +499,7 @@ BEGIN 39
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -526,7 +526,7 @@ BEGIN 41
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -553,7 +553,7 @@ BEGIN 43
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -580,7 +580,7 @@ BEGIN 45
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -607,7 +607,7 @@ BEGIN 47
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -634,7 +634,7 @@ BEGIN 49
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -661,7 +661,7 @@ BEGIN 51
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -688,7 +688,7 @@ BEGIN 53
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -715,7 +715,7 @@ BEGIN 55
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -742,7 +742,7 @@ BEGIN 57
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -769,7 +769,7 @@ BEGIN 59
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -796,7 +796,7 @@ BEGIN 61
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -823,7 +823,7 @@ BEGIN 63
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -850,7 +850,7 @@ BEGIN 65
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -877,7 +877,7 @@ BEGIN 67
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -904,7 +904,7 @@ BEGIN 69
   fittest
   has
   length
-  973
+  957
   and
   consists
   of
@@ -925,7 +925,7 @@ BEGIN 71
   path
   of
   length
-  973.
+  957.
 END 71
 BEGIN 72
   Removed

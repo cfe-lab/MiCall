@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  68
+  429
   between
   contigs
-  'r70-444.2'
+  'r393-893.1'
   and
-  'r377-928.1'
+  'r464-892.0'
   to
   be
-  (307,
-  68).
+  (71,
+  500).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r70-444.2'
+  'r393-893.1'
   and
-  'r377-928.1'
+  'r464-892.0'
   has
   size
-  68,
-  68
+  429,
+  429
   matches,
   and
   the
   score
   of
-  14448.102759624082.
+  36593.489225183584.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  68
-  between
-  contigs
-  'r70-444.2'
-  and
-  'r377-928.1',
-  resulting
-  in
+  Contig
+  'r393-893.1'
+  covers
   contig
-  (1).
+  'r464-892.0'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  373
+  102
   between
   contigs
-  'r377-928.1'
+  'r163-494.2'
   and
-  'r528-900.0'
+  'r393-893.1'
   to
   be
-  (151,
-  524).
+  (230,
+  102).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r377-928.1'
+  'r163-494.2'
   and
-  'r528-900.0'
+  'r393-893.1'
   has
   size
-  373,
-  373
+  102,
+  102
   matches,
   and
   the
   score
   of
-  34101.765882774394.
+  17767.264032411153.
 END 9
 BEGIN 10
-  Contig
-  'r377-928.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  102
+  between
+  contigs
+  'r163-494.2'
+  and
+  'r393-893.1',
+  resulting
+  in
   contig
-  'r528-900.0'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  859
+  731
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  373
+  429
   between
   contigs
   (1)
   and
-  'r528-900.0'
+  'r464-892.0'
   to
   be
-  (458,
-  831).
+  (301,
+  730).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r528-900.0'
+  'r464-892.0'
   has
   size
-  373,
-  373
+  429,
+  429
   matches,
   and
   the
   score
   of
-  34101.765882774394.
+  36593.489225183584.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r528-900.0'
+  'r464-892.0'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  859
+  731
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  859.
+  731.
 END 18
 BEGIN 19
   Removed

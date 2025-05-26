@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  437
+  479
   between
   contigs
-  'r147-766.1'
+  'r331-835.0'
   and
-  'r330-980.2'
+  'r357-969.2'
   to
   be
-  (183,
-  437).
+  (26,
+  479).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r147-766.1'
+  'r331-835.0'
   and
-  'r330-980.2'
+  'r357-969.2'
   has
   size
-  437,
-  437
+  479,
+  479
   matches,
   and
   the
   score
   of
-  37006.121440225346.
+  38750.12881068196.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  437
+  479
   between
   contigs
-  'r147-766.1'
+  'r331-835.0'
   and
-  'r330-980.2',
+  'r357-969.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  974
+  654
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  149
+  241
   between
   contigs
-  'r7-295.0'
-  and
   (1)
+  and
+  'r729-984.1'
   to
   be
-  (140,
-  149).
+  (398,
+  241).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r7-295.0'
-  and
   (1)
+  and
+  'r729-984.1'
   has
   size
-  149,
-  149
+  241,
+  241
   matches,
   and
   the
   score
   of
-  21529.233026334732.
+  27439.035644733354.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  149
+  241
   between
   contigs
-  'r7-295.0'
+  (1)
   and
-  (1),
+  'r729-984.1',
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  974
+  654
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  974.
+  654.
 END 15
 BEGIN 16
   Removed

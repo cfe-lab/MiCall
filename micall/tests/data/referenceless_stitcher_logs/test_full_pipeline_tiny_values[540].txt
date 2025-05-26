@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  376
+  199
   between
   contigs
-  'r347-840.2'
+  'r29-523.0'
   and
-  'r465-932.1'
+  'r325-888.1'
   to
   be
-  (118,
-  376).
+  (296,
+  199).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r347-840.2'
+  'r29-523.0'
   and
-  'r465-932.1'
+  'r325-888.1'
   has
   size
-  376,
-  376
+  199,
+  199
   matches,
   and
   the
   score
   of
-  34315.67691254831.
+  24915.556466325746.
 END 6
 BEGIN 7
   Found
@@ -72,45 +72,18 @@ BEGIN 7
   overlap
   of
   size
-  376
+  199
   between
   contigs
-  'r347-840.2'
+  'r29-523.0'
   and
-  'r465-932.1',
+  'r325-888.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  609
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +91,116 @@ BEGIN 10
   overlap
   of
   size
-  311
+  301
   between
   contigs
-  'r324-657.0'
+  'r325-888.1'
   and
-  (1)
+  'r409-709.2'
   to
   be
-  (23,
-  311).
-END 10
-BEGIN 11
+  (84,
+  385).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r324-657.0'
+  'r325-888.1'
   and
-  (1)
+  'r409-709.2'
   has
   size
-  311,
-  311
+  301,
+  301
   matches,
   and
   the
   score
   of
-  31194.493943259735.
+  30601.506419343368.
+END 9
+BEGIN 10
+  Contig
+  'r325-888.1'
+  covers
+  contig
+  'r409-709.2'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  860
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  311
+  301
   between
   contigs
-  'r324-657.0'
+  (1)
   and
-  (1),
-  resulting
-  in
+  'r409-709.2'
+  to
+  be
+  (380,
+  681).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r409-709.2'
+  has
+  size
+  301,
+  301
+  matches,
+  and
+  the
+  score
+  of
+  30601.506419343368.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r409-709.2'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  609
+  860
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  609.
-END 15
-BEGIN 16
+  860.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

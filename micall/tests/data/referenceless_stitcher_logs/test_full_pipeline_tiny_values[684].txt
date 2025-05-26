@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  427
+  573
   between
   contigs
-  'r109-834.0'
+  'r265-969.1'
   and
-  'r408-937.2'
+  'r397-989.0'
   to
   be
-  (299,
-  427).
+  (132,
+  573).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r109-834.0'
+  'r265-969.1'
   and
-  'r408-937.2'
+  'r397-989.0'
   has
   size
-  427,
-  427
+  573,
+  573
   matches,
   and
   the
   score
   of
-  36578.62821877826.
+  42394.20959124529.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  427
+  573
   between
   contigs
-  'r109-834.0'
+  'r265-969.1'
   and
-  'r408-937.2',
+  'r397-989.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  829
+  725
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  358
+  355
   between
   contigs
   (1)
   and
-  'r357-714.1'
+  'r487-841.2'
   to
   be
-  (248,
-  606).
+  (222,
+  577).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r357-714.1'
+  'r487-841.2'
   has
   size
-  358,
-  358
+  355,
+  355
   matches,
   and
   the
   score
   of
-  33402.79931139061.
+  33261.243813239074.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r357-714.1'
+  'r487-841.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  829
+  725
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  829.
+  725.
 END 15
 BEGIN 16
   Removed

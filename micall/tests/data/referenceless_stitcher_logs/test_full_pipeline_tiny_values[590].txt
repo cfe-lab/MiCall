@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  205
+  531
   between
   contigs
-  'r521-797.1'
+  'r25-784.0'
   and
-  'r593-986.0'
+  'r50-580.1'
   to
   be
-  (72,
-  205).
+  (25,
+  556).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r521-797.1'
+  'r25-784.0'
   and
-  'r593-986.0'
+  'r50-580.1'
   has
   size
-  205,
-  205
+  531,
+  531
   matches,
   and
   the
   score
   of
-  25291.471044577567.
+  40742.33396935912.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  205
-  between
-  contigs
-  'r521-797.1'
-  and
-  'r593-986.0',
-  resulting
-  in
+  Contig
+  'r25-784.0'
+  covers
   contig
-  (1).
+  'r50-580.1'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  612
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  116
+  286
   between
   contigs
-  'r375-636.2'
+  'r25-784.0'
   and
-  (1)
+  'r499-958.2'
   to
   be
-  (146,
-  116).
-END 10
-BEGIN 11
+  (474,
+  286).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r375-636.2'
+  'r25-784.0'
   and
-  (1)
+  'r499-958.2'
   has
   size
-  116,
-  116
+  286,
+  286
   matches,
   and
   the
   score
   of
-  18966.005545084667.
-END 11
-BEGIN 12
+  29907.437431730403.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  116
+  286
   between
   contigs
-  'r375-636.2'
+  'r25-784.0'
   and
-  (1),
+  'r499-958.2',
   resulting
   in
   contig
-  (2).
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  934
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  531
+  between
+  contigs
+  (1)
+  and
+  'r50-580.1'
+  to
+  be
+  (25,
+  556).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r50-580.1'
+  has
+  size
+  531,
+  531
+  matches,
+  and
+  the
+  score
+  of
+  40742.33396935912.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r50-580.1'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  612
+  934
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  612.
-END 15
-BEGIN 16
+  934.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

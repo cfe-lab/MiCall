@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  322
+  471
   between
   contigs
-  'r163-712.1'
+  'r71-813.0'
   and
-  'r391-985.2'
+  'r311-781.2'
   to
   be
-  (228,
-  322).
+  (240,
+  711).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r163-712.1'
+  'r71-813.0'
   and
-  'r391-985.2'
+  'r311-781.2'
   has
   size
-  322,
-  322
+  471,
+  471
   matches,
   and
   the
   score
   of
-  31744.27271096946.
+  38356.217502099425.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  322
-  between
-  contigs
-  'r163-712.1'
-  and
-  'r391-985.2',
-  resulting
-  in
+  Contig
+  'r71-813.0'
+  covers
   contig
-  (1).
+  'r311-781.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  823
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  285
+  318
   between
   contigs
-  (1)
+  'r71-813.0'
   and
-  'r610-894.0'
+  'r328-645.1'
   to
   be
-  (447,
-  732).
-END 10
-BEGIN 11
+  (257,
+  575).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r71-813.0'
   and
-  'r610-894.0'
+  'r328-645.1'
   has
   size
-  285,
-  285
+  318,
+  318
   matches,
   and
   the
   score
   of
-  29767.846125164564.
-END 11
-BEGIN 12
+  31463.083909030065.
+END 9
+BEGIN 10
   Contig
-  (1)
+  'r71-813.0'
   covers
   contig
-  'r610-894.0'
+  'r328-645.1'
   completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  743
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  318
+  between
+  contigs
+  'r71-813.0'
+  and
+  'r328-645.1'
+  to
+  be
+  (257,
+  575).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r71-813.0'
+  and
+  'r328-645.1'
+  has
+  size
+  318,
+  318
+  matches,
+  and
+  the
+  score
+  of
+  31463.083909030065.
+END 14
+BEGIN 15
+  Contig
+  'r71-813.0'
+  covers
+  contig
+  'r328-645.1'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  823
+  743
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  823.
-END 15
-BEGIN 16
+  743.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  555
+  299
   between
   contigs
-  'r12-579.1'
+  'r277-809.2'
   and
-  'r25-721.0'
+  'r511-920.1'
   to
   be
-  (13,
-  555).
+  (234,
+  299).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r12-579.1'
+  'r277-809.2'
   and
-  'r25-721.0'
+  'r511-920.1'
   has
   size
-  555,
-  555
+  299,
+  299
   matches,
   and
   the
   score
   of
-  41721.052458956176.
+  30583.466666666667.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  555
+  299
   between
   contigs
-  'r12-579.1'
+  'r277-809.2'
   and
-  'r25-721.0',
+  'r511-920.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  914
+  805
   and
   consists
   of
@@ -118,34 +118,34 @@ BEGIN 10
   overlap
   of
   size
-  68
+  185
   between
   contigs
-  (1)
+  'r116-461.0'
   and
-  'r654-925.2'
+  (1)
   to
   be
-  (642,
-  68).
+  (161,
+  185).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  (1)
+  'r116-461.0'
   and
-  'r654-925.2'
+  (1)
   has
   size
-  68,
-  68
+  185,
+  185
   matches,
   and
   the
   score
   of
-  14448.102759624082.
+  24015.55468223336.
 END 11
 BEGIN 12
   Found
@@ -154,12 +154,12 @@ BEGIN 12
   overlap
   of
   size
-  68
+  185
   between
   contigs
-  (1)
+  'r116-461.0'
   and
-  'r654-925.2',
+  (1),
   resulting
   in
   contig
@@ -177,7 +177,7 @@ BEGIN 13
   fittest
   has
   length
-  914
+  805
   and
   consists
   of
@@ -198,7 +198,7 @@ BEGIN 15
   path
   of
   length
-  914.
+  805.
 END 15
 BEGIN 16
   Removed

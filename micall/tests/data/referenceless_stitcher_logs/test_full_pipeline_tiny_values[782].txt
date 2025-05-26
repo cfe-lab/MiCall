@@ -36,115 +36,134 @@ BEGIN 5
   overlap
   of
   size
-  234
+  154
   between
   contigs
-  'r175-516.2'
+  'r259-677.1'
   and
-  'r586-888.0'
+  'r524-961.2'
   to
   be
-  None.
+  (265,
+  154).
 END 5
 BEGIN 6
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  280
+  Overlap
   between
   contigs
-  'r175-516.2'
+  'r259-677.1'
   and
-  'r540-839.1'
-  to
-  be
-  None.
+  'r524-961.2'
+  has
+  size
+  154,
+  154
+  matches,
+  and
+  the
+  score
+  of
+  21891.443808812808.
 END 6
 BEGIN 7
-  Constructed
+  Found
   a
-  path
+  significant
+  overlap
   of
-  length
-  342.
+  size
+  154
+  between
+  contigs
+  'r259-677.1'
+  and
+  'r524-961.2',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  2
-  still
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  277
+  between
+  contigs
+  'r524-961.2'
+  and
+  'r685-996.0'
   to
-  process.
+  be
+  (161,
+  277).
 END 8
 BEGIN 9
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
+  Overlap
+  between
+  contigs
+  'r524-961.2'
+  and
+  'r685-996.0'
+  has
+  size
+  277,
+  277
+  matches,
+  and
+  the
+  score
+  of
+  29430.3226717946.
 END 9
 BEGIN 10
-  Initial
+  Found
+  a
+  significant
   overlap
-  stitching
-  produced
-  3
-  contigs.
+  of
+  size
+  277
+  between
+  contigs
+  'r524-961.2'
+  and
+  'r685-996.0',
+  resulting
+  in
+  contig
+  (2).
 END 10
 BEGIN 11
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  234
-  between
-  contigs
-  'r175-516.2'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  738
   and
-  'r586-888.0'
-  to
-  be
-  None.
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  280
-  between
-  contigs
-  'r175-516.2'
-  and
-  'r540-839.1'
-  to
-  be
-  None.
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
   Calculated
@@ -154,34 +173,34 @@ BEGIN 13
   overlap
   of
   size
-  254
+  154
   between
   contigs
-  'r540-839.1'
+  'r259-677.1'
   and
-  'r586-888.0'
+  (2)
   to
   be
-  (46,
-  254).
+  (265,
+  154).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r540-839.1'
+  'r259-677.1'
   and
-  'r586-888.0'
+  (2)
   has
   size
-  254,
-  254
+  154,
+  154
   matches,
   and
   the
   score
   of
-  28174.349380266216.
+  21891.443808812808.
 END 14
 BEGIN 15
   Found
@@ -190,37 +209,76 @@ BEGIN 15
   overlap
   of
   size
-  254
+  154
   between
   contigs
-  'r540-839.1'
+  'r259-677.1'
   and
-  'r586-888.0',
+  (2),
   resulting
   in
   contig
-  (1).
+  (3).
 END 15
 BEGIN 16
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  280
-  between
-  contigs
-  'r175-516.2'
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  738
   and
-  (1)
-  to
-  be
-  None.
+  consists
+  of
+  3
+  parts.
 END 16
 BEGIN 17
-  Outputting
-  2
-  contigs.
+  Cycle
+  3
+  started
+  with
+  1
+  paths.
 END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  738.
+END 18
+BEGIN 19
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 19
+BEGIN 20
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+END 20
+BEGIN 21
+  Outputting
+  1
+  contigs.
+END 21

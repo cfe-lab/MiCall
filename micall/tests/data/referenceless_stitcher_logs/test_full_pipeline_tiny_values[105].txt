@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  610
+  486
   between
   contigs
-  'r140-800.2'
+  'r319-842.1'
   and
-  'r191-893.1'
+  'r357-909.0'
   to
   be
-  (51,
-  610).
+  (38,
+  486).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r140-800.2'
+  'r319-842.1'
   and
-  'r191-893.1'
+  'r357-909.0'
   has
   size
-  610,
-  610
+  486,
+  486
   matches,
   and
   the
   score
   of
-  43745.40379140288.
+  39033.22189338856.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  610
+  486
   between
   contigs
-  'r140-800.2'
+  'r319-842.1'
   and
-  'r191-893.1',
+  'r357-909.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  754
+  591
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  285
+  405
   between
   contigs
   (1)
   and
-  'r363-647.0'
+  'r342-746.2'
   to
   be
-  (223,
-  508).
+  (23,
+  428).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r363-647.0'
+  'r342-746.2'
   has
   size
-  285,
-  285
+  405,
+  405
   matches,
   and
   the
   score
   of
-  29767.846125164564.
+  35546.99765401543.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r363-647.0'
+  'r342-746.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  754
+  591
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  754.
+  591.
 END 15
 BEGIN 16
   Removed

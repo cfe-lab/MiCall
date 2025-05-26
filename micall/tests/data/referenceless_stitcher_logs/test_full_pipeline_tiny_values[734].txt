@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  95
+  338
   between
   contigs
-  'r56-510.0'
+  'r104-704.2'
   and
-  'r416-969.1'
+  'r367-991.1'
   to
   be
-  (360,
-  95).
+  (263,
+  338).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r56-510.0'
+  'r104-704.2'
   and
-  'r416-969.1'
+  'r367-991.1'
   has
   size
-  95,
-  95
+  338,
+  338
   matches,
   and
   the
   score
   of
-  17136.497139795585.
+  32527.3681808242.
 END 6
 BEGIN 7
   Found
@@ -72,18 +72,45 @@ BEGIN 7
   overlap
   of
   size
-  95
+  338
   between
   contigs
-  'r56-510.0'
+  'r104-704.2'
   and
-  'r416-969.1',
+  'r367-991.1',
   resulting
   in
   contig
   (1).
 END 7
 BEGIN 8
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  930
+  and
+  consists
+  of
+  3
+  parts.
+END 8
+BEGIN 9
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -91,136 +118,54 @@ BEGIN 8
   overlap
   of
   size
-  159
+  474
   between
   contigs
-  'r277-574.2'
+  'r62-577.0'
   and
-  'r416-969.1'
+  (1)
   to
   be
-  (139,
-  159).
-END 8
-BEGIN 9
+  (42,
+  474).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
-  'r277-574.2'
+  'r62-577.0'
   and
-  'r416-969.1'
+  (1)
   has
   size
-  159,
-  159
+  474,
+  474
   matches,
   and
   the
   score
   of
-  22247.75998911651.
-END 9
-BEGIN 10
+  38546.64661789547.
+END 11
+BEGIN 12
   Found
   a
   significant
   overlap
   of
   size
-  159
+  474
   between
   contigs
-  'r277-574.2'
+  'r62-577.0'
   and
-  'r416-969.1',
+  (1),
   resulting
   in
   contig
   (2).
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  914
-  and
-  consists
-  of
-  3
-  parts.
-END 11
-BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
 END 12
 BEGIN 13
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  234
-  between
-  contigs
-  'r56-510.0'
-  and
-  (2)
-  to
-  be
-  (221,
-  234).
-END 13
-BEGIN 14
-  Overlap
-  between
-  contigs
-  'r56-510.0'
-  and
-  (2)
-  has
-  size
-  234,
-  234
-  matches,
-  and
-  the
-  score
-  of
-  27034.81587637511.
-END 14
-BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  234
-  between
-  contigs
-  'r56-510.0'
-  and
-  (2),
-  resulting
-  in
-  contig
-  (3).
-END 15
-BEGIN 16
   Cycle
   2
   finished
@@ -232,30 +177,30 @@ BEGIN 16
   fittest
   has
   length
-  914
+  930
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  914.
-END 18
-BEGIN 19
+  930.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -268,17 +213,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

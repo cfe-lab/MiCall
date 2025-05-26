@@ -36,72 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  370
+  251
   between
   contigs
-  'r27-486.2'
+  'r129-482.1'
   and
-  'r582-991.0'
+  'r232-676.0'
   to
   be
-  None.
+  (103,
+  251).
 END 5
 BEGIN 6
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  71
-  between
-  contigs
-  'r27-486.2'
-  and
-  'r416-776.1'
-  to
-  be
-  (389,
-  71).
-END 6
-BEGIN 7
   Overlap
   between
   contigs
-  'r27-486.2'
+  'r129-482.1'
   and
-  'r416-776.1'
+  'r232-676.0'
   has
   size
-  71,
-  71
+  251,
+  251
   matches,
   and
   the
   score
   of
-  14770.967480036516.
-END 7
-BEGIN 8
+  28006.374990074244.
+END 6
+BEGIN 7
   Found
   a
   significant
   overlap
   of
   size
-  71
+  251
   between
   contigs
-  'r27-486.2'
+  'r129-482.1'
   and
-  'r416-776.1',
+  'r232-676.0',
   resulting
   in
   contig
   (1).
-END 8
-BEGIN 9
+END 7
+BEGIN 8
   Cycle
   1
   finished
@@ -113,22 +95,22 @@ BEGIN 9
   fittest
   has
   length
-  965
+  548
   and
   consists
   of
   3
   parts.
-END 9
-BEGIN 10
+END 8
+BEGIN 9
   Cycle
   2
   started
   with
   1
   paths.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -136,54 +118,44 @@ BEGIN 11
   overlap
   of
   size
-  195
+  278
   between
   contigs
   (1)
   and
-  'r582-991.0'
+  'r721-998.2'
   to
   be
-  (555,
-  195).
-END 11
-BEGIN 12
+  (68,
+  346).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
   (1)
   and
-  'r582-991.0'
+  'r721-998.2'
   has
   size
-  195,
-  195
+  278,
+  184
   matches,
   and
   the
   score
   of
-  24661.764184264517.
+  16111.098627077812.
+END 11
+BEGIN 12
+  Contig
+  (1)
+  covers
+  contig
+  'r721-998.2'
+  completely.
 END 12
 BEGIN 13
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  195
-  between
-  contigs
-  (1)
-  and
-  'r582-991.0',
-  resulting
-  in
-  contig
-  (2).
-END 13
-BEGIN 14
   Cycle
   2
   finished
@@ -195,30 +167,30 @@ BEGIN 14
   fittest
   has
   length
-  965
+  548
   and
   consists
   of
   3
   parts.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  965.
-END 16
-BEGIN 17
+  548.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -231,17 +203,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 19
+END 18

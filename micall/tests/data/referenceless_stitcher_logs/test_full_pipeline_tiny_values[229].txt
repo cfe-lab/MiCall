@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  303
+  323
   between
   contigs
-  'r116-781.1'
+  'r230-950.1'
   and
-  'r162-464.2'
+  'r628-970.2'
   to
   be
-  (46,
-  349).
+  (398,
+  323).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r116-781.1'
+  'r230-950.1'
   and
-  'r162-464.2'
+  'r628-970.2'
   has
   size
-  303,
-  303
+  323,
+  323
   matches,
   and
   the
   score
   of
-  30704.122964526523.
+  31793.78122385395.
 END 6
 BEGIN 7
-  Contig
-  'r116-781.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  323
+  between
+  contigs
+  'r230-950.1'
+  and
+  'r628-970.2',
+  resulting
+  in
   contig
-  'r162-464.2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  273
+  327
   between
   contigs
-  'r116-781.1'
+  'r230-950.1'
   and
-  'r282-554.0'
+  'r541-867.0'
   to
   be
-  (166,
-  439).
+  (311,
+  638).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r116-781.1'
+  'r230-950.1'
   and
-  'r282-554.0'
+  'r541-867.0'
   has
   size
-  273,
-  273
+  327,
+  327
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  31909.799259318603.
 END 9
 BEGIN 10
   Contig
-  'r116-781.1'
+  'r230-950.1'
   covers
   contig
-  'r282-554.0'
+  'r541-867.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  666
+  741
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  273
+  327
   between
   contigs
-  'r116-781.1'
+  (1)
   and
-  'r282-554.0'
+  'r541-867.0'
   to
   be
-  (166,
-  439).
+  (311,
+  638).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r116-781.1'
+  (1)
   and
-  'r282-554.0'
+  'r541-867.0'
   has
   size
-  273,
-  273
+  327,
+  327
   matches,
   and
   the
   score
   of
-  29126.95191875689.
+  31909.799259318603.
 END 14
 BEGIN 15
   Contig
-  'r116-781.1'
+  (1)
   covers
   contig
-  'r282-554.0'
+  'r541-867.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  666
+  741
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  666.
+  741.
 END 18
 BEGIN 19
   Removed

@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  444
+  435
   between
   contigs
-  'r91-776.2'
+  'r40-676.0'
   and
-  'r333-845.1'
+  'r46-480.2'
   to
   be
-  (242,
-  444).
+  (6,
+  441).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r91-776.2'
+  'r40-676.0'
   and
-  'r333-845.1'
+  'r46-480.2'
   has
   size
-  444,
-  444
+  435,
+  435
   matches,
   and
   the
   score
   of
-  37302.451919451574.
+  36850.46959083203.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  444
-  between
-  contigs
-  'r91-776.2'
-  and
-  'r333-845.1',
-  resulting
-  in
+  Contig
+  'r40-676.0'
+  covers
   contig
-  (1).
+  'r46-480.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  771
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  340
+  280
   between
   contigs
-  'r75-430.0'
+  'r40-676.0'
   and
-  (1)
+  'r397-798.1'
   to
   be
-  (16,
-  340).
-END 10
-BEGIN 11
+  (357,
+  280).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r75-430.0'
+  'r40-676.0'
   and
-  (1)
+  'r397-798.1'
   has
   size
-  340,
-  340
+  280,
+  280
   matches,
   and
   the
   score
   of
-  32623.933546027834.
-END 11
-BEGIN 12
+  29590.21564298475.
+END 9
+BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  340
+  280
   between
   contigs
-  'r75-430.0'
+  'r40-676.0'
   and
-  (1),
+  'r397-798.1',
   resulting
   in
   contig
-  (2).
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  759
+  and
+  consists
+  of
+  3
+  parts.
+END 11
+BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  435
+  between
+  contigs
+  (1)
+  and
+  'r46-480.2'
+  to
+  be
+  (6,
+  441).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r46-480.2'
+  has
+  size
+  435,
+  435
+  matches,
+  and
+  the
+  score
+  of
+  36850.46959083203.
+END 14
+BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r46-480.2'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  771
+  759
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  771.
-END 15
-BEGIN 16
+  759.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

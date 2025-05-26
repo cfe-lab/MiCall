@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  364
+  628
   between
   contigs
-  'r46-603.0'
+  'r218-921.2'
   and
-  'r240-771.1'
+  'r294-945.0'
   to
   be
-  (194,
-  364).
+  (76,
+  628).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r46-603.0'
+  'r218-921.2'
   and
-  'r240-771.1'
+  'r294-945.0'
   has
   size
-  364,
-  364
+  628,
+  628
   matches,
   and
   the
   score
   of
-  33761.18234982963.
+  44387.87216060797.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  364
+  628
   between
   contigs
-  'r46-603.0'
+  'r218-921.2'
   and
-  'r240-771.1',
+  'r294-945.0',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  726
+  728
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  348
+  286
   between
   contigs
   (1)
   and
-  'r253-600.2'
+  'r651-936.1'
   to
   be
-  (207,
-  555).
+  (433,
+  719).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r253-600.2'
+  'r651-936.1'
   has
   size
-  348,
-  348
+  286,
+  286
   matches,
   and
   the
   score
   of
-  32928.581767270356.
+  29820.63245969636.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r253-600.2'
+  'r651-936.1'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  726
+  728
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  726.
+  728.
 END 15
 BEGIN 16
   Removed

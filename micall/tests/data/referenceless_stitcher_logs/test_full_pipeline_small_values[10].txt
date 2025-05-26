@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  469
+  66
   between
   contigs
-  'r59-617.4'
+  'r35-504.5'
   and
-  'r147-615.1'
+  'r439-889.1'
   to
   be
-  (88,
-  557).
+  (404,
+  66).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r59-617.4'
+  'r35-504.5'
   and
-  'r147-615.1'
+  'r439-889.1'
   has
   size
-  469,
-  469
+  66,
+  66
   matches,
   and
   the
   score
   of
-  38274.11874737524.
+  14228.796039592331.
 END 6
 BEGIN 7
-  Contig
-  'r59-617.4'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  66
+  between
+  contigs
+  'r35-504.5'
+  and
+  'r439-889.1',
+  resulting
+  in
   contig
-  'r147-615.1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  189
+  294
   between
   contigs
-  'r59-617.4'
+  'r35-504.5'
   and
-  'r429-836.5'
+  'r211-650.3'
   to
   be
-  (370,
-  189).
+  (176,
+  294).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r59-617.4'
+  'r35-504.5'
   and
-  'r429-836.5'
+  'r211-650.3'
   has
   size
-  189,
-  189
+  294,
+  294
   matches,
   and
   the
   score
   of
-  24276.102358333403.
+  30325.238816969184.
 END 9
 BEGIN 10
   Found
@@ -117,153 +127,18 @@ BEGIN 10
   overlap
   of
   size
-  189
+  294
   between
   contigs
-  'r59-617.4'
+  'r35-504.5'
   and
-  'r429-836.5',
+  'r211-650.3',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  405
-  between
-  contigs
-  'r59-617.4'
-  and
-  'r163-567.0'
-  to
-  be
-  (104,
-  509).
-END 11
-BEGIN 12
-  Overlap
-  between
-  contigs
-  'r59-617.4'
-  and
-  'r163-567.0'
-  has
-  size
-  405,
-  405
-  matches,
-  and
-  the
-  score
-  of
-  35546.99765401543.
-END 12
-BEGIN 13
-  Contig
-  'r59-617.4'
-  covers
-  contig
-  'r163-567.0'
-  completely.
-END 13
-BEGIN 14
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  317
-  between
-  contigs
-  'r59-617.4'
-  and
-  'r280-596.2'
-  to
-  be
-  (221,
-  538).
-END 14
-BEGIN 15
-  Overlap
-  between
-  contigs
-  'r59-617.4'
-  and
-  'r280-596.2'
-  has
-  size
-  317,
-  317
-  matches,
-  and
-  the
-  score
-  of
-  31413.056842733513.
-END 15
-BEGIN 16
-  Contig
-  'r59-617.4'
-  covers
-  contig
-  'r280-596.2'
-  completely.
-END 16
-BEGIN 17
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  235
-  between
-  contigs
-  'r59-617.4'
-  and
-  'r114-348.3'
-  to
-  be
-  (55,
-  290).
-END 17
-BEGIN 18
-  Overlap
-  between
-  contigs
-  'r59-617.4'
-  and
-  'r114-348.3'
-  has
-  size
-  235,
-  235
-  matches,
-  and
-  the
-  score
-  of
-  26997.309247180623.
-END 18
-BEGIN 19
-  Contig
-  'r59-617.4'
-  covers
-  contig
-  'r114-348.3'
-  completely.
-END 19
-BEGIN 20
   Cycle
   1
   finished
@@ -275,22 +150,22 @@ BEGIN 20
   fittest
   has
   length
-  778
+  920
   and
   consists
   of
   6
   parts.
-END 20
-BEGIN 21
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 21
-BEGIN 22
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -298,42 +173,198 @@ BEGIN 22
   overlap
   of
   size
-  469
+  212
   between
   contigs
-  (1)
+  (2)
   and
-  'r147-615.1'
+  'r439-889.1'
   to
   be
-  (88,
-  557).
-END 22
-BEGIN 23
+  (404,
+  212).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r147-615.1'
+  'r439-889.1'
   has
   size
-  469,
-  469
+  212,
+  212
   matches,
   and
   the
   score
   of
-  38274.11874737524.
+  25723.096847465706.
+END 14
+BEGIN 15
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  212
+  between
+  contigs
+  (2)
+  and
+  'r439-889.1',
+  resulting
+  in
+  contig
+  (3).
+END 15
+BEGIN 16
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  286
+  between
+  contigs
+  (2)
+  and
+  'r669-954.4'
+  to
+  be
+  (197,
+  483).
+END 16
+BEGIN 17
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r669-954.4'
+  has
+  size
+  286,
+  189
+  matches,
+  and
+  the
+  score
+  of
+  16303.803727964832.
+END 17
+BEGIN 18
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  920
+  and
+  consists
+  of
+  6
+  parts.
+END 18
+BEGIN 19
+  Cycle
+  3
+  started
+  with
+  1
+  paths.
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  221
+  between
+  contigs
+  (3)
+  and
+  'r669-954.4'
+  to
+  be
+  (634,
+  221).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (3)
+  and
+  'r669-954.4'
+  has
+  size
+  221,
+  221
+  matches,
+  and
+  the
+  score
+  of
+  26267.626444256723.
+END 21
+BEGIN 22
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  221
+  between
+  contigs
+  (3)
+  and
+  'r669-954.4',
+  resulting
+  in
+  contig
+  (4).
+END 22
+BEGIN 23
+  Cycle
+  3
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  920
+  and
+  consists
+  of
+  6
+  parts.
 END 23
 BEGIN 24
-  Contig
-  (1)
-  covers
-  contig
-  'r147-615.1'
-  completely.
+  Cycle
+  4
+  started
+  with
+  1
+  paths.
 END 24
 BEGIN 25
   Calculated
@@ -343,41 +374,41 @@ BEGIN 25
   overlap
   of
   size
-  405
+  220
   between
   contigs
-  (1)
+  (4)
   and
-  'r163-567.0'
+  'r585-804.0'
   to
   be
-  (104,
-  509).
+  (550,
+  770).
 END 25
 BEGIN 26
   Overlap
   between
   contigs
-  (1)
+  (4)
   and
-  'r163-567.0'
+  'r585-804.0'
   has
   size
-  405,
-  405
+  220,
+  220
   matches,
   and
   the
   score
   of
-  35546.99765401543.
+  26108.909668158492.
 END 26
 BEGIN 27
   Contig
-  (1)
+  (4)
   covers
   contig
-  'r163-567.0'
+  'r585-804.0'
   completely.
 END 27
 BEGIN 28
@@ -388,475 +419,151 @@ BEGIN 28
   overlap
   of
   size
-  317
+  211
   between
   contigs
-  (1)
+  (4)
   and
-  'r280-596.2'
+  'r591-801.2'
   to
   be
-  (221,
-  538).
+  (556,
+  767).
 END 28
 BEGIN 29
   Overlap
   between
   contigs
-  (1)
+  (4)
   and
-  'r280-596.2'
+  'r591-801.2'
   has
   size
-  317,
-  317
+  211,
+  211
   matches,
   and
   the
   score
   of
-  31413.056842733513.
+  25561.061591733636.
 END 29
 BEGIN 30
   Contig
-  (1)
+  (4)
   covers
   contig
-  'r280-596.2'
+  'r591-801.2'
   completely.
 END 30
 BEGIN 31
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  235
-  between
-  contigs
-  (1)
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  920
   and
-  'r114-348.3'
-  to
-  be
-  (55,
-  290).
+  consists
+  of
+  6
+  parts.
 END 31
 BEGIN 32
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  has
-  size
-  235,
-  235
-  matches,
-  and
-  the
-  score
-  of
-  26997.309247180623.
+  Cycle
+  5
+  started
+  with
+  1
+  paths.
 END 32
 BEGIN 33
-  Contig
-  (1)
-  covers
-  contig
-  'r114-348.3'
-  completely.
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  211
+  between
+  contigs
+  (4)
+  and
+  'r591-801.2'
+  to
+  be
+  (556,
+  767).
 END 33
 BEGIN 34
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  778
+  Overlap
+  between
+  contigs
+  (4)
   and
-  consists
+  'r591-801.2'
+  has
+  size
+  211,
+  211
+  matches,
+  and
+  the
+  score
   of
-  6
-  parts.
+  25561.061591733636.
 END 34
 BEGIN 35
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
+  Contig
+  (4)
+  covers
+  contig
+  'r591-801.2'
+  completely.
 END 35
 BEGIN 36
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  405
-  between
-  contigs
-  (1)
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  920
   and
-  'r163-567.0'
-  to
-  be
-  (104,
-  509).
+  consists
+  of
+  6
+  parts.
 END 36
 BEGIN 37
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r163-567.0'
-  has
-  size
-  405,
-  405
-  matches,
-  and
-  the
-  score
-  of
-  35546.99765401543.
+  Cycle
+  6
+  started
+  with
+  1
+  paths.
 END 37
 BEGIN 38
-  Contig
-  (1)
-  covers
-  contig
-  'r163-567.0'
-  completely.
-END 38
-BEGIN 39
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  317
-  between
-  contigs
-  (1)
-  and
-  'r280-596.2'
-  to
-  be
-  (221,
-  538).
-END 39
-BEGIN 40
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r280-596.2'
-  has
-  size
-  317,
-  317
-  matches,
-  and
-  the
-  score
-  of
-  31413.056842733513.
-END 40
-BEGIN 41
-  Contig
-  (1)
-  covers
-  contig
-  'r280-596.2'
-  completely.
-END 41
-BEGIN 42
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  235
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  to
-  be
-  (55,
-  290).
-END 42
-BEGIN 43
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  has
-  size
-  235,
-  235
-  matches,
-  and
-  the
-  score
-  of
-  26997.309247180623.
-END 43
-BEGIN 44
-  Contig
-  (1)
-  covers
-  contig
-  'r114-348.3'
-  completely.
-END 44
-BEGIN 45
-  Cycle
-  3
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  778
-  and
-  consists
-  of
-  6
-  parts.
-END 45
-BEGIN 46
-  Cycle
-  4
-  started
-  with
-  1
-  paths.
-END 46
-BEGIN 47
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  317
-  between
-  contigs
-  (1)
-  and
-  'r280-596.2'
-  to
-  be
-  (221,
-  538).
-END 47
-BEGIN 48
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r280-596.2'
-  has
-  size
-  317,
-  317
-  matches,
-  and
-  the
-  score
-  of
-  31413.056842733513.
-END 48
-BEGIN 49
-  Contig
-  (1)
-  covers
-  contig
-  'r280-596.2'
-  completely.
-END 49
-BEGIN 50
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  235
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  to
-  be
-  (55,
-  290).
-END 50
-BEGIN 51
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  has
-  size
-  235,
-  235
-  matches,
-  and
-  the
-  score
-  of
-  26997.309247180623.
-END 51
-BEGIN 52
-  Contig
-  (1)
-  covers
-  contig
-  'r114-348.3'
-  completely.
-END 52
-BEGIN 53
-  Cycle
-  4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  778
-  and
-  consists
-  of
-  6
-  parts.
-END 53
-BEGIN 54
-  Cycle
-  5
-  started
-  with
-  1
-  paths.
-END 54
-BEGIN 55
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  235
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  to
-  be
-  (55,
-  290).
-END 55
-BEGIN 56
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r114-348.3'
-  has
-  size
-  235,
-  235
-  matches,
-  and
-  the
-  score
-  of
-  26997.309247180623.
-END 56
-BEGIN 57
-  Contig
-  (1)
-  covers
-  contig
-  'r114-348.3'
-  completely.
-END 57
-BEGIN 58
-  Cycle
-  5
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  778
-  and
-  consists
-  of
-  6
-  parts.
-END 58
-BEGIN 59
-  Cycle
-  6
-  started
-  with
-  1
-  paths.
-END 59
-BEGIN 60
   Constructed
   a
   path
   of
   length
-  778.
-END 60
-BEGIN 61
+  920.
+END 38
+BEGIN 39
   Removed
   6
   components
@@ -869,17 +576,17 @@ BEGIN 61
   still
   to
   process.
-END 61
-BEGIN 62
+END 39
+BEGIN 40
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 62
-BEGIN 63
+END 40
+BEGIN 41
   Outputting
   1
   contigs.
-END 63
+END 41

@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  589
+  485
   between
   contigs
-  'r109-739.2'
+  'r132-660.1'
   and
-  'r151-836.0'
+  'r133-617.2'
   to
   be
-  (42,
-  589).
+  (1,
+  486).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r109-739.2'
+  'r132-660.1'
   and
-  'r151-836.0'
+  'r133-617.2'
   has
   size
-  589,
-  589
+  485,
+  485
   matches,
   and
   the
   score
   of
-  42983.72239177416.
+  38926.06136657075.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  589
-  between
-  contigs
-  'r109-739.2'
-  and
-  'r151-836.0',
-  resulting
-  in
+  Contig
+  'r132-660.1'
+  covers
   contig
-  (1).
+  'r133-617.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  728
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  546
+  229
   between
   contigs
-  (1)
+  'r132-660.1'
   and
-  'r225-770.1'
+  'r432-912.0'
   to
   be
-  (116,
-  662).
-END 10
-BEGIN 11
+  (300,
+  229).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r132-660.1'
   and
-  'r225-770.1'
+  'r432-912.0'
   has
   size
-  546,
-  546
+  229,
+  229
   matches,
   and
   the
   score
   of
-  41317.33956194282.
+  26742.347443816463.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  229
+  between
+  contigs
+  'r132-660.1'
+  and
+  'r432-912.0',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  781
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  485
+  between
+  contigs
+  (1)
+  and
+  'r133-617.2'
+  to
+  be
+  (1,
+  486).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r133-617.2'
+  has
+  size
+  485,
+  485
+  matches,
+  and
+  the
+  score
+  of
+  38926.06136657075.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r225-770.1'
+  'r133-617.2'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  728
+  781
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  728.
-END 15
-BEGIN 16
+  781.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

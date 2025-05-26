@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  266
+  546
   between
   contigs
-  'r188-722.0'
+  'r3-599.0'
   and
-  'r457-795.1'
+  'r54-747.1'
   to
   be
-  (269,
-  266).
+  (51,
+  546).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r188-722.0'
+  'r3-599.0'
   and
-  'r457-795.1'
+  'r54-747.1'
   has
   size
-  266,
-  266
+  546,
+  546
   matches,
   and
   the
   score
   of
-  28836.46499379435.
+  41380.367709527985.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  266
+  546
   between
   contigs
-  'r188-722.0'
+  'r3-599.0'
   and
-  'r457-795.1',
+  'r54-747.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  675
+  745
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  207
+  390
   between
   contigs
   (1)
   and
-  'r589-862.2'
+  'r177-566.2'
   to
   be
-  (401,
-  207).
+  (174,
+  564).
 END 10
 BEGIN 11
   Overlap
@@ -135,35 +135,25 @@ BEGIN 11
   contigs
   (1)
   and
-  'r589-862.2'
+  'r177-566.2'
   has
   size
-  207,
-  207
+  390,
+  390
   matches,
   and
   the
   score
   of
-  25415.54057194343.
+  34877.001381433925.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  207
-  between
-  contigs
+  Contig
   (1)
-  and
-  'r589-862.2',
-  resulting
-  in
+  covers
   contig
-  (2).
+  'r177-566.2'
+  completely.
 END 12
 BEGIN 13
   Cycle
@@ -177,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  675
+  745
   and
   consists
   of
@@ -198,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  675.
+  745.
 END 15
 BEGIN 16
   Removed

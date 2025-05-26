@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  357
+  293
   between
   contigs
-  'r236-900.1'
+  'r123-485.0'
   and
-  'r365-721.2'
+  'r597-889.1'
   to
   be
-  (129,
-  486).
+  (11,
+  304).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r236-900.1'
+  'r123-485.0'
   and
-  'r365-721.2'
+  'r597-889.1'
   has
   size
-  357,
-  357
+  293,
+  191
   matches,
   and
   the
   score
   of
-  33355.680879318505.
+  16143.62883672934.
 END 6
 BEGIN 7
   Contig
-  'r236-900.1'
+  'r123-485.0'
   covers
   contig
-  'r365-721.2'
+  'r597-889.1'
   completely.
 END 7
 BEGIN 8
@@ -81,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  353
+  240
   between
   contigs
-  'r236-900.1'
+  'r71-362.2'
   and
-  'r377-729.0'
+  'r123-485.0'
   to
   be
-  (141,
-  494).
+  (52,
+  240).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r236-900.1'
+  'r71-362.2'
   and
-  'r377-729.0'
+  'r123-485.0'
   has
   size
-  353,
-  353
+  240,
+  240
   matches,
   and
   the
   score
   of
-  33166.53791124181.
+  27381.65526408846.
 END 9
 BEGIN 10
-  Contig
-  'r236-900.1'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  240
+  between
+  contigs
+  'r71-362.2'
+  and
+  'r123-485.0',
+  resulting
+  in
   contig
-  'r377-729.0'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  665
+  415
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  353
+  293
   between
   contigs
-  'r236-900.1'
+  (1)
   and
-  'r377-729.0'
+  'r597-889.1'
   to
   be
-  (141,
-  494).
+  (36,
+  329).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r236-900.1'
+  (1)
   and
-  'r377-729.0'
+  'r597-889.1'
   has
   size
-  353,
-  353
+  293,
+  193
   matches,
   and
   the
   score
   of
-  33166.53791124181.
+  16418.999904306813.
 END 14
 BEGIN 15
   Contig
-  'r236-900.1'
+  (1)
   covers
   contig
-  'r377-729.0'
+  'r597-889.1'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  665
+  415
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  665.
+  415.
 END 18
 BEGIN 19
   Removed

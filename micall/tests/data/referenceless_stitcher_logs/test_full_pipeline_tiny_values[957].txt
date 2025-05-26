@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  453
+  223
   between
   contigs
-  'r6-476.2'
+  'r204-596.1'
   and
-  'r502-954.0'
+  'r374-842.2'
   to
   be
-  (19,
-  472).
+  (170,
+  223).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r6-476.2'
+  'r204-596.1'
   and
-  'r502-954.0'
+  'r374-842.2'
   has
   size
-  453,
-  300
+  223,
+  223
   matches,
   and
   the
   score
   of
-  20648.566357031486.
+  26387.107270317414.
 END 6
 BEGIN 7
-  Contig
-  'r6-476.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  223
+  between
+  contigs
+  'r204-596.1'
+  and
+  'r374-842.2',
+  resulting
+  in
   contig
-  'r502-954.0'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,52 +91,42 @@ BEGIN 8
   overlap
   of
   size
-  178
+  348
   between
   contigs
-  'r6-476.2'
+  'r374-842.2'
   and
-  'r299-600.1'
+  'r473-820.0'
   to
   be
-  (293,
-  178).
+  (99,
+  447).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r6-476.2'
+  'r374-842.2'
   and
-  'r299-600.1'
+  'r473-820.0'
   has
   size
-  178,
-  178
+  348,
+  348
   matches,
   and
   the
   score
   of
-  23552.663256793185.
+  32928.581767270356.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  178
-  between
-  contigs
-  'r6-476.2'
-  and
-  'r299-600.1',
-  resulting
-  in
+  Contig
+  'r374-842.2'
+  covers
   contig
-  (1).
+  'r473-820.0'
+  completely.
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  949
+  639
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  99
+  348
   between
   contigs
   (1)
   and
-  'r502-954.0'
+  'r473-820.0'
   to
   be
-  (496,
-  99).
+  (269,
+  617).
 END 13
 BEGIN 14
   Overlap
@@ -180,35 +180,25 @@ BEGIN 14
   contigs
   (1)
   and
-  'r502-954.0'
+  'r473-820.0'
   has
   size
-  99,
-  99
+  348,
+  348
   matches,
   and
   the
   score
   of
-  17499.717599245232.
+  32928.581767270356.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  99
-  between
-  contigs
+  Contig
   (1)
-  and
-  'r502-954.0',
-  resulting
-  in
+  covers
   contig
-  (2).
+  'r473-820.0'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -222,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  949
+  639
   and
   consists
   of
@@ -243,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  949.
+  639.
 END 18
 BEGIN 19
   Removed

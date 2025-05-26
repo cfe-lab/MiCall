@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  318
+  399
   between
   contigs
-  'r128-609.1'
+  'r210-804.0'
   and
-  'r292-624.0'
+  'r406-993.1'
   to
   be
-  (164,
-  318).
+  (196,
+  399).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r128-609.1'
+  'r210-804.0'
   and
-  'r292-624.0'
+  'r406-993.1'
   has
   size
-  318,
-  318
+  399,
+  399
   matches,
   and
   the
   score
   of
-  31545.461718782968.
+  35354.15920388057.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  318
+  399
   between
   contigs
-  'r128-609.1'
+  'r210-804.0'
   and
-  'r292-624.0',
+  'r406-993.1',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  497
+  784
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  314
+  260
   between
   contigs
   (1)
   and
-  'r619-932.2'
+  'r242-501.2'
   to
   be
-  (173,
-  487).
+  (32,
+  292).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r619-932.2'
+  'r242-501.2'
   has
   size
-  314,
-  206
+  260,
+  260
   matches,
   and
   the
   score
   of
-  16895.050734106037.
+  28416.349171455797.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r619-932.2'
+  'r242-501.2'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  497
+  784
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  497.
+  784.
 END 15
 BEGIN 16
   Removed

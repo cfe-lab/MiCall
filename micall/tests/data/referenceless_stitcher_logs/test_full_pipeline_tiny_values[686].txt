@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  313
+  478
   between
   contigs
-  'r178-852.1'
+  'r300-903.1'
   and
-  'r540-891.0'
+  'r391-868.2'
   to
   be
-  (362,
-  313).
+  (91,
+  569).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r178-852.1'
+  'r300-903.1'
   and
-  'r540-891.0'
+  'r391-868.2'
   has
   size
-  313,
-  313
+  478,
+  478
   matches,
   and
   the
   score
   of
-  31295.172059090328.
+  38642.18973321488.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  313
-  between
-  contigs
-  'r178-852.1'
-  and
-  'r540-891.0',
-  resulting
-  in
+  Contig
+  'r300-903.1'
+  covers
   contig
-  (1).
+  'r391-868.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  714
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  281
+  353
   between
   contigs
-  (1)
+  'r300-903.1'
   and
-  'r491-771.2'
+  'r551-956.0'
   to
   be
-  (313,
-  594).
-END 10
-BEGIN 11
+  (251,
+  353).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r300-903.1'
   and
-  'r491-771.2'
+  'r551-956.0'
   has
   size
-  281,
-  281
+  353,
+  353
   matches,
   and
   the
   score
   of
-  29555.758366151782.
+  33244.77254780334.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  353
+  between
+  contigs
+  'r300-903.1'
+  and
+  'r551-956.0',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  657
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  478
+  between
+  contigs
+  (1)
+  and
+  'r391-868.2'
+  to
+  be
+  (91,
+  569).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r391-868.2'
+  has
+  size
+  478,
+  478
+  matches,
+  and
+  the
+  score
+  of
+  38642.18973321488.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r491-771.2'
+  'r391-868.2'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  714
+  657
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  714.
-END 15
-BEGIN 16
+  657.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

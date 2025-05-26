@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  359
+  399
   between
   contigs
-  'r265-820.2'
+  'r248-669.1'
   and
-  'r462-853.1'
+  'r271-823.2'
   to
   be
-  (197,
-  359).
+  (23,
+  399).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r265-820.2'
+  'r248-669.1'
   and
-  'r462-853.1'
+  'r271-823.2'
   has
   size
-  359,
-  359
+  399,
+  399
   matches,
   and
   the
   score
   of
-  33527.43662225401.
+  35354.15920388057.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  359
+  399
   between
   contigs
-  'r265-820.2'
+  'r248-669.1'
   and
-  'r462-853.1',
+  'r271-823.2',
   resulting
   in
   contig
@@ -95,7 +95,7 @@ BEGIN 8
   fittest
   has
   length
-  589
+  576
   and
   consists
   of
@@ -118,16 +118,16 @@ BEGIN 10
   overlap
   of
   size
-  357
+  303
   between
   contigs
   (1)
   and
-  'r425-781.0'
+  'r322-624.0'
   to
   be
-  (160,
-  517).
+  (74,
+  377).
 END 10
 BEGIN 11
   Overlap
@@ -135,24 +135,24 @@ BEGIN 11
   contigs
   (1)
   and
-  'r425-781.0'
+  'r322-624.0'
   has
   size
-  357,
-  357
+  303,
+  303
   matches,
   and
   the
   score
   of
-  33355.680879318505.
+  30704.122964526523.
 END 11
 BEGIN 12
   Contig
   (1)
   covers
   contig
-  'r425-781.0'
+  'r322-624.0'
   completely.
 END 12
 BEGIN 13
@@ -167,7 +167,7 @@ BEGIN 13
   fittest
   has
   length
-  589
+  576
   and
   consists
   of
@@ -188,7 +188,7 @@ BEGIN 15
   path
   of
   length
-  589.
+  576.
 END 15
 BEGIN 16
   Removed

@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  433
+  538
   between
   contigs
-  'r203-747.0'
+  'r235-892.1'
   and
-  'r315-848.2'
+  'r285-822.2'
   to
   be
-  (112,
-  433).
+  (50,
+  588).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r203-747.0'
+  'r235-892.1'
   and
-  'r315-848.2'
+  'r285-822.2'
   has
   size
-  433,
-  433
+  538,
+  538
   matches,
   and
   the
   score
   of
-  36835.71948159252.
+  41011.67308492414.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  433
-  between
-  contigs
-  'r203-747.0'
-  and
-  'r315-848.2',
-  resulting
-  in
+  Contig
+  'r235-892.1'
+  covers
   contig
-  (1).
+  'r285-822.2'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  688
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,54 +81,116 @@ BEGIN 10
   overlap
   of
   size
-  427
+  340
   between
   contigs
-  'r161-629.1'
+  'r235-892.1'
   and
-  (1)
+  'r278-617.0'
   to
   be
-  (42,
-  427).
-END 10
-BEGIN 11
+  (43,
+  383).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  'r161-629.1'
+  'r235-892.1'
   and
-  (1)
+  'r278-617.0'
   has
   size
-  427,
-  427
+  340,
+  340
   matches,
   and
   the
   score
   of
-  36578.62821877826.
+  32544.234024624282.
+END 9
+BEGIN 10
+  Contig
+  'r235-892.1'
+  covers
+  contig
+  'r278-617.0'
+  completely.
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  658
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  427
+  340
   between
   contigs
-  'r161-629.1'
+  'r235-892.1'
   and
-  (1),
-  resulting
-  in
+  'r278-617.0'
+  to
+  be
+  (43,
+  383).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r235-892.1'
+  and
+  'r278-617.0'
+  has
+  size
+  340,
+  340
+  matches,
+  and
+  the
+  score
+  of
+  32544.234024624282.
+END 14
+BEGIN 15
+  Contig
+  'r235-892.1'
+  covers
   contig
-  (2).
-END 12
-BEGIN 13
+  'r278-617.0'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -177,30 +202,30 @@ BEGIN 13
   fittest
   has
   length
-  688
+  658
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  688.
-END 15
-BEGIN 16
+  658.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -213,17 +238,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  398
+  359
   between
   contigs
-  'r521-976.0'
+  'r573-975.1'
   and
-  'r51-448.2'
+  'r204-562.2'
   to
   be
-  (28,
-  426).
+  (13,
+  372).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r521-976.0'
+  'r573-975.1'
   and
-  'r51-448.2'
+  'r204-562.2'
   has
   size
-  398,
-  260
+  359,
+  242
   matches,
   and
   the
   score
   of
-  18918.613620805656.
+  18887.497479981965.
 END 6
 BEGIN 7
   Contig
-  'r521-976.0'
+  'r573-975.1'
   covers
   contig
-  'r51-448.2'
+  'r204-562.2'
   completely.
 END 7
 BEGIN 8
@@ -81,54 +81,36 @@ BEGIN 8
   overlap
   of
   size
-  67
+  250
   between
   contigs
-  'r205-587.1'
+  'r573-975.1'
   and
-  'r521-976.0'
+  'r201-547.0'
   to
   be
-  (316,
-  67).
+  (402,
+  6).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r205-587.1'
+  'r573-975.1'
   and
-  'r521-976.0'
+  'r201-547.0'
   has
   size
-  67,
-  67
+  6,
+  1
   matches,
   and
   the
   score
   of
-  14338.868060446819.
+  -670.3653588049687.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  67
-  between
-  contigs
-  'r205-587.1'
-  and
-  'r521-976.0',
-  resulting
-  in
-  contig
-  (1).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -140,22 +122,22 @@ BEGIN 11
   fittest
   has
   length
-  926
+  403
   and
   consists
   of
-  3
+  2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -163,75 +145,65 @@ BEGIN 13
   overlap
   of
   size
-  244
+  250
   between
   contigs
-  'r51-448.2'
+  'r573-975.1'
   and
-  (1)
+  'r201-547.0'
   to
   be
-  (154,
-  244).
-END 13
-BEGIN 14
+  (402,
+  6).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  'r51-448.2'
+  'r573-975.1'
   and
-  (1)
+  'r201-547.0'
   has
   size
-  244,
-  244
+  6,
+  1
   matches,
   and
   the
   score
   of
-  27610.461389557.
+  -670.3653588049687.
+END 13
+BEGIN 14
+  Constructed
+  a
+  path
+  of
+  length
+  403.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  244
-  between
-  contigs
-  'r51-448.2'
-  and
-  (1),
-  resulting
-  in
-  contig
-  (2).
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  926
-  and
-  consists
-  of
-  3
-  parts.
+  Calculating
+  all
+  paths...
 END 16
 BEGIN 17
   Cycle
-  3
+  1
   started
   with
   1
@@ -243,11 +215,11 @@ BEGIN 18
   path
   of
   length
-  926.
+  347.
 END 18
 BEGIN 19
   Removed
-  3
+  1
   components
   from
   the
@@ -260,15 +232,68 @@ BEGIN 19
   process.
 END 19
 BEGIN 20
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 20
-BEGIN 21
-  Outputting
-  1
+  2
   contigs.
 END 21
+BEGIN 22
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  250
+  between
+  contigs
+  'r573-975.1'
+  and
+  'r201-547.0'
+  to
+  be
+  (402,
+  6).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  'r573-975.1'
+  and
+  'r201-547.0'
+  has
+  size
+  6,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  -670.3653588049687.
+END 23
+BEGIN 24
+  Outputting
+  2
+  contigs.
+END 24

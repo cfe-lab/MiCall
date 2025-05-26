@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  341
+  415
   between
   contigs
-  'r304-731.1'
+  'r18-452.1'
   and
-  'r391-824.2'
+  'r19-433.0'
   to
   be
-  (87,
-  341).
+  (1,
+  416).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r304-731.1'
+  'r18-452.1'
   and
-  'r391-824.2'
+  'r19-433.0'
   has
   size
-  341,
-  341
+  415,
+  415
   matches,
   and
   the
   score
   of
-  32672.109207432237.
+  35986.733724747224.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  341
-  between
-  contigs
-  'r304-731.1'
-  and
-  'r391-824.2',
-  resulting
-  in
+  Contig
+  'r18-452.1'
+  covers
   contig
-  (1).
+  'r19-433.0'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  408
+  318
   between
   contigs
-  'r391-824.2'
+  'r18-452.1'
   and
-  'r397-804.0'
+  'r135-488.2'
   to
   be
-  (6,
-  414).
+  (117,
+  318).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r391-824.2'
+  'r18-452.1'
   and
-  'r397-804.0'
+  'r135-488.2'
   has
   size
-  408,
-  408
+  318,
+  318
   matches,
   and
   the
   score
   of
-  35679.48744099378.
+  31545.461718782968.
 END 9
 BEGIN 10
-  Contig
-  'r391-824.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  318
+  between
+  contigs
+  'r18-452.1'
+  and
+  'r135-488.2',
+  resulting
+  in
   contig
-  'r397-804.0'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  521
+  471
   and
   consists
   of
@@ -163,16 +163,16 @@ BEGIN 13
   overlap
   of
   size
-  408
+  415
   between
   contigs
   (1)
   and
-  'r397-804.0'
+  'r19-433.0'
   to
   be
-  (93,
-  501).
+  (1,
+  416).
 END 13
 BEGIN 14
   Overlap
@@ -180,24 +180,24 @@ BEGIN 14
   contigs
   (1)
   and
-  'r397-804.0'
+  'r19-433.0'
   has
   size
-  408,
-  408
+  415,
+  415
   matches,
   and
   the
   score
   of
-  35679.48744099378.
+  35986.733724747224.
 END 14
 BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r397-804.0'
+  'r19-433.0'
   completely.
 END 15
 BEGIN 16
@@ -212,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  521
+  471
   and
   consists
   of
@@ -233,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  521.
+  471.
 END 18
 BEGIN 19
   Removed

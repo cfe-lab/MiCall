@@ -36,34 +36,34 @@ BEGIN 5
   overlap
   of
   size
-  381
+  66
   between
   contigs
-  'r144-603.1'
+  'r38-420.1'
   and
-  'r223-664.2'
+  'r355-981.0'
   to
   be
-  (79,
-  381).
+  (317,
+  66).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r144-603.1'
+  'r38-420.1'
   and
-  'r223-664.2'
+  'r355-981.0'
   has
   size
-  381,
-  381
+  66,
+  66
   matches,
   and
   the
   score
   of
-  34544.08962188087.
+  14228.796039592331.
 END 6
 BEGIN 7
   Found
@@ -72,12 +72,12 @@ BEGIN 7
   overlap
   of
   size
-  381
+  66
   between
   contigs
-  'r144-603.1'
+  'r38-420.1'
   and
-  'r223-664.2',
+  'r355-981.0',
   resulting
   in
   contig
@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  521
+  944
   and
   consists
   of
-  2
+  3
   parts.
 END 8
 BEGIN 9
@@ -118,46 +118,65 @@ BEGIN 10
   overlap
   of
   size
-  243
+  302
   between
   contigs
   (1)
   and
-  'r699-991.0'
+  'r77-378.2'
   to
   be
-  None.
+  (39,
+  341).
 END 10
 BEGIN 11
-  Constructed
-  a
-  path
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r77-378.2'
+  has
+  size
+  302,
+  302
+  matches,
+  and
+  the
+  score
   of
-  length
-  521.
+  30652.85762014207.
 END 11
 BEGIN 12
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Contig
+  (1)
+  covers
+  contig
+  'r77-378.2'
+  completely.
 END 12
 BEGIN 13
-  Calculating
-  all
-  paths...
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  944
+  and
+  consists
+  of
+  3
+  parts.
 END 13
 BEGIN 14
   Cycle
-  1
+  3
   started
   with
   1
@@ -169,11 +188,11 @@ BEGIN 15
   path
   of
   length
-  293.
+  944.
 END 15
 BEGIN 16
   Removed
-  1
+  3
   components
   from
   the
@@ -186,49 +205,15 @@ BEGIN 16
   process.
 END 16
 BEGIN 17
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 17
-BEGIN 18
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 17
+BEGIN 18
+  Outputting
+  1
   contigs.
 END 18
-BEGIN 19
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  243
-  between
-  contigs
-  (1)
-  and
-  'r699-991.0'
-  to
-  be
-  None.
-END 19
-BEGIN 20
-  Outputting
-  2
-  contigs.
-END 20

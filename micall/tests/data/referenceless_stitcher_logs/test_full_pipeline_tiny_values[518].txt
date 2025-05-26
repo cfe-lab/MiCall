@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  244
+  519
   between
   contigs
-  'r0-541.2'
+  'r261-808.1'
   and
-  'r298-817.1'
+  'r262-780.2'
   to
   be
-  (298,
-  244).
+  (1,
+  520).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r0-541.2'
+  'r261-808.1'
   and
-  'r298-817.1'
+  'r262-780.2'
   has
   size
-  244,
-  244
+  519,
+  519
   matches,
   and
   the
   score
   of
-  27610.461389557.
+  40276.41999897038.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  244
-  between
-  contigs
-  'r0-541.2'
-  and
-  'r298-817.1',
-  resulting
-  in
+  Contig
+  'r261-808.1'
+  covers
   contig
-  (1).
+  'r262-780.2'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  359
+  276
   between
   contigs
-  'r0-541.2'
+  'r261-808.1'
   and
-  'r183-648.0'
+  'r533-969.0'
   to
   be
-  (183,
-  359).
+  (272,
+  276).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r0-541.2'
+  'r261-808.1'
   and
-  'r183-648.0'
+  'r533-969.0'
   has
   size
-  359,
-  359
+  276,
+  276
   matches,
   and
   the
   score
   of
-  33527.43662225401.
+  29376.831639728083.
 END 9
 BEGIN 10
   Found
@@ -127,16 +117,16 @@ BEGIN 10
   overlap
   of
   size
-  359
+  276
   between
   contigs
-  'r0-541.2'
+  'r261-808.1'
   and
-  'r183-648.0',
+  'r533-969.0',
   resulting
   in
   contig
-  (2).
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  818
+  709
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  351
+  519
   between
   contigs
-  (2)
+  (1)
   and
-  'r298-817.1'
+  'r262-780.2'
   to
   be
-  (298,
-  351).
+  (1,
+  520).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
-  'r298-817.1'
+  'r262-780.2'
   has
   size
-  351,
-  351
+  519,
+  519
   matches,
   and
   the
   score
   of
-  33150.01561862606.
+  40276.41999897038.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  351
-  between
-  contigs
-  (2)
-  and
-  'r298-817.1',
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r262-780.2'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  818
+  709
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  818.
+  709.
 END 18
 BEGIN 19
   Removed

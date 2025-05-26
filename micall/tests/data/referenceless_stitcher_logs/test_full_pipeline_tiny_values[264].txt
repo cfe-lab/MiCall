@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  434
+  137
   between
   contigs
-  'r42-739.0'
+  'r328-695.2'
   and
-  'r283-716.2'
+  'r559-912.0'
   to
   be
-  (241,
-  675).
+  (231,
+  137).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r42-739.0'
+  'r328-695.2'
   and
-  'r283-716.2'
+  'r559-912.0'
   has
   size
-  434,
-  434
+  137,
+  137
   matches,
   and
   the
   score
   of
-  36807.76410583707.
+  20634.010290690672.
 END 6
 BEGIN 7
-  Contig
-  'r42-739.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  137
+  between
+  contigs
+  'r328-695.2'
+  and
+  'r559-912.0',
+  resulting
+  in
   contig
-  'r283-716.2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,42 +91,52 @@ BEGIN 8
   overlap
   of
   size
-  385
+  166
   between
   contigs
-  'r42-739.0'
+  'r328-695.2'
   and
-  'r174-558.1'
+  'r530-870.1'
   to
   be
-  (132,
-  517).
+  (202,
+  166).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r42-739.0'
+  'r328-695.2'
   and
-  'r174-558.1'
+  'r530-870.1'
   has
   size
-  385,
-  385
+  166,
+  166
   matches,
   and
   the
   score
   of
-  34650.7910824429.
+  22737.226204114824.
 END 9
 BEGIN 10
-  Contig
-  'r42-739.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  166
+  between
+  contigs
+  'r328-695.2'
+  and
+  'r530-870.1',
+  resulting
+  in
   contig
-  'r174-558.1'
-  completely.
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  698
+  585
   and
   consists
   of
@@ -153,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  385
+  312
   between
   contigs
-  'r42-739.0'
+  (2)
   and
-  'r174-558.1'
+  'r559-912.0'
   to
   be
-  (132,
-  517).
+  (231,
+  312).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r42-739.0'
+  (2)
   and
-  'r174-558.1'
+  'r559-912.0'
   has
   size
-  385,
-  385
+  312,
+  312
   matches,
   and
   the
   score
   of
-  34650.7910824429.
+  31244.873549267104.
 END 14
 BEGIN 15
-  Contig
-  'r42-739.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  312
+  between
+  contigs
+  (2)
+  and
+  'r559-912.0',
+  resulting
+  in
   contig
-  'r174-558.1'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -202,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  698
+  585
   and
   consists
   of
@@ -223,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  698.
+  585.
 END 18
 BEGIN 19
   Removed

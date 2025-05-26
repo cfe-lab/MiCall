@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  289
+  227
   between
   contigs
-  'r430-807.0'
+  'r29-356.1'
   and
-  'r490-778.1'
+  'r130-818.2'
   to
   be
-  (60,
-  349).
+  (101,
+  227).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r430-807.0'
+  'r29-356.1'
   and
-  'r490-778.1'
+  'r130-818.2'
   has
   size
-  289,
-  289
+  227,
+  227
   matches,
   and
   the
   score
   of
-  29978.433974291813.
+  26624.460634791594.
 END 6
 BEGIN 7
-  Contig
-  'r430-807.0'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  227
+  between
+  contigs
+  'r29-356.1'
+  and
+  'r130-818.2',
+  resulting
+  in
   contig
-  'r490-778.1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,34 +91,34 @@ BEGIN 8
   overlap
   of
   size
-  27
+  292
   between
   contigs
-  'r199-456.2'
+  'r130-818.2'
   and
-  'r430-807.0'
+  'r527-830.0'
   to
   be
-  (231,
-  27).
+  (397,
+  292).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r199-456.2'
+  'r130-818.2'
   and
-  'r430-807.0'
+  'r527-830.0'
   has
   size
-  27,
-  27
+  292,
+  292
   matches,
   and
   the
   score
   of
-  8938.204784066249.
+  30221.32992949884.
 END 9
 BEGIN 10
   Found
@@ -117,16 +127,16 @@ BEGIN 10
   overlap
   of
   size
-  27
+  292
   between
   contigs
-  'r199-456.2'
+  'r130-818.2'
   and
-  'r430-807.0',
+  'r527-830.0',
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -140,7 +150,7 @@ BEGIN 11
   fittest
   has
   length
-  609
+  802
   and
   consists
   of
@@ -163,42 +173,52 @@ BEGIN 13
   overlap
   of
   size
-  289
+  227
   between
   contigs
-  (1)
+  'r29-356.1'
   and
-  'r490-778.1'
+  (2)
   to
   be
-  (291,
-  580).
+  (101,
+  227).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r29-356.1'
   and
-  'r490-778.1'
+  (2)
   has
   size
-  289,
-  289
+  227,
+  227
   matches,
   and
   the
   score
   of
-  29978.433974291813.
+  26624.460634791594.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  227
+  between
+  contigs
+  'r29-356.1'
+  and
+  (2),
+  resulting
+  in
   contig
-  'r490-778.1'
-  completely.
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -212,7 +232,7 @@ BEGIN 16
   fittest
   has
   length
-  609
+  802
   and
   consists
   of
@@ -233,7 +253,7 @@ BEGIN 18
   path
   of
   length
-  609.
+  802.
 END 18
 BEGIN 19
   Removed

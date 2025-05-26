@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  321
+  512
   between
   contigs
-  'r74-529.2'
+  'r228-947.2'
   and
-  'r131-451.0'
+  'r433-944.0'
   to
   be
-  (57,
-  378).
+  (205,
+  717).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r74-529.2'
+  'r228-947.2'
   and
-  'r131-451.0'
+  'r433-944.0'
   has
   size
-  321,
-  321
+  512,
+  512
   matches,
   and
   the
   score
   of
-  31612.69023341104.
+  40002.13115152832.
 END 6
 BEGIN 7
   Contig
-  'r74-529.2'
+  'r228-947.2'
   covers
   contig
-  'r131-451.0'
+  'r433-944.0'
   completely.
 END 7
 BEGIN 8
@@ -81,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  260
+  392
   between
   contigs
-  'r74-529.2'
+  'r161-619.1'
   and
-  'r587-846.1'
+  'r228-947.2'
   to
   be
-  (125,
-  385).
+  (67,
+  392).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r74-529.2'
+  'r161-619.1'
   and
-  'r587-846.1'
+  'r228-947.2'
   has
   size
-  260,
-  167
+  392,
+  392
   matches,
   and
   the
   score
   of
-  14829.097382533488.
+  35041.357365818694.
 END 9
 BEGIN 10
-  Contig
-  'r74-529.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  392
+  between
+  contigs
+  'r161-619.1'
+  and
+  'r228-947.2',
+  resulting
+  in
   contig
-  'r587-846.1'
-  completely.
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  456
+  787
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  260
+  512
   between
   contigs
-  'r74-529.2'
+  (1)
   and
-  'r587-846.1'
+  'r433-944.0'
   to
   be
-  (125,
-  385).
+  (272,
+  784).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r74-529.2'
+  (1)
   and
-  'r587-846.1'
+  'r433-944.0'
   has
   size
-  260,
-  167
+  512,
+  512
   matches,
   and
   the
   score
   of
-  14829.097382533488.
+  40002.13115152832.
 END 14
 BEGIN 15
   Contig
-  'r74-529.2'
+  (1)
   covers
   contig
-  'r587-846.1'
+  'r433-944.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  456
+  787
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  456.
+  787.
 END 18
 BEGIN 19
   Removed

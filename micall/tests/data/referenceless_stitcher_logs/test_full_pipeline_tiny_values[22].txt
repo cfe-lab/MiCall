@@ -36,81 +36,44 @@ BEGIN 5
   overlap
   of
   size
-  356
+  380
   between
   contigs
-  'r147-529.0'
+  'r24-592.1'
   and
-  'r174-913.1'
+  'r143-522.0'
   to
   be
-  (27,
-  356).
+  (119,
+  499).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r147-529.0'
+  'r24-592.1'
   and
-  'r174-913.1'
+  'r143-522.0'
   has
   size
-  356,
-  356
+  380,
+  380
   matches,
   and
   the
   score
   of
-  33386.4037147.
+  34423.09456190931.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  356
-  between
-  contigs
-  'r147-529.0'
-  and
-  'r174-913.1',
-  resulting
-  in
+  Contig
+  'r24-592.1'
+  covers
   contig
-  (1).
+  'r143-522.0'
+  completely.
 END 7
 BEGIN 8
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  767
-  and
-  consists
-  of
-  3
-  parts.
-END 8
-BEGIN 9
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 9
-BEGIN 10
   Calculated
   cutoff
   for
@@ -118,44 +81,126 @@ BEGIN 10
   overlap
   of
   size
-  344
+  136
   between
   contigs
-  (1)
+  'r24-592.1'
   and
-  'r287-630.2'
+  'r457-806.2'
   to
   be
-  (140,
-  484).
-END 10
-BEGIN 11
+  (433,
+  136).
+END 8
+BEGIN 9
   Overlap
   between
   contigs
-  (1)
+  'r24-592.1'
   and
-  'r287-630.2'
+  'r457-806.2'
   has
   size
-  344,
-  344
+  136,
+  136
   matches,
   and
   the
   score
   of
-  32736.971822158175.
+  20557.64939084441.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  136
+  between
+  contigs
+  'r24-592.1'
+  and
+  'r457-806.2',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  783
+  and
+  consists
+  of
+  3
+  parts.
 END 11
 BEGIN 12
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  380
+  between
+  contigs
+  (1)
+  and
+  'r143-522.0'
+  to
+  be
+  (119,
+  499).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r143-522.0'
+  has
+  size
+  380,
+  380
+  matches,
+  and
+  the
+  score
+  of
+  34423.09456190931.
+END 14
+BEGIN 15
   Contig
   (1)
   covers
   contig
-  'r287-630.2'
+  'r143-522.0'
   completely.
-END 12
-BEGIN 13
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -167,30 +212,30 @@ BEGIN 13
   fittest
   has
   length
-  767
+  783
   and
   consists
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
-  767.
-END 15
-BEGIN 16
+  783.
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -203,17 +248,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

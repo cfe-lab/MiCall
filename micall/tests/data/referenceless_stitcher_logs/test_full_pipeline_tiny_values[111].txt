@@ -36,41 +36,41 @@ BEGIN 5
   overlap
   of
   size
-  516
+  469
   between
   contigs
-  'r313-985.1'
+  'r217-943.0'
   and
-  'r344-859.2'
+  'r407-875.2'
   to
   be
-  (31,
-  547).
+  (190,
+  659).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r313-985.1'
+  'r217-943.0'
   and
-  'r344-859.2'
+  'r407-875.2'
   has
   size
-  516,
-  516
+  469,
+  469
   matches,
   and
   the
   score
   of
-  40159.09700923526.
+  38274.11874737524.
 END 6
 BEGIN 7
   Contig
-  'r313-985.1'
+  'r217-943.0'
   covers
   contig
-  'r344-859.2'
+  'r407-875.2'
   completely.
 END 7
 BEGIN 8
@@ -81,41 +81,41 @@ BEGIN 8
   overlap
   of
   size
-  319
+  355
   between
   contigs
-  'r313-985.1'
+  'r217-943.0'
   and
-  'r366-684.0'
+  'r505-859.1'
   to
   be
-  (53,
-  372).
+  (288,
+  643).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r313-985.1'
+  'r217-943.0'
   and
-  'r366-684.0'
+  'r505-859.1'
   has
   size
-  319,
-  319
+  355,
+  355
   matches,
   and
   the
   score
   of
-  31513.031578917846.
+  33261.243813239074.
 END 9
 BEGIN 10
   Contig
-  'r313-985.1'
+  'r217-943.0'
   covers
   contig
-  'r366-684.0'
+  'r505-859.1'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +130,7 @@ BEGIN 11
   fittest
   has
   length
-  673
+  727
   and
   consists
   of
@@ -153,41 +153,41 @@ BEGIN 13
   overlap
   of
   size
-  319
+  355
   between
   contigs
-  'r313-985.1'
+  'r217-943.0'
   and
-  'r366-684.0'
+  'r505-859.1'
   to
   be
-  (53,
-  372).
+  (288,
+  643).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r313-985.1'
+  'r217-943.0'
   and
-  'r366-684.0'
+  'r505-859.1'
   has
   size
-  319,
-  319
+  355,
+  355
   matches,
   and
   the
   score
   of
-  31513.031578917846.
+  33261.243813239074.
 END 14
 BEGIN 15
   Contig
-  'r313-985.1'
+  'r217-943.0'
   covers
   contig
-  'r366-684.0'
+  'r505-859.1'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +202,7 @@ BEGIN 16
   fittest
   has
   length
-  673
+  727
   and
   consists
   of
@@ -223,7 +223,7 @@ BEGIN 18
   path
   of
   length
-  673.
+  727.
 END 18
 BEGIN 19
   Removed

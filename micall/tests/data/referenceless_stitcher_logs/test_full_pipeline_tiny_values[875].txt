@@ -36,99 +36,54 @@ BEGIN 5
   overlap
   of
   size
-  491
+  314
   between
   contigs
-  'r65-773.1'
+  'r78-828.2'
   and
-  'r144-634.0'
+  'r515-903.0'
   to
   be
-  (79,
-  570).
+  (437,
+  314).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r65-773.1'
+  'r78-828.2'
   and
-  'r144-634.0'
+  'r515-903.0'
   has
   size
-  491,
-  491
+  314,
+  314
   matches,
   and
   the
   score
   of
-  39167.74262687937.
+  31345.38986306798.
 END 6
 BEGIN 7
-  Contig
-  'r65-773.1'
-  covers
-  contig
-  'r144-634.0'
-  completely.
-END 7
-BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  244
-  between
-  contigs
-  'r48-308.2'
-  and
-  'r65-773.1'
-  to
-  be
-  (17,
-  244).
-END 8
-BEGIN 9
-  Overlap
-  between
-  contigs
-  'r48-308.2'
-  and
-  'r65-773.1'
-  has
-  size
-  244,
-  244
-  matches,
-  and
-  the
-  score
-  of
-  27610.461389557.
-END 9
-BEGIN 10
   Found
   a
   significant
   overlap
   of
   size
-  244
+  314
   between
   contigs
-  'r48-308.2'
+  'r78-828.2'
   and
-  'r65-773.1',
+  'r515-903.0',
   resulting
   in
   contig
   (1).
-END 10
-BEGIN 11
+END 7
+BEGIN 8
   Cycle
   1
   finished
@@ -140,22 +95,22 @@ BEGIN 11
   fittest
   has
   length
-  726
+  920
   and
   consists
   of
   3
   parts.
-END 11
-BEGIN 12
+END 8
+BEGIN 9
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -163,44 +118,54 @@ BEGIN 13
   overlap
   of
   size
-  491
+  274
   between
   contigs
   (1)
   and
-  'r144-634.0'
+  'r630-997.1'
   to
   be
-  (96,
-  587).
-END 13
-BEGIN 14
+  (552,
+  274).
+END 10
+BEGIN 11
   Overlap
   between
   contigs
   (1)
   and
-  'r144-634.0'
+  'r630-997.1'
   has
   size
-  491,
-  491
+  274,
+  274
   matches,
   and
   the
   score
   of
-  39167.74262687937.
-END 14
-BEGIN 15
-  Contig
+  29269.5563345158.
+END 11
+BEGIN 12
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  274
+  between
+  contigs
   (1)
-  covers
+  and
+  'r630-997.1',
+  resulting
+  in
   contig
-  'r144-634.0'
-  completely.
-END 15
-BEGIN 16
+  (2).
+END 12
+BEGIN 13
   Cycle
   2
   finished
@@ -212,30 +177,30 @@ BEGIN 16
   fittest
   has
   length
-  726
+  920
   and
   consists
   of
   3
   parts.
-END 16
-BEGIN 17
+END 13
+BEGIN 14
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  726.
-END 18
-BEGIN 19
+  920.
+END 15
+BEGIN 16
   Removed
   3
   components
@@ -248,17 +213,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 21
+END 18

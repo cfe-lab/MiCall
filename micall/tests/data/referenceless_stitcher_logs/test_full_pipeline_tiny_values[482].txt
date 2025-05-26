@@ -36,52 +36,42 @@ BEGIN 5
   overlap
   of
   size
-  227
+  344
   between
   contigs
-  'r109-531.0'
+  'r232-709.2'
   and
-  'r305-606.1'
+  'r256-599.1'
   to
   be
-  (196,
-  227).
+  (24,
+  368).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r109-531.0'
+  'r232-709.2'
   and
-  'r305-606.1'
+  'r256-599.1'
   has
   size
-  227,
-  227
+  344,
+  344
   matches,
   and
   the
   score
   of
-  26624.460634791594.
+  32736.971822158175.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  227
-  between
-  contigs
-  'r109-531.0'
-  and
-  'r305-606.1',
-  resulting
-  in
+  Contig
+  'r232-709.2'
+  covers
   contig
-  (1).
+  'r256-599.1'
+  completely.
 END 7
 BEGIN 8
   Calculated
@@ -91,34 +81,34 @@ BEGIN 8
   overlap
   of
   size
-  269
+  166
   between
   contigs
-  'r98-377.2'
+  'r232-709.2'
   and
-  'r109-531.0'
+  'r544-861.0'
   to
   be
-  (11,
-  269).
+  (312,
+  166).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r98-377.2'
+  'r232-709.2'
   and
-  'r109-531.0'
+  'r544-861.0'
   has
   size
-  269,
-  269
+  166,
+  166
   matches,
   and
   the
   score
   of
-  28999.632146155676.
+  22737.226204114824.
 END 9
 BEGIN 10
   Found
@@ -127,16 +117,16 @@ BEGIN 10
   overlap
   of
   size
-  269
+  166
   between
   contigs
-  'r98-377.2'
+  'r232-709.2'
   and
-  'r109-531.0',
+  'r544-861.0',
   resulting
   in
   contig
-  (2).
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -150,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  509
+  630
   and
   consists
   of
@@ -173,52 +163,42 @@ BEGIN 13
   overlap
   of
   size
-  227
+  344
   between
   contigs
-  (2)
+  (1)
   and
-  'r305-606.1'
+  'r256-599.1'
   to
   be
-  (207,
-  227).
+  (24,
+  368).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
-  'r305-606.1'
+  'r256-599.1'
   has
   size
-  227,
-  227
+  344,
+  344
   matches,
   and
   the
   score
   of
-  26624.460634791594.
+  32736.971822158175.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  227
-  between
-  contigs
-  (2)
-  and
-  'r305-606.1',
-  resulting
-  in
+  Contig
+  (1)
+  covers
   contig
-  (3).
+  'r256-599.1'
+  completely.
 END 15
 BEGIN 16
   Cycle
@@ -232,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  509
+  630
   and
   consists
   of
@@ -253,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  509.
+  630.
 END 18
 BEGIN 19
   Removed

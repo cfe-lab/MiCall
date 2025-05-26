@@ -36,42 +36,52 @@ BEGIN 5
   overlap
   of
   size
-  478
+  256
   between
   contigs
-  'r271-859.2'
+  'r59-784.1'
   and
-  'r286-763.1'
+  'r529-939.2'
   to
   be
-  (15,
-  493).
+  (470,
+  256).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r271-859.2'
+  'r59-784.1'
   and
-  'r286-763.1'
+  'r529-939.2'
   has
   size
-  478,
-  478
+  256,
+  256
   matches,
   and
   the
   score
   of
-  38642.18973321488.
+  28285.778199159315.
 END 6
 BEGIN 7
-  Contig
-  'r271-859.2'
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  256
+  between
+  contigs
+  'r59-784.1'
+  and
+  'r529-939.2',
+  resulting
+  in
   contig
-  'r286-763.1'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -81,41 +91,41 @@ BEGIN 8
   overlap
   of
   size
-  362
+  319
   between
   contigs
-  'r271-859.2'
+  'r59-784.1'
   and
-  'r374-735.0'
+  'r202-520.0'
   to
   be
-  (103,
-  465).
+  (143,
+  462).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r271-859.2'
+  'r59-784.1'
   and
-  'r374-735.0'
+  'r202-520.0'
   has
   size
-  362,
-  362
+  319,
+  319
   matches,
   and
   the
   score
   of
-  33590.61224514467.
+  31513.031578917846.
 END 9
 BEGIN 10
   Contig
-  'r271-859.2'
+  'r59-784.1'
   covers
   contig
-  'r374-735.0'
+  'r202-520.0'
   completely.
 END 10
 BEGIN 11
@@ -130,7 +140,7 @@ BEGIN 11
   fittest
   has
   length
-  589
+  881
   and
   consists
   of
@@ -153,41 +163,41 @@ BEGIN 13
   overlap
   of
   size
-  362
+  319
   between
   contigs
-  'r271-859.2'
+  (1)
   and
-  'r374-735.0'
+  'r202-520.0'
   to
   be
-  (103,
-  465).
+  (143,
+  462).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r271-859.2'
+  (1)
   and
-  'r374-735.0'
+  'r202-520.0'
   has
   size
-  362,
-  362
+  319,
+  319
   matches,
   and
   the
   score
   of
-  33590.61224514467.
+  31513.031578917846.
 END 14
 BEGIN 15
   Contig
-  'r271-859.2'
+  (1)
   covers
   contig
-  'r374-735.0'
+  'r202-520.0'
   completely.
 END 15
 BEGIN 16
@@ -202,7 +212,7 @@ BEGIN 16
   fittest
   has
   length
-  589
+  881
   and
   consists
   of
@@ -223,7 +233,7 @@ BEGIN 18
   path
   of
   length
-  589.
+  881.
 END 18
 BEGIN 19
   Removed
