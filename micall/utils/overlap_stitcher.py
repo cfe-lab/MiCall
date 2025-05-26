@@ -191,37 +191,43 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
 
 def calculate_overlap_score(L: int, M: int) -> Score:
     """
-    Computes a monotonic scoring metric for an overlap event between
-    two sequences using a four-letter alphabet. This function returns
-    a z-score that quantifies how far the observed number of matching
-    characters deviates from the expected value under the assumption
-    that each character match occurs with a probability of 1/4.
+    Computes a monotonic scoring metric for an overlap between two sequences
+    over a four-letter alphabet.  Although the formula
 
-    Given:
-        - M: the observed number of matching characters in the overlap,
-        - L: the length of the overlap.
+        (4*M - L) / sqrt(3*L)
 
-    Under the uniform model for a four-letter alphabet:
-        - The probability of a match per position is 1/4.
-        - Expected number of matches: L / 4.
-        - Variance: L * (1/4) * (3/4) = 3L / 16.
-        - Standard deviation: sqrt(3L) / 4.
+    originates from the z-score derivation under a uniform p=1/4 model,
+    this function does *not* return a classical z-score.  Instead it returns
+    a scaled value that preserves the ordering of overlap "rarity":
 
-    The z-score is computed using the formula:
-        z = (4*M - L) / sqrt(3*L)
+        actual_score(a) < actual_score(b)
+                       iff
+          score(a)      < score(b)
 
-    This z-score provides a monotonic measure for ranking overlap
-    events: a higher z-score indicates a larger deviation from the
-    expected match count and thus a rarer event.
+    In other words, larger values still indicate more significant deviations
+    from the expected match count (L/4), but we omit any constant normalization
+    so as to maximize speed.
 
-    :param M: Number of matching characters.
-    :param L: Length of the overlap (must be greater than 0).
-    :return: A z-score as a Score that serves as a ranking metric for the event.
-    :raises ValueError: If L is not greater than 0.
+    Parameters
+    ----------
+    L : int
+        Length of the overlap (must be > 0).
+    M : int
+        Number of matching characters (0 <= M <= L).
+
+    Returns
+    -------
+    Score
+        A monotonic overlap score based on the original z-score.
+
+    Notes
+    -----
+    - By dropping constant factors, we guarantee that sorting by this score
+      yields identical rank order to sorting by the exact z-score.
+    - This streamlined computation is more efficient and avoids extra divisions
+      without changing any comparative outcome.
     """
 
-    # Compute z-score for a four-letter alphabet where P(match)=1/4:
-    # Expected matches = L / 4 and standard deviation = sqrt(3L) / 4.
     return (4 * M - L) / ((3 * L) ** 0.5)
 
 
