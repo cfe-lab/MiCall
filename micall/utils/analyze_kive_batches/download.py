@@ -67,15 +67,18 @@ def try_load_run_info(root: DirPath, run: KiveRun) -> KiveRun:
 
 def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     info_path = root / "runs" / f"{run.id}.json"
-    if not info_path.exists():
+    existing = info_path.exists()
+
+    if not existing:
+        save_run_info(root, run)
+
+    if run.is_finished:
+        return run
+
+    if existing:
         run = try_load_run_info(root, run)
-
-    if run.is_finished:
-        return run
-
-    run = try_load_run_info(root, run)
-    if run.is_finished:
-        return run
+        if run.is_finished:
+            return run
 
     try:
         logger.debug("Fetching run info for %s - it has not finished last time.", run.id)
