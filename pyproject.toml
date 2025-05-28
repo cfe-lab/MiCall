@@ -26,11 +26,12 @@ dependencies = [
     "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
-    "numpy==2.2.4",
-    "scipy==1.15.2",
-    "matplotlib==3.10.1",
+    "numpy==2.1.3",
+    "sortedcontainers==2.4.0",
+    "scipy==1.15.1",
+    "matplotlib==3.10.0",
     "cutadapt==5.0",
-    "python-Levenshtein==0.27.1",
+    "python-Levenshtein==0.26.1",
     "PyYAML==6.0.2",
     "reportlab==4.4.1",
     "pysam==0.23.0",
@@ -64,6 +65,7 @@ dev = [
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
+    "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
     "pandas-stubs==2.2.3.250308",
 ]
 denovo = [
@@ -81,7 +83,7 @@ basespace = [
 ]
 
 [project.scripts]
-micall = "micall.main:cli"
+micall = "micall.__main__:cli"
 
 [tool.hatch.build]
 include = [
@@ -255,6 +257,14 @@ check_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = "mappy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scipy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sortedcontainers"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
