@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  9390.994230676079.
+  inf.
 END 6
 BEGIN 7
   Contig
@@ -172,7 +172,7 @@ BEGIN 13
   the
   score
   of
-  -494.4127188458684.
+  inf.
 END 13
 BEGIN 14
   Constructed
@@ -290,7 +290,7 @@ BEGIN 23
   the
   score
   of
-  -494.4127188458684.
+  inf.
 END 23
 BEGIN 24
   Outputting

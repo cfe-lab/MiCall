@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  17975.57358918757.
+  inf.
 END 6
 BEGIN 7
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  17975.57358918757.
+  inf.
 END 14
 BEGIN 15
   Contig
@@ -308,7 +308,7 @@ BEGIN 21
   the
   score
   of
-  7831.537691355173.
+  1.2205849192156235.
 END 21
 BEGIN 22
   Contig
@@ -380,7 +380,7 @@ BEGIN 26
   the
   score
   of
-  17975.57358918757.
+  inf.
 END 26
 BEGIN 27
   Contig
@@ -507,7 +507,7 @@ BEGIN 34
   the
   score
   of
-  17975.57358918757.
+  inf.
 END 34
 BEGIN 35
   Contig
@@ -634,7 +634,7 @@ BEGIN 42
   the
   score
   of
-  17975.57358918757.
+  inf.
 END 42
 BEGIN 43
   Contig

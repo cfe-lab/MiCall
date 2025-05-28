@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  18075.394542999602.
+  inf.
 END 6
 BEGIN 7
   Contig
@@ -253,7 +253,7 @@ BEGIN 18
   the
   score
   of
-  8402.649877003023.
+  0.5849514991602479.
 END 18
 BEGIN 19
   Cycle
@@ -317,7 +317,7 @@ BEGIN 22
   the
   score
   of
-  18075.394542999602.
+  inf.
 END 22
 BEGIN 23
   Contig
@@ -489,7 +489,7 @@ BEGIN 33
   the
   score
   of
-  18075.394542999602.
+  inf.
 END 33
 BEGIN 34
   Contig
@@ -616,7 +616,7 @@ BEGIN 41
   the
   score
   of
-  18075.394542999602.
+  inf.
 END 41
 BEGIN 42
   Contig
@@ -733,7 +733,7 @@ BEGIN 49
   the
   score
   of
-  15442.241560405964.
+  inf.
 END 49
 BEGIN 50
   Contig

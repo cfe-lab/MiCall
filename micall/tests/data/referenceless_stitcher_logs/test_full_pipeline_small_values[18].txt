@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  17997.448777647744.
+  inf.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  16580.80362949388.
+  inf.
 END 11
 BEGIN 12
   Found
@@ -227,7 +227,7 @@ BEGIN 16
   the
   score
   of
-  16132.269846610847.
+  inf.
 END 16
 BEGIN 17
   Contig
@@ -399,7 +399,7 @@ BEGIN 27
   the
   score
   of
-  16132.269846610847.
+  inf.
 END 27
 BEGIN 28
   Contig
@@ -516,7 +516,7 @@ BEGIN 35
   the
   score
   of
-  15993.838827504478.
+  inf.
 END 35
 BEGIN 36
   Contig

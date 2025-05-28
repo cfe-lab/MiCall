@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  17096.744681727156.
+  inf.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  15150.677437642693.
+  inf.
 END 11
 BEGIN 12
   Found
@@ -200,7 +200,7 @@ BEGIN 14
   the
   score
   of
-  8782.372023438946.
+  0.5796686029113562.
 END 14
 BEGIN 15
   Cycle
@@ -264,7 +264,7 @@ BEGIN 18
   the
   score
   of
-  8782.372023438946.
+  inf.
 END 18
 BEGIN 19
   Contig
@@ -426,7 +426,7 @@ BEGIN 29
   the
   score
   of
-  8181.158534881437.
+  inf.
 END 29
 BEGIN 30
   Contig
@@ -543,7 +543,7 @@ BEGIN 37
   the
   score
   of
-  14814.848756428428.
+  inf.
 END 37
 BEGIN 38
   Contig

@@ -346,9 +346,10 @@ def try_combine_contigs(is_debug2: bool,
     # The addition would give a more precise value for the result_score, but it's much more expensive to calculate.
     result_score = calculate_referenceless_overlap_score(L=result_length, M=number_of_matches)
     if is_debug2:
+        relative_score = result_score / minimum_base_score if minimum_base_score != 0 else float("inf")
         log(events.DeterminedOverlap(left.unique_name, right.unique_name,
                                      result_length - is_covered - 1,
-                                     number_of_matches, result_score))
+                                     number_of_matches, relative_score))
 
     if result_score < minimum_base_score:
         return None

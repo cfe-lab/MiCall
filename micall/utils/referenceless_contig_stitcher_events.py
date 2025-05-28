@@ -137,12 +137,12 @@ class DeterminedOverlap:
     right_contig: str
     overlap_size: int
     number_of_matches: int
-    result_probability: Score
+    relative_score: Score
 
     def __str__(self) -> str:
         return f"Overlap between contigs {self.left_contig} and {self.right_contig}" \
             f" has size {self.overlap_size}, {self.number_of_matches} matches," \
-            f" and the score of {self.result_probability}."
+            f" and the score of {self.relative_score}."
 
 
 EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,

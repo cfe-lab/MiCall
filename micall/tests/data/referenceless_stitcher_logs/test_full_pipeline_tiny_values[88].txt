@@ -181,7 +181,7 @@ BEGIN 14
   the
   score
   of
-  12897.913198385198.
+  inf.
 END 14
 BEGIN 15
   Found
