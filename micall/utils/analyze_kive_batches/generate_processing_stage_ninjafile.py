@@ -119,7 +119,7 @@ def generate_statements(root: DirPath,
                    "--column", "app",
                    "--output", Deref("out"),
                ),
-               description=Description.make("join tables"),
+               description=Description.make("join tables {}", Deref("out")),
                )
 
     builds = tuple(generate_builds(root, runs_txt))
