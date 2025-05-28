@@ -168,12 +168,12 @@ def generate_statements(root: DirPath,
 
     yield Build(rule="join_tables",
                 outputs=[stats_join_file],
-                inputs=[aggregated_stats, properties_file],
+                inputs=[stats, properties_file],
                 )
 
     yield Build(rule="join_tables",
                 outputs=[overlaps_join_file],
-                inputs=[aggregated_overlaps, properties_file],
+                inputs=[overlaps, properties_file],
                 )
 
     yield from builds
