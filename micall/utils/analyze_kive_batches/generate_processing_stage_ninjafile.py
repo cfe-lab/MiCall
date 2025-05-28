@@ -131,6 +131,8 @@ def generate_statements(root: DirPath,
     aggregated_overlaps = root / "agg-overlaps.csv"
     properties_file = root / "properties.csv"
     join_file = root / "combined.csv"
+    stats_join_file = root / "stats_combined.csv"
+    overlaps_join_file = root / "overlaps_combined.csv"
 
     yield Build(rule="combine_stats",
                 outputs=[stats],
@@ -162,6 +164,16 @@ def generate_statements(root: DirPath,
     yield Build(rule="join_tables",
                 outputs=[join_file],
                 inputs=[aggregated_stats, aggregated_overlaps, properties_file],
+                )
+
+    yield Build(rule="join_tables",
+                outputs=[stats_join_file],
+                inputs=[aggregated_stats, properties_file],
+                )
+
+    yield Build(rule="join_tables",
+                outputs=[overlaps_join_file],
+                inputs=[aggregated_overlaps, properties_file],
                 )
 
     yield from builds
