@@ -30,7 +30,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     return 1024 * calculate_overlap_score(L=L, M=M)
 
 
-ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=81, M=80)
+ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=99, M=98)
 MAX_ALTERNATIVES = 999
 MIN_ALTERNATIVES = 1
 
