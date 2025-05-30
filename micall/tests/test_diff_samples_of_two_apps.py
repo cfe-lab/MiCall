@@ -46,12 +46,14 @@ def test_simple_pair(tmp_path):
 
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
 
-    # Expect one row: 1,alice/bob,70-50=20,y/x
+    # Expect one row: 1,alice/bob,70-50=20,y/x + base columns
     want = pd.DataFrame([{
         "sample": "1",
         "app":    "alice/bob",
         "size":   "20",
         "type":   "y/x",
+        "size_base": "70",
+        "type_base": "y",
     }])
     got = read_df(out)
     assert_df_equal_ignore_dtype(got, want)
@@ -76,6 +78,8 @@ def test_three_apps_only_two_selected(tmp_path):
         "app":    "alice/bob",
         "size":   "20",
         "type":   "z/x",
+        "size_base": "70",
+        "type_base": "z",
     }])
     got = read_df(out)
     assert_df_equal_ignore_dtype(got, want)
@@ -98,7 +102,7 @@ def test_multiple_rows_per_sample(tmp_path):
 
     # We get two output rows in the same order pairs were seen:
     want = pd.DataFrame([
-        {"sample": "1", "app": "alice/bob", "size": "20", "type": "z+k/x+m"},
+        {"sample": "1", "app": "alice/bob", "size": "20", "type": "z+k/x+m", "size_base": "70", "type_base": "z+k"},
     ])
     got = read_df(out)
     assert_df_equal_ignore_dtype(got, want)
@@ -120,8 +124,8 @@ def test_two_samples(tmp_path):
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
 
     want = pd.DataFrame([
-        {"sample": "1", "app": "alice/bob", "size": "10"},
-        {"sample": "2", "app": "alice/bob", "size": "10"},
+        {"sample": "1", "app": "alice/bob", "size": "10", "size_base": "20"},
+        {"sample": "2", "app": "alice/bob", "size": "10", "size_base": "40"},
     ])
     got = read_df(out)
     assert_df_equal_ignore_dtype(got, want)
@@ -142,7 +146,8 @@ def test_no_common_samples_yields_only_header(tmp_path):
 
     # read with pandas: zero rows but correct header
     df = pd.read_csv(out)
-    assert list(df.columns) == header
+    expected_cols = header + ["size_base"]  # base columns added
+    assert list(df.columns) == expected_cols
     assert df.shape[0] == 0
 
 
@@ -176,10 +181,12 @@ def test_coerce_and_nan(tmp_path):
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     df = pd.read_csv(out)
 
-    # foo → NaN, so result is 10/foo
+    # foo → NaN, so result is 10/foo, base is 10
     assert df.loc[0, "size"] == "10/foo"
+    assert str(df.loc[0, "size_base"]) == "10"
     # still has the correct header
-    assert list(df.columns) == header
+    expected_cols = header + ["size_base"]
+    assert list(df.columns) == expected_cols
 
 
 def test_identical_non_numeric(tmp_path):
@@ -196,8 +203,9 @@ def test_identical_non_numeric(tmp_path):
 
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     df = pd.read_csv(out, dtype=str)
-    # tag is the same → we expect "X" not "X/X"
+    # tag is the same → we expect "X" not "X/X", base is "X"
     assert df.loc[0, "tag"] == "X"
+    assert df.loc[0, "tag_base"] == "X"
     assert df.loc[0, "app"] == "alice/bob"
 
 
@@ -224,10 +232,13 @@ def test_unbalanced_rows_pairs_and_logs_warning(tmp_path, caplog):
 
     # only the first pair shows up
     assert len(df) == 1
-    # sizes: 15-10=5, 25-20=5
+    # sizes: 15-10=5, 25-20=5, but aggregated so mean of (15,25) - mean of (10,20,30) = 20-20=0
     assert set(df["size"]) == {'0'}
-    # types: A/X and B/Y
+    # types: A/X and B/Y, but aggregated so A+B/X+Y+Z
     assert set(df["type"]) == {"A+B/X+Y+Z"}
+    # base columns should have alice's aggregated values
+    assert set(df["size_base"]) == {'20'}
+    assert set(df["type_base"]) == {"A+B"}
 
 
 def test_float_subtraction_and_negative(tmp_path):
@@ -249,11 +260,14 @@ def test_float_subtraction_and_negative(tmp_path):
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     df = read_df(out)
 
-    # For sample=1: 2.1-3.5 = -1.4
-    # For sample=2: 5.0-1.0 = 4.0
+    # For sample=1: 2.1-3.5 = -1.4, base=2.1
+    # For sample=2: 5.0-1.0 = 4.0, base=5.0
     got = dict(zip(df["sample"], df["val"]))
+    got_base = dict(zip(df["sample"], df["val_base"]))
     assert got["1"] == "-1.4"
     assert got["2"] == "4.0"
+    assert got_base["1"] == "2.1"
+    assert got_base["2"] == "5.0"
 
 
 def test_column_order_is_preserved(tmp_path):
@@ -271,21 +285,26 @@ def test_column_order_is_preserved(tmp_path):
     write_csv(inp, header, rows)
 
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
-    # read only header line
-    first = out.read_text().splitlines()[0].split(',')
-    assert first == header
+    # read only header line - should include base columns
+    actual_header = out.read_text().splitlines()[0].split(',')
+    expected_header = header + ["type_base", "foo_base", "size_base"]
+    assert actual_header == expected_header
 
     # check the single data row
     df = read_df(out)
     rec = df.iloc[0].to_dict()
 
     # NOTE: type: Y/X, foo: beta/alpha, app: alice/bob, size:10
+    # base columns have alice's values
     assert rec == {
         "type":   "Y/X",
         "sample": "1",
         "foo":    "beta/alpha",
         "app":    "alice/bob",
         "size":   "10",
+        "type_base": "Y",
+        "foo_base": "beta",
+        "size_base": "110",
     }
 
 
@@ -306,6 +325,7 @@ def test_boolean_and_nonstring_columns(tmp_path):
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     df = read_df(out)
     assert df.loc[0, "flag"] == "False/True"
+    assert df.loc[0, "flag_base"] == "False"
     assert df.loc[0, "app"]  == "alice/bob"
 
 
@@ -327,6 +347,7 @@ def test_sample_codes_are_preserved_as_strings(tmp_path):
     df = read_df(out)
     assert df.loc[0, "sample"] == "S1"
     assert df.loc[0, "size"]   == "3"
+    assert df.loc[0, "size_base"] == "8"
 
 
 def test_same_app_diffing_itself(tmp_path):
@@ -345,10 +366,13 @@ def test_same_app_diffing_itself(tmp_path):
 
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
-    # we should get two rows, both with size=0, tag unchanged
+    # we should get one row with aggregated values and base columns
     assert list(df["size"]) == ["10.0"]
     assert list(df["tag"])  == ["X+Y"]
     assert list(df["app"])  == ["bob"]
+    # base columns should have the same values since it's same app
+    assert list(df["size_base"]) == ["15.0"]  # mean of 10,20
+    assert list(df["tag_base"])  == ["X+Y"]
 
 
 def test_same_app_diffing_itself2(tmp_path):
@@ -368,11 +392,15 @@ def test_same_app_diffing_itself2(tmp_path):
 
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
-    # we should get two rows, both with size=0, tag unchanged
-    assert list(df["size"]) == ["10.0"]
+    # we should get one row with aggregated values and base columns
+    assert list(df["size"]) == ["10.0"]  # variance: average diff between consecutive values (|20-10| + |30-20|)/(3-1) = 20/2 = 10
     assert list(df["tag"])  == ["X+Y+X"]
     assert list(df["tag2"])  == ["a+b+c"]
     assert list(df["app"])  == ["bob"]
+    # base columns should have the same values since it's same app
+    assert list(df["size_base"]) == ["20.0"]  # mean of 10,20,30
+    assert list(df["tag_base"])  == ["X+Y+X"]
+    assert list(df["tag2_base"])  == ["a+b+c"]
 
 
 def test_empty_input_header_only_raises(tmp_path):
@@ -405,5 +433,6 @@ def test_missing_non_numeric_values(tmp_path):
 
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     df = read_df(out)
-    # tag = "HELLO/" because bob's side was empty
+    # tag = "HELLO/" because bob's side was empty, base = "HELLO"
     assert df.loc[0, "tag"] == "HELLO/"
+    assert df.loc[0, "tag_base"] == "HELLO"
