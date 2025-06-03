@@ -84,7 +84,7 @@ def log(e: events.EventType) -> None:
 
 @dataclass
 class Pool:
-    paths: SortedRing[ContigsPath]
+    ring: SortedRing[ContigsPath]
     existing: MutableMapping[str, ContigsPath]
     smallest_score: Score
 
@@ -106,8 +106,8 @@ class Pool:
 
         # insert the new path and record it
         self.existing[key] = path
-        if self.paths.insert(path):
-            self.smallest_score = max(self.paths[0].get_score(), ACCEPTABLE_STITCHING_SCORE)
+        if self.ring.insert(path):
+            self.smallest_score = max(self.ring[0].get_score(), ACCEPTABLE_STITCHING_SCORE)
             return True
 
         return False
@@ -448,22 +448,22 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
     pool = Pool.empty(max_alternatives)
     for path in sorted(paths):
         # stop if we reached capacity
-        if len(pool.paths) >= pool.paths.capacity:
+        if len(pool.ring) >= pool.ring.capacity:
             break
         pool.add(path)
 
     log(events.CalculatingAll())
     for cycle in itertools.count(1):
         # log start with current pool size
-        log(events.CycleStart(cycle, len(pool.paths)))
+        log(events.CycleStart(cycle, len(pool.ring)))
 
-        if not calc_multiple_extensions(is_debug2, pool, pool.paths, contigs):
+        if not calc_multiple_extensions(is_debug2, pool, pool.ring, contigs):
             break
 
         # log end with updated pool size
-        log(events.CycleEnd(cycle, len(pool.paths), pool))
+        log(events.CycleEnd(cycle, len(pool.ring), pool))
 
-    return pool.paths
+    return pool.ring
 
 
 def find_most_probable_path(seeds: Sequence[ContigsPath],

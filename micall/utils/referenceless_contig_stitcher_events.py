@@ -42,7 +42,7 @@ class CycleEnd:
         self.pool = pool
 
     def __str__(self) -> str:
-        fittest = self.pool.paths[-1]  # type: ignore
+        fittest = self.pool.ring[-1]  # type: ignore
         length = len(fittest.whole.seq)  # type: ignore
         parts = len(fittest.parts_ids)  # type: ignore
 
