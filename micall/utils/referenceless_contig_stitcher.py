@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 @cache
 def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
+    if L == 0:
+        return SCORE_NOTHING
+
     return 1024 * calculate_overlap_score(L=L, M=M)
 
 
