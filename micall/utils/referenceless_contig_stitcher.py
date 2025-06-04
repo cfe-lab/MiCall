@@ -411,24 +411,25 @@ def extend_by_1(is_debug2: bool,
                 pool: Pool,
                 path: ContigsPath,
                 candidate: ContigWithAligner,
-                ) -> bool:
+                ) -> Optional[ContigsPath]:
     """
     Attempt to extend a contig path by one candidate contig.
-    If a valid combination is found and added to the pool, return True.
-    Otherwise return False.
+    If a valid combination is found, return it.
+    Otherwise return None.
     """
+
     if path.has_contig(candidate):
-        return False
+        return None
 
     combination = try_combine_contigs(is_debug2, path.score, pool, path.whole, candidate)
     if combination is None:
-        return False
+        return None
 
     combined, additional_score = combination
     score = combine_scores(path.score, additional_score)
     new_elements = path.parts_ids.union([candidate.id])
     new_path = ContigsPath(combined, new_elements, score)
-    return pool.add(new_path)
+    return new_path
 
 
 def calc_extension(is_debug2: bool,
@@ -440,9 +441,13 @@ def calc_extension(is_debug2: bool,
     Try to extend a single path with each contig in contigs.
     Return True if any extension was added to the pool.
     """
+
     ret = False
     for contig in contigs:
-        ret = extend_by_1(is_debug2, pool, path, contig) or ret
+        new = extend_by_1(is_debug2, pool, path, contig)
+        if new is not None:
+            ret = pool.add(new) or ret
+
     return ret
 
 
