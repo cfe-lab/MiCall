@@ -2,7 +2,7 @@ import itertools
 import logging
 from dataclasses import dataclass
 from functools import cache
-from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Literal, Union
+from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Literal, Union, Set
 
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -85,6 +85,7 @@ def log(e: events.EventType) -> None:
 @dataclass
 class Pool:
     ring: SortedRing[ContigsPath]
+    set: Set[str]
     existing: MutableMapping[str, ContigsPath]
     smallest_score: Score
 
@@ -92,7 +93,7 @@ class Pool:
     def empty(capacity: int) -> 'Pool':
         # initial capacity is large; smallest_score starts at threshold
         ring: SortedRing[ContigsPath] = SortedRing(capacity=capacity)
-        return Pool(ring, {}, ACCEPTABLE_STITCHING_SCORE)
+        return Pool(ring, set(), {}, ACCEPTABLE_STITCHING_SCORE)
 
     @property
     def min_acceptable_score(self) -> Score:
@@ -106,7 +107,32 @@ class Pool:
 
         # insert the new path and record it
         self.existing[key] = path
+
+        deleted_seq = None
+        old_size = len(self.ring)
+
+        if path.whole.seq in self.set:
+            to_delete_index = -1
+            for i, candidate in enumerate(self.ring):
+                if candidate.whole.seq == path.whole.seq:
+                    to_delete_index = i
+                    break
+
+            assert to_delete_index >= 0
+            deleted_seq = path.whole.seq
+            del self.ring[to_delete_index]
+
+        else:
+            if len(self.ring) > 0:
+                deleted_seq = self.ring[0].whole.seq
+
         if self.ring.insert(path):
+            new_size = len(self.ring)
+
+            if new_size == old_size and deleted_seq is not None:
+                self.set.remove(deleted_seq)
+
+            self.set.add(path.whole.seq)
             self.smallest_score = max(self.ring[0].get_score(), ACCEPTABLE_STITCHING_SCORE)
             return True
 

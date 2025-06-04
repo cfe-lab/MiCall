@@ -371,7 +371,7 @@ class TestPool:
         assert pool.existing["ATCG"] == better_path  # Should still be the better path
 
     def test_pool_add_duplicate_sequence_better_score(self):
-        """Test adding a path with duplicate sequence but better score (updates existing mapping but keeps both in ring)."""
+        """Test adding a path with duplicate sequence but better score (replaces old path with deduplication)."""
         pool = Pool.empty(3)
 
         # Create two paths with same sequence but different scores
@@ -384,15 +384,16 @@ class TestPool:
         assert len(pool.ring) == 1
         assert pool.existing["ATCG"] == worse_path
 
-        # Add better path (current behavior: keeps both in ring, updates existing mapping)
+        # Add better path (new behavior: replaces old path with deduplication)
         assert pool.add(better_path) is True
-        assert len(pool.ring) == 2  # Both paths remain in ring
+        assert len(pool.ring) == 1  # Still only one path (replaced, not added)
         assert pool.existing["ATCG"] == better_path  # Existing mapping points to better path
 
-        # Verify both paths are in the ring
+        # Verify only the better path is in the ring
         ring_paths = list(pool.ring)
-        assert worse_path in ring_paths
-        assert better_path in ring_paths
+        assert worse_path not in ring_paths  # Old path should be removed
+        assert better_path in ring_paths      # New path should be present
+        assert pool.ring[0] == better_path    # Should be the only path
 
     def test_pool_capacity_enforcement(self):
         """Test that pool enforces capacity limits through SortedRing."""
@@ -625,7 +626,7 @@ class TestPool:
         assert len(ring_sequences) >= 0
 
     def test_pool_duplicate_with_marginally_better_score(self):
-        """Test duplicate sequence with marginally better score."""
+        """Test duplicate sequence with marginally better score (replaces with deduplication)."""
         pool = Pool.empty(3)
 
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -641,8 +642,9 @@ class TestPool:
         assert pool.add(barely_better_path) is True
         assert pool.existing["ATCG"] == barely_better_path
 
-        # Both should be in ring (current implementation behavior)
-        assert len(pool.ring) == 2
+        # With deduplication, only the better path should remain
+        assert len(pool.ring) == 1
+        assert pool.ring[0] == barely_better_path
 
     def test_pool_empty_sequence_edge_case(self):
         """Test Pool behavior with empty sequence strings."""
@@ -716,3 +718,278 @@ class TestPool:
         assert pool.add(path3) is False  # Should fail because score is lower than ring[0]
         # But existing mapping should still be updated
         assert pool.existing["CCCC"] == path3
+
+    def test_pool_deduplication_set_consistency(self):
+        """Test set management during deduplication."""
+        pool = Pool.empty(3)
+
+        # Add initial path
+        contig = ContigWithAligner(name="1", seq="ATCG")
+        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
+
+        assert pool.add(path1) is True
+        assert "ATCG" in pool.set
+        assert pool.existing["ATCG"] == path1
+
+        # Add better path with same sequence (should replace)
+        path2 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
+
+        assert pool.add(path2) is True
+
+        assert "ATCG" in pool.set, "BUG: Set incorrectly removes sequence during replacement"
+        assert pool.existing["ATCG"] == path2
+        assert len(pool.ring) == 1
+        assert pool.ring[0] == path2
+
+    def test_pool_existing_mapping_comprehensive_tracking(self):
+        """Test that existing mapping comprehensively tracks all sequences for deduplication."""
+        # Create a small pool that will be full
+        pool = Pool.empty(1)
+
+        # Fill the pool to capacity
+        contig1 = ContigWithAligner(name="1", seq="AAAA")
+        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        assert pool.add(path1) is True
+
+        # Try to add a lower-scoring path that should be rejected by ring
+        contig2 = ContigWithAligner(name="2", seq="TTTT")
+        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(5.0))
+        result = pool.add(path2)
+
+        # The add should fail
+        assert not result, "Expected add to fail for lower-scoring path when pool is full"
+
+        # DESIGN FEATURE: existing mapping tracks ALL sequences for comprehensive deduplication
+        # This prevents future additions of the same sequence even if it was previously rejected
+        assert "TTTT" in pool.existing, (
+            f"Expected existing mapping to track all sequences for deduplication. "
+            f"existing contains: {list(pool.existing.keys())}"
+        )
+
+        # Verify that trying to add the same sequence again is properly rejected
+        contig3 = ContigWithAligner(name="3", seq="TTTT")
+        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(6.0))  # Slightly better but still worse than what's tracked
+        result2 = pool.add(path3)
+        assert not result2, "Expected duplicate sequence to be rejected based on existing mapping"
+
+    def test_pool_set_tracking_during_complex_operations(self):
+        """Test that set correctly tracks sequences during complex add/remove scenarios."""
+        pool = Pool.empty(2)  # Small capacity to force evictions
+
+        # Add first path
+        contig1 = ContigWithAligner(name="1", seq="AAAA")
+        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        assert pool.add(path1) is True
+        assert "AAAA" in pool.set
+
+        # Add second path (different sequence)
+        contig2 = ContigWithAligner(name="2", seq="BBBB")
+        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(20.0))
+        assert pool.add(path2) is True
+        assert "BBBB" in pool.set
+        assert len(pool.set) == 2
+
+        # Add third path (different sequence, high score) - should evict lowest
+        contig3 = ContigWithAligner(name="3", seq="CCCC")
+        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(30.0))
+        result = pool.add(path3)
+
+        if result is True:
+            # Set should reflect actual ring contents
+            ring_sequences = {path.whole.seq for path in pool.ring}
+            assert ring_sequences == pool.set, "BUG: Set doesn't match actual ring contents"
+            assert "CCCC" in pool.set
+            # One of the previous sequences should have been evicted
+            assert len(pool.set) == len(pool.ring)
+
+    def test_pool_duplicate_replacement_with_eviction_scenario(self):
+        """Test complex scenario: duplicate replacement when at capacity."""
+        pool = Pool.empty(2)
+
+        # Fill capacity with two different sequences
+        contig1 = ContigWithAligner(name="1", seq="AAAA")
+        contig2 = ContigWithAligner(name="2", seq="BBBB")
+        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(15.0))
+
+        assert pool.add(path1) is True
+        assert pool.add(path2) is True
+        assert len(pool.ring) == 2
+        assert len(pool.set) == 2
+
+        # Now add a better version of the first sequence
+        better_path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(25.0))
+        assert pool.add(better_path1) is True
+
+        # Check consistency: should still have 2 items, with better_path1 replacing path1
+        assert len(pool.ring) == 2
+        assert len(pool.set) == 2
+        assert "AAAA" in pool.set
+        assert "BBBB" in pool.set
+        assert pool.existing["AAAA"] == better_path1
+
+        # Verify that better_path1 is actually in the ring, not the old path1
+        ring_paths = list(pool.ring)
+        assert better_path1 in ring_paths
+        assert path1 not in ring_paths
+
+    def test_pool_empty_ring_smallest_score_bug(self):
+        """Test potential IndexError when accessing ring[0] on empty ring."""
+        pool = Pool.empty(1)
+
+        # Try to add a path with very low score that ring might reject
+        contig = ContigWithAligner(name="1", seq="ATCG")
+        very_low_score = Score(-1000.0)
+        path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=very_low_score)
+
+        # This should not crash due to accessing ring[0] when ring is empty
+        try:
+            result = pool.add(path)
+            # If it succeeded, smallest_score should be updated safely
+            if result is True:
+                assert pool.smallest_score >= ACCEPTABLE_STITCHING_SCORE
+        except IndexError as e:
+            if "ring[0]" in str(e):
+                assert False, "BUG: IndexError when accessing ring[0] on empty ring"
+
+    def test_pool_deduplication_assert_failure_scenario(self):
+        """Test scenario that might trigger the assert to_delete_index >= 0."""
+        pool = Pool.empty(3)
+
+        # Add a path
+        contig = ContigWithAligner(name="1", seq="ATCG")
+        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
+        assert pool.add(path1) is True
+
+        # Manually corrupt the state to test assert robustness
+        # (In real scenario, this might happen due to race conditions or other bugs)
+        pool.set.add("FAKE_SEQ")  # Add fake sequence to set
+
+        # Try to add a path with sequence that's in set but not in ring
+        fake_contig = ContigWithAligner(name="fake", seq="FAKE_SEQ")
+        fake_path = ContigsPath(whole=fake_contig, parts_ids=frozenset([fake_contig.id]), score=Score(10.0))
+
+        try:
+            pool.add(fake_path)
+        except AssertionError:
+            # The assert to_delete_index >= 0 should catch this inconsistency
+            pass  # Expected in this corrupted state test
+
+    def test_pool_set_existing_ring_consistency_invariant(self):
+        """Test that set, existing, and ring maintain consistency invariants."""
+        pool = Pool.empty(4)
+
+        sequences_to_test = ["AAAA", "BBBB", "CCCC", "DDDD", "EEEE"]
+        paths = []
+
+        for i, seq in enumerate(sequences_to_test):
+            contig = ContigWithAligner(name=str(i), seq=seq)
+            path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(float(i * 10)))
+            paths.append(path)
+
+            pool.add(path)
+
+            # Verify invariants after each addition
+            ring_sequences = {p.whole.seq for p in pool.ring}
+            existing_sequences = set(pool.existing.keys())
+
+            # INVARIANT 1: set should match ring sequences
+            assert pool.set == ring_sequences, f"INVARIANT VIOLATED: set {pool.set} != ring sequences {ring_sequences}"
+
+            # INVARIANT 2: all ring sequences should be in existing
+            assert ring_sequences.issubset(existing_sequences), f"INVARIANT VIOLATED: ring sequences {ring_sequences} not in existing {existing_sequences}"
+
+            # INVARIANT 3: ring size should not exceed capacity
+            assert len(pool.ring) <= pool.ring.capacity, f"INVARIANT VIOLATED: ring size {len(pool.ring)} exceeds capacity {pool.ring.capacity}"
+
+    def test_pool_deduplication_score_comparison_edge_cases(self):
+        """Test edge cases in score comparison for deduplication."""
+        pool = Pool.empty(3)
+
+        contig = ContigWithAligner(name="1", seq="ATCG")
+
+        # Test with exactly equal scores (should be rejected)
+        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
+        path2 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
+
+        assert pool.add(path1) is True
+        assert pool.add(path2) is False  # Equal score should be rejected
+        assert pool.existing["ATCG"] == path1  # Should still be first path
+
+        # Test with very small difference (floating point precision)
+        epsilon_better = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0000000001))
+        assert pool.add(epsilon_better) is True
+        assert pool.existing["ATCG"] == epsilon_better
+
+        # Test with much better score
+        much_better = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(50.0))
+        assert pool.add(much_better) is True
+        assert pool.existing["ATCG"] == much_better
+        assert len(pool.ring) == 1  # Should still be just one path
+
+    def test_pool_deduplication_multiple_replacements(self):
+        """Test multiple consecutive replacements of the same sequence."""
+        pool = Pool.empty(5)
+
+        contig = ContigWithAligner(name="1", seq="ATCG")
+        scores = [5.0, 10.0, 15.0, 8.0, 25.0, 3.0, 30.0]  # Mix of better and worse scores
+
+        best_path = None
+        best_score = 0.0
+
+        for i, score in enumerate(scores):
+            path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(score))
+            result = pool.add(path)
+
+            if score > best_score:
+                # Should succeed and update
+                assert result is True
+                best_path = path
+                best_score = score
+                assert pool.existing["ATCG"] == best_path
+            else:
+                # Should be rejected
+                assert result is False
+                assert pool.existing["ATCG"] == best_path  # Should remain unchanged
+
+            # Pool should always contain exactly one path for this sequence
+            assert len(pool.ring) == 1
+            assert "ATCG" in pool.set
+            assert pool.ring[0] == best_path
+
+    def test_pool_deduplication_with_different_sequence_interleaved(self):
+        """Test deduplication behavior when adding different sequences between duplicates."""
+        pool = Pool.empty(3)
+
+        # Add initial path
+        contig1 = ContigWithAligner(name="1", seq="AAAA")
+        path1a = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        assert pool.add(path1a) is True
+
+        # Add different sequence
+        contig2 = ContigWithAligner(name="2", seq="BBBB")
+        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(15.0))
+        assert pool.add(path2) is True
+
+        # Add another different sequence
+        contig3 = ContigWithAligner(name="3", seq="CCCC")
+        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(20.0))
+        assert pool.add(path3) is True
+
+        assert len(pool.ring) == 3
+        assert len(pool.set) == 3
+
+        # Now add better version of first sequence
+        path1b = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(25.0))
+        assert pool.add(path1b) is True
+
+        # Should still have 3 paths, but path1a should be replaced with path1b
+        assert len(pool.ring) == 3
+        assert len(pool.set) == 3
+        assert pool.existing["AAAA"] == path1b
+
+        ring_paths = list(pool.ring)
+        assert path1b in ring_paths
+        assert path1a not in ring_paths
+        assert path2 in ring_paths
+        assert path3 in ring_paths
