@@ -24,7 +24,8 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.referenceless_contig_stitcher_events import EventType
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, \
-    referenceless_contig_stitcher_with_ctx, read_contigs, Pool, ACCEPTABLE_STITCHING_SCORE
+    referenceless_contig_stitcher_with_ctx, read_contigs, Pool, ACCEPTABLE_STITCHING_SCORE, \
+    calculate_referenceless_overlap_score
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import SCORE_NOTHING, Score
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -285,7 +286,9 @@ def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file,
 
 
 @pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
-def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int, disable_acceptable_prob_check):
+def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
+    acceptable_score = calculate_referenceless_overlap_score(71, 70)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", acceptable_score)
     assert not ReferencelessStitcherContext.get().is_debug2
     converted_fasta_file, ref_seqs = random_fasta_file(50, random_seed)
     run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
