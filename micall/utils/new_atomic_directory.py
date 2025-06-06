@@ -33,4 +33,4 @@ def new_atomic_directory(path: DirPath) -> Iterator[DirPath]:
     if path.exists():
         shutil.rmtree(path)
 
-    shutil.move(src=temporary_path, dst=path)
+    temporary_path.rename(path)
