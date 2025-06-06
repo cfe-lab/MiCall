@@ -56,7 +56,7 @@ BEGIN 6
   'r525-818.0'
   has
   size
-  294,
+  292,
   294
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r152-844.1'
   has
   size
-  223,
+  222,
   223
   matches,
   and
   the
   score
   of
-  13761.154007876672.
+  13818.802304689418.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r525-818.0'
   has
   size
-  294,
+  292,
   294
   matches,
   and

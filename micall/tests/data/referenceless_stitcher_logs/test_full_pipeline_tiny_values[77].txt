@@ -56,7 +56,7 @@ BEGIN 6
   'r333-689.0'
   has
   size
-  189,
+  188,
   189
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r246-599.1'
   has
   size
-  276,
+  275,
   276
   matches,
   and
   the
   score
   of
-  1.1653419420078457.
+  1.1635335517547558.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r333-689.0'
   has
   size
-  267,
+  266,
   267
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r418-887.0'
   has
   size
-  196,
+  195,
   196
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r180-577.1'
   has
   size
-  398,
+  396,
   398
   matches,
   and
   the
   score
   of
-  1.3276447885516212.
+  1.3275497347734373.
 END 9
 BEGIN 10
   Contig
@@ -156,14 +156,14 @@ BEGIN 12
   'r230-581.2'
   has
   size
-  352,
+  350,
   352
   matches,
   and
   the
   score
   of
-  1.2632237669228672.
+  1.2639055964049781.
 END 12
 BEGIN 13
   Contig
@@ -201,14 +201,14 @@ BEGIN 15
   'r119-613.4'
   has
   size
-  229,
+  228,
   229
   matches,
   and
   the
   score
   of
-  1.0649495847592416.
+  1.0642208527237251.
 END 15
 BEGIN 16
   Found
@@ -283,7 +283,7 @@ BEGIN 20
   'r418-887.0'
   has
   size
-  196,
+  195,
   196
   matches,
   and
@@ -338,14 +338,14 @@ BEGIN 23
   'r180-577.1'
   has
   size
-  398,
+  396,
   398
   matches,
   and
   the
   score
   of
-  1.3276447885516212.
+  1.3275497347734375.
 END 23
 BEGIN 24
   Contig
@@ -383,14 +383,14 @@ BEGIN 26
   'r230-581.2'
   has
   size
-  352,
+  350,
   352
   matches,
   and
   the
   score
   of
-  1.2632237669228672.
+  1.2639055964049783.
 END 26
 BEGIN 27
   Contig
@@ -428,14 +428,14 @@ BEGIN 29
   (2)
   has
   size
-  235,
+  234,
   235
   matches,
   and
   the
   score
   of
-  1.0761358307806306.
+  1.0752877949315787.
 END 29
 BEGIN 30
   Found
@@ -510,7 +510,7 @@ BEGIN 34
   'r418-887.0'
   has
   size
-  196,
+  195,
   196
   matches,
   and
@@ -565,14 +565,14 @@ BEGIN 37
   'r180-577.1'
   has
   size
-  398,
+  396,
   398
   matches,
   and
   the
   score
   of
-  1.327644788551621.
+  1.3275497347734373.
 END 37
 BEGIN 38
   Contig
@@ -610,14 +610,14 @@ BEGIN 40
   'r230-581.2'
   has
   size
-  352,
+  350,
   352
   matches,
   and
   the
   score
   of
-  1.263223766922867.
+  1.2639055964049781.
 END 40
 BEGIN 41
   Contig
@@ -682,7 +682,7 @@ BEGIN 45
   'r180-577.1'
   has
   size
-  398,
+  396,
   398
   matches,
   and
@@ -727,14 +727,14 @@ BEGIN 48
   'r230-581.2'
   has
   size
-  352,
+  350,
   352
   matches,
   and
   the
   score
   of
-  16499.31285086951.
+  16586.91136428315.
 END 48
 BEGIN 49
   Contig
@@ -799,7 +799,7 @@ BEGIN 53
   'r230-581.2'
   has
   size
-  352,
+  350,
   352
   matches,
   and

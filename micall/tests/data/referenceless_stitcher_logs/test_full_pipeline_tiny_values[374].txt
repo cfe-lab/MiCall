@@ -56,7 +56,7 @@ BEGIN 6
   'r339-673.0'
   has
   size
-  335,
+  333,
   335
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r245-887.2'
   has
   size
-  217,
+  216,
   217
   matches,
   and
   the
   score
   of
-  13610.267602033025.
+  13668.861784284682.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r339-673.0'
   has
   size
-  335,
+  333,
   335
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r144-825.0'
   has
   size
-  403,
+  402,
   403
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r144-825.0'
   has
   size
-  471,
+  470,
   471
   matches,
   and
   the
   score
   of
-  1.064710120708717.
+  1.0643546071887424.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  418,
+  417,
   418
   matches,
   and

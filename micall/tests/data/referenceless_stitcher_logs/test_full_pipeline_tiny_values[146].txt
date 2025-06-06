@@ -174,7 +174,7 @@ BEGIN 14
   'r136-462.0'
   has
   size
-  267,
+  266,
   267
   matches,
   and
@@ -229,7 +229,7 @@ BEGIN 17
   'r577-976.2'
   has
   size
-  2,
+  1,
   1
   matches,
   and

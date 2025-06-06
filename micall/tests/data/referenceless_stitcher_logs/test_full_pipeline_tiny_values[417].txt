@@ -56,7 +56,7 @@ BEGIN 6
   'r46-480.2'
   has
   size
-  435,
+  433,
   435
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r397-798.1'
   has
   size
-  280,
+  279,
   280
   matches,
   and
   the
   score
   of
-  15085.6967269572.
+  15136.0192385151.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r46-480.2'
   has
   size
-  435,
+  433,
   435
   matches,
   and

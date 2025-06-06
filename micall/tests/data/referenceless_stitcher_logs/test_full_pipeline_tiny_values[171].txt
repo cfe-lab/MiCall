@@ -56,7 +56,7 @@ BEGIN 6
   'r318-737.2'
   has
   size
-  308,
+  307,
   308
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r423-738.0'
   has
   size
-  315,
+  314,
   315
   matches,
   and

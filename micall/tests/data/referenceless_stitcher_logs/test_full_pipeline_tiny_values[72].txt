@@ -56,7 +56,7 @@ BEGIN 6
   'r314-947.2'
   has
   size
-  417,
+  416,
   417
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r190-621.1'
   has
   size
-  432,
+  430,
   432
   matches,
   and
   the
   score
   of
-  1.0121297598275498.
+  1.0142361286780601.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r190-621.1'
   has
   size
-  432,
+  430,
   432
   matches,
   and

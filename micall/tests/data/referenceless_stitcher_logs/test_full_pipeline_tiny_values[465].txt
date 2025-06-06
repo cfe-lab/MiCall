@@ -56,7 +56,7 @@ BEGIN 6
   'r196-944.0'
   has
   size
-  179,
+  178,
   179
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r226-512.1'
   has
   size
-  287,
+  285,
   287
   matches,
   and
   the
   score
   of
-  1.2062940107244144.
+  1.2078459468853804.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r226-512.1'
   has
   size
-  287,
+  285,
   287
   matches,
   and

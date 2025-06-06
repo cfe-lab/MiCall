@@ -56,7 +56,7 @@ BEGIN 6
   'r411-895.5'
   has
   size
-  267,
+  266,
   267
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r405-853.2'
   has
   size
-  273,
+  272,
   273
   matches,
   and
   the
   score
   of
-  1.0090062477846962.
+  1.0089288814689772.
 END 9
 BEGIN 10
   Found
@@ -166,14 +166,14 @@ BEGIN 12
   'r241-599.0'
   has
   size
-  359,
+  357,
   359
   matches,
   and
   the
   score
   of
-  1.1137845189766948.
+  1.1157649654253645.
 END 12
 BEGIN 13
   Contig
@@ -238,7 +238,7 @@ BEGIN 17
   'r411-895.5'
   has
   size
-  443,
+  442,
   443
   matches,
   and
@@ -320,7 +320,7 @@ BEGIN 22
   'r241-599.0'
   has
   size
-  359,
+  357,
   359
   matches,
   and
@@ -365,14 +365,14 @@ BEGIN 25
   'r158-407.3'
   has
   size
-  250,
+  248,
   250
   matches,
   and
   the
   score
   of
-  14357.819100817816.
+  14465.20064253321.
 END 25
 BEGIN 26
   Contig
@@ -410,14 +410,14 @@ BEGIN 28
   (3)
   has
   size
-  177,
+  176,
   177
   matches,
   and
   the
   score
   of
-  12532.885501015007.
+  12599.049002464457.
 END 28
 BEGIN 29
   Found
@@ -492,7 +492,7 @@ BEGIN 33
   'r241-599.0'
   has
   size
-  359,
+  357,
   359
   matches,
   and
@@ -537,14 +537,14 @@ BEGIN 36
   'r158-407.3'
   has
   size
-  250,
+  248,
   250
   matches,
   and
   the
   score
   of
-  14357.819100817816.
+  14465.20064253321.
 END 36
 BEGIN 37
   Contig
@@ -609,7 +609,7 @@ BEGIN 41
   'r158-407.3'
   has
   size
-  250,
+  248,
   250
   matches,
   and

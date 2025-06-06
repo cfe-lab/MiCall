@@ -56,7 +56,7 @@ BEGIN 6
   'r457-982.2'
   has
   size
-  268,
+  267,
   268
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r665-941.0'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  1.0100150178053355.
+  1.013299877186485.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r665-941.0'
   has
   size
-  277,
+  275,
   277
   matches,
   and

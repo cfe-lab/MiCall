@@ -56,7 +56,7 @@ BEGIN 6
   'r115-671.2'
   has
   size
-  491,
+  490,
   491
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r148-604.1'
   has
   size
-  457,
+  455,
   457
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r375-971.2'
   has
   size
-  117,
+  116,
   117
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r506-796.0'
   has
   size
-  291,
+  289,
   291
   matches,
   and
   the
   score
   of
-  1.4419783597445717.
+  1.4397359560916931.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r506-796.0'
   has
   size
-  291,
+  289,
   291
   matches,
   and

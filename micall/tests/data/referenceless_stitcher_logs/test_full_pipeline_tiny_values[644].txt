@@ -56,7 +56,7 @@ BEGIN 6
   'r497-914.0'
   has
   size
-  181,
+  180,
   181
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r182-547.2'
   has
   size
-  366,
+  364,
   366
   matches,
   and
   the
   score
   of
-  1.3253952481062978.
+  1.3253207701977188.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r182-547.2'
   has
   size
-  366,
+  364,
   366
   matches,
   and

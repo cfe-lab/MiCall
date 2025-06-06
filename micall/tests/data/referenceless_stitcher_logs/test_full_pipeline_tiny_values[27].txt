@@ -56,7 +56,7 @@ BEGIN 6
   'r341-725.2'
   has
   size
-  111,
+  110,
   111
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r201-493.0'
   has
   size
-  251,
+  250,
   251
   matches,
   and
   the
   score
   of
-  1.392419978783653.
+  1.3859268133154066.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r341-725.2'
   has
   size
-  153,
+  152,
   153
   matches,
   and

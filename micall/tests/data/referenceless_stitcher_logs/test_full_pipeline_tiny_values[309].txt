@@ -56,7 +56,7 @@ BEGIN 6
   'r202-907.2'
   has
   size
-  270,
+  269,
   270
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  260,
+  259,
   260
   matches,
   and

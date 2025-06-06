@@ -56,7 +56,7 @@ BEGIN 6
   'r348-791.2'
   has
   size
-  305,
+  304,
   305
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r488-926.0'
   has
   size
-  304,
+  303,
   304
   matches,
   and

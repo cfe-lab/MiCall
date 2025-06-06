@@ -56,7 +56,7 @@ BEGIN 6
   'r400-818.2'
   has
   size
-  239,
+  238,
   239
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r117-638.0'
   has
   size
-  309,
+  308,
   309
   matches,
   and
   the
   score
   of
-  1.1091944633796007.
+  1.1082155288005084.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r400-818.2'
   has
   size
-  239,
+  238,
   239
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r321-920.1'
   has
   size
-  220,
+  219,
   220
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r633-899.0'
   has
   size
-  267,
+  265,
   267
   matches,
   and
   the
   score
   of
-  1.0775696749300256.
+  1.0805265242821827.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r633-899.0'
   has
   size
-  267,
+  265,
   267
   matches,
   and

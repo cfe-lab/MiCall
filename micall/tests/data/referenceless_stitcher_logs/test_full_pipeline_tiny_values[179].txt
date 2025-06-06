@@ -56,7 +56,7 @@ BEGIN 6
   'r529-939.2'
   has
   size
-  256,
+  255,
   256
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r202-520.0'
   has
   size
-  319,
+  317,
   319
   matches,
   and
   the
   score
   of
-  1.0895943992083301.
+  1.0919940879273482.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r202-520.0'
   has
   size
-  319,
+  317,
   319
   matches,
   and

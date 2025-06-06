@@ -56,7 +56,7 @@ BEGIN 6
   'r324-789.0'
   has
   size
-  172,
+  171,
   172
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r536-899.2'
   has
   size
-  254,
+  253,
   254
   matches,
   and
   the
   score
   of
-  1.17079532964827.
+  1.1687513025273395.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  172,
+  171,
   172
   matches,
   and

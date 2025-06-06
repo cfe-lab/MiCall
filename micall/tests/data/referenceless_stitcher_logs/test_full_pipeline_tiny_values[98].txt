@@ -56,7 +56,7 @@ BEGIN 6
   'r364-913.0'
   has
   size
-  449,
+  448,
   449
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r360-829.1'
   has
   size
-  453,
+  452,
   453
   matches,
   and
   the
   score
   of
-  1.0035723945929735.
+  1.0035539956151303.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r364-913.0'
   has
   size
-  466,
+  465,
   466
   matches,
   and

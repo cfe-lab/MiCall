@@ -56,7 +56,7 @@ BEGIN 6
   'r321-936.1'
   has
   size
-  220,
+  219,
   220
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r321-936.1'
   has
   size
-  225,
+  224,
   225
   matches,
   and
   the
   score
   of
-  1.0091245751827214.
+  1.0090296660141784.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  493,
+  492,
   493
   matches,
   and

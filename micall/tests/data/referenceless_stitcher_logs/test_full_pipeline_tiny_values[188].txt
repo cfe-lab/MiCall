@@ -56,7 +56,7 @@ BEGIN 6
   'r401-791.2'
   has
   size
-  216,
+  215,
   216
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r247-538.1'
   has
   size
-  292,
+  290,
   292
   matches,
   and
   the
   score
   of
-  1.1258346063043398.
+  1.1281624490632136.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r247-538.1'
   has
   size
-  292,
+  290,
   292
   matches,
   and

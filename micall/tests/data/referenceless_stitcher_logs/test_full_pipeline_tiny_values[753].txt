@@ -56,7 +56,7 @@ BEGIN 6
   'r72-796.0'
   has
   size
-  478,
+  477,
   478
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r161-438.1'
   has
   size
-  278,
+  276,
   278
   matches,
   and

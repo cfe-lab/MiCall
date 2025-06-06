@@ -56,7 +56,7 @@ BEGIN 6
   'r385-836.0'
   has
   size
-  123,
+  122,
   123
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r385-836.0'
   has
   size
-  351,
+  350,
   351
   matches,
   and
   the
   score
   of
-  1.5286052053599837.
+  1.5211106323768169.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  173,
+  172,
   173
   matches,
   and

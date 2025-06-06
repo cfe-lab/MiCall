@@ -56,7 +56,7 @@ BEGIN 6
   'r531-872.0'
   has
   size
-  274,
+  273,
   274
   matches,
   and

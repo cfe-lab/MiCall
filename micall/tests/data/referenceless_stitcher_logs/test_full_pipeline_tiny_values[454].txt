@@ -56,7 +56,7 @@ BEGIN 6
   'r333-943.1'
   has
   size
-  533,
+  532,
   533
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  432,
+  431,
   432
   matches,
   and

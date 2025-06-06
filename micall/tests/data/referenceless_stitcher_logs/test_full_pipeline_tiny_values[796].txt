@@ -56,7 +56,7 @@ BEGIN 6
   'r602-888.2'
   has
   size
-  287,
+  285,
   287
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r485-751.1'
   has
   size
-  267,
+  265,
   267
   matches,
   and
   the
   score
   of
-  14747.64297072299.
+  14850.906474575288.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r485-751.1'
   has
   size
-  267,
+  265,
   267
   matches,
   and

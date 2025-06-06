@@ -56,7 +56,7 @@ BEGIN 6
   'r389-870.5'
   has
   size
-  82,
+  81,
   82
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r389-870.5'
   has
   size
-  120,
+  119,
   120
   matches,
   and
   the
   score
   of
-  1.168702565657513.
+  1.1645200154406385.
 END 9
 BEGIN 10
   Found
@@ -166,14 +166,14 @@ BEGIN 12
   'r637-970.0'
   has
   size
-  234,
+  233,
   234
   matches,
   and
   the
   score
   of
-  1.3111551170421585.
+  1.3062125272284386.
 END 12
 BEGIN 13
   Found
@@ -221,14 +221,14 @@ BEGIN 15
   'r480-809.4'
   has
   size
-  330,
+  328,
   330
   matches,
   and
   the
   score
   of
-  1.1455044845707922.
+  1.147411591615988.
 END 15
 BEGIN 16
   Contig
@@ -293,7 +293,7 @@ BEGIN 20
   (3)
   has
   size
-  82,
+  81,
   82
   matches,
   and
@@ -348,14 +348,14 @@ BEGIN 23
   (3)
   has
   size
-  120,
+  119,
   120
   matches,
   and
   the
   score
   of
-  1.1687025656575127.
+  1.1645200154406385.
 END 23
 BEGIN 24
   Found
@@ -403,14 +403,14 @@ BEGIN 26
   'r480-809.4'
   has
   size
-  330,
+  328,
   330
   matches,
   and
   the
   score
   of
-  1.5019340665397347.
+  1.4987633948559251.
 END 26
 BEGIN 27
   Contig
@@ -448,14 +448,14 @@ BEGIN 29
   'r664-893.2'
   has
   size
-  230,
+  228,
   230
   matches,
   and
   the
   score
   of
-  1.2967982653547883.
+  1.2972349353706694.
 END 29
 BEGIN 30
   Contig
@@ -520,7 +520,7 @@ BEGIN 34
   (5)
   has
   size
-  356,
+  355,
   356
   matches,
   and
@@ -602,7 +602,7 @@ BEGIN 39
   'r480-809.4'
   has
   size
-  330,
+  328,
   330
   matches,
   and
@@ -647,14 +647,14 @@ BEGIN 42
   'r664-893.2'
   has
   size
-  230,
+  228,
   230
   matches,
   and
   the
   score
   of
-  13877.871155478755.
+  13990.704791653001.
 END 42
 BEGIN 43
   Contig
@@ -719,7 +719,7 @@ BEGIN 47
   'r664-893.2'
   has
   size
-  230,
+  228,
   230
   matches,
   and

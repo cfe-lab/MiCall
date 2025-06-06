@@ -56,7 +56,7 @@ BEGIN 6
   'r186-600.0'
   has
   size
-  415,
+  413,
   415
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r370-775.2'
   has
   size
-  346,
+  345,
   346
   matches,
   and
   the
   score
   of
-  16428.89202491974.
+  16473.235156105857.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r186-600.0'
   has
   size
-  415,
+  413,
   415
   matches,
   and

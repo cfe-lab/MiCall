@@ -56,7 +56,7 @@ BEGIN 6
   'r542-980.2'
   has
   size
-  341,
+  340,
   341
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r85-348.0'
   has
   size
-  264,
+  352,
   174
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r234-909.0'
   has
   size
-  279,
+  278,
   279
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r434-854.2'
   has
   size
-  421,
+  419,
   421
   matches,
   and
   the
   score
   of
-  1.1776043669746306.
+  1.178884226928632.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r434-854.2'
   has
   size
-  421,
+  419,
   421
   matches,
   and

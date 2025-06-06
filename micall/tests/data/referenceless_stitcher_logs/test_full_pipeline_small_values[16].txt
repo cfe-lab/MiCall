@@ -56,7 +56,7 @@ BEGIN 6
   'r419-958.4'
   has
   size
-  353,
+  352,
   353
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r419-958.4'
   has
   size
-  395,
+  394,
   395
   matches,
   and
   the
   score
   of
-  1.0462871230019102.
+  1.0459934285720838.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  402,
+  401,
   402
   matches,
   and
@@ -275,7 +275,7 @@ BEGIN 19
   'r492-840.1'
   has
   size
-  349,
+  347,
   349
   matches,
   and
@@ -320,14 +320,14 @@ BEGIN 22
   'r426-745.2'
   has
   size
-  320,
+  318,
   320
   matches,
   and
   the
   score
   of
-  15873.737341317386.
+  15966.453108392712.
 END 22
 BEGIN 23
   Contig
@@ -365,14 +365,14 @@ BEGIN 25
   'r457-662.3'
   has
   size
-  206,
+  204,
   206
   matches,
   and
   the
   score
   of
-  13266.914032697625.
+  13387.37246896005.
 END 25
 BEGIN 26
   Contig
@@ -437,7 +437,7 @@ BEGIN 30
   'r426-745.2'
   has
   size
-  320,
+  318,
   320
   matches,
   and
@@ -482,14 +482,14 @@ BEGIN 33
   'r457-662.3'
   has
   size
-  206,
+  204,
   206
   matches,
   and
   the
   score
   of
-  13266.914032697625.
+  13387.37246896005.
 END 33
 BEGIN 34
   Contig
@@ -554,7 +554,7 @@ BEGIN 38
   'r457-662.3'
   has
   size
-  206,
+  204,
   206
   matches,
   and

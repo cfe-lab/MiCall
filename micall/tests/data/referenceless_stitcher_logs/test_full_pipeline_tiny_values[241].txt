@@ -56,7 +56,7 @@ BEGIN 6
   'r265-945.2'
   has
   size
-  481,
+  480,
   481
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r265-945.2'
   has
   size
-  537,
+  536,
   537
   matches,
   and
   the
   score
   of
-  1.0452483079635957.
+  1.0450370399963935.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  505,
+  504,
   505
   matches,
   and

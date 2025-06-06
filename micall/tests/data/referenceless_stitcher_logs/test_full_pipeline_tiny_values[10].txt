@@ -56,7 +56,7 @@ BEGIN 6
   'r585-856.0'
   has
   size
-  272,
+  270,
   272
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r591-853.2'
   has
   size
-  263,
+  261,
   263
   matches,
   and
   the
   score
   of
-  14657.314677397717.
+  14761.509077301625.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r591-853.2'
   has
   size
-  263,
+  261,
   263
   matches,
   and

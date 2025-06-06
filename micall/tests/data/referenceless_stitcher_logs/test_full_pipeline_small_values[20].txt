@@ -56,7 +56,7 @@ BEGIN 6
   'r266-814.0'
   has
   size
-  175,
+  174,
   175
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r586-875.2'
   has
   size
-  229,
+  228,
   229
   matches,
   and
   the
   score
   of
-  1.1149714007971183.
+  1.1135737207468375.
 END 9
 BEGIN 10
   Found
@@ -166,14 +166,14 @@ BEGIN 12
   'r416-657.4'
   has
   size
-  242,
+  240,
   242
   matches,
   and
   the
   score
   of
-  1.0186318616640357.
+  1.0223319967120668.
 END 12
 BEGIN 13
   Contig
@@ -238,7 +238,7 @@ BEGIN 17
   (2)
   has
   size
-  175,
+  174,
   175
   matches,
   and
@@ -293,14 +293,14 @@ BEGIN 20
   'r650-904.1'
   has
   size
-  226,
+  225,
   226
   matches,
   and
   the
   score
   of
-  1.1090457657778672.
+  1.1077153047521744.
 END 20
 BEGIN 21
   Found
@@ -348,14 +348,14 @@ BEGIN 23
   'r416-657.4'
   has
   size
-  242,
+  240,
   242
   matches,
   and
   the
   score
   of
-  1.0240744149088679.
+  1.0277388427633032.
 END 23
 BEGIN 24
   Contig
@@ -420,7 +420,7 @@ BEGIN 28
   (4)
   has
   size
-  175,
+  174,
   175
   matches,
   and
@@ -475,14 +475,14 @@ BEGIN 31
   'r416-657.4'
   has
   size
-  242,
+  240,
   242
   matches,
   and
   the
   score
   of
-  1.1357453936961266.
+  1.1384420454171993.
 END 31
 BEGIN 32
   Contig
@@ -547,7 +547,7 @@ BEGIN 36
   'r105-372.5'
   has
   size
-  268,
+  266,
   268
   matches,
   and
@@ -592,14 +592,14 @@ BEGIN 39
   'r416-657.4'
   has
   size
-  242,
+  240,
   242
   matches,
   and
   the
   score
   of
-  14168.760985780611.
+  14278.237608842412.
 END 39
 BEGIN 40
   Contig
@@ -664,7 +664,7 @@ BEGIN 44
   'r416-657.4'
   has
   size
-  242,
+  240,
   242
   matches,
   and

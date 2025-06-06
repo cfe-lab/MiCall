@@ -56,7 +56,7 @@ BEGIN 6
   'r464-972.0'
   has
   size
-  500,
+  499,
   500
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  262,
+  261,
   262
   matches,
   and

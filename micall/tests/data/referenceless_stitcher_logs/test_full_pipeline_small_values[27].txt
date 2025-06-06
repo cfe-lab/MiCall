@@ -56,7 +56,7 @@ BEGIN 6
   'r381-790.3'
   has
   size
-  19,
+  18,
   19
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r381-790.3'
   has
   size
-  293,
+  292,
   293
   matches,
   and
   the
   score
   of
-  3.125475421912955.
+  2.987071428107669.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  59,
+  58,
   59
   matches,
   and
@@ -248,14 +248,14 @@ BEGIN 17
   (2)
   has
   size
-  176,
+  175,
   176
   matches,
   and
   the
   score
   of
-  1.5646050865593708.
+  1.5483326162310929.
 END 17
 BEGIN 18
   Found
@@ -303,14 +303,14 @@ BEGIN 20
   'r502-741.5'
   has
   size
-  240,
+  238,
   240
   matches,
   and
   the
   score
   of
-  1.1292980266738128.
+  1.1320860256924674.
 END 20
 BEGIN 21
   Contig
@@ -375,7 +375,7 @@ BEGIN 25
   (4)
   has
   size
-  213,
+  212,
   213
   matches,
   and
@@ -430,14 +430,14 @@ BEGIN 28
   'r201-441.0'
   has
   size
-  241,
+  239,
   241
   matches,
   and
   the
   score
   of
-  1.0471263439408829.
+  1.0506425266007322.
 END 28
 BEGIN 29
   Contig
@@ -475,14 +475,14 @@ BEGIN 31
   'r502-741.5'
   has
   size
-  240,
+  238,
   240
   matches,
   and
   the
   score
   of
-  1.0453526148961527.
+  1.0488965460488981.
 END 31
 BEGIN 32
   Contig
@@ -547,7 +547,7 @@ BEGIN 36
   'r201-441.0'
   has
   size
-  241,
+  239,
   241
   matches,
   and
@@ -592,14 +592,14 @@ BEGIN 39
   'r502-741.5'
   has
   size
-  240,
+  238,
   240
   matches,
   and
   the
   score
   of
-  14120.901657229822.
+  14230.919278009893.
 END 39
 BEGIN 40
   Contig
@@ -664,7 +664,7 @@ BEGIN 44
   'r502-741.5'
   has
   size
-  240,
+  238,
   240
   matches,
   and

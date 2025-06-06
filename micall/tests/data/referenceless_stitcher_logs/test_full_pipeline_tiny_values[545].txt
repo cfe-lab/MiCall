@@ -56,7 +56,7 @@ BEGIN 6
   'r220-796.0'
   has
   size
-  210,
+  209,
   210
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r511-805.2'
   has
   size
-  286,
+  285,
   286
   matches,
   and
   the
   score
   of
-  1.1328450507317651.
+  1.131510778663196.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  210,
+  209,
   210
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r20-431.0'
   has
   size
-  412,
+  554,
   267
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r456-938.2'
   has
   size
-  117,
+  116,
   117
   matches,
   and
   the
   score
   of
-  10591.70908439705.
+  10676.3500126472.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   (1)
   has
   size
-  174,
+  173,
   174
   matches,
   and

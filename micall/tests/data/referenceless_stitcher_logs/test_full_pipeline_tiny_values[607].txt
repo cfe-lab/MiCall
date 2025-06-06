@@ -56,7 +56,7 @@ BEGIN 6
   'r165-676.2'
   has
   size
-  512,
+  510,
   512
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r136-551.0'
   has
   size
-  416,
+  414,
   416
   matches,
   and
   the
   score
   of
-  17653.851824437785.
+  17733.146043892182.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r136-551.0'
   has
   size
-  416,
+  414,
   416
   matches,
   and

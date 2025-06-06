@@ -56,7 +56,7 @@ BEGIN 6
   'r204-818.0'
   has
   size
-  325,
+  324,
   325
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r204-818.0'
   has
   size
-  361,
+  360,
   361
   matches,
   and
   the
   score
   of
-  1.0432147564794518.
+  1.0429164949040628.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  333,
+  332,
   333
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r331-919.2'
   has
   size
-  241,
+  240,
   241
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r423-682.1'
   has
   size
-  260,
+  258,
   260
   matches,
   and
   the
   score
   of
-  1.02742669186162.
+  1.0308192547134944.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r68-447.0'
   has
   size
-  380,
+  378,
   380
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   'r282-564.4'
   has
   size
-  283,
+  281,
   283
   matches,
   and
   the
   score
   of
-  15100.930129551056.
+  15200.680569237838.
 END 17
 BEGIN 18
   Contig
@@ -273,14 +273,14 @@ BEGIN 20
   'r423-682.1'
   has
   size
-  260,
+  258,
   260
   matches,
   and
   the
   score
   of
-  14589.016853929013.
+  14693.924286313786.
 END 20
 BEGIN 21
   Contig
@@ -318,14 +318,14 @@ BEGIN 23
   'r696-921.3'
   has
   size
-  224,
+  223,
   224
   matches,
   and
   the
   score
   of
-  13786.061549140844.
+  13843.556127684316.
 END 23
 BEGIN 24
   Found
@@ -400,7 +400,7 @@ BEGIN 28
   'r68-447.0'
   has
   size
-  380,
+  378,
   380
   matches,
   and
@@ -445,14 +445,14 @@ BEGIN 31
   'r282-564.4'
   has
   size
-  283,
+  281,
   283
   matches,
   and
   the
   score
   of
-  15100.930129551056.
+  15200.680569237838.
 END 31
 BEGIN 32
   Contig
@@ -490,14 +490,14 @@ BEGIN 34
   'r423-682.1'
   has
   size
-  260,
+  258,
   260
   matches,
   and
   the
   score
   of
-  14589.016853929013.
+  14693.924286313786.
 END 34
 BEGIN 35
   Contig
@@ -562,7 +562,7 @@ BEGIN 39
   'r282-564.4'
   has
   size
-  283,
+  281,
   283
   matches,
   and
@@ -607,14 +607,14 @@ BEGIN 42
   'r423-682.1'
   has
   size
-  260,
+  258,
   260
   matches,
   and
   the
   score
   of
-  14589.016853929013.
+  14693.924286313786.
 END 42
 BEGIN 43
   Contig
@@ -679,7 +679,7 @@ BEGIN 47
   'r423-682.1'
   has
   size
-  260,
+  258,
   260
   matches,
   and

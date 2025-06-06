@@ -56,7 +56,7 @@ BEGIN 6
   'r231-668.0'
   has
   size
-  438,
+  436,
   438
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r288-559.2'
   has
   size
-  272,
+  270,
   272
   matches,
   and
   the
   score
   of
-  14859.39991028352.
+  14961.530427284155.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r288-559.2'
   has
   size
-  272,
+  270,
   272
   matches,
   and

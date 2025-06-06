@@ -56,7 +56,7 @@ BEGIN 6
   'r362-788.0'
   has
   size
-  427,
+  425,
   427
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r555-949.2'
   has
   size
-  249,
+  248,
   249
   matches,
   and
   the
   score
   of
-  14388.052905773031.
+  14442.028488915967.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r362-788.0'
   has
   size
-  427,
+  425,
   427
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r395-799.0'
   has
   size
-  30,
+  29,
   30
   matches,
   and
@@ -156,7 +156,7 @@ BEGIN 12
   'r618-907.2'
   has
   size
-  182,
+  181,
   182
   matches,
   and

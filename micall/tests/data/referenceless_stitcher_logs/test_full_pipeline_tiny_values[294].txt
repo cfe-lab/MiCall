@@ -56,7 +56,7 @@ BEGIN 6
   'r316-694.2'
   has
   size
-  379,
+  377,
   379
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r203-928.1'
   has
   size
-  250,
+  249,
   250
   matches,
   and
   the
   score
   of
-  14411.354076831925.
+  14465.20064253321.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r316-694.2'
   has
   size
-  379,
+  377,
   379
   matches,
   and

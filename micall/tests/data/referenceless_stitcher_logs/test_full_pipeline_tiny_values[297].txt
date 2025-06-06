@@ -56,7 +56,7 @@ BEGIN 6
   'r98-438.2'
   has
   size
-  341,
+  453,
   226
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r538-981.0'
   has
   size
-  150,
+  149,
   150
   matches,
   and
   the
   score
   of
-  11718.914249968231.
+  11791.931892860237.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   (1)
   has
   size
-  27,
+  26,
   27
   matches,
   and

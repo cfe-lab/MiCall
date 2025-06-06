@@ -174,7 +174,7 @@ BEGIN 14
   'r713-972.2'
   has
   size
-  190,
+  189,
   190
   matches,
   and

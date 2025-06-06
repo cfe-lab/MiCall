@@ -56,7 +56,7 @@ BEGIN 6
   'r471-981.2'
   has
   size
-  56,
+  55,
   56
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r38-543.0'
   has
   size
-  489,
+  488,
   489
   matches,
   and
   the
   score
   of
-  2.4144864057665876.
+  2.3792952240850185.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r471-981.2'
   has
   size
-  73,
+  72,
   73
   matches,
   and

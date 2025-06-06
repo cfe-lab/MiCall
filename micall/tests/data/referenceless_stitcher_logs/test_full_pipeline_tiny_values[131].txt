@@ -56,7 +56,7 @@ BEGIN 6
   'r323-768.0'
   has
   size
-  223,
+  222,
   223
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r293-556.2'
   has
   size
-  253,
+  252,
   253
   matches,
   and
   the
   score
   of
-  1.0523042494516874.
+  1.0517832814919403.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r323-768.0'
   has
   size
-  234,
+  233,
   234
   matches,
   and

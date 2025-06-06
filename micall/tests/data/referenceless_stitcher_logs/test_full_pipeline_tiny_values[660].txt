@@ -56,7 +56,7 @@ BEGIN 6
   'r388-772.1'
   has
   size
-  228,
+  227,
   228
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r83-418.2'
   has
   size
-  336,
+  334,
   336
   matches,
   and
   the
   score
   of
-  1.1660805360730793.
+  1.1677819874500979.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r83-418.2'
   has
   size
-  336,
+  334,
   336
   matches,
   and

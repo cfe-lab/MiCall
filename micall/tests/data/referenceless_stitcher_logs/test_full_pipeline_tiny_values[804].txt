@@ -74,7 +74,7 @@ BEGIN 7
   'r370-633.2'
   has
   size
-  73,
+  72,
   73
   matches,
   and
@@ -156,7 +156,7 @@ BEGIN 12
   'r471-770.0'
   has
   size
-  163,
+  162,
   163
   matches,
   and

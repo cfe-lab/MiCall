@@ -56,7 +56,7 @@ BEGIN 6
   'r439-889.1'
   has
   size
-  66,
+  65,
   66
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r211-650.3'
   has
   size
-  294,
+  293,
   294
   matches,
   and
   the
   score
   of
-  1.837643887256217.
+  1.8176964454692883.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r439-889.1'
   has
   size
-  212,
+  211,
   212
   matches,
   and
@@ -275,7 +275,7 @@ BEGIN 19
   'r669-954.4'
   has
   size
-  221,
+  220,
   221
   matches,
   and
@@ -357,7 +357,7 @@ BEGIN 24
   'r585-804.0'
   has
   size
-  220,
+  218,
   220
   matches,
   and
@@ -402,14 +402,14 @@ BEGIN 27
   'r591-801.2'
   has
   size
-  211,
+  209,
   211
   matches,
   and
   the
   score
   of
-  13397.655333459994.
+  13516.412604133373.
 END 27
 BEGIN 28
   Contig
@@ -474,7 +474,7 @@ BEGIN 32
   'r591-801.2'
   has
   size
-  211,
+  209,
   211
   matches,
   and

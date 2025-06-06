@@ -56,7 +56,7 @@ BEGIN 6
   'r511-920.1'
   has
   size
-  299,
+  298,
   299
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  185,
+  184,
   185
   matches,
   and

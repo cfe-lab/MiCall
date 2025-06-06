@@ -56,7 +56,7 @@ BEGIN 6
   'r518-830.0'
   has
   size
-  64,
+  63,
   64
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r181-581.2'
   has
   size
-  245,
+  244,
   245
   matches,
   and
   the
   score
   of
-  1.72921758109837.
+  1.7107811017580064.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r518-830.0'
   has
   size
-  64,
+  63,
   64
   matches,
   and

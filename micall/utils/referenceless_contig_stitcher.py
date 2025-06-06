@@ -356,7 +356,6 @@ def try_combine_contigs(is_debug2: bool,
         covered_overlap = covered.seq
         bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
         aligned_1, aligned_2 = align_overlaps(covered_overlap, bigger_overlap)
-        result_length = max(len(bigger_overlap), len(covered_overlap)) + 2
 
     else:
         left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
@@ -364,8 +363,8 @@ def try_combine_contigs(is_debug2: bool,
         right_overlap = right.seq[:right_cutoff]
         right_remainder = right.seq[right_cutoff:]
         aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
-        result_length = max(len(left_overlap), len(right_overlap)) + 1
 
+    result_length = len(aligned_1)
     assert result_length > 0, "The overlap cannot be empty."
     number_of_matches = sum(1 for x, y
                             in zip(aligned_1, aligned_2)

@@ -56,7 +56,7 @@ BEGIN 6
   'r268-963.2'
   has
   size
-  512,
+  511,
   512
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r158-719.0'
   has
   size
-  562,
+  560,
   562
   matches,
   and
   the
   score
   of
-  1.0364220976089047.
+  1.0379741595171479.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r158-719.0'
   has
   size
-  562,
+  560,
   562
   matches,
   and

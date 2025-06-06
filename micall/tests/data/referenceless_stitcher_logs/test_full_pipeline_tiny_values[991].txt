@@ -56,7 +56,7 @@ BEGIN 6
   'r383-993.2'
   has
   size
-  258,
+  257,
   258
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r383-993.2'
   has
   size
-  302,
+  301,
   302
   matches,
   and
   the
   score
   of
-  1.0655733901931526.
+  1.0650129651971245.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  345,
+  344,
   345
   matches,
   and

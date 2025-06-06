@@ -56,7 +56,7 @@ BEGIN 6
   'r297-938.0'
   has
   size
-  370,
+  369,
   370
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r297-938.0'
   has
   size
-  417,
+  416,
   417
   matches,
   and
   the
   score
   of
-  1.049293647361712.
+  1.0489957589540782.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  553,
+  552,
   553
   matches,
   and

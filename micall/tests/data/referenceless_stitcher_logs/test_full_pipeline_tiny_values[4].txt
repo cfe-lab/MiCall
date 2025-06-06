@@ -56,7 +56,7 @@ BEGIN 6
   'r405-905.2'
   has
   size
-  325,
+  324,
   325
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r241-651.0'
   has
   size
-  411,
+  409,
   411
   matches,
   and
   the
   score
   of
-  1.0966287440145435.
+  1.098457818436333.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r241-651.0'
   has
   size
-  411,
+  409,
   411
   matches,
   and

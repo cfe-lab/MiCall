@@ -56,7 +56,7 @@ BEGIN 6
   'r385-916.3'
   has
   size
-  71,
+  70,
   71
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r552-903.0'
   has
   size
-  352,
+  350,
   352
   matches,
   and
   the
   score
   of
-  1.9120634093373432.
+  1.8972026644322508.
 END 9
 BEGIN 10
   Contig
@@ -156,14 +156,14 @@ BEGIN 12
   'r137-381.4'
   has
   size
-  245,
+  327,
   159
   matches,
   and
   the
   score
   of
-  0.8757800871566302.
+  0.5743759439950047.
 END 12
 BEGIN 13
   Calculated
@@ -193,14 +193,14 @@ BEGIN 14
   'r625-843.1'
   has
   size
-  219,
+  217,
   219
   matches,
   and
   the
   score
   of
-  1.5764114212540745.
+  1.5691855724599175.
 END 14
 BEGIN 15
   Contig
@@ -238,14 +238,14 @@ BEGIN 17
   'r472-678.5'
   has
   size
-  207,
+  205,
   207
   matches,
   and
   the
   score
   of
-  1.5405170675848088.
+  1.534209963045166.
 END 17
 BEGIN 18
   Contig
@@ -310,7 +310,7 @@ BEGIN 22
   'r552-903.0'
   has
   size
-  352,
+  350,
   352
   matches,
   and
@@ -355,14 +355,14 @@ BEGIN 25
   'r137-381.4'
   has
   size
-  245,
+  243,
   245
   matches,
   and
   the
   score
   of
-  14240.09893050065.
+  14348.777203890955.
 END 25
 BEGIN 26
   Contig
@@ -400,14 +400,14 @@ BEGIN 28
   'r625-843.1'
   has
   size
-  219,
+  217,
   219
   matches,
   and
   the
   score
   of
-  13602.951185582759.
+  13719.115249236476.
 END 28
 BEGIN 29
   Contig
@@ -445,14 +445,14 @@ BEGIN 31
   'r472-678.5'
   has
   size
-  207,
+  205,
   207
   matches,
   and
   the
   score
   of
-  13293.21659839445.
+  13413.329608013019.
 END 31
 BEGIN 32
   Contig
@@ -517,7 +517,7 @@ BEGIN 36
   'r137-381.4'
   has
   size
-  245,
+  243,
   245
   matches,
   and
@@ -562,14 +562,14 @@ BEGIN 39
   'r625-843.1'
   has
   size
-  219,
+  217,
   219
   matches,
   and
   the
   score
   of
-  13602.951185582759.
+  13719.115249236476.
 END 39
 BEGIN 40
   Contig
@@ -607,14 +607,14 @@ BEGIN 42
   'r472-678.5'
   has
   size
-  207,
+  205,
   207
   matches,
   and
   the
   score
   of
-  13293.21659839445.
+  13413.329608013019.
 END 42
 BEGIN 43
   Contig
@@ -679,7 +679,7 @@ BEGIN 47
   'r625-843.1'
   has
   size
-  219,
+  217,
   219
   matches,
   and
@@ -724,14 +724,14 @@ BEGIN 50
   'r472-678.5'
   has
   size
-  207,
+  205,
   207
   matches,
   and
   the
   score
   of
-  13293.21659839445.
+  13413.329608013019.
 END 50
 BEGIN 51
   Contig
@@ -796,7 +796,7 @@ BEGIN 55
   'r472-678.5'
   has
   size
-  207,
+  205,
   207
   matches,
   and

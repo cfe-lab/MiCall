@@ -74,7 +74,7 @@ BEGIN 7
   'r617-981.2'
   has
   size
-  322,
+  321,
   322
   matches,
   and

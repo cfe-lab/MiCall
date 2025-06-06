@@ -56,7 +56,7 @@ BEGIN 6
   'r408-828.0'
   has
   size
-  387,
+  386,
   387
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r459-865.2'
   has
   size
-  370,
+  369,
   370
   matches,
   and

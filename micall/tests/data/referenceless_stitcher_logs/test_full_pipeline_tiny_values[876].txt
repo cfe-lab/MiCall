@@ -56,7 +56,7 @@ BEGIN 6
   'r39-337.2'
   has
   size
-  299,
+  401,
   193
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r734-1000.0'
   has
   size
-  215,
+  214,
   215
   matches,
   and
   the
   score
   of
-  13559.410863316012.
+  13618.329645040634.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r39-337.2'
   has
   size
-  299,
+  401,
   193
   matches,
   and

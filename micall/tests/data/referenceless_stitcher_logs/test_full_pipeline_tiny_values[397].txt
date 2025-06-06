@@ -56,7 +56,7 @@ BEGIN 6
   'r404-894.1'
   has
   size
-  208,
+  207,
   208
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r123-424.0'
   has
   size
-  302,
+  300,
   302
   matches,
   and
   the
   score
   of
-  1.1588947763646684.
+  1.1608535750369187.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r123-424.0'
   has
   size
-  302,
+  300,
   302
   matches,
   and

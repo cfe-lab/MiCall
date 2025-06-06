@@ -56,7 +56,7 @@ BEGIN 6
   'r289-832.2'
   has
   size
-  436,
+  435,
   436
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r469-968.0'
   has
   size
-  364,
+  363,
   364
   matches,
   and
@@ -220,7 +220,7 @@ BEGIN 16
   'r356-700.5'
   has
   size
-  345,
+  343,
   345
   matches,
   and
@@ -265,14 +265,14 @@ BEGIN 19
   (2)
   has
   size
-  230,
+  229,
   230
   matches,
   and
   the
   score
   of
-  13934.110100062855.
+  13990.704791653001.
 END 19
 BEGIN 20
   Found
@@ -320,14 +320,14 @@ BEGIN 22
   'r680-988.3'
   has
   size
-  289,
+  288,
   289
   matches,
   and
   the
   score
   of
-  1.0965465158299383.
+  1.0956403114470068.
 END 22
 BEGIN 23
   Found
@@ -402,7 +402,7 @@ BEGIN 27
   'r356-700.5'
   has
   size
-  345,
+  343,
   345
   matches,
   and
@@ -447,14 +447,14 @@ BEGIN 30
   (4)
   has
   size
-  230,
+  229,
   230
   matches,
   and
   the
   score
   of
-  13934.110100062855.
+  13990.704791653001.
 END 30
 BEGIN 31
   Found
@@ -529,7 +529,7 @@ BEGIN 35
   'r356-700.5'
   has
   size
-  345,
+  343,
   345
   matches,
   and

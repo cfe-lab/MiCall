@@ -56,7 +56,7 @@ BEGIN 6
   'r476-910.1'
   has
   size
-  435,
+  433,
   435
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r463-952.0'
   has
   size
-  353,
+  352,
   353
   matches,
   and
   the
   score
   of
-  16561.928838918353.
+  16605.74408720551.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r476-910.1'
   has
   size
-  435,
+  433,
   435
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   (1)
   has
   size
-  35,
+  34,
   35
   matches,
   and
   the
   score
   of
-  6416.216985859452.
+  6588.335037075145.
 END 17
 BEGIN 18
   Found
@@ -301,24 +301,16 @@ BEGIN 21
   'r145-394.5'
   has
   size
-  250,
+  333,
   165
   matches,
   and
   the
   score
   of
-  1.2205849192156235.
+  0.7981931645145206.
 END 21
 BEGIN 22
-  Contig
-  (1)
-  covers
-  contig
-  'r145-394.5'
-  completely.
-END 22
-BEGIN 23
   Cycle
   2
   finished
@@ -336,16 +328,16 @@ BEGIN 23
   of
   6
   parts.
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Cycle
   3
   started
   with
   1
   paths.
-END 24
-BEGIN 25
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -363,8 +355,8 @@ BEGIN 25
   be
   (282,
   717).
-END 25
-BEGIN 26
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -373,7 +365,7 @@ BEGIN 26
   'r476-910.1'
   has
   size
-  435,
+  433,
   435
   matches,
   and
@@ -381,16 +373,16 @@ BEGIN 26
   score
   of
   inf.
-END 26
-BEGIN 27
+END 25
+BEGIN 26
   Contig
   (2)
   covers
   contig
   'r476-910.1'
   completely.
-END 27
-BEGIN 28
+END 26
+BEGIN 27
   Calculated
   cutoff
   for
@@ -408,8 +400,8 @@ BEGIN 28
   be
   (4,
   248).
-END 28
-BEGIN 29
+END 27
+BEGIN 28
   Overlap
   between
   contigs
@@ -418,16 +410,16 @@ BEGIN 29
   (2)
   has
   size
-  248,
+  247,
   248
   matches,
   and
   the
   score
   of
-  14364.695003031544.
-END 29
-BEGIN 30
+  14418.80043126141.
+END 28
+BEGIN 29
   Found
   a
   significant
@@ -444,8 +436,8 @@ BEGIN 30
   in
   contig
   (3).
-END 30
-BEGIN 31
+END 29
+BEGIN 30
   Cycle
   3
   finished
@@ -463,16 +455,16 @@ BEGIN 31
   of
   6
   parts.
-END 31
-BEGIN 32
+END 30
+BEGIN 31
   Cycle
   4
   started
   with
   1
   paths.
-END 32
-BEGIN 33
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -490,8 +482,8 @@ BEGIN 33
   be
   (286,
   721).
-END 33
-BEGIN 34
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -500,7 +492,7 @@ BEGIN 34
   'r476-910.1'
   has
   size
-  435,
+  433,
   435
   matches,
   and
@@ -508,16 +500,16 @@ BEGIN 34
   score
   of
   inf.
-END 34
-BEGIN 35
+END 33
+BEGIN 34
   Contig
   (3)
   covers
   contig
   'r476-910.1'
   completely.
-END 35
-BEGIN 36
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -535,8 +527,8 @@ BEGIN 36
   be
   (45,
   205).
-END 36
-BEGIN 37
+END 35
+BEGIN 36
   Overlap
   between
   contigs
@@ -545,16 +537,16 @@ BEGIN 37
   (3)
   has
   size
-  205,
+  204,
   205
   matches,
   and
   the
   score
   of
-  13300.72280896678.
-END 37
-BEGIN 38
+  13361.33961599342.
+END 36
+BEGIN 37
   Found
   a
   significant
@@ -571,8 +563,8 @@ BEGIN 38
   in
   contig
   (4).
-END 38
-BEGIN 39
+END 37
+BEGIN 38
   Cycle
   4
   finished
@@ -590,16 +582,16 @@ BEGIN 39
   of
   6
   parts.
-END 39
-BEGIN 40
+END 38
+BEGIN 39
   Cycle
   5
   started
   with
   1
   paths.
-END 40
-BEGIN 41
+END 39
+BEGIN 40
   Calculated
   cutoff
   for
@@ -617,8 +609,8 @@ BEGIN 41
   be
   (331,
   766).
-END 41
-BEGIN 42
+END 40
+BEGIN 41
   Overlap
   between
   contigs
@@ -627,7 +619,7 @@ BEGIN 42
   'r476-910.1'
   has
   size
-  435,
+  433,
   435
   matches,
   and
@@ -635,16 +627,16 @@ BEGIN 42
   score
   of
   inf.
-END 42
-BEGIN 43
+END 41
+BEGIN 42
   Contig
   (4)
   covers
   contig
   'r476-910.1'
   completely.
-END 43
-BEGIN 44
+END 42
+BEGIN 43
   Cycle
   5
   finished
@@ -662,24 +654,24 @@ BEGIN 44
   of
   6
   parts.
-END 44
-BEGIN 45
+END 43
+BEGIN 44
   Cycle
   6
   started
   with
   1
   paths.
-END 45
-BEGIN 46
+END 44
+BEGIN 45
   Constructed
   a
   path
   of
   length
   808.
-END 46
-BEGIN 47
+END 45
+BEGIN 46
   Removed
   6
   components
@@ -692,17 +684,17 @@ BEGIN 47
   still
   to
   process.
-END 47
-BEGIN 48
+END 46
+BEGIN 47
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 48
-BEGIN 49
+END 47
+BEGIN 48
   Outputting
   1
   contigs.
-END 49
+END 48

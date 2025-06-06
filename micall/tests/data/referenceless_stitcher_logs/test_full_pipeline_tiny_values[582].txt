@@ -56,7 +56,7 @@ BEGIN 6
   'r233-913.2'
   has
   size
-  572,
+  571,
   572
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r209-830.0'
   has
   size
-  596,
+  595,
   596
   matches,
   and
   the
   score
   of
-  1.0166432994633587.
+  1.0165765617881928.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r233-913.2'
   has
   size
-  598,
+  597,
   598
   matches,
   and

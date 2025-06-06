@@ -56,7 +56,7 @@ BEGIN 6
   'r277-856.1'
   has
   size
-  351,
+  350,
   351
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r310-751.4'
   has
   size
-  442,
+  440,
   442
   matches,
   and
   the
   score
   of
-  1.0948838790317907.
+  1.0965944944862807.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r310-751.4'
   has
   size
-  442,
+  440,
   442
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   'r261-613.2'
   has
   size
-  353,
+  351,
   353
   matches,
   and
   the
   score
   of
-  16518.29353098495.
+  16605.74408720551.
 END 17
 BEGIN 18
   Contig
@@ -273,14 +273,14 @@ BEGIN 20
   'r269-586.5'
   has
   size
-  318,
+  316,
   318
   matches,
   and
   the
   score
   of
-  15833.39933248944.
+  15926.461882378877.
 END 20
 BEGIN 21
   Contig
@@ -318,14 +318,14 @@ BEGIN 23
   'r751-991.3'
   has
   size
-  106,
+  105,
   106
   matches,
   and
   the
   score
   of
-  10173.167599571601.
+  10262.916716768323.
 END 23
 BEGIN 24
   Found
@@ -400,7 +400,7 @@ BEGIN 28
   'r310-751.4'
   has
   size
-  442,
+  440,
   442
   matches,
   and
@@ -445,14 +445,14 @@ BEGIN 31
   'r261-613.2'
   has
   size
-  353,
+  351,
   353
   matches,
   and
   the
   score
   of
-  16518.29353098495.
+  16605.74408720551.
 END 31
 BEGIN 32
   Contig
@@ -490,14 +490,14 @@ BEGIN 34
   'r269-586.5'
   has
   size
-  318,
+  316,
   318
   matches,
   and
   the
   score
   of
-  15833.39933248944.
+  15926.461882378877.
 END 34
 BEGIN 35
   Contig
@@ -562,7 +562,7 @@ BEGIN 39
   'r261-613.2'
   has
   size
-  353,
+  351,
   353
   matches,
   and
@@ -607,14 +607,14 @@ BEGIN 42
   'r269-586.5'
   has
   size
-  318,
+  316,
   318
   matches,
   and
   the
   score
   of
-  15833.39933248944.
+  15926.461882378877.
 END 42
 BEGIN 43
   Contig
@@ -679,7 +679,7 @@ BEGIN 47
   'r269-586.5'
   has
   size
-  318,
+  316,
   318
   matches,
   and

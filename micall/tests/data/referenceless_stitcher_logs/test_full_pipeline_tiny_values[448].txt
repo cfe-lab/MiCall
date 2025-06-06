@@ -56,7 +56,7 @@ BEGIN 6
   'r287-669.0'
   has
   size
-  383,
+  381,
   383
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r301-636.2'
   has
   size
-  336,
+  334,
   336
   matches,
   and
   the
   score
   of
-  16191.05560778883.
+  16281.115958912427.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r301-636.2'
   has
   size
-  336,
+  334,
   336
   matches,
   and

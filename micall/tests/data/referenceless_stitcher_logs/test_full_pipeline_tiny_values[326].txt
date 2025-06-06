@@ -56,7 +56,7 @@ BEGIN 6
   'r415-708.2'
   has
   size
-  189,
+  188,
   189
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r316-592.1'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  1.1631286088582018.
+  1.16521800288449.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r316-592.1'
   has
   size
-  277,
+  275,
   277
   matches,
   and

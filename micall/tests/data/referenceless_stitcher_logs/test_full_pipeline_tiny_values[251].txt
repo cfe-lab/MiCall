@@ -56,7 +56,7 @@ BEGIN 6
   'r467-848.0'
   has
   size
-  160,
+  159,
   160
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r500-802.1'
   has
   size
-  303,
+  301,
   303
   matches,
   and
   the
   score
   of
-  1.2905873253517608.
+  1.291008371188354.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r500-802.1'
   has
   size
-  303,
+  301,
   303
   matches,
   and

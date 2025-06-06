@@ -56,7 +56,7 @@ BEGIN 6
   'r50-349.2'
   has
   size
-  292,
+  291,
   292
   matches,
   and

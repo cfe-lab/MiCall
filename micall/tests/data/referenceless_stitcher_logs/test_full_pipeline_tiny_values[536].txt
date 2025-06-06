@@ -56,7 +56,7 @@ BEGIN 6
   'r385-859.0'
   has
   size
-  285,
+  284,
   285
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r341-801.2'
   has
   size
-  329,
+  328,
   329
   matches,
   and
   the
   score
   of
-  1.0595715778974275.
+  1.0591084064608385.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r385-859.0'
   has
   size
-  417,
+  416,
   417
   matches,
   and

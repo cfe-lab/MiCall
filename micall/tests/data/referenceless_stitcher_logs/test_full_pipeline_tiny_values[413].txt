@@ -56,7 +56,7 @@ BEGIN 6
   'r479-827.0'
   has
   size
-  140,
+  139,
   140
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r299-644.2'
   has
   size
-  320,
+  319,
   320
   matches,
   and
   the
   score
   of
-  1.3971178210125579.
+  1.391902378790547.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r479-827.0'
   has
   size
-  166,
+  165,
   166
   matches,
   and

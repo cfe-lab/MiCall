@@ -56,7 +56,7 @@ BEGIN 6
   'r363-830.0'
   has
   size
-  468,
+  466,
   468
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r306-889.1'
   has
   size
-  384,
+  383,
   384
   matches,
   and
   the
   score
   of
-  17132.711023806685.
+  17174.375270930333.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r363-830.0'
   has
   size
-  468,
+  466,
   468
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r71-823.0'
   has
   size
-  443,
+  442,
   443
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r171-464.2'
   has
   size
-  294,
+  292,
   294
   matches,
   and

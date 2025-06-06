@@ -56,7 +56,7 @@ BEGIN 6
   'r327-924.2'
   has
   size
-  38,
+  37,
   38
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r500-804.4'
   has
   size
-  305,
+  303,
   305
   matches,
   and
   the
   score
   of
-  2.3428693614354947.
+  2.3004166225087954.
 END 9
 BEGIN 10
   Contig
@@ -156,14 +156,14 @@ BEGIN 12
   'r327-924.2'
   has
   size
-  71,
+  70,
   71
   matches,
   and
   the
   score
   of
-  1.2986636474203639.
+  1.284073551755695.
 END 12
 BEGIN 13
   Found
@@ -229,14 +229,14 @@ BEGIN 16
   'r327-924.2'
   has
   size
-  162,
+  161,
   162
   matches,
   and
   the
   score
   of
-  1.4011763967744129.
+  1.390921647642956.
 END 16
 BEGIN 17
   Found
@@ -311,7 +311,7 @@ BEGIN 21
   (3)
   has
   size
-  98,
+  97,
   98
   matches,
   and
@@ -366,14 +366,14 @@ BEGIN 24
   'r500-804.4'
   has
   size
-  305,
+  303,
   305
   matches,
   and
   the
   score
   of
-  1.5801606721555104.
+  1.57481486474482.
 END 24
 BEGIN 25
   Contig
@@ -411,14 +411,14 @@ BEGIN 27
   (3)
   has
   size
-  131,
+  130,
   131
   matches,
   and
   the
   score
   of
-  1.1257843438948214.
+  1.1230991226631253.
 END 27
 BEGIN 28
   Found
@@ -493,7 +493,7 @@ BEGIN 32
   (5)
   has
   size
-  269,
+  268,
   269
   matches,
   and
@@ -548,14 +548,14 @@ BEGIN 35
   'r500-804.4'
   has
   size
-  305,
+  303,
   305
   matches,
   and
   the
   score
   of
-  1.048747573337694.
+  1.0515235987024625.
 END 35
 BEGIN 36
   Contig
@@ -620,7 +620,7 @@ BEGIN 40
   'r500-804.4'
   has
   size
-  305,
+  303,
   305
   matches,
   and
@@ -665,14 +665,14 @@ BEGIN 43
   (6)
   has
   size
-  256,
+  255,
   256
   matches,
   and
   the
   score
   of
-  14549.989963836477.
+  14603.079335657501.
 END 43
 BEGIN 44
   Found
@@ -747,7 +747,7 @@ BEGIN 48
   'r500-804.4'
   has
   size
-  305,
+  303,
   305
   matches,
   and

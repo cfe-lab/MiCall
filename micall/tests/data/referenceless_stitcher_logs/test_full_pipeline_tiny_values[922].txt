@@ -56,7 +56,7 @@ BEGIN 6
   'r211-843.2'
   has
   size
-  633,
+  631,
   633
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r200-914.1'
   has
   size
-  366,
+  365,
   366
   matches,
   and
   the
   score
   of
-  16804.832684906738.
+  16847.710554747482.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r211-843.2'
   has
   size
-  633,
+  631,
   633
   matches,
   and

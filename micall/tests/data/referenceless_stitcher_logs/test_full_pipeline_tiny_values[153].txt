@@ -56,7 +56,7 @@ BEGIN 6
   'r251-921.2'
   has
   size
-  176,
+  175,
   176
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r502-795.0'
   has
   size
-  294,
+  292,
   294
   matches,
   and
   the
   score
   of
-  1.2265379499251725.
+  1.2278176299949861.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r502-795.0'
   has
   size
-  294,
+  292,
   294
   matches,
   and

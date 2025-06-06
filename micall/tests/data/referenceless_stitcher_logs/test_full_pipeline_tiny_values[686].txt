@@ -56,7 +56,7 @@ BEGIN 6
   'r391-868.2'
   has
   size
-  478,
+  476,
   478
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r551-956.0'
   has
   size
-  353,
+  352,
   353
   matches,
   and
   the
   score
   of
-  16561.928838918353.
+  16605.74408720551.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r391-868.2'
   has
   size
-  478,
+  476,
   478
   matches,
   and

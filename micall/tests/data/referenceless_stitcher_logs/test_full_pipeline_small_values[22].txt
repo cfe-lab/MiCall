@@ -56,7 +56,7 @@ BEGIN 6
   'r188-750.1'
   has
   size
-  517,
+  516,
   517
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r327-837.4'
   has
   size
-  424,
+  423,
   424
   matches,
   and
@@ -193,14 +193,14 @@ BEGIN 14
   'r183-668.5'
   has
   size
-  486,
+  484,
   486
   matches,
   and
   the
   score
   of
-  1.0543803152146096.
+  1.0561075930664272.
 END 14
 BEGIN 15
   Contig
@@ -265,7 +265,7 @@ BEGIN 19
   'r183-668.5'
   has
   size
-  486,
+  484,
   486
   matches,
   and
@@ -310,14 +310,14 @@ BEGIN 22
   'r237-577.3'
   has
   size
-  341,
+  339,
   341
   matches,
   and
   the
   score
   of
-  16288.326788012255.
+  16377.59812402282.
 END 22
 BEGIN 23
   Contig
@@ -355,14 +355,14 @@ BEGIN 25
   'r248-463.0'
   has
   size
-  216,
+  214,
   216
   matches,
   and
   the
   score
   of
-  13526.512109097437.
+  13643.630806566422.
 END 25
 BEGIN 26
   Contig
@@ -427,7 +427,7 @@ BEGIN 30
   'r237-577.3'
   has
   size
-  341,
+  339,
   341
   matches,
   and
@@ -472,14 +472,14 @@ BEGIN 33
   'r248-463.0'
   has
   size
-  216,
+  214,
   216
   matches,
   and
   the
   score
   of
-  13526.512109097437.
+  13643.630806566422.
 END 33
 BEGIN 34
   Contig
@@ -544,7 +544,7 @@ BEGIN 38
   'r248-463.0'
   has
   size
-  216,
+  214,
   216
   matches,
   and

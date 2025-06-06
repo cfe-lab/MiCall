@@ -56,7 +56,7 @@ BEGIN 6
   'r210-686.1'
   has
   size
-  477,
+  475,
   477
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r207-799.0'
   has
   size
-  172,
+  171,
   172
   matches,
   and
   the
   score
   of
-  12388.159004352161.
+  12455.46189097751.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r210-686.1'
   has
   size
-  477,
+  475,
   477
   matches,
   and

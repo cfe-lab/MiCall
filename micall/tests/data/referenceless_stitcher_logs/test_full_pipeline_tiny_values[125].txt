@@ -56,7 +56,7 @@ BEGIN 6
   'r308-853.1'
   has
   size
-  546,
+  544,
   546
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r359-691.2'
   has
   size
-  333,
+  331,
   333
   matches,
   and
   the
   score
   of
-  16132.269846610847.
+  16222.812619729377.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r359-691.2'
   has
   size
-  333,
+  331,
   333
   matches,
   and

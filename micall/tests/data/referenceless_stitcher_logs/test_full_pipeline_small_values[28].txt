@@ -56,7 +56,7 @@ BEGIN 6
   'r135-664.3'
   has
   size
-  530,
+  528,
   530
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r133-615.1'
   has
   size
-  483,
+  481,
   483
   matches,
   and
   the
   score
   of
-  18752.133741444402.
+  18824.667362546454.
 END 9
 BEGIN 10
   Contig
@@ -146,14 +146,14 @@ BEGIN 12
   'r182-500.2'
   has
   size
-  319,
+  317,
   319
   matches,
   and
   the
   score
   of
-  15853.58757313364.
+  15946.47630007202.
 END 12
 BEGIN 13
   Contig
@@ -191,14 +191,14 @@ BEGIN 15
   'r427-737.4'
   has
   size
-  272,
+  271,
   272
   matches,
   and
   the
   score
   of
-  14910.328929704288.
+  14961.530427284155.
 END 15
 BEGIN 16
   Found
@@ -246,14 +246,14 @@ BEGIN 18
   'r218-494.5'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  1.003996012765541.
+  1.007312784722697.
 END 18
 BEGIN 19
   Contig
@@ -318,7 +318,7 @@ BEGIN 23
   'r135-664.3'
   has
   size
-  530,
+  528,
   530
   matches,
   and
@@ -363,14 +363,14 @@ BEGIN 26
   'r133-615.1'
   has
   size
-  483,
+  481,
   483
   matches,
   and
   the
   score
   of
-  18752.133741444402.
+  18824.667362546454.
 END 26
 BEGIN 27
   Contig
@@ -408,14 +408,14 @@ BEGIN 29
   'r182-500.2'
   has
   size
-  319,
+  317,
   319
   matches,
   and
   the
   score
   of
-  15853.58757313364.
+  15946.47630007202.
 END 29
 BEGIN 30
   Contig
@@ -453,14 +453,14 @@ BEGIN 32
   'r218-494.5'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  14969.910794445801.
+  15070.940878420966.
 END 32
 BEGIN 33
   Contig
@@ -525,7 +525,7 @@ BEGIN 37
   'r133-615.1'
   has
   size
-  483,
+  481,
   483
   matches,
   and
@@ -570,14 +570,14 @@ BEGIN 40
   'r182-500.2'
   has
   size
-  319,
+  317,
   319
   matches,
   and
   the
   score
   of
-  15853.58757313364.
+  15946.47630007202.
 END 40
 BEGIN 41
   Contig
@@ -615,14 +615,14 @@ BEGIN 43
   'r218-494.5'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  14969.910794445801.
+  15070.940878420966.
 END 43
 BEGIN 44
   Contig
@@ -687,7 +687,7 @@ BEGIN 48
   'r182-500.2'
   has
   size
-  319,
+  317,
   319
   matches,
   and
@@ -732,14 +732,14 @@ BEGIN 51
   'r218-494.5'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  14969.910794445801.
+  15070.940878420966.
 END 51
 BEGIN 52
   Contig
@@ -804,7 +804,7 @@ BEGIN 56
   'r218-494.5'
   has
   size
-  277,
+  275,
   277
   matches,
   and

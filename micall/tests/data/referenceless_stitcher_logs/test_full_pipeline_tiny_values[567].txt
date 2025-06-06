@@ -56,7 +56,7 @@ BEGIN 6
   'r289-782.2'
   has
   size
-  275,
+  274,
   275
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r486-783.1'
   has
   size
-  297,
+  296,
   297
   matches,
   and
   the
   score
   of
-  1.0315219782133933.
+  1.031263156552487.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  275,
+  274,
   275
   matches,
   and

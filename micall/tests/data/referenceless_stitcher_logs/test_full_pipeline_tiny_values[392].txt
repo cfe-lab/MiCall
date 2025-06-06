@@ -56,7 +56,7 @@ BEGIN 6
   'r464-954.0'
   has
   size
-  251,
+  250,
   251
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r216-634.2'
   has
   size
-  419,
+  417,
   419
   matches,
   and
   the
   score
   of
-  1.2265830309695644.
+  1.2274847933695308.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r216-634.2'
   has
   size
-  419,
+  417,
   419
   matches,
   and

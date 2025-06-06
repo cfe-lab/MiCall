@@ -56,7 +56,7 @@ BEGIN 6
   'r232-676.0'
   has
   size
-  251,
+  250,
   251
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r721-998.2'
   has
   size
-  278,
+  369,
   184
   matches,
   and

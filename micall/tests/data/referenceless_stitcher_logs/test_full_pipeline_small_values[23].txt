@@ -56,7 +56,7 @@ BEGIN 6
   'r388-862.2'
   has
   size
-  136,
+  135,
   136
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r273-703.4'
   has
   size
-  251,
+  250,
   251
   matches,
   and
   the
   score
   of
-  1.2817857739053555.
+  1.277773642033475.
 END 9
 BEGIN 10
   Found
@@ -166,14 +166,14 @@ BEGIN 12
   'r17-523.0'
   has
   size
-  314,
+  313,
   314
   matches,
   and
   the
   score
   of
-  1.0945252250857709.
+  1.093710472612124.
 END 12
 BEGIN 13
   Found
@@ -248,7 +248,7 @@ BEGIN 17
   'r388-862.2'
   has
   size
-  136,
+  135,
   136
   matches,
   and
@@ -303,14 +303,14 @@ BEGIN 20
   'r273-703.4'
   has
   size
-  251,
+  250,
   251
   matches,
   and
   the
   score
   of
-  1.2817857739053558.
+  1.277773642033475.
 END 20
 BEGIN 21
   Found
@@ -385,7 +385,7 @@ BEGIN 25
   'r388-862.2'
   has
   size
-  316,
+  315,
   316
   matches,
   and
@@ -440,14 +440,14 @@ BEGIN 28
   'r314-733.1'
   has
   size
-  390,
+  389,
   390
   matches,
   and
   the
   score
   of
-  1.0884137886940932.
+  1.087804897512875.
 END 28
 BEGIN 29
   Found
@@ -522,7 +522,7 @@ BEGIN 33
   'r388-862.2'
   has
   size
-  346,
+  345,
   346
   matches,
   and
@@ -604,7 +604,7 @@ BEGIN 38
   'r366-635.3'
   has
   size
-  270,
+  268,
   270
   matches,
   and

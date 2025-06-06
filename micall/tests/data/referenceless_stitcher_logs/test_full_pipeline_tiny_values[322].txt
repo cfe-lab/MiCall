@@ -56,7 +56,7 @@ BEGIN 6
   'r289-707.2'
   has
   size
-  153,
+  152,
   153
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r429-763.0'
   has
   size
-  279,
+  278,
   279
   matches,
   and
   the
   score
   of
-  1.2751415964931057.
+  1.271642718996805.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  153,
+  152,
   153
   matches,
   and

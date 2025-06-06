@@ -56,7 +56,7 @@ BEGIN 6
   'r187-887.2'
   has
   size
-  471,
+  470,
   471
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r187-887.2'
   has
   size
-  493,
+  492,
   493
   matches,
   and
   the
   score
   of
-  1.0185181374147725.
+  1.018428173152125.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  511,
+  510,
   511
   matches,
   and

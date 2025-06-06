@@ -56,7 +56,7 @@ BEGIN 6
   'r628-970.2'
   has
   size
-  323,
+  322,
   323
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r541-867.0'
   has
   size
-  327,
+  325,
   327
   matches,
   and
   the
   score
   of
-  1.002113244029474.
+  1.0049352776307554.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r541-867.0'
   has
   size
-  327,
+  325,
   327
   matches,
   and

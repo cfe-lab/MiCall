@@ -56,7 +56,7 @@ BEGIN 6
   'r19-433.0'
   has
   size
-  415,
+  413,
   415
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r135-488.2'
   has
   size
-  318,
+  317,
   318
   matches,
   and
   the
   score
   of
-  15879.824361513725.
+  15926.461882378877.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r19-433.0'
   has
   size
-  415,
+  413,
   415
   matches,
   and

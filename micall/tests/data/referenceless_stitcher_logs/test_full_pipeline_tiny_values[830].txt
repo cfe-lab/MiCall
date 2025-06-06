@@ -56,7 +56,7 @@ BEGIN 6
   'r281-954.1'
   has
   size
-  435,
+  434,
   435
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  492,
+  491,
   492
   matches,
   and

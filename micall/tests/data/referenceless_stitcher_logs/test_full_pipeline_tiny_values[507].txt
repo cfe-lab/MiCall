@@ -56,7 +56,7 @@ BEGIN 6
   'r248-734.0'
   has
   size
-  487,
+  485,
   487
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r141-761.2'
   has
   size
-  465,
+  464,
   465
   matches,
   and
   the
   score
   of
-  18503.693563944016.
+  18540.849970613406.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r248-734.0'
   has
   size
-  487,
+  485,
   487
   matches,
   and

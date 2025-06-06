@@ -56,7 +56,7 @@ BEGIN 6
   'r422-756.0'
   has
   size
-  210,
+  209,
   210
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r422-756.0'
   has
   size
-  282,
+  281,
   282
   matches,
   and
   the
   score
   of
-  1.1264286173831886.
+  1.1251538885100876.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  215,
+  214,
   215
   matches,
   and

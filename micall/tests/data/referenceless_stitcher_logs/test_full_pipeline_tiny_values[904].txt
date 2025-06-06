@@ -56,7 +56,7 @@ BEGIN 6
   'r406-969.1'
   has
   size
-  402,
+  401,
   402
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r418-923.2'
   has
   size
-  506,
+  504,
   506
   matches,
   and
   the
   score
   of
-  1.0949063000740833.
+  1.0964019152160902.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r418-923.2'
   has
   size
-  506,
+  504,
   506
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r261-782.0'
   has
   size
-  391,
+  390,
   391
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r639-983.1'
   has
   size
-  144,
+  143,
   144
   matches,
   and

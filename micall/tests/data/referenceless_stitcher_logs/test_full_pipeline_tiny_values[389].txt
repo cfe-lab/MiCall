@@ -56,7 +56,7 @@ BEGIN 6
   'r424-957.0'
   has
   size
-  169,
+  168,
   169
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r424-957.0'
   has
   size
-  180,
+  179,
   180
   matches,
   and
   the
   score
   of
-  1.0258891962841494.
+  1.0255440521770414.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  369,
+  368,
   369
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r458-980.1'
   has
   size
-  177,
+  176,
   177
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r182-611.2'
   has
   size
-  430,
+  428,
   430
   matches,
   and
   the
   score
   of
-  1.4275842461112718.
+  1.4262579417406176.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r182-611.2'
   has
   size
-  430,
+  428,
   430
   matches,
   and

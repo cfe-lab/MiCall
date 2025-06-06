@@ -56,7 +56,7 @@ BEGIN 6
   'r524-961.2'
   has
   size
-  154,
+  153,
   154
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r685-996.0'
   has
   size
-  277,
+  276,
   277
   matches,
   and
   the
   score
   of
-  1.2680877533484425.
+  1.264688645075691.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  154,
+  153,
   154
   matches,
   and

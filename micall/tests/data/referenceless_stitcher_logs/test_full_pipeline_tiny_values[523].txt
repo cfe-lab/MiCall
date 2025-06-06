@@ -56,7 +56,7 @@ BEGIN 6
   'r293-959.0'
   has
   size
-  364,
+  363,
   364
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r537-985.1'
   has
   size
-  423,
+  422,
   423
   matches,
   and
   the
   score
   of
-  1.0623086252423937.
+  1.0619292750073068.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  364,
+  363,
   364
   matches,
   and

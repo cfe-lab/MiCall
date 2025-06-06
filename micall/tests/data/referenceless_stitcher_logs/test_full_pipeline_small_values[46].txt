@@ -56,7 +56,7 @@ BEGIN 6
   'r155-656.1'
   has
   size
-  467,
+  466,
   467
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  132,
+  131,
   132
   matches,
   and
@@ -193,14 +193,14 @@ BEGIN 14
   'r409-632.0'
   has
   size
-  224,
+  222,
   224
   matches,
   and
   the
   score
   of
-  1.2340240624576433.
+  1.2355764863173193.
 END 14
 BEGIN 15
   Contig
@@ -283,7 +283,7 @@ BEGIN 20
   'r409-632.0'
   has
   size
-  224,
+  222,
   224
   matches,
   and
@@ -328,14 +328,14 @@ BEGIN 23
   'r550-769.2'
   has
   size
-  107,
+  106,
   107
   matches,
   and
   the
   score
   of
-  10212.285057216963.
+  10301.535644992064.
 END 23
 BEGIN 24
   Found
@@ -410,7 +410,7 @@ BEGIN 28
   'r647-877.4'
   has
   size
-  123,
+  122,
   123
   matches,
   and
@@ -465,14 +465,14 @@ BEGIN 31
   'r409-632.0'
   has
   size
-  224,
+  222,
   224
   matches,
   and
   the
   score
   of
-  1.2700327836255731.
+  1.270975452633315.
 END 31
 BEGIN 32
   Contig
@@ -537,7 +537,7 @@ BEGIN 36
   'r409-632.0'
   has
   size
-  224,
+  222,
   224
   matches,
   and

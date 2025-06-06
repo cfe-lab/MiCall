@@ -56,7 +56,7 @@ BEGIN 6
   'r245-606.0'
   has
   size
-  146,
+  145,
   146
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r245-606.0'
   has
   size
-  212,
+  211,
   212
   matches,
   and
   the
   score
   of
-  1.1632014291567527.
+  1.160895698668706.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  198,
+  197,
   198
   matches,
   and

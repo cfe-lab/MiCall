@@ -56,7 +56,7 @@ BEGIN 6
   'r215-970.2'
   has
   size
-  389,
+  388,
   389
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r296-863.0'
   has
   size
-  568,
+  566,
   568
   matches,
   and
   the
   score
   of
-  1.1624515372228532.
+  1.163481531074381.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r296-863.0'
   has
   size
-  568,
+  566,
   568
   matches,
   and

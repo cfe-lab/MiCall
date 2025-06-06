@@ -56,7 +56,7 @@ BEGIN 6
   'r378-924.2'
   has
   size
-  209,
+  208,
   209
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r526-950.5'
   has
   size
-  399,
+  398,
   399
   matches,
   and
   the
   score
   of
-  1.2979334601175538.
+  1.2951815339325659.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  209,
+  208,
   209
   matches,
   and
@@ -248,14 +248,14 @@ BEGIN 17
   'r623-835.4'
   has
   size
-  213,
+  211,
   213
   matches,
   and
   the
   score
   of
-  1.0033064402801413.
+  1.0076119905128826.
 END 17
 BEGIN 18
   Contig
@@ -320,7 +320,7 @@ BEGIN 22
   (3)
   has
   size
-  387,
+  386,
   387
   matches,
   and
@@ -402,7 +402,7 @@ BEGIN 27
   (4)
   has
   size
-  291,
+  290,
   291
   matches,
   and
@@ -484,7 +484,7 @@ BEGIN 32
   'r623-835.4'
   has
   size
-  213,
+  211,
   213
   matches,
   and

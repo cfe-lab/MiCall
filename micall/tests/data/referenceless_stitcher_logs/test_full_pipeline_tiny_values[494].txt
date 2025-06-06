@@ -56,7 +56,7 @@ BEGIN 6
   'r491-886.1'
   has
   size
-  352,
+  351,
   352
   matches,
   and

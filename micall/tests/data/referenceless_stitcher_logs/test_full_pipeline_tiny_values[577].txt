@@ -56,7 +56,7 @@ BEGIN 6
   'r350-841.1'
   has
   size
-  401,
+  400,
   401
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r401-835.0'
   has
   size
-  435,
+  433,
   435
   matches,
   and

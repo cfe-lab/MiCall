@@ -56,7 +56,7 @@ BEGIN 6
   'r448-921.2'
   has
   size
-  165,
+  164,
   165
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r433-863.4'
   has
   size
-  180,
+  179,
   180
   matches,
   and
   the
   score
   of
-  1.035904033692219.
+  1.0354173175309889.
 END 9
 BEGIN 10
   Found
@@ -166,14 +166,14 @@ BEGIN 12
   'r615-962.3'
   has
   size
-  348,
+  461,
   232
   matches,
   and
   the
   score
   of
-  0.7219471254879487.
+  0.48851072347953595.
 END 12
 BEGIN 13
   Calculated
@@ -203,14 +203,14 @@ BEGIN 14
   'r147-375.5'
   has
   size
-  229,
+  227,
   229
   matches,
   and
   the
   score
   of
-  1.0978468580307357.
+  1.1010960150472557.
 END 14
 BEGIN 15
   Contig
@@ -275,7 +275,7 @@ BEGIN 19
   'r448-921.2'
   has
   size
-  416,
+  415,
   416
   matches,
   and
@@ -357,7 +357,7 @@ BEGIN 24
   'r615-962.3'
   has
   size
-  307,
+  306,
   307
   matches,
   and
@@ -439,7 +439,7 @@ BEGIN 29
   'r147-375.5'
   has
   size
-  229,
+  227,
   229
   matches,
   and
@@ -484,14 +484,14 @@ BEGIN 32
   'r527-748.1'
   has
   size
-  222,
+  220,
   222
   matches,
   and
   the
   score
   of
-  13678.751888069028.
+  13793.981789509413.
 END 32
 BEGIN 33
   Contig
@@ -556,7 +556,7 @@ BEGIN 37
   'r527-748.1'
   has
   size
-  222,
+  220,
   222
   matches,
   and

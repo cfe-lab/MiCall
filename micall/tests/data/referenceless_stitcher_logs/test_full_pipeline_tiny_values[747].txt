@@ -56,7 +56,7 @@ BEGIN 6
   'r642-957.0'
   has
   size
-  38,
+  37,
   38
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r691-948.2'
   has
   size
-  1,
+  0,
   0
   matches,
   and
   the
   score
   of
-  -0.10518948261588215.
+  -0.07779744005172155.
 END 9
 BEGIN 10
   Cycle
@@ -175,7 +175,7 @@ BEGIN 13
   'r691-948.2'
   has
   size
-  258,
+  256,
   258
   matches,
   and

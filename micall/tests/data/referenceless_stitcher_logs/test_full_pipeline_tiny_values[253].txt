@@ -74,7 +74,7 @@ BEGIN 7
   'r390-853.0'
   has
   size
-  130,
+  129,
   130
   matches,
   and
@@ -156,7 +156,7 @@ BEGIN 12
   (1)
   has
   size
-  162,
+  161,
   162
   matches,
   and

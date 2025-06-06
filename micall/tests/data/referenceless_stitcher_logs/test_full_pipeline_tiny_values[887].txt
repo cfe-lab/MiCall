@@ -56,7 +56,7 @@ BEGIN 6
   'r506-955.0'
   has
   size
-  53,
+  52,
   53
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r547-857.2'
   has
   size
-  311,
+  309,
   311
   matches,
   and
   the
   score
   of
-  2.053062863468855.
+  2.0295222072231.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r547-857.2'
   has
   size
-  311,
+  309,
   311
   matches,
   and

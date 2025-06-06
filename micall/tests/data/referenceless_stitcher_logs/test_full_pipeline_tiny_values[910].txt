@@ -56,7 +56,7 @@ BEGIN 6
   'r279-693.1'
   has
   size
-  415,
+  413,
   415
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r655-954.0'
   has
   size
-  191,
+  190,
   191
   matches,
   and
   the
   score
   of
-  12925.355457704976.
+  12988.583941431843.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r279-693.1'
   has
   size
-  415,
+  413,
   415
   matches,
   and

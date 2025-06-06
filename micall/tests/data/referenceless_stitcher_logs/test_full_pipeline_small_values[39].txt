@@ -56,7 +56,7 @@ BEGIN 6
   'r405-981.3'
   has
   size
-  145,
+  144,
   145
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r661-994.5'
   has
   size
-  321,
+  320,
   321
   matches,
   and
   the
   score
   of
-  1.379061178558025.
+  1.3742154030391784.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  145,
+  144,
   145
   matches,
   and
@@ -248,14 +248,14 @@ BEGIN 17
   (2)
   has
   size
-  206,
+  205,
   206
   matches,
   and
   the
   score
   of
-  1.152988407316448.
+  1.1507995602245649.
 END 17
 BEGIN 18
   Found
@@ -330,7 +330,7 @@ BEGIN 22
   (4)
   has
   size
-  156,
+  155,
   156
   matches,
   and
@@ -385,14 +385,14 @@ BEGIN 25
   'r576-781.4'
   has
   size
-  206,
+  204,
   206
   matches,
   and
   the
   score
   of
-  1.114206331624657.
+  1.1176274213848776.
 END 25
 BEGIN 26
   Contig
@@ -457,7 +457,7 @@ BEGIN 30
   (5)
   has
   size
-  301,
+  300,
   301
   matches,
   and
@@ -539,7 +539,7 @@ BEGIN 35
   'r576-781.4'
   has
   size
-  206,
+  204,
   206
   matches,
   and

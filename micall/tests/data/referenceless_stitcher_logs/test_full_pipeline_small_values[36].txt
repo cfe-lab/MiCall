@@ -56,7 +56,7 @@ BEGIN 6
   'r21-628.1'
   has
   size
-  440,
+  439,
   440
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r253-593.5'
   has
   size
-  341,
+  339,
   341
   matches,
   and
@@ -183,14 +183,14 @@ BEGIN 14
   'r642-935.4'
   has
   size
-  294,
+  391,
   193
   matches,
   and
   the
   score
   of
-  8295.816362823512.
+  5572.253729358584.
 END 14
 BEGIN 15
   Contig
@@ -228,14 +228,14 @@ BEGIN 17
   'r291-534.2'
   has
   size
-  244,
+  242,
   244
   matches,
   and
   the
   score
   of
-  14216.379218949287.
+  14325.321880651114.
 END 17
 BEGIN 18
   Contig
@@ -273,14 +273,14 @@ BEGIN 20
   'r336-568.0'
   has
   size
-  233,
+  231,
   233
   matches,
   and
   the
   score
   of
-  13951.447351630506.
+  14063.41611095749.
 END 20
 BEGIN 21
   Contig
@@ -345,7 +345,7 @@ BEGIN 25
   'r642-935.4'
   has
   size
-  294,
+  391,
   193
   matches,
   and
@@ -390,14 +390,14 @@ BEGIN 28
   'r291-534.2'
   has
   size
-  244,
+  242,
   244
   matches,
   and
   the
   score
   of
-  14216.379218949287.
+  14325.321880651114.
 END 28
 BEGIN 29
   Contig
@@ -435,14 +435,14 @@ BEGIN 31
   'r336-568.0'
   has
   size
-  233,
+  231,
   233
   matches,
   and
   the
   score
   of
-  13951.447351630506.
+  14063.41611095749.
 END 31
 BEGIN 32
   Contig
@@ -507,7 +507,7 @@ BEGIN 36
   'r291-534.2'
   has
   size
-  244,
+  242,
   244
   matches,
   and
@@ -552,14 +552,14 @@ BEGIN 39
   'r336-568.0'
   has
   size
-  233,
+  231,
   233
   matches,
   and
   the
   score
   of
-  13951.447351630506.
+  14063.41611095749.
 END 39
 BEGIN 40
   Contig
@@ -624,7 +624,7 @@ BEGIN 44
   'r336-568.0'
   has
   size
-  233,
+  231,
   233
   matches,
   and

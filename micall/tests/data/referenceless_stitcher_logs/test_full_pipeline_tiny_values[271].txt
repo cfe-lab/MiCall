@@ -56,7 +56,7 @@ BEGIN 6
   'r381-905.1'
   has
   size
-  291,
+  290,
   291
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r364-792.0'
   has
   size
-  308,
+  307,
   308
   matches,
   and
   the
   score
   of
-  1.0231512503202402.
+  1.022970455523058.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r381-905.1'
   has
   size
-  412,
+  411,
   412
   matches,
   and

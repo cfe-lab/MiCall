@@ -56,7 +56,7 @@ BEGIN 6
   'r569-976.1'
   has
   size
-  51,
+  50,
   51
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r389-756.2'
   has
   size
-  231,
+  230,
   231
   matches,
   and
   the
   score
   of
-  1.8559732896729804.
+  1.8298551873361568.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r569-976.1'
   has
   size
-  188,
+  187,
   188
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r560-862.0'
   has
   size
-  303,
+  407,
   195
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r303-602.1'
   has
   size
-  119,
+  118,
   119
   matches,
   and
   the
   score
   of
-  10665.186497029494.
+  10748.979709542951.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r560-862.0'
   has
   size
-  43,
+  42,
   43
   matches,
   and

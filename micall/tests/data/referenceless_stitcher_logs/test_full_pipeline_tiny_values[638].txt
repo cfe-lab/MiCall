@@ -56,7 +56,7 @@ BEGIN 6
   'r305-949.2'
   has
   size
-  242,
+  241,
   242
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r374-650.1'
   has
   size
-  277,
+  275,
   277
   matches,
   and
   the
   score
   of
-  1.0524894862276746.
+  1.0555182853300913.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r374-650.1'
   has
   size
-  277,
+  275,
   277
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r382-773.0'
   has
   size
-  53,
+  52,
   53
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r141-491.1'
   has
   size
-  294,
+  293,
   294
   matches,
   and
   the
   score
   of
-  2.0130838641043765.
+  1.9843971029167593.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r382-773.0'
   has
   size
-  110,
+  109,
   110
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r381-948.2'
   has
   size
-  393,
+  392,
   393
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r56-477.0'
   has
   size
-  422,
+  420,
   422
   matches,
   and
   the
   score
   of
-  1.0267861515596521.
+  1.0288876640435225.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r56-477.0'
   has
   size
-  422,
+  420,
   422
   matches,
   and

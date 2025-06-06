@@ -56,7 +56,7 @@ BEGIN 6
   'r164-730.0'
   has
   size
-  567,
+  565,
   567
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r421-921.2'
   has
   size
-  400,
+  399,
   400
   matches,
   and
   the
   score
   of
-  17416.455053418184.
+  17457.114284110357.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r164-730.0'
   has
   size
-  567,
+  565,
   567
   matches,
   and

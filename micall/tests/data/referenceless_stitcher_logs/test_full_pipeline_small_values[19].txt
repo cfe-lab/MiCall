@@ -56,7 +56,7 @@ BEGIN 6
   'r296-798.4'
   has
   size
-  363,
+  362,
   363
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r151-658.5'
   has
   size
-  437,
+  436,
   437
   matches,
   and
   the
   score
   of
-  1.0775036852068505.
+  1.0770352681896596.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r296-798.4'
   has
   size
-  363,
+  362,
   363
   matches,
   and
@@ -248,14 +248,14 @@ BEGIN 17
   'r204-608.2'
   has
   size
-  405,
+  403,
   405
   matches,
   and
   the
   score
   of
-  1.0426441002986329.
+  1.0447667900935902.
 END 17
 BEGIN 18
   Contig
@@ -320,7 +320,7 @@ BEGIN 22
   'r355-828.3'
   has
   size
-  444,
+  443,
   444
   matches,
   and
@@ -402,7 +402,7 @@ BEGIN 27
   'r204-608.2'
   has
   size
-  405,
+  403,
   405
   matches,
   and
@@ -447,14 +447,14 @@ BEGIN 30
   'r693-918.0'
   has
   size
-  136,
+  135,
   136
   matches,
   and
   the
   score
   of
-  11261.319306209927.
+  11338.719764491994.
 END 30
 BEGIN 31
   Found
@@ -529,7 +529,7 @@ BEGIN 35
   'r204-608.2'
   has
   size
-  405,
+  403,
   405
   matches,
   and

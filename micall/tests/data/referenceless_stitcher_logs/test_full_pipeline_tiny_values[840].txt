@@ -56,7 +56,7 @@ BEGIN 6
   'r471-961.2'
   has
   size
-  463,
+  462,
   463
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r418-906.1'
   has
   size
-  489,
+  487,
   489
   matches,
   and
   the
   score
   of
-  1.0202581005515676.
+  1.0220947257758064.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r418-906.1'
   has
   size
-  489,
+  487,
   489
   matches,
   and

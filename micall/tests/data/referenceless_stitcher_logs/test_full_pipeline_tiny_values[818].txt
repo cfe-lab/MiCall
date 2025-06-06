@@ -56,7 +56,7 @@ BEGIN 6
   'r327-986.0'
   has
   size
-  265,
+  264,
   265
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r327-986.0'
   has
   size
-  280,
+  279,
   280
   matches,
   and
   the
   score
   of
-  1.022460757156064.
+  1.0222682275041854.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  516,
+  515,
   516
   matches,
   and

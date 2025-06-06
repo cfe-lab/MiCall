@@ -56,7 +56,7 @@ BEGIN 6
   'r418-939.0'
   has
   size
-  212,
+  211,
   212
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r418-939.0'
   has
   size
-  216,
+  215,
   216
   matches,
   and
   the
   score
   of
-  1.007586818071838.
+  1.007504874665699.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  400,
+  399,
   400
   matches,
   and

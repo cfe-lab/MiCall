@@ -56,7 +56,7 @@ BEGIN 6
   'r406-993.1'
   has
   size
-  399,
+  398,
   399
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r242-501.2'
   has
   size
-  260,
+  258,
   260
   matches,
   and

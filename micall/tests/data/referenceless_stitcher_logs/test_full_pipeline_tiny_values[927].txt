@@ -56,7 +56,7 @@ BEGIN 6
   'r304-753.2'
   has
   size
-  450,
+  448,
   450
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r196-961.1'
   has
   size
-  234,
+  233,
   234
   matches,
   and
   the
   score
   of
-  14031.513046618342.
+  14087.528299868272.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r304-753.2'
   has
   size
-  450,
+  448,
   450
   matches,
   and

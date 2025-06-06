@@ -56,7 +56,7 @@ BEGIN 6
   'r509-906.0'
   has
   size
-  35,
+  34,
   35
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r369-738.2'
   has
   size
-  175,
+  174,
   175
   matches,
   and
   the
   score
   of
-  1.9443383732989001.
+  1.9036539387158788.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r509-906.0'
   has
   size
-  230,
+  229,
   230
   matches,
   and

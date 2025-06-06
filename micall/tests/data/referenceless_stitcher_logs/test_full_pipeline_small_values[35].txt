@@ -56,7 +56,7 @@ BEGIN 6
   'r292-716.1'
   has
   size
-  183,
+  182,
   183
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r99-488.3'
   has
   size
-  376,
+  375,
   376
   matches,
   and
   the
   score
   of
-  1.3373012213455908.
+  1.3338122510136916.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r292-716.1'
   has
   size
-  197,
+  196,
   197
   matches,
   and
@@ -248,14 +248,14 @@ BEGIN 17
   'r561-935.0'
   has
   size
-  375,
+  499,
   248
   matches,
   and
   the
   score
   of
-  0.7083002713336523.
+  0.4745381266161345.
 END 17
 BEGIN 18
   Calculated
@@ -285,14 +285,14 @@ BEGIN 19
   'r11-263.5'
   has
   size
-  253,
+  251,
   253
   matches,
   and
   the
   score
   of
-  1.102348394096032.
+  1.1052530397418627.
 END 19
 BEGIN 20
   Contig
@@ -330,14 +330,14 @@ BEGIN 22
   'r580-814.2'
   has
   size
-  235,
+  313,
   154
   matches,
   and
   the
   score
   of
-  0.5766832069014481.
+  0.38430179956641125.
 END 22
 BEGIN 23
   Cycle
@@ -394,7 +394,7 @@ BEGIN 26
   'r561-935.0'
   has
   size
-  156,
+  155,
   156
   matches,
   and
@@ -449,14 +449,14 @@ BEGIN 29
   'r11-263.5'
   has
   size
-  253,
+  251,
   253
   matches,
   and
   the
   score
   of
-  1.2116988120827887.
+  1.213384293931082.
 END 29
 BEGIN 30
   Contig
@@ -521,7 +521,7 @@ BEGIN 34
   'r11-263.5'
   has
   size
-  253,
+  251,
   253
   matches,
   and
@@ -566,14 +566,14 @@ BEGIN 37
   'r580-814.2'
   has
   size
-  235,
+  233,
   235
   matches,
   and
   the
   score
   of
-  14000.176834147678.
+  14111.57874160618.
 END 37
 BEGIN 38
   Contig
@@ -638,7 +638,7 @@ BEGIN 42
   'r580-814.2'
   has
   size
-  235,
+  233,
   235
   matches,
   and

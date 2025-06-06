@@ -56,7 +56,7 @@ BEGIN 6
   'r401-902.1'
   has
   size
-  203,
+  202,
   203
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r509-815.0'
   has
   size
-  307,
+  305,
   307
   matches,
   and
   the
   score
   of
-  1.178188949068317.
+  1.1799318793162554.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r509-815.0'
   has
   size
-  307,
+  305,
   307
   matches,
   and

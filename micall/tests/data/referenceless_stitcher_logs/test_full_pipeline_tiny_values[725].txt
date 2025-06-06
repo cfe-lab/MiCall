@@ -56,7 +56,7 @@ BEGIN 6
   'r564-883.2'
   has
   size
-  33,
+  32,
   33
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r87-596.0'
   has
   size
-  219,
+  218,
   219
   matches,
   and
   the
   score
   of
-  2.1832904012406003.
+  2.1319257246234726.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r564-883.2'
   has
   size
-  33,
+  32,
   33
   matches,
   and

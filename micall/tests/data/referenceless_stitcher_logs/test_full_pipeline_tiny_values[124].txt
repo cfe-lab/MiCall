@@ -56,7 +56,7 @@ BEGIN 6
   'r426-824.2'
   has
   size
-  399,
+  397,
   399
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r561-818.0'
   has
   size
-  258,
+  256,
   258
   matches,
   and
   the
   score
   of
-  14543.217370556722.
+  14648.607445834154.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r561-818.0'
   has
   size
-  258,
+  256,
   258
   matches,
   and

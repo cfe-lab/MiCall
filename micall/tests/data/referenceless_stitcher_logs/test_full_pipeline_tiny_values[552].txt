@@ -56,7 +56,7 @@ BEGIN 6
   'r76-670.1'
   has
   size
-  581,
+  580,
   581
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r708-983.2'
   has
   size
-  276,
+  366,
   183
   matches,
   and

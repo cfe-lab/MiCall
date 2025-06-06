@@ -56,7 +56,7 @@ BEGIN 6
   'r182-739.2'
   has
   size
-  558,
+  556,
   558
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r462-910.0'
   has
   size
-  310,
+  309,
   310
   matches,
   and
   the
   score
   of
-  15717.616367263014.
+  15764.969543298208.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r182-739.2'
   has
   size
-  558,
+  556,
   558
   matches,
   and

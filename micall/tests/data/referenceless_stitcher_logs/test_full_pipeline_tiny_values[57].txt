@@ -74,7 +74,7 @@ BEGIN 7
   'r43-486.0'
   has
   size
-  347,
+  346,
   347
   matches,
   and
@@ -156,7 +156,7 @@ BEGIN 12
   'r526-945.2'
   has
   size
-  420,
+  560,
   276
   matches,
   and

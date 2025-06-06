@@ -56,7 +56,7 @@ BEGIN 6
   'r193-764.1'
   has
   size
-  572,
+  570,
   572
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r489-925.0'
   has
   size
-  279,
+  278,
   279
   matches,
   and
   the
   score
   of
-  15063.942956426932.
+  15114.373142281225.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r193-764.1'
   has
   size
-  572,
+  570,
   572
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r322-931.1'
   has
   size
-  466,
+  465,
   466
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r451-769.0'
   has
   size
-  319,
+  317,
   319
   matches,
   and

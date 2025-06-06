@@ -56,7 +56,7 @@ BEGIN 6
   'r458-935.2'
   has
   size
-  409,
+  408,
   409
   matches,
   and

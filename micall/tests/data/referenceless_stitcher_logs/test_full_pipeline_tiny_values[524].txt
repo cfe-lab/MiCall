@@ -56,7 +56,7 @@ BEGIN 6
   'r230-979.0'
   has
   size
-  332,
+  331,
   332
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r276-782.2'
   has
   size
-  507,
+  505,
   507
   matches,
   and
   the
   score
   of
-  1.1835062720023632.
+  1.1845351437517273.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r276-782.2'
   has
   size
-  507,
+  505,
   507
   matches,
   and

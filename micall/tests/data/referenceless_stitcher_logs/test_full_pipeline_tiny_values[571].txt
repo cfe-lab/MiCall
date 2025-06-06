@@ -74,7 +74,7 @@ BEGIN 7
   'r430-711.1'
   has
   size
-  114,
+  113,
   114
   matches,
   and
@@ -156,7 +156,7 @@ BEGIN 12
   'r676-995.2'
   has
   size
-  36,
+  35,
   36
   matches,
   and

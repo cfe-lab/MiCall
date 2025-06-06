@@ -56,7 +56,7 @@ BEGIN 6
   'r275-819.1'
   has
   size
-  545,
+  543,
   545
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r482-878.0'
   has
   size
-  362,
+  361,
   362
   matches,
   and
   the
   score
   of
-  16730.65589298891.
+  16773.816464134034.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r275-819.1'
   has
   size
-  545,
+  543,
   545
   matches,
   and

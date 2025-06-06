@@ -56,7 +56,7 @@ BEGIN 6
   'r147-442.0'
   has
   size
-  296,
+  294,
   296
   matches,
   and

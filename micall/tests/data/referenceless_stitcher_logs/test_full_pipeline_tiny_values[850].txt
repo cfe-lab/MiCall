@@ -56,7 +56,7 @@ BEGIN 6
   'r451-764.1'
   has
   size
-  290,
+  289,
   290
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r459-760.0'
   has
   size
-  302,
+  300,
   302
   matches,
   and

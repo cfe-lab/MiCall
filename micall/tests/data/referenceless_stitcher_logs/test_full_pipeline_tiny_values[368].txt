@@ -56,7 +56,7 @@ BEGIN 6
   'r105-603.2'
   has
   size
-  291,
+  290,
   291
   matches,
   and

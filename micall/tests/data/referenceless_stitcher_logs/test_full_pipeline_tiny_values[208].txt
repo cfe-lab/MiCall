@@ -56,7 +56,7 @@ BEGIN 6
   'r260-952.2'
   has
   size
-  346,
+  345,
   346
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r285-809.0'
   has
   size
-  525,
+  523,
   525
   matches,
   and
   the
   score
   of
-  1.1804871988792407.
+  1.1814987917617774.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r285-809.0'
   has
   size
-  525,
+  523,
   525
   matches,
   and

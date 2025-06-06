@@ -56,7 +56,7 @@ BEGIN 6
   'r584-894.0'
   has
   size
-  311,
+  415,
   203
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r481-768.2'
   has
   size
-  100,
+  99,
   100
   matches,
   and
   the
   score
   of
-  9933.5748340697.
+  10026.479230576404.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r584-894.0'
   has
   size
-  185,
+  184,
   185
   matches,
   and

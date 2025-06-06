@@ -56,7 +56,7 @@ BEGIN 6
   'r423-849.0'
   has
   size
-  39,
+  38,
   39
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r51-346.2'
   has
   size
-  296,
+  294,
   296
   matches,
   and
   the
   score
   of
-  2.289190679566413.
+  2.2495250910149633.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r51-346.2'
   has
   size
-  296,
+  294,
   296
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r472-977.2'
   has
   size
-  173,
+  172,
   173
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r587-901.1'
   has
   size
-  315,
+  313,
   315
   matches,
   and
   the
   score
   of
-  1.2702111615372516.
+  1.2708836141698483.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r587-901.1'
   has
   size
-  315,
+  313,
   315
   matches,
   and

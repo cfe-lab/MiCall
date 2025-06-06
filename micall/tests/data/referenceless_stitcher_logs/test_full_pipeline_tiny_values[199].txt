@@ -56,7 +56,7 @@ BEGIN 6
   'r352-988.0'
   has
   size
-  528,
+  527,
   528
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  228,
+  227,
   228
   matches,
   and

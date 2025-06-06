@@ -56,7 +56,7 @@ BEGIN 6
   'r486-910.2'
   has
   size
-  321,
+  320,
   321
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r323-635.0'
   has
   size
-  313,
+  311,
   313
   matches,
   and

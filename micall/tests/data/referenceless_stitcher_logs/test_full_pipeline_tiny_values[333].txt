@@ -56,7 +56,7 @@ BEGIN 6
   'r361-726.0'
   has
   size
-  366,
+  364,
   366
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r414-711.1'
   has
   size
-  298,
+  296,
   298
   matches,
   and
   the
   score
   of
-  15421.240327782723.
+  15517.97200888906.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r414-711.1'
   has
   size
-  298,
+  296,
   298
   matches,
   and

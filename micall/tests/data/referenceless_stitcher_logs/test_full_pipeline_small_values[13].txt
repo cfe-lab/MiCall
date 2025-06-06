@@ -56,7 +56,7 @@ BEGIN 6
   'r72-547.4'
   has
   size
-  382,
+  381,
   382
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r265-616.0'
   has
   size
-  283,
+  282,
   283
   matches,
   and
@@ -193,14 +193,14 @@ BEGIN 14
   'r667-988.1'
   has
   size
-  322,
+  426,
   214
   matches,
   and
   the
   score
   of
-  0.5796686029113562.
+  0.39331605878716686.
 END 14
 BEGIN 15
   Cycle
@@ -257,7 +257,7 @@ BEGIN 18
   'r667-988.1'
   has
   size
-  322,
+  426,
   214
   matches,
   and
@@ -302,14 +302,14 @@ BEGIN 21
   'r682-960.2'
   has
   size
-  279,
+  371,
   184
   matches,
   and
   the
   score
   of
-  8181.158534881437.
+  5506.916985985667.
 END 21
 BEGIN 22
   Contig
@@ -347,14 +347,14 @@ BEGIN 24
   'r191-460.3'
   has
   size
-  270,
+  268,
   270
   matches,
   and
   the
   score
   of
-  14814.848756428428.
+  14917.428474783865.
 END 24
 BEGIN 25
   Contig
@@ -419,7 +419,7 @@ BEGIN 29
   'r682-960.2'
   has
   size
-  279,
+  371,
   184
   matches,
   and
@@ -464,14 +464,14 @@ BEGIN 32
   'r191-460.3'
   has
   size
-  270,
+  268,
   270
   matches,
   and
   the
   score
   of
-  14814.848756428428.
+  14917.428474783865.
 END 32
 BEGIN 33
   Contig
@@ -536,7 +536,7 @@ BEGIN 37
   'r191-460.3'
   has
   size
-  270,
+  268,
   270
   matches,
   and

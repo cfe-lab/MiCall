@@ -56,7 +56,7 @@ BEGIN 6
   'r225-834.0'
   has
   size
-  610,
+  608,
   610
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r129-837.2'
   has
   size
-  367,
+  366,
   367
   matches,
   and
   the
   score
   of
-  16823.300319550675.
+  16866.108282663918.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r225-834.0'
   has
   size
-  610,
+  608,
   610
   matches,
   and

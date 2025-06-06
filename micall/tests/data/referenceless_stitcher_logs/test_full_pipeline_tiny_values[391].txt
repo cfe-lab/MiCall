@@ -56,7 +56,7 @@ BEGIN 6
   'r504-845.0'
   has
   size
-  137,
+  136,
   137
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r150-488.1'
   has
   size
-  339,
+  337,
   339
   matches,
   and
   the
   score
   of
-  1.4386561612358393.
+  1.436784560309371.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r150-488.1'
   has
   size
-  339,
+  337,
   339
   matches,
   and

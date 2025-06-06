@@ -56,7 +56,7 @@ BEGIN 6
   'r351-897.1'
   has
   size
-  253,
+  252,
   253
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   (1)
   has
   size
-  302,
+  301,
   302
   matches,
   and

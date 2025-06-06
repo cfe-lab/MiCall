@@ -56,7 +56,7 @@ BEGIN 6
   'r278-694.0'
   has
   size
-  247,
+  246,
   247
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r83-441.2'
   has
   size
-  359,
+  357,
   359
   matches,
   and
   the
   score
   of
-  1.159694057807853.
+  1.1613389663037135.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r83-441.2'
   has
   size
-  359,
+  357,
   359
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   'r499-833.1'
   has
   size
-  196,
+  195,
   196
   matches,
   and
   the
   score
   of
-  13061.274876945032.
+  13123.53660863798.
 END 17
 BEGIN 18
   Found
@@ -283,14 +283,14 @@ BEGIN 20
   (1)
   has
   size
-  199,
+  198,
   199
   matches,
   and
   the
   score
   of
-  1.0061666002244434.
+  1.006094562931292.
 END 20
 BEGIN 21
   Found
@@ -338,14 +338,14 @@ BEGIN 23
   'r346-560.3'
   has
   size
-  215,
+  213,
   215
   matches,
   and
   the
   score
   of
-  1.027322666326799.
+  1.0314166868735462.
 END 23
 BEGIN 24
   Contig
@@ -410,7 +410,7 @@ BEGIN 28
   'r83-441.2'
   has
   size
-  359,
+  357,
   359
   matches,
   and
@@ -455,14 +455,14 @@ BEGIN 31
   'r499-833.1'
   has
   size
-  196,
+  195,
   196
   matches,
   and
   the
   score
   of
-  13061.274876945032.
+  13123.53660863798.
 END 31
 BEGIN 32
   Found
@@ -510,14 +510,14 @@ BEGIN 34
   'r346-560.3'
   has
   size
-  215,
+  213,
   215
   matches,
   and
   the
   score
   of
-  1.0336577545115455.
+  1.0377027207800813.
 END 34
 BEGIN 35
   Contig
@@ -582,7 +582,7 @@ BEGIN 39
   'r83-441.2'
   has
   size
-  359,
+  357,
   359
   matches,
   and
@@ -627,14 +627,14 @@ BEGIN 42
   'r346-560.3'
   has
   size
-  215,
+  213,
   215
   matches,
   and
   the
   score
   of
-  13500.888060361061.
+  13618.329645040634.
 END 42
 BEGIN 43
   Contig
@@ -699,7 +699,7 @@ BEGIN 47
   'r346-560.3'
   has
   size
-  215,
+  213,
   215
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r441-807.1'
   has
   size
-  367,
+  365,
   367
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r330-668.0'
   has
   size
-  339,
+  337,
   339
   matches,
   and
   the
   score
   of
-  16249.523065379435.
+  16339.10778854335.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r330-668.0'
   has
   size
-  339,
+  337,
   339
   matches,
   and

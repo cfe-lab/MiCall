@@ -56,7 +56,7 @@ BEGIN 6
   'r257-721.1'
   has
   size
-  465,
+  463,
   465
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r181-850.2'
   has
   size
-  177,
+  176,
   177
   matches,
   and
   the
   score
   of
-  12532.885501015007.
+  12599.049002464457.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r257-721.1'
   has
   size
-  465,
+  463,
   465
   matches,
   and

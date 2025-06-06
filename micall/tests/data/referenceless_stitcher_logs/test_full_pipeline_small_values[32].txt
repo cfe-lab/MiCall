@@ -74,7 +74,7 @@ BEGIN 7
   'r521-893.5'
   has
   size
-  1,
+  0,
   0
   matches,
   and
@@ -111,7 +111,7 @@ BEGIN 9
   'r79-391.0'
   has
   size
-  313,
+  418,
   204
   matches,
   and
@@ -156,14 +156,14 @@ BEGIN 12
   'r737-959.3'
   has
   size
-  157,
+  156,
   157
   matches,
   and
   the
   score
   of
-  11937.978971922925.
+  12009.040777173183.
 END 12
 BEGIN 13
   Found
@@ -211,14 +211,14 @@ BEGIN 15
   'r521-893.5'
   has
   size
-  203,
+  202,
   203
   matches,
   and
   the
   score
   of
-  1.1097416170242256.
+  1.1082520777871336.
 END 15
 BEGIN 16
   Found
@@ -329,7 +329,7 @@ BEGIN 22
   'r79-391.0'
   has
   size
-  313,
+  418,
   204
   matches,
   and
@@ -374,14 +374,14 @@ BEGIN 25
   'r737-959.3'
   has
   size
-  157,
+  156,
   157
   matches,
   and
   the
   score
   of
-  11937.978971922925.
+  12009.040777173183.
 END 25
 BEGIN 26
   Found
@@ -456,7 +456,7 @@ BEGIN 30
   'r102-471.4'
   has
   size
-  370,
+  493,
   244
   matches,
   and
@@ -501,14 +501,14 @@ BEGIN 33
   'r148-506.1'
   has
   size
-  2,
+  1,
   1
   matches,
   and
   the
   score
   of
-  274.00245308082543.
+  698.938883781707.
 END 33
 BEGIN 34
   Found
@@ -556,14 +556,14 @@ BEGIN 36
   'r79-391.0'
   has
   size
-  313,
+  418,
   204
   matches,
   and
   the
   score
   of
-  30.6989941738713.
+  8.004489023661149.
 END 36
 BEGIN 37
   Contig
@@ -628,7 +628,7 @@ BEGIN 41
   'r102-471.4'
   has
   size
-  370,
+  368,
   323
   matches,
   and
@@ -673,14 +673,14 @@ BEGIN 44
   'r79-391.0'
   has
   size
-  313,
+  311,
   243
   matches,
   and
   the
   score
   of
-  11030.780459013675.
+  11106.724920889967.
 END 44
 BEGIN 45
   Contig
@@ -745,7 +745,7 @@ BEGIN 49
   'r79-391.0'
   has
   size
-  313,
+  311,
   243
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r253-562.1'
   has
   size
-  242,
+  241,
   242
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r275-557.0'
   has
   size
-  283,
+  281,
   283
   matches,
   and

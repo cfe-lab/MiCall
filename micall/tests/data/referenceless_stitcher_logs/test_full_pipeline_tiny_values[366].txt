@@ -56,7 +56,7 @@ BEGIN 6
   'r538-989.2'
   has
   size
-  37,
+  36,
   37
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r123-452.1'
   has
   size
-  330,
+  328,
   330
   matches,
   and
   the
   score
   of
-  2.4465357551109985.
+  2.3995228299362594.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r123-452.1'
   has
   size
-  330,
+  328,
   330
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r99-626.0'
   has
   size
-  528,
+  526,
   528
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r458-844.2'
   has
   size
-  183,
+  182,
   183
   matches,
   and
   the
   score
   of
-  12703.315035229092.
+  12768.176997801424.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r99-626.0'
   has
   size
-  528,
+  526,
   528
   matches,
   and

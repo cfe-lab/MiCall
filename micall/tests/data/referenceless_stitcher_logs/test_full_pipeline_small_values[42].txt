@@ -56,7 +56,7 @@ BEGIN 6
   'r89-594.4'
   has
   size
-  506,
+  504,
   506
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r281-609.2'
   has
   size
-  327,
+  326,
   327
   matches,
   and
   the
   score
   of
-  16059.387347289332.
+  16105.25329596099.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r89-594.4'
   has
   size
-  506,
+  504,
   506
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   'r228-502.3'
   has
   size
-  275,
+  273,
   275
   matches,
   and
   the
   score
   of
-  14925.853601613062.
+  15027.320050071112.
 END 17
 BEGIN 18
   Contig
@@ -273,14 +273,14 @@ BEGIN 20
   'r654-914.0'
   has
   size
-  261,
+  347,
   172
   matches,
   and
   the
   score
   of
-  7951.383216543968.
+  5352.191522870984.
 END 20
 BEGIN 21
   Contig
@@ -318,14 +318,14 @@ BEGIN 23
   'r432-651.5'
   has
   size
-  178,
+  177,
   178
   matches,
   and
   the
   score
   of
-  12561.531572327369.
+  12627.473316117006.
 END 23
 BEGIN 24
   Found
@@ -400,7 +400,7 @@ BEGIN 28
   'r89-594.4'
   has
   size
-  506,
+  504,
   506
   matches,
   and
@@ -445,14 +445,14 @@ BEGIN 31
   'r228-502.3'
   has
   size
-  275,
+  273,
   275
   matches,
   and
   the
   score
   of
-  14925.853601613062.
+  15027.320050071112.
 END 31
 BEGIN 32
   Contig
@@ -490,14 +490,14 @@ BEGIN 34
   'r654-914.0'
   has
   size
-  261,
+  347,
   172
   matches,
   and
   the
   score
   of
-  7951.383216543968.
+  5352.191522870984.
 END 34
 BEGIN 35
   Contig
@@ -562,7 +562,7 @@ BEGIN 39
   'r228-502.3'
   has
   size
-  275,
+  273,
   275
   matches,
   and
@@ -607,14 +607,14 @@ BEGIN 42
   'r654-914.0'
   has
   size
-  261,
+  347,
   172
   matches,
   and
   the
   score
   of
-  7951.383216543968.
+  5352.191522870984.
 END 42
 BEGIN 43
   Contig
@@ -679,7 +679,7 @@ BEGIN 47
   'r654-914.0'
   has
   size
-  261,
+  347,
   172
   matches,
   and

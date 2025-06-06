@@ -56,7 +56,7 @@ BEGIN 6
   'r384-747.1'
   has
   size
-  364,
+  362,
   364
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r261-841.0'
   has
   size
-  116,
+  115,
   116
   matches,
   and
   the
   score
   of
-  10554.682206235266.
+  10639.75565109458.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r384-747.1'
   has
   size
-  364,
+  362,
   364
   matches,
   and

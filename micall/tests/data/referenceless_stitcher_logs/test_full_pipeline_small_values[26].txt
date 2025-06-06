@@ -56,7 +56,7 @@ BEGIN 6
   'r175-703.5'
   has
   size
-  529,
+  527,
   529
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r442-952.1'
   has
   size
-  289,
+  288,
   289
   matches,
   and
   the
   score
   of
-  15279.399881414676.
+  15328.780155289822.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r175-703.5'
   has
   size
-  529,
+  527,
   529
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   'r675-983.0'
   has
   size
-  278,
+  277,
   278
   matches,
   and
   the
   score
   of
-  15042.141968363512.
+  15092.680445082442.
 END 17
 BEGIN 18
   Found
@@ -310,7 +310,7 @@ BEGIN 22
   'r175-703.5'
   has
   size
-  529,
+  527,
   529
   matches,
   and
@@ -355,14 +355,14 @@ BEGIN 25
   'r557-789.2'
   has
   size
-  233,
+  231,
   233
   matches,
   and
   the
   score
   of
-  13951.447351630506.
+  14063.41611095749.
 END 25
 BEGIN 26
   Contig
@@ -400,14 +400,14 @@ BEGIN 28
   'r488-712.4'
   has
   size
-  225,
+  223,
   225
   matches,
   and
   the
   score
   of
-  13753.928227340984.
+  13868.243734232592.
 END 28
 BEGIN 29
   Contig
@@ -472,7 +472,7 @@ BEGIN 33
   'r557-789.2'
   has
   size
-  233,
+  231,
   233
   matches,
   and
@@ -517,14 +517,14 @@ BEGIN 36
   'r488-712.4'
   has
   size
-  225,
+  223,
   225
   matches,
   and
   the
   score
   of
-  13753.928227340984.
+  13868.243734232592.
 END 36
 BEGIN 37
   Contig
@@ -589,7 +589,7 @@ BEGIN 41
   'r488-712.4'
   has
   size
-  225,
+  223,
   225
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r170-459.2'
   has
   size
-  290,
+  288,
   290
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r700-974.0'
   has
   size
-  64,
+  63,
   64
   matches,
   and
   the
   score
   of
-  8266.326541852997.
+  8387.266605380482.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r170-459.2'
   has
   size
-  290,
+  288,
   290
   matches,
   and

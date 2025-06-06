@@ -56,7 +56,7 @@ BEGIN 6
   'r167-736.0'
   has
   size
-  220,
+  219,
   220
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r300-601.2'
   has
   size
-  302,
+  300,
   302
   matches,
   and
   the
   score
   of
-  1.1329069209744012.
+  1.1350989053439666.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r300-601.2'
   has
   size
-  302,
+  300,
   302
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r520-918.0'
   has
   size
-  399,
+  397,
   399
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r417-802.2'
   has
   size
-  386,
+  384,
   386
   matches,
   and
   the
   score
   of
-  17127.185541642342.
+  17210.099468013075.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r417-802.2'
   has
   size
-  386,
+  384,
   386
   matches,
   and

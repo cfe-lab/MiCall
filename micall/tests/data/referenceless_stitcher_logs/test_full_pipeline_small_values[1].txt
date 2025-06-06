@@ -56,7 +56,7 @@ BEGIN 6
   'r388-994.3'
   has
   size
-  244,
+  243,
   244
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r64-397.1'
   has
   size
-  334,
+  446,
   219
   matches,
   and
   the
   score
   of
-  0.6111846904185301.
+  0.4060689433245046.
 END 9
 BEGIN 10
   Cycle
@@ -175,7 +175,7 @@ BEGIN 13
   (1)
   has
   size
-  440,
+  439,
   440
   matches,
   and
@@ -257,7 +257,7 @@ BEGIN 18
   (2)
   has
   size
-  278,
+  277,
   278
   matches,
   and
@@ -339,7 +339,7 @@ BEGIN 23
   'r214-465.4'
   has
   size
-  252,
+  250,
   252
   matches,
   and
@@ -384,14 +384,14 @@ BEGIN 26
   'r499-716.5'
   has
   size
-  218,
+  216,
   218
   matches,
   and
   the
   score
   of
-  13577.543130420489.
+  13694.023094968612.
 END 26
 BEGIN 27
   Contig
@@ -456,7 +456,7 @@ BEGIN 31
   'r499-716.5'
   has
   size
-  218,
+  216,
   218
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r290-843.0'
   has
   size
-  554,
+  552,
   554
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r249-909.2'
   has
   size
-  232,
+  231,
   232
   matches,
   and
   the
   score
   of
-  13982.938765544286.
+  14039.241750309904.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r290-843.0'
   has
   size
-  554,
+  552,
   554
   matches,
   and

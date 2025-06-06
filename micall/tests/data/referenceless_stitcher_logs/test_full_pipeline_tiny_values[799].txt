@@ -56,7 +56,7 @@ BEGIN 6
   'r388-886.0'
   has
   size
-  213,
+  212,
   213
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r184-640.2'
   has
   size
-  417,
+  416,
   417
   matches,
   and
   the
   score
   of
-  1.3110879601277403.
+  1.3082856583645603.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r388-886.0'
   has
   size
-  253,
+  252,
   253
   matches,
   and

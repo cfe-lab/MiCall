@@ -56,7 +56,7 @@ BEGIN 6
   'r529-982.0'
   has
   size
-  168,
+  167,
   168
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r451-796.2'
   has
   size
-  246,
+  245,
   246
   matches,
   and
   the
   score
   of
-  1.166845494483348.
+  1.1647972326147882.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   'r529-982.0'
   has
   size
-  268,
+  267,
   268
   matches,
   and

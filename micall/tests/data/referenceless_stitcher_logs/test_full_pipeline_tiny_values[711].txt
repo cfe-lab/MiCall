@@ -56,7 +56,7 @@ BEGIN 6
   'r232-707.1'
   has
   size
-  476,
+  474,
   476
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r435-870.0'
   has
   size
-  436,
+  434,
   436
   matches,
   and
   the
   score
   of
-  17992.268125437888.
+  18069.371804117796.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r435-870.0'
   has
   size
-  436,
+  434,
   436
   matches,
   and

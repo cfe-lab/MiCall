@@ -56,7 +56,7 @@ BEGIN 6
   'r136-717.0'
   has
   size
-  582,
+  580,
   582
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r271-666.1'
   has
   size
-  396,
+  394,
   396
   matches,
   and
   the
   score
   of
-  17305.416237258793.
+  17387.07521703234.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r271-666.1'
   has
   size
-  396,
+  394,
   396
   matches,
   and

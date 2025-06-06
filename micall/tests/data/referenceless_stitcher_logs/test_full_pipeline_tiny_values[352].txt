@@ -56,7 +56,7 @@ BEGIN 6
   'r146-780.0'
   has
   size
-  513,
+  512,
   513
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r146-780.0'
   has
   size
-  554,
+  553,
   554
   matches,
   and
   the
   score
   of
-  1.0313720988808757.
+  1.0312333742842432.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  517,
+  516,
   517
   matches,
   and

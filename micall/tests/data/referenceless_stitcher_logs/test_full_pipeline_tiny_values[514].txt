@@ -56,7 +56,7 @@ BEGIN 6
   'r422-889.2'
   has
   size
-  126,
+  125,
   126
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r422-889.2'
   has
   size
-  256,
+  255,
   256
   matches,
   and
   the
   score
   of
-  1.3328349497087064.
+  1.3278461786440854.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   (2)
   has
   size
-  182,
+  181,
   182
   matches,
   and

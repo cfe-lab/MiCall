@@ -56,7 +56,7 @@ BEGIN 6
   'r188-634.0'
   has
   size
-  212,
+  211,
   212
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r276-603.2'
   has
   size
-  328,
+  326,
   328
   matches,
   and
   the
   score
   of
-  1.1892061886953245.
+  1.1907352023869.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r276-603.2'
   has
   size
-  328,
+  326,
   328
   matches,
   and

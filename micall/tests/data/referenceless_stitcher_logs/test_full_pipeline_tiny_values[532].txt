@@ -56,7 +56,7 @@ BEGIN 6
   'r214-804.0'
   has
   size
-  591,
+  589,
   591
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r632-962.1'
   has
   size
-  181,
+  180,
   181
   matches,
   and
   the
   score
   of
-  12646.887565029732.
+  12712.17574914641.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r214-804.0'
   has
   size
-  591,
+  589,
   591
   matches,
   and

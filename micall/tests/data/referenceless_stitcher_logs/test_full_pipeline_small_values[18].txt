@@ -56,7 +56,7 @@ BEGIN 6
   'r202-655.2'
   has
   size
-  434,
+  433,
   434
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r302-739.4'
   has
   size
-  354,
+  353,
   354
   matches,
   and
@@ -220,7 +220,7 @@ BEGIN 16
   'r200-532.5'
   has
   size
-  333,
+  331,
   333
   matches,
   and
@@ -265,14 +265,14 @@ BEGIN 19
   'r342-667.1'
   has
   size
-  326,
+  324,
   326
   matches,
   and
   the
   score
   of
-  15993.838827504478.
+  16085.534576811975.
 END 19
 BEGIN 20
   Contig
@@ -310,14 +310,14 @@ BEGIN 22
   (2)
   has
   size
-  264,
+  263,
   264
   matches,
   and
   the
   score
   of
-  14731.811829506472.
+  14783.93448401769.
 END 22
 BEGIN 23
   Found
@@ -392,7 +392,7 @@ BEGIN 27
   'r200-532.5'
   has
   size
-  333,
+  331,
   333
   matches,
   and
@@ -437,14 +437,14 @@ BEGIN 30
   'r342-667.1'
   has
   size
-  326,
+  324,
   326
   matches,
   and
   the
   score
   of
-  15993.838827504478.
+  16085.534576811975.
 END 30
 BEGIN 31
   Contig
@@ -509,7 +509,7 @@ BEGIN 35
   'r342-667.1'
   has
   size
-  326,
+  324,
   326
   matches,
   and

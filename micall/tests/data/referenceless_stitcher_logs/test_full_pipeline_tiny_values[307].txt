@@ -56,7 +56,7 @@ BEGIN 6
   'r307-953.0'
   has
   size
-  317,
+  316,
   317
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r436-834.1'
   has
   size
-  399,
+  397,
   399
   matches,
   and
   the
   score
   of
-  1.0944954196085246.
+  1.0963909785931778.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r436-834.1'
   has
   size
-  399,
+  397,
   399
   matches,
   and

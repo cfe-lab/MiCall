@@ -56,7 +56,7 @@ BEGIN 6
   'r433-944.0'
   has
   size
-  512,
+  510,
   512
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r228-947.2'
   has
   size
-  392,
+  391,
   392
   matches,
   and
   the
   score
   of
-  17275.45681265524.
+  17316.610372415493.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r433-944.0'
   has
   size
-  512,
+  510,
   512
   matches,
   and

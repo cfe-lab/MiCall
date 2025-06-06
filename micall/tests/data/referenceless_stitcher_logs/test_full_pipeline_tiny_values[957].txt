@@ -56,7 +56,7 @@ BEGIN 6
   'r374-842.2'
   has
   size
-  223,
+  222,
   223
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r473-820.0'
   has
   size
-  348,
+  346,
   348
   matches,
   and
   the
   score
   of
-  1.19343629315116.
+  1.1948399977535649.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r473-820.0'
   has
   size
-  348,
+  346,
   348
   matches,
   and

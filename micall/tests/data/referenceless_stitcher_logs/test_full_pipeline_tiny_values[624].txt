@@ -56,7 +56,7 @@ BEGIN 6
   'r218-623.2'
   has
   size
-  406,
+  404,
   406
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r193-909.0'
   has
   size
-  219,
+  218,
   219
   matches,
   and
   the
   score
   of
-  13660.840941036566.
+  13719.115249236476.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r218-623.2'
   has
   size
-  406,
+  404,
   406
   matches,
   and

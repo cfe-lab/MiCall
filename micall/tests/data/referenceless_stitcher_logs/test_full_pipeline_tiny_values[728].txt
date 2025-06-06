@@ -56,7 +56,7 @@ BEGIN 6
   'r649-959.0'
   has
   size
-  302,
+  301,
   302
   matches,
   and
@@ -138,7 +138,7 @@ BEGIN 11
   'r708-964.1'
   has
   size
-  252,
+  251,
   252
   matches,
   and

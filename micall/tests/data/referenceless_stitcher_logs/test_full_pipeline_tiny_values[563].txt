@@ -56,7 +56,7 @@ BEGIN 6
   'r374-751.2'
   has
   size
-  378,
+  376,
   378
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r310-896.0'
   has
   size
-  39,
+  38,
   39
   matches,
   and
   the
   score
   of
-  6718.142294553674.
+  6879.776049952188.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r374-751.2'
   has
   size
-  378,
+  376,
   378
   matches,
   and

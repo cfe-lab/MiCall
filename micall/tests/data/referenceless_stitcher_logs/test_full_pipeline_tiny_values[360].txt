@@ -56,7 +56,7 @@ BEGIN 6
   'r212-814.2'
   has
   size
-  603,
+  601,
   603
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r313-692.0'
   has
   size
-  380,
+  378,
   380
   matches,
   and
   the
   score
   of
-  17018.898497731392.
+  17102.59049845539.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r313-692.0'
   has
   size
-  380,
+  378,
   380
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r529-973.0'
   has
   size
-  225,
+  224,
   225
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r388-737.1'
   has
   size
-  350,
+  348,
   350
   matches,
   and
   the
   score
   of
-  1.1919028315604647.
+  1.1933125565869631.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r388-737.1'
   has
   size
-  350,
+  348,
   350
   matches,
   and

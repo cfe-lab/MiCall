@@ -56,7 +56,7 @@ BEGIN 6
   'r473-789.0'
   has
   size
-  19,
+  18,
   19
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r169-441.2'
   has
   size
-  273,
+  271,
   273
   matches,
   and
   the
   score
   of
-  3.0272787378356902.
+  2.9037793898879105.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r169-441.2'
   has
   size
-  273,
+  271,
   273
   matches,
   and

@@ -56,7 +56,7 @@ BEGIN 6
   'r538-855.0'
   has
   size
-  318,
+  316,
   318
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r564-854.2'
   has
   size
-  291,
+  289,
   291
   matches,
   and
   the
   score
   of
-  15273.015292410539.
+  15371.124993028177.
 END 9
 BEGIN 10
   Contig
@@ -173,7 +173,7 @@ BEGIN 14
   'r564-854.2'
   has
   size
-  291,
+  289,
   291
   matches,
   and

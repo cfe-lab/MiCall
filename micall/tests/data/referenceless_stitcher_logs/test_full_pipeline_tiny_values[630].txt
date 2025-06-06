@@ -56,7 +56,7 @@ BEGIN 6
   'r389-952.2'
   has
   size
-  214,
+  213,
   214
   matches,
   and
@@ -111,14 +111,14 @@ BEGIN 9
   'r466-800.0'
   has
   size
-  335,
+  333,
   335
   matches,
   and
   the
   score
   of
-  1.1948903092005994.
+  1.1963339114303624.
 END 9
 BEGIN 10
   Contig
@@ -183,7 +183,7 @@ BEGIN 14
   'r466-800.0'
   has
   size
-  335,
+  333,
   335
   matches,
   and

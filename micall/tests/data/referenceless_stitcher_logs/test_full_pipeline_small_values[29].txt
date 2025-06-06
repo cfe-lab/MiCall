@@ -56,7 +56,7 @@ BEGIN 6
   'r402-817.4'
   has
   size
-  416,
+  414,
   416
   matches,
   and
@@ -101,14 +101,14 @@ BEGIN 9
   'r522-901.3'
   has
   size
-  342,
+  341,
   342
   matches,
   and
   the
   score
   of
-  16352.140017348249.
+  16396.7925078026.
 END 9
 BEGIN 10
   Found
@@ -183,7 +183,7 @@ BEGIN 14
   'r402-817.4'
   has
   size
-  416,
+  414,
   416
   matches,
   and
@@ -228,14 +228,14 @@ BEGIN 17
   (1)
   has
   size
-  189,
+  188,
   189
   matches,
   and
   the
   score
   of
-  12870.383103327827.
+  12934.009636920253.
 END 17
 BEGIN 18
   Found
@@ -283,14 +283,14 @@ BEGIN 20
   'r561-802.0'
   has
   size
-  242,
+  240,
   242
   matches,
   and
   the
   score
   of
-  1.1008810594081748.
+  1.1039297178258662.
 END 20
 BEGIN 21
   Contig
@@ -355,7 +355,7 @@ BEGIN 25
   'r402-817.4'
   has
   size
-  416,
+  414,
   416
   matches,
   and
@@ -400,14 +400,14 @@ BEGIN 28
   'r561-802.0'
   has
   size
-  242,
+  240,
   242
   matches,
   and
   the
   score
   of
-  14168.760985780611.
+  14278.237608842412.
 END 28
 BEGIN 29
   Contig
@@ -445,14 +445,14 @@ BEGIN 31
   'r19-238.5'
   has
   size
-  2,
+  1,
   0
   matches,
   and
   the
   score
   of
-  -822.0073592424762.
+  -698.938883781707.
 END 31
 BEGIN 32
   Cycle
@@ -509,7 +509,7 @@ BEGIN 35
   'r561-802.0'
   has
   size
-  242,
+  240,
   242
   matches,
   and
@@ -554,14 +554,14 @@ BEGIN 38
   'r19-238.5'
   has
   size
-  2,
+  1,
   0
   matches,
   and
   the
   score
   of
-  -822.0073592424762.
+  -698.938883781707.
 END 38
 BEGIN 39
   Cycle
@@ -618,7 +618,7 @@ BEGIN 42
   'r19-238.5'
   has
   size
-  2,
+  1,
   0
   matches,
   and
@@ -736,7 +736,7 @@ BEGIN 52
   'r19-238.5'
   has
   size
-  2,
+  1,
   0
   matches,
   and
