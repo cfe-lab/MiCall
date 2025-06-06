@@ -426,8 +426,14 @@ def extend_by_1(is_debug2: bool,
 
     combined, additional_score = combination
     score = combine_scores(path.score, additional_score)
-    new_elements = path.parts_ids.union([candidate.id])
-    new_path = ContigsPath(combined, new_elements, score)
+    is_covered = additional_score == SCORE_EPSILON
+    if is_covered:
+        new_elements = path.contigs_ids
+        new_elements = path.contigs_ids.union([candidate.id])  # TODO: remove this line.
+    else:
+        new_elements = path.contigs_ids.union([candidate.id])
+    new_contained_elements = path.contains_contigs_ids.union([candidate.id])
+    new_path = ContigsPath(combined, new_elements, new_contained_elements, score)
     return new_path
 
 
@@ -533,9 +539,9 @@ def stitch_consensus_overlaps(contigs: Iterable[ContigWithAligner]) -> Iterator[
         remaining = tuple(contig for contig in remaining
                           if not most_probable.has_contig(contig))
         seeds = tuple(path for path in seeds
-                      if most_probable.parts_ids.isdisjoint(path.parts_ids))
-        log(events.Remove(len(most_probable.parts_ids), len(remaining)))
-        if len(most_probable.parts_ids) == 1:
+                      if most_probable.contigs_ids.isdisjoint(path.contigs_ids))
+        log(events.Remove(len(most_probable.contigs_ids), len(remaining)))
+        if len(most_probable.contains_contigs_ids) == 1:
             log(events.GiveUp())
             yield from remaining
             return

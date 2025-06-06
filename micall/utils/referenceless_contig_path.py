@@ -11,7 +11,12 @@ class ContigsPath:
     whole: ContigWithAligner
 
     # Id's of contigs that comprise this path.
-    parts_ids: FrozenSet[int]
+    # Does not contain contigs covered
+    contigs_ids: FrozenSet[int]
+
+    # Ids of contigs that are contained within this path.
+    # Different from `contigs_ids` in that it also contains ones that are covered by this path.
+    contains_contigs_ids: FrozenSet[int]
 
     # Higher is better. The lower the score is, the higher the probability
     # that all the components of `whole` came together on accident.
@@ -33,11 +38,12 @@ class ContigsPath:
         return self.get_score() >= other.get_score()
 
     def has_contig(self, contig: Contig) -> bool:
-        return contig.id in self.parts_ids
+        return contig.id in self.contains_contigs_ids
 
     @staticmethod
     def singleton(contig: ContigWithAligner) -> 'ContigsPath':
         return ContigsPath(whole=contig,
-                           parts_ids=frozenset((contig.id,)),
+                           contigs_ids=frozenset((contig.id,)),
+                           contains_contigs_ids=frozenset((contig.id,)),
                            score=SCORE_NOTHING,
                            )

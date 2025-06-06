@@ -44,7 +44,7 @@ class CycleEnd:
     def __str__(self) -> str:
         fittest = self.pool.ring[-1]  # type: ignore
         length = len(fittest.whole.seq)  # type: ignore
-        parts = len(fittest.parts_ids)  # type: ignore
+        parts = len(fittest.contigs_ids)  # type: ignore
 
         return f"Cycle {self.i_cycle} finished with {self.n_paths} new paths. " \
             f"The fittest has length {length} and consists of {parts} parts."

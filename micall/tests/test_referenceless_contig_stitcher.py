@@ -357,8 +357,8 @@ class TestPool:
 
         # Create two paths with same sequence but different scores
         contig = ContigWithAligner(name="1", seq="ATCG")
-        better_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
-        worse_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
+        better_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0))
+        worse_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(5.0))
 
         # Add better path first
         assert pool.add(better_path) is True
@@ -376,8 +376,8 @@ class TestPool:
 
         # Create two paths with same sequence but different scores
         contig = ContigWithAligner(name="1", seq="ATCG")
-        worse_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
-        better_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
+        worse_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(5.0))
+        better_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0))
 
         # Add worse path first
         assert pool.add(worse_path) is True
@@ -405,9 +405,9 @@ class TestPool:
         contig2 = ContigWithAligner(name="2", seq="CCCC")
         contig3 = ContigWithAligner(name="3", seq="GGGG")
 
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(1.0))
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(5.0))
-        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(3.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(1.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(5.0))
+        path3 = ContigsPath(whole=contig3, contigs_ids=frozenset([contig3.id]), contains_contigs_ids=frozenset([contig3.id]), score=Score(3.0))
 
         # Add first two paths
         assert pool.add(path1) is True
@@ -429,7 +429,7 @@ class TestPool:
 
         # Add a path with score higher than ACCEPTABLE_STITCHING_SCORE
         contig = ContigWithAligner(name="1", seq="ATCG")
-        high_score_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(100.0))
+        high_score_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(100.0))
 
         pool.add(high_score_path)
 
@@ -448,7 +448,7 @@ class TestPool:
 
         # Add a path and check that property updates
         contig = ContigWithAligner(name="1", seq="ATCG")
-        path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(50.0))
+        path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(50.0))
         pool.add(path)
 
         assert pool.min_acceptable_score == pool.smallest_score
@@ -479,7 +479,7 @@ class TestPool:
 
         paths = []
         for contig, score in contigs_and_scores:
-            path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=score)
+            path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=score)
             paths.append(path)
             pool.add(path)
 
@@ -520,8 +520,8 @@ class TestPool:
 
         # Create two paths with same sequence and EXACTLY equal scores
         contig = ContigWithAligner(name="1", seq="ATCG")
-        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
-        path2 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
+        path1 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(5.0))
+        path2 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(5.0))
 
         # Add first path
         assert pool.add(path1) is True
@@ -542,8 +542,8 @@ class TestPool:
         contig2 = ContigWithAligner(name="2", seq="BBBB")  # Different sequence
 
         # Create paths with very low scores that might be rejected by ring
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(1.0))
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(0.5))  # Even lower score
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(1.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(0.5))  # Even lower score
 
         # Add first path (should succeed)
         result1 = pool.add(path1)
@@ -585,7 +585,7 @@ class TestPool:
         # Create a path with very low score that ring.insert() will reject
         contig = ContigWithAligner(name="1", seq="ATCG")
         very_low_score = Score(-1000.0)  # Much lower than ACCEPTABLE_STITCHING_SCORE
-        path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=very_low_score)
+        path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=very_low_score)
 
         # This should not crash even though ring[0] would be accessed if ring.insert() succeeded
         pool.add(path)
@@ -603,9 +603,9 @@ class TestPool:
         contig2 = ContigWithAligner(name="2", seq="BBBB")
         contig3 = ContigWithAligner(name="3", seq="CCCC")
 
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(5.0))
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(10.0))
-        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(3.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(5.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(10.0))
+        path3 = ContigsPath(whole=contig3, contigs_ids=frozenset([contig3.id]), contains_contigs_ids=frozenset([contig3.id]), score=Score(3.0))
 
         # Add first two paths (fill capacity)
         assert pool.add(path1) is True
@@ -631,8 +631,8 @@ class TestPool:
 
         contig = ContigWithAligner(name="1", seq="ATCG")
         # Create paths with very close but different scores
-        worse_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
-        barely_better_path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.000001))
+        worse_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0))
+        barely_better_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.000001))
 
         # Add worse path first
         assert pool.add(worse_path) is True
@@ -661,7 +661,7 @@ class TestPool:
 
         # Try to add another path with empty sequence
         contig2 = ContigWithAligner(name="2", seq="")
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(5.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(5.0))
 
         # Should be treated as duplicate sequence
         assert pool.add(path2) is True
@@ -673,7 +673,7 @@ class TestPool:
 
         # Add a path that will succeed
         contig1 = ContigWithAligner(name="1", seq="AAAA")
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(10.0))
 
         assert pool.add(path1) is True
         # smallest_score should update because ring.insert() returned True
@@ -681,7 +681,7 @@ class TestPool:
 
         # Try to add a path that will fail ring insertion
         contig2 = ContigWithAligner(name="2", seq="BBBB")
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(5.0))  # Lower score
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(5.0))  # Lower score
 
         current_smallest_score = pool.smallest_score
         assert pool.add(path2) is False  # Should fail due to capacity and lower score
@@ -694,7 +694,7 @@ class TestPool:
 
         # Add first path
         contig1 = ContigWithAligner(name="1", seq="AAAA")
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(5.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(5.0))
 
         result1 = pool.add(path1)
         assert result1 is True
@@ -703,7 +703,7 @@ class TestPool:
 
         # Add second path with higher score and different sequence
         contig2 = ContigWithAligner(name="2", seq="BBBB")
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(10.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(10.0))
 
         result2 = pool.add(path2)
         assert result2 is True  # Should succeed because score is higher
@@ -713,7 +713,7 @@ class TestPool:
 
         # Add third path with lower score and different sequence
         contig3 = ContigWithAligner(name="3", seq="CCCC")
-        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(3.0))
+        path3 = ContigsPath(whole=contig3, contigs_ids=frozenset([contig3.id]), contains_contigs_ids=frozenset([contig3.id]), score=Score(3.0))
 
         assert pool.add(path3) is False  # Should fail because score is lower than ring[0]
         # But existing mapping should still be updated
@@ -725,14 +725,14 @@ class TestPool:
 
         # Add initial path
         contig = ContigWithAligner(name="1", seq="ATCG")
-        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
+        path1 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(5.0))
 
         assert pool.add(path1) is True
         assert "ATCG" in pool.set
         assert pool.existing["ATCG"] == path1
 
         # Add better path with same sequence (should replace)
-        path2 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
+        path2 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0))
 
         assert pool.add(path2) is True
 
@@ -748,12 +748,12 @@ class TestPool:
 
         # Fill the pool to capacity
         contig1 = ContigWithAligner(name="1", seq="AAAA")
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(10.0))
         assert pool.add(path1) is True
 
         # Try to add a lower-scoring path that should be rejected by ring
         contig2 = ContigWithAligner(name="2", seq="TTTT")
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(5.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(5.0))
         result = pool.add(path2)
 
         # The add should fail
@@ -768,7 +768,7 @@ class TestPool:
 
         # Verify that trying to add the same sequence again is properly rejected
         contig3 = ContigWithAligner(name="3", seq="TTTT")
-        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(6.0))  # Slightly better but still worse than what's tracked
+        path3 = ContigsPath(whole=contig3, contigs_ids=frozenset([contig3.id]), contains_contigs_ids=frozenset([contig3.id]), score=Score(6.0))  # Slightly better but still worse than what's tracked
         result2 = pool.add(path3)
         assert not result2, "Expected duplicate sequence to be rejected based on existing mapping"
 
@@ -778,20 +778,20 @@ class TestPool:
 
         # Add first path
         contig1 = ContigWithAligner(name="1", seq="AAAA")
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(10.0))
         assert pool.add(path1) is True
         assert "AAAA" in pool.set
 
         # Add second path (different sequence)
         contig2 = ContigWithAligner(name="2", seq="BBBB")
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(20.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(20.0))
         assert pool.add(path2) is True
         assert "BBBB" in pool.set
         assert len(pool.set) == 2
 
         # Add third path (different sequence, high score) - should evict lowest
         contig3 = ContigWithAligner(name="3", seq="CCCC")
-        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(30.0))
+        path3 = ContigsPath(whole=contig3, contigs_ids=frozenset([contig3.id]), contains_contigs_ids=frozenset([contig3.id]), score=Score(30.0))
         result = pool.add(path3)
 
         if result is True:
@@ -809,8 +809,8 @@ class TestPool:
         # Fill capacity with two different sequences
         contig1 = ContigWithAligner(name="1", seq="AAAA")
         contig2 = ContigWithAligner(name="2", seq="BBBB")
-        path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(15.0))
+        path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(10.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(15.0))
 
         assert pool.add(path1) is True
         assert pool.add(path2) is True
@@ -818,7 +818,7 @@ class TestPool:
         assert len(pool.set) == 2
 
         # Now add a better version of the first sequence
-        better_path1 = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(25.0))
+        better_path1 = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(25.0))
         assert pool.add(better_path1) is True
 
         # Check consistency: should still have 2 items, with better_path1 replacing path1
@@ -840,7 +840,7 @@ class TestPool:
         # Try to add a path with very low score that ring might reject
         contig = ContigWithAligner(name="1", seq="ATCG")
         very_low_score = Score(-1000.0)
-        path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=very_low_score)
+        path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=very_low_score)
 
         # This should not crash due to accessing ring[0] when ring is empty
         try:
@@ -858,7 +858,7 @@ class TestPool:
 
         # Add a path
         contig = ContigWithAligner(name="1", seq="ATCG")
-        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(5.0))
+        path1 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(5.0))
         assert pool.add(path1) is True
 
         # Manually corrupt the state to test assert robustness
@@ -867,7 +867,7 @@ class TestPool:
 
         # Try to add a path with sequence that's in set but not in ring
         fake_contig = ContigWithAligner(name="fake", seq="FAKE_SEQ")
-        fake_path = ContigsPath(whole=fake_contig, parts_ids=frozenset([fake_contig.id]), score=Score(10.0))
+        fake_path = ContigsPath(whole=fake_contig, contigs_ids=frozenset([fake_contig.id]), contains_contigs_ids=frozenset([fake_contig.id]), score=Score(10.0))
 
         try:
             pool.add(fake_path)
@@ -884,7 +884,7 @@ class TestPool:
 
         for i, seq in enumerate(sequences_to_test):
             contig = ContigWithAligner(name=str(i), seq=seq)
-            path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(float(i * 10)))
+            path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(float(i * 10)))
             paths.append(path)
 
             pool.add(path)
@@ -909,20 +909,20 @@ class TestPool:
         contig = ContigWithAligner(name="1", seq="ATCG")
 
         # Test with exactly equal scores (should be rejected)
-        path1 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
-        path2 = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0))
+        path1 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0))
+        path2 = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0))
 
         assert pool.add(path1) is True
         assert pool.add(path2) is False  # Equal score should be rejected
         assert pool.existing["ATCG"] == path1  # Should still be first path
 
         # Test with very small difference (floating point precision)
-        epsilon_better = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(10.0000000001))
+        epsilon_better = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(10.0000000001))
         assert pool.add(epsilon_better) is True
         assert pool.existing["ATCG"] == epsilon_better
 
         # Test with much better score
-        much_better = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(50.0))
+        much_better = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(50.0))
         assert pool.add(much_better) is True
         assert pool.existing["ATCG"] == much_better
         assert len(pool.ring) == 1  # Should still be just one path
@@ -938,7 +938,7 @@ class TestPool:
         best_score = 0.0
 
         for i, score in enumerate(scores):
-            path = ContigsPath(whole=contig, parts_ids=frozenset([contig.id]), score=Score(score))
+            path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(score))
             result = pool.add(path)
 
             if score > best_score:
@@ -963,24 +963,24 @@ class TestPool:
 
         # Add initial path
         contig1 = ContigWithAligner(name="1", seq="AAAA")
-        path1a = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(10.0))
+        path1a = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(10.0))
         assert pool.add(path1a) is True
 
         # Add different sequence
         contig2 = ContigWithAligner(name="2", seq="BBBB")
-        path2 = ContigsPath(whole=contig2, parts_ids=frozenset([contig2.id]), score=Score(15.0))
+        path2 = ContigsPath(whole=contig2, contigs_ids=frozenset([contig2.id]), contains_contigs_ids=frozenset([contig2.id]), score=Score(15.0))
         assert pool.add(path2) is True
 
         # Add another different sequence
         contig3 = ContigWithAligner(name="3", seq="CCCC")
-        path3 = ContigsPath(whole=contig3, parts_ids=frozenset([contig3.id]), score=Score(20.0))
+        path3 = ContigsPath(whole=contig3, contigs_ids=frozenset([contig3.id]), contains_contigs_ids=frozenset([contig3.id]), score=Score(20.0))
         assert pool.add(path3) is True
 
         assert len(pool.ring) == 3
         assert len(pool.set) == 3
 
         # Now add better version of first sequence
-        path1b = ContigsPath(whole=contig1, parts_ids=frozenset([contig1.id]), score=Score(25.0))
+        path1b = ContigsPath(whole=contig1, contigs_ids=frozenset([contig1.id]), contains_contigs_ids=frozenset([contig1.id]), score=Score(25.0))
         assert pool.add(path1b) is True
 
         # Should still have 3 paths, but path1a should be replaced with path1b
