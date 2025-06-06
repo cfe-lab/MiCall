@@ -99,7 +99,7 @@ BEGIN 8
   and
   consists
   of
-  6
+  3
   parts.
 END 8
 BEGIN 9
@@ -226,7 +226,7 @@ BEGIN 16
   and
   consists
   of
-  6
+  3
   parts.
 END 16
 BEGIN 17
@@ -388,7 +388,7 @@ BEGIN 27
   and
   consists
   of
-  6
+  3
   parts.
 END 27
 BEGIN 28
@@ -505,7 +505,7 @@ BEGIN 35
   and
   consists
   of
-  6
+  3
   parts.
 END 35
 BEGIN 36
@@ -577,7 +577,7 @@ BEGIN 40
   and
   consists
   of
-  6
+  3
   parts.
 END 40
 BEGIN 41
@@ -598,7 +598,7 @@ BEGIN 42
 END 42
 BEGIN 43
   Removed
-  6
+  3
   components
   from
   the

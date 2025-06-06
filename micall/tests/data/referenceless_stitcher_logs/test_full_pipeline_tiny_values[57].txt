@@ -117,7 +117,7 @@ BEGIN 9
   and
   consists
   of
-  3
+  2
   parts.
 END 9
 BEGIN 10
@@ -189,7 +189,7 @@ BEGIN 14
   and
   consists
   of
-  3
+  2
   parts.
 END 14
 BEGIN 15
@@ -210,7 +210,7 @@ BEGIN 16
 END 16
 BEGIN 17
   Removed
-  3
+  2
   components
   from
   the

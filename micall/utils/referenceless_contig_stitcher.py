@@ -429,7 +429,6 @@ def extend_by_1(is_debug2: bool,
     is_covered = additional_score == SCORE_EPSILON
     if is_covered:
         new_elements = path.contigs_ids
-        new_elements = path.contigs_ids.union([candidate.id])  # TODO: remove this line.
     else:
         new_elements = path.contigs_ids.union([candidate.id])
     new_contained_elements = path.contains_contigs_ids.union([candidate.id])

@@ -154,7 +154,7 @@ BEGIN 11
   and
   consists
   of
-  6
+  4
   parts.
 END 11
 BEGIN 12
@@ -236,7 +236,7 @@ BEGIN 16
   and
   consists
   of
-  6
+  4
   parts.
 END 16
 BEGIN 17
@@ -363,7 +363,7 @@ BEGIN 24
   and
   consists
   of
-  6
+  4
   parts.
 END 24
 BEGIN 25
@@ -480,7 +480,7 @@ BEGIN 32
   and
   consists
   of
-  6
+  4
   parts.
 END 32
 BEGIN 33
@@ -552,7 +552,7 @@ BEGIN 37
   and
   consists
   of
-  6
+  4
   parts.
 END 37
 BEGIN 38
@@ -573,7 +573,7 @@ BEGIN 39
 END 39
 BEGIN 40
   Removed
-  6
+  4
   components
   from
   the

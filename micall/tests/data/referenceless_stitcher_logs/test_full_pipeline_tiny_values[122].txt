@@ -107,7 +107,7 @@ BEGIN 9
   and
   consists
   of
-  2
+  1
   parts.
 END 9
 BEGIN 10
@@ -146,7 +146,7 @@ BEGIN 12
 END 12
 BEGIN 13
   Removed
-  2
+  1
   components
   from
   the

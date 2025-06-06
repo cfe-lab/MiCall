@@ -144,7 +144,7 @@ BEGIN 11
   and
   consists
   of
-  5
+  3
   parts.
 END 11
 BEGIN 12
@@ -316,7 +316,7 @@ BEGIN 22
   and
   consists
   of
-  5
+  3
   parts.
 END 22
 BEGIN 23
@@ -470,7 +470,7 @@ BEGIN 32
   and
   consists
   of
-  5
+  3
   parts.
 END 32
 BEGIN 33
@@ -579,7 +579,7 @@ BEGIN 39
   and
   consists
   of
-  5
+  3
   parts.
 END 39
 BEGIN 40
@@ -637,7 +637,7 @@ BEGIN 43
 END 43
 BEGIN 44
   Removed
-  5
+  3
   components
   from
   the
@@ -663,14 +663,86 @@ BEGIN 46
   paths.
 END 46
 BEGIN 47
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  220
+  between
+  contigs
+  'r402-817.4'
+  and
+  'r19-238.5'
+  to
+  be
+  (109,
+  329).
+END 47
+BEGIN 48
+  Overlap
+  between
+  contigs
+  'r402-817.4'
+  and
+  'r19-238.5'
+  has
+  size
+  297,
+  139
+  matches,
+  and
+  the
+  score
+  of
+  inf.
+END 48
+BEGIN 49
+  Contig
+  'r402-817.4'
+  covers
+  contig
+  'r19-238.5'
+  completely.
+END 49
+BEGIN 50
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  416
+  and
+  consists
+  of
+  1
+  parts.
+END 50
+BEGIN 51
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 51
+BEGIN 52
   Constructed
   a
   path
   of
   length
-  220.
-END 47
-BEGIN 48
+  416.
+END 52
+BEGIN 53
   Removed
   1
   components
@@ -683,32 +755,16 @@ BEGIN 48
   still
   to
   process.
-END 48
-BEGIN 49
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 49
-BEGIN 50
+END 53
+BEGIN 54
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 50
-BEGIN 51
+END 54
+BEGIN 55
   Calculated
   cutoff
   for
@@ -716,37 +772,45 @@ BEGIN 51
   overlap
   of
   size
-  149
+  416
   between
   contigs
   (2)
   and
-  'r19-238.5'
+  'r402-817.4'
   to
   be
-  (606,
-  2).
-END 51
-BEGIN 52
+  (107,
+  523).
+END 55
+BEGIN 56
   Overlap
   between
   contigs
   (2)
   and
-  'r19-238.5'
+  'r402-817.4'
   has
   size
-  1,
-  0
+  414,
+  416
   matches,
   and
   the
   score
   of
   inf.
-END 52
-BEGIN 53
+END 56
+BEGIN 57
+  Contig
+  (2)
+  covers
+  contig
+  'r402-817.4'
+  completely.
+END 57
+BEGIN 58
   Outputting
-  2
+  1
   contigs.
-END 53
+END 58

@@ -279,7 +279,7 @@ BEGIN 20
   and
   consists
   of
-  6
+  2
   parts.
 END 20
 BEGIN 21
@@ -486,7 +486,7 @@ BEGIN 34
   and
   consists
   of
-  6
+  2
   parts.
 END 34
 BEGIN 35
@@ -648,7 +648,7 @@ BEGIN 45
   and
   consists
   of
-  6
+  2
   parts.
 END 45
 BEGIN 46
@@ -765,7 +765,7 @@ BEGIN 53
   and
   consists
   of
-  6
+  2
   parts.
 END 53
 BEGIN 54
@@ -837,7 +837,7 @@ BEGIN 58
   and
   consists
   of
-  6
+  2
   parts.
 END 58
 BEGIN 59
@@ -858,7 +858,7 @@ BEGIN 60
 END 60
 BEGIN 61
   Removed
-  6
+  2
   components
   from
   the

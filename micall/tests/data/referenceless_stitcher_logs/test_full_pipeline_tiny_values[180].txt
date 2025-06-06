@@ -107,7 +107,7 @@ BEGIN 9
   and
   consists
   of
-  2
+  1
   parts.
 END 9
 BEGIN 10
@@ -146,7 +146,7 @@ BEGIN 12
 END 12
 BEGIN 13
   Removed
-  2
+  1
   components
   from
   the
@@ -172,14 +172,86 @@ BEGIN 15
   paths.
 END 15
 BEGIN 16
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  261
+  between
+  contigs
+  'r147-442.0'
+  and
+  'r690-950.1'
+  to
+  be
+  (19,
+  280).
+END 16
+BEGIN 17
+  Overlap
+  between
+  contigs
+  'r147-442.0'
+  and
+  'r690-950.1'
+  has
+  size
+  348,
+  172
+  matches,
+  and
+  the
+  score
+  of
+  inf.
+END 17
+BEGIN 18
+  Contig
+  'r147-442.0'
+  covers
+  contig
+  'r690-950.1'
+  completely.
+END 18
+BEGIN 19
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  296
+  and
+  consists
+  of
+  1
+  parts.
+END 19
+BEGIN 20
+  Cycle
+  2
+  started
+  with
+  1
+  paths.
+END 20
+BEGIN 21
   Constructed
   a
   path
   of
   length
-  261.
-END 16
-BEGIN 17
+  296.
+END 21
+BEGIN 22
   Removed
   1
   components
@@ -192,32 +264,16 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 18
-BEGIN 19
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 19
-BEGIN 20
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -225,18 +281,45 @@ BEGIN 20
   overlap
   of
   size
-  212
+  296
   between
   contigs
   'r124-682.2'
   and
-  'r690-950.1'
+  'r147-442.0'
   to
   be
-  None.
-END 20
-BEGIN 21
+  (23,
+  319).
+END 24
+BEGIN 25
+  Overlap
+  between
+  contigs
+  'r124-682.2'
+  and
+  'r147-442.0'
+  has
+  size
+  294,
+  296
+  matches,
+  and
+  the
+  score
+  of
+  inf.
+END 25
+BEGIN 26
+  Contig
+  'r124-682.2'
+  covers
+  contig
+  'r147-442.0'
+  completely.
+END 26
+BEGIN 27
   Outputting
-  2
+  1
   contigs.
-END 21
+END 27
