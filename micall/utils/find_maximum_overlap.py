@@ -56,9 +56,9 @@ def get_overlap_results(total: np.ndarray,
     overlap_sizes[-right_size:] = np.flip(clip(1 + np.arange(right_size)))
 
     assert len(overlap_sizes[:left_size]) + len(overlap_sizes[-right_size:]) == len(total)
-    assert max(overlap_sizes[:left_size]) <= max_overlap + 1
-    assert max(overlap_sizes[-right_size:]) <= max_overlap + 1
-    assert min(overlap_sizes[:left_size]) == min(overlap_sizes[-right_size:]) == 1
+    assert np.max(overlap_sizes[:left_size]) <= max_overlap + 1
+    assert np.max(overlap_sizes[-right_size:]) <= max_overlap + 1
+    assert np.min(overlap_sizes[:left_size]) == np.min(overlap_sizes[-right_size:]) == 1
 
     total = calculate_overlap_score(L=overlap_sizes, M=total)  # type: ignore
 
