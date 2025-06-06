@@ -124,6 +124,7 @@ def write_phix_csv(out_file, records, read_lengths=None, summary=None):
             read_length = read_lengths[0] if sign == 1 else -read_lengths[-1]
             while previous_cycle*sign < read_length*sign:
                 previous_cycle += sign
+                assert record is not None
                 writer.writerow((record[0], previous_cycle, ''))
     if error_counts[1] > 0 and summary is not None:
         summary['error_rate_fwd'] = error_sums[1]/error_counts[1]

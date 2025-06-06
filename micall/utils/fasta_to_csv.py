@@ -112,11 +112,10 @@ def genotype(contigs_fasta: Path, db: Optional[Path] = None,
     """
 
     contig_nums: Dict[str, int] = {}  # {contig_name: contig_num}
-    with open(contigs_fasta) as f:
-        for line in f:
-            if line.startswith('>'):
-                contig_name = line[1:-1]
-                contig_nums[contig_name] = len(contig_nums) + 1
+
+    for record in SeqIO.parse(contigs_fasta, "fasta"):
+        contig_name = record.name
+        contig_nums[contig_name] = len(contig_nums) + 1
 
     def invoke_blast(db: Path) -> str:
         return Blastn().genotype(
