@@ -55,7 +55,7 @@ test = [
 
     # Also includes watcher's dependencies.
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.3",
+    "requests==2.32.4",
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
@@ -73,11 +73,11 @@ denovo = [
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.3",
+    "requests==2.32.4",
 ]
 basespace = [
     # Requirements for running the micall_basespace.py script
-    "requests==2.32.3",
+    "requests==2.32.4",
 ]
 
 [project.scripts]
