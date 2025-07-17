@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  15866.191071184052.
+  1500900.5212813157.
 END 14
 BEGIN 15
   Contig
@@ -235,7 +235,7 @@ BEGIN 17
   the
   score
   of
-  15621.599880403492.
+  1491526.548108531.
 END 17
 BEGIN 18
   Contig
@@ -280,7 +280,7 @@ BEGIN 20
   the
   score
   of
-  12279.81131566606.
+  1367335.4369787758.
 END 20
 BEGIN 21
   Found
@@ -407,7 +407,7 @@ BEGIN 28
   the
   score
   of
-  15866.191071184052.
+  1500900.5212813157.
 END 28
 BEGIN 29
   Contig
@@ -452,7 +452,7 @@ BEGIN 31
   the
   score
   of
-  15621.599880403492.
+  1491526.548108531.
 END 31
 BEGIN 32
   Contig
@@ -569,7 +569,7 @@ BEGIN 39
   the
   score
   of
-  15621.599880403492.
+  1491526.548108531.
 END 39
 BEGIN 40
   Contig

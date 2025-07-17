@@ -30,7 +30,12 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     if L == 0:
         return SCORE_NOTHING
 
-    return 1024 * calculate_overlap_score(L=L, M=M)
+    ret = calculate_overlap_score(L=L, M=M)
+    if ret > 0:
+        ret += 99
+    elif ret < 0:
+        ret -= 99
+    return ret * ret * ret
 
 
 ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=71, M=70)
