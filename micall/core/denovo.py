@@ -80,7 +80,8 @@ def denovo(fastq1_path: str,
             pass
 
     with open(contigs_fasta_path) as reader:
-        copyfileobj(cast(BinaryIO, reader), fasta)
+        inp: BinaryIO = cast(BinaryIO, reader)
+        copyfileobj(inp, fasta)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
