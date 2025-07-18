@@ -156,22 +156,3 @@ From: python:3.11
 %apphelp denovo
     Standard pipeline with de novo assembly instead of mapping to reference
     sequences.
-
-%apprun free
-    exec /bin/sh "$@"
-
-%applabels free
-    KIVE_INPUTS  script_sh i00 i01 i02 i03 i04 i05 i06 i07 i08 i09 \
-                           i10 i11 i12 i13 i14 i15 i16 i17 i18 i19 \
-                           i20 i21 i22 i23 i24 i25 i26 i27 i28 i29
-    KIVE_OUTPUTS o00 o01 o02 o03 o04 o05 o06 o07 o08 o09 \
-                 o10 o11 o12 o13 o14 o15 o16 o17 o18 o19 \
-                 o20 o21 o22 o23 o24 o25 o26 o27 o28 o29
-    KIVE_THREADS 2
-    KIVE_MEMORY 6000
-
-%apphelp free
-    Execute an arbitrary shell-script inside the container,
-    passing up to 30 arguments.  Usage:
-        singularity exec micall.sif free script.sh input.csv
-    This app is useful for testing the image on Kive.
