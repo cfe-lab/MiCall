@@ -47,7 +47,7 @@ def generate_indexes(min_length: int,
                      ref_length: int,
                      rng: random.Random,
                      ) -> Iterator[Tuple[int, int]]:
-    start = ref_length // 2
+    start = 0
     direction = 1
 
     while True:
