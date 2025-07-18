@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  524
+  791
   and
   consists
   of
-  2
+  3
   parts.
 END 8
 BEGIN 9
@@ -166,51 +166,43 @@ BEGIN 12
   (2).
 END 12
 BEGIN 13
-  Constructed
-  a
-  path
-  of
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
   length
-  524.
+  791
+  and
+  consists
+  of
+  3
+  parts.
 END 13
 BEGIN 14
-  Removed
-  2
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 14
-BEGIN 15
-  Calculating
-  all
-  paths...
-END 15
-BEGIN 16
   Cycle
-  1
+  3
   started
   with
   1
   paths.
-END 16
-BEGIN 17
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  271.
-END 17
-BEGIN 18
+  791.
+END 15
+BEGIN 16
   Removed
-  1
+  3
   components
   from
   the
@@ -221,88 +213,17 @@ BEGIN 18
   still
   to
   process.
-END 18
-BEGIN 19
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 19
-BEGIN 20
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
-  2
+  1
   contigs.
-END 20
-BEGIN 21
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  268
-  between
-  contigs
-  (1)
-  and
-  'r188-458.2'
-  to
-  be
-  (520,
-  1).
-END 21
-BEGIN 22
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r188-458.2'
-  has
-  size
-  3,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  inf.
-END 22
-BEGIN 23
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  1
-  between
-  contigs
-  (1)
-  and
-  'r188-458.2',
-  resulting
-  in
-  contig
-  (3).
-END 23
-BEGIN 24
+END 17
+BEGIN 18
   Outputting
   1
   contigs.
-END 24
+END 18

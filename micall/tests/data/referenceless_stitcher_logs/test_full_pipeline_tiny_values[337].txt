@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  0.7768541964875065.
+  0.999897805597863.
 END 9
 BEGIN 10
   Cycle

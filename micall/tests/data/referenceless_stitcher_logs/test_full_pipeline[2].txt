@@ -1028,41 +1028,14 @@ BEGIN 78
   paths.
 END 78
 BEGIN 79
-  Cycle
-  38
-  finished
-  with
-  21
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  963
-  and
-  consists
-  of
-  16
-  parts.
-END 79
-BEGIN 80
-  Cycle
-  39
-  started
-  with
-  21
-  paths.
-END 80
-BEGIN 81
   Constructed
   a
   path
   of
   length
   963.
-END 81
-BEGIN 82
+END 79
+BEGIN 80
   Removed
   16
   components
@@ -1075,17 +1048,17 @@ BEGIN 82
   still
   to
   process.
-END 82
-BEGIN 83
+END 80
+BEGIN 81
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 83
-BEGIN 84
+END 81
+BEGIN 82
   Outputting
   1
   contigs.
-END 84
+END 82
