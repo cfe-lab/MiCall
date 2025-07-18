@@ -17,9 +17,19 @@ from typing import Sequence, Iterator, Tuple
 from pathlib import Path
 from itertools import islice
 from micall.utils.user_error import UserError
+import logging
 
 
 MAX_QUALITY = 40
+
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
 
 
 class ModuleError(UserError):
@@ -30,12 +40,6 @@ class InvalidRange(ModuleError):
     def __init__(self, a: int, b: int):
         fmt = "Min length (%s) should not be bigger than max length (%s)."
         super().__init__(fmt, a, b)
-
-
-class LengthTooLarge(ModuleError):
-    def __init__(self, read: int, ref: int):
-        fmt = "Max read length (%s) should not be bigger than reference length (%s)."
-        super().__init__(fmt, read, ref)
 
 
 def generate_indexes(min_length: int,
@@ -98,13 +102,20 @@ def simulate_reads(reference: Seq,
     if is_reversed:
         reference = reference.reverse_complement()
 
-    if min_length > max_length:
-        raise InvalidRange(min_length, max_length)
-
     ref_length = len(reference)
 
     if max_length > ref_length:
-        raise LengthTooLarge(max_length, ref_length)
+        logger.warn("Max read length (%s) is bigger than reference length (%s).",
+                    max_length, ref_length)
+        max_length = ref_length
+
+    if min_length > ref_length:
+        logger.warn("Min read length (%s) is bigger than reference length (%s).",
+                    max_length, ref_length)
+        min_length = ref_length
+
+    if min_length > max_length:
+        raise InvalidRange(min_length, max_length)
 
     file_num = 2 if is_reversed else 1
     indexes = generate_indexes(min_length=min_length,
