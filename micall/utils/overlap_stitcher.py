@@ -209,7 +209,8 @@ def calculate_overlap_score(L: int, M: int) -> Score:
                 SD[M] = sqrt(3L) / 4
           - Classic z-score for M:
                 z = (M - L/4) / (sqrt(3L)/4)
-                  = (4*M - L) / sqrt(3L)
+          - Drop expensive calculation, preserving monotonicity:
+                z ~ (4*M - L) / sqrt(3L)
 
     2.  Correlated-match model:
           - Real DNA (repeats, conserved motifs, low-complexity regions)
@@ -242,14 +243,8 @@ def calculate_overlap_score(L: int, M: int) -> Score:
     -------
     Score
         A monotonic overlap score based on z-score.
-
-    Notes
-    -----
-    - This streamlined computation is more efficient and avoids extra divisions
-      without changing any comparative outcome.
     """
 
-    # TODO: adjust this constant via experimentation.
     alpha = 0.60
     return (4 * M - L) / ((3 * L) ** alpha)
 

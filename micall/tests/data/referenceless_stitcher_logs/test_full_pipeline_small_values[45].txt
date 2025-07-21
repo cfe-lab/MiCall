@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.00003445433018.
+  1.0156881158094748.
 END 9
 BEGIN 10
   Contig
@@ -235,7 +235,7 @@ BEGIN 17
   the
   score
   of
-  2000164.248669737.
+  2026977.6255104106.
 END 17
 BEGIN 18
   Found
@@ -290,7 +290,7 @@ BEGIN 20
   the
   score
   of
-  1.0000010039918035.
+  1.0003274353378364.
 END 20
 BEGIN 21
   Found
@@ -345,7 +345,7 @@ BEGIN 23
   the
   score
   of
-  1.0000053048458386.
+  1.0017955565649848.
 END 23
 BEGIN 24
   Contig
@@ -462,7 +462,7 @@ BEGIN 31
   the
   score
   of
-  2000164.248669737.
+  2026977.6255104106.
 END 31
 BEGIN 32
   Found
@@ -517,7 +517,7 @@ BEGIN 34
   the
   score
   of
-  1.0000063088429683.
+  1.0021235798314916.
 END 34
 BEGIN 35
   Contig
@@ -634,7 +634,7 @@ BEGIN 42
   the
   score
   of
-  2000176.8673918925.
+  2031282.074314829.
 END 42
 BEGIN 43
   Contig

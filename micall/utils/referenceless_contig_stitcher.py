@@ -31,30 +31,28 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     Transform overlap scores for optimal contig path selection in referenceless stitching.
 
     This function takes the raw statistical overlap score and applies transformations to:
-    1. Emphasize high-quality overlaps through quadratic scaling
+    1. Emphasize high-quality overlaps by scaling
     2. Ensure clear separation from SCORE_EPSILON
-    3. Preserve monotonic ordering for relative comparisons
 
-    Quadratic Amplification
+    Amplification
     -----------------------
-    The score² transformation addresses a pathfinding problem: when combining multiple
+    The score^4 transformation addresses a pathfinding problem: when combining multiple
     overlaps into contig paths, excellent overlaps should dominate the total path score
     rather than being averaged out by mediocre ones. This creates strong preference for
     paths with consistently high-quality connections.
 
-    Monotonicity Preservation
-    -------------------------
-    Both transformations preserve the monotonic ordering of the original scores,
-    ensuring that better statistical overlaps always result in higher transformed scores.
-    The sign is preserved throughout: positive = genuine overlap, negative = spurious.
-
-    SCORE_EPSILON Separation
+    Separation from SCORE_EPSILON
     ------------------------
     The large offset ensures that no genuine overlap score can accidentally equal
     SCORE_EPSILON. This separation is critical because:
     - SCORE_EPSILON triggers different algorithmic behavior (ex: covered contigs)
     - All other scoring is purely relative (only <, >, >= comparisons matter)
     - The specific magnitude is irrelevant, only the ordering and separation
+
+    Monotonicity Preservation
+    -------------------------
+    Both transformations preserve the monotonic ordering of the original scores,
+    ensuring that better statistical overlaps always result in higher transformed scores.
 
     Parameters
     ----------
@@ -68,23 +66,23 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     Score
         A transformed score where:
         - Ordering reflects overlap quality (higher = better)
-        - Guaranteed to be far from SCORE_EPSILON (≠ 1)
         - Positive values indicate genuine overlaps
         - Negative values indicate spurious overlaps
         - Zero only when L=0 (no overlap)
+        - Guaranteed to be far from SCORE_EPSILON
     """
 
     if L == 0:
         return SCORE_NOTHING
 
     base = calculate_overlap_score(L=L, M=M)
-    sq   = base * base
-    sep  = sq + (SCORE_EPSILON + 1) * 1_000_000
     sign = 1 if base >= 0 else -1
+    exp  = base ** 4
+    sep  = exp + (SCORE_EPSILON + 1) * 1_000_000
     return sep * sign
 
 
-ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=71, M=70)
+ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=99, M=98)
 MAX_ALTERNATIVES = 999
 MIN_ALTERNATIVES = 1
 
