@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  2061188.5852330644.
+  2000247.363265731.
 END 9
 BEGIN 10
   Found
@@ -140,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  627
+  886
   and
   consists
   of
-  3
+  4
   parts.
 END 11
 BEGIN 12
@@ -235,7 +235,7 @@ BEGIN 17
   the
   score
   of
-  2046379.5272661876.
+  2000215.359065902.
 END 17
 BEGIN 18
   Contig
@@ -253,7 +253,7 @@ BEGIN 19
   overlap
   of
   size
-  261
+  1
   between
   contigs
   (1)
@@ -261,8 +261,8 @@ BEGIN 19
   'r654-914.0'
   to
   be
-  (213,
-  474).
+  (584,
+  1).
 END 19
 BEGIN 20
   Overlap
@@ -273,22 +273,32 @@ BEGIN 20
   'r654-914.0'
   has
   size
-  347,
-  172
+  0,
+  1
   matches,
   and
   the
   score
   of
-  2000746.3228813827.
+  2000002.4082246854.
 END 20
 BEGIN 21
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
   (1)
-  covers
+  and
+  'r654-914.0',
+  resulting
+  in
   contig
-  'r654-914.0'
-  completely.
+  (2).
 END 21
 BEGIN 22
   Calculated
@@ -325,7 +335,7 @@ BEGIN 23
   the
   score
   of
-  2023124.1624266438.
+  1.000074828952209.
 END 23
 BEGIN 24
   Found
@@ -343,7 +353,7 @@ BEGIN 24
   resulting
   in
   contig
-  (2).
+  (3).
 END 24
 BEGIN 25
   Cycle
@@ -357,11 +367,11 @@ BEGIN 25
   fittest
   has
   length
-  627
+  886
   and
   consists
   of
-  3
+  4
   parts.
 END 25
 BEGIN 26
@@ -383,7 +393,7 @@ BEGIN 27
   506
   between
   contigs
-  (2)
+  (3)
   and
   'r89-594.4'
   to
@@ -395,7 +405,7 @@ BEGIN 28
   Overlap
   between
   contigs
-  (2)
+  (3)
   and
   'r89-594.4'
   has
@@ -411,7 +421,7 @@ BEGIN 28
 END 28
 BEGIN 29
   Contig
-  (2)
+  (3)
   covers
   contig
   'r89-594.4'
@@ -428,7 +438,7 @@ BEGIN 30
   275
   between
   contigs
-  (2)
+  (3)
   and
   'r228-502.3'
   to
@@ -440,7 +450,7 @@ BEGIN 31
   Overlap
   between
   contigs
-  (2)
+  (3)
   and
   'r228-502.3'
   has
@@ -452,11 +462,11 @@ BEGIN 31
   the
   score
   of
-  2046379.5272661876.
+  2000215.359065902.
 END 31
 BEGIN 32
   Contig
-  (2)
+  (3)
   covers
   contig
   'r228-502.3'
@@ -470,42 +480,52 @@ BEGIN 33
   overlap
   of
   size
-  261
+  11
   between
   contigs
-  (2)
-  and
   'r654-914.0'
+  and
+  (3)
   to
   be
-  (213,
-  474).
+  (260,
+  3).
 END 33
 BEGIN 34
   Overlap
   between
   contigs
-  (2)
-  and
   'r654-914.0'
+  and
+  (3)
   has
   size
-  347,
-  172
+  2,
+  1
   matches,
   and
   the
   score
   of
-  2000746.3228813827.
+  2000000.0008839425.
 END 34
 BEGIN 35
-  Contig
-  (2)
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  2
+  between
+  contigs
   'r654-914.0'
-  completely.
+  and
+  (3),
+  resulting
+  in
+  contig
+  (4).
 END 35
 BEGIN 36
   Cycle
@@ -519,11 +539,11 @@ BEGIN 36
   fittest
   has
   length
-  627
+  886
   and
   consists
   of
-  3
+  4
   parts.
 END 36
 BEGIN 37
@@ -542,22 +562,67 @@ BEGIN 38
   overlap
   of
   size
-  275
+  506
   between
   contigs
-  (2)
+  (4)
   and
-  'r228-502.3'
+  'r89-594.4'
   to
   be
-  (203,
-  478).
+  (323,
+  829).
 END 38
 BEGIN 39
   Overlap
   between
   contigs
-  (2)
+  (4)
+  and
+  'r89-594.4'
+  has
+  size
+  504,
+  506
+  matches,
+  and
+  the
+  score
+  of
+  inf.
+END 39
+BEGIN 40
+  Contig
+  (4)
+  covers
+  contig
+  'r89-594.4'
+  completely.
+END 40
+BEGIN 41
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  275
+  between
+  contigs
+  (4)
+  and
+  'r228-502.3'
+  to
+  be
+  (462,
+  737).
+END 41
+BEGIN 42
+  Overlap
+  between
+  contigs
+  (4)
   and
   'r228-502.3'
   has
@@ -569,59 +634,14 @@ BEGIN 39
   the
   score
   of
-  inf.
-END 39
-BEGIN 40
-  Contig
-  (2)
-  covers
-  contig
-  'r228-502.3'
-  completely.
-END 40
-BEGIN 41
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  261
-  between
-  contigs
-  (2)
-  and
-  'r654-914.0'
-  to
-  be
-  (213,
-  474).
-END 41
-BEGIN 42
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r654-914.0'
-  has
-  size
-  347,
-  172
-  matches,
-  and
-  the
-  score
-  of
-  2000746.3228813827.
+  2000215.359065902.
 END 42
 BEGIN 43
   Contig
-  (2)
+  (4)
   covers
   contig
-  'r654-914.0'
+  'r228-502.3'
   completely.
 END 43
 BEGIN 44
@@ -636,11 +656,11 @@ BEGIN 44
   fittest
   has
   length
-  627
+  886
   and
   consists
   of
-  3
+  4
   parts.
 END 44
 BEGIN 45
@@ -659,28 +679,28 @@ BEGIN 46
   overlap
   of
   size
-  261
+  275
   between
   contigs
-  (2)
+  (4)
   and
-  'r654-914.0'
+  'r228-502.3'
   to
   be
-  (213,
-  474).
+  (462,
+  737).
 END 46
 BEGIN 47
   Overlap
   between
   contigs
-  (2)
+  (4)
   and
-  'r654-914.0'
+  'r228-502.3'
   has
   size
-  347,
-  172
+  273,
+  275
   matches,
   and
   the
@@ -690,10 +710,10 @@ BEGIN 47
 END 47
 BEGIN 48
   Contig
-  (2)
+  (4)
   covers
   contig
-  'r654-914.0'
+  'r228-502.3'
   completely.
 END 48
 BEGIN 49
@@ -708,11 +728,11 @@ BEGIN 49
   fittest
   has
   length
-  627
+  886
   and
   consists
   of
-  3
+  4
   parts.
 END 49
 BEGIN 50
@@ -729,11 +749,11 @@ BEGIN 51
   path
   of
   length
-  627.
+  886.
 END 51
 BEGIN 52
   Removed
-  3
+  4
   components
   from
   the

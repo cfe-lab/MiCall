@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  548
+  822
   and
   consists
   of
-  2
+  3
   parts.
 END 8
 BEGIN 9
@@ -118,7 +118,7 @@ BEGIN 10
   overlap
   of
   size
-  278
+  4
   between
   contigs
   (1)
@@ -126,8 +126,8 @@ BEGIN 10
   'r721-998.2'
   to
   be
-  (68,
-  346).
+  (544,
+  3).
 END 10
 BEGIN 11
   Overlap
@@ -138,8 +138,8 @@ BEGIN 11
   'r721-998.2'
   has
   size
-  369,
-  184
+  3,
+  3
   matches,
   and
   the
@@ -148,12 +148,22 @@ BEGIN 11
   inf.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  3
+  between
+  contigs
   (1)
-  covers
+  and
+  'r721-998.2',
+  resulting
+  in
   contig
-  'r721-998.2'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,11 +177,11 @@ BEGIN 13
   fittest
   has
   length
-  548
+  822
   and
   consists
   of
-  2
+  3
   parts.
 END 13
 BEGIN 14
@@ -188,11 +198,11 @@ BEGIN 15
   path
   of
   length
-  548.
+  822.
 END 15
 BEGIN 16
   Removed
-  2
+  3
   components
   from
   the

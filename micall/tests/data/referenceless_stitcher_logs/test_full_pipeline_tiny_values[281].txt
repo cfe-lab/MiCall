@@ -36,28 +36,28 @@ BEGIN 5
   overlap
   of
   size
-  412
+  6
   between
   contigs
-  'r456-938.2'
-  and
   'r20-431.0'
+  and
+  'r456-938.2'
   to
   be
-  (56,
-  468).
+  (406,
+  3).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r456-938.2'
-  and
   'r20-431.0'
+  and
+  'r456-938.2'
   has
   size
-  554,
-  267
+  5,
+  3
   matches,
   and
   the
@@ -66,12 +66,22 @@ BEGIN 6
   inf.
 END 6
 BEGIN 7
-  Contig
-  'r456-938.2'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  3
+  between
+  contigs
   'r20-431.0'
-  completely.
+  and
+  'r456-938.2',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -108,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  2011816.5687571645.
+  1.0000542896867977.
 END 9
 BEGIN 10
   Found
@@ -126,7 +136,7 @@ BEGIN 10
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -168,7 +178,7 @@ BEGIN 13
   contigs
   'r20-431.0'
   and
-  (1)
+  (2)
   to
   be
   (238,
@@ -180,7 +190,7 @@ BEGIN 14
   contigs
   'r20-431.0'
   and
-  (1)
+  (2)
   has
   size
   173,
@@ -204,11 +214,11 @@ BEGIN 15
   contigs
   'r20-431.0'
   and
-  (1),
+  (2),
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

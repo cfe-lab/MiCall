@@ -81,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  280
+  5
   between
   contigs
-  'r445-974.0'
-  and
   'r91-370.1'
+  and
+  'r445-974.0'
   to
   be
-  (138,
-  418).
+  (276,
+  5).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r445-974.0'
-  and
   'r91-370.1'
+  and
+  'r445-974.0'
   has
   size
-  375,
-  182
+  4,
+  3
   matches,
   and
   the
   score
   of
-  2000712.7187989056.
+  2000000.4139044837.
 END 9
 BEGIN 10
-  Contig
-  'r445-974.0'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  5
+  between
+  contigs
   'r91-370.1'
-  completely.
+  and
+  'r445-974.0',
+  resulting
+  in
+  contig
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -130,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  530
+  806
   and
   consists
   of
-  1
+  2
   parts.
 END 11
 BEGIN 12
@@ -153,28 +163,28 @@ BEGIN 13
   overlap
   of
   size
-  280
+  319
   between
   contigs
-  'r445-974.0'
+  (1)
   and
-  'r91-370.1'
+  'r472-790.2'
   to
   be
-  (138,
-  418).
+  (303,
+  622).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r445-974.0'
+  (1)
   and
-  'r91-370.1'
+  'r472-790.2'
   has
   size
-  375,
-  182
+  317,
+  319
   matches,
   and
   the
@@ -184,10 +194,10 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r445-974.0'
+  (1)
   covers
   contig
-  'r91-370.1'
+  'r472-790.2'
   completely.
 END 15
 BEGIN 16
@@ -202,11 +212,11 @@ BEGIN 16
   fittest
   has
   length
-  530
+  806
   and
   consists
   of
-  1
+  2
   parts.
 END 16
 BEGIN 17
@@ -223,11 +233,11 @@ BEGIN 18
   path
   of
   length
-  530.
+  806.
 END 18
 BEGIN 19
   Removed
-  1
+  2
   components
   from
   the

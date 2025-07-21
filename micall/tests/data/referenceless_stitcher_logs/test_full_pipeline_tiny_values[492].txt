@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  0.9925649417507432.
+  0.999938738535902.
 END 9
 BEGIN 10
   Cycle
@@ -155,65 +155,46 @@ BEGIN 12
   overlap
   of
   size
-  257
+  147
   between
   contigs
-  (1)
-  and
   'r655-911.1'
+  and
+  (1)
   to
   be
-  (208,
-  465).
+  None.
 END 12
 BEGIN 13
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r655-911.1'
-  has
-  size
-  341,
-  170
-  matches,
-  and
-  the
-  score
+  Constructed
+  a
+  path
   of
-  inf.
+  length
+  497.
 END 13
 BEGIN 14
-  Contig
-  (1)
-  covers
-  contig
-  'r655-911.1'
-  completely.
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 14
 BEGIN 15
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  497
-  and
-  consists
-  of
-  2
-  parts.
+  Calculating
+  all
+  paths...
 END 15
 BEGIN 16
   Cycle
-  3
+  1
   started
   with
   1
@@ -225,11 +206,11 @@ BEGIN 17
   path
   of
   length
-  497.
+  257.
 END 17
 BEGIN 18
   Removed
-  2
+  1
   components
   from
   the
@@ -242,15 +223,49 @@ BEGIN 18
   process.
 END 18
 BEGIN 19
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 19
-BEGIN 20
-  Outputting
-  1
+  2
   contigs.
 END 20
+BEGIN 21
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  147
+  between
+  contigs
+  'r655-911.1'
+  and
+  (1)
+  to
+  be
+  None.
+END 21
+BEGIN 22
+  Outputting
+  2
+  contigs.
+END 22

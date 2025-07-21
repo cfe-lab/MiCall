@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.0015142267481927.
+  1.0000051581292224.
 END 9
 BEGIN 10
   Found
@@ -146,7 +146,7 @@ BEGIN 11
   overlap
   of
   size
-  348
+  217
   between
   contigs
   'r93-612.0'
@@ -154,8 +154,8 @@ BEGIN 11
   'r615-962.3'
   to
   be
-  (37,
-  385).
+  (519,
+  2).
 END 11
 BEGIN 12
   Overlap
@@ -166,14 +166,14 @@ BEGIN 12
   'r615-962.3'
   has
   size
-  461,
-  232
+  1,
+  0
   matches,
   and
   the
   score
   of
-  0.9890288410864743.
+  -0.9999233159311118.
 END 12
 BEGIN 13
   Calculated
@@ -210,7 +210,7 @@ BEGIN 14
   the
   score
   of
-  1.005467187580107.
+  1.0000162941470887.
 END 14
 BEGIN 15
   Contig
@@ -491,7 +491,7 @@ BEGIN 32
   the
   score
   of
-  2032927.50062534.
+  2000181.4593635648.
 END 32
 BEGIN 33
   Contig

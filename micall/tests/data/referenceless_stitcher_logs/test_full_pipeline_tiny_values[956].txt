@@ -118,7 +118,7 @@ BEGIN 10
   overlap
   of
   size
-  300
+  1
   between
   contigs
   'r677-977.1'

@@ -218,7 +218,7 @@ def calculate_overlap_score(L: int, M: int) -> Score:
                 Var[M] ~ L^(2a)
             for some a > 0.5.
           - Empirical analysis of genomic windows typically yields
-                a ~ 0.6
+                a ~ 0.8
             implying
                 SD[M] ~ L^a.
 
@@ -226,7 +226,7 @@ def calculate_overlap_score(L: int, M: int) -> Score:
           - Replace the sqrt(L) scaling in the denominator by L^a, and keep
             the same numerator (4*M - L) to preserve ordering:
                 score = (4*M - L) / ( (3 * L) ** a )
-          - Here a = 0.6, giving denominator ~ L^0.6.
+          - Here a = 0.8, giving denominator ~ L^0.8.
 
     This score preserves the monotonic "rarity" ordering of overlaps
     (higher => more unexpected), while penalizing long overlaps more
@@ -245,7 +245,7 @@ def calculate_overlap_score(L: int, M: int) -> Score:
         A monotonic overlap score based on z-score.
     """
 
-    alpha = 0.60
+    alpha = 0.80
     return (4 * M - L) / ((3 * L) ** alpha)
 
 

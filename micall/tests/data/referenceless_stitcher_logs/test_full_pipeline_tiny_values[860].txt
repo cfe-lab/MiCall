@@ -81,42 +81,52 @@ BEGIN 8
   overlap
   of
   size
-  298
+  5
   between
   contigs
-  'r92-622.2'
-  and
   'r683-980.1'
+  and
+  'r92-622.2'
   to
   be
-  (67,
-  365).
+  (294,
+  5).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r92-622.2'
-  and
   'r683-980.1'
+  and
+  'r92-622.2'
   has
   size
-  395,
-  197
+  4,
+  3
   matches,
   and
   the
   score
   of
-  2000969.4352384056.
+  2000000.4139044837.
 END 9
 BEGIN 10
-  Contig
-  'r92-622.2'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  4
+  between
+  contigs
   'r683-980.1'
-  completely.
+  and
+  'r92-622.2',
+  resulting
+  in
+  contig
+  (1).
 END 10
 BEGIN 11
   Cycle
@@ -130,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  531
+  824
   and
   consists
   of
-  1
+  2
   parts.
 END 11
 BEGIN 12
@@ -153,28 +163,28 @@ BEGIN 13
   overlap
   of
   size
-  298
+  324
   between
   contigs
-  'r92-622.2'
+  (1)
   and
-  'r683-980.1'
+  'r141-464.0'
   to
   be
-  (67,
-  365).
+  (342,
+  666).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r92-622.2'
+  (1)
   and
-  'r683-980.1'
+  'r141-464.0'
   has
   size
-  395,
-  197
+  322,
+  324
   matches,
   and
   the
@@ -184,10 +194,10 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r92-622.2'
+  (1)
   covers
   contig
-  'r683-980.1'
+  'r141-464.0'
   completely.
 END 15
 BEGIN 16
@@ -202,11 +212,11 @@ BEGIN 16
   fittest
   has
   length
-  531
+  824
   and
   consists
   of
-  1
+  2
   parts.
 END 16
 BEGIN 17
@@ -223,11 +233,11 @@ BEGIN 18
   path
   of
   length
-  531.
+  824.
 END 18
 BEGIN 19
   Removed
-  1
+  2
   components
   from
   the

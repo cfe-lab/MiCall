@@ -36,44 +36,17 @@ BEGIN 5
   overlap
   of
   size
-  311
+  112
   between
   contigs
-  'r49-580.1'
-  and
   'r584-894.0'
+  and
+  'r49-580.1'
   to
   be
-  (45,
-  356).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r49-580.1'
-  and
-  'r584-894.0'
-  has
-  size
-  415,
-  203
-  matches,
-  and
-  the
-  score
-  of
-  inf.
-END 6
-BEGIN 7
-  Contig
-  'r49-580.1'
-  covers
-  contig
-  'r584-894.0'
-  completely.
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -91,8 +64,8 @@ BEGIN 8
   be
   (432,
   100).
-END 8
-BEGIN 9
+END 6
+BEGIN 7
   Overlap
   between
   contigs
@@ -108,9 +81,9 @@ BEGIN 9
   the
   score
   of
-  2009191.6611884013.
-END 9
-BEGIN 10
+  inf.
+END 7
+BEGIN 8
   Found
   a
   significant
@@ -127,8 +100,8 @@ BEGIN 10
   in
   contig
   (1).
-END 10
-BEGIN 11
+END 8
+BEGIN 9
   Cycle
   1
   finished
@@ -146,16 +119,16 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -173,8 +146,8 @@ BEGIN 13
   be
   (535,
   185).
-END 13
-BEGIN 14
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -191,8 +164,8 @@ BEGIN 14
   score
   of
   inf.
-END 14
-BEGIN 15
+END 12
+BEGIN 13
   Found
   a
   significant
@@ -209,8 +182,8 @@ BEGIN 15
   in
   contig
   (2).
-END 15
-BEGIN 16
+END 13
+BEGIN 14
   Cycle
   2
   finished
@@ -228,24 +201,24 @@ BEGIN 16
   of
   3
   parts.
-END 16
-BEGIN 17
+END 14
+BEGIN 15
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   846.
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Removed
   3
   components
@@ -258,17 +231,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 18
+BEGIN 19
   Outputting
   1
   contigs.
-END 21
+END 19

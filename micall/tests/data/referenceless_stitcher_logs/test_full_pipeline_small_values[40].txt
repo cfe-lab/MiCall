@@ -272,7 +272,7 @@ BEGIN 19
   the
   score
   of
-  2034846.4503583023.
+  2000186.6720395728.
 END 19
 BEGIN 20
   Found
@@ -327,7 +327,7 @@ BEGIN 22
   the
   score
   of
-  1.0075525173165036.
+  1.000018705377147.
 END 22
 BEGIN 23
   Found
@@ -454,7 +454,7 @@ BEGIN 30
   the
   score
   of
-  2034846.4503583023.
+  2000186.6720395728.
 END 30
 BEGIN 31
   Found

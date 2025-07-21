@@ -36,28 +36,28 @@ BEGIN 5
   overlap
   of
   size
-  426
+  1
   between
   contigs
-  'r478-927.2'
-  and
   'r33-458.0'
+  and
+  'r478-927.2'
   to
   be
-  (20,
-  446).
+  (425,
+  1).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r478-927.2'
-  and
   'r33-458.0'
+  and
+  'r478-927.2'
   has
   size
-  566,
-  282
+  0,
+  1
   matches,
   and
   the
@@ -66,12 +66,22 @@ BEGIN 6
   inf.
 END 6
 BEGIN 7
-  Contig
-  'r478-927.2'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
   'r33-458.0'
-  completely.
+  and
+  'r478-927.2',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -108,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  2091673.8268261456.
+  1.0001501841367153.
 END 9
 BEGIN 10
   Contig
@@ -130,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  450
+  875
   and
   consists
   of
-  1
+  2
   parts.
 END 11
 BEGIN 12
@@ -156,19 +166,19 @@ BEGIN 13
   421
   between
   contigs
-  'r478-927.2'
+  (1)
   and
   'r499-919.1'
   to
   be
-  (21,
-  442).
+  (446,
+  867).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r478-927.2'
+  (1)
   and
   'r499-919.1'
   has
@@ -184,7 +194,7 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r478-927.2'
+  (1)
   covers
   contig
   'r499-919.1'
@@ -202,11 +212,11 @@ BEGIN 16
   fittest
   has
   length
-  450
+  875
   and
   consists
   of
-  1
+  2
   parts.
 END 16
 BEGIN 17
@@ -223,11 +233,11 @@ BEGIN 18
   path
   of
   length
-  450.
+  875.
 END 18
 BEGIN 19
   Removed
-  1
+  2
   components
   from
   the

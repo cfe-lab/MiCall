@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  629
+  922
   and
   consists
   of
-  2
+  3
   parts.
 END 8
 BEGIN 9
@@ -163,7 +163,7 @@ BEGIN 13
   overlap
   of
   size
-  294
+  1
   between
   contigs
   (1)
@@ -171,8 +171,8 @@ BEGIN 13
   'r642-935.4'
   to
   be
-  (226,
-  520).
+  (628,
+  1).
 END 13
 BEGIN 14
   Overlap
@@ -183,22 +183,32 @@ BEGIN 14
   'r642-935.4'
   has
   size
-  391,
-  193
+  0,
+  1
   matches,
   and
   the
   score
   of
-  2000876.8467722551.
+  2000002.4082246854.
 END 14
 BEGIN 15
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
   (1)
-  covers
+  and
+  'r642-935.4',
+  resulting
+  in
   contig
-  'r642-935.4'
-  completely.
+  (2).
 END 15
 BEGIN 16
   Calculated
@@ -235,7 +245,7 @@ BEGIN 17
   the
   score
   of
-  2038301.6717230692.
+  1.0000966498357373.
 END 17
 BEGIN 18
   Contig
@@ -280,7 +290,7 @@ BEGIN 20
   the
   score
   of
-  2035576.5213837463.
+  1.0000931044726347.
 END 20
 BEGIN 21
   Contig
@@ -302,11 +312,11 @@ BEGIN 22
   fittest
   has
   length
-  629
+  922
   and
   consists
   of
-  2
+  3
   parts.
 END 22
 BEGIN 23
@@ -325,28 +335,28 @@ BEGIN 24
   overlap
   of
   size
-  294
+  341
   between
   contigs
-  (1)
+  (2)
   and
-  'r642-935.4'
+  'r253-593.5'
   to
   be
-  (226,
-  520).
+  (253,
+  594).
 END 24
 BEGIN 25
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
-  'r642-935.4'
+  'r253-593.5'
   has
   size
-  391,
-  193
+  339,
+  341
   matches,
   and
   the
@@ -356,10 +366,10 @@ BEGIN 25
 END 25
 BEGIN 26
   Contig
-  (1)
+  (2)
   covers
   contig
-  'r642-935.4'
+  'r253-593.5'
   completely.
 END 26
 BEGIN 27
@@ -373,7 +383,7 @@ BEGIN 27
   244
   between
   contigs
-  (1)
+  (2)
   and
   'r291-534.2'
   to
@@ -385,7 +395,7 @@ BEGIN 28
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r291-534.2'
   has
@@ -397,11 +407,11 @@ BEGIN 28
   the
   score
   of
-  2038301.6717230692.
+  2000195.7081289142.
 END 28
 BEGIN 29
   Contig
-  (1)
+  (2)
   covers
   contig
   'r291-534.2'
@@ -418,7 +428,7 @@ BEGIN 30
   233
   between
   contigs
-  (1)
+  (2)
   and
   'r336-568.0'
   to
@@ -430,7 +440,7 @@ BEGIN 31
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r336-568.0'
   has
@@ -442,11 +452,11 @@ BEGIN 31
   the
   score
   of
-  2035576.5213837463.
+  2000188.6173941707.
 END 31
 BEGIN 32
   Contig
-  (1)
+  (2)
   covers
   contig
   'r336-568.0'
@@ -464,11 +474,11 @@ BEGIN 33
   fittest
   has
   length
-  629
+  922
   and
   consists
   of
-  2
+  3
   parts.
 END 33
 BEGIN 34
@@ -490,7 +500,7 @@ BEGIN 35
   244
   between
   contigs
-  (1)
+  (2)
   and
   'r291-534.2'
   to
@@ -502,7 +512,7 @@ BEGIN 36
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r291-534.2'
   has
@@ -518,7 +528,7 @@ BEGIN 36
 END 36
 BEGIN 37
   Contig
-  (1)
+  (2)
   covers
   contig
   'r291-534.2'
@@ -535,7 +545,7 @@ BEGIN 38
   233
   between
   contigs
-  (1)
+  (2)
   and
   'r336-568.0'
   to
@@ -547,7 +557,7 @@ BEGIN 39
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r336-568.0'
   has
@@ -559,11 +569,11 @@ BEGIN 39
   the
   score
   of
-  2035576.5213837463.
+  2000188.6173941707.
 END 39
 BEGIN 40
   Contig
-  (1)
+  (2)
   covers
   contig
   'r336-568.0'
@@ -581,11 +591,11 @@ BEGIN 41
   fittest
   has
   length
-  629
+  922
   and
   consists
   of
-  2
+  3
   parts.
 END 41
 BEGIN 42
@@ -607,7 +617,7 @@ BEGIN 43
   233
   between
   contigs
-  (1)
+  (2)
   and
   'r336-568.0'
   to
@@ -619,7 +629,7 @@ BEGIN 44
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r336-568.0'
   has
@@ -635,7 +645,7 @@ BEGIN 44
 END 44
 BEGIN 45
   Contig
-  (1)
+  (2)
   covers
   contig
   'r336-568.0'
@@ -653,11 +663,11 @@ BEGIN 46
   fittest
   has
   length
-  629
+  922
   and
   consists
   of
-  2
+  3
   parts.
 END 46
 BEGIN 47
@@ -674,11 +684,11 @@ BEGIN 48
   path
   of
   length
-  629.
+  922.
 END 48
 BEGIN 49
   Removed
-  2
+  3
   components
   from
   the

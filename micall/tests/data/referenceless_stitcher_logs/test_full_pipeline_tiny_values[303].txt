@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  336
+  3
   between
   contigs
   'r32-409.0'
@@ -44,8 +44,8 @@ BEGIN 5
   'r407-742.2'
   to
   be
-  (38,
-  374).
+  (375,
+  3).
 END 5
 BEGIN 6
   Overlap
@@ -56,8 +56,8 @@ BEGIN 6
   'r407-742.2'
   has
   size
-  444,
-  225
+  2,
+  3
   matches,
   and
   the
@@ -66,12 +66,22 @@ BEGIN 6
   inf.
 END 6
 BEGIN 7
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  3
+  between
+  contigs
   'r32-409.0'
-  covers
+  and
+  'r407-742.2',
+  resulting
+  in
   contig
-  'r407-742.2'
-  completely.
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -108,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  2030356.0972883091.
+  1.0000842149890248.
 END 9
 BEGIN 10
   Found
@@ -126,7 +136,7 @@ BEGIN 10
   resulting
   in
   contig
-  (1).
+  (2).
 END 10
 BEGIN 11
   Cycle
@@ -166,7 +176,7 @@ BEGIN 13
   95
   between
   contigs
-  (1)
+  (2)
   and
   'r407-742.2'
   to
@@ -178,7 +188,7 @@ BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  (2)
   and
   'r407-742.2'
   has
@@ -202,13 +212,13 @@ BEGIN 15
   95
   between
   contigs
-  (1)
+  (2)
   and
   'r407-742.2',
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle

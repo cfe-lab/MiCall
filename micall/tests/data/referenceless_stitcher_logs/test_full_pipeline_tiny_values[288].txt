@@ -36,28 +36,28 @@ BEGIN 5
   overlap
   of
   size
-  435
+  30
   between
   contigs
-  'r29-518.2'
-  and
   'r522-996.1'
+  and
+  'r29-518.2'
   to
   be
-  (486,
-  1).
+  (457,
+  5).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r29-518.2'
-  and
   'r522-996.1'
+  and
+  'r29-518.2'
   has
   size
-  3,
-  0
+  18,
+  2
   matches,
   and
   the

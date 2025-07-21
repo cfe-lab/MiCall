@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  2065740.9199687713.
+  2000256.399921936.
 END 9
 BEGIN 10
   Found
@@ -140,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  607
+  824
   and
   consists
   of
-  3
+  4
   parts.
 END 11
 BEGIN 12
@@ -235,7 +235,7 @@ BEGIN 17
   the
   score
   of
-  2025452.6434757155.
+  2000159.5388462904.
 END 17
 BEGIN 18
   Found
@@ -290,7 +290,7 @@ BEGIN 20
   the
   score
   of
-  1.0060963892888422.
+  1.0000174410563643.
 END 20
 BEGIN 21
   Contig
@@ -312,11 +312,11 @@ BEGIN 22
   fittest
   has
   length
-  607
+  824
   and
   consists
   of
-  3
+  4
   parts.
 END 22
 BEGIN 23
@@ -407,7 +407,7 @@ BEGIN 28
   the
   score
   of
-  2037800.5912764578.
+  2000194.4237415453.
 END 28
 BEGIN 29
   Contig
@@ -425,346 +425,81 @@ BEGIN 30
   overlap
   of
   size
-  149
+  3
   between
   contigs
-  (2)
-  and
   'r19-238.5'
+  and
+  (2)
   to
   be
-  (606,
-  2).
+  (217,
+  3).
 END 30
 BEGIN 31
   Overlap
   between
   contigs
-  (2)
-  and
   'r19-238.5'
+  and
+  (2)
   has
   size
-  1,
-  0
+  2,
+  3
   matches,
   and
   the
   score
   of
-  -2000000.2170485964.
+  2000005.799546135.
 END 31
 BEGIN 32
-  Cycle
-  3
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  607
-  and
-  consists
+  Found
+  a
+  significant
+  overlap
   of
+  size
   3
-  parts.
+  between
+  contigs
+  'r19-238.5'
+  and
+  (2),
+  resulting
+  in
+  contig
+  (3).
 END 32
 BEGIN 33
   Cycle
-  4
-  started
+  3
+  finished
   with
   1
+  new
   paths.
+  The
+  fittest
+  has
+  length
+  824
+  and
+  consists
+  of
+  4
+  parts.
 END 33
 BEGIN 34
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  242
-  between
-  contigs
-  (2)
-  and
-  'r561-802.0'
-  to
-  be
-  (266,
-  508).
-END 34
-BEGIN 35
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r561-802.0'
-  has
-  size
-  240,
-  242
-  matches,
-  and
-  the
-  score
-  of
-  inf.
-END 35
-BEGIN 36
-  Contig
-  (2)
-  covers
-  contig
-  'r561-802.0'
-  completely.
-END 36
-BEGIN 37
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  149
-  between
-  contigs
-  (2)
-  and
-  'r19-238.5'
-  to
-  be
-  (606,
-  2).
-END 37
-BEGIN 38
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r19-238.5'
-  has
-  size
-  1,
-  0
-  matches,
-  and
-  the
-  score
-  of
-  -2000000.2170485964.
-END 38
-BEGIN 39
   Cycle
   4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  607
-  and
-  consists
-  of
-  3
-  parts.
-END 39
-BEGIN 40
-  Cycle
-  5
   started
   with
   1
   paths.
-END 40
-BEGIN 41
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  149
-  between
-  contigs
-  (2)
-  and
-  'r19-238.5'
-  to
-  be
-  (606,
-  2).
-END 41
-BEGIN 42
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r19-238.5'
-  has
-  size
-  1,
-  0
-  matches,
-  and
-  the
-  score
-  of
-  inf.
-END 42
-BEGIN 43
-  Constructed
-  a
-  path
-  of
-  length
-  607.
-END 43
-BEGIN 44
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 44
-BEGIN 45
-  Calculating
-  all
-  paths...
-END 45
-BEGIN 46
-  Cycle
-  1
-  started
-  with
-  1
-  paths.
-END 46
-BEGIN 47
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  220
-  between
-  contigs
-  'r402-817.4'
-  and
-  'r19-238.5'
-  to
-  be
-  (109,
-  329).
-END 47
-BEGIN 48
-  Overlap
-  between
-  contigs
-  'r402-817.4'
-  and
-  'r19-238.5'
-  has
-  size
-  297,
-  139
-  matches,
-  and
-  the
-  score
-  of
-  inf.
-END 48
-BEGIN 49
-  Contig
-  'r402-817.4'
-  covers
-  contig
-  'r19-238.5'
-  completely.
-END 49
-BEGIN 50
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  416
-  and
-  consists
-  of
-  1
-  parts.
-END 50
-BEGIN 51
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 51
-BEGIN 52
-  Constructed
-  a
-  path
-  of
-  length
-  416.
-END 52
-BEGIN 53
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 53
-BEGIN 54
-  Initial
-  overlap
-  stitching
-  produced
-  2
-  contigs.
-END 54
-BEGIN 55
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -775,19 +510,19 @@ BEGIN 55
   416
   between
   contigs
-  (2)
+  (3)
   and
   'r402-817.4'
   to
   be
-  (107,
-  523).
-END 55
-BEGIN 56
+  (324,
+  740).
+END 35
+BEGIN 36
   Overlap
   between
   contigs
-  (2)
+  (3)
   and
   'r402-817.4'
   has
@@ -800,17 +535,191 @@ BEGIN 56
   score
   of
   inf.
-END 56
-BEGIN 57
+END 36
+BEGIN 37
   Contig
-  (2)
+  (3)
   covers
   contig
   'r402-817.4'
   completely.
-END 57
-BEGIN 58
+END 37
+BEGIN 38
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  242
+  between
+  contigs
+  (3)
+  and
+  'r561-802.0'
+  to
+  be
+  (483,
+  725).
+END 38
+BEGIN 39
+  Overlap
+  between
+  contigs
+  (3)
+  and
+  'r561-802.0'
+  has
+  size
+  240,
+  242
+  matches,
+  and
+  the
+  score
+  of
+  2000194.4237415453.
+END 39
+BEGIN 40
+  Contig
+  (3)
+  covers
+  contig
+  'r561-802.0'
+  completely.
+END 40
+BEGIN 41
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  824
+  and
+  consists
+  of
+  4
+  parts.
+END 41
+BEGIN 42
+  Cycle
+  5
+  started
+  with
+  1
+  paths.
+END 42
+BEGIN 43
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  242
+  between
+  contigs
+  (3)
+  and
+  'r561-802.0'
+  to
+  be
+  (483,
+  725).
+END 43
+BEGIN 44
+  Overlap
+  between
+  contigs
+  (3)
+  and
+  'r561-802.0'
+  has
+  size
+  240,
+  242
+  matches,
+  and
+  the
+  score
+  of
+  inf.
+END 44
+BEGIN 45
+  Contig
+  (3)
+  covers
+  contig
+  'r561-802.0'
+  completely.
+END 45
+BEGIN 46
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  824
+  and
+  consists
+  of
+  4
+  parts.
+END 46
+BEGIN 47
+  Cycle
+  6
+  started
+  with
+  1
+  paths.
+END 47
+BEGIN 48
+  Constructed
+  a
+  path
+  of
+  length
+  824.
+END 48
+BEGIN 49
+  Removed
+  4
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 49
+BEGIN 50
+  Initial
+  overlap
+  stitching
+  produced
+  1
+  contigs.
+END 50
+BEGIN 51
   Outputting
   1
   contigs.
-END 58
+END 51

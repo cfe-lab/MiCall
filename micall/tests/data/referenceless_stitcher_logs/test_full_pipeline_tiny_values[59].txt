@@ -84,51 +84,33 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  241
-  between
-  contigs
-  'r731-997.2'
+  Cycle
+  1
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  505
   and
-  'r23-347.1'
-  to
-  be
-  None.
+  consists
+  of
+  2
+  parts.
 END 8
 BEGIN 9
   Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  505
-  and
-  consists
-  of
-  2
-  parts.
-END 9
-BEGIN 10
-  Cycle
   2
   started
   with
   1
   paths.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -136,81 +118,62 @@ BEGIN 11
   overlap
   of
   size
-  267
+  9
   between
   contigs
-  (1)
-  and
   'r731-997.2'
+  and
+  (1)
   to
   be
-  (184,
-  451).
-END 11
-BEGIN 12
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r731-997.2'
-  has
-  size
-  354,
-  176
-  matches,
-  and
-  the
-  score
-  of
-  inf.
-END 12
-BEGIN 13
-  Contig
-  (1)
-  covers
-  contig
-  'r731-997.2'
-  completely.
-END 13
-BEGIN 14
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  505
-  and
-  consists
-  of
-  2
-  parts.
-END 14
-BEGIN 15
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 15
-BEGIN 16
+  None.
+END 10
+BEGIN 11
   Constructed
   a
   path
   of
   length
   505.
-END 16
-BEGIN 17
+END 11
+BEGIN 12
   Removed
   2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 12
+BEGIN 13
+  Calculating
+  all
+  paths...
+END 13
+BEGIN 14
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
+END 14
+BEGIN 15
+  Constructed
+  a
+  path
+  of
+  length
+  267.
+END 15
+BEGIN 16
+  Removed
+  1
   components
   from
   the
@@ -221,17 +184,51 @@ BEGIN 17
   still
   to
   process.
+END 16
+BEGIN 17
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 17
 BEGIN 18
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
 END 18
 BEGIN 19
-  Outputting
-  1
-  contigs.
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  9
+  between
+  contigs
+  'r731-997.2'
+  and
+  (1)
+  to
+  be
+  None.
 END 19
+BEGIN 20
+  Outputting
+  2
+  contigs.
+END 20

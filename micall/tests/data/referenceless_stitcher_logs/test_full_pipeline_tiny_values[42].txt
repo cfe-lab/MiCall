@@ -95,11 +95,11 @@ BEGIN 8
   fittest
   has
   length
-  637
+  942
   and
   consists
   of
-  2
+  3
   parts.
 END 8
 BEGIN 9
@@ -118,7 +118,7 @@ BEGIN 10
   overlap
   of
   size
-  313
+  8
   between
   contigs
   (1)
@@ -126,8 +126,8 @@ BEGIN 10
   'r654-966.0'
   to
   be
-  (213,
-  526).
+  (629,
+  8).
 END 10
 BEGIN 11
   Overlap
@@ -138,8 +138,8 @@ BEGIN 11
   'r654-966.0'
   has
   size
-  419,
-  204
+  7,
+  8
   matches,
   and
   the
@@ -148,12 +148,22 @@ BEGIN 11
   inf.
 END 11
 BEGIN 12
-  Contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  8
+  between
+  contigs
   (1)
-  covers
+  and
+  'r654-966.0',
+  resulting
+  in
   contig
-  'r654-966.0'
-  completely.
+  (2).
 END 12
 BEGIN 13
   Cycle
@@ -167,11 +177,11 @@ BEGIN 13
   fittest
   has
   length
-  637
+  942
   and
   consists
   of
-  2
+  3
   parts.
 END 13
 BEGIN 14
@@ -188,11 +198,11 @@ BEGIN 15
   path
   of
   length
-  637.
+  942.
 END 15
 BEGIN 16
   Removed
-  2
+  3
   components
   from
   the

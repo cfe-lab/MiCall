@@ -36,28 +36,28 @@ BEGIN 5
   overlap
   of
   size
-  360
+  1
   between
   contigs
-  'r413-942.1'
-  and
   'r17-376.2'
+  and
+  'r413-942.1'
   to
   be
-  (96,
-  456).
+  (359,
+  1).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r413-942.1'
-  and
   'r17-376.2'
+  and
+  'r413-942.1'
   has
   size
-  485,
-  233
+  0,
+  1
   matches,
   and
   the
@@ -66,12 +66,22 @@ BEGIN 6
   inf.
 END 6
 BEGIN 7
-  Contig
-  'r413-942.1'
-  covers
-  contig
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
   'r17-376.2'
-  completely.
+  and
+  'r413-942.1',
+  resulting
+  in
+  contig
+  (1).
 END 7
 BEGIN 8
   Calculated
@@ -108,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  2058811.0726377692.
+  1.0001200507147923.
 END 9
 BEGIN 10
   Contig
@@ -130,11 +140,11 @@ BEGIN 11
   fittest
   has
   length
-  530
+  889
   and
   consists
   of
-  1
+  2
   parts.
 END 11
 BEGIN 12
@@ -156,19 +166,19 @@ BEGIN 13
   319
   between
   contigs
-  'r413-942.1'
+  (1)
   and
   'r487-805.0'
   to
   be
-  (74,
-  393).
+  (433,
+  752).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r413-942.1'
+  (1)
   and
   'r487-805.0'
   has
@@ -184,7 +194,7 @@ BEGIN 14
 END 14
 BEGIN 15
   Contig
-  'r413-942.1'
+  (1)
   covers
   contig
   'r487-805.0'
@@ -202,11 +212,11 @@ BEGIN 16
   fittest
   has
   length
-  530
+  889
   and
   consists
   of
-  1
+  2
   parts.
 END 16
 BEGIN 17
@@ -223,11 +233,11 @@ BEGIN 18
   path
   of
   length
-  530.
+  889.
 END 18
 BEGIN 19
   Removed
-  1
+  2
   components
   from
   the

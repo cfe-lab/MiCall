@@ -84,24 +84,6 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  292
-  between
-  contigs
-  'r362-804.1'
-  and
-  'r22-318.2'
-  to
-  be
-  None.
-END 8
-BEGIN 9
   Cycle
   1
   finished
@@ -119,16 +101,16 @@ BEGIN 9
   of
   2
   parts.
-END 9
-BEGIN 10
+END 8
+BEGIN 9
   Cycle
   2
   started
   with
   1
   paths.
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Calculated
   cutoff
   for
@@ -136,7 +118,7 @@ BEGIN 11
   overlap
   of
   size
-  117
+  8
   between
   contigs
   (1)
@@ -145,16 +127,16 @@ BEGIN 11
   to
   be
   None.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Constructed
   a
   path
   of
   length
   511.
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Removed
   2
   components
@@ -167,29 +149,29 @@ BEGIN 13
   still
   to
   process.
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Calculating
   all
   paths...
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Cycle
   1
   started
   with
   1
   paths.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
   297.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Removed
   1
   components
@@ -202,8 +184,8 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Giving
   up
   on
@@ -218,16 +200,16 @@ BEGIN 18
   is
   a
   singleton.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Calculated
   cutoff
   for
@@ -235,7 +217,7 @@ BEGIN 20
   overlap
   of
   size
-  117
+  8
   between
   contigs
   (1)
@@ -244,9 +226,9 @@ BEGIN 20
   to
   be
   None.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Outputting
   2
   contigs.
-END 21
+END 20
