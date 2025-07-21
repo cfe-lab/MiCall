@@ -28,6 +28,8 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     def tostr(x: pd.DataFrame) -> str:
         if pd.isna(x):
             return ''
+        elif isinstance(x, float) and float.is_integer(x):
+            return str(int(x))
         else:
             return str(x)
 
@@ -126,7 +128,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
                     continue
 
                 # only treat ints and floats as numeric; exclude bools
-                if is_numeric_dtype(column):
+                if is_numeric_dtype(column) and not pd.isna(a) and not pd.isna(b):
                     # numeric diff
                     rec[col] = pd.to_numeric(a, errors='coerce') - \
                                pd.to_numeric(b, errors='coerce')
