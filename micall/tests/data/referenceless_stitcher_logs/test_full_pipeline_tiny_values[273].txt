@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  25073.63529108521.
+  477.0759695671399.
 END 9
 BEGIN 10
   Found

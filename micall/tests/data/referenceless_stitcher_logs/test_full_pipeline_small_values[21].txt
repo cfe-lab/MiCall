@@ -300,7 +300,7 @@ BEGIN 20
   the
   score
   of
-  1.0845349443009549.
+  1.1801473632230122.
 END 20
 BEGIN 21
   Found
@@ -437,7 +437,7 @@ BEGIN 28
   the
   score
   of
-  1.1311382080053851.
+  1.2897611806519544.
 END 28
 BEGIN 29
   Found

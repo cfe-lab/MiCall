@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  25636.035343152882.
+  499.4553555353289.
 END 14
 BEGIN 15
   Found
@@ -317,7 +317,7 @@ BEGIN 22
   the
   score
   of
-  26036.825892987676.
+  515.7530487683832.
 END 22
 BEGIN 23
   Found
@@ -444,7 +444,7 @@ BEGIN 30
   the
   score
   of
-  11019.75114714454.
+  111.34144501575717.
 END 30
 BEGIN 31
   Found

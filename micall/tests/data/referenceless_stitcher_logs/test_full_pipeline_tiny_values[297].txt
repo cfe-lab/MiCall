@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  23592.285981597855.
+  420.8881401205578.
 END 9
 BEGIN 10
   Found
