@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  0.9999979294054706.
+  0.681369988713215.
 END 9
 BEGIN 10
   Calculated
@@ -155,7 +155,7 @@ BEGIN 11
   the
   score
   of
-  1.000066671432108.
+  2.012911953169217.
 END 11
 BEGIN 12
   Found
@@ -210,7 +210,7 @@ BEGIN 14
   the
   score
   of
-  1.000015693349377.
+  1.0594215376845275.
 END 14
 BEGIN 15
   Found
@@ -365,7 +365,7 @@ BEGIN 23
   the
   score
   of
-  1.0000658680891699.
+  1.9222492690100825.
 END 23
 BEGIN 24
   Found
@@ -592,7 +592,7 @@ BEGIN 37
   the
   score
   of
-  2000224.7063793521.
+  27450.245051065296.
 END 37
 BEGIN 38
   Found

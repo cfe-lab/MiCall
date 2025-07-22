@@ -44,7 +44,7 @@ BEGIN 5
   and
   consists
   of
-  20
+  22
   parts.
 END 5
 BEGIN 6
@@ -71,7 +71,7 @@ BEGIN 7
   and
   consists
   of
-  20
+  22
   parts.
 END 7
 BEGIN 8
@@ -98,7 +98,7 @@ BEGIN 9
   and
   consists
   of
-  20
+  22
   parts.
 END 9
 BEGIN 10
@@ -125,7 +125,7 @@ BEGIN 11
   and
   consists
   of
-  20
+  22
   parts.
 END 11
 BEGIN 12
@@ -152,7 +152,7 @@ BEGIN 13
   and
   consists
   of
-  20
+  22
   parts.
 END 13
 BEGIN 14
@@ -179,7 +179,7 @@ BEGIN 15
   and
   consists
   of
-  20
+  22
   parts.
 END 15
 BEGIN 16
@@ -206,7 +206,7 @@ BEGIN 17
   and
   consists
   of
-  20
+  22
   parts.
 END 17
 BEGIN 18
@@ -233,7 +233,7 @@ BEGIN 19
   and
   consists
   of
-  20
+  22
   parts.
 END 19
 BEGIN 20
@@ -260,7 +260,7 @@ BEGIN 21
   and
   consists
   of
-  20
+  22
   parts.
 END 21
 BEGIN 22
@@ -287,7 +287,7 @@ BEGIN 23
   and
   consists
   of
-  20
+  22
   parts.
 END 23
 BEGIN 24
@@ -314,7 +314,7 @@ BEGIN 25
   and
   consists
   of
-  20
+  22
   parts.
 END 25
 BEGIN 26
@@ -341,7 +341,7 @@ BEGIN 27
   and
   consists
   of
-  20
+  22
   parts.
 END 27
 BEGIN 28
@@ -368,7 +368,7 @@ BEGIN 29
   and
   consists
   of
-  20
+  22
   parts.
 END 29
 BEGIN 30
@@ -395,7 +395,7 @@ BEGIN 31
   and
   consists
   of
-  20
+  22
   parts.
 END 31
 BEGIN 32
@@ -422,7 +422,7 @@ BEGIN 33
   and
   consists
   of
-  20
+  22
   parts.
 END 33
 BEGIN 34
@@ -449,7 +449,7 @@ BEGIN 35
   and
   consists
   of
-  20
+  22
   parts.
 END 35
 BEGIN 36
@@ -476,7 +476,7 @@ BEGIN 37
   and
   consists
   of
-  20
+  22
   parts.
 END 37
 BEGIN 38
@@ -503,7 +503,7 @@ BEGIN 39
   and
   consists
   of
-  20
+  22
   parts.
 END 39
 BEGIN 40
@@ -530,7 +530,7 @@ BEGIN 41
   and
   consists
   of
-  20
+  22
   parts.
 END 41
 BEGIN 42
@@ -557,7 +557,7 @@ BEGIN 43
   and
   consists
   of
-  20
+  22
   parts.
 END 43
 BEGIN 44
@@ -584,7 +584,7 @@ BEGIN 45
   and
   consists
   of
-  20
+  22
   parts.
 END 45
 BEGIN 46
@@ -611,7 +611,7 @@ BEGIN 47
   and
   consists
   of
-  20
+  22
   parts.
 END 47
 BEGIN 48
@@ -638,7 +638,7 @@ BEGIN 49
   and
   consists
   of
-  20
+  22
   parts.
 END 49
 BEGIN 50
@@ -665,7 +665,7 @@ BEGIN 51
   and
   consists
   of
-  20
+  22
   parts.
 END 51
 BEGIN 52
@@ -692,7 +692,7 @@ BEGIN 53
   and
   consists
   of
-  20
+  22
   parts.
 END 53
 BEGIN 54
@@ -719,7 +719,7 @@ BEGIN 55
   and
   consists
   of
-  20
+  22
   parts.
 END 55
 BEGIN 56
@@ -746,7 +746,7 @@ BEGIN 57
   and
   consists
   of
-  20
+  22
   parts.
 END 57
 BEGIN 58
@@ -773,7 +773,7 @@ BEGIN 59
   and
   consists
   of
-  20
+  22
   parts.
 END 59
 BEGIN 60
@@ -800,7 +800,7 @@ BEGIN 61
   and
   consists
   of
-  20
+  22
   parts.
 END 61
 BEGIN 62
@@ -827,7 +827,7 @@ BEGIN 63
   and
   consists
   of
-  20
+  22
   parts.
 END 63
 BEGIN 64
@@ -854,7 +854,7 @@ BEGIN 65
   and
   consists
   of
-  20
+  22
   parts.
 END 65
 BEGIN 66
@@ -881,7 +881,7 @@ BEGIN 67
   and
   consists
   of
-  20
+  22
   parts.
 END 67
 BEGIN 68
@@ -908,7 +908,7 @@ BEGIN 69
   and
   consists
   of
-  20
+  22
   parts.
 END 69
 BEGIN 70
@@ -935,7 +935,7 @@ BEGIN 71
   and
   consists
   of
-  20
+  22
   parts.
 END 71
 BEGIN 72
@@ -962,7 +962,7 @@ BEGIN 73
   and
   consists
   of
-  20
+  22
   parts.
 END 73
 BEGIN 74
@@ -989,7 +989,7 @@ BEGIN 75
   and
   consists
   of
-  20
+  22
   parts.
 END 75
 BEGIN 76
@@ -1016,7 +1016,7 @@ BEGIN 77
   and
   consists
   of
-  20
+  22
   parts.
 END 77
 BEGIN 78
@@ -1043,7 +1043,7 @@ BEGIN 79
   and
   consists
   of
-  20
+  22
   parts.
 END 79
 BEGIN 80
@@ -1070,7 +1070,7 @@ BEGIN 81
   and
   consists
   of
-  20
+  22
   parts.
 END 81
 BEGIN 82
@@ -1097,7 +1097,7 @@ BEGIN 83
   and
   consists
   of
-  20
+  22
   parts.
 END 83
 BEGIN 84
@@ -1124,7 +1124,7 @@ BEGIN 85
   and
   consists
   of
-  20
+  22
   parts.
 END 85
 BEGIN 86
@@ -1151,7 +1151,7 @@ BEGIN 87
   and
   consists
   of
-  20
+  22
   parts.
 END 87
 BEGIN 88
@@ -1178,7 +1178,7 @@ BEGIN 89
   and
   consists
   of
-  20
+  22
   parts.
 END 89
 BEGIN 90
@@ -1205,7 +1205,7 @@ BEGIN 91
   and
   consists
   of
-  20
+  22
   parts.
 END 91
 BEGIN 92
@@ -1232,7 +1232,7 @@ BEGIN 93
   and
   consists
   of
-  20
+  22
   parts.
 END 93
 BEGIN 94
@@ -1259,7 +1259,7 @@ BEGIN 95
   and
   consists
   of
-  20
+  22
   parts.
 END 95
 BEGIN 96
@@ -1286,7 +1286,7 @@ BEGIN 97
   and
   consists
   of
-  20
+  22
   parts.
 END 97
 BEGIN 98
@@ -1313,7 +1313,7 @@ BEGIN 99
   and
   consists
   of
-  20
+  22
   parts.
 END 99
 BEGIN 100
@@ -1340,7 +1340,7 @@ BEGIN 101
   and
   consists
   of
-  20
+  22
   parts.
 END 101
 BEGIN 102
@@ -1367,7 +1367,7 @@ BEGIN 103
   and
   consists
   of
-  20
+  22
   parts.
 END 103
 BEGIN 104
@@ -1394,7 +1394,7 @@ BEGIN 105
   and
   consists
   of
-  20
+  22
   parts.
 END 105
 BEGIN 106
@@ -1421,7 +1421,7 @@ BEGIN 107
   and
   consists
   of
-  20
+  22
   parts.
 END 107
 BEGIN 108
@@ -1448,7 +1448,7 @@ BEGIN 109
   and
   consists
   of
-  20
+  22
   parts.
 END 109
 BEGIN 110
@@ -1475,7 +1475,7 @@ BEGIN 111
   and
   consists
   of
-  20
+  22
   parts.
 END 111
 BEGIN 112
@@ -1502,7 +1502,7 @@ BEGIN 113
   and
   consists
   of
-  20
+  22
   parts.
 END 113
 BEGIN 114
@@ -1529,7 +1529,7 @@ BEGIN 115
   and
   consists
   of
-  20
+  22
   parts.
 END 115
 BEGIN 116
@@ -1556,7 +1556,7 @@ BEGIN 117
   and
   consists
   of
-  20
+  22
   parts.
 END 117
 BEGIN 118
@@ -1583,7 +1583,7 @@ BEGIN 119
   and
   consists
   of
-  20
+  22
   parts.
 END 119
 BEGIN 120
@@ -1610,7 +1610,7 @@ BEGIN 121
   and
   consists
   of
-  20
+  22
   parts.
 END 121
 BEGIN 122
@@ -1637,7 +1637,7 @@ BEGIN 123
   and
   consists
   of
-  20
+  22
   parts.
 END 123
 BEGIN 124
@@ -1664,7 +1664,7 @@ BEGIN 125
   and
   consists
   of
-  20
+  22
   parts.
 END 125
 BEGIN 126
@@ -1691,7 +1691,7 @@ BEGIN 127
   and
   consists
   of
-  20
+  22
   parts.
 END 127
 BEGIN 128
@@ -1718,7 +1718,7 @@ BEGIN 129
   and
   consists
   of
-  20
+  22
   parts.
 END 129
 BEGIN 130
@@ -1745,7 +1745,7 @@ BEGIN 131
   and
   consists
   of
-  20
+  22
   parts.
 END 131
 BEGIN 132
@@ -1772,7 +1772,7 @@ BEGIN 133
   and
   consists
   of
-  20
+  22
   parts.
 END 133
 BEGIN 134
@@ -1799,7 +1799,7 @@ BEGIN 135
   and
   consists
   of
-  20
+  22
   parts.
 END 135
 BEGIN 136
@@ -1826,7 +1826,7 @@ BEGIN 137
   and
   consists
   of
-  20
+  22
   parts.
 END 137
 BEGIN 138
@@ -1853,7 +1853,7 @@ BEGIN 139
   and
   consists
   of
-  20
+  22
   parts.
 END 139
 BEGIN 140
@@ -1880,7 +1880,7 @@ BEGIN 141
   and
   consists
   of
-  20
+  22
   parts.
 END 141
 BEGIN 142
@@ -1907,7 +1907,7 @@ BEGIN 143
   and
   consists
   of
-  20
+  22
   parts.
 END 143
 BEGIN 144
@@ -1934,7 +1934,7 @@ BEGIN 145
   and
   consists
   of
-  20
+  22
   parts.
 END 145
 BEGIN 146
@@ -1961,7 +1961,7 @@ BEGIN 147
   and
   consists
   of
-  20
+  22
   parts.
 END 147
 BEGIN 148
@@ -1988,7 +1988,7 @@ BEGIN 149
   and
   consists
   of
-  20
+  22
   parts.
 END 149
 BEGIN 150
@@ -2015,7 +2015,7 @@ BEGIN 151
   and
   consists
   of
-  20
+  22
   parts.
 END 151
 BEGIN 152
@@ -2042,7 +2042,7 @@ BEGIN 153
   and
   consists
   of
-  20
+  22
   parts.
 END 153
 BEGIN 154
@@ -2069,7 +2069,7 @@ BEGIN 155
   and
   consists
   of
-  20
+  22
   parts.
 END 155
 BEGIN 156
@@ -2096,7 +2096,7 @@ BEGIN 157
   and
   consists
   of
-  20
+  22
   parts.
 END 157
 BEGIN 158
@@ -2123,7 +2123,7 @@ BEGIN 159
   and
   consists
   of
-  20
+  22
   parts.
 END 159
 BEGIN 160
@@ -2150,7 +2150,7 @@ BEGIN 161
   and
   consists
   of
-  20
+  22
   parts.
 END 161
 BEGIN 162
@@ -2177,7 +2177,7 @@ BEGIN 163
   and
   consists
   of
-  20
+  22
   parts.
 END 163
 BEGIN 164
@@ -2189,43 +2189,16 @@ BEGIN 164
   paths.
 END 164
 BEGIN 165
-  Cycle
-  81
-  finished
-  with
-  10
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  985
-  and
-  consists
-  of
-  20
-  parts.
-END 165
-BEGIN 166
-  Cycle
-  82
-  started
-  with
-  10
-  paths.
-END 166
-BEGIN 167
   Constructed
   a
   path
   of
   length
   985.
-END 167
-BEGIN 168
+END 165
+BEGIN 166
   Removed
-  20
+  22
   components
   from
   the
@@ -2236,17 +2209,17 @@ BEGIN 168
   still
   to
   process.
-END 168
-BEGIN 169
+END 166
+BEGIN 167
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 169
-BEGIN 170
+END 167
+BEGIN 168
   Outputting
   1
   contigs.
-END 170
+END 168

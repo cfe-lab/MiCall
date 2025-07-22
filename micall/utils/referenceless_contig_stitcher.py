@@ -36,15 +36,16 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
     Amplification
     -----------------------
-    The score^4 transformation addresses a pathfinding problem: when combining multiple
+    The (score+9)^4 transformation addresses a pathfinding problem: when combining multiple
     overlaps into contig paths, excellent overlaps should dominate the total path score
     rather than being averaged out by mediocre ones. This creates strong preference for
     paths with consistently high-quality connections.
 
     Separation from SCORE_EPSILON
     ------------------------
-    The large offset ensures that no genuine overlap score can accidentally equal
-    SCORE_EPSILON. This separation is critical because:
+    The large offset (coming from +9 factor) ensures that no genuine
+    overlap score can accidentally equal SCORE_EPSILON. This
+    separation is critical because:
     - SCORE_EPSILON triggers different algorithmic behavior (ex: covered contigs)
     - All other scoring is purely relative (only <, >, >= comparisons matter)
     - The specific magnitude is irrelevant, only the ordering and separation
@@ -77,9 +78,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
     base = calculate_overlap_score(L=L, M=M)
     sign = 1 if base >= 0 else -1
-    exp  = base ** 4
-    sep  = exp + (SCORE_EPSILON + 1) * 1_000_000
-    return sep * sign
+    return sign * (base + 9) ** 4
 
 
 ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=99, M=98)

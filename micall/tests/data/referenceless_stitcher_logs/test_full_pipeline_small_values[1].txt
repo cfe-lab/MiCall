@@ -354,7 +354,7 @@ BEGIN 24
   the
   score
   of
-  2000178.8389859444.
+  25663.284844771544.
 END 24
 BEGIN 25
   Contig

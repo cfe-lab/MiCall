@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  2000210.9622938435.
+  26936.844203651966.
 END 9
 BEGIN 10
   Contig
