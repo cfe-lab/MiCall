@@ -280,7 +280,7 @@ BEGIN 20
   the
   score
   of
-  -5690.3650578691495.
+  -7527.91509011733.
 END 20
 BEGIN 21
   Cycle
@@ -434,7 +434,7 @@ BEGIN 30
   the
   score
   of
-  -5690.3650578691495.
+  -7527.91509011733.
 END 30
 BEGIN 31
   Cycle
@@ -543,7 +543,7 @@ BEGIN 37
   the
   score
   of
-  -5690.3650578691495.
+  -7527.91509011733.
 END 37
 BEGIN 38
   Cycle
