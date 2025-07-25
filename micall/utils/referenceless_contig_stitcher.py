@@ -81,7 +81,12 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     return sign * (base ** 2 + 9) ** 4
 
 
-ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=99, M=98)
+MIN_MATCHES = 98
+
+@cache
+def ACCEPTABLE_STITCHING_SCORE():
+    return calculate_referenceless_overlap_score(L=MIN_MATCHES+1, M=MIN_MATCHES)
+
 MAX_ALTERNATIVES = 999
 MIN_ALTERNATIVES = 1
 
@@ -141,7 +146,7 @@ class Pool:
     def empty(capacity: int) -> 'Pool':
         # initial capacity is large; smallest_score starts at threshold
         ring: SortedRing[ContigsPath] = SortedRing(capacity=capacity)
-        return Pool(ring, set(), {}, ACCEPTABLE_STITCHING_SCORE)
+        return Pool(ring, set(), {}, ACCEPTABLE_STITCHING_SCORE())
 
     @property
     def min_acceptable_score(self) -> Score:
@@ -181,7 +186,7 @@ class Pool:
                 self.set.remove(deleted_seq)
 
             self.set.add(path.whole.seq)
-            self.smallest_score = max(self.ring[0].get_score(), ACCEPTABLE_STITCHING_SCORE)
+            self.smallest_score = max(self.ring[0].get_score(), ACCEPTABLE_STITCHING_SCORE())
             return True
 
         return False
@@ -241,7 +246,7 @@ def combine_scores(current: Score, new: Score) -> Score:
 def get_minimum_base_score(current: Score, minimum: Score) -> Score:
     """
     Calculate the minimum additional score required so that
-    current + additional >= minimum.
+    combine_scores(current, additional) >= minimum.
     """
     return minimum - current
 
@@ -422,7 +427,7 @@ def try_combine_contigs(is_debug2: bool,
     # The addition would give a more precise value for the result_score, but it's much more expensive to calculate.
     result_score = calculate_referenceless_overlap_score(L=result_length, M=number_of_matches)
     if is_debug2:
-        denominator = max(minimum_base_score, ACCEPTABLE_STITCHING_SCORE)
+        denominator = max(minimum_base_score, ACCEPTABLE_STITCHING_SCORE())
         relative_score = result_score / denominator if denominator != 0 else float("inf")
         log(events.DeterminedOverlap(left.unique_name, right.unique_name,
                                      result_length - is_covered - 1,

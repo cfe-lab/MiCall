@@ -24,10 +24,10 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.referenceless_contig_stitcher_events import EventType
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, \
-    referenceless_contig_stitcher_with_ctx, read_contigs, Pool, ACCEPTABLE_STITCHING_SCORE, \
-    calculate_referenceless_overlap_score
+    referenceless_contig_stitcher_with_ctx, read_contigs, Pool, \
+    ACCEPTABLE_STITCHING_SCORE
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.referenceless_score import SCORE_NOTHING, Score
+from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
 import micall.utils.registry as registry
 
@@ -39,7 +39,7 @@ def load_projects():
 
 @pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
-    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", SCORE_NOTHING)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", -1)
 
 
 TTT = 40 * 'T'
@@ -287,8 +287,7 @@ def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file,
 
 @pytest.mark.parametrize("random_seed", params(range(10), [], "Probably gaps that are too small."))
 def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch):
-    acceptable_score = calculate_referenceless_overlap_score(71, 70)
-    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.ACCEPTABLE_STITCHING_SCORE", acceptable_score)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 70)
     assert not ReferencelessStitcherContext.get().is_debug2
     converted_fasta_file, ref_seqs = random_fasta_file(99, random_seed)
     run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
@@ -307,8 +306,8 @@ class TestPool:
         assert pool.ring.capacity == capacity
         assert len(pool.ring) == 0
         assert len(pool.existing) == 0
-        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE
-        assert pool.min_acceptable_score == ACCEPTABLE_STITCHING_SCORE
+        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE()
+        assert pool.min_acceptable_score == ACCEPTABLE_STITCHING_SCORE()
 
     def test_pool_add_single_path(self):
         """Test adding a single path to an empty pool."""
@@ -423,18 +422,18 @@ class TestPool:
         """Test that pool correctly tracks the smallest score."""
         pool = Pool.empty(3)
 
-        # Initially should be ACCEPTABLE_STITCHING_SCORE
-        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE
-        assert pool.min_acceptable_score == ACCEPTABLE_STITCHING_SCORE
+        # Initially should be ACCEPTABLE_STITCHING_SCORE()
+        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE()
+        assert pool.min_acceptable_score == ACCEPTABLE_STITCHING_SCORE()
 
-        # Add a path with score higher than ACCEPTABLE_STITCHING_SCORE
+        # Add a path with score higher than ACCEPTABLE_STITCHING_SCORE()
         contig = ContigWithAligner(name="1", seq="ATCG")
         high_score_path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=Score(100.0))
 
         pool.add(high_score_path)
 
-        # smallest_score should update to max of ring[0].score and ACCEPTABLE_STITCHING_SCORE
-        expected_score = max(high_score_path.get_score(), ACCEPTABLE_STITCHING_SCORE)
+        # smallest_score should update to max of ring[0].score and ACCEPTABLE_STITCHING_SCORE()
+        expected_score = max(high_score_path.get_score(), ACCEPTABLE_STITCHING_SCORE())
         assert pool.smallest_score == expected_score
         assert pool.min_acceptable_score == expected_score
 
@@ -442,9 +441,9 @@ class TestPool:
         """Test that min_acceptable_score property returns smallest_score."""
         pool = Pool.empty(3)
 
-        # Should initially equal ACCEPTABLE_STITCHING_SCORE
+        # Should initially equal ACCEPTABLE_STITCHING_SCORE()
         assert pool.min_acceptable_score == pool.smallest_score
-        assert pool.min_acceptable_score == ACCEPTABLE_STITCHING_SCORE
+        assert pool.min_acceptable_score == ACCEPTABLE_STITCHING_SCORE()
 
         # Add a path and check that property updates
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -579,12 +578,12 @@ class TestPool:
         """Test potential IndexError when accessing ring[0] on empty ring."""
         pool = Pool.empty(1)
 
-        # Initially ring is empty, so pool.smallest_score should be ACCEPTABLE_STITCHING_SCORE
-        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE
+        # Initially ring is empty, so pool.smallest_score should be ACCEPTABLE_STITCHING_SCORE()
+        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE()
 
         # Create a path with very low score that ring.insert() will reject
         contig = ContigWithAligner(name="1", seq="ATCG")
-        very_low_score = Score(-1000.0)  # Much lower than ACCEPTABLE_STITCHING_SCORE
+        very_low_score = Score(-1000.0)  # Much lower than ACCEPTABLE_STITCHING_SCORE()
         path = ContigsPath(whole=contig, contigs_ids=frozenset([contig.id]), contains_contigs_ids=frozenset([contig.id]), score=very_low_score)
 
         # This should not crash even though ring[0] would be accessed if ring.insert() succeeded
@@ -592,7 +591,7 @@ class TestPool:
         # Ring insertion should fail due to low score vs capacity constraint
 
         # The ring should still be empty, so smallest_score should remain unchanged
-        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE
+        assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE()
 
     def test_pool_existing_mapping_vs_ring_inconsistency(self):
         """Test scenarios where existing mapping and ring contents might become inconsistent."""
@@ -677,7 +676,7 @@ class TestPool:
 
         assert pool.add(path1) is True
         # smallest_score should update because ring.insert() returned True
-        assert pool.smallest_score == max(path1.get_score(), ACCEPTABLE_STITCHING_SCORE)
+        assert pool.smallest_score == max(path1.get_score(), ACCEPTABLE_STITCHING_SCORE())
 
         # Try to add a path that will fail ring insertion
         contig2 = ContigWithAligner(name="2", seq="BBBB")
@@ -847,7 +846,7 @@ class TestPool:
             result = pool.add(path)
             # If it succeeded, smallest_score should be updated safely
             if result is True:
-                assert pool.smallest_score >= ACCEPTABLE_STITCHING_SCORE
+                assert pool.smallest_score >= ACCEPTABLE_STITCHING_SCORE()
         except IndexError as e:
             if "ring[0]" in str(e):
                 assert False, "BUG: IndexError when accessing ring[0] on empty ring"
