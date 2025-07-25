@@ -39,7 +39,7 @@ def load_projects():
 
 @pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
-    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", -1)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)
 
 
 TTT = 40 * 'T'

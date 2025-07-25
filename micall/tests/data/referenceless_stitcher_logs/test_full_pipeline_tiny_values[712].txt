@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  inf.
+  101272.5.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  inf.
+  97541.0.
 END 11
 BEGIN 12
   Contig

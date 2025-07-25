@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  inf.
+  87832.0.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.0222217034781518.
+  1.0080437653702523.
 END 9
 BEGIN 10
   Found
@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  1.3190364309637368.
+  1.1038813623451944.
 END 12
 BEGIN 13
   Contig
@@ -245,7 +245,7 @@ BEGIN 17
   the
   score
   of
-  inf.
+  105481.0.
 END 17
 BEGIN 18
   Found
@@ -327,7 +327,7 @@ BEGIN 22
   the
   score
   of
-  inf.
+  97736.0.
 END 22
 BEGIN 23
   Contig
@@ -372,7 +372,7 @@ BEGIN 25
   the
   score
   of
-  286032.276889529.
+  85781.0.
 END 25
 BEGIN 26
   Contig
@@ -417,7 +417,7 @@ BEGIN 28
   the
   score
   of
-  205979.9483481772.
+  75805.5.
 END 28
 BEGIN 29
   Found
@@ -499,7 +499,7 @@ BEGIN 33
   the
   score
   of
-  inf.
+  97736.0.
 END 33
 BEGIN 34
   Contig
@@ -544,7 +544,7 @@ BEGIN 36
   the
   score
   of
-  286032.276889529.
+  85781.0.
 END 36
 BEGIN 37
   Contig
@@ -616,7 +616,7 @@ BEGIN 41
   the
   score
   of
-  inf.
+  85781.0.
 END 41
 BEGIN 42
   Contig

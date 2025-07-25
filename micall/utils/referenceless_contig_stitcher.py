@@ -36,7 +36,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
     Amplification
     -----------------------
-    The (score+9)^4 transformation addresses a pathfinding problem: when combining multiple
+    The score^exp transformation addresses a pathfinding problem: when combining multiple
     overlaps into contig paths, excellent overlaps should dominate the total path score
     rather than being averaged out by mediocre ones. This creates strong preference for
     paths with consistently high-quality connections.
@@ -76,12 +76,17 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     if L == 0:
         return SCORE_NOTHING
 
-    base = calculate_overlap_score(L=L, M=M)
+    base = calculate_overlap_score(L=L, M=M) - ACCEPTABLE_BASE_STITCHING_SCORE()
     sign = 1 if base >= 0 else -1
-    return sign * (base ** 2 + 9) ** 4
+    magnitude = round((99 * base + SCORE_EPSILON) ** 2) ^ 3
+    return sign * magnitude
 
 
 MIN_MATCHES = 98
+
+@cache
+def ACCEPTABLE_BASE_STITCHING_SCORE():
+    return calculate_overlap_score(L=MIN_MATCHES+1, M=MIN_MATCHES)
 
 @cache
 def ACCEPTABLE_STITCHING_SCORE():

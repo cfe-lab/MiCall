@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  inf.
+  101272.5.
 END 6
 BEGIN 7
   Contig
@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  -7108.680715455677.
+  -1.5.
 END 9
 BEGIN 10
   Cycle
@@ -172,7 +172,7 @@ BEGIN 13
   the
   score
   of
-  inf.
+  -1.5.
 END 13
 BEGIN 14
   Constructed
@@ -244,7 +244,7 @@ BEGIN 19
   the
   score
   of
-  inf.
+  13685.0.
 END 19
 BEGIN 20
   Found
@@ -356,7 +356,7 @@ BEGIN 27
   the
   score
   of
-  inf.
+  100842.5.
 END 27
 BEGIN 28
   Found

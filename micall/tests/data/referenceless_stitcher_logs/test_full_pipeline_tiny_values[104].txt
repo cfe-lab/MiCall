@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  inf.
+  106594.5.
 END 6
 BEGIN 7
   Contig
@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  296120.07812046603.
+  86879.5.
 END 9
 BEGIN 10
   Contig
@@ -180,7 +180,7 @@ BEGIN 14
   the
   score
   of
-  inf.
+  86879.5.
 END 14
 BEGIN 15
   Contig
