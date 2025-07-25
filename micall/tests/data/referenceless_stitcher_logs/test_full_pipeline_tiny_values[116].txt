@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  -1.5.
+  -3.0.
 END 9
 BEGIN 10
   Cycle
@@ -172,7 +172,7 @@ BEGIN 13
   the
   score
   of
-  -1.5.
+  -3.0.
 END 13
 BEGIN 14
   Constructed

@@ -108,7 +108,7 @@ BEGIN 9
   the
   score
   of
-  -66.5.
+  -93.5.
 END 9
 BEGIN 10
   Cycle
@@ -172,7 +172,7 @@ BEGIN 13
   the
   score
   of
-  -66.5.
+  -93.5.
 END 13
 BEGIN 14
   Constructed
@@ -353,7 +353,7 @@ BEGIN 27
   the
   score
   of
-  -66.5.
+  -93.5.
 END 27
 BEGIN 28
   Outputting

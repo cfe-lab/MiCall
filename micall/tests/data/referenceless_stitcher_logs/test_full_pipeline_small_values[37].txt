@@ -173,7 +173,7 @@ BEGIN 12
   the
   score
   of
-  -0.00016390970542147742.
+  -0.0003147066344092366.
 END 12
 BEGIN 13
   Calculated

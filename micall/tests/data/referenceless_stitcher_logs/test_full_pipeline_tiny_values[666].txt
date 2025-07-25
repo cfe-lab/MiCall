@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  -12.5.
+  -24.0.
 END 6
 BEGIN 7
   Calculated
@@ -172,7 +172,7 @@ BEGIN 13
   the
   score
   of
-  -12.5.
+  -24.0.
 END 13
 BEGIN 14
   Constructed
@@ -290,7 +290,7 @@ BEGIN 23
   the
   score
   of
-  -12.5.
+  -24.0.
 END 23
 BEGIN 24
   Outputting
