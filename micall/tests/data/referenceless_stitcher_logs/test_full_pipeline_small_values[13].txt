@@ -282,7 +282,7 @@ BEGIN 19
   the
   score
   of
-  4.988629844356616.
+  24.886427724005625.
 END 19
 BEGIN 20
   Contig
@@ -399,7 +399,7 @@ BEGIN 27
   the
   score
   of
-  555.4412555193978.
+  308514.988332965.
 END 27
 BEGIN 28
   Contig

@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.1749486855477662.
+  1.3805044136704239.
 END 9
 BEGIN 10
   Contig

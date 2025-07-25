@@ -78,7 +78,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
     base = calculate_overlap_score(L=L, M=M)
     sign = 1 if base >= 0 else -1
-    return sign * (base ** 2 + 9) ** 2
+    return sign * (base ** 2 + 9) ** 4
 
 
 ACCEPTABLE_STITCHING_SCORE: Score = calculate_referenceless_overlap_score(L=99, M=98)
