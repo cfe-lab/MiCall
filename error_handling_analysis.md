@@ -122,6 +122,92 @@ wait_for_retry(attempt_count, is_logged)
 - Exception details captured with `exc_info=True`
 - Clear error messages for different failure modes
 
+## Error Coverage Gaps
+
+After analyzing the codebase thoroughly, I've identified several categories of errors that lack proper handling:
+
+### 1. File System Errors (Major Gap)
+
+**Missing Coverage:**
+- **PermissionError**: No specific handling for file permission issues
+- **OSError**: Generic OS errors during file operations are not differentiated
+- **DiskFullError**: No detection of insufficient disk space
+- **Directory traversal errors**: Path resolution failures
+
+**Critical Code Locations:**
+```python
+# In kive_watcher.py - Multiple unprotected file operations:
+with (base_calls / fastq_name).open('rb') as fastq_file:  # Line 493
+shutil.rmtree(scratch_path)  # Line 590
+results_path.mkdir(exist_ok=True)  # Line 598
+target_path.open('w')  # Line 630
+```
+
+**Risk:** File operations can fail due to permissions, disk space, or corruption, causing processing to halt.
+
+### 2. Resource Exhaustion (Major Gap)
+
+**Missing Coverage:**
+- **MemoryError**: Large file processing without memory checks
+- **Process limits**: No handling of OS process/thread limits
+- **File descriptor limits**: Many concurrent file operations
+
+### 3. Data Integrity Errors (Moderate Gap)
+
+**Missing Coverage:**
+- **Corrupted tar files**: `tarfile.open()` operations lack integrity checks
+- **Malformed CSV files**: Beyond empty file detection
+- **Unicode/encoding errors**: No specific handling for encoding issues
+
+**Critical Code:**
+```python
+# No corruption handling
+with tarfile.open(source_path) as f:  # Line 686, 720
+    # Extract without validation
+```
+
+### 4. Queue/Threading Errors (Moderate Gap)
+
+**Missing Coverage:**
+- **Thread synchronization errors**: Race conditions in shared state
+- **Queue corruption**: No validation of queue contents
+- **Deadlock detection**: No timeout for thread coordination
+
+**Risk Areas:**
+```python
+# In micall_watcher.py - Queue operations without comprehensive error handling
+folder_event = sample_queue.get(timeout=POLLING_DELAY)  # Line 130
+sample_queue.put(folder_event, timeout=SLEEP_SECONDS)  # Line 238
+```
+
+### 5. Configuration/Environment Errors (Minor Gap)
+
+**Missing Coverage:**
+- **Invalid environment variables**: Type validation beyond existence
+- **Configuration drift**: Runtime configuration changes
+- **Path resolution failures**: Symbolic link issues
+
+### 6. Application State Corruption (Major Gap)
+
+**Missing Coverage:**
+- **Inconsistent folder states**: Partial processing recovery
+- **Orphaned runs**: Cleanup of abandoned Kive runs
+- **State file corruption**: Recovery from corrupted state files
+
+**Example:**
+```python
+# No validation of folder_watcher state consistency
+if folder_watcher.is_folder_failed:  # Could be inconsistent
+    error_message = 'Filter quality failed in Kive.'
+```
+
+### 7. External Service Degradation (Moderate Gap)
+
+**Missing Coverage:**
+- **Partial service failures**: Kive/QAI partially functional
+- **Rate limiting**: API throttling without clear feedback
+- **Service version mismatches**: API compatibility issues
+
 ## Areas for Improvement
 
 ### 1. Network Error Classification
@@ -301,19 +387,83 @@ class GracefulShutdownHandler:
 ## Implementation Priority
 
 ### High Priority (Immediate)
-1. **Network error classification** - Distinguish between different network failure types
-2. **Circuit breaker pattern** - Prevent resource waste on persistent failures
-3. **Enhanced logging context** - Better error correlation and debugging
+1. **File system error handling** - Handle permissions, disk space, and corruption
+2. **Resource exhaustion protection** - Memory limits and process management  
+3. **Network error classification** - Distinguish between different network failure types
+4. **Circuit breaker pattern** - Prevent resource waste on persistent failures
+5. **Enhanced logging context** - Better error correlation and debugging
 
 ### Medium Priority (Next Quarter)
-1. **Configuration management** - Runtime-configurable timeouts and retry policies
-2. **Monitoring and metrics** - Error rate tracking and alerting
-3. **Graceful shutdown** - Clean resource cleanup
+1. **Data integrity validation** - Checksum verification and format validation
+2. **Application state recovery** - Robust handling of inconsistent states
+3. **Configuration management** - Runtime-configurable timeouts and retry policies
+4. **Monitoring and metrics** - Error rate tracking and alerting
+5. **Graceful shutdown** - Clean resource cleanup
 
 ### Low Priority (Future)
-1. **Predictive failure detection** - ML-based anomaly detection
-2. **Auto-scaling retry policies** - Dynamic adjustment based on system load
-3. **Distributed tracing** - End-to-end request tracking
+1. **Thread synchronization** - Deadlock detection and race condition prevention
+2. **Predictive failure detection** - ML-based anomaly detection
+3. **Auto-scaling retry policies** - Dynamic adjustment based on system load
+4. **Distributed tracing** - End-to-end request tracking
+
+## Specific Recommendations for Coverage Gaps
+
+### File System Error Handling
+```python
+class FileSystemErrorHandler:
+    @staticmethod
+    def safe_file_operation(operation, path, retries=3):
+        for attempt in range(retries):
+            try:
+                return operation()
+            except PermissionError:
+                logger.error(f"Permission denied: {path}")
+                if attempt == retries - 1:
+                    raise FileSystemError(f"Cannot access {path}: permission denied")
+                time.sleep(2 ** attempt)
+            except OSError as e:
+                if e.errno == errno.ENOSPC:  # No space left
+                    raise DiskFullError(f"Disk full while accessing {path}")
+                elif e.errno == errno.ENOENT:  # File not found
+                    raise FileNotFoundError(f"File not found: {path}")
+                else:
+                    raise FileSystemError(f"OS error {e.errno}: {e}")
+```
+
+### Resource Monitoring
+```python
+class ResourceMonitor:
+    def __init__(self, memory_limit_mb=1000, fd_limit=100):
+        self.memory_limit = memory_limit_mb * 1024 * 1024
+        self.fd_limit = fd_limit
+        
+    def check_resources(self):
+        import psutil
+        process = psutil.Process()
+        
+        if process.memory_info().rss > self.memory_limit:
+            raise MemoryError("Memory limit exceeded")
+            
+        if process.num_fds() > self.fd_limit:
+            raise OSError("File descriptor limit exceeded")
+```
+
+### Data Integrity Validation
+```python
+def safe_tar_extract(tar_path, extract_path):
+    try:
+        with tarfile.open(tar_path, 'r') as tar:
+            # Validate tar file integrity
+            for member in tar.getmembers():
+                if not member.isfile():
+                    continue
+                # Check for path traversal attacks
+                if os.path.isabs(member.name) or ".." in member.name:
+                    raise SecurityError(f"Unsafe path in tar: {member.name}")
+            tar.extractall(extract_path)
+    except tarfile.ReadError as e:
+        raise DataIntegrityError(f"Corrupted tar file {tar_path}: {e}")
+```
 
 ## Testing Recommendations
 
@@ -334,6 +484,20 @@ class GracefulShutdownHandler:
 
 ## Conclusion
 
-The MiCall Watcher system demonstrates a solid foundation for error handling with comprehensive retry mechanisms and state management. However, there are significant opportunities for improvement in network error classification, circuit breaking, and observability. The recommendations provided would enhance system reliability, reduce resource waste, and improve operational visibility.
+The MiCall Watcher system demonstrates a solid foundation for error handling with comprehensive retry mechanisms and state management. However, **significant error coverage gaps exist**, particularly around file system operations, resource exhaustion, and data integrity validation.
 
-The proposed improvements follow industry best practices for distributed systems and would make the system more resilient to the inherent unreliability of network operations while providing better insights into system health and performance.
+**Key Findings:**
+1. **Network errors** are well-handled with retry logic and exponential backoff
+2. **File system operations** lack comprehensive error handling for permissions, disk space, and corruption
+3. **Resource exhaustion** scenarios (memory, file descriptors) are not monitored or handled
+4. **Data integrity** validation is minimal, with potential for corrupted file processing
+5. **Application state** recovery mechanisms need strengthening
+
+**Priority Actions:**
+1. Implement comprehensive file system error handling with specific exception types
+2. Add resource monitoring and limits to prevent exhaustion scenarios  
+3. Enhance data integrity validation for all file operations
+4. Improve application state consistency and recovery mechanisms
+5. Strengthen network error classification beyond the current generic approach
+
+The proposed improvements follow industry best practices for distributed systems and would make the system more resilient to the full spectrum of potential failures, not just network-related issues. The error coverage gaps represent significant operational risks that should be addressed to ensure reliable bioinformatics processing.
