@@ -83,7 +83,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     return sign * magnitude
 
 
-MIN_MATCHES = 99
+MIN_MATCHES = 70
 
 @cache
 def ACCEPTABLE_BASE_STITCHING_SCORE():
