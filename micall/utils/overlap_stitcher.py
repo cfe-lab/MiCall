@@ -245,8 +245,8 @@ def calculate_overlap_score(L: int, M: int) -> Score:
         A monotonic overlap score based on z-score.
     """
 
-    alpha = 0.80
-    return (4 * M - L) / ((3 * L) ** alpha)
+    alpha = -0.80
+    return (4 * M - L) * (L ** alpha)
 
 
 def find_max_overlap_length(M: int, X: Score, L_low: int = -1, L_high: int = -1) -> int:

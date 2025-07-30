@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  30587.428571428572.
+  176500.42857142858.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  27681.0.
+  159682.2857142857.
 END 11
 BEGIN 12
   Found
