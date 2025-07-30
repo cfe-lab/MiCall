@@ -191,46 +191,49 @@ def exp_dropoff_array(array: np.ndarray, factor: int = 2) -> None:
 
 def calculate_overlap_score(L: int, M: int) -> Score:
     """
-    Computes a monotonic scoring metric for an overlap between two sequences
-    over a four-letter alphabet. It measures how much the observed
-    match count M in an overlap of length L deviates from its
-    expectation under a uniform four-letter model, with a scaling
-    exponent chosen to reflect the correlated nature of real genomic
-    sequences.
+    Computes a monotonic scoring metric for an overlap between two
+    sequences over a four-letter alphabet. It measures how much the
+    observed match count M in an overlap of length L deviates from its
+    expectation under a four-letter model, with a scaling exponent
+    chosen to reflect the correlated nature of real genomic sequences.
 
     Derivation
     ----------
     1.  Uniform four-letter alphabet (match probability p = 1/4):
           - Expected matches:
-                E[M] = L * p = L / 4
+                E[M] = L * p = L * 1/4
           - Independent-match variance:
-                Var[M] = L * p * (1 - p) = 3L / 16
+                Var[M] = L * p * (1 - p) = L * 1/4 * (1 - 1/4) = L * (1/4 - 1/16)
           - Independent-match standard deviation:
-                SD[M] = sqrt(3L) / 4
+                SD[M] = sqrt(Var[M]) = sqrt(L * (1/4 - 1/16))
           - Classic z-score for M:
-                z = (M - L/4) / (sqrt(3L)/4)
-          - Drop expensive calculation, preserving monotonicity:
-                z ~ (4*M - L) / sqrt(3L)
+                z = (M - E[M]) / SD[M] = (M - L * 1/4) / sqrt(L * (1/4 - 1/16))
 
     2.  Correlated-match model:
           - Real DNA (repeats, conserved motifs, low-complexity regions)
             exhibits long-range correlations so that
-                Var[M] ~ L^(2a)
-            for some a > 0.5.
-          - Empirical analysis of genomic windows typically yields
-                a ~ 0.8
-            implying
-                SD[M] ~ L^a.
+                SD[M] ∝ L^a
+            with empirical estimates
+                a ≈ 0.8.
 
     3.  Generalized overlap score:
-          - Replace the sqrt(L) scaling in the denominator by L^a, and keep
-            the same numerator (4*M - L) to preserve ordering:
-                score = (4*M - L) / ( (3 * L) ** a )
-          - Here a = 0.8, giving denominator ~ L^0.8.
+          - Replace the sqrt(L) scaling with ^a, giving
+                score = (M - L * 1/4) / ((L * (1/4 - 1/16))^a)
+
+    4.  Optimizations:
+          - Multiplying by L^-a avoids an explicit (slower) division:
+                score = (M - L * 1/4) * ((L * (1/4 - 1/16))^-a)
+          Constant factors rescale every score equally and do not affect ordering.
+          - With that we multiply the first factor by 4 to eliminate division operation:
+                score = (4 * M - L) * ((L * (1/4 - 1/16))^-a)
+          - Expanding exponentiation we get another constant factor:
+                score = (4 * M - L) * (L^-a * (1/4 - 1/16)^-a)
+          - We eliminate the constant part:
+                score = (4 * M - L) * (L^-a)
 
     This score preserves the monotonic "rarity" ordering of overlaps
-    (higher => more unexpected), while penalizing long overlaps more
-    strongly than the independent-match model does.
+    (higher ⇒ more unexpected), while penalizing long overlaps more
+    strongly than the independent-match model.
 
     Parameters
     ----------
