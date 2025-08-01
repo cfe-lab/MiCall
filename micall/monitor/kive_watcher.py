@@ -1,4 +1,3 @@
-import errno
 import hashlib
 import logging
 import os
@@ -693,7 +692,7 @@ class KiveWatcher:
                             shutil.copyfileobj(source, target)
             except FileNotFoundError:
                 pass
-        remove_empty_directory(coverage_path)
+        disk_operations.remove_empty_directory(coverage_path)
 
     @staticmethod
     def extract_archive(folder_watcher: FolderWatcher,
@@ -728,10 +727,10 @@ class KiveWatcher:
                         with f.extractfile(source_info) as source, \
                                 open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
-                remove_empty_directory(sample_target_path)
+                disk_operations.remove_empty_directory(sample_target_path)
             except FileNotFoundError:
                 pass
-        remove_empty_directory(output_path)
+        disk_operations.remove_empty_directory(output_path)
 
     @staticmethod
     def move_alignment_plot(folder_watcher,
@@ -744,11 +743,9 @@ class KiveWatcher:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / f'alignment{extension}'
             target_path = alignment_path / f"{sample_name}_alignment{extension}"
-            try:
+            if source_path.exists():
                 disk_operations.rename(source_path, target_path)
-            except FileNotFoundError:
-                pass
-        remove_empty_directory(alignment_path)
+        disk_operations.remove_empty_directory(alignment_path)
 
     @staticmethod
     def move_genome_coverage(folder_watcher, scratch_path, results_path):
@@ -758,17 +755,13 @@ class KiveWatcher:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'genome_coverage.svg'
             target_path = plots_path / f"{sample_name}_genome_coverage.svg"
-            try:
+            if source_path.exists():
                 disk_operations.rename(source_path, target_path)
-            except FileNotFoundError:
-                pass
             concordance_path = scratch_path / sample_name / 'genome_concordance.svg'
             target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
-            try:
+            if concordance_path.exists():
                 disk_operations.rename(concordance_path, target_concordance_path)
-            except FileNotFoundError:
-                pass
-        remove_empty_directory(plots_path)
+        disk_operations.remove_empty_directory(plots_path)
 
     def run_pipeline(self,
                      folder_watcher: FolderWatcher,
@@ -1083,11 +1076,18 @@ class KiveWatcher:
                         read_sizes.index1,
                         read_sizes.index2,
                         read_sizes.read2]
-        error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
+        error_path = folder_watcher.run_folder / "InterOp" / "ErrorMetricsOut.bin"
+        if not error_path.exists():
+            logger.warning("ErrorMetricsOut.bin not found in %s",
+                           folder_watcher.run_folder)
+            disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
+                                     "ErrorMetricsOut.bin not found.\n")
+            return
+
         quality_csv = StringIO()
         # noinspection PyBroadException
         try:
-            with error_path.open('rb') as error_file:
+            with disk_operations.disk_file_operation(error_path, 'rb') as error_file:
                 records = error_metrics_parser.read_errors(error_file)
                 error_metrics_parser.write_phix_csv(quality_csv,
                                                     records,
@@ -1139,12 +1139,3 @@ class KiveWatcher:
                 dataset_name,
                 description)
         return dataset
-
-
-def remove_empty_directory(path: Path):
-    """ Clean up a directory that didn't get any files copied in. """
-    try:
-        path.rmdir()
-    except OSError as ex:
-        if ex.errno != errno.ENOTEMPTY:
-            raise

@@ -135,6 +135,17 @@ def rename(src: Path, dst: Path):
     src.rename(dst)
 
 
+@disk_retry("remove_empty_directory")
+def remove_empty_directory(path: Path):
+    """Remove empty directory, network-aware retry."""
+    import errno
+    try:
+        path.rmdir()
+    except OSError as ex:
+        if ex.errno != errno.ENOTEMPTY:
+            raise
+
+
 @disk_retry("copyfileobj")
 def copy_fileobj(src_file, dst_file):
     """Copy file object contents, network-aware retry."""
