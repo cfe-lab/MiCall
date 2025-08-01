@@ -633,19 +633,14 @@ class KiveWatcher:
                                        source_path)
                         continue
 
-                    try:
-                        with disk_operations.disk_file_operation(source_path, 'r') as source:
-                            if output_name.endswith('_fasta'):
-                                self.extract_fasta(source, target, sample_name)
-                            else:
-                                self.extract_csv(source,
-                                                 target,
-                                                 sample_name,
-                                                 source_count)
-                            source_count += 1
-                    except FileNotFoundError:
-                        # Skip the file.
-                        pass
+                    with disk_operations.disk_file_operation(source_path, 'r') as source:
+                        if output_name.endswith('_fasta'):
+                            source_count += self.extract_fasta(source, target, sample_name)
+                        else:
+                            source_count += self.extract_csv(source,
+                                                             target,
+                                                             sample_name,
+                                                             source_count)
 
             if not source_count:
                 disk_operations.unlink(target_path)
@@ -655,8 +650,8 @@ class KiveWatcher:
         reader = DictReader(source)
         fieldnames = reader.fieldnames
         if fieldnames is None:
-            # Empty file, nothing to copy. Raise error to keep source_count at 0.
-            raise FileNotFoundError(f'CSV file {source.name} is empty.')
+            # Empty file, nothing to copy.
+            return 0
         fieldnames = list(fieldnames)
         has_sample = 'sample' in fieldnames
         if not has_sample:
@@ -669,6 +664,7 @@ class KiveWatcher:
             if not has_sample:
                 row['sample'] = sample_name
             writer.writerow(row)
+        return 1
 
     @staticmethod
     def extract_fasta(source, target, sample_name):
@@ -677,6 +673,7 @@ class KiveWatcher:
                 target.write(f'>{sample_name},{line[1:]}')
             else:
                 target.write(line)
+        return 1
 
     @staticmethod
     def extract_coverage_maps(folder_watcher, scratch_path, results_path):
