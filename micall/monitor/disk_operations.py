@@ -6,7 +6,6 @@ as the Kive network operations. Treats disk as a network resource with exponenti
 backoff for transient failures.
 """
 
-import json
 import logging
 import shutil
 from pathlib import Path
@@ -142,7 +141,12 @@ def remove_empty_directory(path: Path):
     try:
         path.rmdir()
     except OSError as ex:
-        if ex.errno != errno.ENOTEMPTY:
+        if ex.errno == errno.ENOTEMPTY:
+            # Directory not empty is expected, just ignore
+            pass
+        else:
+            # All other errors (including permission errors) should be re-raised
+            # and will be subject to retry logic
             raise
 
 

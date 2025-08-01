@@ -633,15 +633,19 @@ class KiveWatcher:
                                        source_path)
                         continue
 
-                    with disk_operations.disk_file_operation(source_path, 'r') as source:
-                        if output_name.endswith('_fasta'):
-                            self.extract_fasta(source, target, sample_name)
-                        else:
-                            self.extract_csv(source,
-                                             target,
-                                             sample_name,
-                                             source_count)
-                        source_count += 1
+                    try:
+                        with disk_operations.disk_file_operation(source_path, 'r') as source:
+                            if output_name.endswith('_fasta'):
+                                self.extract_fasta(source, target, sample_name)
+                            else:
+                                self.extract_csv(source,
+                                                 target,
+                                                 sample_name,
+                                                 source_count)
+                            source_count += 1
+                    except FileNotFoundError:
+                        # Skip the file.
+                        pass
 
             if not source_count:
                 disk_operations.unlink(target_path)
