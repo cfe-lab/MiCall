@@ -6,6 +6,7 @@ as the Kive network operations. Treats disk as a network resource with exponenti
 backoff for transient failures.
 """
 
+import json
 import logging
 import shutil
 from pathlib import Path
@@ -77,9 +78,9 @@ def disk_retry(operation_name="disk operation"):
 
 
 @disk_retry("mkdir")
-def mkdir_p(path: Path, mode=0o777, exist_ok=True):
+def mkdir_p(path: Path, mode=0o777, parents=False, exist_ok=False):
     """Create directory with parents, network-aware retry."""
-    path.mkdir(mode=mode, parents=True, exist_ok=exist_ok)
+    path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
 
 @disk_retry("rmtree")
@@ -151,6 +152,18 @@ class disk_file_operation:
         self.file_handle = None
 
     def __enter__(self):
+        qpath = json.dumps(str(self.path))  # quote path for logging.
+
+        if self.mode in ("r", "rb", "rt"):
+            if not self.path.exists():
+                raise FileNotFoundError(f"Path {qpath} does not exist.")
+
+            if not self.path.is_file():
+                raise IsADirectoryError(f"Path {qpath} is a directory, not a file.")
+        elif self.mode in ("w", "wb", "wt", "a", "ab", "at"):
+            if self.path.exists() and not self.path.is_file():
+                raise IsADirectoryError(f"Path {qpath} is a directory, not a file.")
+
         @disk_retry(self.operation_name)
         def open_file():
             return self.path.open(self.mode)
