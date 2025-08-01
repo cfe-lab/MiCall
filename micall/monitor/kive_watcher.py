@@ -25,6 +25,7 @@ from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS
 from micall.monitor.find_groups import find_groups
+from micall.monitor import disk_operations
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -219,8 +220,8 @@ def find_sample_groups(run_path, base_calls_path):
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
-        (run_path / "errorprocessing").write_text(
-            "Finding sample groups failed.\n")
+        disk_operations.write_text(run_path / "errorprocessing", 
+                                 "Finding sample groups failed.\n")
         sample_groups = []
     return sample_groups
 
@@ -475,7 +476,7 @@ class KiveWatcher:
                     self.upload_filter_quality(folder_watcher)
                     if folder_watcher.quality_dataset is None:
                         return None
-                    shutil.rmtree(results_path, ignore_errors=True)
+                    disk_operations.rmtree(results_path, ignore_errors=True)
                     try:
                         results_zip.unlink()
                     except FileNotFoundError:
@@ -552,7 +553,7 @@ class KiveWatcher:
                         self.qai_upload_queue.put(
                             (results_path, pipeline_group))
                     if not folder_watcher.active_pipeline_groups:
-                        (results_path / "done_all_processing").touch()
+                        disk_operations.touch(results_path / "done_all_processing")
                         self.folder_watchers.pop(folder)
                 if not self.folder_watchers:
                     logger.info('No more folders to process.')
@@ -578,7 +579,7 @@ class KiveWatcher:
                     ', '.join(failed_sample_names))
         if error_message is not None:
             run_path = (results_path / "../..").resolve()
-            (run_path / 'errorprocessing').write_text(error_message + '\n')
+            disk_operations.write_text(run_path / 'errorprocessing', error_message + '\n')
             logger.error('Error in folder %s: %s', run_path, error_message)
             return
         if pipeline_group == PipelineType.FILTER_QUALITY:
@@ -587,15 +588,15 @@ class KiveWatcher:
         target_path = get_collated_path(results_path, pipeline_group)
         logger.info('Collating results in %s', target_path)
         self.copy_outputs(folder_watcher, scratch_path, target_path)
-        shutil.rmtree(scratch_path)
-        (target_path / 'doneprocessing').touch()
+        disk_operations.rmtree(scratch_path)
+        disk_operations.touch(target_path / 'doneprocessing')
         return results_path
 
     def copy_outputs(self,
                      folder_watcher,
                      scratch_path,
                      results_path):
-        results_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(results_path, exist_ok=True)
         for output_name in DOWNLOADED_RESULTS:
             if output_name == 'coverage_maps_tar':
                 self.extract_coverage_maps(folder_watcher,
@@ -627,12 +628,12 @@ class KiveWatcher:
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
-            with target_path.open('w') as target:
+            with disk_operations.disk_file_operation(target_path, 'w') as target:
                 for sample_name in folder_watcher.all_samples:
                     sample_name = trim_name(sample_name)
                     source_path = scratch_path / sample_name / filename
                     try:
-                        with source_path.open() as source:
+                        with disk_operations.disk_file_operation(source_path, 'r') as source:
                             if output_name.endswith('_fasta'):
                                 self.extract_fasta(source, target, sample_name)
                             else:
@@ -645,7 +646,7 @@ class KiveWatcher:
                         # Skip the file.
                         pass
             if not source_count:
-                target_path.unlink()
+                disk_operations.unlink(target_path)
 
     @staticmethod
     def extract_csv(source, target, sample_name, source_count):
@@ -678,7 +679,7 @@ class KiveWatcher:
     @staticmethod
     def extract_coverage_maps(folder_watcher, scratch_path, results_path):
         coverage_path: Path = results_path / "coverage_maps"
-        coverage_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(coverage_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'coverage_maps.tar'
@@ -712,14 +713,14 @@ class KiveWatcher:
         assert output_name.endswith('_tar'), output_name
         archive_name = output_name[:-4]
         output_path: Path = results_path / archive_name
-        output_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(output_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / (archive_name + '.tar')
             try:
                 with tarfile.open(source_path) as f:
                     sample_target_path = output_path / sample_name
-                    sample_target_path.mkdir(exist_ok=True)
+                    disk_operations.mkdir_p(sample_target_path, exist_ok=True)
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
                         target_path = sample_target_path / filename
@@ -738,13 +739,13 @@ class KiveWatcher:
                             scratch_path,
                             results_path):
         alignment_path: Path = results_path / "alignment"
-        alignment_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(alignment_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / f'alignment{extension}'
             target_path = alignment_path / f"{sample_name}_alignment{extension}"
             try:
-                os.rename(str(source_path), str(target_path))
+                disk_operations.rename(source_path, target_path)
             except FileNotFoundError:
                 pass
         remove_empty_directory(alignment_path)
@@ -752,19 +753,19 @@ class KiveWatcher:
     @staticmethod
     def move_genome_coverage(folder_watcher, scratch_path, results_path):
         plots_path = results_path / "genome_coverage"
-        plots_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(plots_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'genome_coverage.svg'
             target_path = plots_path / f"{sample_name}_genome_coverage.svg"
             try:
-                os.rename(str(source_path), str(target_path))
+                disk_operations.rename(source_path, target_path)
             except FileNotFoundError:
                 pass
             concordance_path = scratch_path / sample_name / 'genome_concordance.svg'
             target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
             try:
-                os.rename(str(concordance_path), str(target_concordance_path))
+                disk_operations.rename(concordance_path, target_concordance_path)
             except FileNotFoundError:
                 pass
         remove_empty_directory(plots_path)
@@ -1049,7 +1050,7 @@ class KiveWatcher:
                 pipeline_group = PIPELINE_GROUPS[pipeline_type]
                 scratch_path = get_scratch_path(results_path, pipeline_group)
                 scratch_path /= trim_name(sample_name)
-                scratch_path.mkdir(parents=True, exist_ok=True)
+                disk_operations.mkdir_p(scratch_path, parents=True, exist_ok=True)
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
                                for run_dataset in run_datasets
@@ -1068,7 +1069,7 @@ class KiveWatcher:
         return run
 
     def download_file(self, dataset_url, target_path):
-        with target_path.open('wb') as f:
+        with disk_operations.disk_file_operation(target_path, 'wb') as f:
             self.session.download_file(f, dataset_url)
 
     def get_results_path(self, folder_watcher):
@@ -1095,8 +1096,8 @@ class KiveWatcher:
             logger.error("Finding error metrics in %s",
                          folder_watcher.run_folder,
                          exc_info=True)
-            (folder_watcher.run_folder / "errorprocessing").write_text(
-                "Finding error metrics failed.\n")
+            disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
+                                     "Finding error metrics failed.\n")
             return
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
