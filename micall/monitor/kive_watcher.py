@@ -476,10 +476,7 @@ class KiveWatcher:
                     if folder_watcher.quality_dataset is None:
                         return None
                     disk_operations.rmtree(results_path, ignore_errors=True)
-                    try:
-                        results_zip.unlink()
-                    except FileNotFoundError:
-                        pass
+                    disk_operations.unlink(results_zip, missing_ok=True)
                     self.folder_watchers[base_calls] = folder_watcher
 
                 for sample_watcher in folder_watcher.sample_watchers:
@@ -631,19 +628,21 @@ class KiveWatcher:
                 for sample_name in folder_watcher.all_samples:
                     sample_name = trim_name(sample_name)
                     source_path = scratch_path / sample_name / filename
-                    try:
-                        with disk_operations.disk_file_operation(source_path, 'r') as source:
-                            if output_name.endswith('_fasta'):
-                                self.extract_fasta(source, target, sample_name)
-                            else:
-                                self.extract_csv(source,
-                                                 target,
-                                                 sample_name,
-                                                 source_count)
-                            source_count += 1
-                    except FileNotFoundError:
-                        # Skip the file.
-                        pass
+                    if not source_path.exists():
+                        logger.debug('Source file %s does not exist, skipping.',
+                                       source_path)
+                        continue
+
+                    with disk_operations.disk_file_operation(source_path, 'r') as source:
+                        if output_name.endswith('_fasta'):
+                            self.extract_fasta(source, target, sample_name)
+                        else:
+                            self.extract_csv(source,
+                                             target,
+                                             sample_name,
+                                             source_count)
+                        source_count += 1
+
             if not source_count:
                 disk_operations.unlink(target_path)
 
@@ -1077,6 +1076,8 @@ class KiveWatcher:
                         read_sizes.index2,
                         read_sizes.read2]
         error_path = folder_watcher.run_folder / "InterOp" / "ErrorMetricsOut.bin"
+        quality_csv = StringIO()
+
         if not error_path.exists():
             logger.warning("ErrorMetricsOut.bin not found in %s",
                            folder_watcher.run_folder)
@@ -1084,7 +1085,6 @@ class KiveWatcher:
                                      "ErrorMetricsOut.bin not found.\n")
             return
 
-        quality_csv = StringIO()
         # noinspection PyBroadException
         try:
             with disk_operations.disk_file_operation(error_path, 'rb') as error_file:

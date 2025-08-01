@@ -163,18 +163,6 @@ class disk_file_operation:
         self.file_handle = None
 
     def __enter__(self):
-        qpath = json.dumps(str(self.path))  # quote path for logging.
-
-        if self.mode in ("r", "rb", "rt"):
-            if not self.path.exists():
-                raise FileNotFoundError(f"Path {qpath} does not exist.")
-
-            if not self.path.is_file():
-                raise IsADirectoryError(f"Path {qpath} is a directory, not a file.")
-        elif self.mode in ("w", "wb", "wt", "a", "ab", "at"):
-            if self.path.exists() and not self.path.is_file():
-                raise IsADirectoryError(f"Path {qpath} is a directory, not a file.")
-
         @disk_retry(self.operation_name)
         def open_file():
             return self.path.open(self.mode)
