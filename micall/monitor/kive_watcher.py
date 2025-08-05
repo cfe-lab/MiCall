@@ -17,6 +17,7 @@ from time import sleep
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # noinspection PyPackageRequirements
+import kiveapi
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 
@@ -81,6 +82,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
 # noinspection PyArgumentList
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
 FolderEvent = namedtuple('FolderEvent', 'base_calls type sample_group')
+
+kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential refresh noise
 
 
 def open_kive(server_url):
