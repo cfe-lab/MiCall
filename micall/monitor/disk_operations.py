@@ -35,16 +35,16 @@ def calculate_cumulative_wait_time(attempt_count):
     return total_time
 
 
-def wait_for_retry(attempt_count, operation_name="disk operation", is_logged=True, start_time=None):
+def wait_for_retry(attempt_count, operation_name, start_time, is_logged=True):
     """Wait with exponential backoff, only logging if one hour has passed since start_time."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, attempt_count)
-    
+
     # Determine if we should log based on elapsed time
     should_log = is_logged
-    if is_logged and start_time is not None:
+    if is_logged:
         elapsed = datetime.now() - start_time
         should_log = elapsed >= timedelta(hours=1)
-    
+
     if should_log:
         logger.error(
             "Disk operation %s failed, waiting %s before retrying.",
@@ -81,7 +81,7 @@ def disk_retry(operation_name="disk operation"):
 
                     # Don't log on first attempt for intermittent network drive issues
                     is_logged = attempt_count > 1
-                    wait_for_retry(attempt_count, operation_name, is_logged, start_time)
+                    wait_for_retry(attempt_count, operation_name, start_time, is_logged)
                 except:
                     # Non-disk errors should not be retried
                     raise
@@ -158,6 +158,7 @@ def rename(src: Path, dst: Path):
 def remove_empty_directory(path: Path):
     """Remove empty directory, network-aware retry."""
     import errno
+
     try:
         path.rmdir()
     except OSError as ex:

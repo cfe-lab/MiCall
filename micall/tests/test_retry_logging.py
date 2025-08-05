@@ -1,7 +1,9 @@
 """
 Test for time-based retry logging behavior.
 
-Tests that retry operations only log after one hour has passed since first failure.
+Tests that retry operatio                # Should not log during first hour
+                network_wait_for_retry(1, self.start_time, True)
+                mock_logger.warning.assert_not_called()only log after one hour has passed since first failure.
 """
 
 import unittest
@@ -45,7 +47,7 @@ class TestRetryLogging(unittest.TestCase):
             mock_datetime.now.return_value = current_time
 
             # Should not log during first hour
-            disk_wait_for_retry(1, "test_operation", True, self.start_time)
+            disk_wait_for_retry(1, "test_operation", self.start_time, True)
             self.mock_logger.error.assert_not_called()
 
         # Time after one hour
@@ -54,8 +56,8 @@ class TestRetryLogging(unittest.TestCase):
         with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
             mock_datetime.now.return_value = current_time
 
-            # Should log after one hour
-            disk_wait_for_retry(2, "test_operation", True, self.start_time)
+            # Should log after one hour has passed
+            disk_wait_for_retry(2, "test_operation", self.start_time, True)
             self.mock_logger.error.assert_called_once()
 
     def test_network_retry_logs_after_one_hour(self):
@@ -73,7 +75,7 @@ class TestRetryLogging(unittest.TestCase):
                 mock_datetime.now.return_value = current_time
 
                 # Should not log during first hour
-                network_wait_for_retry(1, True, self.start_time)
+                network_wait_for_retry(1, self.start_time, True)
                 mock_network_logger.warning.assert_not_called()
 
             # Time after one hour
@@ -83,29 +85,31 @@ class TestRetryLogging(unittest.TestCase):
                 mock_datetime.now.return_value = current_time
 
                 # Should log after one hour
-                network_wait_for_retry(2, True, self.start_time)
+                network_wait_for_retry(2, self.start_time, True)
                 mock_network_logger.warning.assert_called_once()
 
         finally:
             network_logger_patcher.stop()
             network_sleep_patcher.stop()
 
-    def test_disk_retry_without_start_time_always_logs(self):
-        """Test that disk retries without start_time always log when is_logged=True."""
-        # Should log when start_time is None
-        disk_wait_for_retry(1, "test_operation", True, None)
+    def test_disk_retry_with_old_start_time_always_logs(self):
+        """Test that disk retries with very old start_time always log when is_logged=True."""
+        # Use a start time from 2 hours ago
+        old_start_time = self.start_time - timedelta(hours=2)
+        disk_wait_for_retry(1, "test_operation", old_start_time, True)
         self.mock_logger.error.assert_called_once()
 
-    def test_network_retry_without_start_time_always_logs(self):
-        """Test that network retries without start_time always log when is_logged=True."""
+    def test_network_retry_with_old_start_time_always_logs(self):
+        """Test that network retries with very old start_time always log when is_logged=True."""
         network_logger_patcher = patch("micall.monitor.kive_watcher.logger")
         network_sleep_patcher = patch("micall.monitor.kive_watcher.sleep")
         mock_network_logger = network_logger_patcher.start()
         network_sleep_patcher.start()
 
         try:
-            # Should log when start_time is None
-            network_wait_for_retry(1, True, None)
+            # Use a start time from 2 hours ago
+            old_start_time = self.start_time - timedelta(hours=2)
+            network_wait_for_retry(1, old_start_time, True)
             mock_network_logger.warning.assert_called_once()
 
         finally:
@@ -115,14 +119,14 @@ class TestRetryLogging(unittest.TestCase):
     def test_retry_never_logs_when_is_logged_false(self):
         """Test that retries never log when is_logged=False regardless of time."""
         # Test disk operations
-        disk_wait_for_retry(1, "test_operation", False, self.start_time)
+        disk_wait_for_retry(1, "test_operation", self.start_time, False)
         self.mock_logger.error.assert_not_called()
 
         # Test after one hour
         current_time = self.start_time + timedelta(hours=2)
         with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
             mock_datetime.now.return_value = current_time
-            disk_wait_for_retry(2, "test_operation", False, self.start_time)
+            disk_wait_for_retry(2, "test_operation", self.start_time, False)
             self.mock_logger.error.assert_not_called()
 
         # Test network operations
@@ -130,10 +134,10 @@ class TestRetryLogging(unittest.TestCase):
             patch("micall.monitor.kive_watcher.logger") as mock_network_logger,
             patch("micall.monitor.kive_watcher.sleep"),
         ):
-            network_wait_for_retry(1, False, self.start_time)
+            network_wait_for_retry(1, self.start_time, False)
             mock_network_logger.warning.assert_not_called()
 
             with patch("micall.monitor.kive_watcher.datetime") as mock_datetime:
                 mock_datetime.now.return_value = current_time
-                network_wait_for_retry(2, False, self.start_time)
+                network_wait_for_retry(2, self.start_time, False)
                 mock_network_logger.warning.assert_not_called()
