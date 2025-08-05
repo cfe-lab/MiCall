@@ -77,7 +77,7 @@ def disk_retry(operation_name="disk operation"):
 
 
 @disk_retry("mkdir")
-def mkdir_p(path: Path, mode=0o777, parents=False, exist_ok=False):
+def mkdir_p(path: Path, mode=0o777, parents=True, exist_ok=False):
     """Create directory with parents, network-aware retry."""
     path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
