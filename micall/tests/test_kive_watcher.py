@@ -1318,7 +1318,7 @@ def test_sample_fails_to_upload(raw_data_with_two_samples,
                                  ('V3LOOP', None)))
 
     assert sample_watcher is not None
-    mock_wait.assert_called_once_with(1)
+    mock_wait.assert_called_once_with(1, True, ANY)
 
 
 def test_create_batch_fails(raw_data_with_two_samples,
@@ -1345,7 +1345,7 @@ def test_create_batch_fails(raw_data_with_two_samples,
     kive_watcher.poll_runs()
 
     assert sample_watcher is not None
-    mock_wait.assert_called_once_with(1)
+    mock_wait.assert_called_once_with(1, True, ANY)
     mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
         name=ANY,
         app=ANY,
@@ -1629,7 +1629,7 @@ def test_launch_main_run_after_connection_error(raw_data_with_two_samples,
     kive_watcher.poll_runs()
 
     mock_session.endpoints.containerruns.post.assert_called_once()
-    assert [call(1), call(2)] == mock_wait.call_args_list
+    assert [call(1, True, ANY), call(2, True, ANY)] == mock_wait.call_args_list
 
 
 def test_launch_midi_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):

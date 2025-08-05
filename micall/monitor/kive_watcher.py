@@ -103,6 +103,7 @@ def find_samples(raw_data_folder,
                  wait=True,
                  retry=True):
     attempt_count = 0
+    start_time = None
     while True:
         # noinspection PyBroadException
         try:
@@ -111,6 +112,7 @@ def find_samples(raw_data_folder,
                                        sample_queue,
                                        wait)
             attempt_count = 0  # Reset after success
+            start_time = None  # Reset start time after success
             if is_complete and not wait:
                 break
         except Exception as ex:
@@ -118,10 +120,14 @@ def find_samples(raw_data_folder,
                 raise
             attempt_count += 1
 
+            # Record start time on first failure
+            if start_time is None:
+                start_time = datetime.now()
+
             # There's an intermittent problem accessing the network drive, so
             # don't log those unless it's happened more than once.
             is_logged = not isinstance(ex, BlockingIOError) or attempt_count > 1
-            wait_for_retry(attempt_count, is_logged)
+            wait_for_retry(attempt_count, is_logged, start_time)
 
 
 def get_version_key(version_path: Path):
@@ -267,12 +273,20 @@ def get_output_filename(output_name):
     return '.'.join(output_name.rsplit('_', 1))
 
 
-def wait_for_retry(attempt_count, is_logged=True):
+def wait_for_retry(attempt_count, is_logged=True, start_time=None):
+    """Wait with exponential backoff, only logging if one hour has passed since start_time."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
                                  MAXIMUM_RETRY_WAIT,
                                  attempt_count)
-    if is_logged:
-        logger.error('Waiting %s before retrying.', delay, exc_info=True)
+    
+    # Determine if we should log based on elapsed time
+    should_log = is_logged
+    if is_logged and start_time is not None:
+        elapsed = datetime.now() - start_time
+        should_log = elapsed >= timedelta(hours=1)
+    
+    if should_log:
+        logger.warning('Waiting %s before retrying.', delay, exc_info=True)
     sleep(delay.total_seconds())
 
 
@@ -451,6 +465,7 @@ class KiveWatcher:
         :return: SampleWatcher for the sample group, or None if that folder has
             already finished processing
         """
+        start_time = None
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
@@ -500,7 +515,12 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                wait_for_retry(attempt_count)
+                
+                # Record start time on first failure
+                if start_time is None:
+                    start_time = datetime.now()
+                
+                wait_for_retry(attempt_count, True, start_time)
 
     def add_folder(self, base_calls):
         folder_watcher = FolderWatcher(base_calls, self)
@@ -515,6 +535,7 @@ class KiveWatcher:
         self.loaded_folders.add(base_calls)
 
     def poll_runs(self):
+        start_time = None
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
@@ -531,7 +552,12 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                wait_for_retry(attempt_count)
+                
+                # Record start time on first failure
+                if start_time is None:
+                    start_time = datetime.now()
+                
+                wait_for_retry(attempt_count, True, start_time)
 
     def check_completed_folders(self):
         for folder, folder_watcher in list(self.folder_watchers.items()):

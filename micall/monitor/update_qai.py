@@ -391,6 +391,7 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
         run_path / 'SampleSheet.csv')
 
     attempt_count = 0
+    start_time = None
     with qai_helper.Session() as session:
         # noinspection PyBroadException
         try:
@@ -413,7 +414,12 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
 
         except Exception:
             attempt_count += 1
-            wait_for_retry(attempt_count)
+            
+            # Record start time on first failure
+            if start_time is None:
+                start_time = datetime.now()
+            
+            wait_for_retry(attempt_count, True, start_time)
 
 
 def process_remapped(result_folder, session, run, pipeline_version):

@@ -9,7 +9,7 @@ backoff for transient failures.
 import logging
 import shutil
 from pathlib import Path
-from datetime import timedelta
+from datetime import datetime, timedelta
 from time import sleep
 
 logger = logging.getLogger(__name__)
@@ -27,10 +27,25 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
     return timedelta(seconds=seconds)
 
 
-def wait_for_retry(attempt_count, operation_name="disk operation", is_logged=True):
-    """Wait with exponential backoff (same pattern as kive_watcher)."""
+def calculate_cumulative_wait_time(attempt_count):
+    """Calculate total time that will have elapsed after all previous attempts."""
+    total_time = timedelta()
+    for i in range(1, attempt_count):
+        total_time += calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, i)
+    return total_time
+
+
+def wait_for_retry(attempt_count, operation_name="disk operation", is_logged=True, start_time=None):
+    """Wait with exponential backoff, only logging if one hour has passed since start_time."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, attempt_count)
-    if is_logged:
+    
+    # Determine if we should log based on elapsed time
+    should_log = is_logged
+    if is_logged and start_time is not None:
+        elapsed = datetime.now() - start_time
+        should_log = elapsed >= timedelta(hours=1)
+    
+    if should_log:
         logger.error(
             "Disk operation %s failed, waiting %s before retrying.",
             operation_name,
@@ -47,6 +62,7 @@ def disk_retry(operation_name="disk operation"):
         def wrapper(*args, **kwargs):
             attempt_count = 0
             max_attempts = 15  # Same as network operations
+            start_time = None
 
             while attempt_count < max_attempts:
                 attempt_count += 1
@@ -59,9 +75,13 @@ def disk_retry(operation_name="disk operation"):
                         )
                         raise
 
+                    # Record start time on first failure
+                    if start_time is None:
+                        start_time = datetime.now()
+
                     # Don't log on first attempt for intermittent network drive issues
                     is_logged = attempt_count > 1
-                    wait_for_retry(attempt_count, operation_name, is_logged)
+                    wait_for_retry(attempt_count, operation_name, is_logged, start_time)
                 except:
                     # Non-disk errors should not be retried
                     raise

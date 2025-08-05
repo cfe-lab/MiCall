@@ -6,7 +6,7 @@ Tests the low-level disk operation wrappers with network-style retry logic.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, ANY
 import time
 import threading
 import errno
@@ -103,7 +103,7 @@ class TestDiskRetryDecorator:
 
         assert result == "success"
         assert mock_func.call_count == 2
-        mock_wait.assert_called_once_with(1, "test_op", False)
+        mock_wait.assert_called_once_with(1, "test_op", False, ANY)
 
     @patch("micall.monitor.disk_operations.wait_for_retry")
     def test_decorator_retry_on_io_error(self, mock_wait):
@@ -115,7 +115,7 @@ class TestDiskRetryDecorator:
 
         assert result == "success"
         assert mock_func.call_count == 2
-        mock_wait.assert_called_once_with(1, "test_op", False)
+        mock_wait.assert_called_once_with(1, "test_op", False, ANY)
 
     @patch("micall.monitor.disk_operations.wait_for_retry")
     def test_decorator_max_attempts_exceeded(self, mock_wait):
@@ -164,7 +164,7 @@ class TestFileSystemOperations:
         mkdir_p(path)
 
         assert mock_mkdir.call_count == 2
-        mock_wait.assert_called_once_with(1, "mkdir", False)
+        mock_wait.assert_called_once_with(1, "mkdir", False, ANY)
 
     @patch("shutil.rmtree")
     @patch("pathlib.Path.exists")
@@ -189,7 +189,7 @@ class TestFileSystemOperations:
         rmtree(path)
 
         assert mock_rmtree.call_count == 2
-        mock_wait.assert_called_once_with(1, "rmtree", False)
+        mock_wait.assert_called_once_with(1, "rmtree", False, ANY)
 
     @patch("shutil.move")
     def test_move_success(self, mock_move):
@@ -306,7 +306,7 @@ class TestDiskFileOperation:
             pass
 
         assert mock_open.call_count == 2
-        mock_wait.assert_called_once_with(1, "open(r)", False)
+        mock_wait.assert_called_once_with(1, "open(r)", False, ANY)
 
 
 class TestRemoveEmptyDirectory:
@@ -359,7 +359,7 @@ class TestRemoveEmptyDirectory:
         remove_empty_directory(path)
 
         assert mock_rmdir.call_count == 2
-        mock_wait.assert_called_once_with(1, "remove_empty_directory", False)
+        mock_wait.assert_called_once_with(1, "remove_empty_directory", False, ANY)
 
 
 class TestIntegrationWithRealFileSystem:
@@ -525,7 +525,7 @@ class TestErrorScenarios:
             rmtree(path)
 
         assert mock_rmtree.call_count == 2
-        mock_wait.assert_called_once_with(1, "rmtree", False)
+        mock_wait.assert_called_once_with(1, "rmtree", False, ANY)
 
     @patch("pathlib.Path.open")
     @patch("pathlib.Path.is_file")
