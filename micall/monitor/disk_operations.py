@@ -35,15 +35,13 @@ def calculate_cumulative_wait_time(attempt_count):
     return total_time
 
 
-def wait_for_retry(attempt_count, operation_name, start_time, is_logged=True):
+def wait_for_retry(attempt_count, operation_name, start_time):
     """Wait with exponential backoff, only logging if one hour has passed since start_time."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, attempt_count)
 
     # Determine if we should log based on elapsed time
-    should_log = is_logged
-    if is_logged:
-        elapsed = datetime.now() - start_time
-        should_log = elapsed >= timedelta(hours=1)
+    elapsed = datetime.now() - start_time
+    should_log = elapsed >= timedelta(hours=1)
 
     if should_log:
         logger.error(
@@ -79,9 +77,7 @@ def disk_retry(operation_name="disk operation"):
                     if start_time is None:
                         start_time = datetime.now()
 
-                    # Don't log on first attempt for intermittent network drive issues
-                    is_logged = attempt_count > 1
-                    wait_for_retry(attempt_count, operation_name, start_time, is_logged)
+                    wait_for_retry(attempt_count, operation_name, start_time)
                 except:
                     # Non-disk errors should not be retried
                     raise

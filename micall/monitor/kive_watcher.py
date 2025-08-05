@@ -115,7 +115,7 @@ def find_samples(raw_data_folder,
             start_time = None  # Reset start time after success
             if is_complete and not wait:
                 break
-        except Exception as ex:
+        except Exception:
             if not retry:
                 raise
             attempt_count += 1

@@ -76,10 +76,10 @@ class TestRetryLogic:
 
     @patch("micall.monitor.disk_operations.sleep")
     @patch("micall.monitor.disk_operations.logger")
-    def test_wait_for_retry_no_logging(self, mock_logger, mock_sleep):
-        """wait_for_retry with is_logged=False should not log."""
-        start_time = datetime.now() - timedelta(hours=2)  # Old enough to trigger logging normally
-        wait_for_retry(2, "test operation", start_time, is_logged=False)
+    def test_wait_for_retry_within_hour(self, mock_logger, mock_sleep):
+        """wait_for_retry within first hour should not log."""
+        start_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not trigger logging
+        wait_for_retry(2, "test operation", start_time)
 
         mock_logger.error.assert_not_called()
         mock_sleep.assert_called_once()
@@ -108,7 +108,7 @@ class TestDiskRetryDecorator:
 
         assert result == "success"
         assert mock_func.call_count == 2
-        mock_wait.assert_called_once_with(1, "test_op", ANY, False)
+        mock_wait.assert_called_once_with(1, "test_op", ANY)
 
     @patch("micall.monitor.disk_operations.wait_for_retry")
     def test_decorator_retry_on_io_error(self, mock_wait):
@@ -120,7 +120,7 @@ class TestDiskRetryDecorator:
 
         assert result == "success"
         assert mock_func.call_count == 2
-        mock_wait.assert_called_once_with(1, "test_op", ANY, False)
+        mock_wait.assert_called_once_with(1, "test_op", ANY)
 
     @patch("micall.monitor.disk_operations.wait_for_retry")
     def test_decorator_max_attempts_exceeded(self, mock_wait):
@@ -169,7 +169,7 @@ class TestFileSystemOperations:
         mkdir_p(path)
 
         assert mock_mkdir.call_count == 2
-        mock_wait.assert_called_once_with(1, "mkdir", ANY, False)
+        mock_wait.assert_called_once_with(1, "mkdir", ANY)
 
     @patch("shutil.rmtree")
     @patch("pathlib.Path.exists")
@@ -194,7 +194,7 @@ class TestFileSystemOperations:
         rmtree(path)
 
         assert mock_rmtree.call_count == 2
-        mock_wait.assert_called_once_with(1, "rmtree", ANY, False)
+        mock_wait.assert_called_once_with(1, "rmtree", ANY)
 
     @patch("shutil.move")
     def test_move_success(self, mock_move):
@@ -311,7 +311,7 @@ class TestDiskFileOperation:
             pass
 
         assert mock_open.call_count == 2
-        mock_wait.assert_called_once_with(1, "open(r)", ANY, False)
+        mock_wait.assert_called_once_with(1, "open(r)", ANY)
 
 
 class TestRemoveEmptyDirectory:
@@ -364,7 +364,7 @@ class TestRemoveEmptyDirectory:
         remove_empty_directory(path)
 
         assert mock_rmdir.call_count == 2
-        mock_wait.assert_called_once_with(1, "remove_empty_directory", ANY, False)
+        mock_wait.assert_called_once_with(1, "remove_empty_directory", ANY)
 
 
 class TestIntegrationWithRealFileSystem:
@@ -530,7 +530,7 @@ class TestErrorScenarios:
             rmtree(path)
 
         assert mock_rmtree.call_count == 2
-        mock_wait.assert_called_once_with(1, "rmtree", ANY, False)
+        mock_wait.assert_called_once_with(1, "rmtree", ANY)
 
     @patch("pathlib.Path.open")
     @patch("pathlib.Path.is_file")
@@ -1013,7 +1013,7 @@ class TestErrorMessageVerification:
         with patch("micall.monitor.disk_operations.logger.error") as mock_logger:
             with patch("micall.monitor.disk_operations.sleep"):
                 old_time = datetime.now() - timedelta(hours=2)
-                disk_operations.wait_for_retry(3, "test_op", old_time, is_logged=True)
+                disk_operations.wait_for_retry(3, "test_op", old_time)
 
                 mock_logger.assert_called_once()
                 # The log message uses string formatting, so check that args were passed
@@ -1024,8 +1024,8 @@ class TestErrorMessageVerification:
         # Test with logging disabled
         with patch("micall.monitor.disk_operations.logger.error") as mock_logger:
             with patch("micall.monitor.disk_operations.sleep"):
-                old_time = datetime.now() - timedelta(hours=2)
-                disk_operations.wait_for_retry(3, "test_op", old_time, is_logged=False)
+                recent_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not log
+                disk_operations.wait_for_retry(3, "test_op", recent_time)
 
                 mock_logger.assert_not_called()
 
