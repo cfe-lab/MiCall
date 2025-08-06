@@ -1,4 +1,3 @@
-import errno
 import hashlib
 import logging
 import os
@@ -18,6 +17,7 @@ from time import sleep
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # noinspection PyPackageRequirements
+import kiveapi
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 
@@ -25,6 +25,7 @@ from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS
 from micall.monitor.find_groups import find_groups
+from micall.monitor import disk_operations
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -82,6 +83,8 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
 FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
 FolderEvent = namedtuple('FolderEvent', 'base_calls type sample_group')
 
+kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential refresh noise
+
 
 def open_kive(server_url):
     session = KiveAPI(server_url)
@@ -103,6 +106,7 @@ def find_samples(raw_data_folder,
                  wait=True,
                  retry=True):
     attempt_count = 0
+    start_time = None
     while True:
         # noinspection PyBroadException
         try:
@@ -111,17 +115,19 @@ def find_samples(raw_data_folder,
                                        sample_queue,
                                        wait)
             attempt_count = 0  # Reset after success
+            start_time = None  # Reset start time after success
             if is_complete and not wait:
                 break
-        except Exception as ex:
+        except Exception:
             if not retry:
                 raise
             attempt_count += 1
 
-            # There's an intermittent problem accessing the network drive, so
-            # don't log those unless it's happened more than once.
-            is_logged = not isinstance(ex, BlockingIOError) or attempt_count > 1
-            wait_for_retry(attempt_count, is_logged)
+            # Record start time on first failure
+            if start_time is None:
+                start_time = datetime.now()
+
+            wait_for_retry(attempt_count, start_time)
 
 
 def get_version_key(version_path: Path):
@@ -219,8 +225,8 @@ def find_sample_groups(run_path, base_calls_path):
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
-        (run_path / "errorprocessing").write_text(
-            "Finding sample groups failed.\n")
+        disk_operations.write_text(run_path / "errorprocessing", 
+                                 "Finding sample groups failed.\n")
         sample_groups = []
     return sample_groups
 
@@ -267,12 +273,18 @@ def get_output_filename(output_name):
     return '.'.join(output_name.rsplit('_', 1))
 
 
-def wait_for_retry(attempt_count, is_logged=True):
+def wait_for_retry(attempt_count, start_time):
+    """Wait with exponential backoff, only logging if one hour has passed since start_time."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
                                  MAXIMUM_RETRY_WAIT,
                                  attempt_count)
-    if is_logged:
-        logger.error('Waiting %s before retrying.', delay, exc_info=True)
+
+    # Determine if we should log based on elapsed time
+    elapsed = datetime.now() - start_time
+    should_log = elapsed >= timedelta(hours=1)
+
+    if should_log:
+        logger.warning('Waiting %s before retrying.', delay, exc_info=True)
     sleep(delay.total_seconds())
 
 
@@ -451,6 +463,7 @@ class KiveWatcher:
         :return: SampleWatcher for the sample group, or None if that folder has
             already finished processing
         """
+        start_time = None
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
@@ -475,11 +488,8 @@ class KiveWatcher:
                     self.upload_filter_quality(folder_watcher)
                     if folder_watcher.quality_dataset is None:
                         return None
-                    shutil.rmtree(results_path, ignore_errors=True)
-                    try:
-                        results_zip.unlink()
-                    except FileNotFoundError:
-                        pass
+                    disk_operations.rmtree(results_path, ignore_errors=True)
+                    disk_operations.unlink(results_zip, missing_ok=True)
                     self.folder_watchers[base_calls] = folder_watcher
 
                 for sample_watcher in folder_watcher.sample_watchers:
@@ -503,7 +513,12 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                wait_for_retry(attempt_count)
+
+                # Record start time on first failure
+                if start_time is None:
+                    start_time = datetime.now()
+
+                wait_for_retry(attempt_count, start_time)
 
     def add_folder(self, base_calls):
         folder_watcher = FolderWatcher(base_calls, self)
@@ -518,6 +533,7 @@ class KiveWatcher:
         self.loaded_folders.add(base_calls)
 
     def poll_runs(self):
+        start_time = None
         for attempt_count in count(1):
             # noinspection PyBroadException
             try:
@@ -534,7 +550,12 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                wait_for_retry(attempt_count)
+                
+                # Record start time on first failure
+                if start_time is None:
+                    start_time = datetime.now()
+                
+                wait_for_retry(attempt_count, start_time)
 
     def check_completed_folders(self):
         for folder, folder_watcher in list(self.folder_watchers.items()):
@@ -552,7 +573,7 @@ class KiveWatcher:
                         self.qai_upload_queue.put(
                             (results_path, pipeline_group))
                     if not folder_watcher.active_pipeline_groups:
-                        (results_path / "done_all_processing").touch()
+                        disk_operations.touch(results_path / "done_all_processing")
                         self.folder_watchers.pop(folder)
                 if not self.folder_watchers:
                     logger.info('No more folders to process.')
@@ -578,7 +599,7 @@ class KiveWatcher:
                     ', '.join(failed_sample_names))
         if error_message is not None:
             run_path = (results_path / "../..").resolve()
-            (run_path / 'errorprocessing').write_text(error_message + '\n')
+            disk_operations.write_text(run_path / 'errorprocessing', error_message + '\n')
             logger.error('Error in folder %s: %s', run_path, error_message)
             return
         if pipeline_group == PipelineType.FILTER_QUALITY:
@@ -587,15 +608,15 @@ class KiveWatcher:
         target_path = get_collated_path(results_path, pipeline_group)
         logger.info('Collating results in %s', target_path)
         self.copy_outputs(folder_watcher, scratch_path, target_path)
-        shutil.rmtree(scratch_path)
-        (target_path / 'doneprocessing').touch()
+        disk_operations.rmtree(scratch_path)
+        disk_operations.touch(target_path / 'doneprocessing')
         return results_path
 
     def copy_outputs(self,
                      folder_watcher,
                      scratch_path,
                      results_path):
-        results_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(results_path, exist_ok=True)
         for output_name in DOWNLOADED_RESULTS:
             if output_name == 'coverage_maps_tar':
                 self.extract_coverage_maps(folder_watcher,
@@ -627,33 +648,34 @@ class KiveWatcher:
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
-            with target_path.open('w') as target:
+            with disk_operations.disk_file_operation(target_path, 'w') as target:
                 for sample_name in folder_watcher.all_samples:
                     sample_name = trim_name(sample_name)
                     source_path = scratch_path / sample_name / filename
-                    try:
-                        with source_path.open() as source:
-                            if output_name.endswith('_fasta'):
-                                self.extract_fasta(source, target, sample_name)
-                            else:
-                                self.extract_csv(source,
-                                                 target,
-                                                 sample_name,
-                                                 source_count)
-                            source_count += 1
-                    except FileNotFoundError:
-                        # Skip the file.
-                        pass
+                    if not source_path.exists():
+                        logger.debug('Source file %s does not exist, skipping.',
+                                       source_path)
+                        continue
+
+                    with disk_operations.disk_file_operation(source_path, 'r') as source:
+                        if output_name.endswith('_fasta'):
+                            source_count += self.extract_fasta(source, target, sample_name)
+                        else:
+                            source_count += self.extract_csv(source,
+                                                             target,
+                                                             sample_name,
+                                                             source_count)
+
             if not source_count:
-                target_path.unlink()
+                disk_operations.unlink(target_path)
 
     @staticmethod
     def extract_csv(source, target, sample_name, source_count):
         reader = DictReader(source)
         fieldnames = reader.fieldnames
         if fieldnames is None:
-            # Empty file, nothing to copy. Raise error to keep source_count at 0.
-            raise FileNotFoundError(f'CSV file {source.name} is empty.')
+            # Empty file, nothing to copy.
+            return 0
         fieldnames = list(fieldnames)
         has_sample = 'sample' in fieldnames
         if not has_sample:
@@ -666,6 +688,7 @@ class KiveWatcher:
             if not has_sample:
                 row['sample'] = sample_name
             writer.writerow(row)
+        return 1
 
     @staticmethod
     def extract_fasta(source, target, sample_name):
@@ -674,11 +697,12 @@ class KiveWatcher:
                 target.write(f'>{sample_name},{line[1:]}')
             else:
                 target.write(line)
+        return 1
 
     @staticmethod
     def extract_coverage_maps(folder_watcher, scratch_path, results_path):
         coverage_path: Path = results_path / "coverage_maps"
-        coverage_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(coverage_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'coverage_maps.tar'
@@ -692,7 +716,7 @@ class KiveWatcher:
                             shutil.copyfileobj(source, target)
             except FileNotFoundError:
                 pass
-        remove_empty_directory(coverage_path)
+        disk_operations.remove_empty_directory(coverage_path)
 
     @staticmethod
     def extract_archive(folder_watcher: FolderWatcher,
@@ -712,14 +736,14 @@ class KiveWatcher:
         assert output_name.endswith('_tar'), output_name
         archive_name = output_name[:-4]
         output_path: Path = results_path / archive_name
-        output_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(output_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / (archive_name + '.tar')
             try:
                 with tarfile.open(source_path) as f:
                     sample_target_path = output_path / sample_name
-                    sample_target_path.mkdir(exist_ok=True)
+                    disk_operations.mkdir_p(sample_target_path, exist_ok=True)
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
                         target_path = sample_target_path / filename
@@ -727,10 +751,10 @@ class KiveWatcher:
                         with f.extractfile(source_info) as source, \
                                 open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
-                remove_empty_directory(sample_target_path)
+                disk_operations.remove_empty_directory(sample_target_path)
             except FileNotFoundError:
                 pass
-        remove_empty_directory(output_path)
+        disk_operations.remove_empty_directory(output_path)
 
     @staticmethod
     def move_alignment_plot(folder_watcher,
@@ -738,36 +762,30 @@ class KiveWatcher:
                             scratch_path,
                             results_path):
         alignment_path: Path = results_path / "alignment"
-        alignment_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(alignment_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / f'alignment{extension}'
             target_path = alignment_path / f"{sample_name}_alignment{extension}"
-            try:
-                os.rename(str(source_path), str(target_path))
-            except FileNotFoundError:
-                pass
-        remove_empty_directory(alignment_path)
+            if source_path.exists():
+                disk_operations.rename(source_path, target_path)
+        disk_operations.remove_empty_directory(alignment_path)
 
     @staticmethod
     def move_genome_coverage(folder_watcher, scratch_path, results_path):
         plots_path = results_path / "genome_coverage"
-        plots_path.mkdir(exist_ok=True)
+        disk_operations.mkdir_p(plots_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
             sample_name = trim_name(sample_name)
             source_path = scratch_path / sample_name / 'genome_coverage.svg'
             target_path = plots_path / f"{sample_name}_genome_coverage.svg"
-            try:
-                os.rename(str(source_path), str(target_path))
-            except FileNotFoundError:
-                pass
+            if source_path.exists():
+                disk_operations.rename(source_path, target_path)
             concordance_path = scratch_path / sample_name / 'genome_concordance.svg'
             target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
-            try:
-                os.rename(str(concordance_path), str(target_concordance_path))
-            except FileNotFoundError:
-                pass
-        remove_empty_directory(plots_path)
+            if concordance_path.exists():
+                disk_operations.rename(concordance_path, target_concordance_path)
+        disk_operations.remove_empty_directory(plots_path)
 
     def run_pipeline(self,
                      folder_watcher: FolderWatcher,
@@ -1049,7 +1067,7 @@ class KiveWatcher:
                 pipeline_group = PIPELINE_GROUPS[pipeline_type]
                 scratch_path = get_scratch_path(results_path, pipeline_group)
                 scratch_path /= trim_name(sample_name)
-                scratch_path.mkdir(parents=True, exist_ok=True)
+                disk_operations.mkdir_p(scratch_path, parents=True, exist_ok=True)
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
                                for run_dataset in run_datasets
@@ -1068,7 +1086,7 @@ class KiveWatcher:
         return run
 
     def download_file(self, dataset_url, target_path):
-        with target_path.open('wb') as f:
+        with disk_operations.disk_file_operation(target_path, 'wb') as f:
             self.session.download_file(f, dataset_url)
 
     def get_results_path(self, folder_watcher):
@@ -1082,11 +1100,19 @@ class KiveWatcher:
                         read_sizes.index1,
                         read_sizes.index2,
                         read_sizes.read2]
-        error_path = folder_watcher.run_folder / "InterOp/ErrorMetricsOut.bin"
+        error_path = folder_watcher.run_folder / "InterOp" / "ErrorMetricsOut.bin"
         quality_csv = StringIO()
+
+        if not error_path.exists():
+            logger.warning("ErrorMetricsOut.bin not found in %s",
+                           folder_watcher.run_folder)
+            disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
+                                     "ErrorMetricsOut.bin not found.\n")
+            return
+
         # noinspection PyBroadException
         try:
-            with error_path.open('rb') as error_file:
+            with disk_operations.disk_file_operation(error_path, 'rb') as error_file:
                 records = error_metrics_parser.read_errors(error_file)
                 error_metrics_parser.write_phix_csv(quality_csv,
                                                     records,
@@ -1095,8 +1121,8 @@ class KiveWatcher:
             logger.error("Finding error metrics in %s",
                          folder_watcher.run_folder,
                          exc_info=True)
-            (folder_watcher.run_folder / "errorprocessing").write_text(
-                "Finding error metrics failed.\n")
+            disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
+                                     "Finding error metrics failed.\n")
             return
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
@@ -1138,12 +1164,3 @@ class KiveWatcher:
                 dataset_name,
                 description)
         return dataset
-
-
-def remove_empty_directory(path: Path):
-    """ Clean up a directory that didn't get any files copied in. """
-    try:
-        path.rmdir()
-    except OSError as ex:
-        if ex.errno != errno.ENOTEMPTY:
-            raise
