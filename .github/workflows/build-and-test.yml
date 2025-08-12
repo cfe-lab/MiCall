@@ -59,6 +59,10 @@ jobs:
         run: |
           uv sync --extra denovo --extra watcher --extra dev --extra test
 
+      - name: Check if lock file changed
+        run: |
+          git diff --quiet uv.lock
+
       - name: Run type checker
         run: |
           uv run mypy
