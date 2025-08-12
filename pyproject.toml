@@ -259,6 +259,10 @@ module = "mappy"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "tomllib"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "gotoh"
 ignore_missing_imports = true
 
