@@ -52,10 +52,12 @@ jobs:
           # Add to system path
           echo "/opt/bowtie2" >> $GITHUB_PATH
 
+      - name: Install package manager
+        uses: astral-sh/setup-uv@v6
+
       - name: Install MiCall's Python dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install .[denovo,watcher,dev,test]
+          uv pip install --system .[denovo,watcher,dev,test]
 
       - name: Run type checker
         run: |
