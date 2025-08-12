@@ -28,20 +28,27 @@ def iterate_executables() -> Iterator[Path]:
     script_path: Path = Path(__file__).resolve()
     base_dir = script_path.parent.parent.parent
 
-    # Iterate over all files in the base directory.
-    for root, _, files in os.walk(base_dir):
-        for file in files:
+    # Only scan specific source directories, not the entire project
+    source_dirs = ["micall"]
 
-            # Process only files with a .py extension.
-            if not file.endswith('.py'):
-                continue
+    for source_dir in source_dirs:
+        source_path = base_dir / source_dir
+        if not source_path.exists():
+            continue
 
-            file_path = Path(root) / file
-            content = file_path.read_text()
+        # Iterate over all files in the source directory.
+        for root, _, files in os.walk(source_path):
+            for file in files:
+                # Process only files with a .py extension.
+                if not file.endswith(".py"):
+                    continue
 
-            if is_executable_script(content):
-                relative = file_path.relative_to(base_dir)
-                yield relative
+                file_path = Path(root) / file
+                content = file_path.read_text()
+
+                if is_executable_script(content):
+                    relative = file_path.relative_to(base_dir)
+                    yield relative
 
 
 def main(argv: Sequence[str]) -> int:
