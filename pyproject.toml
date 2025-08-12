@@ -5,6 +5,7 @@ description = "Pipeline for processing FASTQ data from an Illumina MiSeq to geno
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
+requires-python = ">=3.10,<3.12"
 license = {text = "AGPL-3.0"}
 license-files = { paths = ["LICENSE.txt"] }
 readme = "README.md"
@@ -65,6 +66,7 @@ dev = [
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "pandas-stubs==2.2.3.250308",
+    "uv==0.8.9",
 ]
 denovo = [
     # Requirements for running De-Novo pipeline (only problematic ones).
@@ -255,6 +257,10 @@ check_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = "mappy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tomllib"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
