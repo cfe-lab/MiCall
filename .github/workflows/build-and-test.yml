@@ -57,24 +57,24 @@ jobs:
 
       - name: Install MiCall's Python dependencies
         run: |
-          uv pip install --system .[denovo,watcher,dev,test]
+          uv sync --extra denovo --extra watcher --extra dev --extra test
 
       - name: Run type checker
         run: |
-          mypy
+          uv run mypy
 
       - name: Run linter
         run: |
-          ruff check
+          uv run ruff check
 
       - name: Test with pytest
-        run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+        run: uv run coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
       - name: Report code coverage
         if: "!github.event.pull_request.draft"
         run: |
           rm -rf micall/tests/microtest/scratch
-          codecov
+          uv run codecov
 
   docker-test:
     runs-on: ubuntu-22.04
