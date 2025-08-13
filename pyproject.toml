@@ -5,7 +5,7 @@ description = "Pipeline for processing FASTQ data from an Illumina MiSeq to geno
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.11,<3.12"
 license = {text = "AGPL-3.0"}
 license-files = { paths = ["LICENSE.txt"] }
 readme = "README.md"
