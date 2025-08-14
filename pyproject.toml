@@ -5,6 +5,7 @@ description = "Pipeline for processing FASTQ data from an Illumina MiSeq to geno
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
+requires-python = ">=3.11,<3.12"
 license = {text = "AGPL-3.0"}
 license-files = { paths = ["LICENSE.txt"] }
 readme = "README.md"
@@ -33,10 +34,10 @@ dependencies = [
     "cutadapt==5.1",
     "python-Levenshtein==0.27.1",
     "PyYAML==6.0.2",
-    "reportlab==4.4.1",
-    "pysam==0.23.1",
+    "reportlab==4.4.3",
+    "pysam==0.23.3",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
-    "mappy==2.29",
+    "mappy==2.30",
     "drawsvg==2.4.0",
     "cairosvg==2.8.2",
     "aligntools==1.2.1",
@@ -46,27 +47,30 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest==8.4.0",
-    "coverage==7.8.2",
-    "pandas==2.3.0",
+    "pytest==8.4.1",
+    "coverage==7.10.3",
+    "pandas==2.3.1",
     "seaborn==0.13.2",
     "ete3",
     # For reading HCV rules from an Excel file.
     "openpyxl==3.1.5",
+    # For turtle.
+    "tk==0.1.0",
 
     # Also includes watcher's dependencies.
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.3",
+    "requests==2.32.4",
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.11.12",
-    "mypy==1.15.0",
+    "ruff==0.12.8",
+    "mypy==1.17.1",
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
     "pandas-stubs==2.2.3.250308",
+    "uv==0.8.9",
 ]
 denovo = [
     # Requirements for running De-Novo pipeline (only problematic ones).
@@ -75,11 +79,11 @@ denovo = [
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.3",
+    "requests==2.32.4",
 ]
 basespace = [
     # Requirements for running the micall_basespace.py script
-    "requests==2.32.3",
+    "requests==2.32.4",
 ]
 
 [project.scripts]
@@ -265,6 +269,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "sortedcontainers"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tomllib"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
