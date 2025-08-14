@@ -274,17 +274,19 @@ def get_output_filename(output_name):
 
 
 def wait_for_retry(attempt_count, start_time):
-    """Wait with exponential backoff, only logging if one hour has passed since start_time."""
+    """Wait with exponential backoff, logging warnings after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
                                  MAXIMUM_RETRY_WAIT,
                                  attempt_count)
 
     # Determine if we should log based on elapsed time
     elapsed = datetime.now() - start_time
-    should_log = elapsed >= timedelta(hours=1)
+    should_log_warning = elapsed >= timedelta(hours=1)
 
-    if should_log:
+    if should_log_warning:
         logger.warning('Waiting %s before retrying.', delay, exc_info=True)
+    else:
+        logger.info('Waiting %s before retrying.', delay)
     sleep(delay.total_seconds())
 
 
