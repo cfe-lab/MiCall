@@ -36,19 +36,25 @@ def calculate_cumulative_wait_time(attempt_count):
 
 
 def wait_for_retry(attempt_count, operation_name, start_time):
-    """Wait with exponential backoff, only logging if one hour has passed since start_time."""
+    """Wait with exponential backoff, logging errors after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, attempt_count)
 
     # Determine if we should log based on elapsed time
     elapsed = datetime.now() - start_time
-    should_log = elapsed >= timedelta(hours=1)
+    should_log_error = elapsed >= timedelta(hours=1)
 
-    if should_log:
+    if should_log_error:
         logger.error(
             "Disk operation %s failed, waiting %s before retrying.",
             operation_name,
             delay,
             exc_info=True,
+        )
+    else:
+        logger.info(
+            "Disk operation %s failed, waiting %s before retrying.",
+            operation_name,
+            delay,
         )
     sleep(delay.total_seconds())
 

@@ -20,6 +20,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import kiveapi
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
+import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
@@ -84,6 +85,9 @@ FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
 FolderEvent = namedtuple('FolderEvent', 'base_calls type sample_group')
 
 kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential refresh noise
+
+# Suppress urllib3 connection retry warnings
+urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 
 def open_kive(server_url):
@@ -274,17 +278,19 @@ def get_output_filename(output_name):
 
 
 def wait_for_retry(attempt_count, start_time):
-    """Wait with exponential backoff, only logging if one hour has passed since start_time."""
+    """Wait with exponential backoff, logging warnings after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
                                  MAXIMUM_RETRY_WAIT,
                                  attempt_count)
 
     # Determine if we should log based on elapsed time
     elapsed = datetime.now() - start_time
-    should_log = elapsed >= timedelta(hours=1)
+    should_log_warning = elapsed >= timedelta(hours=1)
 
-    if should_log:
+    if should_log_warning:
         logger.warning('Waiting %s before retrying.', delay, exc_info=True)
+    else:
+        logger.info('Waiting %s before retrying.', delay)
     sleep(delay.total_seconds())
 
 

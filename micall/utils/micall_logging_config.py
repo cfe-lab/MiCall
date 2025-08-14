@@ -24,6 +24,9 @@ LOGGING = {
         
         # Suppress routine Kive API credential refresh noise while preserving fatal errors
         "kiveapi": {"level": "ERROR"},
+
+        # Suppress urllib3 connection retry warnings (temporary DNS/network failures)
+        "urllib3.connectionpool": {"level": "ERROR"},
     },
 
     # This lets you call logging.getLogger() before the configuration is done.
