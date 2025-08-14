@@ -20,6 +20,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import kiveapi
 from requests.adapters import HTTPAdapter
 from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
+import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
@@ -84,6 +85,9 @@ FolderEventType = Enum('FolderEventType', 'ADD_SAMPLE FINISH_FOLDER')
 FolderEvent = namedtuple('FolderEvent', 'base_calls type sample_group')
 
 kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential refresh noise
+
+# Suppress urllib3 connection retry warnings
+urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 
 def open_kive(server_url):
