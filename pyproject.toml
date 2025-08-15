@@ -1,6 +1,6 @@
 [project]
 name = "micall"
-version = "7.17.0"
+dynamic = ["version"]
 description = "Pipeline for processing FASTQ data from an Illumina MiSeq to genotype human RNA viruses like HIV and hepatitis C."
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
@@ -87,6 +87,13 @@ basespace = [
 [project.scripts]
 micall = "micall.main:cli"
 
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+# Never fail: use this if there is no Git repository / tags
+fallback_version = "0.dev0"
+
 [tool.hatch.build]
 include = [
   "micall/",
@@ -101,7 +108,7 @@ homepage = "https://cfe-lab.github.io/MiCall"
 repository = "https://github.com/cfe-lab/MiCall"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
