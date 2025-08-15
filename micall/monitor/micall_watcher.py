@@ -6,6 +6,7 @@ from queue import Queue, Empty
 from threading import Thread
 from time import sleep
 
+from micall.utils.version import get_version
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType
 from micall.monitor import update_qai
 try:
@@ -145,7 +146,7 @@ def main_loop(args, sample_queue, qai_upload_queue):
 
 def main():
     args = parse_args()
-    logger.info('Starting up with server %s', args.kive_server)
+    logger.info('Starting up with server %s and version %s', args.kive_server, get_version())
 
     sample_queue = Queue(maxsize=2)  # [FolderEvent]
     qai_upload_queue = Queue()  # [Path] for results folders or [None] to quit.
