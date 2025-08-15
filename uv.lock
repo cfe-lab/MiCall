@@ -454,7 +454,6 @@ wheels = [
 
 [[package]]
 name = "micall"
-version = "7.17.0"
 source = { editable = "." }
 dependencies = [
     { name = "aligntools" },
@@ -554,7 +553,7 @@ requires-dist = [
     { name = "tk", marker = "extra == 'test'", specifier = "==0.1.0" },
     { name = "uv", marker = "extra == 'dev'", specifier = "==0.8.9" },
 ]
-provides-extras = ["test", "dev", "denovo", "watcher", "basespace"]
+provides-extras = ["basespace", "denovo", "dev", "test", "watcher"]
 
 [[package]]
 name = "multicsv"
