@@ -12,7 +12,7 @@ import os
 import runpy
 from typing import Sequence
 from pathlib import Path
-from importlib.metadata import version
+
 
 # Run micall/utils/get_list_of_executables.py to get the up-to-date list of these executables.
 # The consistency of this list is verified in micall/tests/test_installation.py
@@ -92,6 +92,7 @@ EXECUTABLES = [
     "micall/utils/append_primers.py",
     "micall/utils/randomize_fastq.py",
     "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
+    "micall/utils/version.py",
 ]
 
 
@@ -119,13 +120,6 @@ def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
     return 0
 
 
-def get_version() -> str:
-    if __package__ is None:
-        return "development"
-    else:
-        return str(version(__package__))
-
-
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run MiCall script.", add_help=False)
     parser.add_argument("--version", action="store_true", help="Print version and exit.")
@@ -140,8 +134,7 @@ def main(argv: Sequence[str]) -> int:
     args = parser.parse_args(argv)
 
     if args.version:
-        print(get_version())
-        return 0
+        return execute_module_as_main('micall.utils.version', [])
 
     elif args.help:
         parser.print_help()
