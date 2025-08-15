@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.11
+FROM debian:13
 
 MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 
@@ -32,7 +32,12 @@ MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
 RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
   unzip \
   wget \
-  && rm -rf /var/lib/apt/lists/*
+  git \
+  gcc \
+  build-essential \
+  zlib1g-dev \
+  libncurses5-dev \
+  libncursesw5-dev
 
 RUN wget -qO rustup.sh https://sh.rustup.rs && \
     chmod +x /rustup.sh && \
@@ -41,10 +46,12 @@ RUN wget -qO rustup.sh https://sh.rustup.rs && \
     rm rustup.sh && \
     cargo install --root / --git https://github.com/jeff-k/merge-mates.git --rev 2fec61363f645e2008a4adff553d098beae21469
 
+RUN rm -rf /root/.cargo/registry && \
+    rm -rf /root/.cargo/git
+
 ## Installing blast
 RUN apt-get update -qq --fix-missing && \
-    apt-get install -q -y ncbi-blast+ && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -q -y ncbi-blast+
 
 ## bowtie2
 RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/download/v2.2.8/bowtie2-2.2.8-linux-x86_64.zip && \
@@ -85,19 +92,43 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
-RUN pip install --upgrade pip setuptools
+
+## Clean up apt cache
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/archives/* && \
+    rm -rf /var/cache/apt/archives/partial/*
+
+## Configure `uv` package manager    
+ENV UV_PROJECT /opt/micall
+ENV UV_PROJECT_ENVIRONMENT /root/.local/share/uv/projects/micall
+ENV UV_NO_CACHE 1
+
+# ## Install `uv` package manager
+RUN wget -qO- https://astral.sh/uv/install.sh -O /tmp/uv-install.sh && \
+    sh /tmp/uv-install.sh && \
+    cp /root/.local/bin/uv /bin/
+
+RUN echo "#! /bin/sh" > /bin/micall && \
+    echo 'uv run micall "$@"' >> /bin/micall && \
+    chmod +x /bin/micall
 
 ## Install just the dependencies of MiCall (for faster build times in development).
-COPY pyproject.toml README.md /opt/micall/
-RUN pip install /opt/micall[denovo,basespace]
+COPY pyproject.toml uv.lock README.md /opt/micall/
+RUN uv sync --extra denovo --extra basespace
 
 ## Trigger matplotlib to build its font cache
-RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+RUN uv run python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
+## Install the main MiCall code.
 COPY . /opt/micall/
+RUN uv sync --extra denovo --extra basespace
 
-RUN pip install /opt/micall[denovo,basespace]
-RUN micall make_blast_db
+## Initialize blast databases.
+RUN uv run micall make_blast_db
+
+## Clean up MiCall
+RUN rm -rf /opt/micall/.git /opt/micall/micall/tests
 
 WORKDIR /data
 ENTRYPOINT ["micall", "micall_docker"]
