@@ -221,7 +221,11 @@ def scan_flag_paths(raw_data_folder):
 
 def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path):
     """
-    Check if the sample names from the sample sheet match those from FASTQ files.
+    Check FASTQ file recognition ratio against sample sheet.
+
+    Prints warning when there are fewer or equal recognized FASTQ files
+    compared to unrecognized ones. Recognized FASTQ are those that have
+    corresponding entries in the sample sheet.
 
     :param sample_sheet_path: Path to the SampleSheet.csv file
     :param fastq_file_names: List of FASTQ file names
@@ -247,21 +251,20 @@ def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path)
         trimmed_name = '_'.join(file_name.split('_')[:2])
         fastq_trimmed_names.add(trimmed_name)
 
-    # Compare the two sets
-    sheet_only = sheet_filenames - fastq_trimmed_names
-    fastq_only = fastq_trimmed_names - sheet_filenames
+    # Identify recognized vs unrecognized FASTQ files
+    recognized_fastq = fastq_trimmed_names & sheet_filenames  # intersection
+    unrecognized_fastq = fastq_trimmed_names - sheet_filenames  # FASTQ only
 
-    if sheet_only or fastq_only:
-        warning_lines = [f"Sample name mismatch detected in run folder {run_path}:"]
-        if sheet_only:
-            warning_lines.append(f"  Samples in sheet but missing FASTQ files: {sorted(sheet_only)}")
-        if fastq_only:
-            warning_lines.append(f"  FASTQ files found but not in sample sheet: {sorted(fastq_only)}")
-
-        warning_message = '\n'.join(warning_lines)
-        logger.warning(warning_message)
+    # Check if recognized files <= unrecognized files
+    if len(recognized_fastq) <= len(unrecognized_fastq):
+        warning_message = f'''\
+Large number of unrecognized FASTQ files in run folder {run_path}.
+There are {len(recognized_fastq)} recognized FASTQ files.
+And {len(unrecognized_fastq)} unrecognized: {list(sorted(unrecognized_fastq))}.'''
+        logger.warning('%s', warning_message)
     else:
-        logger.debug("Sample names consistent between sample sheet and FASTQ files in %s", run_path)
+        logger.debug("FASTQ recognition ratio acceptable: %d recognized, %d unrecognized in %s",
+                    len(recognized_fastq), len(unrecognized_fastq), run_path)
 
 
 def find_sample_groups(run_path, base_calls_path):
