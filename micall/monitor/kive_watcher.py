@@ -261,7 +261,7 @@ def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path)
 Large number of unrecognized FASTQ files in run folder {run_path}.
 There are {len(recognized_fastq)} recognized FASTQ files.
 And {len(unrecognized_fastq)} unrecognized: {list(sorted(unrecognized_fastq))}.'''
-        logger.info('%s', warning_message)
+        logger.warning('%s', warning_message)
     else:
         logger.debug("FASTQ recognition ratio acceptable: %d recognized, %d unrecognized in %s",
                     len(recognized_fastq), len(unrecognized_fastq), run_path)
