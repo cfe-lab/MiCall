@@ -22,9 +22,10 @@ from pathlib import Path
 from typing import Sequence
 import pytest
 import shlex
-import re
 import os
 from itertools import groupby
+from packaging.version import Version, InvalidVersion
+
 from micall.utils.get_list_of_executables import iterate_executables
 from micall.main import EXECUTABLES
 
@@ -110,13 +111,10 @@ def test_micall_version(temp_venv, micall_installation):
     assert returncode == 0, f"MiCall version command failed:\n{stderr}"
     lines = [line.strip() for line in stdout.split('\n')]
     first_line = lines[0].strip()
-    # Check if matches things like: 0.1.0, 0.1.0-rc1, 0.1.0+dev, 0.1.dev1+g5930c68
-    assert re.match(
-        r'^\d+\.\d+(?:\.(?:\d+|[A-Za-z]+[A-Za-z0-9]*))'          # 0.1.0  or 0.1.dev1
-        r'(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?'               # -rc1 or -alpha.1
-        r'(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$',            # +dev or +g5930c68 or +meta.1
-        first_line
-    ), f"Unexpected output for micall --version:\n{stdout}"
+    try:
+        Version(first_line)
+    except InvalidVersion:
+        raise AssertionError(f"Unexpected output for micall --version:\n{stdout}")
 
 
 def test_micall_help(temp_venv, micall_installation):
