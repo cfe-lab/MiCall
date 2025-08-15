@@ -257,10 +257,11 @@ def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path)
 
     # Check if recognized files <= unrecognized files
     if len(recognized_fastq) <= len(unrecognized_fastq):
+        unrecognized_list = ','.join(sorted(unrecognized_fastq))
         warning_message = f'''\
 Large number of unrecognized FASTQ files in run folder {run_path}.
 There are {len(recognized_fastq)} recognized FASTQ files.
-And {len(unrecognized_fastq)} unrecognized: {list(sorted(unrecognized_fastq))}.'''
+And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}.'''
         logger.warning('%s', warning_message)
     else:
         logger.debug("FASTQ recognition ratio acceptable: %d recognized, %d unrecognized in %s",
