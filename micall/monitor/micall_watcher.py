@@ -11,8 +11,10 @@ from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventTy
 from micall.monitor import update_qai
 try:
     from micall.utils.micall_logging_override import LOGGING
+    is_logging_override = True
 except ImportError:
     from micall.utils.micall_logging_config import LOGGING
+    is_logging_override = False
 
 POLLING_DELAY = 10  # seconds between scans for new samples or finished runs
 logger = logging.getLogger(__name__)
@@ -147,6 +149,7 @@ def main_loop(args, sample_queue, qai_upload_queue):
 def main():
     args = parse_args()
     logger.info('Starting up with server %s and version %s', args.kive_server, get_version())
+    logger.info('Logging override: %s', is_logging_override)
 
     sample_queue = Queue(maxsize=2)  # [FolderEvent]
     qai_upload_queue = Queue()  # [Path] for results folders or [None] to quit.
