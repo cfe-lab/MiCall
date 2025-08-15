@@ -27,6 +27,7 @@ from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS
 from micall.monitor.find_groups import find_groups
 from micall.monitor import disk_operations
+from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -218,12 +219,61 @@ def scan_flag_paths(raw_data_folder):
     return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
+def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path):
+    """
+    Check if the sample names from the sample sheet match those from FASTQ files.
+
+    :param sample_sheet_path: Path to the SampleSheet.csv file
+    :param fastq_file_names: List of FASTQ file names
+    :param run_path: Path to the run folder for logging
+    """
+
+    # Extract sample names from the sample sheet
+    run_info = read_sample_sheet_and_overrides(sample_sheet_path)
+
+    # Get filenames from sample sheet DataSplit (these are the expected FASTQ file names)
+    sheet_filenames = set()
+    for row in run_info.get('DataSplit', []):
+        filename = row.get('filename', '')
+        if filename:
+            # Store the trimmed version that matches what find_groups() uses
+            trimmed_filename = '_'.join(filename.split('_')[:2])
+            sheet_filenames.add(trimmed_filename)
+
+    # Extract trimmed names from FASTQ files (same logic as find_groups())
+    fastq_trimmed_names = set()
+    for file_name in fastq_file_names:
+        # This matches the logic in find_groups: '_'.join(file_name.split('_')[:2])
+        trimmed_name = '_'.join(file_name.split('_')[:2])
+        fastq_trimmed_names.add(trimmed_name)
+
+    # Compare the two sets
+    sheet_only = sheet_filenames - fastq_trimmed_names
+    fastq_only = fastq_trimmed_names - sheet_filenames
+
+    if sheet_only or fastq_only:
+        warning_lines = [f"Sample name mismatch detected in run folder {run_path}:"]
+        if sheet_only:
+            warning_lines.append(f"  Samples in sheet but missing FASTQ files: {sorted(sheet_only)}")
+        if fastq_only:
+            warning_lines.append(f"  FASTQ files found but not in sample sheet: {sorted(fastq_only)}")
+
+        warning_message = '\n'.join(warning_lines)
+        logger.warning(warning_message)
+    else:
+        logger.debug("Sample names consistent between sample sheet and FASTQ files in %s", run_path)
+
+
 def find_sample_groups(run_path, base_calls_path):
     # noinspection PyBroadException
     try:
         fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
         sample_sheet_path = run_path / "SampleSheet.csv"
         file_names = [f.name for f in fastq_files]
+
+        # Check sample name consistency between sample sheet and FASTQ files
+        check_sample_name_consistency(sample_sheet_path, file_names, run_path)
+
         sample_groups = list(find_groups(file_names, sample_sheet_path))
         sample_groups.sort(key=lambda group: get_sample_number(group.names[0]),
                            reverse=True)
