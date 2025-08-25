@@ -419,7 +419,7 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
             if start_time is None:
                 start_time = datetime.now()
             
-            wait_for_retry(attempt_count, True, start_time)
+            wait_for_retry(attempt_count, start_time)
 
 
 def process_remapped(result_folder, session, run, pipeline_version):
