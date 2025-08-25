@@ -466,7 +466,6 @@ class SampleRunner:
                 'genome_coverage.csv',
                 'genome_coverage.svg',
                 'genome_concordance.svg',
-                'unstitched_cascade.csv',
                 'unstitched_conseq.csv',
                 'unstitched_contigs.csv',
                 'contigs.csv',
