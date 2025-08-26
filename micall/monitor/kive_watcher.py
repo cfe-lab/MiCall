@@ -343,7 +343,7 @@ def wait_for_retry(attempt_count, start_time):
     if should_log_warning:
         logger.warning('Waiting %s before retrying.', delay, exc_info=True)
     else:
-        logger.info('Waiting %s before retrying.', delay)
+        logger.info('Waiting %s before retrying.', delay, exc_info=True)
     sleep(delay.total_seconds())
 
 

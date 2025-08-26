@@ -55,6 +55,7 @@ def wait_for_retry(attempt_count, operation_name, start_time):
             "Disk operation %s failed, waiting %s before retrying.",
             operation_name,
             delay,
+            exc_info=True,
         )
     sleep(delay.total_seconds())
 
