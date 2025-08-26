@@ -421,11 +421,11 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
 
         except Exception:
             attempt_count += 1
-            
+
             # Record start time on first failure
             if start_time is None:
                 start_time = datetime.now()
-            
+
             wait_for_retry(attempt_count, start_time)
 
 
