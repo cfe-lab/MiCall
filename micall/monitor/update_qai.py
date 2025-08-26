@@ -51,6 +51,13 @@ def parse_args():
     parser.add_argument('--qai_password',
                         default=SUPPRESS,
                         help='password for QAI server (default not shown)')
+
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+
     args = parser.parse_args()
     if not hasattr(args, 'qai_password'):
         args.qai_password = os.environ.get('MICALL_QAI_PASSWORD', 'testing')
@@ -463,6 +470,17 @@ def upload_loop(qai_server, qai_user, qai_password, pipeline_version,
 
 def main():
     args = parse_args()
+
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+
+    logging.basicConfig(level=logger.level)
 
     process_folder((args.result_folder, args.pipeline_group),
                    args.qai_server,
