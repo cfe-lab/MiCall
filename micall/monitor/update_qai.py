@@ -419,14 +419,14 @@ def process_folder(item, qai_server, qai_user, qai_password, pipeline_version):
             else:
                 process_remapped(result_folder, session, run, pipeline_version)
 
-        except Exception:
+        except Exception as ex:
             attempt_count += 1
 
             # Record start time on first failure
             if start_time is None:
                 start_time = datetime.now()
 
-            wait_for_retry(attempt_count, start_time)
+            logger.error(f"Upload to QAI failed: {ex}", exc_info=True)
 
 
 def process_remapped(result_folder, session, run, pipeline_version):
