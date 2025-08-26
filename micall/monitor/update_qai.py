@@ -18,7 +18,6 @@ import os
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
-from .kive_watcher import wait_for_retry
 
 logger = logging.getLogger('update_qai')
 
