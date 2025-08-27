@@ -10,6 +10,7 @@ from datetime import datetime
 import logging
 from functools import partial
 from pathlib import Path
+from typing import Dict, Tuple, Any
 
 from micall.monitor.sample_watcher import PipelineType
 from operator import itemgetter, getitem
@@ -198,14 +199,14 @@ def build_review_decisions(coverage_file, collated_counts_file, cascade_file,
         key = tags, G2P_SEED_NAME
         counts_map[key] = read_int(counts, 'v3loop') * 2
 
-    sequencing_map = defaultdict(dict)  # {tags: {project: sequencing}}
+    sequencing_map: Dict[str, Dict[str, Dict[str, str]]] = defaultdict(dict)  # {tags: {project: sequencing}}
     for sequencing in sequencings:
         sequencing_map[sequencing['tag']][
             sequencing['target_project']] = sequencing
 
     targeted_projects = set(map(itemgetter('target_project'), sequencings))
 
-    decisions = {}  # {(sample_name, region): decision}
+    decisions: Dict[Tuple[str, str], Dict[str, object]] = {}  # {(sample_name, region): decision}
     # sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]

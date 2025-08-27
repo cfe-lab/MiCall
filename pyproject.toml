@@ -201,7 +201,6 @@ exclude = '''(?x)
     ^micall/monitor/find_groups[.]py$|
     ^micall/monitor/kive_watcher[.]py$|
     ^micall/monitor/qai_helper[.]py$|
-    ^micall/monitor/update_qai[.]py$|
     ^micall/monitor/micall_watcher[.]py$|
     ^micall/resistance/asi_algorithm[.]py$|
     ^micall/resistance/genreport[.]py$|
