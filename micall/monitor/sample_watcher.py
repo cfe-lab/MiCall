@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence
+from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol
 
 from kiveapi import KiveRunFailedException
 
@@ -29,27 +29,37 @@ PIPELINE_GROUP_DEPENDENCIES: Mapping[PipelineType, PipelineType] = {
 }
 
 
+class KiveWatcherInterface(Protocol):
+    class Config(Protocol):
+        micall_main_pipeline_id: Optional[int]
+        mixed_hcv_pipeline_id: Optional[int]
+        denovo_main_pipeline_id: Optional[int]
+
+    def run_pipeline(self,
+                     folder_watcher: 'FolderWatcher',
+                     pipeline_type: PipelineType,
+                     sample_watcher: Optional['SampleWatcher'] = None) -> Optional[Dict[str, Any]]: ...
+
+    def fetch_run_status(self,
+                         old_run: Dict[str, Any],
+                         folder_watcher: 'FolderWatcher',
+                         pipeline_type: PipelineType,
+                         sample_watchers: List[Optional['SampleWatcher']]) -> Optional[Dict[str, Any]]: ...
+
+    @property
+    def config(self) -> Config: ...
+
+
 class FolderWatcher:
-    def __init__(self, base_calls_folder: Path, runner: Optional[Any] = None) -> None:
+    def __init__(self, base_calls_folder: Path, runner: KiveWatcherInterface) -> None:
         """ Set up an instance.
 
         :param base_calls_folder: path to the BaseCalls folder under a MiSeq
             run folder
-        :param runner: an object for running Kive pipelines. Must have these
-            methods (this is usually a KiveWatcher instance):
-            run_pipeline(folder_watcher, pipeline_type, sample_watcher)
-                returns run, or None if that pipeline_type is not configured.
-            fetch_run_status(
-                old_run,
-                folder_watcher,
-                pipeline_type,
-                sample_watcher) => None if successfully finished, raise if
-                run failed, new_run if user cancelled the old one, or old_run
-                if it's still running. Also saves the outputs to temporary
-                files in the results folder when the run is finished
+        :param runner: an object for running Kive pipelines.
         """
         self.base_calls_folder: Path = Path(base_calls_folder)
-        self.runner: Optional[Any] = runner
+        self.runner: KiveWatcherInterface = runner
         self.run_folder: Path = (self.base_calls_folder / '../../..').resolve()
         self.run_name: str = '_'.join(self.run_folder.name.split('_')[:2])
         self.sample_watchers: List['SampleWatcher'] = []
