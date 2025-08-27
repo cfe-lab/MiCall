@@ -10,7 +10,7 @@ from datetime import datetime
 import logging
 from functools import partial
 from pathlib import Path
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple
 
 from micall.monitor.sample_watcher import PipelineType
 from operator import itemgetter, getitem
