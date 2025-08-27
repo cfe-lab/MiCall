@@ -118,9 +118,6 @@ class FolderWatcher:
         elif self.filter_quality_run['id'] in self.active_runs:
             # Individual runs are waiting for filter quality.
             # Return n * number of samples, because each can launch n runs.
-            if self.runner is None:
-                raise RuntimeError("Runner is not set for FolderWatcher.")
-
             n = sum(
                 pipeline_id is not None
                 for pipeline_id in (self.runner.config.micall_main_pipeline_id,
@@ -280,8 +277,6 @@ class FolderWatcher:
         if sample_watcher and sample_watcher.is_failed:
             # Don't start runs when the sample has already failed.
             return None
-        if self.runner is None:
-            raise RuntimeError("Runner is not set for FolderWatcher.")
         run = self.runner.run_pipeline(self, pipeline_type, sample_watcher)
         if run is not None:
             self.add_run(run, pipeline_type, sample_watcher)
@@ -307,8 +302,6 @@ class FolderWatcher:
             sample_watcher.runs[pipeline_type] = run
 
     def fetch_run_status(self, run: Dict[str, Any]) -> bool:
-        if self.runner is None:
-            raise RuntimeError("Runner is not set for FolderWatcher.")
         sample_watchers, pipeline_type = self.active_runs[run['id']]
         try:
             self.new_runs.remove(run['id'])
