@@ -1,16 +1,17 @@
 from enum import Enum
 from pathlib import Path
+from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence
 
 from kiveapi import KiveRunFailedException
 
-ALLOWED_GROUPS = ['Everyone']
+ALLOWED_GROUPS: Sequence[str] = ['Everyone']
 # noinspection PyArgumentList
 PipelineType = Enum(
     'PipelineType',
     ['FILTER_QUALITY', 'MAIN', 'MIDI', 'RESISTANCE', 'MIXED_HCV_MAIN', 'MIXED_HCV_MIDI',
      'DENOVO_MAIN', 'DENOVO_MIDI', 'DENOVO_RESISTANCE', 'PROVIRAL'])
 
-PIPELINE_GROUPS = {
+PIPELINE_GROUPS: Mapping[PipelineType, PipelineType] = {
     PipelineType.FILTER_QUALITY: PipelineType.FILTER_QUALITY,
     PipelineType.MAIN: PipelineType.MAIN,
     PipelineType.MIDI: PipelineType.MAIN,
@@ -23,13 +24,13 @@ PIPELINE_GROUPS = {
     PipelineType.PROVIRAL: PipelineType.PROVIRAL
 }
 
-PIPELINE_GROUP_DEPENDENCIES = {
+PIPELINE_GROUP_DEPENDENCIES: Mapping[PipelineType, PipelineType] = {
     PipelineType.PROVIRAL: PipelineType.DENOVO_MAIN
 }
 
 
 class FolderWatcher:
-    def __init__(self, base_calls_folder, runner=None):
+    def __init__(self, base_calls_folder: Path, runner: Optional[Any] = None) -> None:
         """ Set up an instance.
 
         :param base_calls_folder: path to the BaseCalls folder under a MiSeq
@@ -47,34 +48,34 @@ class FolderWatcher:
                 if it's still running. Also saves the outputs to temporary
                 files in the results folder when the run is finished
         """
-        self.base_calls_folder = Path(base_calls_folder)
-        self.runner = runner
-        self.run_folder = (self.base_calls_folder / '../../..').resolve()
-        self.run_name = '_'.join(self.run_folder.name.split('_')[:2])
-        self.sample_watchers = []
-        self.is_folder_failed = False
-        self.batch = None
-        self.quality_dataset = None
-        self.filter_quality_run = None
-        self.bad_cycles_dataset = None
-        self.active_pipeline_groups = set()  # {pipeline_group}
-        self.active_runs = {}  # {run_id: ([sample_watcher], pipeline_type)}
-        self.new_runs = set()  # {run_id}
-        self.completed_samples = set()  # {fastq1_name}
-        self.poll_only_new_runs = False
+        self.base_calls_folder: Path = Path(base_calls_folder)
+        self.runner: Optional[Any] = runner
+        self.run_folder: Path = (self.base_calls_folder / '../../..').resolve()
+        self.run_name: str = '_'.join(self.run_folder.name.split('_')[:2])
+        self.sample_watchers: List['SampleWatcher'] = []
+        self.is_folder_failed: bool = False
+        self.batch: Optional[Any] = None
+        self.quality_dataset: Optional[Any] = None
+        self.filter_quality_run: Optional[Dict[str, Any]] = None
+        self.bad_cycles_dataset: Optional[Any] = None
+        self.active_pipeline_groups: Set[PipelineType] = set()  # {pipeline_group}
+        self.active_runs: Dict[str, Tuple[List[Optional['SampleWatcher']], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
+        self.new_runs: Set[str] = set()  # {run_id}
+        self.completed_samples: Set[str] = set()  # {fastq1_name}
+        self.poll_only_new_runs: bool = False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'FolderWatcher({str(self.base_calls_folder)!r})'
 
     @property
-    def all_samples(self):
+    def all_samples(self) -> Generator[str, None, None]:
         for sample_watcher in self.sample_watchers:
             for name in sample_watcher.sample_group.names:
                 if name is not None:
                     yield name
 
     @property
-    def active_samples(self):
+    def active_samples(self) -> Set[str]:
         if self.is_folder_failed:
             return set()
         if self.filter_quality_run is None:
@@ -87,6 +88,9 @@ class FolderWatcher:
         active_samples = set()
         for run, (sample_watchers, pipeline_type) in self.active_runs.items():
             sample_watcher = sample_watchers[0]
+            if sample_watcher is None:
+                raise RuntimeError("Sample group is not set for an active run.")
+
             if pipeline_type in (PipelineType.MIDI,
                                  PipelineType.MIXED_HCV_MIDI,
                                  PipelineType.DENOVO_MIDI):
@@ -96,7 +100,7 @@ class FolderWatcher:
         return active_samples
 
     @property
-    def active_run_count(self):
+    def active_run_count(self) -> int:
         if self.is_folder_failed:
             return 0
         if self.filter_quality_run is None:
@@ -104,6 +108,9 @@ class FolderWatcher:
         elif self.filter_quality_run['id'] in self.active_runs:
             # Individual runs are waiting for filter quality.
             # Return n * number of samples, because each can launch n runs.
+            if self.runner is None:
+                raise RuntimeError("Runner is not set for FolderWatcher.")
+
             n = sum(
                 pipeline_id is not None
                 for pipeline_id in (self.runner.config.micall_main_pipeline_id,
@@ -116,10 +123,10 @@ class FolderWatcher:
         return len(self.active_runs)
 
     @property
-    def is_complete(self):
+    def is_complete(self) -> bool:
         return self.is_folder_failed or not self.active_samples
 
-    def is_pipeline_group_finished(self, pipeline_group):
+    def is_pipeline_group_finished(self, pipeline_group: PipelineType) -> bool:
         dependency_group = PIPELINE_GROUP_DEPENDENCIES.get(pipeline_group)
         if dependency_group is not None and not self.is_pipeline_group_finished(
                 dependency_group):
@@ -128,7 +135,7 @@ class FolderWatcher:
             PIPELINE_GROUPS[pipeline_type] == pipeline_group
             for sample_watchers, pipeline_type in self.active_runs.values())
 
-    def poll_runs(self):
+    def poll_runs(self) -> None:
         if self.filter_quality_run is None:
             self.filter_quality_run = self.run_pipeline(
                 PipelineType.FILTER_QUALITY)
@@ -154,7 +161,7 @@ class FolderWatcher:
                     name for name in sample_watcher.sample_group.names
                     if name is not None)
 
-    def poll_sample_runs(self, sample_watcher: 'SampleWatcher'):
+    def poll_sample_runs(self, sample_watcher: 'SampleWatcher') -> bool:
         """ Poll all active runs for a sample.
 
         :param sample_watcher: details about the sample to poll
@@ -256,23 +263,25 @@ class FolderWatcher:
                  and is_proviral_complete) or sample_watcher.is_failed)
 
     @property
-    def has_new_runs(self):
+    def has_new_runs(self) -> bool:
         return bool(self.new_runs)
 
-    def run_pipeline(self, pipeline_type, sample_watcher=None):
+    def run_pipeline(self, pipeline_type: PipelineType, sample_watcher: Optional['SampleWatcher'] = None) -> Optional[Dict[str, Any]]:
         if sample_watcher and sample_watcher.is_failed:
             # Don't start runs when the sample has already failed.
             return None
+        if self.runner is None:
+            raise RuntimeError("Runner is not set for FolderWatcher.")
         run = self.runner.run_pipeline(self, pipeline_type, sample_watcher)
         if run is not None:
             self.add_run(run, pipeline_type, sample_watcher)
         return run
 
     def add_run(self,
-                run,
-                pipeline_type,
-                sample_watcher=None,
-                is_complete=False):
+                run: Dict[str, Any],
+                pipeline_type: PipelineType,
+                sample_watcher: Optional['SampleWatcher'] = None,
+                is_complete: bool = False) -> None:
         pipeline_group = PIPELINE_GROUPS[pipeline_type]
         self.active_pipeline_groups.add(pipeline_group)
         if not is_complete:
@@ -283,9 +292,13 @@ class FolderWatcher:
         if pipeline_type == PipelineType.FILTER_QUALITY:
             self.filter_quality_run = run
         else:
+            if sample_watcher is None:
+                raise RuntimeError("Sample watcher must be provided for non-filter-quality runs.")    
             sample_watcher.runs[pipeline_type] = run
 
-    def fetch_run_status(self, run):
+    def fetch_run_status(self, run: Dict[str, Any]) -> bool:
+        if self.runner is None:
+            raise RuntimeError("Runner is not set for FolderWatcher.")
         sample_watchers, pipeline_type = self.active_runs[run['id']]
         try:
             self.new_runs.remove(run['id'])
@@ -318,14 +331,14 @@ class FolderWatcher:
 
 
 class SampleWatcher:
-    def __init__(self, sample_group):
-        self.sample_group = sample_group
-        self.fastq_datasets = []
-        self.sample_info_datasets = []
-        self.runs = {}  # {pipeline_type: run}
-        self.is_failed = False
+    def __init__(self, sample_group: Any) -> None:
+        self.sample_group: Any = sample_group
+        self.fastq_datasets: List[Any] = []
+        self.sample_info_datasets: List[Any] = []
+        self.runs: Dict[PipelineType, Dict[str, Any]] = {}  # {pipeline_type: run}
+        self.is_failed: bool = False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         enum = self.sample_group.enum
         midi_name = self.sample_group.names[1] and '...'
         return f"SampleWatcher(SampleGroup({enum!r}, ('...', {midi_name!r})))"
