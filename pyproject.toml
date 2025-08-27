@@ -296,6 +296,10 @@ module = "Bio.SeqRecord"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "kiveapi"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "genetracks"
 ignore_missing_imports = true
 
