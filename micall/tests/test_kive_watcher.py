@@ -2201,7 +2201,7 @@ def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
     mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    folder_watcher = FolderWatcher(base_calls)
+    folder_watcher = FolderWatcher(base_calls, None)
     sample_watcher = None
     mock_run = dict(id=123)
     mock_session.endpoints.containerruns.get.side_effect = [
@@ -2223,7 +2223,7 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
     mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    folder_watcher = FolderWatcher(base_calls)
+    folder_watcher = FolderWatcher(base_calls, None)
     sample_watcher = SampleWatcher(
         SampleGroup('2000A',
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
@@ -2263,7 +2263,7 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
     mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    folder_watcher = FolderWatcher(base_calls)
+    folder_watcher = FolderWatcher(base_calls, None)
     sample_watcher = SampleWatcher(
         SampleGroup('2000A',
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
@@ -2309,7 +2309,7 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
     mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_hcv_pair /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    folder_watcher = FolderWatcher(base_calls)
+    folder_watcher = FolderWatcher(base_calls, None)
     sample_watcher = SampleWatcher(
         SampleGroup('2130A',
                     ('2130A-HCV_S15_L001_R1_001.fastq.gz',

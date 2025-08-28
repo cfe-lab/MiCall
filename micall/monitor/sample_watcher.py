@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol
+from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, Union
 
 from kiveapi import KiveRunFailedException
 
@@ -51,7 +51,7 @@ class KiveWatcherInterface(Protocol):
 
 
 class FolderWatcher:
-    def __init__(self, base_calls_folder: Path, runner: KiveWatcherInterface) -> None:
+    def __init__(self, base_calls_folder: Union[Path, str], runner: KiveWatcherInterface) -> None:
         """ Set up an instance.
 
         :param base_calls_folder: path to the BaseCalls folder under a MiSeq
