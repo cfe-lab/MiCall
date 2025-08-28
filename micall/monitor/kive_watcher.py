@@ -11,6 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
+from typing import Dict, Any, Optional, Sequence, Iterable
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -167,9 +168,9 @@ def compress_old_versions(version_path: Path):
         with open(results_path / zip_name, 'wb') as f:
             with ZipFile(f, 'w', ZIP_DEFLATED) as z:
                 # noinspection PyTypeChecker
-                for folder_path, folders, files in os.walk(version_folder):
+                for folder_path_str, folders, files in os.walk(version_folder):
                     # noinspection PyTypeChecker
-                    folder_path = Path(folder_path)
+                    folder_path = Path(folder_path_str)
                     folder_rel = folder_path.relative_to(results_path)
                     for file_name in files:
                         z.write(folder_path/file_name, folder_rel/file_name)
@@ -290,6 +291,8 @@ def find_sample_groups(run_path, base_calls_path):
 
 def get_sample_number(fastq_name):
     match = re.match(r'.*_S(\d+)_', fastq_name)
+    if match is None:
+        raise ValueError(f"FASTQ filename does not match expected pattern: {fastq_name}")
     return int(match.group(1))
 
 
@@ -395,16 +398,13 @@ class KiveWatcher:
         """
         self.config = config
         self.retry = retry
-        self.session = None
+        self._session = None
         self.loaded_folders = set()  # base_calls folders with all samples loaded
         self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
         self.app_urls = {}  # {app_id: app_url}
         self.app_args = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path = self.external_directory_name = None
-        if not qai_upload_queue:
-            self.qai_upload_queue = Queue()
-        else:
-            self.qai_upload_queue = qai_upload_queue
+        self.qai_upload_queue = qai_upload_queue if qai_upload_queue is not None else Queue()
 
     def is_full(self):
         active_count = sum(folder_watcher.active_run_count
@@ -556,7 +556,8 @@ class KiveWatcher:
                         return sample_watcher
 
                 sample_watcher = SampleWatcher(sample_group)
-                for fastq1 in filter(None, sample_group.names):
+                names: Iterable[Optional[str]] = sample_group.names
+                for fastq1 in filter(None, names):
                     fastq2 = fastq1.replace('_R1_', '_R2_')
                     for fastq_name, direction in ((fastq1, 'forward'), (fastq2, 'reverse')):
                         with (base_calls / fastq_name).open('rb') as fastq_file:
@@ -770,8 +771,10 @@ class KiveWatcher:
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
                         target_path = coverage_path / (sample_name + '.' + filename)
-                        with f.extractfile(source_info) as source, \
-                                open(target_path, 'wb') as target:
+                        source = f.extractfile(source_info)
+                        if source is None:
+                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
+                        with source, open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
             except FileNotFoundError:
                 pass
@@ -807,8 +810,10 @@ class KiveWatcher:
                         filename = os.path.basename(source_info.name)
                         target_path = sample_target_path / filename
                         assert not target_path.exists(), target_path
-                        with f.extractfile(source_info) as source, \
-                                open(target_path, 'wb') as target:
+                        source = f.extractfile(source_info)
+                        if source is None:
+                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
+                        with source, open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
                 disk_operations.remove_empty_directory(sample_target_path)
             except FileNotFoundError:
@@ -846,16 +851,20 @@ class KiveWatcher:
                 disk_operations.rename(concordance_path, target_concordance_path)
         disk_operations.remove_empty_directory(plots_path)
 
+    def run_filter_quality_pipeline(self, folder_watcher):
+        return self.find_or_launch_run(
+            self.config.micall_filter_quality_pipeline_id,
+            dict(quality_csv=folder_watcher.quality_dataset),
+            'MiCall filter quality on ' + folder_watcher.run_name,
+            folder_watcher.batch)
+
     def run_pipeline(self,
                      folder_watcher: FolderWatcher,
                      pipeline_type: PipelineType,
-                     sample_watcher: SampleWatcher):
+                     sample_watcher: SampleWatcher) -> Optional[Dict[str, Any]]:
         if pipeline_type == PipelineType.FILTER_QUALITY:
-            return self.find_or_launch_run(
-                self.config.micall_filter_quality_pipeline_id,
-                dict(quality_csv=folder_watcher.quality_dataset),
-                'MiCall filter quality on ' + folder_watcher.run_name,
-                folder_watcher.batch)
+            run = self.run_filter_quality_pipeline(folder_watcher)
+            return run
         if pipeline_type == PipelineType.PROVIRAL:
             run = self.run_proviral_pipeline(
                 sample_watcher,
@@ -921,6 +930,8 @@ class KiveWatcher:
                                            folder_watcher,
                                            group_position)
         if folder_watcher.bad_cycles_dataset is None:
+            if folder_watcher.filter_quality_run is None:
+                raise RuntimeError('Filter quality run not available for bad cycles dataset')
             filter_run_id = folder_watcher.filter_quality_run['id']
             run_datasets = self.kive_retry(
                 lambda: self.session.endpoints.containerruns.get(
@@ -1095,7 +1106,7 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
             return target()
 
-    def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watchers):
+    def fetch_run_status(self, run: Dict[str, Any], folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[SampleWatcher]) -> Optional[Dict[str, Any]]:
         self.check_session()
         new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         is_complete = new_status['state'] == 'C'
@@ -1191,11 +1202,15 @@ class KiveWatcher:
             folder_watcher.run_name + '_quality.csv',
             'Error rates for {} run.'.format(folder_watcher.run_name))
 
-    def check_session(self):
-        if self.session is None:
-            self.session = open_kive(self.config.kive_server)
-            self.session.login(self.config.kive_user, self.config.kive_password)
+    @property
+    def session(self) -> KiveAPI:
+        if self._session is None:
+            self._session = open_kive(self.config.kive_server)
+            self._session.login(self.config.kive_user, self.config.kive_password)
+        return self._session        
 
+    def check_session(self):
+        if self._session is None:
             # retrieve external file directory
             directories = self.session.endpoints.externalfiledirectories.get()
             self.external_directory_name = self.external_directory_path = None

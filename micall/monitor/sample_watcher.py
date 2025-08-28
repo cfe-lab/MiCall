@@ -28,17 +28,20 @@ PIPELINE_GROUP_DEPENDENCIES: Mapping[PipelineType, PipelineType] = {
     PipelineType.PROVIRAL: PipelineType.DENOVO_MAIN
 }
 
+class ConfigInterface(Protocol):
+    micall_main_pipeline_id: Optional[int]
+    mixed_hcv_pipeline_id: Optional[int]
+    denovo_main_pipeline_id: Optional[int]
+
 
 class KiveWatcherInterface(Protocol):
-    class Config(Protocol):
-        micall_main_pipeline_id: Optional[int]
-        mixed_hcv_pipeline_id: Optional[int]
-        denovo_main_pipeline_id: Optional[int]
 
     def run_pipeline(self,
                      folder_watcher: 'FolderWatcher',
                      pipeline_type: PipelineType,
-                     sample_watcher: Optional['SampleWatcher'] = None) -> Optional[Dict[str, Any]]: ...
+                     sample_watcher: 'SampleWatcher') -> Optional[Dict[str, Any]]: ...
+
+    def run_filter_quality_pipeline(self, folder_watcher: 'FolderWatcher') -> Optional[Dict[str, Any]]: ...
 
     def fetch_run_status(self,
                          run: Dict[str, Any],
@@ -47,7 +50,7 @@ class KiveWatcherInterface(Protocol):
                          sample_watchers: List['SampleWatcher']) -> Optional[Dict[str, Any]]: ...
 
     @property
-    def config(self) -> Config: ...
+    def config(self) -> ConfigInterface: ...
 
 
 class FolderWatcher:
@@ -144,8 +147,7 @@ class FolderWatcher:
 
     def poll_runs(self) -> None:
         if self.filter_quality_run is None:
-            self.filter_quality_run = self.run_pipeline(
-                PipelineType.FILTER_QUALITY)
+            self.filter_quality_run = self.run_filter_quality_pipeline()
             # Launched filter run, nothing more to check.
             return
         if self.filter_quality_run is None:
@@ -273,8 +275,14 @@ class FolderWatcher:
     def has_new_runs(self) -> bool:
         return bool(self.new_runs)
 
-    def run_pipeline(self, pipeline_type: PipelineType, sample_watcher: Optional['SampleWatcher'] = None) -> Optional[Dict[str, Any]]:
-        if sample_watcher and sample_watcher.is_failed:
+    def run_filter_quality_pipeline(self) -> Optional[Dict[str, Any]]:
+        run = self.runner.run_filter_quality_pipeline(self)
+        if run is not None:
+            self.add_run(run, PipelineType.FILTER_QUALITY)
+        return run
+
+    def run_pipeline(self, pipeline_type: PipelineType, sample_watcher: 'SampleWatcher') -> Optional[Dict[str, Any]]:
+        if sample_watcher.is_failed:
             # Don't start runs when the sample has already failed.
             return None
         run = self.runner.run_pipeline(self, pipeline_type, sample_watcher)
