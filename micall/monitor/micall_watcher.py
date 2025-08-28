@@ -7,10 +7,10 @@ from threading import Thread
 from time import sleep
 
 from micall.utils.version import get_version
-from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType
+from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType, FolderEvent
 from micall.monitor import update_qai
 try:
-    from micall.utils.micall_logging_override import LOGGING
+    from micall.utils.micall_logging_override import LOGGING  # type: ignore[import]
     is_logging_override = True
 except ImportError:
     from micall.utils.micall_logging_config import LOGGING
@@ -151,8 +151,8 @@ def main():
     logger.info('Starting up with server %s and version %s', args.kive_server, get_version())
     logger.info('Logging override: %s', is_logging_override)
 
-    sample_queue = Queue(maxsize=2)  # [FolderEvent]
-    qai_upload_queue = Queue()  # [Path] for results folders or [None] to quit.
+    sample_queue: Queue[FolderEvent] = Queue(maxsize=2)
+    qai_upload_queue: Queue[Path | None] = Queue()  # [Path] for results folders or [None] to quit.
     wait = True
     finder_thread = Thread(target=find_samples,
                            args=(args.raw_data,
