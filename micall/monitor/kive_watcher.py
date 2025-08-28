@@ -235,10 +235,17 @@ def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path)
 
     # Extract sample names from the sample sheet
     run_info = read_sample_sheet_and_overrides(sample_sheet_path)
+    data_split = run_info.get('DataSplit')
+    if data_split is None:
+        raise RuntimeError(f"Missing 'DataSplit' section in {sample_sheet_path}")
+
+    assert hasattr(data_split, '__iter__')
+    if not hasattr(data_split, '__iter__'):
+        raise RuntimeError(f"Invalid 'DataSplit' section in {sample_sheet_path}")
 
     # Get filenames from sample sheet DataSplit (these are the expected FASTQ file names)
     sheet_filenames = set()
-    for row in run_info.get('DataSplit', []):
+    for row in data_split:
         filename = row.get('filename', '')
         if filename:
             # Store the trimmed version that matches what find_groups() uses
