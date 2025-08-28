@@ -1113,16 +1113,21 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
             return target()
 
-    def fetch_run_status(self, run: Dict[str, Any], folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[SampleWatcher]) -> Optional[Dict[str, Any]]:
+    def fetch_run_status(self, run: Dict[str, Any], folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[Optional[SampleWatcher]]) -> Optional[Dict[str, Any]]:
         self.check_session()
         new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         is_complete = new_status['state'] == 'C'
         if new_status['state'] == 'X':
             new_run = None
             for sample_watcher in sample_watchers:
-                new_run = self.run_pipeline(folder_watcher,
-                                            pipeline_type,
-                                            sample_watcher)
+                if sample_watcher is None:
+                    if pipeline_type != PipelineType.FILTER_QUALITY:
+                        raise RuntimeError('Filter quality run failed, but no sample watcher provided.')
+                    new_run = self.run_filter_quality_pipeline(folder_watcher)
+                else:
+                    new_run = self.run_pipeline(folder_watcher,
+                                                pipeline_type,
+                                                sample_watcher)
             return new_run
         if new_status['state'] == 'F':
             raise KiveRunFailedException(f'Run id {new_status["id"]} failed.')
@@ -1131,6 +1136,9 @@ class KiveWatcher:
                 lambda: self.session.endpoints.containerruns.get(
                     f"{run['id']}/dataset_list/"))
             for sample_watcher in sample_watchers:
+                if sample_watcher is None:
+                    raise RuntimeError('A non-filter quality run completed, but no sample watcher provided.')
+
                 for other_run in sample_watcher.runs.values():
                     if other_run['id'] == run['id']:
                         other_run['datasets'] = run_datasets
