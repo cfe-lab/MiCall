@@ -20,6 +20,9 @@ class DummySession:
         self.failed_runs = []  # [run_id]
         self.next_id = 101
 
+    def run_filter_quality_pipeline(self, folder_watcher):
+        return self.run_pipeline(folder_watcher, PipelineType.FILTER_QUALITY, None)
+
     def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type in self.skipped_types:
             return None
