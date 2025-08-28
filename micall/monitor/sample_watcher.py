@@ -41,10 +41,10 @@ class KiveWatcherInterface(Protocol):
                      sample_watcher: Optional['SampleWatcher'] = None) -> Optional[Dict[str, Any]]: ...
 
     def fetch_run_status(self,
-                         old_run: Dict[str, Any],
+                         run: Dict[str, Any],
                          folder_watcher: 'FolderWatcher',
                          pipeline_type: PipelineType,
-                         sample_watchers: List[Optional['SampleWatcher']]) -> Optional[Dict[str, Any]]: ...
+                         sample_watchers: List['SampleWatcher']) -> Optional[Dict[str, Any]]: ...
 
     @property
     def config(self) -> Config: ...
@@ -69,7 +69,7 @@ class FolderWatcher:
         self.filter_quality_run: Optional[Dict[str, Any]] = None
         self.bad_cycles_dataset: Optional[Any] = None
         self.active_pipeline_groups: Set[PipelineType] = set()  # {pipeline_group}
-        self.active_runs: Dict[str, Tuple[List[Optional['SampleWatcher']], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
+        self.active_runs: Dict[str, Tuple[List['SampleWatcher'], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
         self.new_runs: Set[str] = set()  # {run_id}
         self.completed_samples: Set[str] = set()  # {fastq1_name}
         self.poll_only_new_runs: bool = False
@@ -292,7 +292,8 @@ class FolderWatcher:
         if not is_complete:
             sample_watchers, _ = self.active_runs.setdefault(
                 run['id'], ([], pipeline_type))
-            sample_watchers.append(sample_watcher)
+            if sample_watcher is not None:
+                sample_watchers.append(sample_watcher)
             self.new_runs.add(run['id'])
         if pipeline_type == PipelineType.FILTER_QUALITY:
             self.filter_quality_run = run
