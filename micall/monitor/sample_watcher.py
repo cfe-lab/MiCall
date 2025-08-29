@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, Union, TypedDict
+from typing import Dict, List, Literal, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, Union, TypedDict
 
 from kiveapi import KiveRunFailedException
 
@@ -57,7 +57,7 @@ class Run(TypedDict):
     - 'datasets': list of run dataset entries (added when run completes)
     """
     id: str
-    state: str
+    state: Literal["C", "F", "X", "R", "N", "L"]
     datasets: List[RunDataset]
 
 
