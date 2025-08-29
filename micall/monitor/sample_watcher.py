@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, Union
+from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, Union, TypedDict
 
 from kiveapi import KiveRunFailedException
 
@@ -34,20 +34,30 @@ class ConfigInterface(Protocol):
     denovo_main_pipeline_id: Optional[int]
 
 
+class Run(TypedDict):
+    """Minimal protocol for a Kive run object used in this module.
+
+    Code in this file only requires that run objects are
+    mapping-like and provide an 'id' field (string) which is used as a key in
+    FolderWatcher.active_runs. Keep the TypedDict minimal to reflect that.
+    """
+    id: str
+
+
 class KiveWatcherInterface(Protocol):
 
     def run_pipeline(self,
                      folder_watcher: 'FolderWatcher',
                      pipeline_type: PipelineType,
-                     sample_watcher: 'SampleWatcher') -> Optional[Dict[str, Any]]: ...
+                     sample_watcher: 'SampleWatcher') -> Optional[Run]: ...
 
-    def run_filter_quality_pipeline(self, folder_watcher: 'FolderWatcher') -> Optional[Dict[str, Any]]: ...
+    def run_filter_quality_pipeline(self, folder_watcher: 'FolderWatcher') -> Optional[Run]: ...
 
     def fetch_run_status(self,
-                         run: Dict[str, Any],
+                         run: Run,
                          folder_watcher: 'FolderWatcher',
                          pipeline_type: PipelineType,
-                         sample_watchers: List[Optional['SampleWatcher']]) -> Optional[Dict[str, Any]]: ...
+                         sample_watchers: List[Optional['SampleWatcher']]) -> Optional[Run]: ...
 
     @property
     def config(self) -> ConfigInterface: ...
@@ -69,7 +79,7 @@ class FolderWatcher:
         self.is_folder_failed: bool = False
         self.batch: Optional[Any] = None
         self.quality_dataset: Optional[Any] = None
-        self.filter_quality_run: Optional[Dict[str, Any]] = None
+        self.filter_quality_run: Optional[Run] = None
         self.bad_cycles_dataset: Optional[Any] = None
         self.active_pipeline_groups: Set[PipelineType] = set()  # {pipeline_group}
         self.active_runs: Dict[str, Tuple[List[Optional['SampleWatcher']], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
@@ -275,13 +285,13 @@ class FolderWatcher:
     def has_new_runs(self) -> bool:
         return bool(self.new_runs)
 
-    def run_filter_quality_pipeline(self) -> Optional[Dict[str, Any]]:
+    def run_filter_quality_pipeline(self) -> Optional[Run]:
         run = self.runner.run_filter_quality_pipeline(self)
         if run is not None:
             self.add_run(run, PipelineType.FILTER_QUALITY)
         return run
 
-    def run_pipeline(self, pipeline_type: PipelineType, sample_watcher: 'SampleWatcher') -> Optional[Dict[str, Any]]:
+    def run_pipeline(self, pipeline_type: PipelineType, sample_watcher: 'SampleWatcher') -> Optional[Run]:
         if sample_watcher.is_failed:
             # Don't start runs when the sample has already failed.
             return None
@@ -291,7 +301,7 @@ class FolderWatcher:
         return run
 
     def add_run(self,
-                run: Dict[str, Any],
+                run: Run,
                 pipeline_type: PipelineType,
                 sample_watcher: Optional['SampleWatcher'] = None,
                 is_complete: bool = False) -> None:
@@ -309,7 +319,7 @@ class FolderWatcher:
                 raise RuntimeError("Sample watcher must be provided for non-filter-quality runs.")    
             sample_watcher.runs[pipeline_type] = run
 
-    def fetch_run_status(self, run: Dict[str, Any]) -> bool:
+    def fetch_run_status(self, run: Run) -> bool:
         sample_watchers, pipeline_type = self.active_runs[run['id']]
         try:
             self.new_runs.remove(run['id'])
@@ -346,7 +356,7 @@ class SampleWatcher:
         self.sample_group: Any = sample_group
         self.fastq_datasets: List[Any] = []
         self.sample_info_datasets: List[Any] = []
-        self.runs: Dict[PipelineType, Dict[str, Any]] = {}  # {pipeline_type: run}
+        self.runs: Dict[PipelineType, Run] = {}  # {pipeline_type: run}
         self.is_failed: bool = False
 
     def __repr__(self) -> str:
