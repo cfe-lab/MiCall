@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, AnyStr, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -25,7 +25,7 @@ import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
-from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
+from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
@@ -443,7 +443,7 @@ class KiveWatcher:
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
 
-    def create_batch(self, folder_watcher):
+    def create_batch(self, folder_watcher: FolderWatcher) -> None:
         if self.config is None:
             raise RuntimeError("KiveWatcher config is not set.")
     
@@ -463,9 +463,11 @@ class KiveWatcher:
                     name=batch_name,
                     description=description,
                     groups_allowed=ALLOWED_GROUPS)))
-        folder_watcher.batch = batch
 
-    def find_kive_dataset(self, source_file, dataset_name):
+        ret: Batch = batch  # type: ignore
+        folder_watcher.batch = ret
+
+    def find_kive_dataset(self, source_file: IO[bytes], dataset_name: str) -> Optional[RunDataset]:
         """ Search for a dataset in Kive by name and checksum.
 
         :param source_file: open file object to read from
@@ -482,18 +484,24 @@ class KiveWatcher:
                 'name', dataset_name,
                 'md5', checksum,
                 'uploaded', True))
-        return self.find_name_and_permissions_match(datasets,
-                                                    dataset_name,
+        found = self.find_name_and_permissions_match(datasets,
+                                                     dataset_name,
                                                     'dataset')
+        if found is None:
+            return None
+
+        ret: RunDataset = found  # type: ignore
+        return ret
 
     @staticmethod
-    def find_name_and_permissions_match(items, name, type_name):
+    def find_name_and_permissions_match(items: Iterable[Item], name: str, type_name: str) -> Optional[Item]:
         needed_groups = set(ALLOWED_GROUPS)
         for item in items:
             missing_groups = needed_groups - set(item['groups_allowed'])
             if item['name'] == name and not missing_groups:
                 logger.info('%s already in Kive: %r', type_name, name)
                 return item
+        return None
 
     def upload_kive_dataset(self, source_file, dataset_name, description):
         """ Upload a dataset to Kive.
@@ -1080,7 +1088,9 @@ class KiveWatcher:
             filters.append(arg['id'])
 
         old_runs = self.session.endpoints.containerruns.filter(*filters)
-        run: Optional[Run] = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
+        untyped_run = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
+        run: Optional[Run] = untyped_run  # type: ignore
+
         if run:
             if run['state'] == 'C':
                 run_id = run['id']
@@ -1254,7 +1264,7 @@ class KiveWatcher:
                                str(search_path))
 
     def find_or_upload_dataset(self,
-                               dataset_file: IO[AnyStr],
+                               dataset_file: IO[bytes],
                                dataset_name: str,
                                description: str = '') -> Optional[RunDataset]:
         dataset = self.find_kive_dataset(dataset_file, dataset_name)

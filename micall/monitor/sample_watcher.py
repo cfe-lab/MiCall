@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Literal, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, TypeAlias, Union, TypedDict
+from typing import Dict, List, Literal, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, TypeAlias, Union, TypedDict, Iterator
 
 from kiveapi import KiveRunFailedException
 
@@ -43,6 +43,12 @@ class ConfigInterface(Protocol):
     raw_data: Path
 
 
+class Item(TypedDict, total=False):
+    """General type for items in a Kive batch."""
+    name: str
+    groups_allowed: Sequence[str]
+
+
 class RunDataset(TypedDict):
     """Type for individual dataset entries in a run's dataset list."""
     id: str
@@ -51,12 +57,17 @@ class RunDataset(TypedDict):
     argument_type: str
     dataset: str
     dataset_purged: bool
+    name: str
+    groups_allowed: Sequence[str]
 
 
 class RunCreationDataset(TypedDict):
     """Type for dataset entries when creating a new run."""
     argument: str
     dataset: str
+
+
+State: TypeAlias = Literal["C", "F", "X", "R", "N", "L"]
 
 
 class Run(TypedDict):
@@ -68,11 +79,16 @@ class Run(TypedDict):
     - 'datasets': list of run dataset entries (added when run completes)
     """
     id: str
-    state: Literal["C", "F", "X", "R", "N", "L"]
+    state: State
     datasets: List[RunDataset]
 
 
-Batch: TypeAlias = Mapping[str, RunDataset]
+class Batch(Protocol):
+    @property
+    def name(self) -> str: ...
+    def __getitem__(self, key: str) -> RunDataset: ...
+    def get(self, key: str, default: Optional[RunDataset] = None) -> Optional[RunDataset]: ...
+    def __iter__(self) -> Iterator[str]:  ...
 
 
 class KiveWatcherInterface(Protocol):
