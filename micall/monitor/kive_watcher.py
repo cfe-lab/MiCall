@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import Optional, Sequence, Iterable, List
+from typing import Dict, Optional, Sequence, Iterable, List
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -319,7 +319,7 @@ def trim_name(sample_name):
     return '_'.join(sample_name.split('_')[:2])
 
 
-def trim_run_name(run_name):
+def trim_run_name(run_name: str) -> str:
     if len(run_name) > MAX_RUN_NAME_LENGTH:
         split_index = run_name.rfind('_')
         suffix_length = len(run_name) - split_index
@@ -1052,10 +1052,10 @@ class KiveWatcher:
         return run
 
     def find_or_launch_run(self,
-                           pipeline_id,
+                           pipeline_id: int,
                            inputs,
-                           run_name,
-                           run_batch) -> Optional[Run]:
+                           run_name: str,
+                           run_batch: Optional[Dict[str, object]]) -> Optional[Run]:
         """ Look for a matching container run, or start a new one.
 
         :return: the run dictionary
@@ -1069,9 +1069,7 @@ class KiveWatcher:
             filters.append(arg['id'])
 
         old_runs = self.session.endpoints.containerruns.filter(*filters)
-        run = self.find_name_and_permissions_match(old_runs,
-                                                   run_name,
-                                                   'container run')
+        run: Optional[Run] = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
         if run:
             if run['state'] == 'C':
                 run_id = run['id']
@@ -1089,6 +1087,8 @@ class KiveWatcher:
                 raise ValueError(f"Pipeline input error: {repr(e)}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
                                  f" Does the run name {repr(run_name)} make sense for it?")
+            if run_batch is None:
+                raise ValueError("Run batch is required.")
             run_params = dict(name=run_name,
                               batch=run_batch['url'],
                               groups_allowed=ALLOWED_GROUPS,
@@ -1115,10 +1115,10 @@ class KiveWatcher:
 
     def fetch_run_status(self, run: Run, folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[Optional[SampleWatcher]]) -> Optional[Run]:
         self.check_session()
-        new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
+        new_status: Run = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         is_complete = new_status['state'] == 'C'
         if new_status['state'] == 'X':
-            new_run = None
+            new_run: Optional[Run] = None
             for sample_watcher in sample_watchers:
                 if sample_watcher is None:
                     if pipeline_type != PipelineType.FILTER_QUALITY:
