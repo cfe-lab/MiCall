@@ -4,6 +4,8 @@ from typing import Dict, List, Literal, Set, Optional, Any, Tuple, Generator, Ma
 
 from kiveapi import KiveRunFailedException
 
+from micall.monitor.find_groups import SampleGroup
+
 ALLOWED_GROUPS: Sequence[str] = ['Everyone']
 # noinspection PyArgumentList
 PipelineType = Enum(
@@ -156,17 +158,21 @@ class FolderWatcher:
             return all_samples - self.completed_samples
 
         active_samples = set()
-        for run, (sample_watchers, pipeline_type) in self.active_runs.items():
-            sample_watcher = sample_watchers[0]
+        for run, (sample_watches, pipeline_type) in self.active_runs.items():
+            sample_watcher = sample_watches[0]
             if sample_watcher is None:
                 raise RuntimeError("Sample group is not set for an active run.")
 
             if pipeline_type in (PipelineType.MIDI,
                                  PipelineType.MIXED_HCV_MIDI,
                                  PipelineType.DENOVO_MIDI):
-                active_samples.add(sample_watcher.sample_group.names[1])
+                name = sample_watcher.sample_group.names[1]
+                if name is not None:
+                    active_samples.add(name)
             else:
-                active_samples.add(sample_watcher.sample_group.names[0])
+                name = sample_watcher.sample_group.names[0]
+                if name is not None:
+                    active_samples.add(name)
         return active_samples
 
     @property
@@ -200,7 +206,7 @@ class FolderWatcher:
             return False
         return not any(
             PIPELINE_GROUPS[pipeline_type] == pipeline_group
-            for sample_watchers, pipeline_type in self.active_runs.values())
+            for sample_watches, pipeline_type in self.active_runs.values())
 
     def poll_runs(self) -> None:
         if self.filter_quality_run is None:
@@ -243,7 +249,8 @@ class FolderWatcher:
         is_mixed_hcv_complete = False
         mixed_hcv_run = sample_watcher.runs.get(PipelineType.MIXED_HCV_MAIN)
         if mixed_hcv_run is None:
-            if 'HCV' not in sample_watcher.sample_group.names[0]:
+            name = sample_watcher.sample_group.names[0]
+            if name is None or 'HCV' not in name:
                 is_mixed_hcv_complete = True
             else:
                 mixed_hcv_run = self.run_pipeline(PipelineType.MIXED_HCV_MAIN,
@@ -290,7 +297,8 @@ class FolderWatcher:
                         or self.fetch_run_status(denovo_resistance_run))
                 proviral_run = sample_watcher.runs.get(PipelineType.PROVIRAL)
                 if proviral_run is None:
-                    if 'NFL' not in sample_watcher.sample_group.project_codes[0]:
+                    project_code = sample_watcher.sample_group.project_codes[0]
+                    if project_code is None or 'NFL' not in project_code:
                         is_proviral_complete = True
                     else:
                         self.run_pipeline(PipelineType.PROVIRAL,
@@ -399,8 +407,8 @@ class FolderWatcher:
 
 
 class SampleWatcher:
-    def __init__(self, sample_group: Any) -> None:
-        self.sample_group: Any = sample_group
+    def __init__(self, sample_group: SampleGroup) -> None:
+        self.sample_group = sample_group
         self.fastq_datasets: List[Any] = []
         self.sample_info_datasets: List[Any] = []
         self.runs: Dict[PipelineType, Run] = {}  # {pipeline_type: run}

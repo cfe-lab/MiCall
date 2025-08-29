@@ -285,8 +285,8 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
         # Check sample name consistency between sample sheet and FASTQ files
         check_sample_name_consistency(sample_sheet_path, file_names, run_path)
 
-        sample_groups = list(find_groups(file_names, sample_sheet_path))
-        sample_groups.sort(key=lambda group: get_sample_number(group.names[0]),
+        sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
+        sample_groups.sort(key=lambda group: get_sample_number(group.names[0] if group.names[0] is not None else ''),
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
@@ -926,7 +926,7 @@ class KiveWatcher:
             return self.find_or_launch_run(
                 self.config.mixed_hcv_pipeline_id,
                 input_datasets,
-                'Mixed HCV on ' + trim_name(sample_name),
+                'Mixed HCV on ' + (trim_name(sample_name) if sample_name is not None else 'unknown'),
                 folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
             group_position = 0
@@ -950,7 +950,7 @@ class KiveWatcher:
         fastq1, fastq2 = sample_watcher.fastq_datasets[
                          group_position*2:(group_position+1)*2]
         sample_name = sample_watcher.sample_group.names[group_position]
-        run_name += ' on ' + trim_name(sample_name)
+        run_name += ' on ' + (trim_name(sample_name) if sample_name is not None else 'unknown')
         sample_info = self.get_sample_info(pipeline_id,
                                            sample_watcher,
                                            folder_watcher,
@@ -995,7 +995,7 @@ class KiveWatcher:
         assert group_position == len(sample_watcher.sample_info_datasets)
 
         fastq_name = sample_watcher.sample_group.names[group_position]
-        sample_name = trim_name(fastq_name)
+        sample_name = trim_name(fastq_name if fastq_name is not None else 'unknown')
         project_code = sample_watcher.sample_group.project_codes[group_position]
         info_file = StringIO()
         writer = DictWriter(info_file, ['sample', 'project', 'run_name'])
@@ -1172,7 +1172,7 @@ class KiveWatcher:
                 results_path = self.get_results_path(folder_watcher)
                 pipeline_group = PIPELINE_GROUPS[pipeline_type]
                 scratch_path = get_scratch_path(results_path, pipeline_group)
-                scratch_path /= trim_name(sample_name)
+                scratch_path /= trim_name(sample_name if sample_name is not None else 'unknown')
                 disk_operations.mkdir_p(scratch_path, parents=True, exist_ok=True)
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
