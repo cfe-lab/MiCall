@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, AnyStr, Callable, Mapping, Optional, Sequence, Iterable, TextIO, TypeVar
+from typing import IO, AnyStr, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -220,7 +220,7 @@ def scan_flag_paths(raw_data_folder: Path) -> Iterable[Path]:
     return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
-def check_sample_name_consistency(sample_sheet_path: Path, fastq_file_names: list[str], run_path: Path):
+def check_sample_name_consistency(sample_sheet_path: Path, fastq_file_names: Iterable[str], run_path: Path):
     """
     Check FASTQ file recognition ratio against sample sheet.
 
@@ -394,7 +394,7 @@ def get_collated_path(results_path: Path, pipeline_group: PipelineType) -> Path:
 class KiveWatcher:
     def __init__(self,
                  config: ConfigInterface,
-                 qai_upload_queue: Queue,
+                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  retry=False):
         """ Initialize.
 
@@ -412,7 +412,7 @@ class KiveWatcher:
         self.app_args: dict[str | int, dict[str, str]] = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path: Optional[Path] = None
         self.external_directory_name: Optional[str] = None
-        self.qai_upload_queue: Queue = qai_upload_queue
+        self.qai_upload_queue = qai_upload_queue
 
     def is_full(self) -> bool:
         if self.config is None:

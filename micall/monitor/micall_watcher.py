@@ -5,7 +5,9 @@ from pathlib import Path
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
+from typing import Tuple
 
+from micall.monitor.sample_watcher import PipelineType
 from micall.utils.version import get_version
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType, FolderEvent
 from micall.monitor import update_qai
@@ -152,7 +154,7 @@ def main():
     logger.info('Logging override: %s', is_logging_override)
 
     sample_queue: Queue[FolderEvent] = Queue(maxsize=2)
-    qai_upload_queue: Queue[Path | None] = Queue()  # [Path] for results folders or [None] to quit.
+    qai_upload_queue: Queue[None | Tuple[Path, PipelineType]] = Queue()  # [Path] for results folders or [None] to quit.
     wait = True
     finder_thread = Thread(target=find_samples,
                            args=(args.raw_data,
