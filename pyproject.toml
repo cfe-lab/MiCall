@@ -199,8 +199,6 @@ exclude = '''(?x)
     ^micall/drivers/sample[.]py$|
     ^micall/g2p/fastq_g2p[.]py$|
     ^micall/g2p/pssm_lib[.]py$|
-    ^micall/monitor/find_groups[.]py$|
-    ^micall/monitor/qai_helper[.]py$|
     ^micall/resistance/asi_algorithm[.]py$|
     ^micall/resistance/genreport[.]py$|
     ^micall/resistance/pdfreport[.]py$|
