@@ -32,6 +32,15 @@ class ConfigInterface(Protocol):
     micall_main_pipeline_id: Optional[int]
     mixed_hcv_pipeline_id: Optional[int]
     denovo_main_pipeline_id: Optional[int]
+    micall_filter_quality_pipeline_id: Optional[int]
+    micall_resistance_pipeline_id: Optional[int]
+    proviral_pipeline_id: Optional[int]
+    max_active: int
+    pipeline_version: str
+    kive_user: str
+    kive_password: str
+    kive_server: str
+    raw_data: Path
 
 
 class RunDataset(TypedDict):
