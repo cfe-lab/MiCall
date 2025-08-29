@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import Dict, Any, Optional, Sequence, Iterable
+from typing import Optional, Sequence, Iterable, List
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -25,7 +25,7 @@ import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
-from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS
+from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset
 from micall.monitor.find_groups import find_groups
 from micall.monitor import disk_operations
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
@@ -858,7 +858,7 @@ class KiveWatcher:
                 disk_operations.rename(concordance_path, target_concordance_path)
         disk_operations.remove_empty_directory(plots_path)
 
-    def run_filter_quality_pipeline(self, folder_watcher):
+    def run_filter_quality_pipeline(self, folder_watcher) -> Optional[Run]:
         return self.find_or_launch_run(
             self.config.micall_filter_quality_pipeline_id,
             dict(quality_csv=folder_watcher.quality_dataset),
@@ -868,7 +868,7 @@ class KiveWatcher:
     def run_pipeline(self,
                      folder_watcher: FolderWatcher,
                      pipeline_type: PipelineType,
-                     sample_watcher: SampleWatcher) -> Optional[Dict[str, Any]]:
+                     sample_watcher: SampleWatcher) -> Optional[Run]:
         if pipeline_type == PipelineType.FILTER_QUALITY:
             run = self.run_filter_quality_pipeline(folder_watcher)
             return run
@@ -940,7 +940,7 @@ class KiveWatcher:
             if folder_watcher.filter_quality_run is None:
                 raise RuntimeError('Filter quality run not available for bad cycles dataset')
             filter_run_id = folder_watcher.filter_quality_run['id']
-            run_datasets = self.kive_retry(
+            run_datasets: List[RunDataset] = self.kive_retry(
                 lambda: self.session.endpoints.containerruns.get(
                     f'{filter_run_id}/dataset_list/'))
             bad_cycles_run_dataset, = [
@@ -1055,7 +1055,7 @@ class KiveWatcher:
                            pipeline_id,
                            inputs,
                            run_name,
-                           run_batch):
+                           run_batch) -> Optional[Run]:
         """ Look for a matching container run, or start a new one.
 
         :return: the run dictionary
@@ -1075,9 +1075,9 @@ class KiveWatcher:
         if run:
             if run['state'] == 'C':
                 run_id = run['id']
-                run_datasets = self.session.endpoints.containerruns.get(
+                run_datasets: List[RunCreationDataset] = self.session.endpoints.containerruns.get(
                     f'{run_id}/dataset_list/')
-                if any(run_dataset['dataset_purged']
+                if any(run_dataset.get('dataset_purged')
                        for run_dataset in run_datasets):
                     run = None
         if run is None:
@@ -1113,7 +1113,7 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
             return target()
 
-    def fetch_run_status(self, run: Dict[str, Any], folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[Optional[SampleWatcher]]) -> Optional[Dict[str, Any]]:
+    def fetch_run_status(self, run: Run, folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[Optional[SampleWatcher]]) -> Optional[Run]:
         self.check_session()
         new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         is_complete = new_status['state'] == 'C'

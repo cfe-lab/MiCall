@@ -34,14 +34,31 @@ class ConfigInterface(Protocol):
     denovo_main_pipeline_id: Optional[int]
 
 
-class Run(TypedDict):
-    """Minimal protocol for a Kive run object used in this module.
+class RunDataset(TypedDict):
+    """Type for individual dataset entries in a run's dataset list."""
+    argument_name: str
+    argument_type: str
+    dataset: str
+    dataset_purged: bool
 
-    Code in this file only requires that run objects are
-    mapping-like and provide an 'id' field (string) which is used as a key in
-    FolderWatcher.active_runs. Keep the TypedDict minimal to reflect that.
+
+class RunCreationDataset(TypedDict):
+    """Type for dataset entries when creating a new run."""
+    argument: str
+    dataset: str
+
+
+class Run(TypedDict):
+    """TypedDict for a Kive run object.
+
+    Based on usage in kive_watcher.py and sample_watcher.py:
+    - 'id': string identifier used as key in active_runs
+    - 'state': run state ('C' for complete, 'F' for failed, etc.)
+    - 'datasets': list of run dataset entries (added when run completes)
     """
     id: str
+    state: str
+    datasets: List[RunDataset]
 
 
 class KiveWatcherInterface(Protocol):
