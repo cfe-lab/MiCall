@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Literal, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, Union, TypedDict
+from typing import Dict, List, Literal, Set, Optional, Any, Tuple, Generator, Mapping, Sequence, Protocol, TypeAlias, Union, TypedDict
 
 from kiveapi import KiveRunFailedException
 
@@ -36,6 +36,8 @@ class ConfigInterface(Protocol):
 
 class RunDataset(TypedDict):
     """Type for individual dataset entries in a run's dataset list."""
+    id: str
+    url: str
     argument_name: str
     argument_type: str
     dataset: str
@@ -59,6 +61,9 @@ class Run(TypedDict):
     id: str
     state: Literal["C", "F", "X", "R", "N", "L"]
     datasets: List[RunDataset]
+
+
+Batch: TypeAlias = Mapping[str, RunDataset]
 
 
 class KiveWatcherInterface(Protocol):
@@ -94,10 +99,10 @@ class FolderWatcher:
         self.run_name: str = '_'.join(self.run_folder.name.split('_')[:2])
         self.sample_watchers: List['SampleWatcher'] = []
         self.is_folder_failed: bool = False
-        self.batch: Optional[Any] = None
-        self.quality_dataset: Optional[Any] = None
+        self.batch: Optional[Batch] = None
+        self.quality_dataset: Optional[RunDataset] = None
         self.filter_quality_run: Optional[Run] = None
-        self.bad_cycles_dataset: Optional[Any] = None
+        self.bad_cycles_dataset: Optional[RunDataset] = None
         self.active_pipeline_groups: Set[PipelineType] = set()  # {pipeline_group}
         self.active_runs: Dict[str, Tuple[List[Optional['SampleWatcher']], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
         self.new_runs: Set[str] = set()  # {run_id}

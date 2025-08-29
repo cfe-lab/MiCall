@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import Dict, Optional, Sequence, Iterable, List
+from typing import Mapping, Optional, Sequence, Iterable, TextIO
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -587,19 +587,19 @@ class KiveWatcher:
 
                 wait_for_retry(attempt_count, start_time)
 
-    def add_folder(self, base_calls):
+    def add_folder(self, base_calls: Path) -> FolderWatcher:
         folder_watcher = FolderWatcher(base_calls, self)
         self.folder_watchers[base_calls] = folder_watcher
         return folder_watcher
 
-    def finish_folder(self, base_calls):
+    def finish_folder(self, base_calls: Path) -> None:
         """ Record that all samples have been loaded for a folder.
 
         Processing isn't finished yet, but all samples have been loaded.
         """
         self.loaded_folders.add(base_calls)
 
-    def poll_runs(self):
+    def poll_runs(self) -> None:
         start_time = None
         for attempt_count in count(1):
             # noinspection PyBroadException
@@ -624,7 +624,7 @@ class KiveWatcher:
                 
                 wait_for_retry(attempt_count, start_time)
 
-    def check_completed_folders(self):
+    def check_completed_folders(self) -> None:
         for folder, folder_watcher in list(self.folder_watchers.items()):
             if folder not in self.loaded_folders:
                 # Still loading samples, can't be completed.
@@ -645,7 +645,7 @@ class KiveWatcher:
                 if not self.folder_watchers:
                     logger.info('No more folders to process.')
 
-    def collate_folder(self, folder_watcher, pipeline_group):
+    def collate_folder(self, folder_watcher: FolderWatcher, pipeline_group: PipelineType) -> Optional[Path]:
         """ Collate scratch files for a run folder.
 
         :param FolderWatcher folder_watcher: holds details about the run folder
@@ -668,7 +668,7 @@ class KiveWatcher:
             run_path = (results_path / "../..").resolve()
             disk_operations.write_text(run_path / 'errorprocessing', error_message + '\n')
             logger.error('Error in folder %s: %s', run_path, error_message)
-            return
+            return None
         if pipeline_group == PipelineType.FILTER_QUALITY:
             return results_path
         scratch_path = get_scratch_path(results_path, pipeline_group)
@@ -680,9 +680,9 @@ class KiveWatcher:
         return results_path
 
     def copy_outputs(self,
-                     folder_watcher,
-                     scratch_path,
-                     results_path):
+                     folder_watcher: FolderWatcher,
+                     scratch_path: Path,
+                     results_path: Path) -> None:
         disk_operations.mkdir_p(results_path, exist_ok=True)
         for output_name in DOWNLOADED_RESULTS:
             if output_name == 'coverage_maps_tar':
@@ -737,7 +737,7 @@ class KiveWatcher:
                 disk_operations.unlink(target_path)
 
     @staticmethod
-    def extract_csv(source, target, sample_name, source_count):
+    def extract_csv(source: TextIO, target: TextIO, sample_name: str, source_count: int) -> int:
         reader = DictReader(source)
         fieldnames = reader.fieldnames
         if fieldnames is None:
@@ -758,7 +758,7 @@ class KiveWatcher:
         return 1
 
     @staticmethod
-    def extract_fasta(source, target, sample_name):
+    def extract_fasta(source: TextIO, target: TextIO, sample_name: str) -> int:
         for line in source:
             if line.startswith('>'):
                 target.write(f'>{sample_name},{line[1:]}')
@@ -767,7 +767,7 @@ class KiveWatcher:
         return 1
 
     @staticmethod
-    def extract_coverage_maps(folder_watcher, scratch_path, results_path):
+    def extract_coverage_maps(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
         coverage_path: Path = results_path / "coverage_maps"
         disk_operations.mkdir_p(coverage_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
@@ -791,7 +791,7 @@ class KiveWatcher:
     def extract_archive(folder_watcher: FolderWatcher,
                         scratch_path: Path,
                         results_path: Path,
-                        output_name: str):
+                        output_name: str) -> None:
         """ Extract contents of tar files.
 
         There will be a folder named after the output name, with a subfolder
@@ -828,10 +828,10 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(output_path)
 
     @staticmethod
-    def move_alignment_plot(folder_watcher,
-                            extension,
-                            scratch_path,
-                            results_path):
+    def move_alignment_plot(folder_watcher: FolderWatcher,
+                            extension: str,
+                            scratch_path: Path,
+                            results_path: Path) -> None:
         alignment_path: Path = results_path / "alignment"
         disk_operations.mkdir_p(alignment_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
@@ -843,7 +843,7 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(alignment_path)
 
     @staticmethod
-    def move_genome_coverage(folder_watcher, scratch_path, results_path):
+    def move_genome_coverage(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
         plots_path = results_path / "genome_coverage"
         disk_operations.mkdir_p(plots_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
@@ -858,7 +858,10 @@ class KiveWatcher:
                 disk_operations.rename(concordance_path, target_concordance_path)
         disk_operations.remove_empty_directory(plots_path)
 
-    def run_filter_quality_pipeline(self, folder_watcher) -> Optional[Run]:
+    def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
+        if folder_watcher.quality_dataset is None:    
+            raise RuntimeError('Quality dataset not available')
+
         return self.find_or_launch_run(
             self.config.micall_filter_quality_pipeline_id,
             dict(quality_csv=folder_watcher.quality_dataset),
@@ -940,7 +943,7 @@ class KiveWatcher:
             if folder_watcher.filter_quality_run is None:
                 raise RuntimeError('Filter quality run not available for bad cycles dataset')
             filter_run_id = folder_watcher.filter_quality_run['id']
-            run_datasets: List[RunDataset] = self.kive_retry(
+            run_datasets: Sequence[RunDataset] = self.kive_retry(
                 lambda: self.session.endpoints.containerruns.get(
                     f'{filter_run_id}/dataset_list/'))
             bad_cycles_run_dataset, = [
@@ -992,7 +995,7 @@ class KiveWatcher:
 
         return info_dataset
 
-    def run_resistance_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
+    def run_resistance_pipeline(self, sample_watcher: SampleWatcher, folder_watcher: FolderWatcher, input_pipeline_types: Sequence[PipelineType], description: str) -> Optional[Run]:
         pipeline_id = self.config.micall_resistance_pipeline_id
         if pipeline_id is None:
             return None
@@ -1024,7 +1027,7 @@ class KiveWatcher:
             folder_watcher.batch)
         return run
 
-    def run_proviral_pipeline(self, sample_watcher, folder_watcher, description):
+    def run_proviral_pipeline(self, sample_watcher: SampleWatcher, folder_watcher: FolderWatcher, description: str) -> Optional[Run]:
         pipeline_id = self.config.proviral_pipeline_id
         if pipeline_id is None:
             return None
@@ -1053,9 +1056,9 @@ class KiveWatcher:
 
     def find_or_launch_run(self,
                            pipeline_id: int,
-                           inputs,
+                           inputs: Mapping[str, RunDataset],
                            run_name: str,
-                           run_batch: Optional[Dict[str, object]]) -> Optional[Run]:
+                           run_batch: Optional[Mapping[str, object]]) -> Optional[Run]:
         """ Look for a matching container run, or start a new one.
 
         :return: the run dictionary
@@ -1073,7 +1076,7 @@ class KiveWatcher:
         if run:
             if run['state'] == 'C':
                 run_id = run['id']
-                run_datasets: List[RunCreationDataset] = self.session.endpoints.containerruns.get(
+                run_datasets: Sequence[RunCreationDataset] = self.session.endpoints.containerruns.get(
                     f'{run_id}/dataset_list/')
                 if any(run_dataset.get('dataset_purged')
                        for run_dataset in run_datasets):
