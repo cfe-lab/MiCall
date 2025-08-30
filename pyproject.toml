@@ -68,6 +68,7 @@ dev = [
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "pandas-stubs==2.2.3.250308",
+    "types-requests==2.32.4.20250809",
     "uv==0.8.9",
 ]
 denovo = [
@@ -198,12 +199,6 @@ exclude = '''(?x)
     ^micall/drivers/sample[.]py$|
     ^micall/g2p/fastq_g2p[.]py$|
     ^micall/g2p/pssm_lib[.]py$|
-    ^micall/monitor/find_groups[.]py$|
-    ^micall/monitor/kive_watcher[.]py$|
-    ^micall/monitor/qai_helper[.]py$|
-    ^micall/monitor/sample_watcher[.]py$|
-    ^micall/monitor/update_qai[.]py$|
-    ^micall/monitor/micall_watcher[.]py$|
     ^micall/resistance/asi_algorithm[.]py$|
     ^micall/resistance/genreport[.]py$|
     ^micall/resistance/pdfreport[.]py$|
@@ -294,6 +289,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "Bio.SeqRecord"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "kiveapi"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

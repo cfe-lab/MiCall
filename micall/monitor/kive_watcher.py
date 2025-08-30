@@ -11,6 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -24,8 +25,8 @@ import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
 from micall.monitor import error_metrics_parser
-from micall.monitor.sample_watcher import FolderWatcher, ALLOWED_GROUPS, SampleWatcher, PipelineType, PIPELINE_GROUPS
-from micall.monitor.find_groups import find_groups
+from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
+from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
@@ -90,14 +91,15 @@ kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential re
 # Suppress urllib3 connection retry warnings
 urllib3.connectionpool.log.setLevel(logging.ERROR)
 
+T = TypeVar('T')
 
-def open_kive(server_url):
+def open_kive(server_url: str) -> KiveAPI:
     session = KiveAPI(server_url)
     session.mount('https://', HTTPAdapter(max_retries=20))
     return session
 
 
-def now():
+def now() -> datetime:
     """ Get the current date/time.
 
     Wrapped in a local function so it can be mocked during testing.
@@ -105,11 +107,11 @@ def now():
     return datetime.now()
 
 
-def find_samples(raw_data_folder,
-                 pipeline_version,
-                 sample_queue,
-                 wait=True,
-                 retry=True):
+def find_samples(raw_data_folder: Path,
+                 pipeline_version: str,
+                 sample_queue: Queue[FolderEvent],
+                 wait: bool = True,
+                 retry: bool = True):
     attempt_count = 0
     start_time = None
     while True:
@@ -135,13 +137,13 @@ def find_samples(raw_data_folder,
             wait_for_retry(attempt_count, start_time)
 
 
-def get_version_key(version_path: Path):
+def get_version_key(version_path: Path) -> tuple[int, ...]:
     version_name = version_path.name
     version_parts = tuple(int(part) for part in re.findall(r'\d+', version_name))
     return version_parts
 
 
-def compress_old_versions(version_path: Path):
+def compress_old_versions(version_path: Path) -> None:
     results_path: Path = version_path.parent
     if not results_path.exists():
         return
@@ -167,16 +169,16 @@ def compress_old_versions(version_path: Path):
         with open(results_path / zip_name, 'wb') as f:
             with ZipFile(f, 'w', ZIP_DEFLATED) as z:
                 # noinspection PyTypeChecker
-                for folder_path, folders, files in os.walk(version_folder):
+                for folder_path_str, folders, files in os.walk(version_folder):
                     # noinspection PyTypeChecker
-                    folder_path = Path(folder_path)
+                    folder_path = Path(folder_path_str)
                     folder_rel = folder_path.relative_to(results_path)
                     for file_name in files:
                         z.write(folder_path/file_name, folder_rel/file_name)
         shutil.rmtree(version_folder)
 
 
-def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
+def scan_samples(raw_data_folder: Path, pipeline_version: str, sample_queue: Queue[FolderEvent], wait: bool):
     next_scan = now() + FOLDER_SCAN_INTERVAL
     flag_paths = sorted(scan_flag_paths(raw_data_folder), reverse=True)
     is_found = False
@@ -214,12 +216,11 @@ def scan_samples(raw_data_folder, pipeline_version, sample_queue, wait):
         sleep(SLEEP_SECONDS)
     return True
 
-
-def scan_flag_paths(raw_data_folder):
+def scan_flag_paths(raw_data_folder: Path) -> Iterable[Path]:
     return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
-def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path):
+def check_sample_name_consistency(sample_sheet_path: Path, fastq_file_names: Iterable[str], run_path: Path):
     """
     Check FASTQ file recognition ratio against sample sheet.
 
@@ -234,10 +235,17 @@ def check_sample_name_consistency(sample_sheet_path, fastq_file_names, run_path)
 
     # Extract sample names from the sample sheet
     run_info = read_sample_sheet_and_overrides(sample_sheet_path)
+    data_split = run_info.get('DataSplit')
+    if data_split is None:
+        raise RuntimeError(f"Missing 'DataSplit' section in {sample_sheet_path}")
+
+    assert hasattr(data_split, '__iter__')
+    if not hasattr(data_split, '__iter__'):
+        raise RuntimeError(f"Invalid 'DataSplit' section in {sample_sheet_path}")
 
     # Get filenames from sample sheet DataSplit (these are the expected FASTQ file names)
     sheet_filenames = set()
-    for row in run_info.get('DataSplit', []):
+    for row in data_split:
         filename = row.get('filename', '')
         if filename:
             # Store the trimmed version that matches what find_groups() uses
@@ -267,7 +275,7 @@ And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}.'''
                     len(recognized_fastq), len(unrecognized_fastq), run_path)
 
 
-def find_sample_groups(run_path, base_calls_path):
+def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
     # noinspection PyBroadException
     try:
         fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
@@ -277,8 +285,8 @@ def find_sample_groups(run_path, base_calls_path):
         # Check sample name consistency between sample sheet and FASTQ files
         check_sample_name_consistency(sample_sheet_path, file_names, run_path)
 
-        sample_groups = list(find_groups(file_names, sample_sheet_path))
-        sample_groups.sort(key=lambda group: get_sample_number(group.names[0]),
+        sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
+        sample_groups.sort(key=lambda group: get_sample_number(group.names[0] if group.names[0] is not None else ''),
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
@@ -288,12 +296,14 @@ def find_sample_groups(run_path, base_calls_path):
     return sample_groups
 
 
-def get_sample_number(fastq_name):
+def get_sample_number(fastq_name: str) -> int:
     match = re.match(r'.*_S(\d+)_', fastq_name)
+    if match is None:
+        raise ValueError(f"FASTQ filename does not match expected pattern: {fastq_name}")
     return int(match.group(1))
 
 
-def send_event(sample_queue, folder_event, next_scan):
+def send_event(sample_queue: Queue[FolderEvent], folder_event: FolderEvent, next_scan: datetime) -> bool:
     is_sent = False
     while not is_sent and now() < next_scan:
         try:
@@ -305,11 +315,11 @@ def send_event(sample_queue, folder_event, next_scan):
     return is_sent
 
 
-def trim_name(sample_name):
+def trim_name(sample_name: str) -> str:
     return '_'.join(sample_name.split('_')[:2])
 
 
-def trim_run_name(run_name):
+def trim_run_name(run_name: str) -> str:
     if len(run_name) > MAX_RUN_NAME_LENGTH:
         split_index = run_name.rfind('_')
         suffix_length = len(run_name) - split_index
@@ -326,11 +336,11 @@ def trim_run_name(run_name):
     return run_name
 
 
-def get_output_filename(output_name):
+def get_output_filename(output_name: str) -> str:
     return '.'.join(output_name.rsplit('_', 1))
 
 
-def wait_for_retry(attempt_count, start_time):
+def wait_for_retry(attempt_count: int, start_time: datetime) -> None:
     """Wait with exponential backoff, logging warnings after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
                                  MAXIMUM_RETRY_WAIT,
@@ -347,14 +357,14 @@ def wait_for_retry(attempt_count, start_time):
     sleep(delay.total_seconds())
 
 
-def calculate_retry_wait(min_wait, max_wait, attempt_count):
+def calculate_retry_wait(min_wait: timedelta, max_wait: timedelta, attempt_count: int) -> timedelta:
     min_seconds = int(min_wait.total_seconds())
     seconds = min_seconds * (2 ** (attempt_count - 1))
     seconds = min(seconds, max_wait.total_seconds())
     return timedelta(seconds=seconds)
 
 
-def get_scratch_path(results_path, pipeline_group):
+def get_scratch_path(results_path: Path, pipeline_group: PipelineType) -> Path:
     if pipeline_group == PipelineType.MAIN:
         scratch_name = "scratch"
     elif pipeline_group == PipelineType.DENOVO_MAIN:
@@ -368,7 +378,7 @@ def get_scratch_path(results_path, pipeline_group):
     return scratch_path
 
 
-def get_collated_path(results_path, pipeline_group):
+def get_collated_path(results_path: Path, pipeline_group: PipelineType) -> Path:
     if pipeline_group == PipelineType.MAIN:
         target_path = results_path
     elif pipeline_group == PipelineType.DENOVO_MAIN:
@@ -383,8 +393,8 @@ def get_collated_path(results_path, pipeline_group):
 
 class KiveWatcher:
     def __init__(self,
-                 config=None,
-                 qai_upload_queue=None,
+                 config: ConfigInterface,
+                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  retry=False):
         """ Initialize.
 
@@ -395,30 +405,30 @@ class KiveWatcher:
         """
         self.config = config
         self.retry = retry
-        self.session = None
-        self.loaded_folders = set()  # base_calls folders with all samples loaded
-        self.folder_watchers = {}  # {base_calls_folder: FolderWatcher}
-        self.app_urls = {}  # {app_id: app_url}
-        self.app_args = {}  # {app_id: {arg_name: arg_url}}
-        self.external_directory_path = self.external_directory_name = None
-        if not qai_upload_queue:
-            self.qai_upload_queue = Queue()
-        else:
-            self.qai_upload_queue = qai_upload_queue
+        self._session = None
+        self.loaded_folders: set[str] = set()  # base_calls folders with all samples loaded
+        self.folder_watchers: dict[str, FolderWatcher] = {}  # {base_calls_folder: FolderWatcher}
+        self.app_urls: dict[str | int, str] = {}  # {app_id: app_url}
+        self.app_args: dict[str | int, dict[str, str]] = {}  # {app_id: {arg_name: arg_url}}
+        self.external_directory_path: Optional[Path] = None
+        self.external_directory_name: Optional[str] = None
+        self.qai_upload_queue = qai_upload_queue
 
-    def is_full(self):
+    def is_full(self) -> bool:
+        if self.config is None:
+            raise RuntimeError("KiveWatcher config is not set.")
         active_count = sum(folder_watcher.active_run_count
                            for folder_watcher in self.folder_watchers.values())
         return active_count >= self.config.max_active
 
-    def is_idle(self):
+    def is_idle(self) -> bool:
         return not self.folder_watchers
 
-    def get_kive_app(self, app_id):
+    def get_kive_app(self, app_id: str | int) -> str:
         self.get_kive_arguments(app_id)
         return self.app_urls[app_id]
 
-    def get_kive_arguments(self, app_id):
+    def get_kive_arguments(self, app_id: str | int) -> dict[str, str]:
         """ Get a dictionary of argument URL's for a container app. """
         self.check_session()
         kive_app = self.app_args.get(app_id)
@@ -433,7 +443,10 @@ class KiveWatcher:
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
 
-    def create_batch(self, folder_watcher):
+    def create_batch(self, folder_watcher: FolderWatcher) -> None:
+        if self.config is None:
+            raise RuntimeError("KiveWatcher config is not set.")
+    
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
@@ -450,9 +463,11 @@ class KiveWatcher:
                     name=batch_name,
                     description=description,
                     groups_allowed=ALLOWED_GROUPS)))
-        folder_watcher.batch = batch
 
-    def find_kive_dataset(self, source_file, dataset_name):
+        ret: Batch = batch  # type: ignore
+        folder_watcher.batch = ret
+
+    def find_kive_dataset(self, source_file: IO[bytes], dataset_name: str) -> Optional[RunDataset]:
         """ Search for a dataset in Kive by name and checksum.
 
         :param source_file: open file object to read from
@@ -469,18 +484,24 @@ class KiveWatcher:
                 'name', dataset_name,
                 'md5', checksum,
                 'uploaded', True))
-        return self.find_name_and_permissions_match(datasets,
-                                                    dataset_name,
+        found = self.find_name_and_permissions_match(datasets,
+                                                     dataset_name,
                                                     'dataset')
+        if found is None:
+            return None
+
+        ret: RunDataset = found  # type: ignore
+        return ret
 
     @staticmethod
-    def find_name_and_permissions_match(items, name, type_name):
+    def find_name_and_permissions_match(items: Iterable[Item], name: str, type_name: str) -> Optional[Item]:
         needed_groups = set(ALLOWED_GROUPS)
         for item in items:
             missing_groups = needed_groups - set(item['groups_allowed'])
             if item['name'] == name and not missing_groups:
                 logger.info('%s already in Kive: %r', type_name, name)
                 return item
+        return None
 
     def upload_kive_dataset(self, source_file, dataset_name, description):
         """ Upload a dataset to Kive.
@@ -556,7 +577,8 @@ class KiveWatcher:
                         return sample_watcher
 
                 sample_watcher = SampleWatcher(sample_group)
-                for fastq1 in filter(None, sample_group.names):
+                names: Iterable[Optional[str]] = sample_group.names
+                for fastq1 in filter(None, names):
                     fastq2 = fastq1.replace('_R1_', '_R2_')
                     for fastq_name, direction in ((fastq1, 'forward'), (fastq2, 'reverse')):
                         with (base_calls / fastq_name).open('rb') as fastq_file:
@@ -579,19 +601,19 @@ class KiveWatcher:
 
                 wait_for_retry(attempt_count, start_time)
 
-    def add_folder(self, base_calls):
+    def add_folder(self, base_calls: str) -> FolderWatcher:
         folder_watcher = FolderWatcher(base_calls, self)
         self.folder_watchers[base_calls] = folder_watcher
         return folder_watcher
 
-    def finish_folder(self, base_calls):
+    def finish_folder(self, base_calls: str) -> None:
         """ Record that all samples have been loaded for a folder.
 
         Processing isn't finished yet, but all samples have been loaded.
         """
         self.loaded_folders.add(base_calls)
 
-    def poll_runs(self):
+    def poll_runs(self) -> None:
         start_time = None
         for attempt_count in count(1):
             # noinspection PyBroadException
@@ -616,7 +638,7 @@ class KiveWatcher:
                 
                 wait_for_retry(attempt_count, start_time)
 
-    def check_completed_folders(self):
+    def check_completed_folders(self) -> None:
         for folder, folder_watcher in list(self.folder_watchers.items()):
             if folder not in self.loaded_folders:
                 # Still loading samples, can't be completed.
@@ -637,7 +659,7 @@ class KiveWatcher:
                 if not self.folder_watchers:
                     logger.info('No more folders to process.')
 
-    def collate_folder(self, folder_watcher, pipeline_group):
+    def collate_folder(self, folder_watcher: FolderWatcher, pipeline_group: PipelineType) -> Optional[Path]:
         """ Collate scratch files for a run folder.
 
         :param FolderWatcher folder_watcher: holds details about the run folder
@@ -660,7 +682,7 @@ class KiveWatcher:
             run_path = (results_path / "../..").resolve()
             disk_operations.write_text(run_path / 'errorprocessing', error_message + '\n')
             logger.error('Error in folder %s: %s', run_path, error_message)
-            return
+            return None
         if pipeline_group == PipelineType.FILTER_QUALITY:
             return results_path
         scratch_path = get_scratch_path(results_path, pipeline_group)
@@ -672,9 +694,9 @@ class KiveWatcher:
         return results_path
 
     def copy_outputs(self,
-                     folder_watcher,
-                     scratch_path,
-                     results_path):
+                     folder_watcher: FolderWatcher,
+                     scratch_path: Path,
+                     results_path: Path) -> None:
         disk_operations.mkdir_p(results_path, exist_ok=True)
         for output_name in DOWNLOADED_RESULTS:
             if output_name == 'coverage_maps_tar':
@@ -729,7 +751,7 @@ class KiveWatcher:
                 disk_operations.unlink(target_path)
 
     @staticmethod
-    def extract_csv(source, target, sample_name, source_count):
+    def extract_csv(source: TextIO, target: TextIO, sample_name: str, source_count: int) -> int:
         reader = DictReader(source)
         fieldnames = reader.fieldnames
         if fieldnames is None:
@@ -750,7 +772,7 @@ class KiveWatcher:
         return 1
 
     @staticmethod
-    def extract_fasta(source, target, sample_name):
+    def extract_fasta(source: TextIO, target: TextIO, sample_name: str) -> int:
         for line in source:
             if line.startswith('>'):
                 target.write(f'>{sample_name},{line[1:]}')
@@ -759,7 +781,7 @@ class KiveWatcher:
         return 1
 
     @staticmethod
-    def extract_coverage_maps(folder_watcher, scratch_path, results_path):
+    def extract_coverage_maps(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
         coverage_path: Path = results_path / "coverage_maps"
         disk_operations.mkdir_p(coverage_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
@@ -770,8 +792,10 @@ class KiveWatcher:
                     for source_info in f:
                         filename = os.path.basename(source_info.name)
                         target_path = coverage_path / (sample_name + '.' + filename)
-                        with f.extractfile(source_info) as source, \
-                                open(target_path, 'wb') as target:
+                        source = f.extractfile(source_info)
+                        if source is None:
+                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
+                        with source, open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
             except FileNotFoundError:
                 pass
@@ -781,7 +805,7 @@ class KiveWatcher:
     def extract_archive(folder_watcher: FolderWatcher,
                         scratch_path: Path,
                         results_path: Path,
-                        output_name: str):
+                        output_name: str) -> None:
         """ Extract contents of tar files.
 
         There will be a folder named after the output name, with a subfolder
@@ -807,8 +831,10 @@ class KiveWatcher:
                         filename = os.path.basename(source_info.name)
                         target_path = sample_target_path / filename
                         assert not target_path.exists(), target_path
-                        with f.extractfile(source_info) as source, \
-                                open(target_path, 'wb') as target:
+                        source = f.extractfile(source_info)
+                        if source is None:
+                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
+                        with source, open(target_path, 'wb') as target:
                             shutil.copyfileobj(source, target)
                 disk_operations.remove_empty_directory(sample_target_path)
             except FileNotFoundError:
@@ -816,10 +842,10 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(output_path)
 
     @staticmethod
-    def move_alignment_plot(folder_watcher,
-                            extension,
-                            scratch_path,
-                            results_path):
+    def move_alignment_plot(folder_watcher: FolderWatcher,
+                            extension: str,
+                            scratch_path: Path,
+                            results_path: Path) -> None:
         alignment_path: Path = results_path / "alignment"
         disk_operations.mkdir_p(alignment_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
@@ -831,7 +857,7 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(alignment_path)
 
     @staticmethod
-    def move_genome_coverage(folder_watcher, scratch_path, results_path):
+    def move_genome_coverage(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
         plots_path = results_path / "genome_coverage"
         disk_operations.mkdir_p(plots_path, exist_ok=True)
         for sample_name in folder_watcher.all_samples:
@@ -846,16 +872,25 @@ class KiveWatcher:
                 disk_operations.rename(concordance_path, target_concordance_path)
         disk_operations.remove_empty_directory(plots_path)
 
+    def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
+        if folder_watcher.quality_dataset is None:    
+            raise RuntimeError('Quality dataset not available')
+        if self.config.micall_filter_quality_pipeline_id is None:
+            raise RuntimeError('Filter quality pipeline ID not configured')
+
+        return self.find_or_launch_run(
+            self.config.micall_filter_quality_pipeline_id,
+            dict(quality_csv=folder_watcher.quality_dataset),
+            'MiCall filter quality on ' + folder_watcher.run_name,
+            folder_watcher.batch)
+
     def run_pipeline(self,
                      folder_watcher: FolderWatcher,
                      pipeline_type: PipelineType,
-                     sample_watcher: SampleWatcher):
+                     sample_watcher: SampleWatcher) -> Optional[Run]:
         if pipeline_type == PipelineType.FILTER_QUALITY:
-            return self.find_or_launch_run(
-                self.config.micall_filter_quality_pipeline_id,
-                dict(quality_csv=folder_watcher.quality_dataset),
-                'MiCall filter quality on ' + folder_watcher.run_name,
-                folder_watcher.batch)
+            run = self.run_filter_quality_pipeline(folder_watcher)
+            return run
         if pipeline_type == PipelineType.PROVIRAL:
             run = self.run_proviral_pipeline(
                 sample_watcher,
@@ -891,7 +926,7 @@ class KiveWatcher:
             return self.find_or_launch_run(
                 self.config.mixed_hcv_pipeline_id,
                 input_datasets,
-                'Mixed HCV on ' + trim_name(sample_name),
+                'Mixed HCV on ' + (trim_name(sample_name) if sample_name is not None else 'unknown'),
                 folder_watcher.batch)
         if pipeline_type == PipelineType.MAIN:
             group_position = 0
@@ -915,14 +950,16 @@ class KiveWatcher:
         fastq1, fastq2 = sample_watcher.fastq_datasets[
                          group_position*2:(group_position+1)*2]
         sample_name = sample_watcher.sample_group.names[group_position]
-        run_name += ' on ' + trim_name(sample_name)
+        run_name += ' on ' + (trim_name(sample_name) if sample_name is not None else 'unknown')
         sample_info = self.get_sample_info(pipeline_id,
                                            sample_watcher,
                                            folder_watcher,
                                            group_position)
         if folder_watcher.bad_cycles_dataset is None:
+            if folder_watcher.filter_quality_run is None:
+                raise RuntimeError('Filter quality run not available for bad cycles dataset')
             filter_run_id = folder_watcher.filter_quality_run['id']
-            run_datasets = self.kive_retry(
+            run_datasets: Sequence[RunDataset] = self.kive_retry(
                 lambda: self.session.endpoints.containerruns.get(
                     f'{filter_run_id}/dataset_list/'))
             bad_cycles_run_dataset, = [
@@ -958,7 +995,7 @@ class KiveWatcher:
         assert group_position == len(sample_watcher.sample_info_datasets)
 
         fastq_name = sample_watcher.sample_group.names[group_position]
-        sample_name = trim_name(fastq_name)
+        sample_name = trim_name(fastq_name if fastq_name is not None else 'unknown')
         project_code = sample_watcher.sample_group.project_codes[group_position]
         info_file = StringIO()
         writer = DictWriter(info_file, ['sample', 'project', 'run_name'])
@@ -974,7 +1011,7 @@ class KiveWatcher:
 
         return info_dataset
 
-    def run_resistance_pipeline(self, sample_watcher, folder_watcher, input_pipeline_types, description):
+    def run_resistance_pipeline(self, sample_watcher: SampleWatcher, folder_watcher: FolderWatcher, input_pipeline_types: Sequence[PipelineType], description: str) -> Optional[Run]:
         pipeline_id = self.config.micall_resistance_pipeline_id
         if pipeline_id is None:
             return None
@@ -1006,7 +1043,7 @@ class KiveWatcher:
             folder_watcher.batch)
         return run
 
-    def run_proviral_pipeline(self, sample_watcher, folder_watcher, description):
+    def run_proviral_pipeline(self, sample_watcher: SampleWatcher, folder_watcher: FolderWatcher, description: str) -> Optional[Run]:
         pipeline_id = self.config.proviral_pipeline_id
         if pipeline_id is None:
             return None
@@ -1034,10 +1071,10 @@ class KiveWatcher:
         return run
 
     def find_or_launch_run(self,
-                           pipeline_id,
-                           inputs,
-                           run_name,
-                           run_batch):
+                           pipeline_id: int,
+                           inputs: Mapping[str, RunDataset],
+                           run_name: str,
+                           run_batch: Optional[Batch]) -> Optional[Run]:
         """ Look for a matching container run, or start a new one.
 
         :return: the run dictionary
@@ -1051,15 +1088,15 @@ class KiveWatcher:
             filters.append(arg['id'])
 
         old_runs = self.session.endpoints.containerruns.filter(*filters)
-        run = self.find_name_and_permissions_match(old_runs,
-                                                   run_name,
-                                                   'container run')
+        untyped_run = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
+        run: Optional[Run] = untyped_run  # type: ignore
+
         if run:
             if run['state'] == 'C':
                 run_id = run['id']
-                run_datasets = self.session.endpoints.containerruns.get(
+                run_datasets: Sequence[RunCreationDataset] = self.session.endpoints.containerruns.get(
                     f'{run_id}/dataset_list/')
-                if any(run_dataset['dataset_purged']
+                if any(run_dataset.get('dataset_purged')
                        for run_dataset in run_datasets):
                     run = None
         if run is None:
@@ -1071,6 +1108,8 @@ class KiveWatcher:
                 raise ValueError(f"Pipeline input error: {repr(e)}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
                                  f" Does the run name {repr(run_name)} make sense for it?")
+            if run_batch is None:
+                raise ValueError("Run batch is required.")
             run_params = dict(name=run_name,
                               batch=run_batch['url'],
                               groups_allowed=ALLOWED_GROUPS,
@@ -1083,7 +1122,7 @@ class KiveWatcher:
                     'Failed to launch run {}.'.format(run_name)) from ex
         return run
 
-    def kive_retry(self, target):
+    def kive_retry(self, target: Callable[[], T]) -> T:
         """ Add a single retry to a Kive API call.
 
         Tries to call the target function, then refreshes the session login if
@@ -1095,16 +1134,21 @@ class KiveWatcher:
             self.session.login(self.config.kive_user, self.config.kive_password)
             return target()
 
-    def fetch_run_status(self, run, folder_watcher, pipeline_type, sample_watchers):
+    def fetch_run_status(self, run: Run, folder_watcher: FolderWatcher, pipeline_type: PipelineType, sample_watchers: Sequence[Optional[SampleWatcher]]) -> Optional[Run]:
         self.check_session()
-        new_status = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
+        new_status: Run = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         is_complete = new_status['state'] == 'C'
         if new_status['state'] == 'X':
-            new_run = None
+            new_run: Optional[Run] = None
             for sample_watcher in sample_watchers:
-                new_run = self.run_pipeline(folder_watcher,
-                                            pipeline_type,
-                                            sample_watcher)
+                if sample_watcher is None:
+                    if pipeline_type != PipelineType.FILTER_QUALITY:
+                        raise RuntimeError('Filter quality run failed, but no sample watcher provided.')
+                    new_run = self.run_filter_quality_pipeline(folder_watcher)
+                else:
+                    new_run = self.run_pipeline(folder_watcher,
+                                                pipeline_type,
+                                                sample_watcher)
             return new_run
         if new_status['state'] == 'F':
             raise KiveRunFailedException(f'Run id {new_status["id"]} failed.')
@@ -1113,6 +1157,9 @@ class KiveWatcher:
                 lambda: self.session.endpoints.containerruns.get(
                     f"{run['id']}/dataset_list/"))
             for sample_watcher in sample_watchers:
+                if sample_watcher is None:
+                    raise RuntimeError('A non-filter quality run completed, but no sample watcher provided.')
+
                 for other_run in sample_watcher.runs.values():
                     if other_run['id'] == run['id']:
                         other_run['datasets'] = run_datasets
@@ -1125,7 +1172,7 @@ class KiveWatcher:
                 results_path = self.get_results_path(folder_watcher)
                 pipeline_group = PIPELINE_GROUPS[pipeline_type]
                 scratch_path = get_scratch_path(results_path, pipeline_group)
-                scratch_path /= trim_name(sample_name)
+                scratch_path /= trim_name(sample_name if sample_name is not None else 'unknown')
                 disk_operations.mkdir_p(scratch_path, parents=True, exist_ok=True)
                 for output_name in DOWNLOADED_RESULTS:
                     matches = [run_dataset
@@ -1144,16 +1191,16 @@ class KiveWatcher:
             return None
         return run
 
-    def download_file(self, dataset_url, target_path):
+    def download_file(self, dataset_url: str, target_path: Path) -> None:
         with disk_operations.disk_file_operation(target_path, 'wb') as f:
             self.session.download_file(f, dataset_url)
 
-    def get_results_path(self, folder_watcher):
+    def get_results_path(self, folder_watcher: FolderWatcher) -> Path:
         version_name = f'version_{self.config.pipeline_version}'
         results_path = folder_watcher.run_folder / "Results" / version_name
         return results_path
 
-    def upload_filter_quality(self, folder_watcher):
+    def upload_filter_quality(self, folder_watcher: FolderWatcher) -> None:
         read_sizes = parse_read_sizes(folder_watcher.run_folder / "RunInfo.xml")
         read_lengths = [read_sizes.read1,
                         read_sizes.index1,
@@ -1191,11 +1238,16 @@ class KiveWatcher:
             folder_watcher.run_name + '_quality.csv',
             'Error rates for {} run.'.format(folder_watcher.run_name))
 
-    def check_session(self):
-        if self.session is None:
-            self.session = open_kive(self.config.kive_server)
-            self.session.login(self.config.kive_user, self.config.kive_password)
+    @property
+    def session(self) -> KiveAPI:
+        if self._session is None:
+            new = open_kive(self.config.kive_server)
+            new.login(self.config.kive_user, self.config.kive_password)
+            self._session = new
+        return self._session
 
+    def check_session(self):
+        if self._session is None:
             # retrieve external file directory
             directories = self.session.endpoints.externalfiledirectories.get()
             self.external_directory_name = self.external_directory_path = None
@@ -1212,9 +1264,9 @@ class KiveWatcher:
                                str(search_path))
 
     def find_or_upload_dataset(self,
-                               dataset_file,
-                               dataset_name,
-                               description=''):
+                               dataset_file: IO[bytes],
+                               dataset_name: str,
+                               description: str = '') -> Optional[RunDataset]:
         dataset = self.find_kive_dataset(dataset_file, dataset_name)
         if dataset is None:
             dataset_file.seek(0)

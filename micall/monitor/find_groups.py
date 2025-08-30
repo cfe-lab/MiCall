@@ -1,12 +1,21 @@
-from collections import namedtuple
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable, Iterator, Optional, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
-SampleGroup = namedtuple('SampleGroup', 'enum names project_codes')
+@dataclass(frozen=True)
+class SampleGroup():
+    """Protocol for SampleGroup objects used in the monitor module.
+
+    SampleGroup represents a group of related samples (main and optional MIDI).
+    """
+    enum: str
+    names: Sequence[Optional[str]]
+    project_codes: Sequence[Optional[str]]
 
 
-def find_groups(file_names, sample_sheet_path, included_projects=None):
+def find_groups(file_names: Iterable[str], sample_sheet_path: str, included_projects: Optional[set[str]] = None) -> Iterator[SampleGroup]:
     """ Group HCV samples with their MIDI partners.
 
     :param list[str] file_names: a list of FASTQ file names without paths
@@ -15,13 +24,23 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
         all
     """
     run_info = read_sample_sheet_and_overrides(Path(sample_sheet_path))
+    data_split = run_info.get('DataSplit')
+    if data_split is None:
+        raise RuntimeError(f"Missing 'DataSplit' section in {sample_sheet_path}")
+
+    assert hasattr(data_split, '__iter__')
+    if not hasattr(data_split, '__iter__'):
+        raise RuntimeError(f"Invalid 'DataSplit' section in {sample_sheet_path}")
 
     midi_hcv_code = 'MidHCV'
-    midi_files = {row['sample']: row['filename']
-                  for row in run_info['DataSplit']
-                  if row['project'] == midi_hcv_code}
+    midi_files: dict[str, str] \
+        = {row['sample']: row['filename']
+           for row in data_split
+           if row['project'] == midi_hcv_code
+           and isinstance(row['filename'], str)
+           and isinstance(row['sample'], str)}
     wide_names = {row['filename']: (row['sample'], row['project'])
-                  for row in run_info['DataSplit']
+                  for row in data_split
                   if (row['project'] != midi_hcv_code and
                       (included_projects is None or
                        row['project'] in included_projects))}
@@ -38,9 +57,13 @@ def find_groups(file_names, sample_sheet_path, included_projects=None):
         if midi_trimmed is None and sample_name.upper().endswith('WG'):
             sample_name = sample_name[:-2]
             midi_trimmed = midi_files.get(sample_name + 'MIDI')
-        midi_name = trimmed_names.get(midi_trimmed)
+        if midi_trimmed is not None:
+            midi_name = trimmed_names.get(midi_trimmed)
+        else:
+            midi_name = None
         unused_names.discard(file_name)
-        unused_names.discard(midi_name)
+        if midi_name is not None:
+            unused_names.discard(midi_name)
         midi_project = midi_name and midi_hcv_code
         yield SampleGroup(sample_name,
                           (file_name, midi_name),

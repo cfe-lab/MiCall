@@ -8,11 +8,11 @@ logger = logging.getLogger('qai_helper')
 
 
 class Session(requests.Session):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.qai_path = None
+        self.qai_path: str | None = None
 
-    def login(self, qai_path, qai_user, password):
+    def login(self, qai_path: str, qai_user: str, password: str) -> None:
         """ Login to QAI before calling post_json or get_json.
 
         @raise RuntimeError: when the QAI server rejects the user and password.
