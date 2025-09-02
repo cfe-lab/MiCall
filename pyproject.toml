@@ -39,6 +39,12 @@ dependencies = [
     "cairosvg==2.8.2",
     "aligntools==1.2.1",
     "multicsv==1.0.4",
+
+    # This dependency is not really needed for the main pipeline.
+    # It is needed for `test`, `watcher`, and `basespace` programs.
+    # But repeating this dependency in three different places confuses Github's dependabot.
+    # So we employ this hack. TODO: see if dependabot can handle this now.
+    "requests==2.32.4",
 ]
 
 [project.optional-dependencies]
@@ -56,7 +62,6 @@ test = [
 
     # Also includes watcher's dependencies.
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.4",
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
@@ -72,11 +77,9 @@ dev = [
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.4",
 ]
 basespace = [
     # Requirements for running the micall_basespace.py script
-    "requests==2.32.4",
 ]
 
 [project.scripts]
