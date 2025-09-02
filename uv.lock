@@ -510,7 +510,7 @@ requires-dist = [
     { name = "numpy", specifier = "==2.3.2" },
     { name = "openpyxl", marker = "extra == 'test'", specifier = "==3.1.5" },
     { name = "pandas", marker = "extra == 'test'", specifier = "==2.3.1" },
-    { name = "pandas-stubs", marker = "extra == 'dev'", specifier = "==2.2.3.250308" },
+    { name = "pandas-stubs", marker = "extra == 'dev'", specifier = "==2.3.2.250827" },
     { name = "pysam", specifier = "==0.23.3" },
     { name = "pytest", marker = "extra == 'test'", specifier = "==8.4.1" },
     { name = "python-levenshtein", specifier = "==0.27.1" },
@@ -636,15 +636,15 @@ wheels = [
 
 [[package]]
 name = "pandas-stubs"
-version = "2.2.3.250308"
+version = "2.3.2.250827"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "types-pytz" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/5a/261f5c67a73e46df2d5984fe7129d66a3ed4864fd7aa9d8721abb3fc802e/pandas_stubs-2.2.3.250308.tar.gz", hash = "sha256:3a6e9daf161f00b85c83772ed3d5cff9522028f07a94817472c07b91f46710fd", size = 103986, upload-time = "2025-03-08T20:51:04.999Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/7b/8d2076a76ddf35806319798037056e4bbdcacdc832fb7c95b517f4c03fb2/pandas_stubs-2.3.2.250827.tar.gz", hash = "sha256:bcc2d49a2766325e4a1a492c3eeda879e9521bb5e26e69e2bbf13e80e7ef569a", size = 100032, upload-time = "2025-08-27T23:18:12.802Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/64/ab61d9ca06ff66c07eb804ec27dec1a2be1978b3c3767caaa91e363438cc/pandas_stubs-2.2.3.250308-py3-none-any.whl", hash = "sha256:a377edff3b61f8b268c82499fdbe7c00fdeed13235b8b71d6a1dc347aeddc74d", size = 158053, upload-time = "2025-03-08T20:51:03.411Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/b8/dc820157be5aa9527f1f7ffe81737ee4d1cf0924081e1bfbd680530dde41/pandas_stubs-2.3.2.250827-py3-none-any.whl", hash = "sha256:3d613013b4189147a9a6bb18d8bec1e5b137de091496e9b9ff9f137ec3e223a9", size = 157775, upload-time = "2025-08-27T23:18:11.083Z" },
 ]
 
 [[package]]
