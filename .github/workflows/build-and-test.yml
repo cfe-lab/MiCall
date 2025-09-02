@@ -53,7 +53,7 @@ jobs:
 
       - name: Install MiCall's Python dependencies
         run: |
-          uv sync --extra denovo --extra watcher --extra dev --extra test
+          uv sync --extra watcher --extra dev --extra test
 
       - name: Check if lock file changed
         run: |

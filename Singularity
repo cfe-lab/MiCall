@@ -90,7 +90,7 @@ From: python:3.11
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
     pip install --upgrade pip setuptools
-    pip install /opt/micall[denovo]
+    pip install /opt/micall
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
