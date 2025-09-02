@@ -55,7 +55,8 @@ From: python:3.11
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
 
-    echo ===== Installing IVA dependencies ===== >/dev/null
+    echo ===== Installing IVA ===== >/dev/null
+    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
     apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev
     cd /bin
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
