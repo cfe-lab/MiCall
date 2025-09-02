@@ -55,7 +55,6 @@ RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/downl
 ENV PATH $PATH:/opt/bowtie2
 
 ## Installing IVA dependencies
-RUN pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     cd /bin && \
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc && \
@@ -83,6 +82,7 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
+RUN pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev

@@ -56,7 +56,6 @@ From: python:3.11
     rm bowtie2.zip
 
     echo ===== Installing IVA ===== >/dev/null
-    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
     apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev
     cd /bin
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
@@ -84,6 +83,7 @@ From: python:3.11
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
+    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
