@@ -1,5 +1,5 @@
 
-from importlib.metadata import version
+from importlib.metadata import version, PackageNotFoundError
 from typing import Sequence
 from functools import cache
 
@@ -11,7 +11,10 @@ def get_version() -> str:
         return "development"
     else:
         root_package_name = full_package_name.split('.')[0]
-        return str(version(root_package_name))
+        try:
+            return str(version(root_package_name))
+        except PackageNotFoundError:
+            return "development"
 
 
 def main(argv: Sequence[str]) -> int:
