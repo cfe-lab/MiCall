@@ -7,8 +7,6 @@ authors = [
 ]
 requires-python = ">=3.11,<3.12"
 license = {text = "AGPL-3.0"}
-license-files = { paths = ["LICENSE.txt"] }
-readme = "README.md"
 classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python",
