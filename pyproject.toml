@@ -7,8 +7,6 @@ authors = [
 ]
 requires-python = ">=3.11,<3.12"
 license = {text = "AGPL-3.0"}
-license-files = { paths = ["LICENSE.txt"] }
-readme = "README.md"
 classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python",
@@ -70,10 +68,6 @@ dev = [
     "pandas-stubs==2.2.3.250308",
     "types-requests==2.32.4.20250809",
     "uv==0.8.9",
-]
-denovo = [
-    # Requirements for running De-Novo pipeline (only problematic ones).
-    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script

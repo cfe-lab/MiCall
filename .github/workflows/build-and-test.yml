@@ -53,11 +53,15 @@ jobs:
 
       - name: Install MiCall's Python dependencies
         run: |
-          uv sync --extra denovo --extra watcher --extra dev --extra test
+          uv sync --extra watcher --extra dev --extra test
 
       - name: Check if lock file changed
         run: |
           git diff --quiet uv.lock
+
+      - name: Install IVA
+        run: |
+          uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
       - name: Run type checker
         run: |

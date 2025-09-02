@@ -55,7 +55,7 @@ From: python:3.11
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
 
-    echo ===== Installing IVA dependencies ===== >/dev/null
+    echo ===== Installing IVA ===== >/dev/null
     apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev
     cd /bin
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
@@ -83,13 +83,14 @@ From: python:3.11
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
+    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
     pip install --upgrade pip setuptools
-    pip install /opt/micall[denovo]
+    pip install /opt/micall
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
