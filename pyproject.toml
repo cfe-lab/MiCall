@@ -69,10 +69,6 @@ dev = [
     "types-requests==2.32.4.20250809",
     "uv==0.8.9",
 ]
-denovo = [
-    # Requirements for running De-Novo pipeline (only problematic ones).
-    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
-]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
