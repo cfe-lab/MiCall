@@ -454,13 +454,11 @@ dependencies = [
     { name = "pyvdrm" },
     { name = "pyyaml" },
     { name = "reportlab" },
+    { name = "requests" },
     { name = "scipy" },
 ]
 
 [package.optional-dependencies]
-basespace = [
-    { name = "requests" },
-]
 dev = [
     { name = "codecov" },
     { name = "gprof2dot" },
@@ -478,13 +476,11 @@ test = [
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "pytest" },
-    { name = "requests" },
     { name = "seaborn" },
     { name = "tk" },
 ]
 watcher = [
     { name = "kiveapi" },
-    { name = "requests" },
 ]
 
 [package.metadata]
@@ -518,9 +514,7 @@ requires-dist = [
     { name = "pyvdrm", git = "https://github.com/cfe-lab/pyvdrm.git?rev=v0.3.2" },
     { name = "pyyaml", specifier = "==6.0.2" },
     { name = "reportlab", specifier = "==4.4.3" },
-    { name = "requests", marker = "extra == 'basespace'", specifier = "==2.32.4" },
-    { name = "requests", marker = "extra == 'test'", specifier = "==2.32.4" },
-    { name = "requests", marker = "extra == 'watcher'", specifier = "==2.32.4" },
+    { name = "requests", specifier = "==2.32.4" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.12.8" },
     { name = "scipy", specifier = "==1.15.2" },
     { name = "seaborn", marker = "extra == 'test'", specifier = "==0.13.2" },
