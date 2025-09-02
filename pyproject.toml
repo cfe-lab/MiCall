@@ -67,7 +67,7 @@ dev = [
     "codecov==2.1.13",  # For reporting the code coverage.
     "pandas-stubs==2.2.3.250308",
     "types-requests==2.32.4.20250809",
-    "uv==0.8.9",
+    "uv==0.8.14",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
