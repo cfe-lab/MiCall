@@ -10,7 +10,9 @@ from datetime import datetime
 import logging
 from functools import partial
 from pathlib import Path
-from typing import Dict, Tuple, List, Set, Optional, Any
+from typing import Dict, Sequence, Tuple, List, Set, Optional, TextIO, TypedDict
+import argparse
+from queue import Queue
 
 from micall.monitor.sample_watcher import PipelineType
 from operator import itemgetter, getitem
@@ -23,8 +25,29 @@ from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
 logger = logging.getLogger('update_qai')
 
 
-def parse_args() -> Any:
-    import argparse
+Session = qai_helper.Session
+
+
+class Sequencing(TypedDict):
+    id: str
+    tag: str
+    target_project: str
+
+
+class Run(TypedDict):
+    runname: str
+    sequencing_summary: Sequence[Sequencing]
+    id: str
+
+
+class ProjectRegion(TypedDict):
+    id: int
+    project_name: str
+    seed_region_names: List[str]
+    coordinate_region_name: str
+
+
+def parse_args() -> argparse.Namespace:
     pipeline_parser = partial(getitem, PipelineType)
     parser = argparse.ArgumentParser(
         description="Update the Oracle database with conseq information",
@@ -64,7 +87,7 @@ def parse_args() -> Any:
     return args
 
 
-def build_conseqs(conseqs_file: Any, run_name: str, sample_sheet: Dict[str, Any]) -> List[Dict[str, Any]]:
+def build_conseqs(conseqs_file: TextIO, run_name: str, sample_sheet: Dict[str, object]) -> List[Dict[str, object]]:
     """
     Parses a Pipeline-produced conseq file and builds JSON objects to send
     to QAI.
@@ -76,7 +99,7 @@ def build_conseqs(conseqs_file: Any, run_name: str, sample_sheet: Dict[str, Any]
     @return an array of JSON hashes, one for each conseq.
     """
 
-    result: List[Dict[str, Any]] = []
+    result: List[Dict[str, object]] = []
     ss = sample_sheet
     conseqs_csv = csv.DictReader(conseqs_file)
     # ss["Data"] is keyed by (what should be) the FASTQ
@@ -108,7 +131,24 @@ def build_conseqs(conseqs_file: Any, run_name: str, sample_sheet: Dict[str, Any]
         # but both ; and _ got garbled by the MiSeq instrument itself.
         # Thus we have to work around it.
         fastq_filename = row["sample"]
-        sample_info = ss["Data"][fastq_filename]
+
+        data_raw = ss.get("Data")
+        if data_raw is None:
+            raise RuntimeError('Sample sheet is missing "Data" section')
+        if hasattr(data_raw, '__getitem__'):
+            data = data_raw
+        else:
+            raise RuntimeError('Sample sheet "Data" section is not indexable')
+
+        data_split_raw = ss.get("DataSplit")
+        if data_split_raw is None:
+            raise RuntimeError('Sample sheet is missing "DataSplit" section')
+        if hasattr(data_split_raw, '__getitem__') and hasattr(data_split_raw, '__iter__'):
+            data_split = data_split_raw
+        else:
+            raise RuntimeError('Sample sheet "DataSplit" section is not indexable and iterable')
+
+        sample_info = data[fastq_filename]
         orig_sample_name = sample_info["orig_sample_name"]
         # FIXME if row["sequence"] is blank we replace it with a dash.
         # Need Conan to make that row blank-able.
@@ -116,7 +156,7 @@ def build_conseqs(conseqs_file: Any, run_name: str, sample_sheet: Dict[str, Any]
         seeds = sample_seeds.get(fastq_filename)
         if seeds is None:
             seeds = set()
-            for sample_row in ss["DataSplit"]:
+            for sample_row in data_split:
                 if sample_row['filename'] != fastq_filename:
                     continue
                 target_project = sample_row['project']
@@ -146,9 +186,9 @@ def build_conseqs(conseqs_file: Any, run_name: str, sample_sheet: Dict[str, Any]
     return result
 
 
-def build_review_decisions(coverage_file: Any, collated_counts_file: Any, cascade_file: Any,
-                           sample_sheet: Dict[str, Any], sequencings: List[Dict[str, Any]], project_regions: List[Dict[str, Any]],
-                           regions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, cascade_file: TextIO,
+                           sample_sheet: Dict[str, object], sequencings: Sequence[Sequencing], project_regions: Sequence[ProjectRegion],
+                           regions: List[Dict[str, object]]) -> List[Dict[str, object]]:
     """ Build a list of request objects that will create the review decision
     records.
 
@@ -164,14 +204,22 @@ def build_review_decisions(coverage_file: Any, collated_counts_file: Any, cascad
     @param regions: [{"id": region_id, "name": region_name}]
     """
 
-    project_region_map: Dict[Tuple[str, str], int] = dict([((entry['project_name'],
+    data_split_raw = sample_sheet.get("DataSplit")
+    if data_split_raw is None:
+        raise RuntimeError('Sample sheet is missing "DataSplit" section')
+    if hasattr(data_split_raw, '__iter__'):
+        data_split = data_split_raw
+    else:
+        raise RuntimeError('Sample sheet "DataSplit" section is not iterable')
+
+    project_region_map = dict([((entry['project_name'],
                                  entry['coordinate_region_name']), entry['id'])
                                for entry in project_regions])
-    region_map: Dict[str, int] = dict([(entry['name'], entry['id']) for entry in regions])
+    region_map = dict([(entry['name'], entry['id']) for entry in regions])
     # noinspection PyTypeChecker
-    sample_tags = dict(map(itemgetter('filename', 'tags'), sample_sheet['DataSplit']))
+    sample_tags = dict(map(itemgetter('filename', 'tags'), data_split))
     # noinspection PyTypeChecker
-    sample_names = dict(map(itemgetter('tags', 'filename'), sample_sheet['DataSplit']))
+    sample_names = dict(map(itemgetter('tags', 'filename'), data_split))
 
     def read_int(table, name):
         ret = float(table[name])
@@ -199,7 +247,7 @@ def build_review_decisions(coverage_file: Any, collated_counts_file: Any, cascad
         key = tags, G2P_SEED_NAME
         counts_map[key] = read_int(counts, 'v3loop') * 2
 
-    sequencing_map: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(dict)  # {tags: {project: sequencing}}
+    sequencing_map: Dict[str, Dict[str, Sequencing]] = defaultdict(dict)  # {tags: {project: sequencing}}
     for sequencing in sequencings:
         sequencing_map[sequencing['tag']][
             sequencing['target_project']] = sequencing
@@ -214,7 +262,7 @@ def build_review_decisions(coverage_file: Any, collated_counts_file: Any, cascad
         if project_map is None:
             raise KeyError("No sequencing found with tags '%s' for %s. Are "
                            "tagged layouts missing?" % (tags, coverage_file.name))
-        sequencing: Optional[Dict[str, Any]] = project_map.get(coverage['project'])  # type: ignore
+        sequencing: Optional[Dict[str, object]] = project_map.get(coverage['project'])  # type: ignore
         if sequencing is not None:
             score = read_int(coverage, 'on.score')
         else:
@@ -263,8 +311,8 @@ def build_review_decisions(coverage_file: Any, collated_counts_file: Any, cascad
     return list(decisions.values())
 
 
-def upload_review_to_qai(coverage_file: Any, collated_counts_file: Any, cascade_file: Any,
-                         run: Dict[str, Any], sample_sheet: Dict[str, Any], conseqs: List[Dict[str, Any]], session: Any,
+def upload_review_to_qai(coverage_file: TextIO, collated_counts_file: TextIO, cascade_file: TextIO,
+                         run: Run, sample_sheet: Dict[str, object], conseqs: List[Dict[str, object]], session: Session,
                          pipeline_version: str) -> None:
     """ Create a review.
 
@@ -281,16 +329,14 @@ def upload_review_to_qai(coverage_file: Any, collated_counts_file: Any, cascade_
     @param str pipeline_version: 'X.Y' describing the current version
     """
 
-    runid: str = run['id']
-
-    sequencings: List[Dict[str, Any]] = run['sequencing_summary']
-
-    project_regions: List[Dict[str, Any]] = session.get_json("/lab_miseq_project_regions?pipeline=" +
+    runid = run['id']
+    sequencings = run['sequencing_summary']
+    project_regions = session.get_json("/lab_miseq_project_regions?pipeline=" +
                                        pipeline_version)
     if not project_regions:
         raise RuntimeError('Unknown pipeline: ' + pipeline_version)
 
-    regions: List[Dict[str, Any]] = session.get_json("/lab_miseq_regions")
+    regions = session.get_json("/lab_miseq_regions")
 
     decisions = build_review_decisions(coverage_file, collated_counts_file,
                                        cascade_file, sample_sheet, sequencings,
@@ -305,7 +351,7 @@ def upload_review_to_qai(coverage_file: Any, collated_counts_file: Any, cascade_
         })
 
 
-def upload_proviral_tables(session: Any, result_folder: str, run: Dict[str, Any]) -> None:
+def upload_proviral_tables(session: Session, result_folder: str, run: Run) -> None:
     proviral_file: str = os.path.join(result_folder, "proviral",
                                  "table_precursor.csv")
     aln_proviral_file: str = os.path.join(result_folder, "proviral",
@@ -318,8 +364,8 @@ def upload_proviral_tables(session: Any, result_folder: str, run: Dict[str, Any]
     logger.info('aligned proviral upload success!')
 
 
-def upload_proviral_csv(session: Any, run_id: str, csv_path: str, endpoint: str) -> List[Any]:
-    responses: List[Any] = []
+def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: str) -> List[object]:
+    responses: List[object] = []
     with open(csv_path, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -338,15 +384,15 @@ def clean_runname(runname: str) -> str:
     return cleaned_runname
 
 
-def find_run(session: Any, runname: str) -> Dict[str, Any]:
+def find_run(session: Session, runname: str) -> Run:
     """ Query QAI to find the run id for a given run name.
 
     @return: a hash with the attributes of the run record, including a
         sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
-    runs: List[Dict[str, Any]] = session.get_json("/lab_miseq_runs?summary=sequencing&runname=" +
-                            cleaned_runname)
+    runs: List[Run] = session.get_json("/lab_miseq_runs?summary=sequencing&runname=" +
+                                       cleaned_runname)
     rowcount: int = len(runs)
     if rowcount == 0:
         raise RuntimeError(
@@ -357,15 +403,15 @@ def find_run(session: Any, runname: str) -> Dict[str, Any]:
     return runs[0]
 
 
-def find_pipeline_id(session: Any, pipeline_version: str) -> int:
+def find_pipeline_id(session: Session, pipeline_version: str) -> object:
     """ Query QAI to find the pipeline id for the current version.
 
     :param session: open session on QAI
     :param str pipeline_version: 'X.Y' description of pipeline version to find
     @return: the pipeline id.
     """
-    pipelines: List[Dict[str, Any]] = session.get_json("/lab_miseq_pipelines?version=" +
-                                 pipeline_version)
+    pipelines: List[Dict[str, object]] = session.get_json("/lab_miseq_pipelines?version=" +
+                                                          pipeline_version)
     rowcount: int = len(pipelines)
     if rowcount == 0:
         raise RuntimeError(
@@ -373,7 +419,11 @@ def find_pipeline_id(session: Any, pipeline_version: str) -> int:
     if rowcount != 1:
         raise RuntimeError("Found {} pipelines with version {!r}.".format(
             rowcount, pipeline_version))
-    return pipelines[0]['id']
+    first_pipeline = pipelines[0]
+    pipeline_id = first_pipeline.get('id')
+    if pipeline_id is None:
+        raise RuntimeError("Pipeline record is missing 'id' field.")
+    return pipeline_id
 
 
 def load_ok_sample_regions(result_folder: str) -> Set[Tuple[str, str, str]]:
@@ -389,14 +439,20 @@ def load_ok_sample_regions(result_folder: str) -> Set[Tuple[str, str, str]]:
     return ok_sample_regions
 
 
-def process_folder(item: Tuple[str, PipelineType], qai_server: str, qai_user: str, qai_password: str, pipeline_version: str) -> None:
-    result_folder: str
+def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: str, qai_password: str, pipeline_version: str) -> None:
+    result_folder: Path
     pipeline_group: PipelineType
     result_folder, pipeline_group = item
 
     run_path: Path = Path(result_folder).parent.parent
-    sample_sheet: Dict[str, Any] = sample_sheet_parser.read_sample_sheet_and_overrides(
+    sample_sheet: Dict[str, object] = sample_sheet_parser.read_sample_sheet_and_overrides(
         run_path / 'SampleSheet.csv')
+
+    experiment_name = sample_sheet.get("Experiment Name")
+    if experiment_name is None:
+        raise RuntimeError("Sample sheet is missing 'Experiment Name' field.")
+    if not isinstance(experiment_name, str):
+        raise RuntimeError("'Experiment Name' field is not a string.")
 
     attempt_count: int = 0
     start_time: Optional[datetime] = None
@@ -404,7 +460,7 @@ def process_folder(item: Tuple[str, PipelineType], qai_server: str, qai_user: st
         # noinspection PyBroadException
         try:
             session.login(qai_server, qai_user, qai_password)
-            run: Dict[str, Any] = find_run(session, sample_sheet["Experiment Name"])
+            run: Run = find_run(session, experiment_name)
 
             # PROVIRAL
             if pipeline_group == PipelineType.PROVIRAL:
@@ -430,18 +486,19 @@ def process_folder(item: Tuple[str, PipelineType], qai_server: str, qai_user: st
             logger.error(f"Upload to QAI failed: {ex}", exc_info=True)
 
 
-def process_remapped(result_folder: str, session: Any, run: Dict[str, Any], pipeline_version: str) -> None:
+def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_version: str) -> None:
     logger.info('Uploading data to Oracle from {}'.format(result_folder))
-    collated_conseqs: str = os.path.join(result_folder, 'conseq.csv')
-    collated_counts: str = os.path.join(result_folder, 'remap_counts.csv')
-    cascade: str = os.path.join(result_folder, 'cascade.csv')
-    coverage_scores: str = os.path.join(result_folder, 'coverage_scores.csv')
-    run_path: Path = Path(result_folder).parent.parent
-    sample_sheet: Dict[str, Any] = sample_sheet_parser.read_sample_sheet_and_overrides(
+    result_folder = Path(result_folder)
+    collated_conseqs: Path = result_folder / 'conseq.csv'
+    collated_counts: Path = result_folder / 'remap_counts.csv'
+    cascade: Path = result_folder / 'cascade.csv'
+    coverage_scores: Path = result_folder / 'coverage_scores.csv'
+    run_path: Path = result_folder.parent.parent
+    sample_sheet: Dict[str, object] = sample_sheet_parser.read_sample_sheet_and_overrides(
         run_path / 'SampleSheet.csv')
 
     with open(collated_conseqs) as f:
-        conseqs: List[Dict[str, Any]] = build_conseqs(f, run['runname'], sample_sheet)
+        conseqs: List[Dict[str, object]] = build_conseqs(f, run['runname'], sample_sheet)
 
     with open(coverage_scores) as f, \
             open(collated_counts) as f2, \
@@ -452,7 +509,7 @@ def process_remapped(result_folder: str, session: Any, run: Dict[str, Any], pipe
 
 
 def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_version: str,
-                upload_queue: Any) -> None:
+                upload_queue: Queue[Tuple[Path, PipelineType]]) -> None:
     # noinspection PyBroadException
     try:
         with qai_helper.Session() as session:
@@ -462,7 +519,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
         logger.error('Unable to log in to QAI.', exc_info=True)
 
     while True:
-        item: Optional[Tuple[str, PipelineType]] = upload_queue.get()
+        item: Optional[Tuple[Path, PipelineType]] = upload_queue.get()
         if item is None:
             break
         process_folder(item, qai_server, qai_user, qai_password,
@@ -470,7 +527,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
 
 
 def main() -> None:
-    args: Any = parse_args()
+    args = parse_args()
 
     if args.quiet:
         logger.setLevel(logging.ERROR)
