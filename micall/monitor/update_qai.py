@@ -418,24 +418,32 @@ def upload_review_to_qai(coverage_file: TextIO, collated_counts_file: TextIO, ca
 
     runid = run['id']
     sequencings = run['sequencing_summary']
-    project_regions = session.get_json("/lab_miseq_project_regions?pipeline=" +
-                                       pipeline_version)
+    project_regions = retry_operation(
+        lambda: session.get_json("/lab_miseq_project_regions?pipeline=" + pipeline_version),
+        f"Getting project regions for pipeline {pipeline_version}"
+    )
     if not project_regions:
         raise RuntimeError('Unknown pipeline: ' + pipeline_version)
 
-    regions = session.get_json("/lab_miseq_regions")
+    regions = retry_operation(
+        lambda: session.get_json("/lab_miseq_regions"),
+        "Getting lab MiSeq regions"
+    )
 
     decisions = build_review_decisions(coverage_file, collated_counts_file,
                                        cascade_file, sample_sheet, sequencings,
                                        project_regions, regions)
 
-    session.post_json(
-        "/lab_miseq_reviews", {
-            'runid': runid,
-            'pipeline_id': find_pipeline_id(session, pipeline_version),
-            'lab_miseq_review_decisions': decisions,
-            'lab_miseq_conseqs': conseqs
-        })
+    retry_operation(
+        lambda: session.post_json(
+            "/lab_miseq_reviews", {
+                'runid': runid,
+                'pipeline_id': find_pipeline_id(session, pipeline_version),
+                'lab_miseq_review_decisions': decisions,
+                'lab_miseq_conseqs': conseqs
+            }),
+        f"Posting lab MiSeq review for run {runid}"
+    )
 
 
 def upload_proviral_tables(session: Session, result_folder: str, run: Run) -> None:
@@ -457,7 +465,10 @@ def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: 
         reader = csv.DictReader(csvfile)
         for row in reader:
             row['lab_miseq_run_id'] = run_id
-            response = session.post_json(endpoint, row)
+            response = retry_operation(
+                lambda: session.post_json(endpoint, row),
+                f"Posting proviral data to {endpoint}"
+            )
             responses.append(response)
     return responses
 
@@ -478,8 +489,10 @@ def find_run(session: Session, runname: str) -> Sequence[Run]:
         sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
-    runs: Sequence[Run] = session.get_json("/lab_miseq_runs?summary=sequencing&runname=" +
-                                           cleaned_runname)
+    runs: Sequence[Run] = retry_operation(
+        lambda: session.get_json("/lab_miseq_runs?summary=sequencing&runname=" + cleaned_runname),
+        f"Finding run with name {cleaned_runname}"
+    )
     return runs
 
 
@@ -490,8 +503,10 @@ def find_pipeline_id(session: Session, pipeline_version: str) -> object:
     :param str pipeline_version: 'X.Y' description of pipeline version to find
     @return: the pipeline id.
     """
-    pipelines: List[Dict[str, object]] = session.get_json("/lab_miseq_pipelines?version=" +
-                                                          pipeline_version)
+    pipelines: List[Dict[str, object]] = retry_operation(
+        lambda: session.get_json("/lab_miseq_pipelines?version=" + pipeline_version),
+        f"Finding pipeline with version {pipeline_version}"
+    )
     rowcount: int = len(pipelines)
     if rowcount == 0:
         raise RuntimeError(
