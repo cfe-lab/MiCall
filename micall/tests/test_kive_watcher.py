@@ -305,6 +305,7 @@ def test_main_pipeline_not_set(capsys, monkeypatch):
 
 def test_hcv_pair(raw_data_with_hcv_pair):
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -320,13 +321,14 @@ def test_hcv_pair(raw_data_with_hcv_pair):
                     None))
     pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_hcv_pair, pipeline_version, sample_queue, wait=False)
+    find_samples(raw_data_with_hcv_pair, pipeline_version, sample_queue, qai_upload_queue, wait=False)
 
     sample_queue.verify()
 
 
 def test_hcv_pair_with_wg_suffix(raw_data_with_hcv_pair):
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     run_folder = raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234"
     sample_sheet = run_folder / "SampleSheet.csv"
     sample_sheet_text = sample_sheet.read_text()
@@ -354,6 +356,7 @@ def test_hcv_pair_with_wg_suffix(raw_data_with_hcv_pair):
     find_samples(raw_data_with_hcv_pair,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False,
                  retry=False)
 
@@ -363,6 +366,7 @@ def test_hcv_pair_with_wg_suffix(raw_data_with_hcv_pair):
 def test_hcv_midi_alone(raw_data_with_hcv_pair):
 
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     base_calls_path = (raw_data_with_hcv_pair / "MiSeq/runs/140101_M01234" /
                        "Data/Intensities/BaseCalls")
     (base_calls_path / '2130A-HCV_S15_L001_R1_001.fastq.gz').unlink()
@@ -382,6 +386,7 @@ def test_hcv_midi_alone(raw_data_with_hcv_pair):
     find_samples(raw_data_with_hcv_pair,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False,
                  retry=False)
 
@@ -390,6 +395,7 @@ def test_hcv_midi_alone(raw_data_with_hcv_pair):
 
 def test_two_runs(raw_data_with_two_runs):
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -418,13 +424,14 @@ def test_two_runs(raw_data_with_two_runs):
                     None))
     pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_runs, pipeline_version, sample_queue, wait=False)
+    find_samples(raw_data_with_two_runs, pipeline_version, sample_queue, qai_upload_queue, wait=False)
 
     sample_queue.verify()
 
 
 def test_two_samples(raw_data_with_two_samples):
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -448,7 +455,7 @@ def test_two_samples(raw_data_with_two_samples):
                     None))
     pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, wait=False)
+    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, qai_upload_queue, wait=False)
 
     sample_queue.verify()
 
@@ -456,6 +463,7 @@ def test_two_samples(raw_data_with_two_samples):
 def test_undetermined_file(raw_data_with_two_samples):
 
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     base_calls = (raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                   "Data/Intensities/BaseCalls")
 
@@ -483,7 +491,7 @@ def test_undetermined_file(raw_data_with_two_samples):
                     None))
     pipeline_version = 'XXX'
 
-    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, wait=False)
+    find_samples(raw_data_with_two_samples, pipeline_version, sample_queue, qai_upload_queue, wait=False)
 
     sample_queue.verify()
 
@@ -496,6 +504,7 @@ def test_skip_done_runs(raw_data_with_two_runs):
     done_path.touch()
     pipeline_version = '0-dev'
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -513,6 +522,7 @@ def test_skip_done_runs(raw_data_with_two_runs):
     find_samples(raw_data_with_two_runs,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False,
                  retry=False)
 
@@ -525,6 +535,7 @@ def test_skip_failed_runs(raw_data_with_two_runs):
     error_path.touch()
     pipeline_version = '0-dev'
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -542,6 +553,7 @@ def test_skip_failed_runs(raw_data_with_two_runs):
     find_samples(raw_data_with_two_runs,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False)
 
     sample_queue.verify()
@@ -558,6 +570,7 @@ Garbage!
     error_path = error_run_path / "errorprocessing"
     pipeline_version = '0-dev'
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -575,6 +588,7 @@ Garbage!
     find_samples(raw_data_with_two_runs,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False)
 
     sample_queue.verify()
@@ -583,6 +597,7 @@ Garbage!
 
 def test_full_queue(raw_data_with_two_runs):
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140201_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -615,6 +630,7 @@ def test_full_queue(raw_data_with_two_runs):
     find_samples(raw_data_with_two_runs,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False)
 
     sample_queue.verify()
@@ -629,6 +645,7 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
                          "MiSeq/runs/140201_M01234/needsprocessing")
     needs_processing2.unlink()
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     item1 = FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                         "Data/Intensities/BaseCalls",
                         FolderEventType.ADD_SAMPLE,
@@ -666,6 +683,7 @@ def test_scan_for_new_runs(raw_data_with_two_runs, mock_clock):
     find_samples(raw_data_with_two_runs,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False)
 
     sample_queue.verify()
@@ -682,6 +700,7 @@ def test_scan_error(raw_data_with_two_samples, monkeypatch):
                         "MiSeq/runs/140101_M01234/needsprocessing")
     mock_scan.side_effect = [IOError('unavailable'), [needs_processing]]
     sample_queue = DummyQueueSink()
+    qai_upload_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -708,6 +727,7 @@ def test_scan_error(raw_data_with_two_samples, monkeypatch):
     find_samples(raw_data_with_two_samples,
                  pipeline_version,
                  sample_queue,
+                 qai_upload_queue,
                  wait=False)
 
     sample_queue.verify()
