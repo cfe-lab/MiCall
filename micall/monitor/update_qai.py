@@ -534,15 +534,16 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
                 process_folder((results_path, pipeline_group),
                                qai_server, qai_user, qai_password,
                                pipeline_version)
+                status = 'succeeded'
             except Exception:
                 logger.error("QAI upload failed for %s", results_path, exc_info=True)
-                # Leave done_qai_upload absent to allow retry on next queue item
-                continue
+                status = 'failed'
         else:
             logger.debug("Skipping QAI upload for %s", results_path)
+            status = 'skipped'
 
         # Mark completed to prevent re-upload
-        disk_operations.touch(done_qai_flag)
+        disk_operations.write_text(done_qai_flag, status)
 
 
 def main() -> None:
