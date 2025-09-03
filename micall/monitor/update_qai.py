@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Dict, Sequence, Tuple, List, Set, Optional, TextIO, TypedDict
 import argparse
 from queue import Queue
+from urllib.parse import urlparse
 
 from micall.monitor.sample_watcher import PipelineType
 from operator import itemgetter, getitem
@@ -623,6 +624,12 @@ def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_v
 
 def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_version: str,
                 upload_queue: Queue[Optional[Tuple[Path, PipelineType]]]) -> None:
+
+    # Check if `qai_server` is a valid URL.
+    parsed_url = urlparse(qai_server)
+    if not (parsed_url.scheme and parsed_url.netloc):
+        raise ValueError(f"Invalid QAI server URL: {qai_server}")
+
     while True:
         item = upload_queue.get()
         if item is None:
