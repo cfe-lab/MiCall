@@ -1,10 +1,12 @@
 import json
 import logging
-from random import Random
+from datetime import datetime
 import requests
-import time
 
 logger = logging.getLogger('qai_helper')
+
+# Use the same retry configuration as kive_watcher and update_qai
+MAX_RETRY_ATTEMPTS = 100
 
 
 class Session(requests.Session):

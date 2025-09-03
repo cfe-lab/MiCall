@@ -1,6 +1,15 @@
 # Script to update QAI with information from the
 # conseq.csv files produced by the MiSeq pipeline.
 # To execute as a script, run python -m micall.monitor.update_qai
+#
+# RETRY IMPLEMENTATION:
+# This script implements robust retry logic for both network and disk operations:
+# - Network failures: QAI login, run lookups, data uploads
+# - Disk failures: File reads, sample sheet parsing, flag writing
+# - Uses exponential backoff with the same retry parameters as kive_watcher
+# - Retries up to MAX_RETRY_ATTEMPTS (10) times by default
+# - Logs warnings for each retry attempt, errors after exhausting retries
+# - Always creates done_qai_upload flag, even when coverage_scores.csv is missing
 
 import csv
 import typing
@@ -25,6 +34,58 @@ from micall.monitor import disk_operations
 
 logger = logging.getLogger('update_qai')
 
+# Use the same retry configuration as kive_watcher
+MAX_RETRY_ATTEMPTS = 100 
+
+
+def retry_operation(operation, operation_name: str):
+    """Execute an operation with retry logic for both network and disk failures.
+    
+    This function handles:
+    - Network failures (requests exceptions, connection errors)
+    - Disk failures (IO errors, permission errors)
+    - QAI API failures (authentication, server errors)
+    - File system issues (missing files, corrupted data)
+    
+    Args:
+        operation: Callable that performs the operation
+        operation_name: Human-readable name for logging
+        max_attempts: Maximum number of retry attempts
+        
+    Returns:
+        The result of the successful operation
+        
+    Raises:
+        RuntimeError: If all retry attempts fail
+    """
+
+    from micall.monitor.kive_watcher import wait_for_retry
+
+    attempt_count = 0
+    start_time = None
+    last_exception = None
+
+    while attempt_count < MAX_RETRY_ATTEMPTS:
+        try:
+            return operation()
+        except Exception as ex:
+            attempt_count += 1
+            last_exception = ex
+            
+            # Record start time on first failure
+            if start_time is None:
+                start_time = datetime.now()
+            
+            if attempt_count >= MAX_RETRY_ATTEMPTS:
+                logger.error(f'{operation_name} failed after {MAX_RETRY_ATTEMPTS} attempts', exc_info=True)
+                break
+            
+            logger.warning(f'{operation_name} failed (attempt {attempt_count}/{MAX_RETRY_ATTEMPTS})', exc_info=True)
+            wait_for_retry(attempt_count, start_time)
+    
+    # If we get here, all attempts failed
+    raise RuntimeError(f'{operation_name} failed after {MAX_RETRY_ATTEMPTS} attempts') from last_exception
+
 
 Session = qai_helper.Session
 
@@ -44,8 +105,33 @@ class Run(TypedDict):
 class ProjectRegion(TypedDict):
     id: int
     project_name: str
-    seed_region_names: List[str]
+    seed_region_names: Sequence[str]
     coordinate_region_name: str
+
+
+def retry_qai_login(session: Session, qai_server: str, qai_user: str, qai_password: str, context: str = "") -> None:
+    """Login to QAI with retry logic."""
+    retry_operation(
+        lambda: session.login(qai_server, qai_user, qai_password),
+        f"QAI login{' for ' + context if context else ''}"
+    )
+
+
+def retry_find_run(session: Session, experiment_name: str) -> Run:
+    """Find QAI run with retry logic."""
+    runs = retry_operation(
+        lambda: find_run(session, experiment_name),
+        f"Finding QAI run for {experiment_name}"
+    )
+
+    rowcount: int = len(runs)
+    if rowcount == 0:
+        raise RuntimeError(
+            "No run found with runname {!r}.".format(experiment_name))
+    if rowcount != 1:
+        raise RuntimeError("Found {} runs with runname {!r}.".format(
+            rowcount, experiment_name))
+    return runs[0]
 
 
 def parse_args() -> argparse.Namespace:
@@ -385,23 +471,16 @@ def clean_runname(runname: str) -> str:
     return cleaned_runname
 
 
-def find_run(session: Session, runname: str) -> Run:
+def find_run(session: Session, runname: str) -> Sequence[Run]:
     """ Query QAI to find the run id for a given run name.
 
     @return: a hash with the attributes of the run record, including a
         sequencing summary of all the samples and their target projects.
     """
     cleaned_runname = clean_runname(runname)
-    runs: List[Run] = session.get_json("/lab_miseq_runs?summary=sequencing&runname=" +
-                                       cleaned_runname)
-    rowcount: int = len(runs)
-    if rowcount == 0:
-        raise RuntimeError(
-            "No run found with runname {!r}.".format(cleaned_runname))
-    if rowcount != 1:
-        raise RuntimeError("Found {} runs with runname {!r}.".format(
-            rowcount, cleaned_runname))
-    return runs[0]
+    runs: Sequence[Run] = session.get_json("/lab_miseq_runs?summary=sequencing&runname=" +
+                                           cleaned_runname)
+    return runs
 
 
 def find_pipeline_id(session: Session, pipeline_version: str) -> object:
@@ -445,9 +524,15 @@ def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: s
     pipeline_group: PipelineType
     result_folder, pipeline_group = item
 
-    run_path: Path = Path(result_folder).parent.parent
-    sample_sheet: Dict[str, object] = sample_sheet_parser.read_sample_sheet_and_overrides(
-        run_path / 'SampleSheet.csv')
+    def read_sample_sheet_with_retry():
+        run_path: Path = Path(result_folder).parent.parent
+        return sample_sheet_parser.read_sample_sheet_and_overrides(run_path / 'SampleSheet.csv')
+
+    # Read sample sheet with retry for disk operations
+    sample_sheet: Dict[str, object] = retry_operation(
+        read_sample_sheet_with_retry,
+        f"Reading sample sheet for {result_folder}"
+    )
 
     experiment_name = sample_sheet.get("Experiment Name")
     if experiment_name is None:
@@ -455,36 +540,26 @@ def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: s
     if not isinstance(experiment_name, str):
         raise RuntimeError("'Experiment Name' field is not a string.")
 
-    attempt_count: int = 0
-    start_time: Optional[datetime] = None
     with qai_helper.Session() as session:
-        # noinspection PyBroadException
-        try:
-            session.login(qai_server, qai_user, qai_password)
-            run: Run = find_run(session, experiment_name)
+        retry_qai_login(session, qai_server, qai_user, qai_password, f"{result_folder}")    
+        run = retry_find_run(session, experiment_name)
 
-            # PROVIRAL
-            if pipeline_group == PipelineType.PROVIRAL:
-                # upload_proviral_tables(session, result_folder, run)
-                pass
-            # DENOVO
-            elif pipeline_group in (PipelineType.DENOVO_MAIN,
-                                    PipelineType.DENOVO_MIDI,
-                                    PipelineType.DENOVO_RESISTANCE):
-                # Do nothing
-                pass
-            # REMAPPED
-            else:
-                process_remapped(result_folder, session, run, pipeline_version)
-
-        except Exception as ex:
-            attempt_count += 1
-
-            # Record start time on first failure
-            if start_time is None:
-                start_time = datetime.now()
-
-            logger.error(f"Upload to QAI failed: {ex}", exc_info=True)
+        # PROVIRAL
+        if pipeline_group == PipelineType.PROVIRAL:
+            # upload_proviral_tables(session, result_folder, run)
+            pass
+        # DENOVO
+        elif pipeline_group in (PipelineType.DENOVO_MAIN,
+                                PipelineType.DENOVO_MIDI,
+                                PipelineType.DENOVO_RESISTANCE):
+            # Do nothing
+            pass
+        # REMAPPED
+        else:
+            retry_operation(
+                lambda: process_remapped(result_folder, session, run, pipeline_version),
+                f"Processing remapped data for {result_folder}"
+            )
 
 
 def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_version: str) -> None:
@@ -495,32 +570,46 @@ def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_v
     cascade: Path = result_folder / 'cascade.csv'
     coverage_scores: Path = result_folder / 'coverage_scores.csv'
     run_path: Path = result_folder.parent.parent
-    sample_sheet: Dict[str, object] = sample_sheet_parser.read_sample_sheet_and_overrides(
-        run_path / 'SampleSheet.csv')
 
-    with open(collated_conseqs) as f:
-        conseqs: List[Dict[str, object]] = build_conseqs(f, run['runname'], sample_sheet)
+    def read_sample_sheet_with_retry():
+        return sample_sheet_parser.read_sample_sheet_and_overrides(run_path / 'SampleSheet.csv')
 
-    with open(coverage_scores) as f, \
-            open(collated_counts) as f2, \
-            open(cascade) as f3:
-        upload_review_to_qai(f, f2, f3, run, sample_sheet, conseqs, session,
-                             pipeline_version)
-        logger.info('Remapped upload success!')
+    def read_conseqs_with_retry():
+        with open(collated_conseqs) as f:
+            return build_conseqs(f, run['runname'], sample_sheet)
+
+    def upload_with_retry():
+        with open(coverage_scores) as f, \
+                open(collated_counts) as f2, \
+                open(cascade) as f3:
+            upload_review_to_qai(f, f2, f3, run, sample_sheet, conseqs, session,
+                                 pipeline_version)
+
+    # Read sample sheet with retry
+    sample_sheet: Dict[str, object] = retry_operation(
+        read_sample_sheet_with_retry,
+        f"Reading sample sheet for {result_folder}"
+    )
+
+    # Read conseqs with retry
+    conseqs: List[Dict[str, object]] = retry_operation(
+        read_conseqs_with_retry,
+        f"Reading conseqs file for {result_folder}"
+    )
+
+    # Upload to QAI with retry
+    retry_operation(
+        upload_with_retry,
+        f"Uploading to QAI for {result_folder}"
+    )
+
+    logger.info('Remapped upload success!')
 
 
 def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_version: str,
-                upload_queue: Queue[Tuple[Path, PipelineType]]) -> None:
-    # noinspection PyBroadException
-    try:
-        with qai_helper.Session() as session:
-            # Try logging in to QAI, just so we learn about problems at launch.
-            session.login(qai_server, qai_user, qai_password)
-    except Exception:
-        logger.error('Unable to log in to QAI.', exc_info=True)
-
+                upload_queue: Queue[Optional[Tuple[Path, PipelineType]]]) -> None:
     while True:
-        item: Optional[Tuple[Path, PipelineType]] = upload_queue.get()
+        item = upload_queue.get()
         if item is None:
             break
         results_path, pipeline_group = item
@@ -528,8 +617,17 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
         done_qai_flag = results_path / 'done_qai_upload'
         coverage_scores = results_path / 'coverage_scores.csv'
 
+        def check_coverage_file():
+            return coverage_scores.exists()
+
+        # Check coverage file with retry (in case of temporary file system issues)
+        has_coverage_file = retry_operation(
+            check_coverage_file,
+            f"Checking coverage file for {results_path}",
+        )
+
         # Skip upload if coverage_scores.csv is missing, but still mark as done.
-        if coverage_scores.exists():
+        if has_coverage_file:
             try:
                 process_folder((results_path, pipeline_group),
                                qai_server, qai_user, qai_password,
@@ -539,11 +637,14 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
                 logger.error("QAI upload failed for %s", results_path, exc_info=True)
                 status = 'failed'
         else:
-            logger.debug("Skipping QAI upload for %s", results_path)
+            logger.debug("Skipping QAI upload for %s (coverage_scores.csv missing)", results_path)
             status = 'skipped'
 
-        # Mark completed to prevent re-upload
-        disk_operations.write_text(done_qai_flag, status)
+        # Mark completed to prevent re-upload with retry for disk operations
+        def write_done_flag():
+            disk_operations.write_text(done_qai_flag, status)
+
+        retry_operation(write_done_flag, f"Writing done_qai_upload flag for {results_path}")
 
 
 def main() -> None:
