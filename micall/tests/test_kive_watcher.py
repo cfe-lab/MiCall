@@ -505,6 +505,8 @@ def test_skip_done_runs(raw_data_with_two_runs):
     pipeline_version = '0-dev'
     sample_queue = DummyQueueSink()
     qai_upload_queue = DummyQueueSink()
+    # The done run should trigger a QAI upload event
+    qai_upload_queue.expect_put((done_run / "Results" / "version_0-dev", PipelineType.MAIN))
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_runs / "MiSeq/runs/140101_M01234" /
                     "Data/Intensities/BaseCalls",
@@ -527,6 +529,7 @@ def test_skip_done_runs(raw_data_with_two_runs):
                  retry=False)
 
     sample_queue.verify()
+    qai_upload_queue.verify()
 
 
 def test_skip_failed_runs(raw_data_with_two_runs):
