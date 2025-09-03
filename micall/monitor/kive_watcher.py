@@ -110,8 +110,9 @@ def now() -> datetime:
 def find_samples(raw_data_folder: Path,
                  pipeline_version: str,
                  sample_queue: Queue[FolderEvent],
+                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  wait: bool = True,
-                 retry: bool = True):
+                 retry: bool = True) -> None:
     attempt_count = 0
     start_time = None
     while True:
@@ -121,6 +122,18 @@ def find_samples(raw_data_folder: Path,
                                        pipeline_version,
                                        sample_queue,
                                        wait)
+
+            # After scanning for new samples, enqueue QAI upload tasks for finished runs.
+            qai_next_scan = now() + FOLDER_SCAN_INTERVAL
+            for version_folder in scan_qai_done_flags(raw_data_folder, pipeline_version):
+                is_sent = send_qai_event(qai_upload_queue,
+                                         (version_folder, PipelineType.MAIN),
+                                         qai_next_scan)
+                if not is_sent:
+                    # Let the caller loop and try again later
+                    is_complete = False
+                    break
+
             attempt_count = 0  # Reset after success
             start_time = None  # Reset start time after success
             if is_complete and not wait:
@@ -220,6 +233,20 @@ def scan_flag_paths(raw_data_folder: Path) -> Iterable[Path]:
     return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
+def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterable[Path]:
+    """Find version folders with done_all_processing set and not yet uploaded to QAI.
+
+    We consider a version folder eligible if:
+    - Results/version_{pipeline_version}/done_all_processing exists, and
+    - Results/version_{pipeline_version}/done_qai_upload does NOT exist.
+    """
+    pattern = f"MiSeq/runs/*/Results/version_{pipeline_version}/done_all_processing"
+    for done_flag in raw_data_folder.glob(pattern):
+        version_folder = done_flag.parent
+        if not (version_folder / 'done_qai_upload').exists():
+            yield version_folder
+
+
 def check_sample_name_consistency(sample_sheet_path: Path, fastq_file_names: Iterable[str], run_path: Path):
     """
     Check FASTQ file recognition ratio against sample sheet.
@@ -309,6 +336,18 @@ def send_event(sample_queue: Queue[FolderEvent], folder_event: FolderEvent, next
         try:
             sample_queue.put(folder_event,
                              timeout=SLEEP_SECONDS)
+            is_sent = True
+        except Full:
+            pass
+    return is_sent
+
+
+def send_qai_event(qai_queue: Queue[Tuple[Path, PipelineType]], qai_event: Tuple[Path, PipelineType], next_scan: datetime) -> bool:
+    """Send an event to the QAI upload queue with timeout and retry logic."""
+    is_sent = False
+    while not is_sent and now() < next_scan:
+        try:
+            qai_queue.put(qai_event, timeout=SLEEP_SECONDS)
             is_sent = True
         except Full:
             pass

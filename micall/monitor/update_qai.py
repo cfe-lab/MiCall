@@ -21,6 +21,7 @@ import os
 from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
 from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
+from micall.monitor import disk_operations
 
 logger = logging.getLogger('update_qai')
 
@@ -522,8 +523,26 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
         item: Optional[Tuple[Path, PipelineType]] = upload_queue.get()
         if item is None:
             break
-        process_folder(item, qai_server, qai_user, qai_password,
-                       pipeline_version)
+        results_path, pipeline_group = item
+        results_path = Path(results_path)
+        done_qai_flag = results_path / 'done_qai_upload'
+        coverage_scores = results_path / 'coverage_scores.csv'
+
+        # Skip upload if coverage_scores.csv is missing, but still mark as done.
+        if coverage_scores.exists():
+            try:
+                process_folder((results_path, pipeline_group),
+                               qai_server, qai_user, qai_password,
+                               pipeline_version)
+            except Exception:
+                logger.error("QAI upload failed for %s", results_path, exc_info=True)
+                # Leave done_qai_upload absent to allow retry on next queue item
+                continue
+        else:
+            logger.debug("Skipping QAI upload for %s", results_path)
+
+        # Mark completed to prevent re-upload
+        disk_operations.touch(done_qai_flag)
 
 
 def main() -> None:
