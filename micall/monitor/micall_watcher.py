@@ -160,7 +160,9 @@ def main():
                            args=(args.raw_data,
                                  args.pipeline_version,
                                  sample_queue,
-                                 wait),
+                                 qai_upload_queue,
+                                 wait,
+                                 True),  # retry
                            daemon=True)
     finder_thread.start()
 
