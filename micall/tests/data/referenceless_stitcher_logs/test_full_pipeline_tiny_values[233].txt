@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  145619.7142857143.
+  1.6549062331089152e+16.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  -19.285714285714285.
+  -35937.0.
 END 11
 BEGIN 12
   Constructed
@@ -263,7 +263,7 @@ BEGIN 21
   the
   score
   of
-  -19.285714285714285.
+  -35937.0.
 END 21
 BEGIN 22
   Outputting
