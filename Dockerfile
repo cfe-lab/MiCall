@@ -82,6 +82,7 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
+RUN pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
@@ -89,14 +90,14 @@ RUN pip install --upgrade pip setuptools
 
 ## Install just the dependencies of MiCall (for faster build times in development).
 COPY pyproject.toml README.md /opt/micall/
-RUN pip install /opt/micall[denovo,basespace]
+RUN pip install /opt/micall[basespace]
 
 ## Trigger matplotlib to build its font cache
 RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 COPY . /opt/micall/
 
-RUN pip install /opt/micall[denovo,basespace]
+RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 
 WORKDIR /data

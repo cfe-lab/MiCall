@@ -7,8 +7,6 @@ authors = [
 ]
 requires-python = ">=3.11,<3.12"
 license = {text = "AGPL-3.0"}
-license-files = { paths = ["LICENSE.txt"] }
-readme = "README.md"
 classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python",
@@ -27,10 +25,10 @@ dependencies = [
     "biopython==1.85",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
-    "numpy==2.2.4",
+    "numpy==2.3.2",
     "sortedcontainers==2.4.0",
-    "scipy==1.15.2",
-    "matplotlib==3.10.1",
+    "scipy==1.16.1",
+    "matplotlib==3.10.6",
     "cutadapt==5.1",
     "python-Levenshtein==0.27.1",
     "PyYAML==6.0.2",
@@ -42,14 +40,20 @@ dependencies = [
     "cairosvg==2.8.2",
     "aligntools==1.2.1",
     "multicsv==1.0.4",
+
+    # This dependency is not really needed for the main pipeline.
+    # It is needed for `test`, `watcher`, and `basespace` programs.
+    # But repeating this dependency in three different places confuses Github's dependabot.
+    # So we employ this hack. TODO: see if dependabot can handle this now.
+    "requests==2.32.5",
 ]
 
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
     "pytest==8.4.1",
-    "coverage==7.10.3",
-    "pandas==2.3.1",
+    "coverage==7.10.6",
+    "pandas==2.3.2",
     "seaborn==0.13.2",
     "ete3",
     # For reading HCV rules from an Excel file.
@@ -59,31 +63,25 @@ test = [
 
     # Also includes watcher's dependencies.
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.4",
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.12.8",
+    "ruff==0.12.11",
     "mypy==1.17.1",
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
-    "pandas-stubs==2.2.3.250308",
-    "uv==0.8.9",
-]
-denovo = [
-    # Requirements for running De-Novo pipeline (only problematic ones).
-    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
+    "pandas-stubs==2.3.2.250827",
+    "types-requests==2.32.4.20250809",
+    "uv==0.8.14",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.4",
 ]
 basespace = [
     # Requirements for running the micall_basespace.py script
-    "requests==2.32.4",
 ]
 
 [project.scripts]
@@ -200,12 +198,6 @@ exclude = '''(?x)
     ^micall/drivers/sample[.]py$|
     ^micall/g2p/fastq_g2p[.]py$|
     ^micall/g2p/pssm_lib[.]py$|
-    ^micall/monitor/find_groups[.]py$|
-    ^micall/monitor/kive_watcher[.]py$|
-    ^micall/monitor/qai_helper[.]py$|
-    ^micall/monitor/sample_watcher[.]py$|
-    ^micall/monitor/update_qai[.]py$|
-    ^micall/monitor/micall_watcher[.]py$|
     ^micall/resistance/asi_algorithm[.]py$|
     ^micall/resistance/genreport[.]py$|
     ^micall/resistance/pdfreport[.]py$|
@@ -304,6 +296,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "Bio.SeqRecord"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "kiveapi"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

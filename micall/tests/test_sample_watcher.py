@@ -20,6 +20,9 @@ class DummySession:
         self.failed_runs = []  # [run_id]
         self.next_id = 101
 
+    def run_filter_quality_pipeline(self, folder_watcher):
+        return self.run_pipeline(folder_watcher, PipelineType.FILTER_QUALITY, None)
+
     def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type in self.skipped_types:
             return None
@@ -56,7 +59,7 @@ class DummySession:
 def test_folder_watcher_repr():
     base_calls_folder = '/path/Data/Intensities/BaseCalls'
     expected_repr = "FolderWatcher('/path/Data/Intensities/BaseCalls')"
-    watcher = FolderWatcher(base_calls_folder)
+    watcher = FolderWatcher(base_calls_folder, None)
 
     assert expected_repr == repr(watcher)
 
@@ -64,7 +67,7 @@ def test_folder_watcher_repr():
 def test_folder_watcher_repr_with_pathlib():
     base_calls_folder = Path('/path/Data/Intensities/BaseCalls')
     expected_repr = "FolderWatcher('/path/Data/Intensities/BaseCalls')"
-    watcher = FolderWatcher(base_calls_folder)
+    watcher = FolderWatcher(base_calls_folder, None)
 
     assert expected_repr == repr(watcher)
 
@@ -73,7 +76,7 @@ def test_folder_watcher_run_details():
     base_calls_folder = '/path/140101_M01234_JUNK/Data/Intensities/BaseCalls'
     expected_run_folder = Path('/path/140101_M01234_JUNK')
     expected_run_name = '140101_M01234'
-    watcher = FolderWatcher(base_calls_folder)
+    watcher = FolderWatcher(base_calls_folder, None)
 
     assert expected_run_folder == watcher.run_folder
     assert expected_run_name == watcher.run_name
