@@ -43,7 +43,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
     Separation from SCORE_EPSILON
     ------------------------
-    The large offset (coming from +9 factor) ensures that no genuine
+    The large offset (coming from 99 factor) ensures that no genuine
     overlap score can accidentally equal SCORE_EPSILON. This
     separation is critical because:
     - SCORE_EPSILON triggers different algorithmic behavior (ex: covered contigs)
