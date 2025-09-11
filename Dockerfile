@@ -71,14 +71,14 @@ RUN pip install --upgrade pip setuptools
 
 ## Install just the dependencies of MiCall (for faster build times in development).
 COPY pyproject.toml README.md /opt/micall/
-RUN pip install /opt/micall[denovo,basespace]
+RUN pip install /opt/micall[basespace]
 
 ## Trigger matplotlib to build its font cache
 RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 COPY . /opt/micall/
 
-RUN pip install /opt/micall[denovo,basespace]
+RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 
 WORKDIR /data

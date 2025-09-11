@@ -52,7 +52,7 @@ def read_sample_sheet_overrides(override_file, run_info):
         row['project'] = new_project
 
 
-def read_sample_sheet_and_overrides(sample_sheet_path: Path) -> dict:
+def read_sample_sheet_and_overrides(sample_sheet_path: Path) -> dict[str, object]:
     with sample_sheet_path.open() as sample_sheet_file:
         run_info = sample_sheet_parser(sample_sheet_file)
     overrides_path = sample_sheet_path.parent / 'SampleSheetOverrides.csv'
