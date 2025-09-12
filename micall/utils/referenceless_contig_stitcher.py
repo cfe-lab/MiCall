@@ -43,7 +43,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
 
     Separation from SCORE_EPSILON
     ------------------------
-    The large offset (coming from 99 factor) ensures that no genuine
+    The large offset (coming from 999 factor) ensures that no genuine
     overlap score can accidentally equal SCORE_EPSILON. This
     separation is critical because:
     - SCORE_EPSILON triggers different algorithmic behavior (ex: covered contigs)
@@ -79,7 +79,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     base = calculate_overlap_score(L=L, M=M) - ACCEPTABLE_BASE_STITCHING_SCORE()
     sign = 1 if base >= 0 else -1
     abase = sign * base # Absolute value of base.
-    magnitude = round((99 * abase + 2) ** 2) ** 3
+    magnitude = (999 * abase + 2) ** 2
     return sign * magnitude
 
 

@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  1.0529271143288966e+16.
+  22232435.05518421.
 END 6
 BEGIN 7
   Found
@@ -118,7 +118,7 @@ BEGIN 9
   the
   score
   of
-  1.7371743913743583.
+  1.2025272080573495.
 END 9
 BEGIN 10
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  1.8291180189958604e+16.
+  26735108.055227015.
 END 14
 BEGIN 15
   Contig

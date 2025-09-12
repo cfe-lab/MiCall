@@ -81,7 +81,7 @@ BEGIN 7
   the
   score
   of
-  62103840598801.0.
+  3996001.0.
 END 7
 BEGIN 8
   Found
@@ -163,7 +163,7 @@ BEGIN 12
   the
   score
   of
-  3656694753520097.5.
+  15615672.5601031.
 END 12
 BEGIN 13
   Contig
