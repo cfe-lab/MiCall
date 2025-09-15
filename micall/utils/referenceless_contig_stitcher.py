@@ -2,7 +2,7 @@ import itertools
 import logging
 from dataclasses import dataclass
 from functools import cache
-from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Literal, Union
+from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Set
 
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -143,43 +143,65 @@ def log(e: events.EventType) -> None:
 
 @dataclass(frozen=True)
 class Overlap:
-    # A negative integer.
-    # Represents the shift value for left contig relative to right
-    # contig to achieve the maximum overlap.
+    """Represents a maximal-overlap placement between two contigs.
+
+    Attributes:
+        shift: Relative shift to place `left` vs `right` at their best overlap.
+            The value is negative when `right` starts before the end of `left`.
+            A value of 0 indicates no overlap (we never construct Overlap with 0).
+        size: Length (in bases) of the overlapping window induced by `shift`.
+    """
     shift: int
     size: int
 
 
 ContigId = int
-GET_OVERLAP_CACHE: MutableMapping[
-    Tuple[ContigId, ContigId],
-    Optional[Overlap]] = {}
+# Cache positive overlaps and negative results separately for clarity.
+GET_OVERLAP_CACHE: MutableMapping[Tuple[ContigId, ContigId], Overlap] = {}
+GET_OVERLAP_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
+
+
+def _compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
+    """Compute the overlap size given contig lengths and a shift.
+
+    The shift is defined as returned by `ContigWithAligner.find_maximum_overlap`.
+    This helper reproduces the original size logic in a readable form and
+    asserts the resulting window is valid.
+    """
+    if abs(shift) <= left_len:
+        size = min(abs(shift), right_len)
+    else:
+        size = min(left_len, left_len + right_len + shift)
+    assert size > 0, f"{shift}, {left_len}, {right_len}"
+    assert size <= left_len, f"{shift}, {size}, {left_len}, {right_len}"
+    assert size <= right_len, f"{shift}, {size}, {left_len}, {right_len}"
+    return size
 
 
 def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[Overlap]:
+    """Return the best overlap placement between two contigs, if any.
+
+    Uses an internal cache to avoid repeated expensive overlap calculations.
+
+    Returns:
+        Overlap(shift, size) if an overlap was found; otherwise None.
+    """
     if len(left.seq) == 0 or len(right.seq) == 0:
         return None
 
     key = (left.id, right.id)
-    cached: Union[Overlap, None, Literal[0]] = GET_OVERLAP_CACHE.get(key, 0)
-    if cached != 0:
+    if key in GET_OVERLAP_NEGATIVE:
+        return None
+    cached = GET_OVERLAP_CACHE.get(key)
+    if cached is not None:
         return cached
 
-    (shift, value) = left.find_maximum_overlap(right)
+    shift, _ = left.find_maximum_overlap(right)
     if shift == 0:
-        ret = None
-        GET_OVERLAP_CACHE[key] = ret
-        return ret
+        GET_OVERLAP_NEGATIVE.add(key)
+        return None
 
-    if abs(shift) <= len(left.seq):
-        size = min(abs(shift), len(right.seq))
-    else:
-        size = min(len(left.seq), len(left.seq) + len(right.seq) + shift)
-
-    assert size > 0, f"{shift}, {len(left.seq)}, {len(right.seq)}"
-    assert size <= len(left.seq), f"{shift}, {size}, {len(left.seq)}, {len(right.seq)}"
-    assert size <= len(right.seq), f"{shift}, {size}, {len(left.seq)}, {len(right.seq)}"
-
+    size = _compute_overlap_size(len(left.seq), len(right.seq), shift)
     ret = Overlap(shift=shift, size=size)
     GET_OVERLAP_CACHE[key] = ret
     return ret
@@ -216,7 +238,9 @@ def align_overlaps(left_overlap: str, right_overlap: str) -> Tuple[str, str]:
 
 CutoffsCacheResult = Optional[Tuple[int, int]]
 CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
-CUTOFFS_CACHE: CutoffsCache = {}
+# Maintain positive and negative caches separately to simplify logic.
+CUTOFFS_CACHE: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]] = {}
+CUTOFFS_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
 
 
 def find_overlap_cutoffs(minimum_score: Score,
@@ -226,66 +250,94 @@ def find_overlap_cutoffs(minimum_score: Score,
                          left_initial_overlap: str,
                          right_initial_overlap: str,
                          ) -> CutoffsCacheResult:
+    """Locate cutoffs delimiting the high-confidence overlap region.
 
+    The function determines indices into the original left/right contig sequences
+    that bound the overlap to be aligned for scoring and merging. Cutoffs are
+    chosen via `map_overlap` using the provided `minimum_score`.
+
+    Caching:
+        Results are cached per (left.id, right.id). When no valid overlap region
+        is possible for the given pair (under `minimum_score`), a negative entry
+        is recorded and None is returned on subsequent calls.
+
+    Returns:
+        Tuple (left_cutoff, right_cutoff) on success, or None if no valid
+        overlap region satisfies the minimum score.
+    """
     key = (left.id, right.id)
 
-    existing: Union[CutoffsCacheResult, Literal[False]] \
-        = CUTOFFS_CACHE.get(key, False)
-
-    if existing is None:
+    if key in CUTOFFS_NEGATIVE:
         return None
+    existing = CUTOFFS_CACHE.get(key)
+    if existing is not None:
+        return existing
 
-    elif existing is not False:
-        (left_cutoff, right_cutoff) = existing
+    # Helper to finalize and cache results
+    def _cache_and_return(value: Optional[Tuple[int, int]]) -> CutoffsCacheResult:
+        if value is None:
+            CUTOFFS_NEGATIVE.add(key)
+        else:
+            CUTOFFS_CACHE[key] = value
+        return value
 
-    elif len(left.seq) == len(left_initial_overlap):
+    if len(left.seq) == len(left_initial_overlap):
+        # The entire left is covered in the initial overlap window; sweep on right.
         overlap_alignments = tuple(right.map_overlap(minimum_score, "cover", left_initial_overlap))
         right_cutoff = max((end for start, end in overlap_alignments), default=-1)
         if right_cutoff < 0:
             ret = (len(right.seq) - abs(shift) + 1, len(right.seq) - abs(shift) + len(left_initial_overlap) + 1)
-            CUTOFFS_CACHE[key] = ret
-            return ret
-
+            return _cache_and_return(ret)
         left_cutoff = min((start for start, end in overlap_alignments), default=-1)
 
     elif len(right.seq) == len(right_initial_overlap):
+        # The entire right is covered in the initial overlap window; sweep on left.
         overlap_alignments = tuple(left.map_overlap(minimum_score, "cover", right_initial_overlap))
         left_cutoff = min((start for start, end in overlap_alignments), default=-1)
         if left_cutoff < 0:
             ret = (len(left.seq) - abs(shift) + 1, len(left.seq) - abs(shift) + len(right_initial_overlap) + 1)
-            CUTOFFS_CACHE[key] = ret
-            return ret
-
+            return _cache_and_return(ret)
         right_cutoff = max((end for start, end in overlap_alignments), default=-1)
 
     elif len(left.seq) < len(right.seq):
+        # Left is shorter: align left overlap region first, then right.
         left_overlap_alignments = left.map_overlap(minimum_score, "left", right_initial_overlap)
         left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
-            CUTOFFS_CACHE[key] = None
-            return None
-
+            return _cache_and_return(None)
         right_overlap_alignments = right.map_overlap(minimum_score, "right", left_initial_overlap)
         right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
-            CUTOFFS_CACHE[key] = None
-            return None
+            return _cache_and_return(None)
+
     else:
+        # Right is shorter or equal: align right overlap region first, then left.
         right_overlap_alignments = right.map_overlap(minimum_score, "right", left_initial_overlap)
         right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
         if right_cutoff < 0:
-            CUTOFFS_CACHE[key] = None
-            return None
-
+            return _cache_and_return(None)
         left_overlap_alignments = left.map_overlap(minimum_score, "left", right_initial_overlap)
         left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
         if left_cutoff < 0:
-            CUTOFFS_CACHE[key] = None
-            return None
+            return _cache_and_return(None)
 
     ret = (left_cutoff, right_cutoff)
-    CUTOFFS_CACHE[key] = ret
-    return ret
+    return _cache_and_return(ret)
+
+
+def _normalize_orientation(a: ContigWithAligner, b: ContigWithAligner, overlap: Overlap) -> Tuple[ContigWithAligner, ContigWithAligner, int]:
+    """Return (left, right, shift) ensuring `shift` corresponds to left->right."""
+    if abs(overlap.shift) < len(a.seq):
+        return a, b, overlap.shift
+    shift = (len(b.seq) + len(a.seq) - abs(overlap.shift)) * -1
+    return b, a, shift
+
+
+def _initial_overlap_windows(left: ContigWithAligner, right: ContigWithAligner, shift: int) -> Tuple[str, str]:
+    """Extract initial overlap windows on left/right given a placement shift."""
+    left_initial = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
+    right_initial = right.seq[:abs(shift)]
+    return left_initial, right_initial
 
 
 def try_combine_contigs(is_debug2: bool,
@@ -293,41 +345,45 @@ def try_combine_contigs(is_debug2: bool,
                         pool: Pool,
                         a: ContigWithAligner, b: ContigWithAligner,
                         ) -> Optional[Tuple[ContigWithAligner, Score]]:
+    """Attempt to combine two contigs respecting the pool's score threshold.
 
+    Fast-fails using upper bounds on achievable overlap, normalizes orientation,
+    determines precise cutoffs for the overlap region, aligns the overlaps, and
+    either returns a merged contig and its score or indicates that merging is
+    not beneficial under the current threshold.
+    """
+
+    # Compute the minimum additional score needed for acceptance.
     minimum_base_score = get_minimum_base_score(current_score, pool.min_acceptable_score)
 
+    # Quick upper bound check: if even a perfect overlap cannot reach the minimum, abort early.
     maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
     maximum_number_of_matches = maximum_overlap_size
     maximum_result_score = calculate_referenceless_overlap_score(L=maximum_overlap_size+1, M=maximum_number_of_matches)
     if maximum_result_score < minimum_base_score:
         return None
 
+    # Identify best overlap placement.
     overlap = get_overlap(a, b)
     if overlap is None:
         return None
 
+    # Optimistic check using the discovered overlap window size.
     optimistic_overlap_size = overlap.size
     optimistic_number_of_matches = optimistic_overlap_size
     optimistic_result_score = calculate_referenceless_overlap_score(L=optimistic_overlap_size+1, M=optimistic_number_of_matches)
     if optimistic_result_score < minimum_base_score:
         return None
 
-    if abs(overlap.shift) < len(a.seq):
-        shift = overlap.shift
-        left = a
-        right = b
-    else:
-        shift = (len(b.seq) + len(a.seq) - abs(overlap.shift)) * -1
-        left = b
-        right = a
-
-    left_initial_overlap = left.seq[len(left.seq) - abs(shift):(len(left.seq) - abs(shift) + len(right.seq))]
-    right_initial_overlap = right.seq[:abs(shift)]
+    # Normalize orientation and derive initial overlap windows.
+    left, right, shift = _normalize_orientation(a, b, overlap)
+    left_initial_overlap, right_initial_overlap = _initial_overlap_windows(left, right, shift)
 
     assert len(right_initial_overlap) == overlap.size, f"{len(right_initial_overlap)} == {overlap.size}"
     assert len(left_initial_overlap) == overlap.size, f"{len(left_initial_overlap)} == {overlap.size}"
     assert calculate_referenceless_overlap_score(L=len(left_initial_overlap)+1, M=len(left_initial_overlap)) >= minimum_base_score
 
+    # Determine refined cutoffs within the initial windows.
     cutoffs = find_overlap_cutoffs(minimum_base_score,
                                    left, right, shift,
                                    left_initial_overlap,
@@ -342,23 +398,19 @@ def try_combine_contigs(is_debug2: bool,
     if cutoffs is None:
         return None
 
-    (left_cutoff, right_cutoff) = cutoffs
+    left_cutoff, right_cutoff = cutoffs
 
+    # Covered-contig short-circuit: if one contig is fully covered by the overlap.
     left_is_covered = len(left.seq) <= overlap.size
     right_is_covered = len(right.seq) <= overlap.size
     is_covered = left_is_covered or right_is_covered
-    if is_covered:
-        if left_is_covered:
-            covered = left
-            bigger = right
-        else:
-            covered = right
-            bigger = left
 
+    if is_covered:
+        covered = left if left_is_covered else right
+        bigger = right if left_is_covered else left
         covered_overlap = covered.seq
         bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
         aligned_1, aligned_2 = align_overlaps(covered_overlap, bigger_overlap)
-
     else:
         left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
         left_remainder = left.seq[:left_cutoff]
@@ -366,15 +418,12 @@ def try_combine_contigs(is_debug2: bool,
         right_remainder = right.seq[right_cutoff:]
         aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
 
+    # Score the aligned overlap.
     result_length = len(aligned_1)
     assert result_length > 0, "The overlap cannot be empty."
-    number_of_matches = sum(1 for x, y
-                            in zip(aligned_1, aligned_2)
-                            if x == y and x != '-')
-
-    # Note that result_length is not necessarily == len(left_overlap_chunk) + len(right_overlap_chunk).
-    # The addition would give a more precise value for the result_score, but it's much more expensive to calculate.
+    number_of_matches = sum(1 for x, y in zip(aligned_1, aligned_2) if x == y and x != '-')
     result_score = calculate_referenceless_overlap_score(L=result_length, M=number_of_matches)
+
     if is_debug2:
         denominator = max(minimum_base_score, ACCEPTABLE_STITCHING_SCORE())
         relative_score = result_score / denominator if denominator != 0 else float("inf")
@@ -390,22 +439,22 @@ def try_combine_contigs(is_debug2: bool,
             log(events.Covered(left.unique_name, right.unique_name))
         return (bigger, SCORE_EPSILON)
 
-    else:
-        concordance = calculate_concordance(aligned_1, aligned_2)
-        max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
-        left_overlap_chunk = ''.join(x for x in aligned_1[:max_concordance_index] if x != '-')
-        right_overlap_chunk = ''.join(x for x in aligned_2[max_concordance_index:] if x != '-')
+    # Merge by concordance position to produce the combined contig.
+    concordance = calculate_concordance(aligned_1, aligned_2)
+    max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
+    left_overlap_chunk = ''.join(x for x in aligned_1[:max_concordance_index] if x != '-')
+    right_overlap_chunk = ''.join(x for x in aligned_2[max_concordance_index:] if x != '-')
 
-        result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
-        result_contig = ContigWithAligner(None, result_seq)
+    result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
+    result_contig = ContigWithAligner(None, result_seq)
 
-        if is_debug2:
-            log(events.CombinedContings(left_contig=left.unique_name,
-                                        right_contig=right.unique_name,
-                                        result_contig=result_contig.unique_name,
-                                        overlap_size=len(left_overlap_chunk) + len(right_overlap_chunk),
-                                        ))
-        return (result_contig, result_score)
+    if is_debug2:
+        log(events.CombinedContings(left_contig=left.unique_name,
+                                    right_contig=right.unique_name,
+                                    result_contig=result_contig.unique_name,
+                                    overlap_size=len(left_overlap_chunk) + len(right_overlap_chunk),
+                                    ))
+    return (result_contig, result_score)
 
 
 def extend_by_1(is_debug2: bool,
