@@ -17,7 +17,7 @@ from pathlib import Path
 # Run micall/utils/get_list_of_executables.py to get the up-to-date list of these executables.
 # The consistency of this list is verified in micall/tests/test_installation.py
 EXECUTABLES = [
-    "micall/main.py",
+    "micall/__main__.py",
     "micall/resistance/genreport.py",
     "micall/resistance/resistance.py",
     "micall/resistance/pdfreport.py",

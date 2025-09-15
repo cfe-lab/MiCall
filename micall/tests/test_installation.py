@@ -27,7 +27,7 @@ from itertools import groupby
 from packaging.version import Version, InvalidVersion
 
 from micall.utils.get_list_of_executables import iterate_executables
-from micall.main import EXECUTABLES
+from micall.__main__ import EXECUTABLES
 
 
 # Function to quote shell arguments.
@@ -139,7 +139,7 @@ def test_micall_help(temp_venv, micall_installation):
 
 def test_executables_names():
     """
-    Verify that all and only those executables found by `iterate_executables()` are used in micall/main.py.
+    Verify that all and only those executables found by `iterate_executables()` are used in micall/__main__.py.
     """
 
     assert set(EXECUTABLES) == set(map(str, iterate_executables()))
