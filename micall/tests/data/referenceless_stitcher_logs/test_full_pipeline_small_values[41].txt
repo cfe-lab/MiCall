@@ -63,7 +63,7 @@ BEGIN 6
   the
   score
   of
-  28681518.69955868.
+  114799.03272755502.
 END 6
 BEGIN 7
   Found
@@ -145,7 +145,7 @@ BEGIN 11
   the
   score
   of
-  32110319.29326305.
+  128525.47287152409.
 END 11
 BEGIN 12
   Contig
@@ -190,7 +190,7 @@ BEGIN 14
   the
   score
   of
-  29890378.021880034.
+  119638.41582858886.
 END 14
 BEGIN 15
   Contig
@@ -235,7 +235,7 @@ BEGIN 17
   the
   score
   of
-  29169664.32084765.
+  116753.206331559.
 END 17
 BEGIN 18
   Contig
@@ -280,7 +280,7 @@ BEGIN 20
   the
   score
   of
-  26569968.037309073.
+  106345.98428162077.
 END 20
 BEGIN 21
   Contig
@@ -352,7 +352,7 @@ BEGIN 25
   the
   score
   of
-  29890378.021880034.
+  119638.41582858886.
 END 25
 BEGIN 26
   Contig
@@ -397,7 +397,7 @@ BEGIN 28
   the
   score
   of
-  29169664.32084765.
+  116753.206331559.
 END 28
 BEGIN 29
   Contig
@@ -442,7 +442,7 @@ BEGIN 31
   the
   score
   of
-  26569968.037309073.
+  106345.98428162077.
 END 31
 BEGIN 32
   Contig
@@ -514,7 +514,7 @@ BEGIN 36
   the
   score
   of
-  29169664.32084765.
+  116753.206331559.
 END 36
 BEGIN 37
   Contig
@@ -559,7 +559,7 @@ BEGIN 39
   the
   score
   of
-  26569968.037309073.
+  106345.98428162077.
 END 39
 BEGIN 40
   Contig
@@ -631,7 +631,7 @@ BEGIN 44
   the
   score
   of
-  26569968.037309073.
+  106345.98428162077.
 END 44
 BEGIN 45
   Contig
