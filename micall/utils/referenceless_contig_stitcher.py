@@ -79,7 +79,7 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     base = calculate_overlap_score(L=L, M=M) - ACCEPTABLE_BASE_STITCHING_SCORE()
     sign = 1 if base >= 0 else -1
     abase = sign * base # Absolute value of base.
-    magnitude = (999 * abase + 2) ** 2
+    magnitude = 999 + (999 * abase + 2) ** 2
     return sign * magnitude
 
 
