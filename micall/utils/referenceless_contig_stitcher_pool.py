@@ -16,11 +16,7 @@ Design notes
 - The pool tracks the smallest acceptable score, which is initialized by
   the caller (stitcher) to its global acceptance threshold. As higher
   quality paths fill the pool, this threshold can only increase.
-- The implementation is standalone and does not import the stitcher
-  module to avoid circular dependencies.
 """
-
-from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import MutableMapping, Set
