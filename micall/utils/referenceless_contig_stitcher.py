@@ -2,7 +2,7 @@ import itertools
 import logging
 from dataclasses import dataclass
 from functools import cache
-from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Literal, Union, Set
+from typing import Iterable, Iterator, Optional, Tuple, Sequence, TextIO, MutableMapping, Literal, Union
 
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -15,7 +15,7 @@ from micall.utils.overlap_stitcher import (
     sort_concordance_indexes,
     calculate_overlap_score,
 )
-from micall.utils.sorted_ring import SortedRing
+from .referenceless_contig_stitcher_pool import Pool
 import micall.utils.referenceless_contig_stitcher_events as events
 from micall.utils.referenceless_contig_path import ContigsPath
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
@@ -139,63 +139,6 @@ def log(e: events.EventType) -> None:
     """
     ReferencelessStitcherContext.get().emit(e)
     logger.debug("%s", e)
-
-
-@dataclass
-class Pool:
-    ring: SortedRing[ContigsPath]
-    set: Set[str]
-    existing: MutableMapping[str, ContigsPath]
-    smallest_score: Score
-
-    @staticmethod
-    def empty(capacity: int) -> 'Pool':
-        # initial capacity is large; smallest_score starts at threshold
-        ring: SortedRing[ContigsPath] = SortedRing(capacity=capacity)
-        return Pool(ring, set(), {}, ACCEPTABLE_STITCHING_SCORE())
-
-    @property
-    def min_acceptable_score(self) -> Score:
-        return self.smallest_score
-
-    def add(self, path: ContigsPath) -> bool:
-        key = path.whole.seq
-        alternative = self.existing.get(key)
-        if alternative is not None and alternative.get_score() >= path.get_score():
-            return False
-
-        # insert the new path and record it
-        self.existing[key] = path
-
-        deleted_seq = None
-        old_size = len(self.ring)
-
-        if path.whole.seq in self.set:
-            to_delete_index = -1
-            for i, candidate in enumerate(self.ring):
-                if candidate.whole.seq == path.whole.seq:
-                    to_delete_index = i
-                    break
-
-            assert to_delete_index >= 0
-            deleted_seq = path.whole.seq
-            del self.ring[to_delete_index]
-
-        else:
-            if len(self.ring) > 0:
-                deleted_seq = self.ring[0].whole.seq
-
-        if self.ring.insert(path):
-            new_size = len(self.ring)
-
-            if new_size == old_size and deleted_seq is not None:
-                self.set.remove(deleted_seq)
-
-            self.set.add(path.whole.seq)
-            self.smallest_score = max(self.ring[0].get_score(), ACCEPTABLE_STITCHING_SCORE())
-            return True
-
-        return False
 
 
 @dataclass(frozen=True)
@@ -539,7 +482,7 @@ def calculate_all_paths(paths: Sequence[ContigsPath],
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
 
     max_alternatives = intrapolate_number_of_alternatives(len(contigs))
-    pool = Pool.empty(max_alternatives)
+    pool = Pool.empty(max_alternatives, ACCEPTABLE_STITCHING_SCORE())
     for path in sorted(paths):
         # stop if we reached capacity
         if len(pool.ring) >= pool.ring.capacity:
@@ -616,7 +559,7 @@ def try_combine_1(contigs: Iterable[ContigWithAligner],
             if first.id >= second.id:
                 continue
 
-            pool = Pool.empty(1)
+            pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())
             result = try_combine_contigs(
                 is_debug2=is_debug2,
                 current_score=SCORE_NOTHING,
