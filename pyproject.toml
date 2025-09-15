@@ -27,7 +27,7 @@ dependencies = [
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
     "sortedcontainers==2.4.0",
     "numpy==2.3.3",
-    "scipy==1.16.1",
+    "scipy==1.16.2",
     "matplotlib==3.10.6",
     "cutadapt==5.1",
     "python-Levenshtein==0.27.1",
@@ -67,13 +67,13 @@ test = [
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
     "ruff==0.13.0",
-    "mypy==1.17.1",
+    "mypy==1.18.1",
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
     "pandas-stubs==2.3.2.250827",
-    "types-requests==2.32.4.20250809",
+    "types-requests==2.32.4.20250913",
     "uv==0.8.17",
 ]
 watcher = [
