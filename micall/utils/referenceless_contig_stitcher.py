@@ -169,17 +169,14 @@ class Overlap:
 
 
 ContigId = int
-# Cache positive overlaps and negative results separately for clarity.
 GET_OVERLAP_CACHE: MutableMapping[Tuple[ContigId, ContigId], Overlap] = {}
 GET_OVERLAP_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
 
 
-def _compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
+def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
     """Compute the overlap size given contig lengths and a shift.
 
     The shift is defined as returned by `ContigWithAligner.find_maximum_overlap`.
-    This helper reproduces the original size logic in a readable form and
-    asserts the resulting window is valid.
     """
     if abs(shift) <= left_len:
         size = min(abs(shift), right_len)
@@ -214,16 +211,13 @@ def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[O
         GET_OVERLAP_NEGATIVE.add(key)
         return None
 
-    size = _compute_overlap_size(len(left.seq), len(right.seq), shift)
+    size = compute_overlap_size(len(left.seq), len(right.seq), shift)
     ret = Overlap(shift=shift, size=size)
     GET_OVERLAP_CACHE[key] = ret
     return ret
 
 
 def combine_scores(current: Score, new: Score) -> Score:
-    """
-    Combine two scores by summing them.
-    """
     return current + new
 
 
@@ -249,7 +243,7 @@ def align_overlaps(left_overlap: str, right_overlap: str) -> Tuple[str, str]:
     return result
 
 
-# Cutoff cache types and stores (defined early so annotations resolve)
+# Cutoff cache types and stores
 CutoffsCacheResult = Optional[Tuple[int, int]]
 CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
 CUTOFFS_CACHE: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]] = {}
