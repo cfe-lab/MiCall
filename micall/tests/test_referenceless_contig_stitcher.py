@@ -3,8 +3,9 @@ import pytest
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, \
     ACCEPTABLE_STITCHING_SCORE
+from micall.utils.referenceless_contig_stitcher import try_combine_contigs, calculate_referenceless_overlap_score
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.referenceless_score import Score
+from micall.utils.referenceless_score import Score, SCORE_NOTHING
 from micall.utils.referenceless_contig_path import ContigsPath
 
 from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check
@@ -767,3 +768,89 @@ class TestPool:
         assert path1a not in ring_paths
         assert path2 in ring_paths
         assert path3 in ring_paths
+
+
+@pytest.mark.parametrize(
+    "seqs, expected",
+    [
+        # Extreme-shift overlap: right tail matches left head.
+        (("A" * 10 + "C" * 20, "T" * 40 + "A" * 10), ("T" * 40 + "A" * 10 + "C" * 20,)),
+    ],
+)
+def test_stitch_extreme_shift_overlap(seqs, expected, disable_acceptable_prob_check):
+    contigs = [ContigWithAligner(None, s) for s in seqs]
+    with ReferencelessStitcherContext.fresh():
+        consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
+    assert consenses == tuple(sorted(expected))
+
+
+def test_cutoffs_cache_respects_threshold():
+    """
+    Cutoffs cache should not ignore minimum_score threshold.
+    First call caches a negative result at a high threshold, second call with
+    a lower threshold should succeed.
+    """
+
+    # Build two contigs with a 20bp overlap containing 1 mismatch (19/20 matches).
+    left_seq = ("A" * 10) + ("T" * 10) + "C" + ("T" * 9)  # 20bp window with 1 mismatch
+    right_seq = ("T" * 20) + "G" * 10
+    a = ContigWithAligner(None, left_seq)
+    b = ContigWithAligner(None, right_seq)
+
+    # Pick a threshold between optimistic (perfect 20/21) and actual (19/20).
+    optimistic = calculate_referenceless_overlap_score(L=21, M=20)
+    actual = calculate_referenceless_overlap_score(L=20, M=19)
+    high_min = (optimistic + actual) / 2.0
+
+    # First attempt with high threshold should fail.
+    pool_high = Pool.empty(capacity=1, min_acceptable_score=Score(high_min))
+    res1 = try_combine_contigs(
+        is_debug2=False,
+        current_score=SCORE_NOTHING,
+        pool=pool_high,
+        a=a,
+        b=b,
+    )
+    assert res1 is None  # High threshold cannot be met
+
+    # Second attempt with a very low threshold should succeed.
+    pool_low = Pool.empty(capacity=1, min_acceptable_score=SCORE_NOTHING)
+    res2 = try_combine_contigs(
+        is_debug2=False,
+        current_score=SCORE_NOTHING,
+        pool=pool_low,
+        a=a,
+        b=b,
+    )
+
+    # Expect success
+    assert res2 is not None
+
+
+@pytest.mark.xfail
+def test_noncovered_alignment_uses_right_cutoff_window():
+    """
+    The align_for_merge_noncovered should use the correct right-side cutoff window.
+    """
+    N = 20
+    left_seq = ("C" * 10) + ("T" * N) + ("A" * 10)  # extra suffix after overlap
+    right_seq = ("T" * N) + ("G" * 10)
+    a = ContigWithAligner(None, left_seq)
+    b = ContigWithAligner(None, right_seq)
+
+    # Threshold just below the perfect N/N overlap score.
+    min_ok = calculate_referenceless_overlap_score(L=N, M=N) - 1.0
+    pool = Pool.empty(capacity=1, min_acceptable_score=Score(min_ok))
+
+    res = try_combine_contigs(
+        is_debug2=False,
+        current_score=SCORE_NOTHING,
+        pool=pool,
+        a=a,
+        b=b,
+    )
+
+    # With correct windowing, this should pass and produce a combined contig.
+    assert res is not None
+    combined, _ = res
+    assert combined.seq == ("C" * 10) + ("T" * N) + ("G" * 10)  # expected stitch
