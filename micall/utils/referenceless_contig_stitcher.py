@@ -236,9 +236,9 @@ def align_overlaps(left_overlap: str, right_overlap: str) -> Tuple[str, str]:
     return result
 
 
+# Cutoff cache types and stores (defined early so annotations resolve)
 CutoffsCacheResult = Optional[Tuple[int, int]]
 CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
-# Maintain positive and negative caches separately to simplify logic.
 CUTOFFS_CACHE: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]] = {}
 CUTOFFS_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
 
@@ -340,6 +340,74 @@ def _initial_overlap_windows(left: ContigWithAligner, right: ContigWithAligner, 
     return left_initial, right_initial
 
 
+def _max_possible_overlap_score(len_a: int, len_b: int) -> Score:
+    """Upper bound score for a perfect overlap between two contigs.
+
+    Uses L = min(len_a, len_b) - 1 and M = L.
+    """
+    maximum_overlap_size = min(len_a, len_b) - 1
+    maximum_number_of_matches = maximum_overlap_size
+    return calculate_referenceless_overlap_score(
+        L=maximum_overlap_size + 1,
+        M=maximum_number_of_matches,
+    )
+
+
+def _optimistic_overlap_score(overlap_size: int) -> Score:
+    """Optimistic score using discovered overlap window size (assume M = L)."""
+    return calculate_referenceless_overlap_score(L=overlap_size + 1, M=overlap_size)
+
+
+def _score_alignment(aligned_1: str, aligned_2: str) -> Tuple[int, int, Score]:
+    """Compute (result_length, number_of_matches, result_score) from an alignment."""
+    result_length = len(aligned_1)
+    assert result_length > 0, "The overlap cannot be empty."
+    number_of_matches = sum(1 for x, y in zip(aligned_1, aligned_2) if x == y and x != '-')
+    result_score = calculate_referenceless_overlap_score(L=result_length, M=number_of_matches)
+    return result_length, number_of_matches, result_score
+
+
+def _align_for_merge_covered(covered: ContigWithAligner,
+                             bigger: ContigWithAligner,
+                             left_cutoff: int,
+                             right_cutoff: int) -> Tuple[str, str]:
+    """Align sequences for the covered-contig case."""
+    covered_overlap = covered.seq
+    bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
+    return align_overlaps(covered_overlap, bigger_overlap)
+
+
+def _align_for_merge_noncovered(left: ContigWithAligner,
+                                right: ContigWithAligner,
+                                left_cutoff: int,
+                                right_cutoff: int) -> Tuple[str, str, str, str]:
+    """Align overlap windows and return alignment plus remainders for merging."""
+    left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
+    left_remainder = left.seq[:left_cutoff]
+    right_overlap = right.seq[:right_cutoff]
+    right_remainder = right.seq[right_cutoff:]
+    aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
+    return aligned_1, aligned_2, left_remainder, right_remainder
+
+
+def _merge_by_concordance(aligned_1: str,
+                          aligned_2: str,
+                          left_remainder: str,
+                          right_remainder: str) -> Tuple[str, int]:
+    """Produce merged sequence by splitting at the best concordance index.
+
+    Returns tuple of (result_seq, overlap_size_for_event).
+    """
+    concordance = calculate_concordance(aligned_1, aligned_2)
+    max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
+    left_overlap_chunk = ''.join(x for x in aligned_1[:max_concordance_index] if x != '-')
+    right_overlap_chunk = ''.join(x for x in aligned_2[max_concordance_index:] if x != '-')
+
+    result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
+    overlap_size = len(left_overlap_chunk) + len(right_overlap_chunk)
+    return result_seq, overlap_size
+
+
 def try_combine_contigs(is_debug2: bool,
                         current_score: Score,
                         pool: Pool,
@@ -357,10 +425,7 @@ def try_combine_contigs(is_debug2: bool,
     minimum_base_score = get_minimum_base_score(current_score, pool.min_acceptable_score)
 
     # Quick upper bound check: if even a perfect overlap cannot reach the minimum, abort early.
-    maximum_overlap_size = min(len(a.seq), len(b.seq)) - 1
-    maximum_number_of_matches = maximum_overlap_size
-    maximum_result_score = calculate_referenceless_overlap_score(L=maximum_overlap_size+1, M=maximum_number_of_matches)
-    if maximum_result_score < minimum_base_score:
+    if _max_possible_overlap_score(len(a.seq), len(b.seq)) < minimum_base_score:
         return None
 
     # Identify best overlap placement.
@@ -369,10 +434,7 @@ def try_combine_contigs(is_debug2: bool,
         return None
 
     # Optimistic check using the discovered overlap window size.
-    optimistic_overlap_size = overlap.size
-    optimistic_number_of_matches = optimistic_overlap_size
-    optimistic_result_score = calculate_referenceless_overlap_score(L=optimistic_overlap_size+1, M=optimistic_number_of_matches)
-    if optimistic_result_score < minimum_base_score:
+    if _optimistic_overlap_score(overlap.size) < minimum_base_score:
         return None
 
     # Normalize orientation and derive initial overlap windows.
@@ -408,21 +470,13 @@ def try_combine_contigs(is_debug2: bool,
     if is_covered:
         covered = left if left_is_covered else right
         bigger = right if left_is_covered else left
-        covered_overlap = covered.seq
-        bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
-        aligned_1, aligned_2 = align_overlaps(covered_overlap, bigger_overlap)
+        aligned_1, aligned_2 = _align_for_merge_covered(covered, bigger, left_cutoff, right_cutoff)
+        # Score the aligned overlap.
+        result_length, number_of_matches, result_score = _score_alignment(aligned_1, aligned_2)
     else:
-        left_overlap = left.seq[left_cutoff:(left_cutoff + len(right.seq))]
-        left_remainder = left.seq[:left_cutoff]
-        right_overlap = right.seq[:right_cutoff]
-        right_remainder = right.seq[right_cutoff:]
-        aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
-
-    # Score the aligned overlap.
-    result_length = len(aligned_1)
-    assert result_length > 0, "The overlap cannot be empty."
-    number_of_matches = sum(1 for x, y in zip(aligned_1, aligned_2) if x == y and x != '-')
-    result_score = calculate_referenceless_overlap_score(L=result_length, M=number_of_matches)
+        aligned_1, aligned_2, left_remainder, right_remainder = _align_for_merge_noncovered(left, right, left_cutoff, right_cutoff)
+        # Score the aligned overlap.
+        result_length, number_of_matches, result_score = _score_alignment(aligned_1, aligned_2)
 
     if is_debug2:
         denominator = max(minimum_base_score, ACCEPTABLE_STITCHING_SCORE())
@@ -440,19 +494,14 @@ def try_combine_contigs(is_debug2: bool,
         return (bigger, SCORE_EPSILON)
 
     # Merge by concordance position to produce the combined contig.
-    concordance = calculate_concordance(aligned_1, aligned_2)
-    max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
-    left_overlap_chunk = ''.join(x for x in aligned_1[:max_concordance_index] if x != '-')
-    right_overlap_chunk = ''.join(x for x in aligned_2[max_concordance_index:] if x != '-')
-
-    result_seq = left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
+    result_seq, overlap_size = _merge_by_concordance(aligned_1, aligned_2, left_remainder, right_remainder)
     result_contig = ContigWithAligner(None, result_seq)
 
     if is_debug2:
         log(events.CombinedContings(left_contig=left.unique_name,
                                     right_contig=right.unique_name,
                                     result_contig=result_contig.unique_name,
-                                    overlap_size=len(left_overlap_chunk) + len(right_overlap_chunk),
+                                    overlap_size=overlap_size,
                                     ))
     return (result_contig, result_score)
 
