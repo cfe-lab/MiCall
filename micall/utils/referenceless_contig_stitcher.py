@@ -304,7 +304,7 @@ def precheck_and_prepare_overlap(
     return left, right, shift, left_initial_overlap, right_initial_overlap, overlap
 
 
-def _coverage_flags(
+def coverage_flags(
     left: ContigWithAligner,
     right: ContigWithAligner,
     overlap_size: int,
@@ -661,7 +661,7 @@ def try_combine_contigs(
     left_cutoff, right_cutoff = cutoffs
 
     # Covered-contig short-circuit: if one contig is fully covered by the overlap.
-    is_covered, covered, bigger = _coverage_flags(left, right, overlap.size)
+    is_covered, covered, bigger = coverage_flags(left, right, overlap.size)
 
     (
         aligned_1,
