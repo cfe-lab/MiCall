@@ -256,6 +256,219 @@ CUTOFFS_CACHE: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]] = {}
 CUTOFFS_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
 
 
+def precheck_and_prepare_overlap(
+    a: ContigWithAligner,
+    b: ContigWithAligner,
+    minimum_base_score: Score,
+) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, int, str, str, Overlap]]:
+    """
+    Run early-bound checks and prepare normalized overlap windows.
+
+    Returns (left, right, shift, left_initial_overlap, right_initial_overlap, overlap)
+    or None if any precondition fails. No events are emitted here.
+    """
+
+    # Quick upper bound check: if even a perfect overlap cannot reach the minimum, abort early.
+    if max_possible_overlap_score(len(a.seq), len(b.seq)) < minimum_base_score:
+        return None
+
+    # Identify best overlap placement.
+    overlap = get_overlap(a, b)
+    if overlap is None:
+        return None
+
+    # Optimistic check using the discovered overlap window size.
+    if optimistic_overlap_score(overlap.size) < minimum_base_score:
+        return None
+
+    # Normalize orientation and derive initial overlap windows.
+    left, right, shift = normalize_orientation(a, b, overlap)
+    left_initial_overlap, right_initial_overlap = initial_overlap_windows(
+        left, right, shift
+    )
+
+    # Maintain safety assertions from original implementation.
+    assert len(right_initial_overlap) == overlap.size, (
+        f"{len(right_initial_overlap)} == {overlap.size}"
+    )
+    assert len(left_initial_overlap) == overlap.size, (
+        f"{len(left_initial_overlap)} == {overlap.size}"
+    )
+    assert (
+        calculate_referenceless_overlap_score(
+            L=len(left_initial_overlap) + 1, M=len(left_initial_overlap)
+        )
+        >= minimum_base_score
+    )
+
+    return left, right, shift, left_initial_overlap, right_initial_overlap, overlap
+
+
+def _coverage_flags(
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    overlap_size: int,
+) -> Tuple[bool, Optional[ContigWithAligner], Optional[ContigWithAligner]]:
+    """Compute coverage flags and identify covered/bigger contigs if applicable."""
+    left_is_covered = len(left.seq) <= overlap_size
+    right_is_covered = len(right.seq) <= overlap_size
+    is_covered = left_is_covered or right_is_covered
+    if is_covered:
+        covered = left if left_is_covered else right
+        bigger = right if left_is_covered else left
+        return True, covered, bigger
+    return False, None, None
+
+
+def compute_alignment_and_score(
+    is_covered: bool,
+    covered: Optional[ContigWithAligner],
+    bigger: Optional[ContigWithAligner],
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    left_cutoff: int,
+    right_cutoff: int,
+) -> Tuple[str, str, str, str, int, int, Score]:
+    """Align according to covered/non-covered case and compute overlap score.
+
+    Returns (aligned_1, aligned_2, left_remainder, right_remainder,
+             result_length, number_of_matches, result_score).
+    """
+    if is_covered:
+        assert covered is not None and bigger is not None
+        aligned_1, aligned_2 = align_for_merge_covered(
+            covered, bigger, left_cutoff, right_cutoff
+        )
+        left_remainder = right_remainder = ""
+    else:
+        aligned_1, aligned_2, left_remainder, right_remainder = (
+            align_for_merge_noncovered(left, right, left_cutoff, right_cutoff)
+        )
+
+    result_length, number_of_matches, result_score = score_alignment(
+        aligned_1, aligned_2
+    )
+    return (
+        aligned_1,
+        aligned_2,
+        left_remainder,
+        right_remainder,
+        result_length,
+        number_of_matches,
+        result_score,
+    )
+
+
+# Cutoff computation helpers
+def cutoffs_left_covered(
+    minimum_score: Score,
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    shift: int,
+    left_initial_overlap: str,
+) -> Tuple[int, int]:
+    overlap_alignments = tuple(
+        right.map_overlap(minimum_score, "cover", left_initial_overlap)
+    )
+    right_cutoff = max((end for start, end in overlap_alignments), default=-1)
+    if right_cutoff < 0:
+        return (
+            len(right.seq) - abs(shift) + 1,
+            len(right.seq) - abs(shift) + len(left_initial_overlap) + 1,
+        )
+    left_cutoff = min((start for start, end in overlap_alignments), default=-1)
+    return left_cutoff, right_cutoff
+
+
+def cutoffs_right_covered(
+    minimum_score: Score,
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    shift: int,
+    right_initial_overlap: str,
+) -> Tuple[int, int]:
+    overlap_alignments = tuple(
+        left.map_overlap(minimum_score, "cover", right_initial_overlap)
+    )
+    left_cutoff = min((start for start, end in overlap_alignments), default=-1)
+    if left_cutoff < 0:
+        return (
+            len(left.seq) - abs(shift) + 1,
+            len(left.seq) - abs(shift) + len(right_initial_overlap) + 1,
+        )
+    right_cutoff = max((end for start, end in overlap_alignments), default=-1)
+    return left_cutoff, right_cutoff
+
+
+def cutoffs_left_shorter(
+    minimum_score: Score,
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    left_initial_overlap: str,
+    right_initial_overlap: str,
+) -> Optional[Tuple[int, int]]:
+    left_overlap_alignments = left.map_overlap(
+        minimum_score, "left", right_initial_overlap
+    )
+    left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
+    if left_cutoff < 0:
+        return None
+    right_overlap_alignments = right.map_overlap(
+        minimum_score, "right", left_initial_overlap
+    )
+    right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
+    if right_cutoff < 0:
+        return None
+    return left_cutoff, right_cutoff
+
+
+def cutoffs_right_shorter_or_equal(
+    minimum_score: Score,
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    left_initial_overlap: str,
+    right_initial_overlap: str,
+) -> Optional[Tuple[int, int]]:
+    right_overlap_alignments = right.map_overlap(
+        minimum_score, "right", left_initial_overlap
+    )
+    right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
+    if right_cutoff < 0:
+        return None
+    left_overlap_alignments = left.map_overlap(
+        minimum_score, "left", right_initial_overlap
+    )
+    left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
+    if left_cutoff < 0:
+        return None
+    return left_cutoff, right_cutoff
+
+
+def compute_overlap_cutoffs(
+    minimum_score: Score,
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    shift: int,
+    left_initial_overlap: str,
+    right_initial_overlap: str,
+) -> Optional[Tuple[int, int]]:
+    if len(left.seq) == len(left_initial_overlap):
+        return cutoffs_left_covered(
+            minimum_score, left, right, shift, left_initial_overlap
+        )
+    if len(right.seq) == len(right_initial_overlap):
+        return cutoffs_right_covered(
+            minimum_score, left, right, shift, right_initial_overlap
+        )
+    if len(left.seq) < len(right.seq):
+        return cutoffs_left_shorter(
+            minimum_score, left, right, left_initial_overlap, right_initial_overlap
+        )
+    return cutoffs_right_shorter_or_equal(
+        minimum_score, left, right, left_initial_overlap, right_initial_overlap
+    )
+
+
 def find_overlap_cutoffs(
     minimum_score: Score,
     left: ContigWithAligner,
@@ -287,74 +500,14 @@ def find_overlap_cutoffs(
     if existing is not None:
         return existing
 
-    # Helper to finalize and cache results
-    def _cache_and_return(value: Optional[Tuple[int, int]]) -> CutoffsCacheResult:
-        if value is None:
-            CUTOFFS_NEGATIVE.add(key)
-        else:
-            CUTOFFS_CACHE[key] = value
-        return value
-
-    if len(left.seq) == len(left_initial_overlap):
-        # The entire left is covered in the initial overlap window; sweep on right.
-        overlap_alignments = tuple(
-            right.map_overlap(minimum_score, "cover", left_initial_overlap)
-        )
-        right_cutoff = max((end for start, end in overlap_alignments), default=-1)
-        if right_cutoff < 0:
-            ret = (
-                len(right.seq) - abs(shift) + 1,
-                len(right.seq) - abs(shift) + len(left_initial_overlap) + 1,
-            )
-            return _cache_and_return(ret)
-        left_cutoff = min((start for start, end in overlap_alignments), default=-1)
-
-    elif len(right.seq) == len(right_initial_overlap):
-        # The entire right is covered in the initial overlap window; sweep on left.
-        overlap_alignments = tuple(
-            left.map_overlap(minimum_score, "cover", right_initial_overlap)
-        )
-        left_cutoff = min((start for start, end in overlap_alignments), default=-1)
-        if left_cutoff < 0:
-            ret = (
-                len(left.seq) - abs(shift) + 1,
-                len(left.seq) - abs(shift) + len(right_initial_overlap) + 1,
-            )
-            return _cache_and_return(ret)
-        right_cutoff = max((end for start, end in overlap_alignments), default=-1)
-
-    elif len(left.seq) < len(right.seq):
-        # Left is shorter: align left overlap region first, then right.
-        left_overlap_alignments = left.map_overlap(
-            minimum_score, "left", right_initial_overlap
-        )
-        left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
-        if left_cutoff < 0:
-            return _cache_and_return(None)
-        right_overlap_alignments = right.map_overlap(
-            minimum_score, "right", left_initial_overlap
-        )
-        right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
-        if right_cutoff < 0:
-            return _cache_and_return(None)
-
+    value = compute_overlap_cutoffs(
+        minimum_score, left, right, shift, left_initial_overlap, right_initial_overlap
+    )
+    if value is None:
+        CUTOFFS_NEGATIVE.add(key)
     else:
-        # Right is shorter or equal: align right overlap region first, then left.
-        right_overlap_alignments = right.map_overlap(
-            minimum_score, "right", left_initial_overlap
-        )
-        right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
-        if right_cutoff < 0:
-            return _cache_and_return(None)
-        left_overlap_alignments = left.map_overlap(
-            minimum_score, "left", right_initial_overlap
-        )
-        left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
-        if left_cutoff < 0:
-            return _cache_and_return(None)
-
-    ret = (left_cutoff, right_cutoff)
-    return _cache_and_return(ret)
+        CUTOFFS_CACHE[key] = value
+    return value
 
 
 def normalize_orientation(
@@ -367,7 +520,7 @@ def normalize_orientation(
     return b, a, shift
 
 
-def _initial_overlap_windows(
+def initial_overlap_windows(
     left: ContigWithAligner, right: ContigWithAligner, shift: int
 ) -> Tuple[str, str]:
     """Extract initial overlap windows on left/right given a placement shift."""
@@ -479,37 +632,11 @@ def try_combine_contigs(
         current_score, pool.min_acceptable_score
     )
 
-    # Quick upper bound check: if even a perfect overlap cannot reach the minimum, abort early.
-    if max_possible_overlap_score(len(a.seq), len(b.seq)) < minimum_base_score:
+    # Prechecks and preparation (no events emitted here).
+    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score)
+    if prepared is None:
         return None
-
-    # Identify best overlap placement.
-    overlap = get_overlap(a, b)
-    if overlap is None:
-        return None
-
-    # Optimistic check using the discovered overlap window size.
-    if optimistic_overlap_score(overlap.size) < minimum_base_score:
-        return None
-
-    # Normalize orientation and derive initial overlap windows.
-    left, right, shift = normalize_orientation(a, b, overlap)
-    left_initial_overlap, right_initial_overlap = _initial_overlap_windows(
-        left, right, shift
-    )
-
-    assert len(right_initial_overlap) == overlap.size, (
-        f"{len(right_initial_overlap)} == {overlap.size}"
-    )
-    assert len(left_initial_overlap) == overlap.size, (
-        f"{len(left_initial_overlap)} == {overlap.size}"
-    )
-    assert (
-        calculate_referenceless_overlap_score(
-            L=len(left_initial_overlap) + 1, M=len(left_initial_overlap)
-        )
-        >= minimum_base_score
-    )
+    left, right, shift, left_initial_overlap, right_initial_overlap, overlap = prepared
 
     # Determine refined cutoffs within the initial windows.
     cutoffs = find_overlap_cutoffs(
@@ -534,28 +661,19 @@ def try_combine_contigs(
     left_cutoff, right_cutoff = cutoffs
 
     # Covered-contig short-circuit: if one contig is fully covered by the overlap.
-    left_is_covered = len(left.seq) <= overlap.size
-    right_is_covered = len(right.seq) <= overlap.size
-    is_covered = left_is_covered or right_is_covered
+    is_covered, covered, bigger = _coverage_flags(left, right, overlap.size)
 
-    if is_covered:
-        covered = left if left_is_covered else right
-        bigger = right if left_is_covered else left
-        aligned_1, aligned_2 = align_for_merge_covered(
-            covered, bigger, left_cutoff, right_cutoff
-        )
-        # Score the aligned overlap.
-        result_length, number_of_matches, result_score = score_alignment(
-            aligned_1, aligned_2
-        )
-    else:
-        aligned_1, aligned_2, left_remainder, right_remainder = (
-            align_for_merge_noncovered(left, right, left_cutoff, right_cutoff)
-        )
-        # Score the aligned overlap.
-        result_length, number_of_matches, result_score = score_alignment(
-            aligned_1, aligned_2
-        )
+    (
+        aligned_1,
+        aligned_2,
+        left_remainder,
+        right_remainder,
+        result_length,
+        number_of_matches,
+        result_score,
+    ) = compute_alignment_and_score(
+        is_covered, covered, bigger, left, right, left_cutoff, right_cutoff
+    )
 
     if is_debug2:
         denominator = max(minimum_base_score, ACCEPTABLE_STITCHING_SCORE())
@@ -576,6 +694,7 @@ def try_combine_contigs(
         return None
 
     if is_covered:
+        assert bigger is not None
         if is_debug2:
             log(events.Covered(left.unique_name, right.unique_name))
         return (bigger, SCORE_EPSILON)
