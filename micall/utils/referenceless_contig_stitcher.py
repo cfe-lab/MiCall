@@ -574,7 +574,7 @@ def align_for_merge_noncovered(
     right_cutoff: int,
 ) -> Tuple[str, str, str, str]:
     """Align overlap windows and return alignment plus remainders for merging."""
-    left_overlap = left.seq[left_cutoff : (left_cutoff + len(right.seq))]
+    left_overlap = left.seq[left_cutoff : left_cutoff + right_cutoff]
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]

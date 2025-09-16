@@ -354,14 +354,14 @@ BEGIN 27
   has
   aligned
   size
-  398,
+  397,
   397
   matches,
   and
   the
   score
   of
-  118694.82573524317.
+  119311.54164391856.
 END 27
 BEGIN 28
   Found

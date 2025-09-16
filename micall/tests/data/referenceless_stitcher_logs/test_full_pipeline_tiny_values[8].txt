@@ -140,14 +140,14 @@ BEGIN 11
   has
   aligned
   size
-  4,
+  3,
   3
   matches,
   and
   the
   score
   of
-  13230.19371331111.
+  22419.554807128407.
 END 11
 BEGIN 12
   Found

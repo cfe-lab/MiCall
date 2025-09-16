@@ -103,16 +103,34 @@ BEGIN 9
   has
   aligned
   size
-  19,
+  1,
   1
   matches,
   and
   the
   score
   of
-  -179.4275861476993.
+  15985.0.
 END 9
 BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
+  'r667-997.0'
+  and
+  'r26-544.1',
+  resulting
+  in
+  contig
+  (1).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -124,159 +142,22 @@ BEGIN 10
   fittest
   has
   length
-  519
+  831
   and
   consists
   of
-  1
+  2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 11
-BEGIN 12
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  34
-  between
-  contigs
-  'r667-997.0'
-  and
-  'r26-544.1'
-  to
-  be
-  (312,
-  1).
 END 12
 BEGIN 13
-  Overlap
-  between
-  contigs
-  'r667-997.0'
-  and
-  'r26-544.1'
-  has
-  aligned
-  size
-  19,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  -179.4275861476993.
-END 13
-BEGIN 14
-  Constructed
-  a
-  path
-  of
-  length
-  519.
-END 14
-BEGIN 15
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 15
-BEGIN 16
-  Calculating
-  all
-  paths...
-END 16
-BEGIN 17
-  Cycle
-  1
-  started
-  with
-  1
-  paths.
-END 17
-BEGIN 18
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  316
-  between
-  contigs
-  'r667-997.0'
-  and
-  'r157-513.2'
-  to
-  be
-  None.
-END 18
-BEGIN 19
-  Constructed
-  a
-  path
-  of
-  length
-  357.
-END 19
-BEGIN 20
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
-END 20
-BEGIN 21
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 21
-BEGIN 22
-  Initial
-  overlap
-  stitching
-  produced
-  3
-  contigs.
-END 22
-BEGIN 23
   Calculated
   cutoff
   for
@@ -287,19 +168,19 @@ BEGIN 23
   357
   between
   contigs
-  'r26-544.1'
+  (1)
   and
   'r157-513.2'
   to
   be
-  (131,
-  488).
-END 23
-BEGIN 24
+  (443,
+  800).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r26-544.1'
+  (1)
   and
   'r157-513.2'
   has
@@ -313,55 +194,74 @@ BEGIN 24
   score
   of
   114799.03272755502.
-END 24
-BEGIN 25
+END 14
+BEGIN 15
   Contig
-  'r26-544.1'
+  (1)
   covers
   contig
   'r157-513.2'
   completely.
-END 25
-BEGIN 26
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  34
-  between
-  contigs
-  'r667-997.0'
-  and
-  'r26-544.1'
-  to
-  be
-  (312,
-  1).
-END 26
-BEGIN 27
-  Overlap
-  between
-  contigs
-  'r667-997.0'
-  and
-  'r26-544.1'
-  has
-  aligned
-  size
-  19,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  -179.4275861476993.
-END 27
-BEGIN 28
-  Outputting
+END 15
+BEGIN 16
+  Cycle
   2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  831
+  and
+  consists
+  of
+  2
+  parts.
+END 16
+BEGIN 17
+  Cycle
+  3
+  started
+  with
+  1
+  paths.
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  831.
+END 18
+BEGIN 19
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  0
+  still
+  to
+  process.
+END 19
+BEGIN 20
+  Initial
+  overlap
+  stitching
+  produced
+  1
   contigs.
-END 28
+END 20
+BEGIN 21
+  Outputting
+  1
+  contigs.
+END 21

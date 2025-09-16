@@ -96,11 +96,11 @@ BEGIN 8
   fittest
   has
   length
-  451
+  737
   and
   consists
   of
-  2
+  3
   parts.
 END 8
 BEGIN 9
@@ -140,61 +140,71 @@ BEGIN 11
   has
   aligned
   size
-  12,
+  2,
   1
   matches,
   and
   the
   score
   of
-  -10.175077289359967.
+  4613.2877161461965.
 END 11
 BEGIN 12
-  Constructed
+  Found
   a
-  path
+  significant
+  overlap
   of
-  length
-  451.
+  size
+  2
+  between
+  contigs
+  (1)
+  and
+  'r209-506.2',
+  resulting
+  in
+  contig
+  (2).
 END 12
 BEGIN 13
-  Removed
+  Cycle
   2
-  components
-  from
-  the
-  working
-  list,
-  having
+  finished
+  with
   1
-  still
-  to
-  process.
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  737
+  and
+  consists
+  of
+  3
+  parts.
 END 13
 BEGIN 14
-  Calculating
-  all
-  paths...
-END 14
-BEGIN 15
   Cycle
-  1
+  3
   started
   with
   1
   paths.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Constructed
   a
   path
   of
   length
-  298.
-END 16
-BEGIN 17
+  737.
+END 15
+BEGIN 16
   Removed
-  1
+  3
   components
   from
   the
@@ -205,71 +215,17 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 18
-BEGIN 19
+END 16
+BEGIN 17
   Initial
   overlap
   stitching
   produced
-  2
-  contigs.
-END 19
-BEGIN 20
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  21
-  between
-  contigs
-  (1)
-  and
-  'r209-506.2'
-  to
-  be
-  (439,
-  2).
-END 20
-BEGIN 21
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r209-506.2'
-  has
-  aligned
-  size
-  12,
   1
-  matches,
-  and
-  the
-  score
-  of
-  -10.175077289359967.
-END 21
-BEGIN 22
-  Outputting
-  2
   contigs.
-END 22
+END 17
+BEGIN 18
+  Outputting
+  1
+  contigs.
+END 18

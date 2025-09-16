@@ -57,16 +57,34 @@ BEGIN 6
   has
   aligned
   size
-  2,
+  1,
   0
   matches,
   and
   the
   score
   of
-  -23.089089578045378.
+  1.0.
 END 6
 BEGIN 7
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
+  'r126-406.2'
+  and
+  'r444-844.0',
+  resulting
+  in
+  contig
+  (1).
+END 7
+BEGIN 8
   Calculated
   cutoff
   for
@@ -84,8 +102,8 @@ BEGIN 7
   be
   (68,
   331).
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Overlap
   between
   contigs
@@ -103,16 +121,16 @@ BEGIN 8
   score
   of
   102788.67400434411.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Contig
   'r444-844.0'
   covers
   contig
   'r512-774.1'
   completely.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -124,22 +142,22 @@ BEGIN 10
   fittest
   has
   length
-  401
+  680
   and
   consists
   of
-  1
+  2
   parts.
-END 10
-BEGIN 11
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -147,66 +165,66 @@ BEGIN 12
   overlap
   of
   size
-  17
+  263
   between
   contigs
-  'r126-406.2'
+  (1)
   and
-  'r444-844.0'
+  'r512-774.1'
   to
   be
-  (279,
-  1).
-END 12
-BEGIN 13
+  (347,
+  610).
+END 13
+BEGIN 14
   Overlap
   between
   contigs
-  'r126-406.2'
+  (1)
   and
-  'r444-844.0'
+  'r512-774.1'
   has
   aligned
   size
-  2,
-  0
+  263,
+  263
   matches,
   and
   the
   score
   of
-  -23.089089578045378.
-END 13
-BEGIN 14
-  Constructed
-  a
-  path
-  of
-  length
-  401.
+  102788.67400434411.
 END 14
 BEGIN 15
-  Removed
-  1
-  components
-  from
-  the
-  working
-  list,
-  having
-  1
-  still
-  to
-  process.
+  Contig
+  (1)
+  covers
+  contig
+  'r512-774.1'
+  completely.
 END 15
 BEGIN 16
-  Calculating
-  all
-  paths...
+  Cycle
+  2
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  680
+  and
+  consists
+  of
+  2
+  parts.
 END 16
 BEGIN 17
   Cycle
-  1
+  3
   started
   with
   1
@@ -218,11 +236,11 @@ BEGIN 18
   path
   of
   length
-  281.
+  680.
 END 18
 BEGIN 19
   Removed
-  1
+  2
   components
   from
   the
@@ -235,69 +253,15 @@ BEGIN 19
   process.
 END 19
 BEGIN 20
-  Giving
-  up
-  on
-  attempts
-  to
-  stitch
-  more
-  overlaps
-  since
-  most
-  probable
-  is
-  a
-  singleton.
-END 20
-BEGIN 21
   Initial
   overlap
   stitching
   produced
-  2
+  1
+  contigs.
+END 20
+BEGIN 21
+  Outputting
+  1
   contigs.
 END 21
-BEGIN 22
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  17
-  between
-  contigs
-  'r126-406.2'
-  and
-  'r444-844.0'
-  to
-  be
-  (279,
-  1).
-END 22
-BEGIN 23
-  Overlap
-  between
-  contigs
-  'r126-406.2'
-  and
-  'r444-844.0'
-  has
-  aligned
-  size
-  2,
-  0
-  matches,
-  and
-  the
-  score
-  of
-  -23.089089578045378.
-END 23
-BEGIN 24
-  Outputting
-  2
-  contigs.
-END 24
