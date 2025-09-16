@@ -13,6 +13,7 @@ assert disable_acceptable_prob_check is not None
 
 
 TTT = 40 * 'T'
+AAA = 40 * 'A'
 
 
 @pytest.mark.parametrize(
@@ -766,3 +767,42 @@ class TestPool:
         assert path1a not in ring_paths
         assert path2 in ring_paths
         assert path3 in ring_paths
+
+
+# Additional end-to-end tests for the stitcher
+@pytest.mark.parametrize(
+    "seqs, expected",
+    [
+        # Deduplicate identical contigs (perfect full overlap -> single output)
+        (("AAA" + TTT + "GGG", "AAA" + TTT + "GGG"), ("AAA" + TTT + "GGG",)),
+
+        # Presence of empty contig should be preserved; other contigs still stitch
+        (("", "AAAAA" + TTT, TTT + "GGGGG"), ("", "AAAAA" + TTT + "GGGGG")),
+
+        # Two independent pairs should stitch separately in one run
+        (("XXX" + TTT, TTT + "GGG", "CCC" + AAA, AAA + "DDD"),
+         ("XXX" + TTT + "GGG", "CCC" + AAA + "DDD")),
+
+        # # Multi-step chain across three overlaps, requires second-phase (o2_loop)
+        # (("AAA" + TTT, TTT + "B" * 120, "B" * 120 + AAA, AAA + "CCC"),
+        #  ("AAA" + TTT + "B" * 120 + AAA + "CCC",)),
+
+        # Multiple identical duplicates collapse to a single contig
+        ((("XXXXX" + TTT + "YYYYY",) * 3), ("XXXXX" + TTT + "YYYYY",)),
+    ],
+)
+def test_stitch_additional_cases(seqs, expected, disable_acceptable_prob_check):
+    contigs = [ContigWithAligner(None, seq) for seq in seqs]
+    with ReferencelessStitcherContext.fresh():
+        consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
+    assert consenses == tuple(sorted(expected))
+
+
+def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
+    """When one contig is fully contained in another, keep only the bigger contig."""
+    bigger = "AAAAA" + TTT + "GGGGG"
+    contained = TTT
+    contigs = [ContigWithAligner(None, bigger), ContigWithAligner(None, contained)]
+    with ReferencelessStitcherContext.fresh():
+        consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
+    assert consenses == (bigger,)
