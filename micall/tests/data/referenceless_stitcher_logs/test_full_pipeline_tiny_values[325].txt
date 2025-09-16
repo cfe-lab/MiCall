@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r128-671.0'
   has
+  aligned
   size
-  542,
+  544,
   544
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r674-966.2'
   has
+  aligned
   size
-  203,
+  204,
   204
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r128-671.0'
   has
+  aligned
   size
-  542,
+  544,
   544
   matches,
   and

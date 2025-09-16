@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r352-988.0'
   has
+  aligned
   size
-  527,
+  528,
   528
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  227,
+  228,
   228
   matches,
   and

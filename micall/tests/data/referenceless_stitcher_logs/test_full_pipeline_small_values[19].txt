@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r296-798.4'
   has
+  aligned
   size
-  362,
+  363,
   363
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r151-658.5'
   has
+  aligned
   size
-  436,
+  437,
   437
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r296-798.4'
   has
+  aligned
   size
-  362,
+  363,
   363
   matches,
   and
@@ -247,8 +250,9 @@ BEGIN 17
   and
   'r204-608.2'
   has
+  aligned
   size
-  403,
+  405,
   405
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r355-828.3'
   has
+  aligned
   size
-  443,
+  444,
   444
   matches,
   and
@@ -401,8 +406,9 @@ BEGIN 27
   and
   'r204-608.2'
   has
+  aligned
   size
-  403,
+  405,
   405
   matches,
   and
@@ -446,8 +452,9 @@ BEGIN 30
   and
   'r693-918.0'
   has
+  aligned
   size
-  135,
+  136,
   136
   matches,
   and
@@ -528,8 +535,9 @@ BEGIN 35
   and
   'r204-608.2'
   has
+  aligned
   size
-  403,
+  405,
   405
   matches,
   and

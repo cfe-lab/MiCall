@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r418-887.0'
   has
+  aligned
   size
-  195,
+  196,
   196
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r180-577.1'
   has
+  aligned
   size
-  396,
+  398,
   398
   matches,
   and
@@ -155,8 +157,9 @@ BEGIN 12
   and
   'r230-581.2'
   has
+  aligned
   size
-  350,
+  352,
   352
   matches,
   and
@@ -200,8 +203,9 @@ BEGIN 15
   and
   'r119-613.4'
   has
+  aligned
   size
-  228,
+  229,
   229
   matches,
   and
@@ -282,8 +286,9 @@ BEGIN 20
   and
   'r418-887.0'
   has
+  aligned
   size
-  195,
+  196,
   196
   matches,
   and
@@ -337,8 +342,9 @@ BEGIN 23
   and
   'r180-577.1'
   has
+  aligned
   size
-  396,
+  398,
   398
   matches,
   and
@@ -382,8 +388,9 @@ BEGIN 26
   and
   'r230-581.2'
   has
+  aligned
   size
-  350,
+  352,
   352
   matches,
   and
@@ -427,8 +434,9 @@ BEGIN 29
   and
   (2)
   has
+  aligned
   size
-  234,
+  235,
   235
   matches,
   and
@@ -509,8 +517,9 @@ BEGIN 34
   and
   'r418-887.0'
   has
+  aligned
   size
-  195,
+  196,
   196
   matches,
   and
@@ -564,8 +573,9 @@ BEGIN 37
   and
   'r180-577.1'
   has
+  aligned
   size
-  396,
+  398,
   398
   matches,
   and
@@ -609,8 +619,9 @@ BEGIN 40
   and
   'r230-581.2'
   has
+  aligned
   size
-  350,
+  352,
   352
   matches,
   and
@@ -681,8 +692,9 @@ BEGIN 45
   and
   'r180-577.1'
   has
+  aligned
   size
-  396,
+  398,
   398
   matches,
   and
@@ -726,8 +738,9 @@ BEGIN 48
   and
   'r230-581.2'
   has
+  aligned
   size
-  350,
+  352,
   352
   matches,
   and
@@ -798,8 +811,9 @@ BEGIN 53
   and
   'r230-581.2'
   has
+  aligned
   size
-  350,
+  352,
   352
   matches,
   and

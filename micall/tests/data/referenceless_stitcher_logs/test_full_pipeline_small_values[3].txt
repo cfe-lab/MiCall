@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r378-890.2'
   has
+  aligned
   size
-  371,
+  372,
   372
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r265-750.5'
   has
+  aligned
   size
-  484,
+  486,
   486
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r557-826.1'
   has
+  aligned
   size
-  268,
+  270,
   270
   matches,
   and
@@ -227,8 +230,9 @@ BEGIN 17
   and
   'r594-830.3'
   has
+  aligned
   size
-  235,
+  237,
   237
   matches,
   and
@@ -272,8 +276,9 @@ BEGIN 20
   and
   'r620-829.4'
   has
+  aligned
   size
-  208,
+  210,
   210
   matches,
   and
@@ -344,8 +349,9 @@ BEGIN 25
   and
   'r557-826.1'
   has
+  aligned
   size
-  268,
+  270,
   270
   matches,
   and
@@ -389,8 +395,9 @@ BEGIN 28
   and
   'r594-830.3'
   has
+  aligned
   size
-  235,
+  237,
   237
   matches,
   and
@@ -434,8 +441,9 @@ BEGIN 31
   and
   'r620-829.4'
   has
+  aligned
   size
-  208,
+  210,
   210
   matches,
   and
@@ -506,8 +514,9 @@ BEGIN 36
   and
   'r594-830.3'
   has
+  aligned
   size
-  235,
+  237,
   237
   matches,
   and
@@ -551,8 +560,9 @@ BEGIN 39
   and
   'r620-829.4'
   has
+  aligned
   size
-  208,
+  210,
   210
   matches,
   and
@@ -623,8 +633,9 @@ BEGIN 44
   and
   'r620-829.4'
   has
+  aligned
   size
-  208,
+  210,
   210
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r206-822.0'
   has
+  aligned
   size
-  476,
+  477,
   477
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r422-737.2'
   has
+  aligned
   size
-  314,
+  316,
   316
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r73-547.1'
   has
+  aligned
   size
-  473,
+  475,
   475
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r36-486.2'
   has
+  aligned
   size
-  449,
+  451,
   451
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r36-486.2'
   has
+  aligned
   size
-  449,
+  451,
   451
   matches,
   and

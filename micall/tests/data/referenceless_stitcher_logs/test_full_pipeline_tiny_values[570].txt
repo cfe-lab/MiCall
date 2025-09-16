@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r78-436.0'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r50-307.2'
   has
+  aligned
   size
-  256,
+  258,
   258
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r50-307.2'
   has
+  aligned
   size
-  256,
+  258,
   258
   matches,
   and

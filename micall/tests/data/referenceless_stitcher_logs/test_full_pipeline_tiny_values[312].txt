@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r151-573.2'
   has
+  aligned
   size
-  421,
+  423,
   423
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r33-665.1'
   has
+  aligned
   size
-  15,
+  16,
   1
   matches,
   and
@@ -164,8 +166,9 @@ BEGIN 13
   and
   'r33-665.1'
   has
+  aligned
   size
-  15,
+  16,
   1
   matches,
   and
@@ -300,8 +303,9 @@ BEGIN 24
   and
   'r151-573.2'
   has
+  aligned
   size
-  421,
+  423,
   423
   matches,
   and
@@ -345,8 +349,9 @@ BEGIN 27
   and
   'r33-665.1'
   has
+  aligned
   size
-  15,
+  16,
   1
   matches,
   and

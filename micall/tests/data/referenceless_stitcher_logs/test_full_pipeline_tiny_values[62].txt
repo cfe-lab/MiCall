@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r475-888.2'
   has
+  aligned
   size
-  412,
+  414,
   414
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r243-954.1'
   has
+  aligned
   size
-  222,
+  223,
   223
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r475-888.2'
   has
+  aligned
   size
-  412,
+  414,
   414
   matches,
   and

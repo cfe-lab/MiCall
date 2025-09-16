@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r317-998.0'
   has
+  aligned
   size
-  433,
+  434,
   434
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r185-604.2'
   has
+  aligned
   size
-  418,
+  420,
   420
   matches,
   and

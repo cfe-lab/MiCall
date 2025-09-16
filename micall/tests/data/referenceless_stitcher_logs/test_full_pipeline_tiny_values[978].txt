@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r239-767.1'
   has
+  aligned
   size
-  527,
+  529,
   529
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r605-939.0'
   has
+  aligned
   size
-  274,
+  275,
   275
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r239-767.1'
   has
+  aligned
   size
-  527,
+  529,
   529
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r202-907.2'
   has
+  aligned
   size
-  269,
+  270,
   270
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  259,
+  260,
   260
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r532-848.1'
   has
+  aligned
   size
-  315,
+  317,
   317
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r693-970.0'
   has
+  aligned
   size
-  187,
+  188,
   188
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r532-848.1'
   has
+  aligned
   size
-  315,
+  317,
   317
   matches,
   and

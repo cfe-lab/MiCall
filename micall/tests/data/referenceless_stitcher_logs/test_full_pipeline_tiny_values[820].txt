@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r221-651.0'
   has
+  aligned
   size
-  429,
+  431,
   431
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r502-819.1'
   has
+  aligned
   size
-  316,
+  318,
   318
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r502-819.1'
   has
+  aligned
   size
-  316,
+  318,
   318
   matches,
   and

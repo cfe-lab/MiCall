@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r388-772.1'
   has
+  aligned
   size
-  227,
+  228,
   228
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r83-418.2'
   has
+  aligned
   size
-  334,
+  336,
   336
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r83-418.2'
   has
+  aligned
   size
-  334,
+  336,
   336
   matches,
   and

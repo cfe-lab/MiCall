@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r491-886.1'
   has
+  aligned
   size
-  351,
+  352,
   352
   matches,
   and

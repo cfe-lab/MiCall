@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r532-887.1'
   has
+  aligned
   size
-  354,
+  356,
   356
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r399-913.2'
   has
+  aligned
   size
-  261,
+  262,
   262
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r532-887.1'
   has
+  aligned
   size
-  354,
+  356,
   356
   matches,
   and

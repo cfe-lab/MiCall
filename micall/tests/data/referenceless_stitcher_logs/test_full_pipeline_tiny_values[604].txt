@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r301-905.1'
   has
+  aligned
   size
-  598,
+  599,
   599
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  229,
+  230,
   230
   matches,
   and

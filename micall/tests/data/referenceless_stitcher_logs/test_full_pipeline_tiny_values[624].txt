@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r218-623.2'
   has
+  aligned
   size
-  404,
+  406,
   406
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r193-909.0'
   has
+  aligned
   size
-  218,
+  219,
   219
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r218-623.2'
   has
+  aligned
   size
-  404,
+  406,
   406
   matches,
   and

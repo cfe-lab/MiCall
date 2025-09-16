@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r618-973.2'
   has
+  aligned
   size
-  70,
+  71,
   71
   matches,
   and
@@ -155,8 +156,9 @@ BEGIN 12
   and
   (1)
   has
+  aligned
   size
-  155,
+  156,
   156
   matches,
   and

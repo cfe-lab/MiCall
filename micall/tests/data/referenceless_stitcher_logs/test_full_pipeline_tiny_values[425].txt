@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r175-607.1'
   has
+  aligned
   size
-  431,
+  433,
   433
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r429-729.0'
   has
+  aligned
   size
-  200,
+  201,
   201
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r175-607.1'
   has
+  aligned
   size
-  431,
+  433,
   433
   matches,
   and

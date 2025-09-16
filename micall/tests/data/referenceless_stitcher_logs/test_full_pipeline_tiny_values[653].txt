@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r424-963.2'
   has
+  aligned
   size
-  259,
+  260,
   260
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r424-963.2'
   has
+  aligned
   size
-  451,
+  452,
   452
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  295,
+  296,
   296
   matches,
   and

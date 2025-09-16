@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r252-909.1'
   has
+  aligned
   size
-  234,
+  235,
   235
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r456-861.2'
   has
+  aligned
   size
-  404,
+  406,
   406
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r456-861.2'
   has
+  aligned
   size
-  404,
+  406,
   406
   matches,
   and

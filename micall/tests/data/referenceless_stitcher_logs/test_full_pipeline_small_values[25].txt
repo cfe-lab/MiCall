@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r386-982.0'
   has
+  aligned
   size
-  247,
+  248,
   248
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r386-982.0'
   has
+  aligned
   size
-  419,
+  420,
   420
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  320,
+  321,
   321
   matches,
   and
@@ -274,8 +277,9 @@ BEGIN 19
   and
   'r219-578.1'
   has
+  aligned
   size
-  358,
+  360,
   360
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r434-686.5'
   has
+  aligned
   size
-  251,
+  253,
   253
   matches,
   and
@@ -364,8 +369,9 @@ BEGIN 25
   and
   'r261-481.3'
   has
+  aligned
   size
-  219,
+  221,
   221
   matches,
   and
@@ -436,8 +442,9 @@ BEGIN 30
   and
   'r434-686.5'
   has
+  aligned
   size
-  251,
+  253,
   253
   matches,
   and
@@ -481,8 +488,9 @@ BEGIN 33
   and
   'r261-481.3'
   has
+  aligned
   size
-  219,
+  221,
   221
   matches,
   and
@@ -553,8 +561,9 @@ BEGIN 38
   and
   'r261-481.3'
   has
+  aligned
   size
-  219,
+  221,
   221
   matches,
   and

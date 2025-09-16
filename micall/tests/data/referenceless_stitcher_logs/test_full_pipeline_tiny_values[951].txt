@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r262-671.1'
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r181-566.0'
   has
+  aligned
   size
-  381,
+  382,
   382
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r262-671.1'
   has
+  aligned
   size
-  304,
+  305,
   305
   matches,
   and

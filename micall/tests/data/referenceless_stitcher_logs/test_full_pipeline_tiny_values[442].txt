@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r433-899.0'
   has
+  aligned
   size
-  382,
+  383,
   383
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r486-937.1'
   has
+  aligned
   size
-  413,
+  414,
   414
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r381-905.1'
   has
+  aligned
   size
-  290,
+  291,
   291
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r364-792.0'
   has
+  aligned
   size
-  307,
+  308,
   308
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r381-905.1'
   has
+  aligned
   size
-  411,
+  412,
   412
   matches,
   and

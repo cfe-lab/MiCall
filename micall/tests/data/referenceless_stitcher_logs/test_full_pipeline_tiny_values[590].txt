@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r50-580.1'
   has
+  aligned
   size
-  529,
+  531,
   531
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r499-958.2'
   has
+  aligned
   size
-  285,
+  286,
   286
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r50-580.1'
   has
+  aligned
   size
-  529,
+  531,
   531
   matches,
   and

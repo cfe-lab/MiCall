@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r327-924.2'
   has
+  aligned
   size
-  37,
+  38,
   38
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r500-804.4'
   has
+  aligned
   size
-  303,
+  305,
   305
   matches,
   and
@@ -155,8 +157,9 @@ BEGIN 12
   and
   'r327-924.2'
   has
+  aligned
   size
-  70,
+  71,
   71
   matches,
   and
@@ -228,8 +231,9 @@ BEGIN 16
   and
   'r327-924.2'
   has
+  aligned
   size
-  161,
+  162,
   162
   matches,
   and
@@ -310,8 +314,9 @@ BEGIN 21
   and
   (3)
   has
+  aligned
   size
-  97,
+  98,
   98
   matches,
   and
@@ -365,8 +370,9 @@ BEGIN 24
   and
   'r500-804.4'
   has
+  aligned
   size
-  303,
+  305,
   305
   matches,
   and
@@ -410,8 +416,9 @@ BEGIN 27
   and
   (3)
   has
+  aligned
   size
-  130,
+  131,
   131
   matches,
   and
@@ -492,8 +499,9 @@ BEGIN 32
   and
   (5)
   has
+  aligned
   size
-  268,
+  269,
   269
   matches,
   and
@@ -547,8 +555,9 @@ BEGIN 35
   and
   'r500-804.4'
   has
+  aligned
   size
-  303,
+  305,
   305
   matches,
   and
@@ -619,8 +628,9 @@ BEGIN 40
   and
   'r500-804.4'
   has
+  aligned
   size
-  303,
+  305,
   305
   matches,
   and
@@ -664,8 +674,9 @@ BEGIN 43
   and
   (6)
   has
+  aligned
   size
-  255,
+  256,
   256
   matches,
   and
@@ -746,8 +757,9 @@ BEGIN 48
   and
   'r500-804.4'
   has
+  aligned
   size
-  303,
+  305,
   305
   matches,
   and

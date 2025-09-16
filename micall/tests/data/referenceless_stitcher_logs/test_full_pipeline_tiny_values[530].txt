@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r398-740.2'
   has
+  aligned
   size
-  341,
+  343,
   343
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r501-802.1'
   has
+  aligned
   size
-  244,
+  245,
   245
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r398-740.2'
   has
+  aligned
   size
-  341,
+  343,
   343
   matches,
   and

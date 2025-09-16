@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r236-832.2'
   has
+  aligned
   size
-  542,
+  543,
   543
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r265-668.0'
   has
+  aligned
   size
-  402,
+  404,
   404
   matches,
   and

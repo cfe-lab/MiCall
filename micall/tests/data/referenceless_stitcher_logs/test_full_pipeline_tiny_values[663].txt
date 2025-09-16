@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r629-947.0'
   has
+  aligned
   size
-  129,
+  130,
   130
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  188,
+  189,
   189
   matches,
   and

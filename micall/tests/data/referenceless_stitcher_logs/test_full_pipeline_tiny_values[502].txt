@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r360-988.2'
   has
+  aligned
   size
-  389,
+  390,
   390
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r517-958.0'
   has
+  aligned
   size
-  440,
+  442,
   442
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r517-958.0'
   has
+  aligned
   size
-  440,
+  442,
   442
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r135-664.3'
   has
+  aligned
   size
-  528,
+  530,
   530
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r133-615.1'
   has
+  aligned
   size
-  481,
+  483,
   483
   matches,
   and
@@ -145,8 +147,9 @@ BEGIN 12
   and
   'r182-500.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -190,8 +193,9 @@ BEGIN 15
   and
   'r427-737.4'
   has
+  aligned
   size
-  271,
+  272,
   272
   matches,
   and
@@ -272,8 +276,9 @@ BEGIN 20
   and
   'r135-664.3'
   has
+  aligned
   size
-  528,
+  530,
   530
   matches,
   and
@@ -317,8 +322,9 @@ BEGIN 23
   and
   'r133-615.1'
   has
+  aligned
   size
-  481,
+  483,
   483
   matches,
   and
@@ -362,8 +368,9 @@ BEGIN 26
   and
   'r182-500.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -407,8 +414,9 @@ BEGIN 29
   and
   'r218-494.5'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and
@@ -479,8 +487,9 @@ BEGIN 34
   and
   'r133-615.1'
   has
+  aligned
   size
-  481,
+  483,
   483
   matches,
   and
@@ -524,8 +533,9 @@ BEGIN 37
   and
   'r182-500.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -569,8 +579,9 @@ BEGIN 40
   and
   'r218-494.5'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and
@@ -641,8 +652,9 @@ BEGIN 45
   and
   'r182-500.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -686,8 +698,9 @@ BEGIN 48
   and
   'r218-494.5'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and
@@ -758,8 +771,9 @@ BEGIN 53
   and
   'r218-494.5'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and

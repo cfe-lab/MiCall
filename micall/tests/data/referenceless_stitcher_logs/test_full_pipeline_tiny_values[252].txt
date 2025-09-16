@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r346-744.2'
   has
+  aligned
   size
-  397,
+  399,
   399
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r553-882.1'
   has
+  aligned
   size
-  207,
+  208,
   208
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r346-744.2'
   has
+  aligned
   size
-  397,
+  399,
   399
   matches,
   and

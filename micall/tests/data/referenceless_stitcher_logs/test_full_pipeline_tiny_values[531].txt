@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r472-790.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r445-974.0'
   has
+  aligned
   size
-  4,
+  5,
   3
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r472-790.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and

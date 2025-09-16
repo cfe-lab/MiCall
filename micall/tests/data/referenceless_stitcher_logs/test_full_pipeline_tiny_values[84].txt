@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r471-981.2'
   has
+  aligned
   size
-  55,
+  56,
   56
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r38-543.0'
   has
+  aligned
   size
-  488,
+  489,
   489
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r471-981.2'
   has
+  aligned
   size
-  72,
+  73,
   73
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r542-980.0'
   has
+  aligned
   size
-  365,
+  366,
   366
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  1,
+  2,
   2
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r195-816.1'
   has
+  aligned
   size
-  361,
+  363,
   363
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r395-713.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r395-713.2'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r192-702.0'
   has
+  aligned
   size
-  509,
+  511,
   511
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r533-951.2'
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r192-702.0'
   has
+  aligned
   size
-  509,
+  511,
   511
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r330-766.0'
   has
+  aligned
   size
-  193,
+  194,
   194
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r330-766.0'
   has
+  aligned
   size
-  211,
+  212,
   212
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  378,
+  379,
   379
   matches,
   and

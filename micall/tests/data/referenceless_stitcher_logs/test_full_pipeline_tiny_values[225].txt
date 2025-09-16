@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r194-637.1'
   has
+  aligned
   size
-  442,
+  444,
   444
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r245-591.0'
   has
+  aligned
   size
-  345,
+  347,
   347
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r245-591.0'
   has
+  aligned
   size
-  345,
+  347,
   347
   matches,
   and

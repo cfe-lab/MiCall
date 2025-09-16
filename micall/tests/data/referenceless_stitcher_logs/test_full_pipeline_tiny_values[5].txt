@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r115-560.2'
   has
+  aligned
   size
-  444,
+  446,
   446
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r664-945.1'
   has
+  aligned
   size
-  50,
+  51,
   51
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r115-560.2'
   has
+  aligned
   size
-  444,
+  446,
   446
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r141-464.0'
   has
+  aligned
   size
-  322,
+  324,
   324
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r92-622.2'
   has
+  aligned
   size
-  4,
+  5,
   3
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r141-464.0'
   has
+  aligned
   size
-  322,
+  324,
   324
   matches,
   and

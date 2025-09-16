@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r181-695.1'
   has
+  aligned
   size
-  492,
+  493,
   493
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  443,
+  444,
   444
   matches,
   and

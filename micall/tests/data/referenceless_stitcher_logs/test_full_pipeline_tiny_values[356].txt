@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r457-982.2'
   has
+  aligned
   size
-  267,
+  268,
   268
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r665-941.0'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r665-941.0'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and

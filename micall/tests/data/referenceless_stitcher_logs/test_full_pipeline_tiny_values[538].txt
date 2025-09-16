@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r277-683.0'
   has
+  aligned
   size
-  405,
+  407,
   407
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r409-684.2'
   has
+  aligned
   size
-  274,
+  276,
   276
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r409-684.2'
   has
+  aligned
   size
-  274,
+  276,
   276
   matches,
   and

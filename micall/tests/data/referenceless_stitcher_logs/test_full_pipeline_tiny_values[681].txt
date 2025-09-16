@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r486-910.2'
   has
+  aligned
   size
-  320,
+  321,
   321
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r323-635.0'
   has
+  aligned
   size
-  311,
+  313,
   313
   matches,
   and

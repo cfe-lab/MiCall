@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r411-817.0'
   has
+  aligned
   size
-  405,
+  407,
   407
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r327-854.2'
   has
+  aligned
   size
-  166,
+  167,
   167
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r411-817.0'
   has
+  aligned
   size
-  405,
+  407,
   407
   matches,
   and

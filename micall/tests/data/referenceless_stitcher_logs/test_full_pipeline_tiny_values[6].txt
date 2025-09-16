@@ -73,8 +73,9 @@ BEGIN 7
   and
   'r382-800.2'
   has
+  aligned
   size
-  158,
+  159,
   159
   matches,
   and
@@ -155,8 +156,9 @@ BEGIN 12
   and
   (1)
   has
+  aligned
   size
-  62,
+  63,
   63
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r300-815.2'
   has
+  aligned
   size
-  514,
+  516,
   516
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r259-942.0'
   has
+  aligned
   size
-  259,
+  260,
   260
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r300-815.2'
   has
+  aligned
   size
-  514,
+  516,
   516
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r281-650.1'
   has
+  aligned
   size
-  368,
+  370,
   370
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r325-601.0'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r325-601.0'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and

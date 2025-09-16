@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r193-864.0'
   has
+  aligned
   size
-  293,
+  294,
   294
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r407-763.2'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r407-763.2'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and

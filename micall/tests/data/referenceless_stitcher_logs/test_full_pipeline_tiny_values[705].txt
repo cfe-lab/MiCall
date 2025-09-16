@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r442-942.2'
   has
+  aligned
   size
-  468,
+  469,
   469
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  99,
+  100,
   100
   matches,
   and

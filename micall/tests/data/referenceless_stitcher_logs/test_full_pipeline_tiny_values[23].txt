@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r542-980.2'
   has
+  aligned
   size
-  340,
+  341,
   341
   matches,
   and

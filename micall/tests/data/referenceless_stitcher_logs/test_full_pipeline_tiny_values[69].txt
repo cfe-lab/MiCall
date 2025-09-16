@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r170-459.2'
   has
+  aligned
   size
-  288,
+  290,
   290
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r700-974.0'
   has
+  aligned
   size
-  63,
+  64,
   64
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r170-459.2'
   has
+  aligned
   size
-  288,
+  290,
   290
   matches,
   and

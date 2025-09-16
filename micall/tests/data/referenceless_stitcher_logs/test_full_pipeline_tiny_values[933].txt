@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r677-970.2'
   has
+  aligned
   size
-  41,
+  42,
   42
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r514-777.1'
   has
+  aligned
   size
-  204,
+  205,
   205
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r677-970.2'
   has
+  aligned
   size
-  100,
+  101,
   101
   matches,
   and

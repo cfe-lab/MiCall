@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r363-830.0'
   has
+  aligned
   size
-  466,
+  468,
   468
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r306-889.1'
   has
+  aligned
   size
-  383,
+  384,
   384
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r363-830.0'
   has
+  aligned
   size
-  466,
+  468,
   468
   matches,
   and

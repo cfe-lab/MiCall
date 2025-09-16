@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r500-797.1'
   has
+  aligned
   size
-  3,
+  4,
   4
   matches,
   and
@@ -155,8 +156,9 @@ BEGIN 12
   and
   'r705-999.0'
   has
+  aligned
   size
-  92,
+  93,
   93
   matches,
   and

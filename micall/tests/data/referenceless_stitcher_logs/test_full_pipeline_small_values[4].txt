@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r411-895.5'
   has
+  aligned
   size
-  266,
+  267,
   267
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r405-853.2'
   has
+  aligned
   size
-  272,
+  273,
   273
   matches,
   and
@@ -165,8 +167,9 @@ BEGIN 12
   and
   'r241-599.0'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -237,8 +240,9 @@ BEGIN 17
   and
   'r411-895.5'
   has
+  aligned
   size
-  442,
+  443,
   443
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r241-599.0'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -364,8 +369,9 @@ BEGIN 25
   and
   'r158-407.3'
   has
+  aligned
   size
-  248,
+  250,
   250
   matches,
   and
@@ -409,8 +415,9 @@ BEGIN 28
   and
   (3)
   has
+  aligned
   size
-  176,
+  177,
   177
   matches,
   and
@@ -491,8 +498,9 @@ BEGIN 33
   and
   'r241-599.0'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -536,8 +544,9 @@ BEGIN 36
   and
   'r158-407.3'
   has
+  aligned
   size
-  248,
+  250,
   250
   matches,
   and
@@ -608,8 +617,9 @@ BEGIN 41
   and
   'r158-407.3'
   has
+  aligned
   size
-  248,
+  250,
   250
   matches,
   and

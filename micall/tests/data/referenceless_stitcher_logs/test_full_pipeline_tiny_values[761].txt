@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r230-799.0'
   has
+  aligned
   size
-  568,
+  570,
   570
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r263-815.2'
   has
+  aligned
   size
-  536,
+  537,
   537
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r230-799.0'
   has
+  aligned
   size
-  568,
+  570,
   570
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r64-648.1'
   has
+  aligned
   size
-  418,
+  419,
   419
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r156-556.0'
   has
+  aligned
   size
-  399,
+  401,
   401
   matches,
   and

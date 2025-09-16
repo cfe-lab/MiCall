@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r158-880.2'
   has
+  aligned
   size
-  579,
+  580,
   580
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r551-991.1'
   has
+  aligned
   size
-  329,
+  330,
   330
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r155-504.1'
   has
+  aligned
   size
-  348,
+  350,
   350
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r196-476.0'
   has
+  aligned
   size
-  279,
+  281,
   281
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r196-476.0'
   has
+  aligned
   size
-  279,
+  281,
   281
   matches,
   and

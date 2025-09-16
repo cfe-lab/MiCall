@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r200-569.0'
   has
+  aligned
   size
-  368,
+  370,
   370
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r589-937.1'
   has
+  aligned
   size
-  270,
+  271,
   271
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r200-569.0'
   has
+  aligned
   size
-  368,
+  370,
   370
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r390-786.2'
   has
+  aligned
   size
-  395,
+  397,
   397
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r140-877.1'
   has
+  aligned
   size
-  270,
+  271,
   271
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r390-786.2'
   has
+  aligned
   size
-  395,
+  397,
   397
   matches,
   and

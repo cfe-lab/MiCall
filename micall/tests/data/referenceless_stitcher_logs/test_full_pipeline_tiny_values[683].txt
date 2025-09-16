@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r200-902.1'
   has
+  aligned
   size
-  438,
+  439,
   439
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  333,
+  334,
   334
   matches,
   and

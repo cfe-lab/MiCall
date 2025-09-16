@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r419-840.1'
   has
+  aligned
   size
-  151,
+  152,
   152
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  224,
+  225,
   225
   matches,
   and

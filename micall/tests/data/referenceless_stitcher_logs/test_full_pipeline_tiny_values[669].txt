@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r357-801.2'
   has
+  aligned
   size
-  443,
+  445,
   445
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r309-871.0'
   has
+  aligned
   size
-  410,
+  412,
   412
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r309-871.0'
   has
+  aligned
   size
-  410,
+  412,
   412
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r64-418.1'
   has
+  aligned
   size
-  353,
+  355,
   355
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r133-399.0'
   has
+  aligned
   size
-  265,
+  267,
   267
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r133-399.0'
   has
+  aligned
   size
-  265,
+  267,
   267
   matches,
   and

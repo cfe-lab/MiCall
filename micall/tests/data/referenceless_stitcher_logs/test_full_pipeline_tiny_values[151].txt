@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r472-977.2'
   has
+  aligned
   size
-  172,
+  173,
   173
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r587-901.1'
   has
+  aligned
   size
-  313,
+  315,
   315
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r587-901.1'
   has
+  aligned
   size
-  313,
+  315,
   315
   matches,
   and

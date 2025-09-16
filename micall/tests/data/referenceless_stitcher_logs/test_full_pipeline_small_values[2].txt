@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r257-770.2'
   has
+  aligned
   size
-  473,
+  474,
   474
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  319,
+  320,
   320
   matches,
   and
@@ -219,8 +221,9 @@ BEGIN 16
   and
   'r369-658.1'
   has
+  aligned
   size
-  288,
+  290,
   290
   matches,
   and
@@ -264,8 +267,9 @@ BEGIN 19
   and
   'r697-981.5'
   has
+  aligned
   size
-  73,
+  74,
   74
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r93-339.0'
   has
+  aligned
   size
-  245,
+  247,
   247
   matches,
   and
@@ -391,8 +396,9 @@ BEGIN 27
   and
   'r369-658.1'
   has
+  aligned
   size
-  288,
+  290,
   290
   matches,
   and
@@ -436,8 +442,9 @@ BEGIN 30
   and
   'r93-339.0'
   has
+  aligned
   size
-  245,
+  247,
   247
   matches,
   and
@@ -508,8 +515,9 @@ BEGIN 35
   and
   'r93-339.0'
   has
+  aligned
   size
-  245,
+  247,
   247
   matches,
   and

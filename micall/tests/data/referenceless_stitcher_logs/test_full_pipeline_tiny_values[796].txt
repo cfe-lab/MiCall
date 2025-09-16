@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r602-888.2'
   has
+  aligned
   size
-  285,
+  287,
   287
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r485-751.1'
   has
+  aligned
   size
-  265,
+  267,
   267
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r485-751.1'
   has
+  aligned
   size
-  265,
+  267,
   267
   matches,
   and

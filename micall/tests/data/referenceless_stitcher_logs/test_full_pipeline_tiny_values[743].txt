@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r290-843.0'
   has
+  aligned
   size
-  552,
+  554,
   554
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r249-909.2'
   has
+  aligned
   size
-  231,
+  232,
   232
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r290-843.0'
   has
+  aligned
   size
-  552,
+  554,
   554
   matches,
   and

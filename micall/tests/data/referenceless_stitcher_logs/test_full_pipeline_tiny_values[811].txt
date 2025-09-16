@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r93-438.0'
   has
+  aligned
   size
-  344,
+  346,
   346
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r437-708.1'
   has
+  aligned
   size
-  270,
+  272,
   272
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r437-708.1'
   has
+  aligned
   size
-  270,
+  272,
   272
   matches,
   and

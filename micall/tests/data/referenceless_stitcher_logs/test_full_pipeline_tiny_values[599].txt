@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r350-668.1'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r724-996.0'
   has
+  aligned
   size
-  100,
+  101,
   101
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r350-668.1'
   has
+  aligned
   size
-  317,
+  319,
   319
   matches,
   and

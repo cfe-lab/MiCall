@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r43-421.2'
   has
+  aligned
   size
-  2,
+  3,
   1
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r303-602.1'
   has
+  aligned
   size
-  118,
+  119,
   119
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r560-862.0'
   has
+  aligned
   size
-  42,
+  43,
   43
   matches,
   and

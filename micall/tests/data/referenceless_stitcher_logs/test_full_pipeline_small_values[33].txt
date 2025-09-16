@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r328-882.3'
   has
+  aligned
   size
-  398,
+  399,
   399
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r540-989.4'
   has
+  aligned
   size
-  342,
+  343,
   343
   matches,
   and
@@ -219,8 +221,9 @@ BEGIN 16
   and
   'r455-802.5'
   has
+  aligned
   size
-  346,
+  348,
   348
   matches,
   and
@@ -264,8 +267,9 @@ BEGIN 19
   and
   'r647-969.1'
   has
+  aligned
   size
-  321,
+  323,
   323
   matches,
   and
@@ -309,8 +313,9 @@ BEGIN 22
   and
   'r584-872.0'
   has
+  aligned
   size
-  287,
+  289,
   289
   matches,
   and
@@ -381,8 +386,9 @@ BEGIN 27
   and
   'r647-969.1'
   has
+  aligned
   size
-  321,
+  323,
   323
   matches,
   and
@@ -426,8 +432,9 @@ BEGIN 30
   and
   'r584-872.0'
   has
+  aligned
   size
-  287,
+  289,
   289
   matches,
   and
@@ -498,8 +505,9 @@ BEGIN 35
   and
   'r584-872.0'
   has
+  aligned
   size
-  287,
+  289,
   289
   matches,
   and

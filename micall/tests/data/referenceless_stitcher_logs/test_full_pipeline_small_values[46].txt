@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r155-656.1'
   has
+  aligned
   size
-  466,
+  467,
   467
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  131,
+  132,
   132
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r409-632.0'
   has
+  aligned
   size
-  222,
+  224,
   224
   matches,
   and
@@ -264,8 +267,9 @@ BEGIN 19
   and
   'r647-877.4'
   has
+  aligned
   size
-  9,
+  10,
   10
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r409-632.0'
   has
+  aligned
   size
-  222,
+  224,
   224
   matches,
   and
@@ -364,8 +369,9 @@ BEGIN 25
   and
   'r550-769.2'
   has
+  aligned
   size
-  106,
+  107,
   107
   matches,
   and
@@ -446,8 +452,9 @@ BEGIN 30
   and
   'r647-877.4'
   has
+  aligned
   size
-  122,
+  123,
   123
   matches,
   and
@@ -501,8 +508,9 @@ BEGIN 33
   and
   'r409-632.0'
   has
+  aligned
   size
-  222,
+  224,
   224
   matches,
   and
@@ -573,8 +581,9 @@ BEGIN 38
   and
   'r409-632.0'
   has
+  aligned
   size
-  222,
+  224,
   224
   matches,
   and

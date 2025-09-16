@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r405-981.3'
   has
+  aligned
   size
-  144,
+  145,
   145
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r661-994.5'
   has
+  aligned
   size
-  320,
+  321,
   321
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  144,
+  145,
   145
   matches,
   and
@@ -247,8 +250,9 @@ BEGIN 17
   and
   (2)
   has
+  aligned
   size
-  205,
+  206,
   206
   matches,
   and
@@ -329,8 +333,9 @@ BEGIN 22
   and
   (4)
   has
+  aligned
   size
-  155,
+  156,
   156
   matches,
   and
@@ -384,8 +389,9 @@ BEGIN 25
   and
   'r576-781.4'
   has
+  aligned
   size
-  204,
+  206,
   206
   matches,
   and
@@ -456,8 +462,9 @@ BEGIN 30
   and
   (5)
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -538,8 +545,9 @@ BEGIN 35
   and
   'r576-781.4'
   has
+  aligned
   size
-  204,
+  206,
   206
   matches,
   and

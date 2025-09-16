@@ -135,13 +135,13 @@ class CalculatedCutoffs:
 class DeterminedOverlap:
     left_contig: str
     right_contig: str
-    overlap_size: int
+    aligned_size: int
     number_of_matches: int
     relative_score: Score
 
     def __str__(self) -> str:
         return f"Overlap between contigs {self.left_contig} and {self.right_contig}" \
-            f" has size {self.overlap_size}, {self.number_of_matches} matches," \
+            f" has aligned size {self.aligned_size}, {self.number_of_matches} matches," \
             f" and the score of {self.relative_score}."
 
 

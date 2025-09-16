@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r400-818.2'
   has
+  aligned
   size
-  238,
+  239,
   239
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r117-638.0'
   has
+  aligned
   size
-  308,
+  309,
   309
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r400-818.2'
   has
+  aligned
   size
-  238,
+  239,
   239
   matches,
   and

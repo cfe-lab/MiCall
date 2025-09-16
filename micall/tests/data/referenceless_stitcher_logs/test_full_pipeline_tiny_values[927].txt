@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r304-753.2'
   has
+  aligned
   size
-  448,
+  450,
   450
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r196-961.1'
   has
+  aligned
   size
-  233,
+  234,
   234
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r304-753.2'
   has
+  aligned
   size
-  448,
+  450,
   450
   matches,
   and

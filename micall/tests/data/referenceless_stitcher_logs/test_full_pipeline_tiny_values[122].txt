@@ -173,8 +173,9 @@ BEGIN 14
   and
   'r606-943.1'
   has
+  aligned
   size
-  280,
+  281,
   281
   matches,
   and

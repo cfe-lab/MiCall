@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r279-693.1'
   has
+  aligned
   size
-  413,
+  415,
   415
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r655-954.0'
   has
+  aligned
   size
-  190,
+  191,
   191
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r279-693.1'
   has
+  aligned
   size
-  413,
+  415,
   415
   matches,
   and

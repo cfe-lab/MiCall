@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r407-906.1'
   has
+  aligned
   size
-  448,
+  449,
   449
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r403-782.2'
   has
+  aligned
   size
-  378,
+  380,
   380
   matches,
   and

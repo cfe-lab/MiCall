@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r438-813.0'
   has
+  aligned
   size
-  374,
+  376,
   376
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r666-954.2'
   has
+  aligned
   size
-  204,
+  205,
   205
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r438-813.0'
   has
+  aligned
   size
-  374,
+  376,
   376
   matches,
   and

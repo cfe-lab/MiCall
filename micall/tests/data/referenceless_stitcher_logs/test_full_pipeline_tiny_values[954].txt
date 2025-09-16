@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r177-724.0'
   has
+  aligned
   size
-  502,
+  503,
   503
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r300-702.2'
   has
+  aligned
   size
-  401,
+  403,
   403
   matches,
   and

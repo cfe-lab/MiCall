@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r271-776.2'
   has
+  aligned
   size
-  504,
+  506,
   506
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r208-828.0'
   has
+  aligned
   size
-  387,
+  388,
   388
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r271-776.2'
   has
+  aligned
   size
-  504,
+  506,
   506
   matches,
   and

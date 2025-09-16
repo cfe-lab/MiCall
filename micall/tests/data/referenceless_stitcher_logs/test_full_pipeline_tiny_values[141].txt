@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r30-582.0'
   has
+  aligned
   size
-  551,
+  553,
   553
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r181-729.1'
   has
+  aligned
   size
-  547,
+  549,
   549
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r181-729.1'
   has
+  aligned
   size
-  547,
+  549,
   549
   matches,
   and

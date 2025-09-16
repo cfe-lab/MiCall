@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r147-636.0'
   has
+  aligned
   size
-  488,
+  490,
   490
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r378-847.1'
   has
+  aligned
   size
-  328,
+  329,
   329
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r147-636.0'
   has
+  aligned
   size
-  488,
+  490,
   490
   matches,
   and

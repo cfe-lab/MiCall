@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r120-764.0'
   has
+  aligned
   size
-  559,
+  560,
   560
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r209-781.2'
   has
+  aligned
   size
-  555,
+  556,
   556
   matches,
   and

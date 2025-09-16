@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r196-641.2'
   has
+  aligned
   size
-  444,
+  446,
   446
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r450-809.0'
   has
+  aligned
   size
-  317,
+  318,
   318
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r196-641.2'
   has
+  aligned
   size
-  444,
+  446,
   446
   matches,
   and

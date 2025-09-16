@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r401-972.2'
   has
+  aligned
   size
-  483,
+  484,
   484
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  264,
+  265,
   265
   matches,
   and

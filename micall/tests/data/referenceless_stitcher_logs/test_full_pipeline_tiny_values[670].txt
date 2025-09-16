@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r386-845.1'
   has
+  aligned
   size
-  458,
+  460,
   460
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r423-747.0'
   has
+  aligned
   size
-  323,
+  325,
   325
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r423-747.0'
   has
+  aligned
   size
-  323,
+  325,
   325
   matches,
   and

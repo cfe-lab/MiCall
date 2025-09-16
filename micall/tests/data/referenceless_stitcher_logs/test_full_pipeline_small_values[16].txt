@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r419-958.4'
   has
+  aligned
   size
-  352,
+  353,
   353
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r419-958.4'
   has
+  aligned
   size
-  394,
+  395,
   395
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  401,
+  402,
   402
   matches,
   and
@@ -274,8 +277,9 @@ BEGIN 19
   and
   'r492-840.1'
   has
+  aligned
   size
-  347,
+  349,
   349
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r426-745.2'
   has
+  aligned
   size
-  318,
+  320,
   320
   matches,
   and
@@ -364,8 +369,9 @@ BEGIN 25
   and
   'r457-662.3'
   has
+  aligned
   size
-  204,
+  206,
   206
   matches,
   and
@@ -436,8 +442,9 @@ BEGIN 30
   and
   'r426-745.2'
   has
+  aligned
   size
-  318,
+  320,
   320
   matches,
   and
@@ -481,8 +488,9 @@ BEGIN 33
   and
   'r457-662.3'
   has
+  aligned
   size
-  204,
+  206,
   206
   matches,
   and
@@ -553,8 +561,9 @@ BEGIN 38
   and
   'r457-662.3'
   has
+  aligned
   size
-  204,
+  206,
   206
   matches,
   and

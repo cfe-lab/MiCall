@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r308-871.2'
   has
+  aligned
   size
-  562,
+  564,
   564
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r304-974.0'
   has
+  aligned
   size
-  201,
+  202,
   202
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r308-871.2'
   has
+  aligned
   size
-  562,
+  564,
   564
   matches,
   and

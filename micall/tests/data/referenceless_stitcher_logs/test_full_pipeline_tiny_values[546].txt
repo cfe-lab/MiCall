@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r406-863.1'
   has
+  aligned
   size
-  168,
+  169,
   169
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  258,
+  259,
   259
   matches,
   and

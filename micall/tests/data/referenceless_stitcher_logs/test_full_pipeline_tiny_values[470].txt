@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r135-654.2'
   has
+  aligned
   size
-  518,
+  520,
   520
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r354-702.1'
   has
+  aligned
   size
-  314,
+  315,
   315
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r135-654.2'
   has
+  aligned
   size
-  518,
+  520,
   520
   matches,
   and

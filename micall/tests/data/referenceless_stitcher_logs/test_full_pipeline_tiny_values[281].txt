@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r456-938.2'
   has
+  aligned
   size
-  5,
+  6,
   3
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r456-938.2'
   has
+  aligned
   size
-  116,
+  117,
   117
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  173,
+  174,
   174
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r278-694.0'
   has
+  aligned
   size
-  246,
+  247,
   247
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r83-441.2'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r83-441.2'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -227,8 +230,9 @@ BEGIN 17
   and
   'r499-833.1'
   has
+  aligned
   size
-  195,
+  196,
   196
   matches,
   and
@@ -282,8 +286,9 @@ BEGIN 20
   and
   'r346-560.3'
   has
+  aligned
   size
-  213,
+  215,
   215
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   'r83-441.2'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -399,8 +405,9 @@ BEGIN 28
   and
   (2)
   has
+  aligned
   size
-  198,
+  199,
   199
   matches,
   and
@@ -454,8 +461,9 @@ BEGIN 31
   and
   'r346-560.3'
   has
+  aligned
   size
-  213,
+  215,
   215
   matches,
   and
@@ -526,8 +534,9 @@ BEGIN 36
   and
   'r83-441.2'
   has
+  aligned
   size
-  357,
+  359,
   359
   matches,
   and
@@ -571,8 +580,9 @@ BEGIN 39
   and
   'r346-560.3'
   has
+  aligned
   size
-  213,
+  215,
   215
   matches,
   and
@@ -643,8 +653,9 @@ BEGIN 44
   and
   'r346-560.3'
   has
+  aligned
   size
-  213,
+  215,
   215
   matches,
   and

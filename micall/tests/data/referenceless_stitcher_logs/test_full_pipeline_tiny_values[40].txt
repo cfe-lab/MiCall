@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r289-884.1'
   has
+  aligned
   size
-  487,
+  488,
   488
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  281,
+  282,
   282
   matches,
   and

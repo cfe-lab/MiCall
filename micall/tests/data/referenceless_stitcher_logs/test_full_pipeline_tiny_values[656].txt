@@ -73,8 +73,9 @@ BEGIN 7
   and
   'r481-768.2'
   has
+  aligned
   size
-  99,
+  100,
   100
   matches,
   and
@@ -155,8 +156,9 @@ BEGIN 12
   and
   'r584-894.0'
   has
+  aligned
   size
-  184,
+  185,
   185
   matches,
   and

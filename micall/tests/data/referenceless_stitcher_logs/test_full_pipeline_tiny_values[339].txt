@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r144-825.0'
   has
+  aligned
   size
-  402,
+  403,
   403
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r144-825.0'
   has
+  aligned
   size
-  470,
+  471,
   471
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  417,
+  418,
   418
   matches,
   and

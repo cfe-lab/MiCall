@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r379-871.0'
   has
+  aligned
   size
-  491,
+  493,
   493
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r304-586.2'
   has
+  aligned
   size
-  281,
+  283,
   283
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r304-586.2'
   has
+  aligned
   size
-  281,
+  283,
   283
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r521-893.5'
   has
+  aligned
   size
-  1,
+  2,
   2
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r79-391.0'
   has
+  aligned
   size
-  1,
+  2,
   1
   matches,
   and
@@ -147,8 +149,9 @@ BEGIN 11
   and
   'r737-959.3'
   has
+  aligned
   size
-  156,
+  157,
   157
   matches,
   and
@@ -202,8 +205,9 @@ BEGIN 14
   and
   'r521-893.5'
   has
+  aligned
   size
-  202,
+  203,
   203
   matches,
   and
@@ -284,8 +288,9 @@ BEGIN 19
   and
   (3)
   has
+  aligned
   size
-  2,
+  3,
   3
   matches,
   and
@@ -357,8 +362,9 @@ BEGIN 23
   and
   'r737-959.3'
   has
+  aligned
   size
-  156,
+  157,
   157
   matches,
   and
@@ -439,8 +445,9 @@ BEGIN 28
   and
   (5)
   has
+  aligned
   size
-  2,
+  3,
   3
   matches,
   and
@@ -539,8 +546,9 @@ BEGIN 34
   and
   'r148-506.1'
   has
+  aligned
   size
-  357,
+  359,
   323
   matches,
   and
@@ -584,8 +592,9 @@ BEGIN 37
   and
   (6)
   has
+  aligned
   size
-  289,
+  290,
   290
   matches,
   and
@@ -666,8 +675,9 @@ BEGIN 42
   and
   'r148-506.1'
   has
+  aligned
   size
-  357,
+  359,
   323
   matches,
   and

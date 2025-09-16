@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r96-718.1'
   has
+  aligned
   size
-  621,
+  623,
   623
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r246-758.0'
   has
+  aligned
   size
-  494,
+  495,
   495
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r96-718.1'
   has
+  aligned
   size
-  621,
+  623,
   623
   matches,
   and

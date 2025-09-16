@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r490-986.0'
   has
+  aligned
   size
-  390,
+  391,
   391
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  96,
+  97,
   97
   matches,
   and

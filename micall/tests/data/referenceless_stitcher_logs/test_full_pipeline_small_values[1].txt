@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r388-994.3'
   has
+  aligned
   size
-  243,
+  244,
   244
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  439,
+  440,
   440
   matches,
   and
@@ -219,8 +221,9 @@ BEGIN 16
   and
   (2)
   has
+  aligned
   size
-  277,
+  278,
   278
   matches,
   and
@@ -301,8 +304,9 @@ BEGIN 21
   and
   'r214-465.4'
   has
+  aligned
   size
-  250,
+  252,
   252
   matches,
   and
@@ -346,8 +350,9 @@ BEGIN 24
   and
   'r499-716.5'
   has
+  aligned
   size
-  216,
+  218,
   218
   matches,
   and
@@ -418,8 +423,9 @@ BEGIN 29
   and
   'r499-716.5'
   has
+  aligned
   size
-  216,
+  218,
   218
   matches,
   and

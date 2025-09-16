@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r464-959.2'
   has
+  aligned
   size
-  455,
+  456,
   456
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r440-926.1'
   has
+  aligned
   size
-  479,
+  480,
   480
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r464-959.2'
   has
+  aligned
   size
-  462,
+  463,
   463
   matches,
   and
@@ -274,8 +277,9 @@ BEGIN 19
   and
   'r524-924.4'
   has
+  aligned
   size
-  399,
+  401,
   401
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   (3)
   has
+  aligned
   size
-  284,
+  285,
   285
   matches,
   and
@@ -401,8 +406,9 @@ BEGIN 27
   and
   'r524-924.4'
   has
+  aligned
   size
-  399,
+  401,
   401
   matches,
   and
@@ -446,8 +452,9 @@ BEGIN 30
   and
   'r360-595.0'
   has
+  aligned
   size
-  234,
+  236,
   236
   matches,
   and
@@ -518,8 +525,9 @@ BEGIN 35
   and
   'r360-595.0'
   has
+  aligned
   size
-  234,
+  236,
   236
   matches,
   and

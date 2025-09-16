@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r74-695.2'
   has
+  aligned
   size
-  620,
+  622,
   622
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r240-580.1'
   has
+  aligned
   size
-  339,
+  341,
   341
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r240-580.1'
   has
+  aligned
   size
-  339,
+  341,
   341
   matches,
   and

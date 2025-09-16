@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r164-730.0'
   has
+  aligned
   size
-  565,
+  567,
   567
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r421-921.2'
   has
+  aligned
   size
-  399,
+  400,
   400
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r164-730.0'
   has
+  aligned
   size
-  565,
+  567,
   567
   matches,
   and

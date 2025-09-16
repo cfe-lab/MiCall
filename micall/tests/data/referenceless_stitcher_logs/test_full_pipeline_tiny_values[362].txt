@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r266-750.2'
   has
+  aligned
   size
-  483,
+  485,
   485
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r319-756.1'
   has
+  aligned
   size
-  436,
+  438,
   438
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r319-756.1'
   has
+  aligned
   size
-  436,
+  438,
   438
   matches,
   and

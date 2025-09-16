@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r376-806.2'
   has
+  aligned
   size
-  18,
+  19,
   19
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r495-766.0'
   has
+  aligned
   size
-  270,
+  272,
   272
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r495-766.0'
   has
+  aligned
   size
-  270,
+  272,
   272
   matches,
   and

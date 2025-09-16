@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r229-527.0'
   has
+  aligned
   size
-  118,
+  119,
   119
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r297-783.0'
   has
+  aligned
   size
-  485,
+  487,
   487
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r592-917.1'
   has
+  aligned
   size
-  227,
+  228,
   228
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r297-783.0'
   has
+  aligned
   size
-  485,
+  487,
   487
   matches,
   and

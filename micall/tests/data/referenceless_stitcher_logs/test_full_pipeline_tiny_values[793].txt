@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r99-626.0'
   has
+  aligned
   size
-  526,
+  528,
   528
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r458-844.2'
   has
+  aligned
   size
-  182,
+  183,
   183
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r99-626.0'
   has
+  aligned
   size
-  526,
+  528,
   528
   matches,
   and

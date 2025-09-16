@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r95-699.2'
   has
+  aligned
   size
-  603,
+  605,
   605
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r89-820.0'
   has
+  aligned
   size
-  434,
+  435,
   435
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r95-699.2'
   has
+  aligned
   size
-  603,
+  605,
   605
   matches,
   and

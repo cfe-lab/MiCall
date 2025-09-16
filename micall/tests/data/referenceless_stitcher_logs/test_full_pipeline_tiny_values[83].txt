@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r90-410.0'
   has
+  aligned
   size
-  319,
+  321,
   321
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r387-659.1'
   has
+  aligned
   size
-  271,
+  273,
   273
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r387-659.1'
   has
+  aligned
   size
-  271,
+  273,
   273
   matches,
   and

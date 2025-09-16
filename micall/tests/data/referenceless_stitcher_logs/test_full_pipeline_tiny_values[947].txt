@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r365-883.1'
   has
+  aligned
   size
-  447,
+  448,
   448
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  246,
+  247,
   247
   matches,
   and

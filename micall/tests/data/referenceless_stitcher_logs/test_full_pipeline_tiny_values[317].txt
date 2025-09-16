@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r473-738.0'
   has
+  aligned
   size
-  113,
+  114,
   114
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r394-658.1'
   has
+  aligned
   size
-  192,
+  193,
   193
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r473-738.0'
   has
+  aligned
   size
-  185,
+  186,
   186
   matches,
   and

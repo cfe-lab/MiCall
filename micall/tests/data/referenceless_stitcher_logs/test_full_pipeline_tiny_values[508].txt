@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r375-971.2'
   has
+  aligned
   size
-  116,
+  117,
   117
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r506-796.0'
   has
+  aligned
   size
-  289,
+  291,
   291
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r506-796.0'
   has
+  aligned
   size
-  289,
+  291,
   291
   matches,
   and

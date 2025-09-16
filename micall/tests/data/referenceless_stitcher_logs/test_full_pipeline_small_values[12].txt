@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r233-721.4'
   has
+  aligned
   size
-  309,
+  310,
   310
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r146-544.1'
   has
+  aligned
   size
-  396,
+  397,
   397
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r233-721.4'
   has
+  aligned
   size
-  311,
+  312,
   312
   matches,
   and
@@ -247,8 +250,9 @@ BEGIN 17
   and
   'r11-405.2'
   has
+  aligned
   size
-  393,
+  395,
   395
   matches,
   and
@@ -319,8 +323,9 @@ BEGIN 22
   and
   'r11-405.2'
   has
+  aligned
   size
-  393,
+  395,
   395
   matches,
   and
@@ -364,8 +369,9 @@ BEGIN 25
   and
   'r494-837.3'
   has
+  aligned
   size
-  227,
+  228,
   228
   matches,
   and
@@ -419,8 +425,9 @@ BEGIN 28
   and
   'r485-825.0'
   has
+  aligned
   size
-  236,
+  237,
   237
   matches,
   and
@@ -501,8 +508,9 @@ BEGIN 33
   and
   'r11-405.2'
   has
+  aligned
   size
-  393,
+  395,
   395
   matches,
   and
@@ -546,8 +554,9 @@ BEGIN 36
   and
   'r494-837.3'
   has
+  aligned
   size
-  331,
+  332,
   332
   matches,
   and
@@ -628,8 +637,9 @@ BEGIN 41
   and
   'r11-405.2'
   has
+  aligned
   size
-  393,
+  395,
   395
   matches,
   and

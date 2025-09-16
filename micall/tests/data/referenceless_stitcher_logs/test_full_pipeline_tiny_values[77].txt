@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r333-689.0'
   has
+  aligned
   size
-  188,
+  189,
   189
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r246-599.1'
   has
+  aligned
   size
-  275,
+  276,
   276
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r333-689.0'
   has
+  aligned
   size
-  266,
+  267,
   267
   matches,
   and

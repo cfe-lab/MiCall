@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r465-761.1'
   has
+  aligned
   size
-  219,
+  220,
   220
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r459-732.0'
   has
+  aligned
   size
-  225,
+  226,
   226
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r465-761.1'
   has
+  aligned
   size
-  267,
+  268,
   268
   matches,
   and

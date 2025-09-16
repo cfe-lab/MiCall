@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r448-921.2'
   has
+  aligned
   size
-  164,
+  165,
   165
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r433-863.4'
   has
+  aligned
   size
-  179,
+  180,
   180
   matches,
   and
@@ -165,8 +167,9 @@ BEGIN 12
   and
   'r615-962.3'
   has
+  aligned
   size
-  1,
+  2,
   0
   matches,
   and
@@ -202,8 +205,9 @@ BEGIN 14
   and
   'r147-375.5'
   has
+  aligned
   size
-  227,
+  229,
   229
   matches,
   and
@@ -274,8 +278,9 @@ BEGIN 19
   and
   'r448-921.2'
   has
+  aligned
   size
-  415,
+  416,
   416
   matches,
   and
@@ -356,8 +361,9 @@ BEGIN 24
   and
   'r615-962.3'
   has
+  aligned
   size
-  306,
+  307,
   307
   matches,
   and
@@ -438,8 +444,9 @@ BEGIN 29
   and
   'r147-375.5'
   has
+  aligned
   size
-  227,
+  229,
   229
   matches,
   and
@@ -483,8 +490,9 @@ BEGIN 32
   and
   'r527-748.1'
   has
+  aligned
   size
-  220,
+  222,
   222
   matches,
   and
@@ -555,8 +563,9 @@ BEGIN 37
   and
   'r527-748.1'
   has
+  aligned
   size
-  220,
+  222,
   222
   matches,
   and

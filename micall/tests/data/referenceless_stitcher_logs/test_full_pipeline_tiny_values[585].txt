@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r379-904.2'
   has
+  aligned
   size
-  292,
+  293,
   293
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  170,
+  171,
   171
   matches,
   and

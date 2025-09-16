@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r290-863.5'
   has
+  aligned
   size
-  428,
+  429,
   429
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r173-719.2'
   has
+  aligned
   size
-  545,
+  547,
   547
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r186-500.0'
   has
+  aligned
   size
-  313,
+  315,
   315
   matches,
   and
@@ -227,8 +230,9 @@ BEGIN 17
   and
   'r171-473.1'
   has
+  aligned
   size
-  301,
+  303,
   303
   matches,
   and
@@ -272,8 +276,9 @@ BEGIN 20
   and
   'r698-947.3'
   has
+  aligned
   size
-  165,
+  166,
   166
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   'r173-719.2'
   has
+  aligned
   size
-  545,
+  547,
   547
   matches,
   and
@@ -399,8 +405,9 @@ BEGIN 28
   and
   'r186-500.0'
   has
+  aligned
   size
-  313,
+  315,
   315
   matches,
   and
@@ -444,8 +451,9 @@ BEGIN 31
   and
   'r171-473.1'
   has
+  aligned
   size
-  301,
+  303,
   303
   matches,
   and
@@ -516,8 +524,9 @@ BEGIN 36
   and
   'r186-500.0'
   has
+  aligned
   size
-  313,
+  315,
   315
   matches,
   and
@@ -561,8 +570,9 @@ BEGIN 39
   and
   'r171-473.1'
   has
+  aligned
   size
-  301,
+  303,
   303
   matches,
   and
@@ -633,8 +643,9 @@ BEGIN 44
   and
   'r171-473.1'
   has
+  aligned
   size
-  301,
+  303,
   303
   matches,
   and

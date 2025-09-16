@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r561-894.2'
   has
+  aligned
   size
-  170,
+  171,
   171
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r278-556.0'
   has
+  aligned
   size
-  277,
+  279,
   279
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r278-556.0'
   has
+  aligned
   size
-  277,
+  279,
   279
   matches,
   and

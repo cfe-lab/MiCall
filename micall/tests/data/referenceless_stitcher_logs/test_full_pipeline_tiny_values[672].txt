@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r218-808.1'
   has
+  aligned
   size
-  589,
+  591,
   591
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r178-842.2'
   has
+  aligned
   size
-  149,
+  150,
   150
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r218-808.1'
   has
+  aligned
   size
-  589,
+  591,
   591
   matches,
   and

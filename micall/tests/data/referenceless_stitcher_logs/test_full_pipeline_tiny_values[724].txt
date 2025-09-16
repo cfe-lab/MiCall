@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r297-938.0'
   has
+  aligned
   size
-  369,
+  370,
   370
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r297-938.0'
   has
+  aligned
   size
-  416,
+  417,
   417
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  552,
+  553,
   553
   matches,
   and

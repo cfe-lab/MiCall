@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r152-679.1'
   has
+  aligned
   size
-  526,
+  528,
   528
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r465-856.0'
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r152-679.1'
   has
+  aligned
   size
-  526,
+  528,
   528
   matches,
   and

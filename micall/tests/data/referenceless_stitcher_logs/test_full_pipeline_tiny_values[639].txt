@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r157-513.2'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r26-544.1'
   has
+  aligned
   size
-  18,
+  19,
   1
   matches,
   and
@@ -164,8 +166,9 @@ BEGIN 13
   and
   'r26-544.1'
   has
+  aligned
   size
-  18,
+  19,
   1
   matches,
   and
@@ -300,8 +303,9 @@ BEGIN 24
   and
   'r157-513.2'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and
@@ -345,8 +349,9 @@ BEGIN 27
   and
   'r26-544.1'
   has
+  aligned
   size
-  18,
+  19,
   1
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r483-808.1'
   has
+  aligned
   size
-  324,
+  326,
   326
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r643-948.0'
   has
+  aligned
   size
-  182,
+  183,
   183
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r483-808.1'
   has
+  aligned
   size
-  324,
+  326,
   326
   matches,
   and

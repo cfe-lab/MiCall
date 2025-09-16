@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r279-882.2'
   has
+  aligned
   size
-  456,
+  457,
   457
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r476-977.0'
   has
+  aligned
   size
-  406,
+  407,
   407
   matches,
   and

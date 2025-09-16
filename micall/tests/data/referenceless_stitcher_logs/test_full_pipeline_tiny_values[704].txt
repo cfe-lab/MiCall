@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r331-810.2'
   has
+  aligned
   size
-  478,
+  480,
   480
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r392-862.1'
   has
+  aligned
   size
-  469,
+  471,
   471
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r392-862.1'
   has
+  aligned
   size
-  469,
+  471,
   471
   matches,
   and

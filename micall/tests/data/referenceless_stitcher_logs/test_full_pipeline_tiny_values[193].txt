@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r571-964.0'
   has
+  aligned
   size
-  82,
+  83,
   83
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  179,
+  180,
   180
   matches,
   and

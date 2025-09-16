@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r136-717.0'
   has
+  aligned
   size
-  580,
+  582,
   582
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r271-666.1'
   has
+  aligned
   size
-  394,
+  396,
   396
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r271-666.1'
   has
+  aligned
   size
-  394,
+  396,
   396
   matches,
   and

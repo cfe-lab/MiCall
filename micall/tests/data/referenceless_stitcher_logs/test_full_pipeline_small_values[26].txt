@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r175-703.5'
   has
+  aligned
   size
-  527,
+  529,
   529
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r442-952.1'
   has
+  aligned
   size
-  288,
+  289,
   289
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r175-703.5'
   has
+  aligned
   size
-  527,
+  529,
   529
   matches,
   and
@@ -227,8 +230,9 @@ BEGIN 17
   and
   'r675-983.0'
   has
+  aligned
   size
-  277,
+  278,
   278
   matches,
   and
@@ -309,8 +313,9 @@ BEGIN 22
   and
   'r175-703.5'
   has
+  aligned
   size
-  527,
+  529,
   529
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   'r557-789.2'
   has
+  aligned
   size
-  231,
+  233,
   233
   matches,
   and
@@ -399,8 +405,9 @@ BEGIN 28
   and
   'r488-712.4'
   has
+  aligned
   size
-  223,
+  225,
   225
   matches,
   and
@@ -471,8 +478,9 @@ BEGIN 33
   and
   'r557-789.2'
   has
+  aligned
   size
-  231,
+  233,
   233
   matches,
   and
@@ -516,8 +524,9 @@ BEGIN 36
   and
   'r488-712.4'
   has
+  aligned
   size
-  223,
+  225,
   225
   matches,
   and
@@ -588,8 +597,9 @@ BEGIN 41
   and
   'r488-712.4'
   has
+  aligned
   size
-  223,
+  225,
   225
   matches,
   and

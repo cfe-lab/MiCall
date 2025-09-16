@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r251-646.2'
   has
+  aligned
   size
-  394,
+  396,
   396
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r8-648.0'
   has
+  aligned
   size
-  10,
+  11,
   1
   matches,
   and
@@ -164,8 +166,9 @@ BEGIN 13
   and
   'r8-648.0'
   has
+  aligned
   size
-  10,
+  11,
   1
   matches,
   and
@@ -236,8 +239,9 @@ BEGIN 19
   and
   'r661-977.1'
   has
+  aligned
   size
-  0,
+  1,
   1
   matches,
   and
@@ -348,8 +352,9 @@ BEGIN 27
   and
   (1)
   has
+  aligned
   size
-  397,
+  398,
   397
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r378-924.2'
   has
+  aligned
   size
-  208,
+  209,
   209
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r526-950.5'
   has
+  aligned
   size
-  398,
+  399,
   399
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  208,
+  209,
   209
   matches,
   and
@@ -274,8 +277,9 @@ BEGIN 19
   and
   (3)
   has
+  aligned
   size
-  386,
+  387,
   387
   matches,
   and
@@ -356,8 +360,9 @@ BEGIN 24
   and
   (4)
   has
+  aligned
   size
-  290,
+  291,
   291
   matches,
   and
@@ -438,8 +443,9 @@ BEGIN 29
   and
   'r623-835.4'
   has
+  aligned
   size
-  211,
+  213,
   213
   matches,
   and

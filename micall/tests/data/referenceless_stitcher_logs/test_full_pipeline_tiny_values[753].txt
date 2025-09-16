@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r72-796.0'
   has
+  aligned
   size
-  477,
+  478,
   478
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r161-438.1'
   has
+  aligned
   size
-  276,
+  278,
   278
   matches,
   and

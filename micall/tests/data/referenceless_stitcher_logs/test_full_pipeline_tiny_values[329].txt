@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r400-795.2'
   has
+  aligned
   size
-  394,
+  396,
   396
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r343-711.1'
   has
+  aligned
   size
-  367,
+  369,
   369
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r343-711.1'
   has
+  aligned
   size
-  367,
+  369,
   369
   matches,
   and

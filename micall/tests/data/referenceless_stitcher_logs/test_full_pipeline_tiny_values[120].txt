@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r193-931.1'
   has
+  aligned
   size
-  316,
+  317,
   317
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r527-908.0'
   has
+  aligned
   size
-  380,
+  382,
   382
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r527-908.0'
   has
+  aligned
   size
-  380,
+  382,
   382
   matches,
   and

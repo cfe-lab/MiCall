@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r225-773.0'
   has
+  aligned
   size
-  547,
+  549,
   549
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r231-598.1'
   has
+  aligned
   size
-  366,
+  368,
   368
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r231-598.1'
   has
+  aligned
   size
-  366,
+  368,
   368
   matches,
   and

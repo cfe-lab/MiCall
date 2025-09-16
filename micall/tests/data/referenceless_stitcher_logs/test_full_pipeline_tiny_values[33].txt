@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r283-783.1'
   has
+  aligned
   size
-  499,
+  501,
   501
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r584-924.0'
   has
+  aligned
   size
-  339,
+  341,
   341
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r584-924.0'
   has
+  aligned
   size
-  339,
+  341,
   341
   matches,
   and

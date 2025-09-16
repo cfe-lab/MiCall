@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r350-943.0'
   has
+  aligned
   size
-  514,
+  515,
   515
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  406,
+  407,
   407
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r342-719.1'
   has
+  aligned
   size
-  376,
+  378,
   378
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r202-944.2'
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r342-719.1'
   has
+  aligned
   size
-  376,
+  378,
   378
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r213-660.2'
   has
+  aligned
   size
-  446,
+  448,
   448
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r527-957.0'
   has
+  aligned
   size
-  346,
+  347,
   347
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r213-660.2'
   has
+  aligned
   size
-  446,
+  448,
   448
   matches,
   and

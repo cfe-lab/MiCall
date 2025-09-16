@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r502-858.0'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r272-973.1'
   has
+  aligned
   size
-  160,
+  161,
   161
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r502-858.0'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r529-982.0'
   has
+  aligned
   size
-  167,
+  168,
   168
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r451-796.2'
   has
+  aligned
   size
-  245,
+  246,
   246
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r529-982.0'
   has
+  aligned
   size
-  267,
+  268,
   268
   matches,
   and

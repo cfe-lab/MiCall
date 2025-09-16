@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r426-824.2'
   has
+  aligned
   size
-  397,
+  399,
   399
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r561-818.0'
   has
+  aligned
   size
-  256,
+  258,
   258
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r561-818.0'
   has
+  aligned
   size
-  256,
+  258,
   258
   matches,
   and

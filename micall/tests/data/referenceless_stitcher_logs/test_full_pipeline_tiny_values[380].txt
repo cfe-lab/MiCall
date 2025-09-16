@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r337-992.0'
   has
+  aligned
   size
-  654,
+  656,
   656
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r448-818.1'
   has
+  aligned
   size
-  369,
+  371,
   371
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r448-818.1'
   has
+  aligned
   size
-  369,
+  371,
   371
   matches,
   and

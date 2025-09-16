@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r233-688.0'
   has
+  aligned
   size
-  454,
+  456,
   456
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r338-596.1'
   has
+  aligned
   size
-  257,
+  259,
   259
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r338-596.1'
   has
+  aligned
   size
-  257,
+  259,
   259
   matches,
   and

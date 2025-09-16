@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r388-862.2'
   has
+  aligned
   size
-  135,
+  136,
   136
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r273-703.4'
   has
+  aligned
   size
-  250,
+  251,
   251
   matches,
   and
@@ -165,8 +167,9 @@ BEGIN 12
   and
   'r17-523.0'
   has
+  aligned
   size
-  313,
+  314,
   314
   matches,
   and
@@ -247,8 +250,9 @@ BEGIN 17
   and
   'r388-862.2'
   has
+  aligned
   size
-  135,
+  136,
   136
   matches,
   and
@@ -302,8 +306,9 @@ BEGIN 20
   and
   'r273-703.4'
   has
+  aligned
   size
-  250,
+  251,
   251
   matches,
   and
@@ -384,8 +389,9 @@ BEGIN 25
   and
   'r388-862.2'
   has
+  aligned
   size
-  315,
+  316,
   316
   matches,
   and
@@ -439,8 +445,9 @@ BEGIN 28
   and
   'r314-733.1'
   has
+  aligned
   size
-  389,
+  390,
   390
   matches,
   and
@@ -521,8 +528,9 @@ BEGIN 33
   and
   'r388-862.2'
   has
+  aligned
   size
-  345,
+  346,
   346
   matches,
   and
@@ -603,8 +611,9 @@ BEGIN 38
   and
   'r366-635.3'
   has
+  aligned
   size
-  268,
+  270,
   270
   matches,
   and

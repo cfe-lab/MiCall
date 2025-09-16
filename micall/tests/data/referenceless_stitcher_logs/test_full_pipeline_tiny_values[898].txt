@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r428-747.0'
   has
+  aligned
   size
-  73,
+  74,
   74
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r229-503.2'
   has
+  aligned
   size
-  272,
+  273,
   273
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r428-747.0'
   has
+  aligned
   size
-  75,
+  76,
   76
   matches,
   and

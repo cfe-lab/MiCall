@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r516-842.2'
   has
+  aligned
   size
-  325,
+  327,
   327
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r488-926.1'
   has
+  aligned
   size
-  217,
+  218,
   218
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r516-842.2'
   has
+  aligned
   size
-  325,
+  327,
   327
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r498-834.1'
   has
+  aligned
   size
-  65,
+  66,
   66
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r310-627.0'
   has
+  aligned
   size
-  253,
+  254,
   254
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r498-834.1'
   has
+  aligned
   size
-  129,
+  130,
   130
   matches,
   and

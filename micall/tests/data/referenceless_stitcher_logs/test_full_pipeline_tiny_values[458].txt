@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r292-807.2'
   has
+  aligned
   size
-  345,
+  346,
   346
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  295,
+  296,
   296
   matches,
   and

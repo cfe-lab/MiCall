@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r440-796.1'
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  265,
+  266,
   266
   matches,
   and

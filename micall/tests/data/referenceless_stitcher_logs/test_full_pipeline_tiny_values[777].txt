@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r377-926.1'
   has
+  aligned
   size
-  548,
+  550,
   550
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r276-956.2'
   has
+  aligned
   size
-  441,
+  442,
   442
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r377-926.1'
   has
+  aligned
   size
-  548,
+  550,
   550
   matches,
   and

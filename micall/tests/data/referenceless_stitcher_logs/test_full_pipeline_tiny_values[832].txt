@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r554-981.0'
   has
+  aligned
   size
-  404,
+  405,
   405
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  64,
+  65,
   65
   matches,
   and

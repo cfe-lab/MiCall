@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r182-739.2'
   has
+  aligned
   size
-  556,
+  558,
   558
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r462-910.0'
   has
+  aligned
   size
-  309,
+  310,
   310
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r182-739.2'
   has
+  aligned
   size
-  556,
+  558,
   558
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r294-991.0'
   has
+  aligned
   size
-  221,
+  222,
   222
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  166,
+  167,
   167
   matches,
   and

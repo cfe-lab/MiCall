@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r202-468.0'
   has
+  aligned
   size
-  265,
+  267,
   267
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r105-365.1'
   has
+  aligned
   size
-  259,
+  261,
   261
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r105-365.1'
   has
+  aligned
   size
-  259,
+  261,
   261
   matches,
   and

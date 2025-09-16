@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r564-883.2'
   has
+  aligned
   size
-  32,
+  33,
   33
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r87-596.0'
   has
+  aligned
   size
-  218,
+  219,
   219
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r564-883.2'
   has
+  aligned
   size
-  32,
+  33,
   33
   matches,
   and

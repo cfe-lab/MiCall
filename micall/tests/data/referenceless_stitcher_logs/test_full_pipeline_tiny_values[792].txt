@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r435-950.0'
   has
+  aligned
   size
-  192,
+  193,
   193
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r133-423.1'
   has
+  aligned
   size
-  289,
+  291,
   291
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r133-423.1'
   has
+  aligned
   size
-  289,
+  291,
   291
   matches,
   and

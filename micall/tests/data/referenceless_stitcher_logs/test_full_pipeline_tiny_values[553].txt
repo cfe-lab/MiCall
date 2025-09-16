@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r483-751.0'
   has
+  aligned
   size
-  267,
+  269,
   269
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r465-789.1'
   has
+  aligned
   size
-  266,
+  267,
   267
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r483-751.0'
   has
+  aligned
   size
-  267,
+  269,
   269
   matches,
   and

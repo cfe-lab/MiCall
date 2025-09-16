@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r221-872.2'
   has
+  aligned
   size
-  650,
+  652,
   652
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r639-926.1'
   has
+  aligned
   size
-  260,
+  261,
   261
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r221-872.2'
   has
+  aligned
   size
-  650,
+  652,
   652
   matches,
   and

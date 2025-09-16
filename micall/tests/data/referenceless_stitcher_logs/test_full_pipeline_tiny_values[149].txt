@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r257-705.1'
   has
+  aligned
   size
-  209,
+  210,
   210
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  235,
+  236,
   236
   matches,
   and

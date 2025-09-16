@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r281-954.1'
   has
+  aligned
   size
-  434,
+  435,
   435
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  491,
+  492,
   492
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r225-834.0'
   has
+  aligned
   size
-  608,
+  610,
   610
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r129-837.2'
   has
+  aligned
   size
-  366,
+  367,
   367
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r225-834.0'
   has
+  aligned
   size
-  608,
+  610,
   610
   matches,
   and

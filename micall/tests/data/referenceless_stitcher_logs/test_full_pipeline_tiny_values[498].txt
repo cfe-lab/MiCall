@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r493-960.0'
   has
+  aligned
   size
-  142,
+  143,
   143
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r493-960.0'
   has
+  aligned
   size
-  159,
+  160,
   160
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  245,
+  246,
   246
   matches,
   and

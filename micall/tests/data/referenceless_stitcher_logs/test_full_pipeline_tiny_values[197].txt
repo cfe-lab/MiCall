@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r135-473.1'
   has
+  aligned
   size
-  337,
+  339,
   339
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r552-814.0'
   has
+  aligned
   size
-  77,
+  78,
   78
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r135-473.1'
   has
+  aligned
   size
-  337,
+  339,
   339
   matches,
   and

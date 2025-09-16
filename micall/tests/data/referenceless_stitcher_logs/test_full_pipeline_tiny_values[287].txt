@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r321-711.1'
   has
+  aligned
   size
-  389,
+  391,
   391
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r569-836.0'
   has
+  aligned
   size
-  266,
+  268,
   268
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r569-836.0'
   has
+  aligned
   size
-  266,
+  268,
   268
   matches,
   and

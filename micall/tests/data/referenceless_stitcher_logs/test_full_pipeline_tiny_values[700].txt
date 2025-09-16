@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r170-887.0'
   has
+  aligned
   size
-  400,
+  401,
   401
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r196-680.1'
   has
+  aligned
   size
-  483,
+  485,
   485
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r196-680.1'
   has
+  aligned
   size
-  483,
+  485,
   485
   matches,
   and

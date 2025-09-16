@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r464-972.0'
   has
+  aligned
   size
-  499,
+  500,
   500
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  261,
+  262,
   262
   matches,
   and

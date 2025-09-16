@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r266-604.2'
   has
+  aligned
   size
-  337,
+  339,
   339
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r564-853.0'
   has
+  aligned
   size
-  223,
+  224,
   224
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r266-604.2'
   has
+  aligned
   size
-  337,
+  339,
   339
   matches,
   and

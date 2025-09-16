@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r274-694.0'
   has
+  aligned
   size
-  419,
+  421,
   421
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r255-771.1'
   has
+  aligned
   size
-  285,
+  286,
   286
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r274-694.0'
   has
+  aligned
   size
-  419,
+  421,
   421
   matches,
   and

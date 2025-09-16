@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r143-419.2'
   has
+  aligned
   size
-  275,
+  277,
   277
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r306-570.1'
   has
+  aligned
   size
-  263,
+  265,
   265
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r306-570.1'
   has
+  aligned
   size
-  263,
+  265,
   265
   matches,
   and

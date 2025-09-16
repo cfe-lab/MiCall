@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r59-500.2'
   has
+  aligned
   size
-  440,
+  442,
   442
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r466-812.1'
   has
+  aligned
   size
-  147,
+  148,
   148
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r59-500.2'
   has
+  aligned
   size
-  440,
+  442,
   442
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r389-870.5'
   has
+  aligned
   size
-  81,
+  82,
   82
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r389-870.5'
   has
+  aligned
   size
-  119,
+  120,
   120
   matches,
   and
@@ -165,8 +167,9 @@ BEGIN 12
   and
   'r637-970.0'
   has
+  aligned
   size
-  233,
+  234,
   234
   matches,
   and
@@ -220,8 +223,9 @@ BEGIN 15
   and
   'r480-809.4'
   has
+  aligned
   size
-  328,
+  330,
   330
   matches,
   and
@@ -292,8 +296,9 @@ BEGIN 20
   and
   (3)
   has
+  aligned
   size
-  81,
+  82,
   82
   matches,
   and
@@ -347,8 +352,9 @@ BEGIN 23
   and
   (3)
   has
+  aligned
   size
-  119,
+  120,
   120
   matches,
   and
@@ -402,8 +408,9 @@ BEGIN 26
   and
   'r480-809.4'
   has
+  aligned
   size
-  328,
+  330,
   330
   matches,
   and
@@ -447,8 +454,9 @@ BEGIN 29
   and
   'r664-893.2'
   has
+  aligned
   size
-  228,
+  230,
   230
   matches,
   and
@@ -519,8 +527,9 @@ BEGIN 34
   and
   (5)
   has
+  aligned
   size
-  355,
+  356,
   356
   matches,
   and
@@ -601,8 +610,9 @@ BEGIN 39
   and
   'r480-809.4'
   has
+  aligned
   size
-  328,
+  330,
   330
   matches,
   and
@@ -646,8 +656,9 @@ BEGIN 42
   and
   'r664-893.2'
   has
+  aligned
   size
-  228,
+  230,
   230
   matches,
   and
@@ -718,8 +729,9 @@ BEGIN 47
   and
   'r664-893.2'
   has
+  aligned
   size
-  228,
+  230,
   230
   matches,
   and

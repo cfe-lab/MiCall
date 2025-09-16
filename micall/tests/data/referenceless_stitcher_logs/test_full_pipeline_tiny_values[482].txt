@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r256-599.1'
   has
+  aligned
   size
-  342,
+  344,
   344
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r544-861.0'
   has
+  aligned
   size
-  165,
+  166,
   166
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r256-599.1'
   has
+  aligned
   size
-  342,
+  344,
   344
   matches,
   and

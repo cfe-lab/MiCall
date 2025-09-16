@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r207-702.0'
   has
+  aligned
   size
-  494,
+  496,
   496
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r498-846.2'
   has
+  aligned
   size
-  347,
+  349,
   349
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r498-846.2'
   has
+  aligned
   size
-  347,
+  349,
   349
   matches,
   and

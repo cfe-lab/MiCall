@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r280-861.1'
   has
+  aligned
   size
-  329,
+  330,
   330
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r280-861.1'
   has
+  aligned
   size
-  438,
+  439,
   439
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  356,
+  357,
   357
   matches,
   and

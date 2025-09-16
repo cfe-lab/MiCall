@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r319-859.1'
   has
+  aligned
   size
-  307,
+  308,
   308
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r165-581.0'
   has
+  aligned
   size
-  415,
+  417,
   417
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r165-581.0'
   has
+  aligned
   size
-  415,
+  417,
   417
   matches,
   and

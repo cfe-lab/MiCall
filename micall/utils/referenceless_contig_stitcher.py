@@ -677,7 +677,7 @@ def try_combine_contigs(
             events.DeterminedOverlap(
                 left.unique_name,
                 right.unique_name,
-                result_length - is_covered - 1,
+                result_length,
                 number_of_matches,
                 relative_score,
             )

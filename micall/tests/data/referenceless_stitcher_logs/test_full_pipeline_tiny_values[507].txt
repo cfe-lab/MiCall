@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r248-734.0'
   has
+  aligned
   size
-  485,
+  487,
   487
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r141-761.2'
   has
+  aligned
   size
-  464,
+  465,
   465
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r248-734.0'
   has
+  aligned
   size
-  485,
+  487,
   487
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r385-859.0'
   has
+  aligned
   size
-  284,
+  285,
   285
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r341-801.2'
   has
+  aligned
   size
-  328,
+  329,
   329
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r385-859.0'
   has
+  aligned
   size
-  416,
+  417,
   417
   matches,
   and

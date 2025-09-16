@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r46-480.2'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r397-798.1'
   has
+  aligned
   size
-  279,
+  280,
   280
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r46-480.2'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r286-670.2'
   has
+  aligned
   size
-  338,
+  339,
   339
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  0,
+  1,
   1
   matches,
   and

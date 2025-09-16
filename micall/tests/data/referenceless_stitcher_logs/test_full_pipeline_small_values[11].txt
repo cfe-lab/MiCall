@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r476-910.1'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r463-952.0'
   has
+  aligned
   size
-  352,
+  353,
   353
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r476-910.1'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and
@@ -227,8 +230,9 @@ BEGIN 17
   and
   (1)
   has
+  aligned
   size
-  34,
+  35,
   35
   matches,
   and
@@ -309,8 +313,9 @@ BEGIN 22
   and
   'r476-910.1'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   (2)
   has
+  aligned
   size
-  247,
+  248,
   248
   matches,
   and
@@ -436,8 +442,9 @@ BEGIN 30
   and
   'r476-910.1'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and
@@ -481,8 +488,9 @@ BEGIN 33
   and
   (3)
   has
+  aligned
   size
-  204,
+  205,
   205
   matches,
   and
@@ -563,8 +571,9 @@ BEGIN 38
   and
   'r476-910.1'
   has
+  aligned
   size
-  433,
+  435,
   435
   matches,
   and

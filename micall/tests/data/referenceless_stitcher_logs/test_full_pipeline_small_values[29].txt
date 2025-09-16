@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r402-817.4'
   has
+  aligned
   size
-  414,
+  416,
   416
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r522-901.3'
   has
+  aligned
   size
-  341,
+  342,
   342
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r402-817.4'
   has
+  aligned
   size
-  414,
+  416,
   416
   matches,
   and
@@ -227,8 +230,9 @@ BEGIN 17
   and
   (1)
   has
+  aligned
   size
-  188,
+  189,
   189
   matches,
   and
@@ -282,8 +286,9 @@ BEGIN 20
   and
   'r561-802.0'
   has
+  aligned
   size
-  240,
+  242,
   242
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   'r402-817.4'
   has
+  aligned
   size
-  414,
+  416,
   416
   matches,
   and
@@ -399,8 +405,9 @@ BEGIN 28
   and
   'r561-802.0'
   has
+  aligned
   size
-  240,
+  242,
   242
   matches,
   and
@@ -444,8 +451,9 @@ BEGIN 31
   and
   (2)
   has
+  aligned
   size
-  2,
+  3,
   3
   matches,
   and
@@ -526,8 +534,9 @@ BEGIN 36
   and
   'r402-817.4'
   has
+  aligned
   size
-  414,
+  416,
   416
   matches,
   and
@@ -571,8 +580,9 @@ BEGIN 39
   and
   'r561-802.0'
   has
+  aligned
   size
-  240,
+  242,
   242
   matches,
   and
@@ -643,8 +653,9 @@ BEGIN 44
   and
   'r561-802.0'
   has
+  aligned
   size
-  240,
+  242,
   242
   matches,
   and

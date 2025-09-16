@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r203-804.0'
   has
+  aligned
   size
-  343,
+  344,
   344
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r508-801.1'
   has
+  aligned
   size
-  292,
+  294,
   294
   matches,
   and

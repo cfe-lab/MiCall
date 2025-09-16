@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r514-954.4'
   has
+  aligned
   size
-  439,
+  441,
   441
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r6-382.3'
   has
+  aligned
   size
-  1,
+  2,
   2
   matches,
   and
@@ -155,8 +157,9 @@ BEGIN 12
   and
   'r474-990.0'
   has
+  aligned
   size
-  247,
+  248,
   248
   matches,
   and
@@ -237,8 +240,9 @@ BEGIN 17
   and
   'r514-954.4'
   has
+  aligned
   size
-  439,
+  441,
   441
   matches,
   and
@@ -282,8 +286,9 @@ BEGIN 20
   and
   'r6-382.3'
   has
+  aligned
   size
-  1,
+  2,
   2
   matches,
   and
@@ -337,8 +342,9 @@ BEGIN 23
   and
   (2)
   has
+  aligned
   size
-  74,
+  75,
   75
   matches,
   and
@@ -419,8 +425,9 @@ BEGIN 28
   and
   'r514-954.4'
   has
+  aligned
   size
-  439,
+  441,
   441
   matches,
   and
@@ -464,8 +471,9 @@ BEGIN 31
   and
   (4)
   has
+  aligned
   size
-  300,
+  301,
   301
   matches,
   and
@@ -546,8 +554,9 @@ BEGIN 36
   and
   'r514-954.4'
   has
+  aligned
   size
-  439,
+  441,
   441
   matches,
   and
@@ -591,8 +600,9 @@ BEGIN 39
   and
   'r141-439.2'
   has
+  aligned
   size
-  297,
+  299,
   299
   matches,
   and
@@ -663,8 +673,9 @@ BEGIN 44
   and
   'r141-439.2'
   has
+  aligned
   size
-  297,
+  299,
   299
   matches,
   and

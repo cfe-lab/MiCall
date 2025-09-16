@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r186-600.0'
   has
+  aligned
   size
-  413,
+  415,
   415
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r370-775.2'
   has
+  aligned
   size
-  345,
+  346,
   346
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r186-600.0'
   has
+  aligned
   size
-  413,
+  415,
   415
   matches,
   and

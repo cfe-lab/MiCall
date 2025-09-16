@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r36-371.0'
   has
+  aligned
   size
-  334,
+  336,
   336
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r238-541.2'
   has
+  aligned
   size
-  302,
+  304,
   304
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r238-541.2'
   has
+  aligned
   size
-  302,
+  304,
   304
   matches,
   and

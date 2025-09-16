@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r19-433.0'
   has
+  aligned
   size
-  413,
+  415,
   415
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r135-488.2'
   has
+  aligned
   size
-  317,
+  318,
   318
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r19-433.0'
   has
+  aligned
   size
-  413,
+  415,
   415
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r157-615.2'
   has
+  aligned
   size
-  457,
+  459,
   459
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r326-650.1'
   has
+  aligned
   size
-  295,
+  296,
   296
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r157-615.2'
   has
+  aligned
   size
-  457,
+  459,
   459
   matches,
   and

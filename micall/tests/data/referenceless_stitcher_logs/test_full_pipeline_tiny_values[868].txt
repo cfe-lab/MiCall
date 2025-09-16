@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r411-741.0'
   has
+  aligned
   size
-  329,
+  331,
   331
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r523-785.2'
   has
+  aligned
   size
-  261,
+  263,
   263
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r523-785.2'
   has
+  aligned
   size
-  261,
+  263,
   263
   matches,
   and

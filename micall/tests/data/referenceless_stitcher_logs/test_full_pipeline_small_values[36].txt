@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r21-628.1'
   has
+  aligned
   size
-  439,
+  440,
   440
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r253-593.5'
   has
+  aligned
   size
-  339,
+  341,
   341
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r642-935.4'
   has
+  aligned
   size
-  0,
+  1,
   1
   matches,
   and
@@ -237,8 +240,9 @@ BEGIN 17
   and
   'r291-534.2'
   has
+  aligned
   size
-  242,
+  244,
   244
   matches,
   and
@@ -282,8 +286,9 @@ BEGIN 20
   and
   'r336-568.0'
   has
+  aligned
   size
-  231,
+  233,
   233
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   'r253-593.5'
   has
+  aligned
   size
-  339,
+  341,
   341
   matches,
   and
@@ -399,8 +405,9 @@ BEGIN 28
   and
   'r291-534.2'
   has
+  aligned
   size
-  242,
+  244,
   244
   matches,
   and
@@ -444,8 +451,9 @@ BEGIN 31
   and
   'r336-568.0'
   has
+  aligned
   size
-  231,
+  233,
   233
   matches,
   and
@@ -516,8 +524,9 @@ BEGIN 36
   and
   'r291-534.2'
   has
+  aligned
   size
-  242,
+  244,
   244
   matches,
   and
@@ -561,8 +570,9 @@ BEGIN 39
   and
   'r336-568.0'
   has
+  aligned
   size
-  231,
+  233,
   233
   matches,
   and
@@ -633,8 +643,9 @@ BEGIN 44
   and
   'r336-568.0'
   has
+  aligned
   size
-  231,
+  233,
   233
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r348-873.0'
   has
+  aligned
   size
-  412,
+  413,
   413
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  359,
+  360,
   360
   matches,
   and

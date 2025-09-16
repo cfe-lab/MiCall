@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r235-743.0'
   has
+  aligned
   size
-  507,
+  509,
   509
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r331-815.1'
   has
+  aligned
   size
-  442,
+  443,
   443
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r235-743.0'
   has
+  aligned
   size
-  507,
+  509,
   509
   matches,
   and

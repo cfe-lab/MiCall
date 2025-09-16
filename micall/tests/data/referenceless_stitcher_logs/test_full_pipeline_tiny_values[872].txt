@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r488-810.0'
   has
+  aligned
   size
-  321,
+  323,
   323
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r393-868.1'
   has
+  aligned
   size
-  98,
+  99,
   99
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r488-810.0'
   has
+  aligned
   size
-  321,
+  323,
   323
   matches,
   and

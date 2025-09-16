@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r476-926.1'
   has
+  aligned
   size
-  10,
+  11,
   11
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r476-926.1'
   has
+  aligned
   size
-  25,
+  26,
   26
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  329,
+  330,
   330
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r577-925.1'
   has
+  aligned
   size
-  302,
+  303,
   303
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  131,
+  132,
   132
   matches,
   and

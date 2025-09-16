@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r508-980.2'
   has
+  aligned
   size
-  441,
+  442,
   442
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  267,
+  268,
   268
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r228-881.1'
   has
+  aligned
   size
-  565,
+  566,
   566
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  200,
+  201,
   201
   matches,
   and

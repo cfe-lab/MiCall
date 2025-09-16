@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r199-834.0'
   has
+  aligned
   size
-  586,
+  587,
   587
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  223,
+  224,
   224
   matches,
   and

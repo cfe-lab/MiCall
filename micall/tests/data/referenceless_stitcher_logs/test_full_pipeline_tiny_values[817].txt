@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r256-849.2'
   has
+  aligned
   size
-  440,
+  441,
   441
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r327-758.1'
   has
+  aligned
   size
-  430,
+  432,
   432
   matches,
   and

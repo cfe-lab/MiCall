@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r328-972.2'
   has
+  aligned
   size
-  439,
+  440,
   440
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  523,
+  524,
   524
   matches,
   and

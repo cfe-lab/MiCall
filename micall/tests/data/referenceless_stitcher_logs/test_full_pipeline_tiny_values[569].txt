@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r61-485.1'
   has
+  aligned
   size
-  423,
+  425,
   425
   matches,
   and
@@ -262,8 +263,9 @@ BEGIN 22
   and
   'r61-485.1'
   has
+  aligned
   size
-  423,
+  425,
   425
   matches,
   and

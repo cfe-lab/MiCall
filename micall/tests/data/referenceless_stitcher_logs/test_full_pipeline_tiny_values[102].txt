@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r173-711.1'
   has
+  aligned
   size
-  537,
+  539,
   539
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r622-970.2'
   has
+  aligned
   size
-  130,
+  131,
   131
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r173-711.1'
   has
+  aligned
   size
-  537,
+  539,
   539
   matches,
   and

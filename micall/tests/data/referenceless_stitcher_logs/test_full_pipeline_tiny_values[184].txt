@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r341-768.2'
   has
+  aligned
   size
-  426,
+  428,
   428
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r282-540.0'
   has
+  aligned
   size
-  257,
+  259,
   259
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r282-540.0'
   has
+  aligned
   size
-  257,
+  259,
   259
   matches,
   and

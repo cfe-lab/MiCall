@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r220-796.0'
   has
+  aligned
   size
-  209,
+  210,
   210
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r511-805.2'
   has
+  aligned
   size
-  285,
+  286,
   286
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  209,
+  210,
   210
   matches,
   and

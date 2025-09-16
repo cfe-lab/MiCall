@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r362-788.0'
   has
+  aligned
   size
-  425,
+  427,
   427
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r555-949.2'
   has
+  aligned
   size
-  248,
+  249,
   249
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r362-788.0'
   has
+  aligned
   size
-  425,
+  427,
   427
   matches,
   and

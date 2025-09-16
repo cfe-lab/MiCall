@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r506-858.1'
   has
+  aligned
   size
-  351,
+  353,
   353
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r358-919.0'
   has
+  aligned
   size
-  250,
+  251,
   251
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r506-858.1'
   has
+  aligned
   size
-  351,
+  353,
   353
   matches,
   and

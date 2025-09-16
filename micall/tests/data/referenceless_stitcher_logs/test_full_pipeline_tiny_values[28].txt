@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r133-667.1'
   has
+  aligned
   size
-  533,
+  535,
   535
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r182-552.2'
   has
+  aligned
   size
-  369,
+  371,
   371
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r182-552.2'
   has
+  aligned
   size
-  369,
+  371,
   371
   matches,
   and

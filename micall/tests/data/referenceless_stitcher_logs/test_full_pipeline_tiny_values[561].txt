@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r204-562.2'
   has
+  aligned
   size
-  2,
+  3,
   1
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r201-547.0'
   has
+  aligned
   size
-  5,
+  6,
   1
   matches,
   and
@@ -174,8 +176,9 @@ BEGIN 13
   and
   'r201-547.0'
   has
+  aligned
   size
-  345,
+  347,
   341
   matches,
   and

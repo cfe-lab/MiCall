@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r309-970.2'
   has
+  aligned
   size
-  366,
+  367,
   367
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r561-977.0'
   has
+  aligned
   size
-  409,
+  410,
   410
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   (2)
   has
+  aligned
   size
-  366,
+  367,
   367
   matches,
   and

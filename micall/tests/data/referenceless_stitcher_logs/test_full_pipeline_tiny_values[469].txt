@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r305-900.1'
   has
+  aligned
   size
-  594,
+  596,
   596
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r271-932.0'
   has
+  aligned
   size
-  457,
+  458,
   458
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r305-900.1'
   has
+  aligned
   size
-  594,
+  596,
   596
   matches,
   and

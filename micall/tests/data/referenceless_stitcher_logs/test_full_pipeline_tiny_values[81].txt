@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r464-892.0'
   has
+  aligned
   size
-  427,
+  429,
   429
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r393-893.1'
   has
+  aligned
   size
-  101,
+  102,
   102
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r464-892.0'
   has
+  aligned
   size
-  427,
+  429,
   429
   matches,
   and

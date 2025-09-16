@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r253-715.4'
   has
+  aligned
   size
-  369,
+  370,
   370
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r232-624.0'
   has
+  aligned
   size
-  391,
+  393,
   393
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   (1)
   has
+  aligned
   size
-  216,
+  217,
   217
   matches,
   and
@@ -264,8 +267,9 @@ BEGIN 19
   and
   'r232-624.0'
   has
+  aligned
   size
-  391,
+  393,
   393
   matches,
   and
@@ -309,8 +313,9 @@ BEGIN 22
   and
   (2)
   has
+  aligned
   size
-  231,
+  232,
   232
   matches,
   and
@@ -391,8 +396,9 @@ BEGIN 27
   and
   'r232-624.0'
   has
+  aligned
   size
-  391,
+  393,
   393
   matches,
   and
@@ -436,8 +442,9 @@ BEGIN 30
   and
   (3)
   has
+  aligned
   size
-  0,
+  1,
   1
   matches,
   and
@@ -518,8 +525,9 @@ BEGIN 35
   and
   'r232-624.0'
   has
+  aligned
   size
-  391,
+  393,
   393
   matches,
   and

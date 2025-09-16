@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r382-773.0'
   has
+  aligned
   size
-  52,
+  53,
   53
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r141-491.1'
   has
+  aligned
   size
-  293,
+  294,
   294
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r382-773.0'
   has
+  aligned
   size
-  109,
+  110,
   110
   matches,
   and

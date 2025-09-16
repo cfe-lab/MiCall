@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r318-737.2'
   has
+  aligned
   size
-  307,
+  308,
   308
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r423-738.0'
   has
+  aligned
   size
-  314,
+  315,
   315
   matches,
   and

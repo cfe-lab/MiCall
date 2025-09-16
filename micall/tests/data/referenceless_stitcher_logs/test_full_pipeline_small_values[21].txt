@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r187-648.3'
   has
+  aligned
   size
-  398,
+  399,
   399
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  238,
+  239,
   239
   matches,
   and
@@ -237,8 +239,9 @@ BEGIN 17
   and
   'r540-863.4'
   has
+  aligned
   size
-  108,
+  109,
   109
   matches,
   and
@@ -292,8 +295,9 @@ BEGIN 20
   and
   'r490-803.2'
   has
+  aligned
   size
-  158,
+  159,
   159
   matches,
   and
@@ -374,8 +378,9 @@ BEGIN 25
   and
   'r650-997.1'
   has
+  aligned
   size
-  153,
+  154,
   154
   matches,
   and
@@ -429,8 +434,9 @@ BEGIN 28
   and
   'r540-863.4'
   has
+  aligned
   size
-  263,
+  264,
   264
   matches,
   and
@@ -511,8 +517,9 @@ BEGIN 33
   and
   'r650-997.1'
   has
+  aligned
   size
-  213,
+  214,
   214
   matches,
   and

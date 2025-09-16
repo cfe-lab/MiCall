@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r161-531.2'
   has
+  aligned
   size
-  369,
+  371,
   371
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r308-569.0'
   has
+  aligned
   size
-  260,
+  262,
   262
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r308-569.0'
   has
+  aligned
   size
-  260,
+  262,
   262
   matches,
   and

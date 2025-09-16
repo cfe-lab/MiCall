@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r499-858.2'
   has
+  aligned
   size
-  358,
+  360,
   360
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r321-975.1'
   has
+  aligned
   size
-  18,
+  19,
   19
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r499-858.2'
   has
+  aligned
   size
-  358,
+  360,
   360
   matches,
   and

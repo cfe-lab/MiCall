@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r115-709.1'
   has
+  aligned
   size
-  340,
+  341,
   341
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r548-869.5'
   has
+  aligned
   size
-  161,
+  162,
   162
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r402-677.2'
   has
+  aligned
   size
-  274,
+  276,
   276
   matches,
   and
@@ -237,8 +240,9 @@ BEGIN 17
   and
   'r142-402.4'
   has
+  aligned
   size
-  259,
+  261,
   261
   matches,
   and
@@ -309,8 +313,9 @@ BEGIN 22
   and
   'r402-677.2'
   has
+  aligned
   size
-  274,
+  276,
   276
   matches,
   and
@@ -354,8 +359,9 @@ BEGIN 25
   and
   'r142-402.4'
   has
+  aligned
   size
-  259,
+  261,
   261
   matches,
   and
@@ -399,8 +405,9 @@ BEGIN 28
   and
   'r700-925.3'
   has
+  aligned
   size
-  169,
+  170,
   170
   matches,
   and
@@ -481,8 +488,9 @@ BEGIN 33
   and
   'r402-677.2'
   has
+  aligned
   size
-  274,
+  276,
   276
   matches,
   and
@@ -526,8 +534,9 @@ BEGIN 36
   and
   'r142-402.4'
   has
+  aligned
   size
-  259,
+  261,
   261
   matches,
   and
@@ -598,8 +607,9 @@ BEGIN 41
   and
   'r142-402.4'
   has
+  aligned
   size
-  259,
+  261,
   261
   matches,
   and

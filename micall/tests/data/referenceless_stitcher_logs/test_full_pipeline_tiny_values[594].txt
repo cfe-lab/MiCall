@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r197-603.1'
   has
+  aligned
   size
-  405,
+  407,
   407
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r128-623.0'
   has
+  aligned
   size
-  202,
+  203,
   203
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r197-603.1'
   has
+  aligned
   size
-  405,
+  407,
   407
   matches,
   and

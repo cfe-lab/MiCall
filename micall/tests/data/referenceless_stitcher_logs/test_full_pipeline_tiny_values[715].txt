@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r525-818.0'
   has
+  aligned
   size
-  292,
+  294,
   294
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r152-844.1'
   has
+  aligned
   size
-  222,
+  223,
   223
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r525-818.0'
   has
+  aligned
   size
-  292,
+  294,
   294
   matches,
   and

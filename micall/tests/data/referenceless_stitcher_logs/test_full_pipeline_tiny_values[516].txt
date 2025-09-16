@@ -73,8 +73,9 @@ BEGIN 7
   and
   'r282-548.2'
   has
+  aligned
   size
-  76,
+  77,
   77
   matches,
   and
@@ -155,8 +156,9 @@ BEGIN 12
   and
   'r367-651.1'
   has
+  aligned
   size
-  181,
+  182,
   182
   matches,
   and

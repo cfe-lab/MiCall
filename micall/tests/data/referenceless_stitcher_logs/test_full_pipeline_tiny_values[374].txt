@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r339-673.0'
   has
+  aligned
   size
-  333,
+  335,
   335
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r245-887.2'
   has
+  aligned
   size
-  216,
+  217,
   217
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r339-673.0'
   has
+  aligned
   size
-  333,
+  335,
   335
   matches,
   and

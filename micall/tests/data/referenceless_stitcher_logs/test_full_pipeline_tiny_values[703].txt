@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r255-723.2'
   has
+  aligned
   size
-  402,
+  403,
   403
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  310,
+  311,
   311
   matches,
   and

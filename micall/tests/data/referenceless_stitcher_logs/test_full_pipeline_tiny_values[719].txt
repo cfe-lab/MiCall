@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r520-918.0'
   has
+  aligned
   size
-  397,
+  399,
   399
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r417-802.2'
   has
+  aligned
   size
-  384,
+  386,
   386
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r417-802.2'
   has
+  aligned
   size
-  384,
+  386,
   386
   matches,
   and

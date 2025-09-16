@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r594-949.0'
   has
+  aligned
   size
-  249,
+  250,
   250
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  185,
+  186,
   186
   matches,
   and

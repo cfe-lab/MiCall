@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r259-549.0'
   has
+  aligned
   size
-  289,
+  291,
   291
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r100-550.2'
   has
+  aligned
   size
-  246,
+  247,
   247
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r259-549.0'
   has
+  aligned
   size
-  289,
+  291,
   291
   matches,
   and

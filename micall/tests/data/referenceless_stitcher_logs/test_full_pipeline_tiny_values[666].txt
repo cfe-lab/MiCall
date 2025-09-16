@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r444-844.0'
   has
+  aligned
   size
-  1,
+  2,
   0
   matches,
   and
@@ -92,8 +93,9 @@ BEGIN 8
   and
   'r512-774.1'
   has
+  aligned
   size
-  261,
+  263,
   263
   matches,
   and
@@ -164,8 +166,9 @@ BEGIN 13
   and
   'r444-844.0'
   has
+  aligned
   size
-  1,
+  2,
   0
   matches,
   and
@@ -282,8 +285,9 @@ BEGIN 23
   and
   'r444-844.0'
   has
+  aligned
   size
-  1,
+  2,
   0
   matches,
   and

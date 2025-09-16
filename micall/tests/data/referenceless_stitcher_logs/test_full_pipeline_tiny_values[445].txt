@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r414-967.1'
   has
+  aligned
   size
-  237,
+  238,
   238
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  232,
+  233,
   233
   matches,
   and

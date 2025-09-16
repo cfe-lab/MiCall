@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r399-860.2'
   has
+  aligned
   size
-  460,
+  462,
   462
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r450-781.1'
   has
+  aligned
   size
-  330,
+  332,
   332
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r450-781.1'
   has
+  aligned
   size
-  330,
+  332,
   332
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r428-941.1'
   has
+  aligned
   size
-  512,
+  514,
   514
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r258-956.0'
   has
+  aligned
   size
-  257,
+  258,
   258
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r428-941.1'
   has
+  aligned
   size
-  512,
+  514,
   514
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r391-892.0'
   has
+  aligned
   size
-  394,
+  395,
   395
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  333,
+  334,
   334
   matches,
   and

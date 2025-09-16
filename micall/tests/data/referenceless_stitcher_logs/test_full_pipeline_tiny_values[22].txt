@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r143-522.0'
   has
+  aligned
   size
-  378,
+  380,
   380
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r457-806.2'
   has
+  aligned
   size
-  135,
+  136,
   136
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r143-522.0'
   has
+  aligned
   size
-  378,
+  380,
   380
   matches,
   and

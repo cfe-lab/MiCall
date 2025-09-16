@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r421-884.2'
   has
+  aligned
   size
-  445,
+  446,
   446
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   (1)
   has
+  aligned
   size
-  175,
+  176,
   176
   matches,
   and

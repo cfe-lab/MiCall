@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r469-988.1'
   has
+  aligned
   size
-  72,
+  73,
   73
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r564-920.0'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and
@@ -182,8 +184,9 @@ BEGIN 14
   and
   'r564-920.0'
   has
+  aligned
   size
-  355,
+  357,
   357
   matches,
   and

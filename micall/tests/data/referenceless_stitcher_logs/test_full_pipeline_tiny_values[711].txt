@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r232-707.1'
   has
+  aligned
   size
-  474,
+  476,
   476
   matches,
   and
@@ -100,8 +101,9 @@ BEGIN 9
   and
   'r435-870.0'
   has
+  aligned
   size
-  434,
+  436,
   436
   matches,
   and
@@ -172,8 +174,9 @@ BEGIN 14
   and
   'r435-870.0'
   has
+  aligned
   size
-  434,
+  436,
   436
   matches,
   and

@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r388-886.0'
   has
+  aligned
   size
-  212,
+  213,
   213
   matches,
   and
@@ -110,8 +111,9 @@ BEGIN 9
   and
   'r184-640.2'
   has
+  aligned
   size
-  416,
+  417,
   417
   matches,
   and
@@ -192,8 +194,9 @@ BEGIN 14
   and
   'r388-886.0'
   has
+  aligned
   size
-  252,
+  253,
   253
   matches,
   and

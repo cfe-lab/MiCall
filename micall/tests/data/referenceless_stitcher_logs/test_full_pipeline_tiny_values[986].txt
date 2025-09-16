@@ -55,8 +55,9 @@ BEGIN 6
   and
   'r123-874.0'
   has
+  aligned
   size
-  502,
+  503,
   503
   matches,
   and
@@ -137,8 +138,9 @@ BEGIN 11
   and
   'r370-719.1'
   has
+  aligned
   size
-  348,
+  350,
   350
   matches,
   and
