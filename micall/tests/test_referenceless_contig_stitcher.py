@@ -300,7 +300,7 @@ class TestPool:
     def test_pool_empty_creation(self):
         """Test creating an empty pool with specified capacity."""
         capacity = 5
-        pool = Pool.empty(capacity)
+        pool = Pool.empty(capacity, ACCEPTABLE_STITCHING_SCORE())
 
         # Check pool structure
         assert pool.ring.capacity == capacity
@@ -311,7 +311,7 @@ class TestPool:
 
     def test_pool_add_single_path(self):
         """Test adding a single path to an empty pool."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Create a test path
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -328,7 +328,7 @@ class TestPool:
 
     def test_pool_add_multiple_paths_different_sequences(self):
         """Test adding multiple paths with different sequences."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Create test paths with different sequences
         contig1 = ContigWithAligner(name="1", seq="ATCG")
@@ -352,7 +352,7 @@ class TestPool:
 
     def test_pool_add_duplicate_sequence_worse_score(self):
         """Test adding a path with duplicate sequence but worse score (should be rejected)."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Create two paths with same sequence but different scores
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -371,7 +371,7 @@ class TestPool:
 
     def test_pool_add_duplicate_sequence_better_score(self):
         """Test adding a path with duplicate sequence but better score (replaces old path with deduplication)."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Create two paths with same sequence but different scores
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -397,7 +397,7 @@ class TestPool:
     def test_pool_capacity_enforcement(self):
         """Test that pool enforces capacity limits through SortedRing."""
         capacity = 2
-        pool = Pool.empty(capacity)
+        pool = Pool.empty(capacity, ACCEPTABLE_STITCHING_SCORE())
 
         # Create paths with different scores
         contig1 = ContigWithAligner(name="1", seq="AAAA")  # Will have score SCORE_NOTHING (lowest)
@@ -420,7 +420,7 @@ class TestPool:
 
     def test_pool_smallest_score_tracking(self):
         """Test that pool correctly tracks the smallest score."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Initially should be ACCEPTABLE_STITCHING_SCORE()
         assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE()
@@ -439,7 +439,7 @@ class TestPool:
 
     def test_pool_min_acceptable_score_property(self):
         """Test that min_acceptable_score property returns smallest_score."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Should initially equal ACCEPTABLE_STITCHING_SCORE()
         assert pool.min_acceptable_score == pool.smallest_score
@@ -454,7 +454,7 @@ class TestPool:
 
     def test_pool_add_path_with_score_nothing(self):
         """Test adding a path with SCORE_NOTHING."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         contig = ContigWithAligner(name="1", seq="ATCG")
         path = ContigsPath.singleton(contig)  # This creates a path with SCORE_NOTHING
@@ -466,7 +466,7 @@ class TestPool:
 
     def test_pool_ring_sorted_by_score(self):
         """Test that paths in the ring are sorted by score."""
-        pool = Pool.empty(5)
+        pool = Pool.empty(5, ACCEPTABLE_STITCHING_SCORE())
 
         # Create paths with different scores
         contigs_and_scores = [
@@ -490,7 +490,7 @@ class TestPool:
 
     def test_pool_existing_mapping_consistency(self):
         """Test that existing mapping stays consistent with ring contents."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Add some paths
         contig1 = ContigWithAligner(name="1", seq="ATCG")
@@ -515,7 +515,7 @@ class TestPool:
 
     def test_pool_add_exactly_equal_scores(self):
         """Test adding paths with exactly equal scores (should reject duplicate)."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Create two paths with same sequence and EXACTLY equal scores
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -534,7 +534,7 @@ class TestPool:
 
     def test_pool_ring_insert_failure_but_existing_updated(self):
         """Test intricate behavior: ring.insert() fails but existing mapping is still updated."""
-        pool = Pool.empty(1)  # Very small capacity
+        pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())  # Very small capacity
 
         # Create paths where ring insertion might fail but scores allow existing update
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -562,7 +562,7 @@ class TestPool:
         """Test Pool behavior with edge case capacities."""
         # Test that Pool.empty() with capacity 0 fails (SortedRing should reject this)
         try:
-            pool = Pool.empty(0)
+            pool = Pool.empty(0, ACCEPTABLE_STITCHING_SCORE())
             # If we get here, the Pool constructor didn't validate capacity
             # Let's test the behavior anyway
             contig = ContigWithAligner(name="1", seq="ATCG")
@@ -576,7 +576,7 @@ class TestPool:
 
     def test_pool_empty_ring_access_edge_case(self):
         """Test potential IndexError when accessing ring[0] on empty ring."""
-        pool = Pool.empty(1)
+        pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())
 
         # Initially ring is empty, so pool.smallest_score should be ACCEPTABLE_STITCHING_SCORE()
         assert pool.smallest_score == ACCEPTABLE_STITCHING_SCORE()
@@ -595,7 +595,7 @@ class TestPool:
 
     def test_pool_existing_mapping_vs_ring_inconsistency(self):
         """Test scenarios where existing mapping and ring contents might become inconsistent."""
-        pool = Pool.empty(2)
+        pool = Pool.empty(2, ACCEPTABLE_STITCHING_SCORE())
 
         # Add paths that will fill the capacity
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -626,7 +626,7 @@ class TestPool:
 
     def test_pool_duplicate_with_marginally_better_score(self):
         """Test duplicate sequence with marginally better score (replaces with deduplication)."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         contig = ContigWithAligner(name="1", seq="ATCG")
         # Create paths with very close but different scores
@@ -647,7 +647,7 @@ class TestPool:
 
     def test_pool_empty_sequence_edge_case(self):
         """Test Pool behavior with empty sequence strings."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Create contig with empty sequence
         contig = ContigWithAligner(name="1", seq="")
@@ -668,7 +668,7 @@ class TestPool:
 
     def test_pool_smallest_score_only_updates_on_successful_ring_insert(self):
         """Test that smallest_score only updates when ring.insert() returns True."""
-        pool = Pool.empty(1)
+        pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())
 
         # Add a path that will succeed
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -689,7 +689,7 @@ class TestPool:
 
     def test_pool_capacity_one_detailed_behavior(self):
         """Test detailed behavior with capacity=1 to understand ring/existing interaction."""
-        pool = Pool.empty(1)
+        pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())
 
         # Add first path
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -720,7 +720,7 @@ class TestPool:
 
     def test_pool_deduplication_set_consistency(self):
         """Test set management during deduplication."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Add initial path
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -743,7 +743,7 @@ class TestPool:
     def test_pool_existing_mapping_comprehensive_tracking(self):
         """Test that existing mapping comprehensively tracks all sequences for deduplication."""
         # Create a small pool that will be full
-        pool = Pool.empty(1)
+        pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())
 
         # Fill the pool to capacity
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -773,7 +773,7 @@ class TestPool:
 
     def test_pool_set_tracking_during_complex_operations(self):
         """Test that set correctly tracks sequences during complex add/remove scenarios."""
-        pool = Pool.empty(2)  # Small capacity to force evictions
+        pool = Pool.empty(2, ACCEPTABLE_STITCHING_SCORE())  # Small capacity to force evictions
 
         # Add first path
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -803,7 +803,7 @@ class TestPool:
 
     def test_pool_duplicate_replacement_with_eviction_scenario(self):
         """Test complex scenario: duplicate replacement when at capacity."""
-        pool = Pool.empty(2)
+        pool = Pool.empty(2, ACCEPTABLE_STITCHING_SCORE())
 
         # Fill capacity with two different sequences
         contig1 = ContigWithAligner(name="1", seq="AAAA")
@@ -834,7 +834,7 @@ class TestPool:
 
     def test_pool_empty_ring_smallest_score_bug(self):
         """Test potential IndexError when accessing ring[0] on empty ring."""
-        pool = Pool.empty(1)
+        pool = Pool.empty(1, ACCEPTABLE_STITCHING_SCORE())
 
         # Try to add a path with very low score that ring might reject
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -853,7 +853,7 @@ class TestPool:
 
     def test_pool_deduplication_assert_failure_scenario(self):
         """Test scenario that might trigger the assert to_delete_index >= 0."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Add a path
         contig = ContigWithAligner(name="1", seq="ATCG")
@@ -876,7 +876,7 @@ class TestPool:
 
     def test_pool_set_existing_ring_consistency_invariant(self):
         """Test that set, existing, and ring maintain consistency invariants."""
-        pool = Pool.empty(4)
+        pool = Pool.empty(4, ACCEPTABLE_STITCHING_SCORE())
 
         sequences_to_test = ["AAAA", "BBBB", "CCCC", "DDDD", "EEEE"]
         paths = []
@@ -903,7 +903,7 @@ class TestPool:
 
     def test_pool_deduplication_score_comparison_edge_cases(self):
         """Test edge cases in score comparison for deduplication."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         contig = ContigWithAligner(name="1", seq="ATCG")
 
@@ -928,7 +928,7 @@ class TestPool:
 
     def test_pool_deduplication_multiple_replacements(self):
         """Test multiple consecutive replacements of the same sequence."""
-        pool = Pool.empty(5)
+        pool = Pool.empty(5, ACCEPTABLE_STITCHING_SCORE())
 
         contig = ContigWithAligner(name="1", seq="ATCG")
         scores = [5.0, 10.0, 15.0, 8.0, 25.0, 3.0, 30.0]  # Mix of better and worse scores
@@ -958,7 +958,7 @@ class TestPool:
 
     def test_pool_deduplication_with_different_sequence_interleaved(self):
         """Test deduplication behavior when adding different sequences between duplicates."""
-        pool = Pool.empty(3)
+        pool = Pool.empty(3, ACCEPTABLE_STITCHING_SCORE())
 
         # Add initial path
         contig1 = ContigWithAligner(name="1", seq="AAAA")
