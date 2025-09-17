@@ -700,7 +700,7 @@ def try_combine_contigs(
 
     if is_debug2:
         log(
-            events.CombinedContings(
+            events.CombinedContigs(
                 left_contig=left.unique_name,
                 right_contig=right.unique_name,
                 result_contig=result_contig.unique_name,

@@ -106,7 +106,7 @@ class Covered:
 
 
 @dataclass(frozen=True)
-class CombinedContings:
+class CombinedContigs:
     left_contig: str
     right_contig: str
     result_contig: str
@@ -148,4 +148,4 @@ class DeterminedOverlap:
 EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,
                   CycleEnd, InitializingSeeds, Starting, Constructed,
                   Loaded, Outputting, InitiallyProduced, Covered,
-                  CombinedContings, CalculatedCutoffs, DeterminedOverlap]
+                  CombinedContigs, CalculatedCutoffs, DeterminedOverlap]
