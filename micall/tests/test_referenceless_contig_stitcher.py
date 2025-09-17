@@ -788,7 +788,7 @@ class TestPool:
          ("AAA" + TTT + "G" * 120 + AAA + "CCC",)),
 
         # Multiple identical duplicates collapse to a single contig
-        ((("XXXXX" + TTT + "YYYYY",) * 3), ("XXXXX" + TTT + "YYYYY",)),
+        ((("XXXXX" + TTT + "YYYYY",) * 9), ("XXXXX" + TTT + "YYYYY",)),
     ],
 )
 def test_stitch_additional_cases(seqs, expected, disable_acceptable_prob_check):
