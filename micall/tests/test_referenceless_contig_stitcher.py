@@ -783,9 +783,9 @@ class TestPool:
         (("XXX" + TTT, TTT + "GGG", "CCC" + AAA, AAA + "DDD"),
          ("XXX" + TTT + "GGG", "CCC" + AAA + "DDD")),
 
-        # # Multi-step chain across three overlaps, requires second-phase (o2_loop)
-        # (("AAA" + TTT, TTT + "B" * 120, "B" * 120 + AAA, AAA + "CCC"),
-        #  ("AAA" + TTT + "B" * 120 + AAA + "CCC",)),
+        # Multi-step chain across three overlaps, requires second-phase (o2_loop)
+        (("AAA" + TTT, TTT + "G" * 120, "G" * 120 + AAA, AAA + "CCC"),
+         ("AAA" + TTT + "G" * 120 + AAA + "CCC",)),
 
         # Multiple identical duplicates collapse to a single contig
         ((("XXXXX" + TTT + "YYYYY",) * 3), ("XXXXX" + TTT + "YYYYY",)),
