@@ -100,8 +100,8 @@ BEGIN 8
   'r655-911.1'
   to
   be
-  (76,
-  333).
+  (75,
+  332).
 END 8
 BEGIN 9
   Overlap

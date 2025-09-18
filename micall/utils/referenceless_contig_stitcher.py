@@ -366,8 +366,8 @@ def cutoffs_left_covered(
     right_cutoff = max((end for start, end in overlap_alignments), default=-1)
     if right_cutoff < 0:
         return (
-            len(right.seq) - abs(shift) + 1,
-            len(right.seq) - abs(shift) + len(left_initial_overlap) + 1,
+            len(right.seq) - abs(shift),
+            len(right.seq) - abs(shift) + len(left_initial_overlap),
         )
     left_cutoff = min((start for start, end in overlap_alignments), default=-1)
     return left_cutoff, right_cutoff
@@ -386,8 +386,8 @@ def cutoffs_right_covered(
     left_cutoff = min((start for start, end in overlap_alignments), default=-1)
     if left_cutoff < 0:
         return (
-            len(left.seq) - abs(shift) + 1,
-            len(left.seq) - abs(shift) + len(right_initial_overlap) + 1,
+            len(left.seq) - abs(shift),
+            len(left.seq) - abs(shift) + len(right_initial_overlap),
         )
     right_cutoff = max((end for start, end in overlap_alignments), default=-1)
     return left_cutoff, right_cutoff

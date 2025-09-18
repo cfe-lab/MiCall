@@ -109,7 +109,13 @@ AAA = 40 * 'A'
         # Correct result: keep only the bigger left contig.
         (( 'C' * 80 + 'Z' + 'A' * 120,
            'A' * 120 ),
-         ( 'C' * 80 + 'Z' + 'A' * 120 ,)),         
+         ( 'C' * 80 + 'Z' + 'A' * 120 ,)),
+
+        # Right-covered: left has junk + 'Z' + perfect middle that covers right.
+        # Correct result: keep only the bigger left contig.
+        (( 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,
+           'A' * 120 ),
+         ( 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,)),
     ],
 )
 def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check, force_failing_map_overlap):

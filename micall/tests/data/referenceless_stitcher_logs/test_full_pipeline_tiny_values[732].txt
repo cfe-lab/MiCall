@@ -44,8 +44,8 @@ BEGIN 5
   'r678-994.0'
   to
   be
-  (58,
-  375).
+  (57,
+  374).
 END 5
 BEGIN 6
   Overlap
@@ -58,13 +58,13 @@ BEGIN 6
   aligned
   size
   422,
-  211
+  210
   matches,
   and
   the
   score
   of
-  18905.763052124294.
+  18630.770854205322.
 END 6
 BEGIN 7
   Contig
