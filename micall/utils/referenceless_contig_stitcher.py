@@ -27,7 +27,7 @@ from micall.utils.overlap_stitcher import (
 from .referenceless_contig_stitcher_pool import Pool
 import micall.utils.referenceless_contig_stitcher_events as events
 from micall.utils.referenceless_contig_path import ContigsPath
-from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
+from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
 from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 
 
@@ -361,7 +361,7 @@ def cutoffs_left_covered(
     left_initial_overlap: str,
 ) -> Tuple[int, int]:
     overlap_alignments = tuple(
-        right.map_overlap(minimum_score, "cover", left_initial_overlap)
+        map_overlap(right, minimum_score, "cover", left_initial_overlap)
     )
     right_cutoff = max((end for start, end in overlap_alignments), default=-1)
     if right_cutoff < 0:
@@ -381,7 +381,7 @@ def cutoffs_right_covered(
     right_initial_overlap: str,
 ) -> Tuple[int, int]:
     overlap_alignments = tuple(
-        left.map_overlap(minimum_score, "cover", right_initial_overlap)
+        map_overlap(left, minimum_score, "cover", right_initial_overlap)
     )
     left_cutoff = min((start for start, end in overlap_alignments), default=-1)
     if left_cutoff < 0:
@@ -400,14 +400,14 @@ def cutoffs_left_shorter(
     left_initial_overlap: str,
     right_initial_overlap: str,
 ) -> Optional[Tuple[int, int]]:
-    left_overlap_alignments = left.map_overlap(
-        minimum_score, "left", right_initial_overlap
+    left_overlap_alignments = map_overlap(
+        left, minimum_score, "left", right_initial_overlap
     )
     left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
     if left_cutoff < 0:
         return None
-    right_overlap_alignments = right.map_overlap(
-        minimum_score, "right", left_initial_overlap
+    right_overlap_alignments = map_overlap(
+        right, minimum_score, "right", left_initial_overlap
     )
     right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
     if right_cutoff < 0:
@@ -422,14 +422,14 @@ def cutoffs_right_shorter_or_equal(
     left_initial_overlap: str,
     right_initial_overlap: str,
 ) -> Optional[Tuple[int, int]]:
-    right_overlap_alignments = right.map_overlap(
-        minimum_score, "right", left_initial_overlap
+    right_overlap_alignments = map_overlap(
+        right, minimum_score, "right", left_initial_overlap
     )
     right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
     if right_cutoff < 0:
         return None
-    left_overlap_alignments = left.map_overlap(
-        minimum_score, "left", right_initial_overlap
+    left_overlap_alignments = map_overlap(
+        left, minimum_score, "left", right_initial_overlap
     )
     left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
     if left_cutoff < 0:

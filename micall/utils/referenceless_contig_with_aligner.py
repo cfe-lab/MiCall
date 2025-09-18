@@ -100,46 +100,6 @@ class ContigWithAligner(Contig):
     def empty() -> 'ContigWithAligner':
         return ContigWithAligner.make(Contig.empty())
 
-    def map_overlap(self,
-                    minimum_score: Score,
-                    relation: OverlapRelation,
-                    overlap: str,
-                    ) -> Iterator[Tuple[int, int]]:
-
-        if relation == "left":
-            aligner = self.reversed_aligner
-        elif relation == "right":
-            aligner = self.forward_aligner
-        else:
-            aligner = self.mappy_aligner
-        shift = 0
-
-        if relation != "cover":
-            optimistic_number_of_matches = len(overlap)
-            max_length = find_max_overlap_length(M=optimistic_number_of_matches,
-                                                 X=minimum_score,
-                                                 L_high=len(self.seq),
-                                                 )
-
-            assert max_length > 0
-            assert max_length >= len(overlap)
-            assert max_length <= len(self.seq)
-
-            if max_length < len(self.seq):
-                if relation == "left":
-                    seq = self.seq[-max_length:]
-                    shift = len(self.seq) - max_length
-                    aligner = ReversedAligner(seq=seq)
-                elif relation == "right":
-                    seq = self.seq[:max_length]
-                    shift = 0
-                    aligner = ForwardAligner(seq=seq)
-                else:
-                    _x: NoReturn = relation
-
-        for start, end in aligner.map(overlap):
-            yield (start + shift, end + shift)
-
     @cached_property
     def nucleotide_seq(self) -> np.ndarray:
         ret = np.frombuffer(self.seq.encode('utf-8'), dtype='S1')
@@ -176,3 +136,44 @@ class ContigWithAligner(Contig):
             total += method(x, y, mode='full')
 
         return get_overlap_results(total, len(self.seq), len(other.seq))
+
+
+def map_overlap(self: ContigWithAligner,
+                minimum_score: Score,
+                relation: OverlapRelation,
+                overlap: str,
+                ) -> Iterator[Tuple[int, int]]:
+
+    if relation == "left":
+        aligner = self.reversed_aligner
+    elif relation == "right":
+        aligner = self.forward_aligner
+    else:
+        aligner = self.mappy_aligner
+    shift = 0
+
+    if relation != "cover":
+        optimistic_number_of_matches = len(overlap)
+        max_length = find_max_overlap_length(M=optimistic_number_of_matches,
+                                                X=minimum_score,
+                                                L_high=len(self.seq),
+                                                )
+
+        assert max_length > 0
+        assert max_length >= len(overlap)
+        assert max_length <= len(self.seq)
+
+        if max_length < len(self.seq):
+            if relation == "left":
+                seq = self.seq[-max_length:]
+                shift = len(self.seq) - max_length
+                aligner = ReversedAligner(seq=seq)
+            elif relation == "right":
+                seq = self.seq[:max_length]
+                shift = 0
+                aligner = ForwardAligner(seq=seq)
+            else:
+                _x: NoReturn = relation
+
+    for start, end in aligner.map(overlap):
+        yield (start + shift, end + shift)
