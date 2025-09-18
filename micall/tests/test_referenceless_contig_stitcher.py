@@ -6,10 +6,11 @@ from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
 
-from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check
+from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check, force_failing_map_overlap
 
 # prevent linter warnings
 assert disable_acceptable_prob_check is not None
+assert force_failing_map_overlap is not None
 
 
 TTT = 40 * 'T'
@@ -103,6 +104,43 @@ def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check):
     contigs = [ContigWithAligner(None, seq) for seq in seqs]
     with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
+    assert consenses == tuple(sorted(expected))
+
+
+@pytest.mark.parametrize(
+    "seqs, expected",
+    [
+        #
+        # Witnesses that exercise the covered-fallback branch.
+        # We tag the *bigger* contig with a 'Z' so we can selectively
+        # force map_overlap(..., mode='cover', ...) to return no hits.
+        #
+
+        # Left-covered: right = perfect prefix match of left, then 'Z' marker, then junk.
+        # Correct result: keep only the bigger right contig.
+        (( 'A' * 120,
+           'A' * 120 + 'Z' + 'G' * 200 ),
+         ( 'A' * 120 + 'Z' + 'G' * 200 ,)),
+
+        # Right-covered (mirror): left has junk + 'Z' + perfect suffix that covers right.
+        # Correct result: keep only the bigger left contig.
+        (( 'C' * 80 + 'Z' + 'A' * 120,
+           'A' * 120 ),
+         ( 'C' * 80 + 'Z' + 'A' * 120 ,)),
+    ],
+)
+def test_stitch_fallback_witnesses(seqs, expected, disable_acceptable_prob_check, force_failing_map_overlap):
+    """
+    These inputs are crafted so that:
+      - one contig is completely covered by the other (so the 'covered' path is taken),
+      - but we *force* the covered-fallback by making map_overlap return no hits
+        only when the bigger contig contains the sentinel 'Z'.
+    Unfixed code: chooses a tail-anchored, off-by-one window -> merge rejected -> FAIL.
+    Fixed code: chooses the correct prefix-anchored window -> merge accepted -> PASS.
+    """
+    contigs = [ContigWithAligner(None, s) for s in seqs]
+    with ReferencelessStitcherContext.fresh():
+        consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
     assert consenses == tuple(sorted(expected))
 
 

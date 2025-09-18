@@ -9,6 +9,8 @@ from Bio.SeqRecord import SeqRecord
 from micall.utils.referenceless_contig_stitcher_events import EventType
 from pathlib import Path
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
+from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
+from micall.utils.referenceless_score import Score
 import micall.utils.registry as registry
 from micall.utils.referenceless_contig_stitcher import \
     referenceless_contig_stitcher_with_ctx, read_contigs
@@ -24,6 +26,28 @@ def load_projects():
 @pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)
+
+
+def failing_map_overlap(
+    self: ContigWithAligner,
+    minimum_score: Score,
+    relation: str,
+    initial_overlap: str,
+) -> Iterator[Tuple[int, int]]:
+    original_map_overlap = map_overlap.__wrapped__  # type: ignore
+
+    # Force fallback ONLY for covered-mode lookups on our sentinel-tagged ("Z") contigs.
+    if relation == "cover" and "Z" in getattr(self, "seq", ""):
+        # Return an empty iterable (no alignments found)
+        yield from ()
+
+    # Defer to the real implementation otherwise.
+    return original_map_overlap(self, minimum_score, relation, initial_overlap)
+
+
+@pytest.fixture
+def force_failing_map_overlap(monkeypatch):
+    monkeypatch.setattr("micall.utils.referenceless_contig_with_aligner.map_overlap", failing_map_overlap)
 
 
 @pytest.fixture
