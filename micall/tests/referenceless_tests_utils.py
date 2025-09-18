@@ -1,7 +1,7 @@
 
 import pytest
 
-from typing import Callable, Tuple, Iterator, AbstractSet
+from typing import Callable, Literal, Tuple, Iterator, AbstractSet
 from collections import defaultdict
 import random
 from Bio import SeqIO, Seq
@@ -28,26 +28,27 @@ def disable_acceptable_prob_check(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)
 
 
+original_map_overlap = map_overlap
+
+
 def failing_map_overlap(
     self: ContigWithAligner,
     minimum_score: Score,
-    relation: str,
+    relation: Literal["left", "right", "cover"],
     initial_overlap: str,
 ) -> Iterator[Tuple[int, int]]:
-    original_map_overlap = map_overlap.__wrapped__  # type: ignore
-
-    # Force fallback ONLY for covered-mode lookups on our sentinel-tagged ("Z") contigs.
-    if relation == "cover" and "Z" in getattr(self, "seq", ""):
+    if "Z" in getattr(self, "seq", ""):
         # Return an empty iterable (no alignments found)
         yield from ()
 
     # Defer to the real implementation otherwise.
-    return original_map_overlap(self, minimum_score, relation, initial_overlap)
+    yield from original_map_overlap(self, minimum_score, relation, initial_overlap)
 
 
 @pytest.fixture
 def force_failing_map_overlap(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_with_aligner.map_overlap", failing_map_overlap)
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.map_overlap", failing_map_overlap)
 
 
 @pytest.fixture

@@ -98,23 +98,6 @@ AAA = 40 * 'A'
         (( 'G' + 'A' * 50 + 'C' * 20 + 'A' * 50,
            'A' * 100 ),
          ( 'G' + 'A' * 50 + 'C' * 20 + 'A' * 100, )),
-    ],
-)
-def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check):
-    contigs = [ContigWithAligner(None, seq) for seq in seqs]
-    with ReferencelessStitcherContext.fresh():
-        consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
-    assert consenses == tuple(sorted(expected))
-
-
-@pytest.mark.parametrize(
-    "seqs, expected",
-    [
-        #
-        # Witnesses that exercise the covered-fallback branch.
-        # We tag the *bigger* contig with a 'Z' so we can selectively
-        # force map_overlap(..., mode='cover', ...) to return no hits.
-        #
 
         # Left-covered: right = perfect prefix match of left, then 'Z' marker, then junk.
         # Correct result: keep only the bigger right contig.
@@ -126,21 +109,13 @@ def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check):
         # Correct result: keep only the bigger left contig.
         (( 'C' * 80 + 'Z' + 'A' * 120,
            'A' * 120 ),
-         ( 'C' * 80 + 'Z' + 'A' * 120 ,)),
+         ( 'C' * 80 + 'Z' + 'A' * 120 ,)),         
     ],
 )
-def test_stitch_fallback_witnesses(seqs, expected, disable_acceptable_prob_check, force_failing_map_overlap):
-    """
-    These inputs are crafted so that:
-      - one contig is completely covered by the other (so the 'covered' path is taken),
-      - but we *force* the covered-fallback by making map_overlap return no hits
-        only when the bigger contig contains the sentinel 'Z'.
-    Unfixed code: chooses a tail-anchored, off-by-one window -> merge rejected -> FAIL.
-    Fixed code: chooses the correct prefix-anchored window -> merge accepted -> PASS.
-    """
-    contigs = [ContigWithAligner(None, s) for s in seqs]
+def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check, force_failing_map_overlap):
+    contigs = [ContigWithAligner(None, seq) for seq in seqs]
     with ReferencelessStitcherContext.fresh():
-        consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
+        consenses = tuple(sorted(contig.seq for contig in stitch_consensus(contigs)))
     assert consenses == tuple(sorted(expected))
 
 
