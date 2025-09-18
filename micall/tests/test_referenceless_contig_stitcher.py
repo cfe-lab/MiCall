@@ -59,6 +59,44 @@ AAA = 40 * 'A'
         (('AAA',), ('AAA',)),
         ((), ()),
 
+        # Left-covered: right = S + (mismatching tail). Correct behavior: keep right only.
+        ((('AC' * 60), ('AC' * 60 + 'G' * 200)), (('AC' * 60 + 'G' * 200),)),
+
+        # Right-covered (mirror image): left has a mismatching head, right is exactly the covered prefix.
+        # Correct behavior: keep left only.
+        ((( 'C' * 200 + 'AC' * 60 ), ('AC' * 60)), (( 'C' * 200 + 'AC' * 60 ),)),
+
+        # Stress the off-by-one when the longer contig is only barely longer:
+        # right = S + 'G'. Correct behavior: keep right.
+        ((('AC' * 60), ('AC' * 60 + 'G')), (('AC' * 60 + 'G'),)),
+
+        # Symmetric "barely longer" case for right-covered:
+        ((( 'G' + 'AC' * 60 ), ('AC' * 60)), (( 'G' + 'AC' * 60 ),)),
+
+        # 1) Left is covered by right, but right's prefix has a 1-bp insertion that
+        #    requires a gap to align (so map_overlap finds nothing; fallback is used).
+        #    Correct behavior: keep only the bigger right contig.
+        (( 'A' * 150,
+           'A' * 75 + 'G' + 'A' * 75 + 'C' * 30 ),
+         ( 'A' * 75 + 'G' + 'A' * 75 + 'C' * 30, )),
+
+        # 2) Mirror of (1): right is covered by left, but left's suffix has a 1-bp insertion.
+        #    Correct behavior: keep only the bigger left contig.
+        (( 'C' * 30 + 'A' * 75 + 'G' + 'A' * 75,
+           'A' * 150 ),
+         ( 'C' * 30 + 'A' * 75 + 'G' + 'A' * 75, )),
+
+        # 3) "Barely longer" variant (tight threshold): still covered with a single insertion.
+        #    Correct behavior: keep only the bigger right contig.
+        (( 'A' * 100,
+           'A' * 50 + 'G' + 'A' * 50 ),
+         ( 'A' * 50 + 'G' + 'A' * 50, )),
+
+        # 4) Mirror of (3): right covered by left with a single insertion near the end.
+        #    Correct behavior: keep only the bigger left contig.
+        (( 'G' + 'A' * 50 + 'C' * 20 + 'A' * 50,
+           'A' * 100 ),
+         ( 'G' + 'A' * 50 + 'C' * 20 + 'A' * 100, )),
     ],
 )
 def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check):
