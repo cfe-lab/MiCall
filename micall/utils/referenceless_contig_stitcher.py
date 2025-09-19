@@ -9,7 +9,6 @@ from typing import (
     Sequence,
     TextIO,
     MutableMapping,
-    Set,
 )
 
 from Bio import Seq, SeqIO
@@ -174,8 +173,7 @@ def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
 def get_overlap(
     left: ContigWithAligner,
     right: ContigWithAligner,
-    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
-    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
 ) -> Optional[Overlap]:
     """Return the best overlap placement between two contigs, if any.
 
@@ -188,15 +186,12 @@ def get_overlap(
         return None
 
     key = (left.id, right.id)
-    if key in get_overlap_negative:
-        return None
-    cached = get_overlap_cache.get(key)
-    if cached is not None:
-        return cached
+    if key in get_overlap_cache:
+        return get_overlap_cache[key]
 
     shift, _ = left.find_maximum_overlap(right)
     if shift == 0:
-        get_overlap_negative.add(key)
+        get_overlap_cache[key] = None
         return None
 
     size = compute_overlap_size(len(left.seq), len(right.seq), shift)
@@ -241,8 +236,7 @@ def precheck_and_prepare_overlap(
     a: ContigWithAligner,
     b: ContigWithAligner,
     minimum_base_score: Score,
-    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
-    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
 ) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, int, str, str, Overlap]]:
     """
     Run early-bound checks and prepare normalized overlap windows.
@@ -256,7 +250,7 @@ def precheck_and_prepare_overlap(
         return None
 
     # Identify best overlap placement.
-    overlap = get_overlap(a, b, get_overlap_cache, get_overlap_negative)
+    overlap = get_overlap(a, b, get_overlap_cache)
     if overlap is None:
         return None
 
@@ -460,8 +454,7 @@ def find_overlap_cutoffs(
     shift: int,
     left_initial_overlap: str,
     right_initial_overlap: str,
-    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
-    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
 ) -> CutoffsCacheResult:
     """Locate cutoffs delimiting the high-confidence overlap region.
 
@@ -471,8 +464,8 @@ def find_overlap_cutoffs(
 
     Caching:
         Results are cached per (left.id, right.id). When no valid overlap region
-        is possible for the given pair (under `minimum_score`), a negative entry
-        is recorded and None is returned on subsequent calls.
+        is possible for the given pair (under `minimum_score`), a None entry is
+        recorded and None is returned on subsequent calls.
 
     Returns:
         Tuple (left_cutoff, right_cutoff) on success, or None if no valid
@@ -480,19 +473,13 @@ def find_overlap_cutoffs(
     """
     key = (left.id, right.id)
 
-    if key in cutoffs_negative:
-        return None
-    existing = cutoffs_cache.get(key)
-    if existing is not None:
-        return existing
+    if key in cutoffs_cache:
+        return cutoffs_cache[key]
 
     value = compute_overlap_cutoffs(
         minimum_score, left, right, shift, left_initial_overlap, right_initial_overlap
     )
-    if value is None:
-        cutoffs_negative.add(key)
-    else:
-        cutoffs_cache[key] = value
+    cutoffs_cache[key] = value
     return value
 
 
@@ -606,10 +593,8 @@ def try_combine_contigs(
     pool: Pool,
     a: ContigWithAligner,
     b: ContigWithAligner,
-    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
-    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
-    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
-    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[Tuple[ContigWithAligner, Score]]:
     """Attempt to combine two contigs respecting the pool's score threshold.
@@ -625,13 +610,11 @@ def try_combine_contigs(
         current_score, pool.min_acceptable_score
     )
 
-    # Prechecks and preparation (no events emitted here).
-    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score, get_overlap_cache, get_overlap_negative)
+    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score, get_overlap_cache)
     if prepared is None:
         return None
     left, right, shift, left_initial_overlap, right_initial_overlap, overlap = prepared
 
-    # Determine refined cutoffs within the initial windows.
     cutoffs = find_overlap_cutoffs(
         minimum_base_score,
         left,
@@ -640,7 +623,6 @@ def try_combine_contigs(
         left_initial_overlap,
         right_initial_overlap,
         cutoffs_cache,
-        cutoffs_negative,
     )
 
     if is_debug2:
@@ -655,7 +637,6 @@ def try_combine_contigs(
 
     left_cutoff, right_cutoff = cutoffs
 
-    # Covered-contig short-circuit: if one contig is fully covered by the overlap.
     is_covered, covered, bigger = coverage_flags(left, right, overlap.size)
 
     (
@@ -694,7 +675,6 @@ def try_combine_contigs(
             log(events.Covered(left.unique_name, right.unique_name))
         return (bigger, SCORE_EPSILON)
 
-    # Merge by concordance position to produce the combined contig.
     result_seq, overlap_size = merge_by_concordance(
         aligned_1, aligned_2, left_remainder, right_remainder
     )
@@ -717,10 +697,8 @@ def extend_by_1(
     pool: Pool,
     path: ContigsPath,
     candidate: ContigWithAligner,
-    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
-    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
-    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
-    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[ContigsPath]:
     """
@@ -734,7 +712,7 @@ def extend_by_1(
 
     combination = try_combine_contigs(
         is_debug2, path.score, pool, path.whole, candidate,
-        get_overlap_cache, get_overlap_negative, cutoffs_cache, cutoffs_negative, align_cache
+        get_overlap_cache, cutoffs_cache, align_cache
     )
     if combination is None:
         return None
@@ -756,10 +734,8 @@ def calc_extension(
     pool: Pool,
     contigs: Sequence[ContigWithAligner],
     path: ContigsPath,
-    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
-    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
-    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
-    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
     """
@@ -771,7 +747,7 @@ def calc_extension(
     for contig in contigs:
         new = extend_by_1(
             is_debug2, pool, path, contig,
-            get_overlap_cache, get_overlap_negative, cutoffs_cache, cutoffs_negative, align_cache
+            get_overlap_cache, cutoffs_cache, align_cache
         )
         if new is not None:
             ret = pool.add(new) or ret
@@ -784,10 +760,8 @@ def calc_multiple_extensions(
     pool: Pool,
     paths: Iterable[ContigsPath],
     contigs: Sequence[ContigWithAligner],
-    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
-    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
-    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
-    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
     """
@@ -798,7 +772,7 @@ def calc_multiple_extensions(
     for path in paths:
         ret = calc_extension(
             is_debug2, pool, contigs, path,
-            get_overlap_cache, get_overlap_negative, cutoffs_cache, cutoffs_negative, align_cache
+            get_overlap_cache, cutoffs_cache, align_cache,
         ) or ret
     return ret
 
@@ -814,9 +788,7 @@ def calculate_all_paths(
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
     ctx = ReferencelessStitcherContext.get()
     get_overlap_cache = ctx.get_overlap_cache
-    get_overlap_negative = ctx.get_overlap_negative
     cutoffs_cache = ctx.cutoffs_cache
-    cutoffs_negative = ctx.cutoffs_negative
     align_cache = ctx.align_cache
 
     max_alternatives = intrapolate_number_of_alternatives(len(contigs))
@@ -834,9 +806,7 @@ def calculate_all_paths(
 
         if not calc_multiple_extensions(
             is_debug2, pool, pool.ring, contigs,
-            get_overlap_cache, get_overlap_negative,
-            cutoffs_cache, cutoffs_negative,
-            align_cache,
+            get_overlap_cache, cutoffs_cache, align_cache,
         ):
             break
 
@@ -846,71 +816,13 @@ def calculate_all_paths(
     return pool.ring
 
 
-def find_most_probable_path(
-    seeds: Sequence[ContigsPath],
-    contigs: Sequence[ContigWithAligner],
-) -> ContigsPath:
-    """
-    Select the single most probable contig path from seeds extended by contigs.
-    """
-    paths = calculate_all_paths(seeds, contigs)
-    return max(paths, key=ContigsPath.get_score)
-
-
-def contig_size_fun(contig: Contig) -> int:
-    """
-    Sorting key to order contigs by descending sequence length.
-    """
-    return -len(contig.seq)
-
-
-def stitch_consensus_overlaps(
-    contigs: Iterable[ContigWithAligner],
-) -> Iterator[ContigWithAligner]:
-    """
-    Produce a consensus stitching of contigs based on overlaps.
-    Iteratively selects and stitches the most probable contig paths.
-    """
-    remaining = tuple(sorted(contigs, key=contig_size_fun))
-
-    log(events.InitializingSeeds())
-    seeds = tuple(
-        sorted(
-            map(ContigsPath.singleton, remaining),
-            key=lambda path: len(path.whole.seq),
-            reverse=True,
-        )
-    )
-    log(events.Starting(len(seeds)))
-
-    while remaining:
-        most_probable = find_most_probable_path(seeds, remaining)
-        log(events.Constructed(most_probable))
-        yield most_probable.whole
-        remaining = tuple(
-            contig for contig in remaining if not most_probable.has_contig(contig)
-        )
-        seeds = tuple(
-            path
-            for path in seeds
-            if most_probable.contigs_ids.isdisjoint(path.contigs_ids)
-        )
-        log(events.Remove(len(most_probable.contigs_ids), len(remaining)))
-        if len(most_probable.contains_contigs_ids) == 1:
-            log(events.GiveUp())
-            yield from remaining
-            return
-
-
 def try_combine_1(
     contigs: Iterable[ContigWithAligner],
 ) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, ContigWithAligner]]:
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
     ctx = ReferencelessStitcherContext.get()
     get_overlap_cache = ctx.get_overlap_cache
-    get_overlap_negative = ctx.get_overlap_negative
     cutoffs_cache = ctx.cutoffs_cache
-    cutoffs_negative = ctx.cutoffs_negative
     align_cache = ctx.align_cache
 
     for first in contigs:
@@ -926,9 +838,7 @@ def try_combine_1(
                 a=first,
                 b=second,
                 get_overlap_cache=get_overlap_cache,
-                get_overlap_negative=get_overlap_negative,
                 cutoffs_cache=cutoffs_cache,
-                cutoffs_negative=cutoffs_negative,
                 align_cache=align_cache,
             )
             if result is not None:
@@ -1026,3 +936,59 @@ def referenceless_contig_stitcher(
         if logger.level == logging.DEBUG - 1:
             ctx.is_debug2 = True
         return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
+
+
+def find_most_probable_path(
+    seeds: Sequence[ContigsPath],
+    contigs: Sequence[ContigWithAligner],
+) -> ContigsPath:
+    """
+    Select the single most probable contig path from seeds extended by contigs.
+    """
+    paths = calculate_all_paths(seeds, contigs)
+    return max(paths, key=ContigsPath.get_score)
+
+
+def contig_size_fun(contig: Contig) -> int:
+    """
+    Sorting key to order contigs by descending sequence length.
+    """
+    return -len(contig.seq)
+
+
+def stitch_consensus_overlaps(
+    contigs: Iterable[ContigWithAligner],
+) -> Iterator[ContigWithAligner]:
+    """
+    Produce a consensus stitching of contigs based on overlaps.
+    Iteratively selects and stitches the most probable contig paths.
+    """
+    remaining = tuple(sorted(contigs, key=contig_size_fun))
+
+    log(events.InitializingSeeds())
+    seeds = tuple(
+        sorted(
+            map(ContigsPath.singleton, remaining),
+            key=lambda path: len(path.whole.seq),
+            reverse=True,
+        )
+    )
+    log(events.Starting(len(seeds)))
+
+    while remaining:
+        most_probable = find_most_probable_path(seeds, remaining)
+        log(events.Constructed(most_probable))
+        yield most_probable.whole
+        remaining = tuple(
+            contig for contig in remaining if not most_probable.has_contig(contig)
+        )
+        seeds = tuple(
+            path
+            for path in seeds
+            if most_probable.contigs_ids.isdisjoint(path.contigs_ids)
+        )
+        log(events.Remove(len(most_probable.contigs_ids), len(remaining)))
+        if len(most_probable.contains_contigs_ids) == 1:
+            log(events.GiveUp())
+            yield from remaining
+            return

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, TypeVar, Generic, Iterator, Self, Dict, Set, Tuple
+from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
@@ -74,14 +74,14 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
     def __init__(self) -> None:
         # debug flags
         self.is_debug2: bool = False
-        # overlap detection caches: key=(left_id,right_id) -> Overlap
-        self.get_overlap_cache: Dict[Tuple[int, int], Overlap] = {}
-        self.get_overlap_negative: Set[Tuple[int, int]] = set()
+        # per-context caches (moved from module-level globals)
+        # overlap detection cache: key=(left_id,right_id) -> Optional[Overlap]
+        # Overlap type is imported in algorithm module; use Any here to avoid circular import
+        self.get_overlap_cache: Dict[Tuple[int, int], Optional[Overlap]] = {}
         # alignment cache for overlap windows: key=(left_overlap,right_overlap) -> (aligned_left, aligned_right)
         self.align_cache: Dict[Tuple[str, str], Tuple[str, str]] = {}
-        # cutoffs caches: key=(left_id,right_id) -> (left_cutoff,right_cutoff)
-        self.cutoffs_cache: Dict[Tuple[int, int], Tuple[int, int]] = {}
-        self.cutoffs_negative: Set[Tuple[int, int]] = set()
+        # cutoffs cache: key=(left_id,right_id) -> Optional[(left_cutoff,right_cutoff)]
+        self.cutoffs_cache: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {}
         super().__init__()
 
     @staticmethod
