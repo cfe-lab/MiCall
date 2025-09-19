@@ -169,8 +169,6 @@ class Overlap:
 
 # Note: Contig ids are globally unique, so we can use them as cache keys.
 ContigId = int
-GET_OVERLAP_CACHE: MutableMapping[Tuple[ContigId, ContigId], Overlap] = {}
-GET_OVERLAP_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
 
 
 def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
@@ -188,10 +186,15 @@ def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
     return size
 
 
-def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[Overlap]:
+def get_overlap(
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
+    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+) -> Optional[Overlap]:
     """Return the best overlap placement between two contigs, if any.
 
-    Uses an internal cache to avoid repeated expensive overlap calculations.
+    Uses a provided cache to avoid repeated expensive overlap calculations.
 
     Returns:
         Overlap(shift, size) if an overlap was found; otherwise None.
@@ -200,20 +203,20 @@ def get_overlap(left: ContigWithAligner, right: ContigWithAligner) -> Optional[O
         return None
 
     key = (left.id, right.id)
-    if key in GET_OVERLAP_NEGATIVE:
+    if key in get_overlap_negative:
         return None
-    cached = GET_OVERLAP_CACHE.get(key)
+    cached = get_overlap_cache.get(key)
     if cached is not None:
         return cached
 
     shift, _ = left.find_maximum_overlap(right)
     if shift == 0:
-        GET_OVERLAP_NEGATIVE.add(key)
+        get_overlap_negative.add(key)
         return None
 
     size = compute_overlap_size(len(left.seq), len(right.seq), shift)
     ret = Overlap(shift=shift, size=size)
-    GET_OVERLAP_CACHE[key] = ret
+    get_overlap_cache[key] = ret
     return ret
 
 
@@ -229,31 +232,32 @@ def get_minimum_base_score(current: Score, minimum: Score) -> Score:
     return minimum - current
 
 
-ALIGN_CACHE: MutableMapping[Tuple[str, str], Tuple[str, str]] = {}
-
-
-def align_overlaps(left_overlap: str, right_overlap: str) -> Tuple[str, str]:
+def align_overlaps(
+    left_overlap: str,
+    right_overlap: str,
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
+) -> Tuple[str, str]:
     key = (left_overlap, right_overlap)
-    existing = ALIGN_CACHE.get(key)
+    existing = align_cache.get(key)
     if existing is not None:
         return existing
 
     result = align_queries(left_overlap, right_overlap)
-    ALIGN_CACHE[key] = result
+    align_cache[key] = result
     return result
 
 
-# Cutoff cache types and stores
+# Cutoff cache types
 CutoffsCacheResult = Optional[Tuple[int, int]]
 CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
-CUTOFFS_CACHE: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]] = {}
-CUTOFFS_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
 
 
 def precheck_and_prepare_overlap(
     a: ContigWithAligner,
     b: ContigWithAligner,
     minimum_base_score: Score,
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
+    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
 ) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, int, str, str, Overlap]]:
     """
     Run early-bound checks and prepare normalized overlap windows.
@@ -267,7 +271,7 @@ def precheck_and_prepare_overlap(
         return None
 
     # Identify best overlap placement.
-    overlap = get_overlap(a, b)
+    overlap = get_overlap(a, b, get_overlap_cache, get_overlap_negative)
     if overlap is None:
         return None
 
@@ -322,6 +326,7 @@ def compute_alignment_and_score(
     right: ContigWithAligner,
     left_cutoff: int,
     right_cutoff: int,
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Tuple[str, str, str, str, int, int, Score]:
     """Align according to covered/non-covered case and compute overlap score.
 
@@ -331,12 +336,12 @@ def compute_alignment_and_score(
     if is_covered:
         assert covered is not None and bigger is not None
         aligned_1, aligned_2 = align_for_merge_covered(
-            covered, bigger, left_cutoff, right_cutoff
+            covered, bigger, left_cutoff, right_cutoff, align_cache
         )
         left_remainder = right_remainder = ""
     else:
         aligned_1, aligned_2, left_remainder, right_remainder = (
-            align_for_merge_noncovered(left, right, left_cutoff, right_cutoff)
+            align_for_merge_noncovered(left, right, left_cutoff, right_cutoff, align_cache)
         )
 
     result_length, number_of_matches, result_score = score_alignment(
@@ -470,6 +475,8 @@ def find_overlap_cutoffs(
     shift: int,
     left_initial_overlap: str,
     right_initial_overlap: str,
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
+    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
 ) -> CutoffsCacheResult:
     """Locate cutoffs delimiting the high-confidence overlap region.
 
@@ -488,9 +495,9 @@ def find_overlap_cutoffs(
     """
     key = (left.id, right.id)
 
-    if key in CUTOFFS_NEGATIVE:
+    if key in cutoffs_negative:
         return None
-    existing = CUTOFFS_CACHE.get(key)
+    existing = cutoffs_cache.get(key)
     if existing is not None:
         return existing
 
@@ -498,9 +505,9 @@ def find_overlap_cutoffs(
         minimum_score, left, right, shift, left_initial_overlap, right_initial_overlap
     )
     if value is None:
-        CUTOFFS_NEGATIVE.add(key)
+        cutoffs_negative.add(key)
     else:
-        CUTOFFS_CACHE[key] = value
+        cutoffs_cache[key] = value
     return value
 
 
@@ -561,11 +568,12 @@ def align_for_merge_covered(
     bigger: ContigWithAligner,
     left_cutoff: int,
     right_cutoff: int,
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Tuple[str, str]:
     """Align sequences for the covered-contig case."""
     covered_overlap = covered.seq
     bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
-    return align_overlaps(covered_overlap, bigger_overlap)
+    return align_overlaps(covered_overlap, bigger_overlap, align_cache)
 
 
 def align_for_merge_noncovered(
@@ -573,13 +581,14 @@ def align_for_merge_noncovered(
     right: ContigWithAligner,
     left_cutoff: int,
     right_cutoff: int,
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Tuple[str, str, str, str]:
     """Align overlap windows and return alignment plus remainders for merging."""
     left_overlap = left.seq[left_cutoff : left_cutoff + right_cutoff]
     left_remainder = left.seq[:left_cutoff]
     right_overlap = right.seq[:right_cutoff]
     right_remainder = right.seq[right_cutoff:]
-    aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap)
+    aligned_1, aligned_2 = align_overlaps(left_overlap, right_overlap, align_cache)
     return aligned_1, aligned_2, left_remainder, right_remainder
 
 
@@ -612,6 +621,11 @@ def try_combine_contigs(
     pool: Pool,
     a: ContigWithAligner,
     b: ContigWithAligner,
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
+    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
+    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[Tuple[ContigWithAligner, Score]]:
     """Attempt to combine two contigs respecting the pool's score threshold.
 
@@ -627,7 +641,7 @@ def try_combine_contigs(
     )
 
     # Prechecks and preparation (no events emitted here).
-    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score)
+    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score, get_overlap_cache, get_overlap_negative)
     if prepared is None:
         return None
     left, right, shift, left_initial_overlap, right_initial_overlap, overlap = prepared
@@ -640,6 +654,8 @@ def try_combine_contigs(
         shift,
         left_initial_overlap,
         right_initial_overlap,
+        cutoffs_cache,
+        cutoffs_negative,
     )
 
     if is_debug2:
@@ -666,7 +682,7 @@ def try_combine_contigs(
         number_of_matches,
         result_score,
     ) = compute_alignment_and_score(
-        is_covered, covered, bigger, left, right, left_cutoff, right_cutoff
+        is_covered, covered, bigger, left, right, left_cutoff, right_cutoff, align_cache
     )
 
     if is_debug2:
@@ -716,6 +732,11 @@ def extend_by_1(
     pool: Pool,
     path: ContigsPath,
     candidate: ContigWithAligner,
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
+    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
+    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[ContigsPath]:
     """
     Attempt to extend a contig path by one candidate contig.
@@ -727,7 +748,8 @@ def extend_by_1(
         return None
 
     combination = try_combine_contigs(
-        is_debug2, path.score, pool, path.whole, candidate
+        is_debug2, path.score, pool, path.whole, candidate,
+        get_overlap_cache, get_overlap_negative, cutoffs_cache, cutoffs_negative, align_cache
     )
     if combination is None:
         return None
@@ -749,6 +771,11 @@ def calc_extension(
     pool: Pool,
     contigs: Sequence[ContigWithAligner],
     path: ContigsPath,
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
+    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
+    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
     """
     Try to extend a single path with each contig in contigs.
@@ -757,7 +784,10 @@ def calc_extension(
 
     ret = False
     for contig in contigs:
-        new = extend_by_1(is_debug2, pool, path, contig)
+        new = extend_by_1(
+            is_debug2, pool, path, contig,
+            get_overlap_cache, get_overlap_negative, cutoffs_cache, cutoffs_negative, align_cache
+        )
         if new is not None:
             ret = pool.add(new) or ret
 
@@ -769,6 +799,11 @@ def calc_multiple_extensions(
     pool: Pool,
     paths: Iterable[ContigsPath],
     contigs: Sequence[ContigWithAligner],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Overlap],
+    get_overlap_negative: Set[Tuple[ContigId, ContigId]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Tuple[int, int]],
+    cutoffs_negative: Set[Tuple[ContigId, ContigId]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
     """
     Attempt to extend multiple paths with a set of contigs.
@@ -776,7 +811,10 @@ def calc_multiple_extensions(
     """
     ret = False
     for path in paths:
-        ret = calc_extension(is_debug2, pool, contigs, path) or ret
+        ret = calc_extension(
+            is_debug2, pool, contigs, path,
+            get_overlap_cache, get_overlap_negative, cutoffs_cache, cutoffs_negative, align_cache
+        ) or ret
     return ret
 
 
@@ -789,6 +827,12 @@ def calculate_all_paths(
     Returns an iterable of best paths up to a max number of alternatives.
     """
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
+    ctx = ReferencelessStitcherContext.get()
+    get_overlap_cache = ctx.get_overlap_cache
+    get_overlap_negative = ctx.get_overlap_negative
+    cutoffs_cache = ctx.cutoffs_cache
+    cutoffs_negative = ctx.cutoffs_negative
+    align_cache = ctx.align_cache
 
     max_alternatives = intrapolate_number_of_alternatives(len(contigs))
     pool = Pool.empty(max_alternatives, ACCEPTABLE_STITCHING_SCORE())
@@ -803,7 +847,12 @@ def calculate_all_paths(
         # log start with current pool size
         log(events.CycleStart(cycle, len(pool.ring)))
 
-        if not calc_multiple_extensions(is_debug2, pool, pool.ring, contigs):
+        if not calc_multiple_extensions(
+            is_debug2, pool, pool.ring, contigs,
+            get_overlap_cache, get_overlap_negative,
+            cutoffs_cache, cutoffs_negative,
+            align_cache,
+        ):
             break
 
         # log end with updated pool size
@@ -872,6 +921,12 @@ def try_combine_1(
     contigs: Iterable[ContigWithAligner],
 ) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, ContigWithAligner]]:
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
+    ctx = ReferencelessStitcherContext.get()
+    get_overlap_cache = ctx.get_overlap_cache
+    get_overlap_negative = ctx.get_overlap_negative
+    cutoffs_cache = ctx.cutoffs_cache
+    cutoffs_negative = ctx.cutoffs_negative
+    align_cache = ctx.align_cache
 
     for first in contigs:
         for second in contigs:
@@ -885,6 +940,11 @@ def try_combine_1(
                 pool=pool,
                 a=first,
                 b=second,
+                get_overlap_cache=get_overlap_cache,
+                get_overlap_negative=get_overlap_negative,
+                cutoffs_cache=cutoffs_cache,
+                cutoffs_negative=cutoffs_negative,
+                align_cache=align_cache,
             )
             if result is not None:
                 combined, additional_score = result
