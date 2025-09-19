@@ -182,8 +182,10 @@ def get_overlap(
         return None
 
     key = (left.id, right.id)
-    if key in get_overlap_cache:
-        return get_overlap_cache[key]
+    existing = get_overlap_cache.get(key, -1)
+    if existing != -1:
+        ret: Optional[Overlap] = existing # type: ignore[assignment]
+        return ret
 
     shift, _ = left.find_maximum_overlap(right)
     if shift == 0:
@@ -468,9 +470,10 @@ def find_overlap_cutoffs(
         overlap region satisfies the minimum score.
     """
     key = (left.id, right.id)
-
-    if key in cutoffs_cache:
-        return cutoffs_cache[key]
+    existing = cutoffs_cache.get(key, -1)
+    if existing != -1:
+        ret: CutoffsCacheResult = existing  # type: ignore[assignment]
+        return ret
 
     value = compute_overlap_cutoffs(
         minimum_score, left, right, shift, left_initial_overlap, right_initial_overlap
