@@ -25,7 +25,7 @@ from micall.utils.overlap_stitcher import (
 from .referenceless_contig_stitcher_pool import Pool
 import micall.utils.referenceless_contig_stitcher_events as events
 from micall.utils.referenceless_contig_path import ContigsPath
-from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
+from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, find_maximum_overlap, map_overlap
 from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
@@ -154,7 +154,7 @@ def log(e: events.EventType) -> None:
 def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
     """Compute the overlap size given contig lengths and a shift.
 
-    The shift is defined as returned by `ContigWithAligner.find_maximum_overlap`.
+    The shift is defined as returned by `find_maximum_overlap`.
     """
     if abs(shift) <= left_len:
         size = min(abs(shift), right_len)
@@ -187,7 +187,7 @@ def get_overlap(
         ret: Optional[Overlap] = existing # type: ignore[assignment]
         return ret
 
-    shift, _ = left.find_maximum_overlap(right)
+    shift, _ = find_maximum_overlap(left, right)
     if shift == 0:
         get_overlap_cache[key] = None
         return None

@@ -120,22 +120,23 @@ class ContigWithAligner(Contig):
 
         return {x: to_array(x) for x in self.alphabet}
 
-    def find_maximum_overlap(self, other: 'ContigWithAligner',
-                             ) -> Tuple[int, float]:
+def find_maximum_overlap(
+    left: ContigWithAligner, right: ContigWithAligner
+) -> Tuple[int, float]:
 
-        total = np.zeros(len(self.seq) + len(other.seq) - 1)
-        method = choose_convolution_method(len(self.seq), len(other.seq))
-        keys = sorted(set(list(self.alphabet) + list(other.alphabet)))
-        for key in keys:
-            if key not in self.alignment_seqs or \
-               key not in other.alignment_seqs:
-                continue
+    total = np.zeros(len(left.seq) + len(right.seq) - 1)
+    method = choose_convolution_method(len(left.seq), len(right.seq))
+    keys = sorted(set(list(left.alphabet) + list(right.alphabet)))
+    for key in keys:
+        if key not in left.alignment_seqs or \
+            key not in right.alignment_seqs:
+            continue
 
-            x = self.alignment_seqs[key]
-            y = np.flip(other.alignment_seqs[key])
-            total += method(x, y, mode='full')
+        x = left.alignment_seqs[key]
+        y = np.flip(right.alignment_seqs[key])
+        total += method(x, y, mode='full')
 
-        return get_overlap_results(total, len(self.seq), len(other.seq))
+    return get_overlap_results(total, len(left.seq), len(right.seq))
 
 
 def map_overlap(self: ContigWithAligner,
