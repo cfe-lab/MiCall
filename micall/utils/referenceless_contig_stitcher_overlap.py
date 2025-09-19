@@ -1,16 +1,13 @@
+"""
+Represents a maximal-overlap placement between two contigs.
 
-from dataclasses import dataclass
+Attributes:
+    shift: Relative shift to place `left` vs `right` at their best overlap.
+        The value is negative when `right` starts before the end of `left`.
+        A value of 0 indicates no overlap (we never construct Overlap with 0).
+    size: Length (in bases) of the overlapping window induced by `shift`.
+"""
 
-@dataclass(frozen=True)
-class Overlap:
-    """Represents a maximal-overlap placement between two contigs.
+from typing import NamedTuple
 
-    Attributes:
-        shift: Relative shift to place `left` vs `right` at their best overlap.
-            The value is negative when `right` starts before the end of `left`.
-            A value of 0 indicates no overlap (we never construct Overlap with 0).
-        size: Length (in bases) of the overlapping window induced by `shift`.
-    """
-
-    shift: int
-    size: int
+Overlap = NamedTuple("Overlap", [("shift", int), ("size", int)])
