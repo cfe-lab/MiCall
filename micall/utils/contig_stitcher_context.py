@@ -8,6 +8,7 @@ import micall.utils.referencefull_contig_stitcher_events as full_events
 import micall.utils.referenceless_contig_stitcher_events as less_events
 import micall.utils.registry as registry
 from micall.utils.referenceless_contig_stitcher_overlap import Overlap
+from micall.utils.contig_stitcher_contigs import ContigId
 
 
 T = TypeVar('T')
@@ -77,11 +78,11 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         # per-context caches (moved from module-level globals)
         # overlap detection cache: key=(left_id,right_id) -> Optional[Overlap]
         # Overlap type is imported in algorithm module; use Any here to avoid circular import
-        self.get_overlap_cache: Dict[Tuple[int, int], Optional[Overlap]] = {}
+        self.get_overlap_cache: Dict[Tuple[ContigId, ContigId], Optional[Overlap]] = {}
         # alignment cache for overlap windows: key=(left_overlap,right_overlap) -> (aligned_left, aligned_right)
         self.align_cache: Dict[Tuple[str, str], Tuple[str, str]] = {}
         # cutoffs cache: key=(left_id,right_id) -> Optional[(left_cutoff,right_cutoff)]
-        self.cutoffs_cache: Dict[Tuple[int, int], Optional[Tuple[int, int]]] = {}
+        self.cutoffs_cache: Dict[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]] = {}
         super().__init__()
 
     @staticmethod
