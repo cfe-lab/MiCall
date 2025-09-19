@@ -184,7 +184,7 @@ BEGIN 13
   to
   be
   (501,
-  26).
+  13).
 END 13
 BEGIN 14
   Overlap
@@ -196,14 +196,14 @@ BEGIN 14
   has
   aligned
   size
-  29,
-  19
+  16,
+  10
   matches,
   and
   the
   score
   of
-  17440.79013769597.
+  13031.98390114446.
 END 14
 BEGIN 15
   Found
@@ -212,7 +212,7 @@ BEGIN 15
   overlap
   of
   size
-  24
+  11
   between
   contigs
   (2)

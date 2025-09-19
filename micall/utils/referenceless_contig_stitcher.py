@@ -337,14 +337,14 @@ def compute_alignment_and_score(
 
 # Cutoff computation helpers
 def cutoffs_left_covered(
-    minimum_score: Score,
+    minimum_acceptable: Score,
     left: ContigWithAligner,
     right: ContigWithAligner,
     shift: int,
     left_initial_overlap: str,
 ) -> Tuple[int, int]:
     overlap_alignments = tuple(
-        map_overlap(right, minimum_score, "cover", left_initial_overlap)
+        map_overlap(right, minimum_acceptable, "cover", left_initial_overlap)
     )
     right_cutoff = max((end for start, end in overlap_alignments), default=-1)
     if right_cutoff < 0:
@@ -357,14 +357,14 @@ def cutoffs_left_covered(
 
 
 def cutoffs_right_covered(
-    minimum_score: Score,
+    minimum_acceptable: Score,
     left: ContigWithAligner,
     right: ContigWithAligner,
     shift: int,
     right_initial_overlap: str,
 ) -> Tuple[int, int]:
     overlap_alignments = tuple(
-        map_overlap(left, minimum_score, "cover", right_initial_overlap)
+        map_overlap(left, minimum_acceptable, "cover", right_initial_overlap)
     )
     left_cutoff = min((start for start, end in overlap_alignments), default=-1)
     if left_cutoff < 0:
@@ -377,20 +377,20 @@ def cutoffs_right_covered(
 
 
 def cutoffs_left_shorter(
-    minimum_score: Score,
+    minimum_acceptable: Score,
     left: ContigWithAligner,
     right: ContigWithAligner,
     left_initial_overlap: str,
     right_initial_overlap: str,
 ) -> Optional[Tuple[int, int]]:
     left_overlap_alignments = map_overlap(
-        left, minimum_score, "left", right_initial_overlap
+        left, minimum_acceptable, "left", right_initial_overlap
     )
     left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
     if left_cutoff < 0:
         return None
     right_overlap_alignments = map_overlap(
-        right, minimum_score, "right", left_initial_overlap
+        right, minimum_acceptable, "right", left_initial_overlap
     )
     right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
     if right_cutoff < 0:
@@ -399,20 +399,20 @@ def cutoffs_left_shorter(
 
 
 def cutoffs_right_shorter_or_equal(
-    minimum_score: Score,
+    minimum_acceptable: Score,
     left: ContigWithAligner,
     right: ContigWithAligner,
     left_initial_overlap: str,
     right_initial_overlap: str,
 ) -> Optional[Tuple[int, int]]:
     right_overlap_alignments = map_overlap(
-        right, minimum_score, "right", left_initial_overlap
+        right, minimum_acceptable, "right", left_initial_overlap
     )
     right_cutoff = max((end for start, end in right_overlap_alignments), default=-1)
     if right_cutoff < 0:
         return None
     left_overlap_alignments = map_overlap(
-        left, minimum_score, "left", right_initial_overlap
+        left, minimum_acceptable, "left", right_initial_overlap
     )
     left_cutoff = min((start for start, end in left_overlap_alignments), default=-1)
     if left_cutoff < 0:
@@ -421,7 +421,7 @@ def cutoffs_right_shorter_or_equal(
 
 
 def compute_overlap_cutoffs(
-    minimum_score: Score,
+    minimum_acceptable: Score,
     left: ContigWithAligner,
     right: ContigWithAligner,
     shift: int,
@@ -430,23 +430,23 @@ def compute_overlap_cutoffs(
 ) -> Optional[Tuple[int, int]]:
     if len(left.seq) == len(left_initial_overlap):
         return cutoffs_left_covered(
-            minimum_score, left, right, shift, left_initial_overlap
+            minimum_acceptable, left, right, shift, left_initial_overlap
         )
     if len(right.seq) == len(right_initial_overlap):
         return cutoffs_right_covered(
-            minimum_score, left, right, shift, right_initial_overlap
+            minimum_acceptable, left, right, shift, right_initial_overlap
         )
     if len(left.seq) < len(right.seq):
         return cutoffs_left_shorter(
-            minimum_score, left, right, left_initial_overlap, right_initial_overlap
+            minimum_acceptable, left, right, left_initial_overlap, right_initial_overlap
         )
     return cutoffs_right_shorter_or_equal(
-        minimum_score, left, right, left_initial_overlap, right_initial_overlap
+        minimum_acceptable, left, right, left_initial_overlap, right_initial_overlap
     )
 
 
 def find_overlap_cutoffs(
-    minimum_score: Score,
+    minimum_acceptable: Score,
     left: ContigWithAligner,
     right: ContigWithAligner,
     shift: int,
@@ -462,20 +462,21 @@ def find_overlap_cutoffs(
 
     Caching:
         Results are cached per (left.id, right.id). When no valid overlap region
-        is possible for the given pair (under `minimum_score`), a None entry is
+        is possible for the given pair, a None entry is
         recorded and None is returned on subsequent calls.
 
     Returns:
         Tuple (left_cutoff, right_cutoff) on success, or None if no valid
-        overlap region satisfies the minimum score.
+        overlap region satisfies the minimum acceptable score or something lower than it.
     """
 
     # Note:
-    # It is fine to omit `minimum_score` from the cache key because
-    # the cutoffs are monotonic with respect to `minimum_score`.
-    # Increasing `minimum_score` can only reduce the valid overlap region,
+    # It is fine to omit `minimum_acceptable` from the cache key because
+    # the cutoffs are monotonic with respect to `minimum_acceptable`.
+    # Increasing `minimum_acceptable` can only reduce the valid overlap region,
     # never expand it. Therefore, the cutoffs computed for a lower
-    # `minimum_score` are always valid for a higher one.
+    # `minimum_acceptable` are always valid for a higher one.
+    # The `minimum_acceptable` is monotonic.
     key = (left.id, right.id)
     existing = cutoffs_cache.get(key, -1)
     if existing != -1:
@@ -483,7 +484,7 @@ def find_overlap_cutoffs(
         return ret
 
     value = compute_overlap_cutoffs(
-        minimum_score, left, right, shift, left_initial_overlap, right_initial_overlap
+        minimum_acceptable, left, right, shift, left_initial_overlap, right_initial_overlap
     )
     cutoffs_cache[key] = value
     return value
@@ -622,7 +623,7 @@ def try_combine_contigs(
     left, right, shift, left_initial_overlap, right_initial_overlap, overlap = prepared
 
     cutoffs = find_overlap_cutoffs(
-        minimum_base_score,
+        pool.min_acceptable_score,
         left,
         right,
         shift,
