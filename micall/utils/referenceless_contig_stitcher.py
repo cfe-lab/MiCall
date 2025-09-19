@@ -469,6 +469,13 @@ def find_overlap_cutoffs(
         Tuple (left_cutoff, right_cutoff) on success, or None if no valid
         overlap region satisfies the minimum score.
     """
+
+    # Note:
+    # It is fine to omit `minimum_score` from the cache key because
+    # the cutoffs are monotonic with respect to `minimum_score`.
+    # Increasing `minimum_score` can only reduce the valid overlap region,
+    # never expand it. Therefore, the cutoffs computed for a lower
+    # `minimum_score` are always valid for a higher one.
     key = (left.id, right.id)
     existing = cutoffs_cache.get(key, -1)
     if existing != -1:
