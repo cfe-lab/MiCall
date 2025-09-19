@@ -167,6 +167,7 @@ class Overlap:
     size: int
 
 
+# Note: Contig ids are globally unique, so we can use them as cache keys.
 ContigId = int
 GET_OVERLAP_CACHE: MutableMapping[Tuple[ContigId, ContigId], Overlap] = {}
 GET_OVERLAP_NEGATIVE: Set[Tuple[ContigId, ContigId]] = set()
