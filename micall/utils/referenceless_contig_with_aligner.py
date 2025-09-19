@@ -156,9 +156,9 @@ def map_overlap(self: ContigWithAligner,
     if relation != "cover":
         optimistic_number_of_matches = len(overlap)
         max_length = find_max_overlap_length(M=optimistic_number_of_matches,
-                                                X=minimum_score,
-                                                L_high=len(self.seq),
-                                                )
+                                             X=minimum_score,
+                                             L_high=len(self.seq),
+                                             )
 
         assert max_length > 0
         assert max_length >= len(overlap)
