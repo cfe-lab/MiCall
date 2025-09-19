@@ -6,9 +6,10 @@ import micall.utils.registry as registry
 
 
 ID_STATE = 0
+ContigId = int
 
 
-def generate_new_id() -> int:
+def generate_new_id() -> ContigId:
     global ID_STATE
     ID_STATE += 1
     return ID_STATE
@@ -20,7 +21,7 @@ class Contig:
     seq: str
 
     @cached_property
-    def id(self) -> int:
+    def id(self) -> ContigId:
         return generate_new_id()
 
     @cached_property
