@@ -458,7 +458,7 @@ def find_overlap_cutoffs(
 
     The function determines indices into the original left/right contig sequences
     that bound the overlap to be aligned for scoring and merging. Cutoffs are
-    chosen via `map_overlap` using the provided `minimum_score`.
+    chosen via `map_overlap`.
 
     Caching:
         Results are cached per (left.id, right.id). When no valid overlap region
