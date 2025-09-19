@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, TypeVar, Generic, Iterator, Self, Dict, Set, Tuple, Any
+from typing import List, TypeVar, Generic, Iterator, Self, Dict, Set, Tuple
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
@@ -7,6 +7,7 @@ from copy import deepcopy
 import micall.utils.referencefull_contig_stitcher_events as full_events
 import micall.utils.referenceless_contig_stitcher_events as less_events
 import micall.utils.registry as registry
+from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 
 T = TypeVar('T')
@@ -73,8 +74,8 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
     def __init__(self) -> None:
         # debug flags
         self.is_debug2: bool = False
-        # overlap detection caches: key=(left_id,right_id) -> Overlap (typed as Any to avoid circular import)
-        self.get_overlap_cache: Dict[Tuple[int, int], Any] = {}
+        # overlap detection caches: key=(left_id,right_id) -> Overlap
+        self.get_overlap_cache: Dict[Tuple[int, int], Overlap] = {}
         self.get_overlap_negative: Set[Tuple[int, int]] = set()
         # alignment cache for overlap windows: key=(left_overlap,right_overlap) -> (aligned_left, aligned_right)
         self.align_cache: Dict[Tuple[str, str], Tuple[str, str]] = {}

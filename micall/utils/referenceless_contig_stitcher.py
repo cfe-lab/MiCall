@@ -1,6 +1,5 @@
 import itertools
 import logging
-from dataclasses import dataclass
 from functools import cache
 from typing import (
     Iterable,
@@ -29,6 +28,7 @@ import micall.utils.referenceless_contig_stitcher_events as events
 from micall.utils.referenceless_contig_path import ContigsPath
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
 from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
+from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 
 logger = logging.getLogger(__name__)
@@ -150,21 +150,6 @@ def log(e: events.EventType) -> None:
     """
     ReferencelessStitcherContext.get().emit(e)
     logger.debug("%s", e)
-
-
-@dataclass(frozen=True)
-class Overlap:
-    """Represents a maximal-overlap placement between two contigs.
-
-    Attributes:
-        shift: Relative shift to place `left` vs `right` at their best overlap.
-            The value is negative when `right` starts before the end of `left`.
-            A value of 0 indicates no overlap (we never construct Overlap with 0).
-        size: Length (in bases) of the overlapping window induced by `shift`.
-    """
-
-    shift: int
-    size: int
 
 
 # Note: Contig ids are globally unique, so we can use them as cache keys.
