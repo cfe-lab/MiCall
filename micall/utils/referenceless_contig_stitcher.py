@@ -15,7 +15,7 @@ from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.contig_stitcher_contigs import Contig
+from micall.utils.contig_stitcher_contigs import Contig, ContigId
 from micall.utils.overlap_stitcher import (
     align_queries,
     calculate_concordance,
@@ -149,10 +149,6 @@ def log(e: events.EventType) -> None:
     """
     ReferencelessStitcherContext.get().emit(e)
     logger.debug("%s", e)
-
-
-# Note: Contig ids are globally unique, so we can use them as cache keys.
-ContigId = int
 
 
 def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
