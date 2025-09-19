@@ -932,7 +932,7 @@ def referenceless_contig_stitcher(
     Wrapper that initializes a fresh stitching context and calls the core stitching function.
     """
     with ReferencelessStitcherContext.fresh() as ctx:
-        if logger.level == logging.DEBUG - 1:
+        if logger.getEffectiveLevel() == logging.DEBUG - 1:
             ctx.is_debug2 = True
         return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
 
