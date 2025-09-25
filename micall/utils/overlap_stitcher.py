@@ -94,7 +94,7 @@ def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
 
     c = np.cumsum(arr)                          # running count of 1s
     z = np.where(arr == 0, c, 0)                # cumsum value at zeros
-    return (c - np.maximum.accumulate(z)).astype(np.int64)
+    return c - np.maximum.accumulate(z)
 
 
 def exp_accumulate_array_positive(array: np.ndarray) -> np.ndarray:
