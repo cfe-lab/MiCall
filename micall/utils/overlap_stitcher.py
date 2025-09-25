@@ -92,9 +92,10 @@ def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
     up to (and including) index i, resetting on False.
     """
 
-    c = np.cumsum(arr)                          # running count of 1s
-    z = np.where(arr == 0, c, 0)                # cumsum value at zeros
-    return c - np.maximum.accumulate(z)
+    c = np.add.accumulate(arr)                  # running count of 1s
+    z = np.where(arr == 0, c, 0)                # counts at zeros
+    m = np.maximum.accumulate(z)                # running max of that
+    return c - m
 
 
 def exp_accumulate_array_positive(array: np.ndarray) -> np.ndarray:
