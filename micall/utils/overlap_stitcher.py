@@ -97,6 +97,17 @@ def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
     m = np.maximum.accumulate(z)                # running max of that
     return c - m
 
+    """
+    Example trace:
+
+    arr   = [0, 1, 1, 1, 0, 1, 1, 0]
+    c     = [0, 1, 2, 3, 3, 4, 5, 5]     # running count of 1s
+    z     = [0, 0, 0, 0, 3, 0, 0, 5]     # counts at zeros
+    m     = [0, 0, 0, 0, 3, 3, 3, 5]     # running max of that
+    c - m = [0, 1, 2, 3, 0, 1, 2, 0]
+
+    """
+
 
 def exp_accumulate_array_positive(array: np.ndarray) -> np.ndarray:
     forward = consecutive_true_counts(array)
