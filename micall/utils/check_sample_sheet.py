@@ -53,7 +53,11 @@ def check_sample_name_consistency(
             trimmed_filename = "_".join(filename.split("_")[:2])
             sheet_filenames.add(trimmed_filename)
 
-    logger.debug("Sample sheet contains %d unique sample prefixes: %s", len(sheet_filenames), sorted(sheet_filenames))
+    logger.debug(
+        "Sample sheet contains %d unique sample prefixes: %s",
+        len(sheet_filenames),
+        sorted(sheet_filenames),
+    )
 
     # Extract trimmed names from FASTQ files (same logic as find_groups())
     fastq_trimmed_names = set()
@@ -62,13 +66,21 @@ def check_sample_name_consistency(
         trimmed_name = "_".join(file_name.split("_")[:2])
         fastq_trimmed_names.add(trimmed_name)
 
-    logger.debug("FASTQ files contain %d unique sample prefixes: %s", len(fastq_trimmed_names), sorted(fastq_trimmed_names))
+    logger.debug(
+        "FASTQ files contain %d unique sample prefixes: %s",
+        len(fastq_trimmed_names),
+        sorted(fastq_trimmed_names),
+    )
 
     # Identify recognized vs unrecognized FASTQ files
     recognized_fastq = fastq_trimmed_names & sheet_filenames  # intersection
     unrecognized_fastq = fastq_trimmed_names - sheet_filenames  # FASTQ only
 
-    logger.debug("Found %d recognized and %d unrecognized FASTQ files", len(recognized_fastq), len(unrecognized_fastq))
+    logger.debug(
+        "Found %d recognized and %d unrecognized FASTQ files",
+        len(recognized_fastq),
+        len(unrecognized_fastq),
+    )
 
     if len(recognized_fastq) < len(unrecognized_fastq):
         unrecognized_list = ",".join(sorted(unrecognized_fastq))
@@ -105,10 +117,21 @@ def main(argv: Sequence[str]) -> None:
     )
 
     verbosity_group = parser.add_mutually_exclusive_group()
-    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
-    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
-    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
-    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+    verbosity_group.add_argument(
+        "--verbose", action="store_true", help="Increase output verbosity."
+    )
+    verbosity_group.add_argument(
+        "--no-verbose",
+        action="store_true",
+        help="Normal output verbosity.",
+        default=True,
+    )
+    verbosity_group.add_argument(
+        "--debug", action="store_true", help="Maximum output verbosity."
+    )
+    verbosity_group.add_argument(
+        "--quiet", action="store_true", help="Minimize output verbosity."
+    )
 
     args = parser.parse_args(argv)
 
@@ -122,7 +145,7 @@ def main(argv: Sequence[str]) -> None:
     else:
         logger.setLevel(logging.WARN)
 
-    logging.basicConfig(level=logger.level, format='%(levelname)s: %(message)s')
+    logging.basicConfig(level=logger.level, format="%(levelname)s: %(message)s")
 
     # Infer run_path from sample_sheet if not provided
     run_path = args.run_path
@@ -135,26 +158,34 @@ def main(argv: Sequence[str]) -> None:
     if fastq_file_names is None:
         # Try standard MiSeq structure first
         base_calls_path = run_path / "Data" / "Intensities" / "BaseCalls"
-        logger.debug("Looking for FASTQ files in standard MiSeq location: %s", base_calls_path)
+        logger.debug(
+            "Looking for FASTQ files in standard MiSeq location: %s", base_calls_path
+        )
         if base_calls_path.exists():
             fastq_files = list(base_calls_path.glob("*_R1_*.fastq*"))
             fastq_file_names = [f.name for f in fastq_files]
             logger.debug("Found %d FASTQ files in standard location", len(fastq_files))
         else:
             # Fall back to looking for .fastq files directly in run_path
-            logger.debug("Standard location not found, checking run_path directly: %s", run_path)
+            logger.debug(
+                "Standard location not found, checking run_path directly: %s", run_path
+            )
             fastq_files = list(run_path.glob("*_R1_*.fastq*"))
             if fastq_files:
                 fastq_file_names = [f.name for f in fastq_files]
                 logger.debug("Found %d FASTQ files in run_path", len(fastq_files))
             else:
-                logger.error("No FASTQ files found in %s or %s", base_calls_path, run_path)
+                logger.error(
+                    "No FASTQ files found in %s or %s", base_calls_path, run_path
+                )
                 sys.exit(1)
     else:
         fastq_file_names = [Path(f).name for f in fastq_file_names]
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)
 
-    logger.debug("Starting consistency check with %d FASTQ files", len(fastq_file_names))
+    logger.debug(
+        "Starting consistency check with %d FASTQ files", len(fastq_file_names)
+    )
 
     try:
         check_sample_name_consistency(args.sample_sheet, fastq_file_names, run_path)
