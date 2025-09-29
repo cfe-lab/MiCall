@@ -86,17 +86,48 @@ def main():
     parser.add_argument(
         "sample_sheet", type=Path, help="Path to the SampleSheet.csv file"
     )
-    parser.add_argument("run_path", type=Path, help="Path to the run folder")
-    parser.add_argument("fastq_files", nargs="+", help="FASTQ file names")
+    parser.add_argument(
+        "--run-path",
+        type=Path,
+        help="Path to the run folder (default: inferred from sample_sheet)",
+    )
+    parser.add_argument(
+        "--fastq-files",
+        nargs="+",
+        help="FASTQ file names (default: inferred from run_path)",
+    )
 
     args = parser.parse_args()
+
+    # Infer run_path from sample_sheet if not provided
+    run_path = args.run_path
+    if run_path is None:
+        run_path = args.sample_sheet.parent
+
+    # Infer fastq_files from run_path if not provided
+    fastq_file_names = args.fastq_files
+    if fastq_file_names is None:
+        # Try standard MiSeq structure first
+        base_calls_path = run_path / "Data" / "Intensities" / "BaseCalls"
+        if base_calls_path.exists():
+            fastq_files = list(base_calls_path.glob("*_R1_*.fastq.gz"))
+            fastq_file_names = [f.name for f in fastq_files]
+        else:
+            # Fall back to looking for .fastq files directly in run_path (for tests)
+            fastq_files = list(run_path.glob("*_R1_*.fastq"))
+            if fastq_files:
+                fastq_file_names = [f.name for f in fastq_files]
+            else:
+                print(
+                    f"Error: No FASTQ files found in {base_calls_path} or {run_path}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
 
     logging.basicConfig(level=logging.INFO)
 
     try:
-        check_sample_name_consistency(
-            args.sample_sheet, args.fastq_files, args.run_path
-        )
+        check_sample_name_consistency(args.sample_sheet, fastq_file_names, run_path)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
