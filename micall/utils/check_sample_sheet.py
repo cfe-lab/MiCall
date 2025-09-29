@@ -98,7 +98,7 @@ And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}."""
         )
 
 
-def main(argv: Sequence[str]) -> None:
+def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Check sample name consistency between sample sheet and FASTQ files."
     )
@@ -178,7 +178,7 @@ def main(argv: Sequence[str]) -> None:
                 logger.error(
                     "No FASTQ files found in %s or %s", base_calls_path, run_path
                 )
-                sys.exit(1)
+                return 1
     else:
         fastq_file_names = [Path(f).name for f in fastq_file_names]
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)
@@ -192,8 +192,10 @@ def main(argv: Sequence[str]) -> None:
         logger.debug("Consistency check completed successfully")
     except Exception as e:
         logger.error("Error during consistency check: %s", e)
-        sys.exit(1)
+        return 1
+
+    return 0
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))
