@@ -137,13 +137,13 @@ def main():
         base_calls_path = run_path / "Data" / "Intensities" / "BaseCalls"
         logger.debug("Looking for FASTQ files in standard MiSeq location: %s", base_calls_path)
         if base_calls_path.exists():
-            fastq_files = list(base_calls_path.glob("*_R1_*.fastq.gz"))
+            fastq_files = list(base_calls_path.glob("*_R1_*.fastq*"))
             fastq_file_names = [f.name for f in fastq_files]
             logger.debug("Found %d FASTQ files in standard location", len(fastq_files))
         else:
-            # Fall back to looking for .fastq files directly in run_path (for tests)
+            # Fall back to looking for .fastq files directly in run_path
             logger.debug("Standard location not found, checking run_path directly: %s", run_path)
-            fastq_files = list(run_path.glob("*_R1_*.fastq"))
+            fastq_files = list(run_path.glob("*_R1_*.fastq*"))
             if fastq_files:
                 fastq_file_names = [f.name for f in fastq_files]
                 logger.debug("Found %d FASTQ files in run_path", len(fastq_files))
