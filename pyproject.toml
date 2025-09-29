@@ -32,7 +32,7 @@ dependencies = [
     "cutadapt==5.1",
     "python-Levenshtein==0.27.1",
     "PyYAML==6.0.2",
-    "reportlab==4.4.3",
+    "reportlab==4.4.4",
     "pysam==0.23.3",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy==2.30",
@@ -52,7 +52,7 @@ dependencies = [
 test = [
     # Dependencies required for running the test suite
     "pytest==8.4.2",
-    "coverage==7.10.6",
+    "coverage==7.10.7",
     "pandas==2.3.2",
     "seaborn==0.13.2",
     "ete3",
@@ -66,15 +66,15 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.13.1",
+    "ruff==0.13.2",
     "mypy==1.18.2",
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
-    "pandas-stubs==2.3.2.250827",
+    "pandas-stubs==2.3.2.250926",
     "types-requests==2.32.4.20250913",
-    "uv==0.8.18",
+    "uv==0.8.22",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
