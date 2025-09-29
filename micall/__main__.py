@@ -93,6 +93,7 @@ EXECUTABLES = [
     "micall/utils/randomize_fastq.py",
     "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
     "micall/utils/version.py",
+    "micall/utils/check_sample_sheet.py",
 ]
 
 
