@@ -28,7 +28,8 @@ def check_sample_name_consistency(
     :param fastq_file_names: List of FASTQ file names
     :param run_path: Path to the run folder for logging
     """
-    logger.info("Checking sample name consistency for run: %s", run_path)
+
+    logger.debug("Checking sample name consistency for run: %s", run_path)
     logger.debug("Sample sheet path: %s", sample_sheet_path)
     logger.debug("FASTQ files to check: %s", list(fastq_file_names))
 
@@ -67,7 +68,7 @@ def check_sample_name_consistency(
     recognized_fastq = fastq_trimmed_names & sheet_filenames  # intersection
     unrecognized_fastq = fastq_trimmed_names - sheet_filenames  # FASTQ only
 
-    logger.info("Found %d recognized and %d unrecognized FASTQ files", len(recognized_fastq), len(unrecognized_fastq))
+    logger.debug("Found %d recognized and %d unrecognized FASTQ files", len(recognized_fastq), len(unrecognized_fastq))
 
     if len(recognized_fastq) < len(unrecognized_fastq):
         unrecognized_list = ",".join(sorted(unrecognized_fastq))
@@ -76,16 +77,12 @@ Large number of unrecognized FASTQ files in run folder {run_path}.
 There are {len(recognized_fastq)} recognized FASTQ files.
 And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}."""
         logger.warning("%s", warning_message)
-        print(warning_message, file=sys.stderr)
     else:
         logger.debug(
             "FASTQ recognition ratio acceptable: %d recognized, %d unrecognized in %s",
             len(recognized_fastq),
             len(unrecognized_fastq),
             run_path,
-        )
-        print(
-            f"FASTQ recognition ratio acceptable: {len(recognized_fastq)} recognized, {len(unrecognized_fastq)} unrecognized in {run_path}"
         )
 
 
@@ -152,10 +149,6 @@ def main():
                 logger.debug("Found %d FASTQ files in run_path", len(fastq_files))
             else:
                 logger.error("No FASTQ files found in %s or %s", base_calls_path, run_path)
-                print(
-                    f"Error: No FASTQ files found in {base_calls_path} or {run_path}",
-                    file=sys.stderr,
-                )
                 sys.exit(1)
     else:
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)
@@ -167,7 +160,6 @@ def main():
         logger.info("Consistency check completed successfully")
     except Exception as e:
         logger.error("Error during consistency check: %s", e)
-        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
