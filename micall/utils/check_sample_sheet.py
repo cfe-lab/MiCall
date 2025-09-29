@@ -153,11 +153,11 @@ def main():
     else:
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)
 
-    logger.info("Starting consistency check with %d FASTQ files", len(fastq_file_names))
+    logger.debug("Starting consistency check with %d FASTQ files", len(fastq_file_names))
 
     try:
         check_sample_name_consistency(args.sample_sheet, fastq_file_names, run_path)
-        logger.info("Consistency check completed successfully")
+        logger.debug("Consistency check completed successfully")
     except Exception as e:
         logger.error("Error during consistency check: %s", e)
         sys.exit(1)
