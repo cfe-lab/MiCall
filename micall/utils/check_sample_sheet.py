@@ -111,7 +111,6 @@ def main():
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
-    verbosity_group.add_argument('--debug2', action='store_true', help='Even more debug messages.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
 
     args = parser.parse_args()
@@ -123,8 +122,6 @@ def main():
         logger.setLevel(logging.INFO)
     elif args.debug:
         logger.setLevel(logging.DEBUG)
-    elif args.debug2:
-        logger.setLevel(logging.DEBUG - 1)
     else:
         logger.setLevel(logging.WARN)
 
