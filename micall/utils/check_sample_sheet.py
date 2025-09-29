@@ -101,7 +101,7 @@ def main():
     parser.add_argument(
         "--fastq-files",
         nargs="+",
-        help="FASTQ file names (default: inferred from run_path)",
+        help="FASTQ file paths or names (default: inferred from run_path)",
     )
 
     verbosity_group = parser.add_mutually_exclusive_group()
@@ -151,6 +151,7 @@ def main():
                 logger.error("No FASTQ files found in %s or %s", base_calls_path, run_path)
                 sys.exit(1)
     else:
+        fastq_file_names = [Path(f).name for f in fastq_file_names]
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)
 
     logger.debug("Starting consistency check with %d FASTQ files", len(fastq_file_names))
