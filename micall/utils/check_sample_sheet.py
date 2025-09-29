@@ -7,7 +7,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def check_sample_name_consistency(
     sample_sheet_path: Path, fastq_file_names: Iterable[str], run_path: Path
-):
+) -> None:
     """
     Check FASTQ file recognition ratio against sample sheet.
 
@@ -86,7 +86,7 @@ And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}."""
         )
 
 
-def main():
+def main(argv: Sequence[str]) -> None:
     parser = argparse.ArgumentParser(
         description="Check sample name consistency between sample sheet and FASTQ files."
     )
@@ -110,7 +110,7 @@ def main():
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     # Set logging level based on verbosity arguments
     if args.quiet:
@@ -165,4 +165,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
