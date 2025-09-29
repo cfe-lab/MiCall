@@ -28,7 +28,7 @@ from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
-from micall.utils.consistency_check import check_sample_name_consistency
+from micall.utils.check_sample_sheet import check_sample_name_consistency
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
