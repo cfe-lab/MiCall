@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  117653.822776599.
+  117022.32809216675.
 END 6
 BEGIN 7
   Found
@@ -96,11 +96,11 @@ BEGIN 8
   fittest
   has
   length
-  908
+  891
   and
   consists
   of
-  4
+  5
   parts.
 END 8
 BEGIN 9
@@ -147,7 +147,7 @@ BEGIN 11
   the
   score
   of
-  105543.25241345915.
+  104783.87325806587.
 END 11
 BEGIN 12
   Found
@@ -179,11 +179,11 @@ BEGIN 13
   fittest
   has
   length
-  908
+  891
   and
   consists
   of
-  4
+  5
   parts.
 END 13
 BEGIN 14
@@ -230,7 +230,7 @@ BEGIN 16
   the
   score
   of
-  15985.0.
+  4613.2877161461965.
 END 16
 BEGIN 17
   Found
@@ -258,6 +258,62 @@ BEGIN 18
   overlap
   of
   size
+  3
+  between
+  contigs
+  (2)
+  and
+  'r682-960.2'
+  to
+  be
+  (584,
+  3).
+END 18
+BEGIN 19
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r682-960.2'
+  has
+  aligned
+  size
+  3,
+  3
+  matches,
+  and
+  the
+  score
+  of
+  2.8678449139441966.
+END 19
+BEGIN 20
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  3
+  between
+  contigs
+  (2)
+  and
+  'r682-960.2',
+  resulting
+  in
+  contig
+  (4).
+END 20
+BEGIN 21
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
   270
   between
   contigs
@@ -268,8 +324,8 @@ BEGIN 18
   be
   (161,
   431).
-END 18
-BEGIN 19
+END 21
+BEGIN 22
   Overlap
   between
   contigs
@@ -286,17 +342,17 @@ BEGIN 19
   the
   score
   of
-  6.491528797083795.
-END 19
-BEGIN 20
+  7.725641006510731.
+END 22
+BEGIN 23
   Contig
   (2)
   covers
   contig
   'r191-460.3'
   completely.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
   Cycle
   3
   finished
@@ -308,66 +364,20 @@ BEGIN 21
   fittest
   has
   length
-  908
+  891
   and
   consists
   of
-  4
+  5
   parts.
-END 21
-BEGIN 22
+END 24
+BEGIN 25
   Cycle
   4
   started
   with
   1
   paths.
-END 22
-BEGIN 23
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  279
-  between
-  contigs
-  (3)
-  and
-  'r682-960.2'
-  to
-  be
-  (601,
-  880).
-END 23
-BEGIN 24
-  Overlap
-  between
-  contigs
-  (3)
-  and
-  'r682-960.2'
-  has
-  aligned
-  size
-  279,
-  279
-  matches,
-  and
-  the
-  score
-  of
-  105002.2244099535.
-END 24
-BEGIN 25
-  Contig
-  (3)
-  covers
-  contig
-  'r682-960.2'
-  completely.
 END 25
 BEGIN 26
   Calculated
@@ -377,72 +387,55 @@ BEGIN 26
   overlap
   of
   size
-  270
+  294
   between
   contigs
-  (3)
+  (4)
   and
-  'r191-460.3'
+  'r667-988.1'
   to
   be
-  (161,
-  431).
+  (584,
+  294).
 END 26
 BEGIN 27
   Overlap
   between
   contigs
-  (3)
+  (4)
   and
-  'r191-460.3'
+  'r667-988.1'
   has
   aligned
   size
-  270,
-  270
+  294,
+  279
   matches,
   and
   the
   score
   of
-  103767.08782138447.
+  93596.48596501764.
 END 27
 BEGIN 28
-  Contig
-  (3)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  279
+  between
+  contigs
+  (4)
+  and
+  'r667-988.1',
+  resulting
+  in
   contig
-  'r191-460.3'
-  completely.
+  (5).
 END 28
 BEGIN 29
-  Cycle
-  4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  908
-  and
-  consists
-  of
-  4
-  parts.
-END 29
-BEGIN 30
-  Cycle
-  5
-  started
-  with
-  1
-  paths.
-END 30
-BEGIN 31
   Calculated
   cutoff
   for
@@ -453,19 +446,19 @@ BEGIN 31
   270
   between
   contigs
-  (3)
+  (4)
   and
   'r191-460.3'
   to
   be
   (161,
   431).
-END 31
-BEGIN 32
+END 29
+BEGIN 30
   Overlap
   between
   contigs
-  (3)
+  (4)
   and
   'r191-460.3'
   has
@@ -478,17 +471,90 @@ BEGIN 32
   the
   score
   of
-  103767.08782138447.
-END 32
-BEGIN 33
+  1.092046629975394.
+END 30
+BEGIN 31
   Contig
-  (3)
+  (4)
   covers
   contig
   'r191-460.3'
   completely.
+END 31
+BEGIN 32
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  891
+  and
+  consists
+  of
+  5
+  parts.
+END 32
+BEGIN 33
+  Cycle
+  5
+  started
+  with
+  1
+  paths.
 END 33
 BEGIN 34
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  270
+  between
+  contigs
+  (5)
+  and
+  'r191-460.3'
+  to
+  be
+  (161,
+  431).
+END 34
+BEGIN 35
+  Overlap
+  between
+  contigs
+  (5)
+  and
+  'r191-460.3'
+  has
+  aligned
+  size
+  270,
+  270
+  matches,
+  and
+  the
+  score
+  of
+  102211.7270756368.
+END 35
+BEGIN 36
+  Contig
+  (5)
+  covers
+  contig
+  'r191-460.3'
+  completely.
+END 36
+BEGIN 37
   Cycle
   5
   finished
@@ -500,32 +566,32 @@ BEGIN 34
   fittest
   has
   length
-  908
+  891
   and
   consists
   of
-  4
+  5
   parts.
-END 34
-BEGIN 35
+END 37
+BEGIN 38
   Cycle
   6
   started
   with
   1
   paths.
-END 35
-BEGIN 36
+END 38
+BEGIN 39
   Constructed
   a
   path
   of
   length
-  908.
-END 36
-BEGIN 37
+  891.
+END 39
+BEGIN 40
   Removed
-  4
+  5
   components
   from
   the
@@ -536,17 +602,17 @@ BEGIN 37
   still
   to
   process.
-END 37
-BEGIN 38
+END 40
+BEGIN 41
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 38
-BEGIN 39
+END 41
+BEGIN 42
   Outputting
   1
   contigs.
-END 39
+END 42

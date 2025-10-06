@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  19748.993565611316.
+  9454.655496534793.
 END 6
 BEGIN 7
   Found
@@ -120,7 +120,7 @@ BEGIN 9
   the
   score
   of
-  0.2335960919132233.
+  0.2117381923881051.
 END 9
 BEGIN 10
   Calculated
@@ -158,7 +158,7 @@ BEGIN 11
   the
   score
   of
-  4.325502603807979.
+  8.919835389525561.
 END 11
 BEGIN 12
   Found
@@ -214,7 +214,7 @@ BEGIN 14
   the
   score
   of
-  1.0962761280003661.
+  1.0994065629618908.
 END 14
 BEGIN 15
   Found
@@ -246,11 +246,11 @@ BEGIN 16
   fittest
   has
   length
-  842
+  761
   and
   consists
   of
-  5
+  4
   parts.
 END 16
 BEGIN 17
@@ -297,7 +297,7 @@ BEGIN 19
   the
   score
   of
-  22419.554807128407.
+  13230.19371331111.
 END 19
 BEGIN 20
   Found
@@ -343,6 +343,62 @@ BEGIN 22
   overlap
   of
   size
+  4
+  between
+  contigs
+  'r79-391.0'
+  and
+  (3)
+  to
+  be
+  (309,
+  4).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  'r79-391.0'
+  and
+  (3)
+  has
+  aligned
+  size
+  4,
+  4
+  matches,
+  and
+  the
+  score
+  of
+  1.2297031646537169.
+END 23
+BEGIN 24
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  4
+  between
+  contigs
+  'r79-391.0'
+  and
+  (3),
+  resulting
+  in
+  contig
+  (5).
+END 24
+BEGIN 25
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
   157
   between
   contigs
@@ -353,8 +409,8 @@ BEGIN 22
   be
   (229,
   157).
-END 22
-BEGIN 23
+END 25
+BEGIN 26
   Overlap
   between
   contigs
@@ -371,9 +427,9 @@ BEGIN 23
   the
   score
   of
-  3.810259562490408.
-END 23
-BEGIN 24
+  5.183654590759953.
+END 26
+BEGIN 27
   Found
   a
   significant
@@ -389,9 +445,9 @@ BEGIN 24
   resulting
   in
   contig
-  (5).
-END 24
-BEGIN 25
+  (6).
+END 27
+BEGIN 28
   Cycle
   2
   finished
@@ -403,22 +459,22 @@ BEGIN 25
   fittest
   has
   length
-  842
+  761
   and
   consists
   of
-  5
+  4
   parts.
-END 25
-BEGIN 26
+END 28
+BEGIN 29
   Cycle
   3
   started
   with
   1
   paths.
-END 26
-BEGIN 27
+END 29
+BEGIN 30
   Calculated
   cutoff
   for
@@ -431,19 +487,19 @@ BEGIN 27
   contigs
   'r102-471.4'
   and
-  (5)
+  (6)
   to
   be
   (367,
   3).
-END 27
-BEGIN 28
+END 30
+BEGIN 31
   Overlap
   between
   contigs
   'r102-471.4'
   and
-  (5)
+  (6)
   has
   aligned
   size
@@ -454,9 +510,9 @@ BEGIN 28
   the
   score
   of
-  22419.554807128407.
-END 28
-BEGIN 29
+  13230.19371331111.
+END 31
+BEGIN 32
   Found
   a
   significant
@@ -468,13 +524,13 @@ BEGIN 29
   contigs
   'r102-471.4'
   and
-  (5),
+  (6),
   resulting
   in
   contig
-  (6).
-END 29
-BEGIN 30
+  (7).
+END 32
+BEGIN 33
   Calculated
   cutoff
   for
@@ -487,12 +543,68 @@ BEGIN 30
   contigs
   'r148-506.1'
   and
-  (5)
+  (6)
   to
   be
   None.
-END 30
-BEGIN 31
+END 33
+BEGIN 34
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  4
+  between
+  contigs
+  'r79-391.0'
+  and
+  (6)
+  to
+  be
+  (309,
+  4).
+END 34
+BEGIN 35
+  Overlap
+  between
+  contigs
+  'r79-391.0'
+  and
+  (6)
+  has
+  aligned
+  size
+  4,
+  4
+  matches,
+  and
+  the
+  score
+  of
+  1.2297031646537169.
+END 35
+BEGIN 36
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  4
+  between
+  contigs
+  'r79-391.0'
+  and
+  (6),
+  resulting
+  in
+  contig
+  (8).
+END 36
+BEGIN 37
   Cycle
   3
   finished
@@ -504,22 +616,22 @@ BEGIN 31
   fittest
   has
   length
-  842
+  761
   and
   consists
   of
-  5
+  4
   parts.
-END 31
-BEGIN 32
+END 37
+BEGIN 38
   Cycle
   4
   started
   with
   1
   paths.
-END 32
-BEGIN 33
+END 38
+BEGIN 39
   Calculated
   cutoff
   for
@@ -527,128 +639,45 @@ BEGIN 33
   overlap
   of
   size
-  359
+  370
   between
   contigs
-  (6)
+  (8)
   and
-  'r148-506.1'
-  to
-  be
-  (46,
-  370).
-END 33
-BEGIN 34
-  Overlap
-  between
-  contigs
-  (6)
-  and
-  'r148-506.1'
-  has
-  aligned
-  size
-  359,
-  323
-  matches,
-  and
-  the
-  score
-  of
-  88829.11620893232.
-END 34
-BEGIN 35
-  Contig
-  (6)
-  covers
-  contig
-  'r148-506.1'
-  completely.
-END 35
-BEGIN 36
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  290
-  between
-  contigs
-  'r79-391.0'
-  and
-  (6)
+  'r102-471.4'
   to
   be
   (23,
-  290).
-END 36
-BEGIN 37
+  313).
+END 39
+BEGIN 40
   Overlap
   between
   contigs
-  'r79-391.0'
+  (8)
   and
-  (6)
+  'r102-471.4'
   has
   aligned
   size
-  290,
-  290
+  370,
+  289
   matches,
   and
   the
   score
   of
-  106478.76635738659.
-END 37
-BEGIN 38
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  290
-  between
-  contigs
-  'r79-391.0'
-  and
-  (6),
-  resulting
-  in
-  contig
-  (7).
-END 38
-BEGIN 39
-  Cycle
-  4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  842
-  and
-  consists
-  of
-  5
-  parts.
-END 39
-BEGIN 40
-  Cycle
-  5
-  started
-  with
-  1
-  paths.
+  62106.499001487886.
 END 40
 BEGIN 41
+  Contig
+  (8)
+  covers
+  contig
+  'r102-471.4'
+  completely.
+END 41
+BEGIN 42
   Calculated
   cutoff
   for
@@ -659,42 +688,115 @@ BEGIN 41
   359
   between
   contigs
-  (7)
+  (8)
   and
   'r148-506.1'
   to
   be
   (69,
-  393).
-END 41
-BEGIN 42
+  313).
+END 42
+BEGIN 43
   Overlap
   between
   contigs
-  (7)
+  (8)
   and
   'r148-506.1'
   has
   aligned
   size
   359,
-  323
+  244
   matches,
   and
   the
   score
   of
-  88829.11620893232.
-END 42
-BEGIN 43
+  42623.22628542999.
+END 43
+BEGIN 44
   Contig
-  (7)
+  (8)
   covers
   contig
   'r148-506.1'
   completely.
-END 43
-BEGIN 44
+END 44
+BEGIN 45
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  761
+  and
+  consists
+  of
+  4
+  parts.
+END 45
+BEGIN 46
+  Cycle
+  5
+  started
+  with
+  1
+  paths.
+END 46
+BEGIN 47
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  359
+  between
+  contigs
+  (8)
+  and
+  'r148-506.1'
+  to
+  be
+  (69,
+  313).
+END 47
+BEGIN 48
+  Overlap
+  between
+  contigs
+  (8)
+  and
+  'r148-506.1'
+  has
+  aligned
+  size
+  359,
+  244
+  matches,
+  and
+  the
+  score
+  of
+  42623.22628542999.
+END 48
+BEGIN 49
+  Contig
+  (8)
+  covers
+  contig
+  'r148-506.1'
+  completely.
+END 49
+BEGIN 50
   Cycle
   5
   finished
@@ -706,32 +808,32 @@ BEGIN 44
   fittest
   has
   length
-  842
+  761
   and
   consists
   of
-  5
+  4
   parts.
-END 44
-BEGIN 45
+END 50
+BEGIN 51
   Cycle
   6
   started
   with
   1
   paths.
-END 45
-BEGIN 46
+END 51
+BEGIN 52
   Constructed
   a
   path
   of
   length
-  842.
-END 46
-BEGIN 47
+  761.
+END 52
+BEGIN 53
   Removed
-  5
+  4
   components
   from
   the
@@ -742,17 +844,17 @@ BEGIN 47
   still
   to
   process.
-END 47
-BEGIN 48
+END 53
+BEGIN 54
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 48
-BEGIN 49
+END 54
+BEGIN 55
   Outputting
   1
   contigs.
-END 49
+END 55

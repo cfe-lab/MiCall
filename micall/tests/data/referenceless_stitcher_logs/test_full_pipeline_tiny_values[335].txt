@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  15985.0.
+  4613.2877161461965.
 END 6
 BEGIN 7
   Found
@@ -85,6 +85,62 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  1
+  between
+  contigs
+  'r483-911.2'
+  and
+  'r148-403.0'
+  to
+  be
+  (428,
+  1).
+END 8
+BEGIN 9
+  Overlap
+  between
+  contigs
+  'r483-911.2'
+  and
+  'r148-403.0'
+  has
+  aligned
+  size
+  1,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  1.0.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  1
+  between
+  contigs
+  'r483-911.2'
+  and
+  'r148-403.0',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -102,16 +158,16 @@ BEGIN 8
   of
   3
   parts.
-END 8
-BEGIN 9
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 9
-BEGIN 10
+END 12
+BEGIN 13
   Calculated
   cutoff
   for
@@ -129,8 +185,8 @@ BEGIN 10
   be
   (558,
   212).
-END 10
-BEGIN 11
+END 13
+BEGIN 14
   Overlap
   between
   contigs
@@ -147,9 +203,9 @@ BEGIN 11
   the
   score
   of
-  95117.85293174192.
-END 11
-BEGIN 12
+  94211.00703811305.
+END 14
+BEGIN 15
   Found
   a
   significant
@@ -165,9 +221,9 @@ BEGIN 12
   resulting
   in
   contig
-  (2).
-END 12
-BEGIN 13
+  (3).
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -185,24 +241,24 @@ BEGIN 13
   of
   3
   parts.
-END 13
-BEGIN 14
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 17
+BEGIN 18
   Constructed
   a
   path
   of
   length
   814.
-END 15
-BEGIN 16
+END 18
+BEGIN 19
   Removed
   3
   components
@@ -215,17 +271,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
   Outputting
   1
   contigs.
-END 18
+END 21

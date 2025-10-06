@@ -321,8 +321,9 @@ def compute_alignment_and_score(
             align_for_merge_noncovered(left, right, left_cutoff, right_cutoff, align_cache)
         )
 
+    # Apply +1 length bonus for non-covered overlaps and +2 for covered overlaps
     result_length, number_of_matches, result_score = score_alignment(
-        aligned_1, aligned_2
+        aligned_1, aligned_2, is_covered,
     )
     return (
         aligned_1,
@@ -529,16 +530,25 @@ def optimistic_overlap_score(overlap_size: int) -> Score:
     return calculate_referenceless_overlap_score(L=overlap_size + 1, M=overlap_size)
 
 
-def score_alignment(aligned_1: str, aligned_2: str) -> Tuple[int, int, Score]:
-    """Compute (result_length, number_of_matches, result_score) from an alignment."""
+def score_alignment(aligned_1: str, aligned_2: str, is_covered: bool) -> Tuple[int, int, Score]:
+    """Compute (result_length, number_of_matches, result_score) from an alignment.
+
+    The statistical length L used for scoring is result_length + length_bonus.
+    Use length_bonus = 1 for non-covering overlaps and 2 for covering overlaps.
+    """
     result_length = len(aligned_1)
     assert result_length > 0, "The overlap cannot be empty."
     number_of_matches = sum(
         1 for x, y in zip(aligned_1, aligned_2) if x == y and x != "-"
     )
+
+    # We add a length bonus because the statistical model assumes
+    # that the overlap is flanked by non-matching positions on both sides.
+    length_bonus = 2 if is_covered else 1
     result_score = calculate_referenceless_overlap_score(
-        L=result_length, M=number_of_matches
+        L=result_length + length_bonus, M=number_of_matches
     )
+
     return result_length, number_of_matches, result_score
 
 

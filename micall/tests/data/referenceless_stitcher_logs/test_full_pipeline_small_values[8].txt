@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  116298.42602620559.
+  115654.41646185164.
 END 6
 BEGIN 7
   Found
@@ -85,6 +85,62 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  372
+  between
+  contigs
+  'r232-624.0'
+  and
+  'r253-715.4'
+  to
+  be
+  (21,
+  372).
+END 8
+BEGIN 9
+  Overlap
+  between
+  contigs
+  'r232-624.0'
+  and
+  'r253-715.4'
+  has
+  aligned
+  size
+  372,
+  372
+  matches,
+  and
+  the
+  score
+  of
+  1.001987812067143.
+END 9
+BEGIN 10
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  372
+  between
+  contigs
+  'r232-624.0'
+  and
+  'r253-715.4',
+  resulting
+  in
+  contig
+  (2).
+END 10
+BEGIN 11
   Cycle
   1
   finished
@@ -100,62 +156,16 @@ BEGIN 8
   and
   consists
   of
-  5
+  6
   parts.
-END 8
-BEGIN 9
+END 11
+BEGIN 12
   Cycle
   2
   started
   with
   1
   paths.
-END 9
-BEGIN 10
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  393
-  between
-  contigs
-  (1)
-  and
-  'r232-624.0'
-  to
-  be
-  (18,
-  411).
-END 10
-BEGIN 11
-  Overlap
-  between
-  contigs
-  (1)
-  and
-  'r232-624.0'
-  has
-  aligned
-  size
-  393,
-  393
-  matches,
-  and
-  the
-  score
-  of
-  118873.32481245692.
-END 11
-BEGIN 12
-  Contig
-  (1)
-  covers
-  contig
-  'r232-624.0'
-  completely.
 END 12
 BEGIN 13
   Calculated
@@ -165,35 +175,35 @@ BEGIN 13
   overlap
   of
   size
-  217
+  391
   between
   contigs
-  'r129-430.1'
+  'r214-622.5'
   and
-  (1)
+  (2)
   to
   be
-  (85,
-  217).
+  (18,
+  391).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  'r129-430.1'
+  'r214-622.5'
   and
-  (1)
+  (2)
   has
   aligned
   size
-  217,
-  217
+  391,
+  391
   matches,
   and
   the
   score
   of
-  95917.40150948471.
+  118030.66425164463.
 END 14
 BEGIN 15
   Found
@@ -202,16 +212,16 @@ BEGIN 15
   overlap
   of
   size
-  217
+  391
   between
   contigs
-  'r129-430.1'
+  'r214-622.5'
   and
-  (1),
+  (2),
   resulting
   in
   contig
-  (2).
+  (3).
 END 15
 BEGIN 16
   Cycle
@@ -229,7 +239,7 @@ BEGIN 16
   and
   consists
   of
-  5
+  6
   parts.
 END 16
 BEGIN 17
@@ -248,101 +258,55 @@ BEGIN 18
   overlap
   of
   size
-  393
+  217
   between
   contigs
-  (2)
+  'r129-430.1'
   and
-  'r232-624.0'
+  (3)
   to
   be
-  (103,
-  496).
+  (85,
+  217).
 END 18
 BEGIN 19
   Overlap
   between
   contigs
-  (2)
+  'r129-430.1'
   and
-  'r232-624.0'
+  (3)
   has
   aligned
   size
-  393,
-  393
+  217,
+  217
   matches,
   and
   the
   score
   of
-  118873.32481245692.
+  95023.44501048244.
 END 19
 BEGIN 20
-  Contig
-  (2)
-  covers
-  contig
-  'r232-624.0'
-  completely.
-END 20
-BEGIN 21
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  232
-  between
-  contigs
-  'r87-360.3'
-  and
-  (2)
-  to
-  be
-  (42,
-  232).
-END 21
-BEGIN 22
-  Overlap
-  between
-  contigs
-  'r87-360.3'
-  and
-  (2)
-  has
-  aligned
-  size
-  232,
-  232
-  matches,
-  and
-  the
-  score
-  of
-  98249.57671411378.
-END 22
-BEGIN 23
   Found
   a
   significant
   overlap
   of
   size
-  232
+  217
   between
   contigs
-  'r87-360.3'
+  'r129-430.1'
   and
-  (2),
+  (3),
   resulting
   in
   contig
-  (3).
-END 23
-BEGIN 24
+  (4).
+END 20
+BEGIN 21
   Cycle
   3
   finished
@@ -358,18 +322,18 @@ BEGIN 24
   and
   consists
   of
-  5
+  6
   parts.
-END 24
-BEGIN 25
+END 21
+BEGIN 22
   Cycle
   4
   started
   with
   1
   paths.
-END 25
-BEGIN 26
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -377,45 +341,82 @@ BEGIN 26
   overlap
   of
   size
-  393
+  232
   between
   contigs
-  (3)
+  'r87-360.3'
   and
-  'r232-624.0'
+  (4)
   to
   be
-  (145,
-  538).
-END 26
-BEGIN 27
+  (42,
+  232).
+END 23
+BEGIN 24
   Overlap
   between
   contigs
-  (3)
+  'r87-360.3'
   and
-  'r232-624.0'
+  (4)
   has
   aligned
   size
-  393,
-  393
+  232,
+  232
   matches,
   and
   the
   score
   of
-  118873.32481245692.
+  97391.57760794008.
+END 24
+BEGIN 25
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  232
+  between
+  contigs
+  'r87-360.3'
+  and
+  (4),
+  resulting
+  in
+  contig
+  (5).
+END 25
+BEGIN 26
+  Cycle
+  4
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  854
+  and
+  consists
+  of
+  6
+  parts.
+END 26
+BEGIN 27
+  Cycle
+  5
+  started
+  with
+  1
+  paths.
 END 27
 BEGIN 28
-  Contig
-  (3)
-  covers
-  contig
-  'r232-624.0'
-  completely.
-END 28
-BEGIN 29
   Calculated
   cutoff
   for
@@ -428,19 +429,19 @@ BEGIN 29
   contigs
   'r721-946.2'
   and
-  (3)
+  (5)
   to
   be
   (225,
   1).
-END 29
-BEGIN 30
+END 28
+BEGIN 29
   Overlap
   between
   contigs
   'r721-946.2'
   and
-  (3)
+  (5)
   has
   aligned
   size
@@ -451,9 +452,9 @@ BEGIN 30
   the
   score
   of
-  15985.0.
-END 30
-BEGIN 31
+  4613.2877161461965.
+END 29
+BEGIN 30
   Found
   a
   significant
@@ -465,123 +466,50 @@ BEGIN 31
   contigs
   'r721-946.2'
   and
-  (3),
+  (5),
   resulting
   in
   contig
-  (4).
+  (6).
+END 30
+BEGIN 31
+  Cycle
+  5
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  854
+  and
+  consists
+  of
+  6
+  parts.
 END 31
 BEGIN 32
-  Cycle
-  4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  854
-  and
-  consists
-  of
-  5
-  parts.
-END 32
-BEGIN 33
-  Cycle
-  5
-  started
-  with
-  1
-  paths.
-END 33
-BEGIN 34
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  393
-  between
-  contigs
-  (4)
-  and
-  'r232-624.0'
-  to
-  be
-  (370,
-  763).
-END 34
-BEGIN 35
-  Overlap
-  between
-  contigs
-  (4)
-  and
-  'r232-624.0'
-  has
-  aligned
-  size
-  393,
-  393
-  matches,
-  and
-  the
-  score
-  of
-  118873.32481245692.
-END 35
-BEGIN 36
-  Contig
-  (4)
-  covers
-  contig
-  'r232-624.0'
-  completely.
-END 36
-BEGIN 37
-  Cycle
-  5
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  854
-  and
-  consists
-  of
-  5
-  parts.
-END 37
-BEGIN 38
   Cycle
   6
   started
   with
   1
   paths.
-END 38
-BEGIN 39
+END 32
+BEGIN 33
   Constructed
   a
   path
   of
   length
   854.
-END 39
-BEGIN 40
+END 33
+BEGIN 34
   Removed
-  5
+  6
   components
   from
   the
@@ -592,17 +520,17 @@ BEGIN 40
   still
   to
   process.
-END 40
-BEGIN 41
+END 34
+BEGIN 35
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 41
-BEGIN 42
+END 35
+BEGIN 36
   Outputting
   1
   contigs.
-END 42
+END 36

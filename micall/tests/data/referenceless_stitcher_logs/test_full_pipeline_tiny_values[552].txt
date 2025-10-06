@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  137084.3723090374.
+  136596.3879362843.
 END 6
 BEGIN 7
   Found
@@ -96,11 +96,11 @@ BEGIN 8
   fittest
   has
   length
-  923
+  650
   and
   consists
   of
-  3
+  2
   parts.
 END 8
 BEGIN 9
@@ -147,64 +147,54 @@ BEGIN 11
   the
   score
   of
-  1.0.
+  -23.089089578045378.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  1
-  between
-  contigs
-  (1)
-  and
-  'r708-983.2',
-  resulting
-  in
-  contig
-  (2).
-END 12
-BEGIN 13
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  923
-  and
-  consists
-  of
-  3
-  parts.
-END 13
-BEGIN 14
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 14
-BEGIN 15
   Constructed
   a
   path
   of
   length
-  923.
+  650.
+END 12
+BEGIN 13
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
 END 15
 BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  276.
+END 16
+BEGIN 17
   Removed
-  3
+  1
   components
   from
   the
@@ -215,17 +205,71 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  7
+  between
+  contigs
+  (1)
+  and
+  'r708-983.2'
+  to
+  be
+  (647,
+  1).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r708-983.2'
+  has
+  aligned
+  size
+  1,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -23.089089578045378.
+END 21
+BEGIN 22
   Outputting
-  1
+  2
   contigs.
-END 18
+END 22

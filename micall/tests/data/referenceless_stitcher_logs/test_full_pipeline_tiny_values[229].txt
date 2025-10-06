@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  110710.4923261798.
+  110010.38432708415.
 END 6
 BEGIN 7
   Found
@@ -85,6 +85,44 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  327
+  between
+  contigs
+  'r230-950.1'
+  and
+  'r541-867.0'
+  to
+  be
+  (311,
+  638).
+END 8
+BEGIN 9
+  Overlap
+  between
+  contigs
+  'r230-950.1'
+  and
+  'r541-867.0'
+  has
+  aligned
+  size
+  327,
+  327
+  matches,
+  and
+  the
+  score
+  of
+  0.9982793192832136.
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -102,16 +140,16 @@ BEGIN 8
   of
   2
   parts.
-END 8
-BEGIN 9
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths.
-END 9
-BEGIN 10
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -129,8 +167,8 @@ BEGIN 10
   be
   (311,
   638).
-END 10
-BEGIN 11
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -147,17 +185,17 @@ BEGIN 11
   the
   score
   of
-  111204.91427583121.
-END 11
-BEGIN 12
+  109821.09158012626.
+END 13
+BEGIN 14
   Contig
   (1)
   covers
   contig
   'r541-867.0'
   completely.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -175,24 +213,24 @@ BEGIN 13
   of
   2
   parts.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   741.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Removed
   2
   components
@@ -205,17 +243,17 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 18
+END 20

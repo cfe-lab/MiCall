@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  131267.19305871447.
+  130220.19221313052.
 END 6
 BEGIN 7
   Contig
@@ -110,7 +110,7 @@ BEGIN 9
   the
   score
   of
-  102364.41311185135.
+  101564.4262239254.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   the
   score
   of
-  131267.19305871447.
+  130220.19221313052.
 END 14
 BEGIN 15
   Contig
