@@ -262,7 +262,7 @@ def precheck_and_prepare_overlap(
         left, right, shift
     )
 
-    # Maintain safety assertions from original implementation.
+    # Sanity checks.
     assert len(right_initial_overlap) == overlap.size, (
         f"{len(right_initial_overlap)} == {overlap.size}"
     )
