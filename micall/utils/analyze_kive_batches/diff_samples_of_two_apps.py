@@ -6,13 +6,44 @@ from micall.utils.user_error import UserError
 from .logger import logger
 
 
-def is_numeric_dtype(col: pd.Series) -> bool:
-    return col.dtype.kind in ('i','u','f')
+def _can_parse_float(val: str) -> bool:
+    try:
+        float(val)
+        return True
+    except Exception:
+        return False
+
+
+def _parse_float(val: str) -> Union[float, None]:
+    try:
+        return float(val)
+    except Exception:
+        return None
+
+
+def _is_numeric_by_values(col: pd.Series) -> bool:
+    """Decide if a column is numeric based on its string values.
+
+    Treat empty strings as missing; all other non-empty values must be
+    convertible to float for the column to be considered numeric.
+    """
+    # Ensure we're working with Python strings; pandas shouldn't coerce types
+    vals = ("" if v is None else str(v) for v in col.tolist())
+    non_empty = [v for v in vals if v != ""]
+    if not non_empty:
+        # No data → not considered numeric to avoid producing numbers
+        return False
+    return all(_can_parse_float(v) for v in non_empty)
 
 
 def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) -> None:
-    # 1) Read everything
-    df = pd.read_csv(input)
+    # 1) Read everything as strings; disable NA/NaN inference entirely
+    df = pd.read_csv(
+        input,
+        dtype=str,
+        keep_default_na=False,
+        na_filter=False,
+    )
     cols = tuple(df.columns)  # keep the original column order
 
     # 2) Fail fast if either app is not present
@@ -25,13 +56,18 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     df1 = df[df['app'] == app1]
     df2 = df[df['app'] == app2]
 
-    def tostr(x: pd.DataFrame) -> str:
-        if pd.isna(x):
+    def tostr(x) -> str:
+        if x is None:
             return ''
-        elif isinstance(x, float) and float.is_integer(x):
-            return str(int(x))
-        else:
+        if isinstance(x, float):
+            try:
+                if x.is_integer():
+                    return str(int(x))
+            except Exception:
+                pass
+            # Use default string conversion for floats
             return str(x)
+        return str(x)
 
     # 4) If there are multiple rows per (sample, app), collapse them:
     #    - numeric cols → mean
@@ -39,16 +75,44 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     def concat_all(xs: pd.Series) -> str:
         return '+'.join(map(tostr, xs.tolist()))
 
-    def diff_all(xs: pd.Series) -> float:
-        if len(xs) == 1:
-            return 0
+    def _format_number(n: Union[float, int, None]) -> str:
+        if n is None:
+            return ''
+        if isinstance(n, float):
+            try:
+                if n.is_integer():
+                    return str(int(n))
+            except Exception:
+                pass
+        return str(n)
 
-        diffs = (abs(a - b) for a, b in zip(xs, xs[1:]))
-        return sum(diffs) / (len(xs) - 1)
+    def mean_as_str(xs: pd.Series) -> str:
+        vals = [v for v in (tostr(v) for v in xs.tolist()) if v != '']
+        nums = [float(v) for v in vals if _can_parse_float(v)]
+        if not nums:
+            return ''
+        mean_val = sum(nums) / len(nums)
+        return _format_number(mean_val)
 
-    agg_map: dict[str, Union[str, Callable[[pd.Series], Union[float, str]]]] = {}
+    def diff_all_as_str(xs: pd.Series) -> str:
+        # Calculate average absolute difference across consecutive values (numeric only)
+        vals = [v for v in (tostr(v) for v in xs.tolist()) if v != '']
+        nums = [float(v) for v in vals if _can_parse_float(v)]
+        if len(nums) <= 1:
+            return '0'
+        diffs = [abs(a - b) for a, b in zip(nums, nums[1:])]
+        avg = sum(diffs) / len(diffs)
+        return _format_number(avg)
+
+    agg_map: dict[str, Union[str, Callable[[pd.Series], str]]] = {}
     # For same-app comparison, we need separate aggregation for base columns
-    base_agg_map: dict[str, Union[str, Callable[[pd.Series], Union[float, str]]]] = {}
+    base_agg_map: dict[str, Union[str, Callable[[pd.Series], str]]] = {}
+
+    # Pre-compute which columns appear numeric based on their string values
+    numeric_cols: dict[str, bool] = {
+        c: _is_numeric_by_values(df[c]) if c not in ('sample', 'app') else False
+        for c in cols
+    }
 
     for c in cols:
         if c == 'sample':
@@ -56,13 +120,13 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
         elif c == 'app':
             agg_map[c] = 'first'
             base_agg_map[c] = 'first'
-        elif is_numeric_dtype(df[c]):
+        elif numeric_cols.get(c, False):
             if app1 == app2:
-                agg_map[c] = diff_all
-                base_agg_map[c] = 'mean'  # base columns show the actual mean values
+                agg_map[c] = diff_all_as_str
+                base_agg_map[c] = mean_as_str  # base columns show the actual mean values
             else:
-                agg_map[c] = 'mean'
-                base_agg_map[c] = 'mean'
+                agg_map[c] = mean_as_str
+                base_agg_map[c] = mean_as_str
         else:
             agg_map[c] = concat_all
             base_agg_map[c] = concat_all
@@ -118,22 +182,26 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
                 a = rowA[col]
                 b = rowB[col]
                 a_base = rowA_base[col]  # Use base value for base columns
-                column = df[col]
+                column_is_numeric = numeric_cols.get(col, False)
 
                 if app1 == app2:
-                    rec[col] = a
+                    rec[col] = tostr(a)
                     # For same app comparison, also add base column
                     if col != 'app':
-                        rec[f"{col}_base"] = a_base  # Use the mean/aggregated base value
+                        rec[f"{col}_base"] = tostr(a_base)  # Use the mean/aggregated base value
                     continue
 
-                # only treat ints and floats as numeric; exclude bools
-                if is_numeric_dtype(column) and not pd.isna(a) and not pd.isna(b):
-                    # numeric diff
-                    rec[col] = pd.to_numeric(a, errors='coerce') - \
-                               pd.to_numeric(b, errors='coerce')
-                    if float.is_integer(rec[col]):
-                        rec[col] = int(rec[col])
+                # only treat as numeric when both sides are parseable numbers
+                if column_is_numeric and _can_parse_float(str(a)) and _can_parse_float(str(b)):
+                    aval = _parse_float(str(a))
+                    bval = _parse_float(str(b))
+                    if aval is not None and bval is not None:
+                        diffval = aval - bval
+                        rec[col] = _format_number(diffval)
+                    else:
+                        # Fallback to string diff if any side failed
+                        sa, sb = tostr(a), tostr(b)
+                        rec[col] = sa if sa == sb else f"{sa}/{sb}"
                 else:
                     # non‐numeric: "L/R" or just "L" if equal
                     sa, sb = tostr(a), tostr(b)
@@ -141,12 +209,9 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
 
                 # Add base column (app1 value) for all columns except 'app'
                 if col != 'app':
-                    if is_numeric_dtype(column):
-                        base_val = pd.to_numeric(a_base, errors='coerce')
-                        if not pd.isna(base_val) and float.is_integer(base_val):
-                            rec[f"{col}_base"] = int(base_val)
-                        else:
-                            rec[f"{col}_base"] = base_val
+                    if column_is_numeric and _can_parse_float(str(a_base)):
+                        base_val = _parse_float(str(a_base))
+                        rec[f"{col}_base"] = _format_number(base_val)
                     else:
                         rec[f"{col}_base"] = tostr(a_base)
 
@@ -160,4 +225,6 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     out_df = pd.DataFrame(out_recs, columns=new_cols)
 
     # 8) Write to CSV
+    # Ensure all values are strings, and replace any accidental NaN with empty string
+    out_df = out_df.fillna('').astype(str)
     out_df.to_csv(output, index=False)

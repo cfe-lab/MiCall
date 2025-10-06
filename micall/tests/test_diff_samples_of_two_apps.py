@@ -265,9 +265,9 @@ def test_float_subtraction_and_negative(tmp_path):
     got = dict(zip(df["sample"], df["val"]))
     got_base = dict(zip(df["sample"], df["val_base"]))
     assert got["1"] == "-1.4"
-    assert got["2"] == "4.0"
+    assert got["2"] == "4"
     assert got_base["1"] == "2.1"
-    assert got_base["2"] == "5.0"
+    assert got_base["2"] == "5"
 
 
 def test_column_order_is_preserved(tmp_path):
@@ -367,11 +367,11 @@ def test_same_app_diffing_itself(tmp_path):
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
     # we should get one row with aggregated values and base columns
-    assert list(df["size"]) == ["10.0"]
+    assert list(df["size"]) == ["10"]
     assert list(df["tag"])  == ["X+Y"]
     assert list(df["app"])  == ["bob"]
     # base columns should have the same values since it's same app
-    assert list(df["size_base"]) == ["15.0"]  # mean of 10,20
+    assert list(df["size_base"]) == ["15"]  # mean of 10,20
     assert list(df["tag_base"])  == ["X+Y"]
 
 
@@ -393,12 +393,12 @@ def test_same_app_diffing_itself2(tmp_path):
     diff_samples_of_two_apps(inp, app1="bob", app2="bob", output=out)
     df = read_df(out)
     # we should get one row with aggregated values and base columns
-    assert list(df["size"]) == ["10.0"]  # variance: average diff between consecutive values (|20-10| + |30-20|)/(3-1) = 20/2 = 10
+    assert list(df["size"]) == ["10"]  # variance: average diff between consecutive values (|20-10| + |30-20|)/(3-1) = 20/2 = 10
     assert list(df["tag"])  == ["X+Y+X"]
     assert list(df["tag2"])  == ["a+b+c"]
     assert list(df["app"])  == ["bob"]
     # base columns should have the same values since it's same app
-    assert list(df["size_base"]) == ["20.0"]  # mean of 10,20,30
+    assert list(df["size_base"]) == ["20"]  # mean of 10,20,30
     assert list(df["tag_base"])  == ["X+Y+X"]
     assert list(df["tag2_base"])  == ["a+b+c"]
 
