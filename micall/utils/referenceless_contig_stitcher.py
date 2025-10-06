@@ -104,7 +104,6 @@ def ACCEPTABLE_STITCHING_SCORE():
 
 
 MAX_ALTERNATIVES = 999
-MIN_ALTERNATIVES = 1
 
 
 def intrapolate_number_of_alternatives(n_candidates: int) -> int:
@@ -125,8 +124,8 @@ def intrapolate_number_of_alternatives(n_candidates: int) -> int:
     n_candidates (≤ 2) we still want at least one alternative,
     and we avoid division by zero.
 
-    Finally, the result is clamped into [MIN_ALTERNATIVES, MAX_ALTERNATIVES]
-    = [1, 999] and rounded to the nearest integer.
+    Finally, the result is clamped into [1, MAX_ALTERNATIVES]
+    and rounded to the nearest integer.
 
     Args:
         n_candidates: Number of contigs available for extension
@@ -138,7 +137,7 @@ def intrapolate_number_of_alternatives(n_candidates: int) -> int:
     """
 
     ret = MAX_ALTERNATIVES / max(1, n_candidates - 2)
-    clamped = max(MIN_ALTERNATIVES, min(MAX_ALTERNATIVES, ret))
+    clamped = max(1, min(MAX_ALTERNATIVES, ret))
     rounded = round(clamped)
     return rounded
 
