@@ -7,7 +7,6 @@ Entry script that serves as an entry point of MiCall's Docker image.
 from argparse import ArgumentParser
 import csv
 import errno
-import fnmatch
 import functools
 from concurrent.futures.process import ProcessPoolExecutor
 from glob import glob
@@ -28,7 +27,7 @@ from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.pssm_lib import Pssm
-from micall.utils.list_fastq_files import find_fastq_source_folder
+from micall.utils.list_fastq_files import list_fastq_files
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
     MiCallArgs
@@ -782,20 +781,15 @@ def load_sample(sample_json,
                 project_code: typing.Optional[str]):
     if sample_json is None:
         return None
-    # Try BaseCalls first, then fall back to sample folder
+    # Use list_fastq_files to find R1 files in BaseCalls, Alignment_*/*/Fastq, or sample folder
     sample_base = os.path.join(data_path, 'input', 'samples', sample_json['Id'])
-    sample_dir = os.path.join(sample_base, 'Data', 'Intensities', 'BaseCalls')
-    if not os.path.exists(sample_dir):
-        sample_dir = sample_base
-    fastq1 = None
-    for root, _dirs, files in os.walk(sample_dir):
-        fastq_files = fnmatch.filter(files, '*_R1_*')
-        if fastq_files:
-            fastq1 = os.path.join(root, fastq_files[0])
-            break
-    if fastq1 is None:
+    fastq_files = list_fastq_files(sample_base, '*_R1_*', fallback_to_run_path=True)
+
+    if not fastq_files:
         raise RuntimeError(
             'No R1 file found for sample id {}.'.format(sample_json['Id']))
+
+    fastq1 = str(fastq_files[0])
     sample = Sample(fastq1=fastq1,
                     basespace_id=sample_json['Id'],
                     basespace_href=sample_json['Href'])
@@ -885,13 +879,15 @@ def link_samples(
             sample_groups.append(SampleGroup(sample, midi_sample=None))
 
     else:  # a sample sheet is specified
-        # Find FASTQ files in BaseCalls or run_path
-        source_folder = find_fastq_source_folder(run_path, '*_R1_*')
-        if source_folder is None:
-            fastq_files = []
+        # Find FASTQ files in BaseCalls, Alignment_*/*/Fastq, or run_path
+        fastq_files = [str(f) for f in list_fastq_files(run_path, '*_R1_*', fallback_to_run_path=True)]
+        if not fastq_files:
+            file_names = []
+            source_folder = None
         else:
-            fastq_files = list(glob(os.path.join(str(source_folder), '*_R1_*')))
-        file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
+            source_folder = os.path.dirname(fastq_files[0])
+            file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
+        
         groups = find_groups(file_names, sample_sheet_path)
         for group in groups:
             main_file, midi_file = group.names
