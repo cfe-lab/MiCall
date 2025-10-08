@@ -20,7 +20,7 @@ from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check, log_check, random_fasta_file, run_full_pipeline, load_projects
 
 # to avoid linter warnings
-assert disable_acceptable_prob_check is not None 
+assert disable_acceptable_prob_check is not None
 assert log_check is not None
 assert random_fasta_file is not None
 assert load_projects is not None
