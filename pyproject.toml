@@ -247,7 +247,7 @@ exclude = '''(?x)
     ^micall/utils/release_test_setup[.]py$|
     ^micall/utils/micall_kive[.]py$|
     ^micall/utils/micall_kive_resistance[.]py$|
-    ^micall/utils/micall_docker[.]py$
+    ^micall/utils/analyze[.]py$
 '''
 
 check_untyped_defs = true

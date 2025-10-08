@@ -94,11 +94,11 @@ and the MiseqQCReport so you can download QC data and upload results.
 
 ### Looking at SAM files
 When you don't understand the pipeline's output, it can be helpful to look at
-the raw reads in a sequence viewer like [Tablet][tablet]. Run the `micall_docker`
-script on a run folder or a single sample, like this:
+the raw reads in a sequence viewer like [Tablet][tablet]. Run the `micall analyze`
+command on a run folder or a single sample, like this:
 
 ```shell
-python micall/utils/micall_docker.py folder --debug_remap --all_projects --keep_scratch /path/to/run
+micall analyze folder --debug_remap --all_projects --keep_scratch /path/to/run
 ```
 
 The options tell it to write the debug files, use all projects, and save the

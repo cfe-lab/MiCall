@@ -79,7 +79,7 @@ EXECUTABLES = [
     "micall/utils/ref_aligner.py",
     "micall/utils/scan_run_folders.py",
     "micall/utils/contig_blaster.py",
-    "micall/utils/micall_docker.py",
+    "micall/utils/analyze.py",
     "micall/utils/hcv_reference_tree.py",
     "micall/utils/sample_project_summary.py",
     "micall/utils/get_list_of_executables.py",
