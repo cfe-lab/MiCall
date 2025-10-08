@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
-from micall.utils.list_fastq_files import get_base_calls_path, list_fastq_files
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_files
 
 logger = logging.getLogger(__name__)
 
@@ -165,9 +165,9 @@ def main(argv: Sequence[str]) -> int:
             fastq_file_names = [f.name for f in fastq_files]
             logger.debug("Found %d FASTQ files", len(fastq_files))
         else:
-            base_calls_path = get_base_calls_path(run_path)
+            fastq_folder = find_fastq_source_folder(run_path)
             logger.error(
-                "No FASTQ files found in %s or %s", base_calls_path, run_path
+                "No FASTQ files found in %s or %s", fastq_folder, run_path
             )
             return 1
     else:

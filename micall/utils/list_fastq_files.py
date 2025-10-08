@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Union, Optional
 
 
-def get_base_calls_path(run_path: Union[str, Path]) -> Path:
+def _get_base_calls_path(run_path: Union[str, Path]) -> Path:
     """Get the standard BaseCalls directory path for a MiSeq run.
 
     Args:
@@ -38,7 +38,7 @@ def find_fastq_source_folder(
         run_path = Path(run_path)
 
     # Try standard MiSeq structure first
-    base_calls_path = get_base_calls_path(run_path)
+    base_calls_path = _get_base_calls_path(run_path)
     if base_calls_path.exists():
         fastq_files = list(base_calls_path.glob(pattern))
         if fastq_files:
