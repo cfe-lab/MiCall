@@ -25,7 +25,7 @@ def find_fastq_source_folder(
     """Find the folder containing FASTQ files in a sequencing run.
 
     First tries the standard MiSeq structure (Data/Intensities/BaseCalls),
-    then tries Alignment_\d+/.*/Fastq/ directories (preferring highest alignment
+    then tries Alignment_\\d+/.*/Fastq/ directories (preferring highest alignment
     number, then lexicographically largest subdirectory name),
     then falls back to the run_path directly.
 
@@ -95,7 +95,7 @@ def list_fastq_files(
     """List FASTQ files in a sequencing run folder.
 
     First tries the standard MiSeq structure (Data/Intensities/BaseCalls),
-    then tries Alignment_\d+/.*/Fastq/ directories (preferring highest number),
+    then tries Alignment_\\d+/.*/Fastq/ directories (preferring highest number),
     then falls back to searching the run_path directly if requested.
 
     Args:
@@ -131,7 +131,7 @@ def list_fastq_file_names(
     """List FASTQ file names (without directory path) in a sequencing run folder.
 
     First tries the standard MiSeq structure (Data/Intensities/BaseCalls),
-    then tries Alignment_\d+/.*/Fastq/ directories (preferring highest number),
+    then tries Alignment_\\d+/.*/Fastq/ directories (preferring highest number),
     then falls back to searching the run_path directly if requested.
 
     Args:
