@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  112
+  7
   between
   contigs
   'r584-894.0'
@@ -82,7 +82,7 @@ BEGIN 7
   the
   score
   of
-  71348.84425721793.
+  32419.600681450243.
 END 7
 BEGIN 8
   Found
@@ -165,7 +165,7 @@ BEGIN 12
   the
   score
   of
-  89598.12319299807.
+  36239.155987594335.
 END 12
 BEGIN 13
   Found

@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  120913.13708398382.
+  41696.37542696956.
 END 6
 BEGIN 7
   Contig
@@ -82,24 +82,24 @@ BEGIN 8
   overlap
   of
   size
-  24
+  1
   between
   contigs
-  'r665-994.0'
-  and
   'r33-665.1'
+  and
+  'r665-994.0'
   to
   be
-  (314,
+  (632,
   1).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r665-994.0'
-  and
   'r33-665.1'
+  and
+  'r665-994.0'
   has
   aligned
   size
@@ -110,7 +110,7 @@ BEGIN 9
   the
   score
   of
-  4613.2877161461965.
+  4288.953034789552.
 END 9
 BEGIN 10
   Found
@@ -122,9 +122,9 @@ BEGIN 10
   1
   between
   contigs
-  'r665-994.0'
+  'r33-665.1'
   and
-  'r33-665.1',
+  'r665-994.0',
   resulting
   in
   contig
@@ -142,7 +142,7 @@ BEGIN 11
   fittest
   has
   length
-  947
+  962
   and
   consists
   of
@@ -173,8 +173,8 @@ BEGIN 13
   'r151-573.2'
   to
   be
-  (432,
-  855).
+  (118,
+  541).
 END 13
 BEGIN 14
   Overlap
@@ -193,7 +193,7 @@ BEGIN 14
   the
   score
   of
-  120913.13708398382.
+  41696.37542696956.
 END 14
 BEGIN 15
   Contig
@@ -215,7 +215,7 @@ BEGIN 16
   fittest
   has
   length
-  947
+  962
   and
   consists
   of
@@ -236,7 +236,7 @@ BEGIN 18
   path
   of
   length
-  947.
+  962.
 END 18
 BEGIN 19
   Removed

@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  12214.415360281439.
+  8778.957611190093.
 END 6
 BEGIN 7
   Found
@@ -120,7 +120,7 @@ BEGIN 9
   the
   score
   of
-  7.75312701293576.
+  4.2394330043106745.
 END 9
 BEGIN 10
   Found
@@ -152,7 +152,7 @@ BEGIN 11
   fittest
   has
   length
-  798
+  819
   and
   consists
   of
@@ -175,7 +175,7 @@ BEGIN 13
   overlap
   of
   size
-  24
+  3
   between
   contigs
   (2)
@@ -183,8 +183,8 @@ BEGIN 13
   'r39-337.2'
   to
   be
-  (501,
-  13).
+  (520,
+  3).
 END 13
 BEGIN 14
   Overlap
@@ -196,14 +196,14 @@ BEGIN 14
   has
   aligned
   size
-  16,
-  10
+  3,
+  3
   matches,
   and
   the
   score
   of
-  11443.322570884848.
+  10862.952238016636.
 END 14
 BEGIN 15
   Found
@@ -212,7 +212,7 @@ BEGIN 15
   overlap
   of
   size
-  11
+  3
   between
   contigs
   (2)
@@ -235,7 +235,7 @@ BEGIN 16
   fittest
   has
   length
-  798
+  819
   and
   consists
   of
@@ -256,7 +256,7 @@ BEGIN 18
   path
   of
   length
-  798.
+  819.
 END 18
 BEGIN 19
   Removed

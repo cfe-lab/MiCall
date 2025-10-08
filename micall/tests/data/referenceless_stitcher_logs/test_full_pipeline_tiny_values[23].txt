@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  112229.34348165782.
+  40357.275005773074.
 END 6
 BEGIN 7
   Found
@@ -119,7 +119,7 @@ BEGIN 10
   overlap
   of
   size
-  50
+  12
   between
   contigs
   (1)
@@ -127,17 +127,37 @@ BEGIN 10
   'r85-348.0'
   to
   be
-  None.
+  (544,
+  1).
 END 10
 BEGIN 11
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r85-348.0'
+  has
+  aligned
+  size
+  1,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -6.146278494524225.
+END 11
+BEGIN 12
   Constructed
   a
   path
   of
   length
   548.
-END 11
-BEGIN 12
+END 12
+BEGIN 13
   Removed
   2
   components
@@ -150,29 +170,29 @@ BEGIN 12
   still
   to
   process.
-END 12
-BEGIN 13
+END 13
+BEGIN 14
   Calculating
   all
   paths...
-END 13
-BEGIN 14
+END 14
+BEGIN 15
   Cycle
   1
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 15
+BEGIN 16
   Constructed
   a
   path
   of
   length
   264.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Removed
   1
   components
@@ -185,8 +205,8 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Giving
   up
   on
@@ -201,16 +221,16 @@ BEGIN 17
   is
   a
   singleton.
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 18
-BEGIN 19
+END 19
+BEGIN 20
   Calculated
   cutoff
   for
@@ -218,7 +238,7 @@ BEGIN 19
   overlap
   of
   size
-  50
+  12
   between
   contigs
   (1)
@@ -226,10 +246,30 @@ BEGIN 19
   'r85-348.0'
   to
   be
-  None.
-END 19
-BEGIN 20
+  (544,
+  1).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r85-348.0'
+  has
+  aligned
+  size
+  1,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -6.146278494524225.
+END 21
+BEGIN 22
   Outputting
   2
   contigs.
-END 20
+END 22

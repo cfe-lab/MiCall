@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  16269.211078240382.
+  12834.368696148502.
 END 6
 BEGIN 7
   Found
@@ -92,7 +92,7 @@ BEGIN 8
   overlap
   of
   size
-  216
+  7
   between
   contigs
   'r135-503.2'
@@ -165,7 +165,7 @@ BEGIN 12
   the
   score
   of
-  69443.8159224504.
+  31985.618221923145.
 END 12
 BEGIN 13
   Found

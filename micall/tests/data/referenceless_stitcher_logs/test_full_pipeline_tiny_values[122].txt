@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  288
+  12
   between
   contigs
   'r522-886.0'
@@ -54,7 +54,7 @@ BEGIN 6
   overlap
   of
   size
-  187
+  21
   between
   contigs
   'r108-518.2'
@@ -62,17 +62,37 @@ BEGIN 6
   'r606-943.1'
   to
   be
-  None.
+  (410,
+  1).
 END 6
 BEGIN 7
+  Overlap
+  between
+  contigs
+  'r108-518.2'
+  and
+  'r606-943.1'
+  has
+  aligned
+  size
+  1,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -6.146278494524225.
+END 7
+BEGIN 8
   Constructed
   a
   path
   of
   length
   411.
-END 7
-BEGIN 8
+END 8
+BEGIN 9
   Removed
   1
   components
@@ -85,8 +105,8 @@ BEGIN 8
   still
   to
   process.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Giving
   up
   on
@@ -101,32 +121,14 @@ BEGIN 9
   is
   a
   singleton.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 10
-BEGIN 11
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  288
-  between
-  contigs
-  'r522-886.0'
-  and
-  'r108-518.2'
-  to
-  be
-  None.
 END 11
 BEGIN 12
   Calculated
@@ -136,7 +138,25 @@ BEGIN 12
   overlap
   of
   size
-  187
+  12
+  between
+  contigs
+  'r522-886.0'
+  and
+  'r108-518.2'
+  to
+  be
+  None.
+END 12
+BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  21
   between
   contigs
   'r108-518.2'
@@ -144,9 +164,29 @@ BEGIN 12
   'r606-943.1'
   to
   be
-  None.
-END 12
-BEGIN 13
+  (410,
+  1).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  'r108-518.2'
+  and
+  'r606-943.1'
+  has
+  aligned
+  size
+  1,
+  0
+  matches,
+  and
+  the
+  score
+  of
+  -6.146278494524225.
+END 14
+BEGIN 15
   Calculated
   cutoff
   for
@@ -164,8 +204,8 @@ BEGIN 13
   be
   (84,
   281).
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Overlap
   between
   contigs
@@ -182,9 +222,9 @@ BEGIN 14
   the
   score
   of
-  104510.63823215508.
-END 14
-BEGIN 15
+  39013.659451227126.
+END 16
+BEGIN 17
   Found
   a
   significant
@@ -201,8 +241,8 @@ BEGIN 15
   in
   contig
   (1).
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -210,18 +250,18 @@ BEGIN 16
   overlap
   of
   size
-  345
+  53
   between
   contigs
-  (1)
-  and
   'r108-518.2'
+  and
+  (1)
   to
   be
   None.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Outputting
   2
   contigs.
-END 17
+END 19

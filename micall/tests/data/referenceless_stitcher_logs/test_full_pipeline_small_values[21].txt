@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  118914.81330964748.
+  41478.005770222655.
 END 6
 BEGIN 7
   Found
@@ -147,7 +147,7 @@ BEGIN 11
   the
   score
   of
-  98463.4788468292.
+  37919.36067910977.
 END 11
 BEGIN 12
   Found
@@ -202,12 +202,12 @@ BEGIN 15
   overlap
   of
   size
-  169
+  42
   between
   contigs
-  'r650-997.1'
-  and
   (2)
+  and
+  'r650-997.1'
   to
   be
   None.
@@ -248,7 +248,7 @@ BEGIN 17
   the
   score
   of
-  73673.83433598737.
+  32938.923363385504.
 END 17
 BEGIN 18
   Found
@@ -304,7 +304,7 @@ BEGIN 20
   the
   score
   of
-  1.1500565894105104.
+  1.0708469904926243.
 END 20
 BEGIN 21
   Found
@@ -387,7 +387,7 @@ BEGIN 25
   the
   score
   of
-  83735.19587789055.
+  35071.004165010665.
 END 25
 BEGIN 26
   Found
@@ -443,7 +443,7 @@ BEGIN 28
   the
   score
   of
-  1.2197608181839297.
+  1.1003029863504357.
 END 28
 BEGIN 29
   Found
@@ -526,7 +526,7 @@ BEGIN 33
   the
   score
   of
-  94537.42982457214.
+  37187.137400900974.
 END 33
 BEGIN 34
   Found

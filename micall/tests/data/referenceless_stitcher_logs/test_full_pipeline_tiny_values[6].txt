@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  142
+  11
   between
   contigs
   'r0-329.1'
@@ -82,7 +82,7 @@ BEGIN 7
   the
   score
   of
-  84729.07864524054.
+  35272.54695374855.
 END 7
 BEGIN 8
   Found
@@ -165,7 +165,7 @@ BEGIN 12
   the
   score
   of
-  59981.80505808184.
+  29700.126802188017.
 END 12
 BEGIN 13
   Found

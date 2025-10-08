@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  113549.29315537808.
+  40581.561149628855.
 END 6
 BEGIN 7
   Found
@@ -119,12 +119,12 @@ BEGIN 10
   overlap
   of
   size
-  134
+  6
   between
   contigs
-  (1)
-  and
   'r19-287.0'
+  and
+  (1)
   to
   be
   None.
@@ -218,12 +218,12 @@ BEGIN 19
   overlap
   of
   size
-  134
+  6
   between
   contigs
-  (1)
-  and
   'r19-287.0'
+  and
+  (1)
   to
   be
   None.

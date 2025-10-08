@@ -36,45 +36,37 @@ BEGIN 5
   overlap
   of
   size
-  341
+  29
   between
   contigs
-  'r538-981.0'
-  and
   'r98-438.2'
+  and
+  'r538-981.0'
   to
   be
-  (51,
-  392).
+  (339,
+  4).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r538-981.0'
-  and
   'r98-438.2'
+  and
+  'r538-981.0'
   has
   aligned
   size
-  455,
-  226
+  4,
+  0
   matches,
   and
   the
   score
   of
-  18726.53016168122.
+  -31.461283509891626.
 END 6
 BEGIN 7
-  Contig
-  'r538-981.0'
-  covers
-  contig
-  'r98-438.2'
-  completely.
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -92,8 +84,8 @@ BEGIN 8
   be
   (126,
   150).
-END 8
-BEGIN 9
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -110,9 +102,9 @@ BEGIN 9
   the
   score
   of
-  82925.040754058.
-END 9
-BEGIN 10
+  34905.60104069329.
+END 8
+BEGIN 9
   Found
   a
   significant
@@ -129,8 +121,8 @@ BEGIN 10
   in
   contig
   (1).
-END 10
-BEGIN 11
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -148,16 +140,16 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -175,8 +167,8 @@ BEGIN 13
   be
   (314,
   27).
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Overlap
   between
   contigs
@@ -193,9 +185,9 @@ BEGIN 14
   the
   score
   of
-  43040.05159802904.
-END 14
-BEGIN 15
+  24846.438157173674.
+END 13
+BEGIN 14
   Found
   a
   significant
@@ -212,8 +204,8 @@ BEGIN 15
   in
   contig
   (2).
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -231,24 +223,24 @@ BEGIN 16
   of
   3
   parts.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   884.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Removed
   3
   components
@@ -261,17 +253,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 21
+END 20

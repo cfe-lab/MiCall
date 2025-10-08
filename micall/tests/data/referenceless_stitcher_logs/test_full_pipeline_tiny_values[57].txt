@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  17
+  1
   between
   contigs
   'r43-486.0'
@@ -44,8 +44,8 @@ BEGIN 5
   'r526-945.2'
   to
   be
-  (437,
-  2).
+  (443,
+  1).
 END 5
 BEGIN 6
   Overlap
@@ -57,14 +57,14 @@ BEGIN 6
   has
   aligned
   size
-  2,
+  1,
   1
   matches,
   and
   the
   score
   of
-  2001.9116644885394.
+  4288.953034789552.
 END 6
 BEGIN 7
   Found
@@ -73,7 +73,7 @@ BEGIN 7
   overlap
   of
   size
-  2
+  1
   between
   contigs
   'r43-486.0'
@@ -120,7 +120,7 @@ BEGIN 9
   the
   score
   of
-  56.42235922373258.
+  9.438283979997545.
 END 9
 BEGIN 10
   Found
@@ -152,7 +152,7 @@ BEGIN 11
   fittest
   has
   length
-  881
+  887
   and
   consists
   of
@@ -175,35 +175,35 @@ BEGIN 13
   overlap
   of
   size
-  17
+  1
   between
   contigs
-  (2)
-  and
   'r526-945.2'
+  and
+  (2)
   to
   be
-  (461,
-  2).
+  (419,
+  1).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (2)
-  and
   'r526-945.2'
+  and
+  (2)
   has
   aligned
   size
-  2,
+  1,
   1
   matches,
   and
   the
   score
   of
-  2001.9116644885394.
+  4288.953034789552.
 END 14
 BEGIN 15
   Found
@@ -212,12 +212,12 @@ BEGIN 15
   overlap
   of
   size
-  2
+  1
   between
   contigs
-  (2)
+  'r526-945.2'
   and
-  'r526-945.2',
+  (2),
   resulting
   in
   contig
@@ -235,7 +235,7 @@ BEGIN 16
   fittest
   has
   length
-  881
+  887
   and
   consists
   of
@@ -256,7 +256,7 @@ BEGIN 18
   path
   of
   length
-  881.
+  887.
 END 18
 BEGIN 19
   Removed
