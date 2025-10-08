@@ -65,30 +65,30 @@ sudo docker login docker.illumina.com
 [bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
 
 ### Test data
-If you want to run `micall/monitor/micall_watcher.py`, you have to set up data folders for raw
+If you want to run `micall watcher`, you have to set up data folders for raw
 data and for the working folders. You'll also need to set up the QAI project
 and the MiseqQCReport so you can download QC data and upload results.
 
 1. Create a data folder somewhere on your workstation, like ~/data. Create
    subdirectories called miseq and RAW_DATA. Add folders RAW_DATA/MiSeq/runs.
 2. Connect to the shared drive [using CIFS][cifs] and mount
-   smb://192.168.68.144/RAW_DATA as /media/RAW_DATA.
+   `smb://192.168.68.144/RAW_DATA` as `/media/RAW_DATA`.
 3. Navigate down to /media/RAW_DATA/MiSeq/runs, pick a recent folder, and make
    sure it has a file named needsprocessing.
 4. Copy SampleSheet.csv to a sample run folder under your local
    RAW_DATA/MiSeq/runs folder.
 5. Navigate down to Data\Intensities\BaseCalls, and copy a few of the .fastq.gz
    files to your sample run folder under Data/Intensities/BaseCalls.
-5. Copy the Interop folder and the files RunInfo.xml and runParameters.xml.
-6. Open settings.py for editing.
-7. Point `home` at your local data/miseq folder.
-8. Point `rawdata_mount` at your local RAW_DATA folder.
-9. Set the Oracle connection information to a test database where you can upload
+6. Copy the Interop folder and the files RunInfo.xml and runParameters.xml.
+7. Open settings.py for editing.
+8. Point `home` at your local data/miseq folder.
+9. Point `rawdata_mount` at your local RAW_DATA folder.
+10. Set the Oracle connection information to a test database where you can upload
    sequence data. (https://git-int.cfenet.ubc.ca/wscott/oracleserver)
-10. Run the Ruby console for QAI and `LabMiseqRun.import('01-Jan-2000')` for the
+11. Run the Ruby console for QAI and `LabMiseqRun.import('01-Jan-2000')` for the
     date of your sample run.
-11. Upload the projects to a micall pipelines in QAI, use `micall.utils.projects_upload` to create a new pipeline in QAI
-11. Run `micall/monitor/micall_watcher.py`, it does need arguments. Look up the container app ids from Kive, check the Kive server URL and ports as well as QAI server and port
+12. Upload the projects to a micall pipelines in QAI, use `micall.utils.projects_upload` to create a new pipeline in QAI
+13. Run `micall watcher`, it does need arguments. Look up the container app ids from Kive, check the Kive server URL and ports as well as QAI server and port
 
 [cifs]: https://wiki.ubuntu.com/MountWindowsSharesPermanently
 
@@ -186,18 +186,18 @@ similar steps to setting up a development workstation. Follow these steps:
 7. Upload the Singularity image to the Kive test server, and record the
     ids of the new apps.
 8. Process all the samples from test_samples.csv on the Kive test server, and
-    run the micall_watcher service on a VirtualBox. Use the
+    run the `micall_watcher` service on a VirtualBox. Use the
     `micall/utils/release_test_*.py` scripts to compare the results of the new release with
     the previous version. Also run the internal scripts `miseq_gen_results.rb`
     and `miseq_compare_results.rb` to look for differences. Get the comparison
     signed off to begin the release process.
 8. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
-8. Upload the pipeline definitions to QAI, using the `micall/utils/projects_upload.py`
-    script. There is no need to create the new pipeline version in QAI beforehand,
-    the script will do this for you - just remember to update the `Order by` field
+9. Upload the pipeline definitions to QAI, using the `micall projects_upload`
+    command. There is no need to create the new pipeline version in QAI beforehand,
+    the command will do this for you - just remember to update the `Order by` field
     afterwards.
-8. Stop the micall_watcher service on the main Kive server after you check that
+10. Stop the watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
     ```shell
@@ -206,7 +206,7 @@ similar steps to setting up a development workstation. Follow these steps:
     sudo systemctl stop micall_watcher
     ```
 
-9. Get the code from Github into the server's environment.
+11. Get the code from Github into the server's environment.
 
     ```shell
     ssh user@server
@@ -215,19 +215,19 @@ similar steps to setting up a development workstation. Follow these steps:
     git checkout tags/vX.Y.Z
     ```
 
-10. Look for changes in [`micall/monitor/micall_watcher.py`'s `parse_args()` function][parse_args].
+12. Look for changes in [`micall/monitor/watcher.py`'s `parse_args()` function][parse_args].
     Either look at the blame annotations at the link above, or review the
     changes in the new release. If there are new or changed settings, adjust
     the configuration in `/etc/systemd/system/micall_watcher.service` or
     `/etc/micall/micall.conf`.
-11. Update the container app ids and pipeline version number in
+13. Update the container app ids and pipeline version number in
     `/etc/systemd/system/micall_watcher.service`. If you change the configuration, reload it:
 
     ```shell
     sudo systemctl daemon-reload
     ```
 
-12. Check that the kiveapi package is the same version you tested with. If not,
+14. Check that the kiveapi package is the same version you tested with. If not,
     do a Kive release first.
 
     ```shell
@@ -236,7 +236,7 @@ similar steps to setting up a development workstation. Follow these steps:
     cat api/setup.py
     ```
 
-13. Start the micall_watcher service, and tail the log to see that it begins
+15. Start the watcher service, and tail the log to see that it begins
     processing all the runs with the new version of the pipeline.
 
     ```shell
@@ -248,7 +248,7 @@ similar steps to setting up a development workstation. Follow these steps:
     If the log doesn't help, look in `/var/log/messages` on CentOS or
     `/var/log/syslog` on Ubuntu.
 
-14. Launch the basespace virtual machine (see BaseSpace section above) and copy
+16. Launch the basespace virtual machine (see BaseSpace section above) and copy
     MiCall source files into it. The easiest way to copy is via scp:
 
     ```shell
@@ -268,7 +268,7 @@ similar steps to setting up a development workstation. Follow these steps:
     in the VM. If this is ever updated, or we build our own VM, you won't have to do these
     steps manually anymore and can remove the `--nopush`.
 
-15. Tag the same docker image and push it to docker hub and illumina.
+17. Tag the same docker image and push it to docker hub and illumina.
     Unfortunately, the old
     version of docker that comes with the basespace virtual machine
     [can't log in] to docker hub or illumina, so you'll have to save it to a tar file and
@@ -291,26 +291,26 @@ similar steps to setting up a development workstation. Follow these steps:
     rm micall-vX.Y.Z.tar
     ```
 
-16. Duplicate the MiCall form in the revisions section of the form builder, then
+18. Duplicate the MiCall form in the revisions section of the form builder, then
     edit the `callbacks.js` in the form builder itself, and add the `:vX.Y.Z` tag to the
     `containerImageId` field. In My Apps, create a new version of the App with the new
     version number. Record the new agent ID (click the arrow on the bottom right of the
     form builder).
-17. Launch the spacedock version by running this in your basespace VM:
+19. Launch the spacedock version by running this in your basespace VM:
 
     ```shell
     sudo spacedock -a [agent ID] -m https://mission.basespace.illumina.com
     ```
 
-18. Check that the new MiCall version works as expected by processing some of the
+20. Check that the new MiCall version works as expected by processing some of the
     microtests in BaseSpace.
-17. Activate the new revisions in the form builder and the report builder.
-17. Submit the new revision of the MiCall app for review, and ask our contact
+21. Activate the new revisions in the form builder and the report builder.
+22. Submit the new revision of the MiCall app for review, and ask our contact
     at Illumina to set the price to zero for the list of test users.
-18. Send an e-mail to users describing the major changes in the release.
-19. Close the milestone for this release, create one for the next release, and
+23. Send an e-mail to users describing the major changes in the release.
+24. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
-20. When the release is stable, check that it's included on the [Zenodo] page.
+25. When the release is stable, check that it's included on the [Zenodo] page.
     If you included more than one tag in the same release, the new tags have
     not triggered Zenodo versions. Edit the release on GitHub, copy the
     description text, update the release, then click the Delete button. Then
@@ -318,7 +318,7 @@ similar steps to setting up a development workstation. Follow these steps:
     Zenodo version.
 
 [release]: https://help.github.com/categories/85/articles
-[parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall/monitor/micall_watcher.py
+[parse_args]: https://github.com/cfe-lab/MiCall/blame/master/micall/monitor/watcher.py
 [Zenodo]: https://doi.org/10.5281/zenodo.2644171
 [can't log in]: https://www.docker.com/blog/registry-v1-api-deprecation/
 [docker hub]: https://hub.docker.com/orgs/cfelab/members

@@ -84,7 +84,7 @@ EXECUTABLES = [
     "micall/utils/sample_project_summary.py",
     "micall/utils/get_list_of_executables.py",
     "micall/monitor/update_qai.py",
-    "micall/monitor/micall_watcher.py",
+    "micall/monitor/watcher.py",
     "micall/tcr/igblast.py",
     "micall/utils/fasta_to_fastq.py",
     "micall/utils/append_primers.py",
