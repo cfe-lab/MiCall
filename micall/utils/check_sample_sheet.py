@@ -32,7 +32,8 @@ def check_sample_name_consistency(
 
     logger.debug("Checking sample name consistency for run: %s", run_path)
     logger.debug("Sample sheet path: %s", sample_sheet_path)
-    logger.debug("FASTQ files to check: %s", list(fastq_file_names))
+    file_list = '\n\t'.join(sorted(fastq_file_names))
+    logger.debug("FASTQ files to check:\n\t%s", file_list)
 
     # Extract sample names from the sample sheet
     logger.debug("Reading sample sheet: %s", sample_sheet_path)
@@ -54,10 +55,11 @@ def check_sample_name_consistency(
             trimmed_filename = "_".join(filename.split("_")[:2])
             sheet_filenames.add(trimmed_filename)
 
+    filenames_string = '\n\t'.join(sorted(sheet_filenames))
     logger.debug(
-        "Sample sheet contains %d unique sample prefixes: %s",
+        "Sample sheet contains %d unique sample prefixes:\n\t%s",
         len(sheet_filenames),
-        sorted(sheet_filenames),
+        filenames_string,
     )
 
     # Extract trimmed names from FASTQ files (same logic as find_groups())
@@ -67,10 +69,11 @@ def check_sample_name_consistency(
         trimmed_name = "_".join(file_name.split("_")[:2])
         fastq_trimmed_names.add(trimmed_name)
 
+    trimmed_names_string = '\n\t'.join(sorted(fastq_trimmed_names))
     logger.debug(
-        "FASTQ files contain %d unique sample prefixes: %s",
+        "FASTQ files contain %d unique sample prefixes:\n\t%s",
         len(fastq_trimmed_names),
-        sorted(fastq_trimmed_names),
+        trimmed_names_string,
     )
 
     # Identify recognized vs unrecognized FASTQ files
