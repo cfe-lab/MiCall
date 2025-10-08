@@ -80,5 +80,5 @@ def main():
     scanner.report()
     logger.info('Done.')
 
-
-main()
+if __name__ == '__main__':
+    main()

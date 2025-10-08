@@ -47,5 +47,5 @@ def main():
         print(f'deleting {rel_path}...')
         shutil.rmtree(original_folder)
 
-
-main()
+if __name__ == '__main__':
+    main()

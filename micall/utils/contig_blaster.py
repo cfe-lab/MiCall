@@ -79,4 +79,5 @@ def main():
         print(f'{sample_name}, {contig_num}-{ref_name}: {summary}')
 
 
-main()
+if __name__ == '__main__':
+    main()
