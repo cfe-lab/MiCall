@@ -28,6 +28,7 @@ from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
 from micall.monitor import error_metrics_parser, quality_metrics_parser
 from micall.g2p.pssm_lib import Pssm
+from micall.utils.list_fastq_files import find_fastq_source_folder
 from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
     MiCallArgs
@@ -781,18 +782,11 @@ def load_sample(sample_json,
                 project_code: typing.Optional[str]):
     if sample_json is None:
         return None
-    sample_dir = os.path.join(data_path,
-                              'input',
-                              'samples',
-                              sample_json['Id'],
-                              'Data',
-                              'Intensities',
-                              'BaseCalls')
+    # Try BaseCalls first, then fall back to sample folder
+    sample_base = os.path.join(data_path, 'input', 'samples', sample_json['Id'])
+    sample_dir = os.path.join(sample_base, 'Data', 'Intensities', 'BaseCalls')
     if not os.path.exists(sample_dir):
-        sample_dir = os.path.join(data_path,
-                                  'input',
-                                  'samples',
-                                  sample_json['Id'])
+        sample_dir = sample_base
     fastq1 = None
     for root, _dirs, files in os.walk(sample_dir):
         fastq_files = fnmatch.filter(files, '*_R1_*')
@@ -891,26 +885,24 @@ def link_samples(
             sample_groups.append(SampleGroup(sample, midi_sample=None))
 
     else:  # a sample sheet is specified
-        fastq_files = list(glob(os.path.join(run_path,
-                                             'Data',
-                                             'Intensities',
-                                             'BaseCalls',
-                                             '*_R1_*')) or
-                           glob(os.path.join(run_path,
-                                             '*_R1_*')))
-        source_folder = fastq_files and os.path.dirname(fastq_files[0])
+        # Find FASTQ files in BaseCalls or run_path
+        source_folder = find_fastq_source_folder(run_path, '*_R1_*')
+        if source_folder is None:
+            fastq_files = []
+        else:
+            fastq_files = list(glob(os.path.join(str(source_folder), '*_R1_*')))
         file_names = [os.path.basename(fastq_file) for fastq_file in fastq_files]
         groups = find_groups(file_names, sample_sheet_path)
         for group in groups:
             main_file, midi_file = group.names
             if main_file.startswith('Undetermined'):
                 continue
-            main_sample = Sample(fastq1=os.path.join(source_folder, main_file))
+            main_sample = Sample(fastq1=os.path.join(str(source_folder), main_file))
             main_sample.project_code = project_code
             if midi_file is None:
                 midi_sample = None
             else:
-                midi_sample = Sample(fastq1=os.path.join(source_folder, midi_file))
+                midi_sample = Sample(fastq1=os.path.join(str(source_folder), midi_file))
                 midi_sample.project_code = project_code
             sample_groups.append(SampleGroup(main_sample, midi_sample))
 

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
+from micall.utils.list_fastq_files import get_base_calls_path, list_fastq_files
 
 logger = logging.getLogger(__name__)
 
@@ -156,29 +157,19 @@ def main(argv: Sequence[str]) -> int:
     # Infer fastq_files from run_path if not provided
     fastq_file_names = args.fastq_files
     if fastq_file_names is None:
-        # Try standard MiSeq structure first
-        base_calls_path = run_path / "Data" / "Intensities" / "BaseCalls"
-        logger.debug(
-            "Looking for FASTQ files in standard MiSeq location: %s", base_calls_path
-        )
-        if base_calls_path.exists():
-            fastq_files = list(base_calls_path.glob("*_R1_*.fastq*"))
+        # Try standard MiSeq structure first, then fall back to run_path
+        logger.debug("Looking for FASTQ files in run folder: %s", run_path)
+        fastq_files = list_fastq_files(run_path, "*_R1_*.fastq*", fallback_to_run_path=True)
+
+        if fastq_files:
             fastq_file_names = [f.name for f in fastq_files]
-            logger.debug("Found %d FASTQ files in standard location", len(fastq_files))
+            logger.debug("Found %d FASTQ files", len(fastq_files))
         else:
-            # Fall back to looking for .fastq files directly in run_path
-            logger.debug(
-                "Standard location not found, checking run_path directly: %s", run_path
+            base_calls_path = get_base_calls_path(run_path)
+            logger.error(
+                "No FASTQ files found in %s or %s", base_calls_path, run_path
             )
-            fastq_files = list(run_path.glob("*_R1_*.fastq*"))
-            if fastq_files:
-                fastq_file_names = [f.name for f in fastq_files]
-                logger.debug("Found %d FASTQ files in run_path", len(fastq_files))
-            else:
-                logger.error(
-                    "No FASTQ files found in %s or %s", base_calls_path, run_path
-                )
-                return 1
+            return 1
     else:
         fastq_file_names = [Path(f).name for f in fastq_file_names]
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)

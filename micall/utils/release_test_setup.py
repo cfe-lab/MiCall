@@ -19,6 +19,7 @@ from pathlib import Path
 from shutil import copy, rmtree, copytree
 
 from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.list_fastq_files import get_base_calls_path
 
 NEEDS_PROCESSING = 'needsprocessing'
 ERROR_PROCESSING = 'errorprocessing'
@@ -94,11 +95,8 @@ class Sample(object):
                     matches))
             self.run_name = os.path.dirname(matches[0])
 
-        pattern = os.path.join(self.run_name,
-                               'Data',
-                               'Intensities',
-                               'BaseCalls',
-                               self.extract_num + '*_R1_*')
+        base_calls_path = get_base_calls_path(self.run_name)
+        pattern = os.path.join(str(base_calls_path), self.extract_num + '*_R1_*')
         matches = glob(pattern)
         if len(matches) == 0:
             raise RuntimeError('No matches found for ' + pattern)
@@ -160,10 +158,7 @@ class Sample(object):
         elif os.path.exists(suspended_run_path):
             os.rename(suspended_run_path, target_run_path)
         else:
-            base_calls_path = os.path.join(target_run_path,
-                                           'Data',
-                                           'Intensities',
-                                           'BaseCalls')
+            base_calls_path = str(get_base_calls_path(target_run_path))
             os.makedirs(base_calls_path)
             interop_source = os.path.join(self.run_name, 'InterOp')
             interop_target = os.path.join(target_run_path, 'InterOp')
@@ -219,7 +214,7 @@ def suspend_inactive_runs(active_runs, rawdata_mount):
 
 
 def suspend_inactive_samples(run_path, active_sample_paths):
-    base_calls_path = os.path.join(run_path, 'Data', 'Intensities', 'BaseCalls')
+    base_calls_path = str(get_base_calls_path(run_path))
     local_samples = glob(os.path.join(base_calls_path, '*'))
     excluded = list(active_sample_paths)
     suspended_path = os.path.join(base_calls_path, 'suspended')

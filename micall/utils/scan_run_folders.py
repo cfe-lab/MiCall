@@ -10,6 +10,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from micall.utils.list_fastq_files import get_base_calls_path
+
 
 def parse_args():
     parser = ArgumentParser(description='Scan run folders and report disk usage.',
@@ -53,7 +55,7 @@ def scan_run_folders(runs_folder: Path, run_sizes_csv, group_size: int):
         version_sizes = Counter()
         version_zips = defaultdict(zip_factory)
         results_path = run_folder / 'Results'
-        base_calls_path = str(run_folder / 'Data' / 'Intensities' / 'BaseCalls')
+        base_calls_path = str(get_base_calls_path(run_folder))
         # noinspection PyTypeChecker
         for dirpath, dirnames, filenames in os.walk(run_folder):
             dirpath = Path(dirpath)
