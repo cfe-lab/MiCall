@@ -160,10 +160,11 @@ def main(argv: Sequence[str]) -> int:
         # Try standard MiSeq structure first, then fall back to run_path
         logger.debug("Looking for FASTQ files in run folder: %s", run_path)
         fastq_files = list_fastq_files(run_path, "*_R1_*.fastq*", fallback_to_run_path=True)
+        fastq_directory = find_fastq_source_folder(run_path)
 
         if fastq_files:
             fastq_file_names = [f.name for f in fastq_files]
-            logger.debug("Found %d FASTQ files", len(fastq_files))
+            logger.debug("Found %d FASTQ files in %s", len(fastq_files), fastq_directory)
         else:
             fastq_folder = find_fastq_source_folder(run_path)
             logger.error(
