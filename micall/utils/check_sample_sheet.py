@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_files
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,8 @@ def check_sample_name_consistency(
 
     logger.debug("Checking sample name consistency for run: %s", run_path)
     logger.debug("Sample sheet path: %s", sample_sheet_path)
-    logger.debug("FASTQ files to check: %s", list(fastq_file_names))
+    file_list = '\n\t'.join(sorted(fastq_file_names))
+    logger.debug("FASTQ files to check:\n\t%s", file_list)
 
     # Extract sample names from the sample sheet
     logger.debug("Reading sample sheet: %s", sample_sheet_path)
@@ -53,10 +55,11 @@ def check_sample_name_consistency(
             trimmed_filename = "_".join(filename.split("_")[:2])
             sheet_filenames.add(trimmed_filename)
 
+    filenames_string = '\n\t'.join(sorted(sheet_filenames))
     logger.debug(
-        "Sample sheet contains %d unique sample prefixes: %s",
+        "Sample sheet contains %d unique sample prefixes:\n\t%s",
         len(sheet_filenames),
-        sorted(sheet_filenames),
+        filenames_string,
     )
 
     # Extract trimmed names from FASTQ files (same logic as find_groups())
@@ -66,10 +69,11 @@ def check_sample_name_consistency(
         trimmed_name = "_".join(file_name.split("_")[:2])
         fastq_trimmed_names.add(trimmed_name)
 
+    trimmed_names_string = '\n\t'.join(sorted(fastq_trimmed_names))
     logger.debug(
-        "FASTQ files contain %d unique sample prefixes: %s",
+        "FASTQ files contain %d unique sample prefixes:\n\t%s",
         len(fastq_trimmed_names),
-        sorted(fastq_trimmed_names),
+        trimmed_names_string,
     )
 
     # Identify recognized vs unrecognized FASTQ files
@@ -156,29 +160,20 @@ def main(argv: Sequence[str]) -> int:
     # Infer fastq_files from run_path if not provided
     fastq_file_names = args.fastq_files
     if fastq_file_names is None:
-        # Try standard MiSeq structure first
-        base_calls_path = run_path / "Data" / "Intensities" / "BaseCalls"
-        logger.debug(
-            "Looking for FASTQ files in standard MiSeq location: %s", base_calls_path
-        )
-        if base_calls_path.exists():
-            fastq_files = list(base_calls_path.glob("*_R1_*.fastq*"))
+        # Try standard MiSeq structure first, then fall back to run_path
+        logger.debug("Looking for FASTQ files in run folder: %s", run_path)
+        fastq_files = list_fastq_files(run_path, "*_R1_*.fastq*")
+        fastq_directory = find_fastq_source_folder(run_path)
+
+        if fastq_files:
             fastq_file_names = [f.name for f in fastq_files]
-            logger.debug("Found %d FASTQ files in standard location", len(fastq_files))
+            logger.debug("Found %d FASTQ files in %s", len(fastq_files), fastq_directory)
         else:
-            # Fall back to looking for .fastq files directly in run_path
-            logger.debug(
-                "Standard location not found, checking run_path directly: %s", run_path
+            fastq_folder = find_fastq_source_folder(run_path)
+            logger.error(
+                "No FASTQ files found in %s or %s", fastq_folder, run_path
             )
-            fastq_files = list(run_path.glob("*_R1_*.fastq*"))
-            if fastq_files:
-                fastq_file_names = [f.name for f in fastq_files]
-                logger.debug("Found %d FASTQ files in run_path", len(fastq_files))
-            else:
-                logger.error(
-                    "No FASTQ files found in %s or %s", base_calls_path, run_path
-                )
-                return 1
+            return 1
     else:
         fastq_file_names = [Path(f).name for f in fastq_file_names]
         logger.debug("Using explicitly provided FASTQ files: %s", fastq_file_names)

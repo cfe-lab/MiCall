@@ -29,6 +29,7 @@ from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, 
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
 from micall.utils.check_sample_sheet import check_sample_name_consistency
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_file_names
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -204,12 +205,17 @@ def scan_samples(raw_data_folder: Path, pipeline_version: str, sample_queue: Que
                      f"Results/version_{pipeline_version}/done_all_processing")
         if done_path.exists():
             continue
-        base_calls_path = run_path / "Data/Intensities/BaseCalls"
-        sample_groups = find_sample_groups(run_path, base_calls_path)
+        fastq_folder = find_fastq_source_folder(run_path)
+        if fastq_folder is None:
+            logger.warning("No FASTQ files found in %s", run_path)
+            disk_operations.write_text(error_path,
+                                       "No FASTQ files found.\n")
+            continue
+        sample_groups = find_sample_groups(run_path, fastq_folder)
         for sample_group in sample_groups:
             is_found = True
             is_sent = send_event(sample_queue,
-                                 FolderEvent(base_calls_path,
+                                 FolderEvent(fastq_folder,
                                              FolderEventType.ADD_SAMPLE,
                                              sample_group),
                                  next_scan)
@@ -217,7 +223,7 @@ def scan_samples(raw_data_folder: Path, pipeline_version: str, sample_queue: Que
                 return False
         if sample_groups:
             is_sent = send_event(sample_queue,
-                                 FolderEvent(base_calls_path,
+                                 FolderEvent(fastq_folder,
                                              FolderEventType.FINISH_FOLDER,
                                              None),
                                  next_scan)
@@ -250,9 +256,8 @@ def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterabl
 def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
     # noinspection PyBroadException
     try:
-        fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
+        file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
         sample_sheet_path = run_path / "SampleSheet.csv"
-        file_names = [f.name for f in fastq_files]
 
         # Check sample name consistency between sample sheet and FASTQ files
         check_sample_name_consistency(sample_sheet_path, file_names, run_path)

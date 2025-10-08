@@ -70,6 +70,7 @@ EXECUTABLES = [
     "micall/utils/probe_finder.py",
     "micall/utils/aln2counts_simplify.py",
     "micall/utils/release_test_setup.py",
+    "micall/tests/test_release_test_setup.py",
     "micall/utils/samples_from_454.py",
     "micall/utils/amplicon_finder.py",
     "micall/utils/driver_utils.py",
