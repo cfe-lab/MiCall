@@ -45,6 +45,17 @@ def _read_sample_sheet_overrides(override_file, run_info):
     reader = DictReader(override_file)
     project_overrides = {row['sample']: row['project']
                          for row in reader}
+
+    # Ensure that overrides is a subset of the samples in the sample sheet.
+    sample_names = {row['filename'] for row in run_info['DataSplit']}
+    unknown_samples: set[str] = set()
+    for sample_name in project_overrides:
+        if sample_name not in sample_names:
+            unknown_samples.add(sample_name)
+    if unknown_samples:
+        raise ValueError(f'Unknown samples in SampleSheetOverrides.csv: '
+                         f'{sorted(unknown_samples)}')
+
     for row in run_info['DataSplit']:
         sample_name = row['filename']
         old_project = row['project']
