@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict, Counter
 from pathlib import Path
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +32,10 @@ class Scanner:
             return True
         sample_sheet_path = run_folder / 'SampleSheet.csv'
         folder_name = run_folder.name
-        with sample_sheet_path.open() as f:
-            try:
-                run_info = sample_sheet_parser(f)
-            except Exception:
-                raise RuntimeError(f'Failed to process run {folder_name}.')
+        try:
+            run_info = read_sample_sheet_and_overrides(sample_sheet_path)
+        except Exception:
+            raise RuntimeError(f'Failed to process run {folder_name}.')
         project_groups = defaultdict(list)
         for sample_info in run_info['DataSplit']:
             sample_number = sample_info['sample_number']
