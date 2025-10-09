@@ -101,4 +101,4 @@ RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 
 WORKDIR /data
-ENTRYPOINT ["micall", "micall_docker"]
+ENTRYPOINT ["micall", "analyze"]
