@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 from shutil import copy, rmtree, copytree
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 from micall.utils.list_fastq_files import list_fastq_files, find_fastq_source_folder
 
 NEEDS_PROCESSING = 'needsprocessing'
@@ -108,15 +108,14 @@ class Sample(object):
         self.source_fastq_folder = find_fastq_source_folder(self.run_name, pattern)
         
         if qai_run_names is not None:
-            sample_sheet_path = os.path.join(self.run_name, 'SampleSheet.csv')
-            with open(sample_sheet_path) as f:
-                try:
-                    sample_sheet = sample_sheet_parser(f)
-                except ValueError:
-                    print(f'Bad sample sheet for {self.run_name}.')
-                else:
-                    qai_run_name = sample_sheet['Project Name']
-                    qai_run_names.add(qai_run_name)
+            sample_sheet_path = Path(self.run_name) / 'SampleSheet.csv'
+            try:
+                sample_sheet = read_sample_sheet_and_overrides(sample_sheet_path)
+            except ValueError:
+                print(f'Bad sample sheet for {self.run_name}.')
+            else:
+                qai_run_name = sample_sheet['Project Name']
+                qai_run_names.add(qai_run_name)
 
     def setup_samples(self):
         base_run_name = os.path.basename(self.run_name)
