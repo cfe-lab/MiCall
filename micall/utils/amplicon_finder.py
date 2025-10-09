@@ -100,4 +100,5 @@ def main():
     print(sorted(contig_size_counts.items()))
 
 
-main()
+if __name__ == '__main__':
+    main()

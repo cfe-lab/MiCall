@@ -730,5 +730,5 @@ def main():
             shutil.rmtree(sandbox)
     print('Done.')
 
-
-main()
+if __name__ == '__main__':
+    main()

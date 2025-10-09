@@ -33,5 +33,5 @@ def main():
         for seq in sequences:
             print(seq.qname)
  
-
-main()
+if __name__ == '__main__':
+    main()

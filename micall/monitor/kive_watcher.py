@@ -28,7 +28,8 @@ from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
-from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
+from micall.utils.check_sample_sheet import check_sample_name_consistency
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_file_names
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -204,12 +205,17 @@ def scan_samples(raw_data_folder: Path, pipeline_version: str, sample_queue: Que
                      f"Results/version_{pipeline_version}/done_all_processing")
         if done_path.exists():
             continue
-        base_calls_path = run_path / "Data/Intensities/BaseCalls"
-        sample_groups = find_sample_groups(run_path, base_calls_path)
+        fastq_folder = find_fastq_source_folder(run_path)
+        if fastq_folder is None:
+            logger.warning("No FASTQ files found in %s", run_path)
+            disk_operations.write_text(error_path,
+                                       "No FASTQ files found.\n")
+            continue
+        sample_groups = find_sample_groups(run_path, fastq_folder)
         for sample_group in sample_groups:
             is_found = True
             is_sent = send_event(sample_queue,
-                                 FolderEvent(base_calls_path,
+                                 FolderEvent(fastq_folder,
                                              FolderEventType.ADD_SAMPLE,
                                              sample_group),
                                  next_scan)
@@ -217,7 +223,7 @@ def scan_samples(raw_data_folder: Path, pipeline_version: str, sample_queue: Que
                 return False
         if sample_groups:
             is_sent = send_event(sample_queue,
-                                 FolderEvent(base_calls_path,
+                                 FolderEvent(fastq_folder,
                                              FolderEventType.FINISH_FOLDER,
                                              None),
                                  next_scan)
@@ -247,67 +253,11 @@ def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterabl
             yield version_folder
 
 
-def check_sample_name_consistency(sample_sheet_path: Path, fastq_file_names: Iterable[str], run_path: Path):
-    """
-    Check FASTQ file recognition ratio against sample sheet.
-
-    Prints warning when there are fewer or equal recognized FASTQ files
-    compared to unrecognized ones. Recognized FASTQ are those that have
-    corresponding entries in the sample sheet.
-
-    :param sample_sheet_path: Path to the SampleSheet.csv file
-    :param fastq_file_names: List of FASTQ file names
-    :param run_path: Path to the run folder for logging
-    """
-
-    # Extract sample names from the sample sheet
-    run_info = read_sample_sheet_and_overrides(sample_sheet_path)
-    data_split = run_info.get('DataSplit')
-    if data_split is None:
-        raise RuntimeError(f"Missing 'DataSplit' section in {sample_sheet_path}")
-
-    assert hasattr(data_split, '__iter__')
-    if not hasattr(data_split, '__iter__'):
-        raise RuntimeError(f"Invalid 'DataSplit' section in {sample_sheet_path}")
-
-    # Get filenames from sample sheet DataSplit (these are the expected FASTQ file names)
-    sheet_filenames = set()
-    for row in data_split:
-        filename = row.get('filename', '')
-        if filename:
-            # Store the trimmed version that matches what find_groups() uses
-            trimmed_filename = '_'.join(filename.split('_')[:2])
-            sheet_filenames.add(trimmed_filename)
-
-    # Extract trimmed names from FASTQ files (same logic as find_groups())
-    fastq_trimmed_names = set()
-    for file_name in fastq_file_names:
-        # This matches the logic in find_groups: '_'.join(file_name.split('_')[:2])
-        trimmed_name = '_'.join(file_name.split('_')[:2])
-        fastq_trimmed_names.add(trimmed_name)
-
-    # Identify recognized vs unrecognized FASTQ files
-    recognized_fastq = fastq_trimmed_names & sheet_filenames  # intersection
-    unrecognized_fastq = fastq_trimmed_names - sheet_filenames  # FASTQ only
-
-    if len(recognized_fastq) < len(unrecognized_fastq):
-        unrecognized_list = ','.join(sorted(unrecognized_fastq))
-        warning_message = f'''\
-Large number of unrecognized FASTQ files in run folder {run_path}.
-There are {len(recognized_fastq)} recognized FASTQ files.
-And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}.'''
-        logger.warning('%s', warning_message)
-    else:
-        logger.debug("FASTQ recognition ratio acceptable: %d recognized, %d unrecognized in %s",
-                    len(recognized_fastq), len(unrecognized_fastq), run_path)
-
-
 def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
     # noinspection PyBroadException
     try:
-        fastq_files = base_calls_path.glob("*_R1_*.fastq.gz")
+        file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
         sample_sheet_path = run_path / "SampleSheet.csv"
-        file_names = [f.name for f in fastq_files]
 
         # Check sample name consistency between sample sheet and FASTQ files
         check_sample_name_consistency(sample_sheet_path, file_names, run_path)

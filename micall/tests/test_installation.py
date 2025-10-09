@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 """
 
 This test is supposed to verify that installation of MiCall is not broken.

@@ -10,6 +10,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from micall.utils.list_fastq_files import find_fastq_source_folder
+
 
 def parse_args():
     parser = ArgumentParser(description='Scan run folders and report disk usage.',
@@ -53,7 +55,9 @@ def scan_run_folders(runs_folder: Path, run_sizes_csv, group_size: int):
         version_sizes = Counter()
         version_zips = defaultdict(zip_factory)
         results_path = run_folder / 'Results'
-        base_calls_path = str(run_folder / 'Data' / 'Intensities' / 'BaseCalls')
+        # Find the actual FASTQ folder (could be BaseCalls or Alignment_*/*/Fastq)
+        fastq_folder = find_fastq_source_folder(run_folder, '*_R1_*')
+        fastq_folder_str = str(fastq_folder) if fastq_folder else None
         # noinspection PyTypeChecker
         for dirpath, dirnames, filenames in os.walk(run_folder):
             dirpath = Path(dirpath)
@@ -62,7 +66,8 @@ def scan_run_folders(runs_folder: Path, run_sizes_csv, group_size: int):
                     continue
                 file_path = dirpath / file_name
                 if (file_name.endswith('.fastq.gz') and
-                        str(file_path).startswith(base_calls_path)):
+                        fastq_folder_str and
+                        str(file_path).startswith(fastq_folder_str)):
                     data_size += file_path.stat().st_size
                 else:
                     try:
@@ -122,4 +127,5 @@ def main():
     plt.show()
 
 
-main()
+if __name__ == '__main__':
+    main()

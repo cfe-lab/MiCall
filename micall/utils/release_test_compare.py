@@ -21,7 +21,7 @@ import Levenshtein
 from micall.utils.primer_tracker import PrimerTracker
 from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
-from micall.utils.micall_docker import get_available_memory
+from micall.utils.analyze import get_available_memory
 
 MICALL_VERSION = '7.15'
 #                ^^^^^^ Version of the MiCall release being tested.
