@@ -41,7 +41,7 @@ def open_files(**files):
 
     Yields: A dictionary of opened files, {keyword: file handle}
     """
-    files_opened = {}
+    files_opened: typing.Dict[str, typing.Optional[typing.IO]] = {}
     try:
         for name, file_info in files.items():
             if file_info is None:
@@ -339,18 +339,14 @@ class Sample:
 
         with open(with_prefix(self.genome_coverage_csv)) as genome_coverage_csv, \
              open(with_prefix(self.minimap_hits_csv)) as minimap_hits_csv:
-            if not use_denovo:
-                minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
-                                 minimap_hits_csv,
+                                 minimap_hits_csv if use_denovo else None,
                                  with_prefix(self.genome_coverage_svg))
 
         with open(with_prefix(self.genome_coverage_csv)) as genome_coverage_csv, \
              open(with_prefix(self.minimap_hits_csv)) as minimap_hits_csv:
-            if not use_denovo:
-                minimap_hits_csv = None
             plot_genome_coverage(genome_coverage_csv,
-                                 minimap_hits_csv,
+                                 minimap_hits_csv if use_denovo else None,
                                  with_prefix(self.genome_concordance_svg),
                                  use_concordance=True)
 
@@ -370,10 +366,10 @@ class Sample:
             cascade_report.aligned_csv = aligned_csv
             cascade_report.generate()
 
-    def load_sample_info(self):
+    def load_sample_info(self) -> dict[str, str]:
         path = Path(self.sample_info_csv)
         if not path.exists():
-            sample_info = {}
+            sample_info: dict[str, str] = {}
             if self.project_code is not None:
                 sample_info['project'] = self.project_code
             return sample_info

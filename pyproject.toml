@@ -198,7 +198,6 @@ module = [
     "micall.core.sam2aln",
     "micall.core.trim_fastqs",
     "micall.drivers.run_info",
-    "micall.drivers.sample",
     "micall.drivers.sample_group",
     "micall.g2p.fastq_g2p",
     "micall.g2p.pssm_lib",
