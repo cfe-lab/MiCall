@@ -41,6 +41,10 @@ def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
             return sample_sheet_v2_parser(csvfile)
 
 
+class UnknownSamplesInOverrides(ValueError):
+    pass
+
+
 def _read_sample_sheet_overrides(override_file, run_info):
     reader = DictReader(override_file)
     project_overrides = {row['sample']: row['project']
@@ -53,8 +57,9 @@ def _read_sample_sheet_overrides(override_file, run_info):
         if sample_name not in sample_names:
             unknown_samples.append(sample_name)
     if unknown_samples:
-        raise ValueError(f'Unknown samples in SampleSheetOverrides.csv: '
-                         f'{unknown_samples}')
+        raise UnknownSamplesInOverrides(
+            f'Unknown samples in SampleSheetOverrides.csv: '
+            f'{unknown_samples}')
 
     for row in run_info['DataSplit']:
         sample_name = row['filename']
