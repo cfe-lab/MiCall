@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict, Counter
 from pathlib import Path
 
-from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
+from micall.utils.sample_sheet_parser import UnknownSamplesInOverrides, read_sample_sheet_and_overrides
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,9 @@ class Scanner:
         folder_name = run_folder.name
         try:
             run_info = read_sample_sheet_and_overrides(sample_sheet_path)
+        except UnknownSamplesInOverrides as e:
+            logger.error('Run %s has unknown samples in overrides: %s', folder_name, e)
+            return True
         except Exception:
             raise RuntimeError(f'Failed to process run {folder_name}.')
         project_groups = defaultdict(list)
