@@ -1,6 +1,8 @@
-#! /usr/bin/env python3.6
+#! /usr/bin/env python3
 
+import argparse
 from csv import DictReader
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO, Dict
 import csv
@@ -41,10 +43,25 @@ def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
             return sample_sheet_v2_parser(csvfile)
 
 
+@dataclass(frozen=True)
+class UnknownSamplesInOverrides(ValueError):
+    samples: tuple[str, ...]
+
+
 def _read_sample_sheet_overrides(override_file, run_info):
     reader = DictReader(override_file)
     project_overrides = {row['sample']: row['project']
                          for row in reader}
+
+    # Ensure that overrides is a subset of the samples in the sample sheet.
+    sample_names = {row['filename'] for row in run_info['DataSplit']}
+    unknown_samples = []
+    for sample_name in project_overrides:
+        if sample_name not in sample_names:
+            unknown_samples.append(sample_name)
+    if unknown_samples:
+        raise UnknownSamplesInOverrides(tuple(unknown_samples))
+
     for row in run_info['DataSplit']:
         sample_name = row['filename']
         old_project = row['project']
@@ -63,8 +80,6 @@ def read_sample_sheet_and_overrides(sample_sheet_path: Path) -> dict[str, object
 
 
 def main():
-    import argparse
-
     parser = argparse.ArgumentParser(description="Read a sample sheet")
     parser.add_argument("samplesheet", type=Path, help="Path to SampleSheet.csv")
     args = parser.parse_args()
@@ -73,5 +88,4 @@ def main():
     print(json.dumps(ss, indent='\t'))
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main() # noqa

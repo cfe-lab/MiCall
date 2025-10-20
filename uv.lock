@@ -518,7 +518,7 @@ requires-dist = [
     { name = "kivecli", marker = "extra == 'dev'", git = "https://github.com/Donaim/kivecli?rev=dd77a400b580391184fd9ea19f336b0fa9d949f1" },
     { name = "mappy", specifier = "==2.30" },
     { name = "matplotlib", specifier = "==3.10.7" },
-    { name = "multicsv", specifier = "==1.0.4" },
+    { name = "multicsv", specifier = "==1.0.5" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.18.2" },
     { name = "mypy-extensions", marker = "extra == 'dev'", specifier = "==1.1.0" },
     { name = "numpy", specifier = "==2.3.4" },
@@ -545,11 +545,11 @@ provides-extras = ["basespace", "dev", "test", "watcher"]
 
 [[package]]
 name = "multicsv"
-version = "1.0.4"
+version = "1.0.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/06/f6/2120636ad5ad6cbd2bb7a6b06ef8fdcbdff68a31ad3af6abd33bedb57208/multicsv-1.0.4.tar.gz", hash = "sha256:44afe54a0435b1f4fec86cd03bedad5a33bdeca1625107d06e3d65b918e7a0c4", size = 20904, upload-time = "2024-09-18T21:44:11.801Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/de/9e/7a41248690b0f912ef67dc3de16e080f7b3018055aba6d501aa0491b02a3/multicsv-1.0.5.tar.gz", hash = "sha256:5220e1ad45fa7bebf6c76c66d36aae8d79ac5dfcd3b1073bb30130e991a37aac", size = 20930, upload-time = "2025-10-20T22:31:59.957Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/54/ca24396fbfcc079dcb74d38a5674bcd8dc3dfe3e9b43dbfcaef126f70ef4/multicsv-1.0.4-py2.py3-none-any.whl", hash = "sha256:15b69d5218f45b7d21a1c07808f97530962418608ff3c97e2ea6aa5409466847", size = 23387, upload-time = "2024-09-18T21:44:10.096Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/86/3157ecdd7818be0d9772de2b2dacc8c15eb441bddedb0537c2da7fcddee2/multicsv-1.0.5-py2.py3-none-any.whl", hash = "sha256:0cf83ff324e67675df2e33a7ffed4731f35918874661a8ff4e07b30b8dd0adf1", size = 23424, upload-time = "2025-10-20T22:31:58.913Z" },
 ]
 
 [[package]]

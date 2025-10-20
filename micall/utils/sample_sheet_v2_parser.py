@@ -17,7 +17,13 @@ class SampleProject:
     project_codes: Sequence[str]
 
 
-def try_parse_sample_project(value: Optional[str]) -> Optional[SampleProject]:
+def try_parse_sample_project(value: Optional[str | list[str]]) -> Optional[SampleProject]:
+    if isinstance(value, list):
+        # This is a quirk of csv parsing where empty fields are parsed as empty lists.
+        assert len(value) == 1, "Cannot parse sample project from list with multiple elements."
+        assert value[0] == '', "Cannot parse sample project from list with non-empty element."
+        return None
+
     if value is None or not value.startswith(SAMPLE_SHEET_MAGIC):
         return None
 
