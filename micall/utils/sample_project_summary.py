@@ -17,6 +17,11 @@ def parse_args():
                         default='/media/raw_data/MiSeq/runs',
                         help='a run folder, or a parent of many run folders',
                         type=Path)
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     return parser.parse_args()
 
 
@@ -69,10 +74,20 @@ class Scanner:
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s[%(levelname)s]%(name)s: %(message)s')
-    logger.info('Starting.')
     args = parse_args()
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+
+    logging.basicConfig(level=logger.level,
+                        format='%(asctime)s[%(levelname)s]%(name)s: %(message)s')
+
+    logger.info('Starting.')
     scanner = Scanner()
     if not scanner.process_run(args.start_folder):
         scanner.process_runs(args.start_folder)
