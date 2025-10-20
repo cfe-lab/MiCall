@@ -26,7 +26,7 @@ dependencies = [
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
     "sortedcontainers==2.4.0",
-    "numpy==2.3.3",
+    "numpy==2.3.4",
     "scipy==1.16.2",
     "matplotlib==3.10.7",
     "cutadapt==5.1",
@@ -52,7 +52,7 @@ dependencies = [
 test = [
     # Dependencies required for running the test suite
     "pytest==8.4.2",
-    "coverage==7.10.7",
+    "coverage==7.11.0",
     "pandas==2.3.3",
     "seaborn==0.13.2",
     "ete3",
@@ -66,7 +66,7 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.14.0",
+    "ruff==0.14.1",
     "mypy==1.18.2",
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
@@ -74,7 +74,7 @@ dev = [
     "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
     "pandas-stubs==2.3.2.250926",
     "types-requests==2.32.4.20250913",
-    "uv==0.9.0",
+    "uv==0.9.4",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
@@ -181,82 +181,82 @@ markers = [
 
 [tool.mypy]
 files = ["micall/"]
-
-exclude = '''(?x)
-    ^micall/core/aln2counts[.]py$|
-    ^micall/core/amplicon_finder[.]py$|
-    ^micall/core/cascade_report[.]py$|
-    ^micall/core/consensus_builder[.]py$|
-    ^micall/core/coverage_plots[.]py$|
-    ^micall/core/plot_simple[.]py$|
-    ^micall/core/prelim_map[.]py$|
-    ^micall/core/remap[.]py$|
-    ^micall/core/sam2aln[.]py$|
-    ^micall/core/trim_fastqs[.]py$|
-    ^micall/drivers/run_info[.]py$|
-    ^micall/drivers/sample_group[.]py$|
-    ^micall/drivers/sample[.]py$|
-    ^micall/g2p/fastq_g2p[.]py$|
-    ^micall/g2p/pssm_lib[.]py$|
-    ^micall/resistance/asi_algorithm[.]py$|
-    ^micall/resistance/genreport[.]py$|
-    ^micall/resistance/pdfreport[.]py$|
-    ^micall/resistance/resistance[.]py$|
-    ^micall/tests/.*|
-    ^micall/utils/aln2counts_simplify[.]py$|
-    ^micall/utils/amplicon_finder[.]py$|
-    ^micall/utils/big_counter[.]py$|
-    ^micall/utils/compare_454_samples[.]py$|
-    ^micall/utils/compare_mapping[.]py$|
-    ^micall/utils/concordance_evaluation[.]py$|
-    ^micall/utils/conseq_compare[.]py$|
-    ^micall/utils/contig_blaster[.]py$|
-    ^micall/utils/contig_counts[.]py$|
-    ^micall/utils/contig_summary[.]py$|
-    ^micall/utils/convert_primers_cutadapt[.]py$|
-    ^micall/utils/coverage_data[.]py$|
-    ^micall/utils/dd[.]py$|
-    ^micall/utils/denovo_simplify[.]py$|
-    ^micall/utils/fetch_sequences[.]py$|
-    ^micall/utils/find_by_coverage[.]py$|
-    ^micall/utils/find_chimera[.]py$|
-    ^micall/utils/find_missing_samples[.]py$|
-    ^micall/utils/find_reads_in_sam[.]py$|
-    ^micall/utils/genreport_rerun[.]py$|
-    ^micall/utils/hcv_reference_tree[.]py$|
-    ^micall/utils/hcv_rules_display[.]py$|
-    ^micall/utils/hcv_rules_import[.]py$|
-    ^micall/utils/make_fda_refs[.]py$|
-    ^micall/utils/make_hcv_genotype_refs[.]py$|
-    ^micall/utils/primer_tracker[.]py$|
-    ^micall/utils/probe_finder[.]py$|
-    ^micall/utils/projects_dump[.]py$|
-    ^micall/utils/project_seeds_from_compendium[.]py$|
-    ^micall/utils/projects_upload[.]py$|
-    ^micall/utils/ref_aligner[.]py$|
-    ^micall/utils/reference_distances[.]py$|
-    ^micall/utils/remap_fastq_simplify[.]py$|
-    ^micall/utils/sam_g2p_simplify[.]py$|
-    ^micall/utils/sample_fastq[.]py$|
-    ^micall/utils/sample_project_summary[.]py$|
-    ^micall/utils/samples_from_454[.]py$|
-    ^micall/utils/scan_run_folders[.]py$|
-    ^micall/utils/seed_alignments[.]py$|
-    ^micall/utils/spring_beads[.]py$|
-    ^micall/utils/v3loop_alignment_scores/plot[.]py$|
-    ^micall/utils/release_test_compare[.]py$|
-    ^micall/utils/release_test_microtest[.]py$|
-    ^micall/utils/release_test_setup[.]py$|
-    ^micall/utils/micall_kive[.]py$|
-    ^micall/utils/micall_kive_resistance[.]py$|
-    ^micall/utils/analyze[.]py$
-'''
-
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = "micall.core.plot_contigs"
 check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "micall.core.aln2counts",
+    "micall.core.amplicon_finder",
+    "micall.core.cascade_report",
+    "micall.core.consensus_builder",
+    "micall.core.coverage_plots",
+    "micall.core.plot_simple",
+    "micall.core.prelim_map",
+    "micall.core.remap",
+    "micall.core.sam2aln",
+    "micall.core.trim_fastqs",
+    "micall.drivers.run_info",
+    "micall.drivers.sample_group",
+    "micall.g2p.fastq_g2p",
+    "micall.g2p.pssm_lib",
+    "micall.resistance.asi_algorithm",
+    "micall.resistance.genreport",
+    "micall.resistance.pdfreport",
+    "micall.resistance.resistance",
+    "micall.tests.*",
+    "micall.utils.aln2counts_simplify",
+    "micall.utils.amplicon_finder",
+    "micall.utils.analyze",
+    "micall.utils.big_counter",
+    "micall.utils.compare_454_samples",
+    "micall.utils.compare_mapping",
+    "micall.utils.concordance_evaluation",
+    "micall.utils.conseq_compare",
+    "micall.utils.contig_blaster",
+    "micall.utils.contig_counts",
+    "micall.utils.contig_summary",
+    "micall.utils.convert_primers_cutadapt",
+    "micall.utils.coverage_data",
+    "micall.utils.dd",
+    "micall.utils.denovo_simplify",
+    "micall.utils.fetch_sequences",
+    "micall.utils.find_by_coverage",
+    "micall.utils.find_chimera",
+    "micall.utils.find_missing_samples",
+    "micall.utils.find_reads_in_sam",
+    "micall.utils.genreport_rerun",
+    "micall.utils.hcv_reference_tree",
+    "micall.utils.hcv_rules_display",
+    "micall.utils.hcv_rules_import",
+    "micall.utils.make_fda_refs",
+    "micall.utils.make_hcv_genotype_refs",
+    "micall.utils.micall_kive",
+    "micall.utils.micall_kive_resistance",
+    "micall.utils.primer_tracker",
+    "micall.utils.probe_finder",
+    "micall.utils.project_seeds_from_compendium",
+    "micall.utils.projects_dump",
+    "micall.utils.projects_upload",
+    "micall.utils.ref_aligner",
+    "micall.utils.reference_distances",
+    "micall.utils.release_test_compare",
+    "micall.utils.release_test_microtest",
+    "micall.utils.release_test_setup",
+    "micall.utils.remap_fastq_simplify",
+    "micall.utils.sam_g2p_simplify",
+    "micall.utils.sample_fastq",
+    "micall.utils.sample_project_summary",
+    "micall.utils.samples_from_454",
+    "micall.utils.scan_run_folders",
+    "micall.utils.seed_alignments",
+    "micall.utils.spring_beads",
+    "micall.utils.v3loop_alignment_scores.plot",
+]
+ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = "mappy"

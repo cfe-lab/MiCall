@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import patch
 
 from micall.monitor.update_qai import build_conseqs, build_review_decisions, upload_review_to_qai
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import _sample_sheet_parser
 import micall.monitor.qai_helper
 
 
@@ -13,7 +13,7 @@ import micall.monitor.qai_helper
 def sample_sheet():
     sample_sheet_path = Path(__file__).parent / 'microtest' / 'SampleSheet.csv'
     with sample_sheet_path.open() as sample_sheet_file:
-        sample_sheet = sample_sheet_parser(sample_sheet_file)
+        sample_sheet = _sample_sheet_parser(sample_sheet_file)
     return sample_sheet
 
 
@@ -93,7 +93,7 @@ CFE_MS1_23-Jan-2014_N512-N701_1337B_Unknown_nopid,2100A_HCV;1337B_Unknown,\
 23-Jan-2014,N/A,TTTAAAAA,AAATTTTT,23-Jan-2014,Research:2100A_HCV:FALSE;1337B_Unknown:FALSE \
 Comments:2100A_HCV:;1337B_Unknown: Disablecontamcheck:2100A_HCV:FALSE;1337B_Unknown:FALSE,
 """)
-    sample_sheet = sample_sheet_parser(sample_sheet_file)
+    sample_sheet = _sample_sheet_parser(sample_sheet_file)
     conseq_csv = StringIO(dedent("""\
         sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
         2100A-HCV-1337B-Unknown_S1,HCV-1a,15,MAX,6603,AGGAATACG
@@ -134,7 +134,7 @@ CFE_MS1_23-Jan-2014_N512-N701_1337B_BOGUS_nopid,2100A_HCV;1337B_BOGUS,\
 Research:2100A_HCV:FALSE;1337B_BOGUS:FALSE Comments:2100A_HCV:;1337B_BOGUS: \
 Disablecontamcheck:2100A_HCV:FALSE;1337B_BOGUS:FALSE,
 """)
-    sample_sheet = sample_sheet_parser(sample_sheet_file)
+    sample_sheet = _sample_sheet_parser(sample_sheet_file)
     conseq_csv = StringIO(dedent("""\
         sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
         2100A-HCV-1337B-BOGUS_S1,HCV-1a,15,MAX,6603,AGGAATACG
