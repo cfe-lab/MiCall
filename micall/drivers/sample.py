@@ -430,10 +430,11 @@ class Sample:
                    )
 
         with open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
+            output = Path(self.merged_contigs_fasta)
             try:
-                csv_to_fasta(merged_contigs_csv, Path(self.merged_contigs_fasta))
+                csv_to_fasta(merged_contigs_csv, output)
             except NoContigsInCSV:
-                Path(self.merged_contigs_fasta).touch()
+                output.touch()
 
         concatenate_files(inputs=[self.unstitched_contigs_fasta,
                                   self.merged_contigs_fasta],
