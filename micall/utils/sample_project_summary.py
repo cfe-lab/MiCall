@@ -3,6 +3,8 @@ import logging
 from collections import defaultdict, Counter
 from pathlib import Path
 
+from micall.utils.check_sample_sheet import check_sample_name_consistency
+from micall.utils.list_fastq_files import list_fastq_file_names
 from micall.utils.sample_sheet_parser import UnknownSamplesInOverrides, read_sample_sheet_and_overrides
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,8 @@ class Scanner:
             return True
         except Exception:
             raise RuntimeError(f'Failed to process run {folder_name}.')
+        file_names = list_fastq_file_names(run_folder, "*_R1_*.fastq.gz", fallback_to_run_path=False)
+        check_sample_name_consistency(sample_sheet_path, file_names, run_folder)
         project_groups = defaultdict(list)
         data_split = run_info.get('DataSplit')
         if data_split is None:
