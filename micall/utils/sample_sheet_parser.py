@@ -1,5 +1,6 @@
-#! /usr/bin/env python3.6
+#! /usr/bin/env python3
 
+import argparse
 from csv import DictReader
 from pathlib import Path
 from typing import TextIO, Dict
@@ -79,8 +80,6 @@ def read_sample_sheet_and_overrides(sample_sheet_path: Path) -> dict[str, object
 
 
 def main():
-    import argparse
-
     parser = argparse.ArgumentParser(description="Read a sample sheet")
     parser.add_argument("samplesheet", type=Path, help="Path to SampleSheet.csv")
     args = parser.parse_args()
@@ -89,5 +88,4 @@ def main():
     print(json.dumps(ss, indent='\t'))
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main() # noqa
