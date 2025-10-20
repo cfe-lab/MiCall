@@ -247,7 +247,6 @@ module = [
     "micall.utils.remap_fastq_simplify",
     "micall.utils.sam_g2p_simplify",
     "micall.utils.sample_fastq",
-    "micall.utils.sample_project_summary",
     "micall.utils.samples_from_454",
     "micall.utils.scan_run_folders",
     "micall.utils.seed_alignments",

@@ -27,7 +27,7 @@ def parse_args():
 
 class Scanner:
     def __init__(self):
-        self.project_counts = Counter()
+        self.project_counts: Counter[tuple[str, ...]] = Counter()
         self.latest_dates = defaultdict(str)
 
     def process_run(self, run_folder: Path):
@@ -42,7 +42,12 @@ class Scanner:
         except Exception:
             raise RuntimeError(f'Failed to process run {folder_name}.')
         project_groups = defaultdict(list)
-        for sample_info in run_info['DataSplit']:
+        data_split = run_info.get('DataSplit')
+        if data_split is None:
+            raise RuntimeError(f'No DataSplit section in sample sheet for run {folder_name}.')
+        assert hasattr(data_split, '__iter__'), \
+            f'DataSplit section is not iterable in sample sheet for run {folder_name}.'
+        for sample_info in data_split:
             sample_number = sample_info['sample_number']
             project = sample_info['project']
             project_groups[sample_number].append(project)
