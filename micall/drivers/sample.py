@@ -429,9 +429,9 @@ class Sample:
                    merged_contigs_csv,
                    )
 
-        with open(self.merged_contigs_csv, 'r'):
+        with open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
             try:
-                csv_to_fasta(self.merged_contigs_csv, Path(self.merged_contigs_fasta))
+                csv_to_fasta(merged_contigs_csv, Path(self.merged_contigs_fasta))
             except NoContigsInCSV:
                 Path(self.merged_contigs_fasta).touch()
 
