@@ -78,8 +78,8 @@ class Scanner:
     def report(self):
         for project_codes, count in self.project_counts.most_common():
             latest_date = self.latest_dates[project_codes]
-            logger.info('%s: %d up to %s', ', '.join(project_codes), count, latest_date)
-        logger.info('Total samples: %d', sum(self.project_counts.values()))
+            print('%s: %d up to %s' % (', '.join(project_codes), count, latest_date))
+        print('Total samples:', sum(self.project_counts.values()))
 
 
 def main():
