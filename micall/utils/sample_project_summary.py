@@ -40,7 +40,8 @@ class Scanner:
         try:
             run_info = read_sample_sheet_and_overrides(sample_sheet_path)
         except UnknownSamplesInOverrides as e:
-            logger.error('Run %s has unknown samples in overrides: %s', folder_name, e)
+            samples = '\n\t'.join(e.samples)
+            logger.error('Run %s has unknown samples in overrides:\n\t%s', folder_name, samples)
             return True
         except Exception:
             raise RuntimeError(f'Failed to process run {folder_name}.')

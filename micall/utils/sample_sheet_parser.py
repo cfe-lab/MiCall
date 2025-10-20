@@ -2,6 +2,7 @@
 
 import argparse
 from csv import DictReader
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO, Dict
 import csv
@@ -42,8 +43,9 @@ def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
             return sample_sheet_v2_parser(csvfile)
 
 
+@dataclass(frozen=True)
 class UnknownSamplesInOverrides(ValueError):
-    pass
+    samples: tuple[str, ...]
 
 
 def _read_sample_sheet_overrides(override_file, run_info):
@@ -58,9 +60,7 @@ def _read_sample_sheet_overrides(override_file, run_info):
         if sample_name not in sample_names:
             unknown_samples.append(sample_name)
     if unknown_samples:
-        raise UnknownSamplesInOverrides(
-            f'Unknown samples in SampleSheetOverrides.csv: '
-            f'{unknown_samples}')
+        raise UnknownSamplesInOverrides(tuple(unknown_samples))
 
     for row in run_info['DataSplit']:
         sample_name = row['filename']
