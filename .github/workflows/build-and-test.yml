@@ -84,8 +84,17 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build docker image
-        run: docker build --tag micall --file Dockerfile .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          tags: micall
+          load: true
+          cache-from: type=gha,scope=docker-micall
+          cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
         run: docker run micall --help
       - name: Check docker image entrypoint
