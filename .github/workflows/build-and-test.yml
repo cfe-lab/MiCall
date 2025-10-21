@@ -101,18 +101,17 @@ jobs:
           tags: |
             ghcr.io/cfe-lab/micall:sha-${{ github.sha }}
             ghcr.io/cfe-lab/micall:latest
-            micall
           load: true
           cache-from: type=gha,scope=docker-micall
           cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
-        run: docker run micall --help
+        run: docker run ghcr.io/cfe-lab/micall:latest --help
       - name: Check docker image entrypoint
-        run: docker run micall --help | grep -i -e 'docker'
+        run: docker run ghcr.io/cfe-lab/micall:latest --help | grep -i -e 'docker'
       - name: Install python packages
         run: pip install multicsv
       - name: Check docker image microtest
-        run: python micall release_test_microtest micall --docker
+        run: python micall release_test_microtest ghcr.io/cfe-lab/micall:latest --docker
 
   singularity-test:
     runs-on: ubuntu-22.04
