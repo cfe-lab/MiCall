@@ -97,11 +97,10 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: true
+          push: ${{ github.ref == 'refs/heads/master' }}
           tags: |
             ghcr.io/cfe-lab/micall:sha-${{ github.sha }}
             ghcr.io/cfe-lab/micall:latest
-          load: true
           cache-from: type=gha,scope=docker-micall
           cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
