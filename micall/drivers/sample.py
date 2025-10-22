@@ -9,7 +9,6 @@ from pathlib import Path
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
-from micall.core.contig_stitcher import contig_stitcher
 from micall.core.coverage_plots import coverage_plot, concordance_plot
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
@@ -21,6 +20,10 @@ from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
+from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
+from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
+from micall.utils.cat import cat as concatenate_files
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -150,7 +153,7 @@ class Sample:
         if self.scratch_path is None:
             raise AttributeError(
                 'Unknown output {} and no scratch path.'.format(output_name))
-        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png'):
+        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png', 'fasta'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension
                 break
@@ -422,18 +425,31 @@ class Sample:
                    merged_contigs_csv,
                    )
 
+        with open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
+            output = Path(self.merged_contigs_fasta)
+            try:
+                csv_to_fasta(merged_contigs_csv, output)
+            except NoContigsInCSV:
+                output.touch()
+
+        concatenate_files(inputs=[self.unstitched_contigs_fasta,
+                                  self.merged_contigs_fasta],
+                          output=self.combined_contigs_fasta)
+
+        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
+             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
+            referenceless_contig_stitcher(combined_contigs_fasta, stitched_contigs_fasta)
+
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
-             open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            fasta_to_csv(Path(self.unstitched_contigs_fasta),
+            fasta_to_csv(Path(self.stitched_contigs_fasta),
                          unstitched_contigs_csv,
-                         merged_contigs_csv,
                          blast_csv=blast_csv,
                          )
 
         with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
              open(self.contigs_csv, 'w') as contigs_csv:
-            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
+            referencefull_contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
 
         logger.info('Running remap on %s.', self)
         if self.debug_remap:

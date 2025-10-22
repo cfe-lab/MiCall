@@ -1,5 +1,4 @@
 
-
 class UserError(RuntimeError):
     """
     Base class for all exceptions that are to be presented to a user.
@@ -9,4 +8,4 @@ class UserError(RuntimeError):
         self.fmt = fmt
         self.fmt_args = fmt_args
         self.code = 1
-        super().__init__(fmt.format(fmt_args) if fmt_args else fmt)
+        super().__init__(fmt % fmt_args if fmt_args else fmt)
