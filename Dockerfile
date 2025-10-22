@@ -52,7 +52,7 @@ RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/downl
   ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2 && \
   rm bowtie2.zip
 
-ENV PATH $PATH:/opt/bowtie2
+ENV PATH=$PATH:/opt/bowtie2
 
 ## Installing IVA dependencies
 RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
