@@ -194,18 +194,17 @@ wheels = [
 
 [[package]]
 name = "cutadapt"
-version = "5.1"
+version = "5.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dnaio" },
     { name = "xopen" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/ab/fd48e8ec827b229e42df1b689c9df6b3fe5f08f7ccfe034cd8ea1b41ddf4/cutadapt-5.1.tar.gz", hash = "sha256:6bc76345c0a45f6b680cb1164e48eb1f81815c764ec471284ab6234c6653b937", size = 252843, upload-time = "2025-05-28T12:14:32.276Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/25/0a/2b4007e4577dd3e19affdf7aa716ebf9642e224d68a9205b2081d42ed08a/cutadapt-5.2.tar.gz", hash = "sha256:2394deead42ecae5fe0fdf369e35f3e2afed770e14059582272779c2e8295d3c", size = 253642, upload-time = "2025-10-23T13:32:31.964Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/92/e2/fe7dd7e46f0064bc8c9ceab2fe7e6dc5d3eaa7f99060bad99203f4e78e27/cutadapt-5.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:0e87d12e1733482fa7b16d6316781856dc41d5c5e2f41ab6b5dda062847a988a", size = 231314, upload-time = "2025-05-28T12:14:10.936Z" },
-    { url = "https://files.pythonhosted.org/packages/4b/1a/d7fecebb573c8e13f072bf87d20c4d850adadcf9a934a199e7c42303f96f/cutadapt-5.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:8e6e68896d8c4068aab0da7d1c53bc5fc5d7d6d7f1b785f5e2e68ffd7aacd663", size = 225710, upload-time = "2025-05-28T12:14:12.395Z" },
-    { url = "https://files.pythonhosted.org/packages/92/c2/4ab3954edb2f4c3221360d07ce3579487d117152f62966a24bddc7853909/cutadapt-5.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:df20e6cd6cb8c7f292b1e848b8f34e4cdd26ebef3022ab972f06368ac1b97e9c", size = 275347, upload-time = "2025-05-28T12:14:13.919Z" },
-    { url = "https://files.pythonhosted.org/packages/79/9e/a39e317db790fb65a80af216cd6f4500bba640fc79e84545a5e5b9cfe9eb/cutadapt-5.1-cp311-cp311-win_amd64.whl", hash = "sha256:00340bf3317016e3e426d41d96909985ec8a4bc69ae362d5a460f4695f5f65ba", size = 219801, upload-time = "2025-05-28T12:14:15.16Z" },
+    { url = "https://files.pythonhosted.org/packages/75/93/dbf2fce63c14d453264844853a748930811bb852deb9ae39f158e89114a7/cutadapt-5.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:dbaf12df903971ff780518d8ba0a2c70e63c8448ae406568574037b957fd4814", size = 234802, upload-time = "2025-10-23T13:32:20.029Z" },
+    { url = "https://files.pythonhosted.org/packages/92/65/78dfd1d27ef4fb5f2701b5ae43ae620958e9c2c793eb3efc24c5a2d9cb89/cutadapt-5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:909a65c93c8314e75ce5780ab714f9c7dcb1f5a0eb848f8304421adc1111bb6f", size = 280528, upload-time = "2025-10-23T13:32:21.023Z" },
+    { url = "https://files.pythonhosted.org/packages/9e/fd/c0dfd6b4fe1d51b4b66378974362c632667ee2420eb05282950bfaa82100/cutadapt-5.2-cp311-cp311-win_amd64.whl", hash = "sha256:1a578c64cf9b0837c887ceebb889658ca23b4c059c5f92c2dd6decb337b3e717", size = 222907, upload-time = "2025-10-23T13:32:22.049Z" },
 ]
 
 [[package]]
@@ -496,7 +495,7 @@ requires-dist = [
     { name = "cairosvg", specifier = "==2.8.2" },
     { name = "codecov", marker = "extra == 'dev'", specifier = "==2.1.13" },
     { name = "coverage", marker = "extra == 'test'", specifier = "==7.11.0" },
-    { name = "cutadapt", specifier = "==5.1" },
+    { name = "cutadapt", specifier = "==5.2" },
     { name = "drawsvg", specifier = "==2.4.0" },
     { name = "ete3", marker = "extra == 'test'", specifier = "==3.1.3" },
     { name = "genetracks", git = "https://github.com/cfe-lab/genetracks.git?rev=v0.4" },
