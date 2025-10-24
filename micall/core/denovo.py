@@ -23,70 +23,80 @@ logger = logging.getLogger(__name__)
 
 
 def count_fasta_sequences(file_path):
-    with open(file_path, 'r') as file:
-        return sum(1 for line in file if line.startswith('>'))
+    with open(file_path, "r") as file:
+        return sum(1 for line in file if line.startswith(">"))
 
 
-def run_subprocess(fastq1_path, fastq2_path, work_dir, merged_contigs_csv) -> Path:
+def run_subprocess(
+    fastq1_path: str,
+    fastq2_path: str,
+    work_dir: str,
+    merged_contigs_csv: Optional[TextIO],
+) -> Path:
     cache_key = {
-        'fastq1': Path(fastq1_path),
-        'fastq2': Path(fastq2_path),
-        'merged_contigs_csv': Path(merged_contigs_csv.name) if merged_contigs_csv else None,
+        "fastq1": Path(fastq1_path),
+        "fastq2": Path(fastq2_path),
+        "merged_contigs_csv": Path(merged_contigs_csv.name)
+        if merged_contigs_csv
+        else None,
     }
 
-    cached = cache.get('denovo[iva]', cache_key)
+    cached = cache.get("denovo[iva]", cache_key)
     if cached:
-        path = cached['assembled_fasta']
+        path = cached["assembled_fasta"]
         assert path is not None
         return path
 
-    old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
+    old_tmp_dirs = glob(os.path.join(work_dir, "assembly_*"))
     for old_tmp_dir in old_tmp_dirs:
         rmtree(old_tmp_dir, ignore_errors=True)
 
-    tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
+    tmp_dir = mkdtemp(dir=work_dir, prefix="assembly_")
 
-    joined_path = os.path.join(tmp_dir, 'joined.fastq')
-    subprocess.run(['merge-mates',
-                    fastq1_path,
-                    fastq2_path,
-                    '--interleave',
-                    '-o', joined_path],
-                   check=True)
-    iva_out_path = os.path.join(tmp_dir, 'iva_out')
-    contigs_fasta_path = os.path.join(iva_out_path, 'contigs.fasta')
-    iva_args = [IVA, '--fr', joined_path, '-t', '2']
+    joined_path = os.path.join(tmp_dir, "joined.fastq")
+    subprocess.run(
+        ["merge-mates", fastq1_path, fastq2_path, "--interleave", "-o", joined_path],
+        check=True,
+    )
+    iva_out_path = os.path.join(tmp_dir, "iva_out")
+    contigs_fasta_path = os.path.join(iva_out_path, "contigs.fasta")
+    iva_args = [IVA, "--fr", joined_path, "-t", "2"]
     if merged_contigs_csv is not None:
-        seeds_fasta_path = os.path.join(tmp_dir, 'seeds.fasta')
-        with open(seeds_fasta_path, 'w') as seeds_fasta:
-            SeqIO.write((SeqRecord(Seq(row['contig']), f'seed-{i}', '', '')
-                         for i, row in enumerate(DictReader(merged_contigs_csv))),
-                        seeds_fasta,
-                        'fasta')
+        seeds_fasta_path = os.path.join(tmp_dir, "seeds.fasta")
+        with open(seeds_fasta_path, "w") as seeds_fasta:
+            SeqIO.write(
+                (
+                    SeqRecord(Seq(row["contig"]), f"seed-{i}", "", "")
+                    for i, row in enumerate(DictReader(merged_contigs_csv))
+                ),
+                seeds_fasta,
+                "fasta",
+            )
             seeds_size = seeds_fasta.tell()
         if seeds_size > 0:
-            iva_args.extend(['--contigs', seeds_fasta_path, '--make_new_seeds'])
+            iva_args.extend(["--contigs", seeds_fasta_path, "--make_new_seeds"])
     iva_args.append(iva_out_path)
     try:
         subprocess.run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as ex:
-        output = ex.output and ex.output.decode('UTF8')
-        if output != 'Failed to make first seed. Cannot continue\n':
-            logger.warning('iva failed to assemble.', exc_info=True)
+        output = ex.output and ex.output.decode("UTF8")
+        if output != "Failed to make first seed. Cannot continue\n":
+            logger.warning("iva failed to assemble.", exc_info=True)
             logger.warning(output)
-        with open(contigs_fasta_path, 'a'):
+        with open(contigs_fasta_path, "a"):
             pass
 
     return Path(contigs_fasta_path)
 
 
-def denovo(fastq1_path: str,
-           fastq2_path: str,
-           fasta: TextIO,
-           work_dir: str = '.',
-           merged_contigs_csv: Optional[TextIO] = None,
-           ):
-    """ Use de novo assembly to build contigs from reads.
+def denovo(
+    fastq1_path: str,
+    fastq2_path: str,
+    fasta: TextIO,
+    work_dir: str = ".",
+    merged_contigs_csv: Optional[TextIO] = None,
+):
+    """Use de novo assembly to build contigs from reads.
 
     :param fastq1: FASTQ file for read 1 reads
     :param fastq2: FASTQ file for read 2 reads
@@ -99,39 +109,43 @@ def denovo(fastq1_path: str,
     start_time = datetime.now()
     start_dir = os.getcwd()
 
-    contigs_fasta_path = run_subprocess(fastq1_path, fastq2_path, work_dir, merged_contigs_csv)
+    contigs_fasta_path = run_subprocess(
+        fastq1_path, fastq2_path, work_dir, merged_contigs_csv
+    )
     with open(contigs_fasta_path) as reader:
         copyfileobj(reader, fasta)
 
     os.chdir(start_dir)
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
-    logger.info('Assembled %d contigs in %s (%ds) on %s.',
-                contig_count,
-                duration,
-                duration.total_seconds(),
-                fastq1_path)
+    logger.info(
+        "Assembled %d contigs in %s (%ds) on %s.",
+        contig_count,
+        duration,
+        duration.total_seconds(),
+        fastq1_path,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(
         description="A script to perform de novo assembly of reads to build contigs."
     )
     parser.add_argument(
-        'fastq1',
-        type=argparse.FileType('r'),
-        help="Path to the FASTQ file containing read 1 of paired-end sequencing data."
+        "fastq1",
+        type=argparse.FileType("r"),
+        help="Path to the FASTQ file containing read 1 of paired-end sequencing data.",
     )
     parser.add_argument(
-        'fastq2',
-        type=argparse.FileType('r'),
-        help="Path to the FASTQ file containing read 2 of paired-end sequencing data."
+        "fastq2",
+        type=argparse.FileType("r"),
+        help="Path to the FASTQ file containing read 2 of paired-end sequencing data.",
     )
     parser.add_argument(
-        'fasta',
-        type=argparse.FileType('w'),
-        help="Path to the output FASTA file where assembled contigs will be written."
+        "fasta",
+        type=argparse.FileType("w"),
+        help="Path to the output FASTA file where assembled contigs will be written.",
     )
 
     args = parser.parse_args()
