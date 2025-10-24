@@ -1,4 +1,4 @@
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Union
 from pathlib import Path
 import os
 import hashlib
@@ -36,7 +36,7 @@ def hash_file(file_path: Path) -> str:
 
 def get(
     procedure: str, inputs: Mapping[str, Optional[Path]]
-) -> Optional[Mapping[str, Optional[Path]]]:
+) -> Optional[Union[Path, Mapping[str, Optional[Path]]]]:
     """Retrieve cached data for the given inputs, if available.
 
     Args:
@@ -57,14 +57,14 @@ def get(
 def set(
     procedure: str,
     inputs: Mapping[str, Optional[Path]],
-    outputs: Mapping[str, Optional[Path]],
+    output: Union[Path, Mapping[str, Optional[Path]]],
 ) -> None:
     """Cache the outputs for the given inputs.
 
     Args:
         procedure: The name of the procedure for which to cache data.
         inputs: A mapping of input identifiers to their corresponding file paths.
-        outputs: A mapping of output identifiers to their corresponding file paths.
+        output: Either a single output file path or a mapping of output identifiers.
     """
 
     if not CACHE_FOLDER:

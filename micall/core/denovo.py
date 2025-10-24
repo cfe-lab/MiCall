@@ -43,9 +43,8 @@ def run_subprocess(
 
     cached = cache.get("denovo[iva]", cache_key)
     if cached:
-        path = cached["assembled_fasta"]
-        assert path is not None
-        return path
+        assert isinstance(cached, Path)
+        return cached
 
     old_tmp_dirs = glob(os.path.join(work_dir, "assembly_*"))
     for old_tmp_dir in old_tmp_dirs:
@@ -86,7 +85,7 @@ def run_subprocess(
         with open(contigs_fasta_path, "a"):
             pass
 
-    cache.set("denovo[iva]", cache_key, {"assembled_fasta": Path(contigs_fasta_path)})
+    cache.set("denovo[iva]", cache_key, Path(contigs_fasta_path))
     return Path(contigs_fasta_path)
 
 
