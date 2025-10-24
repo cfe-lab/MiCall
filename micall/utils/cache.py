@@ -34,7 +34,9 @@ def hash_file(file_path: Path) -> str:
     return ret
 
 
-def get(procedure: str, inputs: Mapping[str, Path]) -> Optional[Mapping[str, Path]]:
+def get(
+    procedure: str, inputs: Mapping[str, Optional[Path]]
+) -> Optional[Mapping[str, Optional[Path]]]:
     """Retrieve cached data for the given inputs, if available.
 
     Args:
