@@ -55,7 +55,9 @@ def get(
 
 
 def set(
-    procedure: str, inputs: Mapping[str, Path], outputs: Mapping[str, Path]
+    procedure: str,
+    inputs: Mapping[str, Optional[Path]],
+    outputs: Mapping[str, Optional[Path]],
 ) -> None:
     """Cache the outputs for the given inputs.
 
