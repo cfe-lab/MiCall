@@ -86,6 +86,7 @@ def run_subprocess(
         with open(contigs_fasta_path, "a"):
             pass
 
+    cache.set("denovo[iva]", cache_key, {"assembled_fasta": Path(contigs_fasta_path)})
     return Path(contigs_fasta_path)
 
 
