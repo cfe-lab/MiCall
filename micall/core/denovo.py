@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from pathlib import Path
 from typing import Optional, TextIO
 from csv import DictReader
 from datetime import datetime
@@ -14,6 +15,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+from micall.utils import cache
+
 
 IVA = "iva"
 logger = logging.getLogger(__name__)
@@ -24,21 +27,18 @@ def count_fasta_sequences(file_path):
         return sum(1 for line in file if line.startswith('>'))
 
 
-def denovo(fastq1_path: str,
-           fastq2_path: str,
-           fasta: TextIO,
-           work_dir: str = '.',
-           merged_contigs_csv: Optional[TextIO] = None,
-           ):
-    """ Use de novo assembly to build contigs from reads.
+def run_subprocess(fastq1_path, fastq2_path, work_dir, merged_contigs_csv) -> Path:
+    cache_key = {
+        'fastq1': Path(fastq1_path),
+        'fastq2': Path(fastq2_path),
+        'merged_contigs_csv': Path(merged_contigs_csv.name) if merged_contigs_csv else None,
+    }
 
-    :param fastq1: FASTQ file for read 1 reads
-    :param fastq2: FASTQ file for read 2 reads
-    :param fasta: file to write assembled contigs to
-    :param work_dir: path for writing temporary files
-    :param merged_contigs_csv: open file to read contigs that were merged from
-        amplicon reads
-    """
+    cached = cache.get('denovo[iva]', cache_key)
+    if cached:
+        path = cached['assembled_fasta']
+        assert path is not None
+        return path
 
     old_tmp_dirs = glob(os.path.join(work_dir, 'assembly_*'))
     for old_tmp_dir in old_tmp_dirs:
@@ -46,8 +46,6 @@ def denovo(fastq1_path: str,
 
     tmp_dir = mkdtemp(dir=work_dir, prefix='assembly_')
 
-    start_time = datetime.now()
-    start_dir = os.getcwd()
     joined_path = os.path.join(tmp_dir, 'joined.fastq')
     subprocess.run(['merge-mates',
                     fastq1_path,
@@ -79,6 +77,29 @@ def denovo(fastq1_path: str,
         with open(contigs_fasta_path, 'a'):
             pass
 
+    return Path(contigs_fasta_path)
+
+
+def denovo(fastq1_path: str,
+           fastq2_path: str,
+           fasta: TextIO,
+           work_dir: str = '.',
+           merged_contigs_csv: Optional[TextIO] = None,
+           ):
+    """ Use de novo assembly to build contigs from reads.
+
+    :param fastq1: FASTQ file for read 1 reads
+    :param fastq2: FASTQ file for read 2 reads
+    :param fasta: file to write assembled contigs to
+    :param work_dir: path for writing temporary files
+    :param merged_contigs_csv: open file to read contigs that were merged from
+        amplicon reads
+    """
+
+    start_time = datetime.now()
+    start_dir = os.getcwd()
+
+    contigs_fasta_path = run_subprocess(fastq1_path, fastq2_path, work_dir, merged_contigs_csv)
     with open(contigs_fasta_path) as reader:
         copyfileobj(reader, fasta)
 
