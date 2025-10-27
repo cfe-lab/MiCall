@@ -46,7 +46,7 @@ class WorkDir:
         Raises:
             LookupError: If no work_dir has been set.
         """
-        return _work_dir.get().work_dir
+        return WorkDir._get().work_dir
 
     @staticmethod
     @contextmanager
