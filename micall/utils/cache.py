@@ -1,5 +1,40 @@
 #! /usr/bin/env python3
 
+"""
+Disk-based caching system module.
+
+This module provides a persistent caching mechanism that stores function results
+on disk, enabling expensive computations to be skipped when the same inputs are
+encountered again. The cache is content-addressable, meaning files are identified
+by their content hash rather than their path.
+
+The cache requires the `MICALL_CACHE_FOLDER` environment variable to be set.
+If not configured, all cache operations will be no-ops.
+
+Command-line Interface:
+    The module provides CLI commands for cache management:
+
+    - `micall cache clear`: Remove all cached entries
+    - `micall cache clear <procedure>`: Remove entries for a specific procedure
+    - `micall cache clear <pattern>`: Remove entries matching a regex pattern
+
+Example:
+    >>> from micall.utils.cache import cached
+    >>> from pathlib import Path
+    >>>
+    >>> @cached("my_analysis")
+    >>> def analyze_sequence(input_file: Path) -> Path:
+    ...     # Expensive computation here
+    ...     result = process(input_file)
+    ...     return result
+    >>>
+    >>> # First call computes and caches
+    >>> result1 = analyze_sequence(Path("data.fastq"))
+    >>>
+    >>> # Second call with same input returns cached result instantly
+    >>> result2 = analyze_sequence(Path("data.fastq"))
+"""
+
 import argparse
 import sys
 from typing import Mapping, Optional, Sequence, Union, Callable, TypeVar
