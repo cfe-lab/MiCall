@@ -247,5 +247,5 @@ def main():
         genreport_rerun(results_folder, args.working)
     clear_working_folder(args.working)
 
-
-main()
+if __name__ == '__main__':
+    main()

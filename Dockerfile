@@ -26,7 +26,7 @@
 
 FROM python:3.11
 
-MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
+LABEL maintainer="BC CfE in HIV/AIDS <https://github.com/cfe-lab/MiCall>"
 
 ## Download package sources
 RUN apt-get update -qq -y
@@ -54,7 +54,7 @@ RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/downl
   ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2 && \
   rm bowtie2.zip
 
-ENV PATH $PATH:/opt/bowtie2
+ENV PATH=$PATH:/opt/bowtie2
 
 ## Install Haploflow
 RUN apt-get install -y build-essential sudo git ronn cmake && \
@@ -82,4 +82,4 @@ RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 
 WORKDIR /data
-ENTRYPOINT ["micall", "micall_docker"]
+ENTRYPOINT ["micall", "analyze"]

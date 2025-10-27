@@ -8,6 +8,8 @@ from csv import DictReader
 from micall.core.trim_fastqs import trim
 from micall.utils.dd import DD
 from micall.core.denovo import denovo
+from micall.utils.work_dir import WorkDir
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,11 @@ class MicallDD(DD):
             exception = None
             # noinspection PyBroadException
             try:
-                denovo(trimmed_filename1, trimmed_filename2, contigs_csv, None, workdir)
+                # Use WorkDir for dynamic scoping of work_dir
+                with WorkDir.using(Path(workdir)):
+                    denovo(Path(trimmed_filename1),
+                           Path(trimmed_filename2),
+                           Path(contigs_csv.name))
             except Exception as ex:
                 logger.warning('Assembly failed.', exc_info=True)
                 exception = ex

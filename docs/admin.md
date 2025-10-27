@@ -119,10 +119,10 @@ sudo su micall  # switch to micall account.
 Test that everything is installed with the right permissions:
 
 ```shell
-micall micall_watcher --help
+micall watcher --help
 ```
 
-Look at the options you can give to the `micall_watcher` script when you
+Look at the options you can give to the `watcher` script when you
 configure the service file in the next step.
 
 Now configure the service using a systemd [service unit] configuration.
@@ -133,7 +133,7 @@ Here's an example configuration, in `/etc/systemd/system/micall_watcher.service`
 Description=micall_watcher
     
 [Service]
-ExecStart=/usr/local/share/venv-micall/bin/micall micall_watcher
+ExecStart=/usr/local/share/venv-micall/bin/micall watcher
 EnvironmentFile=/etc/micall/micall.conf
 User=micall
     
@@ -161,7 +161,7 @@ sudo chmod 600 /etc/micall/micall.conf
 Make sure you reduce the read permissions on the `.conf` file so
 other users can't read it. The environment variable names are the same as the
 command options, but they add a `MICALL_` prefix, if it's not already there.
-To list all the available options, run `micall micall_watcher --help`.
+To list all the available options, run `micall watcher --help`.
 Below is the example config:
 
 ```shell
@@ -208,7 +208,7 @@ If you installed it as a service as described above, then it's easy:
 sudo systemctl restart micall_watcher
 ```
 
-Don't launch the `micall/monitor/micall_watcher.py` script on its own, or the service will run
+Don't launch the `micall watcher` command on its own, or the service will run
 won't know that it's running. That can end up running two copies of the watcher
 process, and it gets confused.
 

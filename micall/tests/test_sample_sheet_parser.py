@@ -2,7 +2,7 @@ import unittest
 from io import StringIO
 from pathlib import Path
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser, read_sample_sheet_overrides
+from micall.utils.sample_sheet_parser import _sample_sheet_parser, _read_sample_sheet_overrides
 
 """
 Test suite for the sample sheet parser.
@@ -49,7 +49,7 @@ Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 
     def setUp(self):
         self.maxDiff = None
-        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
+        self.ss = _sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):
         """
@@ -190,7 +190,7 @@ Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
     clean_filenames = ["Sample1-Proj1-Sample2-Proj2_S1", "Sample3-Proj3-Sample4-Proj4_S2"]
 
     def setUp(self):
-        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
+        self.ss = _sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_keys_correct(self):
         """
@@ -355,7 +355,7 @@ A,B,C,D,E
 """
 
         with self.assertRaises(ValueError) as assertion:
-            sample_sheet_parser(StringIO(stub_sample_sheet))
+            _sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEqual("sample sheet data header does not include Sample_Name",
                          assertion.exception.args[0])
 
@@ -389,7 +389,7 @@ CFE_SomeId_10-Jul-2014_N501_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing,N/A,
 Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
 
-        ss = sample_sheet_parser(StringIO(stub_sample_sheet))
+        ss = _sample_sheet_parser(StringIO(stub_sample_sheet))
         sample = ss['Data']['Sample1-Proj1_S1']
         self.assertEqual('ACGTACGT', sample['index1'])
         self.assertEqual('X', sample['index2'])
@@ -425,7 +425,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
 Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
 
-        ss = sample_sheet_parser(StringIO(stub_sample_sheet))
+        ss = _sample_sheet_parser(StringIO(stub_sample_sheet))
         self.assertEqual(ss["Experiment Name"], "10-Jul-2014")
 
     def test_underscores_in_sample_name(self):
@@ -458,7 +458,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
 Chemistry:Sample2_Foo_Proj2:BreakingBad Disablecontamcheck:Sample2_Foo_Proj2:TRUE,
 """
 
-        ss = sample_sheet_parser(StringIO(stub_sample_sheet))
+        ss = _sample_sheet_parser(StringIO(stub_sample_sheet))
         split_rows = ss['DataSplit']
         assert len(split_rows) == 2
 
@@ -509,10 +509,10 @@ Sample2-Proj2_S2,AltB
 """)
 
     with sample_sheet_path.open() as f:
-        run_info = sample_sheet_parser(f)
+        run_info = _sample_sheet_parser(f)
 
     with overrides_path.open() as f:
-        read_sample_sheet_overrides(f, run_info)
+        _read_sample_sheet_overrides(f, run_info)
 
     sample_map = run_info['Data']
     assert len(sample_map) == 2
@@ -551,7 +551,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 
     def setUp(self):
         self.maxDiff = None
-        self.ss = sample_sheet_parser(StringIO(self.stub_sample_sheet))
+        self.ss = _sample_sheet_parser(StringIO(self.stub_sample_sheet))
 
     def test_preamble_correct(self):
         """
@@ -666,7 +666,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 1,1234_1234,20-Jul-2017.M04401,N/A,GTGTTGCT,CATGGTCT,"",bccfe_2_N501-N701_DRT_INT
 2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
-        sample_sheet_parser(StringIO(valid_sample_sheet))
+        _sample_sheet_parser(StringIO(valid_sample_sheet))
 
     def test_missing_header(self):
         invalid_sample_sheet = """
@@ -679,7 +679,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(invalid_sample_sheet))
+            _sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Missing 'Header' section in the sample sheet.", str(context.exception))
 
     def test_missing_required_fields_in_data(self):
@@ -703,7 +703,7 @@ Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_Project
 4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(invalid_sample_sheet))
+            _sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Expected field 'Sample_ID' not found", str(context.exception))
 
     def test_row_length_mismatch_in_data(self):
@@ -727,7 +727,7 @@ ACGT,TGCA,bccfe_2_N501-N701_INT
 CGAT,ATGC,bccfe_2_N501-N701_INT
 """
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(invalid_sample_sheet))
+            _sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Row length 3 does not match header length 4", str(context.exception))
 
     def test_row_length_mismatch_in_bccfe_data(self):
@@ -751,7 +751,7 @@ Sample1,ACGT,TGCA,bccfe_2_N501-N701_INT
 Sample2,CGAT,ATGC,bccfe_2_N501-N701_INT
 """
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(invalid_sample_sheet))
+            _sample_sheet_parser(StringIO(invalid_sample_sheet))
         self.assertIn("Row length 4 does not match header length 5", str(context.exception))
 
     def test_invalid_read_length(self):
@@ -776,7 +776,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(sample_sheet))
+            _sample_sheet_parser(StringIO(sample_sheet))
         self.assertIn("Expected an integer, but got", str(context.exception))
 
     def test_missing_reads_section(self):
@@ -797,7 +797,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(sample_sheet))
+            _sample_sheet_parser(StringIO(sample_sheet))
         self.assertIn("Missing 'Reads' section in the sample sheet.", str(context.exception))
 
     def test_not_allowed_missing_index2(self):
@@ -822,7 +822,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,GenomeFolder,Sample_Project
 """
 
         with self.assertRaises(ValueError) as context:
-            sample_sheet_parser(StringIO(sample_sheet))
+            _sample_sheet_parser(StringIO(sample_sheet))
         self.assertIn("Expected field 'index2' not found", str(context.exception))
 
 
@@ -849,7 +849,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,index3,GenomeFolder,
 1,Sample1,20-Jul-2017.M04401,N/A,ACTG,TGCA,ACCC,"",bccfe_2_Tag1_Neurology
 2,Sample2,20-Jul-2017.M04401,N/A,CGAT,ATGC,TCCC,"",bccfe_2_Tag2_Oncology
 """
-        ss = sample_sheet_parser(StringIO(sample_sheet))
+        ss = _sample_sheet_parser(StringIO(sample_sheet))
 
         self.assertIn("Sample1_S1", ss["Data"])
         self.assertEqual(ss["Data"]["Sample1_S1"]["index2"], "TGCA")
@@ -878,7 +878,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 1,Sample1,20-Jul-2017.M04401,N/A,ACTG,TGCA,"",bccfe_2_Tag1_Neurology
 2,Sample2,20-Jul-2017.M04401,N/A,CGAT,ATGC,"",bccfe_2_Tag2_Oncology
 """
-        ss = sample_sheet_parser(StringIO(sample_sheet))
+        ss = _sample_sheet_parser(StringIO(sample_sheet))
 
         self.assertEqual(ss["Data"]["Sample1_S1"]["tags"], "Tag1")
         self.assertEqual(ss["Data"]["Sample2_S2"]["tags"], "Tag2")
@@ -912,7 +912,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 1,Sample1,20-Jul-2017.M04401,N/A,ACTG,TGCA,"",bccfe_2_Tag1_Neurology
 2,Sample2,20-Jul-2017.M04401,N/A,CGAT,ATGC,"",bccfe_2_Tag2_Oncology
 """
-        ss = sample_sheet_parser(StringIO(sample_sheet))
+        ss = _sample_sheet_parser(StringIO(sample_sheet))
 
         self.assertEqual(ss["Data"]["Sample1_S1"]["tags"], "Tag1")
         self.assertEqual(ss["Data"]["Sample2_S2"]["tags"], "Tag2")

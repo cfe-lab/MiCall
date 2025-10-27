@@ -58,4 +58,5 @@ def main():
                       row['which.key.pos'])
 
 
-main()
+if __name__ == '__main__':
+    main()

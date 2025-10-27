@@ -18,7 +18,8 @@ import os
 from pathlib import Path
 from shutil import copy, rmtree, copytree
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
+from micall.utils.list_fastq_files import list_fastq_files, find_fastq_source_folder
 
 NEEDS_PROCESSING = 'needsprocessing'
 ERROR_PROCESSING = 'errorprocessing'
@@ -62,6 +63,7 @@ class Sample(object):
         self.extract_num = extract_num
         self.config = config
         self.fastq_paths = None
+        self.source_fastq_folder = None  # Track where FASTQ files were found
 
     def find(self, source_folder, qai_run_names=None):
         """ Find matching samples in the source folder.
@@ -94,38 +96,44 @@ class Sample(object):
                     matches))
             self.run_name = os.path.dirname(matches[0])
 
-        pattern = os.path.join(self.run_name,
-                               'Data',
-                               'Intensities',
-                               'BaseCalls',
-                               self.extract_num + '*_R1_*')
-        matches = glob(pattern)
-        if len(matches) == 0:
-            raise RuntimeError('No matches found for ' + pattern)
-        matches.sort()
+        # Use list_fastq_files to search in BaseCalls, Alignment_*/*/Fastq, or run path
+        pattern = self.extract_num + '*_R1_*'
+        fastq_files = list_fastq_files(self.run_name, pattern, fallback_to_run_path=False)
+        if not fastq_files:
+            raise RuntimeError('No matches found for run {}'.format(self.run_name))
+        matches = sorted([str(f) for f in fastq_files])
         self.fastq_paths = matches
+        
+        # Store the source folder where FASTQ files were found
+        self.source_fastq_folder = find_fastq_source_folder(self.run_name, pattern)
+        
         if qai_run_names is not None:
-            sample_sheet_path = os.path.join(self.run_name, 'SampleSheet.csv')
-            with open(sample_sheet_path) as f:
-                try:
-                    sample_sheet = sample_sheet_parser(f)
-                except ValueError:
-                    print(f'Bad sample sheet for {self.run_name}.')
-                else:
-                    qai_run_name = sample_sheet['Project Name']
-                    qai_run_names.add(qai_run_name)
+            sample_sheet_path = Path(self.run_name) / 'SampleSheet.csv'
+            try:
+                sample_sheet = read_sample_sheet_and_overrides(sample_sheet_path)
+            except ValueError:
+                print(f'Bad sample sheet for {self.run_name}.')
+            else:
+                qai_run_name = sample_sheet['Project Name']
+                qai_run_names.add(qai_run_name)
 
     def setup_samples(self):
         base_run_name = os.path.basename(self.run_name)
+        
+        # Compute the relative path from run folder to source FASTQ folder
+        # This could be 'Data/Intensities/BaseCalls' or 'Alignment_20/L001/Fastq' etc.
+        assert self.source_fastq_folder is not None, "source_fastq_folder is not set"
+        source_relative_path = self.source_fastq_folder.relative_to(self.run_name)
+
+        # Replicate the same directory structure in the target
         target_data_path = os.path.join(self.config.test_folder,
                                         'MiSeq',
                                         'runs',
                                         base_run_name,
-                                        'Data',
-                                        'Intensities',
-                                        'BaseCalls')
+                                        str(source_relative_path))
         suspended_path = os.path.join(target_data_path, 'suspended')
         sample_paths = []
+        assert self.fastq_paths is not None, "fastq_paths is not set"
         for fastq1_path in self.fastq_paths:
             fastq2_path = fastq1_path.replace('_R1_', '_R2_')
             for fastq_path in (fastq1_path, fastq2_path):
@@ -160,11 +168,12 @@ class Sample(object):
         elif os.path.exists(suspended_run_path):
             os.rename(suspended_run_path, target_run_path)
         else:
-            base_calls_path = os.path.join(target_run_path,
-                                           'Data',
-                                           'Intensities',
-                                           'BaseCalls')
-            os.makedirs(base_calls_path)
+            # Create directory structure matching the source folder
+            assert self.source_fastq_folder is not None, "source_fastq_folder is not set"
+            source_relative_path = self.source_fastq_folder.relative_to(self.run_name)
+            fastq_folder_path = os.path.join(target_run_path, str(source_relative_path))
+            os.makedirs(fastq_folder_path)
+
             interop_source = os.path.join(self.run_name, 'InterOp')
             interop_target = os.path.join(target_run_path, 'InterOp')
             if self.config.no_links:
@@ -219,10 +228,16 @@ def suspend_inactive_runs(active_runs, rawdata_mount):
 
 
 def suspend_inactive_samples(run_path, active_sample_paths):
-    base_calls_path = os.path.join(run_path, 'Data', 'Intensities', 'BaseCalls')
-    local_samples = glob(os.path.join(base_calls_path, '*'))
+    # Find the actual FASTQ folder (could be BaseCalls or Alignment_*/*/Fastq)
+    # Use a generic pattern to find any FASTQ files
+    fastq_folder = find_fastq_source_folder(run_path, '*_R1_*')
+    if fastq_folder is None:
+        # No FASTQ files found, nothing to suspend
+        return
+        
+    local_samples = glob(os.path.join(str(fastq_folder), '*'))
     excluded = list(active_sample_paths)
-    suspended_path = os.path.join(base_calls_path, 'suspended')
+    suspended_path = os.path.join(str(fastq_folder), 'suspended')
     excluded.append(suspended_path)
     for sample_path in local_samples:
         if sample_path not in excluded:

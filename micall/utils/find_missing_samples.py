@@ -4,7 +4,7 @@ import logging
 from csv import DictReader
 from pathlib import Path
 
-from micall.utils.sample_sheet_parser import sample_sheet_parser
+from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +30,10 @@ def process_run(run_folder: Path, skip_mid_hcv: bool):
     if (run_folder / 'errorprocessing').exists():
         return True
     sample_sheet_path = run_folder / 'SampleSheet.csv'
-    with sample_sheet_path.open() as f:
-        try:
-            run_info = sample_sheet_parser(f)
-        except Exception:
-            raise RuntimeError(f'Failed to process run {run_folder.name}.')
+    try:
+        run_info = read_sample_sheet_and_overrides(sample_sheet_path)
+    except Exception:
+        raise RuntimeError(f'Failed to process run {run_folder.name}.')
     sample_names = set(run_info['Data'])
     if skip_mid_hcv:
         sample_names = {sample_name
@@ -72,4 +71,5 @@ def main():
     logger.info('Done.')
 
 
-main()
+if __name__ == '__main__':
+    main()

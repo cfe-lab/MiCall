@@ -76,16 +76,33 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build docker image
-        run: docker build --tag micall --file Dockerfile .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: ${{ github.ref == 'refs/heads/master' }}
+          tags: |
+            ghcr.io/cfe-lab/micall:sha-${{ github.sha }}
+            ghcr.io/cfe-lab/micall:latest
+          cache-from: type=gha,scope=docker-micall
+          cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
-        run: docker run micall --help
+        run: docker run ghcr.io/cfe-lab/micall:latest --help
       - name: Check docker image entrypoint
-        run: docker run micall --help | grep -i -e 'docker'
+        run: docker run ghcr.io/cfe-lab/micall:latest --help | grep -i -e 'docker'
       - name: Install python packages
         run: pip install multicsv
       - name: Check docker image microtest
-        run: python micall/main.py release_test_microtest micall --docker
+        run: python micall release_test_microtest ghcr.io/cfe-lab/micall:latest --docker
 
   singularity-test:
     runs-on: ubuntu-22.04
@@ -127,7 +144,7 @@ jobs:
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall/main.py release_test_microtest micall.simg
+        run: python micall release_test_microtest micall.simg
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'

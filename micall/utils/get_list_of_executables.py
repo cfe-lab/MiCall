@@ -12,13 +12,7 @@ def is_executable_script(content: str) -> bool:
     if content.startswith("#!"):
         return True
 
-    if re.findall(r'__name__\s*==\s*[\'"]__main__', content):
-        return True
-
-    if 'import argparse' in content:
-        return True
-
-    if 'from argparse' in content:
+    if re.findall(r'__name__.+__main__', content):
         return True
 
     return False

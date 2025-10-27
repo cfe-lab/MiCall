@@ -17,7 +17,7 @@ from pathlib import Path
 # Run micall/utils/get_list_of_executables.py to get the up-to-date list of these executables.
 # The consistency of this list is verified in micall/tests/test_installation.py
 EXECUTABLES = [
-    "micall/main.py",
+    "micall/__main__.py",
     "micall/resistance/genreport.py",
     "micall/resistance/resistance.py",
     "micall/resistance/pdfreport.py",
@@ -30,11 +30,10 @@ EXECUTABLES = [
     "micall/core/remap.py",
     "micall/core/prelim_map.py",
     "micall/core/aln2counts.py",
+    "micall/core/amplicon_finder.py",
     "micall/core/contig_stitcher.py",
     "micall/core/coverage_plots.py",
     "micall/core/plot_simple.py",
-    "micall/tests/test_installation.py",
-    "micall/tests/test_hcv_rules_import.py",
     "micall/g2p/fastq_g2p.py",
     "micall/blast_db/make_blast_db.py",
     "micall/utils/concordance_evaluation.py",
@@ -72,7 +71,6 @@ EXECUTABLES = [
     "micall/utils/release_test_setup.py",
     "micall/utils/samples_from_454.py",
     "micall/utils/amplicon_finder.py",
-    "micall/utils/driver_utils.py",
     "micall/utils/seed_alignments.py",
     "micall/utils/release_test_compare.py",
     "micall/utils/remap_fastq_simplify.py",
@@ -81,18 +79,20 @@ EXECUTABLES = [
     "micall/utils/ref_aligner.py",
     "micall/utils/scan_run_folders.py",
     "micall/utils/contig_blaster.py",
-    "micall/utils/micall_docker.py",
+    "micall/utils/analyze.py",
     "micall/utils/hcv_reference_tree.py",
     "micall/utils/sample_project_summary.py",
     "micall/utils/get_list_of_executables.py",
     "micall/monitor/update_qai.py",
-    "micall/monitor/micall_watcher.py",
+    "micall/monitor/watcher.py",
     "micall/tcr/igblast.py",
     "micall/utils/fasta_to_fastq.py",
     "micall/utils/append_primers.py",
     "micall/utils/randomize_fastq.py",
     "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
     "micall/utils/version.py",
+    "micall/utils/check_sample_sheet.py",
+    "micall/utils/cache.py",
 ]
 
 
