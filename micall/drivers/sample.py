@@ -24,6 +24,7 @@ from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
 from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
 from micall.utils.cat import cat as concatenate_files
+from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -416,14 +417,12 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
 
-        with open(self.unstitched_contigs_fasta, 'w') as unstitched_contigs_fasta, \
-             open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
-            denovo(self.trimmed1_fastq,
-                   self.trimmed2_fastq,
-                   unstitched_contigs_fasta,
-                   self.scratch_path,
-                   merged_contigs_csv,
-                   )
+        # Set work_dir via dynamic scoping
+        with WorkDir.using(Path(self.scratch_path)):
+            denovo(Path(self.trimmed1_fastq),
+                   Path(self.trimmed2_fastq),
+                   Path(self.unstitched_contigs_fasta),
+                   Path(self.merged_contigs_csv))
 
         with open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
             output = Path(self.merged_contigs_fasta)
