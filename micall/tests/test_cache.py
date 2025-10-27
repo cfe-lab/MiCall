@@ -689,3 +689,194 @@ class TestIntegration:
         result = cache.get("test_procedure", inputs)
         assert result is not None
         assert result.read_text() == output.read_text()
+
+
+class TestClearCache:
+    """Tests for the clear_cache function."""
+
+    def test_clear_cache_no_cache_folder(self):
+        """Test that clear_cache handles missing CACHE_FOLDER gracefully."""
+        with patch.object(cache, "CACHE_FOLDER", None):
+            count = cache.clear_cache()
+            assert count == 0
+
+    def test_clear_cache_nonexistent_folder(self, tmp_path):
+        """Test that clear_cache handles nonexistent cache folder."""
+        cache_dir = tmp_path / "nonexistent_cache"
+        with patch.object(cache, "CACHE_FOLDER", str(cache_dir)):
+            count = cache.clear_cache()
+            assert count == 0
+
+    def test_clear_entire_cache(self, temp_cache_dir, sample_files):
+        """Test clearing entire cache without pattern."""
+        # Set up cache with multiple procedures
+        inputs1 = {"input": sample_files["input1"]}
+        output1 = sample_files["output1"]
+        cache.set("procedure1", inputs1, output1)
+
+        inputs2 = {"input": sample_files["input2"]}
+        output2 = sample_files["output2"]
+        cache.set("procedure2", inputs2, output2)
+
+        # Verify cache has data
+        data_file = temp_cache_dir / "data.json"
+        assert data_file.exists()
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert len(data) == 2
+
+        # Clear entire cache
+        count = cache.clear_cache()
+        assert count == 2
+
+        # Verify cache is empty
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert len(data) == 0
+
+    def test_clear_cache_exact_match(self, temp_cache_dir, sample_files):
+        """Test clearing cache with exact procedure name match."""
+        # Set up cache with multiple procedures
+        inputs1 = {"input": sample_files["input1"]}
+        output1 = sample_files["output1"]
+        cache.set("denovo[iva]", inputs1, output1)
+
+        inputs2 = {"input": sample_files["input2"]}
+        output2 = sample_files["output2"]
+        cache.set("other_procedure", inputs2, output2)
+
+        # Clear only denovo[iva]
+        count = cache.clear_cache("denovo[iva]")
+        assert count == 1
+
+        # Verify only denovo[iva] was removed
+        data_file = temp_cache_dir / "data.json"
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert "denovo[iva]" not in data
+        assert "other_procedure" in data
+
+    def test_clear_cache_regex_match(self, temp_cache_dir, sample_files):
+        """Test clearing cache with regex pattern."""
+        # Set up cache with multiple procedures
+        inputs1 = {"input": sample_files["input1"]}
+        output1 = sample_files["output1"]
+        cache.set("denovo[iva]", inputs1, output1)
+
+        inputs2 = {"input": sample_files["input2"]}
+        output2 = sample_files["output2"]
+        cache.set("denovo[hiv]", inputs2, output2)
+
+        # Add another procedure that doesn't match
+        cache.set("other_procedure", inputs1, output1)
+
+        # Clear all procedures starting with "denovo"
+        count = cache.clear_cache("denovo.*")
+        assert count == 2
+
+        # Verify only denovo procedures were removed
+        data_file = temp_cache_dir / "data.json"
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert "denovo[iva]" not in data
+        assert "denovo[hiv]" not in data
+        assert "other_procedure" in data
+
+    def test_clear_cache_no_match(self, temp_cache_dir, sample_files):
+        """Test clearing cache with pattern that doesn't match."""
+        # Set up cache
+        inputs = {"input": sample_files["input1"]}
+        output = sample_files["output1"]
+        cache.set("procedure1", inputs, output)
+
+        # Try to clear with non-matching pattern
+        count = cache.clear_cache("nonexistent")
+        assert count == 0
+
+        # Verify cache still has data
+        data_file = temp_cache_dir / "data.json"
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert "procedure1" in data
+
+    def test_clear_cache_cleans_orphaned_files(self, temp_cache_dir, sample_files):
+        """Test that clearing cache also removes orphaned files."""
+        # Set up cache with two procedures
+        inputs1 = {"input": sample_files["input1"]}
+        output1 = sample_files["output1"]
+        cache.set("procedure1", inputs1, output1)
+
+        inputs2 = {"input": sample_files["input2"]}
+        output2 = sample_files["output2"]
+        cache.set("procedure2", inputs2, output2)
+
+        # Get the hash files
+        data_file = temp_cache_dir / "data.json"
+        with data_file.open("r") as f:
+            data = json.load(f)
+
+        hash1 = data["procedure1"][0]["outputs"]
+        hash2 = data["procedure2"][0]["outputs"]
+
+        # Verify both files exist
+        assert (temp_cache_dir / hash1).exists()
+        assert (temp_cache_dir / hash2).exists()
+
+        # Clear only procedure1
+        cache.clear_cache("procedure1")
+
+        # Verify hash1 file was removed but hash2 still exists
+        assert not (temp_cache_dir / hash1).exists()
+        assert (temp_cache_dir / hash2).exists()
+
+
+class TestCLI:
+    """Tests for the CLI main function."""
+
+    def test_main_clear_no_pattern(self, temp_cache_dir, sample_files):
+        """Test CLI clear command without pattern."""
+        # Set up cache
+        inputs = {"input": sample_files["input1"]}
+        output = sample_files["output1"]
+        cache.set("procedure1", inputs, output)
+
+        # Run CLI
+        result = cache.main(["clear"])
+        assert result == 0
+
+        # Verify cache is empty
+        data_file = temp_cache_dir / "data.json"
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert len(data) == 0
+
+    def test_main_clear_with_pattern(self, temp_cache_dir, sample_files):
+        """Test CLI clear command with pattern."""
+        # Set up cache
+        inputs = {"input": sample_files["input1"]}
+        output = sample_files["output1"]
+        cache.set("denovo[iva]", inputs, output)
+        cache.set("other", inputs, output)
+
+        # Run CLI
+        result = cache.main(["clear", "denovo[iva]"])
+        assert result == 0
+
+        # Verify only denovo[iva] was removed
+        data_file = temp_cache_dir / "data.json"
+        with data_file.open("r") as f:
+            data = json.load(f)
+        assert "denovo[iva]" not in data
+        assert "other" in data
+
+    def test_main_no_command(self):
+        """Test CLI with no command shows help."""
+        result = cache.main([])
+        assert result == 1
+
+    def test_main_invalid_command(self):
+        """Test CLI with invalid command shows help."""
+        # argparse will handle invalid commands by printing error and exiting
+        # We just verify the function can be called
+        with pytest.raises(SystemExit):
+            cache.main(["invalid"])

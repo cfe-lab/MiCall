@@ -1,3 +1,7 @@
+#! /usr/bin/env python3
+
+import argparse
+import sys
 from typing import Mapping, Optional, Sequence, Union, Callable, TypeVar
 from pathlib import Path
 import os
@@ -6,6 +10,8 @@ import json
 import shutil
 from functools import wraps
 import inspect
+import re
+import builtins
 
 
 CACHE_FOLDER = os.environ.get("MICALL_CACHE_FOLDER")
@@ -281,3 +287,132 @@ def cached(procedure: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
         return wrapper
 
     return decorator
+
+
+def clear_cache(pattern: Optional[str] = None) -> int:
+    """Clear cache entries matching the given pattern.
+
+    Args:
+        pattern: Optional pattern to match procedure names.
+                 If None, clears all cache.
+                 Can be an exact match or a regex pattern.
+
+    Returns:
+        Number of entries cleared.
+    """
+    qpattern = json.dumps(pattern)
+
+    if not CACHE_FOLDER:
+        print("No cache folder configured (MICALL_CACHE_FOLDER not set).")
+        return 0
+
+    cache_folder = Path(CACHE_FOLDER)
+
+    if not cache_folder.exists():
+        print("Cache folder does not exist.")
+        return 0
+
+    cache_data = _load_cache_data()
+
+    if not pattern:
+        # Clear entire cache
+        count = sum(len(entries) for entries in cache_data.values())
+
+        # Remove all files in cache folder
+        for item in cache_folder.iterdir():
+            if item.is_file():
+                item.unlink()
+            elif item.is_dir():
+                shutil.rmtree(item)
+
+        # Clear data.json
+        _save_cache_data({})
+
+        print(f"Cleared entire cache ({count} entries).")
+        return count
+
+    # Clear by pattern (exact match or regex)
+    cleared_count = 0
+    procedures_to_remove = []
+
+    for procedure in cache_data.keys():
+        # Try exact match first
+        if procedure == pattern:
+            cleared_count += len(cache_data[procedure])
+            procedures_to_remove.append(procedure)
+        else:
+            # Try regex match
+            try:
+                if re.match(pattern, procedure):
+                    cleared_count += len(cache_data[procedure])
+                    procedures_to_remove.append(procedure)
+            except re.error:
+                # Not a valid regex, skip
+                pass
+
+    # Remove matched procedures
+    for procedure in procedures_to_remove:
+        del cache_data[procedure]
+
+    # Save updated cache data
+    _save_cache_data(cache_data)
+
+    # Clean up orphaned files (files no longer referenced in data.json)
+    if cache_data:
+        referenced_hashes: builtins.set[str] = builtins.set()
+        for entries in cache_data.values():
+            for entry in entries:
+                outputs = entry.get("outputs")
+                if isinstance(outputs, str):
+                    referenced_hashes.add(outputs)
+                elif isinstance(outputs, dict):
+                    for file_hash in outputs.values():
+                        if file_hash:
+                            referenced_hashes.add(file_hash)
+
+        # Remove unreferenced files
+        for item in cache_folder.iterdir():
+            if item.is_file() and item.name != "data.json":
+                if item.name not in referenced_hashes:
+                    item.unlink()
+
+    if cleared_count > 0:
+        print(f"Cleared {cleared_count} cache entries matching {qpattern}.")
+    else:
+        print(f"No cache entries found matching {qpattern}.")
+
+    return cleared_count
+
+
+def main(argv: Sequence[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Utility to manage MiCall cache.", prog="micall cache"
+    )
+
+    subparsers = parser.add_subparsers(dest="command", help="Cache commands")
+
+    # Clear command
+    clear_parser = subparsers.add_parser("clear", help="Clear cache entries")
+    clear_parser.add_argument(
+        "pattern",
+        nargs="?",
+        help="Optional pattern to match procedure names (exact or regex). If omitted, clears entire cache.",
+    )
+
+    args = parser.parse_args(argv)
+
+    if args.command == "clear":
+        clear_cache(args.pattern)
+        return 0
+    else:
+        parser.print_help()
+        return 1
+
+    return 0
+
+
+def entry():
+    sys.exit(main(sys.argv[1:]))
+
+
+if __name__ == "__main__": entry()  # noqa
