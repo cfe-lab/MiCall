@@ -51,10 +51,6 @@ jobs:
         run: |
           git diff --quiet uv.lock
 
-      - name: Install IVA
-        run: |
-          uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
-
       - name: Run type checker
         run: |
           uv run mypy
