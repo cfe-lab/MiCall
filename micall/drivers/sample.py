@@ -21,6 +21,7 @@ from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
+from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -413,11 +414,12 @@ class Sample:
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
 
-        denovo(Path(self.trimmed1_fastq),
-               Path(self.trimmed2_fastq),
-               Path(self.unstitched_contigs_fasta),
-               Path(self.scratch_path),
-               Path(self.merged_contigs_csv))
+        # Set work_dir via dynamic scoping
+        with WorkDir.using(Path(self.scratch_path)):
+            denovo(Path(self.trimmed1_fastq),
+                   Path(self.trimmed2_fastq),
+                   Path(self.unstitched_contigs_fasta),
+                   Path(self.merged_contigs_csv))
 
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \

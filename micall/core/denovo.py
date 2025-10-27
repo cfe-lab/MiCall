@@ -14,6 +14,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.utils import cache
+from micall.utils.work_dir import WorkDir
 
 
 IVA = "iva"
@@ -28,9 +29,16 @@ def count_fasta_sequences(file_path: Path) -> int:
 def run_subprocess(
     fastq1: Path,
     fastq2: Path,
-    work_dir: Path,
     merged_contigs_csv: Optional[Path],
 ) -> Path:
+    """
+    Run IVA de novo assembly subprocess.
+
+    Uses work_dir from WorkDir dynamic scoping for temporary file storage.
+    """
+    # Get work_dir from dynamic scope - required to be set by caller
+    work_dir = WorkDir.get_path()
+
     cache_key = {
         "fastq1": fastq1,
         "fastq2": fastq2,
@@ -90,7 +98,6 @@ def denovo(
     fastq1: Path,
     fastq2: Path,
     fasta: Path,
-    work_dir: Path = Path("."),
     merged_contigs_csv: Optional[Path] = None,
 ):
     """Use de novo assembly to build contigs from reads.
@@ -98,16 +105,14 @@ def denovo(
     :param fastq1: FASTQ file for read 1 reads
     :param fastq2: FASTQ file for read 2 reads
     :param fasta: file to write assembled contigs to
-    :param work_dir: path for writing temporary files
+    :param work_dir: path for writing temporary files (optional, uses dynamic scope if not provided)
     :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
     """
 
     start_time = datetime.now()
 
-    contigs_fasta_path = run_subprocess(
-        fastq1, fastq2, work_dir, merged_contigs_csv
-    )
+    contigs_fasta_path = run_subprocess(fastq1, fastq2, merged_contigs_csv)
     with contigs_fasta_path.open() as reader, \
          fasta.open("w") as writer:
         copyfileobj(reader, writer)
@@ -145,4 +150,5 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    denovo(args.fastq1, args.fastq2, args.fasta)
+    with WorkDir.using(Path.cwd()):
+        denovo(args.fastq1, args.fastq2, args.fasta)

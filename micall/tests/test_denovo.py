@@ -4,7 +4,8 @@ import re
 from pytest import mark
 
 from micall.core.denovo import denovo
-from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
+from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE
+from micall.utils.work_dir import WorkDir  # activates the fixture
 
 # make linters not complain about unused imports.
 assert check_hcv_db is not None
@@ -35,10 +36,10 @@ GCCTCATCGTTTACCCTGACCTCGGCGTCAGGGTCTGCGAGAAGATGGCCCTTTATGATGTCACACAAAAGCTTCCTC\
 AGGCGGTGATGGGGGCTTCTTATGGATTCCAGTACTCCC
 """
 
-    denovo(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq',
-           microtest_path / '2160A-HCV_S19_L001_R2_001.fastq',
-           contigs_fasta,
-           tmpdir)
+    with WorkDir.using(tmpdir):
+        denovo(microtest_path / '2160A-HCV_S19_L001_R1_001.fastq',
+               microtest_path / '2160A-HCV_S19_L001_R2_001.fastq',
+               contigs_fasta)
 
     result = contigs_fasta.read_text()
     expected = expected_contigs_fasta
