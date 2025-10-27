@@ -1,11 +1,14 @@
-from typing import Mapping, Optional, Union
+from typing import Mapping, Optional, Sequence, Union, Callable, TypeVar
 from pathlib import Path
 import os
 import hashlib
+from functools import wraps
 
 
 CACHE_FOLDER = os.environ.get("MICALL_CACHE_FOLDER")
 HASHES: dict[Path, str] = {}
+
+T = TypeVar("T")
 
 
 def hash_file(file_path: Path) -> str:
@@ -71,3 +74,37 @@ def set(
         return
 
     raise NotImplementedError("Cache setting is not implemented yet.")
+
+
+def cached(procedure: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Decorator for caching function results based on file path inputs."""
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        def wrapper(*args: Sequence[object], **kwargs: dict[str, object]) -> T:
+            # Build cache key from kwargs
+            cache_key: dict[str, Optional[Path]] = {}
+
+            for key, value in kwargs.items():
+                if not isinstance(value, (Path, type(None))):
+                    raise ValueError(
+                        f"Input key '{key}' must be of type Path or None, got {type(value)}"
+                    )
+                cache_key[key] = value
+
+            # Try to get from cache
+            cached_result = get(procedure, cache_key)
+            if cached_result is not None:
+                return cached_result  # type: ignore
+
+            # Execute function
+            result = func(*args, **kwargs)
+
+            # Store in cache
+            set(procedure, cache_key, result)  # type: ignore
+
+            return result
+
+        return wrapper
+
+    return decorator

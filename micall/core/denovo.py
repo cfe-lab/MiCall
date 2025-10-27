@@ -13,7 +13,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from micall.utils import cache
+from micall.utils.cache import cached
 from micall.utils.work_dir import WorkDir
 
 
@@ -26,6 +26,7 @@ def count_fasta_sequences(file_path: Path) -> int:
         return sum(1 for line in file if line.startswith(">"))
 
 
+@cached("denovo[iva]")
 def run_subprocess(
     fastq1: Path,
     fastq2: Path,
@@ -38,17 +39,6 @@ def run_subprocess(
     """
     # Get work_dir from dynamic scope - required to be set by caller
     work_dir = WorkDir.get()
-
-    cache_key = {
-        "fastq1": fastq1,
-        "fastq2": fastq2,
-        "merged_contigs_csv": merged_contigs_csv,
-    }
-
-    cached = cache.get("denovo[iva]", cache_key)
-    if cached:
-        assert isinstance(cached, Path)
-        return cached
 
     old_tmp_dirs = work_dir.glob("assembly_*")
     for old_tmp_dir in old_tmp_dirs:
@@ -90,7 +80,6 @@ def run_subprocess(
             logger.warning(output)
         contigs_fasta_path.touch()
 
-    cache.set("denovo[iva]", cache_key, contigs_fasta_path)
     return contigs_fasta_path
 
 
