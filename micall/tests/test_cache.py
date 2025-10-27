@@ -582,6 +582,39 @@ class TestCachedDecorator:
         assert call_count == 1  # Cached
         assert result2["output1"].read_text() == sample_files["output1"].read_text()
 
+    def test_cached_positional_arguments(self, temp_cache_dir, sample_files):
+        """Test decorator with positional arguments (not just kwargs)."""
+        call_count = 0
+
+        @cache.cached("test_proc")
+        def test_func(input1: Path, input2: Path, input3: Path | None = None) -> Path:
+            nonlocal call_count
+            call_count += 1
+            return sample_files["output1"]
+
+        # Call with positional arguments (like denovo does)
+        test_func(sample_files["input1"], sample_files["input2"], None)
+        assert call_count == 1
+
+        # Second call with same positional arguments should use cache
+        test_func(sample_files["input1"], sample_files["input2"], None)
+        assert call_count == 1  # Cached
+
+        # Verify the inputs were captured correctly in the cache
+        data = cache._load_cache_data()
+        assert "test_proc" in data
+        entries = data["test_proc"]
+        assert len(entries) == 1
+
+        # Check that all three parameters are in the inputs
+        inputs = entries[0]["inputs"]
+        assert "input1" in inputs
+        assert "input2" in inputs
+        assert "input3" in inputs
+        assert inputs["input1"] is not None
+        assert inputs["input2"] is not None
+        assert inputs["input3"] is None
+
 
 class TestIntegration:
     """Integration tests for the cache module."""

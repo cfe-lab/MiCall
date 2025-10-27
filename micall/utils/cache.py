@@ -5,6 +5,7 @@ import hashlib
 import json
 import shutil
 from functools import wraps
+import inspect
 
 
 CACHE_FOLDER = os.environ.get("MICALL_CACHE_FOLDER")
@@ -250,10 +251,14 @@ def cached(procedure: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args: Sequence[object], **kwargs: dict[str, object]) -> T:
-            # Build cache key from kwargs
-            cache_key: dict[str, Optional[Path]] = {}
+            # Build cache key from both args and kwargs
+            # We need to map positional args to parameter names
+            sig = inspect.signature(func)
+            bound_args = sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()
 
-            for key, value in kwargs.items():
+            cache_key: dict[str, Optional[Path]] = {}
+            for key, value in bound_args.arguments.items():
                 if not isinstance(value, (Path, type(None))):
                     raise ValueError(
                         f"Input key '{key}' must be of type Path or None, got {type(value)}"
