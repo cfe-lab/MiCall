@@ -126,60 +126,64 @@ class TestHashFile:
         assert len(file_hash) == 32
 
 
-class TestMakeCacheKey:
-    """Tests for the _make_cache_key function."""
+class TestMakeInputKey:
+    """Tests for the _make_input_key function."""
 
-    def test_make_cache_key_basic(self, sample_files):
-        """Test basic cache key generation."""
+    def test_make_input_key_basic(self, sample_files):
+        """Test basic input key generation."""
         inputs = {"input1": sample_files["input1"]}
-        key = cache._make_cache_key("test_procedure", inputs)
+        key = cache._make_cache_key(inputs)
 
-        # Should be a valid MD5 hash
-        assert len(key) == 32
-        assert all(c in "0123456789abcdef" for c in key)
+        # Should be a dict with input names and hashes
+        assert isinstance(key, dict)
+        assert "input1" in key
+        assert isinstance(key["input1"], str)
+        assert len(key["input1"]) == 32  # MD5 hash
 
-    def test_make_cache_key_includes_procedure(self, sample_files):
-        """Test that cache key changes with different procedures."""
-        inputs = {"input1": sample_files["input1"]}
+    def test_make_input_key_multiple_inputs(self, sample_files):
+        """Test input key with multiple inputs."""
+        inputs = {"input1": sample_files["input1"], "input2": sample_files["input2"]}
+        key = cache._make_cache_key(inputs)
 
-        key1 = cache._make_cache_key("procedure_a", inputs)
-        key2 = cache._make_cache_key("procedure_b", inputs)
+        assert len(key) == 2
+        assert "input1" in key
+        assert "input2" in key
+        assert key["input1"] != key["input2"]
 
-        assert key1 != key2
-
-    def test_make_cache_key_includes_input_files(self, sample_files):
-        """Test that cache key changes with different input files."""
+    def test_make_input_key_different_files(self, sample_files):
+        """Test that different files produce different hashes."""
         inputs1 = {"input1": sample_files["input1"]}
         inputs2 = {"input1": sample_files["input2"]}
 
-        key1 = cache._make_cache_key("test_procedure", inputs1)
-        key2 = cache._make_cache_key("test_procedure", inputs2)
+        key1 = cache._make_cache_key(inputs1)
+        key2 = cache._make_cache_key(inputs2)
 
-        assert key1 != key2
+        assert key1["input1"] != key2["input1"]
 
-    def test_make_cache_key_sorted_inputs(self, sample_files):
-        """Test that input order doesn't affect cache key."""
+    def test_make_input_key_sorted(self, sample_files):
+        """Test that input keys are sorted consistently."""
         inputs1 = {"a": sample_files["input1"], "b": sample_files["input2"]}
         inputs2 = {"b": sample_files["input2"], "a": sample_files["input1"]}
 
-        key1 = cache._make_cache_key("test_procedure", inputs1)
-        key2 = cache._make_cache_key("test_procedure", inputs2)
+        key1 = cache._make_cache_key(inputs1)
+        key2 = cache._make_cache_key(inputs2)
 
         assert key1 == key2
 
-    def test_make_cache_key_with_none(self, sample_files):
-        """Test cache key generation with None values."""
+    def test_make_input_key_with_none(self, sample_files):
+        """Test input key generation with None values."""
         inputs = {"input1": sample_files["input1"], "input2": None}
 
-        key = cache._make_cache_key("test_procedure", inputs)
-        assert len(key) == 32
+        key = cache._make_cache_key(inputs)
+        assert key["input1"] is not None
+        assert key["input2"] is None
 
-    def test_make_cache_key_deterministic(self, sample_files):
-        """Test that cache key is deterministic."""
+    def test_make_input_key_deterministic(self, sample_files):
+        """Test that input key is deterministic."""
         inputs = {"input1": sample_files["input1"]}
 
-        key1 = cache._make_cache_key("test_procedure", inputs)
-        key2 = cache._make_cache_key("test_procedure", inputs)
+        key1 = cache._make_cache_key(inputs)
+        key2 = cache._make_cache_key(inputs)
 
         assert key1 == key2
 
@@ -314,11 +318,15 @@ class TestCacheGet:
 
         cache.set("test_procedure", inputs, output)
 
-        # Delete the cached file
-        cache_key = cache._make_cache_key("test_procedure", inputs)
+        # Get the stored data structure
         data = cache._load_cache_data()
-        cached_file_hash = data[cache_key]
-        cached_file = temp_cache_dir / cached_file_hash
+        # Find the entry for this procedure
+        entries = data.get("test_procedure", [])
+        assert len(entries) > 0
+
+        # Delete the cached file
+        file_hash = entries[0]["outputs"]
+        cached_file = temp_cache_dir / file_hash
         cached_file.unlink()
 
         # Should return None since file is missing
@@ -349,13 +357,18 @@ class TestCacheSet:
         data_file = temp_cache_dir / "data.json"
         assert data_file.exists()
 
-        # Verify cache entry
+        # Verify cache entry structure
         data = json.loads(data_file.read_text())
-        cache_key = cache._make_cache_key("test_procedure", inputs)
-        assert cache_key in data
+        assert "test_procedure" in data
+        assert isinstance(data["test_procedure"], list)
+        assert len(data["test_procedure"]) == 1
+
+        entry = data["test_procedure"][0]
+        assert "inputs" in entry
+        assert "outputs" in entry
 
         # Verify cached file exists
-        file_hash = data[cache_key]
+        file_hash = entry["outputs"]
         cached_file = temp_cache_dir / file_hash
         assert cached_file.exists()
         assert cached_file.read_text() == output.read_text()
@@ -372,10 +385,15 @@ class TestCacheSet:
 
         # Verify cache entry
         data = cache._load_cache_data()
-        cache_key = cache._make_cache_key("test_procedure", inputs)
-        assert cache_key in data
+        assert "test_procedure" in data
+        entries = data["test_procedure"]
+        assert len(entries) == 1
 
-        cache_entry = data[cache_key]
+        entry = entries[0]
+        assert "inputs" in entry
+        assert "outputs" in entry
+
+        cache_entry = entry["outputs"]
         assert isinstance(cache_entry, dict)
         assert "output1" in cache_entry
         assert "output2" in cache_entry
@@ -393,8 +411,8 @@ class TestCacheSet:
         cache.set("test_procedure", inputs, outputs)
 
         data = cache._load_cache_data()
-        cache_key = cache._make_cache_key("test_procedure", inputs)
-        cache_entry = data[cache_key]
+        entries = data["test_procedure"]
+        cache_entry = entries[0]["outputs"]
 
         assert cache_entry["output1"] is not None
         assert cache_entry["output2"] is None
@@ -591,11 +609,19 @@ class TestIntegration:
         assert data_file.exists()
 
         data = json.loads(data_file.read_text())
-        assert len(data) == 1
+        # Should have one procedure
+        assert procedure in data
+        # With one entry
+        assert len(data[procedure]) == 1
 
-        # Verify cached file exists with correct name
-        cache_key = cache._make_cache_key(procedure, inputs)
-        file_hash = data[cache_key]
+        entry = data[procedure][0]
+        # Should have structured inputs
+        assert "inputs" in entry
+        assert "fastq1" in entry["inputs"]
+        assert "fastq2" in entry["inputs"]
+        # Should have outputs
+        assert "outputs" in entry
+        file_hash = entry["outputs"]
         cached_file = temp_cache_dir / file_hash
         assert cached_file.exists()
 

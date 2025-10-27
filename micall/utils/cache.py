@@ -69,30 +69,77 @@ def _save_cache_data(data: dict) -> None:
         json.dump(data, f, indent="\t")
 
 
-def _make_cache_key(procedure: str, inputs: Mapping[str, Optional[Path]]) -> str:
-    """Create a cache key from procedure and input file hashes.
+def _make_cache_key(inputs: Mapping[str, Optional[Path]]) -> dict[str, Optional[str]]:
+    """Create a structured input key from input file hashes.
 
     Args:
-        procedure: The name of the procedure.
         inputs: A mapping of input identifiers to their corresponding file paths.
 
     Returns:
-        A unique cache key string.
+        A dict mapping input names to their file hashes (or None).
     """
-    # Build a deterministic key from procedure and sorted input hashes
-    key_parts = [procedure]
-
+    input_key: dict[str, Optional[str]] = {}
     for key in sorted(inputs.keys()):
         value = inputs[key]
         if value is None:
-            key_parts.append(f"{key}:None")
+            input_key[key] = None
         else:
-            file_hash = hash_file(value)
-            key_parts.append(f"{key}:{file_hash}")
+            input_key[key] = hash_file(value)
 
-    key_string = "|".join(key_parts)
-    # Hash the key string to get a fixed-length key
-    return hashlib.md5(key_string.encode()).hexdigest()
+    return input_key
+
+
+def _find_cache_entry(
+    procedure: str, input_key: dict[str, Optional[str]]
+) -> Optional[dict]:
+    """Find a cache entry matching the procedure and input key.
+
+    Args:
+        procedure: The procedure name.
+        input_key: Dict mapping input names to their hashes.
+
+    Returns:
+        The cache entry dict if found, None otherwise.
+    """
+    cache_data = _load_cache_data()
+
+    if procedure not in cache_data:
+        return None
+
+    # Search through all entries for this procedure
+    for entry in cache_data[procedure]:
+        if entry.get("inputs") == input_key:
+            return entry
+
+    return None
+
+
+def _add_cache_entry(
+    procedure: str,
+    input_key: dict[str, Optional[str]],
+    outputs: Union[str, dict[str, Optional[str]]],
+) -> None:
+    """Add or update a cache entry.
+
+    Args:
+        procedure: The procedure name.
+        input_key: Dict mapping input names to their hashes.
+        outputs: Either a single hash or dict of output hashes.
+    """
+    cache_data = _load_cache_data()
+
+    if procedure not in cache_data:
+        cache_data[procedure] = []
+
+    # Remove any existing entry with the same inputs
+    cache_data[procedure] = [
+        entry for entry in cache_data[procedure] if entry.get("inputs") != input_key
+    ]
+
+    # Add the new entry
+    cache_data[procedure].append({"inputs": input_key, "outputs": outputs})
+
+    _save_cache_data(cache_data)
 
 
 def get(
@@ -112,26 +159,26 @@ def get(
     if not CACHE_FOLDER:
         return None
 
-    cache_data = _load_cache_data()
-    cache_key = _make_cache_key(procedure, inputs)
+    input_key = _make_cache_key(inputs)
+    entry = _find_cache_entry(procedure, input_key)
 
-    if cache_key not in cache_data:
+    if entry is None:
         return None
 
-    cache_entry = cache_data[cache_key]
+    outputs = entry.get("outputs")
     cache_folder = Path(CACHE_FOLDER)
 
     # Check if this is a single Path or a mapping
-    if isinstance(cache_entry, str):
+    if isinstance(outputs, str):
         # Single output file
-        cached_file = cache_folder / cache_entry
+        cached_file = cache_folder / outputs
         if not cached_file.exists():
             return None
         return cached_file
-    elif isinstance(cache_entry, dict):
+    elif isinstance(outputs, dict):
         # Multiple output files
         result: dict[str, Optional[Path]] = {}
-        for key, file_hash in cache_entry.items():
+        for key, file_hash in outputs.items():
             if file_hash is None:
                 result[key] = None
             else:
@@ -163,8 +210,7 @@ def set(
     cache_folder = Path(CACHE_FOLDER)
     cache_folder.mkdir(parents=True, exist_ok=True)
 
-    cache_data = _load_cache_data()
-    cache_key = _make_cache_key(procedure, inputs)
+    input_key = _make_cache_key(inputs)
 
     # Process the output and copy files to cache
     if isinstance(output, Path):
@@ -176,7 +222,7 @@ def set(
         if not cached_file.exists():
             shutil.copy2(output, cached_file)
 
-        cache_data[cache_key] = file_hash
+        _add_cache_entry(procedure, input_key, file_hash)
     elif isinstance(output, dict):
         # Multiple output files
         cache_entry: dict[str, Optional[str]] = {}
@@ -193,11 +239,9 @@ def set(
 
                 cache_entry[key] = file_hash
 
-        cache_data[cache_key] = cache_entry
+        _add_cache_entry(procedure, input_key, cache_entry)
     else:
         raise ValueError(f"Unsupported output type: {type(output)}")
-
-    _save_cache_data(cache_data)
 
 
 def cached(procedure: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
