@@ -14,11 +14,11 @@ def test_work_dir_basic():
 
     with WorkDir.using(test_path):
         # Inside the scope, we can retrieve the work_dir
-        assert WorkDir.get_path() == test_path
+        assert WorkDir.get() == test_path
 
     # Outside the scope, get_path raises LookupError
     try:
-        WorkDir.get_path()
+        WorkDir.get()
         assert False, "Should have raised LookupError"
     except LookupError:
         pass  # Expected
@@ -30,14 +30,14 @@ def test_work_dir_nested():
     inner_path = Path("/tmp/inner")
 
     with WorkDir.using(outer_path):
-        assert WorkDir.get_path() == outer_path
+        assert WorkDir.get() == outer_path
 
         with WorkDir.using(inner_path):
             # Inner scope overrides
-            assert WorkDir.get_path() == inner_path
+            assert WorkDir.get() == inner_path
 
         # Back to outer scope after exiting inner
-        assert WorkDir.get_path() == outer_path
+        assert WorkDir.get() == outer_path
 
 
 def test_work_dir_dynamic_scoping():
@@ -45,7 +45,7 @@ def test_work_dir_dynamic_scoping():
 
     def level3_function():
         """Deepest function that needs work_dir but doesn't take it as parameter."""
-        return WorkDir.get_path()
+        return WorkDir.get()
 
     def level2_function():
         """Middle function that doesn't care about work_dir."""

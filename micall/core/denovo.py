@@ -37,7 +37,7 @@ def run_subprocess(
     Uses work_dir from WorkDir dynamic scoping for temporary file storage.
     """
     # Get work_dir from dynamic scope - required to be set by caller
-    work_dir = WorkDir.get_path()
+    work_dir = WorkDir.get()
 
     cache_key = {
         "fastq1": fastq1,

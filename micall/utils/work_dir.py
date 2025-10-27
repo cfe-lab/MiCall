@@ -23,7 +23,7 @@ class WorkDir:
     work_dir: Path
 
     @staticmethod
-    def get() -> "WorkDir":
+    def _get() -> "WorkDir":
         """
         Get the current WorkDir.
 
@@ -36,7 +36,7 @@ class WorkDir:
         return _work_dir.get()
 
     @staticmethod
-    def get_path() -> Path:
+    def get() -> Path:
         """
         Get the current work_dir path.
 
