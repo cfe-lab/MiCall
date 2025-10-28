@@ -13,7 +13,8 @@ import csv
 import logging
 import os
 import sys
-from typing import Optional, Sequence, TextIO, Set
+from pathlib import Path
+from typing import Optional, Sequence, Set
 
 from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
@@ -29,28 +30,28 @@ logger = logging.getLogger(__name__)
 line_counter = LineCounter()
 
 
-def prelim_map(fastq1: str,
-               fastq2: str,
-               prelim_csv: TextIO,
+def prelim_map(fastq1: Path,
+               fastq2: Path,
+               prelim_csv: Path,
                nthreads: int = BOWTIE_THREADS,
                rdgopen: int = READ_GAP_OPEN,
                rfgopen: int = REF_GAP_OPEN,
-               stderr: TextIO = sys.stderr,
+               stderr: Path | None = None,
                gzip: bool = False,
-               work_path: str = '',
+               work_path: Path | None = None,
                excluded_seeds: Optional[Set[str]] = None) -> None:
     """ Run the preliminary mapping step.
 
-    @param fastq1: the file name for the forward reads in FASTQ format
-    @param fastq2: the file name for the reverse reads in FASTQ format
-    @param prelim_csv: an open file object for the output file - all the reads
+    @param fastq1: the file path for the forward reads in FASTQ format
+    @param fastq2: the file path for the reverse reads in FASTQ format
+    @param prelim_csv: the file path for the output file - all the reads
         mapped to references in CSV version of the SAM format
     @param nthreads: the number of threads to use.
     @param rdgopen: a penalty for opening a gap in the read sequence.
     @param rfgopen: a penalty for opening a gap in the reference sequence.
-    @param stderr: where to write the standard error output from bowtie2 calls.
+    @param stderr: optional file path for standard error output from bowtie2 calls.
     @param gzip: True if FASTQ files are in gzip format
-    @param work_path:  optional path to store working files
+    @param work_path: optional path to store working files
     @param excluded_seeds: a list of seed names to exclude from mapping
     """
 
@@ -58,20 +59,29 @@ def prelim_map(fastq1: str,
     bowtie2_build = Bowtie2Build()
     bowtie2_build.set_logger(logger)
 
+    # Convert to Path objects if needed
+    fastq1 = Path(fastq1)
+    fastq2 = Path(fastq2)
+    prelim_csv = Path(prelim_csv)
+    if work_path is None:
+        work_path = prelim_csv.parent
+    else:
+        work_path = Path(work_path)
+
     # check that the inputs exist
-    fastq1 = check_fastq(fastq1, gzip)
-    fastq2 = check_fastq(fastq2, gzip)
+    fastq1_str = check_fastq(str(fastq1), gzip)
+    fastq2_str = check_fastq(str(fastq2), gzip)
 
     # generate initial reference files
     projects = project_config.ProjectConfig.loadDefault()
-    ref_path = os.path.join(work_path, 'micall.fasta')
+    ref_path = work_path / 'micall.fasta'
     all_excluded_seeds = {project_config.G2P_SEED_NAME}
     if excluded_seeds:
         all_excluded_seeds.update(excluded_seeds)
     with open(ref_path, 'w') as ref:
         projects.writeSeedFasta(ref, all_excluded_seeds)
-    reffile_template = os.path.join(work_path, 'reference')
-    bowtie2_build.build(ref_path, reffile_template)
+    reffile_template = str(work_path / 'reference')
+    bowtie2_build.build(str(ref_path), reffile_template)
 
     fieldnames = ['qname',
                   'flag',
@@ -84,29 +94,37 @@ def prelim_map(fastq1: str,
                   'tlen',
                   'seq',
                   'qual']
-    writer = csv.writer(prelim_csv, lineterminator=os.linesep)
-    writer.writerow(fieldnames)
 
-    # do preliminary mapping
-    read_gap_open_penalty = rdgopen
-    ref_gap_open_penalty = rfgopen
+    # Open output file and stderr file
+    stderr_file = open(stderr, 'w') if stderr else sys.stderr
+    try:
+        with open(prelim_csv, 'w') as csv_file:
+            writer = csv.writer(csv_file, lineterminator=os.linesep)
+            writer.writerow(fieldnames)
 
-    # stream output from bowtie2
-    bowtie_args = ['--wrapper', 'micall-0',
-                   '--quiet',
-                   '-x', reffile_template,
-                   '-1', fastq1,
-                   '-2', fastq2,
-                   '--rdg', "{},{}".format(read_gap_open_penalty,
-                                           READ_GAP_EXTEND),
-                   '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                           REF_GAP_EXTEND),
-                   '--no-hd',  # no header lines (start with @)
-                   '-X', '1200',
-                   '-p', str(nthreads)]
+            # do preliminary mapping
+            read_gap_open_penalty = rdgopen
+            ref_gap_open_penalty = rfgopen
 
-    for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-        writer.writerow(line.split('\t')[:11])  # discard optional items
+            # stream output from bowtie2
+            bowtie_args = ['--wrapper', 'micall-0',
+                           '--quiet',
+                           '-x', reffile_template,
+                           '-1', fastq1_str,
+                           '-2', fastq2_str,
+                           '--rdg', "{},{}".format(read_gap_open_penalty,
+                                                   READ_GAP_EXTEND),
+                           '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                                   REF_GAP_EXTEND),
+                           '--no-hd',  # no header lines (start with @)
+                           '-X', '1200',
+                           '-p', str(nthreads)]
+
+            for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr_file)):
+                writer.writerow(line.split('\t')[:11])  # discard optional items
+    finally:
+        if stderr and stderr_file != sys.stderr:
+            stderr_file.close()
 
 
 def check_fastq(filename: str, gzip: bool = False) -> str:
@@ -130,21 +148,18 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument('fastq1', help='<input> FASTQ containing forward reads')
     parser.add_argument('fastq2', help='<input> FASTQ containing reverse reads')
     parser.add_argument('prelim_csv',
-                        type=argparse.FileType('w'),
                         help='<output> CSV containing preliminary mapping from bowtie2 (modified SAM)')
-    parser.add_argument("--rdgopen", default=READ_GAP_OPEN, help="<optional> read gap open penalty")
-    parser.add_argument("--rfgopen", default=REF_GAP_OPEN, help="<optional> reference gap open penalty")
+    parser.add_argument("--rdgopen", type=int, default=READ_GAP_OPEN, help="<optional> read gap open penalty")
+    parser.add_argument("--rfgopen", type=int, default=REF_GAP_OPEN, help="<optional> reference gap open penalty")
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
 
     args = parser.parse_args(argv)
-    work_path = os.path.dirname(args.prelim_csv.name)
-    prelim_map(fastq1=args.fastq1,
-               fastq2=args.fastq2,
-               prelim_csv=args.prelim_csv,
+    prelim_map(fastq1=Path(args.fastq1),
+               fastq2=Path(args.fastq2),
+               prelim_csv=Path(args.prelim_csv),
                rdgopen=args.rdgopen,
                rfgopen=args.rfgopen,
-               gzip=args.gzip,  # defaults to False
-               work_path=work_path)
+               gzip=args.gzip)
 
     return 0
 

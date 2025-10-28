@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 from unittest import TestCase
 import csv
 import tempfile
+from pathlib import Path
 
 from micall.core.prelim_map import check_fastq, prelim_map
 
@@ -92,21 +93,18 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
         stderr_file = os.path.join(self.work_dir, 'stderr.txt')
 
-        with open(output_file, 'w') as output, open(stderr_file, 'w') as stderr:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                stderr=stderr,
-                work_path=self.work_dir
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            stderr=Path(stderr_file),
+            work_path=Path(self.work_dir)
+        )
 
         # Parse the CSV output
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # Verify we got expected results
+            rows = list(reader)        # Verify we got expected results
         self.assertGreater(len(rows), 0, "Should have at least one mapped read")
 
         # All test reads should map (10 read pairs = 20 rows)
@@ -147,19 +145,16 @@ class PrelimMapIntegrationTest(TestCase):
 
         output_file = os.path.join(self.work_dir, 'output.csv')
 
-        with open(output_file, 'w') as output:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                work_path=self.work_dir
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            work_path=Path(self.work_dir)
+        )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # Most reads should have high mapping quality (36)
+            rows = list(reader)        # Most reads should have high mapping quality (36)
         # The last read pair (0010) has a mismatch so lower quality (14)
         mapq_scores = [int(row['mapq']) for row in rows]
 
@@ -178,19 +173,16 @@ class PrelimMapIntegrationTest(TestCase):
 
         output_file = os.path.join(self.work_dir, 'output.csv')
 
-        with open(output_file, 'w') as output:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                work_path=self.work_dir
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            work_path=Path(self.work_dir)
+        )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # Check that the first read has the expected sequence
+            rows = list(reader)        # Check that the first read has the expected sequence
         first_row = rows[0]
         expected_seq = 'TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA'
         self.assertEqual(first_row['seq'], expected_seq)
@@ -210,19 +202,16 @@ class PrelimMapIntegrationTest(TestCase):
 
         output_file = os.path.join(self.work_dir, 'output.csv')
 
-        with open(output_file, 'w') as output:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                work_path=self.work_dir
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            work_path=Path(self.work_dir)
+        )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # Group reads by qname
+            rows = list(reader)        # Group reads by qname
         read_pairs = {}
         for row in rows:
             qname = row['qname']
@@ -256,21 +245,18 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
 
         # Run with custom gap penalties
-        with open(output_file, 'w') as output:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                rdgopen=15,
-                rfgopen=15,
-                work_path=self.work_dir
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            rdgopen=15,
+            rfgopen=15,
+            work_path=Path(self.work_dir)
+        )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # Should still produce results with different penalties
+            rows = list(reader)        # Should still produce results with different penalties
         self.assertGreater(len(rows), 0, "Should have mapped reads with custom penalties")
 
         # Results should be the same for this simple dataset (no gaps)
@@ -284,20 +270,17 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
 
         # Run with multiple threads
-        with open(output_file, 'w') as output:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                nthreads=2,
-                work_path=self.work_dir
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            nthreads=2,
+            work_path=Path(self.work_dir)
+        )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # Should produce same results regardless of thread count
+            rows = list(reader)        # Should produce same results regardless of thread count
         self.assertEqual(len(rows), 20)
 
     def test_excluded_seeds(self):
@@ -308,20 +291,17 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
 
         # Run with all HIV seeds excluded (should produce no results)
-        with open(output_file, 'w') as output:
-            prelim_map(
-                fastq1=fastq1,
-                fastq2=fastq2,
-                prelim_csv=output,
-                work_path=self.work_dir,
-                excluded_seeds={'HIV1-C-BR-JX140663-seed'}
-            )
+        prelim_map(
+            fastq1=Path(fastq1),
+            fastq2=Path(fastq2),
+            prelim_csv=Path(output_file),
+            work_path=Path(self.work_dir),
+            excluded_seeds={'HIV1-C-BR-JX140663-seed'}
+        )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
-            rows = list(reader)
-
-        # With the specific seed excluded, reads may not map or map to other references
+            rows = list(reader)        # With the specific seed excluded, reads may not map or map to other references
         # The exact behavior depends on what other seeds are available
         # Just verify the function runs without error
         self.assertIsInstance(rows, list)
