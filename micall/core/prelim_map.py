@@ -55,11 +55,6 @@ def _prelim_map(
     work_path = WorkDir.get()
     stderr_file = Stderr.get()
 
-    # Convert to Path objects if needed
-    fastq1 = Path(fastq1)
-    fastq2 = Path(fastq2)
-    prelim_csv = Path(prelim_csv)
-
     # check that the inputs exist
     fastq1_str = check_fastq(str(fastq1), gzip)
     fastq2_str = check_fastq(str(fastq2), gzip)
