@@ -7,6 +7,7 @@ See docs/design/remap.md for a detailed description.
 
 import argparse
 import typing
+from typing import Callable, Optional
 from collections import Counter, defaultdict
 import csv
 from csv import DictReader, DictWriter
@@ -459,8 +460,9 @@ def remap(fastq1: Path,
           rdgopen=READ_GAP_OPEN,
           rfgopen=REF_GAP_OPEN,
           gzip=False,
-          debug_file_prefix=None,
-          callback=None):
+          debug_file_prefix: Optional[str] = None,
+          callback: Optional[Callable[[str, float, float], None]] = None,
+          ) -> None:
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
