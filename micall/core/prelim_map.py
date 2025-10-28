@@ -13,7 +13,7 @@ import csv
 import logging
 import os
 import sys
-from typing import Optional, TextIO, Set
+from typing import Optional, Sequence, TextIO, Set
 
 from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
@@ -123,7 +123,7 @@ def check_fastq(filename: str, gzip: bool = False) -> str:
     return filename
 
 
-def main() -> None:
+def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(
         description='Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
 
@@ -136,7 +136,7 @@ def main() -> None:
     parser.add_argument("--rfgopen", default=REF_GAP_OPEN, help="<optional> reference gap open penalty")
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     work_path = os.path.dirname(args.prelim_csv.name)
     prelim_map(fastq1=args.fastq1,
                fastq2=args.fastq2,
@@ -146,6 +146,11 @@ def main() -> None:
                gzip=args.gzip,  # defaults to False
                work_path=work_path)
 
+    return 0
 
-if __name__ == '__main__':
-    main()
+
+def entry() -> None:
+    sys.exit(main(sys.argv[1:]))
+
+
+if __name__ == '__main__': entry()  # noqa
