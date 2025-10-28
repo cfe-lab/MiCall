@@ -9,6 +9,7 @@ from micall.core.prelim_map import prelim_map
 from csv import DictReader
 from micall.core.trim_fastqs import trim, censor
 from micall.utils.dd import DD
+from micall.utils.work_dir import WorkDir
 from micall.g2p.pssm_lib import Pssm
 
 BOWTIE_THREADS = 11
@@ -46,10 +47,11 @@ class MicallDD(DD):
                 open(os.devnull, 'w+') as real_devnull:
             print('Preliminary mapping to filter.')
             devnull = DevNullWrapper(real_devnull)
-            prelim_map(Path(filename1),
-                       Path(filename2),
-                       Path(prelim_filename),
-                       nthreads=BOWTIE_THREADS)
+            with WorkDir.using(Path(workdir)):
+                prelim_map(Path(filename1),
+                           Path(filename2),
+                           Path(prelim_filename),
+                           nthreads=BOWTIE_THREADS)
             print('Remapping to filter.')
             with open(prelim_filename, 'r') as prelim_csv:
                 remap(filename1,
@@ -100,18 +102,19 @@ class MicallDD(DD):
         with open(simple_filename2, 'r') as simple2, \
                 open(censored_filename2, 'w') as censored2:
             censor(simple2, bad_cycles, censored2, use_gzip=False)
-        prelim_map(Path(censored_filename1),
-                   Path(censored_filename2),
-                   Path(prelim_censored_filename),
-                   nthreads=BOWTIE_THREADS)
-        trim((simple_filename1, simple_filename2),
-             self.bad_cycles_filename,
-             (trimmed_filename1, trimmed_filename2),
-             use_gzip=False)
-        prelim_map(Path(trimmed_filename1),
-                   Path(trimmed_filename2),
-                   Path(prelim_trimmed_filename),
-                   nthreads=BOWTIE_THREADS)
+        with WorkDir.using(Path(workdir)):
+            prelim_map(Path(censored_filename1),
+                       Path(censored_filename2),
+                       Path(prelim_censored_filename),
+                       nthreads=BOWTIE_THREADS)
+            trim((simple_filename1, simple_filename2),
+                 self.bad_cycles_filename,
+                 (trimmed_filename1, trimmed_filename2),
+                 use_gzip=False)
+            prelim_map(Path(trimmed_filename1),
+                       Path(trimmed_filename2),
+                       Path(prelim_trimmed_filename),
+                       nthreads=BOWTIE_THREADS)
         with open(prelim_censored_filename, 'r') as prelim_censored_csv:
             censored_map_count = self.count_mapped(prelim_censored_csv)
         with open(prelim_trimmed_filename, 'r') as prelim_trimmed_csv:

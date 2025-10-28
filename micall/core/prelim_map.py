@@ -18,6 +18,7 @@ from typing import Optional, Sequence, Set
 
 from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
+from micall.utils.work_dir import WorkDir
 
 BOWTIE_THREADS = 1    # Bowtie performance roughly scales with number of threads
 # Read and reference gap open/extension penalties.
@@ -38,7 +39,6 @@ def prelim_map(fastq1: Path,
                rfgopen: int = REF_GAP_OPEN,
                stderr: Path | None = None,
                gzip: bool = False,
-               work_path: Path | None = None,
                excluded_seeds: Optional[Set[str]] = None) -> None:
     """ Run the preliminary mapping step.
 
@@ -51,22 +51,22 @@ def prelim_map(fastq1: Path,
     @param rfgopen: a penalty for opening a gap in the reference sequence.
     @param stderr: optional file path for standard error output from bowtie2 calls.
     @param gzip: True if FASTQ files are in gzip format
-    @param work_path: optional path to store working files
     @param excluded_seeds: a list of seed names to exclude from mapping
+
+    Uses work_dir from WorkDir dynamic scoping for temporary file storage.
     """
 
     bowtie2 = Bowtie2()
     bowtie2_build = Bowtie2Build()
     bowtie2_build.set_logger(logger)
 
+    # Get work_dir from dynamic scope - required to be set by caller
+    work_path = WorkDir.get()
+
     # Convert to Path objects if needed
     fastq1 = Path(fastq1)
     fastq2 = Path(fastq2)
     prelim_csv = Path(prelim_csv)
-    if work_path is None:
-        work_path = prelim_csv.parent
-    else:
-        work_path = Path(work_path)
 
     # check that the inputs exist
     fastq1_str = check_fastq(str(fastq1), gzip)
@@ -154,12 +154,14 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument("--gzip", action='store_true', help="<optional> FASTQs are compressed")
 
     args = parser.parse_args(argv)
-    prelim_map(fastq1=Path(args.fastq1),
-               fastq2=Path(args.fastq2),
-               prelim_csv=Path(args.prelim_csv),
-               rdgopen=args.rdgopen,
-               rfgopen=args.rfgopen,
-               gzip=args.gzip)
+    prelim_csv_path = Path(args.prelim_csv)
+    with WorkDir.using(prelim_csv_path.parent):
+        prelim_map(fastq1=Path(args.fastq1),
+                   fastq2=Path(args.fastq2),
+                   prelim_csv=prelim_csv_path,
+                   rdgopen=args.rdgopen,
+                   rfgopen=args.rfgopen,
+                   gzip=args.gzip)
 
     return 0
 

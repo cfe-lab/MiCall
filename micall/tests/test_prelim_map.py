@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from micall.core.prelim_map import check_fastq, prelim_map
+from micall.utils.work_dir import WorkDir
 
 
 class CheckFastqTest(TestCase):
@@ -93,13 +94,13 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
         stderr_file = os.path.join(self.work_dir, 'stderr.txt')
 
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            stderr=Path(stderr_file),
-            work_path=Path(self.work_dir)
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file),
+                stderr=Path(stderr_file)
+            )
 
         # Parse the CSV output
         with open(output_file, 'r') as f:
@@ -145,12 +146,12 @@ class PrelimMapIntegrationTest(TestCase):
 
         output_file = os.path.join(self.work_dir, 'output.csv')
 
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            work_path=Path(self.work_dir)
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file)
+            )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
@@ -173,12 +174,12 @@ class PrelimMapIntegrationTest(TestCase):
 
         output_file = os.path.join(self.work_dir, 'output.csv')
 
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            work_path=Path(self.work_dir)
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file)
+            )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
@@ -202,12 +203,12 @@ class PrelimMapIntegrationTest(TestCase):
 
         output_file = os.path.join(self.work_dir, 'output.csv')
 
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            work_path=Path(self.work_dir)
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file)
+            )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
@@ -245,14 +246,14 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
 
         # Run with custom gap penalties
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            rdgopen=15,
-            rfgopen=15,
-            work_path=Path(self.work_dir)
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file),
+                rdgopen=15,
+                rfgopen=15
+            )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
@@ -270,13 +271,13 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
 
         # Run with multiple threads
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            nthreads=2,
-            work_path=Path(self.work_dir)
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file),
+                nthreads=2
+            )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)
@@ -291,13 +292,13 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
 
         # Run with all HIV seeds excluded (should produce no results)
-        prelim_map(
-            fastq1=Path(fastq1),
-            fastq2=Path(fastq2),
-            prelim_csv=Path(output_file),
-            work_path=Path(self.work_dir),
-            excluded_seeds={'HIV1-C-BR-JX140663-seed'}
-        )
+        with WorkDir.using(Path(self.work_dir)):
+            prelim_map(
+                fastq1=Path(fastq1),
+                fastq2=Path(fastq2),
+                prelim_csv=Path(output_file),
+                excluded_seeds={'HIV1-C-BR-JX140663-seed'}
+            )
 
         with open(output_file, 'r') as f:
             reader = csv.DictReader(f)

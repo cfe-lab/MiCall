@@ -381,11 +381,11 @@ class Sample:
     def run_mapping(self, excluded_seeds):
         logger.info('Running prelim_map on %s.', self)
         scratch_path = self.get_scratch_path()
-        prelim_map(Path(self.trimmed1_fastq),
-                   Path(self.trimmed2_fastq),
-                   Path(self.prelim_csv),
-                   work_path=Path(scratch_path),
-                   excluded_seeds=excluded_seeds)
+        with WorkDir.using(Path(scratch_path)):
+            prelim_map(Path(self.trimmed1_fastq),
+                       Path(self.trimmed2_fastq),
+                       Path(self.prelim_csv),
+                       excluded_seeds=excluded_seeds)
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
