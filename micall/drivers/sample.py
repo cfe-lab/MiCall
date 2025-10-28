@@ -391,22 +391,15 @@ class Sample:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
-        with open(self.prelim_csv) as prelim_csv, \
-                open(self.remap_csv, 'w') as remap_csv, \
-                open(self.remap_counts_csv, 'w') as counts_csv, \
-                open(self.remap_conseq_csv, 'w') as conseq_csv, \
-                open(self.unmapped1_fastq, 'w') as unmapped1, \
-                open(self.unmapped2_fastq, 'w') as unmapped2:
-
-            remap(self.trimmed1_fastq,
-                  self.trimmed2_fastq,
-                  prelim_csv,
-                  remap_csv,
-                  counts_csv,
-                  conseq_csv,
-                  unmapped1,
-                  unmapped2,
-                  scratch_path,
+        with WorkDir.using(Path(scratch_path)):
+            remap(Path(self.trimmed1_fastq),
+                  Path(self.trimmed2_fastq),
+                  Path(self.prelim_csv),
+                  Path(self.remap_csv),
+                  Path(self.remap_counts_csv),
+                  Path(self.remap_conseq_csv),
+                  Path(self.unmapped1_fastq),
+                  Path(self.unmapped2_fastq),
                   debug_file_prefix=debug_file_prefix)
 
     def run_denovo(self, excluded_seeds):

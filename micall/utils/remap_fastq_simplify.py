@@ -43,25 +43,27 @@ class MicallDD(DD):
         workdir = os.path.dirname(filename1)
         prelim_filename = os.path.join(workdir, 'filter.prelim.csv')
         remap_filename = os.path.join(workdir, 'filter.remap.csv')
-        with open(remap_filename, 'w') as remap_csv, \
-                open(os.devnull, 'w+') as real_devnull:
-            print('Preliminary mapping to filter.')
-            devnull = DevNullWrapper(real_devnull)
-            with WorkDir.using(Path(workdir)):
-                prelim_map(Path(filename1),
-                           Path(filename2),
-                           Path(prelim_filename),
-                           nthreads=BOWTIE_THREADS)
-            print('Remapping to filter.')
-            with open(prelim_filename, 'r') as prelim_csv:
-                remap(filename1,
-                      filename2,
-                      prelim_csv,
-                      remap_csv,
-                      devnull,
-                      devnull,
-                      devnull,
-                      devnull)
+        remap_counts_filename = os.path.join(workdir, 'filter.remap_counts.csv')
+        remap_conseq_filename = os.path.join(workdir, 'filter.remap_conseq.csv')
+        unmapped1_filename = os.path.join(workdir, 'filter.unmapped1.fastq')
+        unmapped2_filename = os.path.join(workdir, 'filter.unmapped2.fastq')
+
+        print('Preliminary mapping to filter.')
+        with WorkDir.using(Path(workdir)):
+            prelim_map(Path(filename1),
+                       Path(filename2),
+                       Path(prelim_filename),
+                       nthreads=BOWTIE_THREADS)
+        print('Remapping to filter.')
+        with WorkDir.using(Path(workdir)):
+            remap(Path(filename1),
+                  Path(filename2),
+                  Path(prelim_filename),
+                  Path(remap_filename),
+                  Path(remap_counts_filename),
+                  Path(remap_conseq_filename),
+                  Path(unmapped1_filename),
+                  Path(unmapped2_filename))
         with open(remap_filename, 'r') as remap_csv:
             print('Filtering.')
             reader = DictReader(remap_csv)
