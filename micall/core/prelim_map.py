@@ -11,6 +11,7 @@ import csv
 import logging
 import os
 import sys
+from typing import Optional, TextIO, Set
 
 from micall.core import project_config
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
@@ -26,16 +27,16 @@ logger = logging.getLogger(__name__)
 line_counter = LineCounter()
 
 
-def prelim_map(fastq1,
-               fastq2,
-               prelim_csv,
-               nthreads=BOWTIE_THREADS,
-               rdgopen=READ_GAP_OPEN,
-               rfgopen=REF_GAP_OPEN,
-               stderr=sys.stderr,
-               gzip=False,
-               work_path='',
-               excluded_seeds=None):
+def prelim_map(fastq1: str,
+               fastq2: str,
+               prelim_csv: TextIO,
+               nthreads: int = BOWTIE_THREADS,
+               rdgopen: int = READ_GAP_OPEN,
+               rfgopen: int = REF_GAP_OPEN,
+               stderr: TextIO = sys.stderr,
+               gzip: bool = False,
+               work_path: str = '',
+               excluded_seeds: Optional[Set[str]] = None) -> None:
     """ Run the preliminary mapping step.
 
     @param fastq1: the file name for the forward reads in FASTQ format
@@ -106,7 +107,7 @@ def prelim_map(fastq1,
         writer.writerow(line.split('\t')[:11])  # discard optional items
 
 
-def check_fastq(filename, gzip=False):
+def check_fastq(filename: str, gzip: bool = False) -> str:
     if not os.path.exists(filename):
         sys.exit('No FASTQ found at ' + filename)
     if gzip:
@@ -120,7 +121,7 @@ def check_fastq(filename, gzip=False):
     return filename
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description='Map contents of FASTQ R1 and R2 data sets to references using bowtie2.')
 
