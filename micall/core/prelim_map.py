@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 """
 Kive-style bowtie2
 Run bowtie2 on paired-end FASTQ data sets with user-supplied *.bt2
