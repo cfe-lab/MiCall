@@ -35,6 +35,7 @@ from micall.utils.translation import reverse_and_complement
 from micall.utils.work_dir import WorkDir
 from micall.utils.stderr import Stderr
 from micall.utils.remap_callback import RemapCallback
+from micall.utils.cache import cached
 
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
@@ -449,6 +450,9 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
         remap_counts_writer.writerow(row)
 
 
+@cached("remap",
+        parameters=["count_threshold", "rdgopen", "rfgopen", "gzip", "debug_file_prefix"],
+        outputs=["remap_csv", "remap_counts_csv", "remap_conseq_csv", "unmapped1", "unmapped2"])
 def remap(fastq1: Path,
           fastq2: Path,
           prelim_csv: Path,
