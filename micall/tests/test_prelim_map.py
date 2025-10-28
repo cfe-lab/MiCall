@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from micall.core.prelim_map import check_fastq, prelim_map
+from micall.utils.stderr import Stderr
 from micall.utils.work_dir import WorkDir
 
 
@@ -95,12 +96,13 @@ class PrelimMapIntegrationTest(TestCase):
         stderr_file = os.path.join(self.work_dir, 'stderr.txt')
 
         with WorkDir.using(Path(self.work_dir)):
-            prelim_map(
-                fastq1=Path(fastq1),
-                fastq2=Path(fastq2),
-                prelim_csv=Path(output_file),
-                stderr=Path(stderr_file)
-            )
+            with open(stderr_file, 'w') as stderr_f:
+                with Stderr.using(stderr_f):
+                    prelim_map(
+                        fastq1=Path(fastq1),
+                        fastq2=Path(fastq2),
+                        prelim_csv=Path(output_file)
+                    )
 
         # Parse the CSV output
         with open(output_file, 'r') as f:
