@@ -539,7 +539,7 @@ class TestCachedDecorator:
         def test_func(input1: Path) -> Path:
             return sample_files["output1"]
 
-        with pytest.raises(ValueError, match="must be of type Path or None"):
+        with pytest.raises(ValueError, match="must be either a Path, None, listed in parameters, or listed in outputs"):
             test_func(input1="not_a_path")
 
     def test_cached_no_cache_folder(self, sample_files):

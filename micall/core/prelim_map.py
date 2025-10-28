@@ -10,12 +10,9 @@ Convert to CSV format and write to file.
 
 import argparse
 import csv
-import json
-import shutil
 import logging
 import os
 import sys
-import tempfile
 from pathlib import Path
 from typing import Optional, Sequence, Set
 
@@ -36,7 +33,8 @@ logger = logging.getLogger(__name__)
 line_counter = LineCounter()
 
 
-def _prelim_map(
+@cached("prelim_map", parameters=['nthreads', 'rdgopen', 'rfgopen', 'gzip', 'excluded_seeds'], outputs=['prelim_csv'])
+def prelim_map(
     fastq1: Path,
     fastq2: Path,
     prelim_csv: Path,
@@ -108,100 +106,6 @@ def _prelim_map(
 
         for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr_file)):
             writer.writerow(line.split('\t')[:11])  # discard optional items
-
-
-@cached("prelim_map")
-def prelim_map_cached(fastq1: Path, fastq2: Path, options_file: Path) -> Path:
-    """Cached wrapper for prelim_map that takes options from a JSON file.
-
-    This function is decorated with @cached to enable disk-based caching.
-    When the same input files and options are used again, the cached result
-    is returned without re-running the expensive bowtie2 alignment.
-
-    Args:
-        fastq1: Path to forward reads FASTQ file
-        fastq2: Path to reverse reads FASTQ file
-        options_file: Path to JSON file containing options dict
-
-    Returns:
-        Path to the generated preliminary mapping CSV file
-    """
-    with options_file.open() as f:
-        options = json.load(f)
-
-    # Create a temporary file for the result
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as result:
-        result_path = Path(result.name)
-
-    try:
-        # Extract options and convert excluded_seeds back to Set if present
-        excluded_seeds_list = options.get('excluded_seeds')
-        excluded_seeds = set(excluded_seeds_list) if excluded_seeds_list else None
-
-        _prelim_map(
-            fastq1=fastq1,
-            fastq2=fastq2,
-            prelim_csv=result_path,
-            nthreads=options.get('nthreads', BOWTIE_THREADS),
-            rdgopen=options.get('rdgopen', READ_GAP_OPEN),
-            rfgopen=options.get('rfgopen', REF_GAP_OPEN),
-            gzip=options.get('gzip', False),
-            excluded_seeds=excluded_seeds
-        )
-        return result_path
-    except Exception:
-        # Clean up temp file on error
-        if result_path.exists():
-            result_path.unlink()
-        raise
-
-
-def prelim_map(
-    fastq1: Path,
-    fastq2: Path,
-    prelim_csv: Path,
-    nthreads: int = BOWTIE_THREADS,
-    rdgopen: int = READ_GAP_OPEN,
-    rfgopen: int = REF_GAP_OPEN,
-    gzip: bool = False,
-    excluded_seeds: Optional[Set[str]] = None,
-    ) -> None:
-    """ Run the preliminary mapping step.
-
-    @param fastq1: the file path for the forward reads in FASTQ format
-    @param fastq2: the file path for the reverse reads in FASTQ format
-    @param prelim_csv: the file path for the output file - all the reads
-        mapped to references in CSV version of the SAM format
-    @param nthreads: the number of threads to use.
-    @param rdgopen: a penalty for opening a gap in the read sequence.
-    @param rfgopen: a penalty for opening a gap in the reference sequence.
-    @param gzip: True if FASTQ files are in gzip format
-    @param excluded_seeds: a list of seed names to exclude from mapping
-
-    Uses work_dir and stderr from WorkDir dynamic scoping.
-    """
-
-    # Create options file with all parameters for caching
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as options_file:
-        options_path = Path(options_file.name)
-        options = {
-            'nthreads': nthreads,
-            'rdgopen': rdgopen,
-            'rfgopen': rfgopen,
-            'gzip': gzip,
-            'excluded_seeds': list(excluded_seeds) if excluded_seeds else None,
-        }
-        json.dump(options, options_file)
-
-    try:
-        # Call cached version with options file
-        result_path = prelim_map_cached(fastq1, fastq2, options_path)
-        # Copy result to final location
-        shutil.copy2(result_path, prelim_csv)
-    finally:
-        # Clean up temporary options file
-        if options_path.exists():
-            options_path.unlink()
 
 
 def check_fastq(filename: str, gzip: bool = False) -> str:
