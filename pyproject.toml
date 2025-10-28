@@ -193,7 +193,6 @@ module = [
     "micall.core.consensus_builder",
     "micall.core.coverage_plots",
     "micall.core.plot_simple",
-    "micall.core.prelim_map",
     "micall.core.remap",
     "micall.core.sam2aln",
     "micall.core.trim_fastqs",
