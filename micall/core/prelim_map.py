@@ -10,14 +10,19 @@ Convert to CSV format and write to file.
 
 import argparse
 import csv
+import json
+import shutil
 import logging
 import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Optional, Sequence, Set
 
 from micall.core import project_config
+from micall.utils.cache import cached
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
+from micall.utils.stderr import Stderr
 from micall.utils.work_dir import WorkDir
 
 BOWTIE_THREADS = 1    # Bowtie performance roughly scales with number of threads
@@ -31,37 +36,24 @@ logger = logging.getLogger(__name__)
 line_counter = LineCounter()
 
 
-def prelim_map(fastq1: Path,
-               fastq2: Path,
-               prelim_csv: Path,
-               nthreads: int = BOWTIE_THREADS,
-               rdgopen: int = READ_GAP_OPEN,
-               rfgopen: int = REF_GAP_OPEN,
-               stderr: Path | None = None,
-               gzip: bool = False,
-               excluded_seeds: Optional[Set[str]] = None) -> None:
-    """ Run the preliminary mapping step.
-
-    @param fastq1: the file path for the forward reads in FASTQ format
-    @param fastq2: the file path for the reverse reads in FASTQ format
-    @param prelim_csv: the file path for the output file - all the reads
-        mapped to references in CSV version of the SAM format
-    @param nthreads: the number of threads to use.
-    @param rdgopen: a penalty for opening a gap in the read sequence.
-    @param rfgopen: a penalty for opening a gap in the reference sequence.
-    @param stderr: optional file path for standard error output from bowtie2 calls.
-    @param gzip: True if FASTQ files are in gzip format
-    @param excluded_seeds: a list of seed names to exclude from mapping
-
-    Uses work_dir from WorkDir dynamic scoping for temporary file storage.
-    """
+def _prelim_map(
+    fastq1: Path,
+    fastq2: Path,
+    prelim_csv: Path,
+    nthreads: int = BOWTIE_THREADS,
+    rdgopen: int = READ_GAP_OPEN,
+    rfgopen: int = REF_GAP_OPEN,
+    gzip: bool = False,
+    excluded_seeds: Optional[Set[str]] = None,
+    ) -> None:
 
     bowtie2 = Bowtie2()
     bowtie2_build = Bowtie2Build()
     bowtie2_build.set_logger(logger)
 
-    # Get work_dir from dynamic scope - required to be set by caller
+    # Get work_dir and stderr from dynamic scope - required to be set by caller
     work_path = WorkDir.get()
+    stderr_file = Stderr.get()
 
     # Convert to Path objects if needed
     fastq1 = Path(fastq1)
@@ -95,36 +87,126 @@ def prelim_map(fastq1: Path,
                   'seq',
                   'qual']
 
-    # Open output file and stderr file
-    stderr_file = open(stderr, 'w') if stderr else sys.stderr
+    # Get stderr from dynamic scope (already a file object)
+    # No need to open it - it's already open via Stderr.using()
+    with open(prelim_csv, 'w') as csv_file:
+        writer = csv.writer(csv_file, lineterminator=os.linesep)
+        writer.writerow(fieldnames)
+
+        # do preliminary mapping
+        read_gap_open_penalty = rdgopen
+        ref_gap_open_penalty = rfgopen
+
+        # stream output from bowtie2
+        bowtie_args = ['--wrapper', 'micall-0',
+                       '--quiet',
+                       '-x', reffile_template,
+                       '-1', fastq1_str,
+                       '-2', fastq2_str,
+                       '--rdg', "{},{}".format(read_gap_open_penalty,
+                                               READ_GAP_EXTEND),
+                       '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                               REF_GAP_EXTEND),
+                       '--no-hd',  # no header lines (start with @)
+                       '-X', '1200',
+                       '-p', str(nthreads)]
+
+        for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr_file)):
+            writer.writerow(line.split('\t')[:11])  # discard optional items
+
+
+@cached("prelim_map")
+def prelim_map_cached(fastq1: Path, fastq2: Path, options_file: Path) -> Path:
+    """Cached wrapper for prelim_map that takes options from a JSON file.
+
+    This function is decorated with @cached to enable disk-based caching.
+    When the same input files and options are used again, the cached result
+    is returned without re-running the expensive bowtie2 alignment.
+
+    Args:
+        fastq1: Path to forward reads FASTQ file
+        fastq2: Path to reverse reads FASTQ file
+        options_file: Path to JSON file containing options dict
+
+    Returns:
+        Path to the generated preliminary mapping CSV file
+    """
+    with options_file.open() as f:
+        options = json.load(f)
+
+    # Create a temporary file for the result
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as result:
+        result_path = Path(result.name)
+
     try:
-        with open(prelim_csv, 'w') as csv_file:
-            writer = csv.writer(csv_file, lineterminator=os.linesep)
-            writer.writerow(fieldnames)
+        # Extract options and convert excluded_seeds back to Set if present
+        excluded_seeds_list = options.get('excluded_seeds')
+        excluded_seeds = set(excluded_seeds_list) if excluded_seeds_list else None
 
-            # do preliminary mapping
-            read_gap_open_penalty = rdgopen
-            ref_gap_open_penalty = rfgopen
+        _prelim_map(
+            fastq1=fastq1,
+            fastq2=fastq2,
+            prelim_csv=result_path,
+            nthreads=options.get('nthreads', BOWTIE_THREADS),
+            rdgopen=options.get('rdgopen', READ_GAP_OPEN),
+            rfgopen=options.get('rfgopen', REF_GAP_OPEN),
+            gzip=options.get('gzip', False),
+            excluded_seeds=excluded_seeds
+        )
+        return result_path
+    except Exception:
+        # Clean up temp file on error
+        if result_path.exists():
+            result_path.unlink()
+        raise
 
-            # stream output from bowtie2
-            bowtie_args = ['--wrapper', 'micall-0',
-                           '--quiet',
-                           '-x', reffile_template,
-                           '-1', fastq1_str,
-                           '-2', fastq2_str,
-                           '--rdg', "{},{}".format(read_gap_open_penalty,
-                                                   READ_GAP_EXTEND),
-                           '--rfg', "{},{}".format(ref_gap_open_penalty,
-                                                   REF_GAP_EXTEND),
-                           '--no-hd',  # no header lines (start with @)
-                           '-X', '1200',
-                           '-p', str(nthreads)]
 
-            for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr_file)):
-                writer.writerow(line.split('\t')[:11])  # discard optional items
+def prelim_map(
+    fastq1: Path,
+    fastq2: Path,
+    prelim_csv: Path,
+    nthreads: int = BOWTIE_THREADS,
+    rdgopen: int = READ_GAP_OPEN,
+    rfgopen: int = REF_GAP_OPEN,
+    gzip: bool = False,
+    excluded_seeds: Optional[Set[str]] = None,
+    ) -> None:
+    """ Run the preliminary mapping step.
+
+    @param fastq1: the file path for the forward reads in FASTQ format
+    @param fastq2: the file path for the reverse reads in FASTQ format
+    @param prelim_csv: the file path for the output file - all the reads
+        mapped to references in CSV version of the SAM format
+    @param nthreads: the number of threads to use.
+    @param rdgopen: a penalty for opening a gap in the read sequence.
+    @param rfgopen: a penalty for opening a gap in the reference sequence.
+    @param gzip: True if FASTQ files are in gzip format
+    @param excluded_seeds: a list of seed names to exclude from mapping
+
+    Uses work_dir and stderr from WorkDir dynamic scoping.
+    """
+
+    # Create options file with all parameters for caching
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as options_file:
+        options_path = Path(options_file.name)
+        options = {
+            'nthreads': nthreads,
+            'rdgopen': rdgopen,
+            'rfgopen': rfgopen,
+            'gzip': gzip,
+            'excluded_seeds': list(excluded_seeds) if excluded_seeds else None,
+        }
+        json.dump(options, options_file)
+
+    try:
+        # Call cached version with options file
+        result_path = prelim_map_cached(fastq1, fastq2, options_path)
+        # Copy result to final location
+        shutil.copy2(result_path, prelim_csv)
     finally:
-        if stderr and stderr_file != sys.stderr:
-            stderr_file.close()
+        # Clean up temporary options file
+        if options_path.exists():
+            options_path.unlink()
 
 
 def check_fastq(filename: str, gzip: bool = False) -> str:
