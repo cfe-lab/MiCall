@@ -34,6 +34,7 @@ from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
 from micall.utils.work_dir import WorkDir
 from micall.utils.stderr import Stderr
+from micall.utils.remap_callback import RemapCallback
 
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
@@ -461,7 +462,6 @@ def remap(fastq1: Path,
           rfgopen=REF_GAP_OPEN,
           gzip=False,
           debug_file_prefix: Optional[str] = None,
-          callback: Optional[Callable[[str, float, float], None]] = None,
           ) -> None:
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
@@ -482,13 +482,12 @@ def remap(fastq1: Path,
     @param debug_file_prefix: the prefix for the file path to write debug files.
         If not None, this will be used to write a copy of the reference FASTA
         files and the output SAM files.
-    @param callback: a function to report progress with three optional
-        parameters - callback(message, progress, max_progress)
     """
 
-    # Get work_path and stderr from dynamic scope
+    # Get work_path, stderr, and callback from dynamic scope
     work_path = WorkDir.get()
     stderr = Stderr.get()
+    callback = RemapCallback.get()
 
     reffile = work_path / 'temp.fasta'
     samfile = work_path / 'temp.sam'
