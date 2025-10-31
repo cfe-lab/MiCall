@@ -400,10 +400,10 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
     return f
 
 
-def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage_svg_path: str):
+def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage: Path):
     with StitcherContext.stage():
         f = build_stitcher_figure(logs)
-        f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
+        f.show(w=970).save_svg(genome_coverage, context=draw.Context(invert_y=True))
         return f
 
 

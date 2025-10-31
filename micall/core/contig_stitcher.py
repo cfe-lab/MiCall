@@ -13,6 +13,7 @@ import logging
 from fractions import Fraction
 from operator import itemgetter
 from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
+from pathlib import Path
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
@@ -639,18 +640,18 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               match_fraction=match_fraction)
 
 
-def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
+def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot: Optional[Path]) -> int:
     with StitcherContext.fresh() as ctx:
         contigs = list(read_contigs(input_csv))
 
-        if output_csv is not None or stitcher_plot_path is not None:
+        if output_csv is not None or stitcher_plot is not None:
             contigs = list(stitch_consensus(contigs))
 
         if output_csv is not None:
             write_contigs(output_csv, contigs)
 
-        if stitcher_plot_path is not None:
-            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+        if stitcher_plot is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot)
 
         return len(contigs)
 
@@ -683,7 +684,7 @@ def main(argv: Sequence[str]):
 
     logging.basicConfig(level=logger.level)
 
-    plot_path = args.plot.name if args.plot is not None else None
+    plot_path = Path(args.plot.name) if args.plot is not None else None
     contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
 
 
