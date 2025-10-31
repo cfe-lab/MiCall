@@ -422,37 +422,15 @@ class Sample:
                          blast_csv=blast_csv,
                          )
 
-        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
-             open(self.contigs_csv, 'w') as contigs_csv:
-            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
-
-        logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
 
-        with open(self.contigs_csv) as contigs_csv, \
-                open(self.remap_csv, 'w') as remap_csv, \
-                open(self.remap_counts_csv, 'w') as counts_csv, \
-                open(self.remap_conseq_csv, 'w') as remap_conseq_csv, \
-                open(self.unmapped1_fastq, 'w') as unmapped1, \
-                open(self.unmapped2_fastq, 'w') as unmapped2:
-
-            map_to_contigs(self.trimmed1_fastq,
-                           self.trimmed2_fastq,
-                           contigs_csv,
-                           remap_csv,
-                           counts_csv,
-                           remap_conseq_csv,
-                           unmapped1,
-                           unmapped2,
-                           scratch_path,
-                           debug_file_prefix=debug_file_prefix,
-                           excluded_seeds=excluded_seeds)
-
         def with_prefix(path):
             return path and prepend_prefix_to_basename("unstitched_", path)
+
+        logger.info('Running remap on %s.', self)
 
         with open(self.unstitched_contigs_csv) as contigs_csv, \
                 open(with_prefix(self.remap_csv), 'w') as remap_csv, \
@@ -471,4 +449,27 @@ class Sample:
                            unmapped2,
                            scratch_path,
                            debug_file_prefix=with_prefix(debug_file_prefix),
+                           excluded_seeds=excluded_seeds)
+
+        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+             open(self.contigs_csv, 'w') as contigs_csv:
+            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
+
+        with open(self.contigs_csv) as contigs_csv, \
+                open(self.remap_csv, 'w') as remap_csv, \
+                open(self.remap_counts_csv, 'w') as counts_csv, \
+                open(self.remap_conseq_csv, 'w') as remap_conseq_csv, \
+                open(self.unmapped1_fastq, 'w') as unmapped1, \
+                open(self.unmapped2_fastq, 'w') as unmapped2:
+
+            map_to_contigs(self.trimmed1_fastq,
+                           self.trimmed2_fastq,
+                           contigs_csv,
+                           remap_csv,
+                           counts_csv,
+                           remap_conseq_csv,
+                           unmapped1,
+                           unmapped2,
+                           scratch_path,
+                           debug_file_prefix=debug_file_prefix,
                            excluded_seeds=excluded_seeds)
