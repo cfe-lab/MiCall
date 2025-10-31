@@ -8,7 +8,8 @@ from .logger import logger
 
 
 def stitch_contigs(info_file: Path, output: Path) -> None:
-    directory = DirPath(info_file.parent)
+    assert info_file.name.endswith(".json")
+    directory = DirPath(info_file.with_suffix(""))
 
     try:
         the_unstitched_contigs_path = find_file(directory, ".*unstitched.*contig.*[.]csv$")
@@ -29,6 +30,7 @@ def stitch_contigs(info_file: Path, output: Path) -> None:
             with open(log, "w") as log_writer:
                 subprocess.check_call(
                     ["micall", "contig_stitcher",
+                     "with-references",
                      "--debug",
                      "--plot", str(plot),
                      str(the_unstitched_contigs_path),
