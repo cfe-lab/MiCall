@@ -54,7 +54,7 @@ from micall.utils.list_fastq_files import (
     list_fastq_file_names,
 )
 from miseqinteropreader.error_metrics_parser import write_phix_csv
-from miseqinteropreader.interop_reader import InterOpReader
+from miseqinteropreader.interop_reader import InterOpReader, MetricFile
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -1233,8 +1233,8 @@ class KiveWatcher:
         # noinspection PyBroadException
         try:
             reader = InterOpReader(folder_watcher.run_folder)
-            records = reader.read_error_metrics()
-            write_phix_csv(quality_csv, records, read_lengths)
+            records = reader.read_file(MetricFile.ERROR_METRICS)
+            write_phix_csv(quality_csv, records, tuple(read_lengths))
         except Exception:
             logger.error("Finding error metrics in %s",
                          folder_watcher.run_folder,
