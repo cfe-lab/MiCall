@@ -25,10 +25,9 @@ from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
-from micall.monitor import error_metrics_parser, quality_metrics_parser
+from micall.monitor.interop_wrappers import summarize_quality, summarize_tiles
 from micall.g2p.pssm_lib import Pssm
 from micall.utils.list_fastq_files import list_fastq_files
-from micall.monitor.tile_metrics_parser import summarize_tiles
 from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
     MiCallArgs
 
@@ -988,13 +987,15 @@ def summarize_run(run_info):
             raise FileNotFoundError(
                 f'Cannot censor without {phix_path}, use "--skip trim.censor".')
 
-        with open(phix_path, 'rb') as phix, \
-                open(run_info.quality_csv, 'w') as quality:
-            records = error_metrics_parser.read_errors(phix)
-            error_metrics_parser.write_phix_csv(quality,
-                                                records,
-                                                read_lengths,
-                                                summary)
+        from miseqinteropreader.interop_reader import InterOpReader, MetricFile
+        from miseqinteropreader.error_metrics_parser import write_phix_csv
+        reader = InterOpReader(run_info.interop_path)
+        records = reader.read_file(MetricFile.ERROR_METRICS)
+        with open(run_info.quality_csv, 'w') as quality:
+            write_phix_csv(quality,
+                          records,
+                          tuple(read_lengths),
+                          summary)
         with open(run_info.quality_csv) as quality, \
                 open(run_info.bad_cycles_csv, 'w') as bad_cycles, \
                 open(run_info.bad_tiles_csv, 'w') as bad_tiles:
@@ -1002,9 +1003,9 @@ def summarize_run(run_info):
 
         quality_metrics_path = os.path.join(run_info.interop_path,
                                             'QMetricsOut.bin')
-        quality_metrics_parser.summarize_quality(quality_metrics_path,
-                                                 summary,
-                                                 read_lengths)
+        summarize_quality(quality_metrics_path,
+                         summary,
+                         read_lengths)
 
         tile_metrics_path = os.path.join(run_info.interop_path,
                                          'TileMetricsOut.bin')
