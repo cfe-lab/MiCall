@@ -59,6 +59,10 @@ jobs:
         run: |
           git diff --quiet uv.lock
 
+      - name: Verify miseqinteropreader installation
+        run: |
+          uv run python -c "import miseqinteropreader; import miseqinteropreader.interop_reader; import miseqinteropreader.error_metrics_parser; print('miseqinteropreader installed successfully')"
+
       - name: Install IVA
         run: |
           uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
