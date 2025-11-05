@@ -1,8 +1,9 @@
 from io import BytesIO, StringIO
 from struct import pack
 from unittest import TestCase
-from micall.monitor.error_metrics_parser import read_errors, write_phix_csv, \
-    read_records
+
+from miseqinteropreader.error_metrics_parser import write_phix_csv
+from miseqinteropreader.read_records import read_errors, read_records
 
 
 class RecordsParserTest(TestCase):
@@ -24,7 +25,7 @@ class RecordsParserTest(TestCase):
     def test_load(self):
         expected_records = [b'ABCD']
 
-        records = list(read_records(self.sample_stream, min_version=1))
+        records = [data for data, _ in read_records(self.sample_stream, min_version=1)]
 
         self.assertEqual(expected_records, records)
 
@@ -33,7 +34,7 @@ class RecordsParserTest(TestCase):
         self.pack_data()
         expected_records = [b'AB', b'CD']
 
-        records = list(read_records(self.sample_stream, min_version=1))
+        records = [data for data, _ in read_records(self.sample_stream, min_version=1)]
 
         self.assertEqual(expected_records, records)
 
@@ -42,7 +43,7 @@ class RecordsParserTest(TestCase):
         records = read_records(self.sample_stream, min_version=3)
 
         self.assertRaisesRegex(
-            IOError,
+            ValueError,
             'File version 1 is less than minimum version 3 in test_file.',
             records.__next__)
 
@@ -50,11 +51,11 @@ class RecordsParserTest(TestCase):
         self.sample_data[1] = 3
         self.pack_data()
         records = read_records(self.sample_stream, min_version=1)
-        record1 = next(records)
+        data, _ = next(records)
 
-        self.assertEqual(b'ABC', record1)
+        self.assertEqual(b'ABC', data)
         self.assertRaisesRegex(
-            IOError,
+            RuntimeError,
             'Partial record of length 1 found in test_file.',
             records.__next__)
 
@@ -82,12 +83,12 @@ class ErrorMetricsParserTest(TestCase):
                                  cycle=3,
                                  error_rate=0.5,
                                  num_0_errors=4,
-                                 num_1_error=5,
+                                 num_1_errors=5,
                                  num_2_errors=6,
                                  num_3_errors=7,
                                  num_4_errors=8)]
 
-        records = list(read_errors(self.sample_stream))
+        records = [r.model_dump() for r in read_errors(self.sample_stream)]
 
         self.assertEqual(expected_records, records)
 
@@ -102,12 +103,12 @@ class ErrorMetricsParserTest(TestCase):
                                  cycle=3,
                                  error_rate=0.5,
                                  num_0_errors=4,
-                                 num_1_error=5,
+                                 num_1_errors=5,
                                  num_2_errors=6,
                                  num_3_errors=7,
                                  num_4_errors=8)] * 2
 
-        records = list(read_errors(self.sample_stream))
+        records = [r.model_dump() for r in read_errors(self.sample_stream)]
 
         self.maxDiff = 1000
         self.assertEqual(expected_records, records)
@@ -235,12 +236,10 @@ tile,cycle,errorrate
         out_file = StringIO()
         records = [dict(tile=2, cycle=1, error_rate=0.25),
                    dict(tile=2, cycle=2, error_rate=0.75)]
-        expected_summary = dict(error_rate_fwd=0.5)
 
-        summary = {}
-        write_phix_csv(out_file, records, summary=summary)
+        summary = write_phix_csv(out_file, records)
 
-        self.assertEqual(expected_summary, summary)
+        self.assertEqual(0.5, summary.error_rate_forward)
 
     def test_summary_reverse(self):
         out_file = StringIO()
@@ -248,10 +247,8 @@ tile,cycle,errorrate
                    dict(tile=2, cycle=4, error_rate=0.375),
                    dict(tile=2, cycle=5, error_rate=0.125)]
         read_lengths = [3, 0, 0, 3]
-        expected_summary = dict(error_rate_fwd=0.75,
-                                error_rate_rev=0.25)
 
-        summary = {}
-        write_phix_csv(out_file, records, read_lengths, summary=summary)
+        summary = write_phix_csv(out_file, records, read_lengths)
 
-        self.assertEqual(expected_summary, summary)
+        self.assertEqual(0.75, summary.error_rate_forward)
+        self.assertEqual(0.25, summary.error_rate_reverse)

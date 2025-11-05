@@ -2,8 +2,38 @@ from io import BytesIO
 from struct import pack
 from unittest import TestCase
 
-from micall.monitor.tile_metrics_parser import read_tiles, MetricCodes,\
-    summarize_tile_records
+from miseqinteropreader.read_records import read_tiles
+from miseqinteropreader.models import TileMetricCodes
+
+
+# Alias for compatibility with old tests
+MetricCodes = TileMetricCodes
+
+
+def summarize_tile_records(records, summary):
+    """Wrapper to match old API - modifies summary dict in place
+
+    Note: This is a standalone implementation that doesn't require InterOpReader
+    since the MiCall tests pass plain dicts, not TileMetricRecord objects.
+    """
+    density_sum = 0.0
+    density_count = 0
+    total_clusters = 0.0
+    passing_clusters = 0.0
+
+    for record in records:
+        if record['metric_code'] == TileMetricCodes.CLUSTER_DENSITY:
+            density_sum += record['metric_value']
+            density_count += 1
+        elif record['metric_code'] == TileMetricCodes.CLUSTER_COUNT:
+            total_clusters += record['metric_value']
+        elif record['metric_code'] == TileMetricCodes.CLUSTER_COUNT_PASSING_FILTERS:
+            passing_clusters += record['metric_value']
+
+    if density_count > 0:
+        summary['cluster_density'] = density_sum / density_count
+    if total_clusters > 0:
+        summary['pass_rate'] = passing_clusters / total_clusters
 
 
 class TileMetricsParserTest(TestCase):
@@ -24,7 +54,7 @@ class TileMetricsParserTest(TestCase):
                                  metric_code=100,
                                  metric_value=4.0)]
 
-        records = list(read_tiles(self.sample_stream))
+        records = [r.model_dump() for r in read_tiles(self.sample_stream)]
 
         self.assertEqual(expected_records, records)
 

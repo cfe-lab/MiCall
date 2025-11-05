@@ -39,6 +39,7 @@ dependencies = [
     "cairosvg==2.8.2",
     "aligntools==1.2.1",
     "multicsv==1.0.5",
+    "miseqinteropreader==0.1.3",
 
     # This dependency is not really needed for the main pipeline.
     # It is needed for `test`, `watcher`, and `basespace` programs.

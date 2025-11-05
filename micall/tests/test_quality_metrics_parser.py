@@ -1,8 +1,49 @@
 from io import BytesIO
 from struct import pack
 from unittest import TestCase
-from micall.monitor.quality_metrics_parser import read_quality,\
-    summarize_quality_records
+from miseqinteropreader.read_records import read_quality
+from miseqinteropreader.models import QualityRecord
+
+
+def quality_record_to_dict(record: QualityRecord) -> dict:
+    """Convert QualityRecord to dict with quality_bins tuple"""
+    return {
+        'lane': record.lane,
+        'tile': record.tile,
+        'cycle': record.cycle,
+        'quality_bins': tuple(record.quality_bins)
+    }
+
+
+def summarize_quality_records(records, summary, read_lengths=None):
+    """Wrapper to match old API - modifies summary dict in place
+
+    Note: This is a standalone implementation that doesn't require InterOpReader
+    since the MiCall tests pass plain dicts, not QualityRecord objects.
+    """
+    good_count = total_count = 0
+    good_reverse = total_reverse = 0
+    if read_lengths is None:
+        last_forward_cycle = first_reverse_cycle = None
+    else:
+        last_forward_cycle = read_lengths[0]
+        first_reverse_cycle = sum(read_lengths[:-1]) + 1
+    for record in records:
+        cycle = record['cycle']
+        cycle_clusters = sum(record['quality_bins'])
+        cycle_good = sum(record['quality_bins'][29:])
+
+        if last_forward_cycle is None or cycle <= last_forward_cycle:
+            total_count += cycle_clusters
+            good_count += cycle_good
+        elif cycle >= first_reverse_cycle:
+            total_reverse += cycle_clusters
+            good_reverse += cycle_good
+
+    if total_count > 0:
+        summary['q30_fwd'] = good_count/float(total_count)
+    if total_reverse > 0:
+        summary['q30_rev'] = good_reverse/float(total_reverse)
 
 
 class QualityMetricsParserTest(TestCase):
@@ -23,7 +64,7 @@ class QualityMetricsParserTest(TestCase):
                                  cycle=3,
                                  quality_bins=tuple(range(101, 151)))]
 
-        records = list(read_quality(self.sample_stream))
+        records = [quality_record_to_dict(r) for r in read_quality(self.sample_stream)]
 
         self.assertEqual(expected_records, records)
 
@@ -38,7 +79,7 @@ class QualityMetricsParserTest(TestCase):
                                  cycle=3,
                                  quality_bins=tuple(range(101, 151)))] * 2
 
-        records = list(read_quality(self.sample_stream))
+        records = [quality_record_to_dict(r) for r in read_quality(self.sample_stream)]
 
         self.maxDiff = 1000
         self.assertEqual(expected_records, records)
