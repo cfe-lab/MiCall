@@ -18,6 +18,7 @@ import shutil
 import socket
 from zipfile import ZipFile, ZIP_DEFLATED
 import typing
+from pathlib import Path
 
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.trim_fastqs import TrimSteps
@@ -30,6 +31,8 @@ from micall.g2p.pssm_lib import Pssm
 from micall.utils.list_fastq_files import list_fastq_files
 from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
     MiCallArgs
+from miseqinteropreader.interop_reader import InterOpReader, MetricFile
+from miseqinteropreader.error_metrics_parser import write_phix_csv
 
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
@@ -987,8 +990,6 @@ def summarize_run(run_info):
             raise FileNotFoundError(
                 f'Cannot censor without {phix_path}, use "--skip trim.censor".')
 
-        from miseqinteropreader.interop_reader import InterOpReader, MetricFile
-        from miseqinteropreader.error_metrics_parser import write_phix_csv
         reader = InterOpReader(run_info.interop_path)
         records = reader.read_file(MetricFile.ERROR_METRICS)
         with open(run_info.quality_csv, 'w') as quality:
@@ -1000,7 +1001,6 @@ def summarize_run(run_info):
                 open(run_info.bad_cycles_csv, 'w') as bad_cycles, \
                 open(run_info.bad_tiles_csv, 'w') as bad_tiles:
             report_bad_cycles(quality, bad_cycles, bad_tiles)
-
 
         quality_metrics_path = Path(run_info.interop_path) / 'QMetricsOut.bin'
         summarize_quality(quality_metrics_path, summary, read_lengths)
