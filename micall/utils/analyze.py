@@ -991,7 +991,7 @@ def summarize_run(run_info):
                 f'Cannot censor without {phix_path}, use "--skip trim.censor".')
 
         reader = InterOpReader(run_info.interop_path)
-        records = reader.read_file(MetricFile.ERROR_METRICS)
+        records = reader.read_generic_records(MetricFile.ERROR_METRICS)
         with open(run_info.quality_csv, 'w') as quality:
             write_phix_csv(quality,
                           records,
