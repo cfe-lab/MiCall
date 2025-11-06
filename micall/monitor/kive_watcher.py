@@ -1206,18 +1206,27 @@ class KiveWatcher:
                                      "ErrorMetricsOut.bin not found.\n")
             return
 
-        # noinspection PyBroadException
-        try:
-            reader = InterOpReader(folder_watcher.run_folder)
-            records = reader.read_error_records()
-            write_phix_csv(quality_csv, records, tuple(read_lengths))
-        except Exception:
-            logger.error("Finding error metrics in %s",
+        start_time = None
+        for attempt_count in count(1):
+            try:
+                reader = InterOpReader(folder_watcher.run_folder)
+                records = reader.read_error_records()
+                write_phix_csv(quality_csv, records, tuple(read_lengths))
+                break
+            except OSError as ex:
+                logger.info(f"Caught error while trying to read the phix data: {ex}")
+
+                if start_time is None:
+                    start_time = datetime.now()
+                wait_for_retry(attempt_count, start_time)
+            except Exception:
+                logger.error("Finding error metrics in %s",
                          folder_watcher.run_folder,
                          exc_info=True)
-            disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
-                                     "Finding error metrics failed.\n")
-            return
+                disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
+                                           "Finding error metrics failed.\n")
+                return
+
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
         quality_csv_bytes.seek(0)
