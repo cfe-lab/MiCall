@@ -1001,14 +1001,11 @@ def summarize_run(run_info):
                 open(run_info.bad_tiles_csv, 'w') as bad_tiles:
             report_bad_cycles(quality, bad_cycles, bad_tiles)
 
-        quality_metrics_path = os.path.join(run_info.interop_path,
-                                            'QMetricsOut.bin')
-        summarize_quality(quality_metrics_path,
-                         summary,
-                         read_lengths)
 
-        tile_metrics_path = os.path.join(run_info.interop_path,
-                                         'TileMetricsOut.bin')
+        quality_metrics_path = Path(run_info.interop_path) / 'QMetricsOut.bin'
+        summarize_quality(quality_metrics_path, summary, read_lengths)
+
+        tile_metrics_path = Path(run_info.interop_path) / 'TileMetricsOut.bin'
         summarize_tiles(tile_metrics_path, summary)
     return summary
 

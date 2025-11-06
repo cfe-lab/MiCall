@@ -1,18 +1,19 @@
 
 
+from pathlib import Path
+
 from miseqinteropreader.interop_reader import InterOpReader
 from miseqinteropreader.models import TileMetricCodes
 
 
-def summarize_quality(quality_metrics_path, summary, read_lengths):
+def summarize_quality(quality_metrics_path: Path, summary: dict, read_lengths: tuple[int, ...]) -> None:
     """Summarize quality metrics from InterOp files.
 
     Modifies summary dict in place with q30_fwd and q30_rev values.
     """
     # Extract the run folder path (parent of InterOp folder)
-    import os
-    interop_path = os.path.dirname(quality_metrics_path)
-    run_path = os.path.dirname(interop_path)
+    interop_path = quality_metrics_path.parent
+    run_path = interop_path.parent
 
     reader = InterOpReader(run_path)
     quality_records = reader.read_quality_records()
@@ -40,15 +41,14 @@ def summarize_quality(quality_metrics_path, summary, read_lengths):
         summary['q30_rev'] = good_reverse / float(total_reverse)
 
 
-def summarize_tiles(tile_metrics_path, summary):
+def summarize_tiles(tile_metrics_path: Path, summary: dict) -> None:
     """Summarize tile metrics from InterOp files.
 
     Modifies summary dict in place with cluster_density and pass_rate values.
     """
     # Extract the run folder path (parent of InterOp folder)
-    import os
-    interop_path = os.path.dirname(tile_metrics_path)
-    run_path = os.path.dirname(interop_path)
+    interop_path = tile_metrics_path.parent
+    run_path = interop_path.parent
 
     reader = InterOpReader(run_path)
     tile_records = reader.read_tile_records()
