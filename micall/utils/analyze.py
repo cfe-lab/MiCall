@@ -26,7 +26,7 @@ from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
-from micall.monitor.interop_wrappers import summarize_quality, summarize_tiles
+from micall.utils.interop_wrappers import summarize_quality, summarize_tiles
 from micall.g2p.pssm_lib import Pssm
 from micall.utils.list_fastq_files import list_fastq_files
 from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
