@@ -9,11 +9,12 @@ def summarize_quality(quality_metrics_path, summary, read_lengths):
 
     Modifies summary dict in place with q30_fwd and q30_rev values.
     """
-    # Extract the interop folder path from the full file path
+    # Extract the run folder path (parent of InterOp folder)
     import os
     interop_path = os.path.dirname(quality_metrics_path)
+    run_path = os.path.dirname(interop_path)
 
-    reader = InterOpReader(interop_path)
+    reader = InterOpReader(run_path)
     quality_records = reader.read_quality_records()
 
     good_count = total_count = 0
@@ -44,11 +45,12 @@ def summarize_tiles(tile_metrics_path, summary):
 
     Modifies summary dict in place with cluster_density and pass_rate values.
     """
-    # Extract the interop folder path from the full file path
+    # Extract the run folder path (parent of InterOp folder)
     import os
     interop_path = os.path.dirname(tile_metrics_path)
+    run_path = os.path.dirname(interop_path)
 
-    reader = InterOpReader(interop_path)
+    reader = InterOpReader(run_path)
     tile_records = reader.read_tile_records()
 
     density_sum = 0.0
