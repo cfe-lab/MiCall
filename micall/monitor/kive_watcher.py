@@ -1233,7 +1233,7 @@ class KiveWatcher:
         # noinspection PyBroadException
         try:
             reader = InterOpReader(folder_watcher.run_folder)
-            records = reader.read_file(MetricFile.ERROR_METRICS)
+            records = reader.read_error_records()
             write_phix_csv(quality_csv, records, tuple(read_lengths))
         except Exception:
             logger.error("Finding error metrics in %s",

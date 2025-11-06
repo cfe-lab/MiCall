@@ -1,9 +1,7 @@
 
 
-from typing import cast
-
-from miseqinteropreader.interop_reader import InterOpReader, MetricFile
-from miseqinteropreader.models import QualityRecord, TileMetricCodes, TileMetricRecord
+from miseqinteropreader.interop_reader import InterOpReader
+from miseqinteropreader.models import TileMetricCodes
 
 
 def summarize_quality(quality_metrics_path, summary, read_lengths):
@@ -16,8 +14,7 @@ def summarize_quality(quality_metrics_path, summary, read_lengths):
     interop_path = os.path.dirname(quality_metrics_path)
 
     reader = InterOpReader(interop_path)
-    quality_records: list[QualityRecord] = cast(list[QualityRecord],
-                                                 reader.read_file(MetricFile.QUALITY_METRICS))
+    quality_records = reader.read_quality_records()
 
     good_count = total_count = 0
     good_reverse = total_reverse = 0
@@ -52,8 +49,7 @@ def summarize_tiles(tile_metrics_path, summary):
     interop_path = os.path.dirname(tile_metrics_path)
 
     reader = InterOpReader(interop_path)
-    tile_records: list[TileMetricRecord] = cast(list[TileMetricRecord],
-                                                 reader.read_file(MetricFile.TILE_METRICS))
+    tile_records = reader.read_tile_records()
 
     density_sum = 0.0
     density_count = 0
