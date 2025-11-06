@@ -54,7 +54,7 @@ from micall.utils.list_fastq_files import (
     list_fastq_file_names,
 )
 from miseqinteropreader.error_metrics_parser import write_phix_csv
-from miseqinteropreader.interop_reader import InterOpReader, MetricFile
+from miseqinteropreader.interop_reader import InterOpReader
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
