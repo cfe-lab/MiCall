@@ -5,54 +5,30 @@ import re
 import shutil
 import tarfile
 from collections import namedtuple
-from csv import DictReader, DictWriter
+from csv import DictWriter, DictReader
 from datetime import datetime, timedelta
 from enum import Enum
-from io import BytesIO, StringIO
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
+
+from io import StringIO, BytesIO
 from time import sleep
-from typing import (
-    IO,
-    Callable,
-    Iterable,
-    Mapping,
-    Optional,
-    Sequence,
-    TextIO,
-    Tuple,
-    TypeVar,
-)
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 
 # noinspection PyPackageRequirements
 import kiveapi
-import urllib3
-from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 from requests.adapters import HTTPAdapter
+from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
+import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
-from micall.monitor import disk_operations
+from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
 from micall.monitor.find_groups import SampleGroup, find_groups
-from micall.monitor.sample_watcher import (
-    ALLOWED_GROUPS,
-    PIPELINE_GROUPS,
-    Batch,
-    ConfigInterface,
-    FolderWatcher,
-    Item,
-    PipelineType,
-    Run,
-    RunCreationDataset,
-    RunDataset,
-    SampleWatcher,
-)
+from micall.monitor import disk_operations
 from micall.utils.check_sample_sheet import check_sample_name_consistency
-from micall.utils.list_fastq_files import (
-    find_fastq_source_folder,
-    list_fastq_file_names,
-)
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_file_names
 from miseqinteropreader.error_metrics_parser import write_phix_csv
 from miseqinteropreader.interop_reader import InterOpReader
 
@@ -292,7 +268,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
-        disk_operations.write_text(run_path / "errorprocessing",
+        disk_operations.write_text(run_path / "errorprocessing", 
                                  "Finding sample groups failed.\n")
         sample_groups = []
     return sample_groups
@@ -460,7 +436,7 @@ class KiveWatcher:
     def create_batch(self, folder_watcher: FolderWatcher) -> None:
         if self.config is None:
             raise RuntimeError("KiveWatcher config is not set.")
-
+    
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
@@ -645,11 +621,11 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-
+                
                 # Record start time on first failure
                 if start_time is None:
                     start_time = datetime.now()
-
+                
                 wait_for_retry(attempt_count, start_time)
 
     def check_completed_folders(self) -> None:
@@ -887,7 +863,7 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(plots_path)
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
-        if folder_watcher.quality_dataset is None:
+        if folder_watcher.quality_dataset is None:    
             raise RuntimeError('Quality dataset not available')
         if self.config.micall_filter_quality_pipeline_id is None:
             raise RuntimeError('Filter quality pipeline ID not configured')
