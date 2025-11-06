@@ -3,6 +3,7 @@ from struct import pack
 from unittest import TestCase
 
 from miseqinteropreader.error_metrics_parser import write_phix_csv
+from miseqinteropreader.models import ErrorRecord
 from miseqinteropreader.read_records import read_errors, read_records
 
 
@@ -115,8 +116,10 @@ class ErrorMetricsParserTest(TestCase):
 
     def test_write(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -129,8 +132,10 @@ tile,cycle,errorrate
 
     def test_write_rounded(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.12345),
-                   dict(tile=2, cycle=2, error_rate=0.23001)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.12345, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.23001, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1235
@@ -143,8 +148,10 @@ tile,cycle,errorrate
 
     def test_write_sorted(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=2, error_rate=0.4),
-                   dict(tile=2, cycle=1, error_rate=0.5)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.5
@@ -157,10 +164,12 @@ tile,cycle,errorrate
 
     def test_write_reverse(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2),
-                   dict(tile=2, cycle=3, error_rate=0.3),
-                   dict(tile=2, cycle=4, error_rate=0.4)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=3, error_rate=0.3, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         read_lengths = [2, 2]
         expected_csv = """\
 tile,cycle,errorrate
@@ -176,12 +185,14 @@ tile,cycle,errorrate
 
     def test_write_skip_indexes(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2),
-                   dict(tile=2, cycle=3, error_rate=0.3),
-                   dict(tile=2, cycle=4, error_rate=0.4),
-                   dict(tile=2, cycle=5, error_rate=0.5),
-                   dict(tile=2, cycle=6, error_rate=0.6)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=3, error_rate=0.3, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=6, error_rate=0.6, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         read_lengths = [2, 1, 1, 2]
         expected_csv = """\
 tile,cycle,errorrate
@@ -197,8 +208,10 @@ tile,cycle,errorrate
 
     def test_write_missing(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=4, error_rate=0.4)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -213,10 +226,12 @@ tile,cycle,errorrate
 
     def test_write_missing_end(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2),
-                   dict(tile=2, cycle=4, error_rate=0.4),
-                   dict(tile=2, cycle=5, error_rate=0.5)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         read_lengths = [3, 0, 0, 3]
         expected_csv = """\
 tile,cycle,errorrate
@@ -234,8 +249,10 @@ tile,cycle,errorrate
 
     def test_summary(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.25),
-                   dict(tile=2, cycle=2, error_rate=0.75)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.25, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.75, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
 
         summary = write_phix_csv(out_file, records)
 
@@ -243,9 +260,11 @@ tile,cycle,errorrate
 
     def test_summary_reverse(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.75),
-                   dict(tile=2, cycle=4, error_rate=0.375),
-                   dict(tile=2, cycle=5, error_rate=0.125)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.75, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.375, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.125, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         read_lengths = [3, 0, 0, 3]
 
         summary = write_phix_csv(out_file, records, read_lengths)
