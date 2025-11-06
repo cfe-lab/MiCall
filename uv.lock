@@ -517,7 +517,7 @@ requires-dist = [
     { name = "kiveapi", marker = "extra == 'watcher'", git = "https://github.com/cfe-lab/Kive.git?subdirectory=api&rev=v0.15" },
     { name = "mappy", specifier = "==2.30" },
     { name = "matplotlib", specifier = "==3.10.7" },
-    { name = "miseqinteropreader", specifier = "==0.1.6" },
+    { name = "miseqinteropreader", specifier = "==0.1.7" },
     { name = "multicsv", specifier = "==1.0.5" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.18.2" },
     { name = "mypy-extensions", marker = "extra == 'dev'", specifier = "==1.1.0" },
@@ -544,16 +544,16 @@ provides-extras = ["basespace", "dev", "test", "watcher"]
 
 [[package]]
 name = "miseqinteropreader"
-version = "0.1.6"
+version = "0.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pandas" },
     { name = "pyarrow" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cd/46/5d1e1b3c03db7fcd848f9e0e9d5d6be8bdcde0e33ddf5431430c384e94a8/miseqinteropreader-0.1.6.tar.gz", hash = "sha256:257f27c24c968bc942cf3ed8c939f1437d46a646e6ffebd66af45c1ae3530616", size = 56923, upload-time = "2025-11-06T00:12:20.204Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/be/bfe92a48a1538d90fa9877e6a31e76f86a7ed88007f50e85837f54090cdb/miseqinteropreader-0.1.7.tar.gz", hash = "sha256:e53ddeae6009c221b4feab34008dda063baa4118ed4ced3fa3757063be5282b4", size = 56933, upload-time = "2025-11-06T19:12:15.896Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6a/aa/160b65d8c05eb49ccaa605d45ae3a8945c63e4f3f19ec062465ab873faf1/miseqinteropreader-0.1.6-py3-none-any.whl", hash = "sha256:59d696dfdc8314d7f269359bdcc7c505bfb6ec577a11d2dad66b22ca1791fe99", size = 28100, upload-time = "2025-11-06T00:12:18.952Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/86/ed36fc50aba69847b4b4e16e368f4b6e1d82fba054389e071ec70fd9be07/miseqinteropreader-0.1.7-py3-none-any.whl", hash = "sha256:562f14d5c85f4395a822f3245b57eb587e119c976d66647c5bd34a826be0daa7", size = 28076, upload-time = "2025-11-06T19:12:14.555Z" },
 ]
 
 [[package]]
