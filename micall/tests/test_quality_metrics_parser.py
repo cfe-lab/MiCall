@@ -3,6 +3,7 @@ from struct import pack
 from unittest import TestCase
 from miseqinteropreader.read_records import read_quality
 from miseqinteropreader.models import QualityRecord
+from micall.utils.interop_wrappers import summarize_quality_records
 
 
 def quality_record_to_dict(record: QualityRecord) -> dict:
@@ -13,37 +14,6 @@ def quality_record_to_dict(record: QualityRecord) -> dict:
         'cycle': record.cycle,
         'quality_bins': tuple(record.quality_bins)
     }
-
-
-def summarize_quality_records(records, summary, read_lengths=None):
-    """Wrapper to match old API - modifies summary dict in place
-
-    Note: This is a standalone implementation that doesn't require InterOpReader
-    since the MiCall tests pass plain dicts, not QualityRecord objects.
-    """
-    good_count = total_count = 0
-    good_reverse = total_reverse = 0
-    if read_lengths is None:
-        last_forward_cycle = first_reverse_cycle = None
-    else:
-        last_forward_cycle = read_lengths[0]
-        first_reverse_cycle = sum(read_lengths[:-1]) + 1
-    for record in records:
-        cycle = record['cycle']
-        cycle_clusters = sum(record['quality_bins'])
-        cycle_good = sum(record['quality_bins'][29:])
-
-        if last_forward_cycle is None or cycle <= last_forward_cycle:
-            total_count += cycle_clusters
-            good_count += cycle_good
-        elif cycle >= first_reverse_cycle:
-            total_reverse += cycle_clusters
-            good_reverse += cycle_good
-
-    if total_count > 0:
-        summary['q30_fwd'] = good_count/float(total_count)
-    if total_reverse > 0:
-        summary['q30_rev'] = good_reverse/float(total_reverse)
 
 
 class QualityMetricsParserTest(TestCase):
@@ -85,25 +55,25 @@ class QualityMetricsParserTest(TestCase):
         self.assertEqual(expected_records, records)
 
     def test_summarize(self):
-        records = [dict(cycle=1, quality_bins=[0] * 50),
-                   dict(cycle=101, quality_bins=[0] * 50)]
-        records[0]['quality_bins'][28] = 1
-        records[0]['quality_bins'][29] = 1
-        records[1]['quality_bins'][29] = 1
+        records = [QualityRecord(lane=1, tile=1, cycle=1, quality_bins=[0] * 50),
+                   QualityRecord(lane=1, tile=1, cycle=101, quality_bins=[0] * 50)]
+        records[0].quality_bins[28] = 1
+        records[0].quality_bins[29] = 1
+        records[1].quality_bins[29] = 1
         expected_summary = dict(q30_fwd=2/3.0)
 
         summary = {}
-        summarize_quality_records(records, summary)
+        summarize_quality_records(records, summary, read_lengths=[200])
 
         self.assertEqual(expected_summary, summary)
 
     def test_summarize_reverse(self):
         read_lengths = [95, 5, 95]
-        records = [dict(cycle=1, quality_bins=[0] * 50),
-                   dict(cycle=101, quality_bins=[0] * 50)]
-        records[0]['quality_bins'][28] = 1
-        records[0]['quality_bins'][29] = 1
-        records[1]['quality_bins'][29] = 1
+        records = [QualityRecord(lane=1, tile=1, cycle=1, quality_bins=[0] * 50),
+                   QualityRecord(lane=1, tile=1, cycle=101, quality_bins=[0] * 50)]
+        records[0].quality_bins[28] = 1
+        records[0].quality_bins[29] = 1
+        records[1].quality_bins[29] = 1
         expected_summary = dict(q30_fwd=0.5, q30_rev=1.0)
 
         summary = {}
@@ -113,10 +83,10 @@ class QualityMetricsParserTest(TestCase):
 
     def test_summarize_ignores_index_reads(self):
         read_lengths = [95, 5, 95]
-        records = [dict(cycle=96, quality_bins=[0] * 50),
-                   dict(cycle=100, quality_bins=[0] * 50)]
-        records[0]['quality_bins'][29] = 1
-        records[1]['quality_bins'][29] = 1
+        records = [QualityRecord(lane=1, tile=1, cycle=96, quality_bins=[0] * 50),
+                   QualityRecord(lane=1, tile=1, cycle=100, quality_bins=[0] * 50)]
+        records[0].quality_bins[29] = 1
+        records[1].quality_bins[29] = 1
         expected_summary = {}
 
         summary = {}
@@ -129,6 +99,6 @@ class QualityMetricsParserTest(TestCase):
         expected_summary = {}
 
         summary = {}
-        summarize_quality_records(records, summary)
+        summarize_quality_records(records, summary, read_lengths=[200])
 
         self.assertEqual(expected_summary, summary)

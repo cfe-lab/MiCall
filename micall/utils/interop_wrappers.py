@@ -3,27 +3,16 @@
 from pathlib import Path
 
 from miseqinteropreader.interop_reader import InterOpReader
-from miseqinteropreader.models import TileMetricCodes
+from miseqinteropreader.models import TileMetricCodes, QualityRecord, TileMetricRecord
 
 
-def summarize_quality(quality_metrics_path: Path, summary: dict, read_lengths: tuple[int, ...]) -> None:
-    """Summarize quality metrics from InterOp files.
-
-    Modifies summary dict in place with q30_fwd and q30_rev values.
-    """
-    # Extract the run folder path (parent of InterOp folder)
-    interop_path = quality_metrics_path.parent
-    run_path = interop_path.parent
-
-    reader = InterOpReader(run_path)
-    quality_records = reader.read_quality_records()
-
+def summarize_quality_records(records: list[QualityRecord], summary: dict, read_lengths) -> None:
     good_count = total_count = 0
     good_reverse = total_reverse = 0
     last_forward_cycle = read_lengths[0]
     first_reverse_cycle = sum(read_lengths[:-1]) + 1
 
-    for record in quality_records:
+    for record in records:
         cycle = record.cycle
         cycle_clusters = sum(record.quality_bins)
         cycle_good = sum(record.quality_bins[29:])
@@ -41,24 +30,27 @@ def summarize_quality(quality_metrics_path: Path, summary: dict, read_lengths: t
         summary['q30_rev'] = good_reverse / float(total_reverse)
 
 
-def summarize_tiles(tile_metrics_path: Path, summary: dict) -> None:
-    """Summarize tile metrics from InterOp files.
+def summarize_quality(quality_metrics_path: Path, summary: dict, read_lengths: tuple[int, ...]) -> None:
+    """Summarize quality metrics from InterOp files.
 
-    Modifies summary dict in place with cluster_density and pass_rate values.
+    Modifies summary dict in place with q30_fwd and q30_rev values.
     """
     # Extract the run folder path (parent of InterOp folder)
-    interop_path = tile_metrics_path.parent
+    interop_path = quality_metrics_path.parent
     run_path = interop_path.parent
 
     reader = InterOpReader(run_path)
-    tile_records = reader.read_tile_records()
+    quality_records = reader.read_quality_records()
+    summarize_quality_records(quality_records, summary, read_lengths)
 
+
+def summarize_tile_records(records: list[TileMetricRecord], summary: dict) -> None:
     density_sum = 0.0
     density_count = 0
     total_clusters = 0.0
     passing_clusters = 0.0
 
-    for record in tile_records:
+    for record in records:
         if record.metric_code == TileMetricCodes.CLUSTER_DENSITY:
             density_sum += record.metric_value
             density_count += 1
@@ -71,3 +63,17 @@ def summarize_tiles(tile_metrics_path: Path, summary: dict) -> None:
         summary['cluster_density'] = density_sum / density_count
     if total_clusters > 0:
         summary['pass_rate'] = passing_clusters / total_clusters
+
+
+def summarize_tiles(tile_metrics_path: Path, summary: dict) -> None:
+    """Summarize tile metrics from InterOp files.
+
+    Modifies summary dict in place with cluster_density and pass_rate values.
+    """
+    # Extract the run folder path (parent of InterOp folder)
+    interop_path = tile_metrics_path.parent
+    run_path = interop_path.parent
+
+    reader = InterOpReader(run_path)
+    tile_records = reader.read_tile_records()
+    summarize_tile_records(tile_records, summary)

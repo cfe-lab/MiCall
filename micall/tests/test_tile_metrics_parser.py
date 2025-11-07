@@ -3,37 +3,12 @@ from struct import pack
 from unittest import TestCase
 
 from miseqinteropreader.read_records import read_tiles
-from miseqinteropreader.models import TileMetricCodes
+from miseqinteropreader.models import TileMetricCodes, TileMetricRecord
+from micall.utils.interop_wrappers import summarize_tile_records
 
 
 # Alias for compatibility with old tests
 MetricCodes = TileMetricCodes
-
-
-def summarize_tile_records(records, summary):
-    """Wrapper to match old API - modifies summary dict in place
-
-    Note: This is a standalone implementation that doesn't require InterOpReader
-    since the MiCall tests pass plain dicts, not TileMetricRecord objects.
-    """
-    density_sum = 0.0
-    density_count = 0
-    total_clusters = 0.0
-    passing_clusters = 0.0
-
-    for record in records:
-        if record['metric_code'] == TileMetricCodes.CLUSTER_DENSITY:
-            density_sum += record['metric_value']
-            density_count += 1
-        elif record['metric_code'] == TileMetricCodes.CLUSTER_COUNT:
-            total_clusters += record['metric_value']
-        elif record['metric_code'] == TileMetricCodes.CLUSTER_COUNT_PASSING_FILTERS:
-            passing_clusters += record['metric_value']
-
-    if density_count > 0:
-        summary['cluster_density'] = density_sum / density_count
-    if total_clusters > 0:
-        summary['pass_rate'] = passing_clusters / total_clusters
 
 
 class TileMetricsParserTest(TestCase):
@@ -59,8 +34,9 @@ class TileMetricsParserTest(TestCase):
         self.assertEqual(expected_records, records)
 
     def test_summarize(self):
-        records = [dict(metric_code=MetricCodes.CLUSTER_DENSITY,
-                        metric_value=3.0)]
+        records = [TileMetricRecord(lane=1, tile=1,
+                                     metric_code=MetricCodes.CLUSTER_DENSITY,
+                                     metric_value=3.0)]
         expected_summary = dict(cluster_density=3.0)
 
         summary = {}
@@ -78,10 +54,12 @@ class TileMetricsParserTest(TestCase):
         self.assertEqual(expected_summary, summary)
 
     def test_summarize_multiple(self):
-        records = [dict(metric_code=MetricCodes.CLUSTER_DENSITY,
-                        metric_value=3.0),
-                   dict(metric_code=MetricCodes.CLUSTER_DENSITY,
-                        metric_value=4.0)]
+        records = [TileMetricRecord(lane=1, tile=1,
+                                     metric_code=MetricCodes.CLUSTER_DENSITY,
+                                     metric_value=3.0),
+                   TileMetricRecord(lane=1, tile=2,
+                                    metric_code=MetricCodes.CLUSTER_DENSITY,
+                                    metric_value=4.0)]
         expected_summary = dict(cluster_density=3.5)
 
         summary = {}
@@ -90,10 +68,12 @@ class TileMetricsParserTest(TestCase):
         self.assertEqual(expected_summary, summary)
 
     def test_summarize_skips_other_codes(self):
-        records = [dict(metric_code=MetricCodes.CLUSTER_DENSITY,
-                        metric_value=3.0),
-                   dict(metric_code=MetricCodes.CLUSTER_DENSITY_PASSING_FILTERS,
-                        metric_value=4.0)]
+        records = [TileMetricRecord(lane=1, tile=1,
+                                     metric_code=MetricCodes.CLUSTER_DENSITY,
+                                     metric_value=3.0),
+                   TileMetricRecord(lane=1, tile=1,
+                                    metric_code=MetricCodes.CLUSTER_DENSITY_PASSING_FILTERS,
+                                    metric_value=4.0)]
         expected_summary = dict(cluster_density=3.0)
 
         summary = {}
@@ -102,10 +82,12 @@ class TileMetricsParserTest(TestCase):
         self.assertEqual(expected_summary, summary)
 
     def test_summarize_passing_clusters(self):
-        records = [dict(metric_code=MetricCodes.CLUSTER_COUNT,
-                        metric_value=100.0),
-                   dict(metric_code=MetricCodes.CLUSTER_COUNT_PASSING_FILTERS,
-                        metric_value=50.0)]
+        records = [TileMetricRecord(lane=1, tile=1,
+                                     metric_code=MetricCodes.CLUSTER_COUNT,
+                                     metric_value=100.0),
+                   TileMetricRecord(lane=1, tile=1,
+                                    metric_code=MetricCodes.CLUSTER_COUNT_PASSING_FILTERS,
+                                    metric_value=50.0)]
         expected_summary = dict(pass_rate=0.5)
 
         summary = {}
