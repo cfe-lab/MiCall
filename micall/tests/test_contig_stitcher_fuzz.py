@@ -45,6 +45,7 @@ def read_contigs(line):
             group_ref="commongroup",
             ref_seq=ref_seq,
             match_fraction=2 / 3,
+            reads_count=None,
         )
         alignment = CigarHit(
             Cigar([(length, CigarActions.MATCH)]),
