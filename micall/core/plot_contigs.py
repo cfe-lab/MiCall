@@ -937,7 +937,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 existing.add(coords)
                 if root not in carved_unaligned_parts:
                     carved_unaligned_parts[root] = []
-                fake = Contig(name=None, seq="")
+                fake = Contig(name=None, seq="", reads_count=None)
                 carved_unaligned_parts[root].append(fake.id)
                 query_position_map[fake.id] = coords
 
@@ -957,7 +957,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                           max(q_ei for q_st, q_ei in current_group))
                 if root not in merged_unaligned_parts:
                     merged_unaligned_parts[root] = []
-                fake = Contig(name=None, seq="")
+                fake = Contig(name=None, seq="", reads_count=None)
                 query_position_map[fake.id] = coords
                 merged_unaligned_parts[root].append(fake.id)
                 current_group = []

@@ -57,7 +57,8 @@ def read_assembled_contigs(group_refs: Dict[str, str],
                               ref_name=ref_name,
                               group_ref=group_ref,
                               ref_seq=str(ref_seq) if ref_seq is not None else None,
-                              match_fraction=match_fraction)
+                              match_fraction=match_fraction,
+                              reads_count=None)
 
 
 def init_contigs_refs(contigs_csv: TextIO) -> DictWriter:

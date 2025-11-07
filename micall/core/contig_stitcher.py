@@ -36,8 +36,18 @@ def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig,
     """ Cuts query sequence in two parts with cut_point between them. """
 
     cut_point = max(0.0, cut_point)
-    left = replace(self, name=None, seq=self.seq[:ceil(cut_point)])
-    right = replace(self, name=None, seq=self.seq[ceil(cut_point):])
+    left_len = ceil(cut_point)
+    total_len = len(self.seq)
+
+    # Distribute reads_count proportionally based on sequence length
+    left_reads_count: Optional[int] = None
+    right_reads_count: Optional[int] = None
+    if self.reads_count is not None and total_len > 0:
+        left_reads_count = round(self.reads_count * left_len / total_len)
+        right_reads_count = self.reads_count - left_reads_count
+
+    left = replace(self, name=None, seq=self.seq[:left_len], reads_count=left_reads_count)
+    right = replace(self, name=None, seq=self.seq[left_len:], reads_count=right_reads_count)
     return left, right
 
 
@@ -102,7 +112,8 @@ def munge(self: AlignedContig, other: AlignedContig) -> AlignedContig:
                             ref_name=ref_name,
                             group_ref=self.group_ref,
                             ref_seq=self.ref_seq,
-                            match_fraction=match_fraction)
+                            match_fraction=match_fraction,
+                            reads_count=None)  # Combined contigs lose their reads count
 
     self_alignment = self.alignment
     other_alignment = \
@@ -603,14 +614,15 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
 
 def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     writer = csv.DictWriter(output_csv,
-                            ['ref', 'match', 'group_ref', 'contig'],
+                            ['ref', 'match', 'group_ref', 'contig', 'reads_count'],
                             lineterminator=os.linesep)
     writer.writeheader()
     for contig in contigs:
         writer.writerow(dict(ref=contig.ref_name,
                              match=contig.match_fraction,
                              group_ref=contig.group_ref,
-                             contig=contig.seq))
+                             contig=contig.seq,
+                             reads_count=contig.reads_count if contig.reads_count is not None else ''))
 
     output_csv.flush()
 
@@ -637,7 +649,8 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
                               ref_name=ref_name,
                               group_ref=group_ref,
                               ref_seq=str(ref_seq) if ref_seq is not None else None,
-                              match_fraction=match_fraction)
+                              match_fraction=match_fraction,
+                              reads_count=None)
 
 
 def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot: Optional[Path]) -> int:
