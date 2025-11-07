@@ -39,7 +39,7 @@ dependencies = [
     "cairosvg==2.8.2",
     "aligntools==1.2.1",
     "multicsv==1.0.5",
-    "miseqinteropreader==1.0.0",
+    "miseqinteropreader==1.1.1",
     # This dependency is not really needed for the main pipeline.
     # It is needed for `test`, `watcher`, and `basespace` programs.
     # But repeating this dependency in three different places confuses Github's dependabot.

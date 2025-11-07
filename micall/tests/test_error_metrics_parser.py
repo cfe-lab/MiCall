@@ -3,7 +3,7 @@ from struct import pack
 from unittest import TestCase
 
 from miseqinteropreader.error_metrics_parser import write_phix_csv
-from miseqinteropreader.models import ErrorRecord
+from miseqinteropreader.models import ErrorRecord, ReadLengths4
 from miseqinteropreader.read_records import read_errors, read_records
 
 
@@ -170,7 +170,7 @@ tile,cycle,errorrate
             ErrorRecord(lane=1, tile=2, cycle=3, error_rate=0.3, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
             ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
         ]
-        read_lengths = [2, 2]
+        read_lengths = ReadLengths4(forward_read=2, index1=0, index2=0, reverse_read=2)
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -193,7 +193,7 @@ tile,cycle,errorrate
             ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
             ErrorRecord(lane=1, tile=2, cycle=6, error_rate=0.6, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
         ]
-        read_lengths = [2, 1, 1, 2]
+        read_lengths = ReadLengths4(forward_read=2, index1=1, index2=1, reverse_read=2)
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -232,7 +232,7 @@ tile,cycle,errorrate
             ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
             ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
         ]
-        read_lengths = [3, 0, 0, 3]
+        read_lengths = ReadLengths4(forward_read=3, index1=0, index2=0, reverse_read=3)
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -265,7 +265,7 @@ tile,cycle,errorrate
             ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.375, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
             ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.125, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
         ]
-        read_lengths = [3, 0, 0, 3]
+        read_lengths = ReadLengths4(forward_read=3, index1=0, index2=0, reverse_read=3)
 
         summary = write_phix_csv(out_file, records, read_lengths)
 

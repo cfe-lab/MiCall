@@ -33,6 +33,7 @@ from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs,
     MiCallArgs
 from miseqinteropreader.interop_reader import InterOpReader, MetricFile
 from miseqinteropreader.error_metrics_parser import write_phix_csv
+from miseqinteropreader import ReadLengths4
 
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
@@ -981,10 +982,12 @@ def summarize_run(run_info):
     summary = {}
 
     if run_info.read_sizes is not None:
-        read_lengths = [run_info.read_sizes.read1,
-                        run_info.read_sizes.index1,
-                        run_info.read_sizes.index2,
-                        run_info.read_sizes.read2]
+        read_lengths = ReadLengths4(
+            forward_read=run_info.read_sizes.read1,
+            index1=run_info.read_sizes.index1,
+            index2=run_info.read_sizes.index2,
+            reverse_read=run_info.read_sizes.read2,
+        )
         phix_path = os.path.join(run_info.interop_path, 'ErrorMetricsOut.bin')
         if not os.path.exists(phix_path):
             raise FileNotFoundError(
@@ -993,10 +996,7 @@ def summarize_run(run_info):
         reader = InterOpReader(run_info.interop_path)
         records = reader.read_generic_records(MetricFile.ERROR_METRICS)
         with open(run_info.quality_csv, 'w') as quality:
-            write_phix_csv(quality,
-                          records,
-                          tuple(read_lengths),
-                          summary)
+            write_phix_csv(quality, records, read_lengths, summary)
         with open(run_info.quality_csv) as quality, \
                 open(run_info.bad_cycles_csv, 'w') as bad_cycles, \
                 open(run_info.bad_tiles_csv, 'w') as bad_tiles:

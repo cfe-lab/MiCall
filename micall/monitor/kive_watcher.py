@@ -31,6 +31,7 @@ from micall.utils.check_sample_sheet import check_sample_name_consistency
 from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_file_names
 from miseqinteropreader.error_metrics_parser import write_phix_csv
 from miseqinteropreader.interop_reader import InterOpReader
+from miseqinteropreader import ReadLengths4
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -1192,10 +1193,12 @@ class KiveWatcher:
 
     def upload_filter_quality(self, folder_watcher: FolderWatcher) -> None:
         read_sizes = parse_read_sizes(folder_watcher.run_folder / "RunInfo.xml")
-        read_lengths = [read_sizes.read1,
-                        read_sizes.index1,
-                        read_sizes.index2,
-                        read_sizes.read2]
+        read_lengths = ReadLengths4(
+            forward_read=read_sizes.read1,
+            index1=read_sizes.index1,
+            index2=read_sizes.index2,
+            reverse_read=read_sizes.read2
+        )
         error_path = folder_watcher.run_folder / "InterOp" / "ErrorMetricsOut.bin"
         quality_csv = StringIO()
 
@@ -1211,7 +1214,7 @@ class KiveWatcher:
             try:
                 reader = InterOpReader(folder_watcher.run_folder)
                 records = reader.read_error_records()
-                write_phix_csv(quality_csv, records, tuple(read_lengths))
+                write_phix_csv(quality_csv, records, read_lengths)
                 break
             except OSError as ex:
                 logger.info(f"Caught error while trying to read the phix data: {ex}")

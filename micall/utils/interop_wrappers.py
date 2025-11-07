@@ -1,16 +1,34 @@
 
 
 from pathlib import Path
+from typing import Sequence
 
 from miseqinteropreader.interop_reader import InterOpReader
-from miseqinteropreader.models import TileMetricCodes, QualityRecord, TileMetricRecord
+from miseqinteropreader.models import (
+    TileMetricCodes,
+    QualityRecord,
+    TileMetricRecord,
+    ReadLengths4,
+)
 
 
-def summarize_quality_records(records: list[QualityRecord], summary: dict, read_lengths) -> None:
+def summarize_quality_records(
+    records: Sequence[QualityRecord],
+    summary: dict,
+    read_lengths: ReadLengths4
+) -> None:
+    """Summarize quality records into a dictionary.
+
+    Args:
+        records: Sequence of QualityRecord objects
+        summary: Dictionary to populate with q30_fwd and q30_rev values
+        read_lengths: ReadLengths4 specifying read structure
+    """
+
     good_count = total_count = 0
     good_reverse = total_reverse = 0
-    last_forward_cycle = read_lengths[0]
-    first_reverse_cycle = sum(read_lengths[:-1]) + 1
+    last_forward_cycle = read_lengths.forward_read
+    first_reverse_cycle = read_lengths.forward_read + read_lengths.index1 + read_lengths.index2 + 1
 
     for record in records:
         cycle = record.cycle
@@ -30,10 +48,19 @@ def summarize_quality_records(records: list[QualityRecord], summary: dict, read_
         summary['q30_rev'] = good_reverse / float(total_reverse)
 
 
-def summarize_quality(quality_metrics_path: Path, summary: dict, read_lengths: tuple[int, ...]) -> None:
+def summarize_quality(
+    quality_metrics_path: Path,
+    summary: dict,
+    read_lengths: ReadLengths4
+) -> None:
     """Summarize quality metrics from InterOp files.
 
     Modifies summary dict in place with q30_fwd and q30_rev values.
+
+    Args:
+        quality_metrics_path: Path to quality metrics file
+        summary: Dictionary to populate
+        read_lengths: ReadLengths4 specifying read structure
     """
     # Extract the run folder path (parent of InterOp folder)
     interop_path = quality_metrics_path.parent
@@ -44,7 +71,7 @@ def summarize_quality(quality_metrics_path: Path, summary: dict, read_lengths: t
     summarize_quality_records(quality_records, summary, read_lengths)
 
 
-def summarize_tile_records(records: list[TileMetricRecord], summary: dict) -> None:
+def summarize_tile_records(records: Sequence[TileMetricRecord], summary: dict) -> None:
     density_sum = 0.0
     density_count = 0
     total_clusters = 0.0
