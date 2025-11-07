@@ -614,15 +614,14 @@ def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedCo
 
 def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     writer = csv.DictWriter(output_csv,
-                            ['ref', 'match', 'group_ref', 'contig', 'reads_count'],
+                            ['ref', 'match', 'group_ref', 'contig'],
                             lineterminator=os.linesep)
     writer.writeheader()
     for contig in contigs:
         writer.writerow(dict(ref=contig.ref_name,
                              match=contig.match_fraction,
                              group_ref=contig.group_ref,
-                             contig=contig.seq,
-                             reads_count=contig.reads_count if contig.reads_count is not None else ''))
+                             contig=contig.seq))
 
     output_csv.flush()
 
