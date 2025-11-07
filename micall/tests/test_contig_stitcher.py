@@ -1554,8 +1554,9 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs])
+    stitcher.main([contigs, stitched_contigs, remap_counts])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1576,9 +1577,10 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs, "--debug", "--plot", plot])
+    stitcher.main([contigs, stitched_contigs, remap_counts, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)

@@ -626,10 +626,34 @@ def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     output_csv.flush()
 
 
-def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+def read_remap_counts(remap_counts_csv: TextIO) -> Dict[str, int]:
+    """Read remap counts CSV and extract read counts per contig.
+
+    Args:
+        remap_counts_csv: Open file handle to remap_counts.csv
+
+    Returns:
+        Dictionary mapping contig names (like "1-HCV-1a") to read counts
+    """
+    counts = {}
+    for row in csv.DictReader(remap_counts_csv):
+        type_field = row.get('type', '')
+        # Extract contig name from type field like "remap 1-HCV-1a" or "remap-1 1-HCV-1a"
+        if type_field.startswith('remap'):
+            # Remove "remap" or "remap-1", "remap-2", etc. prefix
+            parts = type_field.split(' ', 1)
+            if len(parts) == 2:
+                contig_name = parts[1]
+                count = int(row.get('count', 0))
+                counts[contig_name] = count
+
+    return counts
+
+
+def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
-    for row in csv.DictReader(input_csv):
+    for i, row in enumerate(csv.DictReader(input_csv)):
         seq = row['contig']
         ref_name = row['ref']
         group_ref = row['group_ref']
@@ -643,18 +667,29 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
             except KeyError:
                 ref_seq = None
 
+        # Generate contig name to look up read count (format: "1-HCV-1a")
+        contig_name = f"{i+1}-{ref_name}"
+        reads_count = contig_read_counts.get(contig_name)
+
         yield GenotypedContig(name=None,
                               seq=seq,
                               ref_name=ref_name,
                               group_ref=group_ref,
                               ref_seq=str(ref_seq) if ref_seq is not None else None,
                               match_fraction=match_fraction,
-                              reads_count=None)
+                              reads_count=reads_count)
 
 
-def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot: Optional[Path]) -> int:
+def contig_stitcher(input_csv: TextIO,
+                    output_csv: TextIO,
+                    stitcher_plot: Optional[Path],
+                    remap_counts_csv: TextIO) -> int:
     with StitcherContext.fresh() as ctx:
-        contigs = list(read_contigs(input_csv))
+        # Read remap counts
+        contig_read_counts = read_remap_counts(remap_counts_csv)
+
+        # Read contigs with read counts
+        contigs = list(read_contigs(input_csv, contig_read_counts))
 
         if output_csv is not None or stitcher_plot is not None:
             contigs = list(stitch_consensus(contigs))
@@ -675,6 +710,8 @@ def main(argv: Sequence[str]):
     parser.add_argument('contigs', type=argparse.FileType('r'), help="Input CSV file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
+    parser.add_argument('remap_counts', type=argparse.FileType('r'),
+                        help="Input CSV file with remap read counts.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
                         help="Output SVG image visualizing the stitching process.")
     verbosity_group = parser.add_mutually_exclusive_group()
@@ -697,7 +734,7 @@ def main(argv: Sequence[str]):
     logging.basicConfig(level=logger.level)
 
     plot_path = Path(args.plot.name) if args.plot is not None else None
-    contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
+    contig_stitcher(args.contigs, args.stitched_contigs, plot_path, args.remap_counts)
 
 
 if __name__ == '__main__':

@@ -452,8 +452,10 @@ class Sample:
                            excluded_seeds=excluded_seeds)
 
         with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+             open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv, \
              open(self.contigs_csv, 'w') as contigs_csv:
-            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
+            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg,
+                          unstitched_counts_csv)
 
         with open(self.contigs_csv) as contigs_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \
