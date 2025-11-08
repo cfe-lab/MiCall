@@ -634,17 +634,38 @@ def read_remap_counts(remap_counts_csv: TextIO) -> Dict[str, int]:
 
     Returns:
         Dictionary mapping contig names (like "1-HCV-1a") to read counts
+
+    Raises:
+        ValueError: If count values are not valid integers
+
+    Note:
+        - If multiple entries exist for the same contig (e.g., from different
+          remap iterations), the last occurrence is used
+        - Entries not starting with "remap" are ignored (e.g., "raw", "unmapped")
+        - Malformed entries (missing space after remap prefix) are ignored
     """
     counts = {}
-    for row in csv.DictReader(remap_counts_csv):
+    reader = csv.DictReader(remap_counts_csv)
+
+    for row_num, row in enumerate(reader, start=2):  # Start at 2 (header is row 1)
         type_field = row.get('type', '')
+
         # Extract contig name from type field like "remap 1-HCV-1a" or "remap-1 1-HCV-1a"
         if type_field.startswith('remap'):
             # Remove "remap" or "remap-1", "remap-2", etc. prefix
             parts = type_field.split(' ', 1)
             if len(parts) == 2:
                 contig_name = parts[1]
-                count = int(row.get('count', 0))
+                count_str = row.get('count', '0')
+
+                try:
+                    count = int(count_str)
+                except ValueError as e:
+                    raise ValueError(
+                        f"Invalid count value '{count_str}' for contig '{contig_name}' "
+                        f"at row {row_num} in remap_counts.csv"
+                    ) from e
+
                 counts[contig_name] = count
 
     return counts
