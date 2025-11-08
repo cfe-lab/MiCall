@@ -554,9 +554,9 @@ def test_stitching_of_identical_contigs(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="ACTGACTG" * 100,
             match_fraction=1.0,
-            reads_count=None,
+            reads_count=reads_count,
         )
-        for name in ["a", "b", "c"]
+        for name, reads_count in [("a", 10), ("b", 20), ("c", 100)]
     ]
 
     results = list(stitch_contigs(contigs))
@@ -578,7 +578,7 @@ def test_stitching_of_completely_identical_contigs(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="ACTGACTG" * 100,
             match_fraction=1.0,
-            reads_count=None,
+            reads_count=copy * 10,  # Different read counts: 10, 20, 30
         )
         for copy in [1, 2, 3]
     ]
@@ -1736,17 +1736,18 @@ class TestMockAlignment:
 
 
 class MockAlignedContig:
-    def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig"):
+    def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig", reads_count=None):
         self.ref_name = ref_name
         self.group_ref = group_ref
         self.alignment = TestMockAlignment(r_st, r_ei)
         self.name = name
         self.id = id(self)
+        self.reads_count = reads_count
 
 
 # Simple function to create mock AlignedContig objects for testing, including ref_name.
-def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
-    return MockAlignedContig(ref_name, ref_name, r_st, r_ei, name)
+def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig", reads_count=None):
+    return MockAlignedContig(ref_name, ref_name, r_st, r_ei, name, reads_count)
 
 
 @pytest.mark.parametrize(
@@ -1760,8 +1761,10 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
         ([("ref1", 50, 150), ("ref1", 0, 200)], "contig1"),
         # A single contig completely covers another, but with different reference names.
         ([("ref1", 0, 50), ("ref2", 0, 100)], None),
-        # Single coverage with exact match.
-        ([("ref1", 0, 100), ("ref1", 0, 100)], "contig1"),
+        # Single coverage with exact match - now requires read count comparison
+        # Since neither contig has reads_count set (None), total_coverage (0) > current (0) is False
+        # So the contig is NOT removed
+        ([("ref1", 0, 100), ("ref1", 0, 100)], None),
         # A single contig is completely covered at the beginning by one and at the end by another contig.
         ([("ref1", 0, 50), ("ref1", 50, 100), ("ref1", 25, 75)], "contig3"),
         # Contigs overlap but none are completely covered.
@@ -1988,3 +1991,189 @@ def test_concordance_higher_in_matching_areas(left, right):
     assert average_inside > average_outside, (
         "Concordance in matching areas should be higher than in non-matching areas"
     )
+
+
+# ========================================================================
+# Tests for read count-based coverage decisions (exact boundary matches)
+# ========================================================================
+
+@pytest.mark.parametrize(
+    "contig_specs, expected_covered_name",
+    [
+        # Exact boundary match: contig with MORE reads wins (keeps lower read count contig)
+        # contig1 has 100 reads, contig2 has 200 reads -> contig1 is covered
+        ([
+            ("ref1", 0, 100, "contig1", 100),
+            ("ref1", 0, 100, "contig2", 200),
+        ], "contig1"),
+
+        # Exact boundary match: contig with LESS reads wins (keeps higher read count contig)
+        # contig1 has 500 reads, contig2 has 200 reads -> contig2 is covered
+        ([
+            ("ref1", 0, 100, "contig1", 500),
+            ("ref1", 0, 100, "contig2", 200),
+        ], "contig2"),
+
+        # Exact boundary match: equal reads -> no coverage (neither removed)
+        ([
+            ("ref1", 0, 100, "contig1", 100),
+            ("ref1", 0, 100, "contig2", 100),
+        ], None),
+
+        # Exact boundary match: one has None reads_count, other has reads
+        # contig1=None (treated as 0), contig2=100 -> contig1 covered
+        ([
+            ("ref1", 0, 100, "contig1", None),
+            ("ref1", 0, 100, "contig2", 100),
+        ], "contig1"),
+
+        # Exact boundary match: both have None reads_count
+        # Both treated as 0, so 0 > 0 is False -> no coverage
+        ([
+            ("ref1", 0, 100, "contig1", None),
+            ("ref1", 0, 100, "contig2", None),
+        ], None),
+
+        # Exact boundary match with multiple covering contigs
+        # contig1 has 50 reads, contig2+contig3 have 100+150=250 total -> contig1 covered
+        ([
+            ("ref1", 0, 100, "contig1", 50),
+            ("ref1", 0, 100, "contig2", 100),
+            ("ref1", 0, 100, "contig3", 150),
+        ], "contig1"),
+
+        # Exact boundary match: current has highest reads -> not covered
+        # contig1 has 500, contig2 has 100, contig3 has 150
+        # When checking contig2: contig1+contig3 (500+150=650) > contig2 (100) -> contig2 covered
+        ([
+            ("ref1", 0, 100, "contig1", 500),
+            ("ref1", 0, 100, "contig2", 100),
+            ("ref1", 0, 100, "contig3", 150),
+        ], "contig2"),
+
+        # Strict coverage (boundaries don't match) - should still work regardless of reads
+        # contig1 strictly inside contig2 -> contig1 covered (ignores read counts)
+        ([
+            ("ref1", 10, 90, "contig1", 1000),
+            ("ref1", 0, 100, "contig2", 1),
+        ], "contig1"),
+
+        # Strict coverage from start (one boundary matches, other doesn't)
+        # contig1 (0, 50) covered by contig2 (0, 100) -> strict coverage
+        ([
+            ("ref1", 0, 50, "contig1", 1000),
+            ("ref1", 0, 100, "contig2", 1),
+        ], "contig1"),
+
+        # Strict coverage from end (one boundary matches, other doesn't)
+        # contig1 (50, 100) covered by contig2 (0, 100) -> strict coverage
+        ([
+            ("ref1", 50, 100, "contig1", 1000),
+            ("ref1", 0, 100, "contig2", 1),
+        ], "contig1"),
+
+        # Mixed: strict coverage + exact boundary
+        # contig2 exactly matches cumulative of contig1+contig3, but has fewer reads
+        # Cumulative: [(10,90)] from contig3 strictly covers nothing
+        # Then contig1 (0,100) and contig2 (0,100) exact match, compare reads
+        ([
+            ("ref1", 0, 100, "contig1", 100),
+            ("ref1", 0, 100, "contig2", 50),
+            ("ref1", 10, 90, "contig3", 25),
+        ], "contig2"),
+    ],
+)
+def test_find_covered_with_read_counts(contig_specs, expected_covered_name):
+    """Test find_covered_contig with read count-based decisions for exact boundary matches."""
+    mock_contigs = [
+        create_mock_aligned_contig(ref_name, r_st, r_ei, name, reads_count)
+        for ref_name, r_st, r_ei, name, reads_count in contig_specs
+    ]
+    covered, covering = find_covered_contig(mock_contigs)
+
+    if expected_covered_name is None:
+        assert covered is None, "Expected no contig to be covered"
+    else:
+        assert covered is not None, f"Expected {expected_covered_name} to be covered, but got None"
+        assert covered.name == expected_covered_name, \
+            f"Expected {expected_covered_name} to be covered, but got {covered.name}"
+
+
+def test_strict_vs_exact_coverage_distinction():
+    """Test that strict coverage (boundaries don't match) and exact coverage (boundaries match) behave differently."""
+
+    # Strict coverage: contig1 (10, 90) strictly inside contig2 (0, 100)
+    # Should be covered regardless of read counts
+    strict_contigs = [
+        create_mock_aligned_contig("ref1", 10, 90, "contig1", 10000),  # Has way more reads
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),      # Has very few reads
+    ]
+    covered, _ = find_covered_contig(strict_contigs)
+    assert covered is not None and covered.name == "contig1", \
+        "Strict coverage should remove contig regardless of read counts"
+
+    # Exact coverage: contig1 (0, 100) exactly matches contig2 (0, 100)
+    # Should compare read counts - contig with fewer reads is covered
+    exact_contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 10000),  # Has more reads - not covered
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),      # Has fewer reads - covered
+    ]
+    covered, _ = find_covered_contig(exact_contigs)
+    assert covered is not None and covered.name == "contig2", \
+        "Exact coverage should remove contig with fewer reads"
+
+
+def test_exact_boundary_cumulative_coverage():
+    """Test that cumulative coverage works correctly for exact boundary matches."""
+
+    # Three contigs: contig1 alone, contig2+contig3 together have same boundaries as contig1
+    # contig1 has 100 reads, contig2+contig3 have 60+60=120 total
+    # So contig1 should be covered
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
+        create_mock_aligned_contig("ref1", 0, 50, "contig2", 60),
+        create_mock_aligned_contig("ref1", 50, 100, "contig3", 60),
+    ]
+
+    covered, covering = find_covered_contig(contigs)
+    assert covered is not None and covered.name == "contig1"
+    assert len(covering) == 2
+    assert {c.name for c in covering} == {"contig2", "contig3"}
+
+
+def test_no_reads_count_defaults_to_zero():
+    """Test that None reads_count is treated as 0 in comparisons."""
+
+    # contig1 has None (treated as 0), contig2 has 1
+    # Total coverage (1) > current (0), so contig1 is covered
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is not None and covered.name == "contig1"
+
+    # Both have None (both treated as 0)
+    # 0 > 0 is False, so no coverage
+    contigs_both_none = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
+    ]
+
+    covered, _ = find_covered_contig(contigs_both_none)
+    assert covered is None
+
+
+def test_zero_reads_count_explicit():
+    """Test that explicit 0 reads_count works correctly."""
+
+    # contig1 has 0 reads, contig2 has 1 read
+    # Total coverage (1) > current (0), so contig1 is covered
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 0),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is not None and covered.name == "contig1"

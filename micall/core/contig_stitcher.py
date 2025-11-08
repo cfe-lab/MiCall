@@ -494,9 +494,18 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
         cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
-        if any((cover_interval[0] <= current_interval[0] and cover_interval[1] >= current_interval[1])
+        if any((cover_interval[0] < current_interval[0] and cover_interval[1] >= current_interval[1]
+                or cover_interval[0] <= current_interval[0] and cover_interval[1] > current_interval[1])
                for cover_interval in cumulative_coverage):
+            # Strictly covered.
             return current, overlaping_contigs
+        elif any((cover_interval[0] == current_interval[0] and cover_interval[1] == current_interval[1])
+               for cover_interval in cumulative_coverage):
+            # Unstrict coverage (exact boundary match).
+            # In this case we must compare the read counts to decide which contig to keep.
+            total_coverage = sum(contig.reads_count or 0 for contig in overlaping_contigs)
+            if total_coverage > (current.reads_count or 0):
+                return current, overlaping_contigs
 
     return None, []
 
