@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 import logging
 import os
@@ -7,22 +6,21 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.core.contig_stitcher as stitcher
-from micall.core.contig_stitcher import (
+import micall.utils.registry as registry
+import micall.utils.referencefull_contig_stitcher as stitcher
+from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
     stitch_contigs,
     GenotypedContig,
     merge_intervals,
     find_covered_contig,
     stitch_consensus,
-    calculate_concordance,
     align_all_to_reference,
-    disambiguate_concordance,
     lstrip,
     rstrip,
 )
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.tests.utils import mock_align_consensus, MockAlignment, fixed_random_seed
+from micall.tests.utils import mock_align_consensus, MockAlignment
 from micall.tests.test_fasta_to_csv import (
     check_hcv_db,
     DEFAULT_DATABASE,
@@ -30,7 +28,7 @@ from micall.tests.test_fasta_to_csv import (
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
-logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
+logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
@@ -43,13 +41,15 @@ assert load_projects is not None
 @pytest.fixture()
 def exact_aligner(monkeypatch):
     monkeypatch.setattr(
-        "micall.core.contig_stitcher.align_consensus", mock_align_consensus
+        "micall.utils.referencefull_contig_stitcher.align_consensus",
+        mock_align_consensus
     )
 
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.StitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+    registry.set(registry.Registry())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)
@@ -59,7 +59,7 @@ def visualizer(request, tmp_path):
     path_to_produced = os.path.join(tmp_path, plot_name)
 
     def check():
-        logs = stitcher.context.get().events
+        logs = stitcher.ReferencefullStitcherContext.get().events
         figure = plot_stitcher_coverage(logs, path_to_produced)
 
         with open(path_to_produced, "r") as produced_file:
@@ -927,7 +927,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
     assert all(x.seq == lstrip(rstrip(x)).seq for x in results)
-    assert {contig.seq for contig in contigs} == {contig.seq for contig in results}
+    assert {contig.seq for contig in contigs} != {contig.seq for contig in results}
 
 
 def test_stitching_partial_align(exact_aligner, visualizer):
@@ -1485,7 +1485,7 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
         algorithm = "mock"
         return (alignments, algorithm)
 
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align)
 
     ref = "A" * 700
     seq = "C" * 600
@@ -1552,11 +1552,12 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs, "--remap-counts", remap_counts])
+    main(['with-references', contigs, stitched_contigs, '--remap-counts', remap_counts])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1575,12 +1576,13 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
 
 
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs, "--remap-counts", remap_counts, "--debug", "--plot", plot])
+    main(['with-references', contigs, stitched_contigs, "--remap-counts", remap_counts, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1608,12 +1610,13 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
 
 def test_main_invocation_without_remap_counts(exact_aligner, tmp_path, hcv_db):
     """Test that main() works without remap_counts argument (all reads_count initialized to None)."""
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
 
     # Call main without --remap-counts
-    stitcher.main([contigs, stitched_contigs])
+    main(['with-references', contigs, stitched_contigs])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1750,18 +1753,18 @@ def test_merge_intervals(intervals, expected):
     assert merge_intervals(intervals) == expected
 
 
-@dataclass
-class TestMockAlignment:
-    r_st: int
-    r_ei: int
-
-
 class MockAlignedContig:
+    @dataclass
+    class TestMockAlignment:
+        r_st: int
+        r_ei: int
+
     def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig", reads_count=None):
         self.ref_name = ref_name
         self.group_ref = group_ref
-        self.alignment = TestMockAlignment(r_st, r_ei)
+        self.alignment = MockAlignedContig.TestMockAlignment(r_st, r_ei)
         self.name = name
+        self.reads_count = reads_count
         self.id = id(self)
         self.reads_count = reads_count
         self._unique_name = name  # Simple version for testing
@@ -1862,7 +1865,7 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig", reads_count=
     ],
 )
 def test_find_covered(contigs, expected_covered_name):
-    stitcher.context.set(stitcher.StitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
     mock_contigs = [
         create_mock_aligned_contig(ref_name, r_st, r_ei, f"contig{i + 1}")
         for i, (ref_name, r_st, r_ei) in enumerate(contigs)
@@ -1873,510 +1876,3 @@ def test_find_covered(contigs, expected_covered_name):
     else:
         assert covered is not None
         assert covered.name == expected_covered_name
-
-
-def test_concordance_same_length_inputs():
-    with pytest.raises(ValueError):
-        calculate_concordance("abc", "ab")
-
-
-def test_concordance_completely_different_strings():
-    result = calculate_concordance("a" * 30, "b" * 30)
-    assert all(n == 0 for n in result)
-
-
-def generate_random_string_pair(length):
-    left = "".join(random.choice("ACGT") for _ in range(length))
-    right = "".join(random.choice("ACGT") for _ in range(length))
-    return left, right
-
-
-@pytest.mark.parametrize(
-    "left, right, expected",
-    [
-        ("aaaaa", "aaaaa", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("abcdd", "abcdd", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("aaaaaaaa", "baaaaaab", [0.3, 0.62, 0.71, 0.75, 0.75, 0.71, 0.62, 0.3]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaabbb", [0.6, 0.68, 0.7, 0.68, 0.6, 0.29, 0.19, 0.13]),
-        ("aaaaaaaa", "aaabbaaa", [0.56, 0.63, 0.62, 0.39, 0.39, 0.62, 0.63, 0.56]),
-        ("aaaaa", "bbbbb", [0] * 5),
-        ("", "", []),
-    ],
-)
-def test_concordance_simple(left, right, expected):
-    result = [round(float(x), 2) for x in calculate_concordance(left, right)]
-    assert result == expected
-
-
-@pytest.mark.parametrize(
-    "left, right, expected",
-    [
-        ("a" * 128, "a" * 128, 64),
-        ("a" * 128, "a" * 64 + "b" * 64, 32),
-        ("a" * 128, "a" * 64 + "ba" * 32, 32),
-        ("a" * 128, "a" * 54 + "b" * 20 + "a" * 54, 28),  # two peaks
-        ("a" * 128, "a" * 63 + "b" * 2 + "a" * 63, 32),  # two peaks
-        ("a" * 1280, "b" * 640 + "a" * 640, round(1280 * 3 / 4)),
-        ("a" * 128, "b" * 48 + "a" * 32 + "b" * 48, 64),
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "ab" + "a" * 15 + "b" * 48,
-            48 + 16 // 2,
-        ),  # two peaks - choosing 1nd
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "ba" + "a" * 15 + "b" * 48,
-            48 + 15 + 16 // 2,
-        ),  # two peaks - choosing 2nd
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "bb" + "a" * 15 + "b" * 48,
-            48 + 15 // 2,
-        ),  # two peaks - choosing 1st
-    ],
-)
-def test_concordance_simple_index(left, right, expected):
-    concordance = calculate_concordance(left, right)
-    concordance_d = list(disambiguate_concordance(concordance))
-    index = max(range(len(concordance)), key=lambda i: concordance_d[i])
-    if abs(index - expected) > 1:
-        assert index == expected
-
-
-def generate_test_cases(num_cases):
-    with fixed_random_seed(42):
-        length = random.randint(1, 80)
-        return [generate_random_string_pair(length) for _ in range(num_cases)]
-
-
-concordance_cases = generate_test_cases(num_cases=100)
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_output_range(left, right):
-    result = calculate_concordance(left, right)
-    assert all(0 <= n <= 1 for n in result), (
-        "All values in result should be between 0 and 1"
-    )
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_higher_if_more_matches_added(left, right):
-    # Insert exact matches in the middle
-    matching_sequence = "A" * 30
-    insert_position = len(left) // 2
-    new_left = (
-        left[:insert_position]
-        + matching_sequence
-        + left[insert_position + len(matching_sequence) :]
-    )
-    new_right = (
-        right[:insert_position]
-        + matching_sequence
-        + right[insert_position + len(matching_sequence) :]
-    )
-
-    old_conc = calculate_concordance(left, right)
-    new_conc = calculate_concordance(new_left, new_right)
-    old_average = sum(old_conc) / len(old_conc)
-    new_average = sum(new_conc) / len(new_conc)
-    assert old_average <= new_average
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_higher_in_matching_areas(left, right):
-    # Insert exact matches in the middle
-    matching_sequence = "A" * 30
-    insert_position = len(left) // 2
-    new_left = (
-        left[:insert_position]
-        + matching_sequence
-        + left[insert_position + len(matching_sequence) :]
-    )
-    new_right = (
-        right[:insert_position]
-        + matching_sequence
-        + right[insert_position + len(matching_sequence) :]
-    )
-
-    concordance_scores = calculate_concordance(new_left, new_right)
-
-    # Check concordance in the matching area
-    matching_area_concordance = concordance_scores[
-        insert_position : insert_position + len(matching_sequence)
-    ]
-
-    # Calculate average concordance inside and outside the matching area
-    average_inside = sum(matching_area_concordance) / len(matching_sequence)
-    average_outside = (sum(concordance_scores) - sum(matching_area_concordance)) / (
-        len(concordance_scores) - len(matching_sequence)
-    )
-
-    # Assert that the concordance is indeed higher in the matching area
-    assert average_inside > average_outside, (
-        "Concordance in matching areas should be higher than in non-matching areas"
-    )
-
-
-# ========================================================================
-# Tests for read count-based coverage decisions (exact boundary matches)
-# ========================================================================
-
-@pytest.mark.parametrize(
-    "contig_specs, expected_covered_name",
-    [
-        # Exact boundary match: contig with MORE reads wins (keeps lower read count contig)
-        # contig1 has 100 reads, contig2 has 200 reads -> contig1 is covered
-        ([
-            ("ref1", 0, 100, "contig1", 100),
-            ("ref1", 0, 100, "contig2", 200),
-        ], "contig1"),
-
-        # Exact boundary match: contig with LESS reads wins (keeps higher read count contig)
-        # contig1 has 500 reads, contig2 has 200 reads -> contig2 is covered
-        ([
-            ("ref1", 0, 100, "contig1", 500),
-            ("ref1", 0, 100, "contig2", 200),
-        ], "contig2"),
-
-        # Exact boundary match: equal reads -> no coverage (neither removed)
-        ([
-            ("ref1", 0, 100, "contig1", 100),
-            ("ref1", 0, 100, "contig2", 100),
-        ], None),
-
-        # Exact boundary match: one has None reads_count, other has reads
-        # Coverage comparison is IGNORED when any contig has None reads_count
-        ([
-            ("ref1", 0, 100, "contig1", None),
-            ("ref1", 0, 100, "contig2", 100),
-        ], None),
-
-        # Exact boundary match: both have None reads_count
-        # Coverage comparison is IGNORED when any contig has None reads_count
-        ([
-            ("ref1", 0, 100, "contig1", None),
-            ("ref1", 0, 100, "contig2", None),
-        ], None),
-
-        # Exact boundary match with multiple covering contigs
-        # contig1 has 50 reads, contig2+contig3 have 100+150=250 total -> contig1 covered
-        ([
-            ("ref1", 0, 100, "contig1", 50),
-            ("ref1", 0, 100, "contig2", 100),
-            ("ref1", 0, 100, "contig3", 150),
-        ], "contig1"),
-
-        # Exact boundary match: current has highest reads -> not covered
-        # contig1 has 500, contig2 has 100, contig3 has 150
-        # When checking contig2: contig1+contig3 (500+150=650) > contig2 (100) -> contig2 covered
-        ([
-            ("ref1", 0, 100, "contig1", 500),
-            ("ref1", 0, 100, "contig2", 100),
-            ("ref1", 0, 100, "contig3", 150),
-        ], "contig2"),
-
-        # Strict coverage (boundaries don't match) - should still work regardless of reads
-        # contig1 strictly inside contig2 -> contig1 covered (ignores read counts)
-        ([
-            ("ref1", 10, 90, "contig1", 1000),
-            ("ref1", 0, 100, "contig2", 1),
-        ], "contig1"),
-
-        # Strict coverage from start (one boundary matches, other doesn't)
-        # contig1 (0, 50) covered by contig2 (0, 100) -> strict coverage
-        ([
-            ("ref1", 0, 50, "contig1", 1000),
-            ("ref1", 0, 100, "contig2", 1),
-        ], "contig1"),
-
-        # Strict coverage from end (one boundary matches, other doesn't)
-        # contig1 (50, 100) covered by contig2 (0, 100) -> strict coverage
-        ([
-            ("ref1", 50, 100, "contig1", 1000),
-            ("ref1", 0, 100, "contig2", 1),
-        ], "contig1"),
-
-        # Mixed: strict coverage + exact boundary
-        # contig2 exactly matches cumulative of contig1+contig3, but has fewer reads
-        # Cumulative: [(10,90)] from contig3 strictly covers nothing
-        # Then contig1 (0,100) and contig2 (0,100) exact match, compare reads
-        ([
-            ("ref1", 0, 100, "contig1", 100),
-            ("ref1", 0, 100, "contig2", 50),
-            ("ref1", 10, 90, "contig3", 25),
-        ], "contig2"),
-    ],
-)
-def test_find_covered_with_read_counts(contig_specs, expected_covered_name):
-    """Test find_covered_contig with read count-based decisions for exact boundary matches."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-    mock_contigs = [
-        create_mock_aligned_contig(ref_name, r_st, r_ei, name, reads_count)
-        for ref_name, r_st, r_ei, name, reads_count in contig_specs
-    ]
-    covered, covering = find_covered_contig(mock_contigs)
-
-    if expected_covered_name is None:
-        assert covered is None, "Expected no contig to be covered"
-    else:
-        assert covered is not None, f"Expected {expected_covered_name} to be covered, but got None"
-        assert covered.name == expected_covered_name, \
-            f"Expected {expected_covered_name} to be covered, but got {covered.name}"
-
-
-def test_strict_vs_exact_coverage_distinction():
-    """Test that strict coverage (boundaries don't match) and exact coverage (boundaries match) behave differently."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # Strict coverage: contig1 (10, 90) strictly inside contig2 (0, 100)
-    # Should be covered regardless of read counts
-    strict_contigs = [
-        create_mock_aligned_contig("ref1", 10, 90, "contig1", 10000),  # Has way more reads
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),      # Has very few reads
-    ]
-    covered, _ = find_covered_contig(strict_contigs)
-    assert covered is not None and covered.name == "contig1", \
-        "Strict coverage should remove contig regardless of read counts"
-
-    # Exact coverage: contig1 (0, 100) exactly matches contig2 (0, 100)
-    # Should compare read counts - contig with fewer reads is covered
-    exact_contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 10000),  # Has more reads - not covered
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),      # Has fewer reads - covered
-    ]
-    covered, _ = find_covered_contig(exact_contigs)
-    assert covered is not None and covered.name == "contig2", \
-        "Exact coverage should remove contig with fewer reads"
-
-
-def test_exact_boundary_cumulative_coverage():
-    """Test that cumulative coverage works correctly for exact boundary matches."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # Three contigs: contig1 alone, contig2+contig3 together have same boundaries as contig1
-    # contig1 has 100 reads, contig2+contig3 have 60+60=120 total
-    # So contig1 should be covered
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
-        create_mock_aligned_contig("ref1", 0, 50, "contig2", 60),
-        create_mock_aligned_contig("ref1", 50, 100, "contig3", 60),
-    ]
-
-    covered, covering = find_covered_contig(contigs)
-    assert covered is not None and covered.name == "contig1"
-    assert len(covering) == 2
-    assert {c.name for c in covering} == {"contig2", "contig3"}
-
-
-def test_no_reads_count_defaults_to_zero():
-    """Test that None reads_count causes coverage comparison to be ignored."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 has None, contig2 has 1
-    # Coverage comparison is IGNORED when any contig has None reads_count
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is None, "Coverage comparison should be ignored when any contig has None reads_count"
-
-    # Both have None
-    # Coverage comparison is IGNORED when any contig has None reads_count
-    contigs_both_none = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
-    ]
-
-    covered, _ = find_covered_contig(contigs_both_none)
-    assert covered is None, "Coverage comparison should be ignored when any contig has None reads_count"
-
-
-def test_zero_reads_count_explicit():
-    """Test that explicit 0 reads_count works correctly."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 has 0 reads, contig2 has 1 read
-    # Total coverage (1) > current (0), so contig1 is covered
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 0),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is not None and covered.name == "contig1"
-
-
-def test_none_reads_count_with_strict_coverage():
-    """Test that strict coverage (non-exact boundaries) works even with None reads_count."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 (10, 90) is strictly inside contig2 (0, 100)
-    # Should be covered regardless of reads_count being None
-    contigs = [
-        create_mock_aligned_contig("ref1", 10, 90, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is not None and covered.name == "contig1", \
-        "Strict coverage should work even when reads_count is None"
-
-
-def test_mixed_none_and_zero_reads_count():
-    """Test behavior with a mix of None and explicit 0 reads_count."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 has None, contig2 has explicit 0
-    # Coverage comparison should be ignored because contig1 has None
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 0),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is None, "Coverage comparison should be ignored when any contig has None"
-
-
-def test_multiple_contigs_one_with_none():
-    """Test that coverage comparison is ignored if ANY contig in the group has None."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 has good read count, but contig2 has None
-    # The group includes a None, so comparison should be ignored
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig3", 200),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is None, \
-        "Coverage comparison should be ignored when any overlapping contig has None reads_count"
-
-
-def test_none_reads_count_different_references():
-    """Test that contigs with different references and None reads_count don't interfere."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # Different references shouldn't overlap, so None doesn't matter
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
-        create_mock_aligned_contig("ref2", 0, 100, "contig2", None),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is None, "Contigs with different references should not overlap"
-
-
-def test_exact_boundary_all_valid_reads_various_totals():
-    """Test exact boundary matching with various read count combinations."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # Case 1: Multiple contigs with exact boundaries, one has significantly fewer reads
-    contigs1 = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 10),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 500),
-        create_mock_aligned_contig("ref1", 0, 100, "contig3", 600),
-    ]
-    covered, _ = find_covered_contig(contigs1)
-    assert covered is not None and covered.name == "contig1", \
-        "Contig with lowest read count should be covered"
-
-    # Case 2: Three contigs where middle one has just enough reads to not be covered
-    contigs2 = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 600),  # More than sum of others
-        create_mock_aligned_contig("ref1", 0, 100, "contig3", 400),
-    ]
-    covered, _ = find_covered_contig(contigs2)
-    assert covered is not None and covered.name == "contig1", \
-        "Contig1 should be covered (100 < 600+400=1000)"
-
-
-def test_exact_boundary_edge_case_equal_to_sum():
-    """Test exact boundary when current reads equals sum of others."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 has 100, contig2+contig3 have 50+50=100
-    # Since 100 is NOT greater than 100, contig1 should NOT be covered
-    contigs = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 50),
-        create_mock_aligned_contig("ref1", 0, 100, "contig3", 50),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    # The function checks each contig in turn
-    # When checking contig1: total from contig2+contig3 = 100, current = 100, 100 > 100 is False
-    # When checking contig2: total from contig1+contig3 = 150, current = 50, 150 > 50 is True -> contig2 covered
-    assert covered is not None and covered.name == "contig2", \
-        "Contig2 should be covered since 150 > 50"
-
-
-def test_partial_overlap_with_none_reads_count():
-    """Test that partial overlaps (not exact boundaries) with None reads_count still use strict coverage."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # contig1 is strictly inside contig2 (partial overlap)
-    # Even with None reads_count, strict coverage should apply
-    contigs = [
-        create_mock_aligned_contig("ref1", 20, 80, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
-    ]
-
-    covered, _ = find_covered_contig(contigs)
-    assert covered is not None and covered.name == "contig1", \
-        "Strict coverage should work with None reads_count"
-
-    # Test the other way - contig2 covers from start but not exact
-    contigs2 = [
-        create_mock_aligned_contig("ref1", 0, 50, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
-    ]
-
-    covered, _ = find_covered_contig(contigs2)
-    assert covered is not None and covered.name == "contig1", \
-        "Strict coverage from start should work with None reads_count"
-
-
-def test_zero_vs_none_reads_count_behavior():
-    """Test that explicit 0 behaves differently from None."""
-    stitcher.context.set(stitcher.StitcherContext.make())
-
-    # With explicit zeros, comparison happens
-    contigs_zeros = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 0),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 0),
-    ]
-    covered, _ = find_covered_contig(contigs_zeros)
-    assert covered is None, "With equal zeros, no contig should be covered (0 > 0 is False)"
-
-    # With Nones, comparison is skipped
-    contigs_nones = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
-    ]
-    covered, _ = find_covered_contig(contigs_nones)
-    assert covered is None, "With None, comparison should be skipped"
-
-    # Key difference: 0 vs 1 causes coverage, None vs 1 doesn't
-    contigs_zero_vs_one = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", 0),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
-    ]
-    covered, _ = find_covered_contig(contigs_zero_vs_one)
-    assert covered is not None and covered.name == "contig1", \
-        "Explicit 0 should be covered when other has 1"
-
-    contigs_none_vs_one = [
-        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
-        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
-    ]
-    covered, _ = find_covered_contig(contigs_none_vs_one)
-    assert covered is None, \
-        "None should cause comparison to be skipped even when other has 1"

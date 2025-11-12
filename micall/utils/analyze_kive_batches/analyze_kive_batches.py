@@ -10,7 +10,6 @@ from micall.utils.dir_path import DirPath
 from micall.utils.user_error import UserError
 from .logger import logger
 
-from .download import download
 from .make_stats import make_stats
 from .get_batch import get_batch
 from .run_all import run_all
@@ -23,6 +22,7 @@ from .aggregate_runs_overlaps import aggregate_runs_overlaps
 from .stitch_contigs import stitch_contigs
 from .make_properties import make_properties
 from .join_tables import join_tables
+from .diff_samples_of_two_apps import diff_samples_of_two_apps
 
 
 def dir_path(string: str) -> DirPath:
@@ -47,6 +47,16 @@ def cli_parser() -> argparse.ArgumentParser:
                      help="Root directory for all output subdirectories.")
     all.add_argument("--properties", type=Path, required=True,
                      help="Additional properties associated with particular images.")
+
+    sub = mode_parsers.add_parser("diff_samples_of_two_apps", help="Computes differences between samples of two apps.")
+    sub.add_argument("--input", type=Path, required=True,
+                     help="Input CSV file.")
+    sub.add_argument("--app1", type=str, required=True,
+                     help="Name of the first app.")
+    sub.add_argument("--app2", type=str, required=True,
+                     help="Name of the second app.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Target CSV file where to put the results to.")
 
     sub = mode_parsers.add_parser("get-batch", help="Downloads a batch info.")
     sub.add_argument("--batch", type=str, required=True,
@@ -75,12 +85,6 @@ def cli_parser() -> argparse.ArgumentParser:
                      help="The txt file with all the run ids in it.")
     sub.add_argument("--target", type=Path, required=True,
                      help="Target file where to put the combine overlaps to.")
-
-    sub = mode_parsers.add_parser("download")
-    sub.add_argument("--json-file", type=Path, required=True,
-                     help="The big JSON file with all the run infos.")
-    sub.add_argument("--root", type=dir_path, required=True,
-                     help="Root directory for all output subdirectories.")
 
     sub = mode_parsers.add_parser("make-stats")
     sub.add_argument("--input", type=Path, required=True,
@@ -143,6 +147,8 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     if args.subcommand == 'all':
         run_all(batches_list=args.batches_list, root=args.root, properties=args.properties)
+    elif args.subcommand == 'diff_samples_of_two_apps':
+        diff_samples_of_two_apps(input=args.input, app1=args.app1, app2=args.app2, output=args.output)
     elif args.subcommand == 'get-batch':
         get_batch(batch=args.batch, target=args.target)
     elif args.subcommand == 'combine-batches-runs':
@@ -151,8 +157,6 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         combine_runs_stats(root=args.root, runs_txt=args.runs_txt, target=args.target)
     elif args.subcommand == 'combine-runs-overlaps':
         combine_runs_overlaps(root=args.root, runs_txt=args.runs_txt, target=args.target)
-    elif args.subcommand == 'download':
-        download(json_file=args.json_file, root=args.root)
     elif args.subcommand == 'make-stats':
         make_stats(input=args.input, output=args.output)
     elif args.subcommand == 'stitch-contigs':

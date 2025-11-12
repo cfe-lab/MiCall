@@ -1,5 +1,5 @@
 import typing
-from typing import Dict, Tuple, List, Set, Iterable, NoReturn
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -22,8 +22,8 @@ from matplotlib.colors import Normalize
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
-from micall.utils.contig_stitcher_context import StitcherContext
-import micall.utils.contig_stitcher_events as events
+from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
+import micall.utils.referencefull_contig_stitcher_events as events
 from micall.data.landmark_reader import LandmarkReader
 
 
@@ -401,7 +401,7 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
 
 
 def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage: Path):
-    with StitcherContext.stage():
+    with ReferencefullStitcherContext.stage():
         f = build_stitcher_figure(logs)
         f.show(w=970).save_svg(genome_coverage, context=draw.Context(invert_y=True))
         return f
@@ -555,11 +555,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1,
                                               r_st=hit.r_ei + 1, r_ei=hit.r_ei)
 
-    def hits_to_insertions(contig: GenotypedContig, hits: List[CigarHit]):
+    def hits_to_insertions(contig: GenotypedContig, hits: Iterable[CigarHit]):
         for hit in hits:
             yield from hit_to_insertions(contig, hit)
 
-    def record_initial_hit(contig: GenotypedContig, hits: List[CigarHit]):
+    def record_initial_hit(contig: GenotypedContig, hits: Sequence[CigarHit]):
         insertions = [gap for gap in hits_to_insertions(contig, hits)]
         unaligned_map[contig.id] = insertions
 

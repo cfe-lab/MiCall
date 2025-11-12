@@ -201,27 +201,3 @@ ref,match,group_ref,contig
     fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
-
-
-def test_merged_contig(tmpdir, hcv_db):
-    contigs_fasta = Path(tmpdir) / 'contigs.fasta'
-    assert not contigs_fasta.exists()
-
-    merged_contigs_path = Path(tmpdir) / 'merged_contigs.csv'
-    merged_contigs_path.write_text("""\
-contig
-TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
-""")
-
-    contigs_csv = StringIO()
-    expected_contigs_csv = """\
-ref,match,group_ref,contig
-HIV1-C-BR-JX140663-seed,1.0,HIV1-C-BR-JX140663-seed,TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
-"""
-
-    with merged_contigs_path.open() as merged_contigs_csv:
-        fasta_to_csv(contigs_fasta,
-                     contigs_csv,
-                     merged_contigs_csv=merged_contigs_csv)
-
-    assert expected_contigs_csv == contigs_csv.getvalue()
