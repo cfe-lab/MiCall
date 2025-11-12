@@ -29,7 +29,10 @@ logger = logging.getLogger(__name__)
 
 def log(e: events.EventType) -> None:
     context.get().emit(e)
-    logger.debug("%s", e)
+    if isinstance(e, events.Warning):
+        logger.warning("%s", e)
+    else:
+        logger.debug("%s", e)
 
 
 def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig, GenotypedContig]:

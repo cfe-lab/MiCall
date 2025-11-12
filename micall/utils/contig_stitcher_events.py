@@ -6,6 +6,10 @@ from aligntools import CigarHit
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
 
 
+class Warning:
+    pass
+
+
 @dataclass(frozen=True)
 class Cut:
     original: AlignedContig
@@ -298,7 +302,7 @@ class FinalCombine:
         )
 
 @dataclass(frozen=True)
-class IgnoreCoverage:
+class IgnoreCoverage(Warning):
     current: AlignedContig
     overlaping_contigs: List[AlignedContig]
 
