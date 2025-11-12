@@ -1,120 +1,116 @@
 import argparse
 import logging
-from pathlib import Path
 from typing import Optional
-from csv import DictReader
 from datetime import datetime
-from shutil import rmtree, copyfileobj
-from subprocess import PIPE, CalledProcessError, STDOUT
+import shutil
+from pathlib import Path
+from subprocess import CalledProcessError
 import subprocess
 from tempfile import mkdtemp
-
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 
 from micall.utils.cache import cached
 from micall.utils.work_dir import WorkDir
 
 
-IVA = "iva"
+HAPLOFLOW = "haploflow"
 logger = logging.getLogger(__name__)
 
 
-def count_fasta_sequences(file_path: Path) -> int:
-    with file_path.open() as file:
-        return sum(1 for line in file if line.startswith(">"))
+def count_fasta_sequences(file_path: Path):
+    with open(file_path, 'r') as file:
+        return sum(1 for line in file if line.startswith('>'))
 
 
-@cached("denovo[iva]")
+@cached("denovo[haploflow]")
 def run_subprocess(
     fastq1: Path,
     fastq2: Path,
     merged_contigs_csv: Optional[Path],
 ) -> Path:
-    """
-    Run IVA de novo assembly subprocess.
 
-    Uses work_dir from WorkDir dynamic scoping for temporary file storage.
-    """
-    # Get work_dir from dynamic scope - required to be set by caller
-    work_dir = WorkDir.get()
-
-    old_tmp_dirs = work_dir.glob("assembly_*")
-    for old_tmp_dir in old_tmp_dirs:
-        rmtree(old_tmp_dir, ignore_errors=True)
-
-    tmp_dir = Path(mkdtemp(dir=work_dir, prefix="assembly_"))
-
-    joined_path = tmp_dir / "joined.fastq"
-    subprocess.run(
-        ["merge-mates", fastq1, fastq2, "--interleave", "-o", str(joined_path)],
-        check=True,
-        cwd=tmp_dir,
-    )
-    iva_out_path = tmp_dir / "iva_out"
-    contigs_fasta_path = iva_out_path / "contigs.fasta"
-    iva_args = [IVA, "--fr", str(joined_path), "-t", "2"]
     if merged_contigs_csv is not None:
-        seeds_fasta_path = tmp_dir / "seeds.fasta"
-        with open(seeds_fasta_path, "w") as seeds_fasta, \
-             merged_contigs_csv.open() as merged_contigs_reader:
-            SeqIO.write(
-                (
-                    SeqRecord(Seq(row["contig"]), f"seed-{i}", "", "")
-                    for i, row in enumerate(DictReader(merged_contigs_reader))
-                ),
-                seeds_fasta,
-                "fasta",
-            )
-            seeds_size = seeds_fasta.tell()
-        if seeds_size > 0:
-            iva_args.extend(["--contigs", str(seeds_fasta_path), "--make_new_seeds"])
-    iva_args.append(str(iva_out_path))
+        # TODO: implement this.
+        logger.error("Haploflow implementation does not support contig extensions yet.")
+
+    work_dir = WorkDir.get()
+    old_tmp_dirs = work_dir.glob('assembly_*')
+    for old_tmp_dir in old_tmp_dirs:
+        shutil.rmtree(old_tmp_dir, ignore_errors=True)
+
+    tmp_dir = Path(mkdtemp(dir=work_dir, prefix='assembly_'))
+
+    joined_path = tmp_dir / 'joined.fastq'
+    subprocess.run(['merge-mates',
+                    str(fastq1),
+                    str(fastq2),
+                    '--interleave',
+                    '-o', str(joined_path)],
+                   check=True)
+
+    haplo_args = {'long': 0,
+                  'filter': 80,
+                  'thres': -1,
+                  'strict': 5,
+                  'error': 0.02,
+                  'kmer': 23,
+                  'merge': False,
+                  'scaffold': False,
+                  'patch': False,
+                  'ref': None,
+                  'RP': False,
+                  }
+
+    assembly_out_path = tmp_dir / 'haplo_out'
+    contigs_fasta_path = assembly_out_path / 'contigs.fa'
+
+    assembly_out_path.mkdir(exist_ok=True, parents=True)
+    contigs_fasta_path.touch()
+
+    haplo_cmd = [HAPLOFLOW,
+                 '--read-file', str(joined_path),
+                 '--out', str(assembly_out_path),
+                 '--k', str(haplo_args['kmer']),
+                 '--error-rate', str(haplo_args['error']),
+                 '--strict', str(haplo_args['strict']),
+                 '--filter', str(haplo_args['filter']),
+                 '--thres', str(haplo_args['thres']),
+                 '--long', str(haplo_args['long'])]
     try:
-        subprocess.run(iva_args, check=True, stdout=PIPE, stderr=STDOUT)
-    except CalledProcessError as ex:
-        output = ex.output and ex.output.decode("UTF8")
-        if output != "Failed to make first seed. Cannot continue\n":
-            logger.warning("iva failed to assemble.", exc_info=True)
-            logger.warning(output)
-        contigs_fasta_path.touch()
+        subprocess.run(haplo_cmd, check=True)
+    except CalledProcessError:
+        logger.warning('Haploflow failed to assemble.', exc_info=True)
 
     return contigs_fasta_path
 
 
-def denovo(
-    fastq1: Path,
-    fastq2: Path,
-    fasta: Path,
-    merged_contigs_csv: Optional[Path] = None,
-):
-    """Use de novo assembly to build contigs from reads.
+def denovo(fastq1_path: Path,
+           fastq2_path: Path,
+           fasta: Path,
+           merged_contigs_csv: Optional[Path] = None,
+           ):
+    """ Use de novo assembly to build contigs from reads.
 
     :param fastq1: FASTQ file for read 1 reads
     :param fastq2: FASTQ file for read 2 reads
     :param fasta: file to write assembled contigs to
-    :param work_dir: path for writing temporary files (optional, uses dynamic scope if not provided)
-    :param merged_contigs_csv: open file to read contigs that were merged from
+    :param work_dir: path for writing temporary files
+    :param merged_contigs_csv: file to read contigs that were merged from
         amplicon reads
     """
 
     start_time = datetime.now()
-
-    contigs_fasta_path = run_subprocess(fastq1, fastq2, merged_contigs_csv)
-    with contigs_fasta_path.open() as reader, \
-         fasta.open("w") as writer:
-        copyfileobj(reader, writer)
+    contigs_fasta_path = run_subprocess(fastq1_path,
+                                        fastq2_path,
+                                        merged_contigs_csv)
+    shutil.copy(contigs_fasta_path, fasta)
 
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
-    logger.info(
-        "Assembled %d contigs in %s (%ds) on %s.",
-        contig_count,
-        duration,
-        duration.total_seconds(),
-        fastq1,
-    )
+    logger.info('Assembled %d contigs in %s (%ds) on %s.',
+                contig_count,
+                duration,
+                duration.total_seconds(),
+                fastq1_path)
 
 
 if __name__ == "__main__":

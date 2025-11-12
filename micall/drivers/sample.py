@@ -413,7 +413,7 @@ class Sample:
             denovo(Path(self.trimmed1_fastq),
                    Path(self.trimmed2_fastq),
                    Path(self.unstitched_contigs_fasta),
-                   Path(self.merged_contigs_csv))
+                   None)
 
         with open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
             output = Path(self.merged_contigs_fasta)
