@@ -1556,7 +1556,7 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
     remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs, remap_counts])
+    stitcher.main([contigs, stitched_contigs, "--remap-counts", remap_counts])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1580,7 +1580,7 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
     remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs, remap_counts, "--debug", "--plot", plot])
+    stitcher.main([contigs, stitched_contigs, "--remap-counts", remap_counts, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1604,6 +1604,27 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
         assert stitched_data == expected_data, (
             "The contents of the stitched plot file do not match the expected contents."
         )
+
+
+def test_main_invocation_without_remap_counts(exact_aligner, tmp_path, hcv_db):
+    """Test that main() works without remap_counts argument (all reads_count initialized to None)."""
+    pwd = os.path.dirname(__file__)
+    contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    stitched_contigs = os.path.join(tmp_path, "stitched.csv")
+
+    # Call main without --remap-counts
+    stitcher.main([contigs, stitched_contigs])
+
+    assert os.path.exists(contigs)
+    assert os.path.exists(stitched_contigs)
+
+    # The file should exist and have content (though results may differ without read counts)
+    with open(stitched_contigs, "r") as stitched_file:
+        stitched_data = stitched_file.read()
+
+    # Should have header and at least some contigs
+    assert "ref,match,group_ref,contig" in stitched_data
+    assert len(stitched_data.strip().split('\n')) > 1  # More than just header
 
 
 def test_visualizer_correct_labeling_of_different_organism_contigs(

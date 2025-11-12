@@ -713,10 +713,13 @@ def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Itera
 def contig_stitcher(input_csv: TextIO,
                     output_csv: TextIO,
                     stitcher_plot: Optional[Path],
-                    remap_counts_csv: TextIO) -> int:
+                    remap_counts_csv: Optional[TextIO] = None) -> int:
     with StitcherContext.fresh() as ctx:
-        # Read remap counts
-        contig_read_counts = read_remap_counts(remap_counts_csv)
+        # Read remap counts if provided
+        if remap_counts_csv is not None:
+            contig_read_counts = read_remap_counts(remap_counts_csv)
+        else:
+            contig_read_counts = {}
 
         # Read contigs with read counts
         contigs = list(read_contigs(input_csv, contig_read_counts))
@@ -740,8 +743,8 @@ def main(argv: Sequence[str]):
     parser.add_argument('contigs', type=argparse.FileType('r'), help="Input CSV file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
-    parser.add_argument('remap_counts', type=argparse.FileType('r'),
-                        help="Input CSV file with remap read counts.")
+    parser.add_argument('--remap-counts', type=argparse.FileType('r'), default=None,
+                        help="Optional input CSV file with remap read counts.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
                         help="Output SVG image visualizing the stitching process.")
     verbosity_group = parser.add_mutually_exclusive_group()
