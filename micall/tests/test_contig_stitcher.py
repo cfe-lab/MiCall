@@ -2209,3 +2209,174 @@ def test_zero_reads_count_explicit():
 
     covered, _ = find_covered_contig(contigs)
     assert covered is not None and covered.name == "contig1"
+
+
+def test_none_reads_count_with_strict_coverage():
+    """Test that strict coverage (non-exact boundaries) works even with None reads_count."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # contig1 (10, 90) is strictly inside contig2 (0, 100)
+    # Should be covered regardless of reads_count being None
+    contigs = [
+        create_mock_aligned_contig("ref1", 10, 90, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is not None and covered.name == "contig1", \
+        "Strict coverage should work even when reads_count is None"
+
+
+def test_mixed_none_and_zero_reads_count():
+    """Test behavior with a mix of None and explicit 0 reads_count."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # contig1 has None, contig2 has explicit 0
+    # Coverage comparison should be ignored because contig1 has None
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 0),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is None, "Coverage comparison should be ignored when any contig has None"
+
+
+def test_multiple_contigs_one_with_none():
+    """Test that coverage comparison is ignored if ANY contig in the group has None."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # contig1 has good read count, but contig2 has None
+    # The group includes a None, so comparison should be ignored
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig3", 200),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is None, \
+        "Coverage comparison should be ignored when any overlapping contig has None reads_count"
+
+
+def test_none_reads_count_different_references():
+    """Test that contigs with different references and None reads_count don't interfere."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # Different references shouldn't overlap, so None doesn't matter
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
+        create_mock_aligned_contig("ref2", 0, 100, "contig2", None),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is None, "Contigs with different references should not overlap"
+
+
+def test_exact_boundary_all_valid_reads_various_totals():
+    """Test exact boundary matching with various read count combinations."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # Case 1: Multiple contigs with exact boundaries, one has significantly fewer reads
+    contigs1 = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 10),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 500),
+        create_mock_aligned_contig("ref1", 0, 100, "contig3", 600),
+    ]
+    covered, _ = find_covered_contig(contigs1)
+    assert covered is not None and covered.name == "contig1", \
+        "Contig with lowest read count should be covered"
+
+    # Case 2: Three contigs where middle one has just enough reads to not be covered
+    contigs2 = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 600),  # More than sum of others
+        create_mock_aligned_contig("ref1", 0, 100, "contig3", 400),
+    ]
+    covered, _ = find_covered_contig(contigs2)
+    assert covered is not None and covered.name == "contig1", \
+        "Contig1 should be covered (100 < 600+400=1000)"
+
+
+def test_exact_boundary_edge_case_equal_to_sum():
+    """Test exact boundary when current reads equals sum of others."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # contig1 has 100, contig2+contig3 have 50+50=100
+    # Since 100 is NOT greater than 100, contig1 should NOT be covered
+    contigs = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 100),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 50),
+        create_mock_aligned_contig("ref1", 0, 100, "contig3", 50),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    # The function checks each contig in turn
+    # When checking contig1: total from contig2+contig3 = 100, current = 100, 100 > 100 is False
+    # When checking contig2: total from contig1+contig3 = 150, current = 50, 150 > 50 is True -> contig2 covered
+    assert covered is not None and covered.name == "contig2", \
+        "Contig2 should be covered since 150 > 50"
+
+
+def test_partial_overlap_with_none_reads_count():
+    """Test that partial overlaps (not exact boundaries) with None reads_count still use strict coverage."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # contig1 is strictly inside contig2 (partial overlap)
+    # Even with None reads_count, strict coverage should apply
+    contigs = [
+        create_mock_aligned_contig("ref1", 20, 80, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
+    ]
+
+    covered, _ = find_covered_contig(contigs)
+    assert covered is not None and covered.name == "contig1", \
+        "Strict coverage should work with None reads_count"
+
+    # Test the other way - contig2 covers from start but not exact
+    contigs2 = [
+        create_mock_aligned_contig("ref1", 0, 50, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
+    ]
+
+    covered, _ = find_covered_contig(contigs2)
+    assert covered is not None and covered.name == "contig1", \
+        "Strict coverage from start should work with None reads_count"
+
+
+def test_zero_vs_none_reads_count_behavior():
+    """Test that explicit 0 behaves differently from None."""
+    stitcher.context.set(stitcher.StitcherContext.make())
+
+    # With explicit zeros, comparison happens
+    contigs_zeros = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 0),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 0),
+    ]
+    covered, _ = find_covered_contig(contigs_zeros)
+    assert covered is None, "With equal zeros, no contig should be covered (0 > 0 is False)"
+
+    # With Nones, comparison is skipped
+    contigs_nones = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", None),
+    ]
+    covered, _ = find_covered_contig(contigs_nones)
+    assert covered is None, "With None, comparison should be skipped"
+
+    # Key difference: 0 vs 1 causes coverage, None vs 1 doesn't
+    contigs_zero_vs_one = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", 0),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
+    ]
+    covered, _ = find_covered_contig(contigs_zero_vs_one)
+    assert covered is not None and covered.name == "contig1", \
+        "Explicit 0 should be covered when other has 1"
+
+    contigs_none_vs_one = [
+        create_mock_aligned_contig("ref1", 0, 100, "contig1", None),
+        create_mock_aligned_contig("ref1", 0, 100, "contig2", 1),
+    ]
+    covered, _ = find_covered_contig(contigs_none_vs_one)
+    assert covered is None, \
+        "None should cause comparison to be skipped even when other has 1"
