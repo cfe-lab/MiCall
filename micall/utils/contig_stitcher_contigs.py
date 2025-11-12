@@ -19,6 +19,7 @@ def generate_new_id() -> ContigId:
 class Contig:
     name: Optional[str]
     seq: str
+    reads_count: Optional[int]
 
     @cached_property
     def id(self) -> ContigId:
@@ -42,7 +43,7 @@ class Contig:
         return EMPTY_CONTIG
 
 
-EMPTY_CONTIG = Contig(name=None, seq='')
+EMPTY_CONTIG = Contig(name=None, seq='', reads_count=None)
 assert EMPTY_CONTIG.id > 0
 
 
@@ -74,4 +75,5 @@ class AlignedContig(GenotypedContig):
             ref_name=query.ref_name,
             group_ref=query.group_ref,
             ref_seq=query.ref_seq,
-            match_fraction=query.match_fraction)
+            match_fraction=query.match_fraction,
+            reads_count=query.reads_count)

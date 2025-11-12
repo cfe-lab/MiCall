@@ -103,7 +103,7 @@ def read_contigs(input_fasta: TextIO) -> Iterator[Contig]:
     """
 
     for record in SeqIO.parse(input_fasta, "fasta"):
-        yield Contig(name=record.name, seq=str(record.seq))
+        yield Contig(name=record.name, seq=str(record.seq), reads_count=None)
 
 
 def kmers(sequence: str, size: int) -> Iterator[KMer]:

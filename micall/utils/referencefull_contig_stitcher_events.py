@@ -1,9 +1,13 @@
-from typing import Union, Sequence, Tuple, Literal
+from typing import Union, Sequence, Tuple, Literal, List
 from dataclasses import dataclass
 from fractions import Fraction
 from aligntools import CigarHit
 
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
+
+
+class Warning:
+    pass
 
 
 @dataclass(frozen=True)
@@ -295,9 +299,22 @@ class FinalCombine:
             f"[{contigs_format}]."
         )
 
+@dataclass(frozen=True)
+class IgnoreCoverage(Warning):
+    current: AlignedContig
+    overlaping_contigs: List[AlignedContig]
+
+    def __str__(self) -> str:
+        overlapping_names = ', '.join([c.unique_name for c in self.overlaping_contigs])
+        return (
+            f"Ignoring coverage comparison for contig {self.current.unique_name} at "
+            f"{self.current.alignment} with overlapping contigs [{overlapping_names}] "
+            "due to unknown read counts."
+        )
+
 
 AlignmentEvent = Union[NoRef, InitialHit, ZeroHits, StrandConflict, ReverseComplement,
                        HitNumber, ConnectedHit]
 ModifyEvent = Union[LStrip, RStrip]
 EventType = Union[Cut, ModifyEvent, Munge, Combine, AlignmentEvent, InitialStrip, StitchCut,
-                  Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro, FinalCombine]
+                  Overlap, NoOverlap, Stitch, Drop, IgnoreGap, SplitGap, Intro, FinalCombine, IgnoreCoverage]

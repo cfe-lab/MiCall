@@ -400,10 +400,10 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
     return f
 
 
-def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage_svg_path: str):
+def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage: Path):
     with ReferencefullStitcherContext.stage():
         f = build_stitcher_figure(logs)
-        f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
+        f.show(w=970).save_svg(genome_coverage, context=draw.Context(invert_y=True))
         return f
 
 
@@ -634,7 +634,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if event.contigs:
                 combine_left_edge[event.result.id] = event.contigs[0].id
                 combine_right_edge[event.result.id] = event.contigs[-1].id
-        elif isinstance(event, (events.IgnoreGap, events.InitialHit)):
+        elif isinstance(event, (events.IgnoreGap, events.InitialHit, events.IgnoreCoverage)):
             pass
         else:
             _x: NoReturn = event
@@ -937,7 +937,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 existing.add(coords)
                 if root not in carved_unaligned_parts:
                     carved_unaligned_parts[root] = []
-                fake = Contig(name=None, seq="")
+                fake = Contig(name=None, seq="", reads_count=None)
                 carved_unaligned_parts[root].append(fake.id)
                 query_position_map[fake.id] = coords
 
@@ -957,7 +957,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                           max(q_ei for q_st, q_ei in current_group))
                 if root not in merged_unaligned_parts:
                     merged_unaligned_parts[root] = []
-                fake = Contig(name=None, seq="")
+                fake = Contig(name=None, seq="", reads_count=None)
                 query_position_map[fake.id] = coords
                 merged_unaligned_parts[root].append(fake.id)
                 current_group = []

@@ -1,0 +1,5 @@
+type,count
+raw,10000
+remap 1-HIV1-B-FR-K03455-seed,5000
+remap 2-HIV1-B-FR-K03455-seed,4800
+unmapped,200

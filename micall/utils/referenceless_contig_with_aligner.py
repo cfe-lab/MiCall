@@ -176,7 +176,7 @@ class ContigWithAligner(Contig):
 
     @staticmethod
     def make(contig: Contig) -> 'ContigWithAligner':
-        return ContigWithAligner(name=contig.name, seq=contig.seq)
+        return ContigWithAligner(name=contig.name, seq=contig.seq, reads_count=contig.reads_count)
 
     @staticmethod
     def empty() -> 'ContigWithAligner':

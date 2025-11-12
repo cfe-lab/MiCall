@@ -694,7 +694,12 @@ def try_combine_contigs(
     result_seq, overlap_size = merge_by_concordance(
         aligned_1, aligned_2, left_remainder, right_remainder
     )
-    result_contig = ContigWithAligner(None, result_seq)
+    # When merging contigs, sum their read counts if both are available
+    if left.reads_count is not None and right.reads_count is not None:
+        combined_reads_count = left.reads_count + right.reads_count
+    else:
+        combined_reads_count = None
+    result_contig = ContigWithAligner(None, result_seq, combined_reads_count)
 
     if is_debug2:
         log(
@@ -916,7 +921,7 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
     Read contigs from a FASTA file handle, yielding ContigWithAligner objects.
     """
     for record in SeqIO.parse(input_fasta, "fasta"):
-        yield ContigWithAligner(name=record.name, seq=str(record.seq))
+        yield ContigWithAligner(name=record.name, seq=str(record.seq), reads_count=None)
 
 
 def referenceless_contig_stitcher_with_ctx(
