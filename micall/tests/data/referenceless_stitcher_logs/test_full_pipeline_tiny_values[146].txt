@@ -159,13 +159,13 @@ BEGIN 12
   aligned
   size
   337,
-  266
+  267
   matches,
   and
   the
   score
   of
-  23303.1249788039.
+  23507.45854746797.
 END 12
 BEGIN 13
   Contig

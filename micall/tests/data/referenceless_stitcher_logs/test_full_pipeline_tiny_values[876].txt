@@ -57,14 +57,14 @@ BEGIN 6
   has
   aligned
   size
-  10,
+  9,
   7
   matches,
   and
   the
   score
   of
-  8778.957611190093.
+  10657.518240606978.
 END 6
 BEGIN 7
   Found
@@ -120,7 +120,7 @@ BEGIN 9
   the
   score
   of
-  4.2394330043106745.
+  3.492164104258105.
 END 9
 BEGIN 10
   Found

@@ -57,34 +57,16 @@ BEGIN 6
   has
   aligned
   size
-  7,
-  2
+  5,
+  0
   matches,
   and
   the
   score
   of
-  1000.0.
+  -39.46817671922188.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  7
-  between
-  contigs
-  'r522-996.1'
-  and
-  'r29-518.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -102,8 +84,8 @@ BEGIN 8
   be
   (452,
   38).
-END 8
-BEGIN 9
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -120,9 +102,9 @@ BEGIN 9
   the
   score
   of
-  26.80099143862082.
-END 9
-BEGIN 10
+  26800.99143862082.
+END 8
+BEGIN 9
   Found
   a
   significant
@@ -138,9 +120,9 @@ BEGIN 10
   resulting
   in
   contig
-  (2).
-END 10
-BEGIN 11
+  (1).
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -158,16 +140,16 @@ BEGIN 11
   of
   3
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -178,19 +160,19 @@ BEGIN 13
   239
   between
   contigs
-  (2)
+  (1)
   and
   'r522-996.1'
   to
   be
   (493,
   239).
-END 13
-BEGIN 14
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
   'r522-996.1'
   has
@@ -204,8 +186,8 @@ BEGIN 14
   score
   of
   37919.36067910977.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Found
   a
   significant
@@ -215,15 +197,15 @@ BEGIN 15
   239
   between
   contigs
-  (2)
+  (1)
   and
   'r522-996.1',
   resulting
   in
   contig
-  (3).
-END 15
-BEGIN 16
+  (2).
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -241,24 +223,24 @@ BEGIN 16
   of
   3
   parts.
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   968.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Removed
   3
   components
@@ -271,17 +253,17 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Outputting
   1
   contigs.
-END 21
+END 20

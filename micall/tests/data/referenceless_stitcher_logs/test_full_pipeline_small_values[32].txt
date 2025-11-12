@@ -661,13 +661,13 @@ BEGIN 40
   aligned
   size
   370,
-  289
+  290
   matches,
   and
   the
   score
   of
-  23105.740325367813.
+  23292.856472945925.
 END 40
 BEGIN 41
   Contig
