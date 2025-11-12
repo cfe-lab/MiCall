@@ -83,7 +83,7 @@ def test_slide_kmer_counts():
 
 def test_process_contig_deduplication():
     # Set up a simple contig.
-    contig = Contig(name="test1", seq="ACGT")
+    contig = Contig(name="test1", seq="ACGT", reads_count=None)
     pool = {}
     # Use max_kmer=2 so both 1-mers and 2-mers are processed.
     process_contig(pool, contig, max_kmer=2)
@@ -101,8 +101,8 @@ def test_process_contig_deduplication():
 
 
 def test_process_all_contigs_multiple():
-    contig1 = Contig(name="c1", seq="ACGT")
-    contig2 = Contig(name="c2", seq="CGTA")
+    contig1 = Contig(name="c1", seq="ACGT", reads_count=None)
+    contig2 = Contig(name="c2", seq="CGTA", reads_count=None)
     contigs = [contig1, contig2]
     pool = {}
     process_all_contigs(pool, contigs, max_kmer=1)

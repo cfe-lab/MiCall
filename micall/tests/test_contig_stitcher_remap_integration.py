@@ -27,7 +27,7 @@ def exact_aligner(monkeypatch):
     from micall.tests.utils import mock_align_consensus
 
     monkeypatch.setattr(
-        "micall.core.contig_stitcher.align_consensus", mock_align_consensus
+        "micall.utils.consensus_aligner.align_consensus", mock_align_consensus
     )
 
 
