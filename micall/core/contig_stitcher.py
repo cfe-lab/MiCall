@@ -13,6 +13,7 @@ import logging
 from fractions import Fraction
 from operator import itemgetter
 from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
+from pathlib import Path
 
 from micall.core.project_config import ProjectConfig
 from micall.core.plot_contigs import plot_stitcher_coverage
@@ -28,15 +29,28 @@ logger = logging.getLogger(__name__)
 
 def log(e: events.EventType) -> None:
     context.get().emit(e)
-    logger.debug("%s", e)
+    if isinstance(e, events.Warning):
+        logger.warning("%s", e)
+    else:
+        logger.debug("%s", e)
 
 
 def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig, GenotypedContig]:
     """ Cuts query sequence in two parts with cut_point between them. """
 
     cut_point = max(0.0, cut_point)
-    left = replace(self, name=None, seq=self.seq[:ceil(cut_point)])
-    right = replace(self, name=None, seq=self.seq[ceil(cut_point):])
+    left_len = ceil(cut_point)
+    total_len = len(self.seq)
+
+    # Distribute reads_count proportionally based on sequence length
+    left_reads_count: Optional[int] = None
+    right_reads_count: Optional[int] = None
+    if self.reads_count is not None and total_len > 0:
+        left_reads_count = round(self.reads_count * left_len / total_len)
+        right_reads_count = self.reads_count - left_reads_count
+
+    left = replace(self, name=None, seq=self.seq[:left_len], reads_count=left_reads_count)
+    right = replace(self, name=None, seq=self.seq[left_len:], reads_count=right_reads_count)
     return left, right
 
 
@@ -101,7 +115,8 @@ def munge(self: AlignedContig, other: AlignedContig) -> AlignedContig:
                             ref_name=ref_name,
                             group_ref=self.group_ref,
                             ref_seq=self.ref_seq,
-                            match_fraction=match_fraction)
+                            match_fraction=match_fraction,
+                            reads_count=None)  # Combined contigs lose their reads count
 
     self_alignment = self.alignment
     other_alignment = \
@@ -482,9 +497,22 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
         cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
-        if any((cover_interval[0] <= current_interval[0] and cover_interval[1] >= current_interval[1])
+        if any((cover_interval[0] < current_interval[0] and cover_interval[1] >= current_interval[1]
+                or cover_interval[0] <= current_interval[0] and cover_interval[1] > current_interval[1])
                for cover_interval in cumulative_coverage):
+            # Strictly covered.
             return current, overlaping_contigs
+        elif any((cover_interval[0] == current_interval[0] and cover_interval[1] == current_interval[1])
+               for cover_interval in cumulative_coverage):
+            if any(contig.reads_count is None for contig in overlaping_contigs + [current]):
+                log(events.IgnoreCoverage(current, overlaping_contigs))
+                continue
+
+            # Unstrict coverage (exact boundary match).
+            # In this case we must compare the read counts to decide which contig to keep.
+            total_coverage = sum(contig.reads_count or 0 for contig in overlaping_contigs)
+            if total_coverage > (current.reads_count or 0):
+                return current, overlaping_contigs
 
     return None, []
 
@@ -614,10 +642,55 @@ def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     output_csv.flush()
 
 
-def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
+def read_remap_counts(remap_counts_csv: TextIO) -> Dict[str, int]:
+    """Read remap counts CSV and extract read counts per contig.
+
+    Args:
+        remap_counts_csv: Open file handle to remap_counts.csv
+
+    Returns:
+        Dictionary mapping contig names (like "1-HCV-1a") to read counts
+
+    Raises:
+        ValueError: If count values are not valid integers
+
+    Note:
+        - If multiple entries exist for the same contig (e.g., from different
+          remap iterations), the last occurrence is used
+        - Entries not starting with "remap" are ignored (e.g., "raw", "unmapped")
+        - Malformed entries (missing space after remap prefix) are ignored
+    """
+    counts = {}
+    reader = csv.DictReader(remap_counts_csv)
+
+    for row_num, row in enumerate(reader, start=2):  # Start at 2 (header is row 1)
+        type_field = row.get('type', '')
+
+        # Extract contig name from type field like "remap 1-HCV-1a" or "remap-1 1-HCV-1a"
+        if type_field.startswith('remap'):
+            # Remove "remap" or "remap-1", "remap-2", etc. prefix
+            parts = type_field.split(' ', 1)
+            if len(parts) == 2:
+                contig_name = parts[1]
+                count_str = row.get('count', '0')
+
+                try:
+                    count = int(count_str)
+                except ValueError as e:
+                    raise ValueError(
+                        f"Invalid count value '{count_str}' for contig '{contig_name}' "
+                        f"at row {row_num} in remap_counts.csv"
+                    ) from e
+
+                counts[contig_name] = count
+
+    return counts
+
+
+def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
-    for row in csv.DictReader(input_csv):
+    for i, row in enumerate(csv.DictReader(input_csv)):
         seq = row['contig']
         ref_name = row['ref']
         group_ref = row['group_ref']
@@ -631,26 +704,41 @@ def read_contigs(input_csv: TextIO) -> Iterable[GenotypedContig]:
             except KeyError:
                 ref_seq = None
 
+        # Generate contig name to look up read count (format: "1-HCV-1a")
+        contig_name = f"{i+1}-{ref_name}"
+        reads_count = contig_read_counts.get(contig_name)
+
         yield GenotypedContig(name=None,
                               seq=seq,
                               ref_name=ref_name,
                               group_ref=group_ref,
                               ref_seq=str(ref_seq) if ref_seq is not None else None,
-                              match_fraction=match_fraction)
+                              match_fraction=match_fraction,
+                              reads_count=reads_count)
 
 
-def contig_stitcher(input_csv: TextIO, output_csv: TextIO, stitcher_plot_path: Optional[str]) -> int:
+def contig_stitcher(input_csv: TextIO,
+                    output_csv: TextIO,
+                    stitcher_plot: Optional[Path],
+                    remap_counts_csv: Optional[TextIO] = None) -> int:
     with StitcherContext.fresh() as ctx:
-        contigs = list(read_contigs(input_csv))
+        # Read remap counts if provided
+        if remap_counts_csv is not None:
+            contig_read_counts = read_remap_counts(remap_counts_csv)
+        else:
+            contig_read_counts = {}
 
-        if output_csv is not None or stitcher_plot_path is not None:
+        # Read contigs with read counts
+        contigs = list(read_contigs(input_csv, contig_read_counts))
+
+        if output_csv is not None or stitcher_plot is not None:
             contigs = list(stitch_consensus(contigs))
 
         if output_csv is not None:
             write_contigs(output_csv, contigs)
 
-        if stitcher_plot_path is not None:
-            plot_stitcher_coverage(ctx.events, stitcher_plot_path)
+        if stitcher_plot is not None:
+            plot_stitcher_coverage(ctx.events, stitcher_plot)
 
         return len(contigs)
 
@@ -662,6 +750,8 @@ def main(argv: Sequence[str]):
     parser.add_argument('contigs', type=argparse.FileType('r'), help="Input CSV file with assembled contigs.")
     parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                         help="Output CSV file with stitched contigs.")
+    parser.add_argument('--remap-counts', type=argparse.FileType('r'), default=None,
+                        help="Optional input CSV file with remap read counts.")
     parser.add_argument('--plot', type=argparse.FileType('w'),
                         help="Output SVG image visualizing the stitching process.")
     verbosity_group = parser.add_mutually_exclusive_group()
@@ -683,8 +773,8 @@ def main(argv: Sequence[str]):
 
     logging.basicConfig(level=logger.level)
 
-    plot_path = args.plot.name if args.plot is not None else None
-    contig_stitcher(args.contigs, args.stitched_contigs, plot_path)
+    plot_path = Path(args.plot.name) if args.plot is not None else None
+    contig_stitcher(args.contigs, args.stitched_contigs, plot_path, args.remap_counts)
 
 
 if __name__ == '__main__':
