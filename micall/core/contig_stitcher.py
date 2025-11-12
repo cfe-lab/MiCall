@@ -501,6 +501,10 @@ def find_covered_contig(contigs: List[AlignedContig]) -> Tuple[Optional[AlignedC
             return current, overlaping_contigs
         elif any((cover_interval[0] == current_interval[0] and cover_interval[1] == current_interval[1])
                for cover_interval in cumulative_coverage):
+            if any(contig.reads_count is None for contig in overlaping_contigs + [current]):
+                log(events.IgnoreCoverage(current, overlaping_contigs))
+                continue
+
             # Unstrict coverage (exact boundary match).
             # In this case we must compare the read counts to decide which contig to keep.
             total_coverage = sum(contig.reads_count or 0 for contig in overlaping_contigs)
