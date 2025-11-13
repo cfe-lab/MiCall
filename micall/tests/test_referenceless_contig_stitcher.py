@@ -88,10 +88,10 @@ AAA = 40 * 'A'
          ( 'C' * 30 + 'A' * 75 + 'G' + 'A' * 75, )),
 
         # 3) "Barely longer" variant (tight threshold): still covered with a single insertion.
-        #    Correct behavior: keep only the bigger right contig.
+        #    Correct behavior: keep both because they cover each other mutually.
         (( 'A' * 100,
            'A' * 50 + 'G' + 'A' * 50 ),
-         ( 'A' * 50 + 'G' + 'A' * 50, )),
+         ( 'A' * 50 + 'G' + 'A' * 50, 'A' * 100 )),
 
         # 4) Mirror of (3): right covered by left with a single insertion near the end.
         #    Correct behavior: keep only the bigger left contig.

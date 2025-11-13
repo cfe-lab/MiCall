@@ -687,6 +687,17 @@ def try_combine_contigs(
 
     if is_covered:
         assert bigger is not None
+
+        # Check if the coverage is mutual (i.e., both contigs are fully covered).
+        is_both_covered = left_cutoff == 0 and right_cutoff >= len(right.seq)
+        if is_both_covered:
+            # In case of mutual coverage, keep both contigs.
+            if left.seq == right.seq:
+                # But if they are identical, keep only one to avoid redundancy.
+                return (left, SCORE_EPSILON)
+
+            return None
+
         if is_debug2:
             log(events.Covered(left.unique_name, right.unique_name))
         return (bigger, SCORE_EPSILON)
