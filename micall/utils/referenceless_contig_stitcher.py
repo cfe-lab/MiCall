@@ -694,6 +694,8 @@ def try_combine_contigs(
             # In case of mutual coverage, keep both contigs.
             if left.seq == right.seq:
                 # But if they are identical, keep only one to avoid redundancy.
+                if is_debug2:
+                    log(events.Covered(left.unique_name, right.unique_name))
                 return (left, SCORE_EPSILON)
 
             return None
