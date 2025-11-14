@@ -278,11 +278,11 @@ def precheck_and_prepare_overlap(
     return left, right, shift, left_initial_overlap, right_initial_overlap, overlap
 
 
-def coverage_flags(
+def calculate_covered(
     left: ContigWithAligner,
     right: ContigWithAligner,
     overlap_size: int,
-) -> Tuple[bool, Optional[ContigWithAligner], Optional[ContigWithAligner]]:
+) -> Optional[Tuple[ContigWithAligner, ContigWithAligner]]:
     """Compute coverage flags and identify covered/bigger contigs if applicable."""
     left_is_covered = len(left.seq) <= overlap_size
     right_is_covered = len(right.seq) <= overlap_size
@@ -290,12 +290,11 @@ def coverage_flags(
     if is_covered:
         covered = left if left_is_covered else right
         bigger = right if left_is_covered else left
-        return True, covered, bigger
-    return False, None, None
+        return covered, bigger
+    return None
 
 
 def compute_alignment_and_score(
-    is_covered: bool,
     covered: Optional[ContigWithAligner],
     bigger: Optional[ContigWithAligner],
     left: ContigWithAligner,
@@ -309,6 +308,8 @@ def compute_alignment_and_score(
     Returns (aligned_1, aligned_2, left_remainder, right_remainder,
              result_length, number_of_matches, result_score).
     """
+
+    is_covered = covered is not None
     if is_covered:
         assert covered is not None and bigger is not None
         aligned_1, aligned_2 = align_for_merge_covered(
@@ -653,7 +654,11 @@ def try_combine_contigs(
 
     left_cutoff, right_cutoff = cutoffs
 
-    is_covered, covered, bigger = coverage_flags(left, right, overlap.size)
+    coverage = calculate_covered(left, right, overlap.size)
+    if coverage is None:
+        covered = bigger = None
+    else:
+        covered, bigger = coverage
 
     (
         aligned_1,
@@ -664,7 +669,7 @@ def try_combine_contigs(
         number_of_matches,
         result_score,
     ) = compute_alignment_and_score(
-        is_covered, covered, bigger, left, right, left_cutoff, right_cutoff, align_cache
+        covered, bigger, left, right, left_cutoff, right_cutoff, align_cache
     )
 
     if is_debug2:
@@ -685,9 +690,7 @@ def try_combine_contigs(
     if result_score < minimum_base_score:
         return None
 
-    if is_covered:
-        assert bigger is not None
-
+    if covered is not None:
         # Check if the coverage is mutual (i.e., both contigs are fully covered).
         is_both_covered = left_cutoff == 0 and right_cutoff >= len(right.seq)
         if is_both_covered:
@@ -702,6 +705,8 @@ def try_combine_contigs(
 
         if is_debug2:
             log(events.Covered(left.unique_name, right.unique_name))
+
+        assert bigger is not None
         return (bigger, SCORE_EPSILON)
 
     result_seq, overlap_size = merge_by_concordance(
