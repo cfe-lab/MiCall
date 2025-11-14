@@ -99,6 +99,12 @@ AAA = 40 * 'A'
            'A' * 100 ),
          ( 'G' + 'A' * 50 + 'C' * 20 + 'A' * 100, )),
 
+        # Imperfect mutual coverage.
+        (( 'A' * 50 + 'GTGTGTGT' + 'C' * 200 + 'TGTGTG' + 'A' * 50,
+           'A' * 50 + 'ACACA' + 'C' * 200 + 'CACACACACA' + 'A' * 50 ),
+         ( 'A' * 50 + 'GTGTGTGT' + 'C' * 200 + 'TGTGTG' + 'A' * 50,
+           'A' * 50 + 'ACACA' + 'C' * 200 + 'CACACACACA' + 'A' * 50 )),
+
         # Left-covered: right = perfect prefix match of left, then 'Z' marker, then junk.
         # Correct result: keep only the bigger right contig.
         (( 'A' * 120,
