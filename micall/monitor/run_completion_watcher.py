@@ -1,8 +1,7 @@
 """
 Monitor MiSeq run directories and create needsprocessing markers when runs complete.
 
-This module replaces the functionality of build/MISEQ/miseq_watch_runs.rb.
-It monitors run directories for FASTQ file stability and creates 'needsprocessing'
+This module monitors run directories for FASTQ file stability and creates 'needsprocessing'
 marker files when a run is complete and ready for processing.
 
 The monitoring runs in an independent daemon thread with a fixed 60-second polling interval.
@@ -18,7 +17,7 @@ from micall.monitor import disk_operations
 
 logger = logging.getLogger(__name__)
 
-# Fixed polling interval in seconds (unconfigurable by design)
+# Fixed polling interval in seconds
 COMPLETION_POLL_INTERVAL = 60
 
 # Delay before restarting after crash
