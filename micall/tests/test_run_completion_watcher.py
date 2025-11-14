@@ -4,6 +4,7 @@ Unit tests for run_completion_watcher module.
 Migrated from build/MISEQ/tests/miseq_watch_runs_test.rb
 """
 
+from pathlib import Path
 from time import sleep
 from unittest.mock import patch
 
@@ -162,7 +163,9 @@ class TestMonitorRunCompletion:
                 raise KeyboardInterrupt("Test complete")
             sleep(0.01)  # Small real sleep to avoid busy loop
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -188,7 +191,9 @@ class TestMonitorRunCompletion:
         def mock_sleep_impl(duration):
             raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -199,10 +204,13 @@ class TestMonitorRunCompletion:
 
     def test_monitor_runs_handles_empty_directory(self, tmp_path):
         """Empty directory - should complete without error."""
+
         def mock_sleep_impl(duration):
             raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -241,7 +249,9 @@ class TestMonitorRunCompletion:
                 # Stop after files stabilize and marker is created
                 raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -277,14 +287,18 @@ class TestMonitorRunCompletion:
             else:
                 raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
                 pass
 
         # Should have detected and marked the late-arriving run
-        assert (tmp_path / "230224_M04401_0040_000000000-LATE" / "needsprocessing").exists()
+        assert (
+            tmp_path / "230224_M04401_0040_000000000-LATE" / "needsprocessing"
+        ).exists()
 
     def test_monitor_handles_multiple_unstable_then_stable_runs(self, tmp_path):
         """Test monitoring multiple runs that stabilize at different times."""
@@ -316,7 +330,9 @@ class TestMonitorRunCompletion:
             else:
                 raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -352,7 +368,9 @@ class TestMonitorRunCompletion:
             else:
                 raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -456,8 +474,12 @@ class TestEdgeCases:
                 raise KeyboardInterrupt("Test complete")
             sleep(0.01)
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
-            with patch.object(type(run_dir / "needsprocessing"), "touch", side_effect=failing_touch):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
+            with patch.object(
+                type(run_dir / "needsprocessing"), "touch", side_effect=failing_touch
+            ):
                 try:
                     monitor_run_completion(tmp_path)
                 except KeyboardInterrupt:
@@ -500,7 +522,9 @@ class TestEdgeCases:
             else:
                 raise KeyboardInterrupt("Test complete")
 
-        with patch("micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl):
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
             try:
                 monitor_run_completion(tmp_path)
             except KeyboardInterrupt:
@@ -508,3 +532,152 @@ class TestEdgeCases:
 
         # Should detect and mark the run that appeared later
         assert (run_dir / "needsprocessing").exists()
+
+
+class TestCrashRecovery:
+    """Test crash recovery and error handling."""
+
+    def test_monitor_recovers_from_unexpected_exception(self, tmp_path):
+        """Test that monitor restarts after unexpected exception."""
+        run_dir = tmp_path / "230224_M04401_0170_000000000-CRASH"
+        basecalls_dir = run_dir / "Data/Intensities/BaseCalls"
+        basecalls_dir.mkdir(parents=True)
+        (basecalls_dir / "file1.fastq.gz").touch()
+
+        sleep_count = [0]
+        crash_count = [0]
+
+        def mock_sleep_impl(duration):
+            sleep_count[0] += 1
+            if sleep_count[0] == 1:
+                # First iteration - cause a crash
+                crash_count[0] += 1
+                raise RuntimeError("Simulated crash")
+            elif sleep_count[0] == 2:
+                # After recovery delay, should retry
+                sleep(0.01)
+            elif sleep_count[0] == 3:
+                # Second check - files stable
+                sleep(0.01)
+            else:
+                raise KeyboardInterrupt("Test complete")
+
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
+            with patch(
+                "micall.monitor.run_completion_watcher.CRASH_RECOVERY_DELAY", 0.01
+            ):
+                try:
+                    monitor_run_completion(tmp_path)
+                except KeyboardInterrupt:
+                    pass
+
+        # Should have crashed once and recovered
+        assert crash_count[0] == 1
+        # Should have marked the run after recovery
+        assert (run_dir / "needsprocessing").exists()
+
+    def test_find_unstable_runs_handles_permission_error(self, tmp_path):
+        """Test that permission errors on individual runs are handled gracefully."""
+        # Create a good run
+        good_run = tmp_path / "230224_M04401_0180_000000000-GOOD"
+        good_basecalls = good_run / "Data/Intensities/BaseCalls"
+        good_basecalls.mkdir(parents=True)
+        (good_basecalls / "file.fastq.gz").touch()
+
+        # Create a bad run that will error
+        bad_run = tmp_path / "230224_M04401_0181_000000000-BAD"
+        bad_basecalls_bad = bad_run / "Data/Intensities/BaseCalls"
+        bad_basecalls_bad.mkdir(parents=True)
+        (bad_basecalls_bad / "file.fastq.gz").touch()
+
+        # Track which paths had glob errors
+        error_count = [0]
+        real_glob = Path.glob
+
+        def mock_glob(self, pattern):
+            # Raise error when globbing in the bad_run directory
+            if "BAD" in str(self):
+                error_count[0] += 1
+                raise PermissionError("Simulated permission denied")
+            # Use real glob for everything else
+            return real_glob(self, pattern)
+
+        with patch.object(Path, "glob", mock_glob):
+            result = find_unstable_runs(tmp_path)
+
+        # Should have attempted to glob in bad_run
+        assert error_count[0] > 0
+        # Should still find the good run despite error on bad run
+        assert len(result) == 1
+        assert result[0].run_dir == good_run
+
+    def test_monitor_continues_after_marker_creation_failure(self, tmp_path):
+        """Test that monitoring continues even if one marker fails to create."""
+        # Create two runs
+        run1 = tmp_path / "230224_M04401_0190_000000000-SUCCEED"
+        basecalls1 = run1 / "Data/Intensities/BaseCalls"
+        basecalls1.mkdir(parents=True)
+        (basecalls1 / "file.fastq.gz").touch()
+
+        run2 = tmp_path / "230224_M04401_0191_000000000-FAIL"
+        basecalls2 = run2 / "Data/Intensities/BaseCalls"
+        basecalls2.mkdir(parents=True)
+        (basecalls2 / "file.fastq.gz").touch()
+
+        sleep_count = [0]
+        touch_calls = [0]
+
+        def mock_touch(path):
+            touch_calls[0] += 1
+            # First touch (run1) succeeds
+            if touch_calls[0] == 1:
+                path.touch()
+            # Second touch (run2) fails
+            elif touch_calls[0] == 2:
+                raise OSError("Simulated disk error")
+            # Third touch (run2 retry) succeeds
+            else:
+                path.touch()
+
+        def mock_sleep_impl(duration):
+            sleep_count[0] += 1
+            if sleep_count[0] >= 3:
+                raise KeyboardInterrupt("Test complete")
+            sleep(0.01)
+
+        with patch("micall.monitor.disk_operations.touch", side_effect=mock_touch):
+            with patch(
+                "micall.monitor.run_completion_watcher.sleep",
+                side_effect=mock_sleep_impl,
+            ):
+                try:
+                    monitor_run_completion(tmp_path)
+                except KeyboardInterrupt:
+                    pass
+
+        # First run should be marked
+        assert (run1 / "needsprocessing").exists()
+        # Second run should eventually be marked too (on retry)
+        assert (run2 / "needsprocessing").exists()
+
+    def test_keyboard_interrupt_propagates(self, tmp_path):
+        """Test that KeyboardInterrupt is not caught by crash recovery."""
+        sleep_count = [0]
+
+        def mock_sleep_impl(duration):
+            sleep_count[0] += 1
+            raise KeyboardInterrupt("User requested shutdown")
+
+        with patch(
+            "micall.monitor.run_completion_watcher.sleep", side_effect=mock_sleep_impl
+        ):
+            try:
+                monitor_run_completion(tmp_path)
+                assert False, "Should have raised KeyboardInterrupt"
+            except KeyboardInterrupt:
+                pass  # Expected
+
+        # Should have only tried once before exiting
+        assert sleep_count[0] == 1

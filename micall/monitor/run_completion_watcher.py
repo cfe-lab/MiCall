@@ -14,10 +14,15 @@ from pathlib import Path
 from time import sleep
 from typing import List
 
+from micall.monitor import disk_operations
+
 logger = logging.getLogger(__name__)
 
 # Fixed polling interval in seconds (unconfigurable by design)
 COMPLETION_POLL_INTERVAL = 60
+
+# Delay before restarting after crash
+CRASH_RECOVERY_DELAY = 10
 
 
 @dataclass
@@ -46,60 +51,76 @@ def find_unstable_runs(runs_dir: Path) -> List[RunInfo]:
     """
     unstable_runs: List[RunInfo] = []
 
-    if not runs_dir.exists():
-        logger.warning("Runs directory does not exist: %s", runs_dir)
-        return unstable_runs
+    try:
+        if not runs_dir.exists():
+            logger.warning("Runs directory does not exist: %s", runs_dir)
+            return unstable_runs
 
-    logger.debug("Searching for runs in %s", runs_dir)
+        logger.debug("Searching for runs in %s", runs_dir)
 
-    for run_path in sorted(runs_dir.iterdir()):
-        if not run_path.is_dir():
-            continue
+        for run_path in sorted(runs_dir.iterdir()):
+            try:
+                if not run_path.is_dir():
+                    continue
 
-        # Skip if already marked
-        needs_processing = run_path / "needsprocessing"
-        already_processed = run_path / "processed"
+                # Skip if already marked
+                needs_processing = run_path / "needsprocessing"
+                already_processed = run_path / "processed"
 
-        if needs_processing.exists() or already_processed.exists():
-            logger.debug("Skipping %s (already marked)", run_path.name)
-            continue
+                if needs_processing.exists() or already_processed.exists():
+                    logger.debug("Skipping %s (already marked)", run_path.name)
+                    continue
 
-        # Check for files in multiple possible locations:
-        # 1. Traditional location: Data/Intensities/BaseCalls/*.gz
-        basecalls_pattern = "Data/Intensities/BaseCalls/*.gz"
-        basecalls_files = list(run_path.glob(basecalls_pattern))
-        num_basecalls = len(basecalls_files)
+                # Check for files in multiple possible locations:
+                # 1. Traditional location: Data/Intensities/BaseCalls/*.gz
+                basecalls_pattern = "Data/Intensities/BaseCalls/*.gz"
+                basecalls_files = list(run_path.glob(basecalls_pattern))
+                num_basecalls = len(basecalls_files)
 
-        # 2. Newer location: Alignment*/*/Fastq/*.gz
-        alignment_pattern = "Alignment*/*/Fastq/*.gz"
-        alignment_files = list(run_path.glob(alignment_pattern))
-        num_alignment = len(alignment_files)
+                # 2. Newer location: Alignment*/*/Fastq/*.gz
+                alignment_pattern = "Alignment*/*/Fastq/*.gz"
+                alignment_files = list(run_path.glob(alignment_pattern))
+                num_alignment = len(alignment_files)
 
-        # Use whichever location has files (prefer BaseCalls if both exist)
-        if num_basecalls > 0:
-            logger.debug(
-                "Found %s with %d files (BaseCalls)", run_path.name, num_basecalls
-            )
-            unstable_runs.append(
-                RunInfo(
-                    run_dir=run_path,
-                    file_count=num_basecalls,
-                    glob_pattern=basecalls_pattern,
-                )
-            )
-        elif num_alignment > 0:
-            logger.debug(
-                "Found %s with %d files (Alignment/Fastq)", run_path.name, num_alignment
-            )
-            unstable_runs.append(
-                RunInfo(
-                    run_dir=run_path,
-                    file_count=num_alignment,
-                    glob_pattern=alignment_pattern,
-                )
-            )
-        else:
-            logger.debug("Skipping %s (no FASTQ files found)", run_path.name)
+                # Use whichever location has files (prefer BaseCalls if both exist)
+                if num_basecalls > 0:
+                    logger.debug(
+                        "Found %s with %d files (BaseCalls)",
+                        run_path.name,
+                        num_basecalls,
+                    )
+                    unstable_runs.append(
+                        RunInfo(
+                            run_dir=run_path,
+                            file_count=num_basecalls,
+                            glob_pattern=basecalls_pattern,
+                        )
+                    )
+                elif num_alignment > 0:
+                    logger.debug(
+                        "Found %s with %d files (Alignment/Fastq)",
+                        run_path.name,
+                        num_alignment,
+                    )
+                    unstable_runs.append(
+                        RunInfo(
+                            run_dir=run_path,
+                            file_count=num_alignment,
+                            glob_pattern=alignment_pattern,
+                        )
+                    )
+                else:
+                    logger.debug("Skipping %s (no FASTQ files found)", run_path.name)
+
+            except (OSError, IOError) as e:
+                # Skip individual runs that fail to read
+                logger.warning("Error scanning run %s: %s", run_path.name, e)
+                continue
+
+    except (OSError, IOError) as e:
+        # If we can't even list the directory, log and return empty
+        logger.error("Error scanning runs directory %s: %s", runs_dir, e)
+        return []
 
     return unstable_runs
 
@@ -113,11 +134,35 @@ def monitor_run_completion(runs_dir: Path) -> None:
     it's considered complete and a 'needsprocessing' marker is created.
 
     This is designed to run in a daemon thread with a fixed 60-second polling interval.
+    It includes crash protection - if any unexpected error occurs, it will log the
+    error and restart after a short delay.
 
     Args:
         runs_dir: Directory containing MiSeq run folders (e.g., /data/RAW_DATA/MiSeq/runs)
     """
 
+    # Outer loop for crash recovery
+    while True:
+        try:
+            _monitor_run_completion_inner(runs_dir)
+        except KeyboardInterrupt:
+            logger.info("Run completion monitor shutting down")
+            raise
+        except Exception:
+            logger.error(
+                "Run completion monitor crashed unexpectedly, restarting in %d seconds",
+                CRASH_RECOVERY_DELAY,
+                exc_info=True,
+            )
+            sleep(CRASH_RECOVERY_DELAY)
+
+
+def _monitor_run_completion_inner(runs_dir: Path) -> None:
+    """
+    Inner monitoring loop - actual monitoring logic.
+
+    Separated from monitor_run_completion to allow crash recovery.
+    """
     # Track runs we're currently monitoring
     monitoring: List[RunInfo] = []
 
@@ -142,35 +187,35 @@ def monitor_run_completion(runs_dir: Path) -> None:
         # Check each monitored run for stability
         completed_indices = []
         for i, run_info in enumerate(monitoring):
-            # Re-glob to get current file count
-            current_files = list(run_info.run_dir.glob(run_info.glob_pattern))
-            current_count = len(current_files)
+            try:
+                # Re-glob to get current file count
+                current_files = list(run_info.run_dir.glob(run_info.glob_pattern))
+                current_count = len(current_files)
 
-            if current_count == run_info.file_count:
-                # File count hasn't changed - run is stable
-                marker_path = run_info.run_dir / "needsprocessing"
-                try:
-                    marker_path.touch()
+                if current_count == run_info.file_count:
+                    # File count hasn't changed - run is stable
+                    marker_path = run_info.run_dir / "needsprocessing"
+                    disk_operations.touch(marker_path)
                     logger.info("Marked run as ready: %s", run_info.run_dir.name)
                     completed_indices.append(i)
-                except OSError as e:
-                    logger.error(
-                        "Failed to create marker for %s: %s", run_info.run_dir.name, e
+                else:
+                    # File count changed - still being written
+                    logger.debug(
+                        "Run %s still growing: %d -> %d files",
+                        run_info.run_dir.name,
+                        run_info.file_count,
+                        current_count,
                     )
-            else:
-                # File count changed - still being written
-                logger.debug(
-                    "Run %s still growing: %d -> %d files",
-                    run_info.run_dir.name,
-                    run_info.file_count,
-                    current_count,
-                )
-                # Update the file count for next check
-                monitoring[i] = RunInfo(
-                    run_dir=run_info.run_dir,
-                    file_count=current_count,
-                    glob_pattern=run_info.glob_pattern,
-                )
+                    # Update the file count for next check
+                    monitoring[i] = RunInfo(
+                        run_dir=run_info.run_dir,
+                        file_count=current_count,
+                        glob_pattern=run_info.glob_pattern,
+                    )
+            except (OSError, IOError) as e:
+                # If we can't check a run, log and continue to next
+                logger.warning("Error checking run %s: %s", run_info.run_dir.name, e)
+                continue
 
         # Remove completed runs from monitoring list (reverse order to preserve indices)
         for i in reversed(completed_indices):
