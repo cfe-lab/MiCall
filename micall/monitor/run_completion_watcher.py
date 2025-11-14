@@ -129,7 +129,7 @@ def monitor_run_completion(runs_dir: Path) -> None:
         for run_info in unstable_runs:
             if not any(r.run_dir == run_info.run_dir for r in monitoring):
                 monitoring.append(run_info)
-                logger.info("Now monitoring run: %s", run_info.run_dir.name)
+                logger.debug("Now monitoring run: %s", run_info.run_dir.name)
 
         if monitoring:
             logger.debug("Currently monitoring %d run(s)", len(monitoring))
