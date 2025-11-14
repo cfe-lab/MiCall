@@ -114,12 +114,12 @@ def find_unstable_runs(runs_dir: Path) -> List[RunInfo]:
 
             except (OSError, IOError) as e:
                 # Skip individual runs that fail to read
-                logger.warning("Error scanning run %s: %s", run_path.name, e)
+                logger.info("Error scanning run %s: %s", run_path.name, e)
                 continue
 
     except (OSError, IOError) as e:
         # If we can't even list the directory, log and return empty
-        logger.error("Error scanning runs directory %s: %s", runs_dir, e)
+        logger.info("Error scanning runs directory %s: %s", runs_dir, e)
         return []
 
     return unstable_runs
@@ -149,7 +149,7 @@ def monitor_run_completion(runs_dir: Path) -> None:
             logger.info("Run completion monitor shutting down")
             raise
         except Exception:
-            logger.error(
+            logger.warning(
                 "Run completion monitor crashed unexpectedly, restarting in %d seconds",
                 CRASH_RECOVERY_DELAY,
                 exc_info=True,
@@ -214,7 +214,7 @@ def _monitor_run_completion_inner(runs_dir: Path) -> None:
                     )
             except (OSError, IOError) as e:
                 # If we can't check a run, log and continue to next
-                logger.warning("Error checking run %s: %s", run_info.run_dir.name, e)
+                logger.info("Error checking run %s: %s", run_info.run_dir.name, e)
                 continue
 
         # Remove completed runs from monitoring list (reverse order to preserve indices)
