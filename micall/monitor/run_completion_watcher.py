@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from time import sleep
-from typing import List
+from typing import List, Sequence
 
 from micall.monitor import disk_operations
 
@@ -33,7 +33,7 @@ class RunInfo:
     glob_pattern: str  # Relative pattern like 'Data/Intensities/BaseCalls/*.gz'
 
 
-def find_unstable_runs(runs_dir: Path) -> List[RunInfo]:
+def find_unstable_runs(runs_dir: Path) -> Sequence[RunInfo]:
     """
     Find run directories without needsprocessing or processed markers.
 
