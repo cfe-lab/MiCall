@@ -238,7 +238,26 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument("--raw-data", type=Path, help="Directory containing MiSeq run folders")
     parser.add_argument("--once", action="store_true", help="Run once and exit")
     parser.add_argument("--dry-run", action="store_true", help="Dry run (no actual changes made)")
+
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+
     args = parser.parse_args(argv)
+
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+
+    logging.basicConfig(level=logger.level)    
+
     raw_data = args.raw_data
     if raw_data is None:
         raw_data = os.getenv("MISEQ_RAW_DATA")
