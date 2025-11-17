@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 """
 Monitor MiSeq run directories and create needsprocessing markers when runs complete.
 
