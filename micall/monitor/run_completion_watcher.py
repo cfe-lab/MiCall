@@ -235,6 +235,7 @@ def main(argv: Sequence[str]) -> int:
         description="Monitor MiSeq run directories for completion."
     )
     parser.add_argument("--raw-data", type=Path, help="Directory containing MiSeq run folders")
+    parser.add_argument("--once", action="store_true", help="Run once and exit")
     args = parser.parse_args(argv)
     raw_data = args.raw_data
     if raw_data is None:
@@ -244,7 +245,10 @@ def main(argv: Sequence[str]) -> int:
             return 1
 
     run_dir = Path(raw_data) / "MiSeq" / "runs"
-    monitor_run_completion(run_dir)
+    if args.once:
+        _check_run_completions(run_dir, [])
+    else:
+        monitor_run_completion(run_dir)
     return 0
 
 
