@@ -129,7 +129,7 @@ def find_unstable_runs(runs_dir: Path) -> Sequence[RunInfo]:
     return unstable_runs
 
 
-def monitor_run_completion(runs_dir: Path) -> None:
+def monitor_run_completion(runs_dir: Path, dry_run: bool = False) -> None:
     """
     Monitor runs for completion and mark them when stable.
 
@@ -148,7 +148,7 @@ def monitor_run_completion(runs_dir: Path) -> None:
     # Outer loop for crash recovery
     while True:
         try:
-            _monitor_run_completion_inner(runs_dir)
+            _monitor_run_completion_inner(runs_dir, dry_run=dry_run)
         except KeyboardInterrupt:
             logger.info("Run completion monitor shutting down")
             raise
@@ -161,7 +161,7 @@ def monitor_run_completion(runs_dir: Path) -> None:
             sleep(CRASH_RECOVERY_DELAY)
 
 
-def check_run_completions(runs_dir: Path, monitoring: List[RunInfo]) -> None:
+def check_run_completions(runs_dir: Path, monitoring: List[RunInfo], dry_run: bool = False) -> None:
     # Find new unstable runs
     unstable_runs = find_unstable_runs(runs_dir)
 
@@ -190,7 +190,8 @@ def check_run_completions(runs_dir: Path, monitoring: List[RunInfo]) -> None:
             if current_count == run_info.file_count:
                 # File count hasn't changed - run is stable
                 marker_path = run_info.run_dir / "needsprocessing"
-                disk_operations.touch(marker_path)
+                if not dry_run:
+                    disk_operations.touch(marker_path)
                 logger.info("Marked run as ready: %s", run_info.run_dir.name)
                 completed_indices.append(i)
             else:
@@ -217,7 +218,7 @@ def check_run_completions(runs_dir: Path, monitoring: List[RunInfo]) -> None:
         del monitoring[i]
 
 
-def _monitor_run_completion_inner(runs_dir: Path) -> None:
+def _monitor_run_completion_inner(runs_dir: Path, dry_run: bool = False) -> None:
     """
     Inner monitoring loop - actual monitoring logic.
 
@@ -227,7 +228,7 @@ def _monitor_run_completion_inner(runs_dir: Path) -> None:
     monitoring: List[RunInfo] = []
 
     while True:
-        check_run_completions(runs_dir, monitoring)
+        check_run_completions(runs_dir, monitoring, dry_run=dry_run)
 
 
 def main(argv: Sequence[str]) -> int:
@@ -236,6 +237,7 @@ def main(argv: Sequence[str]) -> int:
     )
     parser.add_argument("--raw-data", type=Path, help="Directory containing MiSeq run folders")
     parser.add_argument("--once", action="store_true", help="Run once and exit")
+    parser.add_argument("--dry-run", action="store_true", help="Dry run (no actual changes made)")
     args = parser.parse_args(argv)
     raw_data = args.raw_data
     if raw_data is None:
@@ -246,9 +248,9 @@ def main(argv: Sequence[str]) -> int:
 
     run_dir = Path(raw_data) / "MiSeq" / "runs"
     if args.once:
-        check_run_completions(run_dir, [])
+        check_run_completions(run_dir, [], dry_run=args.dry_run)
     else:
-        monitor_run_completion(run_dir)
+        monitor_run_completion(run_dir, dry_run=args.dry_run)
     return 0
 
 
