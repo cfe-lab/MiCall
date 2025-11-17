@@ -98,6 +98,7 @@ EXECUTABLES = [
     "micall/utils/version.py",
     "micall/utils/check_sample_sheet.py",
     "micall/utils/cache.py",
+    "micall/monitor/run_completion_watcher.py",
 ]
 
 

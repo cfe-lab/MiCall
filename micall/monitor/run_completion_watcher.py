@@ -7,9 +7,11 @@ marker files when a run is complete and ready for processing.
 The monitoring runs in an independent daemon thread with a fixed 60-second polling interval.
 """
 
+import argparse
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 from time import sleep
 from typing import List, Sequence
 
@@ -219,3 +221,21 @@ def _monitor_run_completion_inner(runs_dir: Path) -> None:
         # Remove completed runs from monitoring list (reverse order to preserve indices)
         for i in reversed(completed_indices):
             del monitoring[i]
+
+
+def main(argv: Sequence[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="Monitor MiSeq run directories for completion."
+    )
+    parser.add_argument("--runs_dir", type=Path, required=True, help="Directory containing MiSeq run folders")
+    args = parser.parse_args(argv)
+    run_dir = Path(args.runs_dir)
+    monitor_run_completion(run_dir)
+    return 0
+
+
+def entry() -> None:
+    sys.exit(main(sys.argv[1:]))
+
+
+if __name__ == "__main__": entry() # noqa
