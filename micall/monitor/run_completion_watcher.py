@@ -234,7 +234,6 @@ def main(argv: Sequence[str]) -> int:
     args = parser.parse_args(argv)
     raw_data = args.raw_data
     if raw_data is None:
-        # Get from environment variable if not provided
         raw_data = os.getenv("MISEQ_RAW_DATA")
         if raw_data is None:
             logger.error("Error: --runs_dir argument or MISEQ_RAW_DATA environment variable is required")
