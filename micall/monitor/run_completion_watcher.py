@@ -231,7 +231,7 @@ def _monitor_run_completion_inner(runs_dir: Path, dry_run: bool = False) -> None
         check_run_completions(runs_dir, monitoring, dry_run=dry_run)
 
 
-def main(argv: Sequence[str]) -> int:
+def get_parser(argv: Sequence[str]) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Monitor MiSeq run directories for completion."
     )
@@ -245,8 +245,10 @@ def main(argv: Sequence[str]) -> int:
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
 
-    args = parser.parse_args(argv)
+    return parser
 
+
+def configure_logging(args: argparse.Namespace) -> None:
     if args.quiet:
         logger.setLevel(logging.ERROR)
     elif args.verbose:
@@ -256,8 +258,12 @@ def main(argv: Sequence[str]) -> int:
     else:
         logger.setLevel(logging.WARN)
 
-    logging.basicConfig(level=logger.level)    
+    logging.basicConfig(level=logger.level)
 
+
+def main(argv: Sequence[str]) -> int:
+    args = get_parser(argv).parse_args()
+    configure_logging(args)
     raw_data = args.raw_data
     if raw_data is None:
         raw_data = os.getenv("MISEQ_RAW_DATA")
