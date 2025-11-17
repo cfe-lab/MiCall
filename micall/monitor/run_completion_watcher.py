@@ -161,7 +161,7 @@ def monitor_run_completion(runs_dir: Path) -> None:
             sleep(CRASH_RECOVERY_DELAY)
 
 
-def _check_run_completions(runs_dir: Path, monitoring: List[RunInfo]) -> None:
+def check_run_completions(runs_dir: Path, monitoring: List[RunInfo]) -> None:
     # Find new unstable runs
     unstable_runs = find_unstable_runs(runs_dir)
 
@@ -227,7 +227,7 @@ def _monitor_run_completion_inner(runs_dir: Path) -> None:
     monitoring: List[RunInfo] = []
 
     while True:
-        _check_run_completions(runs_dir, monitoring)
+        check_run_completions(runs_dir, monitoring)
 
 
 def main(argv: Sequence[str]) -> int:
@@ -246,7 +246,7 @@ def main(argv: Sequence[str]) -> int:
 
     run_dir = Path(raw_data) / "MiSeq" / "runs"
     if args.once:
-        _check_run_completions(run_dir, [])
+        check_run_completions(run_dir, [])
     else:
         monitor_run_completion(run_dir)
     return 0
