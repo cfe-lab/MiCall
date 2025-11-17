@@ -12,6 +12,7 @@ The monitoring runs in an independent daemon thread with a fixed 60-second polli
 import argparse
 import logging
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import sys
 from time import sleep
@@ -229,9 +230,17 @@ def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Monitor MiSeq run directories for completion."
     )
-    parser.add_argument("--raw-data", type=Path, required=True, help="Directory containing MiSeq raw data runs (e.g., /data/RAW_DATA)")
+    parser.add_argument("--raw-data", type=Path, help="Directory containing MiSeq run folders")
     args = parser.parse_args(argv)
-    run_dir = Path(args.raw_data) / "MiSeq" / "runs"
+    raw_data = args.raw_data
+    if raw_data is None:
+        # Get from environment variable if not provided
+        raw_data = os.getenv("MISEQ_RAW_DATA")
+        if raw_data is None:
+            logger.error("Error: --runs_dir argument or MISEQ_RAW_DATA environment variable is required")
+            return 1
+
+    run_dir = Path(raw_data) / "MiSeq" / "runs"
     monitor_run_completion(run_dir)
     return 0
 
