@@ -229,9 +229,9 @@ def main(argv: Sequence[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Monitor MiSeq run directories for completion."
     )
-    parser.add_argument("--runs_dir", type=Path, required=True, help="Directory containing MiSeq run folders")
+    parser.add_argument("--raw-data", type=Path, required=True, help="Directory containing MiSeq raw data runs (e.g., /data/RAW_DATA)")
     args = parser.parse_args(argv)
-    run_dir = Path(args.runs_dir)
+    run_dir = Path(args.raw_data) / "MiSeq" / "runs"
     monitor_run_completion(run_dir)
     return 0
 
