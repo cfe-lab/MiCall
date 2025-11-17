@@ -161,6 +161,62 @@ def monitor_run_completion(runs_dir: Path) -> None:
             sleep(CRASH_RECOVERY_DELAY)
 
 
+def _check_run_completions(runs_dir: Path, monitoring: List[RunInfo]) -> None:
+    # Find new unstable runs
+    unstable_runs = find_unstable_runs(runs_dir)
+
+    # Add new runs to monitoring list
+    for run_info in unstable_runs:
+        if not any(r.run_dir == run_info.run_dir for r in monitoring):
+            monitoring.append(run_info)
+            logger.debug("Now monitoring run: %s", run_info.run_dir.name)
+
+    if monitoring:
+        logger.debug("Currently monitoring %d run(s)", len(monitoring))
+    else:
+        logger.debug("No runs currently being monitored")
+
+    # Sleep before checking stability
+    sleep(COMPLETION_POLL_INTERVAL)
+
+    # Check each monitored run for stability
+    completed_indices = []
+    for i, run_info in enumerate(monitoring):
+        try:
+            # Re-glob to get current file count
+            current_files = list(run_info.run_dir.glob(run_info.glob_pattern))
+            current_count = len(current_files)
+
+            if current_count == run_info.file_count:
+                # File count hasn't changed - run is stable
+                marker_path = run_info.run_dir / "needsprocessing"
+                disk_operations.touch(marker_path)
+                logger.info("Marked run as ready: %s", run_info.run_dir.name)
+                completed_indices.append(i)
+            else:
+                # File count changed - still being written
+                logger.debug(
+                    "Run %s still growing: %d -> %d files",
+                    run_info.run_dir.name,
+                    run_info.file_count,
+                    current_count,
+                )
+                # Update the file count for next check
+                monitoring[i] = RunInfo(
+                    run_dir=run_info.run_dir,
+                    file_count=current_count,
+                    glob_pattern=run_info.glob_pattern,
+                )
+        except (OSError, IOError) as e:
+            # If we can't check a run, log and continue to next
+            logger.info("Error checking run %s: %s", run_info.run_dir.name, e)
+            continue
+
+    # Remove completed runs from monitoring list (reverse order to preserve indices)
+    for i in reversed(completed_indices):
+        del monitoring[i]
+
+
 def _monitor_run_completion_inner(runs_dir: Path) -> None:
     """
     Inner monitoring loop - actual monitoring logic.
@@ -171,59 +227,7 @@ def _monitor_run_completion_inner(runs_dir: Path) -> None:
     monitoring: List[RunInfo] = []
 
     while True:
-        # Find new unstable runs
-        unstable_runs = find_unstable_runs(runs_dir)
-
-        # Add new runs to monitoring list
-        for run_info in unstable_runs:
-            if not any(r.run_dir == run_info.run_dir for r in monitoring):
-                monitoring.append(run_info)
-                logger.debug("Now monitoring run: %s", run_info.run_dir.name)
-
-        if monitoring:
-            logger.debug("Currently monitoring %d run(s)", len(monitoring))
-        else:
-            logger.debug("No runs currently being monitored")
-
-        # Sleep before checking stability
-        sleep(COMPLETION_POLL_INTERVAL)
-
-        # Check each monitored run for stability
-        completed_indices = []
-        for i, run_info in enumerate(monitoring):
-            try:
-                # Re-glob to get current file count
-                current_files = list(run_info.run_dir.glob(run_info.glob_pattern))
-                current_count = len(current_files)
-
-                if current_count == run_info.file_count:
-                    # File count hasn't changed - run is stable
-                    marker_path = run_info.run_dir / "needsprocessing"
-                    disk_operations.touch(marker_path)
-                    logger.info("Marked run as ready: %s", run_info.run_dir.name)
-                    completed_indices.append(i)
-                else:
-                    # File count changed - still being written
-                    logger.debug(
-                        "Run %s still growing: %d -> %d files",
-                        run_info.run_dir.name,
-                        run_info.file_count,
-                        current_count,
-                    )
-                    # Update the file count for next check
-                    monitoring[i] = RunInfo(
-                        run_dir=run_info.run_dir,
-                        file_count=current_count,
-                        glob_pattern=run_info.glob_pattern,
-                    )
-            except (OSError, IOError) as e:
-                # If we can't check a run, log and continue to next
-                logger.info("Error checking run %s: %s", run_info.run_dir.name, e)
-                continue
-
-        # Remove completed runs from monitoring list (reverse order to preserve indices)
-        for i in reversed(completed_indices):
-            del monitoring[i]
+        _check_run_completions(runs_dir, monitoring)
 
 
 def main(argv: Sequence[str]) -> int:
