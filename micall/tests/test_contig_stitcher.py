@@ -1882,3 +1882,69 @@ def test_find_covered(contigs, expected_covered_name):
     else:
         assert covered is not None
         assert covered.name == expected_covered_name
+
+
+def test_find_covered_prioritizes_by_reads_count():
+    """Test that find_covered_contig prioritizes by reads_count when available."""
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+
+    # Create three contigs where contig2 and contig3 are both fully covered by contig1:
+    # - contig1: ref_length=200, reads_count=100 (large, covers both others)
+    # - contig2: ref_length=50,  reads_count=30  (medium ref_length, medium reads)
+    # - contig3: ref_length=40,  reads_count=10  (small ref_length, low reads)
+    # Both contig2 and contig3 are fully inside contig1's range.
+
+    mock_contigs = [
+        create_mock_aligned_contig("ref1", 0, 200, "contig1", reads_count=100),
+        create_mock_aligned_contig("ref1", 50, 100, "contig2", reads_count=30),
+        create_mock_aligned_contig("ref1", 120, 160, "contig3", reads_count=10),
+    ]
+
+    # With reads_count available, should remove contig3 first (lowest reads_count=10)
+    # even though contig2 has larger ref_length
+    covered, covering = find_covered_contig(mock_contigs)
+    assert covered is not None
+    assert covered.name == "contig3"
+
+
+def test_find_covered_prioritizes_by_ref_length_when_no_reads():
+    """Test that find_covered_contig falls back to ref_length when reads_count is unavailable."""
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+
+    # Create three contigs where contig2 and contig3 are both fully covered by contig1:
+    # - contig1: ref_length=200 (large, covers both others)
+    # - contig2: ref_length=50  (medium)
+    # - contig3: ref_length=40  (smallest)
+
+    mock_contigs = [
+        create_mock_aligned_contig("ref1", 0, 200, "contig1", reads_count=None),
+        create_mock_aligned_contig("ref1", 50, 100, "contig2", reads_count=None),
+        create_mock_aligned_contig("ref1", 120, 160, "contig3", reads_count=None),
+    ]
+
+    # Without reads_count, should remove contig3 first (smallest ref_length=40)
+    covered, covering = find_covered_contig(mock_contigs)
+    assert covered is not None
+    assert covered.name == "contig3"
+
+
+def test_find_covered_mixed_reads_count_uses_ref_length():
+    """Test that find_covered_contig uses ref_length when reads_count is mixed (some None)."""
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+
+    # Create contigs with mixed reads_count (some None, some set):
+    # - contig1: ref_length=200, reads_count=100
+    # - contig2: ref_length=50,  reads_count=None (medium ref_length)
+    # - contig3: ref_length=40,  reads_count=10  (smallest ref_length)
+
+    mock_contigs = [
+        create_mock_aligned_contig("ref1", 0, 200, "contig1", reads_count=100),
+        create_mock_aligned_contig("ref1", 50, 100, "contig2", reads_count=None),
+        create_mock_aligned_contig("ref1", 120, 160, "contig3", reads_count=10),
+    ]
+
+    # Mixed reads_count means fall back to ref_length ordering
+    # Should remove contig3 first (smallest ref_length=40)
+    covered, covering = find_covered_contig(mock_contigs)
+    assert covered is not None
+    assert covered.name == "contig3"
