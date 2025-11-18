@@ -418,7 +418,16 @@ def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[Alig
         merged_intervals = merge_intervals(intervals)
         return merged_intervals
 
-    for current in contigs:
+    by_reads = all(contig.reads_count is not None for contig in contigs)
+    def order(contig: AlignedContig) -> int:
+        if by_reads:
+            assert contig.reads_count is not None
+            return contig.reads_count
+        else:
+            return contig.alignment.ref_length
+
+    # Iterating from the least significant contig to the most significant one.
+    for current in sorted(contigs, key=order):
         current_interval = (current.alignment.r_st, current.alignment.r_ei)
 
         # Create a map of cumulative coverage for contigs
