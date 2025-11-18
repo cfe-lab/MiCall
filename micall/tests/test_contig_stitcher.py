@@ -1759,6 +1759,12 @@ class MockAlignedContig:
         r_st: int
         r_ei: int
 
+        @property
+        def ref_length(self) -> int:
+            """Match aligntools.CigarHit API for tests that rely on ref_length."""
+
+            return abs(self.r_ei - self.r_st)
+
     def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig", reads_count=None):
         self.ref_name = ref_name
         self.group_ref = group_ref
@@ -1808,9 +1814,9 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig", reads_count=
         # Edge case where a contig starts where another ends.
         ([("ref1", 0, 50), ("ref1", 50, 100)], None),
         # Contigs are completely covered in a nested fashion.
-        ([("ref1", 0, 200), ("ref1", 50, 150), ("ref1", 100, 125)], "contig2"),
+        ([("ref1", 0, 200), ("ref1", 50, 150), ("ref1", 100, 125)], "contig3"),
         # Contigs are adjacent and cover each other completely.
-        ([("ref1", 0, 100), ("ref1", 101, 200), ("ref1", 0, 200)], "contig1"),
+        ([("ref1", 0, 100), ("ref1", 101, 200), ("ref1", 0, 200)], "contig2"),
         # Single large contig covers several smaller non-adjacent contigs.
         (
             [
@@ -1829,7 +1835,7 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig", reads_count=
                 ("ref1", 101, 199),
                 ("ref1", 200, 350),
             ],
-            "contig2",
+            "contig3",
         ),
         # Single small contig is covered by several larger contigs.
         (
