@@ -172,7 +172,8 @@ follow these steps to update MiCall:
 4. **Update `HIV_RULES_PATH`**: In `micall/resistance/resistance.py`, update
    the path to point to the new XML file:
    ```python
-   HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'HIVDB_X.X.xml')
+   HIVDB_VERSION = 'X.X'
+   HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), f'HIVDB_{HIVDB_VERSION}.xml')
    ```
 
 5. **Update version in genreport**: In `micall/resistance/genreport.yaml`,
@@ -211,38 +212,21 @@ follow these steps to update MiCall:
    - `micall/tests/test_asi_algorithm.py`: Update expected resistance scores
      if the algorithm produces different results
 
-9. **Delete old XML files**: Remove old HIVdb XML files from `micall/resistance/`
-   to avoid confusion. Keep only the new version:
-   ```shell
-   rm micall/resistance/HIVDB_9.0.xml
-   rm micall/resistance/HIVDB_9.4.xml
-   ```
-
-10. **Run tests**: Execute the test suite to ensure everything works:
+9. **Run tests**: Execute the test suite to ensure everything works:
     ```shell
     pytest micall/tests/test_resistance.py
     pytest micall/tests/test_asi_algorithm.py
     pytest  # Run all tests
     ```
 
-11. **Manual verification**: Process a sample dataset through the pipeline and
+10.  **Manual verification**: Process a sample dataset through the pipeline and
     review the generated resistance reports to ensure output is correct and
     formatting is preserved.
-
-12. **Create a pull request**: Document all changes, reference issue #1407 (or
-    the current update request), include test results, and note any behavioral
-    changes in the algorithm.
 
 **Note on CA (Capsid) region**: Some HIVdb versions include the CA region for
 Capsid Inhibitors. If present and not yet supported in MiCall, the region is
 automatically skipped by the `get_algorithm_regions()` function in
 `resistance.py`. Decide whether to add CA support based on clinical needs.
-
-**Troubleshooting**:
-- If tests fail due to changed resistance scores, verify the changes are
-  expected based on HIVdb release notes before updating test assertions.
-- If pyvdrm parsing errors occur, the XML format may have changed. Check for
-  pyvdrm updates or contact the maintainers.
 
 ### Releases
 This section assumes you already have a working server up and running, and you
