@@ -139,6 +139,21 @@ docker run \
 # Goto http://localhost:4000
 ```
 
+What changes might you want to make? The web site is based on the
+[Bulma Clean Theme], so read through the documentation there to see if it
+already has the feature you want. Usually, the advanced features require you
+to write files in the `docs/_data` folder or add settings to the front matter
+at the top of a markdown file.
+
+If you have to add a new feature to the web site, you can override one of the
+files in the theme by copying it into the `docs/_includes` folder, and making
+changes there. Consider offering it back to the theme project as a pull request,
+because any files you override won't get automatic improvements from the
+original theme project.
+
+[Ruby Version Manager]: https://rvm.io/rvm/install
+[Bulma Clean Theme]: https://github.com/chrisrhymes/bulma-clean-theme
+
 ### Updating HIVdb
 
 When a new version of the Stanford HIV Drug Resistance Database is released,
@@ -228,23 +243,6 @@ automatically skipped by the `get_algorithm_regions()` function in
   expected based on HIVdb release notes before updating test assertions.
 - If pyvdrm parsing errors occur, the XML format may have changed. Check for
   pyvdrm updates or contact the maintainers.
-
-## Making a Release
-
-What changes might you want to make? The web site is based on the
-[Bulma Clean Theme], so read through the documentation there to see if it
-already has the feature you want. Usually, the advanced features require you
-to write files in the `docs/_data` folder or add settings to the front matter
-at the top of a markdown file.
-
-If you have to add a new feature to the web site, you can override one of the
-files in the theme by copying it into the `docs/_includes` folder, and making
-changes there. Consider offering it back to the theme project as a pull request,
-because any files you override won't get automatic improvements from the
-original theme project.
-
-[Ruby Version Manager]: https://rvm.io/rvm/install
-[Bulma Clean Theme]: https://github.com/chrisrhymes/bulma-clean-theme
 
 ### Releases
 This section assumes you already have a working server up and running, and you
