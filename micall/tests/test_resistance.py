@@ -8,7 +8,7 @@ import pytest
 from micall.resistance.resistance import read_aminos, write_resistance, \
     select_reported_regions, AminoList, filter_aminos, load_asi, get_genotype, \
     combine_aminos, write_consensus, create_consensus_writer, write_failures, \
-    write_nuc_mutations
+    write_nuc_mutations, HIVDB_VERSION
 
 
 @pytest.fixture(scope="module")
@@ -1601,28 +1601,28 @@ class WriteResistanceTest(TestCase):
         resistance_csv = StringIO()
         mutations_csv = StringIO()
         resistance_consensus_csv = StringIO()
-        expected_resistance = """\
+        expected_resistance = f"""\
 region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
-RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,9.4
-RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,9.4
-RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,9.4
-RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,9.4
-RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 """
-        expected_mutations = """\
+        expected_mutations = f"""\
 drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
-NRTI,M41L,1.0,,RT,HIV1B-seed,RT,9.4
+NRTI,M41L,1.0,,RT,HIV1B-seed,RT,{HIVDB_VERSION}
 """
-        expected_resistance_consensus = """\
+        expected_resistance_consensus = f"""\
 seed,region,coord_region,version,offset,sequence
-HIV1B-seed,RT,RT,9.4,0,\
+HIV1B-seed,RT,RT,{HIVDB_VERSION},0,\
 PISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALVEICTELEKEGKISKIGPENPYNTPVFAIKK\
 KDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKKSVTVLDVGDAYFSVPLDKDFRKYTAF\
 TIPSINNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRKQNPDIVIYQYMDDLYVGSDLEI\
@@ -1652,37 +1652,37 @@ IIEQLIKKEKVYLAWVPAHKGIGGNEQVDKLVSAGIRKVL
                   AminoList('RT', rt_aminos, None, 'HIV1B-seed')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
-        expected_resistance = """\
+        expected_resistance = f"""\
 region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
-IN,INSTI,BIC,bictegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,9.4
-IN,INSTI,CAB,cabotegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,9.4
-IN,INSTI,DTG,dolutegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,9.4
-IN,INSTI,EVG,elvitegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,9.4
-IN,INSTI,RAL,raltegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,9.4
-PR,PI,ATV/r,atazanavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,DRV/r,darunavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,FPV/r,fosamprenavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,IDV/r,indinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,LPV/r,lopinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,NFV,nelfinavir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,SQV/r,saquinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-PR,PI,TPV/r,tipranavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,9.4
-RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,9.4
-RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,9.4
-RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,9.4
-RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,9.4
-RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
+IN,INSTI,BIC,bictegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,{HIVDB_VERSION}
+IN,INSTI,CAB,cabotegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,{HIVDB_VERSION}
+IN,INSTI,DTG,dolutegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,{HIVDB_VERSION}
+IN,INSTI,EVG,elvitegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,{HIVDB_VERSION}
+IN,INSTI,RAL,raltegravir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,IN,{HIVDB_VERSION}
+PR,PI,ATV/r,atazanavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,DRV/r,darunavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,FPV/r,fosamprenavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,IDV/r,indinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,LPV/r,lopinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,NFV,nelfinavir,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,SQV/r,saquinavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+PR,PI,TPV/r,tipranavir/r,0,Sequence does not meet quality-control standards,0.0,,HIV1B-seed,PR,{HIVDB_VERSION}
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 """
-        expected_mutations = """\
+        expected_mutations = f"""\
 drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
-NRTI,M41L,1.0,,RT,HIV1B-seed,RT,9.4
+NRTI,M41L,1.0,,RT,HIV1B-seed,RT,{HIVDB_VERSION}
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
@@ -1696,24 +1696,24 @@ NRTI,M41L,1.0,,RT,HIV1B-seed,RT,9.4
         aminos = [AminoList('RT', rt_aminos, None, 'HIV1B-seed')]
         resistance_csv = StringIO()
         mutations_csv = StringIO()
-        expected_resistance = """\
+        expected_resistance = f"""\
 region,drug_class,drug,drug_name,level,level_name,score,genotype,seed,coord_region,version
-RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,9.4
-RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,9.4
-RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,9.4
-RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,9.4
-RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
-RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,9.4
+RT,NRTI,3TC,lamivudine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,ABC,abacavir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,AZT,zidovudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,D4T,stavudine,3,Low-Level Resistance,15.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,RPV,rilpivirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 """
-        expected_mutations = """\
+        expected_mutations = f"""\
 drug_class,mutation,prevalence,genotype,region,seed,coord_region,version
-NRTI,M41L,0.3,,RT,HIV1B-seed,RT,9.4
+NRTI,M41L,0.3,,RT,HIV1B-seed,RT,{HIVDB_VERSION}
 """
 
         write_resistance(aminos, resistance_csv, mutations_csv, self.algorithms)
