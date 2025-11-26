@@ -14,6 +14,7 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
         .agg(
             avg_concordance       = ('concordance',       'mean'),
             avg_depth             = ('depth',             'mean'),
+            avg_alignment_score   = ('alignment_score',   'mean'),
             avg_mlen              = ('mlen',              'mean'),
             avg_total_mlen        = ('total_mlen',        'mean'),
             avg_overlap_count     = ('overlap_count',     'mean'),

@@ -24,12 +24,14 @@ from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
-from micall.monitor import error_metrics_parser
 from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
 from micall.utils.check_sample_sheet import check_sample_name_consistency
 from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_file_names
+from miseqinteropreader.error_metrics_parser import write_phix_csv
+from miseqinteropreader.interop_reader import InterOpReader
+from miseqinteropreader import ReadLengths4
 
 logger = logging.getLogger(__name__)
 FOLDER_SCAN_INTERVAL = timedelta(hours=1)
@@ -1191,10 +1193,12 @@ class KiveWatcher:
 
     def upload_filter_quality(self, folder_watcher: FolderWatcher) -> None:
         read_sizes = parse_read_sizes(folder_watcher.run_folder / "RunInfo.xml")
-        read_lengths = [read_sizes.read1,
-                        read_sizes.index1,
-                        read_sizes.index2,
-                        read_sizes.read2]
+        read_lengths = ReadLengths4(
+            forward_read=read_sizes.read1,
+            index1=read_sizes.index1,
+            index2=read_sizes.index2,
+            reverse_read=read_sizes.read2
+        )
         error_path = folder_watcher.run_folder / "InterOp" / "ErrorMetricsOut.bin"
         quality_csv = StringIO()
 
@@ -1205,20 +1209,27 @@ class KiveWatcher:
                                      "ErrorMetricsOut.bin not found.\n")
             return
 
-        # noinspection PyBroadException
-        try:
-            with disk_operations.disk_file_operation(error_path, 'rb') as error_file:
-                records = error_metrics_parser.read_errors(error_file)
-                error_metrics_parser.write_phix_csv(quality_csv,
-                                                    records,
-                                                    read_lengths)
-        except Exception:
-            logger.error("Finding error metrics in %s",
+        start_time = None
+        for attempt_count in count(1):
+            try:
+                reader = InterOpReader(folder_watcher.run_folder)
+                records = reader.read_error_records()
+                write_phix_csv(quality_csv, records, read_lengths)
+                break
+            except OSError as ex:
+                logger.info(f"Caught error while trying to read the phix data: {ex}")
+
+                if start_time is None:
+                    start_time = datetime.now()
+                wait_for_retry(attempt_count, start_time)
+            except Exception:
+                logger.error("Finding error metrics in %s",
                          folder_watcher.run_folder,
                          exc_info=True)
-            disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
-                                     "Finding error metrics failed.\n")
-            return
+                disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",
+                                           "Finding error metrics failed.\n")
+                return
+
         quality_csv_bytes = BytesIO()
         quality_csv_bytes.write(quality_csv.getvalue().encode('utf8'))
         quality_csv_bytes.seek(0)

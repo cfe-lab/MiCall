@@ -539,7 +539,7 @@ class TestCachedDecorator:
         def test_func(input1: Path) -> Path:
             return sample_files["output1"]
 
-        with pytest.raises(ValueError, match="must be of type Path or None"):
+        with pytest.raises(ValueError, match="must be either a Path, None, listed in parameters, or listed in outputs"):
             test_func(input1="not_a_path")
 
     def test_cached_no_cache_folder(self, sample_files):
@@ -614,6 +614,390 @@ class TestCachedDecorator:
         assert inputs["input1"] is not None
         assert inputs["input2"] is not None
         assert inputs["input3"] is None
+
+
+class TestCachedDecoratorWithParameters:
+    """Tests for the @cached decorator with parameters argument."""
+
+    def test_parameters_basic(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with simple parameters."""
+        call_count = 0
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc", parameters=["threshold"], outputs=["output"])
+        def process(input_file: Path, output: Path, threshold: int) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text(f"Processed {input_file.name} with threshold {threshold}")
+
+        # First call
+        process(sample_files["input1"], output_file, 10)
+        assert call_count == 1
+        assert output_file.exists()
+        content1 = output_file.read_text()
+
+        # Delete output to verify it gets restored from cache
+        output_file.unlink()
+
+        # Second call with same parameters - should use cache
+        process(sample_files["input1"], output_file, 10)
+        assert call_count == 1  # Not called again
+        assert output_file.exists()
+        assert output_file.read_text() == content1
+
+        # Call with different threshold - should execute again
+        process(sample_files["input1"], output_file, 20)
+        assert call_count == 2
+        assert "threshold 20" in output_file.read_text()
+
+    def test_parameters_multiple(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with multiple parameters."""
+        call_count = 0
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc",
+                     parameters=["method", "threshold", "enabled"],
+                     outputs=["output"])
+        def process(input_file: Path, output: Path, method: str,
+                   threshold: int, enabled: bool) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text(f"{method}-{threshold}-{enabled}")
+
+        # First call
+        process(sample_files["input1"], output_file, "fast", 10, True)
+        assert call_count == 1
+
+        # Same parameters - cached
+        process(sample_files["input1"], output_file, "fast", 10, True)
+        assert call_count == 1
+
+        # Different method - execute
+        process(sample_files["input1"], output_file, "slow", 10, True)
+        assert call_count == 2
+
+        # Different threshold - execute
+        process(sample_files["input1"], output_file, "fast", 20, True)
+        assert call_count == 3
+
+        # Different enabled - execute
+        process(sample_files["input1"], output_file, "fast", 10, False)
+        assert call_count == 4
+
+    def test_parameters_with_set(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with set parameter (like excluded_seeds)."""
+        call_count = 0
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc", parameters=["excluded"], outputs=["output"])
+        def process(input_file: Path, output: Path, excluded: set[str]) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text(f"Excluded: {sorted(excluded)}")
+
+        # First call
+        process(sample_files["input1"], output_file, {"a", "b", "c"})
+        assert call_count == 1
+
+        # Same set (different order) - should be cached
+        process(sample_files["input1"], output_file, {"c", "a", "b"})
+        assert call_count == 1
+
+        # Different set - execute
+        process(sample_files["input1"], output_file, {"a", "b"})
+        assert call_count == 2
+
+        # Empty set - execute
+        process(sample_files["input1"], output_file, set())
+        assert call_count == 3
+
+    def test_parameters_with_none(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with None parameter values."""
+        call_count = 0
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc", parameters=["optional"], outputs=["output"])
+        def process(input_file: Path, output: Path, optional: str | None) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text(f"Optional: {optional}")
+
+        # First call with None
+        process(sample_files["input1"], output_file, None)
+        assert call_count == 1
+
+        # Same (None) - cached
+        process(sample_files["input1"], output_file, None)
+        assert call_count == 1
+
+        # Different value - execute
+        process(sample_files["input1"], output_file, "value")
+        assert call_count == 2
+
+    def test_parameters_serialization(self, temp_cache_dir, sample_files, tmp_path):
+        """Test that parameters are correctly serialized in cache."""
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc", parameters=["count", "name"], outputs=["output"])
+        def process(input_file: Path, output: Path, count: int, name: str) -> None:
+            output.write_text(f"{count}-{name}")
+
+        process(sample_files["input1"], output_file, 42, "test")
+
+        # Check cache data
+        data = cache._load_cache_data()
+        assert "test_proc" in data
+        entry = data["test_proc"][0]
+        inputs = entry["inputs"]
+
+        # Parameters should be in inputs
+        assert inputs["count"] == 42
+        assert inputs["name"] == "test"
+
+    def test_parameters_without_outputs(self, temp_cache_dir, sample_files):
+        """Test parameters with function that returns a Path (no outputs list)."""
+        call_count = 0
+
+        @cache.cached("test_proc", parameters=["multiplier"])
+        def process(input_file: Path, multiplier: int) -> Path:
+            nonlocal call_count
+            call_count += 1
+            return sample_files["output1"]
+
+        # First call
+        process(sample_files["input1"], 2)
+        assert call_count == 1
+
+        # Same parameters - cached
+        process(sample_files["input1"], 2)
+        assert call_count == 1
+
+        # Different multiplier - execute
+        process(sample_files["input1"], 3)
+        assert call_count == 2
+
+
+class TestCachedDecoratorWithOutputs:
+    """Tests for the @cached decorator with outputs argument."""
+
+    def test_outputs_single(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with single output file."""
+        call_count = 0
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc", outputs=["output"])
+        def process(input_file: Path, output: Path) -> None:
+            nonlocal call_count
+            call_count += 1
+            content = input_file.read_text()
+            output.write_text(f"Processed: {content}")
+
+        # First call
+        process(sample_files["input1"], output_file)
+        assert call_count == 1
+        assert output_file.exists()
+        original_content = output_file.read_text()
+
+        # Delete output file
+        output_file.unlink()
+        assert not output_file.exists()
+
+        # Second call - should restore from cache
+        process(sample_files["input1"], output_file)
+        assert call_count == 1  # Not executed again
+        assert output_file.exists()
+        assert output_file.read_text() == original_content
+
+    def test_outputs_multiple(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with multiple output files."""
+        call_count = 0
+        output1 = tmp_path / "out1.txt"
+        output2 = tmp_path / "out2.txt"
+
+        @cache.cached("test_proc", outputs=["out1", "out2"])
+        def process(input_file: Path, out1: Path, out2: Path) -> None:
+            nonlocal call_count
+            call_count += 1
+            content = input_file.read_text()
+            out1.write_text(f"Output1: {content}")
+            out2.write_text(f"Output2: {content}")
+
+        # First call
+        process(sample_files["input1"], output1, output2)
+        assert call_count == 1
+        assert output1.exists()
+        assert output2.exists()
+        content1 = output1.read_text()
+        content2 = output2.read_text()
+
+        # Delete outputs
+        output1.unlink()
+        output2.unlink()
+
+        # Second call - should restore both from cache
+        process(sample_files["input1"], output1, output2)
+        assert call_count == 1
+        assert output1.read_text() == content1
+        assert output2.read_text() == content2
+
+    def test_outputs_different_locations(self, temp_cache_dir, sample_files, tmp_path):
+        """Test that cached output can be written to different locations."""
+        call_count = 0
+
+        @cache.cached("test_proc", outputs=["output"])
+        def process(input_file: Path, output: Path) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text(f"Result: {input_file.read_text()}")
+
+        # First call to location A
+        output_a = tmp_path / "a" / "result.txt"
+        output_a.parent.mkdir()
+        process(sample_files["input1"], output_a)
+        assert call_count == 1
+
+        # Second call to location B - should use cache
+        output_b = tmp_path / "b" / "result.txt"
+        output_b.parent.mkdir()
+        process(sample_files["input1"], output_b)
+        assert call_count == 1  # Cached
+        assert output_b.read_text() == output_a.read_text()
+
+    def test_outputs_excludes_from_cache_key(self, temp_cache_dir, sample_files, tmp_path):
+        """Test that output paths don't affect cache key."""
+        call_count = 0
+
+        @cache.cached("test_proc", outputs=["output"])
+        def process(input_file: Path, output: Path) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text("result")
+
+        # Call with different output paths but same input
+        output1 = tmp_path / "out1.txt"
+        output2 = tmp_path / "out2.txt"
+
+        process(sample_files["input1"], output1)
+        assert call_count == 1
+
+        process(sample_files["input1"], output2)
+        assert call_count == 1  # Cached - output path doesn't matter
+
+        # Verify both files exist with same content
+        assert output1.read_text() == output2.read_text()
+
+
+class TestCachedDecoratorCombined:
+    """Tests for @cached decorator with both parameters and outputs."""
+
+    def test_combined_basic(self, temp_cache_dir, sample_files, tmp_path):
+        """Test caching with both parameters and outputs."""
+        call_count = 0
+        output_file = tmp_path / "result.txt"
+
+        @cache.cached("test_proc",
+                     parameters=["threshold"],
+                     outputs=["output"])
+        def process(input_file: Path, output: Path, threshold: int) -> None:
+            nonlocal call_count
+            call_count += 1
+            output.write_text(f"Processed with {threshold}")
+
+        # First call
+        process(sample_files["input1"], output_file, 10)
+        assert call_count == 1
+
+        # Same input and parameters - cached
+        process(sample_files["input1"], output_file, 10)
+        assert call_count == 1
+
+        # Different threshold - execute
+        process(sample_files["input1"], output_file, 20)
+        assert call_count == 2
+
+        # Back to first threshold - should use original cache
+        output_file.unlink()
+        process(sample_files["input1"], output_file, 10)
+        assert call_count == 2  # Cached
+        assert "with 10" in output_file.read_text()
+
+    def test_combined_complex(self, temp_cache_dir, sample_files, tmp_path):
+        """Test complex caching scenario like prelim_map."""
+        call_count = 0
+
+        @cache.cached("prelim_map",
+                     parameters=["nthreads", "rdgopen", "rfgopen", "gzip", "excluded_seeds"],
+                     outputs=["prelim_csv"])
+        def prelim_map(fastq1: Path, fastq2: Path, prelim_csv: Path,
+                      nthreads: int, rdgopen: int, rfgopen: int,
+                      gzip: bool, excluded_seeds: set[str] | None) -> None:
+            nonlocal call_count
+            call_count += 1
+            result = f"Mapped {fastq1.name} and {fastq2.name}\n"
+            result += f"Threads: {nthreads}, RDG: {rdgopen}, RFG: {rfgopen}\n"
+            result += f"Gzip: {gzip}, Excluded: {excluded_seeds}"
+            prelim_csv.write_text(result)
+
+        output = tmp_path / "prelim.csv"
+
+        # First call
+        prelim_map(sample_files["input1"], sample_files["input2"], output,
+                  nthreads=4, rdgopen=10, rfgopen=10, gzip=False, excluded_seeds={"seed1"})
+        assert call_count == 1
+        content1 = output.read_text()
+
+        # Delete output
+        output.unlink()
+
+        # Same everything - cached
+        prelim_map(sample_files["input1"], sample_files["input2"], output,
+                  nthreads=4, rdgopen=10, rfgopen=10, gzip=False, excluded_seeds={"seed1"})
+        assert call_count == 1
+        assert output.read_text() == content1
+
+        # Different nthreads - execute
+        prelim_map(sample_files["input1"], sample_files["input2"], output,
+                  nthreads=8, rdgopen=10, rfgopen=10, gzip=False, excluded_seeds={"seed1"})
+        assert call_count == 2
+
+        # Different excluded_seeds - execute
+        prelim_map(sample_files["input1"], sample_files["input2"], output,
+                  nthreads=4, rdgopen=10, rfgopen=10, gzip=False, excluded_seeds={"seed2"})
+        assert call_count == 3
+
+        # Different input file - execute
+        prelim_map(sample_files["input2"], sample_files["input1"], output,
+                  nthreads=4, rdgopen=10, rfgopen=10, gzip=False, excluded_seeds={"seed1"})
+        assert call_count == 4
+
+    def test_error_handling_wrong_type(self, temp_cache_dir, sample_files, tmp_path):
+        """Test error handling when parameter type is wrong."""
+        @cache.cached("test_proc", parameters=["threshold"], outputs=["output"])
+        def process(input_file: Path, output: Path, threshold: int) -> None:
+            output.write_text("result")
+
+        output = tmp_path / "result.txt"
+
+        # This should work
+        process(sample_files["input1"], output, 10)
+
+        # This should fail - output must be a Path when listed in outputs
+        with pytest.raises(ValueError, match="Output argument .* must be a Path"):
+            @cache.cached("bad", outputs=["output"])
+            def bad_func(input_file: Path, output: str) -> None:
+                pass
+            bad_func(sample_files["input1"], "not_a_path")
+
+    def test_error_handling_unlisted_parameter(self, temp_cache_dir, sample_files, tmp_path):
+        """Test error when non-Path argument not in parameters list."""
+        with pytest.raises(ValueError, match="must be either a Path, None, listed in parameters, or listed in outputs"):
+            @cache.cached("test_proc", outputs=["output"])
+            def process(input_file: Path, output: Path, threshold: int) -> None:
+                output.write_text("result")
+
+            output = tmp_path / "result.txt"
+            # threshold is not a Path and not in parameters - should error
+            process(sample_files["input1"], output, 10)
 
 
 class TestIntegration:

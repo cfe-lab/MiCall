@@ -9,7 +9,6 @@ from pathlib import Path
 from micall.core.aln2counts import aln2counts
 from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
 from micall.core.cascade_report import CascadeReport
-from micall.core.contig_stitcher import contig_stitcher
 from micall.core.coverage_plots import coverage_plot, concordance_plot
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
@@ -21,6 +20,9 @@ from micall.core.denovo import denovo
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
+from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
+from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
 
@@ -151,7 +153,7 @@ class Sample:
         if self.scratch_path is None:
             raise AttributeError(
                 'Unknown output {} and no scratch path.'.format(output_name))
-        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png'):
+        for extension in ('csv', 'fastq', 'pdf', 'svg', 'png', 'fasta'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension
                 break
@@ -381,33 +383,25 @@ class Sample:
     def run_mapping(self, excluded_seeds):
         logger.info('Running prelim_map on %s.', self)
         scratch_path = self.get_scratch_path()
-        with open(self.prelim_csv, 'w') as prelim_csv:
-            prelim_map(self.trimmed1_fastq,
-                       self.trimmed2_fastq,
-                       prelim_csv,
-                       work_path=scratch_path,
+        with WorkDir.using(Path(scratch_path)):
+            prelim_map(Path(self.trimmed1_fastq),
+                       Path(self.trimmed2_fastq),
+                       Path(self.prelim_csv),
                        excluded_seeds=excluded_seeds)
         logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
-        with open(self.prelim_csv) as prelim_csv, \
-                open(self.remap_csv, 'w') as remap_csv, \
-                open(self.remap_counts_csv, 'w') as counts_csv, \
-                open(self.remap_conseq_csv, 'w') as conseq_csv, \
-                open(self.unmapped1_fastq, 'w') as unmapped1, \
-                open(self.unmapped2_fastq, 'w') as unmapped2:
-
-            remap(self.trimmed1_fastq,
-                  self.trimmed2_fastq,
-                  prelim_csv,
-                  remap_csv,
-                  counts_csv,
-                  conseq_csv,
-                  unmapped1,
-                  unmapped2,
-                  scratch_path,
+        with WorkDir.using(Path(scratch_path)):
+            remap(Path(self.trimmed1_fastq),
+                  Path(self.trimmed2_fastq),
+                  Path(self.prelim_csv),
+                  Path(self.remap_csv),
+                  Path(self.remap_counts_csv),
+                  Path(self.remap_conseq_csv),
+                  Path(self.unmapped1_fastq),
+                  Path(self.unmapped2_fastq),
                   debug_file_prefix=debug_file_prefix)
 
     def run_denovo(self, excluded_seeds):
@@ -421,46 +415,33 @@ class Sample:
                    Path(self.unstitched_contigs_fasta),
                    None)
 
+        with open(self.merged_contigs_csv, 'r') as merged_contigs_csv:
+            output = Path(self.merged_contigs_fasta)
+            try:
+                csv_to_fasta(merged_contigs_csv, output)
+            except NoContigsInCSV:
+                output.touch()
+
+        concatenate_files(inputs=[self.unstitched_contigs_fasta,
+                                  self.merged_contigs_fasta],
+                          output=self.combined_contigs_fasta)
+
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
-             open(self.merged_contigs_csv, 'r') as merged_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            fasta_to_csv(Path(self.unstitched_contigs_fasta),
+            fasta_to_csv(Path(self.combined_contigs_fasta),
                          unstitched_contigs_csv,
-                         merged_contigs_csv,
                          blast_csv=blast_csv,
                          )
 
-        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
-             open(self.contigs_csv, 'w') as contigs_csv:
-            contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg)
-
-        logger.info('Running remap on %s.', self)
         if self.debug_remap:
             debug_file_prefix = os.path.join(scratch_path, 'debug')
         else:
             debug_file_prefix = None
 
-        with open(self.contigs_csv) as contigs_csv, \
-                open(self.remap_csv, 'w') as remap_csv, \
-                open(self.remap_counts_csv, 'w') as counts_csv, \
-                open(self.remap_conseq_csv, 'w') as remap_conseq_csv, \
-                open(self.unmapped1_fastq, 'w') as unmapped1, \
-                open(self.unmapped2_fastq, 'w') as unmapped2:
-
-            map_to_contigs(self.trimmed1_fastq,
-                           self.trimmed2_fastq,
-                           contigs_csv,
-                           remap_csv,
-                           counts_csv,
-                           remap_conseq_csv,
-                           unmapped1,
-                           unmapped2,
-                           scratch_path,
-                           debug_file_prefix=debug_file_prefix,
-                           excluded_seeds=excluded_seeds)
-
         def with_prefix(path):
             return path and prepend_prefix_to_basename("unstitched_", path)
+
+        logger.info('Running remap on %s.', self)
 
         with open(self.unstitched_contigs_csv) as contigs_csv, \
                 open(with_prefix(self.remap_csv), 'w') as remap_csv, \
@@ -479,4 +460,28 @@ class Sample:
                            unmapped2,
                            scratch_path,
                            debug_file_prefix=with_prefix(debug_file_prefix),
+                           excluded_seeds=excluded_seeds)
+
+        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+             open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv, \
+             open(self.contigs_csv, 'w') as contigs_csv:
+            referencefull_contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, unstitched_counts_csv)
+
+        with open(self.contigs_csv) as contigs_csv, \
+                open(self.remap_csv, 'w') as remap_csv, \
+                open(self.remap_counts_csv, 'w') as counts_csv, \
+                open(self.remap_conseq_csv, 'w') as remap_conseq_csv, \
+                open(self.unmapped1_fastq, 'w') as unmapped1, \
+                open(self.unmapped2_fastq, 'w') as unmapped2:
+
+            map_to_contigs(self.trimmed1_fastq,
+                           self.trimmed2_fastq,
+                           contigs_csv,
+                           remap_csv,
+                           counts_csv,
+                           remap_conseq_csv,
+                           unmapped1,
+                           unmapped2,
+                           scratch_path,
+                           debug_file_prefix=debug_file_prefix,
                            excluded_seeds=excluded_seeds)

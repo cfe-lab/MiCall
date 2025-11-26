@@ -2,12 +2,14 @@ import csv
 from collections import defaultdict
 import logging
 import os
+from pathlib import Path
 
 from micall.core.remap import remap
 from micall.core.prelim_map import prelim_map
 from csv import DictReader
 from micall.core.trim_fastqs import trim, censor
 from micall.utils.dd import DD
+from micall.utils.work_dir import WorkDir
 from micall.g2p.pssm_lib import Pssm
 
 BOWTIE_THREADS = 11
@@ -41,25 +43,27 @@ class MicallDD(DD):
         workdir = os.path.dirname(filename1)
         prelim_filename = os.path.join(workdir, 'filter.prelim.csv')
         remap_filename = os.path.join(workdir, 'filter.remap.csv')
-        with open(prelim_filename, 'w+') as prelim_csv, \
-                open(remap_filename, 'w') as remap_csv, \
-                open(os.devnull, 'w+') as real_devnull:
-            print('Preliminary mapping to filter.')
-            devnull = DevNullWrapper(real_devnull)
-            prelim_map(filename1,
-                       filename2,
-                       prelim_csv,
+        remap_counts_filename = os.path.join(workdir, 'filter.remap_counts.csv')
+        remap_conseq_filename = os.path.join(workdir, 'filter.remap_conseq.csv')
+        unmapped1_filename = os.path.join(workdir, 'filter.unmapped1.fastq')
+        unmapped2_filename = os.path.join(workdir, 'filter.unmapped2.fastq')
+
+        print('Preliminary mapping to filter.')
+        with WorkDir.using(Path(workdir)):
+            prelim_map(Path(filename1),
+                       Path(filename2),
+                       Path(prelim_filename),
                        nthreads=BOWTIE_THREADS)
-            prelim_csv.seek(0)
-            print('Remapping to filter.')
-            remap(filename1,
-                  filename2,
-                  prelim_csv,
-                  remap_csv,
-                  devnull,
-                  devnull,
-                  devnull,
-                  devnull)
+        print('Remapping to filter.')
+        with WorkDir.using(Path(workdir)):
+            remap(Path(filename1),
+                  Path(filename2),
+                  Path(prelim_filename),
+                  Path(remap_filename),
+                  Path(remap_counts_filename),
+                  Path(remap_conseq_filename),
+                  Path(unmapped1_filename),
+                  Path(unmapped2_filename))
         with open(remap_filename, 'r') as remap_csv:
             print('Filtering.')
             reader = DictReader(remap_csv)
@@ -100,23 +104,22 @@ class MicallDD(DD):
         with open(simple_filename2, 'r') as simple2, \
                 open(censored_filename2, 'w') as censored2:
             censor(simple2, bad_cycles, censored2, use_gzip=False)
-        with open(prelim_censored_filename, 'w+') as prelim_censored_csv, \
-                open(prelim_trimmed_filename, 'w+') as prelim_trimmed_csv:
-            prelim_map(censored_filename1,
-                       censored_filename2,
-                       prelim_censored_csv,
+        with WorkDir.using(Path(workdir)):
+            prelim_map(Path(censored_filename1),
+                       Path(censored_filename2),
+                       Path(prelim_censored_filename),
                        nthreads=BOWTIE_THREADS)
             trim((simple_filename1, simple_filename2),
                  self.bad_cycles_filename,
                  (trimmed_filename1, trimmed_filename2),
                  use_gzip=False)
-            prelim_map(trimmed_filename1,
-                       trimmed_filename2,
-                       prelim_trimmed_csv,
+            prelim_map(Path(trimmed_filename1),
+                       Path(trimmed_filename2),
+                       Path(prelim_trimmed_filename),
                        nthreads=BOWTIE_THREADS)
-            prelim_censored_csv.seek(0)
+        with open(prelim_censored_filename, 'r') as prelim_censored_csv:
             censored_map_count = self.count_mapped(prelim_censored_csv)
-            prelim_trimmed_csv.seek(0)
+        with open(prelim_trimmed_filename, 'r') as prelim_trimmed_csv:
             trimmed_map_count = self.count_mapped(prelim_trimmed_csv)
 
         return self.get_result(censored_map_count, trimmed_map_count)

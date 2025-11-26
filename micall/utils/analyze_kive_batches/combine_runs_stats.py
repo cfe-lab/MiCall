@@ -11,6 +11,7 @@ from .logger import logger
 FIELDNAMES = ("app",
               "concordance",
               "depth",
+              "alignment_score",
               "mlen",
               "total_mlen",
               "overlap_count",

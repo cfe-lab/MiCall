@@ -57,7 +57,8 @@ def read_assembled_contigs(group_refs: Dict[str, str],
                               ref_name=ref_name,
                               group_ref=group_ref,
                               ref_seq=str(ref_seq) if ref_seq is not None else None,
-                              match_fraction=match_fraction)
+                              match_fraction=match_fraction,
+                              reads_count=None)
 
 
 def init_contigs_refs(contigs_csv: TextIO) -> DictWriter:
@@ -191,24 +192,16 @@ def genotype(contigs_fasta: Path, db: Optional[Path] = None,
 
 def fasta_to_csv(contigs_fasta: Path,
                  contigs_csv: TextIO,
-                 merged_contigs_csv: Optional[TextIO] = None,
                  blast_csv: Optional[TextIO] = None) -> None:
     """Run BLAST search to identify contig sequences and write them to CSV.
 
     Args:
         contigs_fasta (Path): Path to the FASTA file containing contig sequences.
         contigs_csv (TextIO): Open file to write assembled contigs to.
-        merged_contigs_csv: open file to read contigs that were merged from amplicon reads.
         blast_csv (Optional[TextIO]): Open file to write BLAST search results for each contig.
     """
 
-    with open(contigs_fasta, 'a') as contigs_fasta_writer:
-        if merged_contigs_csv is not None:
-            contig_reader = DictReader(merged_contigs_csv)
-            for i, row in enumerate(contig_reader, 1):
-                contig_name = f'merged-contig-{i}'
-                contigs_fasta_writer.write(f">{contig_name}\n{row['contig']}\n")
-
+    contigs_fasta.touch()
     writer = init_contigs_refs(cast(TextIO, contigs_csv))
     group_refs: Dict[str, str] = {}
 
@@ -224,12 +217,10 @@ def main(argv: Sequence[str]):
     parser.add_argument('contigs_fasta', help="Input FASTA file with contig sequences.")
     parser.add_argument('contigs_csv', type=argparse.FileType('w'),
                         help="Output CSV file to write assembled contigs.")
-    parser.add_argument('--merged_contigs_csv', type=argparse.FileType('r'),
-                        help="Optional CSV file with contigs that were merged from amplicon reads.")
     parser.add_argument('--blast_csv', type=argparse.FileType('w'),
                         help="Optional CSV file to write BLAST search results.")
     args = parser.parse_args(argv)
-    fasta_to_csv(args.contigs_fasta, args.contigs_csv, args.merged_contigs_csv, args.blast_csv)
+    fasta_to_csv(Path(args.contigs_fasta), args.contigs_csv, args.blast_csv)
 
 
 if __name__ == "__main__":

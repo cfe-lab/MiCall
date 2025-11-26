@@ -111,16 +111,22 @@ def _save_cache_data(data: dict) -> None:
         json.dump(data, f, indent="\t")
 
 
-def _make_cache_key(inputs: Mapping[str, Optional[Path]]) -> dict[str, Optional[str]]:
-    """Create a structured input key from input file hashes.
+def _make_cache_key(
+    inputs: Mapping[str, Optional[Path]],
+    parameters: Mapping[str, object] = {},
+) -> dict[str, Optional[str] | object]:
+    """Create a structured input key from input file hashes and serializable parameters.
 
     Args:
         inputs: A mapping of input identifiers to their corresponding file paths.
+        parameters: Mapping of parameter names to their values (for non-Path arguments).
 
     Returns:
-        A dict mapping input names to their file hashes (or None).
+        A dict mapping input names to their file hashes (or None) and parameter names to their values.
     """
-    input_key: dict[str, Optional[str]] = {}
+    input_key: dict[str, Optional[str] | object] = {}
+
+    # Add file hashes
     for key in sorted(inputs.keys()):
         value = inputs[key]
         if value is None:
@@ -128,17 +134,26 @@ def _make_cache_key(inputs: Mapping[str, Optional[Path]]) -> dict[str, Optional[
         else:
             input_key[key] = hash_file(value)
 
+    # Add serializable parameters
+    for key in sorted(parameters.keys()):
+        param_value = parameters[key]
+        # Convert sets to sorted lists for consistent serialization
+        if isinstance(param_value, builtins.set):
+            input_key[key] = sorted(list(param_value))
+        else:
+            input_key[key] = param_value
+
     return input_key
 
 
 def _find_cache_entry(
-    procedure: str, input_key: dict[str, Optional[str]]
+    procedure: str, input_key: dict[str, Optional[str] | object]
 ) -> Optional[dict]:
     """Find a cache entry matching the procedure and input key.
 
     Args:
         procedure: The procedure name.
-        input_key: Dict mapping input names to their hashes.
+        input_key: Dict mapping input names to their hashes or parameter values.
 
     Returns:
         The cache entry dict if found, None otherwise.
@@ -158,7 +173,7 @@ def _find_cache_entry(
 
 def _add_cache_entry(
     procedure: str,
-    input_key: dict[str, Optional[str]],
+    input_key: dict[str, Optional[str] | object],
     outputs: Union[str, dict[str, Optional[str]]],
 ) -> None:
     """Add or update a cache entry.
@@ -185,13 +200,16 @@ def _add_cache_entry(
 
 
 def get(
-    procedure: str, inputs: Mapping[str, Optional[Path]]
+    procedure: str,
+    inputs: Mapping[str, Optional[Path]],
+    parameters: Mapping[str, object] = {},
 ) -> Optional[Union[Path, Mapping[str, Optional[Path]]]]:
-    """Retrieve cached data for the given inputs, if available.
+    """Retrieve cached data for the given inputs and parameters, if available.
 
     Args:
         procedure: The name of the procedure for which to retrieve cached data.
         inputs: A mapping of input identifiers to their corresponding file paths.
+        parameters: Mapping of parameter names to their values.
 
     Returns:
         A mapping of output identifiers to their cached file paths, or None if
@@ -201,7 +219,7 @@ def get(
     if not CACHE_FOLDER:
         return None
 
-    input_key = _make_cache_key(inputs)
+    input_key = _make_cache_key(inputs, parameters)
     entry = _find_cache_entry(procedure, input_key)
 
     if entry is None:
@@ -237,13 +255,15 @@ def set(
     procedure: str,
     inputs: Mapping[str, Optional[Path]],
     output: Union[Path, Mapping[str, Optional[Path]]],
+    parameters: Mapping[str, object] = {},
 ) -> None:
-    """Cache the outputs for the given inputs.
+    """Cache the outputs for the given inputs and parameters.
 
     Args:
         procedure: The name of the procedure for which to cache data.
         inputs: A mapping of input identifiers to their corresponding file paths.
         output: Either a single output file path or a mapping of output identifiers.
+        parameters: Mapping of parameter names to their values.
     """
 
     if not CACHE_FOLDER:
@@ -252,7 +272,7 @@ def set(
     cache_folder = Path(CACHE_FOLDER)
     cache_folder.mkdir(parents=True, exist_ok=True)
 
-    input_key = _make_cache_key(inputs)
+    input_key = _make_cache_key(inputs, parameters)
 
     # Process the output and copy files to cache
     if isinstance(output, Path):
@@ -286,8 +306,29 @@ def set(
         raise ValueError(f"Unsupported output type: {type(output)}")
 
 
-def cached(procedure: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """Decorator for caching function results based on file path inputs."""
+def cached(
+    procedure: str,
+    parameters: Sequence[str] = (),
+    outputs: Optional[Sequence[str]] = None,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Decorator for caching function results based on file path inputs and parameters.
+
+    Args:
+        procedure: Name of the cached procedure.
+        parameters: Optional list of parameter names that should be serialized into the cache key
+                   instead of being treated as Paths. These parameters will have their values
+                   directly added to the cache key.
+        outputs: Optional list of Path parameter names that are outputs (not inputs).
+                These are excluded from the cache key and are where results are written.
+
+    Example:
+        @cached("my_proc", parameters=['threshold'], outputs=['output_file'])
+        def process(input_file: Path, output_file: Path, threshold: int) -> None:
+            # input_file is hashed for cache key
+            # output_file is where results are written (excluded from cache key)
+            # threshold is serialized as a parameter
+            pass
+    """
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
@@ -298,24 +339,78 @@ def cached(procedure: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
 
-            cache_key: dict[str, Optional[Path]] = {}
+            # Separate Path inputs from serializable parameters and outputs
+            path_inputs: dict[str, Optional[Path]] = {}
+            param_values: dict[str, object] = {}
+            output_paths: dict[str, Path] = {}
+            parameter_set = builtins.set(parameters)
+            output_set = builtins.set(outputs) if outputs else builtins.set()
+
             for key, value in bound_args.arguments.items():
-                if not isinstance(value, (Path, type(None))):
+                if key in output_set:
+                    # This is an output Path
+                    if not isinstance(value, Path):
+                        raise ValueError(
+                            f"Output argument '{key}' must be a Path, got {type(value).__name__}"
+                        )
+                    output_paths[key] = value
+                elif key in parameter_set:
+                    # This is a serializable parameter
+                    param_values[key] = value
+                elif isinstance(value, Path):
+                    # This is an input Path
+                    path_inputs[key] = value
+                elif value is None:
+                    # None is allowed for optional Path arguments
+                    path_inputs[key] = None
+                else:
+                    # Not a Path and not in parameters/outputs list - error
                     raise ValueError(
-                        f"Input key '{key}' must be of type Path or None, got {type(value)}"
+                        f"Argument '{key}' must be either a Path, None, listed in parameters, or listed in outputs. "
+                        f"Got type {type(value).__name__}"
                     )
-                cache_key[key] = value
 
             # Try to get from cache
-            cached_result = get(procedure, cache_key)
+            cached_result = get(procedure, path_inputs, param_values)
             if cached_result is not None:
-                return cached_result  # type: ignore
+                # If no outputs specified, return cached result directly
+                if not output_paths:
+                    return cached_result  # type: ignore
+
+                # Copy cached result to output location(s)
+                if len(output_paths) == 1:
+                    # Single output
+                    output_path = list(output_paths.values())[0]
+                    if isinstance(cached_result, Path):
+                        shutil.copy2(cached_result, output_path)
+                    else:
+                        raise ValueError(f"Expected cached result to be a Path, got {type(cached_result)}")
+                elif len(output_paths) > 1:
+                    # Multiple outputs
+                    if not isinstance(cached_result, dict):
+                        raise ValueError(f"Expected cached result to be a dict, got {type(cached_result)}")
+                    for key, output_path in output_paths.items():
+                        cached_file = cached_result.get(key)
+                        if cached_file:
+                            shutil.copy2(cached_file, output_path)
+
+                # Return the original return value of the function
+                return None  # type: ignore
 
             # Execute function
             result = func(*args, **kwargs)
 
-            # Store in cache
-            set(procedure, cache_key, result)  # type: ignore
+            # Store output file(s) in cache
+            output_to_cache: Union[Path, Mapping[str, Path]]
+            if len(output_paths) == 1:
+                output_to_cache = list(output_paths.values())[0]
+            elif len(output_paths) > 1:
+                output_to_cache = output_paths
+            else:
+                # No outputs specified, use the function's return value
+                output_to_cache = result  # type: ignore
+
+            set(procedure, path_inputs, output_to_cache, param_values)
 
             return result
 
