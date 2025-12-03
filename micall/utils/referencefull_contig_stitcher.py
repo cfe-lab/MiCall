@@ -673,8 +673,8 @@ def referencefull_contig_stitcher(input_csv: TextIO,
         # Read contigs with read counts
         contigs = list(read_contigs(input_csv, contig_read_counts))
 
-        if output_csv is not None or stitcher_plot_path is not None:
-            contigs = list(stitch_consensus(contigs))
+        # if output_csv is not None or stitcher_plot_path is not None:
+        #     contigs = list(stitch_consensus(contigs))
 
         if output_csv is not None:
             write_contigs(output_csv, contigs)
