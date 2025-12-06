@@ -1611,6 +1611,7 @@ RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,DPV,dapirivine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
@@ -1675,6 +1676,7 @@ RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,DPV,dapirivine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
@@ -1706,6 +1708,7 @@ RT,NRTI,DDI,didanosine,2,Susceptible,10.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NRTI,FTC,emtricitabine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NRTI,TDF,tenofovir,1,Susceptible,5.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,DOR,doravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
+RT,NNRTI,DPV,dapirivine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,EFV,efavirenz,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,ETR,etravirine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}
 RT,NNRTI,NVP,nevirapine,1,Susceptible,0.0,,HIV1B-seed,RT,{HIVDB_VERSION}

@@ -25,7 +25,7 @@ MIDI_START_POS = 231
 MIDI_END_POS = 561
 
 # Rules configuration - remember to update version numbers in genreport.yaml.
-HIVDB_VERSION = '9.4'
+HIVDB_VERSION = '9.8'
 HIV_RULES_PATH = os.path.join(os.path.dirname(__file__), f'HIVDB_{HIVDB_VERSION}.xml')
 HCV_RULES_PATH = os.path.join(os.path.dirname(__file__), 'hcv_rules.yaml')
 
