@@ -9,6 +9,7 @@ from datetime import datetime
 from itertools import tee
 import ast
 from Bio.Align import PairwiseAligner
+from fractions import Fraction
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 from micall.utils.dir_path import DirPath
@@ -58,9 +59,10 @@ def calc_overlap_pvalue(L: int, M: int, match_prob: float = 1/4) -> float:
     # Binomial(L, x) * match_prob^x * (1-match_prob)^(L-x)
     #   from x = M to L
     for x in range(M, L + 1):
-        pval += (math.comb(L, x) *
-                 (match_prob ** x) *
-                 ((1 - match_prob) ** (L - x)))
+        comb = Fraction(math.comb(L, x))
+        pval += (comb *
+                 Fraction((match_prob ** x) *
+                          ((1 - match_prob) ** (L - x))))
 
     return pval
 
