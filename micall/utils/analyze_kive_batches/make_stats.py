@@ -295,9 +295,6 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
             if ref_name.endswith('-partial'):
                 ref_name = ref_name[:-len('-partial')]
 
-            if ref_name.endswith('-seed'):
-                ref_name = ref_name[:-len('-seed')]
-
             try:
                 # ref_name = "HIV1-B-ZA-KP109515-seed"
                 reference = PROJECTS.getReference(ref_name)
