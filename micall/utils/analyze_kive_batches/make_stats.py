@@ -271,21 +271,28 @@ def avg_contigs_lengths(rows: Rows) -> float:
 def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
     def collect_scores() -> Iterator[float]:
         for row in rows:
-            # This field called "region" by mistake.
-            region = str(row["region"])
+            # This field might be called "region" by mistake.
+            ref_name_raw = row.get("seed") or row.get("region")
+            if not ref_name_raw:
+                raise ValueError("Cannot get name")
+
+            ref_name_raw = str(ref_name_raw)
 
             try:
                 #
-                # Some region names are prefix with "1-" or "2-" or "n-".
+                # Some ref_name_raws are prefix with "1-" or "2-" or "n-".
                 # Strip that here.
                 #
-                index, _dash, ref_name = region.partition('-')
+                index, _dash, ref_name = ref_name_raw.partition('-')
                 int(index, 10)
             except BaseException:
-                ref_name = region
+                ref_name = ref_name_raw
 
             if ref_name.endswith('-partial'):
                 ref_name = ref_name[:-len('-partial')]
+
+            if ref_name.endswith('-seed'):
+                ref_name = ref_name[:-len('-seed')]
 
             try:
                 # ref_name = "HIV1-B-ZA-KP109515-seed"
