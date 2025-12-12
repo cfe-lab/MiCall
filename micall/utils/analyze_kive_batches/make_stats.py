@@ -145,7 +145,11 @@ def read_conseqs_rows(path_to_file: Path) -> Rows:
     with open(path_to_file) as fd:
         reader = csv.DictReader(fd)
         for row in reader:
-            ref = row["region"]
+            # This field might be called "region" by mistake.
+            ref = row.get("seed") or row.get("region")
+            if ref is None:
+                continue
+
             if "unknown" in ref.lower():
                 continue
 
