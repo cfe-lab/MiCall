@@ -373,6 +373,12 @@ def get_stats(info_file: Path) -> Optional[Row]:
         conseqs_csv_path = None
         logger.error("%s", ex)
 
+    try:
+        conseqs_stitched_csv_path = find_file(directory, "^conseq_stitched.*[.]csv$")
+    except ValueError as ex:
+        conseqs_stitched_csv_path = None
+        logger.error("%s", ex)
+
     rc = read_coverage_rows
     ro = read_contigs_or_conseqs_rows
 
@@ -389,6 +395,9 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     if conseqs_csv_path:
         o["alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_csv_path))
+
+    if conseqs_stitched_csv_path:
+        o["stitched_alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_stitched_csv_path))
 
     overlaps: list[Row] = []
     o["overlaps"] = overlaps
