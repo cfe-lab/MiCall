@@ -777,6 +777,71 @@ def test_get_app_cached(mock_open_kive, pipelines_config):
     mock_session.endpoints.containerapps.get.assert_called_once()
 
 
+def test_get_kive_container_name(mock_open_kive, pipelines_config):
+    app_id = 43
+    expected_container_name = 'micall:v7.18.1'
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.containerapps.get.return_value = dict(
+        container_name=expected_container_name,
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    container_name = kive_watcher.get_kive_container_name(app_id)
+
+    assert expected_container_name == container_name
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
+def test_get_container_version(mock_open_kive, pipelines_config):
+    app_id = 43
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.containerapps.get.return_value = dict(
+        container_name='micall:v7.18.1',
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    version = kive_watcher.get_container_version(app_id)
+
+    assert 'v7.18.1' == version
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
+def test_get_container_version_no_separator(mock_open_kive, pipelines_config):
+    app_id = 43
+    container_name_without_version = 'micall'
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.containerapps.get.return_value = dict(
+        container_name=container_name_without_version,
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    version = kive_watcher.get_container_version(app_id)
+
+    # When no version separator is found, should return the full name
+    assert container_name_without_version == version
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
+def test_get_container_version_multiple_colons(mock_open_kive, pipelines_config):
+    app_id = 43
+    mock_session = mock_open_kive.return_value
+    # Test with a Docker registry-style name with multiple colons
+    mock_session.endpoints.containerapps.get.return_value = dict(
+        container_name='registry.example.com:5000/micall:v7.18.1',
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    version = kive_watcher.get_container_version(app_id)
+
+    # rpartition should get the last colon, so we should get the version after it
+    assert 'v7.18.1' == version
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
 def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
