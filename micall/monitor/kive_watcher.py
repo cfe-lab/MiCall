@@ -269,7 +269,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
-        disk_operations.write_text(run_path / "errorprocessing", 
+        disk_operations.write_text(run_path / "errorprocessing",
                                  "Finding sample groups failed.\n")
         sample_groups = []
     return sample_groups
@@ -437,7 +437,7 @@ class KiveWatcher:
     def create_batch(self, folder_watcher: FolderWatcher) -> None:
         if self.config is None:
             raise RuntimeError("KiveWatcher config is not set.")
-    
+
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
@@ -622,11 +622,11 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                
+
                 # Record start time on first failure
                 if start_time is None:
                     start_time = datetime.now()
-                
+
                 wait_for_retry(attempt_count, start_time)
 
     def check_completed_folders(self) -> None:
@@ -864,7 +864,7 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(plots_path)
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
-        if folder_watcher.quality_dataset is None:    
+        if folder_watcher.quality_dataset is None:
             raise RuntimeError('Quality dataset not available')
         if self.config.micall_filter_quality_pipeline_id is None:
             raise RuntimeError('Filter quality pipeline ID not configured')
