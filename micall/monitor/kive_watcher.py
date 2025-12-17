@@ -1006,7 +1006,14 @@ class KiveWatcher:
         fastq_name = sample_watcher.sample_group.names[group_position]
         sample_name = trim_name(fastq_name if fastq_name is not None else 'unknown')
         project_code = sample_watcher.sample_group.project_codes[group_position]
-        micall_version = self.get_container_version(pipeline_id)
+
+        # Get the version of the filter_quality pipeline that produced the bad_cycles_csv
+        # This tracks the provenance of the upstream processing
+        if self.config.micall_filter_quality_pipeline_id is not None:
+            micall_version = self.get_container_version(self.config.micall_filter_quality_pipeline_id)
+        else:
+            micall_version = 'unknown'
+
         info_file = StringIO()
         writer = DictWriter(info_file, ['sample', 'project', 'run_name', 'micall_version'])
         writer.writeheader()
@@ -1021,6 +1028,62 @@ class KiveWatcher:
         sample_watcher.sample_info_datasets.append(info_dataset)
 
         return info_dataset
+
+    def append_version_to_sample_info(self,
+                                      original_dataset: RunDataset,
+                                      pipeline_id: int,
+                                      sample_name: str) -> RunDataset:
+        """Download sample_info, append a pipeline version, and re-upload.
+
+        This is used to track the chain of pipeline versions that processed the data.
+        For example, proviral's sample_info should show: filter_version;denovo_version
+
+        :param original_dataset: The existing sample_info dataset
+        :param pipeline_id: The pipeline ID whose version should be appended
+        :param sample_name: Sample name for the new dataset filename
+        :return: The new dataset with appended version
+        """
+        # Download the existing sample_info
+        response = self.kive_retry(lambda: self.session.get(original_dataset['url']))
+        csv_content = response.content.decode('utf-8')
+
+        # Parse the CSV
+        csv_file = StringIO(csv_content)
+        reader = DictReader(csv_file)
+        rows = list(reader)
+        fieldnames = reader.fieldnames
+
+        if not rows or not fieldnames:
+            # No rows or no fieldnames, just return original
+            return original_dataset
+
+        # Append the version to the micall_version field
+        new_version = self.get_container_version(pipeline_id)
+        for row in rows:
+            if 'micall_version' in row:
+                existing_version = row['micall_version']
+                if existing_version and existing_version != 'unknown':
+                    row['micall_version'] = f"{existing_version};{new_version}"
+                else:
+                    row['micall_version'] = new_version
+
+        # Write the updated CSV
+        output_file = StringIO()
+        writer = DictWriter(output_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+        # Upload as a new dataset
+        bytes_file = BytesIO(output_file.getvalue().encode('utf8'))
+        new_dataset = self.find_or_upload_dataset(
+            bytes_file,
+            f'{trim_name(sample_name)}_info_proviral.csv')
+
+        if new_dataset is None:
+            # If upload failed, return the original
+            return original_dataset
+
+        return new_dataset
 
     def run_resistance_pipeline(self, sample_watcher: SampleWatcher, folder_watcher: FolderWatcher, input_pipeline_types: Sequence[PipelineType], description: str) -> Optional[Run]:
         pipeline_id = self.config.micall_resistance_pipeline_id
@@ -1071,6 +1134,15 @@ class KiveWatcher:
         input_datasets = {
             argument_name: self.kive_retry(lambda: self.session.get(url).json())
             for argument_name, url in input_dataset_urls.items()}
+
+        # Update sample_info to append the denovo pipeline version
+        if 'sample_info_csv' in input_datasets and self.config.denovo_main_pipeline_id is not None:
+            input_datasets['sample_info_csv'] = self.append_version_to_sample_info(
+                input_datasets['sample_info_csv'],
+                self.config.denovo_main_pipeline_id,
+                sample_watcher.sample_group.names[0] if sample_watcher.sample_group.names[0] else 'unknown'
+            )
+
         input_datasets['cascade_csv'] = input_datasets.pop('unstitched_cascade_csv')
         input_datasets['conseqs_csv'] = input_datasets.pop('unstitched_conseq_csv')
         input_datasets['contigs_csv'] = input_datasets.pop('unstitched_contigs_csv')
