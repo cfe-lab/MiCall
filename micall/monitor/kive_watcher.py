@@ -1063,7 +1063,12 @@ class KiveWatcher:
             if 'micall_version' in row:
                 existing_version = row['micall_version']
                 if existing_version and existing_version != 'unknown':
-                    row['micall_version'] = f"{existing_version};{new_version}"
+                    # Split, append, and deduplicate while preserving order
+                    versions = existing_version.split(';')
+                    versions.append(new_version)
+                    # Use dict.fromkeys() to deduplicate while preserving order
+                    unique_versions = list(dict.fromkeys(versions))
+                    row['micall_version'] = ';'.join(unique_versions)
                 else:
                     row['micall_version'] = new_version
 

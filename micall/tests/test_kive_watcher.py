@@ -1915,6 +1915,60 @@ def test_append_version_to_sample_info(mock_open_kive, pipelines_config):
         f"Expected chained version 'v7.15.0;v7.18.1', got '{row['micall_version']}'"
 
 
+def test_append_version_deduplicates(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info deduplicates versions while preserving order."""
+    mock_session = mock_open_kive.return_value
+    
+    # Mock the get request to download existing sample_info with duplicate version
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0;v7.18.1\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+    
+    # Mock the container app for version lookup - returning a duplicate version
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.15.0', id=495)
+    
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+    
+    # Capture uploaded content
+    uploaded_content = None
+    def capture_upload(data, files):
+        nonlocal uploaded_content
+        dataset_file = files['dataset_file']
+        uploaded_content = dataset_file.read()
+        dataset_file.seek(0)
+        return dict(url='/datasets/201', id=201)
+    
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+    
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    
+    original_dataset = dict(url='/datasets/150', id=150)
+    new_dataset = kive_watcher.append_version_to_sample_info(
+        original_dataset,
+        pipelines_config.denovo_main_pipeline_id,
+        '2110A')
+    
+    # Verify the result
+    assert new_dataset is not None
+    assert new_dataset['id'] == 201
+    
+    # Verify deduplication - should keep v7.15.0;v7.18.1, not v7.15.0;v7.18.1;v7.15.0
+    from csv import DictReader
+    from io import StringIO
+    csv_content = uploaded_content.decode('utf-8')
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+    
+    assert row['micall_version'] == 'v7.15.0;v7.18.1', \
+        f"Expected deduplicated version 'v7.15.0;v7.18.1', got '{row['micall_version']}'"
+
+
 def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
