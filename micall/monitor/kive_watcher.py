@@ -434,6 +434,24 @@ class KiveWatcher:
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
 
+    def get_kive_container_name(self, app_id: str | int) -> str:
+        """ Get the container name for a container app. """
+        self.check_session()
+        kive_app = self.kive_retry(
+            lambda: self.session.endpoints.containerapps.get(app_id)
+        )
+        return kive_app['container_name']
+
+    def get_container_version(self, app_id: str | int) -> str:
+        """ Get the container version for a container app. """
+        full_name = self.get_kive_container_name(app_id)
+        container_name, separator, version = full_name.rpartition(':')
+        if not separator:
+            # Weird case: no version found. Let's just return the full name.
+            logger.warning('No version found in container name %r (id %r)', full_name, app_id)
+            return full_name
+        return version
+
     def create_batch(self, folder_watcher: FolderWatcher) -> None:
         if self.config is None:
             raise RuntimeError("KiveWatcher config is not set.")
