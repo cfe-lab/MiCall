@@ -1006,12 +1006,14 @@ class KiveWatcher:
         fastq_name = sample_watcher.sample_group.names[group_position]
         sample_name = trim_name(fastq_name if fastq_name is not None else 'unknown')
         project_code = sample_watcher.sample_group.project_codes[group_position]
+        micall_version = self.get_container_version(pipeline_id)
         info_file = StringIO()
-        writer = DictWriter(info_file, ['sample', 'project', 'run_name'])
+        writer = DictWriter(info_file, ['sample', 'project', 'run_name', 'micall_version'])
         writer.writeheader()
         writer.writerow(dict(sample=sample_name,
                              project=project_code,
-                             run_name=folder_watcher.run_name))
+                             run_name=folder_watcher.run_name,
+                             micall_version=micall_version))
         bytes_file = BytesIO(info_file.getvalue().encode('utf8'))
         info_dataset = self.find_or_upload_dataset(
             bytes_file,

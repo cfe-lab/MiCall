@@ -54,14 +54,24 @@ def create_mock_clock():
         yield mock_clock
 
 
+def mock_containerapps_get(path):
+    """ Mock for containerapps.get that handles both app details and argument lists. """
+    if 'argument_list' in str(path):
+        # Return argument list
+        return [dict(name='quality_csv', url='/args/967485', type='I', app='/apps/19374')]
+    else:
+        # Return app details with container name
+        return dict(id=int(str(path).strip('/')),
+                   container_name='micall:v7.18.1')
+
+
 @pytest.fixture(name='mock_open_kive')
 def create_mock_open_kive():
     with patch('micall.monitor.kive_watcher.open_kive') as mock_open_kive:
         mock_session = mock_open_kive.return_value
 
         # By default, support calling the filter_quality pipeline.
-        mock_session.endpoints.containerapps.get.return_value = [
-            dict(name='quality_csv', url='/args/967485', type='I', app='/apps/19374')]
+        mock_session.endpoints.containerapps.get.side_effect = mock_containerapps_get
         mock_pipeline = mock_session.get_pipeline.return_value
         mock_input = Mock(dataset_name='quality_csv')
         mock_pipeline.inputs = [mock_input]
@@ -747,7 +757,7 @@ def test_get_kive_pipeline(mock_open_kive, pipelines_config):
     app_id = 43
     assert app_id == pipelines_config.micall_main_pipeline_id
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.return_value = [
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: [
         dict(name="fastq1", url="/args/101", type="I", app="/apps/99"),
         dict(name="fastq2", url="/args/102", type="I"),
         dict(name="bad_cycles_csv", url="/args/103", type="I"),
@@ -781,7 +791,7 @@ def test_get_kive_container_name(mock_open_kive, pipelines_config):
     app_id = 43
     expected_container_name = 'micall:v7.18.1'
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.return_value = dict(
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
         container_name=expected_container_name,
         id=app_id
     )
@@ -796,7 +806,7 @@ def test_get_kive_container_name(mock_open_kive, pipelines_config):
 def test_get_container_version(mock_open_kive, pipelines_config):
     app_id = 43
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.return_value = dict(
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
         container_name='micall:v7.18.1',
         id=app_id
     )
@@ -812,7 +822,7 @@ def test_get_container_version_no_separator(mock_open_kive, pipelines_config):
     app_id = 43
     container_name_without_version = 'micall'
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.return_value = dict(
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
         container_name=container_name_without_version,
         id=app_id
     )
@@ -829,7 +839,7 @@ def test_get_container_version_multiple_colons(mock_open_kive, pipelines_config)
     app_id = 43
     mock_session = mock_open_kive.return_value
     # Test with a Docker registry-style name with multiple colons
-    mock_session.endpoints.containerapps.get.return_value = dict(
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
         container_name='registry.example.com:5000/micall:v7.18.1',
         id=app_id
     )
@@ -1639,6 +1649,103 @@ def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
                            batch='/batches/101',
                            groups_allowed=['Everyone']))
             ] == mock_session.endpoints.containerruns.post.call_args_list
+
+
+def test_sample_info_includes_micall_version(raw_data_with_two_samples,
+                                             mock_open_kive,
+                                             pipelines_config):
+    """Test that sample_info.csv includes the micall_version column."""
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+    
+    # Capture the uploaded file contents
+    uploaded_contents = {}
+    
+    def capture_upload(data, files):
+        dataset_file = files['dataset_file']
+        content = dataset_file.read()
+        dataset_file.seek(0)  # Reset for actual upload
+        filename = data['name']
+        uploaded_contents[filename] = content
+        return dict(url=f'/datasets/{104 + len(uploaded_contents)}', 
+                   id=104 + len(uploaded_contents))
+    
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+    
+    expected_version = 'v7.18.1'
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: (
+        dict(container_name=f'micall:{expected_version}', id=int(str(path).strip('/')))
+        if 'argument_list' not in str(path)
+        else [
+            dict(name='bad_cycles_csv', url='/containerargs/110', type='I', app='/apps/102'),
+            dict(name='fastq1', url='/containerargs/111', type='I'),
+            dict(name='fastq2', url='/containerargs/112', type='I'),
+            dict(name='sample_info_csv', url='/containerargs/113', type='I')
+        ]
+    )
+
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    kive_watcher.app_urls = {
+        pipelines_config.micall_main_pipeline_id: '/containerapps/102',
+        pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.micall_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/110',
+            fastq1='/containerargs/111',
+            fastq2='/containerargs/112',
+            sample_info_csv='/containerargs/113'),
+        pipelines_config.denovo_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/114',
+            fastq1='/containerargs/115',
+            fastq2='/containerargs/116',
+            sample_info_csv='/containerargs/117')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('V3LOOP', None)))
+    folder_watcher.add_run(
+        dict(id=106),
+        PipelineType.FILTER_QUALITY)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=106, state='C'),
+        [dict(argument_name='bad_cycles_csv',
+              dataset='/datasets/107',
+              dataset_purged=False)]]
+    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
+                                                           id=107)
+
+    kive_watcher.poll_runs()
+
+    # Get the sample_info CSV that was uploaded
+    # Find the sample_info file by name
+    sample_info_filename = None
+    for filename in uploaded_contents.keys():
+        if '_info.csv' in filename:
+            sample_info_filename = filename
+            break
+    
+    assert sample_info_filename is not None, f"sample_info not found in uploads: {list(uploaded_contents.keys())}"
+    csv_content = uploaded_contents[sample_info_filename].decode('utf-8')
+    
+    # Verify the CSV has the correct headers and content
+    from csv import DictReader
+    from io import StringIO
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+    
+    assert 'micall_version' in reader.fieldnames
+    assert row['sample'] == '2110A-V3LOOP_S13'
+    assert row['project'] == 'V3LOOP'
+    assert row['run_name'] == '140101_M01234'
+    assert row['micall_version'] == expected_version
 
 
 def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):
