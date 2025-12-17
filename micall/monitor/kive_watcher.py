@@ -269,7 +269,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                            reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
-        disk_operations.write_text(run_path / "errorprocessing", 
+        disk_operations.write_text(run_path / "errorprocessing",
                                  "Finding sample groups failed.\n")
         sample_groups = []
     return sample_groups
@@ -434,10 +434,28 @@ class KiveWatcher:
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
 
+    def get_kive_container_name(self, app_id: str | int) -> str:
+        """ Get the container name for a container app. """
+        self.check_session()
+        kive_app = self.kive_retry(
+            lambda: self.session.endpoints.containerapps.get(app_id)
+        )
+        return kive_app['container_name']
+
+    def get_container_version(self, app_id: str | int) -> str:
+        """ Get the container version for a container app. """
+        full_name = self.get_kive_container_name(app_id)
+        container_name, separator, version = full_name.rpartition(':')
+        if not separator:
+            # Weird case: no version found. Let's just return the full name.
+            logger.warning('No version found in container name %r (id %r)', full_name, app_id)
+            return full_name
+        return version
+
     def create_batch(self, folder_watcher: FolderWatcher) -> None:
         if self.config is None:
             raise RuntimeError("KiveWatcher config is not set.")
-    
+
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
         description = 'MiCall batch for folder {}, pipeline version {}.'.format(
             folder_watcher.run_name,
@@ -622,11 +640,11 @@ class KiveWatcher:
             except Exception:
                 if not self.retry:
                     raise
-                
+
                 # Record start time on first failure
                 if start_time is None:
                     start_time = datetime.now()
-                
+
                 wait_for_retry(attempt_count, start_time)
 
     def check_completed_folders(self) -> None:
@@ -864,7 +882,7 @@ class KiveWatcher:
         disk_operations.remove_empty_directory(plots_path)
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
-        if folder_watcher.quality_dataset is None:    
+        if folder_watcher.quality_dataset is None:
             raise RuntimeError('Quality dataset not available')
         if self.config.micall_filter_quality_pipeline_id is None:
             raise RuntimeError('Filter quality pipeline ID not configured')
@@ -988,12 +1006,21 @@ class KiveWatcher:
         fastq_name = sample_watcher.sample_group.names[group_position]
         sample_name = trim_name(fastq_name if fastq_name is not None else 'unknown')
         project_code = sample_watcher.sample_group.project_codes[group_position]
+
+        # Get the version of the filter_quality pipeline that produced the bad_cycles_csv
+        # This tracks the provenance of the upstream processing
+        if self.config.micall_filter_quality_pipeline_id is not None:
+            micall_version = self.get_container_version(self.config.micall_filter_quality_pipeline_id)
+        else:
+            micall_version = 'unknown'
+
         info_file = StringIO()
-        writer = DictWriter(info_file, ['sample', 'project', 'run_name'])
+        writer = DictWriter(info_file, ['sample', 'project', 'run_name', 'micall_version'])
         writer.writeheader()
         writer.writerow(dict(sample=sample_name,
                              project=project_code,
-                             run_name=folder_watcher.run_name))
+                             run_name=folder_watcher.run_name,
+                             micall_version=micall_version))
         bytes_file = BytesIO(info_file.getvalue().encode('utf8'))
         info_dataset = self.find_or_upload_dataset(
             bytes_file,
@@ -1001,6 +1028,76 @@ class KiveWatcher:
         sample_watcher.sample_info_datasets.append(info_dataset)
 
         return info_dataset
+
+    def append_version_to_sample_info(self,
+                                      original_dataset: RunDataset,
+                                      pipeline_id: int,
+                                      sample_name: str) -> RunDataset:
+        """Download sample_info, append a pipeline version, and re-upload.
+
+        This is used to track the chain of pipeline versions that processed the data.
+        For example, proviral's sample_info should show: filter_version;denovo_version
+
+        :param original_dataset: The existing sample_info dataset
+        :param pipeline_id: The pipeline ID whose version should be appended
+        :param sample_name: Sample name for the new dataset filename
+        :return: The new dataset with appended version
+        """
+        # Download the existing sample_info
+        response = self.kive_retry(lambda: self.session.get(original_dataset['url']))
+        csv_content = response.content.decode('utf-8')
+
+        # Parse the CSV
+        csv_file = StringIO(csv_content)
+        reader = DictReader(csv_file)
+        rows = list(reader)
+        fieldnames = reader.fieldnames
+
+        if not rows or not fieldnames:
+            # No rows or no fieldnames, just return original
+            return original_dataset
+
+        # Append the version to the micall_version field
+        new_version = self.get_container_version(pipeline_id)
+        if ';' in new_version:
+            raise ValueError(f"Version string contains semicolon delimiter: {new_version}")
+
+        for row in rows:
+            if 'micall_version' in row:
+                existing_version = row['micall_version']
+                if existing_version and existing_version != 'unknown':
+                    # Split, append, and deduplicate while preserving order
+                    versions = existing_version.split(';')
+                    # Validate that no individual version is empty or contains semicolon
+                    for v in versions:
+                        if not v:
+                            raise ValueError(f"Version string contains empty version (double semicolon or leading/trailing semicolon): {existing_version}")
+                        if ';' in v:
+                            raise ValueError(f"Version string contains semicolon delimiter: {v}")
+                    versions.append(new_version)
+                    # Use dict.fromkeys() to deduplicate while preserving order
+                    unique_versions = list(dict.fromkeys(versions))
+                    row['micall_version'] = ';'.join(unique_versions)
+                else:
+                    row['micall_version'] = new_version
+
+        # Write the updated CSV
+        output_file = StringIO()
+        writer = DictWriter(output_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+        # Upload as a new dataset
+        bytes_file = BytesIO(output_file.getvalue().encode('utf8'))
+        new_dataset = self.find_or_upload_dataset(
+            bytes_file,
+            f'{trim_name(sample_name)}_info_proviral.csv')
+
+        if new_dataset is None:
+            # If upload failed, return the original
+            return original_dataset
+
+        return new_dataset
 
     def run_resistance_pipeline(self, sample_watcher: SampleWatcher, folder_watcher: FolderWatcher, input_pipeline_types: Sequence[PipelineType], description: str) -> Optional[Run]:
         pipeline_id = self.config.micall_resistance_pipeline_id
@@ -1051,6 +1148,15 @@ class KiveWatcher:
         input_datasets = {
             argument_name: self.kive_retry(lambda: self.session.get(url).json())
             for argument_name, url in input_dataset_urls.items()}
+
+        # Update sample_info to append the denovo pipeline version
+        if 'sample_info_csv' in input_datasets and self.config.denovo_main_pipeline_id is not None:
+            input_datasets['sample_info_csv'] = self.append_version_to_sample_info(
+                input_datasets['sample_info_csv'],
+                self.config.denovo_main_pipeline_id,
+                sample_watcher.sample_group.names[0] if sample_watcher.sample_group.names[0] else 'unknown'
+            )
+
         input_datasets['cascade_csv'] = input_datasets.pop('unstitched_cascade_csv')
         input_datasets['conseqs_csv'] = input_datasets.pop('unstitched_conseq_csv')
         input_datasets['contigs_csv'] = input_datasets.pop('unstitched_contigs_csv')

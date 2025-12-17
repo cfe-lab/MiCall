@@ -54,14 +54,24 @@ def create_mock_clock():
         yield mock_clock
 
 
+def mock_containerapps_get(path):
+    """ Mock for containerapps.get that handles both app details and argument lists. """
+    if 'argument_list' in str(path):
+        # Return argument list
+        return [dict(name='quality_csv', url='/args/967485', type='I', app='/apps/19374')]
+    else:
+        # Return app details with container name
+        return dict(id=int(str(path).strip('/')),
+                   container_name='micall:v7.18.1')
+
+
 @pytest.fixture(name='mock_open_kive')
 def create_mock_open_kive():
     with patch('micall.monitor.kive_watcher.open_kive') as mock_open_kive:
         mock_session = mock_open_kive.return_value
 
         # By default, support calling the filter_quality pipeline.
-        mock_session.endpoints.containerapps.get.return_value = [
-            dict(name='quality_csv', url='/args/967485', type='I', app='/apps/19374')]
+        mock_session.endpoints.containerapps.get.side_effect = mock_containerapps_get
         mock_pipeline = mock_session.get_pipeline.return_value
         mock_input = Mock(dataset_name='quality_csv')
         mock_pipeline.inputs = [mock_input]
@@ -747,7 +757,7 @@ def test_get_kive_pipeline(mock_open_kive, pipelines_config):
     app_id = 43
     assert app_id == pipelines_config.micall_main_pipeline_id
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.return_value = [
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: [
         dict(name="fastq1", url="/args/101", type="I", app="/apps/99"),
         dict(name="fastq2", url="/args/102", type="I"),
         dict(name="bad_cycles_csv", url="/args/103", type="I"),
@@ -775,6 +785,71 @@ def test_get_app_cached(mock_open_kive, pipelines_config):
 
     assert pipeline1 is pipeline2
     mock_session.endpoints.containerapps.get.assert_called_once()
+
+
+def test_get_kive_container_name(mock_open_kive, pipelines_config):
+    app_id = 43
+    expected_container_name = 'micall:v7.18.1'
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
+        container_name=expected_container_name,
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    container_name = kive_watcher.get_kive_container_name(app_id)
+
+    assert expected_container_name == container_name
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
+def test_get_container_version(mock_open_kive, pipelines_config):
+    app_id = 43
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
+        container_name='micall:v7.18.1',
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    version = kive_watcher.get_container_version(app_id)
+
+    assert 'v7.18.1' == version
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
+def test_get_container_version_no_separator(mock_open_kive, pipelines_config):
+    app_id = 43
+    container_name_without_version = 'micall'
+    mock_session = mock_open_kive.return_value
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
+        container_name=container_name_without_version,
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    version = kive_watcher.get_container_version(app_id)
+
+    # When no version separator is found, should return the full name
+    assert container_name_without_version == version
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
+
+
+def test_get_container_version_multiple_colons(mock_open_kive, pipelines_config):
+    app_id = 43
+    mock_session = mock_open_kive.return_value
+    # Test with a Docker registry-style name with multiple colons
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
+        container_name='registry.example.com:5000/micall:v7.18.1',
+        id=app_id
+    )
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    version = kive_watcher.get_container_version(app_id)
+
+    # rpartition should get the last colon, so we should get the version after it
+    assert 'v7.18.1' == version
+    mock_session.endpoints.containerapps.get.assert_called_once_with(app_id)
 
 
 def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_config):
@@ -1576,6 +1651,388 @@ def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
             ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
+def test_sample_info_includes_micall_version(raw_data_with_two_samples,
+                                             mock_open_kive,
+                                             pipelines_config):
+    """Test that sample_info.csv includes the micall_version column.
+
+    The version should be from the filter_quality pipeline, which represents
+    the provenance of the bad_cycles_csv input.
+    """
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+
+    # Capture the uploaded file contents
+    uploaded_contents = {}
+
+    def capture_upload(data, files):
+        dataset_file = files['dataset_file']
+        content = dataset_file.read()
+        dataset_file.seek(0)  # Reset for actual upload
+        filename = data['name']
+        uploaded_contents[filename] = content
+        return dict(url=f'/datasets/{104 + len(uploaded_contents)}',
+                   id=104 + len(uploaded_contents))
+
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+
+    # The version from the filter_quality pipeline
+    expected_version = 'v7.18.1'
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: (
+        dict(container_name=f'micall:{expected_version}', id=int(str(path).strip('/')))
+        if 'argument_list' not in str(path)
+        else [
+            dict(name='bad_cycles_csv', url='/containerargs/110', type='I', app='/apps/102'),
+            dict(name='fastq1', url='/containerargs/111', type='I'),
+            dict(name='fastq2', url='/containerargs/112', type='I'),
+            dict(name='sample_info_csv', url='/containerargs/113', type='I')
+        ]
+    )
+
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    kive_watcher.app_urls = {
+        pipelines_config.micall_main_pipeline_id: '/containerapps/102',
+        pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.micall_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/110',
+            fastq1='/containerargs/111',
+            fastq2='/containerargs/112',
+            sample_info_csv='/containerargs/113'),
+        pipelines_config.denovo_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/114',
+            fastq1='/containerargs/115',
+            fastq2='/containerargs/116',
+            sample_info_csv='/containerargs/117')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('V3LOOP', None)))
+    folder_watcher.add_run(
+        dict(id=106),
+        PipelineType.FILTER_QUALITY)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=106, state='C'),
+        [dict(argument_name='bad_cycles_csv',
+              dataset='/datasets/107',
+              dataset_purged=False)]]
+    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
+                                                           id=107)
+
+    kive_watcher.poll_runs()
+
+    # Get the sample_info CSV that was uploaded
+    # Find the sample_info file by name
+    sample_info_filename = None
+    for filename in uploaded_contents.keys():
+        if '_info.csv' in filename:
+            sample_info_filename = filename
+            break
+
+    assert sample_info_filename is not None, f"sample_info not found in uploads: {list(uploaded_contents.keys())}"
+    csv_content = uploaded_contents[sample_info_filename].decode('utf-8')
+
+    # Verify the CSV has the correct headers and content
+    from csv import DictReader
+    from io import StringIO
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+
+    assert 'micall_version' in reader.fieldnames
+    assert row['sample'] == '2110A-V3LOOP_S13'
+    assert row['project'] == 'V3LOOP'
+    assert row['run_name'] == '140101_M01234'
+    assert row['micall_version'] == expected_version
+
+
+def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
+                                                 mock_open_kive,
+                                                 pipelines_config):
+    """Test that sample_info.csv gets version from filter_quality, not main pipeline.
+
+    This ensures proper provenance tracking - the version should reflect the
+    upstream pipeline that produced the bad_cycles_csv input.
+    """
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    mock_session = mock_open_kive.return_value
+
+    # Capture the uploaded file contents
+    uploaded_contents = {}
+
+    def capture_upload(data, files):
+        dataset_file = files['dataset_file']
+        content = dataset_file.read()
+        dataset_file.seek(0)  # Reset for actual upload
+        filename = data['name']
+        uploaded_contents[filename] = content
+        return dict(url=f'/datasets/{104 + len(uploaded_contents)}',
+                   id=104 + len(uploaded_contents))
+
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+
+    # Different versions for different pipelines
+    filter_quality_version = 'v7.15.0'
+    main_pipeline_version = 'v7.18.1'
+
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return [
+                dict(name='bad_cycles_csv', url='/containerargs/110', type='I', app='/apps/102'),
+                dict(name='fastq1', url='/containerargs/111', type='I'),
+                dict(name='fastq2', url='/containerargs/112', type='I'),
+                dict(name='sample_info_csv', url='/containerargs/113', type='I')
+            ]
+        # Return different versions based on pipeline ID
+        path_str = str(path).strip('/')
+        if path_str == str(pipelines_config.micall_filter_quality_pipeline_id):
+            return dict(container_name=f'micall:{filter_quality_version}',
+                       id=pipelines_config.micall_filter_quality_pipeline_id)
+        else:
+            return dict(container_name=f'micall:{main_pipeline_version}',
+                       id=int(path_str))
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    kive_watcher.app_urls = {
+        pipelines_config.micall_main_pipeline_id: '/containerapps/102',
+        pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.micall_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/110',
+            fastq1='/containerargs/111',
+            fastq2='/containerargs/112',
+            sample_info_csv='/containerargs/113'),
+        pipelines_config.denovo_main_pipeline_id: dict(
+            bad_cycles_csv='/containerargs/114',
+            fastq1='/containerargs/115',
+            fastq2='/containerargs/116',
+            sample_info_csv='/containerargs/117')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2110A',
+                                 ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('V3LOOP', None)))
+    folder_watcher.add_run(
+        dict(id=106),
+        PipelineType.FILTER_QUALITY)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=106, state='C'),
+        [dict(argument_name='bad_cycles_csv',
+              dataset='/datasets/107',
+              dataset_purged=False)]]
+    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
+                                                           id=107)
+
+    kive_watcher.poll_runs()
+
+    # Get the sample_info CSV that was uploaded
+    sample_info_filename = None
+    for filename in uploaded_contents.keys():
+        if '_info.csv' in filename:
+            sample_info_filename = filename
+            break
+
+    assert sample_info_filename is not None
+    csv_content = uploaded_contents[sample_info_filename].decode('utf-8')
+
+    # Verify the version is from filter_quality, not main pipeline
+    from csv import DictReader
+    from io import StringIO
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+
+    assert row['micall_version'] == filter_quality_version, \
+        f"Expected filter_quality version {filter_quality_version}, got {row['micall_version']}"
+
+
+def test_append_version_to_sample_info(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info chains versions with semicolon."""
+    mock_session = mock_open_kive.return_value
+
+    # Mock the get request to download existing sample_info
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+
+    # Mock the container app for version lookup
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18.1', id=495)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Capture uploaded content
+    uploaded_content = None
+    def capture_upload(data, files):
+        nonlocal uploaded_content
+        dataset_file = files['dataset_file']
+        uploaded_content = dataset_file.read()
+        dataset_file.seek(0)
+        return dict(url='/datasets/200', id=200)
+
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    original_dataset = dict(url='/datasets/150', id=150)
+    new_dataset = kive_watcher.append_version_to_sample_info(
+        original_dataset,
+        pipelines_config.denovo_main_pipeline_id,
+        '2110A')
+
+    # Verify the result
+    assert new_dataset is not None
+    assert new_dataset['id'] == 200
+
+    # Verify the chained version
+    from csv import DictReader
+    from io import StringIO
+    csv_content = uploaded_content.decode('utf-8')
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+
+    assert row['micall_version'] == 'v7.15.0;v7.18.1', \
+        f"Expected chained version 'v7.15.0;v7.18.1', got '{row['micall_version']}'"
+
+
+def test_append_version_deduplicates(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info deduplicates versions while preserving order."""
+    mock_session = mock_open_kive.return_value
+
+    # Mock the get request to download existing sample_info with duplicate version
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0;v7.18.1\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+
+    # Mock the container app for version lookup - returning a duplicate version
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.15.0', id=495)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Capture uploaded content
+    uploaded_content = None
+    def capture_upload(data, files):
+        nonlocal uploaded_content
+        dataset_file = files['dataset_file']
+        uploaded_content = dataset_file.read()
+        dataset_file.seek(0)
+        return dict(url='/datasets/201', id=201)
+
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    original_dataset = dict(url='/datasets/150', id=150)
+    new_dataset = kive_watcher.append_version_to_sample_info(
+        original_dataset,
+        pipelines_config.denovo_main_pipeline_id,
+        '2110A')
+
+    # Verify the result
+    assert new_dataset is not None
+    assert new_dataset['id'] == 201
+
+    # Verify deduplication - should keep v7.15.0;v7.18.1, not v7.15.0;v7.18.1;v7.15.0
+    from csv import DictReader
+    from io import StringIO
+    csv_content = uploaded_content.decode('utf-8')
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+
+    assert row['micall_version'] == 'v7.15.0;v7.18.1', \
+        f"Expected deduplicated version 'v7.15.0;v7.18.1', got '{row['micall_version']}'"
+
+
+def test_append_version_rejects_semicolon_in_new_version(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info raises error if new version contains semicolon."""
+    mock_session = mock_open_kive.return_value
+
+    # Mock the get request to download existing sample_info
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+
+    # Mock the container app to return a version with semicolon
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18;bad', id=495)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    original_dataset = dict(url='/datasets/150', id=150)
+
+    # Should raise ValueError
+    with pytest.raises(ValueError, match=r"Version string contains semicolon delimiter: v7\.18;bad"):
+        kive_watcher.append_version_to_sample_info(
+            original_dataset,
+            pipelines_config.denovo_main_pipeline_id,
+            '2110A')
+
+
+def test_append_version_rejects_semicolon_in_existing_version(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info raises error if existing version contains double semicolon."""
+    mock_session = mock_open_kive.return_value
+
+    # Mock the get request with a malformed existing version containing double semicolon
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0;;v7.16.0\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+
+    # Mock the container app for version lookup
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18.1', id=495)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+
+    original_dataset = dict(url='/datasets/150', id=150)
+
+    # Should raise ValueError because after split, one element will be empty string
+    with pytest.raises(ValueError, match=r"Version string contains empty version"):
+        kive_watcher.append_version_to_sample_info(
+            original_dataset,
+            pipelines_config.denovo_main_pipeline_id,
+            '2110A')
+
+
 def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
@@ -1785,6 +2242,28 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
 
     kive_watcher.check_session()
     mock_session = kive_watcher.session
+
+    # Mock for downloading the existing sample_info CSV
+    mock_get_response = Mock()
+    mock_get_response.content = b"sample,micall_version\n2120A,v7.15.0\n"
+    mock_session.get.return_value = mock_get_response
+    mock_get_response.json.side_effect = [
+        dict(url='/datasets/110/', id=110),
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
+
+    # Mock for container app version lookup
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18.1', id=43)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Mock for uploading the updated sample_info
+    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/200/', id=200)
+
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
         [dict(dataset='/datasets/110/',
@@ -1799,18 +2278,13 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
          dict(dataset='/datasets/113/',
               argument_type='O',
               argument_name='unstitched_cascade_csv')]]  # run datasets
-    mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/110/', id=110),
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/113/', id=113)]
 
     kive_watcher.poll_runs()
 
     mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
         app='/containerapps/103',
         datasets=[dict(argument='/containerargs/103',
-                       dataset='/datasets/110/'),
+                       dataset='/datasets/200/'),  # Updated sample_info with chained version
                   dict(argument='/containerargs/104',
                        dataset='/datasets/111/'),
                   dict(argument='/containerargs/105',
@@ -1820,6 +2294,119 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
         name='Proviral on 2120A',
         batch='/batches/101',
         groups_allowed=['Everyone']))
+
+
+def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_kive):
+    """Test that proviral pipeline chains filter_quality and denovo versions."""
+    pipelines_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
+                                        '--denovo_main_pipeline_id', '43',
+                                        '--proviral_pipeline_id', '145'])
+
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+
+    # Versions for different pipelines
+    filter_quality_version = 'v7.15.0'
+    denovo_main_version = 'v7.18.1'
+
+    mock_session = mock_open_kive.return_value
+
+    # Mock container app versions
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return [
+                dict(name='sample_info_csv', url='/containerargs/103', type='I'),
+                dict(name='contigs_csv', url='/containerargs/104', type='I'),
+                dict(name='conseqs_csv', url='/containerargs/105', type='I'),
+                dict(name='cascade_csv', url='/containerargs/106', type='I')
+            ]
+        path_str = str(path).strip('/')
+        if path_str == str(pipelines_config.micall_filter_quality_pipeline_id):
+            return dict(container_name=f'micall:{filter_quality_version}', id=42)
+        elif path_str == str(pipelines_config.denovo_main_pipeline_id):
+            return dict(container_name=f'micall:{denovo_main_version}', id=43)
+        else:
+            return dict(container_name='micall:v7.19.0', id=int(path_str))
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Mock the existing sample_info CSV with filter_quality version
+    existing_sample_info = f"sample,micall_version\n2120A,{filter_quality_version}\n".encode('utf-8')
+    mock_get_response = Mock()
+    mock_get_response.content = existing_sample_info
+    mock_session.get.return_value = mock_get_response
+    mock_session.get.return_value.json.side_effect = [
+        dict(url='/datasets/110/', id=110),
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
+
+    # Capture the uploaded sample_info with chained version
+    uploaded_sample_info = None
+    def capture_upload(data, files):
+        nonlocal uploaded_sample_info
+        if 'sample_info_csv' in data.get('name', '') or '_info_proviral.csv' in data.get('name', ''):
+            dataset_file = files['dataset_file']
+            uploaded_sample_info = dataset_file.read()
+            dataset_file.seek(0)
+        return dict(url='/datasets/200/', id=200)
+
+    mock_session.endpoints.datasets.post.side_effect = capture_upload
+
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    kive_watcher.app_urls = {
+        pipelines_config.proviral_pipeline_id: '/containerapps/103'}
+    kive_watcher.app_args = {
+        pipelines_config.proviral_pipeline_id: dict(
+            sample_info_csv='/containerargs/103',
+            contigs_csv='/containerargs/104',
+            conseqs_csv='/containerargs/105',
+            cascade_csv='/containerargs/106')}
+
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.add_run(dict(id=106),
+                           PipelineType.FILTER_QUALITY,
+                           is_complete=True)
+    sample_watcher = kive_watcher.add_sample_group(
+        base_calls=base_calls,
+        sample_group=SampleGroup('2120A',
+                                 ('2120A-PR_S14_L001_R1_001.fastq.gz',
+                                  None),
+                                 ('HIVNFLDNA', None)))
+    folder_watcher.add_run(
+        dict(id=107),
+        PipelineType.DENOVO_MAIN,
+        sample_watcher)
+
+    mock_session.endpoints.containerruns.get.side_effect = [
+        dict(id=107, state='C'),  # refresh run state
+        [dict(dataset='/datasets/110/',
+              argument_type='I',
+              argument_name='sample_info_csv'),
+         dict(dataset='/datasets/111/',
+              argument_type='O',
+              argument_name='unstitched_contigs_csv'),
+         dict(dataset='/datasets/112/',
+              argument_type='O',
+              argument_name='unstitched_conseq_csv'),
+         dict(dataset='/datasets/113/',
+              argument_type='O',
+              argument_name='unstitched_cascade_csv')]]  # run datasets
+
+    kive_watcher.poll_runs()
+
+    # Verify the sample_info was uploaded with chained version
+    assert uploaded_sample_info is not None
+    from csv import DictReader
+    from io import StringIO
+    csv_content = uploaded_sample_info.decode('utf-8')
+    reader = DictReader(StringIO(csv_content))
+    row = next(reader)
+
+    expected_version = f'{filter_quality_version};{denovo_main_version}'
+    assert row['micall_version'] == expected_version, \
+        f"Expected chained version '{expected_version}', got '{row['micall_version']}'"
 
 
 def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipelines_config):
@@ -3239,20 +3826,20 @@ class TestDiskOperationsIntegration:
             temp_path = Path(temp_dir)
             results_path = temp_path / "results"
             coverage_path = results_path / "coverage_maps"
-            
+
             # This mirrors the exact pattern from kive_watcher.extract_coverage_maps
             disk_operations.mkdir_p(coverage_path, exist_ok=True)
             assert coverage_path.exists()
-            
+
             # Simulate creating some files (would normally come from tar extraction)
             test_file = coverage_path / "sample1.coverage.svg"
             disk_operations.write_text(test_file, "test content")
-            
+
             # The remove_empty_directory should NOT remove the directory because it has files
             disk_operations.remove_empty_directory(coverage_path)
             assert coverage_path.exists()  # Should still exist because it has files
             assert test_file.exists()
-            
+
             # Now remove the file and try again
             disk_operations.unlink(test_file)
             disk_operations.remove_empty_directory(coverage_path)
@@ -3265,30 +3852,30 @@ class TestDiskOperationsIntegration:
             results_path = temp_path / "results"
             output_path = results_path / "detailed_results"
             sample_target_path = output_path / "sample1"
-            
+
             # Create the directory structure
             disk_operations.mkdir_p(sample_target_path, exist_ok=True)
             assert sample_target_path.exists()
-            
+
             # Test empty directory removal
             disk_operations.remove_empty_directory(sample_target_path)
             assert not sample_target_path.exists()
-            
+
             # Test with files - create again and add content
             disk_operations.mkdir_p(sample_target_path, exist_ok=True)
             test_file = sample_target_path / "results.txt"
             disk_operations.write_text(test_file, "important data")
-            
+
             # Should not remove when there are files
             disk_operations.remove_empty_directory(sample_target_path)
             assert sample_target_path.exists()
             assert test_file.exists()
-            
+
             # Remove files and parent directory
             disk_operations.unlink(test_file)
             disk_operations.remove_empty_directory(sample_target_path)
             assert not sample_target_path.exists()
-            
+
             # Test parent directory cleanup
             disk_operations.remove_empty_directory(output_path)
             assert not output_path.exists()
@@ -3299,19 +3886,19 @@ class TestDiskOperationsIntegration:
             temp_path = Path(temp_dir)
             results_path = temp_path / "results"
             alignment_path = results_path / "alignment"
-            
+
             # Create alignment directory
             disk_operations.mkdir_p(alignment_path, exist_ok=True)
-            
+
             # Test case where no alignment files are moved (empty directory)
             disk_operations.remove_empty_directory(alignment_path)
             assert not alignment_path.exists()
-            
+
             # Test case where some files exist
             disk_operations.mkdir_p(alignment_path, exist_ok=True)
             alignment_file = alignment_path / "sample1_alignment.svg"
             disk_operations.write_text(alignment_file, "<svg>test</svg>")
-            
+
             # Should not remove directory with files
             disk_operations.remove_empty_directory(alignment_path)
             assert alignment_path.exists()
@@ -3321,14 +3908,14 @@ class TestDiskOperationsIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             test_dir = temp_path / "test_dir"
-            
+
             # Create directory
             disk_operations.mkdir_p(test_dir, exist_ok=True)
-            
+
             # Mock intermittent permission errors at the Path.rmdir level
             call_count = 0
             original_rmdir = Path.rmdir
-            
+
             def mock_rmdir(self):
                 nonlocal call_count
                 if str(self) == str(test_dir):
@@ -3336,7 +3923,7 @@ class TestDiskOperationsIntegration:
                     if call_count <= 2:  # Fail first 2 attempts
                         raise OSError(errno.EACCES, "Permission denied")
                 return original_rmdir(self)
-            
+
             with patch.object(Path, 'rmdir', mock_rmdir):
                 # Should succeed after retries
                 disk_operations.remove_empty_directory(test_dir)
@@ -3349,14 +3936,14 @@ class TestDiskOperationsIntegration:
             temp_path = Path(temp_dir)
             parent_dir = temp_path / "parent"
             child_dir = parent_dir / "child"
-            
+
             # Create nested structure
             disk_operations.mkdir_p(child_dir, exist_ok=True)
-            
+
             # Add file to child
             test_file = child_dir / "important.txt"
             disk_operations.write_text(test_file, "data")
-            
+
             # Try to remove parent - should silently handle ENOTEMPTY
             disk_operations.remove_empty_directory(parent_dir)
             assert parent_dir.exists()  # Should still exist
@@ -3368,14 +3955,14 @@ class TestDiskOperationsIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             target_file = temp_path / "test_output.csv"
-            
+
             # Test write operation (used in copy_outputs)
             with disk_operations.disk_file_operation(target_file, 'w') as target:
                 target.write("sample,value\n")
                 target.write("sample1,123\n")
-            
+
             assert target_file.exists()
-            
+
             # Test read operation (used in copy_outputs)
             with disk_operations.disk_file_operation(target_file, 'r') as source:
                 content = source.read()
@@ -3387,7 +3974,7 @@ class TestDiskOperationsIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             error_file = temp_path / "errorprocessing"
-            
+
             # Test normal operation
             disk_operations.write_text(error_file, "Finding error metrics failed.\n")
             assert error_file.exists()
@@ -3398,14 +3985,14 @@ class TestDiskOperationsIntegration:
         """Test handling of concurrent directory operations."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-            
+
             # Create multiple directories as might happen in concurrent processing
             dirs = []
             for i in range(5):
                 dir_path = temp_path / f"sample_{i}"
                 disk_operations.mkdir_p(dir_path, exist_ok=True)
                 dirs.append(dir_path)
-            
+
             # Remove them all
             for dir_path in dirs:
                 disk_operations.remove_empty_directory(dir_path)
@@ -3416,12 +4003,12 @@ class TestDiskOperationsIntegration:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             results_path = temp_path / "Results" / "version_1.0"
-            
+
             # Create complex directory structure
             disk_operations.mkdir_p(results_path / "sub1" / "sub2", exist_ok=True)
             disk_operations.write_text(results_path / "file1.txt", "content")
             disk_operations.write_text(results_path / "sub1" / "file2.txt", "content")
-            
+
             # Test rmtree with ignore_errors=True
             disk_operations.rmtree(results_path, ignore_errors=True)
             assert not results_path.exists()
