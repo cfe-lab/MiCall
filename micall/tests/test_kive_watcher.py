@@ -1969,6 +1969,70 @@ def test_append_version_deduplicates(mock_open_kive, pipelines_config):
         f"Expected deduplicated version 'v7.15.0;v7.18.1', got '{row['micall_version']}'"
 
 
+def test_append_version_rejects_semicolon_in_new_version(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info raises error if new version contains semicolon."""
+    mock_session = mock_open_kive.return_value
+
+    # Mock the get request to download existing sample_info
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+
+    # Mock the container app to return a version with semicolon
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18;bad', id=495)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+    
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    
+    original_dataset = dict(url='/datasets/150', id=150)
+    
+    # Should raise ValueError
+    with pytest.raises(ValueError, match=r"Version string contains semicolon delimiter: v7\.18;bad"):
+        kive_watcher.append_version_to_sample_info(
+            original_dataset,
+            pipelines_config.denovo_main_pipeline_id,
+            '2110A')
+
+
+def test_append_version_rejects_semicolon_in_existing_version(mock_open_kive, pipelines_config):
+    """Test that append_version_to_sample_info raises error if existing version contains double semicolon."""
+    mock_session = mock_open_kive.return_value
+    
+    # Mock the get request with a malformed existing version containing double semicolon
+    existing_csv = b"sample,micall_version\n2110A,v7.15.0;;v7.16.0\n"
+    mock_response = Mock()
+    mock_response.content = existing_csv
+    mock_session.get.return_value = mock_response
+    
+    # Mock the container app for version lookup
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18.1', id=495)
+    
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+    
+    # Create kive_watcher and test append_version_to_sample_info
+    pipelines_config.denovo_main_pipeline_id = 495
+    kive_watcher = KiveWatcher(pipelines_config, Queue())
+    
+    original_dataset = dict(url='/datasets/150', id=150)
+    
+    # Should raise ValueError because after split, one element will be empty string
+    with pytest.raises(ValueError, match=r"Version string contains empty version"):
+        kive_watcher.append_version_to_sample_info(
+            original_dataset,
+            pipelines_config.denovo_main_pipeline_id,
+            '2110A')
+
+
 def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pipelines_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")

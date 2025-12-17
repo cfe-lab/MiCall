@@ -1059,12 +1059,21 @@ class KiveWatcher:
 
         # Append the version to the micall_version field
         new_version = self.get_container_version(pipeline_id)
+        if ';' in new_version:
+            raise ValueError(f"Version string contains semicolon delimiter: {new_version}")
+
         for row in rows:
             if 'micall_version' in row:
                 existing_version = row['micall_version']
                 if existing_version and existing_version != 'unknown':
                     # Split, append, and deduplicate while preserving order
                     versions = existing_version.split(';')
+                    # Validate that no individual version is empty or contains semicolon
+                    for v in versions:
+                        if not v:
+                            raise ValueError(f"Version string contains empty version (double semicolon or leading/trailing semicolon): {existing_version}")
+                        if ';' in v:
+                            raise ValueError(f"Version string contains semicolon delimiter: {v}")
                     versions.append(new_version)
                     # Use dict.fromkeys() to deduplicate while preserving order
                     unique_versions = list(dict.fromkeys(versions))
