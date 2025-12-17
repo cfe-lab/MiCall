@@ -2242,6 +2242,28 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
 
     kive_watcher.check_session()
     mock_session = kive_watcher.session
+
+    # Mock for downloading the existing sample_info CSV
+    mock_get_response = Mock()
+    mock_get_response.content = b"sample,micall_version\n2120A,v7.15.0\n"
+    mock_session.get.return_value = mock_get_response
+    mock_get_response.json.side_effect = [
+        dict(url='/datasets/110/', id=110),
+        dict(url='/datasets/111/', id=111),
+        dict(url='/datasets/112/', id=112),
+        dict(url='/datasets/113/', id=113)]
+
+    # Mock for container app version lookup
+    def get_container_app(path):
+        if 'argument_list' in str(path):
+            return []
+        return dict(container_name='micall:v7.18.1', id=43)
+
+    mock_session.endpoints.containerapps.get.side_effect = get_container_app
+
+    # Mock for uploading the updated sample_info
+    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/200/', id=200)
+
     mock_session.endpoints.containerruns.get.side_effect = [
         dict(id=107, state='C'),  # refresh run state
         [dict(dataset='/datasets/110/',
@@ -2256,18 +2278,13 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
          dict(dataset='/datasets/113/',
               argument_type='O',
               argument_name='unstitched_cascade_csv')]]  # run datasets
-    mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/110/', id=110),
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/113/', id=113)]
 
     kive_watcher.poll_runs()
 
     mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
         app='/containerapps/103',
         datasets=[dict(argument='/containerargs/103',
-                       dataset='/datasets/110/'),
+                       dataset='/datasets/200/'),  # Updated sample_info with chained version
                   dict(argument='/containerargs/104',
                        dataset='/datasets/111/'),
                   dict(argument='/containerargs/105',
