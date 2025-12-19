@@ -19,7 +19,7 @@ from .logger import logger
 
 
 FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
-    '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)|(^nuc_.*[.]csv)).*')
+    '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)|(nuc)).*')
 
 
 kivecli.logger.logger.setLevel(logging.DEBUG)
