@@ -272,6 +272,73 @@ def avg_contigs_lengths(rows: Rows) -> float:
         return 0
 
 
+def count_soft_clips_from_nuc(path_to_file: Path) -> Optional[int]:
+    """
+    Count the total number of soft-clipped reads from the nuc CSV file.
+
+    The nuc.csv file contains per-position nucleotide counts including a 'clip' column.
+    Each row represents a position in a region/gene, and the 'clip' value is the count
+    of soft-clipped reads at that position.
+
+    To avoid overcounting when the same reference position appears in multiple overlapping regions,
+    we track the maximum clip count per unique (seed, refseq.nuc.pos) combination.
+
+    @param path_to_file: Path to the nuc.csv file
+    @return: Total count of soft-clipped reads, or None if file is empty/invalid
+    """
+    # Track max clip count per (seed, refseq.nuc.pos) to avoid overcounting
+    # when positions appear in multiple overlapping regions
+    position_clips: dict[tuple[str, str], int] = {}
+    has_data = False
+
+    try:
+        with open(path_to_file) as fd:
+            reader = csv.DictReader(fd)
+            for row in reader:
+                has_data = True
+                clip_str = row.get("clip", "0")
+
+                # Skip empty values
+                if not clip_str:
+                    continue
+
+                try:
+                    clip_count = int(clip_str)
+                except ValueError:
+                    logger.warning("Invalid clip value %r in nuc file at position %s.",
+                                 clip_str, row.get("refseq.nuc.pos", "unknown"))
+                    continue
+
+                # Skip zero counts
+                if clip_count == 0:
+                    continue
+
+                # Use (seed, refseq.nuc.pos) as key to deduplicate across overlapping regions
+                seed = row.get("seed", "")
+                refseq_pos = row.get("refseq.nuc.pos", "")
+
+                # Skip if no reference position (shouldn't happen in valid data)
+                if not refseq_pos:
+                    continue
+
+                key = (seed, refseq_pos)
+
+                # Keep the maximum clip count for this position
+                if key not in position_clips or clip_count > position_clips[key]:
+                    position_clips[key] = clip_count
+
+    except (IOError, OSError) as e:
+        logger.warning("Could not read nuc file %s: %s", path_to_file, e)
+        return None
+
+    if not has_data:
+        return None
+
+    # Sum up all the deduplicated clip counts
+    total_clips = sum(position_clips.values())
+    return total_clips
+
+
 def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
     def collect_scores() -> Iterator[float]:
         for row in rows:
@@ -380,6 +447,12 @@ def get_stats(info_file: Path) -> Optional[Row]:
         conseqs_stitched_csv_path = None
         logger.error("%s", ex)
 
+    try:
+        nuc_csv_path = find_file(directory, "^nuc.*[.]csv$")
+    except ValueError as ex:
+        nuc_csv_path = None
+        logger.error("%s", ex)
+
     rc = read_coverage_rows
     ro = read_contigs_or_conseqs_rows
 
@@ -399,6 +472,9 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     if conseqs_stitched_csv_path:
         o["stitched_alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_stitched_csv_path))
+
+    if nuc_csv_path:
+        o["soft_clips_count"] = count_soft_clips_from_nuc(nuc_csv_path)
 
     overlaps: list[Row] = []
     o["overlaps"] = overlaps
