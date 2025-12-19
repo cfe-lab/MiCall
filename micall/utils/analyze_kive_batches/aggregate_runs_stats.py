@@ -21,6 +21,7 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
             avg_overlap_count     = ('overlap_count',     'mean'),
             avg_number_of_contigs = ('number_of_contigs', 'mean'),
             avg_contigs_size      = ('avg_contigs_size',  'mean'),
+            avg_soft_clips_count  = ('soft_clips_count',  'mean'),
             avg_run_time          = ('run_time',          'mean'),
             run_count             = ('app',               'count'),
         )
