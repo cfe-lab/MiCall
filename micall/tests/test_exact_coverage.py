@@ -384,8 +384,9 @@ ref2,1.0,group2,GGGGCCCC
         contigs = read_contigs(csv_file)
         
         self.assertEqual(len(contigs), 2)
-        self.assertEqual(contigs["ref1"], "ACGTACGT")
-        self.assertEqual(contigs["ref2"], "GGGGCCCC")
+        # Should use position-based names since no sample/region columns
+        self.assertEqual(contigs["contig1"], "ACGTACGT")
+        self.assertEqual(contigs["contig2"], "GGGGCCCC")
     
     def test_read_csv_with_sequence_column(self):
         """Test reading contigs from CSV with 'sequence' column (conseq.csv format)"""
@@ -413,10 +414,11 @@ ref1,TTTTTTTT,ACGTACGT
         contigs = read_contigs(csv_file)
         
         # Should use 'sequence' column, not 'contig' column
-        self.assertEqual(contigs["ref1"], "ACGTACGT")
+        # Should use position-based name since no sample/region
+        self.assertEqual(contigs["contig1"], "ACGTACGT")
     
     def test_name_column_priority(self):
-        """Test that 'sample' is prioritized, then 'region', then 'ref'"""
+        """Test that 'sample' is prioritized, then 'region', then position"""
         # Test with sample column
         csv_file = StringIO("""\
 sample,region,ref,contig
@@ -433,13 +435,13 @@ myregion,myref,GGGGCCCC
         contigs = read_contigs(csv_file)
         self.assertIn("myregion", contigs)
         
-        # Test with ref column (no sample or region)
+        # Test with neither sample nor region - should use position
         csv_file = StringIO("""\
 ref,contig
 myref,TTTTTTTT
 """)
         contigs = read_contigs(csv_file)
-        self.assertIn("myref", contigs)
+        self.assertIn("contig1", contigs)
     
     def test_csv_without_sequence_or_contig_column_raises_error(self):
         """Test that CSV without 'sequence' or 'contig' column raises ValueError"""
@@ -465,9 +467,10 @@ ref3,GGGGCCCC
         
         contigs = read_contigs(csv_file)
         
-        # Should only have ref1 and ref3, ref2 should be skipped
+        # Should only have contig1 and contig3, ref2 should be skipped
+        # Uses position-based names
         self.assertEqual(len(contigs), 2)
-        self.assertIn("ref1", contigs)
-        self.assertIn("ref3", contigs)
-        self.assertNotIn("ref2", contigs)
+        self.assertIn("contig1", contigs)
+        self.assertIn("contig3", contigs)
+        self.assertNotIn("contig2", contigs)
 

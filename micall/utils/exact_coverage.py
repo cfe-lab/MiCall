@@ -107,7 +107,7 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
 
     For CSV files:
     - Sequence column: prioritizes 'sequence' over 'contig'
-    - Name column: uses 'sample', 'region', or 'ref' (in that order)
+    - Name column: uses 'sample' or 'region' (in that order), falls back to position
 
     :param contigs_file: File handle to read contigs from
     :return: Dictionary mapping contig_name -> sequence
@@ -144,14 +144,14 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
             if not contig_seq:
                 continue  # Skip empty sequences
 
-            # Find name column: prioritize 'sample', then 'region', then 'ref'
+            # Find name column: prioritize 'sample', then 'region'
+            # Fall back to position if neither is present
             contig_name = None
-            for name_col in ["sample", "region", "ref"]:
-                if name_col in row and row[name_col]:
-                    contig_name = row[name_col]
-                    break
-
-            if not contig_name:
+            if "sample" in row and row["sample"]:
+                contig_name = row["sample"]
+            elif "region" in row and row["region"]:
+                contig_name = row["region"]
+            else:
                 contig_name = f"contig{i}"
 
             # If same name appears multiple times, append index
