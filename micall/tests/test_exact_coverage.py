@@ -204,7 +204,7 @@ class TestFindExactMatches(unittest.TestCase):
         self.assertEqual(len(matches), 2)
         positions = sorted([start for _, start, _ in matches])
         self.assertEqual(positions, [2, 12])
-        
+
         # Verify the matches are for the same contig
         contig_names = [name for name, _, _ in matches]
         self.assertTrue(all(name == "contig1" for name in contig_names))

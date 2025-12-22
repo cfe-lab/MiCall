@@ -215,9 +215,7 @@ def calculate_exact_coverage(
         for read_seq in [read1_seq, read2_seq]:
             # Try both forward and reverse complement
             for seq in [read_seq, reverse_complement(read_seq)]:
-                matches = find_exact_matches(
-                    seq, kmer_index, contigs, kmer_size
-                )
+                matches = find_exact_matches(seq, kmer_index, contigs, kmer_size)
 
                 for contig_name, start_pos, end_pos in matches:
                     match_count += 1
@@ -261,11 +259,13 @@ def write_coverage_csv(
             )
 
 
-def main_typed(fastq1: TextIO,
-                fastq2: TextIO,
-                contigs_fasta: TextIO,
-                output_csv: TextIO,
-                kmer_size: int = 31) -> None:
+def main_typed(
+    fastq1: TextIO,
+    fastq2: TextIO,
+    contigs_fasta: TextIO,
+    output_csv: TextIO,
+    kmer_size: int = 31,
+) -> None:
     coverage, contigs = calculate_exact_coverage(
         fastq1, fastq2, contigs_fasta, kmer_size
     )
