@@ -32,7 +32,7 @@ dependencies = [
     "cutadapt==5.2",
     "python-Levenshtein==0.27.1",
     "PyYAML==6.0.2",
-    "reportlab==4.4.6",
+    "reportlab==4.4.7",
     "pysam==0.23.3",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy==2.30",
