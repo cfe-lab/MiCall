@@ -13,7 +13,7 @@ import csv
 import sys
 import logging
 from collections import defaultdict
-from typing import Dict, List, Sequence, Tuple, TextIO, Iterator
+from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast
 from Bio import SeqIO
 
 logger = logging.getLogger(__name__)
@@ -177,7 +177,7 @@ def reverse_complement(seq: str) -> str:
 
 def build_kmer_index(
     contigs: Dict[str, str], kmer_size: int
-) -> Dict[str, List[Tuple[str, int]]]:
+) -> Dict[str, Sequence[Tuple[str, int]]]:
     """
     Build a k-mer index for all contigs.
 
@@ -194,12 +194,13 @@ def build_kmer_index(
             if "N" not in kmer:  # Skip k-mers with N
                 kmer_index[kmer].append((contig_name, i))
 
-    return kmer_index
+    ret = cast(Dict[str, Sequence[Tuple[str, int]]], kmer_index)
+    return ret
 
 
 def find_exact_matches(
     read_seq: str,
-    kmer_index: Dict[str, List[Tuple[str, int]]],
+    kmer_index: Dict[str, Sequence[Tuple[str, int]]],
     contigs: Dict[str, str],
     kmer_size: int,
 ) -> Iterator[Tuple[str, int, int]]:
@@ -233,7 +234,7 @@ def calculate_exact_coverage(
     fastq2: TextIO,
     contigs_file: TextIO,
     kmer_size: int = 31,
-) -> Tuple[Dict[str, List[int]], Dict[str, str]]:
+) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
 
@@ -289,11 +290,12 @@ def calculate_exact_coverage(
     logger.debug(f"Finished processing {read_count} read pairs")
     logger.debug(f"Total exact matches: {match_count}")
 
-    return coverage, contigs
+    coverage_ret = cast(Dict[str, Sequence[int]], coverage)
+    return coverage_ret, contigs
 
 
 def write_coverage_csv(
-    coverage: Dict[str, List[int]], contigs: Dict[str, str], output_csv: TextIO
+    coverage: Dict[str, Sequence[int]], contigs: Dict[str, str], output_csv: TextIO
 ) -> None:
     """
     Write coverage data to CSV file.
