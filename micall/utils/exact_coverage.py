@@ -181,18 +181,24 @@ def build_kmer_index(
     """
     Build a k-mer index for all contigs.
 
+    Indexes all k-mers up to and including kmer_size to support reads of varying lengths.
+    This allows finding reads that are shorter than the specified kmer_size.
+
     :param contigs: Dictionary mapping contig_name -> sequence
-    :param kmer_size: Size of k-mers to index
+    :param kmer_size: Maximum size of k-mers to index
     :return: Dictionary mapping kmer -> list of (contig_name, position) tuples
     """
     kmer_index = defaultdict(list)
 
     for contig_name, sequence in contigs.items():
         seq_len = len(sequence)
-        for i in range(seq_len - kmer_size + 1):
-            kmer = sequence[i : i + kmer_size]
-            if "N" not in kmer:  # Skip k-mers with N
-                kmer_index[kmer].append((contig_name, i))
+        # Index all k-mer sizes from 1 up to kmer_size
+        # This allows us to find reads shorter than kmer_size
+        for k in range(1, min(kmer_size + 1, seq_len + 1)):
+            for i in range(seq_len - k + 1):
+                kmer = sequence[i : i + k]
+                if "N" not in kmer:  # Skip k-mers with N
+                    kmer_index[kmer].append((contig_name, i))
 
     ret = cast(Dict[str, Sequence[Tuple[str, int]]], kmer_index)
     return ret
@@ -211,22 +217,27 @@ def find_exact_matches(
     :param kmer_index: K-mer index of contigs
     :param contigs: Dictionary of contig sequences
     :param kmer_size: Size of k-mers
-    :return: List of (contig_name, start_pos, end_pos) tuples for exact matches
+    :return: Iterator of (contig_name, start_pos, end_pos) tuples for exact matches
     """
 
     read_len = len(read_seq)
 
-    # Try to find k-mer matches
-    if read_len >= kmer_size:
-        first_kmer = read_seq[:kmer_size]
-        if first_kmer in kmer_index:
-            # Check each potential match location
-            for contig_name, contig_pos in kmer_index[first_kmer]:
-                contig_seq = contigs[contig_name]
-                # Check if the entire read matches exactly at this position
-                if contig_pos + read_len <= len(contig_seq):
-                    if contig_seq[contig_pos : contig_pos + read_len] == read_seq:
-                        yield (contig_name, contig_pos, contig_pos + read_len)
+    if read_len == 0:
+        return
+
+    # For reads shorter than kmer_size, use the entire read as the search key
+    # For reads >= kmer_size, use the first kmer_size bases as the search key
+    effective_kmer_size = min(read_len, kmer_size)
+    search_kmer = read_seq[:effective_kmer_size]
+
+    if search_kmer in kmer_index:
+        # Check each potential match location
+        for contig_name, contig_pos in kmer_index[search_kmer]:
+            contig_seq = contigs[contig_name]
+            # Check if the entire read matches exactly at this position
+            if contig_pos + read_len <= len(contig_seq):
+                if contig_seq[contig_pos : contig_pos + read_len] == read_seq:
+                    yield (contig_name, contig_pos, contig_pos + read_len)
 
 
 def calculate_exact_coverage(
