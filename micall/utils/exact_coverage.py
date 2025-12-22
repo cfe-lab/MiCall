@@ -202,7 +202,7 @@ def find_exact_matches(
     kmer_index: Dict[str, List[Tuple[str, int]]],
     contigs: Dict[str, str],
     kmer_size: int,
-) -> List[Tuple[str, int, int]]:
+) -> Iterator[Tuple[str, int, int]]:
     """
     Find exact matches of a read in contigs using k-mer hashing.
 
@@ -212,7 +212,7 @@ def find_exact_matches(
     :param kmer_size: Size of k-mers
     :return: List of (contig_name, start_pos, end_pos) tuples for exact matches
     """
-    matches = []
+
     read_len = len(read_seq)
 
     # Try to find k-mer matches
@@ -225,9 +225,7 @@ def find_exact_matches(
                 # Check if the entire read matches exactly at this position
                 if contig_pos + read_len <= len(contig_seq):
                     if contig_seq[contig_pos : contig_pos + read_len] == read_seq:
-                        matches.append((contig_name, contig_pos, contig_pos + read_len))
-
-    return matches
+                        yield (contig_name, contig_pos, contig_pos + read_len)
 
 
 def calculate_exact_coverage(
