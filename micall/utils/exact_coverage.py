@@ -47,12 +47,6 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--kmer-size", type=int, default=31, help="K-mer size for hashing (default: 31)"
     )
-    parser.add_argument(
-        "--min-overlap",
-        type=int,
-        default=20,
-        help="Minimum overlap required for exact match (default: 20)",
-    )
 
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument(
@@ -141,7 +135,6 @@ def find_exact_matches(
     kmer_index: Dict[str, List[Tuple[str, int]]],
     contigs: Dict[str, str],
     kmer_size: int,
-    min_overlap: int,
 ) -> List[Tuple[str, int, int]]:
     """
     Find exact matches of a read in contigs using k-mer hashing.
@@ -150,12 +143,8 @@ def find_exact_matches(
     :param kmer_index: K-mer index of contigs
     :param contigs: Dictionary of contig sequences
     :param kmer_size: Size of k-mers
-    :param min_overlap: Minimum overlap required
     :return: List of (contig_name, start_pos, end_pos) tuples for exact matches
     """
-    if len(read_seq) < min_overlap:
-        return []
-
     matches = []
     read_len = len(read_seq)
 
@@ -179,7 +168,6 @@ def calculate_exact_coverage(
     fastq2: TextIO,
     contigs_fasta: TextIO,
     kmer_size: int = 31,
-    min_overlap: int = 20,
 ) -> Tuple[Dict[str, List[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
@@ -188,7 +176,6 @@ def calculate_exact_coverage(
     :param fastq2: Reverse reads FASTQ file
     :param contigs_fasta: FASTA file with contigs
     :param kmer_size: Size of k-mers for hashing
-    :param min_overlap: Minimum overlap required
     :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
              contig_name -> list of coverage counts and contigs_dict maps
              contig_name -> sequence
@@ -229,7 +216,7 @@ def calculate_exact_coverage(
             # Try both forward and reverse complement
             for seq in [read_seq, reverse_complement(read_seq)]:
                 matches = find_exact_matches(
-                    seq, kmer_index, contigs, kmer_size, min_overlap
+                    seq, kmer_index, contigs, kmer_size
                 )
 
                 for contig_name, start_pos, end_pos in matches:
@@ -278,10 +265,9 @@ def main_typed(fastq1: TextIO,
                 fastq2: TextIO,
                 contigs_fasta: TextIO,
                 output_csv: TextIO,
-                kmer_size: int = 31,
-                min_overlap: int = 20,) -> None:
+                kmer_size: int = 31) -> None:
     coverage, contigs = calculate_exact_coverage(
-        fastq1, fastq2, contigs_fasta, kmer_size, min_overlap
+        fastq1, fastq2, contigs_fasta, kmer_size
     )
     write_coverage_csv(coverage, contigs, output_csv)
 
@@ -311,7 +297,6 @@ def main(argv: Sequence[str]) -> int:
         args.contigs_fasta,
         args.output_csv,
         args.kmer_size,
-        args.min_overlap,
     )
 
     logger.debug("Exact coverage calculation complete!")

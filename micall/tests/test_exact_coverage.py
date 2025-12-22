@@ -61,7 +61,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACGT"
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should find 3 matches at positions 0, 4, and 8
         self.assertEqual(len(matches), 3)
@@ -73,7 +73,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "CCCC"
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         self.assertEqual(len(matches), 0)
 
@@ -82,7 +82,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACGTTTTT"  # Only first 4 bases match
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should not match because the entire read doesn't match exactly
         self.assertEqual(len(matches), 0)
@@ -93,7 +93,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACGTAC"  # 6bp read
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 4)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should find matches at positions 0, 4, 8, 12
         self.assertEqual(len(matches), 4)
@@ -107,7 +107,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 31)
         read_seq = long_contig[:200]  # 200bp read
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 31, 20)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 31)
 
         # Should find at least one match
         self.assertGreaterEqual(len(matches), 1)
@@ -123,7 +123,7 @@ class TestFindExactMatches(unittest.TestCase):
         # Test various read lengths
         for length in [4, 8, 12, 16, 20]:
             read_seq = "ACGT" * (length // 4)
-            matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+            matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
             self.assertGreater(
                 len(matches), 0, f"Should find matches for {length}bp read"
             )
@@ -134,7 +134,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACGTACGT"  # Matches at position 7
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should find match at position 7
         positions = [start for _, start, _ in matches]
@@ -146,24 +146,10 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACGTACGTACGTACGT"  # 16bp, longer than contig
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should not find any matches
         self.assertEqual(len(matches), 0)
-
-    def test_minimum_overlap_filter(self):
-        """Test that minimum overlap is enforced"""
-        contigs = {"contig1": "ACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 3)
-        read_seq = "ACG"  # 3bp read
-
-        # With min_overlap of 4, should not match
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 3, 4)
-        self.assertEqual(len(matches), 0)
-
-        # With min_overlap of 3, should match
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 3, 3)
-        self.assertGreater(len(matches), 0)
 
     def test_empty_read(self):
         """Test behavior with empty read"""
@@ -171,7 +157,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = ""
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         self.assertEqual(len(matches), 0)
 
@@ -181,7 +167,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACNTACGT"
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should not match because contig doesn't have N
         self.assertEqual(len(matches), 0)
@@ -196,7 +182,7 @@ class TestFindExactMatches(unittest.TestCase):
         kmer_index = build_kmer_index(contigs, 4)
         read_seq = "ACGTACGT"
 
-        matches = find_exact_matches(read_seq, kmer_index, contigs, 4, 3)
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
 
         # Should only match contig2
         contig_names = [name for name, _, _ in matches]

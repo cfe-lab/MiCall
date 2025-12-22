@@ -79,7 +79,7 @@ def test_exact_coverage_integration():
             open(output_csv, "w") as fo,
         ):
             coverage, contigs = calculate_exact_coverage(
-                f1, f2, fc, kmer_size=4, min_overlap=4
+                f1, f2, fc, kmer_size=4
             )
             write_coverage_csv(coverage, contigs, fo)
 
