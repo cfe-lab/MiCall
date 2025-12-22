@@ -12,11 +12,11 @@ import argparse
 import csv
 import sys
 from collections import defaultdict
-from typing import Dict, List, Tuple, TextIO, Iterator
+from typing import Dict, List, Sequence, Tuple, TextIO, Iterator
 from Bio import SeqIO
 
 
-def parse_args():
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Calculate exact coverage for every base in contigs using k-mer hashing."
     )
@@ -51,7 +51,7 @@ def parse_args():
         help="Minimum overlap required for exact match (default: 20)",
     )
 
-    return parser.parse_args()
+    return parser
 
 
 def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
@@ -226,7 +226,7 @@ def calculate_exact_coverage(
 
 def write_coverage_csv(
     coverage: Dict[str, List[int]], contigs: Dict[str, str], output_csv: TextIO
-):
+) -> None:
     """
     Write coverage data to CSV file in nuc.csv format.
 
@@ -256,8 +256,9 @@ def write_coverage_csv(
             )
 
 
-def main():
-    args = parse_args()
+def main(argv: Sequence[str]) -> int:
+    parser = get_parser()
+    args = parser.parse_args(argv)
 
     coverage, contigs = calculate_exact_coverage(
         args.fastq1, args.fastq2, args.contigs_fasta, args.kmer_size, args.min_overlap
@@ -269,5 +270,8 @@ def main():
     return 0
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+def entry() -> None:
+    sys.exit(main(sys.argv[1:]))
+
+
+if __name__ == "__main__": entry()  # noqa
