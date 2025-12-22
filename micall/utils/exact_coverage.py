@@ -194,12 +194,12 @@ def calculate_exact_coverage(
              contig_name -> sequence
     """
     # Read contigs
-    logger.info("Reading contigs...")
+    logger.debug("Reading contigs...")
     contigs = {}
     for record in SeqIO.parse(contigs_fasta, "fasta"):
         contigs[record.id] = str(record.seq).upper()
 
-    logger.info(f"Loaded {len(contigs)} contigs")
+    logger.debug(f"Loaded {len(contigs)} contigs")
 
     # Initialize coverage arrays
     coverage = {}
@@ -208,19 +208,19 @@ def calculate_exact_coverage(
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
     # Build k-mer index
-    logger.info("Building k-mer index...")
+    logger.debug("Building k-mer index...")
     kmer_index = build_kmer_index(contigs, kmer_size)
-    logger.info(f"Indexed {len(kmer_index)} unique k-mers")
+    logger.debug(f"Indexed {len(kmer_index)} unique k-mers")
 
     # Process read pairs
-    logger.info("Processing reads...")
+    logger.debug("Processing reads...")
     read_count = 0
     match_count = 0
 
     for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
         read_count += 1
         if read_count % 100000 == 0:
-            logger.info(
+            logger.debug(
                 f"Processed {read_count} read pairs, {match_count} exact matches found"
             )
 
@@ -241,8 +241,8 @@ def calculate_exact_coverage(
                     for i in range(start_pos, end_pos):
                         coverage[contig_name][i] += 1
 
-    logger.info(f"Finished processing {read_count} read pairs")
-    logger.info(f"Total exact matches: {match_count}")
+    logger.debug(f"Finished processing {read_count} read pairs")
+    logger.debug(f"Total exact matches: {match_count}")
 
     return coverage, contigs
 
@@ -302,7 +302,7 @@ def main(argv: Sequence[str]) -> int:
 
     write_coverage_csv(coverage, contigs, args.output_csv)
 
-    logger.info("Exact coverage calculation complete!")
+    logger.debug("Exact coverage calculation complete!")
     return 0
 
 
