@@ -116,5 +116,3 @@ def test_exact_coverage_integration():
         print("contig,position,exact_coverage")
         for row in rows[:10]:
             print(f"{row['contig']},{row['position']},{row['exact_coverage']}")
-
-        return True
