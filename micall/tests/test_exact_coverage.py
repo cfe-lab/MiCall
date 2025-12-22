@@ -154,6 +154,54 @@ class TestFindExactMatches(unittest.TestCase):
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, kmer_size=31))
         self.assertEqual(len(matches), 6)
 
+    def test_lazy_kmer_index_caching(self):
+        """Test that k-mer indices for short reads are built lazily and cached."""
+        contigs = {"contig1": "ACGTACGTACGTACGTACGTACGT"}
+        kmer_index = build_kmer_index(contigs, kmer_size=31)
+        cache = {}
+
+        # Initially cache should be empty
+        self.assertEqual(len(cache), 0)
+
+        # Test 10bp read - should trigger lazy build
+        read_seq = "ACGTACGTAC"
+        matches = list(
+            find_exact_matches(
+                read_seq, kmer_index, contigs, kmer_size=31, kmer_index_cache=cache
+            )
+        )
+        self.assertEqual(len(matches), 4)
+
+        # Cache should now have an entry for size 10
+        self.assertEqual(len(cache), 1)
+        self.assertIn(10, cache)
+
+        # Test another 10bp read - should use cached index
+        read_seq2 = "CGTACGTACG"
+        matches2 = list(
+            find_exact_matches(
+                read_seq2, kmer_index, contigs, kmer_size=31, kmer_index_cache=cache
+            )
+        )
+        self.assertGreater(len(matches2), 0)
+
+        # Cache should still have only one entry
+        self.assertEqual(len(cache), 1)
+
+        # Test 5bp read - should trigger another lazy build
+        read_seq3 = "ACGTA"
+        matches3 = list(
+            find_exact_matches(
+                read_seq3, kmer_index, contigs, kmer_size=31, kmer_index_cache=cache
+            )
+        )
+        self.assertEqual(len(matches3), 5)
+
+        # Cache should now have two entries
+        self.assertEqual(len(cache), 2)
+        self.assertIn(10, cache)
+        self.assertIn(5, cache)
+
     def test_read_at_contig_boundary(self):
         """Test reads that match at the end of a contig"""
         contigs = {"contig1": "AAAACGTACGTACGT"}

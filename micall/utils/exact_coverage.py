@@ -13,7 +13,7 @@ import csv
 import sys
 import logging
 from collections import defaultdict
-from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast
+from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast, Optional
 from Bio import SeqIO
 
 logger = logging.getLogger(__name__)
@@ -179,26 +179,44 @@ def build_kmer_index(
     contigs: Dict[str, str], kmer_size: int
 ) -> Dict[str, Sequence[Tuple[str, int]]]:
     """
-    Build a k-mer index for all contigs.
-
-    Indexes all k-mers up to and including kmer_size to support reads of varying lengths.
-    This allows finding reads that are shorter than the specified kmer_size.
+    Build a k-mer index for all contigs at the specified k-mer size.
 
     :param contigs: Dictionary mapping contig_name -> sequence
-    :param kmer_size: Maximum size of k-mers to index
+    :param kmer_size: Size of k-mers to index
     :return: Dictionary mapping kmer -> list of (contig_name, position) tuples
     """
     kmer_index = defaultdict(list)
 
     for contig_name, sequence in contigs.items():
         seq_len = len(sequence)
-        # Index all k-mer sizes from 1 up to kmer_size
-        # This allows us to find reads shorter than kmer_size
-        for k in range(1, min(kmer_size + 1, seq_len + 1)):
-            for i in range(seq_len - k + 1):
-                kmer = sequence[i : i + k]
-                if "N" not in kmer:  # Skip k-mers with N
-                    kmer_index[kmer].append((contig_name, i))
+        for i in range(seq_len - kmer_size + 1):
+            kmer = sequence[i : i + kmer_size]
+            if "N" not in kmer:  # Skip k-mers with N
+                kmer_index[kmer].append((contig_name, i))
+
+    ret = cast(Dict[str, Sequence[Tuple[str, int]]], kmer_index)
+    return ret
+
+
+def build_kmer_index_for_size(
+    contigs: Dict[str, str], k: int
+) -> Dict[str, Sequence[Tuple[str, int]]]:
+    """
+    Build a k-mer index for a specific k-mer size.
+    Used for lazy computation when encountering reads shorter than the default kmer_size.
+
+    :param contigs: Dictionary mapping contig_name -> sequence
+    :param k: Size of k-mers to index
+    :return: Dictionary mapping kmer -> list of (contig_name, position) tuples
+    """
+    kmer_index = defaultdict(list)
+
+    for contig_name, sequence in contigs.items():
+        seq_len = len(sequence)
+        for i in range(seq_len - k + 1):
+            kmer = sequence[i : i + k]
+            if "N" not in kmer:  # Skip k-mers with N
+                kmer_index[kmer].append((contig_name, i))
 
     ret = cast(Dict[str, Sequence[Tuple[str, int]]], kmer_index)
     return ret
@@ -209,14 +227,19 @@ def find_exact_matches(
     kmer_index: Dict[str, Sequence[Tuple[str, int]]],
     contigs: Dict[str, str],
     kmer_size: int,
+    kmer_index_cache: Optional[Dict[int, Dict[str, Sequence[Tuple[str, int]]]]] = None,
 ) -> Iterator[Tuple[str, int, int]]:
     """
     Find exact matches of a read in contigs using k-mer hashing.
 
+    For reads shorter than kmer_size, lazily builds a k-mer index of the appropriate
+    size on first encounter and caches it for future use.
+
     :param read_seq: Read sequence
-    :param kmer_index: K-mer index of contigs
+    :param kmer_index: K-mer index of contigs (for kmer_size)
     :param contigs: Dictionary of contig sequences
-    :param kmer_size: Size of k-mers
+    :param kmer_size: Size of k-mers in the main index
+    :param kmer_index_cache: Optional cache for smaller k-mer indices (maps k -> index)
     :return: Iterator of (contig_name, start_pos, end_pos) tuples for exact matches
     """
 
@@ -225,14 +248,38 @@ def find_exact_matches(
     if read_len == 0:
         return
 
-    # For reads shorter than kmer_size, use the entire read as the search key
-    # For reads >= kmer_size, use the first kmer_size bases as the search key
-    effective_kmer_size = min(read_len, kmer_size)
-    search_kmer = read_seq[:effective_kmer_size]
+    # For reads shorter than kmer_size, use a lazily-built index of the appropriate size
+    if read_len < kmer_size:
+        if kmer_index_cache is not None:
+            # Check if we already have an index for this size
+            if read_len not in kmer_index_cache:
+                # Build it lazily
+                logger.debug(
+                    f"Building k-mer index for size {read_len} (lazy computation)"
+                )
+                kmer_index_cache[read_len] = build_kmer_index_for_size(
+                    contigs, read_len
+                )
 
-    if search_kmer in kmer_index:
+            # Use the cached index for this read length
+            effective_index = kmer_index_cache[read_len]
+            search_kmer = read_seq  # Use the entire read as the search key
+        else:
+            # No cache provided, fall back to searching without index
+            # This shouldn't normally happen in production use
+            for contig_name, contig_seq in contigs.items():
+                for i in range(len(contig_seq) - read_len + 1):
+                    if contig_seq[i : i + read_len] == read_seq:
+                        yield (contig_name, i, i + read_len)
+            return
+    else:
+        # Use the main index for normal-sized reads
+        effective_index = kmer_index
+        search_kmer = read_seq[:kmer_size]
+
+    if search_kmer in effective_index:
         # Check each potential match location
-        for contig_name, contig_pos in kmer_index[search_kmer]:
+        for contig_name, contig_pos in effective_index[search_kmer]:
             contig_seq = contigs[contig_name]
             # Check if the entire read matches exactly at this position
             if contig_pos + read_len <= len(contig_seq):
@@ -274,6 +321,9 @@ def calculate_exact_coverage(
     kmer_index = build_kmer_index(contigs, kmer_size)
     logger.debug(f"Indexed {len(kmer_index)} unique k-mers")
 
+    # Cache for smaller k-mer indices (built lazily when encountering short reads)
+    kmer_index_cache: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
+
     # Process read pairs
     logger.debug("Processing reads...")
     read_count = 0
@@ -290,7 +340,9 @@ def calculate_exact_coverage(
         for read_seq in [read1_seq, read2_seq]:
             # Try both forward and reverse complement
             for seq in [read_seq, reverse_complement(read_seq)]:
-                matches = find_exact_matches(seq, kmer_index, contigs, kmer_size)
+                matches = find_exact_matches(
+                    seq, kmer_index, contigs, kmer_size, kmer_index_cache
+                )
 
                 for contig_name, start_pos, end_pos in matches:
                     match_count += 1
@@ -300,6 +352,16 @@ def calculate_exact_coverage(
 
     logger.debug(f"Finished processing {read_count} read pairs")
     logger.debug(f"Total exact matches: {match_count}")
+
+    # Report on lazy k-mer indices built for short reads
+    if kmer_index_cache:
+        short_read_sizes = sorted(kmer_index_cache.keys())
+        logger.info(
+            f"Built {len(kmer_index_cache)} additional k-mer indices for short reads "
+            f"(sizes: {short_read_sizes})"
+        )
+    else:
+        logger.debug("No short reads encountered (all reads >= kmer_size)")
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs
