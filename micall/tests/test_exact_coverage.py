@@ -129,6 +129,31 @@ class TestFindExactMatches(unittest.TestCase):
                 len(matches), 0, f"Should find matches for {length}bp read"
             )
 
+    def test_read_shorter_than_default_kmer(self):
+        """Test that reads much shorter than default kmer_size (31) work correctly."""
+        contigs = {"contig1": "ACGTACGTACGTACGTACGTACGT"}
+        kmer_index = build_kmer_index(contigs, kmer_size=31)
+
+        # Test 10bp read (much shorter than kmer_size=31)
+        # "ACGTACGTAC" appears at positions: 0, 4, 8, 12
+        read_seq = "ACGTACGTAC"
+        matches = list(find_exact_matches(read_seq, kmer_index, contigs, kmer_size=31))
+        self.assertEqual(len(matches), 4)
+        positions = sorted([start for _, start, _ in matches])
+        self.assertEqual(positions, [0, 4, 8, 12])
+
+        # Test 5bp read
+        # "ACGTA" appears at positions: 0, 4, 8, 12, 16
+        read_seq = "ACGTA"
+        matches = list(find_exact_matches(read_seq, kmer_index, contigs, kmer_size=31))
+        self.assertEqual(len(matches), 5)
+
+        # Test 1bp read
+        # "A" appears at positions: 0, 4, 8, 12, 16, 20
+        read_seq = "A"
+        matches = list(find_exact_matches(read_seq, kmer_index, contigs, kmer_size=31))
+        self.assertEqual(len(matches), 6)
+
     def test_read_at_contig_boundary(self):
         """Test reads that match at the end of a contig"""
         contigs = {"contig1": "AAAACGTACGTACGT"}
