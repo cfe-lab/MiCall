@@ -234,9 +234,6 @@ def calculate_exact_coverage(
 
                 for contig_name, start_pos, end_pos in matches:
                     match_count += 1
-                    logger.debug(
-                        f"Match: {contig_name}:{start_pos}-{end_pos} (length {end_pos - start_pos})"
-                    )
                     # Increment coverage for all bases covered by this read
                     for i in range(start_pos, end_pos):
                         coverage[contig_name][i] += 1
