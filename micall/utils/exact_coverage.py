@@ -277,6 +277,18 @@ def write_coverage_csv(
             )
 
 
+def main_typed(fastq1: TextIO,
+                fastq2: TextIO,
+                contigs_fasta: TextIO,
+                output_csv: TextIO,
+                kmer_size: int = 31,
+                min_overlap: int = 20,) -> None:
+    coverage, contigs = calculate_exact_coverage(
+        fastq1, fastq2, contigs_fasta, kmer_size, min_overlap
+    )
+    write_coverage_csv(coverage, contigs, output_csv)
+
+
 def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
@@ -296,11 +308,14 @@ def main(argv: Sequence[str]) -> int:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    coverage, contigs = calculate_exact_coverage(
-        args.fastq1, args.fastq2, args.contigs_fasta, args.kmer_size, args.min_overlap
+    main_typed(
+        args.fastq1,
+        args.fastq2,
+        args.contigs_fasta,
+        args.output_csv,
+        args.kmer_size,
+        args.min_overlap,
     )
-
-    write_coverage_csv(coverage, contigs, args.output_csv)
 
     logger.debug("Exact coverage calculation complete!")
     return 0
