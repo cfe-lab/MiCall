@@ -188,6 +188,27 @@ class TestFindExactMatches(unittest.TestCase):
         contig_names = [name for name, _, _ in matches]
         self.assertTrue(all(name == "contig2" for name in contig_names))
 
+    def test_repeated_regions_get_multiple_hits(self):
+        """Test that reads mapping to repeated regions increment coverage at all positions"""
+        # Create a contig with a repeated sequence
+        # AAACGTACGTAAACGTACGTAAA
+        # Position 2: ACGTACGT
+        # Position 12: ACGTACGT
+        contigs = {"contig1": "AAACGTACGTAAACGTACGTAAA"}
+        kmer_index = build_kmer_index(contigs, 4)
+        read_seq = "ACGTACGT"  # This appears twice in the contig
+
+        matches = find_exact_matches(read_seq, kmer_index, contigs, 4)
+
+        # Should find 2 matches: one at position 2 and one at position 12
+        self.assertEqual(len(matches), 2)
+        positions = sorted([start for _, start, _ in matches])
+        self.assertEqual(positions, [2, 12])
+        
+        # Verify the matches are for the same contig
+        contig_names = [name for name, _, _ in matches]
+        self.assertTrue(all(name == "contig1" for name in contig_names))
+
 
 class TestReadFastqPairs(unittest.TestCase):
     def test_read_one_pair(self):
