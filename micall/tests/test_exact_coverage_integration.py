@@ -92,8 +92,9 @@ def test_exact_coverage_integration():
         assert len(rows) > 0, "Output CSV should have rows"
         assert rows[0]["contig"] in ["contig1", "contig2"], "Should have contig names"
         assert "position" in rows[0], "Should have position column"
-        assert "base" in rows[0], "Should have base column"
         assert "exact_coverage" in rows[0], "Should have exact_coverage column"
+        # base column should NOT be present
+        assert "base" not in rows[0], "Should NOT have base column"
 
         # Check that we got coverage for both contigs
         contigs_in_output = set(row["contig"] for row in rows)
@@ -112,10 +113,8 @@ def test_exact_coverage_integration():
 
         # Print first few rows for inspection
         print("\nFirst 10 rows of output:")
-        print("contig,position,base,exact_coverage")
+        print("contig,position,exact_coverage")
         for row in rows[:10]:
-            print(
-                f"{row['contig']},{row['position']},{row['base']},{row['exact_coverage']}"
-            )
+            print(f"{row['contig']},{row['position']},{row['exact_coverage']}")
 
         return True

@@ -11,9 +11,12 @@ This tool uses k-mer hashing for fast exact matching of reads to contigs.
 import argparse
 import csv
 import sys
+import logging
 from collections import defaultdict
 from typing import Dict, List, Sequence, Tuple, TextIO, Iterator
 from Bio import SeqIO
+
+logger = logging.getLogger(__name__)
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -49,6 +52,23 @@ def get_parser() -> argparse.ArgumentParser:
         type=int,
         default=20,
         help="Minimum overlap required for exact match (default: 20)",
+    )
+
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument(
+        "--verbose", action="store_true", help="Increase output verbosity."
+    )
+    verbosity_group.add_argument(
+        "--no-verbose",
+        action="store_true",
+        help="Normal output verbosity.",
+        default=True,
+    )
+    verbosity_group.add_argument(
+        "--debug", action="store_true", help="Maximum output verbosity."
+    )
+    verbosity_group.add_argument(
+        "--quiet", action="store_true", help="Minimize output verbosity."
     )
 
     return parser
@@ -174,34 +194,34 @@ def calculate_exact_coverage(
              contig_name -> sequence
     """
     # Read contigs
-    print("Reading contigs...", file=sys.stderr)
+    logger.info("Reading contigs...")
     contigs = {}
     for record in SeqIO.parse(contigs_fasta, "fasta"):
         contigs[record.id] = str(record.seq).upper()
 
-    print(f"Loaded {len(contigs)} contigs", file=sys.stderr)
+    logger.info(f"Loaded {len(contigs)} contigs")
 
     # Initialize coverage arrays
     coverage = {}
     for contig_name, sequence in contigs.items():
         coverage[contig_name] = [0] * len(sequence)
+        logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
     # Build k-mer index
-    print("Building k-mer index...", file=sys.stderr)
+    logger.info("Building k-mer index...")
     kmer_index = build_kmer_index(contigs, kmer_size)
-    print(f"Indexed {len(kmer_index)} unique k-mers", file=sys.stderr)
+    logger.info(f"Indexed {len(kmer_index)} unique k-mers")
 
     # Process read pairs
-    print("Processing reads...", file=sys.stderr)
+    logger.info("Processing reads...")
     read_count = 0
     match_count = 0
 
     for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
         read_count += 1
         if read_count % 100000 == 0:
-            print(
-                f"Processed {read_count} read pairs, {match_count} exact matches found",
-                file=sys.stderr,
+            logger.info(
+                f"Processed {read_count} read pairs, {match_count} exact matches found"
             )
 
         # Try forward orientation for read1
@@ -214,12 +234,15 @@ def calculate_exact_coverage(
 
                 for contig_name, start_pos, end_pos in matches:
                     match_count += 1
+                    logger.debug(
+                        f"Match: {contig_name}:{start_pos}-{end_pos} (length {end_pos - start_pos})"
+                    )
                     # Increment coverage for all bases covered by this read
                     for i in range(start_pos, end_pos):
                         coverage[contig_name][i] += 1
 
-    print(f"Finished processing {read_count} read pairs", file=sys.stderr)
-    print(f"Total exact matches: {match_count}", file=sys.stderr)
+    logger.info(f"Finished processing {read_count} read pairs")
+    logger.info(f"Total exact matches: {match_count}")
 
     return coverage, contigs
 
@@ -228,7 +251,7 @@ def write_coverage_csv(
     coverage: Dict[str, List[int]], contigs: Dict[str, str], output_csv: TextIO
 ) -> None:
     """
-    Write coverage data to CSV file in nuc.csv format.
+    Write coverage data to CSV file.
 
     :param coverage: Dictionary mapping contig_name -> coverage array
     :param contigs: Dictionary mapping contig_name -> sequence
@@ -236,21 +259,19 @@ def write_coverage_csv(
     """
     writer = csv.DictWriter(
         output_csv,
-        ["contig", "position", "base", "exact_coverage"],
+        ["contig", "position", "exact_coverage"],
         lineterminator="\n",
     )
     writer.writeheader()
 
     for contig_name in sorted(coverage.keys()):
-        contig_seq = contigs[contig_name]
         contig_coverage = coverage[contig_name]
 
-        for pos, (base, cov) in enumerate(zip(contig_seq, contig_coverage), start=1):
+        for pos, cov in enumerate(contig_coverage, start=1):
             writer.writerow(
                 {
                     "contig": contig_name,
                     "position": pos,
-                    "base": base,
                     "exact_coverage": cov,
                 }
             )
@@ -260,13 +281,28 @@ def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
 
+    # Configure logging based on verbosity flags
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+
+    logging.basicConfig(
+        level=logger.level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
     coverage, contigs = calculate_exact_coverage(
         args.fastq1, args.fastq2, args.contigs_fasta, args.kmer_size, args.min_overlap
     )
 
     write_coverage_csv(coverage, contigs, args.output_csv)
 
-    print("Exact coverage calculation complete!", file=sys.stderr)
+    logger.info("Exact coverage calculation complete!")
     return 0
 
 
