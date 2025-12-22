@@ -35,9 +35,9 @@ def get_parser() -> argparse.ArgumentParser:
         help="<input> FASTQ file containing reverse reads (read 2)",
     )
     parser.add_argument(
-        "contigs_fasta",
+        "contigs_file",
         type=argparse.FileType("r"),
-        help="<input> FASTA file containing contig sequences",
+        help="<input> FASTA or CSV file containing contig sequences (CSV: 'sequence' or 'contig' column)",
     )
     parser.add_argument(
         "output_csv",
@@ -95,6 +95,73 @@ def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]
         fastq2.readline()  # quality line
 
         yield (seq1, seq2)
+
+
+def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
+    """
+    Read contigs from either FASTA or CSV format.
+
+    Automatically detects format based on file content:
+    - FASTA: starts with '>'
+    - CSV: has header line, looks for 'sequence' or 'contig' column for sequences
+
+    For CSV files:
+    - Sequence column: prioritizes 'sequence' over 'contig'
+    - Name column: uses 'sample', 'region', or 'ref' (in that order)
+
+    :param contigs_file: File handle to read contigs from
+    :return: Dictionary mapping contig_name -> sequence
+    """
+    contigs = {}
+
+    # Peek at first line to detect format
+    first_line = contigs_file.readline().strip()
+    contigs_file.seek(0)  # Reset to beginning
+
+    if first_line.startswith(">"):
+        # FASTA format
+        logger.debug("Detected FASTA format for contigs file")
+        for record in SeqIO.parse(contigs_file, "fasta"):
+            contigs[record.id] = str(record.seq).upper()
+    else:
+        # CSV format
+        logger.debug("Detected CSV format for contigs file")
+        reader = csv.DictReader(contigs_file)
+
+        for i, row in enumerate(reader, start=1):
+            # Find sequence column: prioritize 'sequence' over 'contig'
+            seq_column = None
+            if "sequence" in row:
+                seq_column = "sequence"
+            elif "contig" in row:
+                seq_column = "contig"
+            else:
+                raise ValueError(
+                    f"CSV must have either 'sequence' or 'contig' column. Found columns: {list(row.keys())}"
+                )
+
+            contig_seq = row[seq_column]
+            if not contig_seq:
+                continue  # Skip empty sequences
+
+            # Find name column: prioritize 'sample', then 'region', then 'ref'
+            contig_name = None
+            for name_col in ["sample", "region", "ref"]:
+                if name_col in row and row[name_col]:
+                    contig_name = row[name_col]
+                    break
+
+            if not contig_name:
+                contig_name = f"contig{i}"
+
+            # If same name appears multiple times, append index
+            if contig_name in contigs:
+                contig_name = f"{contig_name}_{i}"
+
+            contigs[contig_name] = contig_seq.upper()
+
+    logger.debug(f"Loaded {len(contigs)} contigs")
+    return contigs
 
 
 def reverse_complement(seq: str) -> str:
@@ -166,7 +233,7 @@ def find_exact_matches(
 def calculate_exact_coverage(
     fastq1: TextIO,
     fastq2: TextIO,
-    contigs_fasta: TextIO,
+    contigs_file: TextIO,
     kmer_size: int = 31,
 ) -> Tuple[Dict[str, List[int]], Dict[str, str]]:
     """
@@ -174,7 +241,7 @@ def calculate_exact_coverage(
 
     :param fastq1: Forward reads FASTQ file
     :param fastq2: Reverse reads FASTQ file
-    :param contigs_fasta: FASTA file with contigs
+    :param contigs_file: FASTA or CSV file with contigs
     :param kmer_size: Size of k-mers for hashing
     :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
              contig_name -> list of coverage counts and contigs_dict maps
@@ -182,9 +249,7 @@ def calculate_exact_coverage(
     """
     # Read contigs
     logger.debug("Reading contigs...")
-    contigs = {}
-    for record in SeqIO.parse(contigs_fasta, "fasta"):
-        contigs[record.id] = str(record.seq).upper()
+    contigs = read_contigs(contigs_file)
 
     logger.debug(f"Loaded {len(contigs)} contigs")
 
@@ -262,12 +327,12 @@ def write_coverage_csv(
 def main_typed(
     fastq1: TextIO,
     fastq2: TextIO,
-    contigs_fasta: TextIO,
+    contigs_file: TextIO,
     output_csv: TextIO,
     kmer_size: int = 31,
 ) -> None:
     coverage, contigs = calculate_exact_coverage(
-        fastq1, fastq2, contigs_fasta, kmer_size
+        fastq1, fastq2, contigs_file, kmer_size
     )
     write_coverage_csv(coverage, contigs, output_csv)
 
@@ -294,7 +359,7 @@ def main(argv: Sequence[str]) -> int:
     main_typed(
         args.fastq1,
         args.fastq2,
-        args.contigs_fasta,
+        args.contigs_file,
         args.output_csv,
         args.kmer_size,
     )
@@ -307,4 +372,5 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__":
+    entry()  # noqa
