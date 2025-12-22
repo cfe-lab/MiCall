@@ -366,13 +366,13 @@ ACGTACGT
 >contig2
 GGGGCCCC
 """)
-        
+
         contigs = read_contigs(fasta_file)
-        
+
         self.assertEqual(len(contigs), 2)
         self.assertEqual(contigs["contig1"], "ACGTACGT")
         self.assertEqual(contigs["contig2"], "GGGGCCCC")
-    
+
     def test_read_csv_with_contig_column(self):
         """Test reading contigs from CSV with 'contig' column (contigs.csv format)"""
         csv_file = StringIO("""\
@@ -380,14 +380,14 @@ ref,match,group_ref,contig
 ref1,1.0,group1,ACGTACGT
 ref2,1.0,group2,GGGGCCCC
 """)
-        
+
         contigs = read_contigs(csv_file)
-        
+
         self.assertEqual(len(contigs), 2)
         # Should use position-based names since no sample/region columns
         self.assertEqual(contigs["contig1"], "ACGTACGT")
         self.assertEqual(contigs["contig2"], "GGGGCCCC")
-    
+
     def test_read_csv_with_sequence_column(self):
         """Test reading contigs from CSV with 'sequence' column (conseq.csv format)"""
         csv_file = StringIO("""\
@@ -395,28 +395,28 @@ sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
 sample1,region1,15,MAX,0,ACGTACGT
 sample1,region2,15,MAX,0,GGGGCCCC
 """)
-        
+
         contigs = read_contigs(csv_file)
-        
+
         self.assertEqual(len(contigs), 2)
         # Should use 'sample' column for name
         self.assertIn("sample1", contigs)
         # Second entry with same sample name should get _2 suffix
         self.assertIn("sample1_2", contigs)
-    
+
     def test_sequence_column_prioritized_over_contig(self):
         """Test that 'sequence' column is prioritized over 'contig' column"""
         csv_file = StringIO("""\
 ref,contig,sequence
 ref1,TTTTTTTT,ACGTACGT
 """)
-        
+
         contigs = read_contigs(csv_file)
-        
+
         # Should use 'sequence' column, not 'contig' column
         # Should use position-based name since no sample/region
         self.assertEqual(contigs["contig1"], "ACGTACGT")
-    
+
     def test_name_column_priority(self):
         """Test that 'sample' is prioritized, then 'region', then position"""
         # Test with sample column
@@ -426,7 +426,7 @@ mysample,myregion,myref,ACGTACGT
 """)
         contigs = read_contigs(csv_file)
         self.assertIn("mysample", contigs)
-        
+
         # Test with region column (no sample)
         csv_file = StringIO("""\
 region,ref,contig
@@ -434,7 +434,7 @@ myregion,myref,GGGGCCCC
 """)
         contigs = read_contigs(csv_file)
         self.assertIn("myregion", contigs)
-        
+
         # Test with neither sample nor region - should use position
         csv_file = StringIO("""\
 ref,contig
@@ -442,20 +442,20 @@ myref,TTTTTTTT
 """)
         contigs = read_contigs(csv_file)
         self.assertIn("contig1", contigs)
-    
+
     def test_csv_without_sequence_or_contig_column_raises_error(self):
         """Test that CSV without 'sequence' or 'contig' column raises ValueError"""
         csv_file = StringIO("""\
 ref,other_column
 ref1,data
 """)
-        
+
         with self.assertRaises(ValueError) as context:
             read_contigs(csv_file)
-        
+
         self.assertIn("sequence", str(context.exception).lower())
         self.assertIn("contig", str(context.exception).lower())
-    
+
     def test_empty_sequences_skipped(self):
         """Test that empty sequences are skipped"""
         csv_file = StringIO("""\
@@ -464,13 +464,12 @@ ref1,ACGTACGT
 ref2,
 ref3,GGGGCCCC
 """)
-        
+
         contigs = read_contigs(csv_file)
-        
+
         # Should only have contig1 and contig3, ref2 should be skipped
         # Uses position-based names
         self.assertEqual(len(contigs), 2)
         self.assertIn("contig1", contigs)
         self.assertIn("contig3", contigs)
         self.assertNotIn("contig2", contigs)
-
