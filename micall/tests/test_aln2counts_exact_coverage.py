@@ -5,7 +5,6 @@ These tests verify that the exact_coverage column is properly populated.
 
 import csv
 from io import StringIO
-import pytest
 
 from micall.core.aln2counts import aln2counts
 
