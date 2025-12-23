@@ -503,7 +503,7 @@ def calculate_exact_coverage_from_csv(
             f"Check that reads and contigs are from the same sample."
         )
     else:
-        logger.info(f"Processed {read_count} reads, found {match_count} exact matches")
+        logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs
