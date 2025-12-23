@@ -88,7 +88,7 @@ def open_fastq(filename: Path) -> TextIO:
     :param filename: Path to FASTQ file (can be .fastq or .fastq.gz)
     :return: Text file handle for reading
     """
-    is_gzipped = str(filename).endswith(".gz")
+    is_gzipped = filename.name.endswith(".gz")
 
     if is_gzipped:
         # Open in binary mode, wrap with GzipFile, then TextIOWrapper for text mode
