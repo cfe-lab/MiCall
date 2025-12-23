@@ -351,7 +351,7 @@ def calculate_exact_coverage(
     # Report on lazy k-mer indices built
     if kmer_index:
         read_sizes = sorted(kmer_index.keys())
-        logger.info(
+        logger.debug(
             f"Built {len(kmer_index)} k-mer indices for read sizes: {read_sizes}"
         )
     else:
