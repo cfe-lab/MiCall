@@ -586,58 +586,14 @@ def calculate_exact_coverage(
     read_count, match_count = _process_reads(read_generator(), contigs, coverage, overlap_size)
 
     if read_count == 0:
-        logger.warning("No reads found in FASTQ files")
+        logger.debug("No reads found in FASTQ files")
     elif match_count == 0:
-        logger.warning(
+        logger.debug(
             f"Processed {read_count} reads but found no exact matches to contigs. "
             f"Check that reads and contigs are from the same sample."
         )
     else:
-        logger.info(f"Processed {read_count} reads, found {match_count} exact matches")
-
-    coverage_ret = cast(Dict[str, Sequence[int]], coverage)
-    return coverage_ret, contigs
-
-
-def calculate_exact_coverage(
-    fastq1_filename: Path,
-    fastq2_filename: Path,
-    contigs_file: TextIO,
-    overlap_size: int,
-) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
-    """
-    Calculate exact coverage for every base in contigs.
-
-    :param fastq1_filename: Path to forward reads FASTQ file (can be gzipped)
-    :param fastq2_filename: Path to reverse reads FASTQ file (can be gzipped)
-    :param contigs_file: FASTA or CSV file with contigs
-    :param overlap_size: Minimum overlap size - only inner portion of reads (excluding this many bases from each end) is counted
-    :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
-             contig_name -> list of coverage counts and contigs_dict maps
-             contig_name -> sequence
-    """
-    # Read contigs
-    logger.debug("Reading contigs...")
-    contigs = read_contigs(contigs_file)
-
-    logger.debug(f"Loaded {len(contigs)} contigs")
-
-    # Initialize coverage arrays as numpy arrays for efficient operations
-    coverage = {}
-    for contig_name, sequence in contigs.items():
-        coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
-        logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
-
-    # Process read pairs - open files with automatic gzip detection
-    logger.debug("Processing read pairs from FASTQ...")
-
-    def read_generator():
-        with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
-            for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
-                yield read1_seq
-                yield read2_seq
-
-    _process_reads(read_generator(), contigs, coverage, overlap_size)
+        logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs
