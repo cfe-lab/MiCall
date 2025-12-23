@@ -17,6 +17,7 @@ from gzip import GzipFile
 from io import TextIOWrapper
 from pathlib import Path
 from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast
+import numpy as np
 from Bio import SeqIO
 
 logger = logging.getLogger(__name__)
@@ -313,10 +314,10 @@ def calculate_exact_coverage(
 
     logger.debug(f"Loaded {len(contigs)} contigs")
 
-    # Initialize coverage arrays
+    # Initialize coverage arrays as numpy arrays for efficient operations
     coverage = {}
     for contig_name, sequence in contigs.items():
-        coverage[contig_name] = [0] * len(sequence)
+        coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
     # Initialize k-mer index structure (multi-level: k-mer size -> index)
@@ -344,9 +345,11 @@ def calculate_exact_coverage(
                     for contig_name, start_pos, end_pos in matches:
                         match_count += 1
                         counter = coverage[contig_name]
-                        # Increment coverage for inner portion of read (excluding overlap_size from each end)
-                        for i in range(start_pos + overlap_size, end_pos - overlap_size):
-                            counter[i] += 1
+                        # Increment coverage for inner portion of read using numpy slice (optimized)
+                        inner_start = start_pos + overlap_size
+                        inner_end = end_pos - overlap_size
+                        if inner_start < inner_end:  # Only increment if there's an inner portion
+                            counter[inner_start:inner_end] += 1
 
     logger.debug(f"Finished processing {read_count} read pairs")
     logger.debug(f"Total exact matches: {match_count}")
@@ -389,7 +392,7 @@ def write_coverage_csv(
                 {
                     "contig": contig_name,
                     "position": pos,
-                    "exact_coverage": cov,
+                    "exact_coverage": int(cov),  # Convert numpy int to Python int
                 }
             )
 
