@@ -16,7 +16,6 @@ from collections import Counter, defaultdict
 import csv
 from csv import DictWriter
 from itertools import groupby, chain
-from io import StringIO
 from operator import itemgetter
 import os
 from pathlib import Path
@@ -412,6 +411,7 @@ class SequenceReport(object):
                                         defaultdict(Counter))
         # {contig_name: {position: exact_coverage}}
         self.exact_coverage_data = defaultdict(dict)
+        self._exact_coverage_calculated = set()  # Track which seeds have been calculated
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -609,6 +609,30 @@ class SequenceReport(object):
                                               self.detailed_concordance_writer,
                                               use_combined_reports=True)
 
+    def _calculate_exact_coverage_for_seed(self, seed_name, read_sequences):
+        """Calculate exact coverage for a seed using the exact_coverage tool.
+
+        @param seed_name: Name of the seed reference
+        @param read_sequences: List of read sequences (just the sequences, not full rows)
+        """
+        if seed_name in self._exact_coverage_calculated:
+            return  # Already calculated
+
+        try:
+            seed_ref = self.projects.getReference(seed_name)
+            overlap_size = max(2, len(seed_ref) // 10) if len(seed_ref) < 200 else 70
+            coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+            contigs = {seed_name: seed_ref}
+            _process_reads(iter(read_sequences), contigs, coverage, overlap_size)
+
+            for pos_0based, count in enumerate(coverage[seed_name]):
+                if count > 0:
+                    self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
+
+            self._exact_coverage_calculated.add(seed_name)
+        except (KeyError, Exception):
+            pass  # Skip if reference not found or other error
+
     def read(self,
              aligned_reads,
              included_regions: typing.Optional[typing.Set] = None,
@@ -624,7 +648,17 @@ class SequenceReport(object):
             all other regions should be excluded, or None to ignore
         @param excluded_regions: coordinate regions that should not be reported.
         """
-        aligned_reads = self.align_deletions(aligned_reads)
+        # Buffer reads to calculate exact coverage if needed
+        aligned_reads_list = list(aligned_reads)
+
+        # Calculate exact coverage for this seed if not done yet
+        if aligned_reads_list:
+            seed_name = aligned_reads_list[0].get('refname')
+            if seed_name and seed_name not in self._exact_coverage_calculated:
+                read_seqs = [row['seq'] for row in aligned_reads_list if 'seq' in row]
+                self._calculate_exact_coverage_for_seed(seed_name, read_seqs)
+
+        aligned_reads = self.align_deletions(iter(aligned_reads_list))
 
         self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
         self.reports.clear()  # {coord_name: [ReportAmino()]}
@@ -2050,60 +2084,6 @@ def aln2counts(aligned_csv,
         report.intermediate_alignments_csv = alignments_intermediate_csv
         report.overall_alignments_csv = alignments_overall_csv
         report.seed_concordance_csv = concordance_seed_csv
-
-        # Calculate exact coverage from aligned reads
-        logger.info("Calculating exact coverage from aligned reads...")
-        aligned_reader = csv.DictReader(aligned_csv)
-        aligned_rows = list(aligned_reader)
-
-        # Group reads by refname to process each seed separately
-        from collections import defaultdict
-        reads_by_seed = defaultdict(list)
-        for row in aligned_rows:
-            if 'refname' in row and 'seq' in row:
-                reads_by_seed[row['refname']].append(row['seq'])
-
-        # Process each seed
-        for seed_name, read_seqs in reads_by_seed.items():
-            try:
-                # Get seed reference
-                seed_ref = projects.getReference(seed_name)
-
-                # Determine overlap size
-                overlap_size = max(2, len(seed_ref) // 10) if len(seed_ref) < 200 else 70
-
-                # Initialize coverage array
-                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
-                contigs = {seed_name: seed_ref}
-
-                # Process reads
-                _process_reads(iter(read_seqs), contigs, coverage, overlap_size)
-
-                # Store results
-                for pos_0based, count in enumerate(coverage[seed_name]):
-                    if count > 0:
-                        report.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
-
-                logger.debug(f"Calculated exact coverage for {seed_name} ({len(seed_ref)} bp)")
-            except KeyError:
-                logger.debug(f"No reference found for seed {seed_name}, skipping exact coverage")
-            except Exception as e:
-                logger.warning(f"Failed to calculate exact coverage for {seed_name}: {e}")
-
-        # If in de novo mode, read remap_conseqs for normal processing
-        if remap_conseq_csv is not None:
-            remap_conseq_csv.seek(0)
-            report.read_remap_conseqs(remap_conseq_csv)
-
-        # Create a new CSV reader from buffered data for process_reads
-        aligned_stringio_full = StringIO()
-        aligned_writer_full = csv.DictWriter(aligned_stringio_full,
-                                              fieldnames=aligned_rows[0].keys() if aligned_rows else [])
-        aligned_writer_full.writeheader()
-        for row in aligned_rows:
-            aligned_writer_full.writerow(row)
-        aligned_stringio_full.seek(0)
-        aligned_csv = aligned_stringio_full
 
         report.process_reads(aligned_csv,
                              coverage_summary,
