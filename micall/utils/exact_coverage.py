@@ -50,6 +50,12 @@ def get_parser() -> argparse.ArgumentParser:
         type=argparse.FileType("w"),
         help="<output> CSV file with exact coverage counts per base",
     )
+    parser.add_argument(
+        "--overlap-size",
+        type=int,
+        default=70,
+        help="Minimum overlap size for counting coverage (default: 70). Only the inner portion of reads (excluding this many bases from each end) is counted.",
+    )
 
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument(
@@ -288,6 +294,7 @@ def calculate_exact_coverage(
     fastq1_filename: Path,
     fastq2_filename: Path,
     contigs_file: TextIO,
+    overlap_size: int,
 ) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
@@ -295,6 +302,7 @@ def calculate_exact_coverage(
     :param fastq1_filename: Path to forward reads FASTQ file (can be gzipped)
     :param fastq2_filename: Path to reverse reads FASTQ file (can be gzipped)
     :param contigs_file: FASTA or CSV file with contigs
+    :param overlap_size: Minimum overlap size - only inner portion of reads (excluding this many bases from each end) is counted
     :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
              contig_name -> list of coverage counts and contigs_dict maps
              contig_name -> sequence
@@ -335,9 +343,10 @@ def calculate_exact_coverage(
 
                     for contig_name, start_pos, end_pos in matches:
                         match_count += 1
-                        # Increment coverage for all bases covered by this read
-                        for i in range(start_pos, end_pos):
-                            coverage[contig_name][i] += 1
+                        counter = coverage[contig_name]
+                        # Increment coverage for inner portion of read (excluding overlap_size from each end)
+                        for i in range(start_pos + overlap_size, end_pos - overlap_size):
+                            counter[i] += 1
 
     logger.debug(f"Finished processing {read_count} read pairs")
     logger.debug(f"Total exact matches: {match_count}")
@@ -390,9 +399,10 @@ def main_typed(
     fastq2_filename: Path,
     contigs_file: TextIO,
     output_csv: TextIO,
+    overlap_size: int,
 ) -> None:
     coverage, contigs = calculate_exact_coverage(
-        fastq1_filename, fastq2_filename, contigs_file
+        fastq1_filename, fastq2_filename, contigs_file, overlap_size
     )
     write_coverage_csv(coverage, contigs, output_csv)
 
@@ -421,6 +431,7 @@ def main(argv: Sequence[str]) -> int:
         Path(args.fastq2),
         args.contigs_file,
         args.output_csv,
+        args.overlap_size,
     )
 
     logger.debug("Exact coverage calculation complete!")
