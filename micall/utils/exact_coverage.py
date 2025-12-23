@@ -24,7 +24,12 @@ logger = logging.getLogger(__name__)
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Calculate exact coverage for every base in contigs using k-mer hashing."
+        description="""Calculate exact coverage for every base in contigs.""",
+        epilog="""Exact coverage is defined as how many reads map around that base exactly,
+        meaning there are no mutations, deletions, or insertions when aligned.
+        When the whole contig is covered exactly by reads, we can be confident
+        that the contig represents at least one genome from the sample.
+        """,
     )
 
     parser.add_argument(
@@ -44,9 +49,6 @@ def get_parser() -> argparse.ArgumentParser:
         "output_csv",
         type=argparse.FileType("w"),
         help="<output> CSV file with exact coverage counts per base",
-    )
-    parser.add_argument(
-        "--kmer-size", type=int, default=31, help="K-mer size for hashing (default: 31)"
     )
 
     verbosity_group = parser.add_mutually_exclusive_group()
@@ -249,18 +251,15 @@ def find_exact_matches(
     read_seq: str,
     kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]],
     contigs: Dict[str, str],
-    kmer_size: int,
 ) -> Iterator[Tuple[str, int, int]]:
     """
     Find exact matches of a read in contigs using k-mer hashing.
 
-    For reads shorter than kmer_size, lazily builds a k-mer index of the appropriate
-    size on first encounter and caches it for future use in the kmer_index dict.
+    Lazily builds k-mer indices as needed when encountering reads of different lengths.
 
     :param read_seq: Read sequence
     :param kmer_index: Multi-level k-mer index mapping k-mer size -> (kmer -> [(contig_name, position)])
     :param contigs: Dictionary of contig sequences
-    :param kmer_size: Default k-mer size (for normal-length reads)
     :return: Iterator of (contig_name, start_pos, end_pos) tuples for exact matches
     """
 
@@ -269,23 +268,17 @@ def find_exact_matches(
     if read_len == 0:
         return
 
-    # Determine which k-mer size to use
-    effective_k = min(read_len, kmer_size)
-
-    # Check if we already have an index for this size
-    if effective_k not in kmer_index:
+    # Check if we already have an index for this read length
+    if read_len not in kmer_index:
         # Build it lazily
-        logger.debug(f"Building k-mer index for size {effective_k}")
-        kmer_index[effective_k] = build_kmer_index_for_size(contigs, effective_k)
+        logger.debug(f"Building k-mer index for size {read_len}")
+        kmer_index[read_len] = build_kmer_index_for_size(contigs, read_len)
 
     # Use the appropriate index
-    effective_index = kmer_index[effective_k]
+    effective_index = kmer_index[read_len]
 
-    # For short reads, use entire read as search key; for long reads, use first kmer_size bases
-    if read_len <= kmer_size:
-        search_kmer = read_seq
-    else:
-        search_kmer = read_seq[:kmer_size]
+    # Use entire read as search key
+    search_kmer = read_seq
 
     if search_kmer in effective_index:
         # Check each potential match location
@@ -301,7 +294,6 @@ def calculate_exact_coverage(
     fastq1_filename: Path,
     fastq2_filename: Path,
     contigs_file: TextIO,
-    kmer_size: int = 31,
 ) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
@@ -309,7 +301,6 @@ def calculate_exact_coverage(
     :param fastq1_filename: Path to forward reads FASTQ file (can be gzipped)
     :param fastq2_filename: Path to reverse reads FASTQ file (can be gzipped)
     :param contigs_file: FASTA or CSV file with contigs
-    :param kmer_size: Size of k-mers for hashing
     :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
              contig_name -> list of coverage counts and contigs_dict maps
              contig_name -> sequence
@@ -346,7 +337,7 @@ def calculate_exact_coverage(
             for read_seq in [read1_seq, read2_seq]:
                 # Try both forward and reverse complement
                 for seq in [read_seq, reverse_complement(read_seq)]:
-                    matches = find_exact_matches(seq, kmer_index, contigs, kmer_size)
+                    matches = find_exact_matches(seq, kmer_index, contigs)
 
                     for contig_name, start_pos, end_pos in matches:
                         match_count += 1
@@ -357,16 +348,14 @@ def calculate_exact_coverage(
     logger.debug(f"Finished processing {read_count} read pairs")
     logger.debug(f"Total exact matches: {match_count}")
 
-    # Report on lazy k-mer indices built for short reads
-    additional_indices = [k for k in kmer_index.keys() if k != kmer_size]
-    if additional_indices:
-        short_read_sizes = sorted(additional_indices)
+    # Report on lazy k-mer indices built
+    if kmer_index:
+        read_sizes = sorted(kmer_index.keys())
         logger.info(
-            f"Built {len(additional_indices)} additional k-mer indices for short reads "
-            f"(sizes: {short_read_sizes})"
+            f"Built {len(kmer_index)} k-mer indices for read sizes: {read_sizes}"
         )
     else:
-        logger.debug("No short reads encountered (all reads >= kmer_size)")
+        logger.debug("No k-mer indices built (no reads processed)")
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs
@@ -407,10 +396,9 @@ def main_typed(
     fastq2_filename: Path,
     contigs_file: TextIO,
     output_csv: TextIO,
-    kmer_size: int = 31,
 ) -> None:
     coverage, contigs = calculate_exact_coverage(
-        fastq1_filename, fastq2_filename, contigs_file, kmer_size
+        fastq1_filename, fastq2_filename, contigs_file
     )
     write_coverage_csv(coverage, contigs, output_csv)
 
@@ -439,7 +427,6 @@ def main(argv: Sequence[str]) -> int:
         Path(args.fastq2),
         args.contigs_file,
         args.output_csv,
-        args.kmer_size,
     )
 
     logger.debug("Exact coverage calculation complete!")
