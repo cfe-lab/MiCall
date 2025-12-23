@@ -311,15 +311,6 @@ def read_aligned_csv(
     try:
         reader = csv.DictReader(aligned_csv)
 
-        # Read first row to validate headers
-        first_row = None
-        try:
-            first_row = next(reader)
-        except StopIteration:
-            # Empty file after header
-            logger.warning("Aligned CSV is empty (no data rows)")
-            return
-
         # Validate required columns exist
         if reader.fieldnames is None:
             raise ValueError("Aligned CSV has no header row")
