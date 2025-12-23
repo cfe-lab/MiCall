@@ -293,6 +293,8 @@ def find_exact_matches(
         yield (contig_name, contig_pos, contig_pos + read_len)
 
 
+
+
 def read_aligned_csv(
     aligned_csv: TextIO,
 ) -> Iterator[Tuple[str, str]]:
@@ -304,13 +306,80 @@ def read_aligned_csv(
 
     :param aligned_csv: Open file handle to aligned CSV
     :return: Iterator of (refname, sequence) tuples
+    :raises ValueError: If required columns are missing or CSV is invalid
     """
-    reader = csv.DictReader(aligned_csv)
-    for row in reader:
-        refname = row.get('refname', '')
-        seq = row.get('seq', '')
-        if refname and seq:
+    try:
+        reader = csv.DictReader(aligned_csv)
+
+        # Read first row to validate headers
+        first_row = None
+        try:
+            first_row = next(reader)
+        except StopIteration:
+            # Empty file after header
+            logger.warning("Aligned CSV is empty (no data rows)")
+            return
+
+        # Validate required columns exist
+        if reader.fieldnames is None:
+            raise ValueError("Aligned CSV has no header row")
+
+        fieldnames_set = set(reader.fieldnames)
+        required_columns = {'refname', 'seq'}
+        missing_columns = required_columns - fieldnames_set
+
+        if missing_columns:
+            raise ValueError(
+                f"Aligned CSV missing required columns: {', '.join(sorted(missing_columns))}. "
+                f"Found columns: {', '.join(sorted(reader.fieldnames))}"
+            )
+
+        # Process first row
+        refname = first_row.get('refname', '').strip()
+        seq = first_row.get('seq', '').strip()
+
+        if not refname:
+            logger.warning("Row 1: Empty refname, skipping")
+        elif not seq:
+            logger.warning(f"Row 1: Empty sequence for refname '{refname}', skipping")
+        else:
+            # Validate sequence contains only valid bases
+            invalid_chars = set(seq.upper()) - {'A', 'C', 'G', 'T', 'N'}
+            if invalid_chars:
+                logger.warning(
+                    f"Row 1: Sequence for '{refname}' contains invalid characters: "
+                    f"{', '.join(sorted(invalid_chars))}, skipping"
+                )
+            else:
+                yield (refname, seq)
+
+        # Process remaining rows
+        for row_num, row in enumerate(reader, start=2):
+            refname = row.get('refname', '').strip()
+            seq = row.get('seq', '').strip()
+
+            if not refname or not seq:
+                if not refname and not seq:
+                    logger.debug(f"Row {row_num}: Empty row, skipping")
+                elif not refname:
+                    logger.warning(f"Row {row_num}: Empty refname, skipping")
+                else:
+                    logger.warning(f"Row {row_num}: Empty sequence for refname '{refname}', skipping")
+                continue
+
+            # Validate sequence
+            invalid_chars = set(seq.upper()) - {'A', 'C', 'G', 'T', 'N'}
+            if invalid_chars:
+                logger.warning(
+                    f"Row {row_num}: Sequence for '{refname}' contains invalid characters: "
+                    f"{', '.join(sorted(invalid_chars))}, skipping"
+                )
+                continue
+
             yield (refname, seq)
+
+    except csv.Error as e:
+        raise ValueError(f"Invalid CSV format: {e}") from e
 
 
 def _process_reads(
@@ -378,12 +447,38 @@ def calculate_exact_coverage_from_csv(
     :param contigs_file: FASTA or CSV file with contigs
     :param overlap_size: Minimum overlap size
     :return: Tuple of (coverage_dict, contigs_dict)
+    :raises ValueError: If inputs are invalid
     """
+    # Validate overlap_size
+    if overlap_size < 0:
+        raise ValueError(f"overlap_size must be non-negative, got {overlap_size}")
+    if overlap_size > 1000:
+        logger.warning(
+            f"overlap_size={overlap_size} is very large. "
+            f"This will exclude most of the read from coverage counting."
+        )
+
     # Read contigs
     logger.debug("Reading contigs...")
-    contigs = read_contigs(contigs_file)
+    try:
+        contigs = read_contigs(contigs_file)
+    except Exception as e:
+        raise ValueError(f"Failed to read contigs file: {e}") from e
+
+    if not contigs:
+        raise ValueError("No contigs found in contigs file")
 
     logger.debug(f"Loaded {len(contigs)} contigs")
+
+    # Validate contig sequences
+    for contig_name, sequence in contigs.items():
+        if not sequence:
+            raise ValueError(f"Contig '{contig_name}' has empty sequence")
+        if len(sequence) < 2 * overlap_size:
+            logger.warning(
+                f"Contig '{contig_name}' length ({len(sequence)}) is less than "
+                f"2 * overlap_size ({2 * overlap_size}). No coverage will be counted."
+            )
 
     # Initialize coverage arrays
     coverage = {}
@@ -398,7 +493,107 @@ def calculate_exact_coverage_from_csv(
         for refname, read_seq in read_aligned_csv(aligned_csv):
             yield read_seq
 
-    _process_reads(read_generator(), contigs, coverage, overlap_size)
+    read_count, match_count = _process_reads(read_generator(), contigs, coverage, overlap_size)
+
+    if read_count == 0:
+        logger.warning("No reads found in aligned CSV")
+    elif match_count == 0:
+        logger.warning(
+            f"Processed {read_count} reads but found no exact matches to contigs. "
+            f"Check that reads and contigs are from the same sample."
+        )
+    else:
+        logger.info(f"Processed {read_count} reads, found {match_count} exact matches")
+
+    coverage_ret = cast(Dict[str, Sequence[int]], coverage)
+    return coverage_ret, contigs
+
+
+def calculate_exact_coverage(
+    fastq1_filename: Path,
+    fastq2_filename: Path,
+    contigs_file: TextIO,
+    overlap_size: int,
+) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
+    """
+    Calculate exact coverage for every base in contigs.
+
+    :param fastq1_filename: Path to forward reads FASTQ file (can be gzipped)
+    :param fastq2_filename: Path to reverse reads FASTQ file (can be gzipped)
+    :param contigs_file: FASTA or CSV file with contigs
+    :param overlap_size: Minimum overlap size - only inner portion of reads (excluding this many bases from each end) is counted
+    :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
+             contig_name -> list of coverage counts and contigs_dict maps
+             contig_name -> sequence
+    :raises ValueError: If inputs are invalid
+    :raises FileNotFoundError: If FASTQ files don't exist
+    """
+    # Validate overlap_size
+    if overlap_size < 0:
+        raise ValueError(f"overlap_size must be non-negative, got {overlap_size}")
+    if overlap_size > 1000:
+        logger.warning(
+            f"overlap_size={overlap_size} is very large. "
+            f"This will exclude most of the read from coverage counting."
+        )
+
+    # Validate FASTQ files exist
+    if not fastq1_filename.exists():
+        raise FileNotFoundError(f"FASTQ file not found: {fastq1_filename}")
+    if not fastq2_filename.exists():
+        raise FileNotFoundError(f"FASTQ file not found: {fastq2_filename}")
+
+    # Read contigs
+    logger.debug("Reading contigs...")
+    try:
+        contigs = read_contigs(contigs_file)
+    except Exception as e:
+        raise ValueError(f"Failed to read contigs file: {e}") from e
+
+    if not contigs:
+        raise ValueError("No contigs found in contigs file")
+
+    logger.debug(f"Loaded {len(contigs)} contigs")
+
+    # Validate contig sequences
+    for contig_name, sequence in contigs.items():
+        if not sequence:
+            raise ValueError(f"Contig '{contig_name}' has empty sequence")
+        if len(sequence) < 2 * overlap_size:
+            logger.warning(
+                f"Contig '{contig_name}' length ({len(sequence)}) is less than "
+                f"2 * overlap_size ({2 * overlap_size}). No coverage will be counted."
+            )
+
+    # Initialize coverage arrays as numpy arrays for efficient operations
+    coverage = {}
+    for contig_name, sequence in contigs.items():
+        coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
+        logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
+
+    # Process read pairs - open files with automatic gzip detection
+    logger.debug("Processing read pairs from FASTQ...")
+
+    def read_generator():
+        try:
+            with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
+                for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
+                    yield read1_seq
+                    yield read2_seq
+        except Exception as e:
+            raise ValueError(f"Error reading FASTQ files: {e}") from e
+
+    read_count, match_count = _process_reads(read_generator(), contigs, coverage, overlap_size)
+
+    if read_count == 0:
+        logger.warning("No reads found in FASTQ files")
+    elif match_count == 0:
+        logger.warning(
+            f"Processed {read_count} reads but found no exact matches to contigs. "
+            f"Check that reads and contigs are from the same sample."
+        )
+    else:
+        logger.info(f"Processed {read_count} reads, found {match_count} exact matches")
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs
