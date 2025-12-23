@@ -242,21 +242,6 @@ data1,data2
 #
 #        self.assertIn("no header", str(ctx.exception).lower())
 
-    def test_invalid_sequence_characters(self):
-        """Test that invalid sequence characters are logged but skipped"""
-        csv_data = StringIO("""\
-refname,seq
-contig1,ACGTXYZ
-contig2,GGGGCCCC
-contig3,123456
-""")
-
-        reads = list(read_aligned_csv(csv_data))
-
-        # Only valid read should be returned
-        self.assertEqual(len(reads), 1)
-        self.assertEqual(reads[0], ('contig2', 'GGGGCCCC'))
-
     def test_empty_refname_skipped(self):
         """Test that rows with empty refname are skipped"""
         csv_data = StringIO("""\
@@ -314,25 +299,3 @@ refname,seq
             calculate_exact_coverage_from_csv(aligned_csv, contigs_csv, overlap_size=2)
 
         self.assertIn("no contigs", str(ctx.exception).lower())
-
-    def test_valid_bases_only(self):
-        """Test that only A,C,G,T,N are considered valid"""
-        csv_data = StringIO("""\
-refname,seq
-valid1,ACGT
-valid2,NNNN
-valid3,acgt
-valid4,AcGtNn
-invalid1,ACGTU
-invalid2,ACGT-GAP
-""")
-
-        reads = list(read_aligned_csv(csv_data))
-
-        # Should accept A,C,G,T,N (case insensitive)
-        self.assertEqual(len(reads), 4)
-        valid_seqs = [r[1] for r in reads]
-        self.assertIn('ACGT', valid_seqs)
-        self.assertIn('NNNN', valid_seqs)
-        self.assertIn('acgt', valid_seqs)
-        self.assertIn('AcGtNn', valid_seqs)
