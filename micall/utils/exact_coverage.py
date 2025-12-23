@@ -293,57 +293,6 @@ def find_exact_matches(
         yield (contig_name, contig_pos, contig_pos + read_len)
 
 
-
-
-def read_aligned_csv(
-    aligned_csv: TextIO,
-) -> Iterator[Tuple[str, str]]:
-    """
-    Read sequences from aligned CSV file.
-
-    Expected format: CSV with 'refname' and 'seq' columns.
-    Each row yields a (refname, sequence) tuple.
-
-    :param aligned_csv: Open file handle to aligned CSV
-    :return: Iterator of (refname, sequence) tuples
-    :raises ValueError: If required columns are missing or CSV is invalid
-    """
-    try:
-        reader = csv.DictReader(aligned_csv)
-
-        # Validate required columns exist
-        if reader.fieldnames is None:
-            raise ValueError("Aligned CSV has no header row")
-
-        fieldnames_set = set(reader.fieldnames)
-        required_columns = {'refname', 'seq'}
-        missing_columns = required_columns - fieldnames_set
-
-        if missing_columns:
-            raise ValueError(
-                f"Aligned CSV missing required columns: {', '.join(sorted(missing_columns))}. "
-                f"Found columns: {', '.join(sorted(reader.fieldnames))}"
-            )
-
-        for row_num, row in enumerate(reader):
-            refname = row.get('refname', '').strip()
-            seq = row.get('seq', '').strip()
-
-            if not refname or not seq:
-                if not refname and not seq:
-                    logger.debug(f"Row {row_num}: Empty row, skipping")
-                elif not refname:
-                    logger.warning(f"Row {row_num}: Empty refname, skipping")
-                else:
-                    logger.warning(f"Row {row_num}: Empty sequence for refname '{refname}', skipping")
-                continue
-
-            yield (refname, seq)
-
-    except csv.Error as e:
-        raise ValueError(f"Invalid CSV format: {e}") from e
-
-
 def _process_reads(
     read_iterator: Iterator[str],
     contigs: Dict[str, str],
@@ -395,80 +344,6 @@ def _process_reads(
         logger.debug("No k-mer indices built (no reads processed)")
 
     return read_count, match_count
-
-
-def calculate_exact_coverage_from_csv(
-    aligned_csv: TextIO,
-    contigs_file: TextIO,
-    overlap_size: int,
-) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
-    """
-    Calculate exact coverage from aligned CSV file.
-
-    :param aligned_csv: CSV file with 'refname' and 'seq' columns
-    :param contigs_file: FASTA or CSV file with contigs
-    :param overlap_size: Minimum overlap size
-    :return: Tuple of (coverage_dict, contigs_dict)
-    :raises ValueError: If inputs are invalid
-    """
-    # Validate overlap_size
-    if overlap_size < 0:
-        raise ValueError(f"overlap_size must be non-negative, got {overlap_size}")
-    if overlap_size > 1000:
-        logger.warning(
-            f"overlap_size={overlap_size} is very large. "
-            f"This will exclude most of the read from coverage counting."
-        )
-
-    # Read contigs
-    logger.debug("Reading contigs...")
-    try:
-        contigs = read_contigs(contigs_file)
-    except Exception as e:
-        raise ValueError(f"Failed to read contigs file: {e}") from e
-
-    if not contigs:
-        raise ValueError("No contigs found in contigs file")
-
-    logger.debug(f"Loaded {len(contigs)} contigs")
-
-    # Validate contig sequences
-    for contig_name, sequence in contigs.items():
-        if not sequence:
-            raise ValueError(f"Contig '{contig_name}' has empty sequence")
-        if len(sequence) < 2 * overlap_size:
-            logger.warning(
-                f"Contig '{contig_name}' length ({len(sequence)}) is less than "
-                f"2 * overlap_size ({2 * overlap_size}). No coverage will be counted."
-            )
-
-    # Initialize coverage arrays
-    coverage = {}
-    for contig_name, sequence in contigs.items():
-        coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
-        logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
-
-    # Process reads from CSV
-    logger.debug("Processing reads from CSV...")
-
-    def read_generator():
-        for refname, read_seq in read_aligned_csv(aligned_csv):
-            yield read_seq
-
-    read_count, match_count = _process_reads(read_generator(), contigs, coverage, overlap_size)
-
-    if read_count == 0:
-        logger.warning("No reads found in aligned CSV")
-    elif match_count == 0:
-        logger.warning(
-            f"Processed {read_count} reads but found no exact matches to contigs. "
-            f"Check that reads and contigs are from the same sample."
-        )
-    else:
-        logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
-
-    coverage_ret = cast(Dict[str, Sequence[int]], coverage)
-    return coverage_ret, contigs
 
 
 def calculate_exact_coverage(
