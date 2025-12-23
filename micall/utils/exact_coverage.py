@@ -275,7 +275,7 @@ def find_exact_matches(
     # Check if we already have an index for this size
     if effective_k not in kmer_index:
         # Build it lazily
-        logger.debug(f"Building k-mer index for size {effective_k} (lazy computation)")
+        logger.debug(f"Building k-mer index for size {effective_k}")
         kmer_index[effective_k] = build_kmer_index_for_size(contigs, effective_k)
 
     # Use the appropriate index
@@ -326,15 +326,8 @@ def calculate_exact_coverage(
         coverage[contig_name] = [0] * len(sequence)
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
-    # Build k-mer index structure (multi-level: k-mer size -> index)
-    # Pre-build the main index for the default kmer_size
-    logger.debug("Building k-mer index...")
-    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {
-        kmer_size: build_kmer_index(contigs, kmer_size)
-    }
-    logger.debug(
-        f"Indexed {len(kmer_index[kmer_size])} unique k-mers for size {kmer_size}"
-    )
+    # Initialize k-mer index structure (multi-level: k-mer size -> index)
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
 
     # Process read pairs - open files with automatic gzip detection
     logger.debug("Processing reads...")
