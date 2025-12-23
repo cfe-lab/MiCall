@@ -13,6 +13,9 @@ import csv
 import sys
 import logging
 from collections import defaultdict
+from gzip import GzipFile
+from io import TextIOWrapper
+from pathlib import Path
 from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast, Optional
 from Bio import SeqIO
 
@@ -26,13 +29,11 @@ def get_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "fastq1",
-        type=argparse.FileType("r"),
-        help="<input> FASTQ file containing forward reads (read 1)",
+        help="<input> FASTQ file containing forward reads (read 1), can be gzip compressed",
     )
     parser.add_argument(
         "fastq2",
-        type=argparse.FileType("r"),
-        help="<input> FASTQ file containing reverse reads (read 2)",
+        help="<input> FASTQ file containing reverse reads (read 2), can be gzip compressed",
     )
     parser.add_argument(
         "contigs_file",
@@ -66,6 +67,28 @@ def get_parser() -> argparse.ArgumentParser:
     )
 
     return parser
+
+
+def open_fastq(filename: Path) -> TextIO:
+    """
+    Open a FASTQ file for reading, automatically handling gzip compression.
+
+    Detects compression by file extension (.gz). Opens compressed files
+    using GzipFile and wraps in TextIOWrapper for text mode reading.
+
+    :param filename: Path to FASTQ file (can be .fastq or .fastq.gz)
+    :return: Text file handle for reading
+    """
+    is_gzipped = str(filename).endswith(".gz")
+
+    if is_gzipped:
+        # Open in binary mode, wrap with GzipFile, then TextIOWrapper for text mode
+        binary_file = open(filename, "rb")
+        gzip_file = GzipFile(fileobj=binary_file)
+        return TextIOWrapper(gzip_file)
+    else:
+        # Regular text file
+        return open(filename, "r")
 
 
 def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
@@ -288,16 +311,16 @@ def find_exact_matches(
 
 
 def calculate_exact_coverage(
-    fastq1: TextIO,
-    fastq2: TextIO,
+    fastq1_filename: Path,
+    fastq2_filename: Path,
     contigs_file: TextIO,
     kmer_size: int = 31,
 ) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
 
-    :param fastq1: Forward reads FASTQ file
-    :param fastq2: Reverse reads FASTQ file
+    :param fastq1_filename: Path to forward reads FASTQ file (can be gzipped)
+    :param fastq2_filename: Path to reverse reads FASTQ file (can be gzipped)
     :param contigs_file: FASTA or CSV file with contigs
     :param kmer_size: Size of k-mers for hashing
     :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
@@ -324,31 +347,32 @@ def calculate_exact_coverage(
     # Cache for smaller k-mer indices (built lazily when encountering short reads)
     kmer_index_cache: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
 
-    # Process read pairs
+    # Process read pairs - open files with automatic gzip detection
     logger.debug("Processing reads...")
     read_count = 0
     match_count = 0
 
-    for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
-        read_count += 1
-        if read_count % 100000 == 0:
-            logger.debug(
-                f"Processed {read_count} read pairs, {match_count} exact matches found"
-            )
-
-        # Try forward orientation for read1
-        for read_seq in [read1_seq, read2_seq]:
-            # Try both forward and reverse complement
-            for seq in [read_seq, reverse_complement(read_seq)]:
-                matches = find_exact_matches(
-                    seq, kmer_index, contigs, kmer_size, kmer_index_cache
+    with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
+        for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
+            read_count += 1
+            if read_count % 100000 == 0:
+                logger.debug(
+                    f"Processed {read_count} read pairs, {match_count} exact matches found"
                 )
 
-                for contig_name, start_pos, end_pos in matches:
-                    match_count += 1
-                    # Increment coverage for all bases covered by this read
-                    for i in range(start_pos, end_pos):
-                        coverage[contig_name][i] += 1
+            # Try forward orientation for read1
+            for read_seq in [read1_seq, read2_seq]:
+                # Try both forward and reverse complement
+                for seq in [read_seq, reverse_complement(read_seq)]:
+                    matches = find_exact_matches(
+                        seq, kmer_index, contigs, kmer_size, kmer_index_cache
+                    )
+
+                    for contig_name, start_pos, end_pos in matches:
+                        match_count += 1
+                        # Increment coverage for all bases covered by this read
+                        for i in range(start_pos, end_pos):
+                            coverage[contig_name][i] += 1
 
     logger.debug(f"Finished processing {read_count} read pairs")
     logger.debug(f"Total exact matches: {match_count}")
@@ -398,14 +422,14 @@ def write_coverage_csv(
 
 
 def main_typed(
-    fastq1: TextIO,
-    fastq2: TextIO,
+    fastq1_filename: Path,
+    fastq2_filename: Path,
     contigs_file: TextIO,
     output_csv: TextIO,
     kmer_size: int = 31,
 ) -> None:
     coverage, contigs = calculate_exact_coverage(
-        fastq1, fastq2, contigs_file, kmer_size
+        fastq1_filename, fastq2_filename, contigs_file, kmer_size
     )
     write_coverage_csv(coverage, contigs, output_csv)
 
@@ -430,8 +454,8 @@ def main(argv: Sequence[str]) -> int:
     )
 
     main_typed(
-        args.fastq1,
-        args.fastq2,
+        Path(args.fastq1),
+        Path(args.fastq2),
         args.contigs_file,
         args.output_csv,
         args.kmer_size,

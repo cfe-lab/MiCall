@@ -72,13 +72,10 @@ def test_exact_coverage_integration():
             write_coverage_csv,
         )
 
-        with (
-            open(fastq1, "r") as f1,
-            open(fastq2, "r") as f2,
-            open(contig_fasta, "r") as fc,
-            open(output_csv, "w") as fo,
-        ):
-            coverage, contigs = calculate_exact_coverage(f1, f2, fc, kmer_size=4)
+        with open(contig_fasta, "r") as fc, open(output_csv, "w") as fo:
+            coverage, contigs = calculate_exact_coverage(
+                fastq1, fastq2, fc, kmer_size=4
+            )
             write_coverage_csv(coverage, contigs, fo)
 
         # Verify results
@@ -128,13 +125,10 @@ def test_exact_coverage_with_csv_contigs():
             write_coverage_csv,
         )
 
-        with (
-            open(fastq1, "r") as f1,
-            open(fastq2, "r") as f2,
-            open(contig_csv, "r") as fc,
-            open(output_csv, "w") as fo,
-        ):
-            coverage, contigs = calculate_exact_coverage(f1, f2, fc, kmer_size=4)
+        with open(contig_csv, "r") as fc, open(output_csv, "w") as fo:
+            coverage, contigs = calculate_exact_coverage(
+                Path(fastq1), Path(fastq2), fc, kmer_size=4
+            )
             write_coverage_csv(coverage, contigs, fo)
 
         # Verify results
@@ -173,13 +167,10 @@ def test_exact_coverage_with_conseq_csv():
             write_coverage_csv,
         )
 
-        with (
-            open(fastq1, "r") as f1,
-            open(fastq2, "r") as f2,
-            open(conseq_csv, "r") as fc,
-            open(output_csv, "w") as fo,
-        ):
-            coverage, contigs = calculate_exact_coverage(f1, f2, fc, kmer_size=4)
+        with open(conseq_csv, "r") as fc, open(output_csv, "w") as fo:
+            coverage, contigs = calculate_exact_coverage(
+                Path(fastq1), Path(fastq2), fc, kmer_size=4
+            )
             write_coverage_csv(coverage, contigs, fo)
 
         # Verify results
