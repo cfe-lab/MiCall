@@ -293,6 +293,117 @@ def find_exact_matches(
         yield (contig_name, contig_pos, contig_pos + read_len)
 
 
+def read_aligned_csv(
+    aligned_csv: TextIO,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Read sequences from aligned CSV file.
+
+    Expected format: CSV with 'refname' and 'seq' columns.
+    Each row yields a (refname, sequence) tuple.
+
+    :param aligned_csv: Open file handle to aligned CSV
+    :return: Iterator of (refname, sequence) tuples
+    """
+    reader = csv.DictReader(aligned_csv)
+    for row in reader:
+        refname = row.get('refname', '')
+        seq = row.get('seq', '')
+        if refname and seq:
+            yield (refname, seq)
+
+
+def _process_reads(
+    read_iterator: Iterator[str],
+    contigs: Dict[str, str],
+    coverage: Dict[str, np.ndarray],
+    overlap_size: int,
+) -> Tuple[int, int]:
+    """
+    Process reads and update coverage counts.
+
+    :param read_iterator: Iterator yielding read sequences
+    :param contigs: Dictionary mapping contig_name -> sequence
+    :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
+    :param overlap_size: Minimum overlap size for counting coverage
+    :return: Tuple of (read_count, match_count)
+    """
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
+    read_count = 0
+    match_count = 0
+
+    for read_seq in read_iterator:
+        read_count += 1
+        if read_count % 100000 == 0:
+            logger.debug(
+                f"Processed {read_count} reads, {match_count} exact matches found"
+            )
+
+        # Try both forward and reverse complement
+        for seq in [read_seq, reverse_complement(read_seq)]:
+            matches = find_exact_matches(seq, kmer_index, contigs)
+
+            for contig_name, start_pos, end_pos in matches:
+                match_count += 1
+                counter = coverage[contig_name]
+                # Increment coverage for inner portion
+                inner_start = start_pos + overlap_size
+                inner_end = end_pos - overlap_size
+                if inner_start < inner_end:
+                    counter[inner_start:inner_end] += 1
+
+    logger.debug(f"Finished processing {read_count} reads")
+    logger.debug(f"Total exact matches: {match_count}")
+
+    if kmer_index:
+        read_sizes = sorted(kmer_index.keys())
+        logger.debug(
+            f"Built {len(kmer_index)} k-mer indices for read sizes: {read_sizes}"
+        )
+    else:
+        logger.debug("No k-mer indices built (no reads processed)")
+
+    return read_count, match_count
+
+
+def calculate_exact_coverage_from_csv(
+    aligned_csv: TextIO,
+    contigs_file: TextIO,
+    overlap_size: int,
+) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
+    """
+    Calculate exact coverage from aligned CSV file.
+
+    :param aligned_csv: CSV file with 'refname' and 'seq' columns
+    :param contigs_file: FASTA or CSV file with contigs
+    :param overlap_size: Minimum overlap size
+    :return: Tuple of (coverage_dict, contigs_dict)
+    """
+    # Read contigs
+    logger.debug("Reading contigs...")
+    contigs = read_contigs(contigs_file)
+
+    logger.debug(f"Loaded {len(contigs)} contigs")
+
+    # Initialize coverage arrays
+    coverage = {}
+    for contig_name, sequence in contigs.items():
+        coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
+        logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
+
+    # Process reads from CSV
+    logger.debug("Processing reads from CSV...")
+
+    def read_generator():
+        for refname, read_seq in read_aligned_csv(aligned_csv):
+            yield read_seq
+
+    _process_reads(read_generator(), contigs, coverage, overlap_size)
+
+    coverage_ret = cast(Dict[str, Sequence[int]], coverage)
+    return coverage_ret, contigs
+
+
 def calculate_exact_coverage(
     fastq1_filename: Path,
     fastq2_filename: Path,
@@ -322,48 +433,16 @@ def calculate_exact_coverage(
         coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
-    # Initialize k-mer index structure (multi-level: k-mer size -> index)
-    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
-
     # Process read pairs - open files with automatic gzip detection
-    logger.debug("Processing reads...")
-    read_count = 0
-    match_count = 0
+    logger.debug("Processing read pairs from FASTQ...")
 
-    with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
-        for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
-            read_count += 1
-            if read_count % 100000 == 0:
-                logger.debug(
-                    f"Processed {read_count} read pairs, {match_count} exact matches found"
-                )
+    def read_generator():
+        with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
+            for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
+                yield read1_seq
+                yield read2_seq
 
-            # Try forward orientation for read1
-            for read_seq in [read1_seq, read2_seq]:
-                # Try both forward and reverse complement
-                for seq in [read_seq, reverse_complement(read_seq)]:
-                    matches = find_exact_matches(seq, kmer_index, contigs)
-
-                    for contig_name, start_pos, end_pos in matches:
-                        match_count += 1
-                        counter = coverage[contig_name]
-                        # Increment coverage for inner portion of read using numpy slice (optimized)
-                        inner_start = start_pos + overlap_size
-                        inner_end = end_pos - overlap_size
-                        if inner_start < inner_end:  # Only increment if there's an inner portion
-                            counter[inner_start:inner_end] += 1
-
-    logger.debug(f"Finished processing {read_count} read pairs")
-    logger.debug(f"Total exact matches: {match_count}")
-
-    # Report on lazy k-mer indices built
-    if kmer_index:
-        read_sizes = sorted(kmer_index.keys())
-        logger.debug(
-            f"Built {len(kmer_index)} k-mer indices for read sizes: {read_sizes}"
-        )
-    else:
-        logger.debug("No k-mer indices built (no reads processed)")
+    _process_reads(read_generator(), contigs, coverage, overlap_size)
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs

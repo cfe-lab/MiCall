@@ -24,7 +24,7 @@ from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
-from micall.utils.exact_coverage import calculate_exact_coverage, write_coverage_csv
+from micall.utils.exact_coverage import calculate_exact_coverage_from_csv, write_coverage_csv
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -243,11 +243,11 @@ class Sample:
         if use_denovo:
             # Run exact coverage after remap_conseq.csv has been generated
             logger.info('Running exact_coverage on %s.', self)
-            with open(self.remap_conseq_csv, 'r') as remap_conseq_file, \
+            with open(self.remap_csv, 'r') as aligned_csv, \
+                 open(self.remap_conseq_csv, 'r') as remap_conseq_file, \
                  open(self.exact_coverage_csv, 'w') as exact_coverage_csv:
-                coverage, contigs = calculate_exact_coverage(
-                    Path(self.trimmed1_fastq),
-                    Path(self.trimmed2_fastq),
+                coverage, contigs = calculate_exact_coverage_from_csv(
+                    aligned_csv,
                     remap_conseq_file,
                     overlap_size=70)
                 write_coverage_csv(coverage, contigs, exact_coverage_csv)
