@@ -24,6 +24,7 @@ from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
+from micall.utils.exact_coverage import calculate_exact_coverage, write_coverage_csv
 from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
@@ -239,6 +240,18 @@ class Sample:
         else:
             self.run_mapping(excluded_seeds)
 
+        if use_denovo:
+            # Run exact coverage after remap_conseq.csv has been generated
+            logger.info('Running exact_coverage on %s.', self)
+            with open(self.remap_conseq_csv, 'r') as remap_conseq_file, \
+                 open(self.exact_coverage_csv, 'w') as exact_coverage_csv:
+                coverage, contigs = calculate_exact_coverage(
+                    Path(self.trimmed1_fastq),
+                    Path(self.trimmed2_fastq),
+                    remap_conseq_file,
+                    overlap_size=70)
+                write_coverage_csv(coverage, contigs, exact_coverage_csv)
+
         self.process_post_assembly(prefix="",
                                    use_denovo=use_denovo,
                                    excluded_projects=excluded_projects)
@@ -283,6 +296,7 @@ class Sample:
                         conseq_ins_csv=(with_prefix(self.conseq_ins_csv), 'r'),
                         remap_conseq_csv=(with_prefix(self.remap_conseq_csv), 'r'),
                         contigs_csv=(with_prefix(self.contigs_csv), 'r') if use_denovo else None,
+                        exact_coverage_csv=(self.exact_coverage_csv, 'r') if use_denovo and prefix == "" else None,
                         nuc_detail_csv=(with_prefix(self.nuc_details_csv), 'w') if use_denovo else None,
                         amino_csv=(with_prefix(self.amino_csv), 'w'),
                         amino_detail_csv=(with_prefix(self.amino_details_csv), 'w') if use_denovo else None,
@@ -319,6 +333,7 @@ class Sample:
                        nuc_detail_csv=opened_files['nuc_detail_csv'],
                        genome_coverage_csv=opened_files['genome_coverage_csv'],
                        contigs_csv=opened_files['contigs_csv'],
+                       exact_coverage_csv=opened_files['exact_coverage_csv'],
                        conseq_all_csv=opened_files['conseq_all_csv'],
                        conseq_stitched_csv=opened_files['conseq_stitched_csv'],
                        minimap_hits_csv=opened_files['minimap_hits_csv'],

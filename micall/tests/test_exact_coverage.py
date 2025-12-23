@@ -449,25 +449,24 @@ ref2,1.0,group2,GGGGCCCC
         contigs = read_contigs(csv_file)
 
         self.assertEqual(len(contigs), 2)
-        # Should use position-based names since no sample/region columns
-        self.assertEqual(contigs["contig1"], "ACGTACGT")
-        self.assertEqual(contigs["contig2"], "GGGGCCCC")
+        # Should use 'ref' column for names (priority: region > ref > sample)
+        self.assertEqual(contigs["ref1"], "ACGTACGT")
+        self.assertEqual(contigs["ref2"], "GGGGCCCC")
 
     def test_read_csv_with_sequence_column(self):
         """Test reading contigs from CSV with 'sequence' column (conseq.csv format)"""
         csv_file = StringIO("""\
-sample,region,q-cutoff,consensus-percent-cutoff,offset,sequence
-sample1,region1,15,MAX,0,ACGTACGT
-sample1,region2,15,MAX,0,GGGGCCCC
+region,q-cutoff,consensus-percent-cutoff,offset,sequence
+region1,15,MAX,0,ACGTACGT
+region2,15,MAX,0,GGGGCCCC
 """)
 
         contigs = read_contigs(csv_file)
 
         self.assertEqual(len(contigs), 2)
-        # Should use 'sample' column for name
-        self.assertIn("sample1", contigs)
-        # Second entry with same sample name should get _2 suffix
-        self.assertIn("sample1_2", contigs)
+        # Should use 'region' column for name
+        self.assertIn("region1", contigs)
+        self.assertIn("region2", contigs)
 
     def test_sequence_column_prioritized_over_contig(self):
         """Test that 'sequence' column is prioritized over 'contig' column"""
@@ -478,35 +477,35 @@ ref1,TTTTTTTT,ACGTACGT
 
         contigs = read_contigs(csv_file)
 
-        # Should use 'sequence' column, not 'contig' column
-        # Should use position-based name since no sample/region
-        self.assertEqual(contigs["contig1"], "ACGTACGT")
+        # Should use 'sequence' column, not 'contig' column for data
+        # Should use 'ref' column for name
+        self.assertEqual(contigs["ref1"], "ACGTACGT")
 
     def test_name_column_priority(self):
-        """Test that 'sample' is prioritized, then 'region', then position"""
-        # Test with sample column
+        """Test that 'region' is prioritized, then 'ref', then 'sample'"""
+        # Test with all three - region should win
         csv_file = StringIO("""\
 sample,region,ref,contig
 mysample,myregion,myref,ACGTACGT
 """)
         contigs = read_contigs(csv_file)
-        self.assertIn("mysample", contigs)
-
-        # Test with region column (no sample)
-        csv_file = StringIO("""\
-region,ref,contig
-myregion,myref,GGGGCCCC
-""")
-        contigs = read_contigs(csv_file)
         self.assertIn("myregion", contigs)
 
-        # Test with neither sample nor region - should use position
+        # Test with region column (no region column)
         csv_file = StringIO("""\
-ref,contig
-myref,TTTTTTTT
+sample,ref,contig
+mysample,myref,GGGGCCCC
 """)
         contigs = read_contigs(csv_file)
-        self.assertIn("contig1", contigs)
+        self.assertIn("myref", contigs)
+
+        # Test with only sample - sample should win
+        csv_file = StringIO("""\
+sample,contig
+mysample,TTTTTTTT
+""")
+        contigs = read_contigs(csv_file)
+        self.assertIn("mysample", contigs)
 
     def test_csv_without_sequence_or_contig_column_raises_error(self):
         """Test that CSV without 'sequence' or 'contig' column raises ValueError"""
@@ -532,9 +531,9 @@ ref3,GGGGCCCC
 
         contigs = read_contigs(csv_file)
 
-        # Should only have contig1 and contig3, ref2 should be skipped
-        # Uses position-based names
+        # Should only have ref1 and ref3, ref2 should be skipped
+        # Uses 'ref' column for names (new priority: region > ref > sample)
         self.assertEqual(len(contigs), 2)
-        self.assertIn("contig1", contigs)
-        self.assertIn("contig3", contigs)
+        self.assertIn("ref1", contigs)
+        self.assertIn("ref3", contigs)
         self.assertNotIn("contig2", contigs)

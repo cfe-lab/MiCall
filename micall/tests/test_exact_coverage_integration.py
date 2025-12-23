@@ -138,9 +138,13 @@ def test_exact_coverage_with_csv_contigs():
 
         # Check structure
         assert len(rows) > 0, "Output CSV should have rows"
-        # Should use position-based names since there's no sample/region column
-        assert any(row["contig"].startswith("contig") for row in rows), (
-            "Should have position-based contig names"
+        # Should use 'ref' column names since CSV has 'ref' column
+        # (priority: region > ref > sample)
+        assert any(row["contig"] == "ref1" for row in rows), (
+            "Should have ref1 contig name from 'ref' column"
+        )
+        assert any(row["contig"] == "ref2" for row in rows), (
+            "Should have ref2 contig name from 'ref' column"
         )
         assert "position" in rows[0], "Should have position column"
         assert "exact_coverage" in rows[0], "Should have exact_coverage column"
