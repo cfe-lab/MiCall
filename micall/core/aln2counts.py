@@ -1685,7 +1685,7 @@ class SequenceReport(object):
                 if coord_amino == '-':
                     continue
                 coord_codon_index += 1
-                
+
                 nuc_pos = conseq_codon_index * 3 - frame_index
                 for i in range(3):
                     result[nuc_pos+i] = frame_index
