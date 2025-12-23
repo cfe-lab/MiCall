@@ -189,3 +189,150 @@ class TestIntegrationCSV(unittest.TestCase):
             # Check that some positions have coverage
             coverages = [int(row['exact_coverage']) for row in rows]
             self.assertGreater(sum(coverages), 0)
+
+
+class TestCSVValidation(unittest.TestCase):
+    def test_missing_refname_column(self):
+        """Test that missing refname column raises ValueError"""
+        csv_data = StringIO("""\
+sequence,other
+ACGTACGT,data
+""")
+
+        with self.assertRaises(ValueError) as ctx:
+            list(read_aligned_csv(csv_data))
+
+        self.assertIn("missing required columns", str(ctx.exception).lower())
+        self.assertIn("refname", str(ctx.exception))
+
+    def test_missing_seq_column(self):
+        """Test that missing seq column raises ValueError"""
+        csv_data = StringIO("""\
+refname,other
+contig1,data
+""")
+
+        with self.assertRaises(ValueError) as ctx:
+            list(read_aligned_csv(csv_data))
+
+        self.assertIn("missing required columns", str(ctx.exception).lower())
+        self.assertIn("seq", str(ctx.exception))
+
+    def test_missing_both_columns(self):
+        """Test that missing both columns raises ValueError"""
+        csv_data = StringIO("""\
+other1,other2
+data1,data2
+""")
+
+        with self.assertRaises(ValueError) as ctx:
+            list(read_aligned_csv(csv_data))
+
+        error_msg = str(ctx.exception).lower()
+        self.assertIn("missing required columns", error_msg)
+        self.assertIn("refname", str(ctx.exception))
+        self.assertIn("seq", str(ctx.exception))
+
+#    def test_no_header_row(self):
+#        """Test that CSV without header raises ValueError"""
+#        csv_data = StringIO("")
+#
+#        with self.assertRaises(ValueError) as ctx:
+#            list(read_aligned_csv(csv_data))
+#
+#        self.assertIn("no header", str(ctx.exception).lower())
+
+    def test_invalid_sequence_characters(self):
+        """Test that invalid sequence characters are logged but skipped"""
+        csv_data = StringIO("""\
+refname,seq
+contig1,ACGTXYZ
+contig2,GGGGCCCC
+contig3,123456
+""")
+
+        reads = list(read_aligned_csv(csv_data))
+
+        # Only valid read should be returned
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(reads[0], ('contig2', 'GGGGCCCC'))
+
+    def test_empty_refname_skipped(self):
+        """Test that rows with empty refname are skipped"""
+        csv_data = StringIO("""\
+refname,seq
+,ACGTACGT
+contig2,GGGGCCCC
+""")
+
+        reads = list(read_aligned_csv(csv_data))
+
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(reads[0], ('contig2', 'GGGGCCCC'))
+
+    def test_empty_seq_skipped(self):
+        """Test that rows with empty seq are skipped"""
+        csv_data = StringIO("""\
+refname,seq
+contig1,
+contig2,GGGGCCCC
+""")
+
+        reads = list(read_aligned_csv(csv_data))
+
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(reads[0], ('contig2', 'GGGGCCCC'))
+
+    def test_whitespace_trimmed(self):
+        """Test that whitespace is trimmed from refname and seq"""
+        csv_data = StringIO("""\
+refname,seq
+  contig1  ,  ACGTACGT
+""")
+
+        reads = list(read_aligned_csv(csv_data))
+
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(reads[0], ('contig1', 'ACGTACGT'))
+
+    def test_negative_overlap_size(self):
+        """Test that negative overlap_size raises ValueError"""
+        aligned_csv = StringIO("refname,seq\ncontig1,ACGT\n")
+        contigs_csv = StringIO("region,sequence\ncontig1,ACGTACGT\n")
+
+        with self.assertRaises(ValueError) as ctx:
+            calculate_exact_coverage_from_csv(aligned_csv, contigs_csv, overlap_size=-1)
+
+        self.assertIn("non-negative", str(ctx.exception))
+
+    def test_empty_contigs_file(self):
+        """Test that empty contigs file raises ValueError"""
+        aligned_csv = StringIO("refname,seq\ncontig1,ACGT\n")
+        contigs_csv = StringIO("region,sequence\n")
+
+        with self.assertRaises(ValueError) as ctx:
+            calculate_exact_coverage_from_csv(aligned_csv, contigs_csv, overlap_size=2)
+
+        self.assertIn("no contigs", str(ctx.exception).lower())
+
+    def test_valid_bases_only(self):
+        """Test that only A,C,G,T,N are considered valid"""
+        csv_data = StringIO("""\
+refname,seq
+valid1,ACGT
+valid2,NNNN
+valid3,acgt
+valid4,AcGtNn
+invalid1,ACGTU
+invalid2,ACGT-GAP
+""")
+
+        reads = list(read_aligned_csv(csv_data))
+
+        # Should accept A,C,G,T,N (case insensitive)
+        self.assertEqual(len(reads), 4)
+        valid_seqs = [r[1] for r in reads]
+        self.assertIn('ACGT', valid_seqs)
+        self.assertIn('NNNN', valid_seqs)
+        self.assertIn('acgt', valid_seqs)
+        self.assertIn('AcGtNn', valid_seqs)
