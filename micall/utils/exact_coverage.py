@@ -334,27 +334,7 @@ def read_aligned_csv(
                 f"Found columns: {', '.join(sorted(reader.fieldnames))}"
             )
 
-        # Process first row
-        refname = first_row.get('refname', '').strip()
-        seq = first_row.get('seq', '').strip()
-
-        if not refname:
-            logger.warning("Row 1: Empty refname, skipping")
-        elif not seq:
-            logger.warning(f"Row 1: Empty sequence for refname '{refname}', skipping")
-        else:
-            # Validate sequence contains only valid bases
-            invalid_chars = set(seq.upper()) - {'A', 'C', 'G', 'T', 'N'}
-            if invalid_chars:
-                logger.warning(
-                    f"Row 1: Sequence for '{refname}' contains invalid characters: "
-                    f"{', '.join(sorted(invalid_chars))}, skipping"
-                )
-            else:
-                yield (refname, seq)
-
-        # Process remaining rows
-        for row_num, row in enumerate(reader, start=2):
+        for row_num, row in enumerate(reader):
             refname = row.get('refname', '').strip()
             seq = row.get('seq', '').strip()
 
@@ -365,15 +345,6 @@ def read_aligned_csv(
                     logger.warning(f"Row {row_num}: Empty refname, skipping")
                 else:
                     logger.warning(f"Row {row_num}: Empty sequence for refname '{refname}', skipping")
-                continue
-
-            # Validate sequence
-            invalid_chars = set(seq.upper()) - {'A', 'C', 'G', 'T', 'N'}
-            if invalid_chars:
-                logger.warning(
-                    f"Row {row_num}: Sequence for '{refname}' contains invalid characters: "
-                    f"{', '.join(sorted(invalid_chars))}, skipping"
-                )
                 continue
 
             yield (refname, seq)
