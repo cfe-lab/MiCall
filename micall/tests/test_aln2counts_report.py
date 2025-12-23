@@ -420,13 +420,13 @@ R1-seed,15,0,9,0,AAATTT
 
     expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,1,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,2,2,2,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,3,3,3,9,0,0,0,0,0,0,0,0,9
-R1-seed,R1,15,4,4,4,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,5,5,5,0,0,0,9,0,0,0,0,0,9
-R1-seed,R1,15,6,6,6,0,0,0,9,0,0,0,0,0,9
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+R1-seed,R1,15,1,1,1,9,0,0,0,0,0,0,0,0,9,
+R1-seed,R1,15,2,2,2,9,0,0,0,0,0,0,0,0,9,
+R1-seed,R1,15,3,3,3,9,0,0,0,0,0,0,0,0,9,
+R1-seed,R1,15,4,4,4,0,0,0,9,0,0,0,0,0,9,
+R1-seed,R1,15,5,5,5,0,0,0,9,0,0,0,0,0,9,
+R1-seed,R1,15,6,6,6,0,0,0,9,0,0,0,0,0,9,
 """
 
     report_file = StringIO()
@@ -476,25 +476,25 @@ def test_multiple_prefix_nucleotide_report_overlapping_regions(
 
     expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,7,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,2,2,8,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,3,3,9,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,,4,10,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,5,11,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,,6,12,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1,15,4,7,13,2,0,0,0,0,0,0,0,0,2
-R1-seed,R1,15,5,8,14,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1,15,6,9,15,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,1,7,7,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,2,8,8,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,3,9,9,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,,10,10,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1-expanded,15,,11,11,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1-expanded,15,,12,12,0,0,0,7,0,0,0,0,0,7
-R1-seed,R1-expanded,15,4,13,13,2,0,0,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,5,14,14,0,0,2,0,0,0,0,0,0,2
-R1-seed,R1-expanded,15,6,15,15,0,0,2,0,0,0,0,0,0,2
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+R1-seed,R1,15,1,1,7,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,2,2,8,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,3,3,9,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,,4,10,0,0,0,7,0,0,0,0,0,7,
+R1-seed,R1,15,,5,11,0,0,0,7,0,0,0,0,0,7,
+R1-seed,R1,15,,6,12,0,0,0,7,0,0,0,0,0,7,
+R1-seed,R1,15,4,7,13,2,0,0,0,0,0,0,0,0,2,
+R1-seed,R1,15,5,8,14,0,0,2,0,0,0,0,0,0,2,
+R1-seed,R1,15,6,9,15,0,0,2,0,0,0,0,0,0,2,
+R1-seed,R1-expanded,15,1,7,7,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,2,8,8,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,3,9,9,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,,10,10,0,0,0,7,0,0,0,0,0,7,
+R1-seed,R1-expanded,15,,11,11,0,0,0,7,0,0,0,0,0,7,
+R1-seed,R1-expanded,15,,12,12,0,0,0,7,0,0,0,0,0,7,
+R1-seed,R1-expanded,15,4,13,13,2,0,0,0,0,0,0,0,0,2,
+R1-seed,R1-expanded,15,5,14,14,0,0,2,0,0,0,0,0,0,2,
+R1-seed,R1-expanded,15,6,15,15,0,0,2,0,0,0,0,0,0,2,
 """
 
     report = sequence_report_overlapping_regions
@@ -525,16 +525,16 @@ def test_nucleotide_report_excluded_regions(sequence_report_overlapping_regions)
 
     expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1,15,1,1,7,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,2,2,8,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,3,3,9,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,4,4,10,0,0,0,5,0,0,0,0,0,5
-R1-seed,R1,15,5,5,11,0,0,0,5,0,0,0,0,0,5
-R1-seed,R1,15,6,6,12,0,0,0,5,0,0,0,0,0,5
-R1-seed,R1,15,7,7,13,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1,15,8,8,14,0,0,5,0,0,0,0,0,0,5
-R1-seed,R1,15,9,9,15,0,0,5,0,0,0,0,0,0,5
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+R1-seed,R1,15,1,1,7,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,2,2,8,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,3,3,9,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,4,4,10,0,0,0,5,0,0,0,0,0,5,
+R1-seed,R1,15,5,5,11,0,0,0,5,0,0,0,0,0,5,
+R1-seed,R1,15,6,6,12,0,0,0,5,0,0,0,0,0,5,
+R1-seed,R1,15,7,7,13,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1,15,8,8,14,0,0,5,0,0,0,0,0,0,5,
+R1-seed,R1,15,9,9,15,0,0,5,0,0,0,0,0,0,5,
 """
 
     report = sequence_report_overlapping_regions
@@ -558,16 +558,16 @@ def test_nucleotide_report_included_regions(sequence_report_overlapping_regions)
 
     expected_text = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-R1-seed,R1-expanded,15,1,7,7,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,2,8,8,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,3,9,9,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,4,10,10,0,0,0,5,0,0,0,0,0,5
-R1-seed,R1-expanded,15,5,11,11,0,0,0,5,0,0,0,0,0,5
-R1-seed,R1-expanded,15,6,12,12,0,0,0,5,0,0,0,0,0,5
-R1-seed,R1-expanded,15,7,13,13,5,0,0,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,8,14,14,0,0,5,0,0,0,0,0,0,5
-R1-seed,R1-expanded,15,9,15,15,0,0,5,0,0,0,0,0,0,5
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+R1-seed,R1-expanded,15,1,7,7,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,2,8,8,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,3,9,9,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,4,10,10,0,0,0,5,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,5,11,11,0,0,0,5,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,6,12,12,0,0,0,5,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,7,13,13,5,0,0,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,8,14,14,0,0,5,0,0,0,0,0,0,5,
+R1-seed,R1-expanded,15,9,15,15,0,0,5,0,0,0,0,0,0,5,
 """
 
     report = sequence_report_overlapping_regions
@@ -716,17 +716,17 @@ SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 
     #                                               A,C,G,T,N,...,coverage
     expected_section = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,13198,13463,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,22,13199,13464,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,23,13200,13465,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,13201,13466,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,25,13202,13467,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,26,13203,13468,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,13204,13469,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,28,13205,13470,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,29,13206,13471,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,30,13207,13472,0,0,0,9,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,31,13208,13473,0,0,0,9,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,21,13198,13463,0,0,0,9,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,22,13199,13464,0,0,0,9,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,23,13200,13465,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,24,13201,13466,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,25,13202,13467,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,26,13203,13468,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,27,13204,13469,0,0,9,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,28,13205,13470,0,0,9,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,29,13206,13471,0,0,9,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,30,13207,13472,0,0,0,9,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,31,13208,13473,0,0,0,9,0,0,0,0,0,9,"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -796,9 +796,9 @@ SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 
     #                                               A,C,G,T,N,...,coverage
     expected_section = """\
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,34,13211,13476,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,35,13212,13477,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,36,13213,13478,0,0,9,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,34,13211,13476,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,35,13212,13477,0,0,9,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-ORF1ab,15,36,13213,13478,0,0,9,0,0,0,0,0,0,9,"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -829,10 +829,10 @@ SARS-CoV-2-seed,15,0,9,10,ACAATCGTTTTTAAACGGGTTTGCGGTGTAAGTGCAGCCCGTCTTACACCG
 
     #                                           A,C,G,T,N,...,coverage
     expected_section = """\
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,58,59,13500,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,59,60,13501,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,60,61,13502,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,61,62,13503,0,0,9,0,0,0,0,0,0,9"""
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,58,59,13500,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,59,60,13501,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,60,61,13502,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,61,62,13503,0,0,9,0,0,0,0,0,0,9,"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -931,17 +931,17 @@ HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTTCAGAATTGGGTGTCGACATAGCAGA
     # skipped pos is 5772 in the genome, and 21 within this read
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,5770,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,5771,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,5772,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,5773,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,5774,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,217,5775,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,218,5776,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,219,5777,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,220,5778,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,221,5779,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,222,5780,0,0,0,9,0,0,0,0,0,9"""
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,5770,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,5771,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,214,5772,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,215,5773,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,216,5774,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,217,5775,0,9,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,218,5776,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,219,5777,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,220,5778,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,221,5779,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,222,5780,0,0,0,9,0,0,0,0,0,9,"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -968,18 +968,18 @@ HIV1-B-FR-K03455-seed,15,0,9,1,CAACAACTGCTGTTTATCCATTTCAGAATTGGGTGTCGACATAGCAGAA
     # skipped pos is 5772 in the genome
 
     expected_section = """\
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,5770,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,5771,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,,214,5772,0,0,0,0,0,9,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,215,5773,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,216,5774,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,217,5775,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,218,5776,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,219,5777,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,220,5778,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,221,5779,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,222,5780,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,223,5781,0,0,0,9,0,0,0,0,0,9"""
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,21,212,5770,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,22,213,5771,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,,214,5772,0,0,0,0,0,9,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,23,215,5773,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,24,216,5774,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,25,217,5775,0,9,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,26,218,5776,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,27,219,5777,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,28,220,5778,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,29,221,5779,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,30,222,5780,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,31,223,5781,0,0,0,9,0,0,0,0,0,9,"""
 
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
@@ -1237,17 +1237,17 @@ Example_read_2,F,HIV1-B-FR-K03455-seed,10,AAC,AAA
 """)
 
     expected_text_untranslated = """\
-HIV1-B-FR-K03455-seed,HIV1B-sl4,15,8,4,796,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-sl4,15,9,5,797,0,10,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-sl4,15,10,6,798,0,0,10,0,0,0,2,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-sl4,15,11,7,799,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-sl4,15,12,8,800,0,0,10,0,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,8,4,796,0,0,10,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,9,5,797,0,10,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,10,6,798,0,0,10,0,0,0,2,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,11,7,799,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-sl4,15,12,8,800,0,0,10,0,0,0,0,0,0,10,"""
     expected_text_translated = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,8,7,796,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,9,8,797,0,10,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,10,9,798,0,0,10,0,0,0,2,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,11,10,799,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,12,11,800,0,0,10,0,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,8,7,796,0,0,10,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,9,8,797,0,10,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,10,9,798,0,0,10,0,0,0,2,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,11,10,799,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,12,11,800,0,0,10,0,0,0,0,0,0,10,"""
 
     nuc_file = StringIO()
     default_sequence_report.read_insertions(conseq_ins_csv)
@@ -1276,11 +1276,11 @@ ATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAATTTTTTTTTATTCGGTTAAGGCCAGG
     #                                                 ^^^^^^^^^
 
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,65,55,844,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,66,56,845,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,65,55,844,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,66,56,845,0,0,0,10,0,0,0,0,0,10,"""
 
     expected_insertions = """\
 seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
@@ -1314,11 +1314,11 @@ CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
     #                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,55,54,843,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10,"""
 
     nuc_file = StringIO()
     default_sequence_report.read(aligned_reads)
@@ -1345,11 +1345,11 @@ CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
     #                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,82,52,841,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,83,53,842,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,84,54,843,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,118,55,844,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,119,56,845,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,82,52,841,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,83,53,842,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,84,54,843,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,118,55,844,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,119,56,845,0,0,0,10,0,0,0,0,0,10,"""
 
     nuc_file = StringIO()
     default_sequence_report.read(aligned_reads)
@@ -1376,13 +1376,13 @@ CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
     #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,88,54,843,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,88,54,843,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,55,844,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,56,845,0,0,0,10,0,0,0,0,0,10,"""
 
     nuc_file = StringIO()
     default_sequence_report.read(aligned_reads)
@@ -1409,13 +1409,13 @@ CCAGGGGGAAAGAAAAAATATAAATTAAAACATAT
     #                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,54,843,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,55,844,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,51,50,839,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,52,51,840,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,53,52,841,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,54,53,842,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,89,54,843,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,90,55,844,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,91,56,845,0,0,0,10,0,0,0,0,0,10,"""
 
     nuc_file = StringIO()
     default_sequence_report.read(aligned_reads)
@@ -1451,14 +1451,14 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,194,69,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,70,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,10,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,71,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10"""
     # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,
-    # A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+    # A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
     expected_insertion = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,208,997,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,198,209,998,0,10,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,199,210,999,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,211,1000,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,213,212,1001,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,197,208,997,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,198,209,998,0,10,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,199,210,999,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,212,211,1000,0,0,10,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,213,212,1001,0,0,10,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10,"""
 
     nuc_csv = StringIO()
     amino_csv = StringIO()
@@ -1491,13 +1491,13 @@ def test_merge_extra_counts_insertion_vpr(projects, default_sequence_report):
 HIV1-B-FR-K03455-seed,15,0,10,0,{read_seq}
 """)
 # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
     expected_insertion = """\
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,239,5797,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,240,5798,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,241,241,5799,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,242,5800,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,243,5801,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,239,5797,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,240,5798,0,0,10,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,241,241,5799,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,242,5800,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,252,243,5801,0,0,0,10,0,0,0,0,0,10,"""
     expected_amino_insertion = """\
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,236,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
@@ -1529,13 +1529,13 @@ def test_merge_extra_counts_insertion_vpr_noskip(projects, default_sequence_repo
 HIV1-B-FR-K03455-seed,15,0,10,0,{read_seq}
 """)
 # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
     expected_insertion = """\
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,239,5797,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,240,5798,0,0,10,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,241,5799,10,0,0,0,0,0,10,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,250,242,5800,10,0,0,0,0,0,0,0,0,10
-HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,243,5801,0,0,0,10,0,0,0,0,0,10"""
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,239,5797,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,239,240,5798,0,0,10,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,240,241,5799,10,0,0,0,0,0,10,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,250,242,5800,10,0,0,0,0,0,0,0,0,10,
+HIV1-B-FR-K03455-seed,HIV1B-vpr,15,251,243,5801,0,0,0,10,0,0,0,0,0,10,"""
     expected_amino_insertion = """\
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,235,79,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,10
 HIV1-B-FR-K03455-seed,HIV1B-vpr,15,238,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,10,0,0,10
@@ -1567,11 +1567,11 @@ def test_merge_extra_counts_insertion_nsp12(projects, default_sequence_report):
 SARS-CoV-2-seed,15,0,10,0,{read_seq}
 """)
 # seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-# A,C,G,T,N,del,ins,clip,v3_overlap,coverage
+# A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
     expected_insertion = """\
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,157,157,13598,0,0,10,0,0,0,0,0,0,10
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,158,158,13599,0,0,0,10,0,0,10,0,0,10
-SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,168,159,13600,10,0,0,0,0,0,0,0,0,10"""
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,157,157,13598,0,0,10,0,0,0,0,0,0,10,
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,158,158,13599,0,0,0,10,0,0,10,0,0,10,
+SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,168,159,13600,10,0,0,0,0,0,0,0,0,10,"""
     expected_amino_insertion = """\
 SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,153,52,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
 SARS-CoV-2-seed,SARS-CoV-2-nsp12,15,156,53,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,10
@@ -2077,18 +2077,18 @@ SARS-CoV-2-seed,15,0,9,0,ACGAACAAACT
 
     expected_report = """\
 seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,1,1,28260,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,2,2,28261,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,3,3,28262,0,0,9,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,4,4,28263,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,5,5,28264,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,6,6,28265,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,7,7,28266,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,8,8,28267,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,9,9,28268,9,0,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,10,10,28269,0,9,0,0,0,0,0,0,0,9
-SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,11,11,28270,0,0,0,9,0,0,0,0,0,9
+A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,1,1,28260,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,2,2,28261,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,3,3,28262,0,0,9,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,4,4,28263,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,5,5,28264,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,6,6,28265,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,7,7,28266,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,8,8,28267,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,9,9,28268,9,0,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,10,10,28269,0,9,0,0,0,0,0,0,0,9,
+SARS-CoV-2-seed,SARS-CoV-2-TRS-B-8,15,11,11,28270,0,0,0,9,0,0,0,0,0,9,
 """
 
     report_file = StringIO()
@@ -2117,26 +2117,26 @@ HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
 
     #                                    A,C,G,T
     expected_text = """\
-HIV1-B-FR-K03455-seed,INT,15,51,262,4491,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,52,263,4492,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,53,264,4493,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,54,265,4494,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,55,266,4495,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,56,267,4496,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,57,268,4497,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,58,269,4498,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,59,270,4499,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,INT,15,60,271,4500,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,61,452,3001,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,62,453,3002,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,63,454,3003,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,64,455,3004,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,65,456,3005,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,66,457,3006,0,0,0,9,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,67,458,3007,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,68,459,3008,0,0,9,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,69,460,3009,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,RT,15,70,461,3010,9,0,0,0,0,0,0,0,0,9"""
+HIV1-B-FR-K03455-seed,INT,15,51,262,4491,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,52,263,4492,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,53,264,4493,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,54,265,4494,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,55,266,4495,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,56,267,4496,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,57,268,4497,0,9,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,58,269,4498,0,9,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,59,270,4499,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,INT,15,60,271,4500,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,61,452,3001,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,62,453,3002,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,63,454,3003,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,64,455,3004,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,65,456,3005,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,66,457,3006,0,0,0,9,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,67,458,3007,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,68,459,3008,0,0,9,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,69,460,3009,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,RT,15,70,461,3010,9,0,0,0,0,0,0,0,0,9,"""
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -2195,11 +2195,11 @@ HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
 """)
     #                                           A,C,G,T
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,493,493,1282,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,494,1283,0,0,0,0,0,9,0,0,0,9
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,493,493,1282,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,494,1283,0,0,0,0,0,9,0,0,0,9,
 ...
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,,1072,1861,0,0,0,0,0,9,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,1862,9,0,0,0,0,0,0,0,0,9"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,,1072,1861,0,0,0,0,0,9,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,1862,9,0,0,0,0,0,0,0,0,9,"""
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -2230,11 +2230,11 @@ def test_minimap_gap_around_start(default_sequence_report, projects):
 HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
 """)
     expected_text = """\
-HIV1-B-FR-K03455-seed,GP41,15,,1037,8794,0,0,0,0,0,9,0,0,0,9
-HIV1-B-FR-K03455-seed,GP41,15,,1038,8795,0,0,0,0,0,9,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-8796,15,,1,8796,0,0,0,0,0,9,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-nef,15,,1,8797,0,0,0,0,0,9,0,0,0,9
-HIV1-B-FR-K03455-seed,HIV1B-nef,15,,2,8798,0,0,0,0,0,9,0,0,0,9"""
+HIV1-B-FR-K03455-seed,GP41,15,,1037,8794,0,0,0,0,0,9,0,0,0,9,
+HIV1-B-FR-K03455-seed,GP41,15,,1038,8795,0,0,0,0,0,9,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-8796,15,,1,8796,0,0,0,0,0,9,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-nef,15,,1,8797,0,0,0,0,0,9,0,0,0,9,
+HIV1-B-FR-K03455-seed,HIV1B-nef,15,,2,8798,0,0,0,0,0,9,0,0,0,9,"""
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)
@@ -2266,9 +2266,9 @@ HIV1-B-FR-K03455-seed,15,0,9,0,{read_seq}
 """)
     #                                     A,C,G,T
     expected_text = """\
-HIV1-B-FR-K03455-seed,HIV1B-gag,15,190,1503,2292,9,0,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,PR,15,151,1,2253,0,9,0,0,0,0,0,0,0,9
-HIV1-B-FR-K03455-seed,PR,15,152,2,2254,0,9,0,0,0,0,0,0,0,9"""
+HIV1-B-FR-K03455-seed,HIV1B-gag,15,190,1503,2292,9,0,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,PR,15,151,1,2253,0,9,0,0,0,0,0,0,0,9,
+HIV1-B-FR-K03455-seed,PR,15,152,2,2254,0,9,0,0,0,0,0,0,0,9,"""
     report_file = StringIO()
     default_sequence_report.write_nuc_header(report_file)
     default_sequence_report.read(aligned_reads)

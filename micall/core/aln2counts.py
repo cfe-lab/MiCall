@@ -1062,7 +1062,7 @@ class SequenceReport(object):
                                'clip',
                                'v3_overlap',
                                'coverage',
-                               'coverage_score'],
+                               'exact_coverage'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -1128,11 +1128,12 @@ class SequenceReport(object):
                'clip': seed_nuc.clip_count,
                'v3_overlap': seed_nuc.v3_overlap,
                'coverage': seed_nuc.get_coverage(),
-               'coverage_score': coverage_score_val}
+               'exact_coverage': coverage_score_val}
         for base in 'ACTGN':
             nuc_count = seed_nuc.counts[base]
             row[base] = nuc_count
         for field_name in ('coverage',
+                           'exact_coverage',
                            'clip',
                            'N',
                            'ins',
