@@ -59,7 +59,7 @@ class TestBuildKmerIndex(unittest.TestCase):
 class TestFindExactMatches(unittest.TestCase):
     def test_exact_match(self):
         contigs = {"contig1": "ACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGT"
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -71,7 +71,7 @@ class TestFindExactMatches(unittest.TestCase):
 
     def test_no_match(self):
         contigs = {"contig1": "AAAAAAAAAA"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "CCCC"
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -80,7 +80,7 @@ class TestFindExactMatches(unittest.TestCase):
 
     def test_partial_match_not_returned(self):
         contigs = {"contig1": "ACGTGGGG"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGTTTTT"  # Only first 4 bases match
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -91,7 +91,7 @@ class TestFindExactMatches(unittest.TestCase):
     def test_variable_read_lengths_short(self):
         """Test with reads shorter than typical (e.g., 20bp)"""
         contigs = {"contig1": "ACGTACGTACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGTAC"  # 6bp read
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -105,7 +105,7 @@ class TestFindExactMatches(unittest.TestCase):
         """Test with reads longer than typical (e.g., 200bp)"""
         long_contig = "ACGT" * 60  # 240 bp
         contigs = {"contig1": long_contig}
-        kmer_index = build_kmer_index(contigs, 31)
+        kmer_index = {31: build_kmer_index(contigs, 31)}
         read_seq = long_contig[:200]  # 200bp read
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 31))
@@ -119,7 +119,7 @@ class TestFindExactMatches(unittest.TestCase):
     def test_variable_read_lengths_mixed(self):
         """Test with different read lengths in same dataset"""
         contigs = {"contig1": "ACGTACGTACGTACGTACGTACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
 
         # Test various read lengths
         for length in [4, 8, 12, 16, 20]:
@@ -132,7 +132,7 @@ class TestFindExactMatches(unittest.TestCase):
     def test_read_shorter_than_default_kmer(self):
         """Test that reads much shorter than default kmer_size (31) work correctly."""
         contigs = {"contig1": "ACGTACGTACGTACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, kmer_size=31)
+        kmer_index = {31: build_kmer_index(contigs, 31)}
 
         # Test 10bp read (much shorter than kmer_size=31)
         # "ACGTACGTAC" appears at positions: 0, 4, 8, 12
@@ -157,55 +157,50 @@ class TestFindExactMatches(unittest.TestCase):
     def test_lazy_kmer_index_caching(self):
         """Test that k-mer indices for short reads are built lazily and cached."""
         contigs = {"contig1": "ACGTACGTACGTACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, kmer_size=31)
-        cache = {}
+        # Create unified kmer_index structure with main index pre-built
+        kmer_index = {31: build_kmer_index(contigs, kmer_size=31)}
 
-        # Initially cache should be empty
-        self.assertEqual(len(cache), 0)
+        # Initially only the main index (size 31) should be present
+        self.assertEqual(len(kmer_index), 1)
+        self.assertIn(31, kmer_index)
 
         # Test 10bp read - should trigger lazy build
         read_seq = "ACGTACGTAC"
-        matches = list(
-            find_exact_matches(
-                read_seq, kmer_index, contigs, kmer_size=31, kmer_index_cache=cache
-            )
-        )
+        matches = list(find_exact_matches(read_seq, kmer_index, contigs, kmer_size=31))
         self.assertEqual(len(matches), 4)
 
-        # Cache should now have an entry for size 10
-        self.assertEqual(len(cache), 1)
-        self.assertIn(10, cache)
+        # kmer_index should now have an entry for size 10
+        self.assertEqual(len(kmer_index), 2)
+        self.assertIn(10, kmer_index)
+        self.assertIn(31, kmer_index)
 
         # Test another 10bp read - should use cached index
         read_seq2 = "CGTACGTACG"
         matches2 = list(
-            find_exact_matches(
-                read_seq2, kmer_index, contigs, kmer_size=31, kmer_index_cache=cache
-            )
+            find_exact_matches(read_seq2, kmer_index, contigs, kmer_size=31)
         )
         self.assertGreater(len(matches2), 0)
 
-        # Cache should still have only one entry
-        self.assertEqual(len(cache), 1)
+        # kmer_index should still have only two entries
+        self.assertEqual(len(kmer_index), 2)
 
         # Test 5bp read - should trigger another lazy build
         read_seq3 = "ACGTA"
         matches3 = list(
-            find_exact_matches(
-                read_seq3, kmer_index, contigs, kmer_size=31, kmer_index_cache=cache
-            )
+            find_exact_matches(read_seq3, kmer_index, contigs, kmer_size=31)
         )
         self.assertEqual(len(matches3), 5)
 
-        # Cache should now have two entries
-        self.assertEqual(len(cache), 2)
-        self.assertIn(10, cache)
-        self.assertIn(5, cache)
+        # kmer_index should now have three entries
+        self.assertEqual(len(kmer_index), 3)
+        self.assertIn(31, kmer_index)
+        self.assertIn(10, kmer_index)
+        self.assertIn(5, kmer_index)
 
     def test_read_at_contig_boundary(self):
         """Test reads that match at the end of a contig"""
         contigs = {"contig1": "AAAACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGTACGT"  # Matches at position 7
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -217,7 +212,7 @@ class TestFindExactMatches(unittest.TestCase):
     def test_read_extends_beyond_contig(self):
         """Test that reads extending beyond contig boundaries are not matched"""
         contigs = {"contig1": "ACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGTACGTACGTACGT"  # 16bp, longer than contig
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -228,7 +223,7 @@ class TestFindExactMatches(unittest.TestCase):
     def test_empty_read(self):
         """Test behavior with empty read"""
         contigs = {"contig1": "ACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = ""
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -238,7 +233,7 @@ class TestFindExactMatches(unittest.TestCase):
     def test_read_with_n_bases(self):
         """Test reads containing N bases"""
         contigs = {"contig1": "ACGTACGTACGT"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACNTACGT"
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -253,7 +248,7 @@ class TestFindExactMatches(unittest.TestCase):
             "contig2": "ACGTACGTAC",
             "contig3": "GGGGGGGGGG",
         }
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGTACGT"
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
@@ -269,7 +264,7 @@ class TestFindExactMatches(unittest.TestCase):
         # Position 2: ACGTACGT
         # Position 12: ACGTACGT
         contigs = {"contig1": "AAACGTACGTAAACGTACGTAAA"}
-        kmer_index = build_kmer_index(contigs, 4)
+        kmer_index = {4: build_kmer_index(contigs, 4)}
         read_seq = "ACGTACGT"  # This appears twice in the contig
 
         matches = list(find_exact_matches(read_seq, kmer_index, contigs, 4))
