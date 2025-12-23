@@ -16,6 +16,7 @@ from collections import Counter, defaultdict
 import csv
 from csv import DictWriter
 from itertools import groupby, chain
+from io import StringIO
 from operator import itemgetter
 import os
 from pathlib import Path
@@ -34,6 +35,7 @@ from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_
     SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate
+from micall.utils.exact_coverage import calculate_exact_coverage_from_csv
 
 logger = logging.getLogger(__name__)
 
@@ -1056,7 +1058,8 @@ class SequenceReport(object):
                                'ins',
                                'clip',
                                'v3_overlap',
-                               'coverage'],
+                               'coverage',
+                                'exact_coverage'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -2025,6 +2028,59 @@ def aln2counts(aligned_csv,
         report.intermediate_alignments_csv = alignments_intermediate_csv
         report.overall_alignments_csv = alignments_overall_csv
         report.seed_concordance_csv = concordance_seed_csv
+
+        # Calculate exact coverage if in de novo mode
+        if remap_conseq_csv is not None:
+            logger.info("Calculating exact coverage from aligned reads...")
+            # Read aligned_csv into memory
+            aligned_reader = csv.DictReader(aligned_csv)
+            aligned_rows = list(aligned_reader)
+            logger.debug(f"Buffered {len(aligned_rows)} aligned read rows")
+
+            # Create StringIO with just refname and seq columns for exact_coverage tool
+            aligned_stringio = StringIO()
+            aligned_writer = csv.DictWriter(aligned_stringio, fieldnames=['refname', 'seq'])
+            aligned_writer.writeheader()
+            for row in aligned_rows:
+                aligned_writer.writerow({'refname': row['refname'], 'seq': row['seq']})
+            aligned_stringio.seek(0)
+
+            # Reset remap_conseq_csv to beginning
+            remap_conseq_csv.seek(0)
+
+            # Calculate exact coverage
+            try:
+                coverage_dict, contigs_dict = calculate_exact_coverage_from_csv(
+                    aligned_stringio,
+                    remap_conseq_csv,
+                    overlap_size=70
+                )
+
+                # Store in report.exact_coverage_data
+                # Convert from numpy arrays to dict of {position: count}
+                for contig_name, coverage_array in coverage_dict.items():
+                    for pos_0based, count in enumerate(coverage_array):
+                        if count > 0:
+                            pos_1based = pos_0based + 1
+                            report.exact_coverage_data[contig_name][pos_1based] = int(count)
+
+                logger.info(f"Exact coverage calculated for {len(coverage_dict)} contigs")
+            except Exception as e:
+                logger.warning(f"Failed to calculate exact coverage: {e}")
+
+            # Reset remap_conseq_csv for normal use
+            remap_conseq_csv.seek(0)
+            report.read_remap_conseqs(remap_conseq_csv)
+
+            # Create a new CSV reader from buffered data for process_reads
+            aligned_stringio_full = StringIO()
+            aligned_writer_full = csv.DictWriter(aligned_stringio_full,
+                                                  fieldnames=aligned_rows[0].keys() if aligned_rows else [])
+            aligned_writer_full.writeheader()
+            for row in aligned_rows:
+                aligned_writer_full.writerow(row)
+            aligned_stringio_full.seek(0)
+            aligned_csv = aligned_stringio_full
 
         report.process_reads(aligned_csv,
                              coverage_summary,
