@@ -280,14 +280,8 @@ def find_exact_matches(
     # Use entire read as search key
     search_kmer = read_seq
 
-    if search_kmer in effective_index:
-        # Check each potential match location
-        for contig_name, contig_pos in effective_index[search_kmer]:
-            contig_seq = contigs[contig_name]
-            # Check if the entire read matches exactly at this position
-            if contig_pos + read_len <= len(contig_seq):
-                if contig_seq[contig_pos : contig_pos + read_len] == read_seq:
-                    yield (contig_name, contig_pos, contig_pos + read_len)
+    for contig_name, contig_pos in effective_index[search_kmer]:
+        yield (contig_name, contig_pos, contig_pos + read_len)
 
 
 def calculate_exact_coverage(
