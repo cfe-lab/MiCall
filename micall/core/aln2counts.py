@@ -62,9 +62,6 @@ def parse_args():
     parser.add_argument('--contigs_csv',
                         type=argparse.FileType(),
                         help='input CSV with assembled contigs')
-    parser.add_argument('--exact_coverage_csv',
-                        type=argparse.FileType(),
-                        help='input CSV with exact coverage data')
     parser.add_argument('--g2p_aligned_csv',
                         type=argparse.FileType(),
                         help='CSV of aligned reads from the G2P process')
@@ -410,8 +407,6 @@ class SequenceReport(object):
         # {seed_name: {pos: count}
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
-        # {contig_name: {position: exact_coverage}}
-        self.exact_coverage_data = defaultdict(dict)
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -1061,8 +1056,7 @@ class SequenceReport(object):
                                'ins',
                                'clip',
                                'v3_overlap',
-                               'coverage',
-                               'exact_coverage'],
+                               'coverage'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -1099,24 +1093,6 @@ class SequenceReport(object):
         genome_pos = (str(report_nuc.position+genome_start_pos - 1)
                       if report_nuc.position is not None
                       else '')
-
-        # Get exact coverage score if available
-        # Use query.nuc.pos (contig position), NOT refseq.nuc.pos (coordinate reference position)
-        coverage_score_val = ''
-        if seed_nuc.consensus_index is not None:
-            query_pos = seed_nuc.consensus_index + 1  # Convert 0-based to 1-based
-
-            # First try direct lookup with seed name
-            if seed in self.exact_coverage_data:
-                coverage_score_val = self.exact_coverage_data[seed].get(query_pos, '')
-            else:
-                # Try looking for any contig that ends with this seed name (e.g., "1-HIV1..." for "HIV1...")
-                for contig_name in self.exact_coverage_data:
-                    # Check if this contig name matches after trimming numeric prefix
-                    if trim_contig_name(contig_name) == seed:
-                        coverage_score_val = self.exact_coverage_data[contig_name].get(query_pos, '')
-                        break
-
         row = {'seed': seed,
                'region': region,
                'q-cutoff': self.qcut,
@@ -1127,13 +1103,11 @@ class SequenceReport(object):
                'ins': seed_nuc.insertion_count,
                'clip': seed_nuc.clip_count,
                'v3_overlap': seed_nuc.v3_overlap,
-               'coverage': seed_nuc.get_coverage(),
-               'exact_coverage': coverage_score_val}
+               'coverage': seed_nuc.get_coverage()}
         for base in 'ACTGN':
             nuc_count = seed_nuc.counts[base]
             row[base] = nuc_count
         for field_name in ('coverage',
-                           'exact_coverage',
                            'clip',
                            'N',
                            'ins',
@@ -1606,18 +1580,6 @@ class SequenceReport(object):
         self.remap_conseqs = dict(map(itemgetter('region', 'sequence'),
                                       csv.DictReader(remap_conseq_csv)))
 
-    def read_exact_coverage(self, exact_coverage_csv):
-        """Read exact coverage data from CSV file.
-
-        :param exact_coverage_csv: CSV file with columns: contig, position, exact_coverage
-        """
-        reader = csv.DictReader(exact_coverage_csv)
-        for row in reader:
-            contig_name = row['contig']
-            position = int(row['position'])
-            exact_coverage = int(row['exact_coverage'])
-            self.exact_coverage_data[contig_name][position] = exact_coverage
-
     def read_contigs(self, contigs_csv):
         self.contigs = list(map(itemgetter('ref', 'group_ref', 'contig'),
                                 csv.DictReader(contigs_csv)))
@@ -1720,7 +1682,7 @@ class SequenceReport(object):
                 if coord_amino == '-':
                     continue
                 coord_codon_index += 1
-
+                
                 nuc_pos = conseq_codon_index * 3 - frame_index
                 for i in range(3):
                     result[nuc_pos+i] = frame_index
@@ -1945,7 +1907,6 @@ def aln2counts(aligned_csv,
                genome_coverage_csv=None,
                nuc_detail_csv=None,
                contigs_csv=None,
-               exact_coverage_csv=None,
                conseq_all_csv=None,
                conseq_stitched_csv=None,
                minimap_hits_csv=None,
@@ -1985,7 +1946,6 @@ def aln2counts(aligned_csv,
     @param genome_coverage_csv: Open file handle to write coverage for individual
         contigs.
     @param contigs_csv: Open file handle to read contig sequences.
-    @param exact_coverage_csv: Open file handle to read exact coverage data.
     @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
         inadequate coverage*.
     @param conseq_stitched_csv: Open file handle to write stitched whole genome
@@ -2050,8 +2010,6 @@ def aln2counts(aligned_csv,
             report.read_insertions(conseq_ins_csv)
         if remap_conseq_csv is not None:
             report.read_remap_conseqs(remap_conseq_csv)
-        if exact_coverage_csv is not None:
-            report.read_exact_coverage(exact_coverage_csv)
         if contigs_csv is not None:
             report.read_contigs(contigs_csv)
         if genome_coverage_csv is not None:
@@ -2106,7 +2064,6 @@ def main():
                nuc_detail_csv=args.nuc_detail_csv,
                genome_coverage_csv=args.genome_coverage_csv,
                contigs_csv=args.contigs_csv,
-               exact_coverage_csv=args.exact_coverage_csv,
                conseq_all_csv=args.conseq_all_csv,
                conseq_stitched_csv=args.conseq_stitched_csv,
                minimap_hits_csv=args.minimap_hits_csv,
