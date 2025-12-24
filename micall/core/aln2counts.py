@@ -615,21 +615,40 @@ class SequenceReport(object):
         @param seed_name: Name of the seed reference
         @param read_sequences: List of read sequences (just the sequences, not full rows)
         """
-        if seed_name in self._exact_coverage_calculated:
-            return  # Already calculated
-
         try:
-            seed_ref = self.projects.getReference(seed_name)
-            overlap_size = max(2, len(seed_ref) // 10) if len(seed_ref) < 200 else 70
-            coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+            # Use remap_conseq if available, otherwise use original seed reference
+            if self.remap_conseqs and seed_name in self.remap_conseqs:
+                seed_ref = self.remap_conseqs[seed_name]
+            else:
+                seed_ref = self.projects.getReference(seed_name)
+
+            # Determine appropriate overlap_size based on read lengths
+            if read_sequences:
+                # Sample first read to estimate typical length
+                first_read_len = len(read_sequences[0])
+                # Use 1/3.55 of read length, minimum 0, maximum 70
+                overlap_size = max(0, min(70, int(first_read_len / 3.55)))
+            else:
+                overlap_size = 0
+
+            # Initialize or reuse existing coverage array
+            if seed_name not in self._exact_coverage_calculated:
+                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+                self._exact_coverage_calculated.add(seed_name)
+            else:
+                # Recreate coverage array from existing data for accumulation
+                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+                for pos_1based, count in self.exact_coverage_data[seed_name].items():
+                    coverage[seed_name][pos_1based - 1] = count
+
             contigs = {seed_name: seed_ref}
             _process_reads(iter(read_sequences), contigs, coverage, overlap_size)
 
+            # Store/update the coverage data
             for pos_0based, count in enumerate(coverage[seed_name]):
                 if count > 0:
                     self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
 
-            self._exact_coverage_calculated.add(seed_name)
         except (KeyError, Exception):
             pass  # Skip if reference not found or other error
 
@@ -653,10 +672,19 @@ class SequenceReport(object):
 
         # Calculate exact coverage for this seed if not done yet
         if aligned_reads_list:
-            seed_name = aligned_reads_list[0].get('refname')
-            if seed_name and seed_name not in self._exact_coverage_calculated:
-                read_seqs = [row['seq'] for row in aligned_reads_list if 'seq' in row]
-                self._calculate_exact_coverage_for_seed(seed_name, read_seqs)
+            refname = aligned_reads_list[0].get('refname')
+            if refname:
+                seed_name = trim_contig_name(refname)
+                if seed_name not in self._exact_coverage_calculated:
+                    # Only use reads with offset=0 for exact coverage calculation
+                    # Replicate each sequence according to its count
+                    read_seqs = []
+                    for row in aligned_reads_list:
+                        if 'seq' in row and int(row.get('offset', 0)) == 0:
+                            count = int(row.get('count', 1))
+                            read_seqs.extend([row['seq']] * count)
+                    if read_seqs:  # Only calculate if we have offset=0 reads
+                        self._calculate_exact_coverage_for_seed(seed_name, read_seqs)
 
         aligned_reads = self.align_deletions(iter(aligned_reads_list))
 
@@ -1138,18 +1166,7 @@ class SequenceReport(object):
         coverage_score_val = ''
         if seed_nuc.consensus_index is not None:
             query_pos = seed_nuc.consensus_index + 1  # Convert 0-based to 1-based
-
-            # First try direct lookup with seed name
-            if seed in self.exact_coverage_data:
-                coverage_score_val = self.exact_coverage_data[seed].get(query_pos, '')
-            else:
-                # Try looking for any contig that ends with this seed name
-                from micall.core.aln2counts import trim_contig_name
-                for contig_name in self.exact_coverage_data:
-                    # Check if this contig name matches after trimming numeric prefix
-                    if trim_contig_name(contig_name) == seed:
-                        coverage_score_val = self.exact_coverage_data[contig_name].get(query_pos, '')
-                        break
+            coverage_score_val = self.exact_coverage_data.get(seed, {}).get(query_pos, '')
 
         row = {'seed': seed,
                'region': region,
