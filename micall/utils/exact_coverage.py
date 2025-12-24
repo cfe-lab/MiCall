@@ -139,7 +139,7 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
 
     For CSV files:
     - Sequence column: prioritizes 'sequence' over 'contig'
-    - Name column: uses 'sample' or 'region' (in that order), falls back to position
+    - Name column: uses 'region', 'ref', or 'sample' (in that order), falls back to position
 
     :param contigs_file: File handle to read contigs from
     :return: Dictionary mapping contig_name -> sequence
@@ -176,13 +176,15 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
             if not contig_seq:
                 continue  # Skip empty sequences
 
-            # Find name column: prioritize 'sample', then 'region'
-            # Fall back to position if neither is present
+            # Find name column: prioritize 'region', then 'ref', then 'sample'
+            # Fall back to position if none are present
             contig_name = None
-            if "sample" in row and row["sample"]:
-                contig_name = row["sample"]
-            elif "region" in row and row["region"]:
+            if "region" in row and row["region"]:
                 contig_name = row["region"]
+            elif "ref" in row and row["ref"]:
+                contig_name = row["ref"]
+            elif "sample" in row and row["sample"]:
+                contig_name = row["sample"]
             else:
                 contig_name = f"contig{i}"
 
@@ -291,6 +293,59 @@ def find_exact_matches(
         yield (contig_name, contig_pos, contig_pos + read_len)
 
 
+def _process_reads(
+    read_iterator: Iterator[str],
+    contigs: Dict[str, str],
+    coverage: Dict[str, np.ndarray],
+    overlap_size: int,
+) -> Tuple[int, int]:
+    """
+    Process reads and update coverage counts.
+
+    :param read_iterator: Iterator yielding read sequences
+    :param contigs: Dictionary mapping contig_name -> sequence
+    :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
+    :param overlap_size: Minimum overlap size for counting coverage
+    :return: Tuple of (read_count, match_count)
+    """
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
+    read_count = 0
+    match_count = 0
+
+    for read_seq in read_iterator:
+        read_count += 1
+        if read_count % 100000 == 0:
+            logger.debug(
+                f"Processed {read_count} reads, {match_count} exact matches found"
+            )
+
+        # Try both forward and reverse complement
+        for seq in [read_seq, reverse_complement(read_seq)]:
+            matches = find_exact_matches(seq, kmer_index, contigs)
+
+            for contig_name, start_pos, end_pos in matches:
+                match_count += 1
+                counter = coverage[contig_name]
+                # Increment coverage for inner portion
+                inner_start = start_pos + overlap_size
+                inner_end = end_pos - overlap_size
+                if inner_start < inner_end:
+                    counter[inner_start:inner_end] += 1
+
+    logger.debug(f"Finished processing {read_count} reads")
+    logger.debug(f"Total exact matches: {match_count}")
+
+    if kmer_index:
+        read_sizes = sorted(kmer_index.keys())
+        logger.debug(
+            f"Built {len(kmer_index)} k-mer indices for read sizes: {read_sizes}"
+        )
+    else:
+        logger.debug("No k-mer indices built (no reads processed)")
+
+    return read_count, match_count
+
+
 def calculate_exact_coverage(
     fastq1_filename: Path,
     fastq2_filename: Path,
@@ -307,12 +362,45 @@ def calculate_exact_coverage(
     :return: Tuple of (coverage_dict, contigs_dict) where coverage_dict maps
              contig_name -> list of coverage counts and contigs_dict maps
              contig_name -> sequence
+    :raises ValueError: If inputs are invalid
+    :raises FileNotFoundError: If FASTQ files don't exist
     """
+    # Validate overlap_size
+    if overlap_size < 0:
+        raise ValueError(f"overlap_size must be non-negative, got {overlap_size}")
+    if overlap_size > 1000:
+        logger.warning(
+            f"overlap_size={overlap_size} is very large. "
+            f"This will exclude most of the read from coverage counting."
+        )
+
+    # Validate FASTQ files exist
+    if not fastq1_filename.exists():
+        raise FileNotFoundError(f"FASTQ file not found: {fastq1_filename}")
+    if not fastq2_filename.exists():
+        raise FileNotFoundError(f"FASTQ file not found: {fastq2_filename}")
+
     # Read contigs
     logger.debug("Reading contigs...")
-    contigs = read_contigs(contigs_file)
+    try:
+        contigs = read_contigs(contigs_file)
+    except Exception as e:
+        raise ValueError(f"Failed to read contigs file: {e}") from e
+
+    if not contigs:
+        raise ValueError("No contigs found in contigs file")
 
     logger.debug(f"Loaded {len(contigs)} contigs")
+
+    # Validate contig sequences
+    for contig_name, sequence in contigs.items():
+        if not sequence:
+            raise ValueError(f"Contig '{contig_name}' has empty sequence")
+        if len(sequence) < 2 * overlap_size:
+            logger.warning(
+                f"Contig '{contig_name}' length ({len(sequence)}) is less than "
+                f"2 * overlap_size ({2 * overlap_size}). No coverage will be counted."
+            )
 
     # Initialize coverage arrays as numpy arrays for efficient operations
     coverage = {}
@@ -320,48 +408,29 @@ def calculate_exact_coverage(
         coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
-    # Initialize k-mer index structure (multi-level: k-mer size -> index)
-    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
-
     # Process read pairs - open files with automatic gzip detection
-    logger.debug("Processing reads...")
-    read_count = 0
-    match_count = 0
+    logger.debug("Processing read pairs from FASTQ...")
 
-    with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
-        for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
-            read_count += 1
-            if read_count % 100000 == 0:
-                logger.debug(
-                    f"Processed {read_count} read pairs, {match_count} exact matches found"
-                )
+    def read_generator():
+        try:
+            with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
+                for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
+                    yield read1_seq
+                    yield read2_seq
+        except Exception as e:
+            raise ValueError(f"Error reading FASTQ files: {e}") from e
 
-            # Try forward orientation for read1
-            for read_seq in [read1_seq, read2_seq]:
-                # Try both forward and reverse complement
-                for seq in [read_seq, reverse_complement(read_seq)]:
-                    matches = find_exact_matches(seq, kmer_index, contigs)
+    read_count, match_count = _process_reads(read_generator(), contigs, coverage, overlap_size)
 
-                    for contig_name, start_pos, end_pos in matches:
-                        match_count += 1
-                        counter = coverage[contig_name]
-                        # Increment coverage for inner portion of read using numpy slice (optimized)
-                        inner_start = start_pos + overlap_size
-                        inner_end = end_pos - overlap_size
-                        if inner_start < inner_end:  # Only increment if there's an inner portion
-                            counter[inner_start:inner_end] += 1
-
-    logger.debug(f"Finished processing {read_count} read pairs")
-    logger.debug(f"Total exact matches: {match_count}")
-
-    # Report on lazy k-mer indices built
-    if kmer_index:
-        read_sizes = sorted(kmer_index.keys())
+    if read_count == 0:
+        logger.debug("No reads found in FASTQ files")
+    elif match_count == 0:
         logger.debug(
-            f"Built {len(kmer_index)} k-mer indices for read sizes: {read_sizes}"
+            f"Processed {read_count} reads but found no exact matches to contigs. "
+            f"Check that reads and contigs are from the same sample."
         )
     else:
-        logger.debug("No k-mer indices built (no reads processed)")
+        logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
 
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage_ret, contigs
