@@ -34,6 +34,8 @@ from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_
     SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate
+from micall.utils.exact_coverage import _process_reads
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -407,6 +409,9 @@ class SequenceReport(object):
         # {seed_name: {pos: count}
         self.conseq_insertion_counts = (conseq_insertion_counts or
                                         defaultdict(Counter))
+        # {contig_name: {position: exact_coverage}}
+        self.exact_coverage_data = defaultdict(dict)
+        self._exact_coverage_calculated = set()  # Track which seeds have been calculated
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -604,6 +609,49 @@ class SequenceReport(object):
                                               self.detailed_concordance_writer,
                                               use_combined_reports=True)
 
+    def _calculate_exact_coverage_for_seed(self, seed_name, read_sequences):
+        """Calculate exact coverage for a seed using the exact_coverage tool.
+
+        @param seed_name: Name of the seed reference
+        @param read_sequences: List of read sequences (just the sequences, not full rows)
+        """
+        try:
+            # Use remap_conseq if available, otherwise use original seed reference
+            if self.remap_conseqs and seed_name in self.remap_conseqs:
+                seed_ref = self.remap_conseqs[seed_name]
+            else:
+                seed_ref = self.projects.getReference(seed_name)
+
+            # Determine appropriate overlap_size based on read lengths
+            if read_sequences:
+                # Sample first read to estimate typical length
+                first_read_len = len(read_sequences[0])
+                # Use 1/3.55 of read length, minimum 0, maximum 70
+                overlap_size = max(0, min(70, int(first_read_len / 3.55)))
+            else:
+                overlap_size = 0
+
+            # Initialize or reuse existing coverage array
+            if seed_name not in self._exact_coverage_calculated:
+                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+                self._exact_coverage_calculated.add(seed_name)
+            else:
+                # Recreate coverage array from existing data for accumulation
+                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+                for pos_1based, count in self.exact_coverage_data[seed_name].items():
+                    coverage[seed_name][pos_1based - 1] = count
+
+            contigs = {seed_name: seed_ref}
+            _process_reads(iter(read_sequences), contigs, coverage, overlap_size)
+
+            # Store/update the coverage data
+            for pos_0based, count in enumerate(coverage[seed_name]):
+                if count > 0:
+                    self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
+
+        except (KeyError, Exception):
+            pass  # Skip if reference not found or other error
+
     def read(self,
              aligned_reads,
              included_regions: typing.Optional[typing.Set] = None,
@@ -619,7 +667,26 @@ class SequenceReport(object):
             all other regions should be excluded, or None to ignore
         @param excluded_regions: coordinate regions that should not be reported.
         """
-        aligned_reads = self.align_deletions(aligned_reads)
+        # Buffer reads to calculate exact coverage if needed
+        aligned_reads_list = list(aligned_reads)
+
+        # Calculate exact coverage for this seed if not done yet
+        if aligned_reads_list:
+            refname = aligned_reads_list[0].get('refname')
+            if refname:
+                seed_name = trim_contig_name(refname)
+                if seed_name not in self._exact_coverage_calculated:
+                    # Only use reads with offset=0 for exact coverage calculation
+                    # Replicate each sequence according to its count
+                    read_seqs = []
+                    for row in aligned_reads_list:
+                        if 'seq' in row and int(row.get('offset', 0)) == 0:
+                            count = int(row.get('count', 1))
+                            read_seqs.extend([row['seq']] * count)
+                    if read_seqs:  # Only calculate if we have offset=0 reads
+                        self._calculate_exact_coverage_for_seed(seed_name, read_seqs)
+
+        aligned_reads = self.align_deletions(iter(aligned_reads_list))
 
         self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
         self.reports.clear()  # {coord_name: [ReportAmino()]}
@@ -1056,7 +1123,8 @@ class SequenceReport(object):
                                'ins',
                                'clip',
                                'v3_overlap',
-                               'coverage'],
+                               'coverage',
+                                'exact_coverage'],
                               lineterminator=os.linesep)
 
     def write_nuc_header(self, nuc_file):
@@ -1093,6 +1161,13 @@ class SequenceReport(object):
         genome_pos = (str(report_nuc.position+genome_start_pos - 1)
                       if report_nuc.position is not None
                       else '')
+
+        # Get exact coverage if available
+        coverage_score_val = ''
+        if seed_nuc.consensus_index is not None:
+            query_pos = seed_nuc.consensus_index + 1  # Convert 0-based to 1-based
+            coverage_score_val = self.exact_coverage_data.get(seed, {}).get(query_pos, '')
+
         row = {'seed': seed,
                'region': region,
                'q-cutoff': self.qcut,
@@ -1103,7 +1178,8 @@ class SequenceReport(object):
                'ins': seed_nuc.insertion_count,
                'clip': seed_nuc.clip_count,
                'v3_overlap': seed_nuc.v3_overlap,
-               'coverage': seed_nuc.get_coverage()}
+               'coverage': seed_nuc.get_coverage(),
+               'exact_coverage': coverage_score_val}
         for base in 'ACTGN':
             nuc_count = seed_nuc.counts[base]
             row[base] = nuc_count
@@ -1682,7 +1758,7 @@ class SequenceReport(object):
                 if coord_amino == '-':
                     continue
                 coord_codon_index += 1
-                
+
                 nuc_pos = conseq_codon_index * 3 - frame_index
                 for i in range(3):
                     result[nuc_pos+i] = frame_index
