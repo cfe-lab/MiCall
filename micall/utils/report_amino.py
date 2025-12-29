@@ -164,7 +164,9 @@ class SeedNucleotide(object):
         total_count = sum(self.counts.values())
         other_count = sum(other.counts.values())
         if total_count and other_count:
-            self.consensus_index = None
+            # Only set to None if consensus indexes are different
+            if self.consensus_index != other.consensus_index:
+                self.consensus_index = None
         elif other_count:
             self.consensus_index = other.consensus_index
         self.counts += other.counts
