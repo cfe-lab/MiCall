@@ -609,11 +609,10 @@ class SequenceReport(object):
                                               self.detailed_concordance_writer,
                                               use_combined_reports=True)
 
-    def _calculate_exact_coverage_for_seed(self, seed_name, read_iterator, overlap_size):
-        """Calculate exact coverage for a seed using the exact_coverage tool.
+    def _initialize_exact_coverage_for_seed(self, seed_name, overlap_size):
+        """Initialize exact coverage structures for a seed.
 
         @param seed_name: Name of the seed reference
-        @param read_iterator: Iterator of (sequence, count) tuples
         @param overlap_size: Overlap size for exact coverage calculation
         """
         try:
@@ -623,28 +622,71 @@ class SequenceReport(object):
             else:
                 seed_ref = self.projects.getReference(seed_name)
 
-            # Initialize coverage array, loading existing data if present to accumulate
+            # Store seed info for incremental updates
+            if not hasattr(self, '_current_seed_info'):
+                self._current_seed_info = {}
+
+            self._current_seed_info[seed_name] = {
+                'seed_ref': seed_ref,
+                'overlap_size': overlap_size,
+                'contigs': {seed_name: seed_ref},
+                'coverage': {seed_name: np.zeros(len(seed_ref), dtype=np.int32)},
+                'kmer_index': {},  # Shared k-mer index for all reads
+                'has_data': False
+            }
+
+            # Load existing data if present
             if seed_name in self.exact_coverage_data:
-                initial_counts = np.zeros(len(seed_ref), dtype=np.int32)
                 for pos, count in self.exact_coverage_data[seed_name].items():
                     if 1 <= pos <= len(seed_ref):
-                        initial_counts[pos - 1] = count
-                coverage = {seed_name: initial_counts}
-            else:
-                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
+                        self._current_seed_info[seed_name]['coverage'][seed_name][pos - 1] = count
 
-            contigs = {seed_name: seed_ref}
-            exact_coverage.process_reads(read_iterator, contigs, coverage, overlap_size)
+        except (KeyError, Exception):
+            pass  # Skip if reference not found or other error
+
+    def _add_to_exact_coverage(self, seed_name, seq, count):
+        """Add a single read to exact coverage calculation.
+
+        @param seed_name: Name of the seed reference
+        @param seq: Read sequence
+        @param count: Read count
+        """
+        if not hasattr(self, '_current_seed_info') or seed_name not in self._current_seed_info:
+            return
+
+        try:
+            info = self._current_seed_info[seed_name]
+            # Process this single read directly without iterator overhead
+            exact_coverage.process_single_read(
+                seq, count, info['kmer_index'], info['contigs'], info['coverage'], info['overlap_size'])
+            info['has_data'] = True
+        except Exception:
+            pass  # Skip errors for individual reads
+
+    def _finalize_exact_coverage_for_seed(self, seed_name):
+        """Finalize exact coverage calculation for a seed.
+
+        @param seed_name: Name of the seed reference
+        """
+        if not hasattr(self, '_current_seed_info') or seed_name not in self._current_seed_info:
+            return
+
+        try:
+            info = self._current_seed_info[seed_name]
+            if not info['has_data']:
+                return
 
             # Store/update the coverage data
-            for pos_0based, count in enumerate(coverage[seed_name]):
+            for pos_0based, count in enumerate(info['coverage'][seed_name]):
                 if count > 0:
                     self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
                 elif (pos_0based + 1) in self.exact_coverage_data[seed_name]:
                     del self.exact_coverage_data[seed_name][pos_0based + 1]
 
-        except (KeyError, Exception):
-            pass  # Skip if reference not found or other error
+            # Clean up
+            del self._current_seed_info[seed_name]
+        except Exception:
+            pass
 
     def read(self,
              aligned_reads,
@@ -661,30 +703,40 @@ class SequenceReport(object):
             all other regions should be excluded, or None to ignore
         @param excluded_regions: coordinate regions that should not be reported.
         """
-        # Buffer reads to calculate exact coverage if needed
-        aligned_reads_list = list(aligned_reads)
+        # Generator that calculates exact coverage as it yields rows
+        def process_with_exact_coverage(aligned_reads):
+            refname = None
+            seed_name = None
+            overlap_size = 0
 
-        # Calculate exact coverage for this seed
-        if aligned_reads_list:
-            refname = aligned_reads_list[0].get('refname')
-            if refname:
-                seed_name = trim_contig_name(refname)
+            for row in aligned_reads:
+                # Extract metadata from first row
+                if refname is None:
+                    refname = row.get('refname')
+                    if refname:
+                        seed_name = trim_contig_name(refname)
+                        # Determine overlap size from the first read
+                        first_read_seq = row.get('seq', '')
+                        first_read_len = len(first_read_seq)
+                        # Use 1/4 of read length, minimum 0, maximum 70
+                        overlap_size = max(0, min(70, first_read_len // 4))
+                        # Initialize exact coverage for this seed
+                        self._initialize_exact_coverage_for_seed(seed_name, overlap_size)
 
-                # Determine overlap size from the first read
-                first_read_seq = aligned_reads_list[0].get('seq', '')
-                first_read_len = len(first_read_seq)
-                # Use 1/4 of read length, minimum 0, maximum 70
-                overlap_size = max(0, min(70, first_read_len // 4))
+                # Add to exact coverage if offset=0
+                if seed_name and 'seq' in row and int(row.get('offset', 0)) == 0:
+                    seq = row['seq']
+                    count = int(row.get('count', 1))
+                    self._add_to_exact_coverage(seed_name, seq, count)
 
-                # Create generator for (seq, count) tuples, considering only offset=0
-                def read_generator():
-                    for row in aligned_reads_list:
-                        if 'seq' in row and int(row.get('offset', 0)) == 0:
-                            yield row['seq'], int(row.get('count', 1))
+                yield row
 
-                self._calculate_exact_coverage_for_seed(seed_name, read_generator(), overlap_size)
+            # Finalize exact coverage after all rows processed
+            if seed_name:
+                self._finalize_exact_coverage_for_seed(seed_name)
 
-        aligned_reads = self.align_deletions(iter(aligned_reads_list))
+        # Process reads through exact coverage calculation, then alignment
+        aligned_reads = self.align_deletions(process_with_exact_coverage(aligned_reads))
 
         self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
         self.reports.clear()  # {coord_name: [ReportAmino()]}
