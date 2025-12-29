@@ -293,7 +293,7 @@ def find_exact_matches(
         yield (contig_name, contig_pos, contig_pos + read_len)
 
 
-def _process_single_read(
+def process_single_read(
     read_seq: str,
     count: int,
     kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]],
@@ -330,7 +330,7 @@ def _process_single_read(
     return match_count
 
 
-def _process_reads(
+def process_reads(
     read_iterator: Iterator[Tuple[str, int]],
     contigs: Dict[str, str],
     coverage: Dict[str, np.ndarray],
@@ -356,7 +356,7 @@ def _process_reads(
                 f"Processed {read_count} reads, {match_count} exact matches found"
             )
 
-        match_count += _process_single_read(
+        match_count += process_single_read(
             read_seq, count, kmer_index, contigs, coverage, overlap_size
         )
 
@@ -451,7 +451,7 @@ def calculate_exact_coverage(
         except Exception as e:
             raise ValueError(f"Error reading FASTQ files: {e}") from e
 
-    read_count, match_count = _process_reads(
+    read_count, match_count = process_reads(
         read_generator(), contigs, coverage, overlap_size
     )
 
