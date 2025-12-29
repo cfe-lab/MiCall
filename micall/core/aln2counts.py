@@ -412,6 +412,7 @@ class SequenceReport(object):
         # {contig_name: {position: exact_coverage}}
         self.exact_coverage_data = defaultdict(dict)
         self._exact_coverage_calculated = set()  # Track which seeds have been calculated
+        self._current_seed_info = {}  # {seed_name: {seed_ref, overlap_size, contigs, coverage, kmer_index, has_data}}
         self.nuc_writer = self.nuc_detail_writer = self.conseq_writer = None
         self.amino_writer = self.amino_detail_writer = None
         self.genome_coverage_writer = self.minimap_hits_writer = None
@@ -623,9 +624,6 @@ class SequenceReport(object):
                 seed_ref = self.projects.getReference(seed_name)
 
             # Store seed info for incremental updates
-            if not hasattr(self, '_current_seed_info'):
-                self._current_seed_info = {}
-
             self._current_seed_info[seed_name] = {
                 'seed_ref': seed_ref,
                 'overlap_size': overlap_size,
@@ -644,31 +642,30 @@ class SequenceReport(object):
         except (KeyError, Exception):
             pass  # Skip if reference not found or other error
 
-    def _add_to_exact_coverage(self, seed_name, seq, count):
+    def _add_to_exact_coverage(self, seed_name, kmer_index, contigs, coverage, overlap_size, seq, count):
         """Add a single read to exact coverage calculation.
 
         @param seed_name: Name of the seed reference
         @param seq: Read sequence
         @param count: Read count
         """
-        if not hasattr(self, '_current_seed_info') or seed_name not in self._current_seed_info:
-            return
+        if seed_name not in self._current_seed_info:
+            return False
 
         try:
-            info = self._current_seed_info[seed_name]
             # Process this single read directly without iterator overhead
-            exact_coverage.process_single_read(
-                seq, count, info['kmer_index'], info['contigs'], info['coverage'], info['overlap_size'])
-            info['has_data'] = True
+            exact_coverage.process_single_read(seq, count, kmer_index, contigs, coverage, overlap_size)
+            return True
         except Exception:
-            pass  # Skip errors for individual reads
+            # Skip errors for individual reads
+            return False
 
     def _finalize_exact_coverage_for_seed(self, seed_name):
         """Finalize exact coverage calculation for a seed.
 
         @param seed_name: Name of the seed reference
         """
-        if not hasattr(self, '_current_seed_info') or seed_name not in self._current_seed_info:
+        if seed_name not in self._current_seed_info:
             return
 
         try:
@@ -723,12 +720,28 @@ class SequenceReport(object):
                         overlap_size = max(0, min(70, first_read_len // 4))
                         # Initialize exact coverage for this seed
                         self._initialize_exact_coverage_for_seed(seed_name, overlap_size)
+                        # Get references to structures after initialization (if successful)
+                        if seed_name in self._current_seed_info:
+                            info = self._current_seed_info[seed_name]
+                            contigs = info['contigs']
+                            coverage = info['coverage']
+                            kmer_index = info['kmer_index']
+                            overlap_size = info['overlap_size']
 
                 # Add to exact coverage if offset=0
                 if seed_name and 'seq' in row and int(row.get('offset', 0)) == 0:
                     seq = row['seq']
                     count = int(row.get('count', 1))
-                    self._add_to_exact_coverage(seed_name, seq, count)
+                    # Only process if we successfully initialized
+                    if seed_name in self._current_seed_info:
+                        if self._add_to_exact_coverage(seed_name=seed_name,
+                                                       contigs=contigs,
+                                                       coverage=coverage,
+                                                       overlap_size=overlap_size,
+                                                       kmer_index=kmer_index,
+                                                       seq=seq,
+                                                       count=count):
+                            info['has_data'] = True
 
                 yield row
 
