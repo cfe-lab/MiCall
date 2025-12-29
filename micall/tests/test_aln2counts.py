@@ -513,8 +513,7 @@ A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,partial,del,ins,clip,v3_overlap,cove
         aligned_reads3 = prepare_reads("3-R1-seed,15,0,2,0,TTTAGG")
 
         expected_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
 R1-seed,R1,15,1,1,1,5,0,0,0,0,0,0,0,0,5,
 R1-seed,R1,15,2,2,2,5,0,0,0,0,0,0,0,0,5,10
 R1-seed,R1,15,3,3,3,5,0,0,0,0,0,0,0,0,5,10
@@ -522,8 +521,8 @@ R1-seed,R1,15,,4,4,0,0,0,7,0,0,0,0,0,7,
 R1-seed,R1,15,,5,5,0,0,0,7,0,0,0,0,0,7,
 R1-seed,R1,15,,6,6,0,0,0,7,0,0,0,0,0,7,
 R1-seed,R1,15,4,7,7,2,0,0,0,0,0,0,0,0,2,10
-R1-seed,R1,15,5,8,8,0,0,2,0,0,0,0,0,0,2,10
-R1-seed,R1,15,6,9,9,0,0,2,0,0,0,0,0,0,2,
+R1-seed,R1,15,5,8,8,0,0,2,0,0,0,0,0,0,2,12
+R1-seed,R1,15,6,9,9,0,0,2,0,0,0,0,0,0,2,2
 R2-seed,R2,15,1,7,7,0,0,4,0,0,0,0,0,0,4,
 R2-seed,R2,15,2,8,8,0,0,4,0,0,0,0,0,0,4,
 R2-seed,R2,15,3,9,9,0,4,0,0,0,0,0,0,0,4,
@@ -533,8 +532,7 @@ R2-seed,R2,15,6,12,12,0,0,4,0,0,0,0,0,0,4,
 """
 
         expected_detail_text = """\
-seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,\
-A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
+seed,region,q-cutoff,query.nuc.pos,refseq.nuc.pos,genome.pos,A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
 1-R1-seed,R1,15,1,1,1,5,0,0,0,0,0,0,0,0,5,
 1-R1-seed,R1,15,2,2,2,5,0,0,0,0,0,0,0,0,5,
 1-R1-seed,R1,15,3,3,3,5,0,0,0,0,0,0,0,0,5,
@@ -554,7 +552,6 @@ A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
 3-R1-seed,R1,15,5,8,8,0,0,2,0,0,0,0,0,0,2,
 3-R1-seed,R1,15,6,9,9,0,0,2,0,0,0,0,0,0,2,
 """
-
         self.report.write_nuc_header(self.report_file)
         self.report.write_nuc_detail_header(self.detail_report_file)
         self.report.read(aligned_reads1)
@@ -568,8 +565,9 @@ A,C,G,T,N,del,ins,clip,v3_overlap,coverage,exact_coverage
         self.report.combine_reports()
         self.report.write_nuc_counts()
 
-        assert self.detail_report_file.getvalue() == expected_detail_text
-        assert self.report_file.getvalue() == expected_text
+        self.assertMultiLineEqual(expected_detail_text, self.detail_report_file.getvalue())
+        self.assertMultiLineEqual(expected_text, self.report_file.getvalue())
+
 
     def testNucleotideDetailReportOnlyPartials(self):
         """ The only contig is a partial BLAST match, not reported. """

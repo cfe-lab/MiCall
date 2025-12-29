@@ -294,7 +294,7 @@ def find_exact_matches(
 
 
 def _process_reads(
-    read_iterator: Iterator[str],
+    read_iterator: Iterator[Tuple[str, int]],
     contigs: Dict[str, str],
     coverage: Dict[str, np.ndarray],
     overlap_size: int,
@@ -302,7 +302,7 @@ def _process_reads(
     """
     Process reads and update coverage counts.
 
-    :param read_iterator: Iterator yielding read sequences
+    :param read_iterator: Iterator yielding (read_sequence, count) tuples
     :param contigs: Dictionary mapping contig_name -> sequence
     :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
     :param overlap_size: Minimum overlap size for counting coverage
@@ -312,8 +312,8 @@ def _process_reads(
     read_count = 0
     match_count = 0
 
-    for read_seq in read_iterator:
-        read_count += 1
+    for read_seq, count in read_iterator:
+        read_count += count
         if read_count % 100000 == 0:
             logger.debug(
                 f"Processed {read_count} reads, {match_count} exact matches found"
@@ -324,13 +324,13 @@ def _process_reads(
             matches = find_exact_matches(seq, kmer_index, contigs)
 
             for contig_name, start_pos, end_pos in matches:
-                match_count += 1
+                match_count += count
                 counter = coverage[contig_name]
                 # Increment coverage for inner portion
                 inner_start = start_pos + overlap_size
                 inner_end = end_pos - overlap_size
                 if inner_start < inner_end:
-                    counter[inner_start:inner_end] += 1
+                    counter[inner_start:inner_end] += count
 
     logger.debug(f"Finished processing {read_count} reads")
     logger.debug(f"Total exact matches: {match_count}")
@@ -415,8 +415,8 @@ def calculate_exact_coverage(
         try:
             with open_fastq(fastq1_filename) as fastq1, open_fastq(fastq2_filename) as fastq2:
                 for read1_seq, read2_seq in read_fastq_pairs(fastq1, fastq2):
-                    yield read1_seq
-                    yield read2_seq
+                    yield read1_seq, 1
+                    yield read2_seq, 1
         except Exception as e:
             raise ValueError(f"Error reading FASTQ files: {e}") from e
 

@@ -609,11 +609,12 @@ class SequenceReport(object):
                                               self.detailed_concordance_writer,
                                               use_combined_reports=True)
 
-    def _calculate_exact_coverage_for_seed(self, seed_name, read_sequences):
+    def _calculate_exact_coverage_for_seed(self, seed_name, read_iterator, overlap_size):
         """Calculate exact coverage for a seed using the exact_coverage tool.
 
         @param seed_name: Name of the seed reference
-        @param read_sequences: List of read sequences (just the sequences, not full rows)
+        @param read_iterator: Iterator of (sequence, count) tuples
+        @param overlap_size: Overlap size for exact coverage calculation
         """
         try:
             # Use remap_conseq if available, otherwise use original seed reference
@@ -622,32 +623,25 @@ class SequenceReport(object):
             else:
                 seed_ref = self.projects.getReference(seed_name)
 
-            # Determine appropriate overlap_size based on read lengths
-            if read_sequences:
-                # Sample first read to estimate typical length
-                first_read_len = len(read_sequences[0])
-                # Use 1/3.55 of read length, minimum 0, maximum 70
-                overlap_size = max(0, min(70, int(first_read_len / 3.55)))
+            # Initialize coverage array, loading existing data if present to accumulate
+            if seed_name in self.exact_coverage_data:
+                initial_counts = np.zeros(len(seed_ref), dtype=np.int32)
+                for pos, count in self.exact_coverage_data[seed_name].items():
+                    if 1 <= pos <= len(seed_ref):
+                        initial_counts[pos - 1] = count
+                coverage = {seed_name: initial_counts}
             else:
-                overlap_size = 0
-
-            # Initialize or reuse existing coverage array
-            if seed_name not in self._exact_coverage_calculated:
                 coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
-                self._exact_coverage_calculated.add(seed_name)
-            else:
-                # Recreate coverage array from existing data for accumulation
-                coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
-                for pos_1based, count in self.exact_coverage_data[seed_name].items():
-                    coverage[seed_name][pos_1based - 1] = count
 
             contigs = {seed_name: seed_ref}
-            _process_reads(iter(read_sequences), contigs, coverage, overlap_size)
+            _process_reads(read_iterator, contigs, coverage, overlap_size)
 
             # Store/update the coverage data
             for pos_0based, count in enumerate(coverage[seed_name]):
                 if count > 0:
                     self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
+                elif (pos_0based + 1) in self.exact_coverage_data[seed_name]:
+                    del self.exact_coverage_data[seed_name][pos_0based + 1]
 
         except (KeyError, Exception):
             pass  # Skip if reference not found or other error
@@ -670,21 +664,25 @@ class SequenceReport(object):
         # Buffer reads to calculate exact coverage if needed
         aligned_reads_list = list(aligned_reads)
 
-        # Calculate exact coverage for this seed if not done yet
+        # Calculate exact coverage for this seed
         if aligned_reads_list:
             refname = aligned_reads_list[0].get('refname')
             if refname:
                 seed_name = trim_contig_name(refname)
-                if seed_name not in self._exact_coverage_calculated:
-                    # Only use reads with offset=0 for exact coverage calculation
-                    # Replicate each sequence according to its count
-                    read_seqs = []
+
+                # Determine overlap size from the first read
+                first_read_seq = aligned_reads_list[0].get('seq', '')
+                first_read_len = len(first_read_seq)
+                # Use 1/4 of read length, minimum 0, maximum 70
+                overlap_size = max(0, min(70, first_read_len // 4))
+
+                # Create generator for (seq, count) tuples, considering only offset=0
+                def read_generator():
                     for row in aligned_reads_list:
                         if 'seq' in row and int(row.get('offset', 0)) == 0:
-                            count = int(row.get('count', 1))
-                            read_seqs.extend([row['seq']] * count)
-                    if read_seqs:  # Only calculate if we have offset=0 reads
-                        self._calculate_exact_coverage_for_seed(seed_name, read_seqs)
+                            yield row['seq'], int(row.get('count', 1))
+
+                self._calculate_exact_coverage_for_seed(seed_name, read_generator(), overlap_size)
 
         aligned_reads = self.align_deletions(iter(aligned_reads_list))
 
