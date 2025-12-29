@@ -34,7 +34,7 @@ from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_
     SeedNucleotide
 from micall.utils.spring_beads import Wire, Bead
 from micall.utils.translation import translate
-from micall.utils.exact_coverage import _process_reads
+import micall.utils.exact_coverage as exact_coverage
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -634,7 +634,7 @@ class SequenceReport(object):
                 coverage = {seed_name: np.zeros(len(seed_ref), dtype=np.int32)}
 
             contigs = {seed_name: seed_ref}
-            _process_reads(read_iterator, contigs, coverage, overlap_size)
+            exact_coverage.process_reads(read_iterator, contigs, coverage, overlap_size)
 
             # Store/update the coverage data
             for pos_0based, count in enumerate(coverage[seed_name]):
