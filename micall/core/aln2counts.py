@@ -616,31 +616,31 @@ class SequenceReport(object):
         @param seed_name: Name of the seed reference
         @param overlap_size: Overlap size for exact coverage calculation
         """
-        try:
-            # Use remap_conseq if available, otherwise use original seed reference
-            if self.remap_conseqs and seed_name in self.remap_conseqs:
-                seed_ref = self.remap_conseqs[seed_name]
-            else:
+        # Use remap_conseq if available, otherwise use original seed reference
+        if self.remap_conseqs and seed_name in self.remap_conseqs:
+            seed_ref = self.remap_conseqs[seed_name]
+        else:
+            try:
                 seed_ref = self.projects.getReference(seed_name)
+            except KeyError:
+                # Reference not found (e.g., partial contigs), skip exact coverage
+                return
 
-            # Store seed info for incremental updates
-            self._current_seed_info[seed_name] = {
-                'seed_ref': seed_ref,
-                'overlap_size': overlap_size,
-                'contigs': {seed_name: seed_ref},
-                'coverage': {seed_name: np.zeros(len(seed_ref), dtype=np.int32)},
-                'kmer_index': {},  # Shared k-mer index for all reads
-                'has_data': False
-            }
+        # Store seed info for incremental updates
+        self._current_seed_info[seed_name] = {
+            'seed_ref': seed_ref,
+            'overlap_size': overlap_size,
+            'contigs': {seed_name: seed_ref},
+            'coverage': {seed_name: np.zeros(len(seed_ref), dtype=np.int32)},
+            'kmer_index': {},  # Shared k-mer index for all reads
+            'has_data': False
+        }
 
-            # Load existing data if present
-            if seed_name in self.exact_coverage_data:
-                for pos, count in self.exact_coverage_data[seed_name].items():
-                    if 1 <= pos <= len(seed_ref):
-                        self._current_seed_info[seed_name]['coverage'][seed_name][pos - 1] = count
-
-        except (KeyError, Exception):
-            pass  # Skip if reference not found or other error
+        # Load existing data if present
+        if seed_name in self.exact_coverage_data:
+            for pos, count in self.exact_coverage_data[seed_name].items():
+                if 1 <= pos <= len(seed_ref):
+                    self._current_seed_info[seed_name]['coverage'][seed_name][pos - 1] = count
 
     def _add_to_exact_coverage(self, seed_name, kmer_index, contigs, coverage, overlap_size, seq, count):
         """Add a single read to exact coverage calculation.
@@ -652,13 +652,9 @@ class SequenceReport(object):
         if seed_name not in self._current_seed_info:
             return False
 
-        try:
-            # Process this single read directly without iterator overhead
-            exact_coverage.process_single_read(seq, count, kmer_index, contigs, coverage, overlap_size)
-            return True
-        except Exception:
-            # Skip errors for individual reads
-            return False
+        # Process this single read directly without iterator overhead
+        exact_coverage.process_single_read(seq, count, kmer_index, contigs, coverage, overlap_size)
+        return True
 
     def _finalize_exact_coverage_for_seed(self, seed_name):
         """Finalize exact coverage calculation for a seed.
@@ -668,22 +664,19 @@ class SequenceReport(object):
         if seed_name not in self._current_seed_info:
             return
 
-        try:
-            info = self._current_seed_info[seed_name]
-            if not info['has_data']:
-                return
+        info = self._current_seed_info[seed_name]
+        if not info['has_data']:
+            return
 
-            # Store/update the coverage data
-            for pos_0based, count in enumerate(info['coverage'][seed_name]):
-                if count > 0:
-                    self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
-                elif (pos_0based + 1) in self.exact_coverage_data[seed_name]:
-                    del self.exact_coverage_data[seed_name][pos_0based + 1]
+        # Store/update the coverage data
+        for pos_0based, count in enumerate(info['coverage'][seed_name]):
+            if count > 0:
+                self.exact_coverage_data[seed_name][pos_0based + 1] = int(count)
+            elif (pos_0based + 1) in self.exact_coverage_data[seed_name]:
+                del self.exact_coverage_data[seed_name][pos_0based + 1]
 
-            # Clean up
-            del self._current_seed_info[seed_name]
-        except Exception:
-            pass
+        # Clean up
+        del self._current_seed_info[seed_name]
 
     def read(self,
              aligned_reads,
