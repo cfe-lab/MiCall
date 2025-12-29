@@ -532,7 +532,6 @@ region,sequence
     assert len(coverage_by_pos) > 0, "Should have coverage at some positions"
     # Check what values we got
     if coverage_by_pos:
-        unique_coverages = set(coverage_by_pos.values())
         # With 6bp read and overlap_size = 6//4 = 1, edges are trimmed
         # Middle positions should have full coverage (5+2=7)
         # But may vary due to edge trimming
