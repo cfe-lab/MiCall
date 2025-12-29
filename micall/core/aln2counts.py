@@ -703,6 +703,7 @@ class SequenceReport(object):
             all other regions should be excluded, or None to ignore
         @param excluded_regions: coordinate regions that should not be reported.
         """
+
         # Generator that calculates exact coverage as it yields rows
         def process_with_exact_coverage(aligned_reads):
             refname = None
@@ -735,8 +736,8 @@ class SequenceReport(object):
             if seed_name:
                 self._finalize_exact_coverage_for_seed(seed_name)
 
-        # Process reads through exact coverage calculation, then alignment
-        aligned_reads = self.align_deletions(process_with_exact_coverage(aligned_reads))
+        aligned_reads = process_with_exact_coverage(aligned_reads)
+        aligned_reads = self.align_deletions(aligned_reads)
 
         self.seed_aminos = {}  # {reading_frame: [SeedAmino(consensus_nuc_index)]}
         self.reports.clear()  # {coord_name: [ReportAmino()]}
