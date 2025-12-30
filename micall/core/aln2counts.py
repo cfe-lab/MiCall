@@ -698,7 +698,6 @@ class SequenceReport(object):
         def process_with_exact_coverage(aligned_reads):
             refname = None
             seed_name = None
-            overlap_size = 0
 
             for row in aligned_reads:
                 # Extract metadata from first row
@@ -721,20 +720,23 @@ class SequenceReport(object):
                             kmer_index = info['kmer_index']
                             overlap_size = info['overlap_size']
 
+                if seed_name not in self._current_seed_info:
+                    # Skip exact coverage processing if initialization failed
+                    yield row
+                    continue
+
                 # Add to exact coverage if offset=0
-                if seed_name and 'seq' in row and int(row.get('offset', 0)) == 0:
+                if int(row.get('offset', 0)) == 0:
                     seq = row['seq']
                     count = int(row.get('count', 1))
-                    # Only process if we successfully initialized
-                    if seed_name in self._current_seed_info:
-                        if self._add_to_exact_coverage(seed_name=seed_name,
-                                                       contigs=contigs,
-                                                       coverage=coverage,
-                                                       overlap_size=overlap_size,
-                                                       kmer_index=kmer_index,
-                                                       seq=seq,
-                                                       count=count):
-                            info['has_data'] = True
+                    if self._add_to_exact_coverage(seed_name=seed_name,
+                                                   contigs=contigs,
+                                                   coverage=coverage,
+                                                   overlap_size=overlap_size,
+                                                   kmer_index=kmer_index,
+                                                   seq=seq,
+                                                   count=count):
+                        info['has_data'] = True
 
                 yield row
 
