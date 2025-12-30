@@ -15,7 +15,7 @@ from fractions import Fraction
 from micall.utils.new_atomic_file import new_atomic_text_file
 from micall.utils.dir_path import DirPath
 from micall.core.project_config import ProjectConfig
-from micall.utils.exact_coverage import calculate_exact_coverage
+from micall.utils.exact_coverage import NoContigsError, calculate_exact_coverage
 from micall.utils.list_fastq_files import find_fastq_source_folder
 from .logger import logger
 from .find_file import find_file
@@ -404,17 +404,16 @@ def calculate_max_ex_cov_dip(
     # Calculate exact coverage using the exact_coverage utility with conseq_stitched CSV
     try:
         with open(conseq_stitched_csv_path, 'r') as conseq_file:
-            line_count = sum(1 for _ in conseq_file)
-            if line_count <= 2:
-                logger.debug("Conseq stitched CSV %s is empty or has no data rows", conseq_stitched_csv_path)
-                return None
-            conseq_file.seek(0)
             coverage_dict, _contigs = calculate_exact_coverage(
                 fastq1_path,
                 fastq2_path,
                 conseq_file,
                 overlap_size
             )
+    except NoContigsError:
+        logger.debug("No contigs found in conseq_stitched file %s for sample %s",
+                     conseq_stitched_csv_path, sample)
+        return None
     except Exception as ex:
         logger.error("Failed to calculate exact coverage for sample %s: %s", sample, ex)
         return None

@@ -23,6 +23,13 @@ from Bio import SeqIO
 logger = logging.getLogger(__name__)
 
 
+class NoContigsError(Exception):
+    """Raised when no contigs are found in the input file."""
+    def __init__(self):
+        super().__init__("No contigs found in the input file.")
+
+
+
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="""Calculate exact coverage for every base in contigs.""",
@@ -394,13 +401,9 @@ def calculate_exact_coverage(
     :raises FileNotFoundError: If FASTQ files don't exist
     """
     # Validate overlap_size
+
     if overlap_size < 0:
         raise ValueError(f"overlap_size must be non-negative, got {overlap_size}")
-    if overlap_size > 1000:
-        logger.warning(
-            f"overlap_size={overlap_size} is very large. "
-            f"This will exclude most of the read from coverage counting."
-        )
 
     # Validate FASTQ files exist
     if not fastq1_filename.exists():
@@ -416,7 +419,7 @@ def calculate_exact_coverage(
         raise ValueError(f"Failed to read contigs file: {e}") from e
 
     if not contigs:
-        raise ValueError("No contigs found in contigs file")
+        raise NoContigsError()
 
     logger.debug(f"Loaded {len(contigs)} contigs")
 
