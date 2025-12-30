@@ -359,8 +359,7 @@ def calculate_max_ex_cov_dip(
     # Get RAW_DATA path from environment variable
     raw_data_path = os.environ.get('RAW_DATA')
     if not raw_data_path:
-        logger.warning("RAW_DATA environment variable not set, cannot calculate maximum_ex_cov_dip for sample %s", sample)
-        return None
+        raise ValueError("Environment variable $RAW_DATA not set")
 
     raw_data_dir = Path(raw_data_path)
     if not raw_data_dir.exists():
