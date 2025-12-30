@@ -404,6 +404,11 @@ def calculate_max_ex_cov_dip(
     # Calculate exact coverage using the exact_coverage utility with conseq_stitched CSV
     try:
         with open(conseq_stitched_csv_path, 'r') as conseq_file:
+            line_count = sum(1 for _ in conseq_file)
+            if line_count <= 2:
+                logger.debug("Conseq stitched CSV %s is empty or has no data rows", conseq_stitched_csv_path)
+                return None
+            conseq_file.seek(0)
             coverage_dict, _contigs = calculate_exact_coverage(
                 fastq1_path,
                 fastq2_path,
