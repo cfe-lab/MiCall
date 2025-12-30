@@ -725,18 +725,17 @@ class SequenceReport(object):
                     yield row
                     continue
 
-                # Add to exact coverage if offset=0
-                if int(row.get('offset', 0)) == 0:
-                    seq = row['seq']
-                    count = int(row.get('count', 1))
-                    if self._add_to_exact_coverage(seed_name=seed_name,
-                                                   contigs=contigs,
-                                                   coverage=coverage,
-                                                   overlap_size=overlap_size,
-                                                   kmer_index=kmer_index,
-                                                   seq=seq,
-                                                   count=count):
-                        info['has_data'] = True
+                # Add to exact coverage
+                seq = row['seq']
+                count = int(row.get('count', 1))
+                if self._add_to_exact_coverage(seed_name=seed_name,
+                                               contigs=contigs,
+                                               coverage=coverage,
+                                               overlap_size=overlap_size,
+                                               kmer_index=kmer_index,
+                                               seq=seq,
+                                               count=count):
+                    info['has_data'] = True
 
                 yield row
 

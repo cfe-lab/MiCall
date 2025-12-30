@@ -371,9 +371,11 @@ region,sequence
     )
 
 
-def test_offset_reads_excluded():
+def test_offset_reads_included():
     """
-    Critical: Reads with offset != 0 should NOT contribute to exact_coverage.
+    Reads with any offset should contribute to exact_coverage.
+    The offset just indicates where the alignment started, but exact coverage
+    does its own k-mer based matching independent of alignment position.
     """
     seed_name = "HIV1-B-FR-K03455-seed"
 
@@ -412,10 +414,10 @@ region,sequence
         if r["exact_coverage"] and r["exact_coverage"].strip()
     ]
 
-    # Should only have coverage from offset=0 read (count=10)
-    # NOT from offset=5 read (count=50)
-    assert max(coverages) == 10, (
-        f"Max coverage should be 10 (offset=0 only), got {max(coverages)}"
+    # Should have coverage from BOTH reads (10 + 50 = 60)
+    # regardless of offset, since exact coverage does k-mer matching
+    assert max(coverages) == 60, (
+        f"Max coverage should be 60 (10+50 from both reads), got {max(coverages)}"
     )
 
 
