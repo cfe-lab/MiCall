@@ -366,7 +366,13 @@ def calculate_max_ex_cov_dip(
         raise ValueError("RAW_DATA path does not exist: {}".format(raw_data_path))
 
     # Find run directory - try MiSeq/runs structure first
-    run_dir = raw_data_dir / 'MiSeq' / 'runs' / run_name
+    run_dirs = list((raw_data_dir / 'MiSeq' / 'runs').glob(run_name + '*'))
+    if not run_dirs:
+        raise ValueError("Run directory not found for run name: {}".format(run_name))
+    if len(run_dirs) > 1:
+        raise ValueError("Multiple run directories found for run name: {}".format(run_name))
+
+    run_dir = run_dirs[0]
     if not run_dir.exists():
         raise ValueError("Run directory does not exist: {}".format(run_dir))
 
