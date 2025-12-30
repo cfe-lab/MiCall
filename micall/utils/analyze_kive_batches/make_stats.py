@@ -363,14 +363,12 @@ def calculate_max_ex_cov_dip(
 
     raw_data_dir = Path(raw_data_path)
     if not raw_data_dir.exists():
-        logger.warning("RAW_DATA path does not exist: %s", raw_data_path)
-        return None
+        raise ValueError("RAW_DATA path does not exist: {}".format(raw_data_path))
 
     # Find run directory - try MiSeq/runs structure first
     run_dir = raw_data_dir / 'MiSeq' / 'runs' / run_name
     if not run_dir.exists():
-        logger.warning("Run directory does not exist: %s", run_dir)
-        return None
+        raise ValueError("Run directory does not exist: {}".format(run_dir))
 
     # Use find_fastq_source_folder to locate FASTQ files (handles various folder structures)
     fastq_folder = find_fastq_source_folder(run_dir)
