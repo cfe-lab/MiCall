@@ -26,13 +26,15 @@ from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup, load_git_version
 from micall.monitor.find_groups import find_groups
-from micall.utils.interop_wrappers import summarize_quality, summarize_tiles
+from micall.utils.interop_wrappers import (
+    summarize_quality,
+    summarize_tiles,
+    summarize_error_metrics
+)
 from micall.g2p.pssm_lib import Pssm
 from micall.utils.list_fastq_files import list_fastq_files
 from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
     MiCallArgs
-from miseqinteropreader.interop_reader import InterOpReader, MetricFile
-from miseqinteropreader.error_metrics_parser import write_phix_csv
 from miseqinteropreader import ReadLengths4
 
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
@@ -988,17 +990,14 @@ def summarize_run(run_info):
             index2=run_info.read_sizes.index2,
             reverse_read=run_info.read_sizes.read2,
         )
-        phix_path = os.path.join(run_info.interop_path, 'ErrorMetricsOut.bin')
-        if not os.path.exists(phix_path):
+        error_metrics_path = Path(run_info.interop_path) / 'ErrorMetricsOut.bin'
+        if not error_metrics_path.exists():
             raise FileNotFoundError(
-                f'Cannot censor without {phix_path}, use "--skip trim.censor".')
+                f'Cannot censor without {error_metrics_path}, use "--skip trim.censor".')
 
-        # InterOpReader expects the run folder (parent of InterOp), not the InterOp folder itself
-        run_path = Path(run_info.interop_path).parent
-        reader = InterOpReader(run_path)
-        records = reader.read_generic_records(MetricFile.ERROR_METRICS)
         with open(run_info.quality_csv, 'w') as quality:
-            write_phix_csv(quality, records, read_lengths, summary)
+            summarize_error_metrics(error_metrics_path, quality, summary, read_lengths)
+
         with open(run_info.quality_csv) as quality, \
                 open(run_info.bad_cycles_csv, 'w') as bad_cycles, \
                 open(run_info.bad_tiles_csv, 'w') as bad_tiles:
