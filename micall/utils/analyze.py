@@ -993,7 +993,9 @@ def summarize_run(run_info):
             raise FileNotFoundError(
                 f'Cannot censor without {phix_path}, use "--skip trim.censor".')
 
-        reader = InterOpReader(run_info.interop_path)
+        # InterOpReader expects the run folder (parent of InterOp), not the InterOp folder itself
+        run_path = Path(run_info.interop_path).parent
+        reader = InterOpReader(run_path)
         records = reader.read_generic_records(MetricFile.ERROR_METRICS)
         with open(run_info.quality_csv, 'w') as quality:
             write_phix_csv(quality, records, read_lengths, summary)
