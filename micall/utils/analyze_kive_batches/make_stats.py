@@ -8,15 +8,12 @@ import math
 from datetime import datetime
 from itertools import tee
 import ast
-import os
 from Bio.Align import PairwiseAligner
 from fractions import Fraction
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 from micall.utils.dir_path import DirPath
 from micall.core.project_config import ProjectConfig
-from micall.utils.exact_coverage import NoContigsError, calculate_exact_coverage
-from micall.utils.list_fastq_files import find_fastq_source_folder
 from .logger import logger
 from .find_file import find_file
 
@@ -342,91 +339,31 @@ def count_soft_clips_from_nuc(path_to_file: Path) -> Optional[int]:
     return total_clips
 
 
-def calculate_max_ex_cov_dip(
-        sample: str,
-        run_name: str,
-        conseq_stitched_csv_path: Path,
-        overlap_size: int = 70) -> Optional[int]:
+def calculate_exact_uncovered_from_csv(exact_cov_csv_path: Path) -> Optional[int]:
     """
-    Calculate maximum decrease in exact coverage between adjacent positions.
+    Calculate number of positions with zero exact coverage from CSV.
 
-    :param sample: Sample name (e.g., "2130A")
-    :param run_name: Run name from sample_info CSV
-    :param conseq_stitched_csv_path: Path to conseq_stitched CSV file (final consensus)
-    :param overlap_size: Minimum overlap size for exact coverage calculation
-    :return: Maximum drop in exact coverage between adjacent positions, or None if files not found
+    :param exact_cov_csv_path: Path to exact_coverage.csv file
+    :return: Count of positions with zero exact coverage, or None if file not found
     """
-    # Get RAW_DATA path from environment variable
-    raw_data_path = os.environ.get('RAW_DATA')
-    if not raw_data_path:
-        raise ValueError("Environment variable $RAW_DATA not set")
-
-    raw_data_dir = Path(raw_data_path)
-    if not raw_data_dir.exists():
-        raise ValueError("RAW_DATA path does not exist: {}".format(raw_data_path))
-
-    # Find run directory - try MiSeq/runs structure first
-    run_dirs = list((raw_data_dir / 'MiSeq' / 'runs').glob(run_name + '*'))
-    if not run_dirs:
-        raise ValueError("Run directory not found for run name: {}".format(run_name))
-    if len(run_dirs) > 1:
-        raise ValueError("Multiple run directories found for run name: {}".format(run_name))
-
-    run_dir = run_dirs[0]
-    if not run_dir.exists():
-        raise ValueError("Run directory does not exist: {}".format(run_dir))
-
-    # Use find_fastq_source_folder to locate FASTQ files (handles various folder structures)
-    fastq_folder = find_fastq_source_folder(run_dir)
-    if fastq_folder is None:
-        logger.warning("No FASTQ folder found for run %s", run_name)
+    if not exact_cov_csv_path or not exact_cov_csv_path.exists():
         return None
 
-    # Find R1 and R2 FASTQ files for this sample
-    r1_pattern = f"{sample}_*_R1_*.fastq*"
-    r2_pattern = f"{sample}_*_R2_*.fastq*"
-
-    r1_files = list(fastq_folder.glob(r1_pattern))
-    r2_files = list(fastq_folder.glob(r2_pattern))
-
-    if not r1_files or not r2_files:
-        logger.warning("FASTQ files not found for sample %s in %s (pattern: %s)",
-                      sample, fastq_folder, r1_pattern)
-        return None
-
-    if len(r1_files) > 1 or len(r2_files) > 1:
-        logger.warning("Multiple FASTQ files found for sample %s in %s, using first match",
-                      sample, fastq_folder)
-
-    fastq1_path = r1_files[0]
-    fastq2_path = r2_files[0]
-
-    # Calculate exact coverage using the exact_coverage utility with conseq_stitched CSV
     try:
-        with open(conseq_stitched_csv_path, 'r') as conseq_file:
-            coverage_dict, _contigs = calculate_exact_coverage(
-                fastq1_path,
-                fastq2_path,
-                conseq_file,
-                overlap_size
-            )
-    except NoContigsError:
-        logger.debug("No contigs found in conseq_stitched file %s for sample %s",
-                     conseq_stitched_csv_path, sample)
-        return None
+        # Count positions with zero coverage
+        zero_count = 0
+        with open(exact_cov_csv_path, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                coverage = int(row['exact_coverage'])
+                if coverage == 0:
+                    zero_count += 1
+
+        return zero_count
+
     except Exception as ex:
-        logger.error("Failed to calculate exact coverage for sample %s: %s", sample, ex)
+        logger.error("Failed to read exact coverage from %s: %s", exact_cov_csv_path, ex)
         return None
-
-    # Calculate maximum drop between adjacent positions across all consensus sequences
-    max_drop = 0
-    for contig_name, coverage_array in coverage_dict.items():
-        for i in range(len(coverage_array) - 1):
-            drop = abs(int(coverage_array[i]) - int(coverage_array[i + 1]))
-            if drop > max_drop:
-                max_drop = drop
-
-    return max_drop if max_drop > 0 else 0
 
 
 def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
@@ -501,25 +438,11 @@ def get_stats(info_file: Path) -> Optional[Row]:
     for subdir in directory.iterdir():
         if subdir.name.endswith("_info.csv"):
             sample = subdir.name[:-len("_info.csv")]
-            sample_info_path = subdir
             break
     else:
         logger.warning("Cannot determine sample name for run %r.", run_id)
         sample = None
-        sample_info_path = None
     o["sample"] = sample
-
-    # Read run_name from sample_info CSV if available
-    run_name = None
-    if sample_info_path and sample_info_path.exists():
-        try:
-            with open(sample_info_path, 'r') as info_csv:
-                info_reader = csv.DictReader(info_csv)
-                info_row = next(info_reader, None)
-                if info_row:
-                    run_name = info_row.get('run_name')
-        except Exception as ex:
-            logger.warning("Failed to read run_name from %s: %s", sample_info_path, ex)
 
     try:
         the_csv_path = find_file(directory, "genome_coverage.*[.]csv$")
@@ -557,6 +480,10 @@ def get_stats(info_file: Path) -> Optional[Row]:
         nuc_csv_path = None
         logger.error("%s", ex)
 
+    # Find exact_coverage.csv file
+    exact_cov_csv_candidate = directory / "exact_coverage.csv"
+    exact_cov_csv_path: Optional[Path] = exact_cov_csv_candidate if exact_cov_csv_candidate.exists() else None
+
     rc = read_coverage_rows
     ro = read_contigs_or_conseqs_rows
 
@@ -580,20 +507,9 @@ def get_stats(info_file: Path) -> Optional[Row]:
     if nuc_csv_path:
         o["soft_clips_count"] = count_soft_clips_from_nuc(nuc_csv_path)
 
-    # Calculate maximum exact coverage dip based on final consensus (conseq_stitched)
-    if sample and run_name and conseqs_stitched_csv_path:
-        o["maximum_ex_cov_dip"] = calculate_max_ex_cov_dip(
-            sample=sample,
-            run_name=run_name,
-            conseq_stitched_csv_path=conseqs_stitched_csv_path
-        )
-    else:
-        if not sample:
-            logger.warning("Cannot calculate maximum_ex_cov_dip: sample name not found")
-        if not run_name:
-            logger.warning("Cannot calculate maximum_ex_cov_dip: run_name not found in sample_info")
-        if not conseqs_stitched_csv_path:
-            logger.warning("Cannot calculate maximum_ex_cov_dip: conseq_stitched CSV not found")
+    # Calculate number of uncovered positions from exact_coverage.csv
+    if exact_cov_csv_path:
+        o["exact_uncovered"] = calculate_exact_uncovered_from_csv(exact_cov_csv_path)
 
     overlaps: list[Row] = []
     o["overlaps"] = overlaps

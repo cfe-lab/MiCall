@@ -22,7 +22,7 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
             avg_number_of_contigs = ('number_of_contigs', 'mean'),
             avg_contigs_size      = ('avg_contigs_size',  'mean'),
             avg_soft_clips_count  = ('soft_clips_count',  'mean'),
-            avg_maximum_ex_cov_dip = ('maximum_ex_cov_dip', 'mean'),
+            avg_exact_uncovered   = ('exact_uncovered',   'mean'),
             avg_run_time          = ('run_time',          'mean'),
             run_count             = ('app',               'count'),
         )

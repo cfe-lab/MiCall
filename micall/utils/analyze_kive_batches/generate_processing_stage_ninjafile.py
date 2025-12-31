@@ -15,15 +15,21 @@ def generate_builds(root: DirPath,
         dir = root / "runs" / str(run_id)
         stats_output = dir / "stats.json"
         stitcher_output = dir / "stitched"
+        exact_cov_output = dir / "exact_coverage.csv"
         input = f"{dir}.json"
         yield Build(outputs=[stitcher_output],
                     rule="stitch",
                     inputs=[input],
                     )
+        yield Build(outputs=[exact_cov_output],
+                    rule="exact_coverage",
+                    inputs=[input],
+                    implicit=[stitcher_output],
+                    )
         yield Build(outputs=[stats_output],
                     rule="stats",
                     inputs=[input],
-                    implicit=[stitcher_output],
+                    implicit=[stitcher_output, exact_cov_output],
                     )
 
 def generate_statements(root: DirPath,
@@ -51,6 +57,17 @@ def generate_statements(root: DirPath,
                    "--output", Deref("out"),
                ),
                description=Description.make("stitch contigs {}", Deref("in")),
+               )
+
+    yield Rule(name="exact_coverage",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "calculate-exact-coverage",
+                   "--info-file", Deref("in"),
+                   "--output", Deref("out"),
+               ),
+               description=Description.make("calculate exact coverage {}", Deref("in")),
                )
 
     yield Rule(name="combine_stats",
