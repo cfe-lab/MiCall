@@ -201,7 +201,6 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
 
             contigs[contig_name] = contig_seq.upper()
 
-    logger.debug(f"Loaded {len(contigs)} contigs")
     return contigs
 
 
