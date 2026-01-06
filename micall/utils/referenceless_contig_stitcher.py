@@ -71,6 +71,7 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
         kmer = contig_sequence[i:i + kmer_size]
         kmers.add(kmer)
 
+    cache[contig_sequence] = kmers
     return kmers
 
 
