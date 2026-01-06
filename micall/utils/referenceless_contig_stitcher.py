@@ -10,6 +10,7 @@ from typing import (
     TextIO,
     MutableMapping,
     Set,
+    AbstractSet,
 )
 
 from Bio import Seq, SeqIO
@@ -35,8 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 # Kmer size for filtering non-overlapping contigs
-# Can be mocked in tests (e.g., set to 1 to disable filtering)
-_KMER_SIZE = 50
+KMER_SIZE = 50
 
 
 def cache_kmers(contig_sequence: str) -> Set[str]:
@@ -54,7 +54,7 @@ def cache_kmers(contig_sequence: str) -> Set[str]:
         A set of all k-mers of size _KMER_SIZE found in the sequence.
         If the sequence is shorter than _KMER_SIZE, returns an empty set.
     """
-    kmer_size = _KMER_SIZE
+    kmer_size = KMER_SIZE
     if len(contig_sequence) < kmer_size:
         return set()
 
@@ -202,6 +202,7 @@ def get_overlap(
     left: ContigWithAligner,
     right: ContigWithAligner,
     get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
 ) -> Optional[Overlap]:
     """Return the best overlap placement between two contigs, if any.
 
@@ -222,10 +223,15 @@ def get_overlap(
     # Fast k-mer filter: if two contigs don't share any k-mers, they cannot overlap
     # Only apply the filter if both contigs are long enough (at least kmer_size)
     # This prevents false negatives when the overlap region is smaller than kmer_size
-    min_length_for_filter = _KMER_SIZE
+    min_length_for_filter = KMER_SIZE
     if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
-        left_kmers = cache_kmers(left.seq)
-        right_kmers = cache_kmers(right.seq)
+        # Use cached kmers if available, otherwise compute and cache
+        if left.seq not in kmers_cache:
+            kmers_cache[left.seq] = cache_kmers(left.seq)
+        if right.seq not in kmers_cache:
+            kmers_cache[right.seq] = cache_kmers(right.seq)
+        left_kmers = kmers_cache[left.seq]
+        right_kmers = kmers_cache[right.seq]
         # Note: cache_kmers returns empty set for sequences shorter than kmer_size
         # We only filter if both have kmers AND they don't share any
         if left_kmers and right_kmers and not (left_kmers & right_kmers):
@@ -281,6 +287,7 @@ def precheck_and_prepare_overlap(
     b: ContigWithAligner,
     minimum_base_score: Score,
     get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
 ) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, int, str, str, Overlap]]:
     """
     Run early-bound checks and prepare normalized overlap windows.
@@ -294,7 +301,7 @@ def precheck_and_prepare_overlap(
         return None
 
     # Identify best overlap placement.
-    overlap = get_overlap(a, b, get_overlap_cache)
+    overlap = get_overlap(a, b, get_overlap_cache, kmers_cache)
     if overlap is None:
         return None
 
@@ -658,6 +665,7 @@ def try_combine_contigs(
     a: ContigWithAligner,
     b: ContigWithAligner,
     get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[Tuple[ContigWithAligner, Score]]:
@@ -674,7 +682,7 @@ def try_combine_contigs(
         current_score, pool.min_acceptable_score
     )
 
-    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score, get_overlap_cache)
+    prepared = precheck_and_prepare_overlap(a, b, minimum_base_score, get_overlap_cache, kmers_cache)
     if prepared is None:
         return None
     left, right, shift, left_initial_overlap, right_initial_overlap, overlap = prepared
@@ -784,6 +792,7 @@ def extend_by_1(
     path: ContigsPath,
     candidate: ContigWithAligner,
     get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[ContigsPath]:
@@ -798,7 +807,7 @@ def extend_by_1(
 
     combination = try_combine_contigs(
         is_debug2, path.score, pool, path.whole, candidate,
-        get_overlap_cache, cutoffs_cache, align_cache
+        get_overlap_cache, kmers_cache, cutoffs_cache, align_cache
     )
     if combination is None:
         return None
@@ -821,6 +830,7 @@ def calc_extension(
     contigs: Sequence[ContigWithAligner],
     path: ContigsPath,
     get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
@@ -833,7 +843,7 @@ def calc_extension(
     for contig in contigs:
         new = extend_by_1(
             is_debug2, pool, path, contig,
-            get_overlap_cache, cutoffs_cache, align_cache
+            get_overlap_cache, kmers_cache, cutoffs_cache, align_cache
         )
         if new is not None:
             ret = pool.add(new) or ret
@@ -847,6 +857,7 @@ def calc_multiple_extensions(
     paths: Iterable[ContigsPath],
     contigs: Sequence[ContigWithAligner],
     get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
@@ -858,7 +869,7 @@ def calc_multiple_extensions(
     for path in paths:
         ret = calc_extension(
             is_debug2, pool, contigs, path,
-            get_overlap_cache, cutoffs_cache, align_cache,
+            get_overlap_cache, kmers_cache, cutoffs_cache, align_cache,
         ) or ret
     return ret
 
@@ -874,6 +885,7 @@ def calculate_all_paths(
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
     ctx = ReferencelessStitcherContext.get()
     get_overlap_cache = ctx.get_overlap_cache
+    kmers_cache = ctx.kmers_cache
     cutoffs_cache = ctx.cutoffs_cache
     align_cache = ctx.align_cache
 
@@ -892,7 +904,7 @@ def calculate_all_paths(
 
         if not calc_multiple_extensions(
             is_debug2, pool, pool.ring, contigs,
-            get_overlap_cache, cutoffs_cache, align_cache,
+            get_overlap_cache, kmers_cache, cutoffs_cache, align_cache,
         ):
             break
 
@@ -908,6 +920,7 @@ def try_combine_1(
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
     ctx = ReferencelessStitcherContext.get()
     get_overlap_cache = ctx.get_overlap_cache
+    kmers_cache = ctx.kmers_cache
     cutoffs_cache = ctx.cutoffs_cache
     align_cache = ctx.align_cache
 
@@ -924,6 +937,7 @@ def try_combine_1(
                 a=first,
                 b=second,
                 get_overlap_cache=get_overlap_cache,
+                kmers_cache=kmers_cache,
                 cutoffs_cache=cutoffs_cache,
                 align_cache=align_cache,
             )
