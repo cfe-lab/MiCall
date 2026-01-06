@@ -203,6 +203,20 @@ def compute_overlap_size(left_len: int, right_len: int, shift: int) -> int:
     return size
 
 
+def does_share_kmers(
+    kmers_cache: MutableMapping[str, AbstractSet[str]],
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+) -> bool:
+    """Return True if two contigs share any k-mers, False otherwise."""
+    left_kmers = get_kmers(kmers_cache, left.seq)
+    right_kmers = get_kmers(kmers_cache, right.seq)
+    # We only filter if both have kmers AND they don't share any
+    if left_kmers and right_kmers and not (left_kmers & right_kmers):
+        return False
+    return True
+
+
 def get_overlap(
     left: ContigWithAligner,
     right: ContigWithAligner,
@@ -230,11 +244,7 @@ def get_overlap(
     # This prevents false negatives when the overlap region is smaller than kmer_size
     min_length_for_filter = KMER_SIZE
     if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
-        left_kmers = get_kmers(kmers_cache, left.seq)
-        right_kmers = get_kmers(kmers_cache, right.seq)
-        # We only filter if both have kmers AND they don't share any
-        if left_kmers and right_kmers and not (left_kmers & right_kmers):
-            # No shared k-mers - so no significant overlap
+        if not does_share_kmers(kmers_cache, left, right):
             get_overlap_cache[key] = None
             return None
 
