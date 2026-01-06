@@ -31,11 +31,11 @@ from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 
-# Kmer size used for filtering unlikely overlaps
-KMER_SIZE = 50
-
 # Minimum number of matches to consider an overlap acceptable
 MIN_MATCHES = 99
+
+# Kmer size used for filtering unlikely overlaps
+KMER_SIZE = 50
 
 
 logger = logging.getLogger(__name__)
