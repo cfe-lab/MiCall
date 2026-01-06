@@ -9,7 +9,6 @@ from typing import (
     Sequence,
     TextIO,
     MutableMapping,
-    Set,
     AbstractSet,
 )
 
@@ -32,14 +31,17 @@ from micall.utils.referenceless_score import Score, SCORE_EPSILON, SCORE_NOTHING
 from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 
-logger = logging.getLogger(__name__)
-
-
 # Kmer size for filtering non-overlapping contigs
 KMER_SIZE = 50
 
+# Minimum number of matches to consider an overlap acceptable
+MIN_MATCHES = 99
 
-def cache_kmers(contig_sequence: str) -> Set[str]:
+
+logger = logging.getLogger(__name__)
+
+
+def cache_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str) -> AbstractSet[str]:
     """
     Extract all k-mers from a contig sequence.
 
@@ -48,12 +50,18 @@ def cache_kmers(contig_sequence: str) -> Set[str]:
     they are considered to not overlap.
 
     Args:
+        cache: A mutable mapping used to cache previously computed k-mer sets.
         contig_sequence: The DNA sequence of the contig
 
     Returns:
         A set of all k-mers of size _KMER_SIZE found in the sequence.
         If the sequence is shorter than _KMER_SIZE, returns an empty set.
     """
+
+    existing = cache.get(contig_sequence)
+    if existing is not None:
+        return existing
+
     kmer_size = KMER_SIZE
     if len(contig_sequence) < kmer_size:
         return set()
@@ -121,9 +129,6 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     sign = 1 if base >= 0 else -1
     magnitude = 999 + (999 * base) ** 2
     return sign * magnitude
-
-
-MIN_MATCHES = 99
 
 
 @cache
@@ -225,17 +230,11 @@ def get_overlap(
     # This prevents false negatives when the overlap region is smaller than kmer_size
     min_length_for_filter = KMER_SIZE
     if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
-        # Use cached kmers if available, otherwise compute and cache
-        if left.seq not in kmers_cache:
-            kmers_cache[left.seq] = cache_kmers(left.seq)
-        if right.seq not in kmers_cache:
-            kmers_cache[right.seq] = cache_kmers(right.seq)
-        left_kmers = kmers_cache[left.seq]
-        right_kmers = kmers_cache[right.seq]
-        # Note: cache_kmers returns empty set for sequences shorter than kmer_size
+        left_kmers = cache_kmers(kmers_cache, left.seq)
+        right_kmers = cache_kmers(kmers_cache, right.seq)
         # We only filter if both have kmers AND they don't share any
         if left_kmers and right_kmers and not (left_kmers & right_kmers):
-            # No shared k-mers, so no overlap possible
+            # No shared k-mers - so no significant overlap
             get_overlap_cache[key] = None
             return None
 
