@@ -9,6 +9,7 @@ from typing import (
     Sequence,
     TextIO,
     MutableMapping,
+    Set,
 )
 
 from Bio import Seq, SeqIO
@@ -31,6 +32,38 @@ from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 
 logger = logging.getLogger(__name__)
+
+
+# Kmer size for filtering non-overlapping contigs
+# Can be mocked in tests (e.g., set to 1 to disable filtering)
+_KMER_SIZE = 50
+
+
+def cache_kmers(contig_sequence: str) -> Set[str]:
+    """
+    Extract all k-mers from a contig sequence.
+
+    This is used as a fast filter to quickly reject contig pairs that
+    cannot possibly overlap. If two contigs don't share any k-mers,
+    they are considered to not overlap.
+
+    Args:
+        contig_sequence: The DNA sequence of the contig
+
+    Returns:
+        A set of all k-mers of size _KMER_SIZE found in the sequence.
+        If the sequence is shorter than _KMER_SIZE, returns an empty set.
+    """
+    kmer_size = _KMER_SIZE
+    if len(contig_sequence) < kmer_size:
+        return set()
+
+    kmers = set()
+    for i in range(len(contig_sequence) - kmer_size + 1):
+        kmer = contig_sequence[i:i + kmer_size]
+        kmers.add(kmer)
+
+    return kmers
 
 
 @cache
@@ -185,6 +218,20 @@ def get_overlap(
     if existing != -1:
         ret: Optional[Overlap] = existing # type: ignore[assignment]
         return ret
+
+    # Fast k-mer filter: if two contigs don't share any k-mers, they cannot overlap
+    # Only apply the filter if both contigs are long enough (at least kmer_size)
+    # This prevents false negatives when the overlap region is smaller than kmer_size
+    min_length_for_filter = _KMER_SIZE
+    if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
+        left_kmers = cache_kmers(left.seq)
+        right_kmers = cache_kmers(right.seq)
+        # Note: cache_kmers returns empty set for sequences shorter than kmer_size
+        # We only filter if both have kmers AND they don't share any
+        if left_kmers and right_kmers and not (left_kmers & right_kmers):
+            # No shared k-mers, so no overlap possible
+            get_overlap_cache[key] = None
+            return None
 
     shift, _ = find_maximum_overlap(left, right)
     if shift == 0:
