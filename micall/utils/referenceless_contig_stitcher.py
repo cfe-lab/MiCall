@@ -41,7 +41,7 @@ MIN_MATCHES = 99
 logger = logging.getLogger(__name__)
 
 
-def cache_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str) -> AbstractSet[str]:
+def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str) -> AbstractSet[str]:
     """
     Extract all k-mers from a contig sequence.
 
@@ -230,8 +230,8 @@ def get_overlap(
     # This prevents false negatives when the overlap region is smaller than kmer_size
     min_length_for_filter = KMER_SIZE
     if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
-        left_kmers = cache_kmers(kmers_cache, left.seq)
-        right_kmers = cache_kmers(kmers_cache, right.seq)
+        left_kmers = get_kmers(kmers_cache, left.seq)
+        right_kmers = get_kmers(kmers_cache, right.seq)
         # We only filter if both have kmers AND they don't share any
         if left_kmers and right_kmers and not (left_kmers & right_kmers):
             # No shared k-mers - so no significant overlap
