@@ -212,7 +212,7 @@ def does_share_kmers(
     left_kmers = get_kmers(kmers_cache, left.seq)
     right_kmers = get_kmers(kmers_cache, right.seq)
     # We only filter if both have kmers AND they don't share any
-    if left_kmers and right_kmers and not left_kmers.isdisjoint(right_kmers):
+    if left_kmers and right_kmers and left_kmers.isdisjoint(right_kmers):
         return False
     return True
 
