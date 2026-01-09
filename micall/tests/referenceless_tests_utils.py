@@ -29,6 +29,11 @@ def disable_kmer_filter(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 1)
 
 
+@pytest.fixture(autouse=True)
+def disable_min_overlap_size(monkeypatch):
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_OVERLAP_SIZE", 0)
+
+
 @pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)

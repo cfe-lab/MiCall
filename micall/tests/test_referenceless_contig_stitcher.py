@@ -7,12 +7,13 @@ from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
 
  # Load autouse fixtures
-from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check, force_failing_map_overlap, disable_kmer_filter
+from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check, force_failing_map_overlap, disable_kmer_filter, disable_min_overlap_size
 
 # prevent linter warnings
 assert disable_acceptable_prob_check is not None
 assert force_failing_map_overlap is not None
 assert disable_kmer_filter is not None
+assert disable_min_overlap_size is not None
 
 TTT = 40 * 'T'
 AAA = 40 * 'A'
