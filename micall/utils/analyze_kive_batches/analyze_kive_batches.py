@@ -110,12 +110,16 @@ def cli_parser() -> argparse.ArgumentParser:
                      help="Input CSV file with the run stats.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
+    sub.add_argument("--properties", type=Path, required=False,
+                     help="Properties TOML file to determine app ordering.")
 
     sub = mode_parsers.add_parser("aggregate-runs-overlaps")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input CSV file with the run overlaps.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
+    sub.add_argument("--properties", type=Path, required=False,
+                     help="Properties TOML file to determine app ordering.")
 
     sub = mode_parsers.add_parser("make-properties")
     sub.add_argument("--input", type=Path, required=True,
@@ -173,9 +177,9 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     elif args.subcommand == 'extract-run-ids':
         extract_run_ids(input=args.input, output=args.output)
     elif args.subcommand == 'aggregate-runs-stats':
-        aggregate_runs_stats(input=args.input, output=args.output)
+        aggregate_runs_stats(input=args.input, output=args.output, properties=args.properties)
     elif args.subcommand == 'aggregate-runs-overlaps':
-        aggregate_runs_overlaps(input=args.input, output=args.output)
+        aggregate_runs_overlaps(input=args.input, output=args.output, properties=args.properties)
     elif args.subcommand == 'make-properties':
         make_properties(input=args.input, output=args.output)
     elif args.subcommand == 'join-tables':
