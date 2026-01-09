@@ -22,6 +22,7 @@ from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
@@ -426,9 +427,13 @@ class Sample:
                                   self.merged_contigs_fasta],
                           output=self.combined_contigs_fasta)
 
+        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
+             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
+            referenceless_contig_stitcher(combined_contigs_fasta, stitched_contigs_fasta)
+
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            fasta_to_csv(Path(self.combined_contigs_fasta),
+            fasta_to_csv(Path(self.stitched_contigs_fasta),
                          unstitched_contigs_csv,
                          blast_csv=blast_csv,
                          )
