@@ -101,6 +101,7 @@ def generate_statements(root: DirPath,
                    "aggregate-runs-stats",
                    "--input", Deref("in"),
                    "--output", Deref("out"),
+                   "--properties", properties,
                ),
                description=Description.make("aggregate stats"),
                )
@@ -112,6 +113,7 @@ def generate_statements(root: DirPath,
                    "aggregate-runs-overlaps",
                    "--input", Deref("in"),
                    "--output", Deref("out"),
+                   "--properties", properties,
                ),
                description=Description.make("aggregate overlaps"),
                )
@@ -166,11 +168,13 @@ def generate_statements(root: DirPath,
     yield Build(rule="aggregate_stats",
                 outputs=[aggregated_stats],
                 inputs=[stats],
+                implicit=[properties],
                 )
 
     yield Build(rule="aggregate_overlaps",
                 outputs=[aggregated_overlaps],
                 inputs=[overlaps],
+                implicit=[properties],
                 )
 
     yield Build(rule="make_properties",

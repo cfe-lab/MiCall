@@ -1,9 +1,11 @@
 
 from pathlib import Path
 import pandas as pd
+import tomllib
+from typing import Optional
 
 
-def aggregate_runs_stats(input: Path, output: Path) -> None:
+def aggregate_runs_stats(input: Path, output: Path, properties: Optional[Path] = None) -> None:
     # 1. Read the CSV
     df = pd.read_csv(input)
 
@@ -29,5 +31,14 @@ def aggregate_runs_stats(input: Path, output: Path) -> None:
         .reset_index()
     )
 
-    # 3. Write out to CSV
+    # 3. Sort by properties.toml order if provided
+    if properties is not None:
+        with properties.open("rb") as reader:
+            props_obj = tomllib.load(reader)
+        app_order = list(props_obj.keys())
+        # Create a categorical type with the order from properties.toml
+        grouped['app'] = pd.Categorical(grouped['app'], categories=app_order, ordered=True)
+        grouped = grouped.sort_values('app')
+
+    # 4. Write out to CSV
     grouped.to_csv(output, index=False)
