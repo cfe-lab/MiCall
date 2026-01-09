@@ -256,6 +256,12 @@ def get_overlap(
         return None
 
     size = compute_overlap_size(len(left.seq), len(right.seq), shift)
+
+    # Filter out overlaps that are too short
+    if size < MIN_OVERLAP_SIZE:
+        get_overlap_cache[key] = None
+        return None
+
     ret = Overlap(shift=shift, size=size)
     get_overlap_cache[key] = ret
     return ret
