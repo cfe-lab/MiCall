@@ -10,6 +10,7 @@ from typing import (
     TextIO,
     MutableMapping,
     AbstractSet,
+    Literal,
 )
 
 from Bio import Seq, SeqIO
@@ -235,9 +236,9 @@ def get_overlap(
         return None
 
     key = (left.id, right.id)
-    existing = get_overlap_cache.get(key, -1)
+    existing: Optional[Overlap] | Literal[-1] = get_overlap_cache.get(key, -1)
     if existing != -1:
-        ret: Optional[Overlap] = existing # type: ignore[assignment]
+        ret: Optional[Overlap] = existing
         return ret
 
     # Fast k-mer filter: if two contigs don't share any k-mers, they cannot overlap
@@ -543,9 +544,9 @@ def find_overlap_cutoffs(
     # `minimum_acceptable` are always valid for a higher one.
     # The `minimum_acceptable` is monotonic.
     key = (left.id, right.id)
-    existing = cutoffs_cache.get(key, -1)
+    existing: Optional[Tuple[int, int]] | Literal[-1] = cutoffs_cache.get(key, -1)
     if existing != -1:
-        ret: CutoffsCacheResult = existing  # type: ignore[assignment]
+        ret: CutoffsCacheResult = existing
         return ret
 
     value = compute_overlap_cutoffs(
