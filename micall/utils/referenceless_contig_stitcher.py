@@ -37,7 +37,7 @@ MIN_OVERLAP_SIZE = 99
 KMER_SIZE = 50
 
 # Minimum number of matches to consider an overlap acceptable
-MIN_MATCHES = 99
+MIN_MATCHES = 60
 
 
 logger = logging.getLogger(__name__)
