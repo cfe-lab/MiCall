@@ -64,13 +64,12 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
     if existing is not None:
         return existing
 
-    kmer_size = KMER_SIZE
-    if len(contig_sequence) < kmer_size:
+    if len(contig_sequence) < KMER_SIZE:
         return set()
 
     kmers = set()
-    for i in range(len(contig_sequence) - kmer_size + 1):
-        kmer = contig_sequence[i:i + kmer_size]
+    for i in range(len(contig_sequence) - KMER_SIZE + 1):
+        kmer = contig_sequence[i:i + KMER_SIZE]
         kmers.add(kmer)
 
     cache[contig_sequence] = kmers
