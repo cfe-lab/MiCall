@@ -13,15 +13,22 @@ class NoContigsInCSV(ValueError):
     pass
 
 
+COLUMNS = ['contig', 'sequence']
+
+
 def csv_to_fasta(contigs_csv: TextIO, contigs_fasta: Path) -> None:
     reader = csv.DictReader(contigs_csv)
-    if reader.fieldnames is None or \
-       'contig' not in reader.fieldnames:
+    seqcolumns = [col for col in COLUMNS if col in (reader.fieldnames or [])]
+    if len(seqcolumns) == 0:
         raise NoContigsInCSV("Input CSV does not contain contigs.")
+    if len(seqcolumns) > 1:
+        raise NoContigsInCSV("Input CSV contains multiple possible contig columns.")
+
+    seqcolumn = seqcolumns[0]
 
     def records() -> Iterator[SeqRecord]:
         for i, row in enumerate(reader):
-            seq = row['contig']
+            seq = row[seqcolumn]
             name = str(i + 1)
             yield SeqRecord(Seq.Seq(seq),
                             description='',
