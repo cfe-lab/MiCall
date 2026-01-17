@@ -1,5 +1,5 @@
 import typing
-from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence, Union
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -418,6 +418,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     discarded: List[int] = []
     unknown: List[int] = []
     anomaly: List[int] = []
+    anomaly_data_map: Dict[int, Union[events.ZeroHits, events.StrandConflict]] = {}
     unaligned_map: Dict[int, List[CigarHit]] = {}
     overlaps_list: List[int] = []
     overlap_leftparent_map: Dict[int, int] = {}
@@ -583,9 +584,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             record_alive(event.contig)
         elif isinstance(event, events.ZeroHits):
             record_bad_contig(event.contig, anomaly)
+            anomaly_data_map[event.contig.id] = event
             record_alive(event.contig)
         elif isinstance(event, events.StrandConflict):
             record_bad_contig(event.contig, anomaly)
+            anomaly_data_map[event.contig.id] = event
             record_alive(event.contig)
         elif isinstance(event, events.ReverseComplement):
             record_contig(event.result, [event.contig])
@@ -1009,6 +1012,64 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
             yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{name}", color=colour)
 
+    def get_anomaly_tracks(part: GenotypedContig, hits: Sequence[CigarHit], name: str) -> Iterable[Track]:
+        """Generate tracks for anomaly contigs with alignment hits, showing mapped (grey) and unmapped (yellow) regions."""
+        # Calculate the span of all hits
+        min_r_st = min(hit.r_st for hit in hits)
+        max_r_ei = max(hit.r_ei for hit in hits)
+
+        # Calculate the aligned region on reference (all hits)
+        # And the full region including unmapped parts
+        min_q_st = min(hit.q_st for hit in hits)
+        max_q_ei = max(hit.q_ei for hit in hits)
+
+        # Full contig region (including unmapped parts at start and end)
+        f_r_st = min_r_st - min_q_st
+        f_r_ei = max_r_ei + (len(part.seq) - 1 - max_q_ei)
+
+        # Aligned region
+        a_r_st = min_r_st
+        a_r_ei = max_r_ei
+
+        # Yellow track for unmapped region at start
+        if a_r_st > f_r_st:
+            yield Track(f_r_st + position_offset, a_r_st + position_offset, color="yellow")
+
+        # Yellow track for unmapped region at end
+        if f_r_ei > a_r_ei:
+            yield Track(a_r_ei + position_offset, f_r_ei + position_offset, color="yellow")
+
+        # Grey track for the aligned/mapped region
+        yield Track(a_r_st + position_offset, a_r_ei + position_offset, label=f"{name}", color="lightgrey")
+
+    def get_anomaly_arrows(hits: Sequence[CigarHit], strands: Sequence[typing.Literal["forward", "reverse"]],
+                          name: str) -> Iterable[Arrow]:
+        """Generate arrows for anomaly contigs showing alignment hits with strand information."""
+        arrows = []
+
+        # Group hits by strand to assign elevations
+        forward_indices = [i for i, strand in enumerate(strands) if strand == "forward"]
+        reverse_indices = [i for i, strand in enumerate(strands) if strand == "reverse"]
+
+        # Create arrows for forward strand hits (elevation = 0)
+        for idx_pos, i in enumerate(forward_indices):
+            hit = hits[i]
+            r_st = hit.r_st + position_offset
+            r_ei = hit.r_ei + position_offset
+            label = name if idx_pos == 0 else None
+            arrows.append(Arrow(r_st, r_ei, h=20, elevation=0, label=label))
+
+        # Create arrows for reverse strand hits (elevation = 1 for separation)
+        for idx_pos, i in enumerate(reverse_indices):
+            hit = hits[i]
+            r_st = hit.r_st + position_offset
+            r_ei = hit.r_ei + position_offset
+            label = name if idx_pos == 0 and not forward_indices else None
+            # Reverse the arrow direction by swapping start/end
+            arrows.append(Arrow(r_ei, r_st, h=20, elevation=1, label=label))
+
+        return arrows
+
     def get_arrows(parts: Iterable[GenotypedContig], labels: bool) -> Iterable[Arrow]:
         for part in parts:
             name = name_map[part.id] if labels else None
@@ -1223,7 +1284,27 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 parts = [contig_map[name] for name in parts_ids]
                 parts = [part for part in parts if part.group_ref == group_ref]
                 for part in parts:
-                    yield Multitrack(list(get_tracks([part])))
+                    # Check if we have alignment data to display
+                    has_alignment_data = False
+                    if part.id in anomaly_data_map:
+                        anomaly_event = anomaly_data_map[part.id]
+                        if isinstance(anomaly_event, events.StrandConflict):
+                            has_alignment_data = True
+                            hits = anomaly_event.hits
+                            strands = anomaly_event.strands
+                            name = name_map.get(part.id, "")
+
+                            # Generate arrows first (displayed on top)
+                            arrows = get_anomaly_arrows(hits, strands, name)
+                            if arrows:
+                                yield ArrowGroup(arrows)
+
+                            # Generate tracks with proper coloring (grey for mapped, yellow for unmapped)
+                            yield Multitrack(list(get_anomaly_tracks(part, hits, name)))
+
+                    # For anomalies without alignment data, display using default tracks
+                    if not has_alignment_data:
+                        yield Multitrack(list(get_tracks([part])))
 
         anom = list(get_group_anomalies(group_ref))
         if anom:
