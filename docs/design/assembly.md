@@ -10,7 +10,7 @@ The best way to see the details is to change the [`iva` command] to write its
 details to a log file like this:
 
 ```python
-    with open(os.path.join(tmp_dir, 'iva.log'), 'w') as log_file:
+with open(os.path.join(tmp_dir, 'iva.log'), 'w') as log_file:
     run([IVA, '-vv', '--fr', joined_path, '-t', '2', iva_out_path],
         check=True,
         stdout=log_file,
