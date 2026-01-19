@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="970.0" height="83.6" viewBox="0.0 -83.6 970.0 83.6">
+     width="970.0" height="113.6" viewBox="0.0 -113.6 970.0 113.6">
 <defs>
 </defs>
-<g transform="translate(0 -68.6)">
+<g transform="translate(0 -98.6)">
 <g transform="translate(0.0 0)">
 <rect x="45.30593180756655" y="-10" width="906.118636151331" height="10" fill="red" stroke="red" />
 </g>
 </g>
-<g transform="translate(0.0 -70.1)">
+<g transform="translate(0.0 -100.1)">
 <rect x="498.323295630092" y="11.5" width="0.0" height="-11.5" fill="transparent" stroke="transparent" />
 <g transform="translate(498.323295630092 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">testref</text>
 </g>
 </g>
-<g transform="translate(0.0 -60.099999999999994)">
+<g transform="translate(0.0 -90.1)">
 <path d="M22.652965903783276,-0.0 L22.652965903783276,-0.0" stroke="black" />
 <path d="M22.652965903783276,-0.0 L22.652965903783276,-3.5 L22.652965903783276,3.5 L22.652965903783276,-0.0" fill="black" />
 </g>
-<g transform="translate(0 -49.99999999999999)">
+<g transform="translate(0 -80.0)">
 <g transform="translate(0.0 0)">
 <rect x="22.652965903783276" y="-0.1" width="18.57543204110229" height="0.1" fill="green" stroke="green" />
 </g>
@@ -98,20 +98,32 @@
 <rect x="951.4245679588976" y="-0.1" width="18.57543204110243" height="0.1" fill="green" stroke="green" />
 </g>
 </g>
-<g transform="translate(0.0 -39.99999999999999)">
+<g transform="translate(0.0 -70.0)">
 <path d="M22.652965903783276,-0.0 L22.652965903783276,-0.0" stroke="black" />
 <path d="M22.652965903783276,-0.0 L22.652965903783276,-3.5 L22.652965903783276,3.5 L22.652965903783276,-0.0" fill="black" />
 </g>
-<g transform="translate(0.0 -29.999999999999993)">
+<g transform="translate(0.0 -59.99999999999999)">
 <rect x="22.652965903783276" y="0" width="0.0" height="0" fill="lightgrey" stroke="lightgrey" />
 <g transform="translate(22.652965903783276 0)">
 <text x="0" y="0" font-size="12" font-family="monospace" text-anchor="left">anomaly:</text>
 </g>
 </g>
+<g transform="translate(0 -30.0)">
+<g transform="translate(0.0 0)">
+<path d="M138.53760545211136,-10.0 L140.7675411429213,-10.0" stroke="black" />
+<circle cx="143.1525732975163" cy="-10.0" r="10.0" fill="ivory" stroke="black" />
+<path d="M147.7675411429213,-10.0 L140.7675411429213,-13.5 L140.7675411429213,-6.5 L147.7675411429213,-10.0" fill="black" />
+<text x="143.1525732975163" y="-10.0" font-size="11.0" text-anchor="middle" dy="0.35em">1</text>
+</g>
+<g transform="translate(0.0 0)">
+<path d="M250.32238215192055,-20.0 L238.76927909665613,-20.0" stroke="black" />
+<path d="M231.76927909665613,-20.0 L238.76927909665613,-23.5 L238.76927909665613,-16.5 L231.76927909665613,-20.0" fill="black" />
+</g>
+</g>
 <g transform="translate(0 -10.0)">
 <g transform="translate(0.0 0)">
-<rect x="45.30593180756655" y="-10" width="27.969502093363445" height="10" fill="yellow" stroke="yellow" />
-<g transform="translate(59.290682854248274 0)">
+<rect x="138.53760545211136" y="-10" width="111.78477669980919" height="10" fill="lightgrey" stroke="lightgrey" />
+<g transform="translate(194.42999380201596 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">1</text>
 </g>
 </g>
