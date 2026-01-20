@@ -88,6 +88,7 @@ EXECUTABLES = [
     "micall/tcr/igblast.py",
     "micall/utils/find_maximum_overlap.py",
     "micall/utils/csv_to_fasta.py",
+    "micall/utils/exact_coverage.py",
     "micall/utils/cat.py",
     "micall/utils/fasta_to_fastq.py",
     "micall/utils/append_primers.py",

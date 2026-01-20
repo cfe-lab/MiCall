@@ -20,6 +20,7 @@ from .extract_run_ids import extract_run_ids
 from .aggregate_runs_stats import aggregate_runs_stats
 from .aggregate_runs_overlaps import aggregate_runs_overlaps
 from .stitch_contigs import stitch_contigs
+from .calculate_exact_coverage_file import calculate_exact_coverage_file
 from .make_properties import make_properties
 from .join_tables import join_tables
 from .diff_samples_of_two_apps import diff_samples_of_two_apps
@@ -98,17 +99,27 @@ def cli_parser() -> argparse.ArgumentParser:
     sub.add_argument("--output", type=Path, required=True,
                      help="Output file.")
 
+    sub = mode_parsers.add_parser("calculate-exact-coverage")
+    sub.add_argument("--info-file", type=Path, required=True,
+                     help="Input JSON file with the run info.")
+    sub.add_argument("--output", type=Path, required=True,
+                     help="Output CSV file with exact coverage data.")
+
     sub = mode_parsers.add_parser("aggregate-runs-stats")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input CSV file with the run stats.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
+    sub.add_argument("--properties", type=Path, required=False,
+                     help="Properties TOML file to determine app ordering.")
 
     sub = mode_parsers.add_parser("aggregate-runs-overlaps")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input CSV file with the run overlaps.")
     sub.add_argument("--output", type=Path, required=True,
                      help="Output stats file.")
+    sub.add_argument("--properties", type=Path, required=False,
+                     help="Properties TOML file to determine app ordering.")
 
     sub = mode_parsers.add_parser("make-properties")
     sub.add_argument("--input", type=Path, required=True,
@@ -161,12 +172,14 @@ def main_typed(subcommand: str, args: argparse.Namespace) -> None:
         make_stats(input=args.input, output=args.output)
     elif args.subcommand == 'stitch-contigs':
         stitch_contigs(info_file=args.info_file, output=args.output)
+    elif args.subcommand == 'calculate-exact-coverage':
+        calculate_exact_coverage_file(info_file=args.info_file, output=args.output)
     elif args.subcommand == 'extract-run-ids':
         extract_run_ids(input=args.input, output=args.output)
     elif args.subcommand == 'aggregate-runs-stats':
-        aggregate_runs_stats(input=args.input, output=args.output)
+        aggregate_runs_stats(input=args.input, output=args.output, properties=args.properties)
     elif args.subcommand == 'aggregate-runs-overlaps':
-        aggregate_runs_overlaps(input=args.input, output=args.output)
+        aggregate_runs_overlaps(input=args.input, output=args.output, properties=args.properties)
     elif args.subcommand == 'make-properties':
         make_properties(input=args.input, output=args.output)
     elif args.subcommand == 'join-tables':

@@ -190,7 +190,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
         return
 
     if len(set(strands)) > 1:
-        log(events.StrandConflict(contig))
+        log(events.StrandConflict(contig, hits, strands))
         yield contig
         return
 

@@ -26,13 +26,13 @@ dependencies = [
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
     "sortedcontainers==2.4.0",
-    "numpy==2.3.5",
+    "numpy==2.4.0",
     "scipy==1.16.3",
-    "matplotlib==3.10.7",
+    "matplotlib==3.10.8",
     "cutadapt==5.2",
     "python-Levenshtein==0.27.1",
     "PyYAML==6.0.2",
-    "reportlab==4.4.5",
+    "reportlab==4.4.7",
     "pysam==0.23.3",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy==2.30",
@@ -51,8 +51,8 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest==9.0.1",
-    "coverage==7.12.0",
+    "pytest==9.0.2",
+    "coverage==7.13.0",
     "pandas==2.3.3",
     "seaborn==0.13.2",
     "ete3==3.1.3",
@@ -66,15 +66,15 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.14.6",
-    "mypy==1.18.2",
+    "ruff==0.14.10",
+    "mypy==1.19.1",
     "mypy-extensions==1.1.0",
     "gprof2dot==2025.4.14",
     "codecov==2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
-    "pandas-stubs==2.3.2.250926",
+    "pandas-stubs==2.3.3.251219",
     "types-requests==2.32.4.20250913",
-    "uv==0.9.12",
+    "uv==0.9.18",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script

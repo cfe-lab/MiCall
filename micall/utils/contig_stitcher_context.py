@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional
+from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional, AbstractSet
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
@@ -79,6 +79,8 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         # overlap detection cache: key=(left_id,right_id) -> Optional[Overlap]
         # Overlap type is imported in algorithm module; use Any here to avoid circular import
         self.get_overlap_cache: Dict[Tuple[ContigId, ContigId], Optional[Overlap]] = {}
+        # kmers cache: key=sequence -> set of kmers
+        self.kmers_cache: Dict[str, AbstractSet[str]] = {}
         # alignment cache for overlap windows: key=(left_overlap,right_overlap) -> (aligned_left, aligned_right)
         self.align_cache: Dict[Tuple[str, str], Tuple[str, str]] = {}
         # cutoffs cache: key=(left_id,right_id) -> Optional[(left_cutoff,right_cutoff)]

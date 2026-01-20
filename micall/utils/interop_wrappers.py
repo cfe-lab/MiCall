@@ -1,7 +1,7 @@
 
 
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, TextIO
 
 from miseqinteropreader.interop_reader import InterOpReader
 from miseqinteropreader.models import (
@@ -10,6 +10,7 @@ from miseqinteropreader.models import (
     TileMetricRecord,
     ReadLengths4,
 )
+from miseqinteropreader.error_metrics_parser import write_phix_csv
 
 
 def summarize_quality_records(
@@ -104,3 +105,36 @@ def summarize_tiles(tile_metrics_path: Path, summary: dict) -> None:
     reader = InterOpReader(run_path)
     tile_records = reader.read_tile_records()
     summarize_tile_records(tile_records, summary)
+
+
+def summarize_error_metrics(
+    error_metrics_path: Path,
+    quality_csv_file: TextIO,
+    summary: dict,
+    read_lengths: ReadLengths4
+) -> None:
+    """Summarize error metrics from InterOp files and write quality CSV.
+
+    Modifies summary dict in place with error_rate_fwd and error_rate_rev values.
+    Also writes the quality data to the provided file handle.
+
+    Args:
+        error_metrics_path: Path to error metrics file (ErrorMetricsOut.bin)
+        quality_csv_file: Open file handle to write quality CSV data
+        summary: Dictionary to populate with error rate values
+        read_lengths: ReadLengths4 specifying read structure
+    """
+    # Extract the run folder path (parent of InterOp folder)
+    interop_path = error_metrics_path.parent
+    run_path = interop_path.parent
+
+    reader = InterOpReader(run_path)
+    records = reader.read_error_records()
+    phix_summary = write_phix_csv(quality_csv_file, records, read_lengths)
+
+    # Store error rates in the summary dictionary
+    if hasattr(phix_summary, 'error_rate_forward'):
+        summary['error_rate_fwd'] = phix_summary.error_rate_forward
+    if hasattr(phix_summary, 'error_rate_reverse'):
+        summary['error_rate_rev'] = phix_summary.error_rate_reverse
+

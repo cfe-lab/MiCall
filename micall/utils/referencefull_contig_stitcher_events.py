@@ -114,6 +114,8 @@ class ZeroHits:
 @dataclass(frozen=True)
 class StrandConflict:
     contig: GenotypedContig
+    hits: Sequence[CigarHit]
+    strands: Sequence[Literal["forward", "reverse"]]
 
     def __str__(self) -> str:
         return (

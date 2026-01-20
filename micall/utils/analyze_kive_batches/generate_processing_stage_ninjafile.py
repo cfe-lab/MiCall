@@ -15,15 +15,21 @@ def generate_builds(root: DirPath,
         dir = root / "runs" / str(run_id)
         stats_output = dir / "stats.json"
         stitcher_output = dir / "stitched"
+        exact_cov_output = dir / "exact_coverage.csv"
         input = f"{dir}.json"
         yield Build(outputs=[stitcher_output],
                     rule="stitch",
                     inputs=[input],
                     )
+        yield Build(outputs=[exact_cov_output],
+                    rule="exact_coverage",
+                    inputs=[input],
+                    implicit=[stitcher_output],
+                    )
         yield Build(outputs=[stats_output],
                     rule="stats",
                     inputs=[input],
-                    implicit=[stitcher_output],
+                    implicit=[stitcher_output, exact_cov_output],
                     )
 
 def generate_statements(root: DirPath,
@@ -51,6 +57,17 @@ def generate_statements(root: DirPath,
                    "--output", Deref("out"),
                ),
                description=Description.make("stitch contigs {}", Deref("in")),
+               )
+
+    yield Rule(name="exact_coverage",
+               command=Command.make(
+                   "micall",
+                   "analyze_kive_batches",
+                   "calculate-exact-coverage",
+                   "--info-file", Deref("in"),
+                   "--output", Deref("out"),
+               ),
+               description=Description.make("calculate exact coverage {}", Deref("in")),
                )
 
     yield Rule(name="combine_stats",
@@ -84,6 +101,7 @@ def generate_statements(root: DirPath,
                    "aggregate-runs-stats",
                    "--input", Deref("in"),
                    "--output", Deref("out"),
+                   "--properties", properties,
                ),
                description=Description.make("aggregate stats"),
                )
@@ -95,6 +113,7 @@ def generate_statements(root: DirPath,
                    "aggregate-runs-overlaps",
                    "--input", Deref("in"),
                    "--output", Deref("out"),
+                   "--properties", properties,
                ),
                description=Description.make("aggregate overlaps"),
                )
@@ -149,11 +168,13 @@ def generate_statements(root: DirPath,
     yield Build(rule="aggregate_stats",
                 outputs=[aggregated_stats],
                 inputs=[stats],
+                implicit=[properties],
                 )
 
     yield Build(rule="aggregate_overlaps",
                 outputs=[aggregated_overlaps],
                 inputs=[overlaps],
+                implicit=[properties],
                 )
 
     yield Build(rule="make_properties",
@@ -163,17 +184,17 @@ def generate_statements(root: DirPath,
 
     yield Build(rule="join_tables",
                 outputs=[join_file],
-                inputs=[aggregated_stats, aggregated_overlaps, properties_file],
+                inputs=[properties_file, aggregated_stats, aggregated_overlaps],
                 )
 
     yield Build(rule="join_tables",
                 outputs=[stats_join_file],
-                inputs=[stats, properties_file],
+                inputs=[properties_file, stats],
                 )
 
     yield Build(rule="join_tables",
                 outputs=[overlaps_join_file],
-                inputs=[overlaps, properties_file],
+                inputs=[properties_file, overlaps],
                 )
 
     yield from builds

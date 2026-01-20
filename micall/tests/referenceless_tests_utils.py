@@ -23,6 +23,12 @@ def load_projects():
 
 
 
+@pytest.fixture(autouse=True)
+def disable_kmer_filter(monkeypatch):
+    """Set KMER_SIZE=1 to disable kmer filtering for all tests."""
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 1)
+
+
 @pytest.fixture
 def disable_acceptable_prob_check(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)
