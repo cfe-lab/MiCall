@@ -769,12 +769,11 @@ def try_combine_contigs(
 
             return None
 
-        if is_debug2:
-            log(events.Covered(left.unique_name, right.unique_name))
-
         assert number_of_matches <= overlap.size
         if number_of_matches == overlap.size:
             # Perfect coverage: no need to merge, just keep the bigger contig.
+            if is_debug2:
+                log(events.Covered(left.unique_name, right.unique_name))
             assert bigger is not None
             return (bigger, SCORE_EPSILON)
         else:

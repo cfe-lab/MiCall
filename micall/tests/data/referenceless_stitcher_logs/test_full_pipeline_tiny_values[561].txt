@@ -168,22 +168,14 @@ BEGIN 12
   36525.21924458316.
 END 12
 BEGIN 13
-  Contig
-  (1)
-  covers
-  contig
-  'r204-562.2'
-  completely.
-END 13
-BEGIN 14
   Constructed
   a
   path
   of
   length
   748.
-END 14
-BEGIN 15
+END 13
+BEGIN 14
   Removed
   2
   components
@@ -196,29 +188,29 @@ BEGIN 15
   still
   to
   process.
-END 15
-BEGIN 16
+END 14
+BEGIN 15
   Calculating
   all
   paths...
-END 16
-BEGIN 17
+END 15
+BEGIN 16
   Cycle
   1
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   359.
-END 18
-BEGIN 19
+END 17
+BEGIN 18
   Removed
   1
   components
@@ -231,8 +223,8 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 18
+BEGIN 19
   Giving
   up
   on
@@ -247,16 +239,16 @@ BEGIN 20
   is
   a
   singleton.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Calculated
   cutoff
   for
@@ -274,8 +266,8 @@ BEGIN 22
   be
   (3,
   346).
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Overlap
   between
   contigs
@@ -293,17 +285,9 @@ BEGIN 23
   score
   of
   36525.21924458316.
-END 23
-BEGIN 24
-  Contig
-  (1)
-  covers
-  contig
-  'r204-562.2'
-  completely.
-END 24
-BEGIN 25
+END 22
+BEGIN 23
   Outputting
   2
   contigs.
-END 25
+END 23

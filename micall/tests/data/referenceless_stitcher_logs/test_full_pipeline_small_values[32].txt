@@ -670,14 +670,6 @@ BEGIN 40
   23292.856472945925.
 END 40
 BEGIN 41
-  Contig
-  (8)
-  covers
-  contig
-  'r102-471.4'
-  completely.
-END 41
-BEGIN 42
   Calculated
   cutoff
   for
@@ -695,8 +687,8 @@ BEGIN 42
   be
   (69,
   313).
-END 42
-BEGIN 43
+END 41
+BEGIN 42
   Overlap
   between
   contigs
@@ -714,24 +706,16 @@ BEGIN 43
   score
   of
   16548.200337539063.
-END 43
-BEGIN 44
-  Contig
-  (8)
-  covers
-  contig
-  'r148-506.1'
-  completely.
-END 44
-BEGIN 45
+END 42
+BEGIN 43
   Constructed
   a
   path
   of
   length
   761.
-END 45
-BEGIN 46
+END 43
+BEGIN 44
   Removed
   4
   components
@@ -744,21 +728,21 @@ BEGIN 46
   still
   to
   process.
-END 46
-BEGIN 47
+END 44
+BEGIN 45
   Calculating
   all
   paths...
-END 47
-BEGIN 48
+END 45
+BEGIN 46
   Cycle
   1
   started
   with
   1
   paths.
-END 48
-BEGIN 49
+END 46
+BEGIN 47
   Calculated
   cutoff
   for
@@ -776,8 +760,8 @@ BEGIN 49
   be
   (46,
   324).
-END 49
-BEGIN 50
+END 47
+BEGIN 48
   Overlap
   between
   contigs
@@ -795,8 +779,8 @@ BEGIN 50
   score
   of
   39998.33478591601.
-END 50
-BEGIN 51
+END 48
+BEGIN 49
   Found
   a
   significant
@@ -813,8 +797,8 @@ BEGIN 51
   in
   contig
   (9).
-END 51
-BEGIN 52
+END 49
+BEGIN 50
   Cycle
   1
   finished
@@ -832,24 +816,24 @@ BEGIN 52
   of
   2
   parts.
-END 52
-BEGIN 53
+END 50
+BEGIN 51
   Cycle
   2
   started
   with
   1
   paths.
-END 53
-BEGIN 54
+END 51
+BEGIN 52
   Constructed
   a
   path
   of
   length
   405.
-END 54
-BEGIN 55
+END 52
+BEGIN 53
   Removed
   2
   components
@@ -862,16 +846,16 @@ BEGIN 55
   still
   to
   process.
-END 55
-BEGIN 56
+END 53
+BEGIN 54
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 56
-BEGIN 57
+END 54
+BEGIN 55
   Calculated
   cutoff
   for
@@ -889,8 +873,8 @@ BEGIN 57
   be
   (23,
   313).
-END 57
-BEGIN 58
+END 55
+BEGIN 56
   Overlap
   between
   contigs
@@ -908,17 +892,9 @@ BEGIN 58
   score
   of
   19114.757796654227.
-END 58
-BEGIN 59
-  Contig
-  (8)
-  covers
-  contig
-  (9)
-  completely.
-END 59
-BEGIN 60
+END 56
+BEGIN 57
   Outputting
   2
   contigs.
-END 60
+END 57
