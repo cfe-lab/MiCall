@@ -28,20 +28,20 @@ AAA = 40 * 'A'
         (('AAAAA' + TTT, TTT + 'GGGGG'), ('AAAAA' + TTT + 'GGGGG',)),
         (('AAAAA' + TTT, TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
         (('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCC', TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
-        (('AAAAA' + TTT, 'GGGGG' + TTT), ("AAAAA" + TTT,)),
-        (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT,)),
-        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT,)),
-        ((TTT + 'AAAAA', TTT + 'GGGGG'), (TTT + 'AAAAA',)),
-        (('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT), ('AAAAAAAAAAAAAA' + TTT,)),
-        (('GGGGGGGGGGGGGG' + TTT, 'AAAAA' + TTT), ('GGGGGGGGGGGGGG' + TTT,)),
-        (('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT), ('GGGGGGGGGGGGGG' + TTT,)),
-        (('GGGGG' + TTT, 'AAAAAAAAAAAAAA' + TTT), ('AAAAAAAAAAAAAA' + TTT,)),
-        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT + 'CC'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        ((TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),
+        ((TTT + 'AAAAA', TTT + 'GGGGG'), (TTT + 'AAAAA', TTT + 'GGGGG',)),
+        (('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT), ('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('GGGGGGGGGGGGGG' + TTT, 'AAAAA' + TTT), ('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT,)),
+        (('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT), ('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT,)),
+        (('GGGGG' + TTT, 'AAAAAAAAAAAAAA' + TTT), ('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT + 'CC'), ('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC',)),
+        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT), ('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        (('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        ((TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC',)),
+        (('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         ((TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         (('AAAA', 'GGGG'), ('AAAA', 'GGGG',)),
@@ -107,10 +107,10 @@ AAA = 40 * 'A'
            'A' * 50 + 'ACACA' + 'C' * 200 + 'CACACACACA' + 'A' * 50 )),
 
         # Left-covered: right = perfect prefix match of left, then 'Z' marker, then junk.
-        # Correct result: keep only the bigger right contig.
+        # Correct behavior: keep both contigs.
         (( 'A' * 120,
            'A' * 120 + 'Z' + 'G' * 200 ),
-         ( 'A' * 120 + 'Z' + 'G' * 200 ,)),
+         ( 'A' * 120, 'A' * 120 + 'Z' + 'G' * 200 ,)),
 
         # Right-covered (mirror): left has junk + 'Z' + perfect suffix that covers right.
         # Correct result: keep only the bigger left contig.
@@ -119,10 +119,10 @@ AAA = 40 * 'A'
          ( 'C' * 80 + 'Z' + 'A' * 120 ,)),
 
         # Right-covered: left has junk + 'Z' + perfect middle that covers right.
-        # Correct result: keep only the bigger left contig.
+        # Correct behavior: keep both contigs.
         (( 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,
            'A' * 120 ),
-         ( 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,)),
+         ( 'A' * 120, 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,)),
     ],
 )
 def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check, force_failing_map_overlap):
@@ -851,8 +851,8 @@ class TestPool:
         (("AAA" + TTT, TTT + "G" * 120, "G" * 120 + AAA, AAA + "CCC"),
          ("AAA" + TTT + "G" * 120 + AAA + "CCC",)),
 
-        # Multiple identical duplicates collapse to a single contig
-        ((("XXXXX" + TTT + "YYYYY",) * 9), ("XXXXX" + TTT + "YYYYY",)),
+        # Multiple identical duplicates - new behavior: mutual coverage keeps all copies
+        ((("XXXXX" + TTT + "YYYYY",) * 9), (("XXXXX" + TTT + "YYYYY",) * 9)),
     ],
 )
 def test_stitch_additional_cases(seqs, expected, disable_acceptable_prob_check):

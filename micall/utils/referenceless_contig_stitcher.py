@@ -772,8 +772,14 @@ def try_combine_contigs(
         if is_debug2:
             log(events.Covered(left.unique_name, right.unique_name))
 
-        assert bigger is not None
-        return (bigger, SCORE_EPSILON)
+        assert number_of_matches <= overlap.size
+        if number_of_matches == overlap.size:
+            # Perfect coverage: no need to merge, just keep the bigger contig.
+            assert bigger is not None
+            return (bigger, SCORE_EPSILON)
+        else:
+            # Partial coverage with mismatches: cannot merge reliably.
+            return None
 
     result_seq, overlap_size = merge_by_concordance(
         aligned_1, aligned_2, left_remainder, right_remainder

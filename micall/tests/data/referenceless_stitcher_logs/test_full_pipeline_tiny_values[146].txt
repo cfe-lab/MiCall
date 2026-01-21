@@ -176,43 +176,51 @@ BEGIN 13
   completely.
 END 13
 BEGIN 14
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  726
-  and
-  consists
-  of
-  2
-  parts.
-END 14
-BEGIN 15
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 15
-BEGIN 16
   Constructed
   a
   path
   of
   length
   726.
-END 16
-BEGIN 17
+END 14
+BEGIN 15
   Removed
   2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 15
+BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
+END 17
+BEGIN 18
+  Constructed
+  a
+  path
+  of
+  length
+  337.
+END 18
+BEGIN 19
+  Removed
+  1
   components
   from
   the
@@ -223,17 +231,79 @@ BEGIN 17
   still
   to
   process.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 18
-BEGIN 19
+END 21
+BEGIN 22
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  337
+  between
+  contigs
+  (1)
+  and
+  'r66-402.1'
+  to
+  be
+  (399,
+  666).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r66-402.1'
+  has
+  aligned
+  size
+  337,
+  267
+  matches,
+  and
+  the
+  score
+  of
+  23507.45854746797.
+END 23
+BEGIN 24
+  Contig
+  (1)
+  covers
+  contig
+  'r66-402.1'
+  completely.
+END 24
+BEGIN 25
   Outputting
-  1
+  2
   contigs.
-END 19
+END 25
