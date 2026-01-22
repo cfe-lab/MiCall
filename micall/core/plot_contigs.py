@@ -1056,17 +1056,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             hit = hits[i]
             r_st = hit.r_st + position_offset
             r_ei = hit.r_ei + position_offset
-            label = name if idx_pos == 0 else None
-            arrows.append(Arrow(r_st, r_ei, h=20, elevation=0, label=label))
+            arrows.append(Arrow(r_st, r_ei, h=3, elevation=-4, label=None))
 
         # Create arrows for reverse strand hits (elevation = 1 for separation)
         for idx_pos, i in enumerate(reverse_indices):
             hit = hits[i]
             r_st = hit.r_st + position_offset
             r_ei = hit.r_ei + position_offset
-            label = name if idx_pos == 0 and not forward_indices else None
             # Reverse the arrow direction by swapping start/end
-            arrows.append(Arrow(r_ei, r_st, h=20, elevation=1, label=label))
+            arrows.append(Arrow(r_ei, r_st, h=3, elevation=-4, label=None))
 
         return arrows
 
