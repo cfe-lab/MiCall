@@ -40,7 +40,7 @@ dependencies = [
     "cairosvg==2.8.2",
     "aligntools==1.2.1",
     "multicsv==1.0.5",
-    "miseqinteropreader==1.1.1",
+    "miseqinteropreader==1.1.2",
     # This dependency is not really needed for the main pipeline.
     # It is needed for `test`, `watcher`, and `basespace` programs.
     # But repeating this dependency in three different places confuses Github's dependabot.
@@ -53,7 +53,7 @@ test = [
     # Dependencies required for running the test suite
     "pytest==9.0.2",
     "coverage==7.13.0",
-    "pandas==2.3.3",
+    "pandas==3.0.0",
     "seaborn==0.13.2",
     "ete3==3.1.3",
     # For reading HCV rules from an Excel file.
