@@ -24,7 +24,6 @@ def generate_builds(root: DirPath,
         yield Build(outputs=[exact_cov_output],
                     rule="exact_coverage",
                     inputs=[input],
-                    implicit=[stitcher_output],
                     )
         yield Build(outputs=[stats_output],
                     rule="stats",
