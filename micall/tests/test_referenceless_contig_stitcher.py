@@ -88,11 +88,11 @@ AAA = 40 * 'A'
            'A' * 150 ),
          ( 'C' * 30 + 'A' * 75 + 'G' + 'A' * 75, )),
 
-        # 3) "Barely longer" variant (tight threshold): still covered with a single insertion.
-        #    Correct behavior: keep both because they cover each other mutually.
+        # 3) Left covered by right with a single insertion near the start.
+        #    Correct behavior: keep only the bigger right contig because this is actually a stitch, not cover.
         (( 'A' * 100,
-           'A' * 50 + 'G' + 'A' * 50 ),
-         ( 'A' * 50 + 'G' + 'A' * 50, 'A' * 100 )),
+           'A' * 70 + 'G' + 'A' * 70 ),
+         ( 'A' * 70 + 'G' + 'A' * 70, )),
 
         # 4) Mirror of (3): right covered by left with a single insertion near the end.
         #    Correct behavior: keep only the bigger left contig.
