@@ -392,7 +392,7 @@ def calculate_exact_coverage(
     fastq2_filename: Path,
     contigs_file: TextIO,
     overlap_size: int,
-) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
+) -> Tuple[Dict[str, Sequence[int]], Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
 

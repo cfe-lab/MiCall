@@ -124,7 +124,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
     # Calculate exact coverage
     try:
         with open(conseq_stitched_csv_path, "r") as conseq_file:
-            coverage_dict, contigs = calculate_exact_coverage(
+            coverage_dict, coverage_ov_dict, contigs = calculate_exact_coverage(
                 fastq1_path, fastq2_path, conseq_file, overlap_size=70
             )
 
