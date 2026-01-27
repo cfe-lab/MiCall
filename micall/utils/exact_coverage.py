@@ -333,6 +333,16 @@ def process_single_read(
             if inner_start < inner_end:
                 counter[inner_start:inner_end] += count
 
+            # Set to 1 if anything matched.
+            if start_pos <= overlap_size:
+                for i in range(overlap_size):
+                    if counter[i] == 0:
+                        counter[i] = 1
+            if end_pos >= len(counter) - overlap_size - 1:
+                for i in range(len(counter) - overlap_size - 1, len(counter)):
+                    if counter[i] == 0:
+                        counter[i] = 1
+
     return match_count
 
 
