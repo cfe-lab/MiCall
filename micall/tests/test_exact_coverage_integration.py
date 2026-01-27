@@ -100,18 +100,6 @@ def test_exact_coverage_integration():
         coverages = [int(row["exact_coverage"]) for row in rows]
         assert any(c > 0 for c in coverages), "Should have some non-zero coverage"
 
-        print("✓ Integration test passed!")
-        print(f"✓ Total positions: {len(rows)}")
-        print(f"✓ Positions with coverage > 0: {sum(1 for c in coverages if c > 0)}")
-        print(f"✓ Max coverage: {max(coverages)}")
-        print(f"✓ Average coverage: {sum(coverages) / len(coverages):.2f}")
-
-        # Print first few rows for inspection
-        print("\nFirst 10 rows of output:")
-        print("contig,position,exact_coverage")
-        for row in rows[:10]:
-            print(f"{row['contig']},{row['position']},{row['exact_coverage']}")
-
 
 def test_exact_coverage_with_csv_contigs():
     """Integration test with CSV contigs file (contigs.csv format)"""
@@ -154,10 +142,6 @@ def test_exact_coverage_with_csv_contigs():
         coverages = [int(row["exact_coverage"]) for row in rows]
         assert any(c > 0 for c in coverages), "Should have some non-zero coverage"
 
-        print("✓ CSV contigs integration test passed!")
-        print(f"✓ Total positions: {len(rows)}")
-        print(f"✓ Positions with coverage > 0: {sum(1 for c in coverages if c > 0)}")
-
 
 def test_exact_coverage_with_conseq_csv():
     """Integration test with CSV conseq file (conseq.csv format)"""
@@ -194,10 +178,6 @@ def test_exact_coverage_with_conseq_csv():
         # Check that some positions have non-zero coverage
         coverages = [int(row["exact_coverage"]) for row in rows]
         assert any(c > 0 for c in coverages), "Should have some non-zero coverage"
-
-        print("✓ conseq.csv format integration test passed!")
-        print(f"✓ Total positions: {len(rows)}")
-        print(f"✓ Positions with coverage > 0: {sum(1 for c in coverages if c > 0)}")
 
 
 def create_test_data_contigs_csv(tmpdir):
