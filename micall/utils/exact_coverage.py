@@ -304,6 +304,7 @@ def process_single_read(
     count: int,
     kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]],
     contigs: Dict[str, str],
+    coverage0: Dict[str, np.ndarray],
     coverage: Dict[str, np.ndarray],
     overlap_size: int,
 ) -> int:
@@ -314,6 +315,7 @@ def process_single_read(
     :param count: Read count
     :param kmer_index: Multi-level k-mer index (modified in place if new indices needed)
     :param contigs: Dictionary mapping contig_name -> sequence
+    :param coverage0: Dictionary mapping contig_name -> coverage array (modified in place)
     :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
     :param overlap_size: Minimum overlap size for counting coverage
     :return: Number of matches found for this read
@@ -327,21 +329,14 @@ def process_single_read(
         for contig_name, start_pos, end_pos in matches:
             match_count += count
             counter = coverage[contig_name]
+            counter0 = coverage0[contig_name]
+            # Increment the full extent of the read
+            counter0[start_pos:end_pos] += count
             # Increment coverage for inner portion
             inner_start = start_pos + overlap_size
             inner_end = end_pos - overlap_size
             if inner_start < inner_end:
                 counter[inner_start:inner_end] += count
-
-            # Set to 1 if anything matched.
-            if start_pos <= overlap_size:
-                for i in range(overlap_size):
-                    if counter[i] == 0:
-                        counter[i] = 1
-            if end_pos >= len(counter) - overlap_size - 1:
-                for i in range(len(counter) - overlap_size - 1, len(counter)):
-                    if counter[i] == 0:
-                        counter[i] = 1
 
     return match_count
 
@@ -349,6 +344,7 @@ def process_single_read(
 def process_reads(
     read_iterator: Iterator[Tuple[str, int]],
     contigs: Dict[str, str],
+    coverage0: Dict[str, np.ndarray],
     coverage: Dict[str, np.ndarray],
     overlap_size: int,
 ) -> Tuple[int, int]:
@@ -357,6 +353,7 @@ def process_reads(
 
     :param read_iterator: Iterator yielding (read_sequence, count) tuples
     :param contigs: Dictionary mapping contig_name -> sequence
+    :param coverage0: Dictionary mapping contig_name -> coverage array (modified in place)
     :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
     :param overlap_size: Minimum overlap size for counting coverage
     :return: Tuple of (read_count, match_count)
@@ -373,7 +370,7 @@ def process_reads(
             )
 
         match_count += process_single_read(
-            read_seq, count, kmer_index, contigs, coverage, overlap_size
+            read_seq, count, kmer_index, contigs, coverage0, coverage, overlap_size
         )
 
     logger.debug(f"Finished processing {read_count} reads")
@@ -443,9 +440,11 @@ def calculate_exact_coverage(
             )
 
     # Initialize coverage arrays as numpy arrays for efficient operations
+    coverage0 = {}
     coverage = {}
     for contig_name, sequence in contigs.items():
         coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
+        coverage0[contig_name] = np.zeros(len(sequence), dtype=np.int32)
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
     # Process read pairs - open files with automatic gzip detection
@@ -464,7 +463,7 @@ def calculate_exact_coverage(
             raise ValueError(f"Error reading FASTQ files: {e}") from e
 
     read_count, match_count = process_reads(
-        read_generator(), contigs, coverage, overlap_size
+        read_generator(), contigs, coverage0, coverage, overlap_size
     )
 
     if read_count == 0:
@@ -477,36 +476,41 @@ def calculate_exact_coverage(
     else:
         logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
 
+    coverage0_ret = cast(Dict[str, Sequence[int]], coverage0)
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
-    return coverage_ret, contigs
+    return coverage0_ret, coverage_ret, contigs
 
 
 def write_coverage_csv(
-    coverage: Dict[str, Sequence[int]], contigs: Dict[str, str], output_csv: TextIO
+    coverage0: Dict[str, Sequence[int]], coverage: Dict[str, Sequence[int]],
+    contigs: Dict[str, str], output_csv: TextIO
 ) -> None:
     """
     Write coverage data to CSV file.
 
+    :param coverage0: Dictionary mapping contig_name -> coverage array
     :param coverage: Dictionary mapping contig_name -> coverage array
     :param contigs: Dictionary mapping contig_name -> sequence
     :param output_csv: Output CSV file
     """
     writer = csv.DictWriter(
         output_csv,
-        ["contig", "position", "exact_coverage"],
+        ["contig", "position", "exact_coverage", "exact_coverage_overlapped"],
         lineterminator="\n",
     )
     writer.writeheader()
 
     for contig_name in sorted(coverage.keys()):
+        contig_coverage0 = coverage0[contig_name]
         contig_coverage = coverage[contig_name]
 
-        for pos, cov in enumerate(contig_coverage, start=1):
+        for pos, (cov0, cov) in enumerate(zip(contig_coverage0, contig_coverage), start=1):
             writer.writerow(
                 {
                     "contig": contig_name,
                     "position": pos,
-                    "exact_coverage": int(cov),  # Convert numpy int to Python int
+                    "exact_coverage": int(cov0),
+                    "exact_coverage_overlapped": int(cov),
                 }
             )
 
@@ -518,10 +522,10 @@ def main_typed(
     output_csv: TextIO,
     overlap_size: int,
 ) -> None:
-    coverage, contigs = calculate_exact_coverage(
+    coverage0, coverage, contigs = calculate_exact_coverage(
         fastq1_filename, fastq2_filename, contigs_file, overlap_size
     )
-    write_coverage_csv(coverage, contigs, output_csv)
+    write_coverage_csv(coverage0, coverage, contigs, output_csv)
 
 
 def main(argv: Sequence[str]) -> int:
