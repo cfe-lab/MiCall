@@ -270,7 +270,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
         for attempt_count in count(1):
             try:
                 sample_groups = find_sample_groups_noretry(run_path, base_calls_path)
-                return sample_groups
+                break
             except Exception:
                 if start_time is None:
                     start_time = datetime.now()
