@@ -92,9 +92,6 @@ def parse_args():
                         type=argparse.FileType('w'),
                         help='CSV containing consensus sequences (ignoring inadequate '
                              'coverage)')
-    parser.add_argument('--conseq_stitched_csv',
-                        type=argparse.FileType('w'),
-                        help='CSV containing stitched whole genome consensus sequences')
     parser.add_argument('--failed_align_csv',
                         type=argparse.FileType('w'),
                         default=os.devnull,
@@ -412,7 +409,6 @@ class SequenceReport(object):
         self.genome_coverage_writer = self.minimap_hits_writer = None
         self.conseq_region_writer = self.fail_writer = None
         self.conseq_all_writer = None
-        self.conseq_stitched_writer = None
         self.alignments_csv = self.unmerged_alignments_csv = None
         self.intermediate_alignments_csv = self.overall_alignments_csv = None
         self.concordance_writer = self.detailed_concordance_writer = None
@@ -595,8 +591,6 @@ class SequenceReport(object):
         if self.amino_detail_writer is not None and self.amino_writer is not None:
             self.write_amino_counts(self.amino_writer,
                                     coverage_summary=coverage_summary)
-        if self.conseq_stitched_writer is not None:
-            self.write_whole_genome_consensus_from_nuc(self.conseq_stitched_writer)
         if self.conseq_region_writer is not None:
             self.write_consensus_regions(self.conseq_region_writer)
         if self.concordance_writer is not None and self.has_detail_counts:
@@ -1304,58 +1298,6 @@ class SequenceReport(object):
             {"region": self.detail_seed},
         )
 
-    def write_whole_genome_consensus_from_nuc(self, conseq_stitched_writer=None):
-        conseq_stitched_writer = conseq_stitched_writer or self.conseq_stitched_writer
-        landmark_reader = LandmarkReader(self.landmarks)
-        for entry in self.combined_report_nucleotides:
-            nuc_dict = {}
-            insertions_dict = {}
-            consumed_positions = set()
-            coordinate_name = landmark_reader.get_coordinates(entry)
-            sorted_regions: list = sorted(
-                self.combined_report_nucleotides[entry].items(),
-                key=lambda item: landmark_reader.get_gene(
-                    coordinate_name,
-                    item[0])['start'])
-            sorted_regions: list = sorted(
-                sorted_regions,
-                key=lambda item: -self.projects.isAmino(item[0]))
-            regions_dict = dict(sorted_regions)
-            prev_region_end = 0
-            for region in regions_dict:
-                region_info = landmark_reader.get_gene(coordinate_name,
-                                                       region)
-                region_start = region_info['start']
-                region_end = region_info['end']
-                is_amino = self.projects.isAmino(region)
-                combine_region_nucleotides(
-                    nuc_dict,
-                    self.combined_report_nucleotides[entry][region],
-                    region_start,
-                    prev_region_end,
-                    is_amino,
-                    region)
-                combine_region_insertions(insertions_dict,
-                                          self.combined_insertions[entry][region],
-                                          region_start,
-                                          prev_region_end,
-                                          is_amino,
-                                          consumed_positions)
-                for i in range(region_start - 1, region_end):
-                    consumed_positions.add(i)
-                prev_region_end = region_end
-            insert_insertions(insertions_dict, nuc_dict)
-            nuc_entries = list(nuc_dict.items())
-            nuc_entries.sort(key=lambda elem: elem[0])
-            self._write_consensus_helper(
-                nuc_entries,
-                conseq_stitched_writer,
-                {
-                    "seed": entry,
-                },
-                is_nucleotide=True,
-            )
-
     def write_consensus_all_header(self, conseq_all_file):
         self.conseq_all_writer = self._create_consensus_writer(
             conseq_all_file,
@@ -1363,14 +1305,6 @@ class SequenceReport(object):
             include_seed_region_offsets=True,
         )
         self.conseq_all_writer.writeheader()
-
-    def write_consensus_stitched_header(self, conseq_stitched_file):
-        self.conseq_stitched_writer = self._create_consensus_writer(
-            conseq_stitched_file,
-            include_seed=True,
-            include_region=False,
-        )
-        self.conseq_stitched_writer.writeheader()
 
     def write_consensus_all(self, conseq_all_writer=None):
         conseq_all_writer = conseq_all_writer or self.conseq_all_writer
@@ -1908,7 +1842,6 @@ def aln2counts(aligned_csv,
                nuc_detail_csv=None,
                contigs_csv=None,
                conseq_all_csv=None,
-               conseq_stitched_csv=None,
                minimap_hits_csv=None,
                alignments_csv=None,
                alignments_unmerged_csv=None,
@@ -1948,7 +1881,7 @@ def aln2counts(aligned_csv,
     @param contigs_csv: Open file handle to read contig sequences.
     @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
         inadequate coverage*.
-    @param conseq_stitched_csv: Open file handle to write stitched whole genome
+
         consensus sequences.
     @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     @param alignments_csv: Open file handle to write alignments.
@@ -2002,8 +1935,6 @@ def aln2counts(aligned_csv,
             report.write_consensus_all_header(conseq_all_csv)
         if conseq_region_csv is not None:
             report.write_consensus_regions_header(conseq_region_csv)
-        if conseq_stitched_csv is not None:
-            report.write_consensus_stitched_header(conseq_stitched_csv)
         if clipping_csv is not None:
             report.read_clipping(clipping_csv)
         if conseq_ins_csv is not None:
@@ -2065,7 +1996,6 @@ def main():
                genome_coverage_csv=args.genome_coverage_csv,
                contigs_csv=args.contigs_csv,
                conseq_all_csv=args.conseq_all_csv,
-               conseq_stitched_csv=args.conseq_stitched_csv,
                minimap_hits_csv=args.minimap_hits_csv,
                alignments_csv=args.alignments_csv,
                alignments_unmerged_csv=args.alignments_unmerged_csv,
