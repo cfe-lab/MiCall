@@ -254,27 +254,29 @@ def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterabl
         if not (version_folder / 'done_qai_upload').exists():
             yield version_folder
 
-def find_sample_groups_noretry(run_path: Path, base_calls_path: Path) -> list[SampleGroup]:
-    file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
-    sample_sheet_path = run_path / "SampleSheet.csv"
-
-    # Check sample name consistency between sample sheet and FASTQ files
-    check_sample_name_consistency(sample_sheet_path, file_names, run_path)
-
-    return list(find_groups(file_names, str(sample_sheet_path)))
-
 
 def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
+    sample_sheet_path = run_path / "SampleSheet.csv"
+
     try:
-        start_time = None
+        start_time = datetime.now()
         for attempt_count in count(1):
             try:
-                sample_groups = find_sample_groups_noretry(run_path, base_calls_path)
+                file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
+            except Exception:
+                wait_for_retry(attempt_count, start_time)
+                continue
+
+            # Check sample name consistency between sample sheet and FASTQ files
+            check_sample_name_consistency(sample_sheet_path, file_names, run_path)
+
+            try:
+                sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
             except Exception:
-                if start_time is None:
-                    start_time = datetime.now()
                 wait_for_retry(attempt_count, start_time)
+                continue
+
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
         disk_operations.write_text(run_path / "errorprocessing",
