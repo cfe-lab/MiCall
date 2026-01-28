@@ -20,7 +20,7 @@ From: python:3.11
         failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
-        genome_coverage_csv genome_coverage_svg genome_concordance_svg
+        genome_coverage_csv genome_coverage_svg genome_concordance_svg stitcher_plot_svg
     KIVE_THREADS 1
     KIVE_MEMORY 6000
 
@@ -142,8 +142,9 @@ From: python:3.11
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg genome_concordance_svg \
-        unstitched_cascade_csv unstitched_conseq_csv unstitched_contigs_csv contigs_csv \
-        read_entropy_csv conseq_region_csv conseq_stitched_csv
+        stitcher_plot_svg unstitched_cascade_csv unstitched_conseq_csv \
+        unstitched_contigs_csv contigs_csv read_entropy_csv \
+        conseq_region_csv conseq_stitched_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
 

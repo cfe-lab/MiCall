@@ -70,6 +70,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'unstitched_conseq_csv',
                       'unstitched_contigs_csv',
                       'contigs_csv',
+                      'stitcher_plot_svg',
                       'alignment_svg',
                       'alignment_png',
                       'assembly_fasta',
@@ -741,6 +742,12 @@ class KiveWatcher:
                 self.move_genome_coverage(folder_watcher,
                                           scratch_path,
                                           results_path)
+                continue
+            if output_name == 'stitcher_plot_svg':
+                self.move_stitcher_plot(folder_watcher,
+                                       scratch_path,
+                                       results_path)
+                continue
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
@@ -885,6 +892,18 @@ class KiveWatcher:
             target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
             if concordance_path.exists():
                 disk_operations.rename(concordance_path, target_concordance_path)
+        disk_operations.remove_empty_directory(plots_path)
+
+    @staticmethod
+    def move_stitcher_plot(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
+        plots_path = results_path / "stitcher_plots"
+        disk_operations.mkdir_p(plots_path, exist_ok=True)
+        for sample_name in folder_watcher.all_samples:
+            sample_name = trim_name(sample_name)
+            source_path = scratch_path / sample_name / 'stitcher_plot.svg'
+            target_path = plots_path / f"{sample_name}_stitcher_plot.svg"
+            if source_path.exists():
+                disk_operations.rename(source_path, target_path)
         disk_operations.remove_empty_directory(plots_path)
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
