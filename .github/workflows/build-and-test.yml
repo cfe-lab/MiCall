@@ -84,6 +84,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for git describe
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
