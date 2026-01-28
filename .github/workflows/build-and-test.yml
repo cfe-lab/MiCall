@@ -11,27 +11,19 @@ jobs:
       - name: Run apt update
         run: sudo apt-get update
 
-      - name: Install IVA assembler dependencies
+      - name: Installing blast
         run: |
-          sudo apt-get install -qq zlib1g-dev libncurses5-dev libncursesw5-dev mummer ncbi-blast+
-          cd ~/bin
-          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
-          wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc_dump
-          # Server doesn't support HTTPS, so check for changed files.
-          echo "\
-            db1935884aec2d23d4d623ff85eb4eae8d7a946c9ee0c33ea1818215c40d3099  kmc
-            34a97db2dab5fdae0276d2589c940142813e9cd87ae10e5e2dd37ed3545b4436  kmc_dump" | sha256sum --check
-          chmod +x kmc kmc_dump
-          wget -q https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2
-          tar -xf samtools-1.3.1.tar.bz2 --no-same-owner --bzip2
-          cd samtools-1.3.1
-          ./configure --prefix=$HOME
-          make
-          make install
-          cd ~
-          wget -q https://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
-          tar -xzf smalt-0.7.6-bin.tar.gz
-          ln -s ~/smalt-0.7.6-bin/smalt_x86_64 ~/bin/smalt
+          sudo apt-get install -qq ncbi-blast+
+
+      - name: Install Haploflow
+        run: |
+          sudo apt-get install -y build-essential git ronn
+          cd /opt/
+          git clone https://github.com/hzi-bifo/Haploflow
+          cd Haploflow
+          git checkout 9a5a0ff6c3a0435e723e41f98fe82ec2ad19cf50
+          sh build.sh
+          sudo ln -s /opt/Haploflow/build/haploflow ~/bin/haploflow
 
       - name: Install Rust and merge-mates
         run: |
@@ -58,10 +50,6 @@ jobs:
       - name: Check if lock file changed
         run: |
           git diff --quiet uv.lock
-
-      - name: Install IVA
-        run: |
-          uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
       - name: Run type checker
         run: |

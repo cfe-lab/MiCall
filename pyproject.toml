@@ -114,11 +114,6 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.pytest.ini_options]
-markers = [
-    "iva: test requires IVA (deselect with '-m \"not iva\"')"
-]
-
 [tool.ruff.lint.per-file-ignores]
 # TODO: resolve these warnings insteads of ignoring them.
 
