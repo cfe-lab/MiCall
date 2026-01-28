@@ -254,7 +254,7 @@ def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterabl
         if not (version_folder / 'done_qai_upload').exists():
             yield version_folder
 
-def find_sample_groups_noretry(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
+def find_sample_groups_noretry(run_path: Path, base_calls_path: Path) -> list[SampleGroup]:
     file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
     sample_sheet_path = run_path / "SampleSheet.csv"
 
