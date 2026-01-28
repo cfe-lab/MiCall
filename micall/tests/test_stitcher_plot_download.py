@@ -1,17 +1,16 @@
 """
 Tests for downloading stitcher plot SVG files from Kive.
 """
-import pytest
-from pathlib import Path
 from unittest.mock import Mock, patch
-from io import BytesIO
 
-from micall.monitor.kive_watcher import KiveWatcher, FolderWatcher, SampleGroup, PipelineType, trim_name
+from micall.monitor.kive_watcher import KiveWatcher, FolderWatcher, trim_name
 from micall.tests.test_kive_watcher import create_kive_watcher_with_main_run, create_raw_data_with_two_samples, create_mock_open_kive, create_default_config
 
-assert create_raw_data_with_two_samples is not None  # To avoid unused import warning
-assert create_mock_open_kive is not None # To avoid unused import warning
-assert create_default_config is not None  # To avoid unused import warning
+# To avoid unused import warning
+assert create_kive_watcher_with_main_run is not None
+assert create_raw_data_with_two_samples is not None
+assert create_mock_open_kive is not None
+assert create_default_config is not None
 
 
 def test_stitcher_plot_svg_in_downloaded_results():
@@ -130,7 +129,6 @@ def test_folder_completed_with_stitcher_plot(raw_data_with_two_samples, mock_ope
     """Test that stitcher plots are moved correctly from scratch to results"""
     # Simplify the test: just test the move_stitcher_plot function directly
     from micall.monitor.kive_watcher import KiveWatcher, trim_name
-    from pathlib import Path
 
     # Create test structure
     scratch_denovo_path = tmp_path / "scratch_denovo"
