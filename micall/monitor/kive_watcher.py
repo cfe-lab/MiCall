@@ -263,17 +263,11 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
         for attempt_count in count(1):
             try:
                 file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
-            except Exception:
-                wait_for_retry(attempt_count, start_time)
-                continue
-
-            # Check sample name consistency between sample sheet and FASTQ files
-            check_sample_name_consistency(sample_sheet_path, file_names, run_path)
-
-            try:
+                # Check sample name consistency between sample sheet and FASTQ files
+                check_sample_name_consistency(sample_sheet_path, file_names, run_path)
                 sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
-            except Exception:
+            except IOError:
                 wait_for_retry(attempt_count, start_time)
                 continue
 
