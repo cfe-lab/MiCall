@@ -254,24 +254,34 @@ def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterabl
         if not (version_folder / 'done_qai_upload').exists():
             yield version_folder
 
+def find_sample_groups_noretry(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
+    file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
+    sample_sheet_path = run_path / "SampleSheet.csv"
+
+    # Check sample name consistency between sample sheet and FASTQ files
+    check_sample_name_consistency(sample_sheet_path, file_names, run_path)
+
+    return list(find_groups(file_names, str(sample_sheet_path)))
+
 
 def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
-    # noinspection PyBroadException
     try:
-        file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
-        sample_sheet_path = run_path / "SampleSheet.csv"
-
-        # Check sample name consistency between sample sheet and FASTQ files
-        check_sample_name_consistency(sample_sheet_path, file_names, run_path)
-
-        sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
-        sample_groups.sort(key=lambda group: get_sample_number(group.names[0] if group.names[0] is not None else ''),
-                           reverse=True)
+        start_time = None
+        for attempt_count in count(1):
+            try:
+                sample_groups = find_sample_groups_noretry(run_path, base_calls_path)
+                return sample_groups
+            except Exception:
+                if start_time is None:
+                    start_time = datetime.now()
+                wait_for_retry(attempt_count, start_time)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
         disk_operations.write_text(run_path / "errorprocessing",
                                  "Finding sample groups failed.\n")
         sample_groups = []
+    sample_groups.sort(key=lambda group: get_sample_number(group.names[0] if group.names[0] is not None else ''),
+                       reverse=True)
     return sample_groups
 
 
