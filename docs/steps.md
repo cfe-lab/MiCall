@@ -229,6 +229,10 @@ Individual files are described after the list of steps.
   * contig - the nucleotide sequence of the assembled contig
 * contigs.csv
   Same as `unstitched_contigs.csv`, but contigs are stitched by `micall/core/contig_stitcher.py`.
+* stitcher_plot_svg
+  An SVG visualization showing how contigs were stitched together, including coverage information
+  and operations performed during stitching. Only generated for denovo assembly with the referencefull
+  stitcher.
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed
