@@ -469,12 +469,6 @@ def get_stats(info_file: Path) -> Optional[Row]:
         logger.error("%s", ex)
 
     try:
-        conseqs_stitched_csv_path = find_file(directory, "^conseq_stitched.*[.]csv$")
-    except ValueError as ex:
-        conseqs_stitched_csv_path = None
-        logger.error("%s", ex)
-
-    try:
         nuc_csv_path = find_file(directory, "^nuc.*[.]csv$")
     except ValueError as ex:
         nuc_csv_path = None
@@ -500,9 +494,6 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     if conseqs_csv_path:
         o["alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_csv_path))
-
-    if conseqs_stitched_csv_path:
-        o["stitched_alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_stitched_csv_path))
 
     if nuc_csv_path:
         o["soft_clips_count"] = count_soft_clips_from_nuc(nuc_csv_path)
