@@ -135,16 +135,16 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
             )
             writer.writeheader()
 
-            for contig_name in sorted(coverage_dict.keys()):
-                contig_coverage = coverage_dict[contig_name]
-                for pos, cov in enumerate(contig_coverage, start=1):
-                    writer.writerow(
-                        {
-                            "contig": contig_name,
-                            "position": pos,
-                            "exact_coverage": int(cov),
-                        }
-                    )
+            key_of_longest_contig = max(coverage_dict.keys(), key=lambda k: len(coverage_dict[k]))
+            contig_coverage = coverage_dict[key_of_longest_contig]
+            for pos, cov in enumerate(contig_coverage, start=1):
+                writer.writerow(
+                    {
+                        "contig": key_of_longest_contig,
+                        "position": pos,
+                        "exact_coverage": int(cov),
+                    }
+                )
 
         logger.debug("Calculated exact coverage for run %r", info_file.name)
 
