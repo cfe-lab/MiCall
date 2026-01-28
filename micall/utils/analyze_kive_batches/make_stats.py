@@ -463,7 +463,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
         logger.error("%s", ex)
 
     try:
-        conseqs_csv_path = find_file(directory, "^conseq.*[.]csv$")
+        conseqs_csv_path = find_file(directory, "^conseq_[0-9].*[.]csv$")
     except ValueError as ex:
         conseqs_csv_path = None
         logger.error("%s", ex)

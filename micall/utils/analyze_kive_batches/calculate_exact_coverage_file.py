@@ -55,7 +55,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
 
     # Find conseq_stitched CSV
     try:
-        conseq_stitched_csv_path = find_file(directory, "^conseq_stitched.*[.]csv$")
+        conseqs_csv_path = find_file(directory, "^conseq_[0-9].*[.]csv$")
     except ValueError:
         logger.debug(
             "No conseq_stitched file found for run %r, skipping exact coverage",
@@ -123,7 +123,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
 
     # Calculate exact coverage
     try:
-        with open(conseq_stitched_csv_path, "r") as conseq_file:
+        with open(conseqs_csv_path, "r") as conseq_file:
             coverage_dict, coverage_ov_dict, contigs = calculate_exact_coverage(
                 fastq1_path, fastq2_path, conseq_file, overlap_size=70
             )
