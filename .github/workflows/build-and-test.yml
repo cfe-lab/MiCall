@@ -90,6 +90,13 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Derive version from latest git tag
+        id: gitver
+        shell: bash
+        run: |
+          VERSION="$(git describe)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using version: $VERSION"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build docker image
@@ -99,7 +106,7 @@ jobs:
           file: Dockerfile
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: |
-            ghcr.io/cfe-lab/micall:sha-${{ github.sha }}
+            ghcr.io/cfe-lab/micall:sha-${{ steps.gitver.outputs.version }}
             ghcr.io/cfe-lab/micall:latest
           cache-from: type=gha,scope=docker-micall
           cache-to: type=gha,mode=max,scope=docker-micall
