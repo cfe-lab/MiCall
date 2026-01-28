@@ -106,7 +106,7 @@ jobs:
           file: Dockerfile
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: |
-            ghcr.io/cfe-lab/micall:sha-${{ steps.gitver.outputs.version }}
+            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
             ghcr.io/cfe-lab/micall:latest
           cache-from: type=gha,scope=docker-micall
           cache-to: type=gha,mode=max,scope=docker-micall
