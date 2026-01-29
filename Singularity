@@ -91,7 +91,7 @@ From: python:3.12
     curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
     sh /tmp/uv-install.sh
 
-    uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
+    uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
