@@ -83,7 +83,15 @@ From: python:3.12
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
-    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
+
+    echo ===== Install iva via uv ===== >/dev/null
+    export HOME=/opt/uv-home
+    export PATH="/opt/uv-home/.local/bin:${PATH}"
+
+    export curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+    export sh /tmp/uv-install.sh
+
+    uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
