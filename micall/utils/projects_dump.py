@@ -3,6 +3,7 @@ import os
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
+import logging
 
 from collections import Counter
 from copy import deepcopy
@@ -11,6 +12,10 @@ try:
 except ImportError:
     # Ignore import errors to allow tests without request module
     qai_helper = None
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_args():
@@ -97,10 +102,17 @@ def main():
                       args.qai_user,
                       args.qai_password)
 
+        logger.info("Dumping project definitions from QAI server %s", args.qai_server)
+
         dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump")
         dump['projects'] = session.get_json(
             "/lab_miseq_projects?mode=dump&pipeline=" +
             args.pipeline_version)
+
+        regions_count = len(dump['regions'])
+        projects_count = len(dump['projects'])
+        logger.info("Dumped %d regions and %d projects", regions_count, projects_count)
+
         empty_projects = []
         for name, project in dump['projects'].items():
             project['regions'].sort(key=itemgetter('coordinate_region'))
@@ -128,6 +140,7 @@ def main():
             del region['min_coverage3']
 
     dump_json(dump, "../projects.json")
+    logger.info("Wrote projects.json")
 
     for project in dump_scoring['projects'].values():
         for region in project['regions']:
@@ -136,8 +149,9 @@ def main():
             region['coordinate_region_length'] = len(seq)
     del dump_scoring['regions']
     dump_json(dump_scoring, "../project_scoring.json")
+    logger.info("Wrote project_scoring.json")
 
-    print("Done.")
+    logger.info("Done.")
 
 
 if __name__ == "__main__":
