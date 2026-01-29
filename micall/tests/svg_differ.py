@@ -73,8 +73,8 @@ class SvgDiffer:
         # noinspection PyTypeChecker
         png_diff.putdata([self.diff_pixel(actual_pixel, expected_pixel)
                           for actual_pixel, expected_pixel in zip(
-                            png_actual_padded.getdata(),
-                            png_expected_padded.getdata())])
+                            png_actual_padded.get_flattened_data(),
+                            png_expected_padded.get_flattened_data())])
 
         # Display image when in live turtle mode.
         display_image = getattr(Turtle, 'display_image', None)
