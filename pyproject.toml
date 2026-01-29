@@ -55,7 +55,6 @@ test = [
     "coverage>=7.13.0",
     "pandas>=3.0.0",
     "seaborn>=0.13.2",
-    "ete3>=3.1.3",
     # For reading HCV rules from an Excel file.
     "openpyxl>=3.1.5",
     # For turtle.
@@ -82,6 +81,10 @@ watcher = [
 ]
 basespace = [
     # Requirements for running the micall_basespace.py script
+]
+utils = [
+    # Dependencies for various utility scripts.
+    "ete3>=3.1.3",
 ]
 
 [project.scripts]
