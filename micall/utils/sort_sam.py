@@ -5,21 +5,21 @@ import os
 from argparse import ArgumentParser, FileType, ArgumentDefaultsHelpFormatter
 
 import subprocess
-from pathlib import Path
 
 import typing
+
+from micall.utils.externals import ProjectsFile
 
 
 def parse_args():
     parser = ArgumentParser(description='Sort SAM file before viewing.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('sam', help='SAM file to sort, or prelim.csv')
-    default_projects = Path(__file__).parent.parent / 'projects.json'
-    parser.add_argument('--projects',
-                        type=FileType(),
-                        help='JSON file with project definitions',
-                        default=str(default_projects))
-
+    with ProjectsFile().path() as projects_file_path:
+        parser.add_argument('--projects',
+                            type=FileType(),
+                            help='JSON file with project definitions',
+                            default=str(projects_file_path))
     return parser.parse_args()
 
 

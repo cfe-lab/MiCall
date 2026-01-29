@@ -3,6 +3,8 @@ import os
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
+import logging
+from micall.utils.externals import ProjectsFile, ProjectsScoringFile
 
 from collections import Counter
 from copy import deepcopy
@@ -11,6 +13,10 @@ try:
 except ImportError:
     # Ignore import errors to allow tests without request module
     qai_helper = None
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_args():
@@ -97,12 +103,17 @@ def main():
                       args.qai_user,
                       args.qai_password)
 
-        dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump",
-                                           retries=0)
+        logger.info("Dumping project definitions from QAI server %s", args.qai_server)
+
+        dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump")
         dump['projects'] = session.get_json(
             "/lab_miseq_projects?mode=dump&pipeline=" +
-            args.pipeline_version,
-            retries=0)
+            args.pipeline_version)
+
+        regions_count = len(dump['regions'])
+        projects_count = len(dump['projects'])
+        logger.info("Dumped %d regions and %d projects", regions_count, projects_count)
+
         empty_projects = []
         for name, project in dump['projects'].items():
             project['regions'].sort(key=itemgetter('coordinate_region'))
@@ -129,7 +140,9 @@ def main():
             del region['min_coverage2']
             del region['min_coverage3']
 
-    dump_json(dump, "../projects.json")
+    with ProjectsFile().path() as projects_file_path:
+        dump_json(dump, projects_file_path)
+        logger.info("Wrote %s", projects_file_path)
 
     for project in dump_scoring['projects'].values():
         for region in project['regions']:
@@ -137,9 +150,12 @@ def main():
             seq = ''.join(dump_scoring['regions'][name]['reference'])
             region['coordinate_region_length'] = len(seq)
     del dump_scoring['regions']
-    dump_json(dump_scoring, "../project_scoring.json")
 
-    print("Done.")
+    with ProjectsScoringFile().path() as projects_scoring_file_path:
+        dump_json(dump_scoring, projects_scoring_file_path)
+        logger.info("Wrote %s", projects_scoring_file_path)
+
+    logger.info("Done.")
 
 
 if __name__ == "__main__":

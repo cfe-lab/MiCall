@@ -7,6 +7,8 @@ from gotoh import align_it  # @UnresolvedImport
 import Levenshtein
 import matplotlib.pyplot as plt
 
+from micall.utils.externals import ProjectsFile
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s[%(levelname)s]%(name)s.%(funcName)s(): %(message)s')
 logger = logging.getLogger('reference_distances')
@@ -114,4 +116,5 @@ def plot_distances(projects_filename):
     ax.margins(0.1)
     plt.show()
 
-plot_distances('../projects.json')
+with ProjectsFile().path() as projects_file_path:
+    plot_distances(projects_file_path)

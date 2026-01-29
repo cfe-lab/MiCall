@@ -407,3 +407,15 @@ class DefaultBlastDatabase(PackagedResource):
     @property
     def relative_path(self) -> Path:
         return Path(".") / "blast_db" / "refs.fasta"
+
+
+class ProjectsFile(PackagedResource):
+    @property
+    def relative_path(self) -> Path:
+        return Path(".") / "projects.json"
+
+
+class ProjectsScoringFile(PackagedResource):
+    @property
+    def relative_path(self) -> Path:
+        return Path(".") / "project_scoring.json"

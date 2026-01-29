@@ -9,7 +9,6 @@ from csv import DictReader
 from itertools import chain
 from subprocess import run
 
-import ete3
 from Levenshtein import distance
 import requests
 import sys
@@ -140,13 +139,14 @@ def build_tree(fasta_path, check_cache=False):
 
     logger.info('Building tree.')
     with open(tree_path, 'wb') as tree_file:
-        run(['fasttree', '-quiet', '-nt', fasta_path],
+        run(['FastTree', '-quiet', '-nt', fasta_path],
             check=True,
             stdout=tree_file)
     return tree_path
 
 
 def check_tree(tree_source, report_file=None):
+    import ete3
     tree = ete3.Tree(tree_source)
     subtypes = Counter()
     genotypes = Counter()
