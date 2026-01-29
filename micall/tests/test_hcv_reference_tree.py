@@ -1,6 +1,16 @@
 from io import StringIO
 
-from micall.utils.hcv_reference_tree import filter_hcv_fasta, check_tree, combine_samples, check_distances
+from micall.utils.hcv_reference_tree import filter_hcv_fasta, combine_samples, check_distances
+
+def check_tree(*args, **kwargs):
+    try:
+        import ete3
+    except ImportError:
+        # Skip test if ete3 is not installed.
+        return
+
+    import micall.utils.hcv_reference_tree as origin
+    return origin.check_tree(*args, **kwargs)
 
 
 def test_add_subtype():
