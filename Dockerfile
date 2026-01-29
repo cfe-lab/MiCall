@@ -90,7 +90,7 @@ ENV PATH="/opt/uv-home/.local/bin:${PATH}"
 RUN curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
 RUN sh /tmp/uv-install.sh
 
-RUN uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
+RUN uv tool install --managed-python 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
