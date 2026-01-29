@@ -26,6 +26,13 @@
 
 FROM donaim/micallsys:7.17.0-1694-g0fc07d356
 
+## Install just the dependencies of MiCall (for faster build times in development).
+COPY pyproject.toml README.md /opt/micall/
+RUN pip install /opt/micall[basespace]
+
+## Trigger matplotlib to build its font cache
+RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
+
 COPY . /opt/micall/
 
 RUN pip install /opt/micall[basespace]
