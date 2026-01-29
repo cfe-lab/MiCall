@@ -97,12 +97,10 @@ def main():
                       args.qai_user,
                       args.qai_password)
 
-        dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump",
-                                           retries=0)
+        dump['regions'] = session.get_json("/lab_miseq_regions?mode=dump")
         dump['projects'] = session.get_json(
             "/lab_miseq_projects?mode=dump&pipeline=" +
-            args.pipeline_version,
-            retries=0)
+            args.pipeline_version)
         empty_projects = []
         for name, project in dump['projects'].items():
             project['regions'].sort(key=itemgetter('coordinate_region'))
