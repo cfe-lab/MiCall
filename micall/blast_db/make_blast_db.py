@@ -5,13 +5,12 @@ from subprocess import run
 
 from micall.utils.externals import ProjectsFile
 
-DEFAULT_DATABASE = str(Path(__file__).parent / 'refs.fasta')
-
-with ProjectsFile().path() as projects_file_path:
-    DEFAULT_PROJECTS = str(projects_file_path)
-
-
 def parse_args():
+    DEFAULT_DATABASE = str(Path(__file__).parent / 'refs.fasta')
+
+    with ProjectsFile().path() as projects_file_path:
+        DEFAULT_PROJECTS = str(projects_file_path)
+
     parser = ArgumentParser(description='Build Blast database from FASTA.',
                             formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('json',
