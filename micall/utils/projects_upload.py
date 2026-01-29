@@ -3,9 +3,13 @@ import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
 from pathlib import Path
+import logging
 
 from micall.core.project_config import ProjectConfig
 from micall.monitor import qai_helper
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 
 def parse_args():
@@ -80,14 +84,16 @@ def main():
                      'seed_group_id': seed_group_id})
                 regions[region_name] = region
             elif region['reference'] != ref_seq:
-                print("Reference doesn't match:", region_name)
+                logger.warning("Reference doesn't match: %s", region_name)
                 if args.update_sequences:
                     region['reference'] = ref_seq
                     session.post_json(f"/lab_miseq_regions/{region['id']}",
                                       region)
 
+        logger.info("Uploading project definitions to QAI server %s", args.qai_server)
         pipeline = session.post_json("/lab_miseq_pipelines",
                                      {'version': args.pipeline_version})
+        logger.info("Created pipeline version %s with id %d", args.pipeline_version, pipeline['id'])
         pipeline_id = pipeline['id']
 
         old_projects = session.get_json("/lab_miseq_projects")
@@ -130,7 +136,7 @@ def main():
                                        'start_pos': key_position['start_pos'],
                                        'end_pos': key_position['end_pos']})
 
-    print("Done.")
+    logger.info("Done.")
 
 
 if __name__ == "__main__":
