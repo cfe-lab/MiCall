@@ -24,7 +24,7 @@ dependencies = [
     "pytz>=2025.2",
     "biopython>=1.86",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
-    "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
+    "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.3",
     "sortedcontainers>=2.4.0",
     "numpy>=2.4.0",
     "scipy>=1.16.3",

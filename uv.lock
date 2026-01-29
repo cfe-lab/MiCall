@@ -544,7 +544,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'test'", specifier = ">=9.0.2" },
     { name = "python-levenshtein", specifier = ">=0.27.1" },
     { name = "pytz", specifier = ">=2025.2" },
-    { name = "pyvdrm", git = "https://github.com/cfe-lab/pyvdrm.git?rev=v0.3.2" },
+    { name = "pyvdrm", git = "https://github.com/cfe-lab/pyvdrm.git?rev=v0.3.3" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "reportlab", specifier = ">=4.4.7" },
     { name = "requests", specifier = ">=2.32.5" },
@@ -873,8 +873,8 @@ wheels = [
 
 [[package]]
 name = "pyvdrm"
-version = "0.3.1"
-source = { git = "https://github.com/cfe-lab/pyvdrm.git?rev=v0.3.2#fefa963b53e53cedc24540b7e725a7862da87d0d" }
+version = "0.3.3"
+source = { git = "https://github.com/cfe-lab/pyvdrm.git?rev=v0.3.3#22cd728ee62d04935a369c0939535108afbdf53b" }
 dependencies = [
     { name = "pyparsing" },
 ]
