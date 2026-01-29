@@ -198,7 +198,6 @@ def test_stitcher_plot_svg_argument_in_micall_kive():
         'stitcher_plot.svg',
         'read_entropy.csv',
         'conseq_region.csv',
-        'conseq_stitched.csv',
     ]
 
     with patch.object(sys, 'argv', ['micall_kive'] + test_args):
@@ -250,7 +249,6 @@ def test_stitcher_plot_passed_to_sample():
         stitcher_plot_svg='stitcher_plot.svg',
         read_entropy_csv='read_entropy.csv',
         conseq_region_csv='conseq_region.csv',
-        conseq_stitched_csv='conseq_stitched.csv',
     )
 
     sample = load_sample(args)

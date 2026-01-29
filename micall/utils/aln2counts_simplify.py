@@ -79,7 +79,6 @@ class MicallDD(DD):
                            failed_align_csv,
                            # Outputs #
                            nuc_detail_csv=nuc_detail_csv,
-                           conseq_stitched_csv=stitched_csv,
                            )
 
                 exception = None

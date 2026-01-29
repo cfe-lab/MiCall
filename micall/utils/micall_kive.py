@@ -108,9 +108,6 @@ def parse_args():
     parser.add_argument('conseq_region_csv',
                         nargs='?',
                         help='CSV containing consensus sequences, split by region')
-    parser.add_argument('conseq_stitched_csv',
-                        nargs='?',
-                        help='CSV containing stitched whole genome consensus sequences')
 
     return parser.parse_args()
 
@@ -138,7 +135,6 @@ def load_sample(args):
                     conseq_csv=args.conseq_csv,
                     conseq_all_csv=args.conseq_all_csv,
                     conseq_region_csv=args.conseq_region_csv,
-                    conseq_stitched_csv=args.conseq_stitched_csv,
                     failed_align_csv=args.failed_align_csv,
                     coverage_scores_csv=args.coverage_scores_csv,
                     aligned_csv=args.aligned_csv,
