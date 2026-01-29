@@ -140,7 +140,7 @@ def build_tree(fasta_path, check_cache=False):
 
     logger.info('Building tree.')
     with open(tree_path, 'wb') as tree_file:
-        run(['fasttree', '-quiet', '-nt', fasta_path],
+        run(['FastTree', '-quiet', '-nt', fasta_path],
             check=True,
             stdout=tree_file)
     return tree_path
