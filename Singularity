@@ -86,7 +86,6 @@ From: python:3.12
 
     echo ===== Install iva via uv ===== >/dev/null
     export HOME=/opt/uv-home
-    export PATH="/opt/uv-home/.local/bin:${PATH}"
 
     curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
     sh /tmp/uv-install.sh
@@ -110,6 +109,7 @@ From: python:3.12
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
+    export PATH="/opt/uv-home/.local/bin:${PATH}"
 
 %runscript
     micall micall_kive "$@"
