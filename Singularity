@@ -88,8 +88,8 @@ From: python:3.12
     export HOME=/opt/uv-home
     export PATH="/opt/uv-home/.local/bin:${PATH}"
 
-    export curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
-    export sh /tmp/uv-install.sh
+    curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+    sh /tmp/uv-install.sh
 
     uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
