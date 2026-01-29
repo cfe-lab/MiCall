@@ -86,6 +86,7 @@ From: python:3.12
 
     echo ===== Install iva via uv ===== >/dev/null
     export HOME=/opt/uv-home
+    export PATH="/opt/uv-home/.local/bin:${PATH}"
 
     curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
     sh /tmp/uv-install.sh
