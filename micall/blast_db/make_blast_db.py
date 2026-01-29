@@ -3,8 +3,12 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from pathlib import Path
 from subprocess import run
 
+from micall.utils.externals import ProjectsFile
+
 DEFAULT_DATABASE = str(Path(__file__).parent / 'refs.fasta')
-DEFAULT_PROJECTS = str(Path(__file__).parent.parent / 'projects.json')
+
+with ProjectsFile().path() as projects_file_path:
+    DEFAULT_PROJECTS = str(projects_file_path)
 
 
 def parse_args():

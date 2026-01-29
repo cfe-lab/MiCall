@@ -142,7 +142,7 @@ def main():
 
     with ProjectsFile().path() as projects_file_path:
         dump_json(dump, projects_file_path)
-    logger.info("Wrote projects.json")
+        logger.info("Wrote %s", projects_file_path)
 
     for project in dump_scoring['projects'].values():
         for region in project['regions']:
@@ -153,7 +153,7 @@ def main():
 
     with ProjectsScoringFile().path() as projects_scoring_file_path:
         dump_json(dump_scoring, projects_scoring_file_path)
-    logger.info("Wrote project_scoring.json")
+        logger.info("Wrote %s", projects_scoring_file_path)
 
     logger.info("Done.")
 
