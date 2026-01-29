@@ -473,7 +473,6 @@ class SampleRunner:
                 'stitcher_plot_svg',
                 'read_entropy.csv',
                 'conseq_region.csv',
-                'conseq_stitched.csv',
             ]
 
         else:

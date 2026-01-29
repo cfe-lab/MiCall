@@ -22,6 +22,7 @@ from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
@@ -293,7 +294,6 @@ class Sample:
                         coverage_summary_csv=(with_prefix(self.coverage_summary_csv), 'w'),
                         genome_coverage_csv=(with_prefix(self.genome_coverage_csv), 'w'),
                         conseq_all_csv=(with_prefix(self.conseq_all_csv), 'w'),
-                        conseq_stitched_csv=(with_prefix(self.conseq_stitched_csv), 'w') if use_denovo else None,
                         minimap_hits_csv=(with_prefix(self.minimap_hits_csv), 'w'),
                         alignments_csv=(with_prefix(self.alignments_csv), 'w'),
                         alignments_unmerged_csv=(with_prefix(self.alignments_unmerged_csv), 'w'),
@@ -320,7 +320,6 @@ class Sample:
                        genome_coverage_csv=opened_files['genome_coverage_csv'],
                        contigs_csv=opened_files['contigs_csv'],
                        conseq_all_csv=opened_files['conseq_all_csv'],
-                       conseq_stitched_csv=opened_files['conseq_stitched_csv'],
                        minimap_hits_csv=opened_files['minimap_hits_csv'],
                        alignments_csv=opened_files['alignments_csv'],
                        alignments_unmerged_csv=opened_files['alignments_unmerged_csv'],
@@ -426,9 +425,13 @@ class Sample:
                                   self.merged_contigs_fasta],
                           output=self.combined_contigs_fasta)
 
+        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
+             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
+            referenceless_contig_stitcher(combined_contigs_fasta, stitched_contigs_fasta)
+
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
-            fasta_to_csv(Path(self.combined_contigs_fasta),
+            fasta_to_csv(Path(self.stitched_contigs_fasta),
                          unstitched_contigs_csv,
                          blast_csv=blast_csv,
                          )
