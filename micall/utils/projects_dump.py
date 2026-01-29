@@ -4,6 +4,7 @@ import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
 import logging
+from micall.utils.externals import ProjectsFile, ProjectsScoringFile
 
 from collections import Counter
 from copy import deepcopy
@@ -139,7 +140,8 @@ def main():
             del region['min_coverage2']
             del region['min_coverage3']
 
-    dump_json(dump, "../projects.json")
+    with ProjectsFile().path() as projects_file_path:
+        dump_json(dump, projects_file_path)
     logger.info("Wrote projects.json")
 
     for project in dump_scoring['projects'].values():
@@ -148,7 +150,9 @@ def main():
             seq = ''.join(dump_scoring['regions'][name]['reference'])
             region['coordinate_region_length'] = len(seq)
     del dump_scoring['regions']
-    dump_json(dump_scoring, "../project_scoring.json")
+
+    with ProjectsScoringFile().path() as projects_scoring_file_path:
+        dump_json(dump_scoring, projects_scoring_file_path)
     logger.info("Wrote project_scoring.json")
 
     logger.info("Done.")
