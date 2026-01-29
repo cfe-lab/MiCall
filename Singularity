@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: python:3.11
+From: python:3.12
 
 %help
     MiCall maps all the reads from a sample against a set of reference
@@ -83,7 +83,15 @@ From: python:3.11
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
-    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
+
+    echo ===== Install iva via uv ===== >/dev/null
+    export HOME=/opt/uv-home
+    export PATH="/opt/uv-home/.local/bin:${PATH}"
+
+    curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+    sh /tmp/uv-install.sh
+
+    uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
@@ -100,7 +108,7 @@ From: python:3.11
     mkdir -p /root
 
 %environment
-    export PATH=/opt/bowtie2:/bin:/usr/local/bin
+    export PATH=/opt/uv-home/.local/bin:/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript

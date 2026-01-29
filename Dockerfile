@@ -24,7 +24,7 @@
 # If you omit the `--target` tag altogether, `docker build` will build
 # the development image.
 
-FROM python:3.11
+FROM python:3.12
 
 LABEL maintainer="BC CfE in HIV/AIDS <https://github.com/cfe-lab/MiCall>"
 
@@ -82,7 +82,15 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
-RUN pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
+
+## Install iva via uv
+ENV HOME=/opt/uv-home
+ENV PATH="/opt/uv-home/.local/bin:${PATH}"
+
+RUN curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+RUN sh /tmp/uv-install.sh
+
+RUN uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev

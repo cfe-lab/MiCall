@@ -50,7 +50,7 @@ Check that Python is already installed.
 python --version
 ```
 
-We have tested with Python `3.11`.
+We have tested with Python `3.12`.
 
 ### BaseSpace
 
