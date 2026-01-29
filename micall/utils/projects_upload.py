@@ -51,8 +51,7 @@ def main():
                       args.qai_password)
 
         pipelines = session.get_json(
-            "/lab_miseq_pipelines?version=" + args.pipeline_version,
-            retries=0)
+            "/lab_miseq_pipelines?version=" + args.pipeline_version)
         if pipelines:
             raise RuntimeError('Pipeline {} already exists.'.format(
                 args.pipeline_version))
@@ -60,7 +59,7 @@ def main():
         seed_groups = session.get_json("/lab_miseq_seed_groups")
         # noinspection PyTypeChecker
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
-        old_regions = session.get_json("/lab_miseq_regions", retries=0)
+        old_regions = session.get_json("/lab_miseq_regions")
         regions = dict(((region['name'], region) for region in old_regions))
         for region_name, region_data in project_config.config['regions'].items():
             ref_seq = ''.join(region_data['reference'])
@@ -91,7 +90,7 @@ def main():
                                      {'version': args.pipeline_version})
         pipeline_id = pipeline['id']
 
-        old_projects = session.get_json("/lab_miseq_projects", retries=0)
+        old_projects = session.get_json("/lab_miseq_projects")
         projects = dict(((project['name'], project) for project in old_projects))
         for project_name, project_data in project_config.config['projects'].items():
             project = projects.get(project_name)
