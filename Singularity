@@ -107,7 +107,7 @@ From: python:3.12
     mkdir -p /root
 
 %environment
-    export PATH="/opt/uv-home/.local/bin:/opt/bowtie2:/bin:/usr/local/bin$:{PATH}"
+    export PATH="/opt/uv-home/.local/bin:/opt/bowtie2:/bin:/usr/local/bin:${PATH}"
     export LANG=en_US.UTF-8
 
 %runscript
