@@ -96,7 +96,8 @@ From: python:3.11
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     # Cleanup.
-    rm -rf /opt/micall
+    rm -rf /opt/micall /root /usr/lib/gcc /opt/uv-home/.cache /tmp /etc/apt/ /var/apt /etc/dpkg /var/log /var/cache /var/lib/apt /var/lib/dpkg
+    mkdir -p /root /tmp
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
