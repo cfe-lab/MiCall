@@ -1,0 +1,4 @@
+
+Score = float
+SCORE_NOTHING = 0
+SCORE_EPSILON = 1

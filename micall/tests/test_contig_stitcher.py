@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 import logging
 import os
@@ -7,27 +6,29 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.core.contig_stitcher as stitcher
-from micall.core.contig_stitcher import (
+import micall.utils.registry as registry
+import micall.utils.referencefull_contig_stitcher as stitcher
+from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
     stitch_contigs,
     GenotypedContig,
     merge_intervals,
     find_covered_contig,
     stitch_consensus,
-    calculate_concordance,
     align_all_to_reference,
-    disambiguate_concordance,
     lstrip,
     rstrip,
 )
 from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.tests.utils import mock_align_consensus, MockAlignment, fixed_random_seed
-from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE  # activates the fixture
+from micall.tests.utils import mock_align_consensus, MockAlignment
+from micall.tests.test_fasta_to_csv import (
+    check_hcv_db,
+    DEFAULT_DATABASE,
+)  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
 
 
-logging.getLogger("micall.core.contig_stitcher").setLevel(logging.DEBUG)
+logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
 
 
@@ -39,12 +40,16 @@ assert load_projects is not None
 
 @pytest.fixture()
 def exact_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align_consensus)
+    monkeypatch.setattr(
+        "micall.utils.referencefull_contig_stitcher.align_consensus",
+        mock_align_consensus
+    )
 
 
 @pytest.fixture
 def visualizer(request, tmp_path):
-    stitcher.context.set(stitcher.StitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+    registry.set(registry.Registry())
     test_name = request.node.name
     plot_name = test_name + ".svg"
     pwd = os.path.dirname(__file__)
@@ -54,7 +59,7 @@ def visualizer(request, tmp_path):
     path_to_produced = os.path.join(tmp_path, plot_name)
 
     def check():
-        logs = stitcher.context.get().events
+        logs = stitcher.ReferencefullStitcherContext.get().events
         figure = plot_stitcher_coverage(logs, path_to_produced)
 
         with open(path_to_produced, "r") as produced_file:
@@ -83,6 +88,7 @@ def test_identical_stitching_of_one_contig(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="T" * 20 + "ACTGACTG" * 110 + "T" * 20,
             match_fraction=1.0,
+            reads_count=None,
         ),
     ]
 
@@ -106,6 +112,7 @@ def test_separate_stitching_of_non_overlapping_contigs_1(exact_aligner, visualiz
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -114,6 +121,7 @@ def test_separate_stitching_of_non_overlapping_contigs_1(exact_aligner, visualiz
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -139,6 +147,7 @@ def test_separate_stitching_of_non_overlapping_contigs_2(exact_aligner, visualiz
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="a",
@@ -147,6 +156,7 @@ def test_separate_stitching_of_non_overlapping_contigs_2(exact_aligner, visualiz
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -173,6 +183,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -181,6 +192,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -210,6 +222,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_with_padding(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -218,6 +231,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_with_padding(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -249,6 +263,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_real_hiv(
             group_ref=ref_name,
             ref_seq=ref,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -257,6 +272,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_real_hiv(
             group_ref=ref_name,
             ref_seq=ref,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -289,6 +305,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_real_hcv(
             group_ref=group_ref,
             ref_seq=ref,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -297,6 +314,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_real_hcv(
             group_ref=group_ref,
             ref_seq=ref,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -329,6 +347,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_with_insignifica
             group_ref=hxb2_name,
             ref_seq=ref,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -337,6 +356,7 @@ def test_correct_stitching_of_two_partially_overlapping_contigs_with_insignifica
             group_ref=hxb2_name,
             ref_seq=ref,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -367,6 +387,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -375,6 +396,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="c",
@@ -383,6 +405,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -410,6 +433,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig_2(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -418,6 +442,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig_2(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="c",
@@ -426,6 +451,7 @@ def test_correct_processing_of_two_overlapping_and_one_separate_contig_2(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -452,6 +478,7 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -460,6 +487,7 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="c",
@@ -468,6 +496,7 @@ def test_stitching_of_all_overlapping_contigs_into_one_sequence(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -495,6 +524,7 @@ def test_stitching_with_empty_contigs(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -503,6 +533,7 @@ def test_stitching_with_empty_contigs(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -523,8 +554,9 @@ def test_stitching_of_identical_contigs(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="ACTGACTG" * 100,
             match_fraction=1.0,
+            reads_count=reads_count,
         )
-        for name in ["a", "b", "c"]
+        for name, reads_count in [("a", 10), ("b", 20), ("c", 100)]
     ]
 
     results = list(stitch_contigs(contigs))
@@ -546,6 +578,7 @@ def test_stitching_of_completely_identical_contigs(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="ACTGACTG" * 100,
             match_fraction=1.0,
+            reads_count=copy * 10,  # Different read counts: 10, 20, 30
         )
         for copy in [1, 2, 3]
     ]
@@ -583,6 +616,7 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
             group_ref="testref-1",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -591,6 +625,7 @@ def test_correct_stitching_of_two_partially_overlapping_different_organism_conti
             group_ref="testref-2",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -618,6 +653,7 @@ def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
                 group_ref=ref_name,
                 ref_seq=ref_seq,
                 match_fraction=0.5,
+                reads_count=None,
             ),
             GenotypedContig(
                 name="b" + ref_name,
@@ -626,6 +662,7 @@ def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
                 group_ref=ref_name,
                 ref_seq=ref_seq,
                 match_fraction=0.5,
+                reads_count=None,
             ),
             GenotypedContig(
                 name="c" + ref_name,
@@ -634,6 +671,7 @@ def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
                 group_ref=ref_name,
                 ref_seq=ref_seq,
                 match_fraction=0.5,
+                reads_count=None,
             ),
             GenotypedContig(
                 name="d" + ref_name,
@@ -642,6 +680,7 @@ def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
                 group_ref=ref_name,
                 ref_seq=ref_seq,
                 match_fraction=0.5,
+                reads_count=None,
             ),
         ]
         for ref_name in ["testref-1", "testref-2"]
@@ -682,6 +721,7 @@ def test_stitching_when_one_contig_completely_covered_by_another(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -690,6 +730,7 @@ def test_stitching_when_one_contig_completely_covered_by_another(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -718,6 +759,7 @@ def test_stitching_when_multiple_contigs_completely_covered_by_other_contigs(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -726,6 +768,7 @@ def test_stitching_when_multiple_contigs_completely_covered_by_other_contigs(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="c",
@@ -734,6 +777,7 @@ def test_stitching_when_multiple_contigs_completely_covered_by_other_contigs(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="d",
@@ -742,6 +786,7 @@ def test_stitching_when_multiple_contigs_completely_covered_by_other_contigs(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -764,6 +809,7 @@ def test_stitching_contig_with_big_noncovered_gap(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -787,6 +833,7 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="B",
@@ -795,6 +842,7 @@ def test_stitching_contig_with_big_noncovered_gap_2(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -818,6 +866,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -826,6 +875,7 @@ def test_stitching_contig_with_big_covered_gap(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -854,6 +904,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -862,6 +913,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -875,7 +927,7 @@ def test_stitching_contig_with_small_covered_gap(exact_aligner, visualizer):
     assert len(visualizer().elements) > len(contigs)
 
     assert all(x.seq == lstrip(rstrip(x)).seq for x in results)
-    assert {contig.seq for contig in contigs} == {contig.seq for contig in results}
+    assert {contig.seq for contig in contigs} != {contig.seq for contig in results}
 
 
 def test_stitching_partial_align(exact_aligner, visualizer):
@@ -889,6 +941,7 @@ def test_stitching_partial_align(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="A" * 20 + "C" * 20 + "T" * 20,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -917,6 +970,7 @@ def test_partial_align_consensus(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq="A" * 20 + "C" * 20 + "T" * 20,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -940,6 +994,7 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -948,6 +1003,7 @@ def test_stitching_partial_align_multiple_sequences(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -971,6 +1027,7 @@ def test_partial_align_consensus_multiple_sequences(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -979,6 +1036,7 @@ def test_partial_align_consensus_multiple_sequences(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1005,6 +1063,7 @@ def test_partial_align_consensus_multiple_overlaping_sequences(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -1013,6 +1072,7 @@ def test_partial_align_consensus_multiple_overlaping_sequences(
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1031,7 +1091,7 @@ def test_big_insertion_in_a_single_contig(projects, visualizer):
 
     hxb2_name = "HIV1-B-FR-K03455-seed"
     ref_seq = projects.getReference(hxb2_name)
-    seq = ref_seq[2000:3000] + 'C' * 300 + ref_seq[3100:4000]
+    seq = ref_seq[2000:3000] + "C" * 300 + ref_seq[3100:4000]
 
     contigs = [
         GenotypedContig(
@@ -1041,6 +1101,7 @@ def test_big_insertion_in_a_single_contig(projects, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1064,6 +1125,7 @@ def test_big_insertion_in_a_single_contig_2(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1087,6 +1149,7 @@ def test_gap_around_small_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -1095,6 +1158,7 @@ def test_gap_around_small_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1117,6 +1181,7 @@ def test_gap_around_big_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -1125,6 +1190,7 @@ def test_gap_around_big_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1147,6 +1213,7 @@ def test_stitch_with_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1169,6 +1236,7 @@ def test_stitch_cross_alignment(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1191,6 +1259,7 @@ def test_cross_alignment_around_small_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -1199,6 +1268,7 @@ def test_cross_alignment_around_small_insertion(exact_aligner, visualizer):
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1226,6 +1296,7 @@ def test_reverse_complement_match(projects, visualizer):
             group_ref="testref",
             ref_seq=ref,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1253,6 +1324,7 @@ def test_reverse_complement_match_with_padding(projects, visualizer):
             group_ref="testref",
             ref_seq=ref,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1292,6 +1364,7 @@ def test_multiple_reverse_complement_matches(projects, visualizer):
             group_ref="testref",
             ref_seq=ref,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1333,6 +1406,7 @@ def test_multiple_reverse_complement_matches_out_of_order(projects, visualizer):
             group_ref="testref",
             ref_seq=ref,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1364,6 +1438,7 @@ def test_forward_and_reverse_match(projects, visualizer):
             group_ref="testref",
             ref_seq=ref,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
@@ -1376,29 +1451,44 @@ def test_forward_and_reverse_match(projects, visualizer):
 def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
     # Scenario: Single contig is aligned in two parts that overlap in reference space.
 
-    def mock_align(reference_seq: str, consensus: str) -> Tuple[List[MockAlignment], str]:
-        alignments = [MockAlignment(ctg="N/A", ctg_len=0,
-                                    strand=1, mapq=60,
-                                    is_primary=True,
-                                    q_st=100, q_en=300,
-                                    r_st=200, r_en=400,
-                                    cigar=[(200, CigarActions.MATCH)],
-                                    cigar_str="200M"),
-                      MockAlignment(ctg="N/A", ctg_len=0,
-                                    strand=1, mapq=60,
-                                    is_primary=True,
-                                    q_st=300, q_en=500,
-                                    r_st=300, r_en=500,
-                                    cigar=[(200, CigarActions.MATCH)],
-                                    cigar_str="200M"),
-                      ]
-        algorithm = 'mock'
+    def mock_align(
+        reference_seq: str, consensus: str
+    ) -> Tuple[List[MockAlignment], str]:
+        alignments = [
+            MockAlignment(
+                ctg="N/A",
+                ctg_len=0,
+                strand=1,
+                mapq=60,
+                is_primary=True,
+                q_st=100,
+                q_en=300,
+                r_st=200,
+                r_en=400,
+                cigar=[(200, CigarActions.MATCH)],
+                cigar_str="200M",
+            ),
+            MockAlignment(
+                ctg="N/A",
+                ctg_len=0,
+                strand=1,
+                mapq=60,
+                is_primary=True,
+                q_st=300,
+                q_en=500,
+                r_st=300,
+                r_en=500,
+                cigar=[(200, CigarActions.MATCH)],
+                cigar_str="200M",
+            ),
+        ]
+        algorithm = "mock"
         return (alignments, algorithm)
 
-    monkeypatch.setattr("micall.core.contig_stitcher.align_consensus", mock_align)
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_consensus", mock_align)
 
-    ref = 'A' * 700
-    seq = 'C' * 600
+    ref = "A" * 700
+    seq = "C" * 600
 
     contigs = [
         GenotypedContig(
@@ -1408,15 +1498,18 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
             group_ref="testref",
             ref_seq=ref,
             match_fraction=0.3,
+            reads_count=None,
         ),
     ]
 
     results = list(stitch_consensus(contigs))
     assert len(results) == 1
-    assert results[0].seq == 'C' * 500
+    assert results[0].seq == "C" * 500
 
     assert isinstance(results[0], stitcher.AlignedContig)
-    assert results[0].alignment == CigarHit(Cigar.parse('300M'), r_st=200, r_ei=499, q_st=100, q_ei=399)
+    assert results[0].alignment == CigarHit(
+        Cigar.parse("300M"), r_st=200, r_ei=499, q_st=100, q_ei=399
+    )
 
     assert len(visualizer().elements) > len(contigs)
 
@@ -1434,6 +1527,7 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
             group_ref="testref",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -1442,6 +1536,7 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
             group_ref=None,
             ref_seq=None,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -1457,10 +1552,12 @@ def test_correct_stitching_of_one_normal_and_one_unknown(exact_aligner, visualiz
 
 
 def test_main_invocation(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
-    stitcher.main([contigs, stitched_contigs])
+    main(['with-references', contigs, stitched_contigs, '--remap-counts', remap_counts])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1473,17 +1570,19 @@ def test_main_invocation(exact_aligner, tmp_path, hcv_db):
     with open(expected_file_path, "r") as expected_file:
         expected_data = expected_file.read()
 
-    assert (
-        stitched_data == expected_data
-    ), "The contents of the stitched contigs file do not match the expected contents."
+    assert stitched_data == expected_data, (
+        "The contents of the stitched contigs file do not match the expected contents."
+    )
 
 
 def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
+    from micall.core.contig_stitcher import main
     pwd = os.path.dirname(__file__)
     contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    remap_counts = os.path.join(pwd, "data", "exact_parts_contigs_remap_counts.csv")
     stitched_contigs = os.path.join(tmp_path, "stitched.csv")
     plot = os.path.join(tmp_path, "exact_parts_contigs.plot.svg")
-    stitcher.main([contigs, stitched_contigs, "--debug", "--plot", plot])
+    main(['with-references', contigs, stitched_contigs, "--remap-counts", remap_counts, "--debug", "--plot", plot])
 
     assert os.path.exists(contigs)
     assert os.path.exists(stitched_contigs)
@@ -1495,18 +1594,40 @@ def test_visualizer_simple(exact_aligner, tmp_path, hcv_db):
     expected_file_path = os.path.join(pwd, "data", "exact_parts_contigs_stitched.csv")
     with open(expected_file_path, "r") as expected_file:
         expected_data = expected_file.read()
-        assert (
-            stitched_data == expected_data
-        ), "The contents of the stitched contigs file do not match the expected contents."
+        assert stitched_data == expected_data, (
+            "The contents of the stitched contigs file do not match the expected contents."
+        )
 
     # Check the contents of stitched_contigs
     expected_plot = os.path.join(pwd, "data", "exact_parts_contigs.plot.svg")
     with open(plot, "r") as stitched_file, open(expected_plot, "r") as expected_file:
         stitched_data = stitched_file.read()
         expected_data = expected_file.read()
-        assert (
-            stitched_data == expected_data
-        ), "The contents of the stitched plot file do not match the expected contents."
+        assert stitched_data == expected_data, (
+            "The contents of the stitched plot file do not match the expected contents."
+        )
+
+
+def test_main_invocation_without_remap_counts(exact_aligner, tmp_path, hcv_db):
+    """Test that main() works without remap_counts argument (all reads_count initialized to None)."""
+    from micall.core.contig_stitcher import main
+    pwd = os.path.dirname(__file__)
+    contigs = os.path.join(pwd, "data", "exact_parts_contigs.csv")
+    stitched_contigs = os.path.join(tmp_path, "stitched.csv")
+
+    # Call main without --remap-counts
+    main(['with-references', contigs, stitched_contigs])
+
+    assert os.path.exists(contigs)
+    assert os.path.exists(stitched_contigs)
+
+    # The file should exist and have content (though results may differ without read counts)
+    with open(stitched_contigs, "r") as stitched_file:
+        stitched_data = stitched_file.read()
+
+    # Should have header and at least some contigs
+    assert "ref,match,group_ref,contig" in stitched_data
+    assert len(stitched_data.strip().split('\n')) > 1  # More than just header
 
 
 def test_visualizer_correct_labeling_of_different_organism_contigs(
@@ -1524,6 +1645,7 @@ def test_visualizer_correct_labeling_of_different_organism_contigs(
             group_ref="testref-1",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b",
@@ -1532,6 +1654,7 @@ def test_visualizer_correct_labeling_of_different_organism_contigs(
             group_ref="testref-2",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="a_anomaly",
@@ -1540,6 +1663,7 @@ def test_visualizer_correct_labeling_of_different_organism_contigs(
             group_ref="testref-1",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="b_discarded",
@@ -1548,22 +1672,25 @@ def test_visualizer_correct_labeling_of_different_organism_contigs(
             group_ref="testref-2",
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="some_anomaly",
             seq="T" * 20,
-            ref_name='unknown',
+            ref_name="unknown",
             group_ref=None,
             ref_seq=ref_seq,
             match_fraction=0.5,
+            reads_count=None,
         ),
         GenotypedContig(
             name="some_unknown",
             seq="T" * 20,
-            ref_name='unknown',
+            ref_name="unknown",
             group_ref=None,
             ref_seq=None,
             match_fraction=0.5,
+            reads_count=None,
         ),
     ]
 
@@ -1626,24 +1753,36 @@ def test_merge_intervals(intervals, expected):
     assert merge_intervals(intervals) == expected
 
 
-@dataclass
-class TestMockAlignment:
-    r_st: int
-    r_ei: int
-
-
 class MockAlignedContig:
-    def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig"):
+    @dataclass
+    class TestMockAlignment:
+        r_st: int
+        r_ei: int
+
+        @property
+        def ref_length(self) -> int:
+            """Match aligntools.CigarHit API for tests that rely on ref_length."""
+
+            return abs(self.r_ei - self.r_st)
+
+    def __init__(self, ref_name, group_ref, r_st, r_ei, name="contig", reads_count=None):
         self.ref_name = ref_name
         self.group_ref = group_ref
-        self.alignment = TestMockAlignment(r_st, r_ei)
+        self.alignment = MockAlignedContig.TestMockAlignment(r_st, r_ei)
         self.name = name
+        self.reads_count = reads_count
         self.id = id(self)
+        self.reads_count = reads_count
+        self._unique_name = name  # Simple version for testing
+
+    @property
+    def unique_name(self):
+        return self._unique_name
 
 
 # Simple function to create mock AlignedContig objects for testing, including ref_name.
-def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
-    return MockAlignedContig(ref_name, ref_name, r_st, r_ei, name)
+def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig", reads_count=None):
+    return MockAlignedContig(ref_name, ref_name, r_st, r_ei, name, reads_count)
 
 
 @pytest.mark.parametrize(
@@ -1657,8 +1796,10 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
         ([("ref1", 50, 150), ("ref1", 0, 200)], "contig1"),
         # A single contig completely covers another, but with different reference names.
         ([("ref1", 0, 50), ("ref2", 0, 100)], None),
-        # Single coverage with exact match.
-        ([("ref1", 0, 100), ("ref1", 0, 100)], "contig1"),
+        # Single coverage with exact match - now requires read count comparison
+        # Since neither contig has reads_count set (None), total_coverage (0) > current (0) is False
+        # So the contig is NOT removed
+        ([("ref1", 0, 100), ("ref1", 0, 100)], None),
         # A single contig is completely covered at the beginning by one and at the end by another contig.
         ([("ref1", 0, 50), ("ref1", 50, 100), ("ref1", 25, 75)], "contig3"),
         # Contigs overlap but none are completely covered.
@@ -1673,9 +1814,9 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
         # Edge case where a contig starts where another ends.
         ([("ref1", 0, 50), ("ref1", 50, 100)], None),
         # Contigs are completely covered in a nested fashion.
-        ([("ref1", 0, 200), ("ref1", 50, 150), ("ref1", 100, 125)], "contig2"),
+        ([("ref1", 0, 200), ("ref1", 50, 150), ("ref1", 100, 125)], "contig3"),
         # Contigs are adjacent and cover each other completely.
-        ([("ref1", 0, 100), ("ref1", 101, 200), ("ref1", 0, 200)], "contig1"),
+        ([("ref1", 0, 100), ("ref1", 101, 200), ("ref1", 0, 200)], "contig2"),
         # Single large contig covers several smaller non-adjacent contigs.
         (
             [
@@ -1694,7 +1835,7 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
                 ("ref1", 101, 199),
                 ("ref1", 200, 350),
             ],
-            "contig2",
+            "contig3",
         ),
         # Single small contig is covered by several larger contigs.
         (
@@ -1730,8 +1871,9 @@ def create_mock_aligned_contig(ref_name, r_st, r_ei, name="contig"):
     ],
 )
 def test_find_covered(contigs, expected_covered_name):
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
     mock_contigs = [
-        create_mock_aligned_contig(ref_name, r_st, r_ei, f"contig{i+1}")
+        create_mock_aligned_contig(ref_name, r_st, r_ei, f"contig{i + 1}")
         for i, (ref_name, r_st, r_ei) in enumerate(contigs)
     ]
     covered, covering = find_covered_contig(mock_contigs)
@@ -1742,146 +1884,67 @@ def test_find_covered(contigs, expected_covered_name):
         assert covered.name == expected_covered_name
 
 
-def test_concordance_same_length_inputs():
-    with pytest.raises(ValueError):
-        calculate_concordance("abc", "ab")
+def test_find_covered_prioritizes_by_reads_count():
+    """Test that find_covered_contig prioritizes by reads_count when available."""
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
 
+    # Create three contigs where contig2 and contig3 are both fully covered by contig1:
+    # - contig1: ref_length=200, reads_count=100 (large, covers both others)
+    # - contig2: ref_length=50,  reads_count=30  (medium ref_length, medium reads)
+    # - contig3: ref_length=40,  reads_count=10  (small ref_length, low reads)
+    # Both contig2 and contig3 are fully inside contig1's range.
 
-def test_concordance_completely_different_strings():
-    result = calculate_concordance("a" * 30, "b" * 30)
-    assert all(n == 0 for n in result)
-
-
-def generate_random_string_pair(length):
-    left = "".join(random.choice("ACGT") for _ in range(length))
-    right = "".join(random.choice("ACGT") for _ in range(length))
-    return left, right
-
-
-@pytest.mark.parametrize(
-    "left, right, expected",
-    [
-        ("aaaaa", "aaaaa", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("abcdd", "abcdd", [0.6, 0.68, 0.7, 0.68, 0.6]),
-        ("aaaaaaaa", "baaaaaab", [0.3, 0.62, 0.71, 0.75, 0.75, 0.71, 0.62, 0.3]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaaaab", [0.64, 0.73, 0.79, 0.8, 0.79, 0.73, 0.64, 0.31]),
-        ("aaaaaaaa", "aaaaabbb", [0.6, 0.68, 0.7, 0.68, 0.6, 0.29, 0.19, 0.13]),
-        ("aaaaaaaa", "aaabbaaa", [0.56, 0.63, 0.62, 0.39, 0.39, 0.62, 0.63, 0.56]),
-        ("aaaaa", "bbbbb", [0] * 5),
-        ("", "", []),
-    ],
-)
-def test_concordance_simple(left, right, expected):
-    result = [round(float(x), 2) for x in calculate_concordance(left, right)]
-    assert result == expected
-
-
-@pytest.mark.parametrize(
-    "left, right, expected",
-    [
-        ("a" * 128, "a" * 128, 64),
-        ("a" * 128, "a" * 64 + "b" * 64, 32),
-        ("a" * 128, "a" * 64 + "ba" * 32, 32),
-        ("a" * 128, "a" * 54 + "b" * 20 + "a" * 54, 28),  # two peaks
-        ("a" * 128, "a" * 63 + "b" * 2 + "a" * 63, 32),  # two peaks
-        ("a" * 1280, "b" * 640 + "a" * 640, round(1280 * 3 / 4)),
-        ("a" * 128, "b" * 48 + "a" * 32 + "b" * 48, 64),
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "ab" + "a" * 15 + "b" * 48,
-            48 + 16 // 2,
-        ),  # two peaks - choosing 1nd
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "ba" + "a" * 15 + "b" * 48,
-            48 + 15 + 16 // 2,
-        ),  # two peaks - choosing 2nd
-        (
-            "a" * 128,
-            "b" * 48 + "a" * 15 + "bb" + "a" * 15 + "b" * 48,
-            48 + 15 // 2,
-        ),  # two peaks - choosing 1st
-    ],
-)
-def test_concordance_simple_index(left, right, expected):
-    concordance = calculate_concordance(left, right)
-    concordance_d = list(disambiguate_concordance(concordance))
-    index = max(range(len(concordance)), key=lambda i: concordance_d[i])
-    if abs(index - expected) > 1:
-        assert index == expected
-
-
-def generate_test_cases(num_cases):
-    with fixed_random_seed(42):
-        length = random.randint(1, 80)
-        return [generate_random_string_pair(length) for _ in range(num_cases)]
-
-
-concordance_cases = generate_test_cases(num_cases=100)
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_output_range(left, right):
-    result = calculate_concordance(left, right)
-    assert all(
-        0 <= n <= 1 for n in result
-    ), "All values in result should be between 0 and 1"
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_higher_if_more_matches_added(left, right):
-    # Insert exact matches in the middle
-    matching_sequence = "A" * 30
-    insert_position = len(left) // 2
-    new_left = (
-        left[:insert_position]
-        + matching_sequence
-        + left[insert_position + len(matching_sequence):]
-    )
-    new_right = (
-        right[:insert_position]
-        + matching_sequence
-        + right[insert_position + len(matching_sequence):]
-    )
-
-    old_conc = calculate_concordance(left, right)
-    new_conc = calculate_concordance(new_left, new_right)
-    old_average = sum(old_conc) / len(old_conc)
-    new_average = sum(new_conc) / len(new_conc)
-    assert old_average <= new_average
-
-
-@pytest.mark.parametrize("left, right", concordance_cases)
-def test_concordance_higher_in_matching_areas(left, right):
-    # Insert exact matches in the middle
-    matching_sequence = "A" * 30
-    insert_position = len(left) // 2
-    new_left = (
-        left[:insert_position]
-        + matching_sequence
-        + left[insert_position + len(matching_sequence):]
-    )
-    new_right = (
-        right[:insert_position]
-        + matching_sequence
-        + right[insert_position + len(matching_sequence):]
-    )
-
-    concordance_scores = calculate_concordance(new_left, new_right)
-
-    # Check concordance in the matching area
-    matching_area_concordance = concordance_scores[
-        insert_position:insert_position + len(matching_sequence)
+    mock_contigs = [
+        create_mock_aligned_contig("ref1", 0, 200, "contig1", reads_count=100),
+        create_mock_aligned_contig("ref1", 50, 100, "contig2", reads_count=30),
+        create_mock_aligned_contig("ref1", 120, 160, "contig3", reads_count=10),
     ]
 
-    # Calculate average concordance inside and outside the matching area
-    average_inside = sum(matching_area_concordance) / len(matching_sequence)
-    average_outside = (sum(concordance_scores) - sum(matching_area_concordance)) / (
-        len(concordance_scores) - len(matching_sequence)
-    )
+    # With reads_count available, should remove contig3 first (lowest reads_count=10)
+    # even though contig2 has larger ref_length
+    covered, covering = find_covered_contig(mock_contigs)
+    assert covered is not None
+    assert covered.name == "contig3"
 
-    # Assert that the concordance is indeed higher in the matching area
-    assert (
-        average_inside > average_outside
-    ), "Concordance in matching areas should be higher than in non-matching areas"
+
+def test_find_covered_prioritizes_by_ref_length_when_no_reads():
+    """Test that find_covered_contig falls back to ref_length when reads_count is unavailable."""
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+
+    # Create three contigs where contig2 and contig3 are both fully covered by contig1:
+    # - contig1: ref_length=200 (large, covers both others)
+    # - contig2: ref_length=50  (medium)
+    # - contig3: ref_length=40  (smallest)
+
+    mock_contigs = [
+        create_mock_aligned_contig("ref1", 0, 200, "contig1", reads_count=None),
+        create_mock_aligned_contig("ref1", 50, 100, "contig2", reads_count=None),
+        create_mock_aligned_contig("ref1", 120, 160, "contig3", reads_count=None),
+    ]
+
+    # Without reads_count, should remove contig3 first (smallest ref_length=40)
+    covered, covering = find_covered_contig(mock_contigs)
+    assert covered is not None
+    assert covered.name == "contig3"
+
+
+def test_find_covered_mixed_reads_count_uses_ref_length():
+    """Test that find_covered_contig uses ref_length when reads_count is mixed (some None)."""
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+
+    # Create contigs with mixed reads_count (some None, some set):
+    # - contig1: ref_length=200, reads_count=100
+    # - contig2: ref_length=50,  reads_count=None (medium ref_length)
+    # - contig3: ref_length=40,  reads_count=10  (smallest ref_length)
+
+    mock_contigs = [
+        create_mock_aligned_contig("ref1", 0, 200, "contig1", reads_count=100),
+        create_mock_aligned_contig("ref1", 50, 100, "contig2", reads_count=None),
+        create_mock_aligned_contig("ref1", 120, 160, "contig3", reads_count=10),
+    ]
+
+    # Mixed reads_count means fall back to ref_length ordering
+    # Should remove contig3 first (smallest ref_length=40)
+    covered, covering = find_covered_contig(mock_contigs)
+    assert covered is not None
+    assert covered.name == "contig3"

@@ -7,6 +7,7 @@ See docs/design/remap.md for a detailed description.
 
 import argparse
 import typing
+from typing import Callable, Optional
 from collections import Counter, defaultdict
 import csv
 from csv import DictReader, DictWriter
@@ -27,11 +28,14 @@ import Levenshtein
 from micall.core import project_config
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
-from micall.core.prelim_map import BOWTIE_BUILD_PATH, \
-    BOWTIE_PATH, BOWTIE_VERSION, READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
+from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
     REF_GAP_EXTEND, check_fastq
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
 from micall.utils.translation import reverse_and_complement
+from micall.utils.work_dir import WorkDir
+from micall.utils.stderr import Stderr
+from micall.utils.remap_callback import RemapCallback
+from micall.utils.cache import cached
 
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
@@ -446,209 +450,220 @@ def write_remap_counts(remap_counts_writer, counts, title, distance_report=None)
         remap_counts_writer.writerow(row)
 
 
-def remap(fastq1: str,
-          fastq2: str,
-          prelim_csv: typing.IO,
-          remap_csv: typing.IO,
-          remap_counts_csv: typing.IO,
-          remap_conseq_csv: typing.IO,
-          unmapped1: typing.IO,
-          unmapped2: typing.IO,
-          work_path='',
-          callback=None,
+@cached("remap",
+        parameters=["count_threshold", "rdgopen", "rfgopen", "gzip", "debug_file_prefix"],
+        outputs=["remap_csv", "remap_counts_csv", "remap_conseq_csv", "unmapped1", "unmapped2"])
+def remap(fastq1: Path,
+          fastq2: Path,
+          prelim_csv: Path,
+          remap_csv: Path,
+          remap_counts_csv: Path,
+          remap_conseq_csv: Path,
+          unmapped1: Path,
+          unmapped2: Path,
           count_threshold=10,
           rdgopen=READ_GAP_OPEN,
           rfgopen=REF_GAP_OPEN,
-          stderr=sys.stderr,
           gzip=False,
-          debug_file_prefix=None):
+          debug_file_prefix: Optional[str] = None,
+          ) -> None:
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
     is being updated as the consensus of the reads that were mapped to the last set.
-    @param fastq1: input R1 FASTQ
-    @param fastq2: input R2 FASTQ
-    @param prelim_csv: input CSV output from prelim_csv()
-    @param remap_csv:  output CSV, contents of bowtie2 SAM output
-    @param remap_counts_csv:  output CSV, counts of reads mapped to regions
-    @param remap_conseq_csv:  output CSV, sample- and region-specific consensus sequences
+    @param fastq1: Path to input R1 FASTQ
+    @param fastq2: Path to input R2 FASTQ
+    @param prelim_csv: Path to input CSV output from prelim_csv()
+    @param remap_csv:  Path to output CSV, contents of bowtie2 SAM output
+    @param remap_counts_csv:  Path to output CSV, counts of reads mapped to regions
+    @param remap_conseq_csv:  Path to output CSV, sample- and region-specific consensus sequences
                                 generated while remapping reads
-    @param unmapped1:  output FASTQ containing R1 reads that did not map to any region
-    @param unmapped2:  output FASTQ containing R2 reads that did not map to any region
-    @param work_path:  optional path to store working files
-    @param callback: a function to report progress with three optional
-        parameters - callback(message, progress, max_progress)
+    @param unmapped1:  Path to output FASTQ containing R1 reads that did not map to any region
+    @param unmapped2:  Path to output FASTQ containing R2 reads that did not map to any region
     @param count_threshold:  minimum number of reads that map to a region for it to be remapped
     @param rdgopen: read gap open penalty
     @param rfgopen: reference gap open penalty
-    @param stderr: an open file object to receive stderr from the bowtie2 calls
     @param gzip: True if the FASTQ files are gzipped
     @param debug_file_prefix: the prefix for the file path to write debug files.
         If not None, this will be used to write a copy of the reference FASTA
         files and the output SAM files.
     """
 
-    reffile = os.path.join(work_path, 'temp.fasta')
-    samfile = os.path.join(work_path, 'temp.sam')
+    # Get work_path, stderr, and callback from dynamic scope
+    work_path = WorkDir.get()
+    stderr = Stderr.get()
+    callback = RemapCallback.get()
+
+    reffile = work_path / 'temp.fasta'
+    samfile = work_path / 'temp.sam'
 
     bowtie2, bowtie2_build = find_bowtie2()
 
     # check that the inputs exist
-    fastq1 = check_fastq(fastq1, gzip)
-    fastq2 = check_fastq(fastq2, gzip)
+    fastq1_str = check_fastq(str(fastq1), gzip)
+    fastq2_str = check_fastq(str(fastq2), gzip)
 
     # retrieve reference sequences used for preliminary mapping
     projects = project_config.ProjectConfig.loadDefault()
     seeds = projects.getAllReferences()
 
     # record the raw read count
-    raw_count = line_counter.count(fastq1, gzip=gzip) // 2  # 4 lines per record in FASTQ, paired
+    raw_count = line_counter.count(fastq1_str, gzip=gzip) // 2  # 4 lines per record in FASTQ, paired
 
-    remap_counts_writer = csv.DictWriter(
-        remap_counts_csv,
-        'type count filtered_count seed_dist other_dist other_seed'.split(),
-        lineterminator=os.linesep)
-    remap_counts_writer.writeheader()
-    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
+    # Open all output files that will be used throughout the function
+    with open(remap_counts_csv, 'w') as remap_counts_file, \
+         open(unmapped1, 'w') as unmapped1_file, \
+         open(unmapped2, 'w') as unmapped2_file:
 
-    # convert preliminary CSV to SAM, count reads
-    with open(samfile, 'w') as f:
-        # transfer filtered counts to map counts for remap loop
-        map_counts = convert_prelim(prelim_csv,
-                                    f,
-                                    remap_counts_writer,
-                                    count_threshold,
-                                    projects)
+        remap_counts_writer = csv.DictWriter(
+            remap_counts_file,
+            'type count filtered_count seed_dist other_dist other_seed'.split(),
+            lineterminator=os.linesep)
+        remap_counts_writer.writeheader()
+        remap_counts_writer.writerow(dict(type='raw', count=raw_count))
 
-    # debug_reports = {('SARS-CoV-2-seed', pos): None
-    #                  for pos in range(20290, 20311)}
-    debug_reports = None
-    # regenerate consensus sequences based on preliminary map
-    prelim_conseqs = build_conseqs(samfile,
-                                   seeds=seeds,
-                                   debug_reports=debug_reports)
-    print_debug_reports(debug_reports, 'Preliminary mapping report:')
+        # convert preliminary CSV to SAM, count reads
+        with open(samfile, 'w') as sam_f, open(prelim_csv) as prelim_f:
+            # transfer filtered counts to map counts for remap loop
+            map_counts = convert_prelim(prelim_f,
+                                        sam_f,
+                                        remap_counts_writer,
+                                        count_threshold,
+                                        projects)
 
-    # exclude references with low counts (post filtering)
-    conseqs = {rname: prelim_conseqs[rname]
-               for rname in map_counts
-               if rname in prelim_conseqs}
+        # debug_reports = {('SARS-CoV-2-seed', pos): None
+        #                  for pos in range(20290, 20311)}
+        debug_reports = None
+        # regenerate consensus sequences based on preliminary map
+        prelim_conseqs = build_conseqs(str(samfile),
+                                       seeds=seeds,
+                                       debug_reports=debug_reports)
+        print_debug_reports(debug_reports, 'Preliminary mapping report:')
 
-    # start remapping loop
-    n_remaps = 0
-    new_counts = Counter()
-    unmapped_count = raw_count
-    while conseqs:
-        # reset unmapped files with each iteration
-        unmapped1.seek(0)
-        unmapped1.truncate()
-        unmapped2.seek(0)
-        unmapped2.truncate()
+        # exclude references with low counts (post filtering)
+        conseqs = {rname: prelim_conseqs[rname]
+                   for rname in map_counts
+                   if rname in prelim_conseqs}
 
-        if debug_file_prefix is None:
-            next_debug_prefix = None
-        else:
-            next_debug_prefix = '{}_remap{}'.format(debug_file_prefix,
-                                                    n_remaps+1)
-        unmapped_count = map_to_reference(fastq1,
-                                          fastq2,
-                                          conseqs,
-                                          reffile,
-                                          samfile,
-                                          unmapped1,
-                                          unmapped2,
-                                          bowtie2,
-                                          bowtie2_build,
-                                          raw_count,
-                                          rdgopen,
-                                          rfgopen,
-                                          new_counts,
-                                          stderr,
-                                          callback,
-                                          debug_file_prefix=next_debug_prefix)
+        # start remapping loop
+        n_remaps = 0
+        new_counts = Counter()
+        unmapped_count = raw_count
 
-        old_seed_names = set(conseqs.keys())
-        # regenerate consensus sequences
-        distance_report = {}
-        conseqs = build_conseqs(samfile,
-                                seeds=conseqs,
-                                is_filtered=True,
-                                filter_coverage=count_threshold//2,  # pairs
-                                distance_report=distance_report,
-                                original_seeds=seeds,
-                                debug_reports=debug_reports)
-        new_seed_names = set(conseqs.keys())
-        n_remaps += 1
-        print_debug_reports(debug_reports, f'Remap {n_remaps} report:')
+        while conseqs:
+            # reset unmapped files with each iteration
+            unmapped1_file.seek(0)
+            unmapped1_file.truncate()
+            unmapped2_file.seek(0)
+            unmapped2_file.truncate()
 
+            if debug_file_prefix is None:
+                next_debug_prefix = None
+            else:
+                next_debug_prefix = '{}_remap{}'.format(debug_file_prefix,
+                                                        n_remaps+1)
+            unmapped_count = map_to_reference(fastq1_str,
+                                              fastq2_str,
+                                              conseqs,
+                                              str(reffile),
+                                              str(samfile),
+                                              unmapped1_file,
+                                              unmapped2_file,
+                                              bowtie2,
+                                              bowtie2_build,
+                                              raw_count,
+                                              rdgopen,
+                                              rfgopen,
+                                              new_counts,
+                                              stderr,
+                                              callback,
+                                              debug_file_prefix=next_debug_prefix)
+
+
+            old_seed_names = set(conseqs.keys())
+            # regenerate consensus sequences
+            distance_report = {}
+            conseqs = build_conseqs(str(samfile),
+                                    seeds=conseqs,
+                                    is_filtered=True,
+                                    filter_coverage=count_threshold//2,  # pairs
+                                    distance_report=distance_report,
+                                    original_seeds=seeds,
+                                    debug_reports=debug_reports)
+            new_seed_names = set(conseqs.keys())
+            n_remaps += 1
+            print_debug_reports(debug_reports, f'Remap {n_remaps} report:')
+
+            write_remap_counts(remap_counts_writer,
+                               new_counts,
+                               title='remap-{}'.format(n_remaps),
+                               distance_report=distance_report)
+
+            if new_seed_names == old_seed_names:
+                # stopping criterion 1 - none of the regions gained reads
+                if all((count <= map_counts[refname])
+                       for refname, count in new_counts.items()):
+                    break
+
+                # stopping criterion 2 - a sufficient fraction of raw data has been mapped
+                mapping_efficiency = sum(new_counts.values()) / float(raw_count)
+                if mapping_efficiency > MIN_MAPPING_EFFICIENCY:
+                    break
+
+                if n_remaps >= MAX_REMAPS:
+                    break
+
+            # deep copy of mapping counts
+            map_counts = dict(new_counts)
+
+        # finished iterative phase (out of while loop but still in with block)
+        # generate SAM CSV output
+        with open(remap_csv, 'w') as remap_csv_file:
+            remap_writer = csv.DictWriter(remap_csv_file, SAM_FIELDS, lineterminator=os.linesep)
+            remap_writer.writeheader()
+            if new_counts:
+                splitter = MixedReferenceSplitter(str(work_path))
+                split_counts = Counter()
+                # At least one read was mapped, so samfile has relevant data
+                with open(samfile) as f:
+                    for fields in splitter.split(f):
+                        remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
+                for rname, (split_file1, split_file2) in splitter.splits.items():
+                    refseqs = {rname: conseqs[rname]}
+                    unmapped_count += map_to_reference(split_file1.name,
+                                                       split_file2.name,
+                                                       refseqs,
+                                                       str(reffile),
+                                                       str(samfile),
+                                                       unmapped1_file,
+                                                       unmapped2_file,
+                                                       bowtie2,
+                                                       bowtie2_build,
+                                                       raw_count,
+                                                       rdgopen,
+                                                       rfgopen,
+                                                       split_counts,
+                                                       stderr,
+                                                       callback)
+                    new_counts.update(split_counts)
+                    with open(samfile, 'r') as f:
+                        for fields in splitter.walk(f):
+                            remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
+
+        # write consensus sequences and counts
+        with open(remap_conseq_csv, 'w') as remap_conseq_file:
+            remap_conseq_file.write('region,sequence\n')  # record consensus sequences for later use
+            for refname in new_counts.keys():
+                # NOTE this is the consensus sequence to which the reads were mapped, NOT the
+                # current consensus!
+                conseq = conseqs.get(refname) or projects.getReference(refname)
+                remap_conseq_file.write('%s,%s\n' % (refname, conseq))
         write_remap_counts(remap_counts_writer,
                            new_counts,
-                           title='remap-{}'.format(n_remaps),
-                           distance_report=distance_report)
+                           title='remap-final')
 
-        if new_seed_names == old_seed_names:
-            # stopping criterion 1 - none of the regions gained reads
-            if all((count <= map_counts[refname])
-                   for refname, count in new_counts.items()):
-                break
-
-            # stopping criterion 2 - a sufficient fraction of raw data has been mapped
-            mapping_efficiency = sum(new_counts.values()) / float(raw_count)
-            if mapping_efficiency > MIN_MAPPING_EFFICIENCY:
-                break
-
-            if n_remaps >= MAX_REMAPS:
-                break
-
-        # deep copy of mapping counts
-        map_counts = dict(new_counts)
-
-    # finished iterative phase
-    # generate SAM CSV output
-    remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
-    remap_writer.writeheader()
-    if new_counts:
-        splitter = MixedReferenceSplitter(work_path)
-        split_counts = Counter()
-        # At least one read was mapped, so samfile has relevant data
-        with open(samfile) as f:
-            for fields in splitter.split(f):
-                remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
-        for rname, (split_file1, split_file2) in splitter.splits.items():
-            refseqs = {rname: conseqs[rname]}
-            unmapped_count += map_to_reference(split_file1.name,
-                                               split_file2.name,
-                                               refseqs,
-                                               reffile,
-                                               samfile,
-                                               unmapped1,
-                                               unmapped2,
-                                               bowtie2,
-                                               bowtie2_build,
-                                               raw_count,
-                                               rdgopen,
-                                               rfgopen,
-                                               split_counts,
-                                               stderr,
-                                               callback)
-            new_counts.update(split_counts)
-            with open(samfile, 'r') as f:
-                for fields in splitter.walk(f):
-                    remap_writer.writerow(dict(zip(SAM_FIELDS, fields)))
-
-    # write consensus sequences and counts
-    remap_conseq_csv.write('region,sequence\n')  # record consensus sequences for later use
-    for refname in new_counts.keys():
-        # NOTE this is the consensus sequence to which the reads were mapped, NOT the
-        # current consensus!
-        conseq = conseqs.get(refname) or projects.getReference(refname)
-        remap_conseq_csv.write('%s,%s\n' % (refname, conseq))
-    write_remap_counts(remap_counts_writer,
-                       new_counts,
-                       title='remap-final')
-
-    # report number of unmapped reads
-    remap_counts_writer.writerow(dict(type='unmapped',
-                                      count=unmapped_count))
+        # report number of unmapped reads
+        remap_counts_writer.writerow(dict(type='unmapped',
+                                          count=unmapped_count))
 
 
 def print_debug_reports(debug_reports, title):
@@ -786,16 +801,9 @@ def map_to_contigs(fastq1,
 
 
 def find_bowtie2():
-    try:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH,
-                                     logger)
-    except RuntimeError:
-        bowtie2 = Bowtie2(BOWTIE_VERSION, BOWTIE_PATH + '-' + BOWTIE_VERSION)
-        bowtie2_build = Bowtie2Build(BOWTIE_VERSION,
-                                     BOWTIE_BUILD_PATH + '-' + BOWTIE_VERSION,
-                                     logger)
+    bowtie2 = Bowtie2()
+    bowtie2_build = Bowtie2Build()
+    bowtie2_build.set_logger(logger)
     return bowtie2, bowtie2_build
 
 

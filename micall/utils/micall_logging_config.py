@@ -13,13 +13,21 @@ Do not commit micall_logging_override.py to source control.
 
 # Production server probably needs /var/log/micall/micall.log
 # Don't forget to create the folder and change owner to micall.
-LOG_FILE = 'micall.log'
+LOG_FILE = '/tmp/micall.log'
 
 LOGGING = {
     # This is the default logger. Probably want to switch console to mail.
     'root': {'handlers': ['console', 'file'],
              'level': 'INFO'},
-    'loggers': {"__main__": {"level": "INFO"}},
+    'loggers': {
+        "__main__": {"level": "INFO"},
+        
+        # Suppress routine Kive API credential refresh noise while preserving fatal errors
+        "kiveapi": {"level": "ERROR"},
+
+        # Suppress urllib3 connection retry warnings (temporary DNS/network failures)
+        "urllib3.connectionpool": {"level": "ERROR"},
+    },
 
     # This lets you call logging.getLogger() before the configuration is done.
     'disable_existing_loggers': False,

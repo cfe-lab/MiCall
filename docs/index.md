@@ -11,12 +11,12 @@ transfers FASTQ.gz files to the cluster and executes the pipeline.
 
 See the [list of steps and files][steps] for details of what the pipeline does.
 The [admin] page describes how to look after the pipeline in Kive, and the
-[getting started] page describes how to get the docker version set up and run it
+[local analysis] page describes how to get the docker version set up and run it
 on your own data.
 
-[steps]: https://cfe-lab.github.io/MiCall/steps
-[admin]: https://cfe-lab.github.io/MiCall/admin
-[getting started]: https://cfe-lab.github.io/MiCall/getting_started
+[steps]: /steps
+[admin]: /admin
+[local analysis]: /local_analysis.html
 
 ## Dual Licensing ##
 Copyright (C) 2016, University of British Columbia

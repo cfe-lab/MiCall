@@ -9,11 +9,13 @@ so this is a summary of what we've learned about how it works.
 The best way to see the details is to change the [`iva` command] to write its
 details to a log file like this:
 
-    with open(os.path.join(tmp_dir, 'iva.log'), 'w') as log_file:
+```python
+with open(os.path.join(tmp_dir, 'iva.log'), 'w') as log_file:
     run([IVA, '-vv', '--fr', joined_path, '-t', '2', iva_out_path],
         check=True,
         stdout=log_file,
         stderr=STDOUT)
+```
 
 That will show you the contig sequence as it gets assembled throughout the
 process by writing its progress to the `iva.log` file.

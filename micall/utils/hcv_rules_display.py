@@ -200,5 +200,5 @@ def main():
     rules.sort(key=itemgetter('region', 'name'))
     write_report(args.display, rules)
 
-
-main()
+if __name__ == '__main__':
+    main()

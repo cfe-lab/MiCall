@@ -20,7 +20,7 @@ From: python:3.12
         failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
-        genome_coverage_csv genome_coverage_svg genome_concordance_svg
+        genome_coverage_csv genome_coverage_svg genome_concordance_svg stitcher_plot_svg
     KIVE_THREADS 1
     KIVE_MEMORY 6000
 
@@ -37,13 +37,6 @@ From: python:3.12
     echo ===== Installing Prerequisites ===== >/dev/null
     apt-get update -q
     apt-get install -q -y unzip wget
-
-    echo ===== Saving git version ===== >/dev/null
-    # Git is expected to be already installed.
-    mkdir -p /etc/micall
-    git -C /opt/micall/ rev-parse HEAD > /etc/micall/git-version
-    git -C /opt/micall/ -c 'core.fileMode=false' describe --tags --dirty 1>&2 > /etc/micall/git-describe || true
-    git -C /opt/micall/ log -n 10 > /etc/micall/git-log
 
     echo ===== Installing blast ===== >/dev/null
     apt-get install -q -y ncbi-blast+
@@ -62,7 +55,7 @@ From: python:3.12
     ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2
     rm bowtie2.zip
 
-    echo ===== Installing IVA dependencies ===== >/dev/null
+    echo ===== Installing IVA ===== >/dev/null
     apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev
     cd /bin
     wget -q http://sun.aei.polsl.pl/kmc/download-2.1.1/linux/kmc
@@ -90,19 +83,21 @@ From: python:3.12
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
+    pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
     echo ===== Installing Python packages ===== >/dev/null
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
-    pip install --upgrade pip
+    pip install --upgrade pip setuptools
     pip install /opt/micall
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     # Cleanup.
-    rm -rf /opt/micall
+    rm -rf /opt/micall /root /usr/lib/gcc /opt/uv-home/.cache /etc/apt/ /var/apt /etc/dpkg /var/log /var/cache /var/lib/apt /var/lib/dpkg
+    mkdir -p /root
 
 %environment
     export PATH=/opt/bowtie2:/bin:/usr/local/bin
@@ -148,8 +143,9 @@ From: python:3.12
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
         genome_coverage_csv genome_coverage_svg genome_concordance_svg \
-        unstitched_cascade_csv unstitched_conseq_csv unstitched_contigs_csv contigs_csv \
-        read_entropy_csv conseq_region_csv conseq_stitched_csv
+        stitcher_plot_svg unstitched_cascade_csv unstitched_conseq_csv \
+        unstitched_contigs_csv contigs_csv read_entropy_csv \
+        conseq_region_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
 

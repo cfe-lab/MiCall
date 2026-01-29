@@ -162,4 +162,5 @@ def main():
             display_coverage(report_file)
 
 
-main()
+if __name__ == '__main__':
+    main()

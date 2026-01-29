@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 """
 
 This test is supposed to verify that installation of MiCall is not broken.
@@ -22,11 +20,12 @@ from pathlib import Path
 from typing import Sequence
 import pytest
 import shlex
-import re
 import os
 from itertools import groupby
+from packaging.version import Version, InvalidVersion
+
 from micall.utils.get_list_of_executables import iterate_executables
-from micall.main import EXECUTABLES
+from micall.__main__ import EXECUTABLES
 
 
 # Function to quote shell arguments.
@@ -110,7 +109,10 @@ def test_micall_version(temp_venv, micall_installation):
     assert returncode == 0, f"MiCall version command failed:\n{stderr}"
     lines = [line.strip() for line in stdout.split('\n')]
     first_line = lines[0].strip()
-    assert re.match(r'(\d+[.]\d+[.]\d+)|development', first_line), "Unexpected output for micall version check."
+    try:
+        Version(first_line)
+    except InvalidVersion:
+        raise AssertionError(f"Unexpected output for micall --version:\n{stdout}")
 
 
 def test_micall_help(temp_venv, micall_installation):
@@ -135,7 +137,7 @@ def test_micall_help(temp_venv, micall_installation):
 
 def test_executables_names():
     """
-    Verify that all and only those executables found by `iterate_executables()` are used in micall/main.py.
+    Verify that all and only those executables found by `iterate_executables()` are used in micall/__main__.py.
     """
 
     assert set(EXECUTABLES) == set(map(str, iterate_executables()))

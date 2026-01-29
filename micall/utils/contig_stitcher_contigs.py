@@ -2,11 +2,14 @@ from dataclasses import dataclass
 from typing import Optional, Literal
 from functools import cached_property
 from aligntools import CigarHit
+import micall.utils.registry as registry
 
 
 ID_STATE = 0
+ContigId = int
 
-def generate_new_id() -> int:
+
+def generate_new_id() -> ContigId:
     global ID_STATE
     ID_STATE += 1
     return ID_STATE
@@ -16,9 +19,10 @@ def generate_new_id() -> int:
 class Contig:
     name: Optional[str]
     seq: str
+    reads_count: Optional[int]
 
     @cached_property
-    def id(self) -> int:
+    def id(self) -> ContigId:
         return generate_new_id()
 
     @cached_property
@@ -31,9 +35,16 @@ class Contig:
             return unqualified + f'({index})'
 
     def register(self) -> int:
-        from micall.utils.contig_stitcher_context import context
-        ctx = context.get()
-        return ctx.register(key=self.id, value=self.name)
+        ctx = registry.get()
+        return ctx.add(key=self.id, value=self.name)
+
+    @staticmethod
+    def empty() -> 'Contig':
+        return EMPTY_CONTIG
+
+
+EMPTY_CONTIG = Contig(name=None, seq='', reads_count=None)
+assert EMPTY_CONTIG.id > 0
 
 
 @dataclass(frozen=True)
@@ -64,4 +75,5 @@ class AlignedContig(GenotypedContig):
             ref_name=query.ref_name,
             group_ref=query.group_ref,
             ref_seq=query.ref_seq,
-            match_fraction=query.match_fraction)
+            match_fraction=query.match_fraction,
+            reads_count=query.reads_count)

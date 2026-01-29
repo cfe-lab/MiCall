@@ -61,64 +61,88 @@ If a MiCall sample finishes processing and the number of active samples dips bel
 that limit, MiCall Watcher looks at its list of Samples That Need Reprocessing and starts 
 the next one, moving it from that list to Samples In Progress.
 
+### Installing base packages ###
+
+MiCall is written in python, thus we need the following packages:
+
+```shell
+apt-get install -y python3 python3-venv git  # on Ubuntu & Debian.
+```
+
 ### Installing MiCall Watcher ###
+
 Install the MiCall source code in a shared location:
 
-    $ cd /usr/local/share
-    $ sudo git clone https://github.com/cfe-lab/MiCall.git
+```shell
+cd /usr/local/share
+sudo git clone https://github.com/cfe-lab/MiCall.git
+```
 
-Create a Python 3.6 virtual environment to run MiCall.
+Create a Python virtual environment to run MiCall.
 
-    $ cd /usr/local/share
-    $ sudo python3.6 -m venv venv-micall
-    $ cd MiCall
-    $ sudo ../venv-micall/bin/pip install .[watcher]
+```shell
+sudo python3 -m venv venv-micall
+```
+
+Configure micall logging, and then install micall package:
+
+```shell
 
 Copy the logging configuration if you want to change any of the settings.
 
-    $ cp micall/utils/micall_logging_config.py micall/utils/micall_logging_override.py
+```shell
+sudo cp micall/utils/micall_logging_config.py micall/utils/micall_logging_override.py
+sudo emacs micall/utils/micall_logging_override.py
+sudo venv-micall/bin/pip install ./MiCall[watcher]
+```
 
 Read the instructions in the file, and edit the override copy. If the default
 settings are fine, you don't need the override file.
 
-It should be run as a service, under its own user account, so first create the
-new user:
-
-    $ sudo useradd --system micall
-
-A system user won't show up in the list of accounts to log in, and it won't get
-a home folder.
-
 Depending on how you configured the logging, you'll probably need to create a
 log folder and grant access to the micall user.
 
-    $ sudo mkdir /var/log/micall
-    $ sudo chown micall:micall /var/log/micall
+```shell
+sudo mkdir /var/log/micall
+sudo chown micall:micall /var/log/micall
+```
+
+MiCall watcher should be run as a service, under its own user account, 
+so first create the new user:
+
+```shell
+sudo useradd --system micall
+sudo su micall  # switch to micall account.
+. venv-micall/bin/activate # activate the virtual environment.
+```
 
 Test that everything is installed with the right permissions:
 
-    $ sudo su -c "/usr/local/share/venv-micall/bin/python micall/monitor/micall_watcher.py --help" micall 
+```shell
+micall watcher --help
+```
 
-Look at the options you can give to the `micall/monitor/micall_watcher.py` script when you
+Look at the options you can give to the `watcher` script when you
 configure the service file in the next step.
 
 Now configure the service using a systemd [service unit] configuration.
 Here's an example configuration, in `/etc/systemd/system/micall_watcher.service`:
 
-    [Unit]
-    Description=micall_watcher
+```toml
+[Unit]
+Description=micall_watcher
     
-    [Service]
-    ExecStart=/usr/local/share/venv-micall/bin/python3 \
-        /usr/local/share/MiCall/micall/monitor/micall_watcher.py
-    EnvironmentFile=/etc/micall/micall.conf
-    User=micall
+[Service]
+ExecStart=/usr/local/share/venv-micall/bin/micall watcher
+EnvironmentFile=/etc/micall/micall.conf
+User=micall
     
-    # Allow the process to log its exit.
-    KillSignal=SIGINT
+# Allow the process to log its exit.
+KillSignal=SIGINT
     
-    [Install]
-    WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
+```
 
 Micall watcher accepts multiple settings which can be passed
 directly as command line arguments, or as environment variables.
@@ -127,31 +151,36 @@ because the command line is visible to all users.
 Environment variables go in the configuration file listed in the
 `EnvironmentFile=` setting. In this example, it's `/etc/micall/micall.conf`
 
-    $ sudo mkdir /etc/micall
-    $ sudo emacs -nw /etc/micall/micall.conf
-    $ sudo chmod 600 /etc/micall/micall.conf
+```shell
+exit # logout from "micall" account.
+sudo mkdir /etc/micall
+sudo emacs /etc/micall/micall.conf
+sudo chmod 600 /etc/micall/micall.conf
+```
 
 Make sure you reduce the read permissions on the `.conf` file so
 other users can't read it. The environment variable names are the same as the
 command options, but they add a `MICALL_` prefix, if it's not already there.
-To list all the available options, run `python3 micall/monitor/micall_watcher.py --help`.
+To list all the available options, run `micall watcher --help`.
 Below is the example config:
 
-    # This is an example of /etc/micall/micall.conf
-    # You can add comment lines that start with #
-    MICALL_KIVE_SERVER=https://kive.example.com
-    MICALL_KIVE_USER=kiveusername
-    MICALL_KIVE_PASSWORD=kivepassword
+```shell
+# This is an example of /etc/micall/micall.conf
+# You can add comment lines that start with #
+MICALL_KIVE_SERVER=https://kive.example.com
+MICALL_KIVE_USER=kiveusername
+MICALL_KIVE_PASSWORD=kivepassword
 
-    MICALL_QAI_SERVER=https://qai.example.com
-    MICALL_QAI_USER=qaiuser
-    MICALL_QAI_PASSWORD=qaipassword
+MICALL_QAI_SERVER=https://qai.example.com
+MICALL_QAI_USER=qaiuser
+MICALL_QAI_PASSWORD=qaipassword
 
-    MICALL_RAW_DATA=/data/raw
+MICALL_RAW_DATA=/data/raw
 
-    MICALL_MAIN_PIPELINE_ID=100
-    MICALL_FILTER_QUALITY_PIPELINE_ID=101
-    MICALL_RESISTANCE_PIPELINE_ID=102
+MICALL_MAIN_PIPELINE_ID=100
+MICALL_FILTER_QUALITY_PIPELINE_ID=101
+MICALL_RESISTANCE_PIPELINE_ID=102
+```
 
 Don't put the environment variables directly in the `.service` file, because
 its contents are visible to all users with `systemctl show micall_watcher`.
@@ -160,10 +189,12 @@ Once you write the configuration file, you
 have to enable and start the service. From then on, it will start automatically
 when the server boots up.
 
-    $ sudo systemctl daemon-reload
-    $ sudo systemctl enable micall_watcher
-    $ sudo systemctl start micall_watcher
-    $ sudo systemctl status micall_watcher
+```shell
+sudo systemctl daemon-reload
+sudo systemctl enable micall_watcher
+sudo systemctl start micall_watcher
+sudo systemctl status micall_watcher
+```
 
 If the service fails to start, look for detailed messages in the log file, in
 `/var/log/syslog`, or in `/var/log/messages`.
@@ -173,9 +204,11 @@ If the service fails to start, look for detailed messages in the log file, in
 ### Restarting the MiCall Watcher ###
 If you installed it as a service as described above, then it's easy:
 
-    sudo systemctl restart micall_watcher
+```shell
+sudo systemctl restart micall_watcher
+```
 
-Don't launch the `micall/monitor/micall_watcher.py` script on its own, or the service will run
+Don't launch the `micall watcher` command on its own, or the service will run
 won't know that it's running. That can end up running two copies of the watcher
 process, and it gets confused.
 
@@ -221,9 +254,13 @@ in a run under `Data/Intensities/BaeCalls/L001/*/*.bcl`.
 
 You can see how much space they take within a run folder:
 
-    find -name "*.bcl" -print0 | du -ch --files0-from -
+```shell
+find -name "*.bcl" -print0 | du -ch --files0-from -
+```
 
 We usually keep the last year's worth of BCL files around, so to delete all the
 BCL files from before May 2022, we ran this command in the runs folder:
 
-    find */Data/Intensities/BaseCalls/L001 -name "*.bcl" -not -newer 220527_M04401_0226_000000000-K5YRD/SampleSheet.csv -print -delete
+```shell
+find */Data/Intensities/BaseCalls/L001 -name "*.bcl" -not -newer 220527_M04401_0226_000000000-K5YRD/SampleSheet.csv -print -delete
+```

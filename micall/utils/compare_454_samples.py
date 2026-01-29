@@ -187,4 +187,5 @@ def main():
     plot(prelim_percents)
     print('Done.')
 
-main()
+if __name__ == '__main__':
+    main()

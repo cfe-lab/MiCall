@@ -391,8 +391,9 @@ def create_sample_scratch(fastq_file):
 
 
 class SampleRunner:
-    def __init__(self, image_path: Path):
+    def __init__(self, image_path: Path, is_docker: bool = False):
         self.image_path = image_path
+        self.is_docker = is_docker
         self.is_denovo = False
         self.bad_cycles_path = None
 
@@ -469,9 +470,9 @@ class SampleRunner:
                 'unstitched_conseq.csv',
                 'unstitched_contigs.csv',
                 'contigs.csv',
+                'stitcher_plot_svg',
                 'read_entropy.csv',
                 'conseq_region.csv',
-                'conseq_stitched.csv',
             ]
 
         else:
@@ -572,21 +573,46 @@ class SampleRunner:
     def build_command(self, inputs, outputs, app_name=None):
         input_path = inputs[0].parent
         output_path = outputs[0].parent
-        command = ['singularity',
-                   'run',
-                   '--contain',
-                   '--cleanenv',
-                   '-B',
-                   '{}:/mnt/input,{}:/mnt/output'.format(input_path,
-                                                         output_path)]
-        if app_name:
-            command.append('--app')
-            command.append(app_name)
-        command.append(self.image_path)
+
+        if self.is_docker:
+            command = ['docker',
+                       'run',
+                       '--rm',
+                       '--read-only',
+                       '--volume', '{}:/mnt/input'.format(input_path),
+                       '--volume', '{}:/mnt/output'.format(output_path),
+                       '--volume', '{}:/tmp'.format(output_path / 'tmp'),
+                       '--entrypoint', 'micall',
+                       '--', str(self.image_path),
+                       ]
+
+            app_arguments = {
+                None: ['micall_kive'],
+                'filter_quality': ['filter_quality'],
+                'resistance': ['micall_kive_resistance'],
+                'denovo': ['micall_kive', '--denovo'],
+            }[app_name]
+
+            command.extend(app_arguments)
+
+        else:
+            command = ['singularity',
+                       'run',
+                       '--contain',
+                       '--cleanenv',
+                       '-B',
+                       '{}:/mnt/input,{}:/mnt/output'.format(input_path,
+                                                             output_path)]
+            if app_name:
+                command.append('--app')
+                command.append(app_name)
+            command.append(str(self.image_path))
+
         for arguments, guest_path in zip((inputs, outputs),
                                          ('/mnt/input', '/mnt/output')):
             for argument in arguments:
                 command.append(os.path.join(guest_path, argument.name))
+
         return command
 
 
@@ -622,6 +648,8 @@ def main():
                         help='Folder to copy microtest samples into.')
     parser.add_argument('--sample',
                         help='Prefix of sample name to run.')
+    parser.add_argument('--docker', action='store_true',
+                        help='If to use docker instead of Singularity.')
     # noinspection PyTypeChecker
     parser.add_argument('image',
                         type=Path,
@@ -642,7 +670,7 @@ def main():
         for source_file in source_files:
             target_file: Path = sandbox_path / source_file.name
             shutil.copy(str(source_file), str(target_file))
-    runner = SampleRunner(args.image)
+    runner = SampleRunner(args.image, is_docker=args.docker)
     with ProcessPoolExecutor() as pool:
         search_pattern = '*_R1_*.fastq'
         if args.sample:
@@ -702,5 +730,5 @@ def main():
             shutil.rmtree(sandbox)
     print('Done.')
 
-
-main()
+if __name__ == '__main__':
+    main()

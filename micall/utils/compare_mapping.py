@@ -258,4 +258,5 @@ def load_read_bins(remap_csv):
     return bins
 
 
-main()
+if __name__ == '__main__':
+    main()

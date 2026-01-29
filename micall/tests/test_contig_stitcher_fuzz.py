@@ -1,15 +1,16 @@
 import pytest
 import json
 import os
-from micall.core.contig_stitcher import (
+from micall.utils.referencefull_contig_stitcher import (
     GenotypedContig,
     AlignedContig,
     stitch_consensus,
     stitch_contigs,
     drop_completely_covered,
-    StitcherContext,
+    ReferencefullStitcherContext,
 )
-import micall.core.contig_stitcher as stitcher
+import micall.utils.referencefull_contig_stitcher as stitcher
+import micall.utils.registry as registry
 from micall.core.plot_contigs import build_stitcher_figure
 from aligntools import CigarHit, Cigar, CigarActions
 from typing import Dict, List
@@ -18,12 +19,13 @@ from collections import defaultdict
 
 @pytest.fixture
 def no_aligner(monkeypatch):
-    monkeypatch.setattr("micall.core.contig_stitcher.align_to_reference", lambda x: [x])
+    monkeypatch.setattr("micall.utils.referencefull_contig_stitcher.align_to_reference", lambda x: [x])
 
 
 @pytest.fixture(autouse=True)
 def stitcher_context():
-    stitcher.context.set(StitcherContext.make())
+    stitcher.ReferencefullStitcherContext.set(stitcher.ReferencefullStitcherContext())
+    registry.set(registry.Registry())
 
 
 def read_contigs(line):
@@ -45,6 +47,7 @@ def read_contigs(line):
             group_ref="commongroup",
             ref_seq=ref_seq,
             match_fraction=2 / 3,
+            reads_count=None,
         )
         alignment = CigarHit(
             Cigar([(length, CigarActions.MATCH)]),
@@ -138,7 +141,7 @@ def test_stitching_intervals_prop(no_aligner, description):
 @pytest.mark.parametrize("description", all_case_descriptions, ids=all_case_ids)
 def test_visualizer_simple(no_aligner, description):
     contigs = description["contigs"]
-    with StitcherContext.fresh() as ctx:
+    with ReferencefullStitcherContext.fresh() as ctx:
         list(stitch_consensus(contigs))
         assert len(ctx.events) >= len(contigs)
         figure = build_stitcher_figure(ctx.events)

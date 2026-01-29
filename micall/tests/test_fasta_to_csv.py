@@ -16,7 +16,7 @@ def DEFAULT_DATABASE():
 
 @pytest.fixture(scope='session', name='hcv_db')
 def check_hcv_db(DEFAULT_DATABASE):
-    db_path = Path(DEFAULT_DATABASE)
+    db_path = DEFAULT_DATABASE
     index_path = db_path.parent / "refs.fasta.nin"
     build_needed = not index_path.exists()
     if not build_needed:
@@ -32,7 +32,7 @@ def check_hcv_db(DEFAULT_DATABASE):
 
 
 def test_make_blast_db_excludes_hivgha(hcv_db, DEFAULT_DATABASE):
-    fasta_path = Path(DEFAULT_DATABASE)
+    fasta_path = DEFAULT_DATABASE
     with fasta_path.open() as f:
         for reference in SeqIO.parse(f, 'fasta'):
             # Exclude the Ghana project, because they're recombinant.
@@ -55,7 +55,7 @@ contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
 1,HCV-1a,41,1.0,100,1,41,8187,8227
 """
 
-    genotype(str(contigs_fasta), blast_csv=blast_csv)
+    genotype(contigs_fasta, blast_csv=blast_csv)
 
     assert expected_blast_csv == blast_csv.getvalue()
 
@@ -75,7 +75,7 @@ HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-1a,1.0,HCV-1a,CAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
@@ -98,7 +98,7 @@ HCV-1g,1.0,HCV-1g,ACCATGGATCACTCCCCTGTGAGGAACTACTGTCTT
 HCV-2b,1.0,HCV-2b,TGCAATGACAGCTTACAGACGGGTTTCCTCGCTTCCTTGTTTTACACCCA
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
@@ -115,7 +115,7 @@ ref,match,group_ref,contig
 unknown,0,,CATCACATAGGAGA
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
@@ -135,7 +135,7 @@ HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
@@ -156,7 +156,7 @@ HCV-1a,1.0,HCV-1a,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 HCV-1a,0.75,HCV-1a,CATCACATAGGAGACAGGGCTCCAGGACTGCACCATGCTCGTGTGTGGCGACGAC
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
 
@@ -183,7 +183,7 @@ contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
 1,HCV-1a,41,1.0,100,1,41,8187,8227
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv, blast_csv=blast_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv, blast_csv=blast_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()
     assert expected_blast_csv == blast_csv.getvalue()
@@ -198,30 +198,6 @@ def test_fasta_to_csv_none(tmpdir, hcv_db):
 ref,match,group_ref,contig
 """
 
-    fasta_to_csv(str(contigs_fasta), contigs_csv)
-
-    assert expected_contigs_csv == contigs_csv.getvalue()
-
-
-def test_merged_contig(tmpdir, hcv_db):
-    contigs_fasta = Path(tmpdir) / 'contigs.fasta'
-    assert not contigs_fasta.exists()
-
-    merged_contigs_path = Path(tmpdir) / 'merged_contigs.csv'
-    merged_contigs_path.write_text("""\
-contig
-TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
-""")
-
-    contigs_csv = StringIO()
-    expected_contigs_csv = """\
-ref,match,group_ref,contig
-HIV1-C-BR-JX140663-seed,1.0,HIV1-C-BR-JX140663-seed,TGCACAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA
-"""
-
-    with merged_contigs_path.open() as merged_contigs_csv:
-        fasta_to_csv(str(contigs_fasta),
-                     contigs_csv,
-                     merged_contigs_csv=merged_contigs_csv)
+    fasta_to_csv(contigs_fasta, contigs_csv)
 
     assert expected_contigs_csv == contigs_csv.getvalue()

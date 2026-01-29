@@ -2,6 +2,7 @@
 title: Steps and their input / output files
 subtitle: Where the data goes
 ---
+
 Individual files are described after the list of steps.
 
 * `micall_basespace.summarize_run`: extract phiX error rates from MiSeq data.
@@ -86,7 +87,6 @@ Individual files are described after the list of steps.
   * conseq.csv - downloaded - consensus sequence, minimum coverage (read depth) 100
   * conseq_all.csv - downloaded - consensus for all seeds (whole and region-wise), no minimum coverage
   * conseq_region.csv - downloaded - consensus for all regions
-  * conseq_stitched.csv - downloaded - stitched whole genome consensus
   * insertions.csv - downloaded - insertions for all regions, at different mixture cutoffs
   * failed_align.csv - downloaded - any consensus that failed to align to its ref
   * nuc_variants.csv - downloaded - top nucleotide variants for HLA
@@ -131,6 +131,7 @@ Individual files are described after the list of steps.
 [genome coverage]: genome_coverage.md
 
 ## File descriptions ##
+
 * aligned.csv and g2p_aligned.csv
   * refname - seed reference the reads mapped to
   * qcut - minimum Phred quality score to include a nucleotide
@@ -199,17 +200,6 @@ Individual files are described after the list of steps.
   * seed-offset - offset of the seed relative to the reference
   * region-offset - offset of the seed relative to the region
 * conseq_region.csv: same columns as conseq.csv
-* conseq_stitched.csv: our best guess at a whole genome consensus, stitched
-  together from the individual regions' consensus sequences, at different mixture levels.
-  Insertions are included and gaps are not filled. In areas where multiple 
-  regions overlap, we prioritize translated regions (because the amino acid alignment is 
-  more precise), and we prioritize information from the centre of the region over information 
-  from the edge of the region (again because the alignment in the centre is more reliable).
-  * seed - reference name
-  * q-cutoff - minimum quality score
-  * consensus-percent-cutoff - to be included in a mixture, a variant must make
-    up at least this fraction of the total valid counts
-  * offset - offset relative to the reference
   * sequence - stitched whole genome consensus
 * conseq_ins.csv
   * qname - query name from the read
@@ -227,6 +217,10 @@ Individual files are described after the list of steps.
   * contig - the nucleotide sequence of the assembled contig
 * contigs.csv
   Same as `unstitched_contigs.csv`, but contigs are stitched by `micall/core/contig_stitcher.py`.
+* stitcher_plot_svg
+  An SVG visualization showing how contigs were stitched together, including coverage information
+  and operations performed during stitching. Only generated for denovo assembly with the referencefull
+  stitcher.
 * coverage_scores.csv
   * project - the project this score is defined by
   * region - the region being displayed

@@ -1,14 +1,12 @@
 [project]
 name = "micall"
-version = "7.17.0"
+dynamic = ["version"]
 description = "Pipeline for processing FASTQ data from an Illumina MiSeq to genotype human RNA viruses like HIV and hepatitis C."
 authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
-license = {text = "AGPL-3.0"}
-license-files = { paths = ["LICENSE.txt"] }
-readme = "README.md"
 requires-python = ">=3.12,<3.13"
+license = {text = "AGPL-3.0"}
 classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python",
@@ -23,60 +21,78 @@ classifiers = [
 
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
-    "pytz==2024.1",
-    "iva @ git+https://github.com/cfe-lab/iva.git@v1.1.1",
-    "biopython==1.83",
+    "pytz>=2025.2",
+    "biopython>=1.86",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.2",
-    "numpy==2.1.2",
-    "scipy==1.14.1",
-    "matplotlib==3.9.2",
-    "cutadapt==4.8",
-    "python-Levenshtein==0.25.1",
-    "PyYAML==6.0.1",
-    "reportlab==4.2.0",
-    "pysam==0.22.1",
+    "sortedcontainers>=2.4.0",
+    "numpy>=2.4.0",
+    "scipy>=1.16.3",
+    "matplotlib>=3.10.8",
+    "cutadapt>=5.2",
+    "python-Levenshtein>=0.27.1",
+    "PyYAML>=6.0.2",
+    "reportlab>=4.4.7",
+    "pysam>=0.23.3",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
-    "mappy==2.28",
-    "drawsvg==2.3.0",
-    "cairosvg==2.7.1",
-    "aligntools==1.1.1",
+    "mappy>=2.30",
+    "drawsvg>=2.4.0",
+    "cairosvg>=2.8.2",
+    "aligntools>=1.2.1",
+    "multicsv>=1.0.5",
+    "miseqinteropreader>=1.1.2",
+    # This dependency is not really needed for the main pipeline.
+    # It is needed for `test`, `watcher`, and `basespace` programs.
+    # But repeating this dependency in three different places confuses Github's dependabot.
+    # So we employ this hack. TODO: see if dependabot can handle this now.
+    "requests>=2.32.5",
 ]
 
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest==8.2.2",
-    "coverage==7.5.3",
-    "pandas==2.2.3",
-    "seaborn==0.13.2",
-    "ete3",
+    "pytest>=9.0.2",
+    "coverage>=7.13.0",
+    "pandas>=3.0.0",
+    "seaborn>=0.13.2",
+    "ete3>=3.1.3",
     # For reading HCV rules from an Excel file.
-    "openpyxl==3.1.3",
+    "openpyxl>=3.1.5",
+    # For turtle.
+    "tk>=0.1.0",
 
     # Also includes watcher's dependencies.
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.3",
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff==0.7.0",
-    "mypy==1.10.0",
-    "mypy-extensions==1.0.0",
-    "gprof2dot==2024.6.6",
+    "ruff>=0.14.10",
+    "mypy>=1.19.1",
+    "mypy-extensions>=1.1.0",
+    "gprof2dot>=2025.4.14",
+    "codecov>=2.1.13",  # For reporting the code coverage.
+    "kivecli @ git+https://github.com/Donaim/kivecli@dd77a400b580391184fd9ea19f336b0fa9d949f1",
+    "pandas-stubs>=2.3.3.260113",
+    "types-requests>=2.32.4.20250913",
+    "uv>=0.9.18",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
     "kiveapi @ git+https://github.com/cfe-lab/Kive.git@v0.15#egg=kiveapi&subdirectory=api",
-    "requests==2.32.3",
 ]
 basespace = [
     # Requirements for running the micall_basespace.py script
-    "requests==2.32.3",
 ]
 
 [project.scripts]
-micall = "micall.main:cli"
+micall = "micall.__main__:cli"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+# Never fail: use this if there is no Git repository / tags
+fallback_version = "0.dev0"
 
 [tool.hatch.build]
 include = [
@@ -92,7 +108,7 @@ homepage = "https://cfe-lab.github.io/MiCall"
 repository = "https://github.com/cfe-lab/MiCall"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
@@ -165,85 +181,6 @@ markers = [
 
 [tool.mypy]
 files = ["micall/"]
-
-exclude = '''(?x)
-    ^micall/core/aln2counts[.]py$|
-    ^micall/core/amplicon_finder[.]py$|
-    ^micall/core/cascade_report[.]py$|
-    ^micall/core/consensus_builder[.]py$|
-    ^micall/core/coverage_plots[.]py$|
-    ^micall/core/plot_simple[.]py$|
-    ^micall/core/prelim_map[.]py$|
-    ^micall/core/remap[.]py$|
-    ^micall/core/sam2aln[.]py$|
-    ^micall/core/trim_fastqs[.]py$|
-    ^micall/drivers/run_info[.]py$|
-    ^micall/drivers/sample_group[.]py$|
-    ^micall/drivers/sample[.]py$|
-    ^micall/g2p/fastq_g2p[.]py$|
-    ^micall/g2p/pssm_lib[.]py$|
-    ^micall/monitor/find_groups[.]py$|
-    ^micall/monitor/kive_watcher[.]py$|
-    ^micall/monitor/qai_helper[.]py$|
-    ^micall/monitor/sample_watcher[.]py$|
-    ^micall/monitor/update_qai[.]py$|
-    ^micall/monitor/micall_watcher[.]py$|
-    ^micall/resistance/asi_algorithm[.]py$|
-    ^micall/resistance/genreport[.]py$|
-    ^micall/resistance/pdfreport[.]py$|
-    ^micall/resistance/resistance[.]py$|
-    ^micall/tests/.*|
-    ^micall/utils/aln2counts_simplify[.]py$|
-    ^micall/utils/amplicon_finder[.]py$|
-    ^micall/utils/big_counter[.]py$|
-    ^micall/utils/compare_454_samples[.]py$|
-    ^micall/utils/compare_mapping[.]py$|
-    ^micall/utils/concordance_evaluation[.]py$|
-    ^micall/utils/conseq_compare[.]py$|
-    ^micall/utils/contig_blaster[.]py$|
-    ^micall/utils/contig_counts[.]py$|
-    ^micall/utils/contig_summary[.]py$|
-    ^micall/utils/convert_primers_cutadapt[.]py$|
-    ^micall/utils/coverage_data[.]py$|
-    ^micall/utils/dd[.]py$|
-    ^micall/utils/denovo_simplify[.]py$|
-    ^micall/utils/externals[.]py$|
-    ^micall/utils/fetch_sequences[.]py$|
-    ^micall/utils/find_by_coverage[.]py$|
-    ^micall/utils/find_chimera[.]py$|
-    ^micall/utils/find_missing_samples[.]py$|
-    ^micall/utils/find_reads_in_sam[.]py$|
-    ^micall/utils/genreport_rerun[.]py$|
-    ^micall/utils/hcv_reference_tree[.]py$|
-    ^micall/utils/hcv_rules_display[.]py$|
-    ^micall/utils/hcv_rules_import[.]py$|
-    ^micall/utils/make_fda_refs[.]py$|
-    ^micall/utils/make_hcv_genotype_refs[.]py$|
-    ^micall/utils/primer_tracker[.]py$|
-    ^micall/utils/probe_finder[.]py$|
-    ^micall/utils/projects_dump[.]py$|
-    ^micall/utils/project_seeds_from_compendium[.]py$|
-    ^micall/utils/projects_upload[.]py$|
-    ^micall/utils/ref_aligner[.]py$|
-    ^micall/utils/reference_distances[.]py$|
-    ^micall/utils/remap_fastq_simplify[.]py$|
-    ^micall/utils/sam_g2p_simplify[.]py$|
-    ^micall/utils/sample_fastq[.]py$|
-    ^micall/utils/sample_project_summary[.]py$|
-    ^micall/utils/samples_from_454[.]py$|
-    ^micall/utils/sample_sheet_parser[.]py$|
-    ^micall/utils/scan_run_folders[.]py$|
-    ^micall/utils/seed_alignments[.]py$|
-    ^micall/utils/spring_beads[.]py$|
-    ^micall/utils/v3loop_alignment_scores/plot[.]py$|
-    ^micall/utils/release_test_compare[.]py$|
-    ^micall/utils/release_test_microtest[.]py$|
-    ^micall/utils/release_test_setup[.]py$|
-    ^micall/utils/micall_kive[.]py$|
-    ^micall/utils/micall_kive_resistance[.]py$|
-    ^micall/utils/micall_docker[.]py$
-'''
-
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
@@ -251,7 +188,88 @@ module = "micall.core.plot_contigs"
 check_untyped_defs = false
 
 [[tool.mypy.overrides]]
+module = [
+    "micall.core.aln2counts",
+    "micall.core.amplicon_finder",
+    "micall.core.cascade_report",
+    "micall.core.consensus_builder",
+    "micall.core.coverage_plots",
+    "micall.core.plot_simple",
+    "micall.core.remap",
+    "micall.core.sam2aln",
+    "micall.core.trim_fastqs",
+    "micall.drivers.run_info",
+    "micall.drivers.sample_group",
+    "micall.g2p.fastq_g2p",
+    "micall.g2p.pssm_lib",
+    "micall.resistance.asi_algorithm",
+    "micall.resistance.genreport",
+    "micall.resistance.pdfreport",
+    "micall.resistance.resistance",
+    "micall.tests.*",
+    "micall.utils.aln2counts_simplify",
+    "micall.utils.amplicon_finder",
+    "micall.utils.analyze",
+    "micall.utils.big_counter",
+    "micall.utils.compare_454_samples",
+    "micall.utils.compare_mapping",
+    "micall.utils.concordance_evaluation",
+    "micall.utils.conseq_compare",
+    "micall.utils.contig_blaster",
+    "micall.utils.contig_counts",
+    "micall.utils.contig_summary",
+    "micall.utils.convert_primers_cutadapt",
+    "micall.utils.coverage_data",
+    "micall.utils.dd",
+    "micall.utils.denovo_simplify",
+    "micall.utils.fetch_sequences",
+    "micall.utils.find_by_coverage",
+    "micall.utils.find_chimera",
+    "micall.utils.find_missing_samples",
+    "micall.utils.find_reads_in_sam",
+    "micall.utils.genreport_rerun",
+    "micall.utils.hcv_reference_tree",
+    "micall.utils.hcv_rules_display",
+    "micall.utils.hcv_rules_import",
+    "micall.utils.make_fda_refs",
+    "micall.utils.make_hcv_genotype_refs",
+    "micall.utils.micall_kive",
+    "micall.utils.micall_kive_resistance",
+    "micall.utils.primer_tracker",
+    "micall.utils.probe_finder",
+    "micall.utils.project_seeds_from_compendium",
+    "micall.utils.projects_dump",
+    "micall.utils.projects_upload",
+    "micall.utils.ref_aligner",
+    "micall.utils.reference_distances",
+    "micall.utils.release_test_compare",
+    "micall.utils.release_test_microtest",
+    "micall.utils.release_test_setup",
+    "micall.utils.remap_fastq_simplify",
+    "micall.utils.sam_g2p_simplify",
+    "micall.utils.sample_fastq",
+    "micall.utils.samples_from_454",
+    "micall.utils.scan_run_folders",
+    "micall.utils.seed_alignments",
+    "micall.utils.spring_beads",
+    "micall.utils.v3loop_alignment_scores.plot",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
 module = "mappy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scipy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sortedcontainers"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tomllib"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -276,6 +294,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "Bio.SeqRecord"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "kiveapi"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

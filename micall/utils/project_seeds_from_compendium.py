@@ -139,5 +139,5 @@ def main():
 
         print('Done with {} clean and {} dirty.'.format(clean_count, dirty_count))
 
-
-main()
+if __name__ == '__main__':
+    main()

@@ -2,13 +2,9 @@ name: Build and Test MiCall
 on: push
 jobs:
   main:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.12
       - run: mkdir -p ~/bin
       - run: echo ~/bin >> $GITHUB_PATH
 
@@ -52,51 +48,83 @@ jobs:
           # Add to system path
           echo "/opt/bowtie2" >> $GITHUB_PATH
 
+      - name: Install package manager
+        uses: astral-sh/setup-uv@v6
+
       - name: Install MiCall's Python dependencies
-        # Have to clean up alignment build files. Otherwise, they'll get reused
-        # in Singularity build with the wrong GLIBC libraries.
         run: |
-          python -m pip install --upgrade pip
-          pip install .[dev,test]
+          uv sync --extra watcher --extra dev --extra test
+
+      - name: Check if lock file changed
+        run: |
+          git diff --quiet uv.lock
+
+      - name: Install IVA
+        run: |
+          uv tool install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
       - name: Run type checker
         run: |
-          mypy
+          uv run mypy
 
       - name: Run linter
         run: |
-          ruff check
+          uv run ruff check
 
       - name: Test with pytest
-        run: coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+        run: uv run coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
 
       - name: Report code coverage
+        if: "!github.event.pull_request.draft"
         run: |
           rm -rf micall/tests/microtest/scratch
-          python -m pip install codecov
-          codecov
+          uv run codecov
 
   docker-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for git describe
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Derive version from latest git tag
+        id: gitver
+        shell: bash
+        run: |
+          VERSION="$(git describe)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using version: $VERSION"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build docker image
-        run: docker build --tag micall --file Dockerfile .
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: ${{ github.ref == 'refs/heads/master' }}
+          tags: |
+            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
+            ghcr.io/cfe-lab/micall:latest
+          cache-from: type=gha,scope=docker-micall
+          cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
-        run: docker run micall --help
+        run: docker run ghcr.io/cfe-lab/micall:latest --help
       - name: Check docker image entrypoint
-        run: docker run micall --help | grep -i -e 'docker'
+        run: docker run ghcr.io/cfe-lab/micall:latest --help | grep -i -e 'docker'
+      - name: Install python packages
+        run: pip install multicsv
+      - name: Check docker image microtest
+        run: python micall release_test_microtest ghcr.io/cfe-lab/micall:latest --docker
 
   singularity-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.12
-
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.15.6'
@@ -129,10 +157,14 @@ jobs:
       - name: Singularity build
         run: sudo singularity build micall.simg Singularity
 
+      - name: Install python packages
+        run: pip install multicsv
+
       - name: Singularity test
-        run: python micall/main.py release_test_microtest micall.simg
+        run: python micall release_test_microtest micall.simg
 
       - name: Upload Singularity Image
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg

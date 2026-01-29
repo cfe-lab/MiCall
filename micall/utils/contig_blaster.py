@@ -4,6 +4,7 @@ from io import StringIO
 from itertools import groupby
 from operator import itemgetter
 from tempfile import NamedTemporaryFile
+from pathlib import Path
 
 from micall.utils.fasta_to_csv import fasta_to_csv
 
@@ -44,7 +45,7 @@ def main():
     fasta_file.flush()
     new_contigs_csv = StringIO()
     blast_csv = StringIO()
-    fasta_to_csv(fasta_file.name, new_contigs_csv, blast_csv=blast_csv)
+    fasta_to_csv(Path(fasta_file.name), new_contigs_csv, blast_csv=blast_csv)
     blast_csv.seek(0)
     for source_contig_num, contig_rows in groupby(DictReader(blast_csv),
                                                   itemgetter('contig_num')):
@@ -78,4 +79,5 @@ def main():
         print(f'{sample_name}, {contig_num}-{ref_name}: {summary}')
 
 
-main()
+if __name__ == '__main__':
+    main()

@@ -1,5 +1,6 @@
 from collections import namedtuple
 from xml.etree import ElementTree
+from pathlib import Path
 
 import os
 
@@ -15,7 +16,7 @@ class RunInfo:
                  output_path=None,
                  read_sizes=None,
                  href_app_session=None,
-                 is_denovo=False):
+                 is_denovo=False) -> None:
         """ Initialize the run details.
 
         :param list[Sample] sample_groups: list of sample details
@@ -48,12 +49,16 @@ class RunInfo:
             yield from sample_group
 
 
-def parse_read_sizes(run_info_path):
+def parse_read_sizes(run_info_path: Path) -> ReadSizes:
     run_info = ElementTree.parse(run_info_path).getroot()
     read1 = run_info.find('.//Read[@Number="1"][@IsIndexedRead="N"]')
     read2 = run_info.find('.//Read[@IsIndexedRead="N"][last()]')
     index1 = run_info.find('.//Read[@Number="2"][@IsIndexedRead="Y"]')
     index2 = run_info.find('.//Read[@Number="3"][@IsIndexedRead="Y"]')
+
+    if read1 is None or read2 is None or index1 is None:
+        raise ValueError(f"Failed to parse {run_info_path}")
+
     read_sizes = ReadSizes(read1=int(read1.attrib['NumCycles']),
                            read2=int(read2.attrib['NumCycles']),
                            index1=int(index1.attrib['NumCycles']),

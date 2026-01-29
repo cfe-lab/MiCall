@@ -1,8 +1,10 @@
 from io import BytesIO, StringIO
 from struct import pack
 from unittest import TestCase
-from micall.monitor.error_metrics_parser import read_errors, write_phix_csv,\
-    read_records
+
+from miseqinteropreader.error_metrics_parser import write_phix_csv
+from miseqinteropreader.models import ErrorRecord, ReadLengths4
+from miseqinteropreader.read_records import read_errors, read_records
 
 
 class RecordsParserTest(TestCase):
@@ -24,7 +26,7 @@ class RecordsParserTest(TestCase):
     def test_load(self):
         expected_records = [b'ABCD']
 
-        records = list(read_records(self.sample_stream, min_version=1))
+        records = [data for data, _ in read_records(self.sample_stream, min_version=1)]
 
         self.assertEqual(expected_records, records)
 
@@ -33,7 +35,7 @@ class RecordsParserTest(TestCase):
         self.pack_data()
         expected_records = [b'AB', b'CD']
 
-        records = list(read_records(self.sample_stream, min_version=1))
+        records = [data for data, _ in read_records(self.sample_stream, min_version=1)]
 
         self.assertEqual(expected_records, records)
 
@@ -42,7 +44,7 @@ class RecordsParserTest(TestCase):
         records = read_records(self.sample_stream, min_version=3)
 
         self.assertRaisesRegex(
-            IOError,
+            ValueError,
             'File version 1 is less than minimum version 3 in test_file.',
             records.__next__)
 
@@ -50,11 +52,11 @@ class RecordsParserTest(TestCase):
         self.sample_data[1] = 3
         self.pack_data()
         records = read_records(self.sample_stream, min_version=1)
-        record1 = next(records)
+        data, _ = next(records)
 
-        self.assertEqual(b'ABC', record1)
+        self.assertEqual(b'ABC', data)
         self.assertRaisesRegex(
-            IOError,
+            RuntimeError,
             'Partial record of length 1 found in test_file.',
             records.__next__)
 
@@ -82,12 +84,12 @@ class ErrorMetricsParserTest(TestCase):
                                  cycle=3,
                                  error_rate=0.5,
                                  num_0_errors=4,
-                                 num_1_error=5,
+                                 num_1_errors=5,
                                  num_2_errors=6,
                                  num_3_errors=7,
                                  num_4_errors=8)]
 
-        records = list(read_errors(self.sample_stream))
+        records = [r.model_dump() for r in read_errors(self.sample_stream)]
 
         self.assertEqual(expected_records, records)
 
@@ -102,20 +104,22 @@ class ErrorMetricsParserTest(TestCase):
                                  cycle=3,
                                  error_rate=0.5,
                                  num_0_errors=4,
-                                 num_1_error=5,
+                                 num_1_errors=5,
                                  num_2_errors=6,
                                  num_3_errors=7,
                                  num_4_errors=8)] * 2
 
-        records = list(read_errors(self.sample_stream))
+        records = [r.model_dump() for r in read_errors(self.sample_stream)]
 
         self.maxDiff = 1000
         self.assertEqual(expected_records, records)
 
     def test_write(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -128,8 +132,10 @@ tile,cycle,errorrate
 
     def test_write_rounded(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.12345),
-                   dict(tile=2, cycle=2, error_rate=0.23001)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.12345, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.23001, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1235
@@ -142,8 +148,10 @@ tile,cycle,errorrate
 
     def test_write_sorted(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=2, error_rate=0.4),
-                   dict(tile=2, cycle=1, error_rate=0.5)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.5
@@ -156,11 +164,13 @@ tile,cycle,errorrate
 
     def test_write_reverse(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2),
-                   dict(tile=2, cycle=3, error_rate=0.3),
-                   dict(tile=2, cycle=4, error_rate=0.4)]
-        read_lengths = [2, 2]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=3, error_rate=0.3, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
+        read_lengths = ReadLengths4(forward_read=2, index1=0, index2=0, reverse_read=2)
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -175,13 +185,15 @@ tile,cycle,errorrate
 
     def test_write_skip_indexes(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2),
-                   dict(tile=2, cycle=3, error_rate=0.3),
-                   dict(tile=2, cycle=4, error_rate=0.4),
-                   dict(tile=2, cycle=5, error_rate=0.5),
-                   dict(tile=2, cycle=6, error_rate=0.6)]
-        read_lengths = [2, 1, 1, 2]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=3, error_rate=0.3, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=6, error_rate=0.6, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
+        read_lengths = ReadLengths4(forward_read=2, index1=1, index2=1, reverse_read=2)
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -196,8 +208,10 @@ tile,cycle,errorrate
 
     def test_write_missing(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=4, error_rate=0.4)]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -212,11 +226,13 @@ tile,cycle,errorrate
 
     def test_write_missing_end(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.1),
-                   dict(tile=2, cycle=2, error_rate=0.2),
-                   dict(tile=2, cycle=4, error_rate=0.4),
-                   dict(tile=2, cycle=5, error_rate=0.5)]
-        read_lengths = [3, 0, 0, 3]
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.1, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.2, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.4, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.5, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
+        read_lengths = ReadLengths4(forward_read=3, index1=0, index2=0, reverse_read=3)
         expected_csv = """\
 tile,cycle,errorrate
 2,1,0.1
@@ -233,25 +249,25 @@ tile,cycle,errorrate
 
     def test_summary(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.25),
-                   dict(tile=2, cycle=2, error_rate=0.75)]
-        expected_summary = dict(error_rate_fwd=0.5)
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.25, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=2, error_rate=0.75, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
 
-        summary = {}
-        write_phix_csv(out_file, records, summary=summary)
+        summary = write_phix_csv(out_file, records)
 
-        self.assertEqual(expected_summary, summary)
+        self.assertEqual(0.5, summary.error_rate_forward)
 
     def test_summary_reverse(self):
         out_file = StringIO()
-        records = [dict(tile=2, cycle=1, error_rate=0.75),
-                   dict(tile=2, cycle=4, error_rate=0.375),
-                   dict(tile=2, cycle=5, error_rate=0.125)]
-        read_lengths = [3, 0, 0, 3]
-        expected_summary = dict(error_rate_fwd=0.75,
-                                error_rate_rev=0.25)
+        records = [
+            ErrorRecord(lane=1, tile=2, cycle=1, error_rate=0.75, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=4, error_rate=0.375, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0),
+            ErrorRecord(lane=1, tile=2, cycle=5, error_rate=0.125, num_0_errors=0, num_1_errors=0, num_2_errors=0, num_3_errors=0, num_4_errors=0)
+        ]
+        read_lengths = ReadLengths4(forward_read=3, index1=0, index2=0, reverse_read=3)
 
-        summary = {}
-        write_phix_csv(out_file, records, read_lengths, summary=summary)
+        summary = write_phix_csv(out_file, records, read_lengths)
 
-        self.assertEqual(expected_summary, summary)
+        self.assertEqual(0.75, summary.error_rate_forward)
+        self.assertEqual(0.25, summary.error_rate_reverse)

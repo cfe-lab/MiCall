@@ -75,5 +75,5 @@ def main():
     locations.sort()
     print(*locations, sep='\n')
 
-
-main()
+if __name__ == '__main__':
+    main()

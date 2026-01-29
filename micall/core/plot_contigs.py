@@ -1,5 +1,5 @@
 import typing
-from typing import Dict, Tuple, List, Set, Iterable, NoReturn
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence, Union
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -22,8 +22,8 @@ from matplotlib.colors import Normalize
 from micall.core.project_config import ProjectConfig
 from micall.utils.alignment_wrapper import align_nucs
 from micall.utils.contig_stitcher_contigs import Contig, GenotypedContig, AlignedContig
-from micall.utils.contig_stitcher_context import StitcherContext
-import micall.utils.contig_stitcher_events as events
+from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
+import micall.utils.referencefull_contig_stitcher_events as events
 from micall.data.landmark_reader import LandmarkReader
 
 
@@ -400,10 +400,10 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
     return f
 
 
-def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage_svg_path: str):
-    with StitcherContext.stage():
+def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage: Path):
+    with ReferencefullStitcherContext.stage():
         f = build_stitcher_figure(logs)
-        f.show(w=970).save_svg(genome_coverage_svg_path, context=draw.Context(invert_y=True))
+        f.show(w=970).save_svg(genome_coverage, context=draw.Context(invert_y=True))
         return f
 
 
@@ -418,6 +418,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     discarded: List[int] = []
     unknown: List[int] = []
     anomaly: List[int] = []
+    anomaly_data_map: Dict[int, Union[events.ZeroHits, events.StrandConflict]] = {}
     unaligned_map: Dict[int, List[CigarHit]] = {}
     overlaps_list: List[int] = []
     overlap_leftparent_map: Dict[int, int] = {}
@@ -555,11 +556,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         yield CigarHit.from_default_alignment(q_st=hit.q_ei + 1, q_ei=len(contig.seq) - 1,
                                               r_st=hit.r_ei + 1, r_ei=hit.r_ei)
 
-    def hits_to_insertions(contig: GenotypedContig, hits: List[CigarHit]):
+    def hits_to_insertions(contig: GenotypedContig, hits: Iterable[CigarHit]):
         for hit in hits:
             yield from hit_to_insertions(contig, hit)
 
-    def record_initial_hit(contig: GenotypedContig, hits: List[CigarHit]):
+    def record_initial_hit(contig: GenotypedContig, hits: Sequence[CigarHit]):
         insertions = [gap for gap in hits_to_insertions(contig, hits)]
         unaligned_map[contig.id] = insertions
 
@@ -583,9 +584,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             record_alive(event.contig)
         elif isinstance(event, events.ZeroHits):
             record_bad_contig(event.contig, anomaly)
+            anomaly_data_map[event.contig.id] = event
             record_alive(event.contig)
         elif isinstance(event, events.StrandConflict):
             record_bad_contig(event.contig, anomaly)
+            anomaly_data_map[event.contig.id] = event
             record_alive(event.contig)
         elif isinstance(event, events.ReverseComplement):
             record_contig(event.result, [event.contig])
@@ -634,7 +637,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             if event.contigs:
                 combine_left_edge[event.result.id] = event.contigs[0].id
                 combine_right_edge[event.result.id] = event.contigs[-1].id
-        elif isinstance(event, (events.IgnoreGap, events.InitialHit)):
+        elif isinstance(event, (events.IgnoreGap, events.InitialHit, events.IgnoreCoverage)):
             pass
         else:
             _x: NoReturn = event
@@ -937,7 +940,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 existing.add(coords)
                 if root not in carved_unaligned_parts:
                     carved_unaligned_parts[root] = []
-                fake = Contig(name=None, seq="")
+                fake = Contig(name=None, seq="", reads_count=None)
                 carved_unaligned_parts[root].append(fake.id)
                 query_position_map[fake.id] = coords
 
@@ -957,7 +960,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                           max(q_ei for q_st, q_ei in current_group))
                 if root not in merged_unaligned_parts:
                     merged_unaligned_parts[root] = []
-                fake = Contig(name=None, seq="")
+                fake = Contig(name=None, seq="", reads_count=None)
                 query_position_map[fake.id] = coords
                 merged_unaligned_parts[root].append(fake.id)
                 current_group = []
@@ -1008,6 +1011,62 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 colour = "yellow"
 
             yield Track(f_r_st + position_offset, f_r_ei + position_offset, label=f"{name}", color=colour)
+
+    def get_anomaly_tracks(part: GenotypedContig, hits: Sequence[CigarHit], name: str) -> Iterable[Track]:
+        """Generate tracks for anomaly contigs with alignment hits, showing mapped (grey) and unmapped (yellow) regions."""
+        # Calculate the span of all hits
+        min_r_st = min(hit.r_st for hit in hits)
+        max_r_ei = max(hit.r_ei for hit in hits)
+
+        # Calculate the aligned region on reference (all hits)
+        # And the full region including unmapped parts
+        min_q_st = min(hit.q_st for hit in hits)
+        max_q_ei = max(hit.q_ei for hit in hits)
+
+        # Full contig region (including unmapped parts at start and end)
+        f_r_st = min_r_st - min_q_st
+        f_r_ei = max_r_ei + (len(part.seq) - 1 - max_q_ei)
+
+        # Aligned region
+        a_r_st = min_r_st
+        a_r_ei = max_r_ei
+
+        # Yellow track for unmapped region at start
+        if a_r_st > f_r_st:
+            yield Track(f_r_st + position_offset, a_r_st + position_offset, color="yellow")
+
+        # Yellow track for unmapped region at end
+        if f_r_ei > a_r_ei:
+            yield Track(a_r_ei + position_offset, f_r_ei + position_offset, color="yellow")
+
+        # Grey track for the aligned/mapped region
+        yield Track(a_r_st + position_offset, a_r_ei + position_offset, label=f"{name}", color="lightgrey")
+
+    def get_anomaly_arrows(hits: Sequence[CigarHit], strands: Sequence[typing.Literal["forward", "reverse"]],
+                          name: str) -> Iterable[Arrow]:
+        """Generate arrows for anomaly contigs showing alignment hits with strand information."""
+        arrows = []
+
+        # Group hits by strand to assign elevations
+        forward_indices = [i for i, strand in enumerate(strands) if strand == "forward"]
+        reverse_indices = [i for i, strand in enumerate(strands) if strand == "reverse"]
+
+        # Create arrows for forward strand hits (elevation = 0)
+        for idx_pos, i in enumerate(forward_indices):
+            hit = hits[i]
+            r_st = hit.r_st + position_offset
+            r_ei = hit.r_ei + position_offset
+            arrows.append(Arrow(r_st, r_ei, h=3, elevation=-4, label=None))
+
+        # Create arrows for reverse strand hits (elevation = 1 for separation)
+        for idx_pos, i in enumerate(reverse_indices):
+            hit = hits[i]
+            r_st = hit.r_st + position_offset
+            r_ei = hit.r_ei + position_offset
+            # Reverse the arrow direction by swapping start/end
+            arrows.append(Arrow(r_ei, r_st, h=3, elevation=-4, label=None))
+
+        return arrows
 
     def get_arrows(parts: Iterable[GenotypedContig], labels: bool) -> Iterable[Arrow]:
         for part in parts:
@@ -1223,7 +1282,27 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 parts = [contig_map[name] for name in parts_ids]
                 parts = [part for part in parts if part.group_ref == group_ref]
                 for part in parts:
-                    yield Multitrack(list(get_tracks([part])))
+                    # Check if we have alignment data to display
+                    has_alignment_data = False
+                    if part.id in anomaly_data_map:
+                        anomaly_event = anomaly_data_map[part.id]
+                        if isinstance(anomaly_event, events.StrandConflict):
+                            has_alignment_data = True
+                            hits = anomaly_event.hits
+                            strands = anomaly_event.strands
+                            name = name_map.get(part.id, "")
+
+                            # Generate arrows first (displayed on top)
+                            arrows = get_anomaly_arrows(hits, strands, name)
+                            if arrows:
+                                yield ArrowGroup(arrows)
+
+                            # Generate tracks with proper coloring (grey for mapped, yellow for unmapped)
+                            yield Multitrack(list(get_anomaly_tracks(part, hits, name)))
+
+                    # For anomalies without alignment data, display using default tracks
+                    if not has_alignment_data:
+                        yield Multitrack(list(get_tracks([part])))
 
         anom = list(get_group_anomalies(group_ref))
         if anom:

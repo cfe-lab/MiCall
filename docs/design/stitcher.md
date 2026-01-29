@@ -27,7 +27,7 @@ stitcher module can be run as a CLI script, separately from the rest
 of the pipeline. The following command runs the Stitcher:
 
 ```sh
-PYTHONPATH="/path/to/micall/repository" python3 -m micall.core.contig_stitcher --help
+micall contig_stitcher --help
 ```
 
 <!-- ## Functionality as a Black-Box -->

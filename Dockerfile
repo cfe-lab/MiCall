@@ -26,7 +26,7 @@
 
 FROM python:3.12
 
-MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
+LABEL maintainer="BC CfE in HIV/AIDS <https://github.com/cfe-lab/MiCall>"
 
 ## Prerequisites
 RUN apt-get update -qq --fix-missing && apt-get install -qq -y \
@@ -52,7 +52,7 @@ RUN wget -q -O bowtie2.zip https://github.com/BenLangmead/bowtie2/releases/downl
   ln -s /opt/bowtie2-2.2.8/ /opt/bowtie2 && \
   rm bowtie2.zip
 
-ENV PATH $PATH:/opt/bowtie2
+ENV PATH=$PATH:/opt/bowtie2
 
 ## Installing IVA dependencies
 RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
@@ -82,18 +82,23 @@ RUN apt-get install -q -y zlib1g-dev libncurses5-dev libncursesw5-dev && \
     wget -q http://downloads.sourceforge.net/project/smalt/smalt-0.7.6-bin.tar.gz && \
     tar -xzf smalt-0.7.6-bin.tar.gz --no-same-owner && \
     ln -s /opt/smalt-0.7.6-bin/smalt_x86_64 /bin/smalt
+RUN pip install 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
 
 ## Install dependencies for genetracks/drawsvg
 RUN apt-get install -q -y libcairo2-dev
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools
+
+## Install just the dependencies of MiCall (for faster build times in development).
+COPY pyproject.toml README.md /opt/micall/
+RUN pip install /opt/micall[basespace]
+
+## Trigger matplotlib to build its font cache
+RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 COPY . /opt/micall/
 
 RUN pip install /opt/micall[basespace]
 RUN micall make_blast_db
 
-## Trigger matplotlib to build its font cache
-RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
-
 WORKDIR /data
-ENTRYPOINT ["micall", "micall_docker"]
+ENTRYPOINT ["micall", "analyze"]
