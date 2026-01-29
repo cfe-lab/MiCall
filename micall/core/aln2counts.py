@@ -1881,8 +1881,6 @@ def aln2counts(aligned_csv,
     @param contigs_csv: Open file handle to read contig sequences.
     @param conseq_all_csv: Open file handle to write consensus sequences *ignoring
         inadequate coverage*.
-
-        consensus sequences.
     @param minimap_hits_csv: Open file handle to write minimap2 match locations.
     @param alignments_csv: Open file handle to write alignments.
     @param alignments_unmerged_csv: Open file handle to write unmerged alignments.
