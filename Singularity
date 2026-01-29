@@ -145,7 +145,7 @@ From: python:3.11
         genome_coverage_csv genome_coverage_svg genome_concordance_svg \
         stitcher_plot_svg unstitched_cascade_csv unstitched_conseq_csv \
         unstitched_contigs_csv contigs_csv read_entropy_csv \
-        conseq_region_csv conseq_stitched_csv
+        conseq_region_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
 
