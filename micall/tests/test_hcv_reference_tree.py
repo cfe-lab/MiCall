@@ -1,4 +1,5 @@
 from io import StringIO
+import pytest
 
 from micall.utils.hcv_reference_tree import filter_hcv_fasta, combine_samples, check_distances
 
@@ -7,6 +8,7 @@ def check_tree(*args, **kwargs):
         import ete3
     except ImportError:
         # Skip test if ete3 is not installed.
+        pytest.skip("ete3 not installed")
         return
 
     import micall.utils.hcv_reference_tree as origin
