@@ -96,7 +96,7 @@ jobs:
         id: gitver
         shell: bash
         run: |
-          VERSION="$(git describe)"
+          VERSION="$(git describe | sed 's/^v//')"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Using version: $VERSION"
       - name: Set up Docker Buildx
