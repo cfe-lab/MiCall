@@ -4,6 +4,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
 from pathlib import Path
 import logging
+import sys
 
 from micall.core.project_config import ProjectConfig
 from micall.monitor import qai_helper
@@ -43,7 +44,7 @@ def parse_args():
     return args
 
 
-def main():
+def main() -> int:
     args = parse_args()
     project_config = ProjectConfig.loadDefault()
     scoring_path = Path(__file__).parent.parent / 'project_scoring.json'
@@ -57,8 +58,8 @@ def main():
         pipelines = session.get_json(
             "/lab_miseq_pipelines?version=" + args.pipeline_version)
         if pipelines:
-            raise RuntimeError('Pipeline {} already exists.'.format(
-                args.pipeline_version))
+            logger.error('Pipeline %s already exists.', args.pipeline_version)
+            return 1
 
         seed_groups = session.get_json("/lab_miseq_seed_groups")
         # noinspection PyTypeChecker
@@ -137,7 +138,8 @@ def main():
                                        'end_pos': key_position['end_pos']})
 
     logger.info("Done.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
