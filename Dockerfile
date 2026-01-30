@@ -85,8 +85,8 @@ ENV HOME=/opt/uv-home
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV PATH="/opt/uv-home/.local/bin:/opt/venv/bin:${PATH}"
 
-RUN apt-get install -qy curl tar git
-RUN curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+RUN apt-get install -qy tar git
+RUN wget -q https://astral.sh/uv/install.sh -O /tmp/uv-install.sh
 RUN sh /tmp/uv-install.sh
 
 RUN uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
