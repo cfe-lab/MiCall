@@ -104,6 +104,7 @@ From: debian:bookworm-slim
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     # Cleanup.
+    apt-get remove --purge -y git wget unzip build-essential binutils binutils-common binutils-x86-64-linux-gnu bzip2 cpp cpp-12 dirmngr dpkg-dev fakeroot g++ g++-12 gcc gcc-12 git-man gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server libbinutils libctf0 libgprofng0
     rm -rf /opt/micall /root /usr/lib/gcc /opt/uv-home/.cache /etc/apt/ /var/apt /etc/dpkg /var/log /var/cache /var/lib/apt /var/lib/dpkg
     mkdir -p /root
 
