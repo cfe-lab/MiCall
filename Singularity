@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: python:3.12
+From: debian:bookworm-slim
 
 %help
     MiCall maps all the reads from a sample against a set of reference
@@ -86,9 +86,10 @@ From: python:3.12
 
     echo ===== Install iva via uv ===== >/dev/null
     export HOME=/opt/uv-home
-    export PATH="/opt/uv-home/.local/bin:${PATH}"
+    export UV_PROJECT_ENVIRONMENT=/opt/venv
+    export PATH="/opt/uv-home/.local/bin:/opt/venv/bin:${PATH}"
 
-    curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+    wget -q https://astral.sh/uv/install.sh -O /tmp/uv-install.sh
     sh /tmp/uv-install.sh
 
     uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
@@ -97,8 +98,7 @@ From: python:3.12
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
-    pip install --upgrade pip setuptools
-    pip install /opt/micall
+    uv sync --managed-python --project /opt/micall --extra basespace --no-editable
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
