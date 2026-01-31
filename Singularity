@@ -1,6 +1,6 @@
 # Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker
-From: python:3.12
+From: debian:bookworm-slim
 
 %help
     MiCall maps all the reads from a sample against a set of reference
@@ -36,7 +36,7 @@ From: python:3.12
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     apt-get update -q
-    apt-get install -q -y unzip wget
+    apt-get install -q -y unzip wget build-essential git tar
 
     echo ===== Installing blast ===== >/dev/null
     apt-get install -q -y ncbi-blast+
@@ -86,9 +86,10 @@ From: python:3.12
 
     echo ===== Install iva via uv ===== >/dev/null
     export HOME=/opt/uv-home
-    export PATH="/opt/uv-home/.local/bin:${PATH}"
+    export UV_PROJECT_ENVIRONMENT=/opt/venv
+    export PATH="/opt/uv-home/.local/bin:/opt/venv/bin:${PATH}"
 
-    curl -LsSf https://astral.sh/uv/install.sh -o /tmp/uv-install.sh
+    wget -q https://astral.sh/uv/install.sh -O /tmp/uv-install.sh
     sh /tmp/uv-install.sh
 
     uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1'
@@ -97,18 +98,18 @@ From: python:3.12
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
-    pip install --upgrade pip setuptools
-    pip install /opt/micall
+    uv sync --managed-python --project /opt/micall --extra basespace --no-editable
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
     # Cleanup.
+    apt-get remove --purge -y git wget unzip build-essential binutils binutils-common binutils-x86-64-linux-gnu bzip2 cpp cpp-12 dirmngr dpkg-dev fakeroot g++ g++-12 gcc gcc-12 git-man gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server libbinutils libctf0 libgprofng0
     rm -rf /opt/micall /root /usr/lib/gcc /opt/uv-home/.cache /etc/apt/ /var/apt /etc/dpkg /var/log /var/cache /var/lib/apt /var/lib/dpkg
     mkdir -p /root
 
 %environment
-    export PATH=/opt/uv-home/.local/bin:/opt/bowtie2:/bin:/usr/local/bin
+    export PATH=/opt/uv-home/.local/bin:/opt/venv/bin:/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
