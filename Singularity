@@ -36,7 +36,7 @@ From: debian:bookworm-slim
 %post
     echo ===== Installing Prerequisites ===== >/dev/null
     apt-get update -q
-    apt-get install -q -y unzip wget
+    apt-get install -q -y unzip wget build-essential git tar
 
     echo ===== Installing blast ===== >/dev/null
     apt-get install -q -y ncbi-blast+
