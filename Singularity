@@ -108,7 +108,7 @@ From: debian:bookworm-slim
     mkdir -p /root
 
 %environment
-    export PATH=/opt/uv-home/.local/bin:/opt/bowtie2:/bin:/usr/local/bin
+    export PATH=/opt/uv-home/.local/bin:/opt/venv/bin:/opt/bowtie2:/bin:/usr/local/bin
     export LANG=en_US.UTF-8
 
 %runscript
