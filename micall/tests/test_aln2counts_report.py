@@ -1243,8 +1243,9 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
     default_sequence_report.write_amino_counts()
     report_lines = nuc_csv.getvalue().splitlines()
     amino_lines = amino_csv.getvalue().splitlines()
-    deletion_lines = amino_lines[33:39]
-    amino_insertion_lines = amino_lines[69:72]
+    # HIV1B-gag now starts at line 24 (due to seed_coordinates changes for CA)
+    deletion_lines = amino_lines[56:62]  # was [33:39], HIV1B-gag starts at 24, so 24+32=56
+    amino_insertion_lines = amino_lines[92:95]  # was [69:72], 24+68=92
     insertion_lines = report_lines[208:214]
     deletion_report = '\n'.join(deletion_lines)
     amino_insertion_report = '\n'.join(amino_insertion_lines)
