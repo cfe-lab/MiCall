@@ -89,6 +89,12 @@
 </g>
 <g transform="translate(0 -120.5)">
 <g transform="translate(0.0 0)">
+<rect x="153.78923953571552" y="-10" width="70.90872566744568" height="10" fill="lightskyblue" stroke="lightskyblue" />
+<g transform="translate(189.24360236943835 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">CA</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
 <rect x="260.3424318590488" y="-10" width="28.13536568038063" height="10" fill="orange" stroke="orange" />
 <g transform="translate(274.4101146992391 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">PR</text>

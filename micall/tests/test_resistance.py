@@ -1312,7 +1312,8 @@ def test_filter_aminos_all(asi_algorithms):
                             None,
                             'HIV1B-seed',
                             True)]
-    expected_aminos = [AminoList('INT',
+    expected_aminos = [AminoList('CA', [{}]*249, None, 'HIV1B-seed'),
+                       AminoList('INT',
                                  [{'E': 1.0}, {'A': 1.0}, {'T': 1.0}],
                                  None,
                                  'HIV1B-seed',
@@ -1339,7 +1340,8 @@ def test_filter_aminos_missing(asi_algorithms):
                             None,
                             'HIV1B-seed',
                             True)]
-    expected_aminos = [AminoList('INT', [{}]*289, None, 'HIV1B-seed'),
+    expected_aminos = [AminoList('CA', [{}]*249, None, 'HIV1B-seed'),
+                       AminoList('INT', [{}]*289, None, 'HIV1B-seed'),
                        AminoList('PR', [{}]*99, None, 'HIV1B-seed'),
                        AminoList('RT',
                                  [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
@@ -1382,7 +1384,8 @@ def test_filter_aminos_missing_with_some_genotypes(asi_algorithms):
                             '1A',
                             'HCV-1a',
                             True)]
-    expected_aminos = [AminoList('HCV1A-H77-NS3', [{}] * 631, '1A', 'HCV-1a'),
+    expected_aminos = [AminoList('CA', [{}]*249, None, 'HIV1B-seed'),
+                       AminoList('HCV1A-H77-NS3', [{}] * 631, '1A', 'HCV-1a'),
                        AminoList('HCV1A-H77-NS5a', [{}] * 448, '1A', 'HCV-1a'),
                        AminoList('HCV1A-H77-NS5b',
                                  [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
@@ -1423,7 +1426,8 @@ def test_filter_aminos_exclude(asi_algorithms):
                             '1A',
                             'HCV-1a',
                             False)]
-    expected_aminos = [AminoList('INT',
+    expected_aminos = [AminoList('CA', [{}]*249, None, 'HIV1B-seed'),
+                       AminoList('INT',
                                  [{'K': 1.0}, {'F': 1.0}, {'A': 1.0}],
                                  None,
                                  'HIV1B-seed',

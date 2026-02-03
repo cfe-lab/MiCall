@@ -118,16 +118,35 @@ HIV wild types for resistance reports are extracted from Consensus B.
                                           'POL')
     consensus_b = sequences['CONSENSUS_B'].upper()
 
+    # Fetch GAG sequences for CA region
+    gag_sequences = fetch_alignment_sequences(2004,
+                                              'CON',  # Consensus/Ancestral
+                                              'GAG')
+    consensus_b_gag = gag_sequences['CONSENSUS_B'].upper()
+
     with open(WILD_TYPES_PATH) as wild_types_file:
         wild_types = safe_load(wild_types_file)
     boundaries = {'PR': (171, 468),
                   'RT': (468, 2148),
                   'INT': (2148, 3017)}
-    ref_names = sorted(boundaries.keys())
+    gag_boundaries = {'CA': (342, 1089)}  # CA/p24 region in gag
+    ref_names = sorted(boundaries.keys()) + sorted(gag_boundaries.keys())
     source_wild_types = {}
     length_errors = 0
     for ref_name, (start, end) in boundaries.items():
         source_nuc_sequence = consensus_b[start:end]
+        source_wild_type, length_error = check_length_and_translate(ref_name, source_nuc_sequence)
+        length_errors += length_error
+        source_wild_types[ref_name] = source_wild_type
+        mapping_ref = project_config.getReference(ref_name)
+        wild_type_length = len(source_wild_type)
+        mapping_length = len(mapping_ref)
+        if wild_type_length != mapping_length:
+            print(f'{ref_name} expected length {mapping_length}, '
+                  f'was {wild_type_length}')
+            length_errors += 1
+    for ref_name, (start, end) in gag_boundaries.items():
+        source_nuc_sequence = consensus_b_gag[start:end]
         source_wild_type, length_error = check_length_and_translate(ref_name, source_nuc_sequence)
         length_errors += length_error
         source_wild_types[ref_name] = source_wild_type
@@ -173,6 +192,7 @@ for insertions in the scoring matrix. See pssm_lib.py for more details.
         consensus_sequences['CON_OF_CONS'].replace('-', '').upper()
 
     region_names = ['HIV1B-gag',
+                    'CA',
                     'PR',
                     'RT',  # p51 only
                     'INT',

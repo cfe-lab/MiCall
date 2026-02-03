@@ -1766,6 +1766,9 @@ HCV-7a:
     end: 2747
     start: 2558
 HIV1-A1-CD-AM000053-seed:
+  CA:
+    end: 1877
+    start: 1133
   GP120:
     end: 7753
     start: 6235
@@ -1800,6 +1803,9 @@ HIV1-A1-CD-AM000053-seed:
     end: 4225
     start: 2545
 HIV1-A1-CM-KP718928-seed:
+  CA:
+    end: 1346
+    start: 599
   GP120:
     end: 7198
     start: 5704
@@ -1834,6 +1840,9 @@ HIV1-A1-CM-KP718928-seed:
     end: 3691
     start: 2011
 HIV1-A1-CY-JF683783-seed:
+  CA:
+    end: 1104
+    start: 357
   GP120:
     end: 6974
     start: 5444
@@ -1868,6 +1877,9 @@ HIV1-A1-CY-JF683783-seed:
     end: 3440
     start: 1760
 HIV1-A1-IN-KT152839-seed:
+  CA:
+    end: 1756
+    start: 1009
   GP120:
     end: 7668
     start: 6099
@@ -1902,6 +1914,9 @@ HIV1-A1-IN-KT152839-seed:
     end: 4092
     start: 2412
 HIV1-A1-KE-KF716474-seed:
+  CA:
+    end: 1255
+    start: 508
   GP120:
     end: 7134
     start: 5610
@@ -1936,6 +1951,9 @@ HIV1-A1-KE-KF716474-seed:
     end: 3597
     start: 1917
 HIV1-A1-RU-JX500694-seed:
+  CA:
+    end: 1408
+    start: 673
   GP120:
     end: 7284
     start: 5760
@@ -1970,6 +1988,9 @@ HIV1-A1-RU-JX500694-seed:
     end: 3753
     start: 2073
 HIV1-A1-RW-KF716472-seed:
+  CA:
+    end: 1235
+    start: 488
   GP120:
     end: 7141
     start: 5593
@@ -2004,6 +2025,9 @@ HIV1-A1-RW-KF716472-seed:
     end: 3580
     start: 1900
 HIV1-A1-SN-AY521629-seed:
+  CA:
+    end: 1085
+    start: 338
   GP120:
     end: 6961
     start: 5443
@@ -2038,6 +2062,9 @@ HIV1-A1-SN-AY521629-seed:
     end: 3427
     start: 1747
 HIV1-A1-UG-KF716486-seed:
+  CA:
+    end: 1230
+    start: 480
   GP120:
     end: 7088
     start: 5582
@@ -2072,6 +2099,9 @@ HIV1-A1-UG-KF716486-seed:
     end: 3578
     start: 1898
 HIV1-A1-ZA-KT183312-seed:
+  CA:
+    end: 1110
+    start: 342
   GP120:
     end: 6989
     start: 5450
@@ -2106,6 +2136,9 @@ HIV1-A1-ZA-KT183312-seed:
     end: 3446
     start: 1766
 HIV1-A2-CD-AF286238-seed:
+  CA:
+    end: 1243
+    start: 478
   GP120:
     end: 7067
     start: 5573
@@ -2140,6 +2173,9 @@ HIV1-A2-CD-AF286238-seed:
     end: 3567
     start: 1887
 HIV1-A2-CM-GU201516-seed:
+  CA:
+    end: 1077
+    start: 336
   GP120:
     end: 6962
     start: 5441
@@ -2174,6 +2210,9 @@ HIV1-A2-CM-GU201516-seed:
     end: 3428
     start: 1748
 HIV1-A2-CY-AF286237-seed:
+  CA:
+    end: 1235
+    start: 494
   GP120:
     end: 7129
     start: 5599
@@ -2208,6 +2247,9 @@ HIV1-A2-CY-AF286237-seed:
     end: 3586
     start: 1906
 HIV1-B-BR-KJ849801-seed:
+  CA:
+    end: 1456
+    start: 709
   GP120:
     end: 7376
     start: 5795
@@ -2242,6 +2284,9 @@ HIV1-B-BR-KJ849801-seed:
     end: 3801
     start: 2121
 HIV1-B-CA-JF320424-seed:
+  CA:
+    end: 1305
+    start: 561
   GP120:
     end: 7204
     start: 5662
@@ -2276,6 +2321,9 @@ HIV1-B-CA-JF320424-seed:
     end: 3656
     start: 1976
 HIV1-B-CH-KC797225-seed:
+  CA:
+    end: 1338
+    start: 591
   GP120:
     end: 7300
     start: 5689
@@ -2310,6 +2358,9 @@ HIV1-B-CH-KC797225-seed:
     end: 3698
     start: 2018
 HIV1-B-CN-KP109511-seed:
+  CA:
+    end: 1242
+    start: 495
   GP120:
     end: 7150
     start: 5602
@@ -2344,6 +2395,9 @@ HIV1-B-CN-KP109511-seed:
     end: 3608
     start: 1928
 HIV1-B-CU-KR914676-seed:
+  CA:
+    end: 1089
+    start: 342
   GP120:
     end: 6965
     start: 5435
@@ -2378,6 +2432,9 @@ HIV1-B-CU-KR914676-seed:
     end: 3440
     start: 1760
 HIV1-B-ES-KT276255-seed:
+  CA:
+    end: 1322
+    start: 572
   GP120:
     end: 7239
     start: 5685
@@ -2412,6 +2469,9 @@ HIV1-B-ES-KT276255-seed:
     end: 3691
     start: 2011
 HIV1-B-FR-K03455-seed:
+  CA:
+    end: 1878
+    start: 1131
   GP120:
     end: 7757
     start: 6224
@@ -2446,6 +2506,9 @@ HIV1-B-FR-K03455-seed:
     end: 4229
     start: 2549
 HIV1-B-FR-KF716496-seed:
+  CA:
+    end: 1127
+    start: 380
   GP120:
     end: 6954
     start: 5469
@@ -2480,6 +2543,9 @@ HIV1-B-FR-KF716496-seed:
     end: 3475
     start: 1795
 HIV1-B-HT-EU839602-seed:
+  CA:
+    end: 1083
+    start: 336
   GP120:
     end: 6981
     start: 5430
@@ -2514,6 +2580,9 @@ HIV1-B-HT-EU839602-seed:
     end: 3430
     start: 1750
 HIV1-B-JP-KF716498-seed:
+  CA:
+    end: 1256
+    start: 509
   GP120:
     end: 7167
     start: 5613
@@ -2548,6 +2617,9 @@ HIV1-B-JP-KF716498-seed:
     end: 3616
     start: 1936
 HIV1-B-KR-KJ140263-seed:
+  CA:
+    end: 1542
+    start: 795
   GP120:
     end: 7420
     start: 5887
@@ -2582,6 +2654,9 @@ HIV1-B-KR-KJ140263-seed:
     end: 3893
     start: 2213
 HIV1-B-RU-JX500708-seed:
+  CA:
+    end: 1437
+    start: 675
   GP120:
     end: 7285
     start: 5794
@@ -2616,6 +2691,9 @@ HIV1-B-RU-JX500708-seed:
     end: 3800
     start: 2120
 HIV1-B-SE-KP411828-seed:
+  CA:
+    end: 1098
+    start: 351
   GP120:
     end: 6997
     start: 5440
@@ -2650,6 +2728,9 @@ HIV1-B-SE-KP411828-seed:
     end: 3446
     start: 1766
 HIV1-B-TH-KP109514-seed:
+  CA:
+    end: 1188
+    start: 441
   GP120:
     end: 7111
     start: 5545
@@ -2684,6 +2765,9 @@ HIV1-B-TH-KP109514-seed:
     end: 3551
     start: 1871
 HIV1-B-US-KT284371-seed:
+  CA:
+    end: 1758
+    start: 1014
   GP120:
     end: 7663
     start: 6109
@@ -2718,6 +2802,9 @@ HIV1-B-US-KT284371-seed:
     end: 4109
     start: 2429
 HIV1-B-ZA-KP109515-seed:
+  CA:
+    end: 1185
+    start: 438
   GP120:
     end: 7030
     start: 5533
@@ -2752,6 +2839,9 @@ HIV1-B-ZA-KP109515-seed:
     end: 3527
     start: 1847
 HIV1-C-BR-JX140663-seed:
+  CA:
+    end: 1225
+    start: 478
   GP120:
     end: 7179
     start: 5577
@@ -2786,6 +2876,9 @@ HIV1-C-BR-JX140663-seed:
     end: 3561
     start: 1881
 HIV1-C-BW-AF443115-seed:
+  CA:
+    end: 1246
+    start: 505
   GP120:
     end: 7092
     start: 5598
@@ -2820,6 +2913,9 @@ HIV1-C-BW-AF443115-seed:
     end: 3600
     start: 1920
 HIV1-C-CN-KC870038-seed:
+  CA:
+    end: 1237
+    start: 493
   GP120:
     end: 7127
     start: 5579
@@ -2854,6 +2950,9 @@ HIV1-C-CN-KC870038-seed:
     end: 3582
     start: 1902
 HIV1-C-CY-JF683803-seed:
+  CA:
+    end: 1092
+    start: 351
   GP120:
     end: 6992
     start: 5468
@@ -2888,6 +2987,9 @@ HIV1-C-CY-JF683803-seed:
     end: 3452
     start: 1772
 HIV1-C-ES-KT276258-seed:
+  CA:
+    end: 1316
+    start: 572
   GP120:
     end: 7126
     start: 5662
@@ -2922,6 +3024,9 @@ HIV1-C-ES-KT276258-seed:
     end: 3643
     start: 1963
 HIV1-C-ET-AY713417-seed:
+  CA:
+    end: 1077
+    start: 333
   GP120:
     end: 6965
     start: 5447
@@ -2956,6 +3061,9 @@ HIV1-C-ET-AY713417-seed:
     end: 3431
     start: 1751
 HIV1-C-IN-KC156210-seed:
+  CA:
+    end: 1869
+    start: 1125
   GP120:
     end: 7789
     start: 6199
@@ -2990,6 +3098,9 @@ HIV1-C-IN-KC156210-seed:
     end: 4205
     start: 2525
 HIV1-C-KE-KT022371-seed:
+  CA:
+    end: 1069
+    start: 325
   GP120:
     end: 6894
     start: 5418
@@ -3024,6 +3135,9 @@ HIV1-C-KE-KT022371-seed:
     end: 3405
     start: 1725
 HIV1-C-MW-KC156214-seed:
+  CA:
+    end: 1870
+    start: 1132
   GP120:
     end: 7718
     start: 6215
@@ -3058,6 +3172,9 @@ HIV1-C-MW-KC156214-seed:
     end: 4209
     start: 2529
 HIV1-C-SE-KP411835-seed:
+  CA:
+    end: 1080
+    start: 342
   GP120:
     end: 6989
     start: 5486
@@ -3092,6 +3209,9 @@ HIV1-C-SE-KP411835-seed:
     end: 3461
     start: 1781
 HIV1-C-TZ-KC156220-seed:
+  CA:
+    end: 1867
+    start: 1120
   GP120:
     end: 7708
     start: 6229
@@ -3126,6 +3246,9 @@ HIV1-C-TZ-KC156220-seed:
     end: 4203
     start: 2523
 HIV1-C-US-KF526226-seed:
+  CA:
+    end: 1202
+    start: 458
   GP120:
     end: 7105
     start: 5596
@@ -3160,6 +3283,9 @@ HIV1-C-US-KF526226-seed:
     end: 3580
     start: 1900
 HIV1-C-YE-AY795906-seed:
+  CA:
+    end: 1074
+    start: 330
   GP120:
     end: 6949
     start: 5419
@@ -3194,6 +3320,9 @@ HIV1-C-YE-AY795906-seed:
     end: 3404
     start: 1724
 HIV1-C-ZA-KP109517-seed:
+  CA:
+    end: 1181
+    start: 437
   GP120:
     end: 7066
     start: 5557
@@ -3228,6 +3357,9 @@ HIV1-C-ZA-KP109517-seed:
     end: 3538
     start: 1858
 HIV1-C-ZM-KF716467-seed:
+  CA:
+    end: 1227
+    start: 483
   GP120:
     end: 7127
     start: 5594
@@ -3266,6 +3398,9 @@ HIV1-CON-XX-Consensus-seed:
     end: 960
     start: 855
 HIV1-CPZ-CD-U42720-seed:
+  CA:
+    end: 1299
+    start: 543
   GP120: {}
   GP41:
     end: 8254
@@ -3296,6 +3431,9 @@ HIV1-CPZ-CD-U42720-seed:
     end: 3668
     start: 1988
 HIV1-CPZ-CM-DQ373064-seed:
+  CA:
+    end: 1424
+    start: 677
   GP120:
     end: 7268
     start: 5789
@@ -3328,6 +3466,9 @@ HIV1-CPZ-CM-DQ373064-seed:
     end: 3784
     start: 2104
 HIV1-CPZ-CM-FR686511-seed:
+  CA:
+    end: 1956
+    start: 1209
   GP120:
     end: 7839
     start: 6306
@@ -3360,6 +3501,9 @@ HIV1-CPZ-CM-FR686511-seed:
     end: 4313
     start: 2633
 HIV1-CPZ-TZ-JN091691-seed:
+  CA:
+    end: 1982
+    start: 1229
   GP120: {}
   GP41:
     end: 8974
@@ -3390,6 +3534,9 @@ HIV1-CPZ-TZ-JN091691-seed:
     end: 4342
     start: 2662
 HIV1-CPZ-US-AF103818-seed:
+  CA:
+    end: 1926
+    start: 1179
   GP120:
     end: 7759
     start: 6313
@@ -3422,6 +3569,9 @@ HIV1-CPZ-US-AF103818-seed:
     end: 4289
     start: 2609
 HIV1-CRF02_AG-GH-AB286855-seed:
+  CA:
+    end: 1908
+    start: 1167
   GP120:
     end: 7798
     start: 6256
@@ -3456,6 +3606,9 @@ HIV1-CRF02_AG-GH-AB286855-seed:
     end: 4253
     start: 2573
 HIV1-CRF06_CPX-GH-AB286851-seed:
+  CA:
+    end: 1910
+    start: 1163
   GP120:
     end: 7882
     start: 6310
@@ -3490,6 +3643,9 @@ HIV1-CRF06_CPX-GH-AB286851-seed:
     end: 4306
     start: 2626
 HIV1-D-CM-JX140670-seed:
+  CA:
+    end: 1241
+    start: 494
   GP120:
     end: 7095
     start: 5607
@@ -3524,6 +3680,9 @@ HIV1-D-CM-JX140670-seed:
     end: 3604
     start: 1924
 HIV1-D-CY-FJ388945-seed:
+  CA:
+    end: 1089
+    start: 342
   GP120:
     end: 6967
     start: 5440
@@ -3558,6 +3717,9 @@ HIV1-D-CY-FJ388945-seed:
     end: 3437
     start: 1757
 HIV1-D-KE-KF716476-seed:
+  CA:
+    end: 1228
+    start: 481
   GP120:
     end: 7087
     start: 5581
@@ -3590,6 +3752,9 @@ HIV1-D-KE-KF716476-seed:
     end: 3579
     start: 1899
 HIV1-D-KR-DQ054367-seed:
+  CA:
+    end: 1837
+    start: 1090
   GP120:
     end: 7670
     start: 6188
@@ -3624,6 +3789,9 @@ HIV1-D-KR-DQ054367-seed:
     end: 4188
     start: 2508
 HIV1-D-SN-AB485648-seed:
+  CA:
+    end: 1877
+    start: 1130
   GP120:
     end: 7755
     start: 6249
@@ -3658,6 +3826,9 @@ HIV1-D-SN-AB485648-seed:
     end: 4246
     start: 2566
 HIV1-D-TZ-AY253311-seed:
+  CA:
+    end: 1073
+    start: 326
   GP120:
     end: 6945
     start: 5433
@@ -3692,6 +3863,9 @@ HIV1-D-TZ-AY253311-seed:
     end: 3430
     start: 1750
 HIV1-D-UG-KF716479-seed:
+  CA:
+    end: 1216
+    start: 469
   GP120:
     end: 7067
     start: 5561
@@ -3726,6 +3900,9 @@ HIV1-D-UG-KF716479-seed:
     end: 3567
     start: 1887
 HIV1-D-UG-KF716480-seed:
+  CA:
+    end: 1227
+    start: 486
   GP120:
     end: 7111
     start: 5584
@@ -3760,6 +3937,9 @@ HIV1-D-UG-KF716480-seed:
     end: 3584
     start: 1904
 HIV1-D-YE-AY795907-seed:
+  CA:
+    end: 1083
+    start: 336
   GP120:
     end: 6937
     start: 5443
@@ -3794,6 +3974,9 @@ HIV1-D-YE-AY795907-seed:
     end: 3440
     start: 1760
 HIV1-D-ZA-EF633445-seed:
+  CA:
+    end: 1224
+    start: 477
   GP120:
     end: 7111
     start: 5581
@@ -3828,6 +4011,9 @@ HIV1-D-ZA-EF633445-seed:
     end: 3575
     start: 1895
 HIV1-F1-AO-FJ900266-seed:
+  CA:
+    end: 1080
+    start: 342
   GP120:
     end: 6924
     start: 5445
@@ -3862,6 +4048,9 @@ HIV1-F1-AO-FJ900266-seed:
     end: 3440
     start: 1760
 HIV1-F1-AR-DQ189088-seed:
+  CA:
+    end: 1175
+    start: 440
   GP120:
     end: 7027
     start: 5527
@@ -3896,6 +4085,9 @@ HIV1-F1-AR-DQ189088-seed:
     end: 3523
     start: 1843
 HIV1-F1-BR-FJ771010-seed:
+  CA:
+    end: 1644
+    start: 906
   GP120:
     end: 7523
     start: 6014
@@ -3930,6 +4122,9 @@ HIV1-F1-BR-FJ771010-seed:
     end: 4010
     start: 2330
 HIV1-F1-BR-KJ849782-seed:
+  CA:
+    end: 1348
+    start: 601
   GP120:
     end: 7173
     start: 5685
@@ -3964,6 +4159,9 @@ HIV1-F1-BR-KJ849782-seed:
     end: 3696
     start: 2016
 HIV1-F1-BR-KJ849791-seed:
+  CA:
+    end: 1345
+    start: 601
   GP120:
     end: 7142
     start: 5639
@@ -3996,6 +4194,9 @@ HIV1-F1-BR-KJ849791-seed:
     end: 3702
     start: 2022
 HIV1-F1-CY-JF683771-seed:
+  CA:
+    end: 1077
+    start: 342
   GP120:
     end: 6923
     start: 5423
@@ -4030,6 +4231,9 @@ HIV1-F1-CY-JF683771-seed:
     end: 3422
     start: 1742
 HIV1-F1-ES-FJ670516-seed:
+  CA:
+    end: 1327
+    start: 586
   GP120:
     end: 7170
     start: 5685
@@ -4064,6 +4268,9 @@ HIV1-F1-ES-FJ670516-seed:
     end: 3681
     start: 2001
 HIV1-F1-ES-KJ883138-seed:
+  CA:
+    end: 1305
+    start: 570
   GP120:
     end: 7154
     start: 5651
@@ -4098,6 +4305,9 @@ HIV1-F1-ES-KJ883138-seed:
     end: 3653
     start: 1973
 HIV1-F1-RO-AB485658-seed:
+  CA:
+    end: 1905
+    start: 1170
   GP120:
     end: 7811
     start: 6257
@@ -4132,6 +4342,9 @@ HIV1-F1-RO-AB485658-seed:
     end: 4253
     start: 2573
 HIV1-F1-RU-GQ290462-seed:
+  CA:
+    end: 1340
+    start: 593
   GP120:
     end: 7243
     start: 5692
@@ -4166,6 +4379,9 @@ HIV1-F1-RU-GQ290462-seed:
     end: 3688
     start: 2008
 HIV1-F2-CM-AY371158-seed:
+  CA:
+    end: 1071
+    start: 336
   GP120:
     end: 6916
     start: 5416
@@ -4200,6 +4416,9 @@ HIV1-F2-CM-AY371158-seed:
     end: 3419
     start: 1739
 HIV1-F2-CM-JX140672-seed:
+  CA:
+    end: 1121
+    start: 386
   GP120:
     end: 7017
     start: 5487
@@ -4234,6 +4453,9 @@ HIV1-F2-CM-JX140672-seed:
     end: 3493
     start: 1813
 HIV1-F2-CM-JX140673-seed:
+  CA:
+    end: 1231
+    start: 496
   GP120:
     end: 7078
     start: 5572
@@ -4268,6 +4490,9 @@ HIV1-F2-CM-JX140673-seed:
     end: 3576
     start: 1896
 HIV1-G-CM-JX140676-seed:
+  CA:
+    end: 1262
+    start: 515
   GP120:
     end: 7120
     start: 5614
@@ -4302,6 +4527,9 @@ HIV1-G-CM-JX140676-seed:
     end: 3610
     start: 1930
 HIV1-G-CM-KP109502-seed:
+  CA:
+    end: 1212
+    start: 465
   GP120:
     end: 7127
     start: 5564
@@ -4336,6 +4564,9 @@ HIV1-G-CM-KP109502-seed:
     end: 3560
     start: 1880
 HIV1-G-CM-KP718923-seed:
+  CA:
+    end: 1270
+    start: 523
   GP120:
     end: 7116
     start: 5628
@@ -4370,6 +4601,9 @@ HIV1-G-CM-KP718923-seed:
     end: 3621
     start: 1941
 HIV1-G-CN-JN106043-seed:
+  CA:
+    end: 1106
+    start: 362
   GP120:
     end: 6987
     start: 5469
@@ -4404,6 +4638,9 @@ HIV1-G-CN-JN106043-seed:
     end: 3469
     start: 1789
 HIV1-G-ES-GU362882-seed:
+  CA:
+    end: 1352
+    start: 605
   GP120:
     end: 7237
     start: 5716
@@ -4438,6 +4675,9 @@ HIV1-G-ES-GU362882-seed:
     end: 3712
     start: 2032
 HIV1-G-ES-KT276261-seed:
+  CA:
+    end: 1341
+    start: 594
   GP120:
     end: 7271
     start: 5696
@@ -4472,6 +4712,9 @@ HIV1-G-ES-KT276261-seed:
     end: 3695
     start: 2015
 HIV1-G-GH-AB287004-seed:
+  CA:
+    end: 1918
+    start: 1171
   GP120:
     end: 7803
     start: 6273
@@ -4506,6 +4749,9 @@ HIV1-G-GH-AB287004-seed:
     end: 4269
     start: 2589
 HIV1-G-KE-KF716477-seed:
+  CA:
+    end: 1262
+    start: 515
   GP120:
     end: 7127
     start: 5609
@@ -4540,6 +4786,9 @@ HIV1-G-KE-KF716477-seed:
     end: 3604
     start: 1924
 HIV1-G-NG-JN248593-seed:
+  CA:
+    end: 1070
+    start: 323
   GP120:
     end: 6933
     start: 5424
@@ -4574,6 +4823,9 @@ HIV1-G-NG-JN248593-seed:
     end: 3421
     start: 1741
 HIV1-G-PT-FR846409-seed:
+  CA:
+    end: 1824
+    start: 1077
   GP120:
     end: 7736
     start: 6173
@@ -4608,6 +4860,9 @@ HIV1-G-PT-FR846409-seed:
     end: 4169
     start: 2489
 HIV1-GOR-CM-FJ424866-seed:
+  CA:
+    end: 1415
+    start: 665
   GP120:
     end: 7309
     start: 5767
@@ -4640,6 +4895,9 @@ HIV1-GOR-CM-FJ424866-seed:
     end: 3766
     start: 2086
 HIV1-GOR-CM-KP004990-seed:
+  CA:
+    end: 1219
+    start: 472
   GP120:
     end: 7174
     start: 5590
@@ -4672,6 +4930,9 @@ HIV1-GOR-CM-KP004990-seed:
     end: 3570
     start: 1890
 HIV1-GOR-CM-KP004991-seed:
+  CA:
+    end: 1342
+    start: 595
   GP120:
     end: 7292
     start: 5699
@@ -4704,6 +4965,9 @@ HIV1-GOR-CM-KP004991-seed:
     end: 3699
     start: 2019
 HIV1-H-BE-AF190127-seed:
+  CA:
+    end: 1270
+    start: 526
   GP120:
     end: 7156
     start: 5605
@@ -4736,6 +5000,9 @@ HIV1-H-BE-AF190127-seed:
     end: 3618
     start: 1938
 HIV1-H-BE-AF190128-seed:
+  CA:
+    end: 1205
+    start: 458
   GP120:
     end: 7071
     start: 5529
@@ -4770,6 +5037,9 @@ HIV1-H-BE-AF190128-seed:
     end: 3553
     start: 1873
 HIV1-H-CF-AF005496-seed:
+  CA:
+    end: 1225
+    start: 478
   GP120:
     end: 7076
     start: 5567
@@ -4804,6 +5074,9 @@ HIV1-H-CF-AF005496-seed:
     end: 3576
     start: 1896
 HIV1-H-GB-FJ711703-seed:
+  CA:
+    end: 1399
+    start: 652
   GP120:
     end: 7265
     start: 5735
@@ -4838,6 +5111,9 @@ HIV1-H-GB-FJ711703-seed:
     end: 3747
     start: 2067
 HIV1-J-CD-EF614151-seed:
+  CA:
+    end: 1082
+    start: 329
   GP120:
     end: 6957
     start: 5427
@@ -4872,6 +5148,9 @@ HIV1-J-CD-EF614151-seed:
     end: 3423
     start: 1743
 HIV1-J-SE-AF082394-seed:
+  CA:
+    end: 1201
+    start: 454
   GP120:
     end: 7064
     start: 5546
@@ -4906,6 +5185,9 @@ HIV1-J-SE-AF082394-seed:
     end: 3543
     start: 1863
 HIV1-J-SE-AF082395-seed:
+  CA:
+    end: 1202
+    start: 455
   GP120:
     end: 7071
     start: 5547
@@ -4940,6 +5222,9 @@ HIV1-J-SE-AF082395-seed:
     end: 3544
     start: 1864
 HIV1-K-CD-AJ249235-seed:
+  CA:
+    end: 1077
+    start: 330
   GP120:
     end: 6940
     start: 5422
@@ -4974,6 +5259,9 @@ HIV1-K-CD-AJ249235-seed:
     end: 3425
     start: 1745
 HIV1-K-CM-AJ249239-seed:
+  CA:
+    end: 1077
+    start: 342
   GP120:
     end: 6917
     start: 5426
@@ -5008,6 +5296,9 @@ HIV1-K-CM-AJ249239-seed:
     end: 3425
     start: 1745
 HIV1-N-CM-AY532635-seed:
+  CA:
+    end: 1363
+    start: 616
   GP120:
     end: 7178
     start: 5696
@@ -5040,6 +5331,9 @@ HIV1-N-CM-AY532635-seed:
     end: 3735
     start: 2055
 HIV1-N-CM-DQ017382-seed:
+  CA:
+    end: 1356
+    start: 609
   GP120:
     end: 7156
     start: 5707
@@ -5072,6 +5366,9 @@ HIV1-N-CM-DQ017382-seed:
     end: 3734
     start: 2054
 HIV1-N-CM-GQ324959-seed:
+  CA:
+    end: 1356
+    start: 609
   GP120:
     end: 7150
     start: 5692
@@ -5104,6 +5401,9 @@ HIV1-N-CM-GQ324959-seed:
     end: 3719
     start: 2039
 HIV1-N-CM-GQ324962-seed:
+  CA:
+    end: 1354
+    start: 607
   GP120:
     end: 7202
     start: 5684
@@ -5136,6 +5436,9 @@ HIV1-N-CM-GQ324962-seed:
     end: 3732
     start: 2052
 HIV1-N-FR-JN572926-seed:
+  CA:
+    end: 1252
+    start: 505
   GP120:
     end: 7084
     start: 5602
@@ -5168,6 +5471,9 @@ HIV1-N-FR-JN572926-seed:
     end: 3630
     start: 1950
 HIV1-O-BE-L20587-seed:
+  CA:
+    end: 1926
+    start: 1176
   GP120:
     end: 7798
     start: 6277
@@ -5200,6 +5506,9 @@ HIV1-O-BE-L20587-seed:
     end: 4283
     start: 2603
 HIV1-O-CM-AY169802-seed:
+  CA:
+    end: 1358
+    start: 608
   GP120:
     end: 7287
     start: 5727
@@ -5232,6 +5541,9 @@ HIV1-O-CM-AY169802-seed:
     end: 3715
     start: 2035
 HIV1-O-CM-AY169804-seed:
+  CA:
+    end: 1362
+    start: 612
   GP120:
     end: 7321
     start: 5725
@@ -5264,6 +5576,9 @@ HIV1-O-CM-AY169804-seed:
     end: 3719
     start: 2039
 HIV1-O-CM-AY169807-seed:
+  CA:
+    end: 1357
+    start: 607
   GP120:
     end: 7316
     start: 5723
@@ -5296,6 +5611,9 @@ HIV1-O-CM-AY169807-seed:
     end: 3714
     start: 2034
 HIV1-O-CM-AY169808-seed:
+  CA:
+    end: 1359
+    start: 609
   GP120:
     end: 7246
     start: 5713
@@ -5328,6 +5646,9 @@ HIV1-O-CM-AY169808-seed:
     end: 3716
     start: 2036
 HIV1-O-CM-AY169815-seed:
+  CA:
+    end: 1357
+    start: 607
   GP120:
     end: 7265
     start: 5711
@@ -5360,6 +5681,9 @@ HIV1-O-CM-AY169815-seed:
     end: 3714
     start: 2034
 HIV1-O-FR-AF407418-seed:
+  CA:
+    end: 1435
+    start: 685
   GP120:
     end: 7361
     start: 5795
@@ -5392,6 +5716,9 @@ HIV1-O-FR-AF407418-seed:
     end: 3795
     start: 2115
 HIV1-O-GA-JX245015-seed:
+  CA:
+    end: 1083
+    start: 333
   GP120:
     end: 7021
     start: 5449
@@ -5424,6 +5751,9 @@ HIV1-O-GA-JX245015-seed:
     end: 3440
     start: 1760
 HIV1-O-SN-AJ302646-seed:
+  CA:
+    end: 1928
+    start: 1178
   GP120:
     end: 7848
     start: 6282
@@ -5456,6 +5786,9 @@ HIV1-O-SN-AJ302646-seed:
     end: 4282
     start: 2602
 HIV1-O-US-JN571034-seed:
+  CA:
+    end: 1847
+    start: 1097
   GP120:
     end: 7722
     start: 6186
@@ -5486,6 +5819,9 @@ HIV1-O-US-JN571034-seed:
     end: 4204
     start: 2524
 HIV1-P-CM-HQ179987-seed:
+  CA:
+    end: 1343
+    start: 596
   GP120:
     end: 7291
     start: 5710
@@ -5518,6 +5854,9 @@ HIV1-P-CM-HQ179987-seed:
     end: 3700
     start: 2020
 HIV1-P-FR-GU111555-seed:
+  CA:
+    end: 1910
+    start: 1160
   GP120:
     end: 7831
     start: 6274
