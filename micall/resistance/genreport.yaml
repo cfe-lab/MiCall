@@ -4,6 +4,8 @@
     # drug_class: [ (drug, drug_name) ]
     # NOTE: The order of the drugs in each drug_class will determine the order
     # in the report tables.
+    CAI:
+      - [LEN, Lenacapavir]
     INSTI:
       - [BIC, Bictegravir]
       - [CAB, Cabotegravir]
@@ -36,6 +38,7 @@
       - [RPV, Rilpivirine]
   known_drug_classes:
     #the order in this list determines the order of the drug_class tables.
+    - [CAI, Capsid Inhibitor]
     - [NRTI, NRTI/NtRTI]
     - [NNRTI, NNRTI]
     - [PI, Protease Inhibitor]
