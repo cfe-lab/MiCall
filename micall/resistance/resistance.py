@@ -16,7 +16,7 @@ from micall.core.aln2counts import AMINO_ALPHABET
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100
-REPORTED_REGIONS = {'PR', 'RT', 'IN', 'NS3', 'NS5a', 'NS5b'}
+REPORTED_REGIONS = {'PR', 'RT', 'IN', 'CA', 'NS3', 'NS5a', 'NS5b'}
 LAST_MAIN_POS = 336  # last position to take from main file if midi is missing
 NS3_END_POS = 181  # positions to check for coverage
 NS5A_END_POS = 101
@@ -304,8 +304,6 @@ def get_algorithm_regions(algorithm):
     for region in algorithm.gene_def:
         if region == 'IN':
             regions.append('INT')
-        elif region == 'CA':
-            continue
         else:
             regions.append(region)
     return regions
