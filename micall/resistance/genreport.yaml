@@ -40,7 +40,7 @@
     - [NNRTI, NNRTI]
     - [PI, Protease Inhibitor]
     - [INSTI, Integrase Inhibitor]
-  known_regions: [IN, PR, RT]
+  known_regions: [CA, IN, PR, RT]
   resistance_level_colours:
     # these are 'name, bg_colour, fg_colour
     0: ['Sequence does not meet quality-control standards', 0xFFFFFF, 0x000000]
