@@ -1246,7 +1246,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,214,213,1002,10,0,0,0,0,0,0,0,0,10"""
     # HIV1B-gag now starts at line 24 (due to seed_coordinates changes for CA)
     deletion_lines = amino_lines[56:62]  # was [33:39], HIV1B-gag starts at 24, so 24+32=56
     amino_insertion_lines = amino_lines[92:95]  # was [69:72], 24+68=92
-    insertion_lines = report_lines[208:214]
+    insertion_lines = report_lines[277:283]
     deletion_report = '\n'.join(deletion_lines)
     amino_insertion_report = '\n'.join(amino_insertion_lines)
     insertion_report = '\n'.join(insertion_lines)
@@ -1637,11 +1637,11 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,1862,9,0,0,0,0,0,0,0,0,9"""
 
     report = report_file.getvalue()
     report_lines = report.splitlines()
-    expected_size = 1558
+    expected_size = 1726
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[493:495] + ['...'] + report_lines[1072:1074]
+    key_lines = report_lines[661:663] + ['...'] + report_lines[1240:1242]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 
