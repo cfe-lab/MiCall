@@ -205,19 +205,19 @@ NRTI,M41L,0.06,,RT,HIV1B-seed,RT,9.0
 
 def test_reported_regions_in_genreport_config():
     """All REPORTED_REGIONS must exist in genreport.yaml known_regions.
-    
+
     Prevents: KeyError when genreport.py tries to process resistance CSV
     containing regions from resistance.py that aren't configured.
     """
     from micall.resistance.resistance import REPORTED_REGIONS
-    
+
     config = read_config('vX.Y')
     report_template = config[0]
     known_regions = report_template.virus_config['known_regions']
-    
+
     # Filter to HIV regions (exclude HCV)
     hiv_reported = {r for r in REPORTED_REGIONS if r not in ('NS3', 'NS5a', 'NS5b')}
-    
+
     missing = hiv_reported - known_regions
     assert not missing, (
         f"Configuration mismatch: Regions in REPORTED_REGIONS but not in "
@@ -228,27 +228,27 @@ def test_reported_regions_in_genreport_config():
 
 def test_algorithm_drugs_in_genreport_config():
     """All drugs from HIVdb algorithm must be in genreport.yaml known_drugs.
-    
+
     Prevents: ValueError 'Unknown drug codes' when PDF generation encounters
     drugs returned by the algorithm that aren't configured.
     """
     from micall.resistance.resistance import load_asi
-    
+
     algorithms = load_asi()
     config = read_config('vX.Y')
     report_template = config[0]
     known_drugs = report_template.virus_config['known_drugs']
-    
+
     configured_drugs = {
         code for drug_class in known_drugs.values()
         for code, name in drug_class
     }
-    
+
     hiv_algorithm = algorithms[None]
     algorithm_drugs = set()
     for drug_list in hiv_algorithm.drug_class.values():
         algorithm_drugs.update(drug_list)
-    
+
     missing = algorithm_drugs - configured_drugs
     assert not missing, (
         f"Configuration mismatch: Drugs in HIV algorithm but not in "
@@ -260,20 +260,20 @@ def test_algorithm_drugs_in_genreport_config():
 
 def test_algorithm_drug_classes_in_genreport():
     """All drug classes from algorithm must be in genreport.yaml.
-    
+
     Prevents: KeyError when trying to organize drugs by class for reporting.
     """
     from micall.resistance.resistance import load_asi
-    
+
     algorithms = load_asi()
     config = read_config('vX.Y')
     report_template = config[0]
     known_drugs = report_template.virus_config['known_drugs']
     known_classes = set(known_drugs.keys())
-    
+
     hiv_algorithm = algorithms[None]
     algorithm_classes = set(hiv_algorithm.drug_class.keys())
-    
+
     missing = algorithm_classes - known_classes
     assert not missing, (
         f"Configuration mismatch: Drug classes in algorithm but not in "
@@ -285,19 +285,19 @@ def test_algorithm_drug_classes_in_genreport():
 
 def test_genreport_drug_class_definitions_complete():
     """All drug classes in known_drugs must also be in known_drug_classes list.
-    
+
     Prevents: Drugs being defined but never displayed in reports.
     """
     config = read_config('vX.Y')
     report_template = config[0]
     virus_config = report_template.virus_config
-    
+
     known_drugs = virus_config['known_drugs']
     # After processing, known_drug_classes is a frozenset of drug class codes
     known_drug_classes_set = virus_config.get('known_drug_classes', frozenset())
-    
+
     defined_classes = set(known_drugs.keys())
-    
+
     missing = defined_classes - known_drug_classes_set
     assert not missing, (
         f"Configuration error: Drug classes defined in known_drugs but not "
@@ -308,18 +308,18 @@ def test_genreport_drug_class_definitions_complete():
 
 def test_algorithm_regions_processable():
     """All regions from algorithm gene_def can be processed without errors.
-    
+
     Prevents: Runtime errors when filter_aminos tries to create empty
     structures for algorithm regions.
     """
     from micall.resistance.resistance import (
         load_asi, get_algorithm_regions, create_empty_aminos
     )
-    
+
     algorithms = load_asi()
     hiv_algorithm = algorithms[None]
     regions = get_algorithm_regions(hiv_algorithm)
-    
+
     errors = []
     for region in regions:
         try:
@@ -328,7 +328,7 @@ def test_algorithm_regions_processable():
             assert len(empty.aminos) > 0
         except Exception as e:
             errors.append(f"{region}: {str(e)}")
-    
+
     assert not errors, (
         f"Cannot process algorithm regions: {errors}\n"
         f"Fix: Ensure all algorithm regions have proper reference sequences "
@@ -338,30 +338,30 @@ def test_algorithm_regions_processable():
 
 def test_no_orphaned_drugs_in_config():
     """Warn if genreport.yaml has drugs not in any algorithm.
-    
+
     Prevents: Configuration drift where drugs are configured but never used.
     This is a warning test - it identifies potential cleanup opportunities.
     """
     from micall.resistance.resistance import load_asi
-    
+
     algorithms = load_asi()
     config = read_config('vX.Y')
     report_template = config[0]
     known_drugs = report_template.virus_config['known_drugs']
-    
+
     configured_drugs = {
         code for drug_class in known_drugs.values()
         for code, name in drug_class
     }
-    
+
     # Collect drugs from all algorithms (HIV and HCV)
     algorithm_drugs = set()
     for algorithm in algorithms.values():
         for drug_list in algorithm.drug_class.values():
             algorithm_drugs.update(drug_list)
-    
+
     orphaned = configured_drugs - algorithm_drugs
-    
+
     # This is informational, not a hard failure
     if orphaned:
         import warnings
@@ -374,47 +374,47 @@ def test_no_orphaned_drugs_in_config():
 
 def test_region_name_mapping_consistency():
     """Verify IN/INT region name mapping is handled correctly.
-    
+
     Prevents: Bugs due to inconsistent region naming (IN in algorithm vs INT in code).
     """
     from micall.resistance.resistance import (
         load_asi, get_algorithm_regions, get_reported_region
     )
-    
+
     algorithms = load_asi()
     hiv_algorithm = algorithms[None]
-    
+
     # Algorithm uses 'IN', code uses 'INT'
     if 'IN' in hiv_algorithm.gene_def:
         regions = get_algorithm_regions(hiv_algorithm)
         assert 'INT' in regions, "get_algorithm_regions should map IN to INT"
-        
+
         # get_reported_region should map back
         assert get_reported_region('INT') == 'IN', "Should map INT back to IN for reporting"
 
 
 def test_drug_class_to_drug_mapping():
     """Verify drugs are assigned to correct classes in both algorithm and config.
-    
+
     Prevents: Drugs appearing under wrong drug class in reports.
     """
     from micall.resistance.resistance import load_asi
-    
+
     algorithms = load_asi()
     config = read_config('vX.Y')
     report_template = config[0]
     known_drugs = report_template.virus_config['known_drugs']
-    
+
     hiv_algorithm = algorithms[None]
-    
+
     # For each drug class in config, verify drugs match algorithm
     errors = []
     for drug_class, drugs in known_drugs.items():
         config_drugs = {code for code, name in drugs}
-        
+
         # Get drugs from algorithm for this class
         algo_drugs = set(hiv_algorithm.drug_class.get(drug_class, []))
-        
+
         # Drugs in config but not in algorithm's class (might be in different class)
         misplaced = config_drugs - algo_drugs
         if misplaced:
@@ -422,7 +422,7 @@ def test_drug_class_to_drug_mapping():
             all_algo_drugs = set()
             for dc, drug_list in hiv_algorithm.drug_class.items():
                 all_algo_drugs.update(drug_list)
-            
+
             for drug in misplaced:
                 if drug in all_algo_drugs:
                     # Find which class it's actually in
@@ -434,8 +434,8 @@ def test_drug_class_to_drug_mapping():
                     errors.append(
                         f"Drug {drug} in {drug_class} but algorithm has it in {actual_class}"
                     )
-    
+
     assert not errors, (
-        f"Drug class assignment mismatch:\n" + "\n".join(errors) +
-        f"\nFix: Move drugs to correct drug_class in genreport.yaml"
+        "Drug class assignment mismatch:\n" + "\n".join(errors) +
+        "\nFix: Move drugs to correct drug_class in genreport.yaml"
     )

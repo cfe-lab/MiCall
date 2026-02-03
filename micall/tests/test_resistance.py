@@ -1966,22 +1966,20 @@ seed,region,coord_region,version,offset,sequence
 
 def test_reported_regions_have_wild_types(asi_algorithms):
     """All regions in REPORTED_REGIONS must have wild type sequences.
-    
+
     Prevents: KeyError when trying to get reference sequence for region.
     """
     from micall.resistance.resistance import REPORTED_REGIONS
-    from micall.data.landmark_reader import LandmarkReader
     from micall.core.project_config import ProjectConfig
-    
+
     projects = ProjectConfig.loadDefault()
-    landmark_reader = LandmarkReader.load()
-    
+
     # Filter to HIV regions
     hiv_regions = {r for r in REPORTED_REGIONS if r not in ('NS3', 'NS5a', 'NS5b')}
-    
+
     # Map region names: IN in REPORTED_REGIONS → INT in references
     region_name_map = {'IN': 'INT'}
-    
+
     missing = []
     for region in hiv_regions:
         ref_name = region_name_map.get(region, region)
@@ -1992,7 +1990,7 @@ def test_reported_regions_have_wild_types(asi_algorithms):
                 missing.append(region)
         except KeyError:
             missing.append(region)
-    
+
     assert not missing, (
         f"Regions in REPORTED_REGIONS lack reference sequences: {missing}\n"
         f"Fix: Add wild type sequences to micall/data/landmark_references.yaml"
@@ -2001,20 +1999,20 @@ def test_reported_regions_have_wild_types(asi_algorithms):
 
 def test_reported_regions_in_algorithm(asi_algorithms):
     """Regions in REPORTED_REGIONS should have algorithm support.
-    
+
     Prevents: Processing regions that can't generate resistance scores.
     """
     from micall.resistance.resistance import REPORTED_REGIONS
-    
+
     hiv_algorithm = asi_algorithms[None]
     algorithm_regions = set(hiv_algorithm.gene_def.keys())
-    
+
     # Map INT to IN for comparison
     if 'INT' in REPORTED_REGIONS:
         algorithm_regions.add('INT')
-    
+
     hiv_regions = {r for r in REPORTED_REGIONS if r not in ('NS3', 'NS5a', 'NS5b')}
-    
+
     unsupported = hiv_regions - algorithm_regions
     assert not unsupported, (
         f"REPORTED_REGIONS has regions without algorithm support: {unsupported}\n"
@@ -2025,14 +2023,14 @@ def test_reported_regions_in_algorithm(asi_algorithms):
 
 def test_algorithm_version_matches_config(asi_algorithms):
     """Algorithm version should match HIVDB_VERSION constant.
-    
+
     Prevents: Version mismatch between loaded algorithm and expected version.
     """
     from micall.resistance.resistance import HIVDB_VERSION
-    
+
     hiv_algorithm = asi_algorithms[None]
     algorithm_version = hiv_algorithm.alg_version
-    
+
     assert algorithm_version == HIVDB_VERSION, (
         f"Algorithm version mismatch: loaded {algorithm_version}, "
         f"expected {HIVDB_VERSION}\n"
@@ -2042,17 +2040,17 @@ def test_algorithm_version_matches_config(asi_algorithms):
 
 def test_get_reported_region_mapping():
     """Test region name mapping for all known regions.
-    
+
     Prevents: Incorrect region names in output causing downstream errors.
     """
     from micall.resistance.resistance import get_reported_region
-    
+
     # Test known mappings
     assert get_reported_region('INT') == 'IN'
     assert get_reported_region('PR') == 'PR'
     assert get_reported_region('RT') == 'RT'
     assert get_reported_region('CA') == 'CA'
-    
+
     # Test HCV regions
     assert get_reported_region('HCV1A-H77-NS3') == 'NS3'
     assert get_reported_region('HCV1A-H77-NS5a') == 'NS5a'
@@ -2061,23 +2059,23 @@ def test_get_reported_region_mapping():
 
 def test_filter_aminos_adds_all_algorithm_regions(asi_algorithms):
     """filter_aminos should add empty entries for all algorithm regions.
-    
+
     Prevents: Missing regions in resistance output causing incomplete reports.
     """
     from micall.resistance.resistance import filter_aminos, get_algorithm_regions
-    
+
     # Start with single region
     input_aminos = [
         AminoList('PR', [{'K': 1.0}] * 30, None, 'HIV1B-seed', True)
     ]
-    
+
     filtered = filter_aminos(input_aminos, asi_algorithms)
-    
+
     # Should have all algorithm regions
     hiv_algorithm = asi_algorithms[None]
     expected_regions = set(get_algorithm_regions(hiv_algorithm))
     actual_regions = {amino.region for amino in filtered}
-    
+
     missing = expected_regions - actual_regions
     assert not missing, (
         f"filter_aminos didn't add all algorithm regions. Missing: {missing}\n"
@@ -2087,39 +2085,39 @@ def test_filter_aminos_adds_all_algorithm_regions(asi_algorithms):
 
 def test_write_resistance_handles_all_regions(asi_algorithms):
     """write_resistance should handle all regions without errors.
-    
+
     Prevents: Runtime errors when processing specific regions.
     """
     from micall.resistance.resistance import write_resistance, get_algorithm_regions
-    
+
     hiv_algorithm = asi_algorithms[None]
     regions = get_algorithm_regions(hiv_algorithm)
-    
+
     # Create amino lists for all regions
     amino_lists = []
     for region in regions:
         # Map INT→IN for stds lookup (algorithm uses INT, stds uses IN)
         std_name = 'IN' if region == 'INT' else region
-        
+
         # Get the proper length from algorithm's wild type sequence
         wild_type = hiv_algorithm.stds.get(std_name, '')
         if not wild_type:
             pytest.skip(f"No wild type sequence for region {region}")
-        
+
         # Create aminos matching the wild type length (all consensus A)
         aminos = [{'A': 1.0}] * len(wild_type)
         amino_lists.append(AminoList(region, aminos, None, 'HIV1B-seed', True))
-    
+
     resistance_csv = StringIO()
     mutations_csv = StringIO()
-    
+
     # Should not raise any errors
     try:
         write_resistance(amino_lists, resistance_csv, mutations_csv,
                         algorithms=asi_algorithms)
     except Exception as e:
         pytest.fail(f"write_resistance failed for algorithm regions: {e}")
-    
+
     # Verify output was generated
     resistance_csv.seek(0)
     lines = resistance_csv.readlines()
@@ -2128,17 +2126,17 @@ def test_write_resistance_handles_all_regions(asi_algorithms):
 
 def test_hcv_genotype_extraction():
     """Test HCV genotype extraction from seed names.
-    
+
     Prevents: Incorrect genotype assignment causing wrong algorithm selection.
     """
     from micall.resistance.resistance import get_genotype
-    
+
     # Test various HCV seeds
     assert get_genotype('HCV-1a') == '1A'
     assert get_genotype('HCV-1b') == '1B'
     assert get_genotype('HCV-2') == '2'
     assert get_genotype('HCV-6e') == '6E'
-    
+
     # HIV should return None
     assert get_genotype('HIV1-B-FR-K03455-seed') is None
     assert get_genotype(None) is None
@@ -2146,20 +2144,20 @@ def test_hcv_genotype_extraction():
 
 def test_reported_regions_constant_completeness():
     """REPORTED_REGIONS should be complete and not have typos.
-    
+
     Prevents: Typos or missing regions in REPORTED_REGIONS constant.
     """
     from micall.resistance.resistance import REPORTED_REGIONS
-    
+
     # Verify expected regions are present
     expected_hiv = {'PR', 'RT', 'IN', 'CA'}
     expected_hcv = {'NS3', 'NS5a', 'NS5b'}
-    
+
     assert expected_hiv.issubset(REPORTED_REGIONS), (
         f"Missing expected HIV regions in REPORTED_REGIONS. "
         f"Missing: {expected_hiv - REPORTED_REGIONS}"
     )
-    
+
     assert expected_hcv.issubset(REPORTED_REGIONS), (
         f"Missing expected HCV regions in REPORTED_REGIONS. "
         f"Missing: {expected_hcv - REPORTED_REGIONS}"
