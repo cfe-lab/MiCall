@@ -64,13 +64,11 @@ class TestHIVCARegionIntegration:
         3. CA resistance calls are written to CSV
         4. No KeyError or other exceptions occur
         """
-        # Create amino CSV with CA data (249 positions)
+        # Create amino CSV with CA data covering all key positions
+        # CA key positions: [56, 57, 66, 67, 70, 74, 105, 107]
+        # Need to cover up to position 107
         ca_data = [
-            (1, {'A': 100}, 100),
-            (2, {'Q': 100}, 100),
-            (3, {'Q': 100}, 100),
-            # Add a few more positions for realistic data
-            *[(i, {'A': 100}, 100) for i in range(4, 20)],
+            *[(i, {'A': 100}, 100) for i in range(1, 108)],
         ]
         
         amino_csv = create_hiv_amino_csv({'CA': ca_data})
@@ -109,10 +107,11 @@ class TestHIVCARegionIntegration:
         This is the ultimate integration test - if this passes, CA is fully integrated.
         """
         # Create comprehensive amino CSV with CA and other regions
+        # Must cover key positions: CA max=107, PR max=90, RT max=348
         regions_data = {
-            'CA': [(i, {'A': 100}, 100) for i in range(1, 50)],
-            'PR': [(i, {'K': 100}, 100) for i in range(1, 30)],
-            'RT': [(i, {'C': 100}, 100) for i in range(1, 50)],
+            'CA': [(i, {'A': 100}, 100) for i in range(1, 108)],
+            'PR': [(i, {'K': 100}, 100) for i in range(1, 91)],
+            'RT': [(i, {'C': 100}, 100) for i in range(1, 349)],
         }
         
         amino_csv = create_hiv_amino_csv(regions_data)
@@ -158,12 +157,13 @@ class TestHIVAllRegionsIntegration:
         This test ensures no region causes pipeline failures and all are
         properly integrated with genreport.yaml configuration.
         """
-        # Create data for all HIV regions
+        # Create data for all HIV regions covering their key positions
+        # Key position ranges: PR max=90, RT max=348, IN max=263, CA max=107
         regions_data = {
-            'PR': [(i, {'P': 100}, 100) for i in range(1, 30)],
-            'RT': [(i, {'M': 100}, 100) for i in range(1, 50)],
-            'INT': [(i, {'E': 100}, 100) for i in range(1, 50)],
-            'CA': [(i, {'A': 100}, 100) for i in range(1, 50)],
+            'PR': [(i, {'P': 100}, 100) for i in range(1, 91)],
+            'RT': [(i, {'M': 100}, 100) for i in range(1, 349)],
+            'INT': [(i, {'E': 100}, 100) for i in range(1, 264)],
+            'CA': [(i, {'A': 100}, 100) for i in range(1, 108)],
         }
         
         amino_csv = create_hiv_amino_csv(regions_data)
