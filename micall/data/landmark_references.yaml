@@ -10,7 +10,6 @@
     - {name: HIV1B-sl3, start: 766, end: 779, frame: 0, stop: N}
     - {name: HIV1B-sl4, start: 793, end: 806, frame: 0, stop: N}
     - {name: gag, full_name: HIV1B-gag, start: 790, end: 2292, frame: 0, colour: lightblue}
-    - {name: CA, start: 1132, end: 1878, frame: 0, colour: lightskyblue}
     - {name: vif, full_name: HIV1B-vif, start: 5041, end: 5619, frame: 0, colour: steelblue}
 
     # Actually starts at 8379, spliced to the end of tat in the middle of a codon.
@@ -30,6 +29,7 @@
     - {name: vpr, full_name: HIV1B-vpr, start: 5559, end: 5850, frame: 2, colour: turquoise, skipped_pos: 5772}
     - {name: rev, start: 5970, end: 6048, frame: 2, colour: yellowgreen, stop: N}
     - {name: env, start: 6225, end: 8795, frame: 2, colour: salmon}
+    - {name: CA, start: 1132, end: 1878, frame: 3, colour: lightskyblue}
     - {name: PR, start: 2253, end: 2549, frame: 3, colour: orange, stop: N}
     - {name: RT, start: 2550, end: 4229, frame: 3, colour: darkorange}
     - {name: INT, start: 4230, end: 5096, frame: 3, colour: orange}
