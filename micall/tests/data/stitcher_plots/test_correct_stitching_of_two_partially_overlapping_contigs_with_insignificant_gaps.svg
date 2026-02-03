@@ -17,6 +17,12 @@
 </g>
 </g>
 <g transform="translate(0.0 0)">
+<rect x="150.84418637319126" y="-10" width="69.55082853883042" height="10" fill="lightskyblue" stroke="lightskyblue" />
+<g transform="translate(185.61960064260649 0)">
+<text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">CA</text>
+</g>
+</g>
+<g transform="translate(0.0 0)">
 <rect x="515.286798649717" y="-10" width="53.88790736654687" height="10" fill="steelblue" stroke="steelblue" />
 <g transform="translate(542.2307523329904 0)">
 <text x="0" y="0" font-size="10" font-family="monospace" text-anchor="middle">vif</text>
