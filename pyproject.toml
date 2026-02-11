@@ -29,7 +29,7 @@ dependencies = [
     "numpy>=2.4.0",
     "scipy>=1.16.3",
     "matplotlib>=3.10.8",
-    "cutadapt>=5.2",
+    "cutadapt==4.8",
     "python-Levenshtein>=0.27.1",
     "PyYAML>=6.0.2",
     "reportlab>=4.4.7",
