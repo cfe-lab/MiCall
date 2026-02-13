@@ -98,7 +98,7 @@ From: debian:bookworm-slim
     # Install dependencies for genetracks/drawsvg
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
-    uv sync --managed-python --project /opt/micall --extra basespace --no-editable
+    uv sync --frozen --managed-python --project /opt/micall --extra basespace --no-editable
     micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
