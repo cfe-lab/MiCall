@@ -95,7 +95,7 @@ RUN uv tool install --python=3.11 'git+https://github.com/cfe-lab/iva.git@v1.1.1
 RUN apt-get install -q -y libcairo2-dev
 
 ## Install just the dependencies of MiCall (for faster build times in development).
-COPY pyproject.toml README.md /opt/micall/
+COPY pyproject.toml README.md uv.lock /opt/micall/
 RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --no-editable
 
 ## Trigger matplotlib to build its font cache
