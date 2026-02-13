@@ -6,9 +6,9 @@ authors = [
     { name = "British Columbia Centre for Excellence in HIV/AIDS", email = "vmysak@bccfe.ca" },
 ]
 requires-python = ">=3.12,<3.13"
-license = {text = "AGPL-3.0"}
+license = {text = "AGPL-3.0-or-later"}
 classifiers = [
-    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
