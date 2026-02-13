@@ -20,7 +20,7 @@ From: debian:bookworm-slim
         failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
         conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
         coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
-        genome_coverage_csv genome_coverage_svg genome_concordance_svg stitcher_plot_svg
+        genome_coverage_csv genome_coverage_svg genome_concordance_svg
     KIVE_THREADS 1
     KIVE_MEMORY 6000
 
