@@ -425,15 +425,25 @@ class Sample:
                                   self.merged_contigs_fasta],
                           output=self.combined_contigs_fasta)
 
+        # Create unstitched_contigs_csv from unstitched (combined) fasta
+        with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
+             open(self.blast_csv, 'w') as blast_csv:
+            fasta_to_csv(Path(self.combined_contigs_fasta),
+                         unstitched_contigs_csv,
+                         blast_csv=blast_csv,
+                         )
+
+        # Run referenceless stitcher and create stitched_contigs_csv
+        # This will only be used in the stitched path (via referencefull_contig_stitcher)
         with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
             referenceless_contig_stitcher(combined_contigs_fasta, stitched_contigs_fasta)
 
-        with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
-             open(self.blast_csv, 'w') as blast_csv:
+        with open(self.stitched_contigs_csv, 'w') as stitched_contigs_csv, \
+             open(self.stitched_blast_csv, 'w') as stitched_blast_csv:
             fasta_to_csv(Path(self.stitched_contigs_fasta),
-                         unstitched_contigs_csv,
-                         blast_csv=blast_csv,
+                         stitched_contigs_csv,
+                         blast_csv=stitched_blast_csv,
                          )
 
         if self.debug_remap:
@@ -465,10 +475,11 @@ class Sample:
                            debug_file_prefix=with_prefix(debug_file_prefix),
                            excluded_seeds=excluded_seeds)
 
-        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+        # Referencefull stitcher uses the output of referenceless stitcher
+        with open(self.stitched_contigs_csv, 'r') as stitched_contigs_csv, \
              open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv, \
              open(self.contigs_csv, 'w') as contigs_csv:
-            referencefull_contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, unstitched_counts_csv)
+            referencefull_contig_stitcher(stitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, unstitched_counts_csv)
 
         with open(self.contigs_csv) as contigs_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \
