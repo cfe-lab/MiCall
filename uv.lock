@@ -361,7 +361,7 @@ source = { git = "https://github.com/cfe-lab/Kive.git?subdirectory=api&rev=v0.15
 [[package]]
 name = "kivecli"
 version = "0.1.0"
-source = { git = "https://github.com/Donaim/kivecli?rev=c49367d468cd526ee695c36fd3bc78492e78082f#c49367d468cd526ee695c36fd3bc78492e78082f" }
+source = { git = "https://github.com/Donaim/kivecli?rev=3623d7e8ee5f6edb8e174459d7a51f9c27cf02fa#3623d7e8ee5f6edb8e174459d7a51f9c27cf02fa" }
 dependencies = [
     { name = "kiveapi" },
     { name = "requests" },
@@ -531,7 +531,7 @@ requires-dist = [
     { name = "gprof2dot", marker = "extra == 'dev'", specifier = ">=2025.4.14" },
     { name = "kiveapi", marker = "extra == 'test'", git = "https://github.com/cfe-lab/Kive.git?subdirectory=api&rev=v0.15" },
     { name = "kiveapi", marker = "extra == 'watcher'", git = "https://github.com/cfe-lab/Kive.git?subdirectory=api&rev=v0.15" },
-    { name = "kivecli", marker = "extra == 'dev'", git = "https://github.com/Donaim/kivecli?rev=c49367d468cd526ee695c36fd3bc78492e78082f" },
+    { name = "kivecli", marker = "extra == 'dev'", git = "https://github.com/Donaim/kivecli?rev=3623d7e8ee5f6edb8e174459d7a51f9c27cf02fa" },
     { name = "mappy", specifier = ">=2.30" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "miseqinteropreader", specifier = ">=1.1.2" },
