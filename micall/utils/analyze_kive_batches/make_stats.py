@@ -8,6 +8,7 @@ import math
 from datetime import datetime
 from itertools import tee
 import ast
+import hashlib
 from Bio.Align import PairwiseAligner
 from fractions import Fraction
 
@@ -158,6 +159,50 @@ def read_conseqs_rows(path_to_file: Path) -> Rows:
                 continue
 
             yield row
+
+
+def calculate_conseq_fingerprint(path_to_file: Path) -> Optional[str]:
+    """Calculate a fingerprint of the largest sequence (with q-cutoff=MAX) from conseq.csv.
+
+    Args:
+        path_to_file: Path to the conseq CSV file
+
+    Returns:
+        A hexadecimal hash string of the largest sequence, or None if no sequences found
+    """
+    try:
+        max_length = 0
+        max_sequence = None
+
+        with open(path_to_file) as fd:
+            reader = csv.DictReader(fd)
+            for row in reader:
+                # This field might be called "region" by mistake.
+                ref = row.get("seed") or row.get("region")
+                if ref is None:
+                    continue
+
+                if "unknown" in ref.lower():
+                    continue
+
+                cutoff = row.get("consensus-percent-cutoff", "")
+                if cutoff != "MAX":
+                    continue
+
+                sequence = row.get("sequence", "")
+                if len(sequence) > max_length:
+                    max_length = len(sequence)
+                    max_sequence = sequence
+
+        if max_sequence is None:
+            return None
+
+        # Use BLAKE2b with 16-byte digest for a 32-character hex string
+        return hashlib.blake2b(max_sequence.encode('utf-8'), digest_size=16).hexdigest()
+
+    except (FileNotFoundError, KeyError) as e:
+        logger.error("Error calculating conseq fingerprint: %s", e)
+        return None
 
 
 def read_contigs_or_conseqs_rows(path_to_file: Path) -> Rows:
@@ -494,6 +539,7 @@ def get_stats(info_file: Path) -> Optional[Row]:
 
     if conseqs_csv_path:
         o["alignment_score"] = calculate_alignment_scores(run_id, ro(conseqs_csv_path))
+        o["conseq_fingerprint"] = calculate_conseq_fingerprint(conseqs_csv_path)
 
     if nuc_csv_path:
         o["soft_clips_count"] = count_soft_clips_from_nuc(nuc_csv_path)
