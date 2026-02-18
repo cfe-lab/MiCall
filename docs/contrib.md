@@ -236,13 +236,13 @@ similar steps to setting up a development workstation. Follow these steps:
 1. Check that all the issues in the current milestone are closed, and make sure
     the code works in your development environment. Run all the unit
     tests as described above, process the microtest data set with
-    `micall release_test_microtest`.
+    `micall release-test-microtest`.
 2. Check if the kiveapi package needs a new release by looking for new commits.
     Make sure you tested with the latest version.
 3. Determine what version number should be used next.
-4. Use the `micall projects_dump` script for the previous version and compare
+4. Use the `micall projects-dump` script for the previous version and compare
     `projects.json` to check that the projects match, or that the differences
-    were intended. Test the `micall projects_upload` script with your updated project
+    were intended. Test the `micall projects-upload` script with your updated project
     files in your local test QAI.
 5. Check the history of the HIV and HCV rules files in the `micall/resistance`
     folder. If they have changed, create a new display file in the `docs` folder
@@ -261,13 +261,13 @@ similar steps to setting up a development workstation. Follow these steps:
     ids of the new apps.
 8. Process all the samples from test_samples.csv on the Kive test server, and
     run the `micall_watcher` service on a VirtualBox. Use the
-    `micall release_test_*` scripts to compare the results of the new release with
+    `micall release-test-*` scripts to compare the results of the new release with
     the previous version. Also run the internal scripts `miseq_gen_results.rb`
     and `miseq_compare_results.rb` to look for differences. Get the comparison
     signed off to begin the release process.
 8. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
-9. Upload the pipeline definitions to QAI, using the `micall projects_upload`
+9. Upload the pipeline definitions to QAI, using the `micall projects-upload`
     command. There is no need to create the new pipeline version in QAI beforehand,
     the command will do this for you - just remember to update the `Order by` field
     afterwards.
