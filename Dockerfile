@@ -104,7 +104,7 @@ RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplo
 COPY . /opt/micall/
 
 RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --no-editable
-RUN micall make_blast_db
+RUN micall make-blast-db
 
 WORKDIR /data
 ENTRYPOINT ["micall", "analyze"]
