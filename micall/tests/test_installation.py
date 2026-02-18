@@ -25,7 +25,7 @@ from itertools import groupby
 from packaging.version import Version, InvalidVersion
 
 from micall.utils.get_list_of_executables import iterate_executables
-from micall.__main__ import EXECUTABLES
+from micall.__main__ import EXECUTABLES, executable_name
 
 
 # Function to quote shell arguments.
@@ -124,7 +124,7 @@ def test_micall_help(temp_venv, micall_installation):
     """
 
     # These are supposed to be listed in output of --help.
-    executables = [os.path.splitext(path.name)[0] for path in iterate_executables()]
+    executables = [executable_name(path) for path in iterate_executables()]
 
     # Check MiCall help to verify installation
     q = quote
