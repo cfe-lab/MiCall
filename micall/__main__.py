@@ -106,7 +106,8 @@ EXECUTABLES = [
 def executable_name(path: str) -> str:
     file_name = Path(path).name
     name, extension = os.path.splitext(file_name)
-    return name
+    normalized_name = name.replace('_', '-')
+    return normalized_name
 
 
 def executable_module(path: str) -> str:
