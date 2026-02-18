@@ -587,10 +587,10 @@ class SampleRunner:
                        ]
 
             app_arguments = {
-                None: ['micall_kive'],
-                'filter_quality': ['filter_quality'],
-                'resistance': ['micall_kive_resistance'],
-                'denovo': ['micall_kive', '--denovo'],
+                None: ['micall-kive'],
+                'filter_quality': ['filter-quality'],
+                'resistance': ['micall-kive-resistance'],
+                'denovo': ['micall-kive', '--denovo'],
             }[app_name]
 
             command.extend(app_arguments)
