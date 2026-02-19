@@ -576,11 +576,11 @@ wheels = [
 
 [[package]]
 name = "multicsv"
-version = "1.0.6"
+version = "1.1.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/be/e4/ce966ee4bb05b3fe3e73d743f98dc40ab8e57e904967ff650ac88ddb00db/multicsv-1.0.6.tar.gz", hash = "sha256:2afb3269367e6e1bcc0a8981a5dadbf290598f394a87a27e6506c6bc8730e2d1", size = 20932, upload-time = "2026-02-10T02:21:19.968Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/dd/160afab342de2eb13df042f0f904713f4a23cb80a3fde6a2e4846b962993/multicsv-1.1.1.tar.gz", hash = "sha256:60e9e768244ccf6d2b68daa0e66afa18a4ef80fb4e07dc0ce9ec6548a5265442", size = 23479, upload-time = "2026-02-19T00:14:17.903Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c6/50/7157fd3b3ca73985355340405b87873a8ea6502c8c4028efabd767dab4a0/multicsv-1.0.6-py2.py3-none-any.whl", hash = "sha256:5b8661a3f4bd79145ed6fbc3209d1751b024317ee659da289b97374c6e3410c1", size = 23425, upload-time = "2026-02-10T02:21:43.078Z" },
+    { url = "https://files.pythonhosted.org/packages/05/58/0b7c6a2463acabd54583d20ab8656587d4a92c7d8fdb988dd00e2eb8a3e0/multicsv-1.1.1-py3-none-any.whl", hash = "sha256:81a1cbedbf081734f72545ebcb2c59bc41315d6436c109100abc380321b945c7", size = 25512, upload-time = "2026-02-19T00:14:16.719Z" },
 ]
 
 [[package]]
