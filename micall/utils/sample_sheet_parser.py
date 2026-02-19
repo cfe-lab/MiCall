@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TextIO, Dict
 import csv
 import multicsv
-from io import BytesIO
+from io import BytesIO, StringIO
 import json
 
 from micall.utils.sample_sheet_v1_parser import sample_sheet_v1_parser
@@ -35,9 +35,11 @@ def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     This is to distinguish replicates of the same sample.
     """
 
-    wrapped = BytesIO(handle.read().encode())
+    content = handle.read()
+    wrapped = BytesIO(content.encode())
     with multicsv.wrap(wrapped) as csvfile:
         if _determine_version(csvfile) == 1:
+            handle = StringIO(content)
             return sample_sheet_v1_parser(handle)
         else:
             return sample_sheet_v2_parser(csvfile)
