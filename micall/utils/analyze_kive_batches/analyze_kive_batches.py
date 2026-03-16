@@ -49,7 +49,7 @@ def cli_parser() -> argparse.ArgumentParser:
     all.add_argument("--properties", type=Path, required=True,
                      help="Additional properties associated with particular images.")
 
-    sub = mode_parsers.add_parser("diff_samples_of_two_apps", help="Computes differences between samples of two apps.")
+    sub = mode_parsers.add_parser("diff-samples-of-two-apps", help="Computes differences between samples of two apps.")
     sub.add_argument("--input", type=Path, required=True,
                      help="Input CSV file.")
     sub.add_argument("--app1", type=str, required=True,
@@ -158,7 +158,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
 def main_typed(subcommand: str, args: argparse.Namespace) -> None:
     if args.subcommand == 'all':
         run_all(batches_list=args.batches_list, root=args.root, properties=args.properties)
-    elif args.subcommand == 'diff_samples_of_two_apps':
+    elif args.subcommand == 'diff-samples-of-two-apps':
         diff_samples_of_two_apps(input=args.input, app1=args.app1, app2=args.app2, output=args.output)
     elif args.subcommand == 'get-batch':
         get_batch(batch=args.batch, target=args.target)
