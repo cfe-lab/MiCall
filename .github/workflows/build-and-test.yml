@@ -119,7 +119,7 @@ jobs:
       - name: Install python packages
         run: pip install multicsv
       - name: Check docker image microtest
-        run: python micall release-test-microtest ghcr.io/cfe-lab/micall:latest --docker
+        run: python micall release_test_microtest ghcr.io/cfe-lab/micall:latest --docker
 
   singularity-test:
     runs-on: ubuntu-22.04
@@ -161,7 +161,7 @@ jobs:
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall release-test-microtest micall.simg
+        run: python micall release_test_microtest micall.simg
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'

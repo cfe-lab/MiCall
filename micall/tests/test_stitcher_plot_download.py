@@ -200,7 +200,7 @@ def test_stitcher_plot_svg_argument_in_micall_kive():
         'conseq_region.csv',
     ]
 
-    with patch.object(sys, 'argv', ['micall-kive'] + test_args):
+    with patch.object(sys, 'argv', ['micall_kive'] + test_args):
         args = parse_args()
         assert hasattr(args, 'stitcher_plot_svg')
         assert args.stitcher_plot_svg == 'stitcher_plot.svg'

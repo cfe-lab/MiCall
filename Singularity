@@ -99,7 +99,7 @@ From: debian:bookworm-slim
     apt-get install -q -y libcairo2-dev
     # Install micall main executable.
     uv sync --frozen --managed-python --project /opt/micall --extra basespace --no-editable
-    micall make-blast-db
+    micall make_blast_db
     # Also trigger matplotlib to build its font cache.
     python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
@@ -113,7 +113,7 @@ From: debian:bookworm-slim
     export LANG=en_US.UTF-8
 
 %runscript
-    micall micall-kive "$@"
+    micall micall_kive "$@"
 
 %apphelp filter_quality
     Post-processing of short-read alignments.
@@ -125,7 +125,7 @@ From: debian:bookworm-slim
     KIVE_MEMORY 200
 
 %apprun filter_quality
-    micall filter-quality "$@"
+    micall filter_quality "$@"
 
 %apphelp resistance
     Combine HCV results with HCV-Midi results, and generate resistance
@@ -139,10 +139,10 @@ From: debian:bookworm-slim
     KIVE_MEMORY 200
 
 %apprun resistance
-    micall micall-kive-resistance "$@"
+    micall micall_kive_resistance "$@"
 
 %apprun denovo
-    micall micall-kive --denovo "$@"
+    micall micall_kive --denovo "$@"
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
