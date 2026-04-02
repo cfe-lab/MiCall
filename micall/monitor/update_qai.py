@@ -24,7 +24,7 @@ import argparse
 from queue import Queue
 from urllib.parse import urlparse
 
-from micall.monitor.sample_watcher import PipelineType
+from micall.monitor.types import PipelineType
 from operator import itemgetter, getitem
 import os
 

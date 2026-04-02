@@ -24,7 +24,8 @@ from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
-from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
+from micall.monitor.types import Batch, ALLOWED_GROUPS, Item, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
+from micall.monitor.sample_watcher import SampleWatcher, FolderWatcher
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
 from micall.utils.check_sample_sheet import check_sample_name_consistency
