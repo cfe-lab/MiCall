@@ -23,7 +23,8 @@ from requests import ConnectionError
 import micall
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEvent, FolderEventType, calculate_retry_wait, \
     trim_run_name, compress_old_versions
-from micall.monitor.sample_watcher import PipelineType, ALLOWED_GROUPS, FolderWatcher, SampleWatcher
+from micall.monitor.sample_watcher import PipelineType, FolderWatcher, SampleWatcher
+from micall.monitor.types import ALLOWED_GROUPS
 from micall.monitor.find_groups import SampleGroup
 from micall.monitor.watcher import parse_args
 from micall.monitor import disk_operations
