@@ -36,26 +36,26 @@ from micall.monitor import disk_operations
 logger = logging.getLogger('update_qai')
 
 # Use the same retry configuration as kive_watcher
-MAX_RETRY_ATTEMPTS = 100 
+MAX_RETRY_ATTEMPTS = 100
 
 
 def retry_operation(operation, operation_name: str):
     """Execute an operation with retry logic for both network and disk failures.
-    
+
     This function handles:
     - Network failures (requests exceptions, connection errors)
     - Disk failures (IO errors, permission errors)
     - QAI API failures (authentication, server errors)
     - File system issues (missing files, corrupted data)
-    
+
     Args:
         operation: Callable that performs the operation
         operation_name: Human-readable name for logging
         max_attempts: Maximum number of retry attempts
-        
+
     Returns:
         The result of the successful operation
-        
+
     Raises:
         RuntimeError: If all retry attempts fail
     """
@@ -72,18 +72,18 @@ def retry_operation(operation, operation_name: str):
         except Exception as ex:
             attempt_count += 1
             last_exception = ex
-            
+
             # Record start time on first failure
             if start_time is None:
                 start_time = datetime.now()
-            
+
             if attempt_count >= MAX_RETRY_ATTEMPTS:
                 logger.error(f'{operation_name} failed after {MAX_RETRY_ATTEMPTS} attempts', exc_info=True)
                 break
-            
+
             logger.warning(f'{operation_name} failed (attempt {attempt_count}/{MAX_RETRY_ATTEMPTS})', exc_info=True)
             wait_for_retry(attempt_count, start_time)
-    
+
     # If we get here, all attempts failed
     raise RuntimeError(f'{operation_name} failed after {MAX_RETRY_ATTEMPTS} attempts') from last_exception
 
@@ -557,7 +557,7 @@ def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: s
         raise RuntimeError("'Experiment Name' field is not a string.")
 
     with qai_helper.Session() as session:
-        retry_qai_login(session, qai_server, qai_user, qai_password, f"{result_folder}")    
+        retry_qai_login(session, qai_server, qai_user, qai_password, f"{result_folder}")
         run = retry_find_run(session, experiment_name)
 
         # PROVIRAL
