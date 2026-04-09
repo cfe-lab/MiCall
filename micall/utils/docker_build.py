@@ -29,7 +29,7 @@ def main():
     if args.tag is not None:
         repository_name += ':' + args.tag
 
-    source_path = os.path.abspath(os.path.dirname(__file__))
+    source_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     version_filename = os.path.join(source_path, 'version.txt')
     with open(version_filename, 'w') as version_file:
         # VirtualBox shared folder messes up file modes, so ignore them.
@@ -55,8 +55,7 @@ def main():
                 'Docker build failed. Do you have root permission?') from ex
         raise
     if args.nopush:
-        print("Rerun without --nopush to attemp to push the docker image to illumina and launch spacedock")
-        print("Currently the docker push does not work in the VM because the docker version is so old.")
+        print("Rerun without --nopush to attempt to push the docker image to illumina and launch spacedock")
         exit()
     check_call(['docker', 'push', repository_name])
     if args.agent_id is None:
