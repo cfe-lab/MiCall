@@ -2,7 +2,12 @@ function launchSpec(dataProvider)
 {
     var ret = {
         commandLine: [ "basespace" ],
-        containerImageId: "docker.illumina.com/cfe_lab/micall:latest",
+        // NOTE: Replace the tag below with the specific release version (e.g. :v4.10.0)
+        // before creating a new BaseSpace app version.  Illumina recommends pinning
+        // Native Apps to a specific image digest rather than a mutable tag for
+        // reproducibility (see Illumina Native App publishing guide).
+        // Example digest format: "docker.illumina.com/cfe_lab/micall@sha256:<hash>"
+        containerImageId: "docker.illumina.com/cfe_lab/micall:vX.Y.Z",
         Options: [ "bsfs.enabled=true" ]
     };
     return ret;
