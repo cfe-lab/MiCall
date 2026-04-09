@@ -47,18 +47,6 @@ python --version
 
 We have tested with Python `3.12`.
 
-### BaseSpace
-
-Set up the [native apps virtual machine][bsvm]. Make sure you have a
-developer account on illumina.com. The first time you run this, you
-will have to log in to your account using
-
-```shell
-sudo docker login docker.illumina.com
-```
-
-[bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
-
 ### Test data
 If you want to run `micall watcher`, you have to set up data folders for raw
 data and for the working folders. You'll also need to set up the QAI project
@@ -317,69 +305,12 @@ similar steps to setting up a development workstation. Follow these steps:
     If the log doesn't help, look in `/var/log/messages` on CentOS or
     `/var/log/syslog` on Ubuntu.
 
-16. Launch the basespace virtual machine (see BaseSpace section above) and copy
-    MiCall source files into it. The easiest way to copy is via scp:
+16. Upload a BaseSpace app. See [basespace_upload.md](./basespace_upload.md) for instructions on how to do this.
 
-    ```shell
-    scp -P 2222 /path/to/micall/on/host basespace@localhost:MiCall
-    # (password is "basespace")
-    ```
-
-    Then login to virtual machine and build the docker image:
-
-    ```shell
-    ssh basespace@localhost -p2222     # (password is "basespace")
-    sudo python3 MiCall/micall/utils/docker_build.py -t vX.Y.Z --nopush
-    ```
-
-    The script is able to push the docker image to the illumina repo and launch
-    spacedock as well, but that is currently broken because of the old docker version
-    in the VM. If this is ever updated, or we build our own VM, you won't have to do these
-    steps manually anymore and can remove the `--nopush`.
-
-17. Tag the same docker image and push it to docker hub and illumina.
-    Unfortunately, the old
-    version of docker that comes with the basespace virtual machine
-    [can't log in] to docker hub or illumina, so you'll have to save it to a tar file and
-    load that into your host system's version of docker. Before pushing it anywhere,
-    check that the docker image works by running the microtests.
-    If the docker push fails with mysterious error messages (access to the resource
-    is denied), try `docker logout` and `docker login` again, and make sure you are
-    on the owner team of cfelab on [docker hub].
-
-    ```shell
-    ssh basespace@localhost -p2222  # password is "basespace"
-    sudo su
-    sudo docker save cfelab/micall:vX.Y.Z > micall-vX.Y.Z.tar
-    exit  # Exit the root shell.
-    exit  # Exit the virtual machine.
-    sudo docker load < micall-vX.Y.Z.tar
-    sudo docker login docker.illumina.com
-    sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y.Z cfelab/micall:vX.Y.Z
-    sudo docker push docker.illumina.com/cfe_lab/micall:vX.Y.Z
-    rm micall-vX.Y.Z.tar
-    ```
-
-18. Duplicate the MiCall form in the revisions section of the form builder, then
-    edit the `callbacks.js` in the form builder itself, and add the `:vX.Y.Z` tag to the
-    `containerImageId` field. In My Apps, create a new version of the App with the new
-    version number. Record the new agent ID (click the arrow on the bottom right of the
-    form builder).
-19. Launch the spacedock version by running this in your basespace VM:
-
-    ```shell
-    sudo spacedock -a [agent ID] -m https://mission.basespace.illumina.com
-    ```
-
-20. Check that the new MiCall version works as expected by processing some of the
-    microtests in BaseSpace.
-21. Activate the new revisions in the form builder and the report builder.
-22. Submit the new revision of the MiCall app for review, and ask our contact
-    at Illumina to set the price to zero for the list of test users.
-23. Send an e-mail to users describing the major changes in the release.
-24. Close the milestone for this release, create one for the next release, and
+17. Send an e-mail to users describing the major changes in the release.
+18. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
-25. When the release is stable, check that it's included on the [Zenodo] page.
+19. When the release is stable, check that it's included on the [Zenodo] page.
     If you included more than one tag in the same release, the new tags have
     not triggered Zenodo versions. Edit the release on GitHub, copy the
     description text, update the release, then click the Delete button. Then
