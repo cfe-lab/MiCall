@@ -106,5 +106,11 @@ COPY . /opt/micall/
 RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --no-editable
 RUN micall make_blast_db
 
+## Sometimes BaseSpace will crash if python tries to create threads. We prevent thread creation here:
+ENV OPENBLAS_NUM_THREADS=1
+ENV OMP_NUM_THREADS=1
+ENV MKL_NUM_THREADS=1
+ENV NUMEXPR_NUM_THREADS=1
+
 WORKDIR /data
 ENTRYPOINT ["micall", "analyze"]
