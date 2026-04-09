@@ -22,12 +22,7 @@ The easiest way to start developing MiCall is by using DevContainers.
     - For a web-based development environment, you can develop directly on GitHub using GitHub Codespaces by navigating to the MiCall repository on GitHub and selecting "Code" > "Open with Codespaces" to launch a pre-configured environment.
 
 2. **Dependency Installation**: All required dependencies will be automatically installed whether you are using a local DevContainer or GitHub Codespace.
-
-3. **Interpreter Selection**:
-    - Following the setup, if you encounter dependency errors, manually select the Python interpreter version `3.8`. This is necessary because the container includes multiple Python versions, and the default selection might not be appropriate.
-    - This issue is tracked and further details can be found [here](https://github.com/cfe-lab/MiCall/issues/1033).
-
-4. **Verification**: To ensure that the environment is correctly configured, execute `pytest` within the DevContainer or Codespace. All tests should pass, indicating that the setup is successful.
+3. **Verification**: To ensure that the environment is correctly configured, execute `pytest` within the DevContainer or Codespace. All tests should pass, indicating that the setup is successful.
 
 ### Local install
 
