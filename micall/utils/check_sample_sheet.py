@@ -151,6 +151,11 @@ def main(argv: Sequence[str]) -> int:
 
     logging.basicConfig(level=logger.level, format="%(levelname)s: %(message)s")
 
+    # Check that sample sheet exists
+    if not args.sample_sheet.exists():
+        logger.error("Sample sheet not found: %s", args.sample_sheet)
+        return 1
+
     # Infer run_path from sample_sheet if not provided
     run_path = args.run_path
     if run_path is None:
