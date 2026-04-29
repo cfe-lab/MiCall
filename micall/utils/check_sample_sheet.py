@@ -156,6 +156,13 @@ def main(argv: Sequence[str]) -> int:
         logger.error("Sample sheet not found: %s", args.sample_sheet)
         return 1
 
+    # Try reading sample sheet to catch parsing errors early
+    try:
+        Path(args.sample_sheet).read_text()
+    except Exception as e:
+        logger.error("Error reading sample sheet: %s", e)
+        return 1
+
     # Infer run_path from sample_sheet if not provided
     run_path = args.run_path
     if run_path is None:
