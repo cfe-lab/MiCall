@@ -2,7 +2,6 @@ import json
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 from operator import itemgetter
-from pathlib import Path
 import logging
 import sys
 import time
