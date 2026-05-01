@@ -576,3 +576,29 @@ class ProjectConfigurationProjectRegionsTest(unittest.TestCase):
             excluded_projects))
 
         self.assertEqual(expected_project_regions, project_regions)
+
+
+
+
+class DefaultConfigConsistencyTest(unittest.TestCase):
+    def test_scoring_covers_all_amino_project_regions(self):
+        project_config = ProjectConfig.loadDefault()
+        scoring_config = ProjectConfig.loadScoring()
+
+        missing_regions = []
+        for project_name, project_data in project_config.config['projects'].items():
+            scoring_project = scoring_config.config['projects'].get(project_name, {})
+            scored_regions = {
+                region_data['coordinate_region']
+                for region_data in scoring_project.get('regions', [])
+            }
+
+            for project_region in project_data['regions']:
+                coordinate_region = project_region['coordinate_region']
+                is_nucleotide = project_config.config['regions'][coordinate_region]['is_nucleotide']
+                if is_nucleotide:
+                    continue
+                if coordinate_region not in scored_regions:
+                    missing_regions.append((project_name, coordinate_region))
+
+        self.assertEqual([], missing_regions)
