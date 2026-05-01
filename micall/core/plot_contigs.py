@@ -1417,13 +1417,13 @@ def build_contig(reader,
                 field_text = contig_row['concordance']
                 field_value = None if field_text == '' else 100 * float(field_text)
                 contig_row['concordance'] = field_value
-        start = contig_rows[0][pos_field]
-        end = contig_rows[-1][pos_field]
-        new_final_pos = -1
-        while end is None:
-            # this can happen if the match ends with an insertion. Backtrack to the last position that was not None
-            new_final_pos -= 1
-            end = contig_rows[new_final_pos][pos_field]
+        included_positions = [row[pos_field]
+                              for row in contig_rows
+                              if row[pos_field] is not None]
+        if not included_positions:
+            continue
+        start = min(included_positions)
+        end = max(included_positions)
         coverage = [0] * (end - start + 1)
         concordance = [0] * (end - start + 1)
         pos = 0

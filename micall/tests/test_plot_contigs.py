@@ -475,6 +475,26 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_out_of_order_positions():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV1A,1,1,0,0,5
+1-HCV-1a,HCV1A,3,3,0,0,9
+1-HCV-1a,HCV1A,2,2,0,0,7
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Coverage 5, 7, 9
+[1-3], 1-HCV-1a - depth 9(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
 def test_plot_genome_coverage_insertion_at_end():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
