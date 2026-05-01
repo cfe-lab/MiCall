@@ -43,6 +43,8 @@ class Session(requests.Session):
             logger.info("Response body: %s", response.text)
 
         response.raise_for_status()
+        if not response.text.strip():
+            return None
         return response.json()
 
     def post_json(self, path, data):
