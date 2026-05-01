@@ -118,7 +118,7 @@ def main() -> int:
                         scoring_data = region
                         break
                 else:
-                    raise ValueError("Region not present in scoring config file")
+                    raise ValueError(f"Region {region_name!r} not present in scoring config file")
                 coordinate_region = regions[region_name]
                 seed_region = regions[region_data['seed_region_names'][0]]
                 seed_group_id = seed_region['seed_group_id']
