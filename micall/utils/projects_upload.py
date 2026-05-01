@@ -9,6 +9,7 @@ import time
 import urllib3
 
 from micall.core.project_config import ProjectConfig
+from micall.utils.externals import ProjectsScoringFile
 from micall.monitor import qai_helper
 
 logger = logging.getLogger(__name__)
@@ -157,7 +158,7 @@ def main() -> int:
         args.update_sequences)
 
     project_config = ProjectConfig.loadDefault()
-    scoring_path = Path(__file__).parent.parent / 'project_scoring.json'
+    scoring_path = ProjectsScoringFile().path()
     logger.debug('Loading scoring config from %s', scoring_path)
     with scoring_path.open() as scoring_file:
         scoring_config = json.load(scoring_file)
