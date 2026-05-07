@@ -193,6 +193,7 @@ def create_mock_wait():
 def create_default_config():
     default_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
                                       '--micall_main_pipeline_id', '43',
+                                      '--micall_collation_pipeline_id', '44',
                                       '--micall_resistance_pipeline_id', '494'])
     yield default_config
 
@@ -289,7 +290,8 @@ def test_filter_pipeline_not_set(capsys, monkeypatch):
 
 def test_pipeline_set():
     args = parse_args(['--micall_filter_quality_pipeline_id', '402',
-                       '--micall_main_pipeline_id', '403'])
+                       '--micall_main_pipeline_id', '403',
+                       '--micall_collation_pipeline_id', '404'])
 
     assert args.micall_filter_quality_pipeline_id == 402
 
@@ -297,6 +299,7 @@ def test_pipeline_set():
 def test_pipeline_set_with_environment_variable(monkeypatch):
     monkeypatch.setenv('MICALL_FILTER_QUALITY_PIPELINE_ID', '99')
     monkeypatch.setenv('MICALL_MAIN_PIPELINE_ID', '99')
+    monkeypatch.setenv('MICALL_COLLATION_PIPELINE_ID', '99')
     args = parse_args([])
 
     assert args.micall_filter_quality_pipeline_id == 99
@@ -2210,6 +2213,7 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
 
 def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
     pipelines_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
+                                        '--micall_collation_pipeline_id', '44',
                                         '--denovo_main_pipeline_id', '43',
                                         '--proviral_pipeline_id', '145'])
 
@@ -2300,6 +2304,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
 def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_kive):
     """Test that proviral pipeline chains filter_quality and denovo versions."""
     pipelines_config = parse_args(argv=['--micall_filter_quality_pipeline_id', '42',
+                                        '--micall_collation_pipeline_id', '44',
                                         '--denovo_main_pipeline_id', '43',
                                         '--proviral_pipeline_id', '145'])
 
@@ -4036,28 +4041,37 @@ def test_run_collation_pipeline_submits_multiple_optional_inputs(raw_data_with_t
                     ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
                     ('V3LOOP', None)))
 
-    results_path = base_calls / '../../../Results/version_0-dev'
-    sample1_path = results_path / 'scratch' / '2120A-PR_S14'
-    sample2_path = results_path / 'scratch' / '2110A-V3LOOP_S13'
-    sample1_path.mkdir(parents=True)
-    sample2_path.mkdir(parents=True)
-    (sample1_path / 'cascade.csv').write_text('a,b\n1,2\n')
-    (sample2_path / 'cascade.csv').write_text('a,b\n3,4\n')
+    sample1_run = dict(id='801', datasets=[dict(argument_type='O',
+                                             argument_name='cascade_csv',
+                                             dataset='/datasets/710/')])
+    sample2_run = dict(id='802', datasets=[dict(argument_type='O',
+                                             argument_name='cascade_csv',
+                                             dataset='/datasets/711/')])
+    folder_watcher.add_run(sample1_run,
+                           PipelineType.MAIN,
+                           folder_watcher.sample_watchers[0],
+                           is_complete=True)
+    folder_watcher.add_run(sample2_run,
+                           PipelineType.MAIN,
+                           folder_watcher.sample_watchers[1],
+                           is_complete=True)
 
     kive_watcher.app_urls[default_config.micall_collation_pipeline_id] = '/containerapps/700'
     kive_watcher.app_args[default_config.micall_collation_pipeline_id] = dict(
-        sample_results_tars='/containerargs/7001')
+        run_outputs='/containerargs/7001',
+        metadata_csv='/containerargs/7002')
 
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.filter.return_value = []
     mock_session.endpoints.containerruns.post.return_value = dict(id='702', state='N')
+    mock_session.get.side_effect = [
+        Mock(json=Mock(return_value=dict(url='/datasets/710/', id='710'))),
+        Mock(json=Mock(return_value=dict(url='/datasets/711/', id='711'))),
+    ]
 
     with patch.object(kive_watcher,
                       'find_or_upload_dataset',
-                      side_effect=[
-                          dict(url='/datasets/710/', id='710'),
-                          dict(url='/datasets/711/', id='711')
-                      ]):
+                      side_effect=[dict(url='/datasets/799/', id='799')]):
         run = kive_watcher.run_collation_pipeline(folder_watcher, PipelineType.MAIN)
 
     assert run is not None
@@ -4066,4 +4080,5 @@ def test_run_collation_pipeline_submits_multiple_optional_inputs(raw_data_with_t
     assert submitted_datasets == [
         dict(argument='/containerargs/7001', dataset='/datasets/710/'),
         dict(argument='/containerargs/7001', dataset='/datasets/711/'),
+        dict(argument='/containerargs/7002', dataset='/datasets/799/'),
     ]

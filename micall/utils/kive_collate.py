@@ -5,7 +5,7 @@ import shutil
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import Iterable, TextIO
+from typing import TextIO
 
 DOWNLOADED_RESULTS = [
     'remap_counts_csv',
@@ -213,24 +213,32 @@ def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path
             target_path.unlink()
 
 
-def unpack_sample_tars(input_tars: Iterable[str], scratch_path: Path) -> list[str]:
-    sample_names: list[str] = []
-    for tar_path_text in input_tars:
-        tar_path = Path(tar_path_text)
-        with tarfile.open(tar_path) as source_tar:
-            source_tar.extractall(scratch_path)
-        for child in scratch_path.iterdir():
-            if child.is_dir() and child.name not in sample_names:
-                sample_names.append(child.name)
-    sample_names.sort()
-    return sample_names
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sample_results_tars', nargs='*', default=[])
+    parser.add_argument('--run_outputs', nargs='*', default=[])
+    parser.add_argument('metadata_csv')
     parser.add_argument('collated_results_tar')
     return parser.parse_args()
+
+
+def stage_inputs_by_sample(run_outputs: list[str], metadata_csv: str, scratch_path: Path) -> list[str]:
+    with open(metadata_csv) as manifest_file:
+        rows = list(csv.DictReader(manifest_file))
+
+    sample_names: set[str] = set()
+    for row in rows:
+        file_index = int(row['index'])
+        sample_name = row['sample']
+        output_name = row['output_name']
+
+        source_path = Path(run_outputs[file_index])
+        sample_path = scratch_path / sample_name
+        sample_path.mkdir(parents=True, exist_ok=True)
+        target_path = sample_path / get_output_filename(output_name)
+        shutil.copyfile(source_path, target_path)
+        sample_names.add(sample_name)
+
+    return sorted(sample_names)
 
 
 def main() -> None:
@@ -242,7 +250,9 @@ def main() -> None:
         scratch_path.mkdir(parents=True, exist_ok=True)
         collated_path.mkdir(parents=True, exist_ok=True)
 
-        sample_names = unpack_sample_tars(args.sample_results_tars, scratch_path)
+        sample_names = stage_inputs_by_sample(args.run_outputs,
+                              args.metadata_csv,
+                              scratch_path)
         copy_outputs(sample_names, scratch_path, collated_path)
 
         with tarfile.open(args.collated_results_tar, 'w') as output_tar:

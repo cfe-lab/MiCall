@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import shutil
-import tempfile
 import tarfile
 from collections import namedtuple
 from csv import DictWriter, DictReader
@@ -12,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, Any, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, Tuple, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -97,7 +96,8 @@ kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential re
 urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 T = TypeVar('T')
-COLLATION_INPUT_NAME = 'sample_results_tars'
+COLLATION_INPUT_NAME = 'run_outputs'
+COLLATION_METADATA_INPUT_NAME = 'metadata_csv'
 COLLATION_OUTPUT_NAME = 'collated_results_tar'
 
 def open_kive(server_url: str) -> KiveAPI:
@@ -337,10 +337,6 @@ def trim_run_name(run_name: str) -> str:
     return run_name
 
 
-def get_output_filename(output_name: str) -> str:
-    return '.'.join(output_name.rsplit('_', 1))
-
-
 def wait_for_retry(attempt_count: int, start_time: datetime) -> None:
     """Wait with exponential backoff, logging warnings after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
@@ -363,20 +359,6 @@ def calculate_retry_wait(min_wait: timedelta, max_wait: timedelta, attempt_count
     seconds = min_seconds * (2 ** (attempt_count - 1))
     seconds = min(seconds, max_wait.total_seconds())
     return timedelta(seconds=seconds)
-
-
-def get_scratch_path(results_path: Path, pipeline_group: PipelineType) -> Path:
-    if pipeline_group == PipelineType.MAIN:
-        scratch_name = "scratch"
-    elif pipeline_group == PipelineType.DENOVO_MAIN:
-        scratch_name = "scratch_denovo"
-    elif pipeline_group == PipelineType.PROVIRAL:
-        scratch_name = "scratch_proviral"
-    else:
-        assert pipeline_group == PipelineType.MIXED_HCV_MAIN
-        scratch_name = "scratch_mixed_hcv"
-    scratch_path = results_path / scratch_name
-    return scratch_path
 
 
 def get_collated_path(results_path: Path, pipeline_group: PipelineType) -> Path:
@@ -666,26 +648,40 @@ class KiveWatcher:
             for pipeline_group in list(folder_watcher.active_pipeline_groups):
                 if not folder_watcher.is_pipeline_group_finished(pipeline_group):
                     continue
+                if pipeline_group == PipelineType.FILTER_QUALITY:
+                    folder_watcher.active_pipeline_groups.remove(pipeline_group)
+                    self._mark_pipeline_group_complete(folder,
+                                                      folder_watcher,
+                                                      pipeline_group,
+                                                      self.get_results_path(folder_watcher))
+                    continue
+
                 collation_key = (folder, pipeline_group)
                 collation_run = self.collation_runs.get(collation_key)
 
-                if (pipeline_group != PipelineType.FILTER_QUALITY and
-                        self.config.micall_collation_pipeline_id is not None):
+                if collation_run is None:
+                    collation_run = self.run_collation_pipeline(folder_watcher,
+                                                                pipeline_group)
                     if collation_run is None:
-                        collation_run = self.run_collation_pipeline(folder_watcher,
-                                                                    pipeline_group)
-                        if collation_run is not None:
-                            self.collation_runs[collation_key] = collation_run
-                            continue
-                    results_path = self.poll_collation_run(folder_watcher,
-                                                           pipeline_group,
-                                                           collation_run)
-                    if results_path is None:
+                        results_path = self.get_results_path(folder_watcher)
+                        target_path = get_collated_path(results_path, pipeline_group)
+                        disk_operations.mkdir_p(target_path, exist_ok=True)
+                        disk_operations.touch(target_path / 'doneprocessing')
+                        folder_watcher.active_pipeline_groups.remove(pipeline_group)
+                        self._mark_pipeline_group_complete(folder,
+                                                          folder_watcher,
+                                                          pipeline_group,
+                                                          results_path)
                         continue
-                    self.collation_runs.pop(collation_key, None)
-                else:
-                    results_path = self.collate_folder(folder_watcher,
-                                                       pipeline_group)
+                    self.collation_runs[collation_key] = collation_run
+                    continue
+
+                results_path = self.poll_collation_run(folder_watcher,
+                                                       pipeline_group,
+                                                       collation_run)
+                if results_path is None:
+                    continue
+                self.collation_runs.pop(collation_key, None)
 
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
                 self._mark_pipeline_group_complete(folder,
@@ -711,35 +707,66 @@ class KiveWatcher:
                                folder_watcher: FolderWatcher,
                                pipeline_group: PipelineType) -> Optional[Run]:
         if self.config.micall_collation_pipeline_id is None:
-            return None
-        results_path = self.get_results_path(folder_watcher)
-        scratch_path = get_scratch_path(results_path, pipeline_group)
+            raise RuntimeError('Collation pipeline ID is not configured.')
 
-        sample_names = sorted({trim_name(name) for name in folder_watcher.all_samples})
         input_datasets: list[RunDataset] = []
-        for sample_name in sample_names:
-            sample_path = scratch_path / sample_name
-            if not sample_path.exists():
-                continue
-            with tempfile.NamedTemporaryFile(suffix='.tar') as sample_tar:
-                with tarfile.open(sample_tar.name, 'w') as archive:
-                    archive.add(sample_path, arcname=sample_name)
-                with open(sample_tar.name, 'rb') as tar_file:
-                    dataset = self.find_or_upload_dataset(
-                        tar_file,
-                        f'{folder_watcher.run_name}_{pipeline_group.name.lower()}_{sample_name}_collation_input.tar',
-                        f'Inputs for Kive collation of {sample_name}.')
-                if dataset is not None:
+        manifest_rows: list[dict[str, str]] = []
+        for sample_watcher in folder_watcher.sample_watchers:
+            for pipeline_type, run in sample_watcher.runs.items():
+                if PIPELINE_GROUPS[pipeline_type] != pipeline_group:
+                    continue
+                sample_name = self.get_sample_name_for_pipeline(sample_watcher,
+                                                                pipeline_type)
+                if sample_name is None:
+                    continue
+                for run_dataset in run.get('datasets', []):
+                    if run_dataset['argument_type'] != 'O':
+                        continue
+                    output_name = run_dataset['argument_name']
+                    if output_name not in DOWNLOADED_RESULTS:
+                        continue
+                    dataset = self.kive_retry(
+                        lambda dataset_url=run_dataset['dataset']:
+                        self.session.get(dataset_url).json())
+                    input_index = len(input_datasets)
                     input_datasets.append(dataset)
+                    manifest_rows.append(dict(index=str(input_index),
+                                              sample=trim_name(sample_name),
+                                              output_name=output_name))
 
-        if not input_datasets:
+        if not manifest_rows:
+            return None
+
+        manifest_text = StringIO()
+        writer = DictWriter(manifest_text,
+                            ['index', 'sample', 'output_name'],
+                            lineterminator='\n')
+        writer.writeheader()
+        writer.writerows(manifest_rows)
+        manifest_dataset = self.find_or_upload_dataset(
+            BytesIO(manifest_text.getvalue().encode('utf8')),
+            f'{folder_watcher.run_name}_{pipeline_group.name.lower()}_collation_metadata.csv',
+            f'Collation metadata for {folder_watcher.run_name} {pipeline_group.name}.')
+        if manifest_dataset is None:
             return None
 
         return self.find_or_launch_run(
             self.config.micall_collation_pipeline_id,
-            {COLLATION_INPUT_NAME: input_datasets},
+            {
+                COLLATION_INPUT_NAME: input_datasets,
+                COLLATION_METADATA_INPUT_NAME: manifest_dataset,
+            },
             f'MiCall collation {pipeline_group.name.lower()} on {folder_watcher.run_name}',
             folder_watcher.batch)
+
+    @staticmethod
+    def get_sample_name_for_pipeline(sample_watcher: SampleWatcher,
+                                     pipeline_type: PipelineType) -> Optional[str]:
+        if pipeline_type in (PipelineType.MIDI,
+                             PipelineType.MIXED_HCV_MIDI,
+                             PipelineType.DENOVO_MIDI):
+            return sample_watcher.sample_group.names[1]
+        return sample_watcher.sample_group.names[0]
 
     def poll_collation_run(self,
                            folder_watcher: FolderWatcher,
@@ -772,7 +799,6 @@ class KiveWatcher:
             raise RuntimeError('Collation run completed without collated output dataset.')
 
         results_path = self.get_results_path(folder_watcher)
-        scratch_path = get_scratch_path(results_path, pipeline_group)
         target_path = get_collated_path(results_path, pipeline_group)
         disk_operations.mkdir_p(target_path, exist_ok=True)
         collated_tar_path = target_path / 'collated_results.tar'
@@ -782,241 +808,8 @@ class KiveWatcher:
         with tarfile.open(collated_tar_path) as tar_file:
             tar_file.extractall(target_path)
         disk_operations.unlink(collated_tar_path, missing_ok=True)
-
-        disk_operations.rmtree(scratch_path)
         disk_operations.touch(target_path / 'doneprocessing')
         return results_path
-
-    def collate_folder(self, folder_watcher: FolderWatcher, pipeline_group: PipelineType) -> Optional[Path]:
-        """ Collate scratch files for a run folder.
-
-        :param FolderWatcher folder_watcher: holds details about the run folder
-        :param PipelineType pipeline_group: the group of runs to collate
-        """
-        results_path = self.get_results_path(folder_watcher)
-
-        error_message = None
-        if folder_watcher.is_folder_failed:
-            error_message = 'Filter quality failed in Kive.'
-        else:
-            failed_sample_names = [
-                sample_watcher.sample_group.enum
-                for sample_watcher in folder_watcher.sample_watchers
-                if sample_watcher.is_failed]
-            if failed_sample_names:
-                error_message = 'Samples failed in Kive: {}.'.format(
-                    ', '.join(failed_sample_names))
-        if error_message is not None:
-            run_path = (results_path / "../..").resolve()
-            disk_operations.write_text(run_path / 'errorprocessing', error_message + '\n')
-            logger.error('Error in folder %s: %s', run_path, error_message)
-            return None
-        if pipeline_group == PipelineType.FILTER_QUALITY:
-            return results_path
-        scratch_path = get_scratch_path(results_path, pipeline_group)
-        target_path = get_collated_path(results_path, pipeline_group)
-        logger.info('Collating results in %s', target_path)
-        self.copy_outputs(folder_watcher, scratch_path, target_path)
-        disk_operations.rmtree(scratch_path)
-        disk_operations.touch(target_path / 'doneprocessing')
-        return results_path
-
-    def copy_outputs(self,
-                     folder_watcher: FolderWatcher,
-                     scratch_path: Path,
-                     results_path: Path) -> None:
-        disk_operations.mkdir_p(results_path, exist_ok=True)
-        for output_name in DOWNLOADED_RESULTS:
-            if output_name == 'coverage_maps_tar':
-                self.extract_coverage_maps(folder_watcher,
-                                           scratch_path,
-                                           results_path)
-                continue
-            if output_name.endswith('_tar'):
-                self.extract_archive(folder_watcher,
-                                     scratch_path,
-                                     results_path,
-                                     output_name)
-                continue
-            if output_name == 'alignment_svg':
-                self.move_alignment_plot(folder_watcher,
-                                         '.svg',
-                                         scratch_path,
-                                         results_path)
-                continue
-            if output_name == 'alignment_png':
-                self.move_alignment_plot(folder_watcher,
-                                         '.png',
-                                         scratch_path,
-                                         results_path)
-                continue
-            if output_name == 'genome_coverage_svg':
-                self.move_genome_coverage(folder_watcher,
-                                          scratch_path,
-                                          results_path)
-                continue
-            if output_name == 'stitcher_plot_svg':
-                self.move_stitcher_plot(folder_watcher,
-                                       scratch_path,
-                                       results_path)
-                continue
-            source_count = 0
-            filename = get_output_filename(output_name)
-            target_path = results_path / filename
-            with disk_operations.disk_file_operation(target_path, 'w') as target:
-                for sample_name in folder_watcher.all_samples:
-                    sample_name = trim_name(sample_name)
-                    source_path = scratch_path / sample_name / filename
-                    if not source_path.exists():
-                        logger.debug('Source file %s does not exist, skipping.',
-                                       source_path)
-                        continue
-
-                    with disk_operations.disk_file_operation(source_path, 'r') as source:
-                        if output_name.endswith('_fasta'):
-                            source_count += self.extract_fasta(source, target, sample_name)
-                        else:
-                            source_count += self.extract_csv(source,
-                                                             target,
-                                                             sample_name,
-                                                             source_count)
-
-            if not source_count:
-                disk_operations.unlink(target_path)
-
-    @staticmethod
-    def extract_csv(source: TextIO, target: TextIO, sample_name: str, source_count: int) -> int:
-        reader = DictReader(source)
-        fieldnames = reader.fieldnames
-        if fieldnames is None:
-            # Empty file, nothing to copy.
-            return 0
-        fieldnames = list(fieldnames)
-        has_sample = 'sample' in fieldnames
-        if not has_sample:
-            fieldnames.insert(0, 'sample')
-        writer = DictWriter(target, fieldnames, lineterminator=os.linesep)
-        if source_count == 0:
-            # First source file, copy header.
-            writer.writeheader()
-        for row in reader:
-            if not has_sample:
-                row['sample'] = sample_name
-            writer.writerow(row)
-        return 1
-
-    @staticmethod
-    def extract_fasta(source: TextIO, target: TextIO, sample_name: str) -> int:
-        for line in source:
-            if line.startswith('>'):
-                target.write(f'>{sample_name},{line[1:]}')
-            else:
-                target.write(line)
-        return 1
-
-    @staticmethod
-    def extract_coverage_maps(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
-        coverage_path: Path = results_path / "coverage_maps"
-        disk_operations.mkdir_p(coverage_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'coverage_maps.tar'
-            try:
-                with tarfile.open(source_path) as f:
-                    for source_info in f:
-                        filename = os.path.basename(source_info.name)
-                        target_path = coverage_path / (sample_name + '.' + filename)
-                        source = f.extractfile(source_info)
-                        if source is None:
-                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
-                        with source, open(target_path, 'wb') as target:
-                            shutil.copyfileobj(source, target)
-            except FileNotFoundError:
-                pass
-        disk_operations.remove_empty_directory(coverage_path)
-
-    @staticmethod
-    def extract_archive(folder_watcher: FolderWatcher,
-                        scratch_path: Path,
-                        results_path: Path,
-                        output_name: str) -> None:
-        """ Extract contents of tar files.
-
-        There will be a folder named after the output name, with a subfolder
-        for each sample.
-        :param folder_watcher: holds a list of all samples to extract from
-        :param scratch_path: parent folder of all sample working files
-        :param results_path: parent folder to extract into
-        :param output_name: the name of tar files to look for with "_tar"
-            instead of ".tar".
-        """
-        assert output_name.endswith('_tar'), output_name
-        archive_name = output_name[:-4]
-        output_path: Path = results_path / archive_name
-        disk_operations.mkdir_p(output_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / (archive_name + '.tar')
-            try:
-                with tarfile.open(source_path) as f:
-                    sample_target_path = output_path / sample_name
-                    disk_operations.mkdir_p(sample_target_path, exist_ok=True)
-                    for source_info in f:
-                        filename = os.path.basename(source_info.name)
-                        target_path = sample_target_path / filename
-                        assert not target_path.exists(), target_path
-                        source = f.extractfile(source_info)
-                        if source is None:
-                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
-                        with source, open(target_path, 'wb') as target:
-                            shutil.copyfileobj(source, target)
-                disk_operations.remove_empty_directory(sample_target_path)
-            except FileNotFoundError:
-                pass
-        disk_operations.remove_empty_directory(output_path)
-
-    @staticmethod
-    def move_alignment_plot(folder_watcher: FolderWatcher,
-                            extension: str,
-                            scratch_path: Path,
-                            results_path: Path) -> None:
-        alignment_path: Path = results_path / "alignment"
-        disk_operations.mkdir_p(alignment_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / f'alignment{extension}'
-            target_path = alignment_path / f"{sample_name}_alignment{extension}"
-            if source_path.exists():
-                disk_operations.rename(source_path, target_path)
-        disk_operations.remove_empty_directory(alignment_path)
-
-    @staticmethod
-    def move_genome_coverage(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
-        plots_path = results_path / "genome_coverage"
-        disk_operations.mkdir_p(plots_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'genome_coverage.svg'
-            target_path = plots_path / f"{sample_name}_genome_coverage.svg"
-            if source_path.exists():
-                disk_operations.rename(source_path, target_path)
-            concordance_path = scratch_path / sample_name / 'genome_concordance.svg'
-            target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
-            if concordance_path.exists():
-                disk_operations.rename(concordance_path, target_concordance_path)
-        disk_operations.remove_empty_directory(plots_path)
-
-    @staticmethod
-    def move_stitcher_plot(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
-        plots_path = results_path / "stitcher_plots"
-        disk_operations.mkdir_p(plots_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'stitcher_plot.svg'
-            target_path = plots_path / f"{sample_name}_stitcher_plot.svg"
-            if source_path.exists():
-                disk_operations.rename(source_path, target_path)
-        disk_operations.remove_empty_directory(plots_path)
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
         if folder_watcher.quality_dataset is None:
@@ -1410,28 +1203,6 @@ class KiveWatcher:
                     if other_run['id'] == run['id']:
                         other_run['datasets'] = run_datasets
                         break
-                sample_name = (sample_watcher.sample_group.names[1]
-                               if pipeline_type in (PipelineType.MIDI,
-                                                    PipelineType.MIXED_HCV_MIDI,
-                                                    PipelineType.DENOVO_MIDI)
-                               else sample_watcher.sample_group.names[0])
-                results_path = self.get_results_path(folder_watcher)
-                pipeline_group = PIPELINE_GROUPS[pipeline_type]
-                scratch_path = get_scratch_path(results_path, pipeline_group)
-                scratch_path /= trim_name(sample_name if sample_name is not None else 'unknown')
-                disk_operations.mkdir_p(scratch_path, parents=True, exist_ok=True)
-                for output_name in DOWNLOADED_RESULTS:
-                    matches = [run_dataset
-                               for run_dataset in run_datasets
-                               if (run_dataset['argument_name'] == output_name and
-                                   run_dataset['argument_type'] == 'O')]
-                    if not matches:
-                        continue
-                    filename = get_output_filename(output_name)
-                    dataset_url, = [match['dataset'] for match in matches]
-                    self.kive_retry(
-                        lambda: self.download_file(dataset_url + 'download/',
-                                                   scratch_path / filename))
 
         if is_complete:
             return None

@@ -125,6 +125,10 @@ def parse_args(argv=None):
     else:
         parser.error(f"No arguments or environment variables set for main "
                      f"pipeline ids ({', '.join(main_pipeline_ids)}).")
+    if args.micall_collation_pipeline_id is None:
+        parser.error("Argument --micall_collation_pipeline_id not set and "
+                     "$MICALL_COLLATION_PIPELINE_ID environment variable "
+                     "not set.")
 
     return args
 
