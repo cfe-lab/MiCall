@@ -1,6 +1,5 @@
 import shutil
 from gzip import GzipFile
-from io import BytesIO, StringIO
 from pathlib import Path
 from queue import Full, Queue
 from unittest.mock import patch, ANY, Mock, call

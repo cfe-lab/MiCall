@@ -1,6 +1,5 @@
 import sys
 import tarfile
-from pathlib import Path
 
 from micall.utils import kive_collate
 
