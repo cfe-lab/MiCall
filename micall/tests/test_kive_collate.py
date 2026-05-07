@@ -47,6 +47,7 @@ def test_main_collates_csv_and_fasta_from_multiple_samples(monkeypatch, tmp_path
          str(sample1_fasta),
          str(sample2_cascade),
          str(sample2_fasta),
+         '--',
          str(metadata_path),
          str(output_path)])
 
