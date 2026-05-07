@@ -42,6 +42,11 @@ def parse_args(argv=None):
         default=os.environ.get('MICALL_RESISTANCE_PIPELINE_ID', None),
         help="id of resistance pipeline's container app")
     parser.add_argument(
+        '--micall_collation_pipeline_id',
+        type=int,
+        default=os.environ.get('MICALL_COLLATION_PIPELINE_ID', None),
+        help="id of collation pipeline's container app")
+    parser.add_argument(
         '--mixed_hcv_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_MIXED_HCV_PIPELINE_ID', None),

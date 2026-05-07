@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import shutil
+import tempfile
 import tarfile
 from collections import namedtuple
 from csv import DictWriter, DictReader
@@ -11,7 +12,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
+from typing import IO, Any, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -96,6 +97,8 @@ kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential re
 urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 T = TypeVar('T')
+COLLATION_INPUT_NAME = 'sample_results_tars'
+COLLATION_OUTPUT_NAME = 'collated_results_tar'
 
 def open_kive(server_url: str) -> KiveAPI:
     session = KiveAPI(server_url)
@@ -411,6 +414,7 @@ class KiveWatcher:
         self.external_directory_path: Optional[Path] = None
         self.external_directory_name: Optional[str] = None
         self.qai_upload_queue = qai_upload_queue
+        self.collation_runs: dict[tuple[str, PipelineType], Run] = {}
 
     def is_full(self) -> bool:
         if self.config is None:
@@ -662,18 +666,126 @@ class KiveWatcher:
             for pipeline_group in list(folder_watcher.active_pipeline_groups):
                 if not folder_watcher.is_pipeline_group_finished(pipeline_group):
                     continue
-                results_path = self.collate_folder(folder_watcher,
-                                                   pipeline_group)
+                collation_key = (folder, pipeline_group)
+                collation_run = self.collation_runs.get(collation_key)
+
+                if (pipeline_group != PipelineType.FILTER_QUALITY and
+                        self.config.micall_collation_pipeline_id is not None):
+                    if collation_run is None:
+                        collation_run = self.run_collation_pipeline(folder_watcher,
+                                                                    pipeline_group)
+                        if collation_run is not None:
+                            self.collation_runs[collation_key] = collation_run
+                            continue
+                    results_path = self.poll_collation_run(folder_watcher,
+                                                           pipeline_group,
+                                                           collation_run)
+                    if results_path is None:
+                        continue
+                    self.collation_runs.pop(collation_key, None)
+                else:
+                    results_path = self.collate_folder(folder_watcher,
+                                                       pipeline_group)
+
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
-                if results_path is not None:
-                    if (results_path / "coverage_scores.csv").exists():
-                        self.qai_upload_queue.put(
-                            (results_path, pipeline_group))
-                    if not folder_watcher.active_pipeline_groups:
-                        disk_operations.touch(results_path / "done_all_processing")
-                        self.folder_watchers.pop(folder)
-                if not self.folder_watchers:
-                    logger.info('No more folders to process.')
+                self._mark_pipeline_group_complete(folder,
+                                                  folder_watcher,
+                                                  pipeline_group,
+                                                  results_path)
+
+    def _mark_pipeline_group_complete(self,
+                                      folder: str,
+                                      folder_watcher: FolderWatcher,
+                                      pipeline_group: PipelineType,
+                                      results_path: Optional[Path]) -> None:
+        if results_path is not None:
+            if (results_path / "coverage_scores.csv").exists():
+                self.qai_upload_queue.put((results_path, pipeline_group))
+            if not folder_watcher.active_pipeline_groups:
+                disk_operations.touch(results_path / "done_all_processing")
+                self.folder_watchers.pop(folder)
+        if not self.folder_watchers:
+            logger.info('No more folders to process.')
+
+    def run_collation_pipeline(self,
+                               folder_watcher: FolderWatcher,
+                               pipeline_group: PipelineType) -> Optional[Run]:
+        if self.config.micall_collation_pipeline_id is None:
+            return None
+        results_path = self.get_results_path(folder_watcher)
+        scratch_path = get_scratch_path(results_path, pipeline_group)
+
+        sample_names = sorted({trim_name(name) for name in folder_watcher.all_samples})
+        input_datasets: list[RunDataset] = []
+        for sample_name in sample_names:
+            sample_path = scratch_path / sample_name
+            if not sample_path.exists():
+                continue
+            with tempfile.NamedTemporaryFile(suffix='.tar') as sample_tar:
+                with tarfile.open(sample_tar.name, 'w') as archive:
+                    archive.add(sample_path, arcname=sample_name)
+                with open(sample_tar.name, 'rb') as tar_file:
+                    dataset = self.find_or_upload_dataset(
+                        tar_file,
+                        f'{folder_watcher.run_name}_{pipeline_group.name.lower()}_{sample_name}_collation_input.tar',
+                        f'Inputs for Kive collation of {sample_name}.')
+                if dataset is not None:
+                    input_datasets.append(dataset)
+
+        if not input_datasets:
+            return None
+
+        return self.find_or_launch_run(
+            self.config.micall_collation_pipeline_id,
+            {COLLATION_INPUT_NAME: input_datasets},
+            f'MiCall collation {pipeline_group.name.lower()} on {folder_watcher.run_name}',
+            folder_watcher.batch)
+
+    def poll_collation_run(self,
+                           folder_watcher: FolderWatcher,
+                           pipeline_group: PipelineType,
+                           run: Optional[Run]) -> Optional[Path]:
+        if run is None:
+            return None
+        run_status: Run = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
+        state = run_status['state']
+        if state in ('N', 'L', 'R'):
+            return None
+        if state == 'X':
+            return self.get_results_path(folder_watcher)
+        if state == 'F':
+            results_path = self.get_results_path(folder_watcher)
+            run_path = (results_path / "../..").resolve()
+            disk_operations.write_text(
+                run_path / 'errorprocessing',
+                f'Kive collation failed for {pipeline_group.name}.\n')
+            return results_path
+
+        run_datasets: Sequence[RunDataset] = self.kive_retry(
+            lambda: self.session.endpoints.containerruns.get(f"{run['id']}/dataset_list/"))
+        matches = [
+            run_dataset
+            for run_dataset in run_datasets
+            if run_dataset['argument_name'] == COLLATION_OUTPUT_NAME and run_dataset['argument_type'] == 'O'
+        ]
+        if not matches:
+            raise RuntimeError('Collation run completed without collated output dataset.')
+
+        results_path = self.get_results_path(folder_watcher)
+        scratch_path = get_scratch_path(results_path, pipeline_group)
+        target_path = get_collated_path(results_path, pipeline_group)
+        disk_operations.mkdir_p(target_path, exist_ok=True)
+        collated_tar_path = target_path / 'collated_results.tar'
+
+        dataset_url = matches[0]['dataset']
+        self.kive_retry(lambda: self.download_file(dataset_url + 'download/', collated_tar_path))
+        with tarfile.open(collated_tar_path) as tar_file:
+            tar_file.extractall(target_path)
+        disk_operations.unlink(collated_tar_path, missing_ok=True)
+
+        disk_operations.rmtree(scratch_path)
+        disk_operations.touch(target_path / 'doneprocessing')
+        return results_path
 
     def collate_folder(self, folder_watcher: FolderWatcher, pipeline_group: PipelineType) -> Optional[Path]:
         """ Collate scratch files for a run folder.
@@ -1194,7 +1306,7 @@ class KiveWatcher:
 
     def find_or_launch_run(self,
                            pipeline_id: int,
-                           inputs: Mapping[str, RunDataset],
+                           inputs: Mapping[str, RunDataset | Sequence[RunDataset]],
                            run_name: str,
                            run_batch: Optional[Batch]) -> Optional[Run]:
         """ Look for a matching container run, or start a new one.
@@ -1206,8 +1318,13 @@ class KiveWatcher:
         run_name = trim_run_name(run_name)
         filters = ['name', run_name, 'app_id', pipeline_id, 'states', 'NLRSC']
         for arg in inputs.values():
-            filters.append('input_id')
-            filters.append(arg['id'])
+            if isinstance(arg, dict):
+                filters.append('input_id')
+                filters.append(arg['id'])
+            else:
+                for item in arg:
+                    filters.append('input_id')
+                    filters.append(item['id'])
 
         old_runs = self.session.endpoints.containerruns.filter(*filters)
         untyped_run = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
@@ -1223,9 +1340,16 @@ class KiveWatcher:
                     run = None
         if run is None:
             try:
-                run_datasets = [dict(argument=app_arg,
-                                     dataset=inputs[name]['url'])
-                                for name, app_arg in app_args.items()]
+                run_dataset_specs: list[dict[str, str]] = []
+                for name, app_arg in app_args.items():
+                    input_value = inputs[name]
+                    if isinstance(input_value, dict):
+                        run_dataset_specs.append(
+                            dict(argument=app_arg, dataset=input_value['url']))
+                    else:
+                        run_dataset_specs.extend(
+                            dict(argument=app_arg, dataset=dataset['url'])
+                            for dataset in input_value)
             except KeyError as e:
                 raise ValueError(f"Pipeline input error: {repr(e)}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
@@ -1236,7 +1360,7 @@ class KiveWatcher:
                               batch=run_batch['url'],
                               groups_allowed=ALLOWED_GROUPS,
                               app=app_url,
-                              datasets=run_datasets)
+                              datasets=run_dataset_specs)
             try:
                 run = self.session.endpoints.containerruns.post(json=run_params)
             except Exception as ex:

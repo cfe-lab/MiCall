@@ -161,3 +161,15 @@ From: debian:bookworm-slim
 %apphelp denovo
     Standard pipeline with de novo assembly instead of mapping to reference
     sequences.
+
+%apphelp collation
+    Collate per-sample MiCall outputs into run-level grouped files.
+
+%applabels collation
+    KIVE_INPUTS --sample_results_tars*
+    KIVE_OUTPUTS collated_results_tar
+    KIVE_THREADS 1
+    KIVE_MEMORY 1000
+
+%apprun collation
+    python -m micall.utils.kive_collate "$@"

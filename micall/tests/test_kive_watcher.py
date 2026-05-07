@@ -4013,3 +4013,57 @@ class TestDiskOperationsIntegration:
             # Test rmtree with ignore_errors=True
             disk_operations.rmtree(results_path, ignore_errors=True)
             assert not results_path.exists()
+
+
+def test_run_collation_pipeline_submits_multiple_optional_inputs(raw_data_with_two_samples,
+                                                                 mock_open_kive,
+                                                                 default_config):
+    default_config.micall_collation_pipeline_id = 700
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = KiveWatcher(default_config, Queue())
+    folder_watcher = kive_watcher.add_folder(base_calls)
+    folder_watcher.batch = dict(url='/batches/701')
+
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2120A',
+                    ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
+                    ('PR', None)))
+    kive_watcher.add_sample_group(
+        base_calls,
+        SampleGroup('2110A',
+                    ('2110A-V3LOOP_S13_L001_R1_001.fastq.gz', None),
+                    ('V3LOOP', None)))
+
+    results_path = base_calls / '../../../Results/version_0-dev'
+    sample1_path = results_path / 'scratch' / '2120A-PR_S14'
+    sample2_path = results_path / 'scratch' / '2110A-V3LOOP_S13'
+    sample1_path.mkdir(parents=True)
+    sample2_path.mkdir(parents=True)
+    (sample1_path / 'cascade.csv').write_text('a,b\n1,2\n')
+    (sample2_path / 'cascade.csv').write_text('a,b\n3,4\n')
+
+    kive_watcher.app_urls[default_config.micall_collation_pipeline_id] = '/containerapps/700'
+    kive_watcher.app_args[default_config.micall_collation_pipeline_id] = dict(
+        sample_results_tars='/containerargs/7001')
+
+    mock_session = kive_watcher.session
+    mock_session.endpoints.containerruns.filter.return_value = []
+    mock_session.endpoints.containerruns.post.return_value = dict(id='702', state='N')
+
+    with patch.object(kive_watcher,
+                      'find_or_upload_dataset',
+                      side_effect=[
+                          dict(url='/datasets/710/', id='710'),
+                          dict(url='/datasets/711/', id='711')
+                      ]):
+        run = kive_watcher.run_collation_pipeline(folder_watcher, PipelineType.MAIN)
+
+    assert run is not None
+    mock_session.endpoints.containerruns.post.assert_called_once()
+    submitted_datasets = mock_session.endpoints.containerruns.post.call_args.kwargs['json']['datasets']
+    assert submitted_datasets == [
+        dict(argument='/containerargs/7001', dataset='/datasets/710/'),
+        dict(argument='/containerargs/7001', dataset='/datasets/711/'),
+    ]
