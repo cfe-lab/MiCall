@@ -663,16 +663,9 @@ class KiveWatcher:
                     collation_run = self.run_collation_pipeline(folder_watcher,
                                                                 pipeline_group)
                     if collation_run is None:
-                        results_path = self.get_results_path(folder_watcher)
-                        target_path = get_collated_path(results_path, pipeline_group)
-                        disk_operations.mkdir_p(target_path, exist_ok=True)
-                        disk_operations.touch(target_path / 'doneprocessing')
-                        folder_watcher.active_pipeline_groups.remove(pipeline_group)
-                        self._mark_pipeline_group_complete(folder,
-                                                          folder_watcher,
-                                                          pipeline_group,
-                                                          results_path)
-                        continue
+                        raise RuntimeError(
+                            f'Failed to launch Kive collation for {folder_watcher.run_name} '
+                            f'pipeline group {pipeline_group.name}.')
                     self.collation_runs[collation_key] = collation_run
                     continue
 
@@ -733,9 +726,6 @@ class KiveWatcher:
                     manifest_rows.append(dict(index=str(input_index),
                                               sample=trim_name(sample_name),
                                               output_name=output_name))
-
-        if not manifest_rows:
-            return None
 
         manifest_text = StringIO()
         writer = DictWriter(manifest_text,

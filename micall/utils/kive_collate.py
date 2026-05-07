@@ -230,6 +230,12 @@ def stage_inputs_by_sample(run_outputs: list[str], metadata_csv: str, scratch_pa
         file_index = int(row['index'])
         sample_name = row['sample']
         output_name = row['output_name']
+        if file_index < 0 or file_index >= len(run_outputs):
+            raise ValueError(f'Invalid run_outputs index {file_index} in metadata manifest.')
+        if not sample_name:
+            raise ValueError('Metadata manifest row has empty sample value.')
+        if output_name not in DOWNLOADED_RESULTS:
+            raise ValueError(f'Metadata manifest row has unknown output_name {output_name!r}.')
 
         source_path = Path(run_outputs[file_index])
         sample_path = scratch_path / sample_name
