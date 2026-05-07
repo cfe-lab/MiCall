@@ -718,9 +718,9 @@ class KiveWatcher:
                     output_name = run_dataset['argument_name']
                     if output_name not in DOWNLOADED_RESULTS:
                         continue
-                    dataset = self.kive_retry(
-                        lambda dataset_url=run_dataset['dataset']:
-                        self.session.get(dataset_url).json())
+                    dataset_url: str = run_dataset['dataset']
+                    dataset: RunDataset = self.kive_retry(
+                        lambda: self.session.get(dataset_url).json())
                     input_index = len(input_datasets)
                     input_datasets.append(dataset)
                     manifest_rows.append(dict(index=str(input_index),
