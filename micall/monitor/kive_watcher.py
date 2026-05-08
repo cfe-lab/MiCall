@@ -830,7 +830,7 @@ class KiveWatcher:
         dataset_url = matches[0]['dataset']
         self.kive_retry(lambda: self.download_file(dataset_url + 'download/', collated_tar_path))
         with tarfile.open(collated_tar_path) as tar_file:
-            tar_file.extractall(target_path)
+            tar_file.extractall(target_path, filter='data')
         disk_operations.unlink(collated_tar_path, missing_ok=True)
         disk_operations.touch(target_path / 'doneprocessing')
         return results_path
