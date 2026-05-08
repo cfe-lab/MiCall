@@ -58,7 +58,7 @@ def test_main_collates_csv_and_fasta_from_multiple_samples(monkeypatch, tmp_path
     extract_path = tmp_path / 'extract'
     extract_path.mkdir()
     with tarfile.open(output_path) as output_tar:
-        output_tar.extractall(extract_path)
+        output_tar.extractall(extract_path, filter='data')
 
     cascade_text = (extract_path / 'cascade.csv').read_text()
     assert cascade_text == (
