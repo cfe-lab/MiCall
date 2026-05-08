@@ -670,10 +670,8 @@ class KiveWatcher:
                     disk_operations.write_text(
                         folder_watcher.run_folder / 'errorprocessing',
                         f'Samples failed in Kive: {", ".join(failed_samples)}.\n')
-                    folder_watcher.active_pipeline_groups.discard(pipeline_group)
-                    if not folder_watcher.active_pipeline_groups:
-                        self.folder_watchers.pop(folder)
-                    continue
+                    self.folder_watchers.pop(folder, None)
+                    break
 
                 collation_key = (folder, pipeline_group)
                 collation_run = self.collation_runs.get(collation_key)
