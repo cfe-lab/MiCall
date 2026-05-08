@@ -5,7 +5,7 @@ import shutil
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import TextIO
+from typing import Sequence, TextIO
 
 DOWNLOADED_RESULTS = [
     'remap_counts_csv',
@@ -54,6 +54,8 @@ DOWNLOADED_RESULTS = [
     'hivseqinr_results_tar',
     'detailed_results_tar',
 ]
+
+REQUIRED_MANIFEST_COLUMNS = {'index', 'sample', 'output_name'}
 
 
 def get_output_filename(output_name: str) -> str:
@@ -215,32 +217,57 @@ def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--run_outputs', nargs='*', default=[])
-    parser.add_argument('metadata_csv')
-    parser.add_argument('collated_results_tar')
+    parser.add_argument('--run_outputs', nargs='*', default=[], type=Path)
+    parser.add_argument('metadata_csv', type=Path)
+    parser.add_argument('collated_results_tar', type=Path)
     return parser.parse_args()
 
 
-def stage_inputs_by_sample(run_outputs: list[str], metadata_csv: str, scratch_path: Path) -> list[str]:
-    with open(metadata_csv) as manifest_file:
-        rows = list(csv.DictReader(manifest_file))
+def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scratch_path: Path) -> list[str]:
+    with metadata_csv.open(newline='', encoding='utf-8') as manifest_file:
+        reader = csv.DictReader(manifest_file)
+        if reader.fieldnames is None:
+            raise ValueError('Metadata manifest is missing a header row.')
+        missing_columns = REQUIRED_MANIFEST_COLUMNS - set(reader.fieldnames)
+        if missing_columns:
+            missing = ', '.join(sorted(missing_columns))
+            raise ValueError(f'Metadata manifest is missing required columns: {missing}.')
+        rows = list(reader)
 
     sample_names: set[str] = set()
-    for row in rows:
-        file_index = int(row['index'])
-        sample_name = row['sample']
-        output_name = row['output_name']
-        if file_index < 0 or file_index >= len(run_outputs):
-            raise ValueError(f'Invalid run_outputs index {file_index} in metadata manifest.')
-        if not sample_name:
-            raise ValueError('Metadata manifest row has empty sample value.')
-        if output_name not in DOWNLOADED_RESULTS:
-            raise ValueError(f'Metadata manifest row has unknown output_name {output_name!r}.')
+    for row_number, row in enumerate(rows, start=2):
+        index_text = row.get('index', '')
+        try:
+            file_index = int(index_text)
+        except (TypeError, ValueError) as ex:
+            raise ValueError(
+                f'Metadata manifest row {row_number} has invalid index {index_text!r}.') from ex
 
-        source_path = Path(run_outputs[file_index])
+        sample_name = (row.get('sample') or '').strip()
+        output_name = (row.get('output_name') or '').strip()
+        if file_index < 0 or file_index >= len(run_outputs):
+            raise ValueError(
+                f'Invalid run_outputs index {file_index} in metadata manifest row {row_number}.')
+        if not sample_name:
+            raise ValueError(f'Metadata manifest row {row_number} has empty sample value.')
+        if Path(sample_name).name != sample_name or sample_name in ('.', '..'):
+            raise ValueError(
+                f'Metadata manifest row {row_number} has invalid sample name {sample_name!r}.')
+        if output_name not in DOWNLOADED_RESULTS:
+            raise ValueError(
+                f'Metadata manifest row {row_number} has unknown output_name {output_name!r}.')
+
+        source_path = run_outputs[file_index]
+        if not source_path.exists():
+            raise FileNotFoundError(
+                f'Metadata manifest row {row_number} references missing run output {source_path}.')
         sample_path = scratch_path / sample_name
         sample_path.mkdir(parents=True, exist_ok=True)
         target_path = sample_path / get_output_filename(output_name)
+        if target_path.exists():
+            raise ValueError(
+                f'Metadata manifest row {row_number} duplicates output {output_name!r} '
+                f'for sample {sample_name!r}.')
         shutil.copyfile(source_path, target_path)
         sample_names.add(sample_name)
 
@@ -249,6 +276,7 @@ def stage_inputs_by_sample(run_outputs: list[str], metadata_csv: str, scratch_pa
 
 def main() -> None:
     args = parse_args()
+    args.collated_results_tar.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp_text:
         tmp_path = Path(tmp_text)
         scratch_path = tmp_path / 'scratch'

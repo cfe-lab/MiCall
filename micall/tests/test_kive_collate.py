@@ -1,5 +1,8 @@
 import sys
 import tarfile
+from pathlib import Path
+
+import pytest
 
 from micall.utils import kive_collate
 
@@ -15,9 +18,9 @@ def test_parse_args_with_optional_multiple_and_separator(monkeypatch, tmp_path):
 
     args = kive_collate.parse_args()
 
-    assert args.run_outputs == ['a.csv', 'b.csv']
-    assert args.metadata_csv == str(metadata_path)
-    assert args.collated_results_tar == str(output_path)
+    assert args.run_outputs == [Path('a.csv'), Path('b.csv')]
+    assert args.metadata_csv == metadata_path
+    assert args.collated_results_tar == output_path
 
 
 def test_main_collates_csv_and_fasta_from_multiple_samples(monkeypatch, tmp_path):
@@ -71,3 +74,38 @@ def test_main_collates_csv_and_fasta_from_multiple_samples(monkeypatch, tmp_path
         '>E22222,seed\n'
         'ACTG\n'
     )
+
+
+def test_stage_inputs_by_sample_rejects_invalid_index(tmp_path):
+    metadata_path = tmp_path / 'metadata.csv'
+    metadata_path.write_text('index,sample,output_name\nabc,E11111,cascade_csv\n')
+    run_outputs = [tmp_path / 'cascade.csv']
+    run_outputs[0].write_text('x,y\n1,2\n')
+
+    with pytest.raises(ValueError, match='invalid index'):
+        kive_collate.stage_inputs_by_sample(run_outputs, metadata_path, tmp_path / 'scratch')
+
+
+def test_stage_inputs_by_sample_rejects_invalid_sample_name(tmp_path):
+    metadata_path = tmp_path / 'metadata.csv'
+    metadata_path.write_text('index,sample,output_name\n0,../escape,cascade_csv\n')
+    run_outputs = [tmp_path / 'cascade.csv']
+    run_outputs[0].write_text('x,y\n1,2\n')
+
+    with pytest.raises(ValueError, match='invalid sample name'):
+        kive_collate.stage_inputs_by_sample(run_outputs, metadata_path, tmp_path / 'scratch')
+
+
+def test_stage_inputs_by_sample_rejects_duplicate_output_for_sample(tmp_path):
+    metadata_path = tmp_path / 'metadata.csv'
+    metadata_path.write_text(
+        'index,sample,output_name\n'
+        '0,E11111,cascade_csv\n'
+        '1,E11111,cascade_csv\n'
+    )
+    run_outputs = [tmp_path / 'cascade1.csv', tmp_path / 'cascade2.csv']
+    run_outputs[0].write_text('x,y\n1,2\n')
+    run_outputs[1].write_text('x,y\n3,4\n')
+
+    with pytest.raises(ValueError, match='duplicates output'):
+        kive_collate.stage_inputs_by_sample(run_outputs, metadata_path, tmp_path / 'scratch')
