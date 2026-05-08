@@ -650,10 +650,29 @@ class KiveWatcher:
                     continue
                 if pipeline_group == PipelineType.FILTER_QUALITY:
                     folder_watcher.active_pipeline_groups.remove(pipeline_group)
-                    self._mark_pipeline_group_complete(folder,
-                                                      folder_watcher,
-                                                      pipeline_group,
-                                                      self.get_results_path(folder_watcher))
+                    if folder_watcher.is_folder_failed:
+                        disk_operations.write_text(
+                            folder_watcher.run_folder / 'errorprocessing',
+                            'Filter quality failed in Kive.\n')
+                        self.folder_watchers.pop(folder)
+                    else:
+                        self._mark_pipeline_group_complete(folder,
+                                                          folder_watcher,
+                                                          pipeline_group,
+                                                          self.get_results_path(folder_watcher))
+                    continue
+
+                failed_samples = sorted(
+                    sw.sample_group.enum
+                    for sw in folder_watcher.sample_watchers
+                    if sw.is_failed)
+                if failed_samples:
+                    disk_operations.write_text(
+                        folder_watcher.run_folder / 'errorprocessing',
+                        f'Samples failed in Kive: {", ".join(failed_samples)}.\n')
+                    folder_watcher.active_pipeline_groups.discard(pipeline_group)
+                    if not folder_watcher.active_pipeline_groups:
+                        self.folder_watchers.pop(folder)
                     continue
 
                 collation_key = (folder, pipeline_group)

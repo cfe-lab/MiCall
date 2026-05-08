@@ -2437,13 +2437,13 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
          dict(dataset='/datasets/112/',
               argument_type='O',
               argument_name='nuc_csv')]]  # run datasets
-    mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111)]
 
-    kive_watcher.poll_runs()
+    with patch.object(kive_watcher, 'run_collation_pipeline',
+                      return_value=dict(id='702', state='N')) as mock_collate:
+        kive_watcher.poll_runs()
 
     mock_session.endpoints.containerruns.post.assert_not_called()
-    assert kive_watcher.is_idle()
+    mock_collate.assert_called_once()
 
 
 def test_resistance_run_missing_input(raw_data_with_two_samples,
