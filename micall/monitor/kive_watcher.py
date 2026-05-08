@@ -777,6 +777,23 @@ class KiveWatcher:
             return sample_watcher.sample_group.names[1]
         return sample_watcher.sample_group.names[0]
 
+    @staticmethod
+    def move_stitcher_plot(folder_watcher: FolderWatcher,
+                           scratch_path: Path,
+                           results_path: Path) -> None:
+        """Move stitcher plot SVG files from per-sample scratch folders to results."""
+        plots_path = results_path / 'stitcher_plots'
+        disk_operations.mkdir_p(plots_path, exist_ok=True)
+
+        sample_names = {trim_name(sample_name) for sample_name in folder_watcher.all_samples}
+        for sample_name in sample_names:
+            source_path = scratch_path / sample_name / 'stitcher_plot.svg'
+            target_path = plots_path / f'{sample_name}_stitcher_plot.svg'
+            if source_path.exists():
+                disk_operations.rename(source_path, target_path)
+
+        disk_operations.remove_empty_directory(plots_path)
+
     def poll_collation_run(self,
                            folder_watcher: FolderWatcher,
                            pipeline_group: PipelineType,
