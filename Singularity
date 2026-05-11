@@ -166,8 +166,8 @@ From: debian:bookworm-slim
     Collate per-sample MiCall outputs into run-level grouped files.
 
 %applabels collation
-    KIVE_INPUTS --run_outputs* metadata_csv
-    KIVE_OUTPUTS collated_results_tar
+    KIVE_INPUTS --inputs*
+    KIVE_OUTPUTS output
     KIVE_THREADS 1
     KIVE_MEMORY 1000
 

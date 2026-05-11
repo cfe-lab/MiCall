@@ -249,10 +249,35 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
-    parser.add_argument('--run_outputs', nargs='*', default=[], type=Path)
-    parser.add_argument('metadata_csv', type=Path)
-    parser.add_argument('collated_results_tar', type=Path)
-    return parser.parse_args(args)
+    parser.add_argument('argv', nargs='*')
+    parsed = parser.parse_args(args)
+
+    tokens = [token for token in parsed.argv if token != '--']
+    if len(tokens) < 2:
+        parser.error('expected --inputs* values (with metadata as last input) and output path')
+
+    output = Path(tokens[-1])
+    input_tokens = tokens[:-1]
+
+    inputs: list[Path] = []
+    for token in input_tokens:
+        if token in {'--inputs', 'inputs'}:
+            continue
+        if token.startswith('--inputs='):
+            value = token.split('=', 1)[1]
+            if value:
+                inputs.append(Path(value))
+            continue
+        if token.startswith('--'):
+            parser.error(f'unrecognized arguments: {token}')
+        inputs.append(Path(token))
+
+    if not inputs:
+        parser.error('expected at least one input path (metadata file) in --inputs*')
+
+    parsed.inputs = inputs
+    parsed.output = output
+    return parsed
 
 
 def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scratch_path: Path) -> list[str]:
@@ -321,17 +346,19 @@ def main(argv: Sequence[str] | None = None) -> None:
     logger.debug('Starting kive_collate with arguments: %s', argv)
     args = parse_args(argv)
     configure_logging(args)
-    run_outputs: Sequence[Path] = args.run_outputs
-    metadata_csv: Path = args.metadata_csv
-    collated_results_tar: Path = args.collated_results_tar
+    inputs: Sequence[Path] = args.inputs
+    run_outputs: Sequence[Path] = inputs[:-1]
+    metadata_csv: Path = inputs[-1]
+    output: Path = args.output
 
     logger.info('Starting kive collation run.')
-    logger.debug('Arguments: run_outputs=%s metadata_csv=%s collated_results_tar=%s',
+    logger.debug('Arguments: inputs=%s run_outputs=%s metadata_csv=%s output=%s',
+                 inputs,
                  run_outputs,
                  metadata_csv,
-                 collated_results_tar)
+                 output)
 
-    collated_results_tar.parent.mkdir(parents=True, exist_ok=True)
+    output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp_text:
         tmp_path = Path(tmp_text)
         scratch_path = tmp_path / 'scratch'
@@ -344,11 +371,11 @@ def main(argv: Sequence[str] | None = None) -> None:
                               scratch_path)
         copy_outputs(sample_names, scratch_path, collated_path)
 
-        with tarfile.open(collated_results_tar, 'w') as output_tar:
+        with tarfile.open(output, 'w') as output_tar:
             for file_path in sorted(collated_path.rglob('*')):
                 if file_path.is_file():
                     output_tar.add(file_path, file_path.relative_to(collated_path))
-    logger.info('Finished kive collation run. Output: %s', collated_results_tar)
+    logger.info('Finished kive collation run. Output: %s', output)
 
 
 if __name__ == '__main__':

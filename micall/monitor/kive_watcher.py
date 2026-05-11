@@ -96,9 +96,8 @@ kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential re
 urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 T = TypeVar('T')
-COLLATION_INPUT_NAME = 'run_outputs'
-COLLATION_METADATA_INPUT_NAME = 'metadata_csv'
-COLLATION_OUTPUT_NAME = 'collated_results_tar'
+COLLATION_INPUT_NAME = 'inputs'
+COLLATION_OUTPUT_NAME = 'output'
 
 def open_kive(server_url: str) -> KiveAPI:
     session = KiveAPI(server_url)
@@ -775,8 +774,7 @@ class KiveWatcher:
         return self.find_or_launch_run(
             self.config.micall_collation_pipeline_id,
             {
-                COLLATION_INPUT_NAME: input_datasets,
-                COLLATION_METADATA_INPUT_NAME: manifest_dataset,
+                COLLATION_INPUT_NAME: [*input_datasets, manifest_dataset],
             },
             f'MiCall collation {pipeline_group.name.lower()} on {folder_watcher.run_name}',
             folder_watcher.batch)

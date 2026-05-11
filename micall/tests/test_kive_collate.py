@@ -14,13 +14,12 @@ def test_parse_args_with_optional_multiple_and_separator(monkeypatch, tmp_path):
     monkeypatch.setattr(
         sys,
         'argv',
-        ['kive_collate', '--run_outputs', 'a.csv', 'b.csv', '--', str(metadata_path), str(output_path)])
+        ['kive_collate', '--inputs', 'a.csv', 'b.csv', str(metadata_path), str(output_path)])
 
     args = kive_collate.parse_args()
 
-    assert args.run_outputs == [Path('a.csv'), Path('b.csv')]
-    assert args.metadata_csv == metadata_path
-    assert args.collated_results_tar == output_path
+    assert args.inputs == [Path('a.csv'), Path('b.csv'), metadata_path]
+    assert args.output == output_path
     assert not args.verbose
     assert not args.debug
     assert not args.quiet
@@ -34,7 +33,7 @@ def test_parse_args_with_debug_flag(monkeypatch, tmp_path):
     monkeypatch.setattr(
         sys,
         'argv',
-        ['kive_collate', '--debug', 'a.csv', str(metadata_path), str(output_path)])
+        ['kive_collate', '--debug', '--inputs', 'a.csv', str(metadata_path), str(output_path)])
 
     args = kive_collate.parse_args()
 
@@ -64,12 +63,11 @@ def test_main_collates_csv_and_fasta_from_multiple_samples(monkeypatch, tmp_path
     monkeypatch.setattr(
         sys,
         'argv',
-        ['kive_collate', '--run_outputs',
+        ['kive_collate', '--inputs',
          str(sample1_cascade),
          str(sample1_fasta),
          str(sample2_cascade),
          str(sample2_fasta),
-         '--',
          str(metadata_path),
          str(output_path)])
 

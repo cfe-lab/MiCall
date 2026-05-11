@@ -3630,8 +3630,7 @@ def test_run_collation_pipeline_submits_multiple_optional_inputs(raw_data_with_t
 
     kive_watcher.app_urls[default_config.micall_collation_pipeline_id] = '/containerapps/700'
     kive_watcher.app_args[default_config.micall_collation_pipeline_id] = dict(
-        run_outputs='/containerargs/7001',
-        metadata_csv='/containerargs/7002')
+        inputs='/containerargs/7001')
 
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.filter.return_value = []
@@ -3652,5 +3651,5 @@ def test_run_collation_pipeline_submits_multiple_optional_inputs(raw_data_with_t
     assert submitted_datasets == [
         dict(argument='/containerargs/7001', dataset='/datasets/710/'),
         dict(argument='/containerargs/7001', dataset='/datasets/711/'),
-        dict(argument='/containerargs/7002', dataset='/datasets/799/'),
+        dict(argument='/containerargs/7001', dataset='/datasets/799/'),
     ]
