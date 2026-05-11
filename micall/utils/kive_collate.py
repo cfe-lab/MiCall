@@ -249,35 +249,11 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
-    parser.add_argument('argv', nargs='*')
-    parsed = parser.parse_args(args)
-
-    tokens = [token for token in parsed.argv if token != '--']
-    if len(tokens) < 2:
-        parser.error('expected --inputs* values (with metadata as last input) and output path')
-
-    output = Path(tokens[-1])
-    input_tokens = tokens[:-1]
-
-    inputs: list[Path] = []
-    for token in input_tokens:
-        if token in {'--inputs', 'inputs'}:
-            continue
-        if token.startswith('--inputs='):
-            value = token.split('=', 1)[1]
-            if value:
-                inputs.append(Path(value))
-            continue
-        if token.startswith('--'):
-            parser.error(f'unrecognized arguments: {token}')
-        inputs.append(Path(token))
-
-    if not inputs:
-        parser.error('expected at least one input path (metadata file) in --inputs*')
-
-    parsed.inputs = inputs
-    parsed.output = output
-    return parsed
+    parser.add_argument('--inputs', action='append', type=Path, required=True,
+                        help='Repeatable input path list. Include metadata CSV as the last --inputs value.')
+    parser.add_argument('output', type=Path,
+                        help='Output tar file path for collated results.')
+    return parser.parse_args(args)
 
 
 def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scratch_path: Path) -> list[str]:
