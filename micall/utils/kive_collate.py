@@ -233,16 +233,12 @@ def configure_logging(args: argparse.Namespace) -> None:
         level = logging.INFO
     elif args.debug:
         level = logging.DEBUG
-    elif args.debug2:
-        level = logging.DEBUG - 1
     else:
         level = logging.WARN
 
     logger.setLevel(level)
     logging.basicConfig(level=level,
                         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-    if args.debug2:
-        logging.addLevelName(logging.DEBUG - 1, 'DEBUG2')
 
 
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
@@ -250,8 +246,8 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
-    verbosity_group.add_argument('--debug2', action='store_true', help='Even more debug messages.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     parser.add_argument('run_outputs', nargs='*', type=Path)
     parser.add_argument('metadata_csv', type=Path)
     parser.add_argument('collated_results_tar', type=Path)
