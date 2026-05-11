@@ -23,7 +23,6 @@ def test_parse_args_with_optional_multiple_and_separator(monkeypatch, tmp_path):
     assert args.collated_results_tar == output_path
     assert not args.verbose
     assert not args.debug
-    assert not args.debug2
     assert not args.quiet
 
 
@@ -41,7 +40,6 @@ def test_parse_args_with_debug_flag(monkeypatch, tmp_path):
 
     assert args.debug
     assert not args.verbose
-    assert not args.debug2
     assert not args.quiet
 
 
