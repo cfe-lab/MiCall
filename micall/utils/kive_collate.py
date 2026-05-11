@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Sequence, TextIO
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 DOWNLOADED_RESULTS = [
     'remap_counts_csv',
