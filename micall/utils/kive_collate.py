@@ -284,7 +284,11 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
 
 def main(argv: Sequence[str]) -> None:
     args = parse_args(argv)
-    args.collated_results_tar.parent.mkdir(parents=True, exist_ok=True)
+    run_outputs: Sequence[Path] = args.run_outputs
+    metadata_csv: Path = args.metadata_csv
+    collated_results_tar: Path = args.collated_results_tar
+
+    collated_results_tar.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp_text:
         tmp_path = Path(tmp_text)
         scratch_path = tmp_path / 'scratch'
@@ -292,12 +296,12 @@ def main(argv: Sequence[str]) -> None:
         scratch_path.mkdir(parents=True, exist_ok=True)
         collated_path.mkdir(parents=True, exist_ok=True)
 
-        sample_names = stage_inputs_by_sample(args.run_outputs,
-                              args.metadata_csv,
+        sample_names = stage_inputs_by_sample(run_outputs,
+                              metadata_csv,
                               scratch_path)
         copy_outputs(sample_names, scratch_path, collated_path)
 
-        with tarfile.open(args.collated_results_tar, 'w') as output_tar:
+        with tarfile.open(collated_results_tar, 'w') as output_tar:
             for file_path in sorted(collated_path.rglob('*')):
                 if file_path.is_file():
                     output_tar.add(file_path, file_path.relative_to(collated_path))
