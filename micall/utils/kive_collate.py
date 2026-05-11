@@ -2,6 +2,7 @@ import argparse
 import csv
 import os
 import shutil
+import sys
 import tarfile
 import tempfile
 from pathlib import Path
@@ -215,12 +216,16 @@ def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path
             target_path.unlink()
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(args: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('run_outputs', nargs='*', type=Path)
     parser.add_argument('metadata_csv', type=Path)
     parser.add_argument('collated_results_tar', type=Path)
-    return parser.parse_args()
+    try:
+        return parser.parse_args(args)
+    except argparse.ArgumentError as ex:
+        print(f'Arguments received: {list(args)}', file=sys.stderr)
+        raise ex
 
 
 def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scratch_path: Path) -> list[str]:
@@ -277,8 +282,8 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
     return sorted(sample_names)
 
 
-def main() -> None:
-    args = parse_args()
+def main(argv: Sequence[str]) -> None:
+    args = parse_args(argv)
     args.collated_results_tar.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp_text:
         tmp_path = Path(tmp_text)
@@ -299,4 +304,4 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
