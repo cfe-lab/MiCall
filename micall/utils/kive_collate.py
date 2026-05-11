@@ -249,7 +249,7 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
-    parser.add_argument('run_outputs', nargs='*', type=Path)
+    parser.add_argument('--run_outputs', nargs='*', default=[], type=Path)
     parser.add_argument('metadata_csv', type=Path)
     parser.add_argument('collated_results_tar', type=Path)
     return parser.parse_args(args)
