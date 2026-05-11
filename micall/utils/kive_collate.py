@@ -1,5 +1,6 @@
 import argparse
 import csv
+import logging
 import os
 import shutil
 import sys
@@ -7,6 +8,8 @@ import tarfile
 import tempfile
 from pathlib import Path
 from typing import Sequence, TextIO
+
+logger = logging.getLogger(__name__)
 
 DOWNLOADED_RESULTS = [
     'remap_counts_csv',
@@ -99,6 +102,7 @@ def remove_empty_directory(path: Path) -> None:
 def extract_coverage_maps(sample_names: list[str], scratch_path: Path, results_path: Path) -> None:
     coverage_path = results_path / 'coverage_maps'
     coverage_path.mkdir(parents=True, exist_ok=True)
+    logger.debug('Extracting coverage maps for %d samples into %s.', len(sample_names), coverage_path)
     for sample_name in sample_names:
         source_path = scratch_path / sample_name / 'coverage_maps.tar'
         try:
@@ -112,6 +116,7 @@ def extract_coverage_maps(sample_names: list[str], scratch_path: Path, results_p
                     with source, open(target_path, 'wb') as target:
                         shutil.copyfileobj(source, target)
         except FileNotFoundError:
+            logger.debug('Missing coverage_maps.tar for sample %s at %s.', sample_name, source_path)
             continue
     remove_empty_directory(coverage_path)
 
@@ -120,6 +125,7 @@ def extract_archive(sample_names: list[str], scratch_path: Path, results_path: P
     archive_name = output_name[:-4]
     output_path = results_path / archive_name
     output_path.mkdir(parents=True, exist_ok=True)
+    logger.debug('Extracting archive output %s for %d samples into %s.', output_name, len(sample_names), output_path)
     for sample_name in sample_names:
         source_path = scratch_path / sample_name / f'{archive_name}.tar'
         try:
@@ -136,6 +142,7 @@ def extract_archive(sample_names: list[str], scratch_path: Path, results_path: P
                         shutil.copyfileobj(source, target)
                 remove_empty_directory(sample_target_path)
         except FileNotFoundError:
+            logger.debug('Missing archive %s for sample %s at %s.', archive_name, sample_name, source_path)
             continue
     remove_empty_directory(output_path)
 
@@ -178,8 +185,10 @@ def move_stitcher_plot(sample_names: list[str], scratch_path: Path, results_path
 
 
 def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path) -> None:
+    logger.info('Collating %d samples into %s.', len(sample_names), results_path)
     results_path.mkdir(parents=True, exist_ok=True)
     for output_name in DOWNLOADED_RESULTS:
+        logger.debug('Processing output %s.', output_name)
         if output_name == 'coverage_maps_tar':
             extract_coverage_maps(sample_names, scratch_path, results_path)
             continue
@@ -214,21 +223,43 @@ def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path
                         source_count += extract_csv(source, target, sample_name, source_count)
         if source_count == 0 and target_path.exists():
             target_path.unlink()
+            logger.debug('Removed empty collated output %s.', target_path)
 
 
-def parse_args(args: Sequence[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+def configure_logging(args: argparse.Namespace) -> None:
+    if args.quiet:
+        level = logging.ERROR
+    elif args.verbose:
+        level = logging.INFO
+    elif args.debug:
+        level = logging.DEBUG
+    elif args.debug2:
+        level = logging.DEBUG - 1
+    else:
+        level = logging.WARN
+
+    logger.setLevel(level)
+    logging.basicConfig(level=level,
+                        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    if args.debug2:
+        logging.addLevelName(logging.DEBUG - 1, 'DEBUG2')
+
+
+def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Collate per-sample MiCall outputs into run-level grouped files.')
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--debug2', action='store_true', help='Even more debug messages.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     parser.add_argument('run_outputs', nargs='*', type=Path)
     parser.add_argument('metadata_csv', type=Path)
     parser.add_argument('collated_results_tar', type=Path)
-    try:
-        return parser.parse_args(args)
-    except argparse.ArgumentError as ex:
-        print(f'Arguments received: {list(args)}', file=sys.stderr)
-        raise ex
+    return parser.parse_args(args)
 
 
 def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scratch_path: Path) -> list[str]:
+    logger.info('Reading metadata manifest from %s.', metadata_csv)
     with metadata_csv.open(newline='', encoding='utf-8') as manifest_file:
         reader = csv.DictReader(manifest_file)
         if reader.fieldnames is None:
@@ -238,6 +269,7 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
             missing = ', '.join(sorted(missing_columns))
             raise ValueError(f'Metadata manifest is missing required columns: {missing}.')
         rows = list(reader)
+    logger.info('Loaded %d metadata rows with %d run outputs.', len(rows), len(run_outputs))
 
     sample_names: set[str] = set()
     for row_number, row in enumerate(rows, start=2):
@@ -250,6 +282,11 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
 
         sample_name = (row.get('sample') or '').strip()
         output_name = (row.get('output_name') or '').strip()
+        logger.debug('Manifest row %d: index=%s sample=%s output=%s',
+                     row_number,
+                     index_text,
+                     sample_name,
+                     output_name)
         if file_index < 0 or file_index >= len(run_outputs):
             raise ValueError(
                 f'Invalid run_outputs index {file_index} in metadata manifest row {row_number}.')
@@ -279,14 +316,22 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
         shutil.copyfile(source_path, target_path)
         sample_names.add(sample_name)
 
+    logger.info('Prepared scratch staging for %d unique samples.', len(sample_names))
     return sorted(sample_names)
 
 
-def main(argv: Sequence[str]) -> None:
+def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
+    configure_logging(args)
     run_outputs: Sequence[Path] = args.run_outputs
     metadata_csv: Path = args.metadata_csv
     collated_results_tar: Path = args.collated_results_tar
+
+    logger.info('Starting kive collation run.')
+    logger.debug('Arguments: run_outputs=%s metadata_csv=%s collated_results_tar=%s',
+                 run_outputs,
+                 metadata_csv,
+                 collated_results_tar)
 
     collated_results_tar.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp_text:
@@ -305,6 +350,7 @@ def main(argv: Sequence[str]) -> None:
             for file_path in sorted(collated_path.rglob('*')):
                 if file_path.is_file():
                     output_tar.add(file_path, file_path.relative_to(collated_path))
+    logger.info('Finished kive collation run. Output: %s', collated_results_tar)
 
 
 if __name__ == '__main__':
