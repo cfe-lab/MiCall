@@ -14,11 +14,7 @@ def test_parse_args_with_optional_multiple_and_separator(monkeypatch, tmp_path):
     monkeypatch.setattr(
         sys,
         'argv',
-        ['kive_collate',
-         '--inputs', 'a.csv',
-         '--inputs', 'b.csv',
-         '--inputs', str(metadata_path),
-         str(output_path)])
+        ['kive_collate', '--inputs', 'a.csv', 'b.csv', str(metadata_path), '--', str(output_path)])
 
     args = kive_collate.parse_args()
 
@@ -37,10 +33,7 @@ def test_parse_args_with_debug_flag(monkeypatch, tmp_path):
     monkeypatch.setattr(
         sys,
         'argv',
-        ['kive_collate', '--debug',
-         '--inputs', 'a.csv',
-         '--inputs', str(metadata_path),
-         str(output_path)])
+        ['kive_collate', '--debug', '--inputs', 'a.csv', str(metadata_path), '--', str(output_path)])
 
     args = kive_collate.parse_args()
 
@@ -70,12 +63,13 @@ def test_main_collates_csv_and_fasta_from_multiple_samples(monkeypatch, tmp_path
     monkeypatch.setattr(
         sys,
         'argv',
-        ['kive_collate',
-         '--inputs', str(sample1_cascade),
-         '--inputs', str(sample1_fasta),
-         '--inputs', str(sample2_cascade),
-         '--inputs', str(sample2_fasta),
-         '--inputs', str(metadata_path),
+        ['kive_collate', '--inputs',
+         str(sample1_cascade),
+         str(sample1_fasta),
+         str(sample2_cascade),
+         str(sample2_fasta),
+         str(metadata_path),
+         '--',
          str(output_path)])
 
     kive_collate.main()
@@ -144,3 +138,18 @@ def test_stage_inputs_by_sample_rejects_duplicate_output_for_sample(tmp_path):
 
     with pytest.raises(ValueError, match='duplicates output'):
         kive_collate.stage_inputs_by_sample(run_outputs, metadata_path, tmp_path / 'scratch')
+
+
+def test_parse_args_with_explicit_output_separator(monkeypatch, tmp_path):
+    metadata_path = tmp_path / 'metadata.csv'
+    metadata_path.write_text('index,sample,output_name\n')
+    output_path = tmp_path / 'out.tar'
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        ['kive_collate', '--inputs', 'a.csv', 'b.csv', str(metadata_path), '--', str(output_path)])
+
+    args = kive_collate.parse_args()
+
+    assert args.inputs == [Path('a.csv'), Path('b.csv'), metadata_path]
+    assert args.output == output_path
