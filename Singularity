@@ -172,4 +172,4 @@ From: debian:bookworm-slim
     KIVE_MEMORY 1000
 
 %apprun collation
-    python -m micall.utils.kive_collate "$@"
+    python -m micall.utils.kive_collate --debug "$@"
