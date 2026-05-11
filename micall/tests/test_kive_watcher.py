@@ -3231,6 +3231,34 @@ def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default
     assert expected_error_message == expected_error_path.read_text()
 
 
+def test_folder_collation_failed_does_not_mark_done_all_processing(raw_data_with_two_samples,
+                                                                   mock_open_kive,
+                                                                   default_config):
+    mock_session = mock_open_kive.return_value
+    base_calls = (raw_data_with_two_samples /
+                  "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
+    kive_watcher = KiveWatcher(default_config, Queue())
+    folder_watcher = kive_watcher.add_folder(base_calls)
+
+    folder_watcher.active_pipeline_groups.add(PipelineType.MAIN)
+    kive_watcher.loaded_folders.add(base_calls)
+    collation_key = (base_calls, PipelineType.MAIN)
+    kive_watcher.collation_runs[collation_key] = dict(id='702', state='N')
+    mock_session.endpoints.containerruns.get.return_value = dict(id='702', state='F')
+
+    run_path = base_calls / '../../..'
+    expected_done_all_path = run_path / 'Results/version_0-dev/done_all_processing'
+    expected_error_path = run_path / 'errorprocessing'
+
+    kive_watcher.check_completed_folders()
+
+    assert not expected_done_all_path.exists()
+    assert expected_error_path.read_text() == 'Kive collation failed for MAIN (state: F).\n'
+    assert collation_key not in kive_watcher.collation_runs
+    assert base_calls not in kive_watcher.loaded_folders
+    assert base_calls not in kive_watcher.folder_watchers
+
+
 def test_add_duplicate_sample(raw_data_with_two_samples,
                               mock_open_kive,
                               default_config):

@@ -654,7 +654,7 @@ class KiveWatcher:
                         disk_operations.write_text(
                             folder_watcher.run_folder / 'errorprocessing',
                             'Filter quality failed in Kive.\n')
-                        self.folder_watchers.pop(folder)
+                        self._remove_folder_state(folder)
                     else:
                         self._mark_pipeline_group_complete(folder,
                                                           folder_watcher,
@@ -670,7 +670,7 @@ class KiveWatcher:
                     disk_operations.write_text(
                         folder_watcher.run_folder / 'errorprocessing',
                         f'Samples failed in Kive: {", ".join(failed_samples)}.\n')
-                    self.folder_watchers.pop(folder, None)
+                    self._remove_folder_state(folder)
                     break
 
                 collation_key = (folder, pipeline_group)
@@ -686,18 +686,32 @@ class KiveWatcher:
                     self.collation_runs[collation_key] = collation_run
                     continue
 
-                results_path = self.poll_collation_run(folder_watcher,
-                                                       pipeline_group,
-                                                       collation_run)
-                if results_path is None:
+                collation_result = self.poll_collation_run(folder_watcher,
+                                                           pipeline_group,
+                                                           collation_run)
+                if collation_result is None:
                     continue
                 self.collation_runs.pop(collation_key, None)
+                results_path, is_successful = collation_result
+
+                if not is_successful:
+                    self._remove_folder_state(folder)
+                    break
 
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
                 self._mark_pipeline_group_complete(folder,
                                                   folder_watcher,
                                                   pipeline_group,
                                                   results_path)
+
+    def _remove_folder_state(self, folder: str) -> None:
+        self.folder_watchers.pop(folder, None)
+        self.loaded_folders.discard(folder)
+        for key in list(self.collation_runs):
+            if key[0] == folder:
+                self.collation_runs.pop(key, None)
+        if not self.folder_watchers:
+            logger.info('No more folders to process.')
 
     def _mark_pipeline_group_complete(self,
                                       folder: str,
@@ -709,7 +723,8 @@ class KiveWatcher:
                 self.qai_upload_queue.put((results_path, pipeline_group))
             if not folder_watcher.active_pipeline_groups:
                 disk_operations.touch(results_path / "done_all_processing")
-                self.folder_watchers.pop(folder)
+                self._remove_folder_state(folder)
+                return
         if not self.folder_watchers:
             logger.info('No more folders to process.')
 
@@ -795,22 +810,20 @@ class KiveWatcher:
     def poll_collation_run(self,
                            folder_watcher: FolderWatcher,
                            pipeline_group: PipelineType,
-                           run: Optional[Run]) -> Optional[Path]:
+                           run: Optional[Run]) -> Optional[tuple[Path, bool]]:
         if run is None:
             return None
         run_status: Run = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
         state = run_status['state']
         if state in ('N', 'L', 'R'):
             return None
-        if state == 'X':
-            return self.get_results_path(folder_watcher)
-        if state == 'F':
+        if state in ('X', 'F'):
             results_path = self.get_results_path(folder_watcher)
             run_path = (results_path / "../..").resolve()
             disk_operations.write_text(
                 run_path / 'errorprocessing',
-                f'Kive collation failed for {pipeline_group.name}.\n')
-            return results_path
+                f'Kive collation failed for {pipeline_group.name} (state: {state}).\n')
+            return results_path, False
 
         run_datasets: Sequence[RunDataset] = self.kive_retry(
             lambda: self.session.endpoints.containerruns.get(f"{run['id']}/dataset_list/"))
@@ -833,7 +846,7 @@ class KiveWatcher:
             tar_file.extractall(target_path, filter='data')
         disk_operations.unlink(collated_tar_path, missing_ok=True)
         disk_operations.touch(target_path / 'doneprocessing')
-        return results_path
+        return results_path, True
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
         if folder_watcher.quality_dataset is None:

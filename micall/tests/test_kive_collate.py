@@ -96,6 +96,16 @@ def test_stage_inputs_by_sample_rejects_invalid_sample_name(tmp_path):
         kive_collate.stage_inputs_by_sample(run_outputs, metadata_path, tmp_path / 'scratch')
 
 
+def test_stage_inputs_by_sample_rejects_missing_required_columns(tmp_path):
+    metadata_path = tmp_path / 'metadata.csv'
+    metadata_path.write_text('index,sample\n0,E11111\n')
+    run_outputs = [tmp_path / 'cascade.csv']
+    run_outputs[0].write_text('x,y\n1,2\n')
+
+    with pytest.raises(ValueError, match='missing required columns'):
+        kive_collate.stage_inputs_by_sample(run_outputs, metadata_path, tmp_path / 'scratch')
+
+
 def test_stage_inputs_by_sample_rejects_duplicate_output_for_sample(tmp_path):
     metadata_path = tmp_path / 'metadata.csv'
     metadata_path.write_text(

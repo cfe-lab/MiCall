@@ -71,7 +71,7 @@ def extract_csv(source: TextIO, target: TextIO, sample_name: str, source_count: 
     has_sample = 'sample' in fieldnames
     if not has_sample:
         fieldnames.insert(0, 'sample')
-    writer = csv.DictWriter(target, fieldnames, lineterminator=os.linesep)
+    writer = csv.DictWriter(target, fieldnames, lineterminator='\n')
     if source_count == 0:
         writer.writeheader()
     for row in reader:
@@ -201,12 +201,12 @@ def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path
         source_count = 0
         filename = get_output_filename(output_name)
         target_path = results_path / filename
-        with open(target_path, 'w') as target:
+        with target_path.open('w', encoding='utf-8', newline='') as target:
             for sample_name in sample_names:
                 source_path = scratch_path / sample_name / filename
                 if not source_path.exists():
                     continue
-                with open(source_path) as source:
+                with source_path.open(encoding='utf-8', newline='') as source:
                     if output_name.endswith('_fasta'):
                         source_count += extract_fasta(source, target, sample_name)
                     else:
@@ -250,7 +250,10 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
                 f'Invalid run_outputs index {file_index} in metadata manifest row {row_number}.')
         if not sample_name:
             raise ValueError(f'Metadata manifest row {row_number} has empty sample value.')
-        if Path(sample_name).name != sample_name or sample_name in ('.', '..'):
+        if (Path(sample_name).name != sample_name or
+            sample_name in ('.', '..') or
+            '/' in sample_name or
+            '\\' in sample_name):
             raise ValueError(
                 f'Metadata manifest row {row_number} has invalid sample name {sample_name!r}.')
         if output_name not in DOWNLOADED_RESULTS:
@@ -258,7 +261,7 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
                 f'Metadata manifest row {row_number} has unknown output_name {output_name!r}.')
 
         source_path = run_outputs[file_index]
-        if not source_path.exists():
+        if not source_path.is_file():
             raise FileNotFoundError(
                 f'Metadata manifest row {row_number} references missing run output {source_path}.')
         sample_path = scratch_path / sample_name
