@@ -217,7 +217,7 @@ def copy_outputs(sample_names: list[str], scratch_path: Path, results_path: Path
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--run_outputs', nargs='*', default=[], type=Path)
+    parser.add_argument('run_outputs', nargs='*', type=Path)
     parser.add_argument('metadata_csv', type=Path)
     parser.add_argument('collated_results_tar', type=Path)
     return parser.parse_args()
