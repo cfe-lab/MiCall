@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Sequence, TextIO
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 DOWNLOADED_RESULTS = [
     'remap_counts_csv',
@@ -319,7 +318,7 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    logger.debug('Starting kive_collate with arguments: %s', argv)
+    print(f'Starting kive_collate with arguments: {argv}')
     args = parse_args(argv)
     configure_logging(args)
     inputs: Sequence[Path] = args.inputs
