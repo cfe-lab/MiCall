@@ -1,5 +1,5 @@
-Bootstrap: docker-daemon
-From: micall:latest
+Bootstrap: docker-archive
+From: mycache~/micall.tar
 
 %help
     MiCall maps all the reads from a sample against a set of reference
