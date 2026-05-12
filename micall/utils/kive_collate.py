@@ -248,7 +248,8 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
-    parser.add_argument('inputs', type=Path, help='Input directory.')
+    parser.add_argument('--inputs', nargs='*', type=Path, required=True,
+                        help='Input run outputs followed by the metadata manifest.')
     parser.add_argument('output', type=Path,
                         help='Output tar file path for collated results.')
     return parser.parse_args(args)
@@ -320,12 +321,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     print(f'Starting kive_collate with arguments: {argv}', file=sys.stderr)
     args = parse_args(argv)
     configure_logging(args)
-    inputs: Path = args.inputs
-
-    import subprocess
-    subprocess.run(['ls', '-lha', '/mnt/input'], check=True)  # Debug listing of input directory
-    subprocess.run(['ls', '-lha', str(inputs)], check=True)  # Debug listing of input directory
-    subprocess.run(['cat', str(inputs)], check=True)  # Debug output of the inputs file
+    inputs: Sequence[Path] = args.inputs
 
     run_outputs: Sequence[Path] = inputs[:-1]
     metadata_csv: Path = inputs[-1]
