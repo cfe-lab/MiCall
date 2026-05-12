@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from typing import Sequence
 import os
 import subprocess
 
 import errno
+import sys
 
 
-def parse_args():
+def get_parser() -> ArgumentParser:
     parser = ArgumentParser(
         description="Build docker image from local source code or a tag.",
         formatter_class=ArgumentDefaultsHelpFormatter)
@@ -17,11 +19,12 @@ def parse_args():
                         help='local agent id from BaseSpace Form Builder')
     parser.add_argument('--nopush',
                         action='store_true')
-    return parser.parse_args()
+    return parser
 
 
-def main():
-    args = parse_args()
+def main(argv: Sequence[str]) -> None:
+    parser = get_parser()
+    args = parser.parse_args(argv)
     source_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     version = subprocess.check_output(['git',
                                         '-c', 'core.fileMode=false',  # Ignore file mode
@@ -63,4 +66,9 @@ def main():
             print('Shutting down.')
 
 
-main()
+def entry() -> None:
+    main(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    entry()
