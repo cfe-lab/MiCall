@@ -819,6 +819,7 @@ class KiveWatcher:
             self.config.micall_collation_pipeline_id,
             {
                 COLLATION_INPUT_NAME: [*input_datasets, manifest_dataset],
+                "some_other_input": manifest_dataset,  # Dummy input to ensure manifest is included in run datasets for easier debugging. Not used by the app.
             },
             f'MiCall collation {pipeline_group.name.lower()} on {folder_watcher.run_name}',
             folder_watcher.batch)
