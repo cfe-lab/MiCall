@@ -76,7 +76,7 @@ def build() -> str:
     return repository_name
 
 
-def main(argv: Sequence[str]) -> None:
+def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
     repository_name = build()
@@ -92,10 +92,11 @@ def main(argv: Sequence[str]) -> None:
         except KeyboardInterrupt:
             print()  # Clear the line after Ctrl-C.
             print('Shutting down.')
+    return 0
 
 
 def entry() -> None:
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))
 
 
 if __name__ == '__main__':
