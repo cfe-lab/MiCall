@@ -20,7 +20,7 @@
 /micall/tests/microtest/micall-results*
 /micall/tests/microtest/scratch
 /venv_micall
-/simgs/*.simg
+/simgs
 /sandbox
 /timing.*
 /micall/blast_db/refs.fasta*
@@ -32,3 +32,4 @@
 /test_samples.csv
 .vscode
 /docs/_site
+version.txt
