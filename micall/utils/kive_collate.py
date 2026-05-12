@@ -323,6 +323,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     inputs: Path = args.inputs
 
     import subprocess
+    subprocess.run(['ls', '-lha', '/mnt/input'], check=True)  # Debug listing of input directory
     subprocess.run(['ls', '-lha', str(inputs)], check=True)  # Debug listing of input directory
     subprocess.run(['tree', '-a', str(inputs)], check=True)  # Debug tree of input directory
 
