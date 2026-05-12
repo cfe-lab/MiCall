@@ -1,4 +1,3 @@
-# Generate the Singularity container to run MiCall on Kive.
 Bootstrap: docker-daemon
 From: micall:latest
 
