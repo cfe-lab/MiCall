@@ -32,6 +32,7 @@ class ConfigInterface(Protocol):
     denovo_main_pipeline_id: Optional[int]
     micall_filter_quality_pipeline_id: Optional[int]
     micall_resistance_pipeline_id: Optional[int]
+    micall_collation_pipeline_id: Optional[int]
     proviral_pipeline_id: Optional[int]
     max_active: int
     pipeline_version: str

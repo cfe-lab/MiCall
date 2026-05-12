@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, Tuple, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -96,6 +96,8 @@ kiveapi.kiveapi.logger.setLevel(logging.ERROR)  # Suppress routine credential re
 urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 T = TypeVar('T')
+COLLATION_INPUT_NAME = 'inputs'
+COLLATION_OUTPUT_NAME = 'output'
 
 def open_kive(server_url: str) -> KiveAPI:
     session = KiveAPI(server_url)
@@ -334,10 +336,6 @@ def trim_run_name(run_name: str) -> str:
     return run_name
 
 
-def get_output_filename(output_name: str) -> str:
-    return '.'.join(output_name.rsplit('_', 1))
-
-
 def wait_for_retry(attempt_count: int, start_time: datetime) -> None:
     """Wait with exponential backoff, logging warnings after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT,
@@ -360,20 +358,6 @@ def calculate_retry_wait(min_wait: timedelta, max_wait: timedelta, attempt_count
     seconds = min_seconds * (2 ** (attempt_count - 1))
     seconds = min(seconds, max_wait.total_seconds())
     return timedelta(seconds=seconds)
-
-
-def get_scratch_path(results_path: Path, pipeline_group: PipelineType) -> Path:
-    if pipeline_group == PipelineType.MAIN:
-        scratch_name = "scratch"
-    elif pipeline_group == PipelineType.DENOVO_MAIN:
-        scratch_name = "scratch_denovo"
-    elif pipeline_group == PipelineType.PROVIRAL:
-        scratch_name = "scratch_proviral"
-    else:
-        assert pipeline_group == PipelineType.MIXED_HCV_MAIN
-        scratch_name = "scratch_mixed_hcv"
-    scratch_path = results_path / scratch_name
-    return scratch_path
 
 
 def get_collated_path(results_path: Path, pipeline_group: PipelineType) -> Path:
@@ -408,9 +392,11 @@ class KiveWatcher:
         self.folder_watchers: dict[str, FolderWatcher] = {}  # {base_calls_folder: FolderWatcher}
         self.app_urls: dict[str | int, str] = {}  # {app_id: app_url}
         self.app_args: dict[str | int, dict[str, str]] = {}  # {app_id: {arg_name: arg_url}}
+        self.app_argument_lists: dict[str | int, list[dict[str, object]]] = {}  # {app_id: [argument_dict]}
         self.external_directory_path: Optional[Path] = None
         self.external_directory_name: Optional[str] = None
         self.qai_upload_queue = qai_upload_queue
+        self.collation_runs: dict[tuple[str, PipelineType], Run] = {}
 
     def is_full(self) -> bool:
         if self.config is None:
@@ -438,8 +424,49 @@ class KiveWatcher:
                         for argument in arguments
                         if argument['type'] == 'I'}
             self.app_args[app_id] = kive_app
+            self.app_argument_lists[app_id] = list(arguments)
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
+
+    def validate_collation_app_signature(self, app_id: int) -> None:
+        """Ensure the collation app has the expected optional-multiple input signature.
+
+        Expected KIVE signature:
+        - Input argument named 'inputs' with type='I', position=None, allow_multiple=True
+        - Output argument named 'output' with type='O'
+        """
+        # Populate cached argument metadata when possible.
+        self.get_kive_arguments(app_id)
+        arguments = self.app_argument_lists.get(app_id)
+        if not arguments:
+            # Tests can pre-seed app_args/app_urls without argument metadata.
+            logger.debug('Skipping collation app signature validation for app %r: argument metadata unavailable.', app_id)
+            return
+
+        input_argument = next(
+            (arg for arg in arguments
+             if arg.get('name') == COLLATION_INPUT_NAME and arg.get('type') == 'I'),
+            None)
+        if input_argument is None:
+            raise RuntimeError(
+                f'Collation app {app_id} is missing required input argument {COLLATION_INPUT_NAME!r}.')
+
+        is_optional_multiple = (input_argument.get('position') is None and
+                                bool(input_argument.get('allow_multiple')))
+        if not is_optional_multiple:
+            raise RuntimeError(
+                f'Collation app {app_id} argument {COLLATION_INPUT_NAME!r} must be optional multiple '
+                f'(formatted as --{COLLATION_INPUT_NAME}* in KIVE_INPUTS). '
+                f'Got position={input_argument.get("position")!r}, '
+                f'allow_multiple={input_argument.get("allow_multiple")!r}.')
+
+        output_argument = next(
+            (arg for arg in arguments
+             if arg.get('name') == COLLATION_OUTPUT_NAME and arg.get('type') == 'O'),
+            None)
+        if output_argument is None:
+            raise RuntimeError(
+                f'Collation app {app_id} is missing required output argument {COLLATION_OUTPUT_NAME!r}.')
 
     def get_kive_container_name(self, app_id: str | int) -> str:
         """ Get the container name for a container app. """
@@ -662,249 +689,207 @@ class KiveWatcher:
             for pipeline_group in list(folder_watcher.active_pipeline_groups):
                 if not folder_watcher.is_pipeline_group_finished(pipeline_group):
                     continue
-                results_path = self.collate_folder(folder_watcher,
-                                                   pipeline_group)
+                if pipeline_group == PipelineType.FILTER_QUALITY:
+                    folder_watcher.active_pipeline_groups.remove(pipeline_group)
+                    if folder_watcher.is_folder_failed:
+                        disk_operations.write_text(
+                            folder_watcher.run_folder / 'errorprocessing',
+                            'Filter quality failed in Kive.\n')
+                        self._remove_folder_state(folder)
+                    else:
+                        self._mark_pipeline_group_complete(folder,
+                                                          folder_watcher,
+                                                          pipeline_group,
+                                                          self.get_results_path(folder_watcher))
+                    continue
+
+                failed_samples = sorted(
+                    sw.sample_group.enum
+                    for sw in folder_watcher.sample_watchers
+                    if sw.is_failed)
+                if failed_samples:
+                    disk_operations.write_text(
+                        folder_watcher.run_folder / 'errorprocessing',
+                        f'Samples failed in Kive: {", ".join(failed_samples)}.\n')
+                    self._remove_folder_state(folder)
+                    break
+
+                collation_key = (folder, pipeline_group)
+                collation_run = self.collation_runs.get(collation_key)
+
+                if collation_run is None:
+                    collation_run = self.run_collation_pipeline(folder_watcher,
+                                                                pipeline_group)
+                    if collation_run is None:
+                        raise RuntimeError(
+                            f'Failed to launch Kive collation for {folder_watcher.run_name} '
+                            f'pipeline group {pipeline_group.name}.')
+                    self.collation_runs[collation_key] = collation_run
+                    continue
+
+                collation_result = self.poll_collation_run(folder_watcher,
+                                                           pipeline_group,
+                                                           collation_run)
+                if collation_result is None:
+                    continue
+                self.collation_runs.pop(collation_key, None)
+                results_path, is_successful = collation_result
+
+                if not is_successful:
+                    self._remove_folder_state(folder)
+                    break
+
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
-                if results_path is not None:
-                    if (results_path / "coverage_scores.csv").exists():
-                        self.qai_upload_queue.put(
-                            (results_path, pipeline_group))
-                    if not folder_watcher.active_pipeline_groups:
-                        disk_operations.touch(results_path / "done_all_processing")
-                        self.folder_watchers.pop(folder)
-                if not self.folder_watchers:
-                    logger.info('No more folders to process.')
+                self._mark_pipeline_group_complete(folder,
+                                                  folder_watcher,
+                                                  pipeline_group,
+                                                  results_path)
 
-    def collate_folder(self, folder_watcher: FolderWatcher, pipeline_group: PipelineType) -> Optional[Path]:
-        """ Collate scratch files for a run folder.
+    def _remove_folder_state(self, folder: str) -> None:
+        self.folder_watchers.pop(folder, None)
+        self.loaded_folders.discard(folder)
+        for key in list(self.collation_runs):
+            if key[0] == folder:
+                self.collation_runs.pop(key, None)
+        if not self.folder_watchers:
+            logger.info('No more folders to process.')
 
-        :param FolderWatcher folder_watcher: holds details about the run folder
-        :param PipelineType pipeline_group: the group of runs to collate
-        """
-        results_path = self.get_results_path(folder_watcher)
+    def _mark_pipeline_group_complete(self,
+                                      folder: str,
+                                      folder_watcher: FolderWatcher,
+                                      pipeline_group: PipelineType,
+                                      results_path: Optional[Path]) -> None:
+        if results_path is not None:
+            if (results_path / "coverage_scores.csv").exists():
+                self.qai_upload_queue.put((results_path, pipeline_group))
+            if not folder_watcher.active_pipeline_groups:
+                disk_operations.touch(results_path / "done_all_processing")
+                self._remove_folder_state(folder)
+                return
+        if not self.folder_watchers:
+            logger.info('No more folders to process.')
 
-        error_message = None
-        if folder_watcher.is_folder_failed:
-            error_message = 'Filter quality failed in Kive.'
-        else:
-            failed_sample_names = [
-                sample_watcher.sample_group.enum
-                for sample_watcher in folder_watcher.sample_watchers
-                if sample_watcher.is_failed]
-            if failed_sample_names:
-                error_message = 'Samples failed in Kive: {}.'.format(
-                    ', '.join(failed_sample_names))
-        if error_message is not None:
-            run_path = (results_path / "../..").resolve()
-            disk_operations.write_text(run_path / 'errorprocessing', error_message + '\n')
-            logger.error('Error in folder %s: %s', run_path, error_message)
-            return None
-        if pipeline_group == PipelineType.FILTER_QUALITY:
-            return results_path
-        scratch_path = get_scratch_path(results_path, pipeline_group)
-        target_path = get_collated_path(results_path, pipeline_group)
-        logger.info('Collating results in %s', target_path)
-        self.copy_outputs(folder_watcher, scratch_path, target_path)
-        disk_operations.rmtree(scratch_path)
-        disk_operations.touch(target_path / 'doneprocessing')
-        return results_path
+    def run_collation_pipeline(self,
+                               folder_watcher: FolderWatcher,
+                               pipeline_group: PipelineType) -> Optional[Run]:
+        if self.config.micall_collation_pipeline_id is None:
+            raise RuntimeError('Collation pipeline ID is not configured.')
 
-    def copy_outputs(self,
-                     folder_watcher: FolderWatcher,
-                     scratch_path: Path,
-                     results_path: Path) -> None:
-        disk_operations.mkdir_p(results_path, exist_ok=True)
-        for output_name in DOWNLOADED_RESULTS:
-            if output_name == 'coverage_maps_tar':
-                self.extract_coverage_maps(folder_watcher,
-                                           scratch_path,
-                                           results_path)
-                continue
-            if output_name.endswith('_tar'):
-                self.extract_archive(folder_watcher,
-                                     scratch_path,
-                                     results_path,
-                                     output_name)
-                continue
-            if output_name == 'alignment_svg':
-                self.move_alignment_plot(folder_watcher,
-                                         '.svg',
-                                         scratch_path,
-                                         results_path)
-                continue
-            if output_name == 'alignment_png':
-                self.move_alignment_plot(folder_watcher,
-                                         '.png',
-                                         scratch_path,
-                                         results_path)
-                continue
-            if output_name == 'genome_coverage_svg':
-                self.move_genome_coverage(folder_watcher,
-                                          scratch_path,
-                                          results_path)
-                continue
-            if output_name == 'stitcher_plot_svg':
-                self.move_stitcher_plot(folder_watcher,
-                                       scratch_path,
-                                       results_path)
-                continue
-            source_count = 0
-            filename = get_output_filename(output_name)
-            target_path = results_path / filename
-            with disk_operations.disk_file_operation(target_path, 'w') as target:
-                for sample_name in folder_watcher.all_samples:
-                    sample_name = trim_name(sample_name)
-                    source_path = scratch_path / sample_name / filename
-                    if not source_path.exists():
-                        logger.debug('Source file %s does not exist, skipping.',
-                                       source_path)
+        self.validate_collation_app_signature(self.config.micall_collation_pipeline_id)
+
+        input_datasets: list[RunDataset] = []
+        manifest_rows: list[dict[str, str]] = []
+        for sample_watcher in folder_watcher.sample_watchers:
+            for pipeline_type, run in sample_watcher.runs.items():
+                if PIPELINE_GROUPS[pipeline_type] != pipeline_group:
+                    continue
+                sample_name = self.get_sample_name_for_pipeline(sample_watcher,
+                                                                pipeline_type)
+                if sample_name is None:
+                    continue
+                for run_dataset in run.get('datasets', []):
+                    if run_dataset['argument_type'] != 'O':
                         continue
+                    output_name = run_dataset['argument_name']
+                    if output_name not in DOWNLOADED_RESULTS:
+                        continue
+                    dataset_url: str = run_dataset['dataset']
+                    dataset: RunDataset = self.kive_retry(
+                        lambda: self.session.get(dataset_url).json())
+                    input_index = len(input_datasets)
+                    input_datasets.append(dataset)
+                    manifest_rows.append(dict(index=str(input_index),
+                                              sample=trim_name(sample_name),
+                                              output_name=output_name))
 
-                    with disk_operations.disk_file_operation(source_path, 'r') as source:
-                        if output_name.endswith('_fasta'):
-                            source_count += self.extract_fasta(source, target, sample_name)
-                        else:
-                            source_count += self.extract_csv(source,
-                                                             target,
-                                                             sample_name,
-                                                             source_count)
+        manifest_text = StringIO()
+        writer = DictWriter(manifest_text,
+                            ['index', 'sample', 'output_name'],
+                            lineterminator='\n')
+        writer.writeheader()
+        writer.writerows(manifest_rows)
+        manifest_dataset = self.find_or_upload_dataset(
+            BytesIO(manifest_text.getvalue().encode('utf8')),
+            f'{folder_watcher.run_name}_{pipeline_group.name.lower()}_collation_metadata.csv',
+            f'Collation metadata for {folder_watcher.run_name} {pipeline_group.name}.')
+        if manifest_dataset is None:
+            return None
 
-            if not source_count:
-                disk_operations.unlink(target_path)
-
-    @staticmethod
-    def extract_csv(source: TextIO, target: TextIO, sample_name: str, source_count: int) -> int:
-        reader = DictReader(source)
-        fieldnames = reader.fieldnames
-        if fieldnames is None:
-            # Empty file, nothing to copy.
-            return 0
-        fieldnames = list(fieldnames)
-        has_sample = 'sample' in fieldnames
-        if not has_sample:
-            fieldnames.insert(0, 'sample')
-        writer = DictWriter(target, fieldnames, lineterminator=os.linesep)
-        if source_count == 0:
-            # First source file, copy header.
-            writer.writeheader()
-        for row in reader:
-            if not has_sample:
-                row['sample'] = sample_name
-            writer.writerow(row)
-        return 1
-
-    @staticmethod
-    def extract_fasta(source: TextIO, target: TextIO, sample_name: str) -> int:
-        for line in source:
-            if line.startswith('>'):
-                target.write(f'>{sample_name},{line[1:]}')
-            else:
-                target.write(line)
-        return 1
+        return self.find_or_launch_run(
+            self.config.micall_collation_pipeline_id,
+            {
+                COLLATION_INPUT_NAME: [*input_datasets, manifest_dataset],
+                "some_other_input": manifest_dataset,  # Dummy input to ensure manifest is included in run datasets for easier debugging. Not used by the app.
+            },
+            f'MiCall collation {pipeline_group.name.lower()} on {folder_watcher.run_name}',
+            folder_watcher.batch)
 
     @staticmethod
-    def extract_coverage_maps(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
-        coverage_path: Path = results_path / "coverage_maps"
-        disk_operations.mkdir_p(coverage_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'coverage_maps.tar'
-            try:
-                with tarfile.open(source_path) as f:
-                    for source_info in f:
-                        filename = os.path.basename(source_info.name)
-                        target_path = coverage_path / (sample_name + '.' + filename)
-                        source = f.extractfile(source_info)
-                        if source is None:
-                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
-                        with source, open(target_path, 'wb') as target:
-                            shutil.copyfileobj(source, target)
-            except FileNotFoundError:
-                pass
-        disk_operations.remove_empty_directory(coverage_path)
+    def get_sample_name_for_pipeline(sample_watcher: SampleWatcher,
+                                     pipeline_type: PipelineType) -> Optional[str]:
+        if pipeline_type in (PipelineType.MIDI,
+                             PipelineType.MIXED_HCV_MIDI,
+                             PipelineType.DENOVO_MIDI):
+            return sample_watcher.sample_group.names[1]
+        return sample_watcher.sample_group.names[0]
 
     @staticmethod
-    def extract_archive(folder_watcher: FolderWatcher,
-                        scratch_path: Path,
-                        results_path: Path,
-                        output_name: str) -> None:
-        """ Extract contents of tar files.
-
-        There will be a folder named after the output name, with a subfolder
-        for each sample.
-        :param folder_watcher: holds a list of all samples to extract from
-        :param scratch_path: parent folder of all sample working files
-        :param results_path: parent folder to extract into
-        :param output_name: the name of tar files to look for with "_tar"
-            instead of ".tar".
-        """
-        assert output_name.endswith('_tar'), output_name
-        archive_name = output_name[:-4]
-        output_path: Path = results_path / archive_name
-        disk_operations.mkdir_p(output_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / (archive_name + '.tar')
-            try:
-                with tarfile.open(source_path) as f:
-                    sample_target_path = output_path / sample_name
-                    disk_operations.mkdir_p(sample_target_path, exist_ok=True)
-                    for source_info in f:
-                        filename = os.path.basename(source_info.name)
-                        target_path = sample_target_path / filename
-                        assert not target_path.exists(), target_path
-                        source = f.extractfile(source_info)
-                        if source is None:
-                            raise RuntimeError(f"Failed to extract {source_info.name} from {source_path}")
-                        with source, open(target_path, 'wb') as target:
-                            shutil.copyfileobj(source, target)
-                disk_operations.remove_empty_directory(sample_target_path)
-            except FileNotFoundError:
-                pass
-        disk_operations.remove_empty_directory(output_path)
-
-    @staticmethod
-    def move_alignment_plot(folder_watcher: FolderWatcher,
-                            extension: str,
-                            scratch_path: Path,
-                            results_path: Path) -> None:
-        alignment_path: Path = results_path / "alignment"
-        disk_operations.mkdir_p(alignment_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / f'alignment{extension}'
-            target_path = alignment_path / f"{sample_name}_alignment{extension}"
-            if source_path.exists():
-                disk_operations.rename(source_path, target_path)
-        disk_operations.remove_empty_directory(alignment_path)
-
-    @staticmethod
-    def move_genome_coverage(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
-        plots_path = results_path / "genome_coverage"
+    def move_stitcher_plot(folder_watcher: FolderWatcher,
+                           scratch_path: Path,
+                           results_path: Path) -> None:
+        """Move stitcher plot SVG files from per-sample scratch folders to results."""
+        plots_path = results_path / 'stitcher_plots'
         disk_operations.mkdir_p(plots_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
-            source_path = scratch_path / sample_name / 'genome_coverage.svg'
-            target_path = plots_path / f"{sample_name}_genome_coverage.svg"
-            if source_path.exists():
-                disk_operations.rename(source_path, target_path)
-            concordance_path = scratch_path / sample_name / 'genome_concordance.svg'
-            target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
-            if concordance_path.exists():
-                disk_operations.rename(concordance_path, target_concordance_path)
-        disk_operations.remove_empty_directory(plots_path)
 
-    @staticmethod
-    def move_stitcher_plot(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
-        plots_path = results_path / "stitcher_plots"
-        disk_operations.mkdir_p(plots_path, exist_ok=True)
-        for sample_name in folder_watcher.all_samples:
-            sample_name = trim_name(sample_name)
+        sample_names = {trim_name(sample_name) for sample_name in folder_watcher.all_samples}
+        for sample_name in sample_names:
             source_path = scratch_path / sample_name / 'stitcher_plot.svg'
-            target_path = plots_path / f"{sample_name}_stitcher_plot.svg"
+            target_path = plots_path / f'{sample_name}_stitcher_plot.svg'
             if source_path.exists():
                 disk_operations.rename(source_path, target_path)
+
         disk_operations.remove_empty_directory(plots_path)
+
+    def poll_collation_run(self,
+                           folder_watcher: FolderWatcher,
+                           pipeline_group: PipelineType,
+                           run: Optional[Run]) -> Optional[tuple[Path, bool]]:
+        if run is None:
+            return None
+        run_status: Run = self.kive_retry(lambda: self.session.endpoints.containerruns.get(run['id']))
+        state = run_status['state']
+        if state in ('N', 'L', 'R'):
+            return None
+        if state in ('X', 'F'):
+            results_path = self.get_results_path(folder_watcher)
+            run_path = (results_path / "../..").resolve()
+            disk_operations.write_text(
+                run_path / 'errorprocessing',
+                f'Kive collation failed for {pipeline_group.name} (state: {state}).\n')
+            return results_path, False
+
+        run_datasets: Sequence[RunDataset] = self.kive_retry(
+            lambda: self.session.endpoints.containerruns.get(f"{run['id']}/dataset_list/"))
+        matches = [
+            run_dataset
+            for run_dataset in run_datasets
+            if run_dataset['argument_name'] == COLLATION_OUTPUT_NAME and run_dataset['argument_type'] == 'O'
+        ]
+        if not matches:
+            raise RuntimeError('Collation run completed without collated output dataset.')
+
+        results_path = self.get_results_path(folder_watcher)
+        target_path = get_collated_path(results_path, pipeline_group)
+        disk_operations.mkdir_p(target_path, exist_ok=True)
+        collated_tar_path = target_path / 'collated_results.tar'
+
+        dataset_url = matches[0]['dataset']
+        self.kive_retry(lambda: self.download_file(dataset_url + 'download/', collated_tar_path))
+        with tarfile.open(collated_tar_path) as tar_file:
+            tar_file.extractall(target_path, filter='data')
+        disk_operations.unlink(collated_tar_path, missing_ok=True)
+        disk_operations.touch(target_path / 'doneprocessing')
+        return results_path, True
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:
         if folder_watcher.quality_dataset is None:
@@ -1194,7 +1179,7 @@ class KiveWatcher:
 
     def find_or_launch_run(self,
                            pipeline_id: int,
-                           inputs: Mapping[str, RunDataset],
+                           inputs: Mapping[str, RunDataset | Sequence[RunDataset]],
                            run_name: str,
                            run_batch: Optional[Batch]) -> Optional[Run]:
         """ Look for a matching container run, or start a new one.
@@ -1206,8 +1191,13 @@ class KiveWatcher:
         run_name = trim_run_name(run_name)
         filters = ['name', run_name, 'app_id', pipeline_id, 'states', 'NLRSC']
         for arg in inputs.values():
-            filters.append('input_id')
-            filters.append(arg['id'])
+            if isinstance(arg, dict):
+                filters.append('input_id')
+                filters.append(arg['id'])
+            else:
+                for item in arg:
+                    filters.append('input_id')
+                    filters.append(item['id'])
 
         old_runs = self.session.endpoints.containerruns.filter(*filters)
         untyped_run = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
@@ -1223,9 +1213,16 @@ class KiveWatcher:
                     run = None
         if run is None:
             try:
-                run_datasets = [dict(argument=app_arg,
-                                     dataset=inputs[name]['url'])
-                                for name, app_arg in app_args.items()]
+                run_dataset_specs: list[dict[str, str]] = []
+                for name, app_arg in app_args.items():
+                    input_value = inputs[name]
+                    if isinstance(input_value, dict):
+                        run_dataset_specs.append(
+                            dict(argument=app_arg, dataset=input_value['url']))
+                    else:
+                        run_dataset_specs.extend(
+                            dict(argument=app_arg, dataset=dataset['url'])
+                            for dataset in input_value)
             except KeyError as e:
                 raise ValueError(f"Pipeline input error: {repr(e)}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
@@ -1236,7 +1233,7 @@ class KiveWatcher:
                               batch=run_batch['url'],
                               groups_allowed=ALLOWED_GROUPS,
                               app=app_url,
-                              datasets=run_datasets)
+                              datasets=run_dataset_specs)
             try:
                 run = self.session.endpoints.containerruns.post(json=run_params)
             except Exception as ex:
@@ -1286,28 +1283,6 @@ class KiveWatcher:
                     if other_run['id'] == run['id']:
                         other_run['datasets'] = run_datasets
                         break
-                sample_name = (sample_watcher.sample_group.names[1]
-                               if pipeline_type in (PipelineType.MIDI,
-                                                    PipelineType.MIXED_HCV_MIDI,
-                                                    PipelineType.DENOVO_MIDI)
-                               else sample_watcher.sample_group.names[0])
-                results_path = self.get_results_path(folder_watcher)
-                pipeline_group = PIPELINE_GROUPS[pipeline_type]
-                scratch_path = get_scratch_path(results_path, pipeline_group)
-                scratch_path /= trim_name(sample_name if sample_name is not None else 'unknown')
-                disk_operations.mkdir_p(scratch_path, parents=True, exist_ok=True)
-                for output_name in DOWNLOADED_RESULTS:
-                    matches = [run_dataset
-                               for run_dataset in run_datasets
-                               if (run_dataset['argument_name'] == output_name and
-                                   run_dataset['argument_type'] == 'O')]
-                    if not matches:
-                        continue
-                    filename = get_output_filename(output_name)
-                    dataset_url, = [match['dataset'] for match in matches]
-                    self.kive_retry(
-                        lambda: self.download_file(dataset_url + 'download/',
-                                                   scratch_path / filename))
 
         if is_complete:
             return None

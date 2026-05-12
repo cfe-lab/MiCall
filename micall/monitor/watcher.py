@@ -42,6 +42,11 @@ def parse_args(argv=None):
         default=os.environ.get('MICALL_RESISTANCE_PIPELINE_ID', None),
         help="id of resistance pipeline's container app")
     parser.add_argument(
+        '--micall_collation_pipeline_id',
+        type=int,
+        default=os.environ.get('MICALL_COLLATION_PIPELINE_ID', None),
+        help="id of collation pipeline's container app")
+    parser.add_argument(
         '--mixed_hcv_pipeline_id',
         type=int,
         default=os.environ.get('MICALL_MIXED_HCV_PIPELINE_ID', None),
@@ -120,6 +125,10 @@ def parse_args(argv=None):
     else:
         parser.error(f"No arguments or environment variables set for main "
                      f"pipeline ids ({', '.join(main_pipeline_ids)}).")
+    if args.micall_collation_pipeline_id is None:
+        parser.error("Argument --micall_collation_pipeline_id not set and "
+                     "$MICALL_COLLATION_PIPELINE_ID environment variable "
+                     "not set.")
 
     return args
 
