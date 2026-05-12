@@ -392,6 +392,7 @@ class KiveWatcher:
         self.folder_watchers: dict[str, FolderWatcher] = {}  # {base_calls_folder: FolderWatcher}
         self.app_urls: dict[str | int, str] = {}  # {app_id: app_url}
         self.app_args: dict[str | int, dict[str, str]] = {}  # {app_id: {arg_name: arg_url}}
+        self.app_argument_lists: dict[str | int, list[dict[str, object]]] = {}  # {app_id: [argument_dict]}
         self.external_directory_path: Optional[Path] = None
         self.external_directory_name: Optional[str] = None
         self.qai_upload_queue = qai_upload_queue
@@ -423,8 +424,49 @@ class KiveWatcher:
                         for argument in arguments
                         if argument['type'] == 'I'}
             self.app_args[app_id] = kive_app
+            self.app_argument_lists[app_id] = list(arguments)
             self.app_urls[app_id] = arguments[0]['app']
         return kive_app
+
+    def validate_collation_app_signature(self, app_id: int) -> None:
+        """Ensure the collation app has the expected optional-multiple input signature.
+
+        Expected KIVE signature:
+        - Input argument named 'inputs' with type='I', position=None, allow_multiple=True
+        - Output argument named 'output' with type='O'
+        """
+        # Populate cached argument metadata when possible.
+        self.get_kive_arguments(app_id)
+        arguments = self.app_argument_lists.get(app_id)
+        if not arguments:
+            # Tests can pre-seed app_args/app_urls without argument metadata.
+            logger.debug('Skipping collation app signature validation for app %r: argument metadata unavailable.', app_id)
+            return
+
+        input_argument = next(
+            (arg for arg in arguments
+             if arg.get('name') == COLLATION_INPUT_NAME and arg.get('type') == 'I'),
+            None)
+        if input_argument is None:
+            raise RuntimeError(
+                f'Collation app {app_id} is missing required input argument {COLLATION_INPUT_NAME!r}.')
+
+        is_optional_multiple = (input_argument.get('position') is None and
+                                bool(input_argument.get('allow_multiple')))
+        if not is_optional_multiple:
+            raise RuntimeError(
+                f'Collation app {app_id} argument {COLLATION_INPUT_NAME!r} must be optional multiple '
+                f'(formatted as --{COLLATION_INPUT_NAME}* in KIVE_INPUTS). '
+                f'Got position={input_argument.get("position")!r}, '
+                f'allow_multiple={input_argument.get("allow_multiple")!r}.')
+
+        output_argument = next(
+            (arg for arg in arguments
+             if arg.get('name') == COLLATION_OUTPUT_NAME and arg.get('type') == 'O'),
+            None)
+        if output_argument is None:
+            raise RuntimeError(
+                f'Collation app {app_id} is missing required output argument {COLLATION_OUTPUT_NAME!r}.')
 
     def get_kive_container_name(self, app_id: str | int) -> str:
         """ Get the container name for a container app. """
@@ -732,6 +774,8 @@ class KiveWatcher:
                                pipeline_group: PipelineType) -> Optional[Run]:
         if self.config.micall_collation_pipeline_id is None:
             raise RuntimeError('Collation pipeline ID is not configured.')
+
+        self.validate_collation_app_signature(self.config.micall_collation_pipeline_id)
 
         input_datasets: list[RunDataset] = []
         manifest_rows: list[dict[str, str]] = []
