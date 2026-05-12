@@ -7,6 +7,8 @@ import subprocess
 import errno
 import sys
 
+from micall.utils.externals import root_directory
+
 
 def get_parser() -> ArgumentParser:
     parser = ArgumentParser(
@@ -22,18 +24,33 @@ def get_parser() -> ArgumentParser:
     return parser
 
 
+def build(source_path: str, repository_name: str) -> None:
+    with root_directory() as source_path:
+        try:
+            subprocess.check_call(['docker',
+                                   'build',
+                                   '--tag', repository_name,
+                                   '--', source_path])
+        except subprocess.CalledProcessError as ex:
+            if ex.returncode == errno.EPERM:
+                raise PermissionError(
+                    'Docker build failed. Do you have root permission?') from ex
+            raise
+
+
 def main(argv: Sequence[str]) -> None:
     parser = get_parser()
     args = parser.parse_args(argv)
-    source_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    version = subprocess.check_output(['git',
-                                        '-c', 'core.fileMode=false',  # Ignore file mode
-                                        '-c', 'safe.directory=*',  # Allow git commands in any directory
-                                        'describe',
-                                        '--tags',
-                                        '--dirty'],
-                                        cwd=source_path,
-                                        text=True).strip()
+
+    with root_directory() as source_path:
+        version = subprocess.check_output(['git',
+                                            '-c', 'core.fileMode=false',  # Ignore file mode
+                                            '-c', 'safe.directory=*',  # Allow git commands in any directory
+                                            'describe',
+                                            '--tags',
+                                            '--dirty'],
+                                            cwd=source_path,
+                                            text=True).strip()
 
     if version.startswith('v'):
         version = version[1:]
