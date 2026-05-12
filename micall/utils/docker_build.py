@@ -82,7 +82,7 @@ def main(argv: Sequence[str]) -> int:
     repository_name = build()
     if args.nopush:
         print("Rerun without --nopush to attempt to push the docker image to illumina and launch spacedock")
-        exit()
+        return 0
     subprocess.check_call(['docker', 'push', '--', repository_name])
     if args.agent_id is None:
         print('Docker image pushed. Include an agent id to launch spacedock.')
