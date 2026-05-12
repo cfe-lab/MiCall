@@ -351,6 +351,7 @@ class Blastn(CommandWrapper):
         stdout = self.check_output(program)
         return stdout
 
+
 @contextlib.contextmanager
 def root_directory() -> Iterator[Path]:
     """
