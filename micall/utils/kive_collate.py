@@ -318,7 +318,7 @@ def stage_inputs_by_sample(run_outputs: Sequence[Path], metadata_csv: Path, scra
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    print(f'Starting kive_collate with arguments: {argv}')
+    print(f'Starting kive_collate with arguments: {argv}', file=sys.stderr)
     args = parse_args(argv)
     configure_logging(args)
     inputs: Sequence[Path] = args.inputs
