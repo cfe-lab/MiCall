@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import os
-from subprocess import check_call, CalledProcessError
+import subprocess
 
 import errno
 
@@ -15,9 +15,6 @@ def parse_args():
                         '--agent_id',
                         default=os.environ.get('BASESPACE_AGENT_ID'),
                         help='local agent id from BaseSpace Form Builder')
-    parser.add_argument('-t',
-                        '--tag',
-                        help='Docker tag to apply (vX.Y.Z)')
     parser.add_argument('--nopush',
                         action='store_true')
     return parser.parse_args()
@@ -25,31 +22,29 @@ def parse_args():
 
 def main():
     args = parse_args()
+    source_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    version = subprocess.check_output(['git',
+                                        '-c', 'core.fileMode=false',  # Ignore file mode
+                                        '-c', 'safe.directory=*',  # Allow git commands in any directory
+                                        'describe',
+                                        '--tags',
+                                        '--dirty'],
+                                        cwd=source_path,
+                                        text=True).strip()
+
+    if version.startswith('v'):
+        version = version[1:]
+
     repository_name = 'docker.illumina.com/cfe_lab/micall'
     if args.tag is not None:
-        repository_name += ':' + args.tag
+        repository_name += ':' + version
 
-    source_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    version_filename = os.path.join(source_path, 'version.txt')
-    with open(version_filename, 'w') as version_file:
-        # VirtualBox shared folder messes up file modes, so ignore them.
-        check_call(['git',
-                    '-c', 'core.fileMode=false',  # Ignore file mode
-                    'describe',
-                    '--tags',
-                    '--dirty'],
-                   cwd=source_path,
-                   stdout=version_file)
     try:
-        try:
-            check_call(['docker',
-                        'build',
-                        '-t',
-                        repository_name,
-                        source_path])
-        finally:
-            os.remove(version_filename)
-    except CalledProcessError as ex:
+        subprocess.check_call(['docker',
+                               'build',
+                               '--tag', repository_name,
+                               '--', source_path])
+    except subprocess.CalledProcessError as ex:
         if ex.returncode == errno.EPERM:
             raise PermissionError(
                 'Docker build failed. Do you have root permission?') from ex
@@ -57,14 +52,12 @@ def main():
     if args.nopush:
         print("Rerun without --nopush to attempt to push the docker image to illumina and launch spacedock")
         exit()
-    check_call(['docker', 'push', repository_name])
+    subprocess.check_call(['docker', 'push', '--', repository_name])
     if args.agent_id is None:
         print('Docker image pushed. Include an agent id to launch spacedock.')
     else:
-        command = ('spacedock -a ' + args.agent_id +
-                   ' -m https://mission.basespace.illumina.com')
         try:
-            check_call(command, shell=True)
+            subprocess.check_call(['spacedock', '-a', args.agent_id, '-m', 'https://mission.basespace.illumina.com'])
         except KeyboardInterrupt:
             print()  # Clear the line after Ctrl-C.
             print('Shutting down.')
