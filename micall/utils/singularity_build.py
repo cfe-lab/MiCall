@@ -19,9 +19,6 @@ From: ./simgs/micall-{container_sha}.tar
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
-    Change Notes: Comprehensive updates to the contig stitcher,
-    including bug fixes and visualization enhancements.
-
 %labels
     MAINTAINER BC CfE in HIV/AIDS https://github.com/cfe-lab/MiCall
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
