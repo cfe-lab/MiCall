@@ -236,9 +236,12 @@ similar steps to setting up a development workstation. Follow these steps:
     a release, you can create additional releases with tags vX.Y.Z.1, vX.Y.Z.2, and
     so on. Mark the release as pre-release until you finish deploying it.
 8. Build the Singularity image by running `micall singularity_build`. This will
-    build the Docker image, save it under `./simgs/`, and write a
-    `Singularity.def` file. Then run `singularity build micall.sif Singularity.def`
-    and upload the resulting `.sif` to your local Kive server.
+    build the Docker image, save it under `./simgs/`, write a
+    `Singularity.def` file, and run `singularity build ./simgs/micall-<sha>.sif`
+    `Singularity.def`.
+    The script also reaches the `kivecli` push hook, which currently raises
+    `NotImplementedError()`.
+    Upload the resulting `.sif` from `./simgs/` to your local Kive server.
 9. Process the microtest data.
 10. Upload the Singularity image to the Kive test server, and record the
     ids of the new apps.

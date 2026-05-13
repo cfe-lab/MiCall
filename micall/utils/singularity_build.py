@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
 from typing import Sequence
+import logging
 import subprocess
 import sys
 
 from micall.utils.docker_build import build
+
+
+logger = logging.getLogger(__name__)
 
 
 SINGULARITY_TEMPLATE = """
@@ -53,7 +57,7 @@ From: ./simgs/micall-{container_sha}.tar
 
 %applabels resistance
     KIVE_INPUTS main_amino_csv midi_amino_csv main_nuc_csv
-    KIVE_OUTPUTS resistance_csv mutations_csv nuc_mutations_csv \\
+    KIVE_OUTPUTS resistance_csv mutations_csv nuc_mutations_csv \
         resistance_fail_csv resistance_pdf resistance_consensus_csv
     KIVE_THREADS 1
     KIVE_MEMORY 200
@@ -66,14 +70,14 @@ From: ./simgs/micall-{container_sha}.tar
 
 %applabels denovo
     KIVE_INPUTS sample_info_csv fastq1 fastq2 bad_cycles_csv
-    KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \\
-        remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \\
-        failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \\
-        conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \\
-        coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \\
-        genome_coverage_csv genome_coverage_svg genome_concordance_svg \\
-        unstitched_cascade_csv unstitched_conseq_csv unstitched_contigs_csv \\
-        contigs_csv stitcher_plot_svg read_entropy_csv \\
+    KIVE_OUTPUTS g2p_csv g2p_summary_csv remap_counts_csv \
+        remap_conseq_csv unmapped1_fastq unmapped2_fastq conseq_ins_csv \
+        failed_csv cascade_csv nuc_csv amino_csv insertions_csv conseq_csv \
+        conseq_all_csv concordance_csv concordance_seed_csv failed_align_csv \
+        coverage_scores_csv coverage_maps_tar aligned_csv g2p_aligned_csv \
+        genome_coverage_csv genome_coverage_svg genome_concordance_svg \
+        unstitched_cascade_csv unstitched_conseq_csv unstitched_contigs_csv \
+        contigs_csv stitcher_plot_svg read_entropy_csv \
         conseq_region_csv
     KIVE_THREADS 2
     KIVE_MEMORY 6000
@@ -81,67 +85,122 @@ From: ./simgs/micall-{container_sha}.tar
 %apphelp denovo
     Standard pipeline with de novo assembly instead of mapping to reference
     sequences.
-
 """
 
-
-def get_container_sha(repository_name: str) -> str:
-    """Return the short content-addressable SHA of a docker image."""
-    full_id = subprocess.check_output(
-        ['docker', 'inspect', '--format={{.Id}}', '--', repository_name],
-        text=True,
-    ).strip()
-    # full_id is typically "sha256:<hex>" — strip the algorithm prefix.
-    if ':' in full_id:
-        full_id = full_id.split(':', 1)[1]
-    return full_id[:12]
-
-
-def save_docker_archive(repository_name: str, container_sha: str) -> Path:
-    """Save the docker image as a tar archive under ./simgs/ and return the path."""
-    simgs_dir = Path('simgs')
-    simgs_dir.mkdir(exist_ok=True)
-    archive_path = simgs_dir / f'micall-{container_sha}.tar'
-    print(f'Saving docker image to {archive_path} ...')
-    subprocess.check_call(
-        ['docker', 'save', '--output', str(archive_path), '--', repository_name],
-    )
-    return archive_path
-
-
-def generate_singularity_def(container_sha: str) -> str:
-    """Return the content of a Singularity definition file for the given image."""
-    return SINGULARITY_TEMPLATE.format(container_sha=container_sha)
+SINGULARITY_DEFINITION_PATH = Path('Singularity.def')
+SINGULARITY_IMAGE_DIR = Path('simgs')
 
 
 def get_parser() -> ArgumentParser:
     parser = ArgumentParser(
         description=(
-            'Build a Docker image, save it as a tar archive, and generate '
-            'a Singularity definition file that references that archive.'
+            'Build a Docker image, save it as a tar archive, generate a '
+            'Singularity definition file, and build the Singularity image.'
         ),
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        '--output',
-        default='Singularity.def',
-        help='Path to write the generated Singularity definition file.',
-    )
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
+    verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
+    verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
+    verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     return parser
+
+
+def configure_logging(args) -> None:
+    if args.quiet:
+        logger.setLevel(logging.ERROR)
+    elif args.verbose:
+        logger.setLevel(logging.INFO)
+    elif args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+
+    logging.basicConfig(
+        level=logger.level,
+        format='%(asctime)s[%(levelname)s]%(name)s: %(message)s',
+    )
+
+
+def get_container_sha(repository_name: str) -> str:
+    """Return the short content-addressable SHA of a docker image."""
+    logger.debug('Inspecting Docker image %s for its immutable ID.', repository_name)
+    full_id = subprocess.check_output(
+        ['docker', 'inspect', '--format={{.Id}}', '--', repository_name],
+        text=True,
+    ).strip()
+    logger.debug('Docker image %s resolved to raw ID %s.', repository_name, full_id)
+    if ':' in full_id:
+        full_id = full_id.split(':', 1)[1]
+    container_sha = full_id[:12]
+    logger.info('Docker image %s will be archived as micall-%s.tar.', repository_name, container_sha)
+    return container_sha
+
+
+def save_docker_archive(repository_name: str, container_sha: str) -> Path:
+    """Save the docker image as a tar archive under ./simgs/ and return the path."""
+    SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    archive_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.tar'
+    logger.info('Saving Docker image %s to %s.', repository_name, archive_path)
+    subprocess.check_call(
+        ['docker', 'save', '--output', str(archive_path), '--', repository_name],
+    )
+    logger.debug('Docker archive %s created successfully.', archive_path)
+    return archive_path
+
+
+def generate_singularity_def(container_sha: str) -> str:
+    """Return the content of a Singularity definition file for the given image."""
+    logger.debug('Rendering Singularity definition for archive micall-%s.tar.', container_sha)
+    return SINGULARITY_TEMPLATE.format(container_sha=container_sha)
+
+
+def write_singularity_definition(container_sha: str) -> Path:
+    definition_path = SINGULARITY_DEFINITION_PATH
+    definition_content = generate_singularity_def(container_sha)
+    definition_path.write_text(definition_content)
+    logger.info('Wrote Singularity definition to %s.', definition_path)
+    return definition_path
+
+
+def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
+    SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    image_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.sif'
+    logger.info('Building Singularity image %s from %s.', image_path, definition_path)
+    subprocess.check_call(
+        ['singularity', 'build', str(image_path), str(definition_path)],
+    )
+    logger.debug('Singularity image %s built successfully.', image_path)
+    return image_path
+
+
+def push_image_with_kivecli(image_path: Path, repository_name: str) -> None:
+    logger.info('Preparing to push Singularity image %s with kivecli.', image_path)
+    logger.debug('Target repository for push is %s.', repository_name)
+    raise NotImplementedError('kivecli push is not implemented yet.')
 
 
 def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
+    configure_logging(args)
 
+    logger.info('Starting Singularity build workflow.')
+    logger.debug('Command-line arguments: %s', args)
+
+    logger.info('Building Docker image first.')
     repository_name = build()
-    container_sha = get_container_sha(repository_name)
-    save_docker_archive(repository_name, container_sha)
+    logger.info('Docker build completed: %s', repository_name)
 
-    def_content = generate_singularity_def(container_sha)
-    output_path = Path(args.output)
-    output_path.write_text(def_content)
-    print(f'Singularity definition written to {output_path}')
+    container_sha = get_container_sha(repository_name)
+    archive_path = save_docker_archive(repository_name, container_sha)
+    definition_path = write_singularity_definition(container_sha)
+    image_path = build_singularity_image(definition_path, container_sha)
+
+    logger.info('Singularity archive ready at %s.', archive_path)
+    logger.info('Singularity image ready at %s.', image_path)
+    push_image_with_kivecli(image_path, repository_name)
 
     return 0
 
