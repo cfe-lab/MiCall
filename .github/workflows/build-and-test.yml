@@ -80,93 +80,53 @@ jobs:
           rm -rf micall/tests/microtest/scratch
           uv run codecov
 
-  docker-build:
+  docker-test:
     runs-on: ubuntu-22.04
-    outputs:
-      repository_name: ${{ steps.meta.outputs.repository_name }}
-      ghcr_latest: ${{ steps.meta.outputs.ghcr_latest }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # Fetch all history for git describe
-      - name: Derive image metadata from latest git tag
-        id: meta
-        shell: bash
-        run: |
-          VERSION="$(git describe --tags | sed 's/^v//')"
-          REPOSITORY_NAME="docker.illumina.com/cfe_lab/micall:${VERSION}"
-          GHCR_VERSION="ghcr.io/cfe-lab/micall:${VERSION}"
-          GHCR_LATEST="ghcr.io/cfe-lab/micall:latest"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "repository_name=$REPOSITORY_NAME" >> "$GITHUB_OUTPUT"
-          echo "ghcr_version=$GHCR_VERSION" >> "$GITHUB_OUTPUT"
-          echo "ghcr_latest=$GHCR_LATEST" >> "$GITHUB_OUTPUT"
-          echo "Using version: $VERSION"
-      - name: Build docker image once for CI
-        run: |
-          docker build \
-            --tag "${{ steps.meta.outputs.repository_name }}" \
-            --tag "${{ steps.meta.outputs.ghcr_version }}" \
-            --tag "${{ steps.meta.outputs.ghcr_latest }}" \
-            .
-      - name: Save docker image artifact
-        run: |
-          docker save \
-            --output /tmp/micall-image.tar \
-            -- "${{ steps.meta.outputs.repository_name }}"
-      - name: Upload docker image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: micall-docker-image
-          path: /tmp/micall-image.tar
       - name: Login to GHCR
-        if: github.ref == 'refs/heads/master'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push docker image tags to GHCR
-        if: github.ref == 'refs/heads/master'
+      - name: Derive version from latest git tag
+        id: gitver
+        shell: bash
         run: |
-          docker push -- "${{ steps.meta.outputs.ghcr_version }}"
-          docker push -- "${{ steps.meta.outputs.ghcr_latest }}"
-
-  docker-test:
-    needs: docker-build
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download docker image artifact
-        uses: actions/download-artifact@v4
+          VERSION="$(git describe | sed 's/^v//')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using version: $VERSION"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build docker image
+        uses: docker/build-push-action@v6
         with:
-          name: micall-docker-image
-          path: /tmp
-      - name: Load docker image artifact
-        run: docker load --input /tmp/micall-image.tar
+          context: .
+          file: Dockerfile
+          push: ${{ github.ref == 'refs/heads/master' }}
+          tags: |
+            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
+            ghcr.io/cfe-lab/micall:latest
+          cache-from: type=gha,scope=docker-micall
+          cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
-        run: docker run ${{ needs.docker-build.outputs.repository_name }} --help
+        run: docker run ghcr.io/cfe-lab/micall:latest --help
       - name: Check docker image entrypoint
-        run: docker run ${{ needs.docker-build.outputs.repository_name }} --help | grep -i -e 'docker'
+        run: docker run ghcr.io/cfe-lab/micall:latest --help | grep -i -e 'docker'
       - name: Install python packages
         run: pip install multicsv
       - name: Check docker image microtest
-        run: python micall release_test_microtest ${{ needs.docker-build.outputs.repository_name }} --docker
+        run: python micall release_test_microtest ghcr.io/cfe-lab/micall:latest --docker
 
   singularity-test:
-    needs: docker-build
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # Fetch all history for git describe
-      - name: Download docker image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: micall-docker-image
-          path: /tmp
-      - name: Load docker image artifact
-        run: docker load --input /tmp/micall-image.tar
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.15.6'
@@ -195,6 +155,21 @@ jobs:
           cd ..
           rm -rf singularity
           singularity --version
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          cache-from: type=gha,scope=docker-micall
 
       - name: Singularity build
         run: |
