@@ -159,27 +159,22 @@ jobs:
           sudo -E micall singularity_build
           sudo chown -R "$USER":"$USER" simgs
 
-      - name: Resolve Singularity image path
-        id: simg
+      - name: Resolve Singularity image path from latest archive symlink
         shell: bash
         run: |
-          SIF_PATH="$(ls -1 simgs/micall-*.sif | head -n1)"
-          if [[ -z "$SIF_PATH" ]]; then
-            echo "No Singularity image found under simgs/." >&2
-            exit 1
-          fi
-          echo "path=$SIF_PATH" >> "$GITHUB_OUTPUT"
-          echo "Using Singularity image: $SIF_PATH"
+          LATEST_TAR_TARGET="$(readlink simgs/micall-latest.tar)"
+          SIF_PATH="simgs/${LATEST_TAR_TARGET%.tar}.sif"
+          echo "SINGULARITY_IMAGE=$SIF_PATH" >> "$GITHUB_ENV"
 
       - name: Install python packages
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall release_test_microtest ${{ steps.simg.outputs.path }}
+        run: python micall release_test_microtest ${{ env.SINGULARITY_IMAGE }}
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg
-          path: ${{ steps.simg.outputs.path }}
+          path: ${{ env.SINGULARITY_IMAGE }}
