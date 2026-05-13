@@ -112,7 +112,7 @@ def get_parser() -> ArgumentParser:
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
     parser.add_argument(
         '--family',
-        required=True,
+        default='micall',
         help='Kive container family name or ID for uploading the built image.',
     )
     parser.add_argument(
