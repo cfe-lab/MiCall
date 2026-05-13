@@ -156,7 +156,7 @@ jobs:
 
       - name: Singularity build
         run: |
-          sudo -E micall singularity_build
+          sudo -E python micall singularity_build
           sudo chown -R "$USER":"$USER" simgs
 
       - name: Resolve Singularity image path from latest archive symlink
