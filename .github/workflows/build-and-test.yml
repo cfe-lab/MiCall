@@ -155,17 +155,31 @@ jobs:
           singularity --version
 
       - name: Singularity build
-        run: sudo singularity build micall.simg Singularity
+        run: |
+          sudo -E micall singularity_build
+          sudo chown -R "$USER":"$USER" simgs
+
+      - name: Resolve Singularity image path
+        id: simg
+        shell: bash
+        run: |
+          SIF_PATH="$(ls -1 simgs/micall-*.sif | head -n1)"
+          if [[ -z "$SIF_PATH" ]]; then
+            echo "No Singularity image found under simgs/." >&2
+            exit 1
+          fi
+          echo "path=$SIF_PATH" >> "$GITHUB_OUTPUT"
+          echo "Using Singularity image: $SIF_PATH"
 
       - name: Install python packages
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall release_test_microtest micall.simg
+        run: python micall release_test_microtest ${{ steps.simg.outputs.path }}
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg
-          path: micall.simg
+          path: ${{ steps.simg.outputs.path }}
