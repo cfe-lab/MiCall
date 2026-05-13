@@ -126,11 +126,6 @@ def get_parser() -> ArgumentParser:
         default=['Everyone'],
         help='Groups to grant access to the uploaded container.',
     )
-    parser.add_argument(
-        '--json',
-        action='store_true',
-        help='Print full JSON metadata from kivecli after upload.',
-    )
     return parser
 
 
@@ -209,7 +204,6 @@ def push_image_with_kivecli(
     tag: str,
     users: list[str] | None,
     groups: list[str] | None,
-    is_json: bool,
 ) -> int:
     logger.info('Preparing to push Singularity image %s with kivecli.', image_path)
     logger.debug('Source Docker repository is %s.', repository_name)
@@ -231,6 +225,7 @@ def push_image_with_kivecli(
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
+    is_json = False
     result_code = makecontainer.main_typed(
         image_path=image_path,
         family_name_or_id=family_name_or_id,
@@ -272,7 +267,6 @@ def main(argv: Sequence[str]) -> int:
         tag=kive_tag,
         users=args.users,
         groups=args.groups,
-        is_json=args.json,
     )
 
 
