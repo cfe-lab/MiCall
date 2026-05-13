@@ -7,7 +7,6 @@ import subprocess
 import sys
 
 from micall.utils.docker_build import build, get_latest_git_tag
-from micall.utils.externals import root_directory
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 SINGULARITY_TEMPLATE = """
 
 Bootstrap: docker-archive
-From: ./simgs/micall-{commit_sha}.tar
+From: ./simgs/micall-{container_sha}.tar
 
 %help
     {description}
@@ -163,30 +162,25 @@ def configure_logging(args) -> None:
     )
 
 
-def get_commit_sha() -> str:
-    """Return the short git commit SHA for naming build artifacts."""
-    with root_directory() as source_path:
-        git_root = source_path.parent
-        commit_sha = subprocess.check_output(
-            [
-                'git',
-                '-c', 'core.fileMode=false',
-                '-c', 'safe.directory=*',
-                'rev-parse',
-                '--short=12',
-                'HEAD',
-            ],
-            cwd=git_root,
-            text=True,
-        ).strip()
-    logger.info('Using git commit SHA %s for artifact naming.', commit_sha)
-    return commit_sha
+def get_container_sha(repository_name: str) -> str:
+    """Return the short content-addressable SHA of a docker image."""
+    logger.debug('Inspecting Docker image %s for its immutable ID.', repository_name)
+    full_id = subprocess.check_output(
+        ['docker', 'inspect', '--format={{.Id}}', '--', repository_name],
+        text=True,
+    ).strip()
+    logger.debug('Docker image %s resolved to raw ID %s.', repository_name, full_id)
+    if ':' in full_id:
+        full_id = full_id.split(':', 1)[1]
+    container_sha = full_id[:12]
+    logger.info('Docker image %s will be archived as micall-%s.tar.', repository_name, container_sha)
+    return container_sha
 
 
-def save_docker_archive(repository_name: str, commit_sha: str) -> Path:
+def save_docker_archive(repository_name: str, container_sha: str) -> Path:
     """Save the docker image as a tar archive under ./simgs/ and return the path."""
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
-    archive_path = SINGULARITY_IMAGE_DIR / f'micall-{commit_sha}.tar'
+    archive_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.tar'
     latest_link_path = SINGULARITY_IMAGE_DIR / 'micall-latest.tar'
     logger.info('Saving Docker image %s to %s.', repository_name, archive_path)
     subprocess.check_call(
@@ -201,23 +195,23 @@ def save_docker_archive(repository_name: str, commit_sha: str) -> Path:
     return archive_path
 
 
-def generate_singularity_def(commit_sha: str) -> str:
+def generate_singularity_def(container_sha: str) -> str:
     """Return the content of a Singularity definition file for the given image."""
-    logger.debug('Rendering Singularity definition for archive micall-%s.tar.', commit_sha)
-    return SINGULARITY_TEMPLATE.format(commit_sha=commit_sha, description=DESCRIPTION)
+    logger.debug('Rendering Singularity definition for archive micall-%s.tar.', container_sha)
+    return SINGULARITY_TEMPLATE.format(container_sha=container_sha, description=DESCRIPTION)
 
 
-def write_singularity_definition(commit_sha: str) -> Path:
+def write_singularity_definition(container_sha: str) -> Path:
     definition_path = SINGULARITY_DEFINITION_PATH
-    definition_content = generate_singularity_def(commit_sha)
+    definition_content = generate_singularity_def(container_sha)
     definition_path.write_text(definition_content)
     logger.info('Wrote Singularity definition to %s.', definition_path)
     return definition_path
 
 
-def build_singularity_image(definition_path: Path, commit_sha: str) -> Path:
+def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
-    image_path = SINGULARITY_IMAGE_DIR / f'micall-{commit_sha}.sif'
+    image_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.sif'
     if image_path.exists():
         logger.info('Skipping Singularity build because image already exists at %s.', image_path)
         return image_path
@@ -283,10 +277,10 @@ def main(argv: Sequence[str]) -> int:
     repository_name = build()
     logger.info('Docker build completed: %s', repository_name)
 
-    commit_sha = get_commit_sha()
-    archive_path = save_docker_archive(repository_name, commit_sha)
-    definition_path = write_singularity_definition(commit_sha)
-    image_path = build_singularity_image(definition_path, commit_sha)
+    container_sha = get_container_sha(repository_name)
+    archive_path = save_docker_archive(repository_name, container_sha)
+    definition_path = write_singularity_definition(container_sha)
+    image_path = build_singularity_image(definition_path, container_sha)
     kive_tag = get_latest_git_tag()
 
     logger.info('Singularity archive ready at %s.', archive_path)
