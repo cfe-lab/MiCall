@@ -161,12 +161,10 @@ jobs:
           sudo -E python micall singularity_build
           sudo chown -R "$USER":"$USER" simgs
 
-      - name: Resolve Singularity image path from latest archive symlink
+      - name: Resolve Singularity image path
         shell: bash
         run: |
-          LATEST_TAR_TARGET="$(readlink simgs/micall-latest.tar)"
-          SIF_PATH="simgs/${LATEST_TAR_TARGET%.tar}.sif"
-          echo "SINGULARITY_IMAGE=$SIF_PATH" >> "$GITHUB_ENV"
+          echo "SINGULARITY_IMAGE=simgs/micall-latest.sif" >> "$GITHUB_ENV"
 
       - name: Install python packages
         run: pip install multicsv

@@ -181,16 +181,10 @@ def save_docker_archive(repository_name: str, container_sha: str) -> Path:
     """Save the docker image as a tar archive under ./simgs/ and return the path."""
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     archive_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.tar'
-    latest_link_path = SINGULARITY_IMAGE_DIR / 'micall-latest.tar'
     logger.info('Saving Docker image %s to %s.', repository_name, archive_path)
     subprocess.check_call(
         ['docker', 'save', '--output', str(archive_path), '--', repository_name],
     )
-    if latest_link_path.exists() or latest_link_path.is_symlink():
-        latest_link_path.unlink()
-    # Keep link target relative to simgs/ so the tree is portable.
-    latest_link_path.symlink_to(archive_path.name)
-    logger.info('Updated latest archive symlink %s -> %s.', latest_link_path, archive_path.name)
     logger.debug('Docker archive %s created successfully.', archive_path)
     return archive_path
 
@@ -212,13 +206,20 @@ def write_singularity_definition(container_sha: str) -> Path:
 def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     image_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.sif'
+    latest_link_path = SINGULARITY_IMAGE_DIR / 'micall-latest.sif'
     if image_path.exists():
         logger.info('Skipping Singularity build because image already exists at %s.', image_path)
-        return image_path
-    logger.info('Building Singularity image %s from %s.', image_path, definition_path)
-    subprocess.check_call(
-        ['singularity', 'build', str(image_path), str(definition_path)],
-    )
+    else:
+        logger.info('Building Singularity image %s from %s.', image_path, definition_path)
+        subprocess.check_call(
+            ['singularity', 'build', str(image_path), str(definition_path)],
+        )
+
+    if latest_link_path.exists() or latest_link_path.is_symlink():
+        latest_link_path.unlink()
+    # Keep link target relative to simgs/ so the tree is portable.
+    latest_link_path.symlink_to(image_path.name)
+    logger.info('Updated latest image symlink %s -> %s.', latest_link_path, image_path.name)
     logger.debug('Singularity image %s built successfully.', image_path)
     return image_path
 
