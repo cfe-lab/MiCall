@@ -30,12 +30,13 @@ def get_repository_name() -> str:
     """
 
     with root_directory() as source_path:
+        git_root = source_path.parent
         version = subprocess.check_output(['git',
                                             '-c', 'core.fileMode=false',  # Ignore file mode
                                             '-c', 'safe.directory=*',  # Allow git commands in any directory
                                             'describe',
                                             '--tags'],
-                                            cwd=source_path,
+                                            cwd=git_root,
                                             text=True).strip()
 
     if version.startswith('v'):
@@ -57,11 +58,12 @@ def build() -> str:
 
     try:
         with root_directory() as source_path:
+            git_root = source_path.parent
             try:
                 subprocess.check_call(['docker',
                                     'build',
                                     '--tag', repository_name,
-                                    '--', str(source_path)])
+                                    '--', str(git_root)])
             except subprocess.CalledProcessError as ex:
                 if ex.returncode == errno.EPERM:
                     raise PermissionError(
