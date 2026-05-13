@@ -105,6 +105,35 @@ def get_parser() -> ArgumentParser:
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
+    parser.add_argument(
+        '--family',
+        required=True,
+        help='Kive container family name or ID for uploading the built image.',
+    )
+    parser.add_argument(
+        '--tag',
+        help='Kive container tag. Defaults to Docker tag (or container SHA fallback).',
+    )
+    parser.add_argument(
+        '--description',
+        default='',
+        help='Description to attach to the uploaded Kive container.',
+    )
+    parser.add_argument(
+        '--users',
+        nargs='*',
+        help='Users to grant access to the uploaded container.',
+    )
+    parser.add_argument(
+        '--groups',
+        nargs='*',
+        help='Groups to grant access to the uploaded container.',
+    )
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Print full JSON metadata from kivecli after upload.',
+    )
     return parser
 
 
@@ -157,6 +186,17 @@ def generate_singularity_def(container_sha: str) -> str:
     return SINGULARITY_TEMPLATE.format(container_sha=container_sha)
 
 
+def get_kive_tag(repository_name: str, container_sha: str, explicit_tag: str | None) -> str:
+    """Resolve the Kive container tag from CLI input or the Docker image tag."""
+    if explicit_tag:
+        return explicit_tag
+    if ':' in repository_name:
+        inferred_tag = repository_name.rsplit(':', 1)[1]
+        if inferred_tag:
+            return inferred_tag
+    return container_sha
+
+
 def write_singularity_definition(container_sha: str) -> Path:
     definition_path = SINGULARITY_DEFINITION_PATH
     definition_content = generate_singularity_def(container_sha)
@@ -176,10 +216,46 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     return image_path
 
 
-def push_image_with_kivecli(image_path: Path, repository_name: str) -> None:
+def push_image_with_kivecli(
+    image_path: Path,
+    repository_name: str,
+    family_name_or_id: str,
+    tag: str,
+    description: str,
+    users: list[str] | None,
+    groups: list[str] | None,
+    is_json: bool,
+) -> int:
     logger.info('Preparing to push Singularity image %s with kivecli.', image_path)
-    logger.debug('Target repository for push is %s.', repository_name)
-    raise NotImplementedError('kivecli push is not implemented yet.')
+    logger.debug('Source Docker repository is %s.', repository_name)
+    logger.debug('Uploading to Kive family=%s tag=%s users=%s groups=%s.',
+                 family_name_or_id,
+                 tag,
+                 users,
+                 groups)
+
+    if not users and not groups:
+        raise ValueError('At least one of --users or --groups must be provided for kivecli upload.')
+
+    try:
+        import kivecli.makecontainer as makecontainer
+    except ImportError as ex:
+        raise ImportError(
+            'kivecli is required for upload. Install dev dependencies that include kivecli.'
+        ) from ex
+
+    logger.info('Starting kivecli makecontainer upload for %s.', image_path)
+    result_code = makecontainer.main_typed(
+        image_path=image_path,
+        family_name_or_id=family_name_or_id,
+        tag=tag,
+        description=description,
+        users=users,
+        groups=groups,
+        is_json=is_json,
+    )
+    logger.info('kivecli upload completed with status code %s.', result_code)
+    return result_code
 
 
 def main(argv: Sequence[str]) -> int:
@@ -198,12 +274,21 @@ def main(argv: Sequence[str]) -> int:
     archive_path = save_docker_archive(repository_name, container_sha)
     definition_path = write_singularity_definition(container_sha)
     image_path = build_singularity_image(definition_path, container_sha)
+    kive_tag = get_kive_tag(repository_name, container_sha, args.tag)
 
     logger.info('Singularity archive ready at %s.', archive_path)
     logger.info('Singularity image ready at %s.', image_path)
-    push_image_with_kivecli(image_path, repository_name)
-
-    return 0
+    logger.info('Using Kive tag %s for uploaded container.', kive_tag)
+    return push_image_with_kivecli(
+        image_path=image_path,
+        repository_name=repository_name,
+        family_name_or_id=args.family,
+        tag=kive_tag,
+        description=args.description,
+        users=args.users,
+        groups=args.groups,
+        is_json=args.json,
+    )
 
 
 def entry() -> None:

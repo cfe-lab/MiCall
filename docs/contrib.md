@@ -239,9 +239,10 @@ similar steps to setting up a development workstation. Follow these steps:
     build the Docker image, save it under `./simgs/`, write a
     `Singularity.def` file, and run `singularity build ./simgs/micall-<sha>.sif`
     `Singularity.def`.
-    The script also reaches the `kivecli` push hook, which currently raises
-    `NotImplementedError()`.
-    Upload the resulting `.sif` from `./simgs/` to your local Kive server.
+    It also uploads the `.sif` to Kive using `kivecli makecontainer`.
+    Provide `--family` and at least one of `--users` or `--groups`, for
+    example:
+    `micall singularity_build --family micall --groups cfe-lab`.
 9. Process the microtest data.
 10. Upload the Singularity image to the Kive test server, and record the
     ids of the new apps.
