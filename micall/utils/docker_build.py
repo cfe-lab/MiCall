@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from typing import Sequence
 import os
-from subprocess import check_call, CalledProcessError
+import subprocess
 
 import errno
+import sys
+
+from micall.utils.externals import root_directory
 
 
-def parse_args():
+def get_parser() -> ArgumentParser:
     parser = ArgumentParser(
         description="Build docker image from local source code or a tag.",
         formatter_class=ArgumentDefaultsHelpFormatter)
@@ -15,59 +19,98 @@ def parse_args():
                         '--agent_id',
                         default=os.environ.get('BASESPACE_AGENT_ID'),
                         help='local agent id from BaseSpace Form Builder')
-    parser.add_argument('-t',
-                        '--tag',
-                        help='Docker tag to apply (vX.Y.Z)')
     parser.add_argument('--nopush',
                         action='store_true')
-    return parser.parse_args()
+    return parser
 
 
-def main():
-    args = parse_args()
-    repository_name = 'docker.illumina.com/cfe_lab/micall'
-    if args.tag is not None:
-        repository_name += ':' + args.tag
+def get_latest_git_tag() -> str:
+    """
+    Get the version string from git describe, which is used for tagging the docker image.
+    If the version is not tagged, it will be tagged with the latest tag plus a suffix indicating the number of commits since the latest tag and the short sha of the current commit.
+    """
 
-    source_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    version_filename = os.path.join(source_path, 'version.txt')
-    with open(version_filename, 'w') as version_file:
-        # VirtualBox shared folder messes up file modes, so ignore them.
-        check_call(['git',
-                    '-c', 'core.fileMode=false',  # Ignore file mode
-                    'describe',
-                    '--tags',
-                    '--dirty'],
-                   cwd=source_path,
-                   stdout=version_file)
+    with root_directory() as source_path:
+        git_root = source_path.parent
+        version = subprocess.check_output(['git',
+                                            '-c', 'core.fileMode=false',  # Ignore file mode
+                                            '-c', 'safe.directory=*',  # Allow git commands in any directory
+                                            'describe',
+                                            '--tags'],
+                                            cwd=git_root,
+                                            text=True).strip()
+
+    return version
+
+
+def get_repository_name() -> str:
+    """
+    Get the repository name for the docker image, which is based on the version from git describe.
+    """
+
+    version = get_latest_git_tag()
+
+    if version.startswith('v'):
+        version = version[1:]
+
+    return f'docker.illumina.com/cfe_lab/micall:{version}'
+
+
+def build() -> str:
+    """
+    Build the docker image from the local source code.
+    The image will be tagged with the version from git describe, and pushed to docker.illumina.com/cfe_lab/micall.
+    If the version is not tagged, it will be tagged with the latest tag plus a suffix indicating the number of commits since the latest tag and the short sha of the current commit.
+    If there are uncommitted changes, the version will have a -dirty suffix.
+    Returns the repository name of the built image.
+    """
+
+    repository_name = get_repository_name()
+
     try:
-        try:
-            check_call(['docker',
-                        'build',
-                        '-t',
-                        repository_name,
-                        source_path])
-        finally:
-            os.remove(version_filename)
-    except CalledProcessError as ex:
+        with root_directory() as source_path:
+            git_root = source_path.parent
+            try:
+                subprocess.check_call(['docker',
+                                    'build',
+                                    '--tag', repository_name,
+                                    '--', str(git_root)])
+            except subprocess.CalledProcessError as ex:
+                if ex.returncode == errno.EPERM:
+                    raise PermissionError(
+                        'Docker build failed. Do you have root permission?') from ex
+                raise
+    except subprocess.CalledProcessError as ex:
         if ex.returncode == errno.EPERM:
             raise PermissionError(
                 'Docker build failed. Do you have root permission?') from ex
         raise
+
+    return repository_name
+
+
+def main(argv: Sequence[str]) -> int:
+    parser = get_parser()
+    args = parser.parse_args(argv)
+    repository_name = build()
     if args.nopush:
         print("Rerun without --nopush to attempt to push the docker image to illumina and launch spacedock")
-        exit()
-    check_call(['docker', 'push', repository_name])
+        return 0
+    subprocess.check_call(['docker', 'push', '--', repository_name])
     if args.agent_id is None:
         print('Docker image pushed. Include an agent id to launch spacedock.')
     else:
-        command = ('spacedock -a ' + args.agent_id +
-                   ' -m https://mission.basespace.illumina.com')
         try:
-            check_call(command, shell=True)
+            subprocess.check_call(['spacedock', '-a', args.agent_id, '-m', 'https://mission.basespace.illumina.com'])
         except KeyboardInterrupt:
             print()  # Clear the line after Ctrl-C.
             print('Shutting down.')
+    return 0
 
 
-main()
+def entry() -> None:
+    sys.exit(main(sys.argv[1:]))
+
+
+if __name__ == '__main__':
+    entry()
