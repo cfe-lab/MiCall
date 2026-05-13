@@ -6,7 +6,7 @@ import logging
 import subprocess
 import sys
 
-from micall.utils.docker_build import build
+from micall.utils.docker_build import build, get_latest_git_tag
 
 
 logger = logging.getLogger(__name__)
@@ -111,10 +111,6 @@ def get_parser() -> ArgumentParser:
         help='Kive container family name or ID for uploading the built image.',
     )
     parser.add_argument(
-        '--tag',
-        help='Kive container tag. Defaults to Docker tag (or container SHA fallback).',
-    )
-    parser.add_argument(
         '--description',
         default='',
         help='Description to attach to the uploaded Kive container.',
@@ -185,17 +181,6 @@ def generate_singularity_def(container_sha: str) -> str:
     """Return the content of a Singularity definition file for the given image."""
     logger.debug('Rendering Singularity definition for archive micall-%s.tar.', container_sha)
     return SINGULARITY_TEMPLATE.format(container_sha=container_sha)
-
-
-def get_kive_tag(repository_name: str, container_sha: str, explicit_tag: str | None) -> str:
-    """Resolve the Kive container tag from CLI input or the Docker image tag."""
-    if explicit_tag:
-        return explicit_tag
-    if ':' in repository_name:
-        inferred_tag = repository_name.rsplit(':', 1)[1]
-        if inferred_tag:
-            return inferred_tag
-    return container_sha
 
 
 def write_singularity_definition(container_sha: str) -> Path:
@@ -275,7 +260,7 @@ def main(argv: Sequence[str]) -> int:
     archive_path = save_docker_archive(repository_name, container_sha)
     definition_path = write_singularity_definition(container_sha)
     image_path = build_singularity_image(definition_path, container_sha)
-    kive_tag = get_kive_tag(repository_name, container_sha, args.tag)
+    kive_tag = get_latest_git_tag()
 
     logger.info('Singularity archive ready at %s.', archive_path)
     logger.info('Singularity image ready at %s.', image_path)
