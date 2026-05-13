@@ -18,9 +18,7 @@ Bootstrap: docker-archive
 From: ./simgs/micall-{container_sha}.tar
 
 %help
-    MiCall maps all the reads from a sample against a set of reference
-    sequences, then stitches all the reads into consensus sequences and
-    coverage maps.
+    {description}
 
     This Singularity container can be run on Kive: http://cfe-lab.github.io/Kive
 
@@ -88,6 +86,13 @@ From: ./simgs/micall-{container_sha}.tar
 """
 
 
+DESCRIPTION = """
+    MiCall maps all the reads from a sample against a set of reference
+    sequences, then stitches all the reads into consensus sequences and
+    coverage maps.
+"""
+
+
 SINGULARITY_IMAGE_DIR = Path('simgs')
 SINGULARITY_DEFINITION_PATH = SINGULARITY_IMAGE_DIR / 'Singularity.def'
 
@@ -109,11 +114,6 @@ def get_parser() -> ArgumentParser:
         '--family',
         required=True,
         help='Kive container family name or ID for uploading the built image.',
-    )
-    parser.add_argument(
-        '--description',
-        default='',
-        help='Description to attach to the uploaded Kive container.',
     )
     parser.add_argument(
         '--users',
@@ -180,7 +180,7 @@ def save_docker_archive(repository_name: str, container_sha: str) -> Path:
 def generate_singularity_def(container_sha: str) -> str:
     """Return the content of a Singularity definition file for the given image."""
     logger.debug('Rendering Singularity definition for archive micall-%s.tar.', container_sha)
-    return SINGULARITY_TEMPLATE.format(container_sha=container_sha)
+    return SINGULARITY_TEMPLATE.format(container_sha=container_sha, description=DESCRIPTION)
 
 
 def write_singularity_definition(container_sha: str) -> Path:
@@ -207,7 +207,6 @@ def push_image_with_kivecli(
     repository_name: str,
     family_name_or_id: str,
     tag: str,
-    description: str,
     users: list[str] | None,
     groups: list[str] | None,
     is_json: bool,
@@ -231,6 +230,7 @@ def push_image_with_kivecli(
         ) from ex
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
+    description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
     result_code = makecontainer.main_typed(
         image_path=image_path,
         family_name_or_id=family_name_or_id,
@@ -270,7 +270,6 @@ def main(argv: Sequence[str]) -> int:
         repository_name=repository_name,
         family_name_or_id=args.family,
         tag=kive_tag,
-        description=args.description,
         users=args.users,
         groups=args.groups,
         is_json=args.json,
