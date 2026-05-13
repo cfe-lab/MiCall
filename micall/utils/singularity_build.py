@@ -114,7 +114,7 @@ def get_parser() -> ArgumentParser:
     subparsers = parser.add_subparsers(dest='mode')
 
     push_parser = subparsers.add_parser(
-        '--push',
+        'push',
         help='Upload the built Singularity image to Kive.',
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
@@ -136,13 +136,13 @@ def get_parser() -> ArgumentParser:
     )
 
     subparsers.add_parser(
-        '--nopush',
+        'nopush',
         help='Build artifacts but do not upload to Kive.',
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    # Default mode is --nopush when no subcommand is provided.
-    parser.set_defaults(mode='--nopush')
+    # Default mode is nopush when no subcommand is provided.
+    parser.set_defaults(mode='nopush')
     return parser
 
 
@@ -286,8 +286,8 @@ def main(argv: Sequence[str]) -> int:
     logger.info('Singularity archive ready at %s.', archive_path)
     logger.info('Singularity image ready at %s.', image_path)
 
-    if args.mode == '--nopush':
-        logger.info('Skipping upload because mode is --nopush (default).')
+    if args.mode == 'nopush':
+        logger.info('Skipping upload because mode is nopush (default).')
         return 0
 
     logger.info('Using Kive tag %s for uploaded container.', kive_tag)
