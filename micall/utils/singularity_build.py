@@ -206,6 +206,9 @@ def write_singularity_definition(container_sha: str) -> Path:
 def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     image_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.sif'
+    if image_path.exists():
+        logger.info('Skipping Singularity build because image already exists at %s.', image_path)
+        return image_path
     logger.info('Building Singularity image %s from %s.', image_path, definition_path)
     subprocess.check_call(
         ['singularity', 'build', str(image_path), str(definition_path)],
