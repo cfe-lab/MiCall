@@ -123,6 +123,7 @@ def get_parser() -> ArgumentParser:
     )
     push_parser.add_argument(
         '--family',
+        default='micall',
         help='Kive container family name or ID for uploading the built image.',
     )
     push_parser.add_argument(
