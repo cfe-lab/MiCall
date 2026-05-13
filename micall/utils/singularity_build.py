@@ -237,7 +237,7 @@ def push_image_with_kivecli(
     tag: str,
     users: list[str] | None,
     groups: list[str] | None,
-) -> int:
+) -> None:
     logger.info('Preparing to push Singularity image %s with kivecli.', image_path)
     logger.debug('Source Docker repository is %s.', repository_name)
     logger.debug('Uploading to Kive family=%s tag=%s users=%s groups=%s.',
@@ -269,12 +269,12 @@ def push_image_with_kivecli(
             tag,
             existing_id,
         )
-        return 0
+        return
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
     is_json = False
-    result_code = makecontainer.main_typed(
+    makecontainer.main_typed(
         image_path=image_path,
         family_name_or_id=family_name_or_id,
         tag=tag,
@@ -283,8 +283,7 @@ def push_image_with_kivecli(
         groups=groups,
         is_json=is_json,
     )
-    logger.info('kivecli upload completed with status code %s.', result_code)
-    return result_code
+    logger.info('kivecli upload completed.')
 
 
 def main(argv: Sequence[str]) -> int:
@@ -313,7 +312,7 @@ def main(argv: Sequence[str]) -> int:
         return 0
 
     logger.info('Using Kive tag %s for uploaded container.', kive_tag)
-    return push_image_with_kivecli(
+    push_image_with_kivecli(
         image_path=image_path,
         repository_name=repository_name,
         family_name_or_id=args.family,
@@ -321,6 +320,7 @@ def main(argv: Sequence[str]) -> int:
         users=args.users,
         groups=args.groups,
     )
+    return 0
 
 
 def entry() -> None:
