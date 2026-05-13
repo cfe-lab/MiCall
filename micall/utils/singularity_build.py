@@ -5,11 +5,14 @@ from typing import Sequence
 import logging
 import subprocess
 import sys
+import urllib3
 
 from micall.utils.docker_build import build, get_latest_git_tag
 
 
 logger = logging.getLogger(__name__)
+
+urllib3.connectionpool.log.setLevel(logging.ERROR)
 
 
 SINGULARITY_TEMPLATE = """
