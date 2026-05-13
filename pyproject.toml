@@ -70,7 +70,7 @@ dev = [
     "mypy-extensions>=1.1.0",
     "gprof2dot>=2025.4.14",
     "codecov>=2.1.13",  # For reporting the code coverage.
-    "kivecli @ git+https://github.com/Donaim/kivecli@a5d5d1bfa1352a4c535ecbb073c2c0a93a0c7439",
+    "kivecli @ git+https://github.com/Donaim/kivecli@3fee9268fd3c55c6b3b6a88da623ea3b8a6967b2",
     "pandas-stubs>=2.3.3.260113",
     "types-requests>=2.33.0.20260508",
     "uv>=0.11.13",
