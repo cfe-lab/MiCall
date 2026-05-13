@@ -259,7 +259,7 @@ def push_image_with_kivecli(
         ) from ex
 
     kivecli.logger.logger.setLevel(logger.level)
-    existing_container = next(Container.search(tag=tag), None)
+    existing_container = next(Container.search(smart_filter=tag), None)
     if existing_container is not None:
         existing_id = existing_container.id.value
         logger.info(
