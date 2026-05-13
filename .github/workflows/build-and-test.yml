@@ -163,11 +163,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          tags: |
-            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
-            ghcr.io/cfe-lab/micall:latest
           cache-from: type=gha,scope=docker-micall
-          cache-to: type=gha,mode=max,scope=docker-micall
 
       - name: Singularity build
         run: |
