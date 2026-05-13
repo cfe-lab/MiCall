@@ -87,8 +87,8 @@ From: ./simgs/micall-{container_sha}.tar
     sequences.
 """
 
-SINGULARITY_DEFINITION_PATH = Path('Singularity.def')
 SINGULARITY_IMAGE_DIR = Path('simgs')
+SINGULARITY_DEFINITION_PATH = SINGULARITY_IMAGE_DIR / 'Singularity.def'
 
 
 def get_parser() -> ArgumentParser:
