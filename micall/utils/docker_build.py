@@ -24,9 +24,10 @@ def get_parser() -> ArgumentParser:
     return parser
 
 
-def get_repository_name() -> str:
+def get_latest_git_tag() -> str:
     """
-    Get the repository name for the docker image, which is based on the version from git describe.
+    Get the version string from git describe, which is used for tagging the docker image.
+    If the version is not tagged, it will be tagged with the latest tag plus a suffix indicating the number of commits since the latest tag and the short sha of the current commit.
     """
 
     with root_directory() as source_path:
@@ -38,6 +39,16 @@ def get_repository_name() -> str:
                                             '--tags'],
                                             cwd=git_root,
                                             text=True).strip()
+
+    return version
+
+
+def get_repository_name() -> str:
+    """
+    Get the repository name for the docker image, which is based on the version from git describe.
+    """
+
+    version = get_latest_git_tag()
 
     if version.startswith('v'):
         version = version[1:]
