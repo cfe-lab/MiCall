@@ -250,6 +250,7 @@ def push_image_with_kivecli(
         raise ValueError('At least one of --users or --groups must be provided for kivecli upload.')
 
     try:
+        from kivecli.container import Container, find_container_family
         import kivecli.makecontainer as makecontainer
         import kivecli.logger
     except ImportError as ex:
@@ -258,6 +259,20 @@ def push_image_with_kivecli(
         ) from ex
 
     kivecli.logger.logger.setLevel(logger.level)
+    family = find_container_family(family_name_or_id)
+    family_id = family.id.value
+    existing_container = next(Container.search(family=family_id, tag=tag), None)
+    if existing_container is not None:
+        existing_id = existing_container.id.value
+        logger.info(
+            'Skipping kivecli upload because container already exists '
+            'for family=%s tag=%s (container id=%s).',
+            family_name_or_id,
+            tag,
+            existing_id,
+        )
+        return 0
+
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
     is_json = False
