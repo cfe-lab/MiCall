@@ -127,6 +127,7 @@ def get_parser() -> ArgumentParser:
     parser.add_argument(
         '--groups',
         nargs='*',
+        default=['Everyone'],
         help='Groups to grant access to the uploaded container.',
     )
     parser.add_argument(
