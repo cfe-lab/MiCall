@@ -110,22 +110,39 @@ def get_parser() -> ArgumentParser:
     verbosity_group.add_argument('--no-verbose', action='store_true', help='Normal output verbosity.', default=True)
     verbosity_group.add_argument('--debug', action='store_true', help='Maximum output verbosity.')
     verbosity_group.add_argument('--quiet', action='store_true', help='Minimize output verbosity.')
-    parser.add_argument(
+
+    subparsers = parser.add_subparsers(dest='mode')
+
+    push_parser = subparsers.add_parser(
+        'push',
+        help='Upload the built Singularity image to Kive.',
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
+    push_parser.add_argument(
         '--family',
         default='micall',
         help='Kive container family name or ID for uploading the built image.',
     )
-    parser.add_argument(
+    push_parser.add_argument(
         '--users',
         nargs='*',
         help='Users to grant access to the uploaded container.',
     )
-    parser.add_argument(
+    push_parser.add_argument(
         '--groups',
         nargs='*',
         default=['Everyone'],
         help='Groups to grant access to the uploaded container.',
     )
+
+    subparsers.add_parser(
+        'nopush',
+        help='Build artifacts but do not upload to Kive.',
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
+
+    # Keep existing behavior: no subcommand defaults to push.
+    parser.set_defaults(mode='push')
     return parser
 
 
@@ -259,6 +276,11 @@ def main(argv: Sequence[str]) -> int:
 
     logger.info('Singularity archive ready at %s.', archive_path)
     logger.info('Singularity image ready at %s.', image_path)
+
+    if args.mode == 'nopush':
+        logger.info('Skipping upload because mode is nopush.')
+        return 0
+
     logger.info('Using Kive tag %s for uploaded container.', kive_tag)
     return push_image_with_kivecli(
         image_path=image_path,
