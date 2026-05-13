@@ -141,8 +141,8 @@ def get_parser() -> ArgumentParser:
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    # Keep existing behavior: no subcommand defaults to push.
-    parser.set_defaults(mode='push')
+    # Default mode is nopush when no subcommand is provided.
+    parser.set_defaults(mode='nopush')
     return parser
 
 
@@ -278,7 +278,7 @@ def main(argv: Sequence[str]) -> int:
     logger.info('Singularity image ready at %s.', image_path)
 
     if args.mode == 'nopush':
-        logger.info('Skipping upload because mode is nopush.')
+        logger.info('Skipping upload because mode is nopush (default).')
         return 0
 
     logger.info('Using Kive tag %s for uploaded container.', kive_tag)
