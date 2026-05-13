@@ -161,20 +161,15 @@ jobs:
           sudo -E python micall singularity_build
           sudo chown -R "$USER":"$USER" simgs
 
-      - name: Resolve Singularity image path
-        shell: bash
-        run: |
-          echo "SINGULARITY_IMAGE=simgs/micall-latest.sif" >> "$GITHUB_ENV"
-
       - name: Install python packages
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall release_test_microtest ${{ env.SINGULARITY_IMAGE }}
+        run: python micall release_test_microtest ./simgs/micall-latest.sif
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg
-          path: ${{ env.SINGULARITY_IMAGE }}
+          path: ./simgs/micall-latest.sif
