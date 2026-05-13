@@ -8,7 +8,8 @@ import sys
 from micall.utils.docker_build import build
 
 
-SINGULARITY_TEMPLATE = """\
+SINGULARITY_TEMPLATE = """
+
 Bootstrap: docker-archive
 From: ./simgs/micall-{container_sha}.tar
 
@@ -80,6 +81,7 @@ From: ./simgs/micall-{container_sha}.tar
 %apphelp denovo
     Standard pipeline with de novo assembly instead of mapping to reference
     sequences.
+
 """
 
 
