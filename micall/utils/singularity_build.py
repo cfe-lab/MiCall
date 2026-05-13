@@ -181,6 +181,10 @@ def save_docker_archive(repository_name: str, container_sha: str) -> Path:
     """Save the docker image as a tar archive under ./simgs/ and return the path."""
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     archive_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.tar'
+    if archive_path.exists():
+        logger.info('Skipping docker save because archive already exists at %s.', archive_path)
+        return archive_path
+
     logger.info('Saving Docker image %s to %s.', repository_name, archive_path)
     subprocess.check_call(
         ['docker', 'save', '--output', str(archive_path), '--', repository_name],
