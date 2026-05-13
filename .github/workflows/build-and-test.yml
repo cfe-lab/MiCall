@@ -156,6 +156,19 @@ jobs:
           rm -rf singularity
           singularity --version
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          tags: |
+            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
+            ghcr.io/cfe-lab/micall:latest
+          cache-from: type=gha,scope=docker-micall
+          cache-to: type=gha,mode=max,scope=docker-micall
+
       - name: Singularity build
         run: |
           sudo -E python micall singularity_build
