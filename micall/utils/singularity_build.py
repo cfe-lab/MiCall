@@ -251,11 +251,13 @@ def push_image_with_kivecli(
 
     try:
         import kivecli.makecontainer as makecontainer
+        import kivecli.logger
     except ImportError as ex:
         raise ImportError(
             'kivecli is required for upload. Install dev dependencies that include kivecli.'
         ) from ex
 
+    kivecli.logger.logger.setLevel(logger.level)
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
     is_json = False
