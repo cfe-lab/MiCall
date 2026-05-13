@@ -181,10 +181,16 @@ def save_docker_archive(repository_name: str, container_sha: str) -> Path:
     """Save the docker image as a tar archive under ./simgs/ and return the path."""
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     archive_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.tar'
+    latest_link_path = SINGULARITY_IMAGE_DIR / 'micall-latest.tar'
     logger.info('Saving Docker image %s to %s.', repository_name, archive_path)
     subprocess.check_call(
         ['docker', 'save', '--output', str(archive_path), '--', repository_name],
     )
+    if latest_link_path.exists() or latest_link_path.is_symlink():
+        latest_link_path.unlink()
+    # Keep link target relative to simgs/ so the tree is portable.
+    latest_link_path.symlink_to(archive_path.name)
+    logger.info('Updated latest archive symlink %s -> %s.', latest_link_path, archive_path.name)
     logger.debug('Docker archive %s created successfully.', archive_path)
     return archive_path
 
