@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 # Use same retry constants as network operations
 MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
+MAXIMUM_RETRY_TIME = timedelta(days=1)
 
 
 def calculate_retry_wait(min_wait, max_wait, attempt_count):
@@ -25,14 +26,6 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
     seconds = min_seconds * (2 ** (attempt_count - 1))
     seconds = min(seconds, max_wait.total_seconds())
     return timedelta(seconds=seconds)
-
-
-def calculate_cumulative_wait_time(attempt_count):
-    """Calculate total time that will have elapsed after all previous attempts."""
-    total_time = timedelta()
-    for i in range(1, attempt_count):
-        total_time += calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, i)
-    return total_time
 
 
 def wait_for_retry(attempt_count, operation_name, start_time):
@@ -66,30 +59,27 @@ def disk_retry(operation_name="disk operation"):
     def decorator(func):
         def wrapper(*args, **kwargs):
             attempt_count = 0
-            max_attempts = 15  # Same as network operations
             start_time = None
 
-            while attempt_count < max_attempts:
+            while True:
                 attempt_count += 1
                 try:
                     return func(*args, **kwargs)
                 except (OSError, IOError) as ex:
-                    if attempt_count >= max_attempts:
-                        logger.error(
-                            f"Disk operation {operation_name} failed after {max_attempts} attempts: {ex}"
-                        )
-                        raise
-
-                    # Record start time on first failure
                     if start_time is None:
                         start_time = datetime.now()
+
+                    elapsed = datetime.now() - start_time
+                    if elapsed >= MAXIMUM_RETRY_TIME:
+                        logger.error(
+                            f"Disk operation {operation_name} failed after {elapsed} of retrying: {ex}"
+                        )
+                        raise
 
                     wait_for_retry(attempt_count, operation_name, start_time)
                 except:
                     # Non-disk errors should not be retried
                     raise
-
-            return func(*args, **kwargs)  # This shouldn't be reached
 
         return wrapper
 
