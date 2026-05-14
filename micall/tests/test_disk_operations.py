@@ -123,8 +123,8 @@ class TestDiskRetryDecorator:
         mock_wait.assert_called_once_with(1, "test_op", ANY)
 
     @patch("micall.monitor.disk_operations.wait_for_retry")
-    def test_decorator_max_attempts_exceeded(self, mock_wait):
-        """Should raise exception after max attempts."""
+    def test_decorator_maximum_retry_time_exceeded(self, mock_wait):
+        """Should raise exception once the retry time budget is exhausted."""
         error = OSError("Persistent disk error")
         mock_func = Mock(side_effect=error)
         decorated = disk_retry("test_op")(mock_func)
@@ -132,8 +132,8 @@ class TestDiskRetryDecorator:
         with pytest.raises(OSError, match="Persistent disk error"):
             decorated()
 
-        assert mock_func.call_count == 15  # max attempts
-        assert mock_wait.call_count == 14  # one less than max attempts
+        assert mock_func.call_count == 16
+        assert mock_wait.call_count == 15
 
     def test_decorator_non_retryable_error(self):
         """Non-disk errors should not trigger retry."""
@@ -350,9 +350,9 @@ class TestRemoveEmptyDirectory:
         with pytest.raises(OSError, match="Permission denied"):
             remove_empty_directory(path)
 
-        # Should retry like other disk operations (15 attempts)
-        assert mock_rmdir.call_count == 15
-        assert mock_wait.call_count == 14  # one less than attempts
+        # Time-based retries still terminate deterministically when waits are mocked.
+        assert mock_rmdir.call_count == 16
+        assert mock_wait.call_count == 15
 
     @patch("pathlib.Path.rmdir")
     @patch("micall.monitor.disk_operations.wait_for_retry")
@@ -639,12 +639,12 @@ class TestAdvancedRetryLogic:
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
             with pytest.raises(OSError):
                 test_function("os_error")
-            assert mock_wait.call_count == 14  # 15 attempts = 14 retries
+            assert mock_wait.call_count == 15
 
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
             with pytest.raises(IOError):
                 test_function("io_error")
-            assert mock_wait.call_count == 14  # 15 attempts = 14 retries
+            assert mock_wait.call_count == 15
 
         # Should NOT retry these errors
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
@@ -1000,11 +1000,11 @@ class TestErrorMessageVerification:
                 # Verify error logging
                 assert mock_logger.call_count >= 1
 
-                # Check that final error message mentions max attempts
+                # Check that final error message mentions the time budget
                 final_call = mock_logger.call_args_list[-1]
                 error_message = final_call[0][0]
                 assert "test_operation" in error_message
-                assert "15 attempts" in error_message
+                assert "of retrying" in error_message
 
     def test_wait_for_retry_logging(self):
         """Test wait_for_retry logging behavior."""

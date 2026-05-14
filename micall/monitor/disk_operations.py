@@ -77,7 +77,10 @@ def disk_retry(operation_name="disk operation"):
                     if start_time is None:
                         start_time = datetime.now()
 
-                    elapsed = datetime.now() - start_time
+                    elapsed = max(
+                        datetime.now() - start_time,
+                        calculate_cumulative_wait_time(attempt_count),
+                    )
                     if elapsed >= MAXIMUM_RETRY_TIME:
                         logger.error(
                             f"Disk operation {operation_name} failed after {elapsed} of retrying: {ex}"
