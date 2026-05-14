@@ -189,8 +189,12 @@ def save_docker_archive(repository_name: str, container_sha: str) -> Path:
         return archive_path
 
     logger.info('Saving Docker image %s to %s.', repository_name, archive_path)
+    stderr_stream = None if logger.isEnabledFor(logging.DEBUG) else subprocess.DEVNULL
+    stdout_stream = stderr_stream if stderr_stream is not None else sys.stderr
     subprocess.check_call(
         ['docker', 'save', '--output', str(archive_path), '--', repository_name],
+        stdout=stdout_stream,
+        stderr=stderr_stream,
     )
     logger.debug('Docker archive %s created successfully.', archive_path)
     return archive_path
@@ -210,7 +214,7 @@ def write_singularity_definition(container_sha: str) -> Path:
     return definition_path
 
 
-def build_singularity_image(definition_path: Path, container_sha: str, verbose: bool) -> Path:
+def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     SINGULARITY_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     image_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.sif'
     latest_link_path = SINGULARITY_IMAGE_DIR / 'micall-latest.sif'
@@ -218,10 +222,12 @@ def build_singularity_image(definition_path: Path, container_sha: str, verbose: 
         logger.info('Skipping Singularity build because image already exists at %s.', image_path)
     else:
         logger.info('Building Singularity image %s from %s.', image_path, definition_path)
+        stderr_stream = None if logger.isEnabledFor(logging.DEBUG) else subprocess.DEVNULL
+        stdout_stream = stderr_stream if stderr_stream is not None else sys.stderr
         subprocess.check_call(
             ['singularity', 'build', str(image_path), str(definition_path)],
-            stdout=subprocess.DEVNULL if not verbose else None,
-            stderr=subprocess.DEVNULL if not verbose else None,
+            stdout=stdout_stream,
+            stderr=stderr_stream,
         )
 
     if latest_link_path.exists() or latest_link_path.is_symlink():
@@ -293,19 +299,18 @@ def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
     configure_logging(args)
-    verbose = args.verbose or args.debug
 
     logger.info('Starting Singularity build workflow.')
     logger.debug('Command-line arguments: %s', args)
 
     logger.info('Building Docker image first.')
-    repository_name = build(verbose=verbose)
+    repository_name = build(verbose=logger.isEnabledFor(logging.DEBUG))
     logger.info('Docker build completed: %s', repository_name)
 
     container_sha = get_container_sha(repository_name)
     archive_path = save_docker_archive(repository_name, container_sha)
     definition_path = write_singularity_definition(container_sha)
-    image_path = build_singularity_image(definition_path, container_sha, verbose=verbose)
+    image_path = build_singularity_image(definition_path, container_sha)
     kive_tag = get_latest_git_tag()
 
     logger.info('Singularity archive ready at %s.', archive_path)

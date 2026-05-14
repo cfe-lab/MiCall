@@ -75,8 +75,8 @@ def build(verbose: bool) -> str:
                                     'build',
                                     '--tag', repository_name,
                                     '--', str(git_root)],
-                                    stdout=subprocess.DEVNULL if not verbose else None,
-                                    stderr=subprocess.DEVNULL if not verbose else None,
+                                    stdout=sys.stderr if not verbose else None,
+                                    stderr=None if verbose else subprocess.DEVNULL,
                                     )
             except subprocess.CalledProcessError as ex:
                 if ex.returncode == errno.EPERM:
