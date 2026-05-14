@@ -28,14 +28,6 @@ def calculate_retry_wait(min_wait, max_wait, attempt_count):
     return timedelta(seconds=seconds)
 
 
-def calculate_cumulative_wait_time(attempt_count):
-    """Calculate total time that will have elapsed after all previous attempts."""
-    total_time = timedelta()
-    for i in range(1, attempt_count):
-        total_time += calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, i)
-    return total_time
-
-
 def wait_for_retry(attempt_count, operation_name, start_time):
     """Wait with exponential backoff, logging errors after 1 hour, info messages before."""
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, attempt_count)
@@ -77,10 +69,7 @@ def disk_retry(operation_name="disk operation"):
                     if start_time is None:
                         start_time = datetime.now()
 
-                    elapsed = max(
-                        datetime.now() - start_time,
-                        calculate_cumulative_wait_time(attempt_count),
-                    )
+                    elapsed = datetime.now() - start_time
                     if elapsed >= MAXIMUM_RETRY_TIME:
                         logger.error(
                             f"Disk operation {operation_name} failed after {elapsed} of retrying: {ex}"

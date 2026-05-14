@@ -129,11 +129,19 @@ class TestDiskRetryDecorator:
         mock_func = Mock(side_effect=error)
         decorated = disk_retry("test_op")(mock_func)
 
-        with pytest.raises(OSError, match="Persistent disk error"):
-            decorated()
+        start_time = datetime(2024, 1, 1, 0, 0, 0)
+        with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
+            mock_datetime.now.side_effect = [
+                start_time,
+                start_time,
+                start_time + disk_operations.MAXIMUM_RETRY_TIME,
+            ]
 
-        assert mock_func.call_count == 16
-        assert mock_wait.call_count == 15
+            with pytest.raises(OSError, match="Persistent disk error"):
+                decorated()
+
+        assert mock_func.call_count == 2
+        assert mock_wait.call_count == 1
 
     def test_decorator_non_retryable_error(self):
         """Non-disk errors should not trigger retry."""
@@ -347,12 +355,19 @@ class TestRemoveEmptyDirectory:
         mock_rmdir.side_effect = OSError(errno.EACCES, "Permission denied")
         path = Path("/test/no_access_dir")
 
-        with pytest.raises(OSError, match="Permission denied"):
-            remove_empty_directory(path)
+        start_time = datetime(2024, 1, 1, 0, 0, 0)
+        with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
+            mock_datetime.now.side_effect = [
+                start_time,
+                start_time,
+                start_time + disk_operations.MAXIMUM_RETRY_TIME,
+            ]
 
-        # Time-based retries still terminate deterministically when waits are mocked.
-        assert mock_rmdir.call_count == 16
-        assert mock_wait.call_count == 15
+            with pytest.raises(OSError, match="Permission denied"):
+                remove_empty_directory(path)
+
+        assert mock_rmdir.call_count == 2
+        assert mock_wait.call_count == 1
 
     @patch("pathlib.Path.rmdir")
     @patch("micall.monitor.disk_operations.wait_for_retry")
@@ -637,14 +652,28 @@ class TestAdvancedRetryLogic:
 
         # Should retry these errors
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
-            with pytest.raises(OSError):
-                test_function("os_error")
-            assert mock_wait.call_count == 15
+            start_time = datetime(2024, 1, 1, 0, 0, 0)
+            with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
+                mock_datetime.now.side_effect = [
+                    start_time,
+                    start_time,
+                    start_time + disk_operations.MAXIMUM_RETRY_TIME,
+                ]
+                with pytest.raises(OSError):
+                    test_function("os_error")
+            assert mock_wait.call_count == 1
 
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
-            with pytest.raises(IOError):
-                test_function("io_error")
-            assert mock_wait.call_count == 15
+            start_time = datetime(2024, 1, 1, 0, 0, 0)
+            with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
+                mock_datetime.now.side_effect = [
+                    start_time,
+                    start_time,
+                    start_time + disk_operations.MAXIMUM_RETRY_TIME,
+                ]
+                with pytest.raises(IOError):
+                    test_function("io_error")
+            assert mock_wait.call_count == 1
 
         # Should NOT retry these errors
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
@@ -741,7 +770,7 @@ class TestEdgeCaseFileOperations:
             assert not existing_file2.exists()
 
             # Test that missing_ok=False would raise for non-existing file
-            # (but don't actually call it since it would retry for 15 attempts)
+            # (but don't actually call it since it would retry until the time budget expires)
             # This tests our understanding of the expected behavior
             assert not non_existing.exists()  # Confirm file doesn't exist
 
@@ -994,8 +1023,16 @@ class TestErrorMessageVerification:
 
         with patch("micall.monitor.disk_operations.logger.error") as mock_logger:
             with patch("micall.monitor.disk_operations.sleep"):
-                with pytest.raises(OSError):
-                    failing_operation()
+                start_time = datetime(2024, 1, 1, 0, 0, 0)
+                with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
+                    mock_datetime.now.side_effect = [
+                        start_time,
+                        start_time,
+                        start_time,
+                        start_time + disk_operations.MAXIMUM_RETRY_TIME,
+                    ]
+                    with pytest.raises(OSError):
+                        failing_operation()
 
                 # Verify error logging
                 assert mock_logger.call_count >= 1
