@@ -56,7 +56,7 @@ def get_repository_name() -> str:
     return f'docker.illumina.com/cfe_lab/micall:{version}'
 
 
-def build() -> str:
+def build(verbose: bool) -> str:
     """
     Build the docker image from the local source code.
     The image will be tagged with the version from git describe, and pushed to docker.illumina.com/cfe_lab/micall.
@@ -74,7 +74,10 @@ def build() -> str:
                 subprocess.check_call(['docker',
                                     'build',
                                     '--tag', repository_name,
-                                    '--', str(git_root)])
+                                    '--', str(git_root)],
+                                    stdout=subprocess.DEVNULL if not verbose else None,
+                                    stderr=subprocess.DEVNULL if not verbose else None,
+                                    )
             except subprocess.CalledProcessError as ex:
                 if ex.returncode == errno.EPERM:
                     raise PermissionError(
@@ -92,7 +95,7 @@ def build() -> str:
 def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
-    repository_name = build()
+    repository_name = build(verbose=True)
     if args.nopush:
         print("Rerun without --nopush to attempt to push the docker image to illumina and launch spacedock")
         return 0
