@@ -7,8 +7,8 @@
 # - Network failures: QAI login, run lookups, data uploads
 # - Disk failures: File reads, sample sheet parsing, flag writing
 # - Uses exponential backoff with the same retry parameters as kive_watcher
-# - Retries up to MAX_RETRY_ATTEMPTS (10) times by default
-# - Logs warnings for each retry attempt, errors after exhausting retries
+# - Retries for up to MAXIMUM_RETRY_TIME by default
+# - Logs warnings for each retry attempt, errors after exhausting retry time
 # - Always creates done_qai_upload flag, even when coverage_scores.csv is missing
 
 import csv
@@ -21,7 +21,7 @@ from functools import partial
 from pathlib import Path
 from typing import Dict, Sequence, Tuple, List, Set, Optional, TextIO, TypedDict
 import argparse
-from queue import Queue
+from time import sleep
 from urllib.parse import urlparse
 
 from micall.monitor.types import PipelineType
@@ -37,6 +37,8 @@ logger = logging.getLogger('update_qai')
 
 # Use the same retry configuration as kive_watcher
 MAXIMUM_RETRY_TIME = timedelta(days=1)
+FOLDER_SCAN_INTERVAL = timedelta(hours=1)
+SLEEP_SECONDS = 60
 
 
 def retry_operation(operation, operation_name: str):
@@ -622,51 +624,89 @@ def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_v
     logger.info('Remapped upload success!')
 
 
+def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Sequence[Path]:
+    """Find version folders with done_all_processing set and not yet uploaded to QAI."""
+    pattern = f"MiSeq/runs/*/Results/version_{pipeline_version}/done_all_processing"
+    version_folders: list[Path] = []
+    for done_flag in raw_data_folder.glob(pattern):
+        version_folder = done_flag.parent
+        if not (version_folder / 'done_qai_upload').exists():
+            version_folders.append(version_folder)
+    return sorted(version_folders)
+
+
 def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_version: str,
-                upload_queue: Queue[Optional[Tuple[Path, PipelineType]]]) -> None:
+                raw_data_folder: Path, wait: bool = True, retry: bool = True) -> None:
 
     # Check if `qai_server` is a valid URL.
     parsed_url = urlparse(qai_server)
     if not (parsed_url.scheme and parsed_url.netloc):
         raise ValueError(f"Invalid QAI server URL: {qai_server}")
 
+    attempt_count = 0
+    start_time = None
     while True:
-        item = upload_queue.get()
-        if item is None:
-            break
-        results_path, pipeline_group = item
-        results_path = Path(results_path)
-        done_qai_flag = results_path / 'done_qai_upload'
-        coverage_scores = results_path / 'coverage_scores.csv'
+        try:
+            next_scan = datetime.now() + FOLDER_SCAN_INTERVAL
+            results_paths = scan_qai_done_flags(raw_data_folder, pipeline_version)
+            if not results_paths:
+                logger.info('No runs pending QAI upload.')
 
-        def check_coverage_file():
-            return coverage_scores.exists()
+            for results_path in results_paths:
+                done_qai_flag = results_path / 'done_qai_upload'
+                coverage_scores = results_path / 'coverage_scores.csv'
 
-        # Check coverage file with retry (in case of temporary file system issues)
-        has_coverage_file = retry_operation(
-            check_coverage_file,
-            f"Checking coverage file for {results_path}",
-        )
+                def check_coverage_file():
+                    return coverage_scores.exists()
 
-        # Skip upload if coverage_scores.csv is missing, but still mark as done.
-        if has_coverage_file:
-            try:
-                process_folder((results_path, pipeline_group),
-                               qai_server, qai_user, qai_password,
-                               pipeline_version)
-                status = 'succeeded'
-            except Exception:
-                logger.error("QAI upload failed for %s", results_path, exc_info=True)
-                status = 'failed'
-        else:
-            logger.debug("Skipping QAI upload for %s (coverage_scores.csv missing)", results_path)
-            status = 'skipped'
+                has_coverage_file = retry_operation(
+                    check_coverage_file,
+                    f"Checking coverage file for {results_path}",
+                )
 
-        # Mark completed to prevent re-upload with retry for disk operations
-        def write_done_flag():
-            disk_operations.write_text(done_qai_flag, status)
+                if has_coverage_file:
+                    try:
+                        process_folder((results_path, PipelineType.MAIN),
+                                       qai_server, qai_user, qai_password,
+                                       pipeline_version)
+                        status = 'succeeded'
+                    except Exception:
+                        logger.error("QAI upload failed for %s", results_path, exc_info=True)
+                        status = 'failed'
+                else:
+                    logger.debug("Skipping QAI upload for %s (coverage_scores.csv missing)", results_path)
+                    status = 'skipped'
 
-        retry_operation(write_done_flag, f"Writing done_qai_upload flag for {results_path}")
+                def write_done_flag():
+                    disk_operations.write_text(done_qai_flag, status)
+
+                retry_operation(write_done_flag, f"Writing done_qai_upload flag for {results_path}")
+
+            attempt_count = 0
+            start_time = None
+            if not wait:
+                break
+            while wait and datetime.now() < next_scan:
+                sleep(SLEEP_SECONDS)
+        except Exception:
+            if not retry:
+                raise
+            from micall.monitor.kive_watcher import wait_for_retry
+
+            attempt_count += 1
+            if start_time is None:
+                start_time = datetime.now()
+
+            elapsed = datetime.now() - start_time
+            if elapsed >= MAXIMUM_RETRY_TIME:
+                logger.error(
+                    'upload_loop failed after %s of retrying; giving up.',
+                    elapsed,
+                    exc_info=True,
+                )
+                raise
+
+            wait_for_retry(attempt_count, start_time)
 
 
 def main() -> None:
