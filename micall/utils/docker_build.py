@@ -101,13 +101,15 @@ def build(verbose: bool) -> str:
     try:
         with root_directory() as source_path:
             git_root = source_path.parent
+            stderr_stream = None if verbose else subprocess.DEVNULL
+            stdout_stream = stderr_stream if stderr_stream is not None else sys.stderr
             try:
                 subprocess.check_call(['docker',
                                     'build',
                                     '--tag', repository_name,
                                     '--', str(git_root)],
-                                    stdout=sys.stderr if not verbose else None,
-                                    stderr=None if verbose else subprocess.DEVNULL,
+                                    stdout=stdout_stream,
+                                    stderr=stderr_stream,
                                     )
                 logger.info('Docker build completed: %s', repository_name)
             except subprocess.CalledProcessError as ex:
