@@ -130,7 +130,7 @@ def main(argv: Sequence[str]) -> int:
     parser = get_parser()
     args = parser.parse_args(argv)
     configure_logging(args)
-    verbose = args.verbose or args.debug
+    verbose = logger.isEnabledFor(logging.DEBUG)
 
     logger.info('Starting Docker build workflow.')
     repository_name = build(verbose=verbose)
