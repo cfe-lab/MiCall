@@ -15,7 +15,7 @@ import csv
 import typing
 from argparse import SUPPRESS
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from functools import partial
 from pathlib import Path
@@ -36,7 +36,7 @@ from micall.monitor import disk_operations
 logger = logging.getLogger('update_qai')
 
 # Use the same retry configuration as kive_watcher
-MAX_RETRY_ATTEMPTS = 100
+MAXIMUM_RETRY_TIME = timedelta(days=1)
 
 
 def retry_operation(operation, operation_name: str):
@@ -51,13 +51,12 @@ def retry_operation(operation, operation_name: str):
     Args:
         operation: Callable that performs the operation
         operation_name: Human-readable name for logging
-        max_attempts: Maximum number of retry attempts
 
     Returns:
         The result of the successful operation
 
     Raises:
-        RuntimeError: If all retry attempts fail
+        RuntimeError: If the operation keeps failing for longer than MAXIMUM_RETRY_TIME
     """
 
     from micall.monitor.kive_watcher import wait_for_retry
@@ -66,7 +65,7 @@ def retry_operation(operation, operation_name: str):
     start_time = None
     last_exception = None
 
-    while attempt_count < MAX_RETRY_ATTEMPTS:
+    while True:
         try:
             return operation()
         except Exception as ex:
@@ -77,15 +76,16 @@ def retry_operation(operation, operation_name: str):
             if start_time is None:
                 start_time = datetime.now()
 
-            if attempt_count >= MAX_RETRY_ATTEMPTS:
-                logger.error(f'{operation_name} failed after {MAX_RETRY_ATTEMPTS} attempts', exc_info=True)
+            elapsed = datetime.now() - start_time
+            if elapsed >= MAXIMUM_RETRY_TIME:
+                logger.error(f'{operation_name} failed after {elapsed} of retrying', exc_info=True)
                 break
 
-            logger.warning(f'{operation_name} failed (attempt {attempt_count}/{MAX_RETRY_ATTEMPTS})', exc_info=True)
+            logger.warning(f'{operation_name} failed (attempt {attempt_count})', exc_info=True)
             wait_for_retry(attempt_count, start_time)
 
     # If we get here, all attempts failed
-    raise RuntimeError(f'{operation_name} failed after {MAX_RETRY_ATTEMPTS} attempts') from last_exception
+    raise RuntimeError(f'{operation_name} failed after {MAXIMUM_RETRY_TIME} of retrying') from last_exception
 
 
 Session = qai_helper.Session

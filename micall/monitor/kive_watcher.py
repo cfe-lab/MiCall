@@ -39,6 +39,7 @@ FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 SLEEP_SECONDS = 60
 MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
+MAXIMUM_RETRY_TIME = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
@@ -150,6 +151,15 @@ def find_samples(raw_data_folder: Path,
             # Record start time on first failure
             if start_time is None:
                 start_time = datetime.now()
+
+            elapsed = datetime.now() - start_time
+            if elapsed >= MAXIMUM_RETRY_TIME:
+                logger.error(
+                    'find_samples failed after %s of retrying; giving up.',
+                    elapsed,
+                    exc_info=True,
+                )
+                raise
 
             wait_for_retry(attempt_count, start_time)
 
@@ -269,6 +279,9 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                 sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
             except IOError:
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    raise
                 wait_for_retry(attempt_count, start_time)
                 continue
 
@@ -615,6 +628,15 @@ class KiveWatcher:
                 if start_time is None:
                     start_time = datetime.now()
 
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    logger.error(
+                        'add_sample_group failed after %s of retrying; giving up.',
+                        elapsed,
+                        exc_info=True,
+                    )
+                    raise
+
                 wait_for_retry(attempt_count, start_time)
 
     def add_folder(self, base_calls: str) -> FolderWatcher:
@@ -651,6 +673,15 @@ class KiveWatcher:
                 # Record start time on first failure
                 if start_time is None:
                     start_time = datetime.now()
+
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    logger.error(
+                        'poll_runs failed after %s of retrying; giving up.',
+                        elapsed,
+                        exc_info=True,
+                    )
+                    raise
 
                 wait_for_retry(attempt_count, start_time)
 
