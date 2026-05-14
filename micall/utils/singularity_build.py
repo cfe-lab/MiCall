@@ -260,7 +260,6 @@ def push_image_with_kivecli(
 
     try:
         from kivecli.container import Container
-        import kivecli.makecontainer as makecontainer
         import kivecli.logger
     except ImportError as ex:
         raise ImportError(
@@ -278,20 +277,20 @@ def push_image_with_kivecli(
             tag,
             existing_id,
         )
+        print(existing_container.id)
         return
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
-    is_json = False
-    makecontainer.main_typed(
+    new_container = Container.create(
         image_path=image_path,
         family_name_or_id=family_name_or_id,
         tag=tag,
         description=description,
         users=users,
         groups=groups,
-        is_json=is_json,
     )
+    print(new_container.id)
     logger.info('kivecli upload completed.')
 
 
