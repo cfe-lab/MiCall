@@ -206,7 +206,7 @@ def generate_singularity_def(container_sha: str) -> str:
 
 
 def write_singularity_definition(container_sha: str) -> Path:
-    definition_path = SINGULARITY_IMAGE_DIR / f'Singularity-{container_sha}.def'
+    definition_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.def'
     definition_content = generate_singularity_def(container_sha)
     definition_path.write_text(definition_content)
     logger.info('Wrote Singularity definition to %s.', definition_path)
