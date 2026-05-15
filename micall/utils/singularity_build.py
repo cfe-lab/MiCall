@@ -281,7 +281,7 @@ def push_image_with_kivecli(
         return
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
-    description = '\n'.join(line.strip() for line in DESCRIPTION.strip().splitlines())
+    description = ' '.join(line.strip() for line in DESCRIPTION.strip().splitlines())
     new_container = Container.create(
         image_path=image_path,
         family_name_or_id=family_name_or_id,
