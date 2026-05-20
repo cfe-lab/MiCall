@@ -218,7 +218,7 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     image_path = SINGULARITY_IMAGE_DIR / f'micall-{container_sha}.sif'
     latest_link_path = SINGULARITY_IMAGE_DIR / 'micall-latest.sif'
     if image_path.exists():
-        logger.info('Skipping Singularity build because image already exists at %s.', image_path)
+        logger.debug('Skipping Singularity build because image already exists at %s.', image_path)
     else:
         logger.info('Building Singularity image %s from %s.', image_path, definition_path)
         stderr_stream = None if logger.isEnabledFor(logging.DEBUG) else subprocess.DEVNULL
@@ -236,6 +236,43 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
     logger.info('Updated latest image symlink %s -> %s.', latest_link_path, image_path.name)
     logger.debug('Singularity image %s built successfully.', image_path)
     return image_path
+
+
+def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_id: str,
+                                    users: Sequence[str] | None, groups: Sequence[str] | None) \
+                                    -> int:
+    try:
+        from kivecli.container import Container
+        import kivecli.logger
+    except ImportError as ex:
+        raise ImportError(
+            'kivecli is required for upload. Install dev dependencies that include kivecli.'
+        ) from ex
+
+    kivecli.logger.logger.setLevel(logger.level)
+    existing_container = next(Container.search(smart_filter=tag), None)
+    if existing_container is not None:
+        existing_id = existing_container.id.value
+        logger.debug(
+            'Skipping kivecli upload because container already exists '
+            'for family=%s tag=%s (container id=%s).',
+            family_name_or_id,
+            tag,
+            existing_id,
+        )
+        return existing_container.id.value
+
+    logger.info('Starting kivecli makecontainer upload for %s.', image_path)
+    description = ' '.join(line.strip() for line in DESCRIPTION.strip().splitlines())
+    new_container = Container.create(
+        image_path=image_path,
+        family_name_or_id=family_name_or_id,
+        tag=tag,
+        description=description,
+        users=users,
+        groups=groups,
+    )
+    return new_container.id.value
 
 
 def push_image_with_kivecli(
@@ -257,39 +294,14 @@ def push_image_with_kivecli(
     if not users and not groups:
         raise ValueError('At least one of --users or --groups must be provided for kivecli upload.')
 
-    try:
-        from kivecli.container import Container
-        import kivecli.logger
-    except ImportError as ex:
-        raise ImportError(
-            'kivecli is required for upload. Install dev dependencies that include kivecli.'
-        ) from ex
-
-    kivecli.logger.logger.setLevel(logger.level)
-    existing_container = next(Container.search(smart_filter=tag), None)
-    if existing_container is not None:
-        existing_id = existing_container.id.value
-        logger.info(
-            'Skipping kivecli upload because container already exists '
-            'for family=%s tag=%s (container id=%s).',
-            family_name_or_id,
-            tag,
-            existing_id,
-        )
-        print(existing_container.id)
-        return
-
-    logger.info('Starting kivecli makecontainer upload for %s.', image_path)
-    description = ' '.join(line.strip() for line in DESCRIPTION.strip().splitlines())
-    new_container = Container.create(
+    new_container_id = build_or_load_singularity_image(
+        tag=tag,
         image_path=image_path,
         family_name_or_id=family_name_or_id,
-        tag=tag,
-        description=description,
         users=users,
         groups=groups,
     )
-    print(new_container.id)
+    print(new_container_id)
     logger.info('kivecli upload completed.')
 
 
