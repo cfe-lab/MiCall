@@ -35,7 +35,7 @@ dependencies = [
     "reportlab>=4.5.1",
     "pysam>=0.24.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
-    "mappy>=2.30",
+    "mappy>=2.31",
     "drawsvg>=2.4.0",
     "cairosvg>=2.8.2",
     "aligntools>=1.2.1",
