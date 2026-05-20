@@ -452,9 +452,9 @@ wheels = [
 
 [[package]]
 name = "mappy"
-version = "2.30"
+version = "2.31"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/78/25/21f1816701c7366cc2d1318c37fe374edd242e966ec3ad152f1742cef7a2/mappy-2.30.tar.gz", hash = "sha256:a25448004558a28cb0d74fb1e55b6ffe9a78aa15dd6b2763630fbbabbaa97a27", size = 143810, upload-time = "2025-06-15T22:49:38.771Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/33/d2/8b283f6fc644260bb1fd44add72695bfa036b99d9cf050a53b3b27eba774/mappy-2.31.tar.gz", hash = "sha256:152a358c11cba1f992968e2611f1e0a1f4a87aaaa3602d93e4f59d7c1db8f3b2", size = 143995, upload-time = "2026-05-19T23:29:40.073Z" }
 
 [[package]]
 name = "matplotlib"
@@ -553,7 +553,7 @@ requires-dist = [
     { name = "kiveapi", marker = "extra == 'test'", git = "https://github.com/cfe-lab/Kive.git?subdirectory=api&rev=v0.15" },
     { name = "kiveapi", marker = "extra == 'watcher'", git = "https://github.com/cfe-lab/Kive.git?subdirectory=api&rev=v0.15" },
     { name = "kivecli", marker = "extra == 'dev'", git = "https://github.com/Donaim/kivecli?rev=62dff8cfbf3b9d10a55333414ab56d38748a0516" },
-    { name = "mappy", specifier = ">=2.30" },
+    { name = "mappy", specifier = ">=2.31" },
     { name = "matplotlib", specifier = ">=3.10.9" },
     { name = "miseqinteropreader", specifier = ">=1.1.2" },
     { name = "multicsv", specifier = ">=1.0.5" },
