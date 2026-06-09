@@ -781,7 +781,6 @@ def check_merged_sequence_support(
                 #   to every position it spans).
 
     if not any_match:
-        # Validation enabled but no read matched the merged sequence at all.
         return False
 
     # ---- 1. cut-spanning support -------------------------------------------
@@ -1188,12 +1187,24 @@ def build_read_index(
         while True:
             header1 = fastq1.readline()
             if not header1:
+                # R2 should also be at EOF; consume any remaining records.
+                remaining = fastq2.read()
+                if remaining.strip():
+                    raise ValueError(
+                        "R1 exhausted before R2 — paired FASTQ files "
+                        "have a different number of records."
+                    )
                 break
             seq1 = fastq1.readline().strip()
             fastq1.readline()
             fastq1.readline()
 
-            fastq2.readline()
+            header2 = fastq2.readline()
+            if not header2:
+                raise ValueError(
+                    "R2 exhausted before R1 — paired FASTQ files "
+                    "have a different number of records."
+                )
             seq2 = fastq2.readline().strip()
             fastq2.readline()
             fastq2.readline()

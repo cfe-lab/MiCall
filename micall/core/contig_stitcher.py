@@ -39,15 +39,15 @@ def main(argv: Sequence[str]) -> int:
         parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                             help="Output FASTA file with stitched contigs.")
         parser.add_argument('--fastq1', type=Path, default=None,
-                            help='Forward reads FASTQ for coverage validation (plain or .gz).')
+                            help='Forward reads FASTQ for join-boundary validation (plain or .gz).')
         parser.add_argument('--fastq2', type=Path, default=None,
-                            help='Reverse reads FASTQ for coverage validation (plain or .gz).')
+                            help='Reverse reads FASTQ for join-boundary validation (plain or .gz).')
         parser.add_argument('--minimum-read-depth', type=int, default=1,
-                            help='Minimum read coverage to accept an overlap. '
-                                 '0 disables coverage validation. (default: 1)')
+                            help='Minimum reads that must cross the join cut. '
+                                 '0 disables validation. (default: 1)')
         parser.add_argument('--read-length', type=int, default=150,
-                            help='Read length used for the boundary margin. '
-                                 'Coverage is checked overlap +/- read_length. (default: 150)')
+                            help='Read length used for the centred coverage window around '
+                                 'the join cut. (default: 150)')
 
     parser.prog = ' '.join([Path(__file__).stem, head_args.mode])
 
