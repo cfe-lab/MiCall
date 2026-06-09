@@ -1,8 +1,9 @@
 import sys
-from typing import Sequence
+from typing import Sequence, Dict
 import logging
 from pathlib import Path
 
+import numpy as np
 import micall.utils.referencefull_contig_stitcher as referencefull
 import micall.utils.referenceless_contig_stitcher as referenceless
 
@@ -38,6 +39,16 @@ def main(argv: Sequence[str]) -> int:
         parser.add_argument('contigs', type=argparse.FileType('r'), help="Input FASTA file with assembled contigs.")
         parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                             help="Output FASTA file with stitched contigs.")
+        parser.add_argument('--fastq1', type=Path, default=None,
+                            help='Forward reads FASTQ for coverage validation (plain or .gz).')
+        parser.add_argument('--fastq2', type=Path, default=None,
+                            help='Reverse reads FASTQ for coverage validation (plain or .gz).')
+        parser.add_argument('--minimum-read-depth', type=int, default=1,
+                            help='Minimum read coverage to accept an overlap. '
+                                 '0 disables coverage validation. (default: 1)')
+        parser.add_argument('--read-length', type=int, default=150,
+                            help='Read length used for the boundary margin. '
+                                 'Coverage is checked overlap +/- read_length. (default: 150)')
 
     parser.prog = ' '.join([Path(__file__).stem, head_args.mode])
 
@@ -71,8 +82,19 @@ def main(argv: Sequence[str]) -> int:
             args.contigs, args.stitched_contigs, plot_path, remap_counts)
     else:
         referenceless.logger = logger
+        coverage_data: Dict[str, np.ndarray] = {}
+        if args.fastq1 is not None and args.fastq2 is not None:
+            contig_records = tuple(referenceless.read_contigs(args.contigs))
+            args.contigs.seek(0)
+            coverage_data = referenceless.compute_coverage_from_fastqs(
+                args.fastq1, args.fastq2, contig_records,
+            )
         referenceless.referenceless_contig_stitcher(
-            args.contigs, args.stitched_contigs)
+            args.contigs, args.stitched_contigs,
+            coverage_data=coverage_data,
+            minimum_read_depth=args.minimum_read_depth,
+            read_length=args.read_length,
+        )
 
     return 0
 

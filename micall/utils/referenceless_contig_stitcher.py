@@ -18,6 +18,13 @@ from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
+from micall.utils.exact_coverage import (
+    build_kmer_index_for_size,
+    find_exact_matches,
+    reverse_complement,
+)
+from micall.utils.exact_coverage import open_fastq as open_fastq_file
+from pathlib import Path
 from micall.utils.contig_stitcher_contigs import Contig, ContigId
 from micall.utils.overlap_stitcher import (
     align_queries,
@@ -1071,17 +1078,82 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
         yield ContigWithAligner(name=record.name, seq=str(record.seq), reads_count=None)
 
 
+def compute_coverage_from_fastqs(
+    fastq1_path: Path,
+    fastq2_path: Path,
+    contigs: Iterable[ContigWithAligner],
+) -> Dict[str, np.ndarray]:
+    """Compute exact per-position read coverage for input contigs.
+
+    Counts every exact match of each read (forward and reverse complement)
+    in every contig, using the full read extent (no overlap trimming).
+
+    Returns a dict mapping contig sequence string -> integer coverage array
+    for lookup by `ContigWithAligner.seq`.
+    """
+    contig_list = tuple(contigs)
+    name_to_seq: Dict[str, str] = {}
+    name_to_coverage: Dict[str, np.ndarray] = {}
+    by_seq: Dict[str, np.ndarray] = {}
+    for c in contig_list:
+        name = c.name or c.seq
+        name_to_seq[name] = c.seq
+        arr = np.zeros(len(c.seq), dtype=np.int32)
+        name_to_coverage[name] = arr
+        by_seq[c.seq] = arr
+
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
+
+    with (
+        open_fastq_file(fastq1_path) as fastq1,
+        open_fastq_file(fastq2_path) as fastq2,
+    ):
+        while True:
+            header1 = fastq1.readline()
+            if not header1:
+                break
+            read1_seq = fastq1.readline().strip()
+            fastq1.readline()
+            fastq1.readline()
+
+            header2 = fastq2.readline()
+            read2_seq = fastq2.readline().strip()
+            fastq2.readline()
+            fastq2.readline()
+
+            for read_seq in (read1_seq, read2_seq):
+                if not read_seq:
+                    continue
+                for trial_seq in (read_seq, reverse_complement(read_seq)):
+                    matches = find_exact_matches(
+                        trial_seq, kmer_index, name_to_seq,
+                    )
+                    for contig_name, start_pos, end_pos in matches:
+                        name_to_coverage[contig_name][start_pos:end_pos] += 1
+
+    return by_seq
+
+
 def referenceless_contig_stitcher_with_ctx(
     input_fasta: TextIO,
     output_fasta: Optional[TextIO],
+    coverage_data: Optional[Dict[str, np.ndarray]] = None,
 ) -> int:
     """
     Main entrypoint for referenceless contig stitching with context.
     Reads input contigs, performs stitching if output is specified, and writes results.
     Returns the number of contigs (stitched or original).
+
+    When coverage_data is provided, each merge candidate is validated against
+    read coverage (see check_read_support). Coverage data may be computed
+    with compute_coverage_from_fastqs.
     """
     contigs = tuple(read_contigs(input_fasta))
     log(events.Loaded(len(contigs)))
+
+    if coverage_data is not None:
+        ctx = ReferencelessStitcherContext.get()
+        ctx.coverage_data = coverage_data
 
     if output_fasta is not None:
         contigs = tuple(stitch_consensus(contigs))
@@ -1096,14 +1168,27 @@ def referenceless_contig_stitcher_with_ctx(
 def referenceless_contig_stitcher(
     input_fasta: TextIO,
     output_fasta: Optional[TextIO],
+    *,
+    coverage_data: Optional[Dict[str, np.ndarray]] = None,
+    minimum_read_depth: int = 1,
+    read_length: int = 150,
 ) -> int:
     """
     Wrapper that initializes a fresh stitching context and calls the core stitching function.
+
+    When coverage_data is provided, merges are validated against read coverage.
+    coverage_data should map contig sequence -> integer coverage array,
+    as returned by compute_coverage_from_fastqs.
     """
     with ReferencelessStitcherContext.fresh() as ctx:
         if logger.getEffectiveLevel() == logging.DEBUG - 1:
             ctx.is_debug2 = True
-        return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
+        ctx.minimum_read_depth = minimum_read_depth
+        ctx.read_length = read_length
+        ctx.coverage_data = coverage_data or {}
+        return referenceless_contig_stitcher_with_ctx(
+            input_fasta, output_fasta, coverage_data=coverage_data,
+        )
 
 
 def find_most_probable_path(
