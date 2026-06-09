@@ -21,6 +21,7 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.exact_coverage import open_fastq as open_fastq_file
+from micall.utils.exact_coverage import read_fastq_pairs_strict
 from micall.utils.exact_coverage import reverse_complement
 from micall.utils.contig_stitcher_contigs import Contig, ContigId
 from micall.utils.overlap_stitcher import (
@@ -686,12 +687,27 @@ def check_merged_sequence_support(
 ) -> Tuple[bool, int, int]:
     """Check that a candidate join cut in a merged sequence has read support.
 
-    Support is counted by **exact placements** weighted by multiplicity.
-    Each start position ``s`` where a canonical read sequence matches the
-    merged sequence contributes that read's multiplicity to the spanning
-    total (if ``s < cut_position < s + L``) and to the per-position
-    coverage within the boundary window.  A single read sequence can
-    contribute multiple times if it matches at multiple start positions.
+    Counting model
+    --------------
+    Support is **exact placements weighted by FASTQ multiplicity**.  Each
+    start position ``s`` where a canonical read matches the merged sequence
+    contributes that read's multiplicity to the cut-crossing total (if
+    ``s < cut < s+L``) and to per-position coverage within the boundary
+    window.  A single read sequence that matches at multiple start positions
+    contributes at each placement.
+
+    The placement × multiplicity model is a deliberate design choice:
+
+    * It keeps the check efficient — the implementation scans candidate
+      k-mers from the merged sequence and does direct ``Counter`` lookups,
+      avoiding read-by-read alignment or expensive multi-mapping disambiguation.
+    * It preserves observed FASTQ multiplicity in the evidence count.
+    * In repetitive/low-complexity sequence, one read may have multiple
+      valid placements; each contributes.  This can overcount support but
+      is an accepted tradeoff for simplicity and speed.
+    * The check remains useful because completely unsupported joins
+      (chimeric, contamination-driven) have **zero** exact cut-crossing
+      placements.
 
     Two conditions must hold:
 
@@ -1166,30 +1182,7 @@ def build_read_index(
         open_fastq_file(fastq1_path) as fastq1,
         open_fastq_file(fastq2_path) as fastq2,
     ):
-        while True:
-            header1 = fastq1.readline()
-            if not header1:
-                remaining = fastq2.read()
-                if remaining.strip():
-                    raise ValueError(
-                        "R1 exhausted before R2 — paired FASTQ files "
-                        "have a different number of records."
-                    )
-                break
-            seq1 = fastq1.readline().strip()
-            fastq1.readline()
-            fastq1.readline()
-
-            header2 = fastq2.readline()
-            if not header2:
-                raise ValueError(
-                    "R2 exhausted before R1 — paired FASTQ files "
-                    "have a different number of records."
-                )
-            seq2 = fastq2.readline().strip()
-            fastq2.readline()
-            fastq2.readline()
-
+        for seq1, seq2 in read_fastq_pairs_strict(fastq1, fastq2):
             for seq in (seq1, seq2):
                 if not seq:
                     continue

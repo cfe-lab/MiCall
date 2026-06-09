@@ -433,8 +433,14 @@ class Sample:
                          blast_csv=blast_csv,
                          )
 
-        # Run referenceless stitcher and create stitched_contigs_csv
-        # This will only be used in the stitched path (via referencefull_contig_stitcher)
+        # Run referenceless stitcher and create stitched_contigs_csv.
+        # This will only be used in the stitched path (via referencefull_contig_stitcher).
+        #
+        # Read-supported join validation is intentionally enabled in the normal
+        # denovo pipeline.  The referenceless stitcher validates candidate joins
+        # on sequence similarity alone; adding read evidence rejects merges that
+        # lack exact cut-spanning support.  This reduces false joins from
+        # coincidental overlap similarity, chimeric assembly, or contamination.
         with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
             read_index = referenceless.build_read_index(

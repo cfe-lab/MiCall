@@ -1264,6 +1264,22 @@ def test_build_read_index_empty_fastq(tmp_path):
     assert index == {}, "Empty FASTQs should produce empty index"
 
 
+def test_build_read_index_mismatched_pairs(tmp_path):
+    """build_read_index raises ValueError when R1 and R2 record counts differ."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("a", "ACGT"),
+        ("b", "TGCA"),  # R1 has 2 records
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("c", "ACGT"),  # R2 has 1 record
+    ])
+
+    with pytest.raises(ValueError, match="R2 exhausted before R1"):
+        build_read_index(fq1, fq2)
+
+
 def test_cli_fastq_pair_validation(tmp_path):
     """CLI must reject --fastq1 without --fastq2 and vice versa."""
     from micall.core.contig_stitcher import main

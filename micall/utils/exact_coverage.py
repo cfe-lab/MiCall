@@ -136,6 +136,48 @@ def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]
         yield (seq1, seq2)
 
 
+def read_fastq_pairs_strict(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
+    """
+    Read paired FASTQ files, raising on mismatched record counts.
+
+    Unlike :func:`read_fastq_pairs`, this generator detects when one
+    file runs out of records before the other and raises ``ValueError``
+    with a descriptive message.  This is useful when exact pairing is
+    required and silent truncation could hide data corruption.
+
+    :param fastq1: Forward reads FASTQ file
+    :param fastq2: Reverse reads FASTQ file
+    :yield: Tuples of (forward_sequence, reverse_sequence)
+    :raises ValueError: If R1 and R2 have different numbers of records.
+    """
+    while True:
+        header1 = fastq1.readline()
+        if not header1:
+            # R1 exhausted; check R2 is also at EOF.
+            remaining = fastq2.read()
+            if remaining.strip():
+                raise ValueError(
+                    "R1 exhausted before R2 — paired FASTQ files "
+                    "have a different number of records."
+                )
+            return
+        seq1 = fastq1.readline().strip()
+        fastq1.readline()
+        fastq1.readline()
+
+        header2 = fastq2.readline()
+        if not header2:
+            raise ValueError(
+                "R2 exhausted before R1 — paired FASTQ files "
+                "have a different number of records."
+            )
+        seq2 = fastq2.readline().strip()
+        fastq2.readline()
+        fastq2.readline()
+
+        yield (seq1, seq2)
+
+
 def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
     """
     Read contigs from either FASTA or CSV format.
