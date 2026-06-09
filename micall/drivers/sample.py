@@ -403,6 +403,29 @@ class Sample:
                   Path(self.unmapped2_fastq),
                   debug_file_prefix=debug_file_prefix)
 
+    def run_referenceless_stitcher(self):
+        """Run referenceless contig stitching with read-supported join validation.
+
+        Read-supported join validation is intentionally enabled in the normal
+        denovo pipeline.  The referenceless stitcher validates candidate joins
+        on sequence similarity alone; adding read evidence rejects merges that
+        lack exact cut-spanning support.  This reduces false joins from
+        coincidental overlap similarity, chimeric assembly, or contamination.
+        """
+        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
+             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
+            read_index = referenceless.build_read_index(
+                Path(self.trimmed1_fastq),
+                Path(self.trimmed2_fastq),
+            )
+            referenceless.referenceless_contig_stitcher(
+                combined_contigs_fasta,
+                stitched_contigs_fasta,
+                read_index=read_index,
+                minimum_read_depth=1,
+                read_length=150,
+            )
+
     def run_denovo(self, excluded_seeds):
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
@@ -433,27 +456,7 @@ class Sample:
                          blast_csv=blast_csv,
                          )
 
-        # Run referenceless stitcher and create stitched_contigs_csv.
-        # This will only be used in the stitched path (via referencefull_contig_stitcher).
-        #
-        # Read-supported join validation is intentionally enabled in the normal
-        # denovo pipeline.  The referenceless stitcher validates candidate joins
-        # on sequence similarity alone; adding read evidence rejects merges that
-        # lack exact cut-spanning support.  This reduces false joins from
-        # coincidental overlap similarity, chimeric assembly, or contamination.
-        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
-             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
-            read_index = referenceless.build_read_index(
-                Path(self.trimmed1_fastq),
-                Path(self.trimmed2_fastq),
-            )
-            referenceless.referenceless_contig_stitcher(
-                combined_contigs_fasta,
-                stitched_contigs_fasta,
-                read_index=read_index,
-                minimum_read_depth=1,
-                read_length=150,
-            )
+        self.run_referenceless_stitcher()
 
         with open(self.stitched_contigs_csv, 'w') as stitched_contigs_csv, \
              open(self.stitched_blast_csv, 'w') as stitched_blast_csv:

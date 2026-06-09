@@ -1302,17 +1302,16 @@ def test_build_read_index_mismatched_pairs_r1_short(tmp_path):
 # Pipeline integration tests
 # ---------------------------------------------------------------------------
 
-def test_run_denovo_enables_read_supported_stitching_by_default(tmp_path, monkeypatch):
-    """Sample.run_denovo() passes a non-None read_index, minimum_read_depth=1,
-    and read_length=150 to the stitcher, enabling read-supported validation
-    by default in the normal denovo pipeline.
+def test_run_referenceless_stitcher_enabled_by_default(tmp_path, monkeypatch):
+    """Sample.run_referenceless_stitcher() passes a non-None read_index,
+    minimum_read_depth=1, and read_length=150 to the stitcher.
 
-    This test mocks the heavy external dependencies (assembler, FASTQ I/O)
-    and only verifies the wiring to referenceless_contig_stitcher.
+    This exercises the actual production method (extracted from run_denovo)
+    with mocks for the stitcher entry point, verifying that read-supported
+    join validation is enabled by default in the normal denovo pipeline.
     """
     from micall.drivers.sample import Sample
 
-    # Mock the stitcher entry point to capture arguments.
     captured = {}
 
     def fake_build_read_index(fq1, fq2):
@@ -1327,70 +1326,28 @@ def test_run_denovo_enables_read_supported_stitching_by_default(tmp_path, monkey
     monkeypatch.setattr(sample_mod.referenceless, "build_read_index", fake_build_read_index)
     monkeypatch.setattr(sample_mod.referenceless, "referenceless_contig_stitcher", tracking_stitcher)
 
-    # Replace run_denovo with a version that only does the stitcher step.
-    # The full method includes heavy dependencies (denovo, WorkDir) that are
-    # impractical to mock completely.  We test the stitcher wiring only.
-    original_run = sample_mod.Sample.run_denovo
-
-    def patched_run_denovo(self, excluded_seeds):
-        """Minimal version that exercises only the stitcher-related wiring."""
-        from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
-        from pathlib import Path
-
-        # The stitcher related lines from the real run_denovo.
-        read_index = sample_mod.referenceless.build_read_index(
-            Path(self.trimmed1_fastq),
-            Path(self.trimmed2_fastq),
-        )
-        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
-             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
-            sample_mod.referenceless.referenceless_contig_stitcher(
-                combined_contigs_fasta,
-                stitched_contigs_fasta,
-                read_index=read_index,
-                minimum_read_depth=1,
-                read_length=150,
-            )
-
-    monkeypatch.setattr(sample_mod.Sample, "run_denovo", patched_run_denovo)
-
-    # Build path dict with all outputs that run_denovo accesses.
     paths = {
         "trimmed1_fastq": str(tmp_path / "r1.fastq"),
         "trimmed2_fastq": str(tmp_path / "r2.fastq"),
-        "merged_contigs_csv": str(tmp_path / "merged.csv"),
-        "merged_contigs_fasta": str(tmp_path / "merged.fasta"),
-        "unstitched_contigs_fasta": str(tmp_path / "unstitched.fasta"),
         "combined_contigs_fasta": str(tmp_path / "combined.fasta"),
         "stitched_contigs_fasta": str(tmp_path / "stitched.fasta"),
-        "stitched_contigs_csv": str(tmp_path / "stitched.csv"),
-        "stitched_blast_csv": str(tmp_path / "blast.csv"),
-        "unstitched_contigs_csv": str(tmp_path / "unstitched.csv"),
-        "blast_csv": str(tmp_path / "blast.csv"),
     }
-
     sample = Sample(scratch_path=str(tmp_path), **paths)
 
-    # Touch the files that run_denovo opens for reading.
-    for name in ["merged_contigs_csv", "combined_contigs_fasta",
-                  "stitched_contigs_fasta", "stitched_contigs_csv",
-                  "stitched_blast_csv", "unstitched_contigs_fasta",
-                  "merged_contigs_fasta"]:
+    for name in paths:
         Path(paths[name]).touch()
 
-    sample.run_denovo([])
+    sample.run_referenceless_stitcher()
 
-    assert captured.get("read_index") is not None, (
-        "sample.run_denovo() should pass a non-None read_index"
+    assert captured["read_index"] == {"sentinel": "read_index"}, (
+        "should pass a non-None read_index"
     )
-    assert captured["read_index"] == {"sentinel": "read_index"}
-    assert captured["kw"].get("minimum_read_depth") == 1
-    assert captured["kw"].get("read_length") == 150
+    assert captured["kw"]["minimum_read_depth"] == 1
+    assert captured["kw"]["read_length"] == 150
 
 
 def test_cli_fastq_pair_validation(tmp_path):
     """CLI must reject --fastq1 without --fastq2 and vice versa."""
-    import sys
     from micall.core.contig_stitcher import main
 
     fasta = tmp_path / "in.fasta"
