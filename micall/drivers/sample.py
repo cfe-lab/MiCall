@@ -22,7 +22,7 @@ from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
-from micall.utils.referenceless_contig_stitcher import referenceless_contig_stitcher
+import micall.utils.referenceless_contig_stitcher as referenceless
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
@@ -437,7 +437,19 @@ class Sample:
         # This will only be used in the stitched path (via referencefull_contig_stitcher)
         with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
-            referenceless_contig_stitcher(combined_contigs_fasta, stitched_contigs_fasta)
+            coverage_data = referenceless.compute_coverage_from_fastqs(
+                Path(self.trimmed1_fastq),
+                Path(self.trimmed2_fastq),
+                tuple(referenceless.read_contigs(combined_contigs_fasta)),
+            )
+            combined_contigs_fasta.seek(0)
+            referenceless.referenceless_contig_stitcher(
+                combined_contigs_fasta,
+                stitched_contigs_fasta,
+                coverage_data=coverage_data,
+                minimum_read_depth=1,
+                read_length=150,
+            )
 
         with open(self.stitched_contigs_csv, 'w') as stitched_contigs_csv, \
              open(self.stitched_blast_csv, 'w') as stitched_blast_csv:
