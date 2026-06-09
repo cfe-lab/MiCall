@@ -158,7 +158,7 @@ jobs:
 
       - name: Singularity build
         run: |
-          sudo -E python micall singularity_build
+          sudo -E python micall singularity_build --debug
           sudo chown -R "$USER":"$USER" simgs
 
       - name: Install python packages
