@@ -2,6 +2,7 @@ import itertools
 import logging
 from functools import cache
 from typing import (
+    Dict,
     Iterable,
     Iterator,
     Optional,

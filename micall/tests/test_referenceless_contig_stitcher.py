@@ -1,7 +1,8 @@
+import numpy as np
 import pytest
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, \
-    ACCEPTABLE_STITCHING_SCORE
+    ACCEPTABLE_STITCHING_SCORE, check_read_support
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -870,3 +871,173 @@ def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
     with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
     assert consenses == (bigger,)
+
+
+# ---------------------------------------------------------------------------
+# Tests for check_read_support
+# ---------------------------------------------------------------------------
+
+def make_coverage_ctx(coverage_data, min_depth=1, read_length=10):
+    """Create a ReferencelessStitcherContext with coverage data."""
+    ctx = ReferencelessStitcherContext()
+    ctx.coverage_data = coverage_data
+    ctx.minimum_read_depth = min_depth
+    ctx.read_length = read_length
+    return ctx
+
+
+class TestCheckReadSupport:
+    """Unit tests for the check_read_support function."""
+
+    def test_both_contigs_covered(self):
+        """Both contigs have sufficient coverage in the overlap region."""
+        seq_a = "A" * 100
+        seq_b = "A" * 100
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.full(100, 5, dtype=np.int32),
+            seq_b: np.full(100, 5, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, min_depth=2)
+        assert check_read_support(left, right, 40, 30, None, ctx)
+
+    def test_insufficient_coverage_left(self):
+        """Left contig has a low-coverage position in the overlap region."""
+        seq_a = "A" * 100
+        seq_b = "A" * 100
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.full(100, 3, dtype=np.int32),
+            seq_b: np.full(100, 3, dtype=np.int32),
+        }
+        cov[seq_a][45] = 0  # Position inside overlap has zero coverage.
+        ctx = make_coverage_ctx(cov, min_depth=1)
+        assert not check_read_support(left, right, 40, 30, None, ctx)
+
+    def test_insufficient_coverage_right(self):
+        """Right contig has a low-coverage position in the overlap region."""
+        seq_a = "A" * 100
+        seq_b = "A" * 100
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.full(100, 3, dtype=np.int32),
+            seq_b: np.full(100, 3, dtype=np.int32),
+        }
+        cov[seq_b][15] = 0  # Position inside overlap on right contig.
+        ctx = make_coverage_ctx(cov, min_depth=1)
+        assert not check_read_support(left, right, 40, 30, None, ctx)
+
+    def test_min_depth_zero_skips_check(self):
+        """When minimum_read_depth is 0, the check is always skipped."""
+        seq_a = "A" * 100
+        seq_b = "A" * 100
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.zeros(100, dtype=np.int32),
+            seq_b: np.zeros(100, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, min_depth=0)
+        assert check_read_support(left, right, 40, 30, None, ctx)
+
+    def test_missing_coverage_data_skips(self):
+        """When coverage data is missing for a contig, that contig is not checked."""
+        seq_a = "A" * 100
+        seq_b = "B" * 100  # Not in coverage_data.
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.full(100, 5, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, min_depth=2)
+        # Right contig has no coverage data -> only left is checked.
+        assert check_read_support(left, right, 40, 30, None, ctx)
+
+    def test_boundary_clamping_left_edge(self):
+        """Overlap at start of left contig clamps left boundary to 0."""
+        seq_a = "A" * 100
+        seq_b = "A" * 100
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.full(100, 5, dtype=np.int32),
+            seq_b: np.full(100, 5, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, read_length=20)
+        # left_cutoff=5, boundary would be at -15, clamped to 0.
+        assert check_read_support(left, right, 5, 30, None, ctx)
+
+    def test_boundary_clamping_right_edge(self):
+        """Overlap at end of right contig clamps right boundary to length."""
+        seq_a = "A" * 100
+        seq_b = "A" * 40  # Short contig.
+        left = ContigWithAligner(None, seq_a, None)
+        right = ContigWithAligner(None, seq_b, None)
+        cov = {
+            seq_a: np.full(100, 5, dtype=np.int32),
+            seq_b: np.full(40, 5, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, read_length=20)
+        # right_cutoff=40, boundary would be at 60, clamped to 40.
+        assert check_read_support(left, right, 60, 40, None, ctx)
+
+    def test_covered_noncovered_coordinates(self):
+        """Non-covered case uses left_cutoff and right_cutoff directly."""
+        seq_left = "A" * 100
+        seq_right = "G" * 100  # Different sequence to avoid array aliasing.
+        left = ContigWithAligner(None, seq_left, None)
+        right = ContigWithAligner(None, seq_right, None)
+        cov = {
+            seq_left: np.full(100, 1, dtype=np.int32),
+            seq_right: np.full(100, 1, dtype=np.int32),
+        }
+        # Overlap is [40, 70) on left, read_length=10 -> check [30, 80).
+        # Overlap on right is [0, 30), read_length=10 -> check [0, 40).
+        cov[seq_left][0] = 0   # Outside left check [30, 80).
+        cov[seq_right][45] = 0  # Outside right check [0, 40).
+        ctx = make_coverage_ctx(cov, read_length=10)
+        assert check_read_support(left, right, 40, 30, None, ctx)
+
+    def test_covered_left_contig(self):
+        """Covered case where the left contig is fully inside the overlap."""
+        seq_small = "A" * 30
+        seq_big = "C" * 100  # Different to avoid array aliasing.
+        left = ContigWithAligner(None, seq_small, None)
+        right = ContigWithAligner(None, seq_big, None)
+        cov = {
+            seq_small: np.full(30, 3, dtype=np.int32),
+            seq_big: np.full(100, 3, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, read_length=10)
+        # left is covered -> overlap on left is [0, 30); on right is [10, 40).
+        assert check_read_support(left, right, 10, 40, left, ctx)
+
+    def test_covered_right_contig(self):
+        """Covered case where the right contig is fully inside the overlap."""
+        seq_big = "A" * 100
+        seq_small = "G" * 30  # Different to avoid array aliasing.
+        left = ContigWithAligner(None, seq_big, None)
+        right = ContigWithAligner(None, seq_small, None)
+        cov = {
+            seq_big: np.full(100, 3, dtype=np.int32),
+            seq_small: np.full(30, 3, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, read_length=10)
+        # right is covered -> overlap on left is [10, 40); on right is [0, 30).
+        assert check_read_support(left, right, 10, 40, right, ctx)
+
+    def test_covered_left_fails_on_small_contig(self):
+        """Covered case: insufficient coverage on the covered (small) contig."""
+        seq_small = "A" * 30
+        seq_big = "C" * 100  # Different to avoid array aliasing.
+        left = ContigWithAligner(None, seq_small, None)
+        right = ContigWithAligner(None, seq_big, None)
+        cov = {
+            seq_small: np.full(30, 0, dtype=np.int32),  # No coverage.
+            seq_big: np.full(100, 3, dtype=np.int32),
+        }
+        ctx = make_coverage_ctx(cov, read_length=10)
+        assert not check_read_support(left, right, 10, 40, left, ctx)
