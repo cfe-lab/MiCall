@@ -772,19 +772,22 @@ def check_merged_sequence_support(
     if not any_match:
         return False, 0, 0
 
-    if spanning_total < min_depth:
-        return False, spanning_total, 0
-
+    # Compute window coverage unconditionally for diagnostic purposes.
     current = 0
     min_cov = float('inf')
     for p in range(window_start, window_end):
         current += diff[p]
         if current < min_cov:
             min_cov = current
-        if current < min_depth:
-            return False, spanning_total, int(min_cov)
+    min_cov = int(min_cov)
 
-    return True, spanning_total, int(min_cov)
+    if spanning_total < min_depth:
+        return False, spanning_total, min_cov
+
+    if min_cov < min_depth:
+        return False, spanning_total, min_cov
+
+    return True, spanning_total, min_cov
 
 
 def try_combine_contigs(

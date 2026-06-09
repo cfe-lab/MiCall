@@ -277,10 +277,12 @@ checks.  A 150-mer and a 75-mer (from trimmed reads) both count.
 
 ## 7. Acceptance criteria
 
-- A candidate join is **not** accepted unless at least `minimum_read_depth`
-  distinct deduplicated read identities cross the join cut (`start < cut < end`).
-- The read-length-sized window around the cut is covered to
-  `minimum_read_depth` distinct deduplicated read identities.
+- A candidate join is **not** accepted unless exact matching placements
+  crossing the join cut (`start < cut < end`), weighted by FASTQ multiplicity,
+  reach `minimum_read_depth`.
+- The read-length-sized window around the cut must have per-base exact
+  placement coverage, weighted by FASTQ multiplicity, of at least
+  `minimum_read_depth`.
 - The check runs against the **proposed merged sequence**, not the original
   contig sequences.
 - A single read sequence matching at multiple start positions contributes its

@@ -1003,14 +1003,14 @@ class TestCheckMergedSequenceSupport:
         assert not check_merged_sequence_support(merged, cut, rd, 999, 5)[0]
 
     # ------------------------------------------------------------------
-    # 6. Deduplication — placements and multiplicity must not inflate
+    # 6. Placements and multiplicity — each placement × count contributes
     # ------------------------------------------------------------------
 
     def test_homopolymer_one_read_min_depth_1(self):
-        """One deduplicated read supports min_depth=1 in a homopolymer."""
+        """One read at 4 spanning placements × count 1 = spanning 4 ≥ 1."""
         merged = "A" * 30
         cut = 15
-        # Single deduplicated read "AAAAA".
+        # "AAAAA" has 4 spanning placements (S=11..14) × count 1 = 4.
         rd = {5: Counter({"AAAAA": 1})}
         assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
 
@@ -1208,6 +1208,60 @@ def test_stitch_with_reads_from_fastq_split_side_rejected(tmp_path, disable_acce
         f"Split-side FASTQ reads should not allow a merge, "
         f"but got {len(result)} contig(s)."
     )
+
+
+# ---------------------------------------------------------------------------
+# Tests for build_read_index
+# ---------------------------------------------------------------------------
+
+def _make_fastq(tmp_path, name, records):
+    """Write a FASTQ file with the given records (list of (header, seq))."""
+    path = tmp_path / name
+    lines = []
+    for h, s in records:
+        lines.append(f"@{h}\n{s}\n+\n{'I' * len(s)}\n")
+    path.write_text("".join(lines))
+    return path
+
+
+def test_build_read_index_duplicates_and_rc(tmp_path):
+    """build_read_index accumulates duplicate reads and RC equivalents."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("r1", "ACGTA"),   # canonical = min("ACGTA","TACGT") = "ACGTA"
+        ("r2", "TACGT"),   # rc of "ACGTA", canonical = "ACGTA" (same)
+        ("r3", "ACGTA"),   # duplicate of r1
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("r4", "ACGTA"),   # duplicate again
+        ("r5", "ACGTA"),   # duplicate again (same count as R1 to stay synced)
+        ("r6", "ACGTA"),   # duplicate again
+    ])
+
+    index = build_read_index(fq1, fq2)
+
+    # Two read lengths?  No, all are length 5.
+    assert 5 in index, "Should have a counter for length 5"
+    counter = index[5]
+    # Only one canonical key "ACGTA" with total count 6:
+    #   R1: ACGTA (1) + TACGT (1) → canonical "ACGTA" → +2
+    #   R1: ACGTA (1)                                 → +1 (total 3)
+    #   R2: ACGTA × 3                                 → +3 (total 6)
+    assert counter == {"ACGTA": 6}, (
+        f"Expected single canonical 'ACGTA' with count 6, got {dict(counter)}"
+    )
+    assert len(counter) == 1, "Only one distinct canonical read expected"
+
+
+def test_build_read_index_empty_fastq(tmp_path):
+    """build_read_index with empty FASTQ files returns empty dict."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "empty1.fastq", [])
+    fq2 = _make_fastq(tmp_path, "empty2.fastq", [])
+    index = build_read_index(fq1, fq2)
+    assert index == {}, "Empty FASTQs should produce empty index"
 
 
 def test_cli_fastq_pair_validation(tmp_path):
