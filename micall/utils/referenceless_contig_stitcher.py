@@ -13,6 +13,7 @@ from typing import (
     Literal,
 )
 
+import numpy as np
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
 
@@ -669,6 +670,65 @@ def merge_by_concordance(
     return result_seq, overlap_size
 
 
+def check_read_support(
+    left: ContigWithAligner,
+    right: ContigWithAligner,
+    left_cutoff: int,
+    right_cutoff: int,
+    covered: Optional[ContigWithAligner],
+    ctx: ReferencelessStitcherContext,
+) -> bool:
+    """Check that the overlap region has sufficient read coverage.
+
+    For every position in the overlap window plus a boundary margin of
+    one read-length on each side, verify that at least `minimum_read_depth`
+    reads cover the position in the original FASTQ files.
+
+    When coverage data is unavailable for a contig (it was produced by a
+    previous merge and is not in ctx.coverage_data), the check for that
+    contig is skipped.
+    """
+    min_depth = ctx.minimum_read_depth
+    if min_depth == 0:
+        return True
+
+    read_len = ctx.read_length
+    cov = ctx.coverage_data
+
+    # Determine overlap intervals on each contig.
+    if covered is None:
+        left_ov_start = left_cutoff
+        left_ov_end = left_cutoff + right_cutoff
+        right_ov_start = 0
+        right_ov_end = right_cutoff
+    elif covered is left:
+        left_ov_start = 0
+        left_ov_end = len(left.seq)
+        right_ov_start = left_cutoff
+        right_ov_end = right_cutoff
+    else:
+        left_ov_start = left_cutoff
+        left_ov_end = right_cutoff
+        right_ov_start = 0
+        right_ov_end = len(right.seq)
+
+    left_cov = cov.get(left.seq)
+    if left_cov is not None:
+        l_start = max(0, left_ov_start - read_len)
+        l_end = min(len(left.seq), left_ov_end + read_len)
+        if np.any(left_cov[l_start:l_end] < min_depth):
+            return False
+
+    right_cov = cov.get(right.seq)
+    if right_cov is not None:
+        r_start = max(0, right_ov_start - read_len)
+        r_end = min(len(right.seq), right_ov_end + read_len)
+        if np.any(right_cov[r_start:r_end] < min_depth):
+            return False
+
+    return True
+
+
 def try_combine_contigs(
     is_debug2: bool,
     current_score: Score,
@@ -754,6 +814,10 @@ def try_combine_contigs(
         )
 
     if result_score < minimum_base_score:
+        return None
+
+    if not check_read_support(left, right, left_cutoff, right_cutoff, covered,
+                              ReferencelessStitcherContext.get()):
         return None
 
     if covered is not None:
