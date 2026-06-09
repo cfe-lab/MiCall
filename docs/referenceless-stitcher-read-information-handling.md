@@ -1,11 +1,17 @@
-# Specification: Read-Supported Overlap Validation for the Referenceless Contig Stitcher
+# Specification: Read-Supported Join Validation for the Referenceless Contig Stitcher
 
 ## 1. Summary
 
-Add read-coverage validation to the referenceless contig stitcher. Before
-accepting a merge between two contigs, verify that every base in the overlap
-region (plus a one-read-length buffer on each side) is covered by at least
-`minimum_read_depth` reads from the original FASTQ files.
+Add read-validation to the referenceless contig stitcher. Before accepting a
+merge between two contigs, check that the **merged sequence** around the **join
+boundary** is supported by reads from the original FASTQ files.  Specifically,
+every position within ±`read_length` of the join boundary must be covered by
+at least `minimum_read_depth` reads that **exactly match** substrings of the
+merged sequence.
+
+This validates the actual join, not just the original contigs independently.
+A merge is rejected if no read spans the boundary, even when both source
+contigs have local coverage.
 
 ---
 
@@ -18,9 +24,10 @@ The current stitcher validates overlaps purely on sequence similarity
 - Chimeric contigs produced by the de-novo assembler.
 - Cross-contamination where unrelated sequences happen to share similarity.
 
-Read support provides independent experimental evidence. If no read covers a
-position in the overlap vicinity, the merge is rejected regardless of sequence
-score.
+A naive per-contig coverage check (validating each original contig's overlap
+region independently) is insufficient: two independently well-covered contig
+ends do **not** prove that a single read spans the join. The check must
+operate on the merged sequence itself.
 
 ---
 
@@ -33,210 +40,169 @@ score.
 | `--fastq1` | `Path` | — | CLI | Forward reads FASTQ (plain or .gz) |
 | `--fastq2` | `Path` | — | CLI | Reverse reads FASTQ (plain or .gz) |
 | `--minimum-read-depth` | `int` | `1` | CLI + Context | Min reads per position. `0` = disable |
-| `--read-length` | `int` | `150` | CLI + Context | Read length for boundary margin |
+| `--read-length` | `int` | `150` | CLI + Context | Read length for boundary window |
 
-Coverage validation is **disabled** (backward compatible) when neither FASTQ is
-provided, or when `--minimum-read-depth 0`.
+Coverage validation is **disabled** when neither FASTQ is provided, or when
+`--minimum-read-depth 0`. `--fastq1` and `--fastq2` must be provided together;
+passing only one is a CLI error.
 
 ### 3.2 CLI changes (`micall/core/contig_stitcher.py`)
 
-Add four arguments to the `without-references` subparser (lines 37-40):
-
 ```python
-# After existing contigs/stitched_contigs arguments, add:
+# without-references subparser:
 parser.add_argument('--fastq1', type=Path, default=None,
-                    help='Forward reads FASTQ for coverage validation.')
+                    help='Forward reads FASTQ for join validation.')
 parser.add_argument('--fastq2', type=Path, default=None,
-                    help='Reverse reads FASTQ for coverage validation.')
+                    help='Reverse reads FASTQ for join validation.')
 parser.add_argument('--minimum-read-depth', type=int, default=1,
-                    help='Minimum read coverage to accept an overlap. '
-                         '0 disables coverage validation.')
+                    help='Minimum reads per position near join boundary. '
+                         '0 disables validation.')
 parser.add_argument('--read-length', type=int, default=150,
-                    help='Read length used for the boundary margin. '
-                         'Coverage is checked overlap ± read_length.')
+                    help='Read length for boundary window. '
+                         'Coverage is checked join_boundary +/- read_length.')
 ```
 
-When FASTQs are provided, coverage is computed before calling the stitcher.
-The `referenceless_contig_stitcher` entry point gains optional keyword
-arguments that populate the context.
-
-### 3.3 Context changes (`micall/utils/contig_stitcher_context.py`)
-
-Add coverage data and parameters to `ReferencelessStitcherContext` (after
-the existing caches at line 87):
+Validation:
 
 ```python
-# Coverage data for read-support validation.
-# Maps contig sequence (str) → per-position coverage (np.ndarray[int32]).
-# Coverage is computed once for all input contigs before stitching.
-coverage_data: Dict[str, np.ndarray] = {}
-
-# Copy of CLI parameters; set by referenceless_contig_stitcher entry point.
-minimum_read_depth: int = 1
-read_length: int = 150
+if (args.fastq1 is None) != (args.fastq2 is None):
+    parser.error("--fastq1 and --fastq2 must be provided together.")
+if args.minimum_read_depth < 0:
+    parser.error("--minimum-read-depth must be non-negative.")
+if args.read_length < 1:
+    parser.error("--read-length must be positive.")
 ```
 
-These fields are populated once during `referenceless_contig_stitcher` (or
-`referenceless_contig_stitcher_with_ctx`) and are read-only during the
-algorithm.
+### 3.3 Read index (`build_read_index`)
 
-### 3.4 Coverage precomputation
-
-Before any stitching, compute exact coverage once for every input contig:
-
-```
-for each (contig_name, contig_seq) in input_contigs:
-    coverage_array = np.zeros(len(contig_seq), dtype=np.int32)
-
-for each read in FASTQ(s):
-    for each exact match of read in any contig (forward or rc):
-        for pos in [match_start, match_end):
-            coverage_array[pos] += 1
-```
-
-Implementation notes:
-
-- Reuse the k-mer hashing logic from `micall/utils/exact_coverage.py` (the
-  `build_kmer_index_for_size` / `find_exact_matches` functions).
-- Count both R1 and R2 reads independently. A read pair yields two
-  independent counts.
-- Use `coverage0` semantics (full read extent, NOT trimmed by
-  `overlap_size`). The stitcher's own boundary logic handles edge effects.
-- Coverage is computed for **original input contigs only**. Newly stitched
-  contigs do not receive coverage arrays — the check is skipped for them
-  (see §3.6).
-
-Alternatively, call `calculate_exact_coverage` from `exact_coverage.py`
-with `overlap_size=0` and use the returned `coverage0` dictionary.
-
-### 3.5 Coverage validation function
-
-New function (added to `referenceless_contig_stitcher.py`):
+Before stitching, reads from both FASTQ files are collected into a
+**read index**: a `Dict[int, Counter[str]]` mapping read_length → Counter of
+read sequences with their counts.
 
 ```python
-def check_read_support(
-    left: ContigWithAligner,
-    right: ContigWithAligner,
-    left_cutoff: int,
-    right_cutoff: int,
-    ctx: ReferencelessStitcherContext,
+def build_read_index(fastq1_path: Path, fastq2_path: Path) -> Dict[int, Counter[str]]:
+    read_index: Dict[int, Counter[str]] = {}
+    with open_fastq(fastq1) as fq1, open_fastq(fastq2) as fq2:
+        while True:
+            header1 = fq1.readline()
+            if not header1:
+                break
+            seq1 = fq1.readline().strip()
+            fq1.readline(); fq1.readline()
+            fq2.readline()
+            seq2 = fq2.readline().strip()
+            fq2.readline(); fq2.readline()
+            for seq in (seq1, seq2):
+                if not seq:
+                    continue
+                read_index.setdefault(len(seq), Counter())[seq] += 1
+    return read_index
+```
+
+This index is built **once** and reused for all merge candidates throughout
+the stitching process.
+
+### 3.4 Context changes (`micall/utils/contig_stitcher_context.py`)
+
+```python
+# Read index for join-boundary validation.
+# Maps read_length -> Counter of read sequences with their counts.
+self.read_index: Dict[int, Counter[str]] = {}
+
+# Coverage validation parameters.
+self.minimum_read_depth: int = 1
+self.read_length: int = 150
+```
+
+### 3.5 Validation function (`check_merged_sequence_support`)
+
+After the merged sequence `M` and join boundary position `B` are determined
+(by `merge_by_concordance`), the check validates every position in
+`[B - read_length, B + read_length)` on `M`:
+
+```python
+def check_merged_sequence_support(
+    merged_seq: str,
+    join_boundary: int,
+    read_index: Dict[int, Counter[str]],
+    min_depth: int,
+    read_length: int,
 ) -> bool:
-    """Return True if the overlap region has sufficient read coverage.
+    if min_depth == 0 or not read_index:
+        return True
 
-    Checks every position in the overlap window plus a boundary margin
-    of `read_length` on each side on both contigs.
+    window_start = max(0, join_boundary - read_length)
+    window_end = min(len(merged_seq), join_boundary + read_length)
 
-    When coverage data is unavailable for a contig (it was produced by
-    a previous merge), the check for that contig is skipped.
-    """
-    min_depth = ctx.minimum_read_depth
-    if min_depth == 0:
-        return True  # disabled
+    # Pick the read length closest to the configured value.
+    lookup_len = min(read_index.keys(), key=lambda x: abs(x - read_length))
+    counter = read_index[lookup_len]
 
-    read_len = ctx.read_length
-    cov = ctx.coverage_data
-
-    # --- Check left contig ---
-    left_cov = cov.get(left.seq)
-    if left_cov is not None:
-        left_start = max(0, left_cutoff - read_len)
-        left_end = min(len(left.seq), left_cutoff + right_cutoff + read_len)
-        if np.any(left_cov[left_start:left_end] < min_depth):
+    for p in range(window_start, window_end):
+        # Reads covering position p start in [p-L+1, p].
+        s_min = max(0, p - lookup_len + 1)
+        s_max = min(p, len(merged_seq) - lookup_len)
+        total = 0
+        for s in range(s_min, s_max + 1):
+            kmer = merged_seq[s:s + lookup_len]
+            total += counter.get(kmer, 0)
+        if total < min_depth:
             return False
-
-    # --- Check right contig ---
-    right_cov = cov.get(right.seq)
-    if right_cov is not None:
-        right_start = 0  # overlap begins at position 0 on the right contig
-        right_end = min(len(right.seq), right_cutoff + read_len)
-        if np.any(right_cov[right_start:right_end] < min_depth):
-            return False
-
     return True
-```
-
-#### Boundary formulas
-
-For the **left contig**, the overlap window occupies:
-`[left_cutoff, left_cutoff + right_cutoff)`.
-
-- Left boundary: one read-length before the overlap starts, clamped to 0.
-- Right boundary: one read-length after the overlap ends, clamped to the
-  contig length.
-
-```
-check_start = max(0, left_cutoff - read_length)
-check_end   = min(len(left.seq), left_cutoff + right_cutoff + read_length)
-```
-
-For the **right contig**, the overlap window occupies `[0, right_cutoff)`.
-
-- Left boundary: 0 (clamped; cannot go negative).
-- Right boundary: one read-length after the overlap ends, clamped to the
-  contig length.
-
-```
-check_start = 0
-check_end   = min(len(right.seq), right_cutoff + read_length)
 ```
 
 #### Geometric interpretation
 
-Extending one read-length beyond the overlap on each side checks that at
-least one full read-length of flanking sequence has coverage. This means:
+For each position `p` near the join boundary, we count every read that
+*exactly matches* a substring of the merged sequence `M` and whose span
+`[s, s+L)` covers `p`.  At least `min_depth` such reads must exist.
 
-- A read starting before the overlap and extending into it is counted.
-- A read starting inside the overlap and extending past it is counted.
-- A read that exactly spans the junction and slightly beyond is counted.
+A read that crosses the join boundary at position `B` will cover positions
+on both sides of `B`, providing evidence that the merge is correct.  Reads
+that only match one original contig do **not** count towards the other
+side's coverage — the check fails if any position in the window lacks
+sufficient coverage.
 
-If a contig is too short to accommodate the full margin on one side, the
-boundary is clamped to the contig's edge (no artificial extension).
+### 3.6 Integration in the merge algorithm
 
-### 3.6 Integration point in the merge algorithm
-
-The check is called inside `try_combine_contigs` (line 756 of
-`referenceless_contig_stitcher.py`), **after** the score threshold passes
-and **before** the merge decision:
+The check is inserted into `try_combine_contigs` after the merged sequence
+has been constructed (the `merge_by_concordance` call is moved before the
+check):
 
 ```python
-    # Line 756 (existing):
-    if result_score < minimum_base_score:
-        return None
+# After score threshold check and covered-contig handling...
 
-    # NEW: coverage check (insert here)
-    if not check_read_support(
-        left, right, left_cutoff, right_cutoff,
-        ReferencelessStitcherContext.get(),
-    ):
-        return None
+result_seq, overlap_size, join_boundary = merge_by_concordance(
+    aligned_1, aligned_2, left_remainder, right_remainder
+)
 
-    # Lines 759-769 (existing): covered-contig handling
-    if covered is not None:
-        ...
+# Validate the merged sequence around the join boundary against reads.
+ctx = ReferencelessStitcherContext.get()
+if not check_merged_sequence_support(
+    result_seq, join_boundary,
+    ctx.read_index, ctx.minimum_read_depth, ctx.read_length,
+):
+    return None
+
+# Build ContigWithAligner and return.
 ```
 
-The same check applies to both the "covered" and "non-covered" cases. In
-the covered case (`covered is not None`), the check is performed on the
-**original** `left` and `right` contigs (not `covered`/`bigger`), because
-the coverage arrays index by original contig sequence.
+Covered-contig cases (one contig fully inside the overlap of another) do
+not create a join boundary, so the check is skipped for them.
 
-### 3.7 When coverage data is unavailable
+### 3.7 Limitations: exact matching
 
-Coverage arrays are computed for original input contigs only. When a
-previously stitched contig participates in a merge (e.g., during the
-`o2_loop` greedy phase), its sequence won't be in `coverage_data`. In this
-case the check for that specific contig is **skipped** (the other contig
-is still checked if it has data).
+The validation uses **exact matching only**: a read must match a substring
+of the merged sequence perfectly, with zero mutations, insertions, or
+deletions.  This means:
 
-This means:
+- Reads with sequencing errors in the overlap region are not counted.
+- Reads from divergent quasispecies variants are not counted.
+- The check is conservative — it undercounts true biological support.
 
-- All original-to-original merges are validated.
-- Original-to-stitched merges are partially validated (original side only).
-- Stitched-to-stitched merges are skipped entirely.
-
-This is a safe default: the most critical merges are the initial ones
-between original contigs. As the stitcher builds longer paths, each
-component has already been individually validated.
+However, the primary target is **spurious joins** from coincidental sequence
+similarity (low-complexity repeats, chimeric assemblies, contamination).
+These will have **zero** spanning reads, which the check correctly rejects.
 
 ---
 
@@ -244,11 +210,10 @@ component has already been individually validated.
 
 | File | Change |
 |---|---|
-| `micall/core/contig_stitcher.py` | Add `--fastq1`, `--fastq2`, `--minimum-read-depth`, `--read-length` args to `without-references` subparser. When FASTQs provided, compute coverage and pass to stitcher. |
-| `micall/utils/contig_stitcher_context.py` | Add `coverage_data`, `minimum_read_depth`, `read_length` fields to `ReferencelessStitcherContext.__init__`. |
-| `micall/utils/referenceless_contig_stitcher.py` | Add `check_read_support()` function. Call it inside `try_combine_contigs` after score check. Accept optional coverage parameters in entry points. |
-| `micall/utils/exact_coverage.py` | No changes needed. Reuse existing `find_exact_matches` / `build_kmer_index_for_size` or the full `calculate_exact_coverage` with `overlap_size=0`. |
-| `micall/drivers/sample.py` | Pass `self.trimmed1_fastq` / `self.trimmed2_fastq` / `minimum_read_depth` / `read_length` to `referenceless_contig_stitcher` call (line 440). |
+| `micall/core/contig_stitcher.py` | Add `--fastq1`, `--fastq2`, `--minimum-read-depth`, `--read-length` args to `without-references` subparser. Validate FASTQ pair. Build read index and pass to stitcher. |
+| `micall/utils/contig_stitcher_context.py` | Replace `coverage_data` with `read_index`. Keep `minimum_read_depth`, `read_length`. Remove numpy import. |
+| `micall/utils/referenceless_contig_stitcher.py` | Add `build_read_index()` (replaces `compute_coverage_from_fastqs`). Add `check_merged_sequence_support()` (replaces `check_read_support`). Restructure `try_combine_contigs` to merge before checking. Modify `merge_by_concordance` to return `join_boundary`. Remove numpy and unused exact_coverage imports. |
+| `micall/drivers/sample.py` | Use `build_read_index` instead of `compute_coverage_from_fastqs`. Pass read index to stitcher. |
 
 ---
 
@@ -256,112 +221,84 @@ component has already been individually validated.
 
 ### 5.1 No FASTQ provided (backward compat)
 
-When neither `--fastq1` nor `--fastq2` is given, coverage data is empty and
-`minimum_read_depth` defaults to 0 automatically (or is explicitly set to 0).
-`check_read_support` returns `True` immediately. Old behaviour preserved.
+When neither `--fastq1` nor `--fastq2` is given, `read_index` stays empty.
+`check_merged_sequence_support` returns `True` immediately when
+`not read_index`. Old behaviour preserved.
 
 ### 5.2 `minimum_read_depth = 0` (explicit disable)
 
-The function short-circuits at the top when `min_depth == 0`. No coverage
-computation is performed even if FASTQs are provided.
+The function short-circuits at `min_depth == 0`. No read index is needed.
 
-### 5.3 Empty contig
+### 5.3 Empty or very short contig
 
-A contig with `len(seq) == 0` has no coverage array. `cov.get("")` returns
-`None`, so the check for that contig is skipped. This matches current
-behaviour where empty contigs pass through.
+A contig shorter than `read_length` is fully covered by the window.
+The check still works: start/end are clamped to sequence boundaries.
 
-### 5.4 Contig shorter than read_length
+### 5.4 Boundary at contig edge
 
-The boundary formula clamps to `len(contig.seq)`. If the contig is shorter
-than `read_length`, the checked region is the entire contig.
+If `join_boundary - read_length < 0`, the window starts at 0.
+If `join_boundary + read_length >= len(merged_seq)`, the window ends at
+`len(merged_seq)`.
 
-### 5.5 Overlap at contig boundary
+### 5.5 Duplicate contig sequences
 
-If the overlap sits flush against one end of a contig (e.g., `left_cutoff == 0`
-or `left_cutoff + right_cutoff == len(left.seq)`), the boundary margin on
-that side is clamped to 0 or `len(seq)` respectively. No out-of-range access.
+The read index is keyed by read sequence (not contig sequence), so
+duplicate or identical contig sequences do not cause coverage confusion.
+Each contig is a separate `ContigWithAligner` object with its own identity;
+the read index works independently of contig identity.
 
-### 5.6 No exact matches found
+### 5.6 Read lengths vary
 
-If no read from FASTQ maps exactly to any contig, all coverage arrays are
-zero. With `minimum_read_depth ≥ 1`, every merge fails the check and the
-stitcher produces no merges (only original contigs are output). This is
-correct behaviour: if the reads don't match the contigs at all, any merge
-would be speculative.
-
-### 5.7 Stitched contigs from o2_loop
-
-The greedy `o2_loop` phase creates merged contigs not present in the
-original input. These have no coverage array. The check for these contigs
-is skipped. If both sides of a candidate pair in `o2_loop` are stitched
-contigs, the check is fully skipped.
+The function picks the read length from the index closest to the configured
+`--read-length`. If reads have very different lengths (e.g., 50bp and 250bp),
+the closest match is used. Reads of other lengths are not considered.
 
 ---
 
 ## 6. Testing strategy
 
-### 6.1 Unit tests for `check_read_support`
+### 6.1 Unit tests for `check_merged_sequence_support`
 
 ```
-test_read_support_both_covered():
-    coverage_data = {"ACGT"*10: np.array([5]*40)}
-    ctx = ReferencelessStitcherContext()
-    ctx.coverage_data = coverage_data
-    ctx.minimum_read_depth = 2
-    ctx.read_length = 10
-    left = ContigWithAligner(None, "ACGT"*10, None)
-    right = ContigWithAligner(None, "ACGT"*10, None)
-    assert check_read_support(left, right, 20, 20, ctx)  # overlap in middle
-
-test_read_support_insufficient_coverage():
-    # coverage_array has zeros in the overlap region
-    ...
-
-test_read_support_min_depth_zero():
-    # returns True regardless of coverage
-    ...
-
-test_read_support_no_coverage_data():
-    # contig seq not in coverage_data -> skip
-    ...
-
-test_read_support_boundary_clamping():
-    # overlap at very start of contig -> left boundary clamped to 0
-    ...
+TestCheckMergedSequenceSupport:
+  test_sufficient_reads_span_boundary      → pass
+  test_no_reads_span_boundary_rejected     → fail (correctly)
+  test_min_depth_zero_passes               → pass
+  test_empty_read_index_passes             → pass
+  test_boundary_at_sequence_start          → pass (degenerate)
+  test_boundary_at_sequence_end            → pass (degenerate)
+  test_partial_coverage_around_boundary    → fail (position near boundary uncovered)
 ```
 
-### 6.2 Integration tests for the stitcher with coverage
+### 6.2 End-to-end tests with read index
 
 ```
-test_stitch_rejects_uncovered_overlap():
-    # Create two contigs that overlap in sequence
-    # Provide FASTQ reads that cover everything EXCEPT the overlap region
-    # Verify they are NOT stitched
+test_stitch_with_read_index:
+  Bad case: reads cover original contigs in overlap,
+  but no read spans boundary → merge rejected (2 contigs remain)
 
-test_stitch_accepts_covered_overlap():
-    # Same contigs, reads covering everything including overlap
-    # Verify they ARE stitched
+  Good case: reads also span boundary → merge accepted (1 contig)
 
-test_stitch_backward_compat_no_fastq():
-    # No FASTQs provided -> stitching proceeds as before
+test_stitch_with_reads_from_fastq:
+  Same as above but reads come from real FASTQ files via build_read_index.
 ```
 
-### 6.3 Existing test suites
+### 6.3 CLI validation tests
+
+```
+test_cli_fastq_pair_validation:
+  --fastq1 without --fastq2 → SystemExit (error)
+  --fastq2 without --fastq1 → SystemExit (error)
+
+test_cli_negative_read_depth_rejected:
+  --minimum-read-depth -1 → SystemExit (error)
+
+test_cli_zero_read_length_rejected:
+  --read-length 0 → SystemExit (error)
+```
+
+### 6.4 Existing test suites
 
 The existing exact-match log tests in
-`test_referenceless_contig_stitcher_exact.py` are not affected when FASTQs
+`test_referenceless_contig_stitcher_exact.py` are unaffected when FASTQs
 are not provided (default behaviour unchanged).
-
----
-
-## 7. Implementation order
-
-1. Add `coverage_data`, `minimum_read_depth`, `read_length` to
-   `ReferencelessStitcherContext.__init__`.
-2. Write `check_read_support()` and its unit tests.
-3. Integrate `check_read_support()` into `try_combine_contigs`.
-4. Add CLI arguments to `contig_stitcher.py`.
-5. Wire coverage precomputation into the `without-references` path.
-6. Add integration tests.
-7. Update `sample.py` to pass FASTQ paths and parameters.
