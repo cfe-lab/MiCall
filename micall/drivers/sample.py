@@ -437,16 +437,14 @@ class Sample:
         # This will only be used in the stitched path (via referencefull_contig_stitcher)
         with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
              open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
-            coverage_data = referenceless.compute_coverage_from_fastqs(
+            read_index = referenceless.build_read_index(
                 Path(self.trimmed1_fastq),
                 Path(self.trimmed2_fastq),
-                tuple(referenceless.read_contigs(combined_contigs_fasta)),
             )
-            combined_contigs_fasta.seek(0)
             referenceless.referenceless_contig_stitcher(
                 combined_contigs_fasta,
                 stitched_contigs_fasta,
-                coverage_data=coverage_data,
+                read_index=read_index,
                 minimum_read_depth=1,
                 read_length=150,
             )

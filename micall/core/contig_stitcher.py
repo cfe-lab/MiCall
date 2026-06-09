@@ -1,9 +1,8 @@
 import sys
-from typing import Sequence, Dict
+from typing import Sequence
 import logging
 from pathlib import Path
 
-import numpy as np
 import micall.utils.referencefull_contig_stitcher as referencefull
 import micall.utils.referenceless_contig_stitcher as referenceless
 
@@ -82,16 +81,23 @@ def main(argv: Sequence[str]) -> int:
             args.contigs, args.stitched_contigs, plot_path, remap_counts)
     else:
         referenceless.logger = logger
-        coverage_data: Dict[str, np.ndarray] = {}
+
+        # Validate FASTQ arguments: both or neither.
+        if (args.fastq1 is None) != (args.fastq2 is None):
+            parser.error("--fastq1 and --fastq2 must be provided together.")
+        if args.minimum_read_depth < 0:
+            parser.error("--minimum-read-depth must be non-negative.")
+        if args.read_length < 1:
+            parser.error("--read-length must be positive.")
+
+        read_index = {}
         if args.fastq1 is not None and args.fastq2 is not None:
-            contig_records = tuple(referenceless.read_contigs(args.contigs))
-            args.contigs.seek(0)
-            coverage_data = referenceless.compute_coverage_from_fastqs(
-                args.fastq1, args.fastq2, contig_records,
+            read_index = referenceless.build_read_index(
+                args.fastq1, args.fastq2,
             )
         referenceless.referenceless_contig_stitcher(
             args.contigs, args.stitched_contigs,
-            coverage_data=coverage_data,
+            read_index=read_index,
             minimum_read_depth=args.minimum_read_depth,
             read_length=args.read_length,
         )
