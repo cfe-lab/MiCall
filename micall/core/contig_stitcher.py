@@ -43,8 +43,9 @@ def main(argv: Sequence[str]) -> int:
         parser.add_argument('--fastq2', type=Path, default=None,
                             help='Reverse reads FASTQ for join-boundary validation (plain or .gz).')
         parser.add_argument('--minimum-read-depth', type=int, default=1,
-                            help='Minimum reads that must cross the join cut. '
-                                 '0 disables validation. (default: 1)')
+                            help='Minimum exact-placement depth required at the join cut '
+                                 'and across the validation window. 0 disables validation. '
+                                 '(default: 1)')
         parser.add_argument('--read-length', type=int, default=150,
                             help='Read length used for the centred coverage window around '
                                  'the join cut. (default: 150)')

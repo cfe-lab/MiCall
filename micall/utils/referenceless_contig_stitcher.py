@@ -740,7 +740,7 @@ def check_merged_sequence_support(
 
     # -- difference array for per-position coverage --
     diff = [0] * (seq_len + 1)
-    spanning_total = 0
+    cut_crossing_depth = 0
     any_match = False
 
     for L, counter in read_index.items():
@@ -761,7 +761,7 @@ def check_merged_sequence_support(
             any_match = True
 
             if s < cut_position < s + L:
-                spanning_total += count
+                cut_crossing_depth += count
 
             cov_start = max(window_start, s)
             cov_end = min(window_end, s + L)
@@ -781,13 +781,13 @@ def check_merged_sequence_support(
             min_cov = current
     min_cov = int(min_cov)
 
-    if spanning_total < min_depth:
-        return False, spanning_total, min_cov
+    if cut_crossing_depth < min_depth:
+        return False, cut_crossing_depth, min_cov
 
     if min_cov < min_depth:
-        return False, spanning_total, min_cov
+        return False, cut_crossing_depth, min_cov
 
-    return True, spanning_total, min_cov
+    return True, cut_crossing_depth, min_cov
 
 
 def try_combine_contigs(
@@ -895,7 +895,7 @@ def try_combine_contigs(
 
     # Validate the merged sequence around the join boundary against reads.
     ctx = ReferencelessStitcherContext.get()
-    passed, span_cnt, min_win_cov = check_merged_sequence_support(
+    passed, cut_depth, min_win_cov = check_merged_sequence_support(
         result_seq, join_boundary,
         ctx.read_index, ctx.minimum_read_depth, ctx.read_length,
     )
@@ -904,7 +904,7 @@ def try_combine_contigs(
             log(events.ReadSupportRejected(
                 left.unique_name, right.unique_name,
                 join_boundary, ctx.minimum_read_depth,
-                span_cnt, min_win_cov,
+                cut_depth, min_win_cov,
             ))
         return None
 
@@ -1211,9 +1211,10 @@ def referenceless_contig_stitcher_with_ctx(
     Reads input contigs, performs stitching if output is specified, and writes results.
     Returns the number of contigs (stitched or original).
 
-    Merge validation against read coverage is controlled by the context:
-    when ctx.read_index is non-empty and ctx.minimum_read_depth > 0,
-    check_merged_sequence_support is called for each candidate merge.
+    Merge validation against read coverage is enabled when
+    ``ctx.read_index is not None`` and ``ctx.minimum_read_depth > 0``.
+    An empty ``read_index`` (``{}``) means validation is enabled but no reads
+    were indexed — merges will be rejected.
     """
     contigs = tuple(read_contigs(input_fasta))
     log(events.Loaded(len(contigs)))
