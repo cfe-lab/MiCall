@@ -1,6 +1,8 @@
 import itertools
 import logging
+from collections import Counter
 from functools import cache
+from pathlib import Path
 from typing import (
     Dict,
     Iterable,
@@ -14,17 +16,11 @@ from typing import (
     Literal,
 )
 
-import numpy as np
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.exact_coverage import (
-    find_exact_matches,
-    reverse_complement,
-)
 from micall.utils.exact_coverage import open_fastq as open_fastq_file
-from pathlib import Path
 from micall.utils.contig_stitcher_contigs import Contig, ContigId
 from micall.utils.overlap_stitcher import (
     align_queries,
@@ -656,10 +652,12 @@ def align_for_merge_noncovered(
 
 def merge_by_concordance(
     aligned_1: str, aligned_2: str, left_remainder: str, right_remainder: str
-) -> Tuple[str, int]:
+) -> Tuple[str, int, int]:
     """Produce merged sequence by splitting at the best concordance index.
 
-    Returns tuple of (result_seq, overlap_size_for_event).
+    Returns tuple of (result_seq, overlap_size_for_event, join_boundary)
+    where join_boundary is the position in result_seq where the left contig
+    ends and the right contig begins (the cut point determined by concordance).
     """
     concordance = calculate_concordance(aligned_1, aligned_2)
     max_concordance_index = next(iter(sort_concordance_indexes(concordance)))
@@ -674,63 +672,73 @@ def merge_by_concordance(
         left_remainder + left_overlap_chunk + right_overlap_chunk + right_remainder
     )
     overlap_size = len(left_overlap_chunk) + len(right_overlap_chunk)
-    return result_seq, overlap_size
+    join_boundary = len(left_remainder) + len(left_overlap_chunk)
+    return result_seq, overlap_size, join_boundary
 
 
-def check_read_support(
-    left: ContigWithAligner,
-    right: ContigWithAligner,
-    left_cutoff: int,
-    right_cutoff: int,
-    covered: Optional[ContigWithAligner],
-    ctx: ReferencelessStitcherContext,
+def check_merged_sequence_support(
+    merged_seq: str,
+    join_boundary: int,
+    read_index: Dict[int, Counter[str]],
+    min_depth: int,
+    read_length: int,
 ) -> bool:
-    """Check that the overlap region has sufficient read coverage.
+    """Check that the joint boundary region of a merged sequence has read support.
 
-    For every position in the overlap window plus a boundary margin of
-    one read-length on each side, verify that at least `minimum_read_depth`
-    reads cover the position in the original FASTQ files.
+    Validates that every position within ±read_length of the join boundary
+    is covered by at least min_depth reads. Coverage is determined by exact
+    matching of reads (from a pre-built read_index) against substrings of
+    the merged sequence.
 
-    When coverage data is unavailable for a contig (it was produced by a
-    previous merge and is not in ctx.coverage_data), the check for that
-    contig is skipped.
+    The join boundary is the position in the merged sequence where the left
+    contig ends and the right contig begins. Reads that exactly match
+    substrings spanning this boundary provide evidence that the merge is
+    biologically valid, as opposed to a spurious sequence-similarity join.
+
+    Limitations
+    -----------
+    This check uses exact matching only: a read with any mutation, insertion,
+    or deletion relative to the merged sequence will not be counted. This
+    means quasispecies diversity or sequencing errors in the overlap region
+    will cause undercounting. However, any false join that arises from
+    coincidental sequence similarity will also have zero spanning reads,
+    which is the primary case this check is designed to reject.
+
+    When the read_index is empty or min_depth is 0, the check passes
+    unconditionally (backward compatible).
     """
-    min_depth = ctx.minimum_read_depth
-    if min_depth == 0:
+    if min_depth == 0 or not read_index:
         return True
 
-    read_len = ctx.read_length
-    cov = ctx.coverage_data
+    seq_len = len(merged_seq)
+    window_start = max(0, join_boundary - read_length)
+    window_end = min(seq_len, join_boundary + read_length)
 
-    # Determine overlap intervals on each contig.
-    if covered is None:
-        left_ov_start = left_cutoff
-        left_ov_end = left_cutoff + right_cutoff
-        right_ov_start = 0
-        right_ov_end = right_cutoff
-    elif covered is left:
-        left_ov_start = 0
-        left_ov_end = len(left.seq)
-        right_ov_start = left_cutoff
-        right_ov_end = right_cutoff
-    else:
-        left_ov_start = left_cutoff
-        left_ov_end = right_cutoff
-        right_ov_start = 0
-        right_ov_end = len(right.seq)
+    if window_end <= window_start:
+        return True
 
-    left_cov = cov.get(left.seq)
-    if left_cov is not None:
-        l_start = max(0, left_ov_start - read_len)
-        l_end = min(len(left.seq), left_ov_end + read_len)
-        if np.any(left_cov[l_start:l_end] < min_depth):
-            return False
+    # Pick the read length closest to the configured value.
+    avail_lengths = sorted(read_index.keys())
+    if not avail_lengths:
+        return True
+    lookup_len = min(avail_lengths, key=lambda x: abs(x - read_length))
 
-    right_cov = cov.get(right.seq)
-    if right_cov is not None:
-        r_start = max(0, right_ov_start - read_len)
-        r_end = min(len(right.seq), right_ov_end + read_len)
-        if np.any(right_cov[r_start:r_end] < min_depth):
+    counter = read_index.get(lookup_len)
+    if counter is None:
+        return True
+
+    # For each position p in the window, compute coverage by summing all
+    # reads that cover p. A read of length L starting at s covers position p
+    # iff s <= p < s + L.  So for position p, valid start positions are:
+    #   max(0, p - L + 1)  ...  min(p, seq_len - L)
+    for p in range(window_start, window_end):
+        s_min = max(0, p - lookup_len + 1)
+        s_max = min(p, seq_len - lookup_len)
+        total = 0
+        for s in range(s_min, s_max + 1):
+            kmer = merged_seq[s:s + lookup_len]
+            total += counter.get(kmer, 0)
+        if total < min_depth:
             return False
 
     return True
@@ -823,10 +831,6 @@ def try_combine_contigs(
     if result_score < minimum_base_score:
         return None
 
-    if not check_read_support(left, right, left_cutoff, right_cutoff, covered,
-                              ReferencelessStitcherContext.get()):
-        return None
-
     if covered is not None:
         assert number_of_matches <= overlap.size
         if number_of_matches == overlap.size:
@@ -839,9 +843,21 @@ def try_combine_contigs(
             # Partial coverage with mismatches: cannot merge reliably.
             return None
 
-    result_seq, overlap_size = merge_by_concordance(
+    result_seq, overlap_size, join_boundary = merge_by_concordance(
         aligned_1, aligned_2, left_remainder, right_remainder
     )
+
+    # Validate the merged sequence around the join boundary against reads.
+    ctx = ReferencelessStitcherContext.get()
+    if not check_merged_sequence_support(
+        result_seq,
+        join_boundary,
+        ctx.read_index,
+        ctx.minimum_read_depth,
+        ctx.read_length,
+    ):
+        return None
+
     # When merging contigs, sum their read counts if both are available
     if left.reads_count is not None and right.reads_count is not None:
         combined_reads_count = left.reads_count + right.reads_count
@@ -1078,31 +1094,22 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
         yield ContigWithAligner(name=record.name, seq=str(record.seq), reads_count=None)
 
 
-def compute_coverage_from_fastqs(
+def build_read_index(
     fastq1_path: Path,
     fastq2_path: Path,
-    contigs: Iterable[ContigWithAligner],
-) -> Dict[str, np.ndarray]:
-    """Compute exact per-position read coverage for input contigs.
+) -> Dict[int, Counter[str]]:
+    """Build a read index from paired FASTQ files.
 
-    Counts every exact match of each read (forward and reverse complement)
-    in every contig, using the full read extent (no overlap trimming).
+    Reads both R1 and R2, and builds a dictionary mapping
+    read_length -> Counter of read sequences with their counts.
 
-    Returns a dict mapping contig sequence string -> integer coverage array
-    for lookup by `ContigWithAligner.seq`.
+    This index is used by check_merged_sequence_support to validate
+    join boundaries on candidate merged contigs. The index is built
+    once before stitching and reused for all merge candidates.
+
+    Returns an empty dict if no reads can be read.
     """
-    contig_list = tuple(contigs)
-    name_to_seq: Dict[str, str] = {}
-    name_to_coverage: Dict[str, np.ndarray] = {}
-    by_seq: Dict[str, np.ndarray] = {}
-    for c in contig_list:
-        name = c.name or c.seq
-        name_to_seq[name] = c.seq
-        arr = np.zeros(len(c.seq), dtype=np.int32)
-        name_to_coverage[name] = arr
-        by_seq[c.seq] = arr
-
-    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
+    read_index: Dict[int, Counter[str]] = {}
 
     with (
         open_fastq_file(fastq1_path) as fastq1,
@@ -1112,48 +1119,41 @@ def compute_coverage_from_fastqs(
             header1 = fastq1.readline()
             if not header1:
                 break
-            read1_seq = fastq1.readline().strip()
+            seq1 = fastq1.readline().strip()
             fastq1.readline()
             fastq1.readline()
 
             fastq2.readline()
-            read2_seq = fastq2.readline().strip()
+            seq2 = fastq2.readline().strip()
             fastq2.readline()
             fastq2.readline()
 
-            for read_seq in (read1_seq, read2_seq):
-                if not read_seq:
+            for seq in (seq1, seq2):
+                if not seq:
                     continue
-                for trial_seq in (read_seq, reverse_complement(read_seq)):
-                    matches = find_exact_matches(
-                        trial_seq, kmer_index, name_to_seq,
-                    )
-                    for contig_name, start_pos, end_pos in matches:
-                        name_to_coverage[contig_name][start_pos:end_pos] += 1
+                length = len(seq)
+                if length not in read_index:
+                    read_index[length] = Counter()
+                read_index[length][seq] += 1
 
-    return by_seq
+    return read_index
 
 
 def referenceless_contig_stitcher_with_ctx(
     input_fasta: TextIO,
     output_fasta: Optional[TextIO],
-    coverage_data: Optional[Dict[str, np.ndarray]] = None,
 ) -> int:
     """
     Main entrypoint for referenceless contig stitching with context.
     Reads input contigs, performs stitching if output is specified, and writes results.
     Returns the number of contigs (stitched or original).
 
-    When coverage_data is provided, each merge candidate is validated against
-    read coverage (see check_read_support). Coverage data may be computed
-    with compute_coverage_from_fastqs.
+    Merge validation against read coverage is controlled by the context:
+    when ctx.read_index is non-empty and ctx.minimum_read_depth > 0,
+    check_merged_sequence_support is called for each candidate merge.
     """
     contigs = tuple(read_contigs(input_fasta))
     log(events.Loaded(len(contigs)))
-
-    if coverage_data is not None:
-        ctx = ReferencelessStitcherContext.get()
-        ctx.coverage_data = coverage_data
 
     if output_fasta is not None:
         contigs = tuple(stitch_consensus(contigs))
@@ -1169,26 +1169,25 @@ def referenceless_contig_stitcher(
     input_fasta: TextIO,
     output_fasta: Optional[TextIO],
     *,
-    coverage_data: Optional[Dict[str, np.ndarray]] = None,
+    read_index: Optional[Dict[int, Counter[str]]] = None,
     minimum_read_depth: int = 1,
     read_length: int = 150,
 ) -> int:
     """
     Wrapper that initializes a fresh stitching context and calls the core stitching function.
 
-    When coverage_data is provided, merges are validated against read coverage.
-    coverage_data should map contig sequence -> integer coverage array,
-    as returned by compute_coverage_from_fastqs.
+    When read_index is provided (from build_read_index), merges are validated
+    against read coverage using check_merged_sequence_support. The read_index
+    must map read_length -> Counter of read sequences, as returned by
+    build_read_index.
     """
     with ReferencelessStitcherContext.fresh() as ctx:
         if logger.getEffectiveLevel() == logging.DEBUG - 1:
             ctx.is_debug2 = True
         ctx.minimum_read_depth = minimum_read_depth
         ctx.read_length = read_length
-        ctx.coverage_data = coverage_data or {}
-        return referenceless_contig_stitcher_with_ctx(
-            input_fasta, output_fasta, coverage_data=coverage_data,
-        )
+        ctx.read_index = read_index or {}
+        return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
 
 
 def find_most_probable_path(

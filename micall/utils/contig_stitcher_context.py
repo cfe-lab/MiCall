@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
+from collections import Counter
 from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional, AbstractSet
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
-import numpy as np
 
 import micall.utils.referencefull_contig_stitcher_events as full_events
 import micall.utils.referenceless_contig_stitcher_events as less_events
@@ -86,9 +86,10 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         self.align_cache: Dict[Tuple[str, str], Tuple[str, str]] = {}
         # cutoffs cache: key=(left_id,right_id) -> Optional[(left_cutoff,right_cutoff)]
         self.cutoffs_cache: Dict[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]] = {}
-        # coverage data for read-support validation.
-        # Maps contig sequence (str) -> per-position coverage (np.ndarray[int32]).
-        self.coverage_data: Dict[str, np.ndarray] = {}
+        # read index for join-boundary validation.
+        # Maps read_length -> Counter of read sequences with their counts.
+        # Built once from FASTQ files before stitching.
+        self.read_index: Dict[int, Counter[str]] = {}
         # coverage validation parameters
         self.minimum_read_depth: int = 1
         self.read_length: int = 150
