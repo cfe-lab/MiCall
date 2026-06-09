@@ -21,6 +21,7 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.exact_coverage import open_fastq as open_fastq_file
+from micall.utils.exact_coverage import reverse_complement
 from micall.utils.contig_stitcher_contigs import Contig, ContigId
 from micall.utils.overlap_stitcher import (
     align_queries,
@@ -678,67 +679,136 @@ def merge_by_concordance(
 
 def check_merged_sequence_support(
     merged_seq: str,
-    join_boundary: int,
-    read_index: Dict[int, Counter[str]],
+    cut_position: int,
+    read_index: Optional[Dict[int, Counter[str]]],
     min_depth: int,
     read_length: int,
 ) -> bool:
-    """Check that the joint boundary region of a merged sequence has read support.
+    """Check that a candidate join cut in a merged sequence has read support.
 
-    Validates that every position within ±read_length of the join boundary
-    is covered by at least min_depth reads. Coverage is determined by exact
-    matching of reads (from a pre-built read_index) against substrings of
-    the merged sequence.
+    Two conditions must hold:
 
-    The join boundary is the position in the merged sequence where the left
-    contig ends and the right contig begins. Reads that exactly match
-    substrings spanning this boundary provide evidence that the merge is
-    biologically valid, as opposed to a spurious sequence-similarity join.
+    1. **Cut-spanning support** — at least ``min_depth`` reads have an
+       exact-match interval that strictly crosses the cut:
+
+           start < cut_position < end
+
+       A read that ends *at* the cut or starts *at* the cut does *not*
+       support the join.
+
+    2. **Boundary-window coverage** — every base in a read-length-sized
+       window around the cut has at least ``min_depth`` exact read coverage:
+
+           window_start = max(0, cut_position - read_length // 2)
+           window_end   = min(len(merged_seq), cut_position + (read_length - read_length // 2))
+
+    Both checks evaluate support in **coordinates of the proposed merged
+    sequence**, not in coordinates of the original source contigs.
+
+    Parameters
+    ----------
+    merged_seq : str
+        The candidate merged sequence.
+    cut_position : int
+        Half-open cut position in merged_seq.  Bases before this position
+        come from the left contig; bases at and after come from the right
+        contig.
+    read_index : Optional[Dict[int, Counter[str]]]
+        Read index mapping read_length -> Counter of read sequences.
+        ``None`` means validation is disabled.
+    min_depth : int
+        Minimum number of reads required.
+    read_length : int
+        Configured read length; used for the window size.
+
+    Returns
+    -------
+    bool
+        ``True`` if both checks pass (or validation is disabled).
 
     Limitations
     -----------
-    This check uses exact matching only: a read with any mutation, insertion,
-    or deletion relative to the merged sequence will not be counted. This
-    means quasispecies diversity or sequencing errors in the overlap region
-    will cause undercounting. However, any false join that arises from
-    coincidental sequence similarity will also have zero spanning reads,
-    which is the primary case this check is designed to reject.
-
-    When the read_index is empty or min_depth is 0, the check passes
-    unconditionally (backward compatible).
+    Uses exact matching only: a read with any mutation, insertion, or
+    deletion relative to the merged sequence is not counted.  This means
+    quasispecies diversity or sequencing errors in the overlap region will
+    cause undercounting.  However, spurious joins from coincidental sequence
+    similarity will have zero spanning reads, which is the primary case this
+    check is designed to reject.
     """
-    if min_depth == 0 or not read_index:
-        return True
+    if read_index is None or min_depth == 0:
+        return True  # validation disabled.
+
+    # An explicitly-provided but empty read index means "validation enabled
+    # but no reads were indexed" — reject rather than silently pass.
+    if not read_index:
+        return False
 
     seq_len = len(merged_seq)
-    window_start = max(0, join_boundary - read_length)
-    window_end = min(seq_len, join_boundary + read_length)
 
+    # ---- window coordinates ------------------------------------------------
+    left_radius = read_length // 2
+    right_radius = read_length - left_radius
+    window_start = max(0, cut_position - left_radius)
+    window_end = min(seq_len, cut_position + right_radius)
     if window_end <= window_start:
         return True
 
-    # Pick the read length closest to the configured value.
-    avail_lengths = sorted(read_index.keys())
-    if not avail_lengths:
-        return True
-    lookup_len = min(avail_lengths, key=lambda x: abs(x - read_length))
+    # ---- per-position coverage array ---------------------------------------
+    coverage = [0] * seq_len
+    any_match = False
 
-    counter = read_index.get(lookup_len)
-    if counter is None:
-        return True
+    for L, counter in read_index.items():
+        # Start positions whose span can touch any position in the window.
+        s_min_win = max(0, window_start - L + 1)
+        s_max_win = min(window_end - 1, seq_len - L)
+        if s_min_win > s_max_win:
+            continue
 
-    # For each position p in the window, compute coverage by summing all
-    # reads that cover p. A read of length L starting at s covers position p
-    # iff s <= p < s + L.  So for position p, valid start positions are:
-    #   max(0, p - L + 1)  ...  min(p, seq_len - L)
+        for s in range(s_min_win, s_max_win + 1):
+            kmer = merged_seq[s:s + L]
+            rc_kmer = reverse_complement(kmer)
+            # Avoid double-counting palindromic kmers.
+            if rc_kmer == kmer:
+                count = counter.get(kmer, 0)
+            else:
+                count = counter.get(kmer, 0) + counter.get(rc_kmer, 0)
+            if count > 0:
+                any_match = True
+                for i in range(L):
+                    coverage[s + i] += count
+                # ^ increment each covered position individually to keep
+                #   coverage values exact (each read contributes its count
+                #   to every position it spans).
+
+    if not any_match:
+        # Validation enabled but no read matched the merged sequence at all.
+        return False
+
+    # ---- 1. cut-spanning support -------------------------------------------
+    spanning_total = 0
+    for L, counter in read_index.items():
+        s_span_min = max(0, cut_position - L + 1)  # need start < cut
+        s_span_max = min(cut_position - 1, seq_len - L)  # need cut < end
+        if s_span_min > s_span_max:
+            continue
+        for s in range(s_span_min, s_span_max + 1):
+            kmer = merged_seq[s:s + L]
+            rc_kmer = reverse_complement(kmer)
+            if rc_kmer == kmer:
+                spanning_total += counter.get(kmer, 0)
+            else:
+                spanning_total += counter.get(kmer, 0) + counter.get(rc_kmer, 0)
+            if spanning_total >= min_depth:
+                break
+        if spanning_total >= min_depth:
+            break
+
+    if spanning_total < min_depth:
+        return False
+
+    # ---- 2. boundary-window coverage ---------------------------------------
     for p in range(window_start, window_end):
-        s_min = max(0, p - lookup_len + 1)
-        s_max = min(p, seq_len - lookup_len)
-        total = 0
-        for s in range(s_min, s_max + 1):
-            kmer = merged_seq[s:s + lookup_len]
-            total += counter.get(kmer, 0)
-        if total < min_depth:
+        if coverage[p] < min_depth:
             return False
 
     return True
@@ -1180,13 +1250,17 @@ def referenceless_contig_stitcher(
     against read coverage using check_merged_sequence_support. The read_index
     must map read_length -> Counter of read sequences, as returned by
     build_read_index.
+
+    ``read_index=None`` (default) means validation is disabled.
+    ``read_index={}`` (provided but empty) means validation is enabled but
+    no reads were indexed — merges will be rejected.
     """
     with ReferencelessStitcherContext.fresh() as ctx:
         if logger.getEffectiveLevel() == logging.DEBUG - 1:
             ctx.is_debug2 = True
         ctx.minimum_read_depth = minimum_read_depth
         ctx.read_length = read_length
-        ctx.read_index = read_index or {}
+        ctx.read_index = read_index
         return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
 
 

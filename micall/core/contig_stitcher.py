@@ -90,7 +90,7 @@ def main(argv: Sequence[str]) -> int:
         if args.read_length < 1:
             parser.error("--read-length must be positive.")
 
-        read_index = {}
+        read_index = None
         if args.fastq1 is not None and args.fastq2 is not None:
             read_index = referenceless.build_read_index(
                 args.fastq1, args.fastq2,

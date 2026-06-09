@@ -89,7 +89,8 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         # read index for join-boundary validation.
         # Maps read_length -> Counter of read sequences with their counts.
         # Built once from FASTQ files before stitching.
-        self.read_index: Dict[int, Counter[str]] = {}
+        # None = validation disabled; {} = enabled but no reads found.
+        self.read_index: Optional[Dict[int, Counter[str]]] = None
         # coverage validation parameters
         self.minimum_read_depth: int = 1
         self.read_length: int = 150

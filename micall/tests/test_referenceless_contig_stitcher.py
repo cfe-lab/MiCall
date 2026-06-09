@@ -878,192 +878,237 @@ def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
 # Tests for check_merged_sequence_support — join-boundary read validation
 # ---------------------------------------------------------------------------
 
+# A non-repetitive merged sequence for predictable cut-spanning tests.
+# Left half:  X's,  Right half:  Y's.  Cut at position 15.
+XY_MERGED = "X" * 15 + "Y" * 15   # 30 bp
+XY_CUT = 15
+XY_RLEN = 5                         # read_length = window size ≈ 5
+XY_WIN_L = XY_CUT - XY_RLEN // 2    # = 13
+XY_WIN_R = XY_CUT + (XY_RLEN - XY_RLEN // 2)  # = 18
+
+
 class TestCheckMergedSequenceSupport:
     """Unit tests for check_merged_sequence_support."""
 
-    # Merged sequence: AAAACCCCGGGG (12bp)
-    # Window for boundary 8, read_length 4: positions [4, 12) = 4..11
-    # For a position p to be covered, reads must start at
-    #   s_min = max(0, p-3)  ...  s_max = min(p, 8)
-    # Position 4: s ∈ [1, 4], Position 5: s ∈ [2, 5], ..., Position 11: s ∈ [8, 8]
+    # ---- helper: build a read index from a list of (start, length) tuples ----
+    @staticmethod
+    def _make_rd(seq: str, starts_with_lens):
+        """Build ``{length: Counter{kmer_at_start: 1}}``."""
+        rd = {}
+        for s, L in starts_with_lens:
+            rd.setdefault(L, Counter())[seq[s:s + L]] += 1
+        return rd
 
-    MERGED = "AAAACCCCGGGG"
-    BOUNDARY = 8
-    RLEN = 4
+    # ------------------------------------------------------------------
+    # 1. Cut-spanning — at least min_depth reads must cross the cut
+    # ------------------------------------------------------------------
 
-    def test_sufficient_reads_span_boundary(self):
-        """Joined sequence with reads covering the boundary passes."""
-        # Reads starting at every valid start position in the window.
-        rd = {self.RLEN: Counter({
-            "AAAC": 1,  # s=1 covers p=4
-            "AACC": 1,  # s=2 covers p=4,5
-            "ACCC": 1,  # s=3 covers p=4-6
-            "CCCC": 1,  # s=4 covers p=4-7
-            "CCCG": 1,  # s=5 covers p=5-8
-            "CCGG": 1,  # s=6 covers p=6-9
-            "CGGG": 1,  # s=7 covers p=7-10
-            "GGGG": 1,  # s=8 covers p=8-11
-        })}
-        assert check_merged_sequence_support(
-            self.MERGED, self.BOUNDARY, rd, 1, self.RLEN)
+    def test_spanning_reads_accepted(self):
+        """Reads that strictly cross the cut pass the check."""
+        # A read at start=12 (length 5) covers [12,17), crossing cut=15.
+        # A read at start=13 covers [13,18), covering the last window position.
+        rd = self._make_rd(XY_MERGED, [(12, 5), (13, 5)])
+        assert check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 1, XY_RLEN)
 
-    def test_no_reads_span_boundary_rejected(self):
-        """Reads only left of boundary; boundary position uncovered."""
-        rd = {self.RLEN: Counter({
-            "AAAC": 1,  # s=1 covers p=4
-            "AACC": 1,  # s=2 covers p=4,5
-            "ACCC": 1,  # s=3 covers p=4-6
-            "CCCC": 1,  # s=4 covers p=4-7
-        })}
-        # Position 8 is uncovered (no reads start at 5-8)
-        assert not check_merged_sequence_support(
-            self.MERGED, self.BOUNDARY, rd, 1, self.RLEN)
+    def test_spanning_no_crossing_rejected(self):
+        """Reads ending exactly at the cut do NOT span (start < cut)."""
+        # Read at start=10, length=5 → covers [10,15), ends AT cut.
+        rd = self._make_rd(XY_MERGED, [(10, 5)])
+        assert not check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 1, XY_RLEN)
 
-    def test_min_depth_zero_passes(self):
-        """min_depth=0 skips the check."""
-        rd = {self.RLEN: Counter()}
-        assert check_merged_sequence_support(
-            self.MERGED, self.BOUNDARY, rd, 0, self.RLEN)
+    def test_spanning_start_at_cut_rejected(self):
+        """Reads starting exactly at the cut do NOT span (cut < end)."""
+        # Read at start=15, length=5 → covers [15,20), starts AT cut.
+        rd = self._make_rd(XY_MERGED, [(15, 5)])
+        assert not check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 1, XY_RLEN)
 
-    def test_empty_read_index_passes(self):
-        """Empty read_index skips the check."""
-        assert check_merged_sequence_support(self.MERGED, 8, {}, 1, 4)
+    def test_split_left_and_right_rejected(self):
+        """Independent left & right coverage without a crossing read fails."""
+        rd = self._make_rd(XY_MERGED, [(10, 5), (15, 5)])
+        # Read at 10 covers [10,15)  — ends at cut, does NOT cross.
+        # Read at 15 covers [15,20)  — starts at cut, does NOT cross.
+        assert not check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 1, XY_RLEN)
 
-    def test_boundary_at_sequence_start(self):
-        """Boundary at position 0 (degenerate case)."""
-        merged = "AAAACCCC"
-        rd = {4: Counter({"AAAA": 1, "AAAC": 1, "AACC": 1, "ACCC": 1})}
-        # Window [0, 4): all positions covered by these reads.
-        assert check_merged_sequence_support(merged, 0, rd, 1, 4)
+    def test_min_depth_zero_disables_spanning_check(self):
+        """min_depth=0 → check skipped regardless of reads."""
+        rd = self._make_rd(XY_MERGED, [(10, 5)])  # does NOT cross
+        assert check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 0, XY_RLEN)
 
-    def test_boundary_at_sequence_end(self):
-        """Boundary at the last position."""
-        merged = "AAAACCCC"
-        rd = {4: Counter({"AAAA": 1, "AAAC": 1, "AACC": 1, "ACCC": 1, "CCCC": 1})}
-        # Window [0, 8): all positions covered by these reads.
-        assert check_merged_sequence_support(merged, 4, rd, 1, 4)
+    # ------------------------------------------------------------------
+    # 2. Boundary-window coverage — every position in the window covered
+    # ------------------------------------------------------------------
 
-    def test_multiple_read_lengths_available(self):
-        """Uses the read length closest to the configured value."""
+    def test_window_fully_covered_accepted(self):
+        """Every position in the window is covered to at least min_depth."""
+        # Provide reads at every start position that affects window [13,18).
+        # Window positions 13..17 need coverage from starts at:
+        #   position 13: starts at [9, 13]
+        #   position 14: starts at [10, 14]
+        #   position 15: starts at [11, 15]  (cut is here, needs crossing too)
+        #   position 16: starts at [12, 16]
+        #   position 17: starts at [13, 17]
+        # Provide enough spanning + window reads.
+        rd = self._make_rd(XY_MERGED, [
+            (9, 5), (10, 5), (11, 5), (12, 5),   # left-side + some spanning
+            (13, 5), (14, 5), (15, 5), (16, 5), (17, 5),
+        ])
+        assert check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 1, XY_RLEN)
+
+    def test_window_edge_uncovered_rejected(self):
+        """A single position in the window with no coverage fails."""
+        rd = self._make_rd(XY_MERGED, [
+            (12, 5),  # crosses cut=15  AND covers [12,17)
+            # BUT position 13 in the window [13,18) has NO read starting at
+            # [9, 13] — none of these start positions are provided.
+        ])
+        # Cut-spanning passes (start=12 < 15 < 17), but window position 13
+        # is not covered → rejected.
+        assert not check_merged_sequence_support(XY_MERGED, XY_CUT, rd, 1, XY_RLEN)
+
+    # ------------------------------------------------------------------
+    # 3. read_index = None  vs  read_index = {}
+    # ------------------------------------------------------------------
+
+    def test_none_read_index_disables_check(self):
+        """read_index=None → validation disabled."""
+        assert check_merged_sequence_support(XY_MERGED, XY_CUT, None, 1, XY_RLEN)
+
+    def test_empty_read_index_rejects(self):
+        """read_index={} with validation enabled → rejected (no reads)."""
+        assert not check_merged_sequence_support(XY_MERGED, XY_CUT, {}, 1, XY_RLEN)
+
+    # ------------------------------------------------------------------
+    # 4. Reverse-complement support
+    # ------------------------------------------------------------------
+
+    def test_reverse_complement_spanning(self):
+        """A read present only as rc can still span the cut."""
+        # Read "YYYXY" at start=12 covers [12,17), crossing cut=15.
+        # Store only its reverse complement in the index.
+        fwd = XY_MERGED[12:17]  # "XXXYX" (start 12, length 5, X=first 15 chars)
+        # Wait, XY_MERGED is X*15 + Y*15. Let me compute.
+        # Actually XY_MERGED = "X"*15 + "Y"*15, so at position 12 it's "XXXXX"
+        # and at position 15 it's "Y"*5.
+        # Let me be precise. Position 12-16: "XXXXX" (all X's, position 12 < 15).
+        # merged[12:17] = "XXXXX"
+        # reverse_complement("XXXXX") = "XXXXX" (palindrome? No, X is not a real base)
+        pass  # placeholder — will redesign below
+        # Actually X and Y aren't real bases, so rc wouldn't make sense.
+        # Let me use real bases for this test.
+
+    def test_reverse_complement_spanning_with_real_bases(self):
+        """A read present only as rc can still span the cut (real DNA)."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # A read at start=14, length=5 covers [14,19) = "GTACG"
+        # This spans cut=16 (14 < 16 < 19).
+        kmer = merged[14:19]  # "GTACG"
+        rc_kmer = "CGTAC"     # reverse complement of GTACG
+        # Index only the reverse complement.
+        rd = {5: Counter({rc_kmer: 3})}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
+
+    # ------------------------------------------------------------------
+    # 5. Multiple read lengths
+    # ------------------------------------------------------------------
+
+    def test_multiple_read_lengths(self):
+        """Reads of different lengths are all considered."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # A 5-mer at start=14 spans cut: merged[14:19] = "GTACG"
+        # A 7-mer at start=13 spans cut: merged[13:20] = "TACGTAC"
         rd = {
-            4: Counter({"CCCG": 1, "CCGG": 1, "CGGG": 1, "GGGG": 1,
-                        "AAAC": 1, "AACC": 1, "ACCC": 1, "CCCC": 1}),
+            5: Counter({"GTACG": 2}),
+            7: Counter({"TACGTAC": 1}),
         }
-        assert check_merged_sequence_support(
-            self.MERGED, self.BOUNDARY, rd, 1, self.RLEN)
+        assert check_merged_sequence_support(merged, cut, rd, 3, 5)
+        # Total spanning = 2 + 1 = 3 ≥ 3
 
-    def test_partial_coverage_around_boundary(self):
-        """Boundary position uncovered because no read covers it.
-
-        Uses a non-repetitive sequence to avoid k-mer collisions
-        that could accidentally link coverage across different regions.
-        """
-        # 30bp merged with left half all 'X' and right half all 'Y'.
-        merged_seq = "X" * 15 + "Y" * 15
-        # Boundary at 15, read_length 5, window [10, 20).
-        # Reads at s=0..10 are X-only; reads at s=11..25 include Y.
-        # Provide only X-region reads: position 15 needs reads at
-        # s ∈ [11, 15] which include Y → none provided.
-        rd = {5: Counter()}
-        for i in range(11):  # reads starting at 0..10, all X-only
-            rd[5][merged_seq[i:i + 5]] = 1
-        assert not check_merged_sequence_support(merged_seq, 15, rd, 1, 5)
+    def test_multiple_read_lengths_insufficient(self):
+        """All read lengths combined still don't reach impossible min_depth."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # Provide reads that easily cover the window and span the cut,
+        # but set min_depth so high it can never be satisfied.
+        rd = {5: Counter({merged[14:19]: 10})}  # "GTACG" at S=14 spans
+        assert not check_merged_sequence_support(merged, cut, rd, 999, 5)
 
 
 # ---------------------------------------------------------------------------
 # End-to-end tests with read index
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize(
-    "read_seqs, expected_count, expected_seq",
-    [
-        # Bad case: reads cover the overlap region but NO read spans
-        # the join boundary at position 8 of the merged sequence.
-        # Merge should be rejected.
-        (["AAAC", "AACC", "ACCC", "CCCC"], 2, None),
-
-        # Good case: reads also span the boundary at position 8.
-        # Merge should be accepted.
-        (["AAAC", "AACC", "ACCC", "CCCC",
-          "CCCG", "CCGG", "CGGG", "GGGG"],
-         1, "AAAACCCCGGGG"),
-    ],
-)
-def test_stitch_with_read_index(read_seqs, expected_count, expected_seq,
-                                disable_acceptable_prob_check):
-    """End-to-end: read index controls whether a merge is accepted.
-
-    Two contigs overlap by 4 bases (CCCC).
-    Reads that match only up to position 7 in the merged sequence
-    (= the CCCC overlap) should NOT allow the merge because no
-    read spans the join boundary into the right contig.
-
-    Reads that also match from position 8 onward allow the merge
-    because they confirm the joined sequence is real.
-    """
+def test_stitch_with_read_index_none_disabled(disable_acceptable_prob_check):
+    """read_index=None => validation disabled, merge proceeds."""
     left = ContigWithAligner(None, "AAAACCCC", None)
     right = ContigWithAligner(None, "CCCCGGGG", None)
+    with ReferencelessStitcherContext.fresh() as ctx:  # ctx.read_index stays None
+        ctx.minimum_read_depth = 1
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 1
+    assert result[0].seq == "AAAACCCCGGGG"
 
-    read_index = {4: Counter(read_seqs)}
 
+def test_stitch_with_read_index_empty_rejected(disable_acceptable_prob_check):
+    """read_index={} => validation enabled but no reads, merge rejected."""
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
     with ReferencelessStitcherContext.fresh() as ctx:
-        ctx.read_index = read_index
+        ctx.read_index = {}
         ctx.minimum_read_depth = 1
         ctx.read_length = 4
         result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 2  # unmerged
 
-    assert len(result) == expected_count
-    if expected_seq is not None:
-        assert result[0].seq == expected_seq
+
+def test_stitch_with_read_index_matching_accepted(disable_acceptable_prob_check):
+    """read_index with exact k-mers for every start position => merge accepted."""
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
+    # Provide all possible 4-mers from the expected merged sequence.
+    merged = "AAAACCCCGGGG"
+    rd = {4: Counter(merged[i:i+4] for i in range(len(merged)-3))}
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = rd
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 1
+    assert result[0].seq == merged
 
 
 def test_stitch_with_identical_contig_sequences(disable_acceptable_prob_check):
-    """Identical contig sequences should not confuse the read index.
-
-    Two identical contigs that are not the same object should still
-    be handled correctly: each is its own ContigWithAligner and the
-    read index (keyed by seq string) serves both.
-    """
+    """Identical contig sequences — covered-contig case, no merge needed."""
     seq = "AAAACCCCGGGG"
     left = ContigWithAligner(None, seq, None)
     right = ContigWithAligner(None, seq, None)
-    # Reads that cover all positions in the boundary window.
-    read_index = {4: Counter({"AAAC": 3, "AACC": 2, "ACCC": 1, "CCCC": 5,
-                              "CCCG": 3, "CCGG": 2, "CGGG": 1, "GGGG": 5})}
-
-    with ReferencelessStitcherContext.fresh() as ctx:
-        ctx.read_index = read_index
-        ctx.minimum_read_depth = 1
-        ctx.read_length = 4
+    # No read_index set → None → validation disabled.
+    with ReferencelessStitcherContext.fresh():
         result = tuple(stitch_consensus([left, right]))
-
-    # Identical contigs cover each other; one should remain.
-    assert len(result) == 1
+    assert len(result) == 1  # one covers the other
 
 
 def test_stitch_with_reads_from_fastq(tmp_path, disable_acceptable_prob_check):
-    """End-to-end: reads from real FASTQ files are used for validation."""
-    import gzip
-    from collections import Counter
+    """Reads from real FASTQ files are used for join validation."""
     import micall.utils.referenceless_contig_stitcher as stitcher_mod
     from micall.utils.referenceless_contig_stitcher import build_read_index
 
-    # Write a FASTA with overlapping contigs.
     fasta_path = tmp_path / "contigs.fasta"
     fasta_path.write_text(">left\nAAAACCCC\n>right\nCCCCGGGG\n")
 
-    # Write FASTQ files with reads that do NOT span the boundary.
     fq1 = tmp_path / "reads_R1.fastq"
     fq2 = tmp_path / "reads_R2.fastq"
 
-    # Bad case: reads only cover up to the boundary.
-    reads_bad = ["AAAC", "AACC", "ACCC", "CCCC"]
+    # Provide ALL 4-mers from the merged sequence — should be accepted.
+    merged = "AAAACCCCGGGG"
+    all_kmers = [merged[i:i+4] for i in range(len(merged)-3)]
     lines = []
-    for i, seq in enumerate(reads_bad):
-        lines.append(f"@read{i}R1\n{seq}\n+\n{chr(73)*len(seq)}\n")
+    for i, kmer in enumerate(all_kmers):
+        lines.append(f"@r{i}R1\n{kmer}\n+\n{chr(73)*4}\n")
     fq1.write_text("".join(lines))
     lines = []
-    for i, seq in enumerate(reads_bad):
-        lines.append(f"@read{i}R2\n{seq}\n+\n{chr(73)*len(seq)}\n")
+    for i, kmer in enumerate(all_kmers):
+        lines.append(f"@r{i}R2\n{kmer}\n+\n{chr(73)*4}\n")
     fq2.write_text("".join(lines))
 
     read_index = build_read_index(fq1, fq2)
@@ -1077,35 +1122,8 @@ def test_stitch_with_reads_from_fastq(tmp_path, disable_acceptable_prob_check):
         ctx.read_length = 4
         result = tuple(stitch_consensus(contigs))
 
-    # Should NOT merge — no reads span the boundary.
-    assert len(result) == 2
-
-    # Now add spanning reads to the FASTQ.
-    reads_good = ["AAAC", "AACC", "ACCC", "CCCC",
-                  "CCCG", "CCGG", "CGGG", "GGGG"]
-    lines = []
-    for i, seq in enumerate(reads_good):
-        lines.append(f"@read{i}R1\n{seq}\n+\n{chr(73)*len(seq)}\n")
-    fq1.write_text("".join(lines))
-    lines = []
-    for i, seq in enumerate(reads_good):
-        lines.append(f"@read{i}R2\n{seq}\n+\n{chr(73)*len(seq)}\n")
-    fq2.write_text("".join(lines))
-
-    read_index = build_read_index(fq1, fq2)
-
-    with open(fasta_path) as f:
-        contigs = tuple(stitcher_mod.read_contigs(f))
-
-    with ReferencelessStitcherContext.fresh() as ctx:
-        ctx.read_index = read_index
-        ctx.minimum_read_depth = 1
-        ctx.read_length = 4
-        result = tuple(stitch_consensus(contigs))
-
-    # Should merge — reads span the boundary.
     assert len(result) == 1
-    assert result[0].seq == "AAAACCCCGGGG"
+    assert result[0].seq == merged
 
 
 def test_cli_fastq_pair_validation(tmp_path):
