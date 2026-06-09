@@ -1,3 +1,5 @@
+from collections import Counter
+
 import pytest
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, \
@@ -888,14 +890,14 @@ DNA_RLEN = 5  # read_length for window size
 class TestCheckMergedSequenceSupport:
     """Unit tests for check_merged_sequence_support."""
 
-    # ---- helper: build a read index (set of canonical reads) from placements --
+    # ---- helper: build a read index from placements -------------------
     @staticmethod
-    def _make_rd(seq: str, starts_with_lens):
-        rd: Dict[int, Set[str]] = {}
+    def _make_rd(seq: str, starts_with_lens, count=1):
+        rd: Dict[int, Counter[str]] = {}
         for s, L in starts_with_lens:
             frag = seq[s:s + L]
             canonical = min(frag, reverse_complement(frag))
-            rd.setdefault(L, set()).add(canonical)
+            rd.setdefault(L, Counter())[canonical] += count
         return rd
 
     # ------------------------------------------------------------------
@@ -907,31 +909,31 @@ class TestCheckMergedSequenceSupport:
         # S=12 "AAACC" covers [12,17), crosses cut=15 (12<15<17).
         # S=13 "AACCC" covers [13,18), also crosses cut.
         rd = self._make_rd(DNA_MERGED, [(12, 5), (13, 5)])
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
 
     def test_spanning_no_crossing_rejected(self):
         """Reads ending exactly at the cut do NOT span (start < cut)."""
         # S=10 "TTAAA" covers [10,15).  10 < 15 < 15 → false, doesn't span.
         rd = self._make_rd(DNA_MERGED, [(10, 5)])
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
 
     def test_spanning_start_at_cut_rejected(self):
         """Reads starting exactly at the cut do NOT span (cut < end)."""
         # S=15 "CCCGG" covers [15,20).  15 < 15 < 20 → false, doesn't span.
         rd = self._make_rd(DNA_MERGED, [(15, 5)])
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
 
     def test_split_left_and_right_rejected(self):
         """Independent left & right coverage without a crossing read fails."""
         rd = self._make_rd(DNA_MERGED, [(10, 5), (15, 5)])
         # Read at 10 covers [10,15)  — ends at cut, does NOT cross.
         # Read at 15 covers [15,20)  — starts at cut, does NOT cross.
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
 
     def test_min_depth_zero_disables_spanning_check(self):
         """min_depth=0 → check skipped regardless of reads."""
         rd = self._make_rd(DNA_MERGED, [(10, 5)])  # does NOT cross
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 0, DNA_RLEN)
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 0, DNA_RLEN)[0]
 
     # ------------------------------------------------------------------
     # 2. Boundary-window coverage — every position in the window covered
@@ -945,7 +947,7 @@ class TestCheckMergedSequenceSupport:
             (9, 5), (10, 5), (11, 5),  # left-only coverage
             (14, 5), (15, 5), (16, 5), (17, 5),  # right-side coverage
         ])
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
 
     def test_window_edge_uncovered_rejected(self):
         """A single position in the window with no coverage fails."""
@@ -954,7 +956,7 @@ class TestCheckMergedSequenceSupport:
             # Position 13 in window [13,18) needs starts at [9,13].
             # None provided → uncovered.
         ])
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
 
     # ------------------------------------------------------------------
     # 3. read_index = None  vs  read_index = {}
@@ -962,11 +964,11 @@ class TestCheckMergedSequenceSupport:
 
     def test_none_read_index_disables_check(self):
         """read_index=None → validation disabled."""
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, None, 1, DNA_RLEN)
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, None, 1, DNA_RLEN)[0]
 
     def test_empty_read_index_rejects(self):
         """read_index={} with validation enabled → rejected (no reads)."""
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, {}, 1, DNA_RLEN)
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, {}, 1, DNA_RLEN)[0]
 
     # ------------------------------------------------------------------
     # 4. Reverse-complement support (real DNA bases only)
@@ -976,39 +978,30 @@ class TestCheckMergedSequenceSupport:
         """A read present only as rc can still span the cut."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        # A read at start=14, length=5 covers [14,19) = "GTACG"
-        # This spans cut=16 (14 < 16 < 19).
         kmer = merged[14:19]  # "GTACG"
         rc_kmer = "CGTAC"     # reverse complement of GTACG
-        # Index only the reverse complement.
-        rd = {5: {rc_kmer}}
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
-
-    # ------------------------------------------------------------------
-    # 5. Multiple read lengths
-    # ------------------------------------------------------------------
+        # Canonical of both is "CGTAC" — use that directly.
+        rd = {5: Counter({rc_kmer: 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
 
     def test_multiple_read_lengths(self):
         """Reads of different lengths are all considered."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        # "GTACG": 5-mer at S=14 spans cut; canonical = min("GTACG","CGTAC") = "CGTAC".
-        # "TACGTAC": 7-mer at S=15 spans cut; canonical = min("TACGTAC","GTACGTA") = "GTACGTA".
-        # These are three different deduplicated reads -> min_depth=3 passes.
-        rd = {5: {"GTACG", "CGTAC"}, 7: {"TACGTAC"}}
-        # But wait — "GTACG" and "CGTAC" share the same canonical "CGTAC",
-        # so they collapse to 1.  Total deduplicated = 1 (from 5-mers) + 1 (7-mer) = 2.
-        # min_depth=2 should pass, min_depth=3 should fail.
-        assert check_merged_sequence_support(merged, cut, rd, 2, 5)
-        assert not check_merged_sequence_support(merged, cut, rd, 3, 5)
+        # L=5 canonical "CGTAC" (count 2) at S=13,14 → 4 spanning.
+        # L=7 canonical "GTACGTA" (count 1) at S=10,11,14,15 → 4 spanning.
+        # Total spanning = 8.  min_depth=8 passes, min_depth=9 fails.
+        rd = {5: Counter({"CGTAC": 2}), 7: Counter({"GTACGTA": 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 8, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)[0]
 
     def test_multiple_read_lengths_insufficient(self):
         """All read lengths combined still don't reach impossible min_depth."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        # Only one distinct read.
-        rd = {5: {merged[14:19]}}  # "GTACG" at S=14 spans
-        assert not check_merged_sequence_support(merged, cut, rd, 999, 5)
+        # Canonical of "GTACG" is "CGTAC".
+        rd = {5: Counter({"CGTAC": 10})}
+        assert not check_merged_sequence_support(merged, cut, rd, 999, 5)[0]
 
     # ------------------------------------------------------------------
     # 6. Deduplication — placements and multiplicity must not inflate
@@ -1019,59 +1012,56 @@ class TestCheckMergedSequenceSupport:
         merged = "A" * 30
         cut = 15
         # Single deduplicated read "AAAAA".
-        rd = {5: {"AAAAA"}}
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
+        rd = {5: Counter({"AAAAA": 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
 
-    def test_homopolymer_one_read_min_depth_2_fails(self):
-        """One deduplicated read can never satisfy min_depth=2."""
+    def test_homopolymer_placements_count(self):
+        """One read at 4 spanning placements × count 1 = spanning 4."""
         merged = "A" * 30
         cut = 15
-        rd = {5: {"AAAAA"}}
-        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+        rd = {5: Counter({"AAAAA": 1})}
+        # 4 spanning placements (S=11,12,13,14) × 1 count = 4.
+        assert check_merged_sequence_support(merged, cut, rd, 4, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)[0]
 
-    def test_read_multiplicity_does_not_inflate(self):
-        """100 identical reads still count as 1 deduplicated identity."""
+    def test_multiplicity_increases_depth(self):
+        """Higher FASTQ count increases each placement's contribution."""
         merged = "A" * 30
         cut = 15
-        # Even with large multiplicity, only 1 canonical read.
-        rd = {5: {"AAAAA"}}
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
-        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+        # 4 spanning placements × 10 count = 40.
+        rd = {5: Counter({"AAAAA": 10})}
+        assert check_merged_sequence_support(merged, cut, rd, 40, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 41, 5)[0]
 
-    def test_rc_does_not_double_count(self):
-        """A read and its reverse complement share one canonical identity."""
+    def test_rc_accumulates_counts(self):
+        """A read and its reverse complement share one canonical, counts sum."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        read = "GTACG"       # at S=14 covers [14,19), spans cut=16
-        rc = reverse_complement(read)  # "CGTAC"
-        # Both appear in the index, but they share the same canonical:
-        # min("GTACG", "CGTAC") = "CGTAC"
-        rd = {5: {read, rc}}  # set deduplication already collapses this,
-                              # but build_read_index would do the same.
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
-        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+        # Both "GTACG" and its rc "CGTAC" map to canonical "CGTAC" with count 2.
+        # "CGTAC" matches at S=13 and S=14, both spanning → 2 placements × 2 = 4.
+        rd = {5: Counter({"CGTAC": 2})}
+        assert check_merged_sequence_support(merged, cut, rd, 4, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)[0]
 
     def test_two_distinct_reads_min_depth_2(self):
         """Two genuinely different reads satisfy min_depth=2."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        # Read1: "GTACG" at S=14 covers [14,19), spans cut=16.
-        # Read2: "TACGT" at S=15 covers [15,20), spans cut=16.
-        # These are different canonical identities.
-        rd = {5: {"GTACG", "TACGT"}}
-        assert check_merged_sequence_support(merged, cut, rd, 2, 5)
+        # "GTACG" canonical → "CGTAC", "TACGT" canonical → "ACGTA".
+        # Both at S=14,15 span → spanning_total = 2.
+        rd = {5: Counter({"CGTAC": 1, "ACGTA": 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 2, 5)[0]
 
-    def test_window_coverage_deduplicated(self):
-        """One repetitive read covering many window positions counts as 1."""
+    def test_window_coverage_placements(self):
+        """Multiple placements contribute to window coverage."""
         merged = "A" * 30
         cut = 15
-        # "AAAAA" matches at all start positions and covers every window
-        # position via multiple placements, but it's still just one read.
-        rd = {5: {"AAAAA"}}
-        # Window [13,18): each position should be covered by at most 1
-        # deduplicated read.  min_depth=1 passes, min_depth=2 fails.
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
-        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+        rd = {5: Counter({"AAAAA": 2})}
+        # 4 spanning placements (S=11..14) × 2 = spanning 8.
+        # Window positions covered by up to 5 placements × 2 = coverage 10.
+        # So spanning_total=8 is the bottleneck, not window coverage.
+        assert check_merged_sequence_support(merged, cut, rd, 8, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)[0]
 
 
 # ---------------------------------------------------------------------------
@@ -1106,13 +1096,11 @@ def test_stitch_with_read_index_matching_accepted(disable_acceptable_prob_check)
     right = ContigWithAligner(None, "CCCCGGGG", None)
     # Provide all possible 4-mers from the expected merged sequence.
     merged = "AAAACCCCGGGG"
-    # Canonicalize each k-mer (though for short non-palindromic kmers
-    # this doesn't change much, keep the set deduplicated by canonical).
-    rd = {4: set()}
+    rd = {4: Counter()}
     for i in range(len(merged)-3):
         frag = merged[i:i+4]
         canonical = min(frag, reverse_complement(frag))
-        rd[4].add(canonical)
+        rd[4][canonical] += 1
     with ReferencelessStitcherContext.fresh() as ctx:
         ctx.read_index = rd
         ctx.minimum_read_depth = 1
@@ -1180,8 +1168,9 @@ def test_merged_check_with_split_side_reads(disable_acceptable_prob_check):
     """
     merged = "AAAACCCCGGGG"
     cut = 5
-    rd = {4: {"AAAA", "CCCG"}}
-    assert not check_merged_sequence_support(merged, cut, rd, 1, 4), \
+    # Note: these must be canonicalized. min("AAAA","TTTT")="AAAA", min("CCCG","CGGG")="CCCG".
+    rd = {4: Counter({"AAAA": 1, "CCCG": 1})}
+    assert not check_merged_sequence_support(merged, cut, rd, 1, 4)[0], \
         "AAAA (ends before cut) and CCCG (starts at cut, rc CGGG not on left) should not support the merge"
 
 
