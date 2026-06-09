@@ -1,7 +1,9 @@
+from collections import Counter
+
 import pytest
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, \
-    ACCEPTABLE_STITCHING_SCORE
+    ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -870,3 +872,299 @@ def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
     with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
     assert consenses == (bigger,)
+
+
+# ---------------------------------------------------------------------------
+# Tests for check_merged_sequence_support — join-boundary read validation
+# ---------------------------------------------------------------------------
+
+class TestCheckMergedSequenceSupport:
+    """Unit tests for check_merged_sequence_support."""
+
+    # Merged sequence: AAAACCCCGGGG (12bp)
+    # Window for boundary 8, read_length 4: positions [4, 12) = 4..11
+    # For a position p to be covered, reads must start at
+    #   s_min = max(0, p-3)  ...  s_max = min(p, 8)
+    # Position 4: s ∈ [1, 4], Position 5: s ∈ [2, 5], ..., Position 11: s ∈ [8, 8]
+
+    MERGED = "AAAACCCCGGGG"
+    BOUNDARY = 8
+    RLEN = 4
+
+    def test_sufficient_reads_span_boundary(self):
+        """Joined sequence with reads covering the boundary passes."""
+        # Reads starting at every valid start position in the window.
+        rd = {self.RLEN: Counter({
+            "AAAC": 1,  # s=1 covers p=4
+            "AACC": 1,  # s=2 covers p=4,5
+            "ACCC": 1,  # s=3 covers p=4-6
+            "CCCC": 1,  # s=4 covers p=4-7
+            "CCCG": 1,  # s=5 covers p=5-8
+            "CCGG": 1,  # s=6 covers p=6-9
+            "CGGG": 1,  # s=7 covers p=7-10
+            "GGGG": 1,  # s=8 covers p=8-11
+        })}
+        assert check_merged_sequence_support(
+            self.MERGED, self.BOUNDARY, rd, 1, self.RLEN)
+
+    def test_no_reads_span_boundary_rejected(self):
+        """Reads only left of boundary; boundary position uncovered."""
+        rd = {self.RLEN: Counter({
+            "AAAC": 1,  # s=1 covers p=4
+            "AACC": 1,  # s=2 covers p=4,5
+            "ACCC": 1,  # s=3 covers p=4-6
+            "CCCC": 1,  # s=4 covers p=4-7
+        })}
+        # Position 8 is uncovered (no reads start at 5-8)
+        assert not check_merged_sequence_support(
+            self.MERGED, self.BOUNDARY, rd, 1, self.RLEN)
+
+    def test_min_depth_zero_passes(self):
+        """min_depth=0 skips the check."""
+        rd = {self.RLEN: Counter()}
+        assert check_merged_sequence_support(
+            self.MERGED, self.BOUNDARY, rd, 0, self.RLEN)
+
+    def test_empty_read_index_passes(self):
+        """Empty read_index skips the check."""
+        assert check_merged_sequence_support(self.MERGED, 8, {}, 1, 4)
+
+    def test_boundary_at_sequence_start(self):
+        """Boundary at position 0 (degenerate case)."""
+        merged = "AAAACCCC"
+        rd = {4: Counter({"AAAA": 1, "AAAC": 1, "AACC": 1, "ACCC": 1})}
+        # Window [0, 4): all positions covered by these reads.
+        assert check_merged_sequence_support(merged, 0, rd, 1, 4)
+
+    def test_boundary_at_sequence_end(self):
+        """Boundary at the last position."""
+        merged = "AAAACCCC"
+        rd = {4: Counter({"AAAA": 1, "AAAC": 1, "AACC": 1, "ACCC": 1, "CCCC": 1})}
+        # Window [0, 8): all positions covered by these reads.
+        assert check_merged_sequence_support(merged, 4, rd, 1, 4)
+
+    def test_multiple_read_lengths_available(self):
+        """Uses the read length closest to the configured value."""
+        rd = {
+            4: Counter({"CCCG": 1, "CCGG": 1, "CGGG": 1, "GGGG": 1,
+                        "AAAC": 1, "AACC": 1, "ACCC": 1, "CCCC": 1}),
+        }
+        assert check_merged_sequence_support(
+            self.MERGED, self.BOUNDARY, rd, 1, self.RLEN)
+
+    def test_partial_coverage_around_boundary(self):
+        """Boundary position uncovered because no read covers it.
+
+        Uses a non-repetitive sequence to avoid k-mer collisions
+        that could accidentally link coverage across different regions.
+        """
+        # 30bp merged with left half all 'X' and right half all 'Y'.
+        merged_seq = "X" * 15 + "Y" * 15
+        # Boundary at 15, read_length 5, window [10, 20).
+        # Reads at s=0..10 are X-only; reads at s=11..25 include Y.
+        # Provide only X-region reads: position 15 needs reads at
+        # s ∈ [11, 15] which include Y → none provided.
+        rd = {5: Counter()}
+        for i in range(11):  # reads starting at 0..10, all X-only
+            rd[5][merged_seq[i:i + 5]] = 1
+        assert not check_merged_sequence_support(merged_seq, 15, rd, 1, 5)
+
+
+# ---------------------------------------------------------------------------
+# End-to-end tests with read index
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "read_seqs, expected_count, expected_seq",
+    [
+        # Bad case: reads cover the overlap region but NO read spans
+        # the join boundary at position 8 of the merged sequence.
+        # Merge should be rejected.
+        (["AAAC", "AACC", "ACCC", "CCCC"], 2, None),
+
+        # Good case: reads also span the boundary at position 8.
+        # Merge should be accepted.
+        (["AAAC", "AACC", "ACCC", "CCCC",
+          "CCCG", "CCGG", "CGGG", "GGGG"],
+         1, "AAAACCCCGGGG"),
+    ],
+)
+def test_stitch_with_read_index(read_seqs, expected_count, expected_seq,
+                                disable_acceptable_prob_check):
+    """End-to-end: read index controls whether a merge is accepted.
+
+    Two contigs overlap by 4 bases (CCCC).
+    Reads that match only up to position 7 in the merged sequence
+    (= the CCCC overlap) should NOT allow the merge because no
+    read spans the join boundary into the right contig.
+
+    Reads that also match from position 8 onward allow the merge
+    because they confirm the joined sequence is real.
+    """
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
+
+    read_index = {4: Counter(read_seqs)}
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = read_index
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+
+    assert len(result) == expected_count
+    if expected_seq is not None:
+        assert result[0].seq == expected_seq
+
+
+def test_stitch_with_identical_contig_sequences(disable_acceptable_prob_check):
+    """Identical contig sequences should not confuse the read index.
+
+    Two identical contigs that are not the same object should still
+    be handled correctly: each is its own ContigWithAligner and the
+    read index (keyed by seq string) serves both.
+    """
+    seq = "AAAACCCCGGGG"
+    left = ContigWithAligner(None, seq, None)
+    right = ContigWithAligner(None, seq, None)
+    # Reads that cover all positions in the boundary window.
+    read_index = {4: Counter({"AAAC": 3, "AACC": 2, "ACCC": 1, "CCCC": 5,
+                              "CCCG": 3, "CCGG": 2, "CGGG": 1, "GGGG": 5})}
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = read_index
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+
+    # Identical contigs cover each other; one should remain.
+    assert len(result) == 1
+
+
+def test_stitch_with_reads_from_fastq(tmp_path, disable_acceptable_prob_check):
+    """End-to-end: reads from real FASTQ files are used for validation."""
+    import gzip
+    from collections import Counter
+    import micall.utils.referenceless_contig_stitcher as stitcher_mod
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    # Write a FASTA with overlapping contigs.
+    fasta_path = tmp_path / "contigs.fasta"
+    fasta_path.write_text(">left\nAAAACCCC\n>right\nCCCCGGGG\n")
+
+    # Write FASTQ files with reads that do NOT span the boundary.
+    fq1 = tmp_path / "reads_R1.fastq"
+    fq2 = tmp_path / "reads_R2.fastq"
+
+    # Bad case: reads only cover up to the boundary.
+    reads_bad = ["AAAC", "AACC", "ACCC", "CCCC"]
+    lines = []
+    for i, seq in enumerate(reads_bad):
+        lines.append(f"@read{i}R1\n{seq}\n+\n{chr(73)*len(seq)}\n")
+    fq1.write_text("".join(lines))
+    lines = []
+    for i, seq in enumerate(reads_bad):
+        lines.append(f"@read{i}R2\n{seq}\n+\n{chr(73)*len(seq)}\n")
+    fq2.write_text("".join(lines))
+
+    read_index = build_read_index(fq1, fq2)
+
+    with open(fasta_path) as f:
+        contigs = tuple(stitcher_mod.read_contigs(f))
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = read_index
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus(contigs))
+
+    # Should NOT merge — no reads span the boundary.
+    assert len(result) == 2
+
+    # Now add spanning reads to the FASTQ.
+    reads_good = ["AAAC", "AACC", "ACCC", "CCCC",
+                  "CCCG", "CCGG", "CGGG", "GGGG"]
+    lines = []
+    for i, seq in enumerate(reads_good):
+        lines.append(f"@read{i}R1\n{seq}\n+\n{chr(73)*len(seq)}\n")
+    fq1.write_text("".join(lines))
+    lines = []
+    for i, seq in enumerate(reads_good):
+        lines.append(f"@read{i}R2\n{seq}\n+\n{chr(73)*len(seq)}\n")
+    fq2.write_text("".join(lines))
+
+    read_index = build_read_index(fq1, fq2)
+
+    with open(fasta_path) as f:
+        contigs = tuple(stitcher_mod.read_contigs(f))
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = read_index
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus(contigs))
+
+    # Should merge — reads span the boundary.
+    assert len(result) == 1
+    assert result[0].seq == "AAAACCCCGGGG"
+
+
+def test_cli_fastq_pair_validation(tmp_path):
+    """CLI must reject --fastq1 without --fastq2 and vice versa."""
+    import sys
+    from micall.core.contig_stitcher import main
+
+    fasta = tmp_path / "in.fasta"
+    fasta.write_text(">c\nAAAA\n")
+    out = tmp_path / "out.fasta"
+    fq = tmp_path / "r.fastq"
+    fq.write_text("@r\nAAAA\n+\nIIII\n")
+
+    # Only --fastq1 provided -> error.
+    try:
+        main(["without-references", str(fasta), str(out),
+              "--fastq1", str(fq)])
+        assert False, "Should have raised SystemExit"
+    except SystemExit:
+        pass
+
+    # Only --fastq2 provided -> error.
+    try:
+        main(["without-references", str(fasta), str(out),
+              "--fastq2", str(fq)])
+        assert False, "Should have raised SystemExit"
+    except SystemExit:
+        pass
+
+
+def test_cli_negative_read_depth_rejected(tmp_path):
+    """--minimum-read-depth negative must be rejected."""
+    import sys
+    from micall.core.contig_stitcher import main
+
+    fasta = tmp_path / "in.fasta"
+    fasta.write_text(">c\nAAAA\n")
+    out = tmp_path / "out.fasta"
+
+    try:
+        main(["without-references", str(fasta), str(out),
+              "--minimum-read-depth", "-1"])
+        assert False, "Should have raised SystemExit"
+    except SystemExit:
+        pass
+
+
+def test_cli_zero_read_length_rejected(tmp_path):
+    """--read-length 0 must be rejected."""
+    import sys
+    from micall.core.contig_stitcher import main
+
+    fasta = tmp_path / "in.fasta"
+    fasta.write_text(">c\nAAAA\n")
+    out = tmp_path / "out.fasta"
+
+    try:
+        main(["without-references", str(fasta), str(out),
+              "--read-length", "0"])
+        assert False, "Should have raised SystemExit"
+    except SystemExit:
+        pass
