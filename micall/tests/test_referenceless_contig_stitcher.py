@@ -893,7 +893,7 @@ class TestCheckMergedSequenceSupport:
     # ---- helper: build a read index from placements -------------------
     @staticmethod
     def _make_rd(seq: str, starts_with_lens, count=1):
-        rd: Dict[int, Counter[str]] = {}
+        rd = {}
         for s, L in starts_with_lens:
             frag = seq[s:s + L]
             canonical = min(frag, reverse_complement(frag))
@@ -978,7 +978,6 @@ class TestCheckMergedSequenceSupport:
         """A read present only as rc can still span the cut."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        kmer = merged[14:19]  # "GTACG"
         rc_kmer = "CGTAC"     # reverse complement of GTACG
         # Canonical of both is "CGTAC" — use that directly.
         rd = {5: Counter({rc_kmer: 1})}
@@ -1213,7 +1212,6 @@ def test_stitch_with_reads_from_fastq_split_side_rejected(tmp_path, disable_acce
 
 def test_cli_fastq_pair_validation(tmp_path):
     """CLI must reject --fastq1 without --fastq2 and vice versa."""
-    import sys
     from micall.core.contig_stitcher import main
 
     fasta = tmp_path / "in.fasta"
@@ -1241,7 +1239,6 @@ def test_cli_fastq_pair_validation(tmp_path):
 
 def test_cli_negative_read_depth_rejected(tmp_path):
     """--minimum-read-depth negative must be rejected."""
-    import sys
     from micall.core.contig_stitcher import main
 
     fasta = tmp_path / "in.fasta"
@@ -1258,7 +1255,6 @@ def test_cli_negative_read_depth_rejected(tmp_path):
 
 def test_cli_zero_read_length_rejected(tmp_path):
     """--read-length 0 must be rejected."""
-    import sys
     from micall.core.contig_stitcher import main
 
     fasta = tmp_path / "in.fasta"
