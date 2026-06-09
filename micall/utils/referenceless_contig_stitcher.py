@@ -20,7 +20,6 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.exact_coverage import (
-    build_kmer_index_for_size,
     find_exact_matches,
     reverse_complement,
 )
@@ -1117,7 +1116,7 @@ def compute_coverage_from_fastqs(
             fastq1.readline()
             fastq1.readline()
 
-            header2 = fastq2.readline()
+            fastq2.readline()
             read2_seq = fastq2.readline().strip()
             fastq2.readline()
             fastq2.readline()
