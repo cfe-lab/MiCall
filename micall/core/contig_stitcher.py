@@ -38,6 +38,17 @@ def main(argv: Sequence[str]) -> int:
         parser.add_argument('contigs', type=argparse.FileType('r'), help="Input FASTA file with assembled contigs.")
         parser.add_argument('stitched_contigs', type=argparse.FileType('w'),
                             help="Output FASTA file with stitched contigs.")
+        parser.add_argument('--fastq1', type=Path, default=None,
+                            help='Forward reads FASTQ for join-boundary validation (plain or .gz).')
+        parser.add_argument('--fastq2', type=Path, default=None,
+                            help='Reverse reads FASTQ for join-boundary validation (plain or .gz).')
+        parser.add_argument('--minimum-read-depth', type=int, default=1,
+                            help='Minimum exact-placement depth required at the join cut '
+                                 'and across the validation window. 0 disables validation. '
+                                 '(default: 1)')
+        parser.add_argument('--read-length', type=int, default=150,
+                            help='Read length used for the centred coverage window around '
+                                 'the join cut. (default: 150)')
 
     parser.prog = ' '.join([Path(__file__).stem, head_args.mode])
 
@@ -71,8 +82,28 @@ def main(argv: Sequence[str]) -> int:
             args.contigs, args.stitched_contigs, plot_path, remap_counts)
     else:
         referenceless.logger = logger
+
+        # Validate FASTQ arguments: both or neither.
+        if (args.fastq1 is None) != (args.fastq2 is None):
+            parser.error("--fastq1 and --fastq2 must be provided together.")
+        if args.minimum_read_depth < 0:
+            parser.error("--minimum-read-depth must be non-negative.")
+        if args.read_length < 1:
+            parser.error("--read-length must be positive.")
+
+        read_index = None
+        validation_requested = args.minimum_read_depth > 0
+        fastqs_provided = args.fastq1 is not None and args.fastq2 is not None
+        if validation_requested and fastqs_provided:
+            read_index = referenceless.build_read_index(
+                args.fastq1, args.fastq2,
+            )
         referenceless.referenceless_contig_stitcher(
-            args.contigs, args.stitched_contigs)
+            args.contigs, args.stitched_contigs,
+            read_index=read_index,
+            minimum_read_depth=args.minimum_read_depth,
+            read_length=args.read_length,
+        )
 
     return 0
 
