@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import Counter
-from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional, AbstractSet
+from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional, AbstractSet, Set
 from contextvars import ContextVar
 from contextlib import contextmanager
 from copy import deepcopy
@@ -87,10 +86,10 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         # cutoffs cache: key=(left_id,right_id) -> Optional[(left_cutoff,right_cutoff)]
         self.cutoffs_cache: Dict[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]] = {}
         # read index for join-boundary validation.
-        # Maps read_length -> Counter of read sequences with their counts.
+        # Maps read_length -> set of canonical deduplicated read identities.
         # Built once from FASTQ files before stitching.
         # None = validation disabled; {} = enabled but no reads found.
-        self.read_index: Optional[Dict[int, Counter[str]]] = None
+        self.read_index: Optional[Dict[int, Set[str]]] = None
         # coverage validation parameters
         self.minimum_read_depth: int = 1
         self.read_length: int = 150

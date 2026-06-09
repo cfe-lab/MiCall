@@ -1,9 +1,8 @@
-from collections import Counter
-
 import pytest
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, \
     ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support
+from micall.utils.exact_coverage import reverse_complement
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -889,12 +888,14 @@ DNA_RLEN = 5  # read_length for window size
 class TestCheckMergedSequenceSupport:
     """Unit tests for check_merged_sequence_support."""
 
-    # ---- helper: build a read index from a list of (start, length) tuples ----
+    # ---- helper: build a read index (set of canonical reads) from placements --
     @staticmethod
     def _make_rd(seq: str, starts_with_lens):
-        rd = {}
+        rd: Dict[int, Set[str]] = {}
         for s, L in starts_with_lens:
-            rd.setdefault(L, Counter())[seq[s:s + L]] += 1
+            frag = seq[s:s + L]
+            canonical = min(frag, reverse_complement(frag))
+            rd.setdefault(L, set()).add(canonical)
         return rd
 
     # ------------------------------------------------------------------
@@ -980,7 +981,7 @@ class TestCheckMergedSequenceSupport:
         kmer = merged[14:19]  # "GTACG"
         rc_kmer = "CGTAC"     # reverse complement of GTACG
         # Index only the reverse complement.
-        rd = {5: Counter({rc_kmer: 3})}
+        rd = {5: {rc_kmer}}
         assert check_merged_sequence_support(merged, cut, rd, 1, 5)
 
     # ------------------------------------------------------------------
@@ -991,50 +992,86 @@ class TestCheckMergedSequenceSupport:
         """Reads of different lengths are all considered."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        rd = {
-            5: Counter({"GTACG": 2}),    # 5-mer at 14 spans
-            7: Counter({"TACGTAC": 1}),  # 7-mer at 15 spans
-        }
-        assert check_merged_sequence_support(merged, cut, rd, 3, 5)
-        # Total spanning = 2 + 1 = 3 ≥ 3
+        # "GTACG": 5-mer at S=14 spans cut; canonical = min("GTACG","CGTAC") = "CGTAC".
+        # "TACGTAC": 7-mer at S=15 spans cut; canonical = min("TACGTAC","GTACGTA") = "GTACGTA".
+        # These are three different deduplicated reads -> min_depth=3 passes.
+        rd = {5: {"GTACG", "CGTAC"}, 7: {"TACGTAC"}}
+        # But wait — "GTACG" and "CGTAC" share the same canonical "CGTAC",
+        # so they collapse to 1.  Total deduplicated = 1 (from 5-mers) + 1 (7-mer) = 2.
+        # min_depth=2 should pass, min_depth=3 should fail.
+        assert check_merged_sequence_support(merged, cut, rd, 2, 5)
+        assert not check_merged_sequence_support(merged, cut, rd, 3, 5)
 
     def test_multiple_read_lengths_insufficient(self):
         """All read lengths combined still don't reach impossible min_depth."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
-        rd = {5: Counter({merged[14:19]: 10})}  # "GTACG" at S=14 spans
+        # Only one distinct read.
+        rd = {5: {merged[14:19]}}  # "GTACG" at S=14 spans
         assert not check_merged_sequence_support(merged, cut, rd, 999, 5)
 
     # ------------------------------------------------------------------
-    # 6. Multi-mapping in low-complexity / repetitive sequence
+    # 6. Deduplication — placements and multiplicity must not inflate
     # ------------------------------------------------------------------
 
-    def test_repetitive_sequence_multi_mapping(self):
-        """In a homopolymer, one read sequence may match many start positions.
-
-        The same read sequence (e.g. 'AAAAA') can be placed at every start
-        position in a poly-A run.  Each placement is a distinct exact match
-        on the merged sequence, so coverage is counted independently per
-        placement.  This is correct: in a homopolymer a read genuinely
-        matches at all those positions.  The spanning check sums over all
-        placements: with 4 start positions that span cut=15 (S=11..14)
-        and count=1 each, total spanning = 4.
-        """
+    def test_homopolymer_one_read_min_depth_1(self):
+        """One deduplicated read supports min_depth=1 in a homopolymer."""
         merged = "A" * 30
         cut = 15
-        rd = {5: Counter({"AAAAA": 1})}
-        # 4 spanning placements → min_depth=4 passes, 5 fails.
-        assert check_merged_sequence_support(merged, cut, rd, 4, 5)
-        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)
+        # Single deduplicated read "AAAAA".
+        rd = {5: {"AAAAA"}}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
 
-    def test_repetitive_sequence_multi_mapping_capped(self):
-        """Same homopolymer but even with multi-mapping, depth caps apply."""
+    def test_homopolymer_one_read_min_depth_2_fails(self):
+        """One deduplicated read can never satisfy min_depth=2."""
         merged = "A" * 30
         cut = 15
-        rd = {5: Counter({"AAAAA": 2})}  # 2 copies of same read
-        # 4 spanning placements × 2 copies = 8
-        assert check_merged_sequence_support(merged, cut, rd, 8, 5)
-        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)
+        rd = {5: {"AAAAA"}}
+        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+
+    def test_read_multiplicity_does_not_inflate(self):
+        """100 identical reads still count as 1 deduplicated identity."""
+        merged = "A" * 30
+        cut = 15
+        # Even with large multiplicity, only 1 canonical read.
+        rd = {5: {"AAAAA"}}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
+        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+
+    def test_rc_does_not_double_count(self):
+        """A read and its reverse complement share one canonical identity."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        read = "GTACG"       # at S=14 covers [14,19), spans cut=16
+        rc = reverse_complement(read)  # "CGTAC"
+        # Both appear in the index, but they share the same canonical:
+        # min("GTACG", "CGTAC") = "CGTAC"
+        rd = {5: {read, rc}}  # set deduplication already collapses this,
+                              # but build_read_index would do the same.
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
+        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
+
+    def test_two_distinct_reads_min_depth_2(self):
+        """Two genuinely different reads satisfy min_depth=2."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # Read1: "GTACG" at S=14 covers [14,19), spans cut=16.
+        # Read2: "TACGT" at S=15 covers [15,20), spans cut=16.
+        # These are different canonical identities.
+        rd = {5: {"GTACG", "TACGT"}}
+        assert check_merged_sequence_support(merged, cut, rd, 2, 5)
+
+    def test_window_coverage_deduplicated(self):
+        """One repetitive read covering many window positions counts as 1."""
+        merged = "A" * 30
+        cut = 15
+        # "AAAAA" matches at all start positions and covers every window
+        # position via multiple placements, but it's still just one read.
+        rd = {5: {"AAAAA"}}
+        # Window [13,18): each position should be covered by at most 1
+        # deduplicated read.  min_depth=1 passes, min_depth=2 fails.
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)
+        assert not check_merged_sequence_support(merged, cut, rd, 2, 5)
 
 
 # ---------------------------------------------------------------------------
@@ -1069,7 +1106,13 @@ def test_stitch_with_read_index_matching_accepted(disable_acceptable_prob_check)
     right = ContigWithAligner(None, "CCCCGGGG", None)
     # Provide all possible 4-mers from the expected merged sequence.
     merged = "AAAACCCCGGGG"
-    rd = {4: Counter(merged[i:i+4] for i in range(len(merged)-3))}
+    # Canonicalize each k-mer (though for short non-palindromic kmers
+    # this doesn't change much, keep the set deduplicated by canonical).
+    rd = {4: set()}
+    for i in range(len(merged)-3):
+        frag = merged[i:i+4]
+        canonical = min(frag, reverse_complement(frag))
+        rd[4].add(canonical)
     with ReferencelessStitcherContext.fresh() as ctx:
         ctx.read_index = rd
         ctx.minimum_read_depth = 1
@@ -1137,7 +1180,7 @@ def test_merged_check_with_split_side_reads(disable_acceptable_prob_check):
     """
     merged = "AAAACCCCGGGG"
     cut = 5
-    rd = {4: Counter({"AAAA": 2, "CCCG": 2})}
+    rd = {4: {"AAAA", "CCCG"}}
     assert not check_merged_sequence_support(merged, cut, rd, 1, 4), \
         "AAAA (ends before cut) and CCCG (starts at cut, rc CGGG not on left) should not support the merge"
 

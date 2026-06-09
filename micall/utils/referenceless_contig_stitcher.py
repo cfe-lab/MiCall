@@ -8,6 +8,7 @@ from typing import (
     Iterable,
     Iterator,
     Optional,
+    Set,
     Tuple,
     Sequence,
     TextIO,
@@ -680,16 +681,24 @@ def merge_by_concordance(
 def check_merged_sequence_support(
     merged_seq: str,
     cut_position: int,
-    read_index: Optional[Dict[int, Counter[str]]],
+    read_index: Optional[Dict[int, Set[str]]],
     min_depth: int,
     read_length: int,
 ) -> bool:
     """Check that a candidate join cut in a merged sequence has read support.
 
+    Support is counted by **deduplicated read identities**.  A read identity
+    is ``min(seq, reverse_complement(seq))`` — forward and reverse-complement
+    observations of the same underlying read collapse to one.  Multiple FASTQ
+    occurrences and multiple exact-match placements of the same identity
+    contribute **at most 1** to spanning support and **at most 1** to
+    coverage at any given window position.
+
     Two conditions must hold:
 
-    1. **Cut-spanning support** — at least ``min_depth`` reads have an
-       exact-match interval that strictly crosses the cut:
+    1. **Cut-spanning support** — at least ``min_depth`` distinct deduplicated
+       read identities have an exact-match interval that strictly crosses the
+       cut:
 
            start < cut_position < end
 
@@ -697,7 +706,8 @@ def check_merged_sequence_support(
        support the join.
 
     2. **Boundary-window coverage** — every base in a read-length-sized
-       window around the cut has at least ``min_depth`` exact read coverage:
+       window around the cut has at least ``min_depth`` distinct deduplicated
+       read identities covering it:
 
            window_start = max(0, cut_position - read_length // 2)
            window_end   = min(len(merged_seq), cut_position + (read_length - read_length // 2))
@@ -713,11 +723,11 @@ def check_merged_sequence_support(
         Half-open cut position in merged_seq.  Bases before this position
         come from the left contig; bases at and after come from the right
         contig.
-    read_index : Optional[Dict[int, Counter[str]]]
-        Read index mapping read_length -> Counter of read sequences.
-        ``None`` means validation is disabled.
+    read_index : Optional[Dict[int, Set[str]]]
+        Read index mapping read_length -> set of canonical deduplicated read
+        identities.  ``None`` means validation is disabled.
     min_depth : int
-        Minimum number of reads required.
+        Minimum number of deduplicated read identities required.
     read_length : int
         Configured read length; used for the window size.
 
@@ -753,61 +763,55 @@ def check_merged_sequence_support(
     if window_end <= window_start:
         return True
 
-    # ---- per-position coverage array ---------------------------------------
-    coverage = [0] * seq_len
+    # ---- build a lookup from canonical read → unique integer id -----------
+    canonical_to_id: Dict[str, int] = {}
+    for L, reads in read_index.items():
+        for read in reads:
+            canonical = min(read, reverse_complement(read))
+            if canonical not in canonical_to_id:
+                canonical_to_id[canonical] = len(canonical_to_id)
+
+    # coverage[p] = set of canonical read IDs covering window position p
+    coverage: Dict[int, Set[int]] = {p: set() for p in range(window_start, window_end)}
+    spanning_reads: Set[int] = set()
     any_match = False
 
-    for L, counter in read_index.items():
-        # Start positions whose span can touch any position in the window.
-        s_min_win = max(0, window_start - L + 1)
-        s_max_win = min(window_end - 1, seq_len - L)
-        if s_min_win > s_max_win:
+    for L, reads in read_index.items():
+        # Combined start-position range for both window and spanning checks.
+        s_eff_min = max(0, min(window_start, cut_position) - L + 1)
+        s_eff_max = min(max(window_end - 1, cut_position - 1), seq_len - L)
+        if s_eff_min > s_eff_max:
             continue
 
-        for s in range(s_min_win, s_max_win + 1):
+        for s in range(s_eff_min, s_eff_max + 1):
             kmer = merged_seq[s:s + L]
             rc_kmer = reverse_complement(kmer)
-            # Avoid double-counting palindromic kmers.
-            if rc_kmer == kmer:
-                count = counter.get(kmer, 0)
-            else:
-                count = counter.get(kmer, 0) + counter.get(rc_kmer, 0)
-            if count > 0:
-                any_match = True
-                for i in range(L):
-                    coverage[s + i] += count
-                # ^ increment each covered position individually to keep
-                #   coverage values exact (each read contributes its count
-                #   to every position it spans).
+            canonical = kmer if kmer <= rc_kmer else rc_kmer
+
+            rid = canonical_to_id.get(canonical)
+            if rid is None:
+                continue
+
+            any_match = True
+
+            # -- window coverage (deduplicated per position) ----------------
+            cov_start = max(window_start, s)
+            cov_end = min(window_end, s + L)
+            for p in range(cov_start, cov_end):
+                coverage[p].add(rid)
+
+            # -- cut-spanning (deduplicated) --------------------------------
+            if s < cut_position < s + L:
+                spanning_reads.add(rid)
 
     if not any_match:
         return False
 
-    # ---- 1. cut-spanning support -------------------------------------------
-    spanning_total = 0
-    for L, counter in read_index.items():
-        s_span_min = max(0, cut_position - L + 1)  # need start < cut
-        s_span_max = min(cut_position - 1, seq_len - L)  # need cut < end
-        if s_span_min > s_span_max:
-            continue
-        for s in range(s_span_min, s_span_max + 1):
-            kmer = merged_seq[s:s + L]
-            rc_kmer = reverse_complement(kmer)
-            if rc_kmer == kmer:
-                spanning_total += counter.get(kmer, 0)
-            else:
-                spanning_total += counter.get(kmer, 0) + counter.get(rc_kmer, 0)
-            if spanning_total >= min_depth:
-                break
-        if spanning_total >= min_depth:
-            break
-
-    if spanning_total < min_depth:
+    if len(spanning_reads) < min_depth:
         return False
 
-    # ---- 2. boundary-window coverage ---------------------------------------
     for p in range(window_start, window_end):
-        if coverage[p] < min_depth:
+        if len(coverage[p]) < min_depth:
             return False
 
     return True
@@ -1166,19 +1170,21 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
 def build_read_index(
     fastq1_path: Path,
     fastq2_path: Path,
-) -> Dict[int, Counter[str]]:
-    """Build a read index from paired FASTQ files.
+) -> Dict[int, Set[str]]:
+    """Build a deduplicated read index from paired FASTQ files.
 
-    Reads both R1 and R2, and builds a dictionary mapping
-    read_length -> Counter of read sequences with their counts.
+    Reads both R1 and R2, canonicalizes each sequence via
+    ``min(seq, reverse_complement(seq))``, and stores the resulting
+    set of canonical read identities keyed by read length.
 
-    This index is used by check_merged_sequence_support to validate
-    join boundaries on candidate merged contigs. The index is built
-    once before stitching and reused for all merge candidates.
+    Multiple FASTQ occurrences of the same read sequence, as well as
+    a read and its reverse complement, collapse to a single entry.
+    The index therefore represents **distinct deduplicated read
+    identities**, not read counts or placements.
 
     Returns an empty dict if no reads can be read.
     """
-    read_index: Dict[int, Counter[str]] = {}
+    read_index: Dict[int, Set[str]] = {}
 
     with (
         open_fastq_file(fastq1_path) as fastq1,
@@ -1213,9 +1219,10 @@ def build_read_index(
                 if not seq:
                     continue
                 length = len(seq)
+                canonical = min(seq, reverse_complement(seq))
                 if length not in read_index:
-                    read_index[length] = Counter()
-                read_index[length][seq] += 1
+                    read_index[length] = set()
+                read_index[length].add(canonical)
 
     return read_index
 
@@ -1250,7 +1257,7 @@ def referenceless_contig_stitcher(
     input_fasta: TextIO,
     output_fasta: Optional[TextIO],
     *,
-    read_index: Optional[Dict[int, Counter[str]]] = None,
+    read_index: Optional[Dict[int, Set[str]]] = None,
     minimum_read_depth: int = 1,
     read_length: int = 150,
 ) -> int:
@@ -1259,8 +1266,8 @@ def referenceless_contig_stitcher(
 
     When read_index is provided (from build_read_index), merges are validated
     against read coverage using check_merged_sequence_support. The read_index
-    must map read_length -> Counter of read sequences, as returned by
-    build_read_index.
+    must map read_length -> set of canonical deduplicated read identities, as
+    returned by build_read_index.
 
     ``read_index=None`` (default) means validation is disabled.
     ``read_index={}`` (provided but empty) means validation is enabled but

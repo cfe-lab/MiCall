@@ -74,16 +74,18 @@ passing only one is a CLI error.  `--minimum-read-depth` must be ≥ 0 and
 ### 3.2 Read index (`build_read_index`)
 
 Before stitching, reads from both FASTQ files are collected into a
-**read index**: a `Dict[int, Counter[str]]` mapping read_length → Counter of
-read sequences with their counts.  Each read from R1 and R2 is counted
-independently.
+**read index**: a `Dict[int, Set[str]]` mapping read_length → set of
+canonical deduplicated read identities.  Each read from R1 and R2 is
+canonicalized via ``min(seq, reverse_complement(seq))`` and stored once.
 
 ```python
-def build_read_index(fastq1_path, fastq2_path) -> Dict[int, Counter[str]]:
+def build_read_index(fastq1_path, fastq2_path) -> Dict[int, Set[str]]:
     ...
 ```
 
-The index is built **once** and reused for all merge candidates.
+The index is built **once** and reused for all merge candidates.  Multiple
+FASTQ occurrences of the same read, as well as a read and its reverse
+complement, collapse to a single entry.
 
 `read_index=None` (no FASTQs provided) means validation is disabled.
 `read_index={}` (FASTQs provided but empty) means validation is enabled but
@@ -95,7 +97,7 @@ no reads were indexed — merges will be rejected.
 def check_merged_sequence_support(
     merged_seq: str,
     cut_position: int,
-    read_index: Optional[Dict[int, Counter[str]]],
+    read_index: Optional[Dict[int, Set[str]]],
     min_depth: int,
     read_length: int,
 ) -> bool:
@@ -106,17 +108,23 @@ The function proceeds in three stages:
 1. **Early exit** — if `read_index is None` or `min_depth == 0`, return True
    (validation disabled).  If `not read_index`, return False (no reads to check).
 
-2. **Coverage computation** — a per-position coverage array is built for the
-   window zone by iterating over every read length `L` in the index and every
-   start position `s` whose span can touch the window.  For each start
-   position, the k-mer `merged[s:s+L]` and its reverse complement are looked
-   up in the index.  Reads of all lengths contribute.
+2. **Coverage computation** — a per-position set of deduplicated read identities
+   is built for the window zone.  For each read length `L` in the index and each
+   start position `s` whose span can touch the window, the k-mer
+   `merged[s:s+L]` is extracted and canonicalized via
+   ``min(kmer, reverse_complement(kmer))``.  If this canonical identity exists
+   in the index, the read is recorded as covering every window position it
+   touches, and (if ``s < cut < s+L``) as spanning the cut.
 
-3. **Cut-spanning check** — reads with start < cut < end are counted.
-   If the total < min_depth, reject.
+   **Duplicate placements of the same read identity do not inflate support** —
+   each identity contributes at most 1 to coverage at any given window position
+   and at most 1 to the spanning count.
 
-4. **Window-coverage check** — every position in `[window_start, window_end)`
-   must have coverage ≥ min_depth.  If any position fails, reject.
+3. **Cut-spanning check** — the count of distinct read identities with
+   ``start < cut < end`` is compared to ``min_depth``.
+
+4. **Window-coverage check** — the count of distinct read identities covering
+   each window position is compared to ``min_depth``.
 
 ### 3.4 Integration in `try_combine_contigs`
 
@@ -136,14 +144,22 @@ if not check_merged_sequence_support(
 Covered-contig cases (one contig fully inside the overlap of another) do
 not create a join boundary, so the check is skipped for them.
 
-### 3.5 Reverse-complement support
+### 3.5 Deduplication and reverse-complement handling
 
-For each candidate k-mer from the merged sequence, both the forward sequence
-and its reverse complement are looked up in the read index.  This mirrors
-the behaviour of the `exact_coverage.py` tool, which tries each read in both
-orientations against contigs.
+Read identity is defined by ``canonical = min(seq, reverse_complement(seq))``.
+This means:
 
-### 3.6 Limitations: exact matching
+- A read and its reverse complement share one canonical identity and are
+  counted once.
+- Multiple FASTQ occurrences of the same read sequence collapse to one entry.
+- Each deduplicated identity contributes **at most 1** to the spanning count
+  and **at most 1** to coverage at any given window position, regardless of
+  how many exact-match placements it has on the merged sequence.
+
+This is intentionally conservative, especially in repetitive regions where a
+single read sequence may match many positions.
+
+### 3.6 Limitations: exact matching and deduplication
 
 The validation uses **exact matching only**: a read must match a substring
 of the merged sequence perfectly, with zero mutations, insertions, or
@@ -151,7 +167,8 @@ deletions.  This means:
 
 - Reads with sequencing errors in the overlap region are not counted.
 - Reads from divergent quasispecies variants are not counted.
-- The check is conservative — it undercounts true biological support.
+- The deduplication is conservative — a repetitive region may be covered by
+  only one unique read sequence even if that sequence has many placements.
 
 However, the primary target is **spurious joins** from coincidental sequence
 similarity (low-complexity repeats, chimeric assemblies, contamination).
@@ -164,8 +181,8 @@ These will have **zero** spanning reads, which the check correctly rejects.
 | File | Change |
 |---|---|
 | `micall/core/contig_stitcher.py` | Add `--fastq1`, `--fastq2`, `--minimum-read-depth`, `--read-length` args.  Validate FASTQ pair and argument ranges.  Build read index or pass None. |
-| `micall/utils/contig_stitcher_context.py` | `read_index` field (Optional, default None).  `minimum_read_depth`, `read_length`.  No numpy. |
-| `micall/utils/referenceless_contig_stitcher.py` | `build_read_index()`, `check_merged_sequence_support()` with cut-spanning + window-coverage.  Restructured `try_combine_contigs`.  `merge_by_concordance` returns `join_boundary`.  Reverse-complement lookups.  Multiple read lengths. |
+| `micall/utils/contig_stitcher_context.py` | `read_index` field (``Optional[Dict[int, Set[str]]]``, default None).  `minimum_read_depth`, `read_length`. |
+| `micall/utils/referenceless_contig_stitcher.py` | `build_read_index()` returning deduplicated canonical read sets.  `check_merged_sequence_support()` with cut-spanning + window-coverage, counting deduplicated read identities.  Restructured `try_combine_contigs`.  `merge_by_concordance` returns `join_boundary`. |
 | `micall/drivers/sample.py` | Use `build_read_index`, pass read index to stitcher. |
 
 ---
@@ -247,13 +264,15 @@ checks.  A 150-mer and a 75-mer (from trimmed reads) both count.
 ## 7. Acceptance criteria
 
 - A candidate join is **not** accepted unless at least `minimum_read_depth`
-  reads cross the join cut (`start < cut < end`).
+  distinct deduplicated read identities cross the join cut (`start < cut < end`).
 - The read-length-sized window around the cut is covered to
-  `minimum_read_depth`.
+  `minimum_read_depth` distinct deduplicated read identities.
 - The check runs against the **proposed merged sequence**, not the original
   contig sequences.
+- One deduplicated read can **never** satisfy `minimum_read_depth > 1`, no
+  matter how many FASTQ occurrences or exact placements it has.
+- A read and its reverse complement share one identity and are not double-counted.
 - Split left/right coverage without a cut-spanning read is **rejected**.
-- Reverse-complement reads are considered.
 - Empty read index (`{}`) does **not** silently disable validation when
   validation was intended (FASTQs provided).
 - `read_index=None` disables validation (backward compatible).
