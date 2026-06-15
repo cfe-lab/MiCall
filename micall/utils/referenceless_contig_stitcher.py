@@ -39,10 +39,10 @@ from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 
 # Minimum number of matches to consider an overlap acceptable
-MIN_MATCHES = 99
+MIN_MATCHES = 50
 
 # Kmer size used for filtering unlikely overlaps
-KMER_SIZE = 50
+KMER_SIZE = 30
 
 
 logger = logging.getLogger(__name__)
