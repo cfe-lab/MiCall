@@ -10,8 +10,10 @@ micall/tests/microtest/micall-results
 micall/tests/microtest/Results
 micall/utils/hcv_reference_tree
 venv_micall
+.venv
 *.pyc
 */*.pyc
 */*/*.pyc
 */*/*/*.pyc
 simgs
+*~

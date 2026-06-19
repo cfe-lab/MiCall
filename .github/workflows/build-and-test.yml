@@ -72,12 +72,21 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for git describe
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Derive version from latest git tag
+        id: gitver
+        shell: bash
+        run: |
+          VERSION="$(git describe | sed 's/^v//')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using version: $VERSION"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build docker image
@@ -87,7 +96,7 @@ jobs:
           file: Dockerfile
           push: ${{ github.ref == 'refs/heads/master' }}
           tags: |
-            ghcr.io/cfe-lab/micall:sha-${{ github.sha }}
+            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
             ghcr.io/cfe-lab/micall:latest
           cache-from: type=gha,scope=docker-micall
           cache-to: type=gha,mode=max,scope=docker-micall
@@ -104,6 +113,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for git describe
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.15.6'
@@ -134,17 +145,19 @@ jobs:
           singularity --version
 
       - name: Singularity build
-        run: sudo singularity build micall.simg Singularity
+        run: |
+          sudo -E python micall singularity_build --debug
+          sudo chown -R "$USER":"$USER" simgs
 
       - name: Install python packages
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall release_test_microtest micall.simg
+        run: python micall release_test_microtest ./simgs/micall-latest.sif
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg
-          path: micall.simg
+          path: ./simgs/micall-latest.sif

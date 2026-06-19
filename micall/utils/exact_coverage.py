@@ -16,7 +16,7 @@ from collections import defaultdict
 from gzip import GzipFile
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast
+from typing import Dict, Optional, Sequence, Tuple, TextIO, Iterator, cast
 import numpy as np
 from Bio import SeqIO
 
@@ -107,6 +107,17 @@ def open_fastq(filename: Path) -> TextIO:
         return open(filename, "r")
 
 
+def _read_one_fastq_record(fastq: TextIO) -> Optional[str]:
+    """Read one FASTQ record, returning the sequence or ``None`` at EOF."""
+    header = fastq.readline()
+    if not header:
+        return None
+    seq = fastq.readline().strip()
+    fastq.readline()  # plus line
+    fastq.readline()  # quality line
+    return seq
+
+
 def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
     """
     Read paired FASTQ files and yield (read1_seq, read2_seq) tuples.
@@ -115,24 +126,46 @@ def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]
     :param fastq2: Reverse reads FASTQ file
     :yield: Tuples of (forward_sequence, reverse_sequence)
     """
-    # Read 4 lines at a time from each file (FASTQ format)
     while True:
-        # Read forward read
-        header1 = fastq1.readline()
-        if not header1:
+        seq1 = _read_one_fastq_record(fastq1)
+        if seq1 is None:
             break
-        seq1 = fastq1.readline().strip()
-        fastq1.readline()  # plus line
-        fastq1.readline()  # quality line
-
-        # Read reverse read
-        header2 = fastq2.readline()
-        if not header2:
+        seq2 = _read_one_fastq_record(fastq2)
+        if seq2 is None:
             break
-        seq2 = fastq2.readline().strip()
-        fastq2.readline()  # plus line
-        fastq2.readline()  # quality line
+        yield (seq1, seq2)
 
+
+def read_fastq_pairs_strict(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
+    """
+    Read paired FASTQ files, raising on mismatched record counts.
+
+    Unlike :func:`read_fastq_pairs`, this generator detects when one
+    file runs out of records before the other and raises ``ValueError``
+    with a descriptive message.  This is useful when exact pairing is
+    required and silent truncation could hide data corruption.
+
+    :param fastq1: Forward reads FASTQ file
+    :param fastq2: Reverse reads FASTQ file
+    :yield: Tuples of (forward_sequence, reverse_sequence)
+    :raises ValueError: If R1 and R2 have different numbers of records.
+    """
+    while True:
+        seq1 = _read_one_fastq_record(fastq1)
+        if seq1 is None:
+            # R1 exhausted; check R2 is also at EOF.
+            if _read_one_fastq_record(fastq2) is not None:
+                raise ValueError(
+                    "R1 exhausted before R2 — paired FASTQ files "
+                    "have a different number of records."
+                )
+            return
+        seq2 = _read_one_fastq_record(fastq2)
+        if seq2 is None:
+            raise ValueError(
+                "R2 exhausted before R1 — paired FASTQ files "
+                "have a different number of records."
+            )
         yield (seq1, seq2)
 
 
@@ -304,6 +337,7 @@ def process_single_read(
     count: int,
     kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]],
     contigs: Dict[str, str],
+    coverage0: Dict[str, np.ndarray],
     coverage: Dict[str, np.ndarray],
     overlap_size: int,
 ) -> int:
@@ -314,6 +348,7 @@ def process_single_read(
     :param count: Read count
     :param kmer_index: Multi-level k-mer index (modified in place if new indices needed)
     :param contigs: Dictionary mapping contig_name -> sequence
+    :param coverage0: Dictionary mapping contig_name -> coverage array (modified in place)
     :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
     :param overlap_size: Minimum overlap size for counting coverage
     :return: Number of matches found for this read
@@ -327,6 +362,9 @@ def process_single_read(
         for contig_name, start_pos, end_pos in matches:
             match_count += count
             counter = coverage[contig_name]
+            counter0 = coverage0[contig_name]
+            # Increment the full extent of the read
+            counter0[start_pos:end_pos] += count
             # Increment coverage for inner portion
             inner_start = start_pos + overlap_size
             inner_end = end_pos - overlap_size
@@ -339,6 +377,7 @@ def process_single_read(
 def process_reads(
     read_iterator: Iterator[Tuple[str, int]],
     contigs: Dict[str, str],
+    coverage0: Dict[str, np.ndarray],
     coverage: Dict[str, np.ndarray],
     overlap_size: int,
 ) -> Tuple[int, int]:
@@ -347,6 +386,7 @@ def process_reads(
 
     :param read_iterator: Iterator yielding (read_sequence, count) tuples
     :param contigs: Dictionary mapping contig_name -> sequence
+    :param coverage0: Dictionary mapping contig_name -> coverage array (modified in place)
     :param coverage: Dictionary mapping contig_name -> coverage array (modified in place)
     :param overlap_size: Minimum overlap size for counting coverage
     :return: Tuple of (read_count, match_count)
@@ -363,7 +403,7 @@ def process_reads(
             )
 
         match_count += process_single_read(
-            read_seq, count, kmer_index, contigs, coverage, overlap_size
+            read_seq, count, kmer_index, contigs, coverage0, coverage, overlap_size
         )
 
     logger.debug(f"Finished processing {read_count} reads")
@@ -385,7 +425,7 @@ def calculate_exact_coverage(
     fastq2_filename: Path,
     contigs_file: TextIO,
     overlap_size: int,
-) -> Tuple[Dict[str, Sequence[int]], Dict[str, str]]:
+) -> Tuple[Dict[str, Sequence[int]], Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
 
@@ -433,9 +473,11 @@ def calculate_exact_coverage(
             )
 
     # Initialize coverage arrays as numpy arrays for efficient operations
+    coverage0 = {}
     coverage = {}
     for contig_name, sequence in contigs.items():
         coverage[contig_name] = np.zeros(len(sequence), dtype=np.int32)
+        coverage0[contig_name] = np.zeros(len(sequence), dtype=np.int32)
         logger.debug(f"Initialized coverage for {contig_name} ({len(sequence)} bases)")
 
     # Process read pairs - open files with automatic gzip detection
@@ -454,7 +496,7 @@ def calculate_exact_coverage(
             raise ValueError(f"Error reading FASTQ files: {e}") from e
 
     read_count, match_count = process_reads(
-        read_generator(), contigs, coverage, overlap_size
+        read_generator(), contigs, coverage0, coverage, overlap_size
     )
 
     if read_count == 0:
@@ -467,36 +509,41 @@ def calculate_exact_coverage(
     else:
         logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
 
+    coverage0_ret = cast(Dict[str, Sequence[int]], coverage0)
     coverage_ret = cast(Dict[str, Sequence[int]], coverage)
-    return coverage_ret, contigs
+    return coverage0_ret, coverage_ret, contigs
 
 
 def write_coverage_csv(
-    coverage: Dict[str, Sequence[int]], contigs: Dict[str, str], output_csv: TextIO
+    coverage0: Dict[str, Sequence[int]], coverage: Dict[str, Sequence[int]],
+    contigs: Dict[str, str], output_csv: TextIO
 ) -> None:
     """
     Write coverage data to CSV file.
 
+    :param coverage0: Dictionary mapping contig_name -> coverage array
     :param coverage: Dictionary mapping contig_name -> coverage array
     :param contigs: Dictionary mapping contig_name -> sequence
     :param output_csv: Output CSV file
     """
     writer = csv.DictWriter(
         output_csv,
-        ["contig", "position", "exact_coverage"],
+        ["contig", "position", "exact_coverage", "exact_coverage_overlapped"],
         lineterminator="\n",
     )
     writer.writeheader()
 
     for contig_name in sorted(coverage.keys()):
+        contig_coverage0 = coverage0[contig_name]
         contig_coverage = coverage[contig_name]
 
-        for pos, cov in enumerate(contig_coverage, start=1):
+        for pos, (cov0, cov) in enumerate(zip(contig_coverage0, contig_coverage), start=1):
             writer.writerow(
                 {
                     "contig": contig_name,
                     "position": pos,
-                    "exact_coverage": int(cov),  # Convert numpy int to Python int
+                    "exact_coverage": int(cov0),
+                    "exact_coverage_overlapped": int(cov),
                 }
             )
 
@@ -508,10 +555,10 @@ def main_typed(
     output_csv: TextIO,
     overlap_size: int,
 ) -> None:
-    coverage, contigs = calculate_exact_coverage(
+    coverage0, coverage, contigs = calculate_exact_coverage(
         fastq1_filename, fastq2_filename, contigs_file, overlap_size
     )
-    write_coverage_csv(coverage, contigs, output_csv)
+    write_coverage_csv(coverage0, coverage, contigs, output_csv)
 
 
 def main(argv: Sequence[str]) -> int:

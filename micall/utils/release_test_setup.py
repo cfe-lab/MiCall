@@ -97,7 +97,10 @@ class Sample(object):
             self.run_name = os.path.dirname(matches[0])
 
         # Use list_fastq_files to search in BaseCalls, Alignment_*/*/Fastq, or run path
-        pattern = self.extract_num + '*_R1_*'
+        if self.extract_num == '*':
+            pattern = '*_R1_*'
+        else:
+            pattern = self.extract_num + '*_R1_*'
         fastq_files = list_fastq_files(self.run_name, pattern, fallback_to_run_path=False)
         if not fastq_files:
             raise RuntimeError('No matches found for run {}'.format(self.run_name))

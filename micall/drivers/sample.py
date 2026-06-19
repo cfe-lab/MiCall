@@ -22,6 +22,7 @@ from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+import micall.utils.referenceless_contig_stitcher as referenceless
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
 from contextlib import contextmanager
@@ -293,7 +294,6 @@ class Sample:
                         coverage_summary_csv=(with_prefix(self.coverage_summary_csv), 'w'),
                         genome_coverage_csv=(with_prefix(self.genome_coverage_csv), 'w'),
                         conseq_all_csv=(with_prefix(self.conseq_all_csv), 'w'),
-                        conseq_stitched_csv=(with_prefix(self.conseq_stitched_csv), 'w') if use_denovo else None,
                         minimap_hits_csv=(with_prefix(self.minimap_hits_csv), 'w'),
                         alignments_csv=(with_prefix(self.alignments_csv), 'w'),
                         alignments_unmerged_csv=(with_prefix(self.alignments_unmerged_csv), 'w'),
@@ -320,7 +320,6 @@ class Sample:
                        genome_coverage_csv=opened_files['genome_coverage_csv'],
                        contigs_csv=opened_files['contigs_csv'],
                        conseq_all_csv=opened_files['conseq_all_csv'],
-                       conseq_stitched_csv=opened_files['conseq_stitched_csv'],
                        minimap_hits_csv=opened_files['minimap_hits_csv'],
                        alignments_csv=opened_files['alignments_csv'],
                        alignments_unmerged_csv=opened_files['alignments_unmerged_csv'],
@@ -404,6 +403,29 @@ class Sample:
                   Path(self.unmapped2_fastq),
                   debug_file_prefix=debug_file_prefix)
 
+    def run_referenceless_stitcher(self):
+        """Run referenceless contig stitching with read-supported join validation.
+
+        Read-supported join validation is intentionally enabled in the normal
+        denovo pipeline.  The referenceless stitcher validates candidate joins
+        on sequence similarity alone; adding read evidence rejects merges that
+        lack exact cut-spanning support.  This reduces false joins from
+        coincidental overlap similarity, chimeric assembly, or contamination.
+        """
+        with open(self.combined_contigs_fasta, 'r') as combined_contigs_fasta, \
+             open(self.stitched_contigs_fasta, 'w') as stitched_contigs_fasta:
+            read_index = referenceless.build_read_index(
+                Path(self.trimmed1_fastq),
+                Path(self.trimmed2_fastq),
+            )
+            referenceless.referenceless_contig_stitcher(
+                combined_contigs_fasta,
+                stitched_contigs_fasta,
+                read_index=read_index,
+                minimum_read_depth=1,
+                read_length=150,
+            )
+
     def run_denovo(self, excluded_seeds):
         logger.info('Running de novo assembly on %s.', self)
         scratch_path = self.get_scratch_path()
@@ -426,11 +448,21 @@ class Sample:
                                   self.merged_contigs_fasta],
                           output=self.combined_contigs_fasta)
 
+        # Create unstitched_contigs_csv from unstitched (combined) fasta
         with open(self.unstitched_contigs_csv, 'w') as unstitched_contigs_csv, \
              open(self.blast_csv, 'w') as blast_csv:
             fasta_to_csv(Path(self.combined_contigs_fasta),
                          unstitched_contigs_csv,
                          blast_csv=blast_csv,
+                         )
+
+        self.run_referenceless_stitcher()
+
+        with open(self.stitched_contigs_csv, 'w') as stitched_contigs_csv, \
+             open(self.stitched_blast_csv, 'w') as stitched_blast_csv:
+            fasta_to_csv(Path(self.stitched_contigs_fasta),
+                         stitched_contigs_csv,
+                         blast_csv=stitched_blast_csv,
                          )
 
         if self.debug_remap:
@@ -462,10 +494,11 @@ class Sample:
                            debug_file_prefix=with_prefix(debug_file_prefix),
                            excluded_seeds=excluded_seeds)
 
-        with open(self.unstitched_contigs_csv, 'r') as unstitched_contigs_csv, \
+        # Referencefull stitcher uses the output of referenceless stitcher
+        with open(self.stitched_contigs_csv, 'r') as stitched_contigs_csv, \
              open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv, \
              open(self.contigs_csv, 'w') as contigs_csv:
-            referencefull_contig_stitcher(unstitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, unstitched_counts_csv)
+            referencefull_contig_stitcher(stitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, unstitched_counts_csv)
 
         with open(self.contigs_csv) as contigs_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \

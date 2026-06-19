@@ -18,7 +18,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
     assert info_file.name.endswith(".json")
     directory = DirPath(info_file.with_suffix(""))
 
-    # Find sample info and conseq_stitched files
+    # Find sample info and conseq files
     sample_info_path = None
     for subdir in directory.iterdir():
         if subdir.name.endswith("_info.csv"):
@@ -53,12 +53,12 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
         output.touch()
         return
 
-    # Find conseq_stitched CSV
+    # Find conseq CSV
     try:
-        conseq_stitched_csv_path = find_file(directory, "^conseq_stitched.*[.]csv$")
+        conseqs_csv_path = find_file(directory, "^conseq_[0-9].*[.]csv$")
     except ValueError:
         logger.debug(
-            "No conseq_stitched file found for run %r, skipping exact coverage",
+            "No conseq file found for run %r, skipping exact coverage",
             info_file.name,
         )
         output.touch()
@@ -123,8 +123,8 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
 
     # Calculate exact coverage
     try:
-        with open(conseq_stitched_csv_path, "r") as conseq_file:
-            coverage_dict, contigs = calculate_exact_coverage(
+        with open(conseqs_csv_path, "r") as conseq_file:
+            coverage_dict, coverage_ov_dict, contigs = calculate_exact_coverage(
                 fastq1_path, fastq2_path, conseq_file, overlap_size=70
             )
 
@@ -135,22 +135,22 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
             )
             writer.writeheader()
 
-            for contig_name in sorted(coverage_dict.keys()):
-                contig_coverage = coverage_dict[contig_name]
-                for pos, cov in enumerate(contig_coverage, start=1):
-                    writer.writerow(
-                        {
-                            "contig": contig_name,
-                            "position": pos,
-                            "exact_coverage": int(cov),
-                        }
-                    )
+            key_of_longest_contig = max(coverage_dict.keys(), key=lambda k: len(coverage_dict[k]))
+            contig_coverage = coverage_dict[key_of_longest_contig]
+            for pos, cov in enumerate(contig_coverage, start=1):
+                writer.writerow(
+                    {
+                        "contig": key_of_longest_contig,
+                        "position": pos,
+                        "exact_coverage": int(cov),
+                    }
+                )
 
         logger.debug("Calculated exact coverage for run %r", info_file.name)
 
     except NoContigsError:
         logger.debug(
-            "No contigs found in conseq_stitched file for run %r", info_file.name
+            "No contigs found in conseq file for run %r", info_file.name
         )
         output.touch()
     except Exception as ex:

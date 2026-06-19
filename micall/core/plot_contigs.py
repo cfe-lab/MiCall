@@ -1056,17 +1056,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             hit = hits[i]
             r_st = hit.r_st + position_offset
             r_ei = hit.r_ei + position_offset
-            label = name if idx_pos == 0 else None
-            arrows.append(Arrow(r_st, r_ei, h=20, elevation=0, label=label))
+            arrows.append(Arrow(r_st, r_ei, h=3, elevation=-4, label=None))
 
         # Create arrows for reverse strand hits (elevation = 1 for separation)
         for idx_pos, i in enumerate(reverse_indices):
             hit = hits[i]
             r_st = hit.r_st + position_offset
             r_ei = hit.r_ei + position_offset
-            label = name if idx_pos == 0 and not forward_indices else None
             # Reverse the arrow direction by swapping start/end
-            arrows.append(Arrow(r_ei, r_st, h=20, elevation=1, label=label))
+            arrows.append(Arrow(r_ei, r_st, h=3, elevation=-4, label=None))
 
         return arrows
 
@@ -1419,13 +1417,13 @@ def build_contig(reader,
                 field_text = contig_row['concordance']
                 field_value = None if field_text == '' else 100 * float(field_text)
                 contig_row['concordance'] = field_value
-        start = contig_rows[0][pos_field]
-        end = contig_rows[-1][pos_field]
-        new_final_pos = -1
-        while end is None:
-            # this can happen if the match ends with an insertion. Backtrack to the last position that was not None
-            new_final_pos -= 1
-            end = contig_rows[new_final_pos][pos_field]
+        included_positions = [row[pos_field]
+                              for row in contig_rows
+                              if row[pos_field] is not None]
+        if not included_positions:
+            continue
+        start = min(included_positions)
+        end = max(included_positions)
         coverage = [0] * (end - start + 1)
         concordance = [0] * (end - start + 1)
         pos = 0

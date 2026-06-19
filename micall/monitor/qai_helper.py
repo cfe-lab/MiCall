@@ -31,12 +31,20 @@ class Session(requests.Session):
         headers = {'Accept': 'application/json'}
         if json_data:
             headers['Content-Type'] = 'application/json'
-            
+        full_path = self.qai_path + path
         response = method(
-            self.qai_path + path,
+            full_path,
             data=json_data,
             headers=headers)
+
+        if response.status_code >= 400:
+            logger.info("Error response from QAI server %s", full_path)
+            logger.info("Response status: %s", response.status_code)
+            logger.info("Response body: %s", response.text)
+
         response.raise_for_status()
+        if not response.text.strip():
+            return None
         return response.json()
 
     def post_json(self, path, data):

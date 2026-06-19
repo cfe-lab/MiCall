@@ -670,14 +670,6 @@ BEGIN 40
   23292.856472945925.
 END 40
 BEGIN 41
-  Contig
-  (8)
-  covers
-  contig
-  'r102-471.4'
-  completely.
-END 41
-BEGIN 42
   Calculated
   cutoff
   for
@@ -695,8 +687,8 @@ BEGIN 42
   be
   (69,
   313).
-END 42
-BEGIN 43
+END 41
+BEGIN 42
   Overlap
   between
   contigs
@@ -714,37 +706,37 @@ BEGIN 43
   score
   of
   16548.200337539063.
+END 42
+BEGIN 43
+  Constructed
+  a
+  path
+  of
+  length
+  761.
 END 43
 BEGIN 44
-  Contig
-  (8)
-  covers
-  contig
-  'r148-506.1'
-  completely.
+  Removed
+  4
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 44
 BEGIN 45
-  Cycle
-  4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  761
-  and
-  consists
-  of
-  4
-  parts.
+  Calculating
+  all
+  paths...
 END 45
 BEGIN 46
   Cycle
-  5
+  1
   started
   with
   1
@@ -758,47 +750,57 @@ BEGIN 47
   overlap
   of
   size
-  359
+  324
   between
   contigs
-  (8)
+  'r102-471.4'
   and
   'r148-506.1'
   to
   be
-  (69,
-  313).
+  (46,
+  324).
 END 47
 BEGIN 48
   Overlap
   between
   contigs
-  (8)
+  'r102-471.4'
   and
   'r148-506.1'
   has
   aligned
   size
-  359,
-  244
+  324,
+  324
   matches,
   and
   the
   score
   of
-  16548.200337539063.
+  39998.33478591601.
 END 48
 BEGIN 49
-  Contig
-  (8)
-  covers
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  324
+  between
+  contigs
+  'r102-471.4'
+  and
+  'r148-506.1',
+  resulting
+  in
   contig
-  'r148-506.1'
-  completely.
+  (9).
 END 49
 BEGIN 50
   Cycle
-  5
+  1
   finished
   with
   1
@@ -808,16 +810,16 @@ BEGIN 50
   fittest
   has
   length
-  761
+  405
   and
   consists
   of
-  4
+  2
   parts.
 END 50
 BEGIN 51
   Cycle
-  6
+  2
   started
   with
   1
@@ -829,11 +831,11 @@ BEGIN 52
   path
   of
   length
-  761.
+  405.
 END 52
 BEGIN 53
   Removed
-  4
+  2
   components
   from
   the
@@ -850,11 +852,49 @@ BEGIN 54
   overlap
   stitching
   produced
-  1
+  2
   contigs.
 END 54
 BEGIN 55
-  Outputting
-  1
-  contigs.
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  405
+  between
+  contigs
+  (8)
+  and
+  (9)
+  to
+  be
+  (23,
+  313).
 END 55
+BEGIN 56
+  Overlap
+  between
+  contigs
+  (8)
+  and
+  (9)
+  has
+  aligned
+  size
+  405,
+  290
+  matches,
+  and
+  the
+  score
+  of
+  19114.757796654227.
+END 56
+BEGIN 57
+  Outputting
+  2
+  contigs.
+END 57

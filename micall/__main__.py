@@ -66,6 +66,7 @@ EXECUTABLES = [
     "micall/utils/projects_dump.py",
     "micall/utils/find_chimera.py",
     "micall/utils/docker_build.py",
+    "micall/utils/singularity_build.py",
     "micall/utils/probe_finder.py",
     "micall/utils/aln2counts_simplify.py",
     "micall/utils/release_test_setup.py",
@@ -129,8 +130,8 @@ def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run MiCall script.", add_help=False)
-    parser.add_argument("--version", action="store_true", help="Print version and exit.")
-    parser.add_argument('--help', action='store_true', help='Show this help message and exit.')
+    parser.add_argument("--version", '-v', action="store_true", help="Print version and exit.")
+    parser.add_argument('--help', '-h', action='store_true', help='Show this help message and exit.')
     parser.add_argument("program", nargs='?', choices=EXECUTABLES_MAP.keys(), help="Program name.")
     parser.add_argument("arguments", nargs=argparse.REMAINDER, help="Program arguments.")
     return parser

@@ -1092,7 +1092,7 @@ def collate_samples(run_info: RunInfo):
                  'concordance.csv',
                  'concordance_seed.csv']
     if run_info.is_denovo:
-        filenames += ['conseq_stitched.csv', 'conseq_region.csv',
+        filenames += ['conseq_region.csv',
                       'unstitched_cascade.csv', 'unstitched_conseq.csv', 'unstitched_contigs.csv']
     for filename in filenames:
         out_path = run_info.output_path

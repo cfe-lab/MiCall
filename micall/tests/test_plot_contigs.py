@@ -475,6 +475,26 @@ Coverage 5x3, 7x3, 8x3
     assert expected_figure == summarize_figure(figure)
 
 
+def test_plot_genome_coverage_out_of_order_positions():
+    genome_coverage_csv = StringIO("""\
+contig,coordinates,query_nuc_pos,refseq_nuc_pos,ins,dels,coverage
+1-HCV-1a,HCV1A,1,1,0,0,5
+1-HCV-1a,HCV1A,3,3,0,0,9
+1-HCV-1a,HCV1A,2,2,0,0,7
+""")
+    expected_figure = """\
+5'[1-341], C[342-914], E1[915-1490], E2[1491-2579], p7[2580-2768], \
+NS2[2769-3419], NS3[3420-5312], NS4b[5475-6257], NS4a[5313-5474], \
+NS5a[6258-7601], NS5b[7602-9377], 3'[9378-9646]
+Coverage 5, 7, 9
+[1-3], 1-HCV-1a - depth 9(1-9646)
+"""
+
+    figure = build_coverage_figure(genome_coverage_csv)
+
+    assert expected_figure == summarize_figure(figure)
+
+
 def test_plot_genome_coverage_insertion_at_end():
     genome_coverage_csv = StringIO("""\
 contig,coordinates,query_nuc_pos,refseq_nuc_pos,dels,coverage
@@ -798,7 +818,7 @@ contig_num,ref_name,score,match,pident,start,end,ref_start,ref_end
 5' LTR[1-634], gag[790-2292], vif[5041-5619], tat[8380-8469], nef[8797-9417]
 tat[5831-6049], vpu[6062-6310], rev[8378-8653], 3' LTR[9086-9719]
 pol[2085-5096], vpr[5559-5850], rev[5970-6048], env[6225-8795]
-PR[2253-2549], RT[2550-4229], INT[4230-5096], V3[7110-7217], GP41[7758-8795]
+CA[1132-1878], PR[2253-2549], RT[2550-4229], INT[4230-5096], V3[7110-7217], GP41[7758-8795]
 2261--1.1->2270
 2261--1.1->2270
 Coverage 5x10
@@ -835,7 +855,7 @@ HIV1-CON-XX-Consensus-seed,HIV1-B-FR-K03455-seed,1,6,7201,7206
 5' LTR[1-634], gag[790-2292], vif[5041-5619], tat[8380-8469], nef[8797-9417]
 tat[5831-6049], vpu[6062-6310], rev[8378-8653], 3' LTR[9086-9719]
 pol[2085-5096], vpr[5559-5850], rev[5970-6048], env[6225-8795]
-PR[2253-2549], RT[2550-4229], INT[4230-5096], V3[7110-7217], GP41[7758-8795]
+CA[1132-1878], PR[2253-2549], RT[2550-4229], INT[4230-5096], V3[7110-7217], GP41[7758-8795]
 2261--1.1->2266
 Coverage 100x6
 [7201-7206], HIV1-CON-XX-Consensus-seed - depth 100(1-9719)

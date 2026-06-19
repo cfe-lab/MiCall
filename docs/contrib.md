@@ -22,20 +22,13 @@ The easiest way to start developing MiCall is by using DevContainers.
     - For a web-based development environment, you can develop directly on GitHub using GitHub Codespaces by navigating to the MiCall repository on GitHub and selecting "Code" > "Open with Codespaces" to launch a pre-configured environment.
 
 2. **Dependency Installation**: All required dependencies will be automatically installed whether you are using a local DevContainer or GitHub Codespace.
-
-3. **Interpreter Selection**:
-    - Following the setup, if you encounter dependency errors, manually select the Python interpreter version `3.8`. This is necessary because the container includes multiple Python versions, and the default selection might not be appropriate.
-    - This issue is tracked and further details can be found [here](https://github.com/cfe-lab/MiCall/issues/1033).
-
-4. **Verification**: To ensure that the environment is correctly configured, execute `pytest` within the DevContainer or Codespace. All tests should pass, indicating that the setup is successful.
+3. **Verification**: To ensure that the environment is correctly configured, execute `pytest` within the DevContainer or Codespace. All tests should pass, indicating that the setup is successful.
 
 ### Local install
 
 To see how all the tools should be installed, follow the steps in `Dockerfile`
 and `dev.dockerfile`. If you prefer, you can run your development environment
-under docker, as described in `dev.dockerfile`. The same installation steps are
-also listed in the `Singularity` file. The docker file runs with debian, and the
-singularity file runs with CentOS.
+under docker, as described in `dev.dockerfile`. The docker file runs with debian.
 
 If you want to see what's currently being worked on, check out the active tasks
 in our [milestones].
@@ -50,19 +43,7 @@ Check that Python is already installed.
 python --version
 ```
 
-We have tested with Python `3.11`.
-
-### BaseSpace
-
-Set up the [native apps virtual machine][bsvm]. Make sure you have a
-developer account on illumina.com. The first time you run this, you
-will have to log in to your account using
-
-```shell
-sudo docker login docker.illumina.com
-```
-
-[bsvm]: https://developer.basespace.illumina.com/docs/content/documentation/native-apps/setup-dev-environment
+We have tested with Python `3.12`.
 
 ### Test data
 If you want to run `micall watcher`, you have to set up data folders for raw
@@ -236,42 +217,48 @@ similar steps to setting up a development workstation. Follow these steps:
 1. Check that all the issues in the current milestone are closed, and make sure
     the code works in your development environment. Run all the unit
     tests as described above, process the microtest data set with
-    `micall/utils/release_test_microtest.py`.
+    `micall release_test_microtest`.
 2. Check if the kiveapi package needs a new release by looking for new commits.
     Make sure you tested with the latest version.
 3. Determine what version number should be used next.
-4. Use the `micall/utils/projects_dump.py` script for the previous version and compare
+4. Use the `micall projects_dump` script for the previous version and compare
     `projects.json` to check that the projects match, or that the differences
-    were intended. Test the `micall/utils/projects_upload.py` script with your updated project
+    were intended. Test the `micall projects_upload` script with your updated project
     files in your local test QAI.
 5. Check the history of the HIV and HCV rules files in the `micall/resistance`
     folder. If they have changed, create a new display file in the `docs` folder
     and upgrade the version numbers in the `genreport.yaml` file and
     `asi_algorithm.py`.
-5. Check the history of the `micall.alignment` folder. If it has changed since
+6. Check the history of the `micall.alignment` folder. If it has changed since
     the last release, then update the version number in `setup.py`.
-5. Update the change notes in the Singularity file, and commit those changes.
-6. [Create a release][release] on Github. Use "vX.Y.Z" as the tag, where X.Y
+7. [Create a release][release] on Github. Use "vX.Y.Z" as the tag, where X.Y
     matches the version you used in QAI. If you have to redo
     a release, you can create additional releases with tags vX.Y.Z.1, vX.Y.Z.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Rebuild the Singularity image, and upload it to your local Kive server.
-    Process the microtest data.
-7. Upload the Singularity image to the Kive test server, and record the
+8. Build the Singularity image by running `micall singularity_build`. This will
+    build the Docker image, save it under `./simgs/`, write a
+    `Singularity.def` file, and run `singularity build ./simgs/micall-<sha>.sif`
+    `Singularity.def`.
+    It also uploads the `.sif` to Kive using `kivecli makecontainer`.
+    Provide `--family` and at least one of `--users` or `--groups`, for
+    example:
+    `micall singularity_build --family micall --groups cfe-lab`.
+9. Process the microtest data.
+10. Upload the Singularity image to the Kive test server, and record the
     ids of the new apps.
-8. Process all the samples from test_samples.csv on the Kive test server, and
+11. Process all the samples from test_samples.csv on the Kive test server, and
     run the `micall_watcher` service on a VirtualBox. Use the
-    `micall/utils/release_test_*.py` scripts to compare the results of the new release with
+    `micall release_test_*` scripts to compare the results of the new release with
     the previous version. Also run the internal scripts `miseq_gen_results.rb`
     and `miseq_compare_results.rb` to look for differences. Get the comparison
     signed off to begin the release process.
-8. Upload the Singularity image to the main Kive server, and
+12. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
-9. Upload the pipeline definitions to QAI, using the `micall projects_upload`
+13. Upload the pipeline definitions to QAI, using the `micall projects_upload`
     command. There is no need to create the new pipeline version in QAI beforehand,
     the command will do this for you - just remember to update the `Order by` field
     afterwards.
-10. Stop the watcher service on the main Kive server after you check that
+14. Stop the watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
     ```shell
@@ -280,7 +267,7 @@ similar steps to setting up a development workstation. Follow these steps:
     sudo systemctl stop micall_watcher
     ```
 
-11. Get the code from Github into the server's environment.
+15. Get the code from Github into the server's environment.
 
     ```shell
     ssh user@server
@@ -289,19 +276,19 @@ similar steps to setting up a development workstation. Follow these steps:
     git checkout tags/vX.Y.Z
     ```
 
-12. Look for changes in [`micall/monitor/watcher.py`'s `parse_args()` function][parse_args].
+16. Look for changes in [`micall/monitor/watcher.py`'s `parse_args()` function][parse_args].
     Either look at the blame annotations at the link above, or review the
     changes in the new release. If there are new or changed settings, adjust
     the configuration in `/etc/systemd/system/micall_watcher.service` or
     `/etc/micall/micall.conf`.
-13. Update the container app ids and pipeline version number in
+17. Update the container app ids and pipeline version number in
     `/etc/systemd/system/micall_watcher.service`. If you change the configuration, reload it:
 
     ```shell
     sudo systemctl daemon-reload
     ```
 
-14. Check that the kiveapi package is the same version you tested with. If not,
+18. Check that the kiveapi package is the same version you tested with. If not,
     do a Kive release first.
 
     ```shell
@@ -310,7 +297,7 @@ similar steps to setting up a development workstation. Follow these steps:
     cat api/setup.py
     ```
 
-15. Start the watcher service, and tail the log to see that it begins
+19. Start the watcher service, and tail the log to see that it begins
     processing all the runs with the new version of the pipeline.
 
     ```shell
@@ -322,69 +309,12 @@ similar steps to setting up a development workstation. Follow these steps:
     If the log doesn't help, look in `/var/log/messages` on CentOS or
     `/var/log/syslog` on Ubuntu.
 
-16. Launch the basespace virtual machine (see BaseSpace section above) and copy
-    MiCall source files into it. The easiest way to copy is via scp:
+20. Upload a BaseSpace app. See [basespace_upload.md](./basespace_upload.md) for instructions on how to do this.
 
-    ```shell
-    scp -P 2222 /path/to/micall/on/host basespace@localhost:MiCall
-    # (password is "basespace")
-    ```
-
-    Then login to virtual machine and build the docker image:
-
-    ```shell
-    ssh basespace@localhost -p2222     # (password is "basespace")
-    sudo python3 MiCall/micall/utils/docker_build.py -t vX.Y.Z --nopush
-    ```
-
-    The script is able to push the docker image to the illumina repo and launch
-    spacedock as well, but that is currently broken because of the old docker version
-    in the VM. If this is ever updated, or we build our own VM, you won't have to do these
-    steps manually anymore and can remove the `--nopush`.
-
-17. Tag the same docker image and push it to docker hub and illumina.
-    Unfortunately, the old
-    version of docker that comes with the basespace virtual machine
-    [can't log in] to docker hub or illumina, so you'll have to save it to a tar file and
-    load that into your host system's version of docker. Before pushing it anywhere,
-    check that the docker image works by running the microtests.
-    If the docker push fails with mysterious error messages (access to the resource
-    is denied), try `docker logout` and `docker login` again, and make sure you are
-    on the owner team of cfelab on [docker hub].
-
-    ```shell
-    ssh basespace@localhost -p2222  # password is "basespace"
-    sudo su
-    sudo docker save cfelab/micall:vX.Y.Z > micall-vX.Y.Z.tar
-    exit  # Exit the root shell.
-    exit  # Exit the virtual machine.
-    sudo docker load < micall-vX.Y.Z.tar
-    sudo docker login docker.illumina.com
-    sudo docker tag docker.illumina.com/cfe_lab/micall:vX.Y.Z cfelab/micall:vX.Y.Z
-    sudo docker push docker.illumina.com/cfe_lab/micall:vX.Y.Z
-    rm micall-vX.Y.Z.tar
-    ```
-
-18. Duplicate the MiCall form in the revisions section of the form builder, then
-    edit the `callbacks.js` in the form builder itself, and add the `:vX.Y.Z` tag to the
-    `containerImageId` field. In My Apps, create a new version of the App with the new
-    version number. Record the new agent ID (click the arrow on the bottom right of the
-    form builder).
-19. Launch the spacedock version by running this in your basespace VM:
-
-    ```shell
-    sudo spacedock -a [agent ID] -m https://mission.basespace.illumina.com
-    ```
-
-20. Check that the new MiCall version works as expected by processing some of the
-    microtests in BaseSpace.
-21. Activate the new revisions in the form builder and the report builder.
-22. Submit the new revision of the MiCall app for review, and ask our contact
-    at Illumina to set the price to zero for the list of test users.
-23. Send an e-mail to users describing the major changes in the release.
-24. Close the milestone for this release, create one for the next release, and
+21. Send an e-mail to users describing the major changes in the release.
+22. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
-25. When the release is stable, check that it's included on the [Zenodo] page.
+23. When the release is stable, check that it's included on the [Zenodo] page.
     If you included more than one tag in the same release, the new tags have
     not triggered Zenodo versions. Edit the release on GitHub, copy the
     description text, update the release, then click the Delete button. Then

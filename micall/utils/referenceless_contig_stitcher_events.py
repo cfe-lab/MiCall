@@ -145,7 +145,27 @@ class DeterminedOverlap:
             f" and the score of {self.relative_score}."
 
 
+@dataclass(frozen=True)
+class ReadSupportRejected:
+    left_contig: str
+    right_contig: str
+    join_boundary: int
+    required_depth: int
+    spanning_count: int
+    min_window_coverage: int
+
+    def __str__(self) -> str:
+        return (
+            f"Read-support check rejected merge of {self.left_contig}"
+            f" and {self.right_contig} (boundary={self.join_boundary}):"
+            f" required_depth={self.required_depth},"
+            f" spanning_count={self.spanning_count},"
+            f" min_window_coverage={self.min_window_coverage}."
+        )
+
+
 EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,
                   CycleEnd, InitializingSeeds, Starting, Constructed,
                   Loaded, Outputting, InitiallyProduced, Covered,
-                  CombinedContigs, CalculatedCutoffs, DeterminedOverlap]
+                  CombinedContigs, CalculatedCutoffs, DeterminedOverlap,
+                  ReadSupportRejected]

@@ -470,9 +470,9 @@ class SampleRunner:
                 'unstitched_conseq.csv',
                 'unstitched_contigs.csv',
                 'contigs.csv',
+                'stitcher_plot_svg',
                 'read_entropy.csv',
                 'conseq_region.csv',
-                'conseq_stitched.csv',
             ]
 
         else:

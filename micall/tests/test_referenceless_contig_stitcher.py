@@ -1,7 +1,11 @@
+from pathlib import Path
+from collections import Counter
+
 import pytest
 from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, \
-    ACCEPTABLE_STITCHING_SCORE
+    ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support
+from micall.utils.exact_coverage import reverse_complement
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -28,20 +32,20 @@ AAA = 40 * 'A'
         (('AAAAA' + TTT, TTT + 'GGGGG'), ('AAAAA' + TTT + 'GGGGG',)),
         (('AAAAA' + TTT, TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
         (('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCC', TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
-        (('AAAAA' + TTT, 'GGGGG' + TTT), ("AAAAA" + TTT,)),
-        (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT,)),
-        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT,)),
-        ((TTT + 'AAAAA', TTT + 'GGGGG'), (TTT + 'AAAAA',)),
-        (('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT), ('AAAAAAAAAAAAAA' + TTT,)),
-        (('GGGGGGGGGGGGGG' + TTT, 'AAAAA' + TTT), ('GGGGGGGGGGGGGG' + TTT,)),
-        (('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT), ('GGGGGGGGGGGGGG' + TTT,)),
-        (('GGGGG' + TTT, 'AAAAAAAAAAAAAA' + TTT), ('AAAAAAAAAAAAAA' + TTT,)),
-        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT + 'CC'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        ((TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
-        (('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),
+        ((TTT + 'AAAAA', TTT + 'GGGGG'), (TTT + 'AAAAA', TTT + 'GGGGG',)),
+        (('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT), ('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('GGGGGGGGGGGGGG' + TTT, 'AAAAA' + TTT), ('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT,)),
+        (('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT), ('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT,)),
+        (('GGGGG' + TTT, 'AAAAAAAAAAAAAA' + TTT), ('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT + 'CC'), ('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC',)),
+        (('GGGGG' + TTT + 'AAAAAAAAAAAAA', 'CC' + TTT), ('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        (('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('CC' + TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
+        ((TTT + 'CC', 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT + 'CC',)),
+        (('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('CC' + TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         ((TTT, 'GGGGG' + TTT + 'AAAAAAAAAAAAA'), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         (('GGGGG' + TTT + 'AAAAAAAAAAAAA', TTT), ('GGGGG' + TTT + 'AAAAAAAAAAAAA',)),
         (('AAAA', 'GGGG'), ('AAAA', 'GGGG',)),
@@ -88,11 +92,11 @@ AAA = 40 * 'A'
            'A' * 150 ),
          ( 'C' * 30 + 'A' * 75 + 'G' + 'A' * 75, )),
 
-        # 3) "Barely longer" variant (tight threshold): still covered with a single insertion.
-        #    Correct behavior: keep both because they cover each other mutually.
+        # 3) Left covered by right with a single insertion near the start.
+        #    Correct behavior: keep only the bigger right contig because this is actually a stitch, not cover.
         (( 'A' * 100,
-           'A' * 50 + 'G' + 'A' * 50 ),
-         ( 'A' * 50 + 'G' + 'A' * 50, 'A' * 100 )),
+           'A' * 70 + 'G' + 'A' * 70 ),
+         ( 'A' * 70 + 'G' + 'A' * 70, )),
 
         # 4) Mirror of (3): right covered by left with a single insertion near the end.
         #    Correct behavior: keep only the bigger left contig.
@@ -107,10 +111,10 @@ AAA = 40 * 'A'
            'A' * 50 + 'ACACA' + 'C' * 200 + 'CACACACACA' + 'A' * 50 )),
 
         # Left-covered: right = perfect prefix match of left, then 'Z' marker, then junk.
-        # Correct result: keep only the bigger right contig.
+        # Correct behavior: keep both contigs.
         (( 'A' * 120,
            'A' * 120 + 'Z' + 'G' * 200 ),
-         ( 'A' * 120 + 'Z' + 'G' * 200 ,)),
+         ( 'A' * 120, 'A' * 120 + 'Z' + 'G' * 200 ,)),
 
         # Right-covered (mirror): left has junk + 'Z' + perfect suffix that covers right.
         # Correct result: keep only the bigger left contig.
@@ -119,10 +123,10 @@ AAA = 40 * 'A'
          ( 'C' * 80 + 'Z' + 'A' * 120 ,)),
 
         # Right-covered: left has junk + 'Z' + perfect middle that covers right.
-        # Correct result: keep only the bigger left contig.
+        # Correct behavior: keep both contigs.
         (( 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,
            'A' * 120 ),
-         ( 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,)),
+         ( 'A' * 120, 'C' * 80 + 'Z' + 'A' * 120 + 'Z' + 'C' * 40,)),
     ],
 )
 def test_stitch_simple_cases(seqs, expected, disable_acceptable_prob_check, force_failing_map_overlap):
@@ -851,8 +855,8 @@ class TestPool:
         (("AAA" + TTT, TTT + "G" * 120, "G" * 120 + AAA, AAA + "CCC"),
          ("AAA" + TTT + "G" * 120 + AAA + "CCC",)),
 
-        # Multiple identical duplicates collapse to a single contig
-        ((("XXXXX" + TTT + "YYYYY",) * 9), ("XXXXX" + TTT + "YYYYY",)),
+        # Multiple identical duplicates - new behavior: mutual coverage keeps all copies
+        ((("XXXXX" + TTT + "YYYYY",) * 9), (("XXXXX" + TTT + "YYYYY",) * 9)),
     ],
 )
 def test_stitch_additional_cases(seqs, expected, disable_acceptable_prob_check):
@@ -870,3 +874,524 @@ def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
     with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
     assert consenses == (bigger,)
+
+
+# ---------------------------------------------------------------------------
+# Tests for check_merged_sequence_support — join-boundary read validation
+# ---------------------------------------------------------------------------
+
+# A merged sequence using real DNA bases for predictable cut-spanning tests.
+# Left half: AAACCCGGGTTTAAA   Right half: CCCGGGTTTAAACCC   Cut at 15.
+DNA_MERGED = "AAACCCGGGTTTAAACCCGGGTTTAAACCC"   # 30 bp
+DNA_CUT = 15
+DNA_RLEN = 5  # read_length for window size
+# window = [15 - 5//2, 15 + (5-5//2)) = [13, 18)  —  5 positions
+
+
+class TestCheckMergedSequenceSupport:
+    """Unit tests for check_merged_sequence_support."""
+
+    # ---- helper: build a read index from placements -------------------
+    @staticmethod
+    def _make_rd(seq: str, starts_with_lens, count=1):
+        rd = {}
+        for s, L in starts_with_lens:
+            frag = seq[s:s + L]
+            canonical = min(frag, reverse_complement(frag))
+            rd.setdefault(L, Counter())[canonical] += count
+        return rd
+
+    # ------------------------------------------------------------------
+    # 1. Cut-spanning — at least min_depth reads must cross the cut
+    # ------------------------------------------------------------------
+
+    def test_spanning_reads_accepted(self):
+        """Reads that strictly cross the cut pass the check."""
+        # S=12 "AAACC" covers [12,17), crosses cut=15 (12<15<17).
+        # S=13 "AACCC" covers [13,18), also crosses cut.
+        rd = self._make_rd(DNA_MERGED, [(12, 5), (13, 5)])
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+
+    def test_spanning_no_crossing_rejected(self):
+        """Reads ending exactly at the cut do NOT span (start < cut)."""
+        # S=10 "TTAAA" covers [10,15).  10 < 15 < 15 → false, doesn't span.
+        rd = self._make_rd(DNA_MERGED, [(10, 5)])
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+
+    def test_spanning_start_at_cut_rejected(self):
+        """Reads starting exactly at the cut do NOT span (cut < end)."""
+        # S=15 "CCCGG" covers [15,20).  15 < 15 < 20 → false, doesn't span.
+        rd = self._make_rd(DNA_MERGED, [(15, 5)])
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+
+    def test_split_left_and_right_rejected(self):
+        """Independent left & right coverage without a crossing read fails."""
+        rd = self._make_rd(DNA_MERGED, [(10, 5), (15, 5)])
+        # Read at 10 covers [10,15)  — ends at cut, does NOT cross.
+        # Read at 15 covers [15,20)  — starts at cut, does NOT cross.
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+
+    def test_min_depth_zero_disables_spanning_check(self):
+        """min_depth=0 → check skipped regardless of reads."""
+        rd = self._make_rd(DNA_MERGED, [(10, 5)])  # does NOT cross
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 0, DNA_RLEN)[0]
+
+    # ------------------------------------------------------------------
+    # 2. Boundary-window coverage — every position in the window covered
+    # ------------------------------------------------------------------
+
+    def test_window_fully_covered_accepted(self):
+        """Every position in the window is covered to at least min_depth."""
+        # Window [13,18): positions 13..17.  Provide reads covering all.
+        rd = self._make_rd(DNA_MERGED, [
+            (12, 5), (13, 5),  # span the cut
+            (9, 5), (10, 5), (11, 5),  # left-only coverage
+            (14, 5), (15, 5), (16, 5), (17, 5),  # right-side coverage
+        ])
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+
+    def test_window_edge_uncovered_rejected(self):
+        """A single position in the window with no coverage fails."""
+        rd = self._make_rd(DNA_MERGED, [
+            (12, 5),  # spans cut=15 (12<15<17), covers [12,17).
+                       # Window is [13,18).  Read at 12 covers [12,17),
+                       # so position 17 is uncovered (no read starts at
+                       # [13,17] to cover it).
+        ])
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+
+    # ------------------------------------------------------------------
+    # 3. read_index = None  vs  read_index = {}
+    # ------------------------------------------------------------------
+
+    def test_none_read_index_disables_check(self):
+        """read_index=None → validation disabled."""
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, None, 1, DNA_RLEN)[0]
+
+    def test_empty_read_index_rejects(self):
+        """read_index={} with validation enabled → rejected (no reads)."""
+        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, {}, 1, DNA_RLEN)[0]
+
+    # ------------------------------------------------------------------
+    # 4. Reverse-complement support (real DNA bases only)
+    # ------------------------------------------------------------------
+
+    def test_reverse_complement_spanning(self):
+        """A read present only as rc can still span the cut."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        rc_kmer = "CGTAC"     # reverse complement of GTACG
+        # Canonical of both is "CGTAC" — use that directly.
+        rd = {5: Counter({rc_kmer: 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
+
+    def test_multiple_read_lengths(self):
+        """Reads of different lengths are all considered."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # L=5 canonical "CGTAC" (count 2) at S=13,14 → 4 spanning.
+        # L=7 canonical "GTACGTA" (count 1) at S=10,11,14,15 → 4 spanning.
+        # Total spanning = 8.  min_depth=8 passes, min_depth=9 fails.
+        rd = {5: Counter({"CGTAC": 2}), 7: Counter({"GTACGTA": 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 8, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)[0]
+
+    def test_multiple_read_lengths_insufficient(self):
+        """All read lengths combined still don't reach impossible min_depth."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # Canonical of "GTACG" is "CGTAC".
+        rd = {5: Counter({"CGTAC": 10})}
+        assert not check_merged_sequence_support(merged, cut, rd, 999, 5)[0]
+
+    # ------------------------------------------------------------------
+    # 6. Placements and multiplicity — each placement × count contributes
+    # ------------------------------------------------------------------
+
+    def test_homopolymer_one_read_min_depth_1(self):
+        """One read at 4 spanning placements × count 1 = spanning 4 ≥ 1."""
+        merged = "A" * 30
+        cut = 15
+        # "AAAAA" has 4 spanning placements (S=11..14) × count 1 = 4.
+        rd = {5: Counter({"AAAAA": 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
+
+    def test_homopolymer_placements_count(self):
+        """One read at 4 spanning placements × count 1 = spanning 4."""
+        merged = "A" * 30
+        cut = 15
+        rd = {5: Counter({"AAAAA": 1})}
+        # 4 spanning placements (S=11,12,13,14) × 1 count = 4.
+        assert check_merged_sequence_support(merged, cut, rd, 4, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)[0]
+
+    def test_multiplicity_increases_depth(self):
+        """Higher FASTQ count increases each placement's contribution."""
+        merged = "A" * 30
+        cut = 15
+        # 4 spanning placements × 10 count = 40.
+        rd = {5: Counter({"AAAAA": 10})}
+        assert check_merged_sequence_support(merged, cut, rd, 40, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 41, 5)[0]
+
+    def test_rc_accumulates_counts(self):
+        """A read and its reverse complement share one canonical, counts sum."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # Both "GTACG" and its rc "CGTAC" map to canonical "CGTAC" with count 2.
+        # "CGTAC" matches at S=13 and S=14, both spanning → 2 placements × 2 = 4.
+        rd = {5: Counter({"CGTAC": 2})}
+        assert check_merged_sequence_support(merged, cut, rd, 4, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)[0]
+
+    def test_two_distinct_reads_min_depth_2(self):
+        """Two genuinely different reads satisfy min_depth=2."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        # "GTACG" canonical → "CGTAC", "TACGT" canonical → "ACGTA".
+        # Both at S=14,15 span → spanning_total = 2.
+        rd = {5: Counter({"CGTAC": 1, "ACGTA": 1})}
+        assert check_merged_sequence_support(merged, cut, rd, 2, 5)[0]
+
+    def test_window_coverage_placements(self):
+        """Multiple placements contribute to window coverage."""
+        merged = "A" * 30
+        cut = 15
+        rd = {5: Counter({"AAAAA": 2})}
+        # 4 spanning placements (S=11..14) × 2 = spanning 8.
+        # Window positions covered by up to 5 placements × 2 = coverage 10.
+        # So spanning_total=8 is the bottleneck, not window coverage.
+        assert check_merged_sequence_support(merged, cut, rd, 8, 5)[0]
+        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)[0]
+
+
+# ---------------------------------------------------------------------------
+# End-to-end tests with read index
+# ---------------------------------------------------------------------------
+def test_stitch_with_read_index_none_disabled(disable_acceptable_prob_check):
+    """read_index=None => validation disabled, merge proceeds."""
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
+    with ReferencelessStitcherContext.fresh() as ctx:  # ctx.read_index stays None
+        ctx.minimum_read_depth = 1
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 1
+    assert result[0].seq == "AAAACCCCGGGG"
+
+
+def test_stitch_with_read_index_empty_rejected(disable_acceptable_prob_check):
+    """read_index={} => validation enabled but no reads, merge rejected."""
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = {}
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 2  # unmerged
+
+
+def test_stitch_with_read_index_matching_accepted(disable_acceptable_prob_check):
+    """read_index with exact k-mers for every start position => merge accepted."""
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
+    # Provide all possible 4-mers from the expected merged sequence.
+    merged = "AAAACCCCGGGG"
+    rd = {4: Counter()}
+    for i in range(len(merged)-3):
+        frag = merged[i:i+4]
+        canonical = min(frag, reverse_complement(frag))
+        rd[4][canonical] += 1
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = rd
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 1
+    assert result[0].seq == merged
+
+
+def test_stitch_with_identical_contig_sequences(disable_acceptable_prob_check):
+    """Identical contig sequences — covered-contig case, no merge needed."""
+    seq = "AAAACCCCGGGG"
+    left = ContigWithAligner(None, seq, None)
+    right = ContigWithAligner(None, seq, None)
+    # No read_index set → None → validation disabled.
+    with ReferencelessStitcherContext.fresh():
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 1  # one covers the other
+
+
+def test_stitch_with_reads_from_fastq(tmp_path, disable_acceptable_prob_check):
+    """Reads from real FASTQ files are used for join validation."""
+    import micall.utils.referenceless_contig_stitcher as stitcher_mod
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fasta_path = tmp_path / "contigs.fasta"
+    fasta_path.write_text(">left\nAAAACCCC\n>right\nCCCCGGGG\n")
+
+    fq1 = tmp_path / "reads_R1.fastq"
+    fq2 = tmp_path / "reads_R2.fastq"
+
+    # Provide ALL 4-mers from the merged sequence — should be accepted.
+    merged = "AAAACCCCGGGG"
+    all_kmers = [merged[i:i+4] for i in range(len(merged)-3)]
+    lines = []
+    for i, kmer in enumerate(all_kmers):
+        lines.append(f"@r{i}R1\n{kmer}\n+\n{chr(73)*4}\n")
+    fq1.write_text("".join(lines))
+    lines = []
+    for i, kmer in enumerate(all_kmers):
+        lines.append(f"@r{i}R2\n{kmer}\n+\n{chr(73)*4}\n")
+    fq2.write_text("".join(lines))
+
+    read_index = build_read_index(fq1, fq2)
+
+    with open(fasta_path) as f:
+        contigs = tuple(stitcher_mod.read_contigs(f))
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = read_index
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus(contigs))
+
+    assert len(result) == 1
+    assert result[0].seq == merged
+
+
+def test_merged_check_with_split_side_reads(disable_acceptable_prob_check):
+    """Direct test that split-side reads fail the merged check.
+
+    "AAAA" (left side, covers [0,4), ends before cut at 5).
+    "CCCG" (right side, covers [5,9), starts at cut, rc "CGGG" missing from left).
+    Neither spans cut=5; neither rc spills to the other side.
+    """
+    merged = "AAAACCCCGGGG"
+    cut = 5
+    # Note: these must be canonicalized. min("AAAA","TTTT")="AAAA", min("CCCG","CGGG")="CCCG".
+    rd = {4: Counter({"AAAA": 1, "CCCG": 1})}
+    assert not check_merged_sequence_support(merged, cut, rd, 1, 4)[0], \
+        "AAAA (ends before cut) and CCCG (starts at cut, rc CGGG not on left) should not support the merge"
+
+
+def test_stitch_with_reads_from_fastq_split_side_rejected(tmp_path, disable_acceptable_prob_check):
+    """Split-side reads from FASTQ: both sides covered but no read crosses cut."""
+    import micall.utils.referenceless_contig_stitcher as stitcher_mod
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fasta_path = tmp_path / "contigs.fasta"
+    fasta_path.write_text(">left\nAAAACCCC\n>right\nCCCCGGGG\n")
+
+    fq1 = tmp_path / "reads_R1.fastq"
+    fq2 = tmp_path / "reads_R2.fastq"
+
+    # "AAAA" on merged covers [0,4), ends before the cut (cut≥?).
+    # "CCCG" on merged covers [5,9), starts at the cut.
+    # Neither spans the cut; rc "CGGG" doesn't match left side.
+    left_only = "AAAA"
+    right_only = "CCCG"
+    fq1.write_text(f"@r1\n{left_only}\n+\nIIII\n@r2\n{right_only}\n+\nIIII\n")
+    fq2.write_text(f"@r1\n{left_only}\n+\nIIII\n@r2\n{right_only}\n+\nIIII\n")
+
+    read_index = build_read_index(fq1, fq2)
+
+    with open(fasta_path) as f:
+        contigs = tuple(stitcher_mod.read_contigs(f))
+
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = read_index
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus(contigs))
+
+    # Should NOT merge — no read crosses the join cut.
+    assert len(result) == 2, (
+        f"Split-side FASTQ reads should not allow a merge, "
+        f"but got {len(result)} contig(s)."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tests for build_read_index
+# ---------------------------------------------------------------------------
+
+def _make_fastq(tmp_path, name, records):
+    """Write a FASTQ file with the given records (list of (header, seq))."""
+    path = tmp_path / name
+    lines = []
+    for h, s in records:
+        lines.append(f"@{h}\n{s}\n+\n{'I' * len(s)}\n")
+    path.write_text("".join(lines))
+    return path
+
+
+def test_build_read_index_duplicates_and_rc(tmp_path):
+    """build_read_index accumulates duplicate reads and RC equivalents."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("r1", "ACGTA"),   # canonical = min("ACGTA","TACGT") = "ACGTA"
+        ("r2", "TACGT"),   # rc of "ACGTA", canonical = "ACGTA" (same)
+        ("r3", "ACGTA"),   # duplicate of r1
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("r4", "ACGTA"),   # duplicate again
+        ("r5", "ACGTA"),   # duplicate again (same count as R1 to stay synced)
+        ("r6", "ACGTA"),   # duplicate again
+    ])
+
+    index = build_read_index(fq1, fq2)
+
+    # Two read lengths?  No, all are length 5.
+    assert 5 in index, "Should have a counter for length 5"
+    counter = index[5]
+    # Only one canonical key "ACGTA" with total count 6:
+    #   R1: ACGTA (1) + TACGT (1) → canonical "ACGTA" → +2
+    #   R1: ACGTA (1)                                 → +1 (total 3)
+    #   R2: ACGTA × 3                                 → +3 (total 6)
+    assert counter == {"ACGTA": 6}, (
+        f"Expected single canonical 'ACGTA' with count 6, got {dict(counter)}"
+    )
+    assert len(counter) == 1, "Only one distinct canonical read expected"
+
+
+def test_build_read_index_empty_fastq(tmp_path):
+    """build_read_index with empty FASTQ files returns empty dict."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "empty1.fastq", [])
+    fq2 = _make_fastq(tmp_path, "empty2.fastq", [])
+    index = build_read_index(fq1, fq2)
+    assert index == {}, "Empty FASTQs should produce empty index"
+
+
+def test_build_read_index_mismatched_pairs_r2_short(tmp_path):
+    """build_read_index raises ValueError when R2 is shorter than R1."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("a", "ACGT"),
+        ("b", "TGCA"),  # R1 has 2 records
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("c", "ACGT"),  # R2 has 1 record
+    ])
+
+    with pytest.raises(ValueError, match="R2 exhausted before R1"):
+        build_read_index(fq1, fq2)
+
+
+def test_build_read_index_mismatched_pairs_r1_short(tmp_path):
+    """build_read_index raises ValueError when R1 is shorter than R2."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("a", "ACGT"),  # R1 has 1 record
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("c", "ACGT"),
+        ("d", "TGCA"),  # R2 has 2 records
+    ])
+
+    with pytest.raises(ValueError, match="R1 exhausted before R2"):
+        build_read_index(fq1, fq2)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline integration tests
+# ---------------------------------------------------------------------------
+
+def test_run_referenceless_stitcher_enabled_by_default(tmp_path, monkeypatch):
+    """Sample.run_referenceless_stitcher() passes a non-None read_index,
+    minimum_read_depth=1, and read_length=150 to the stitcher.
+
+    This exercises the actual production method (extracted from run_denovo)
+    with mocks for the stitcher entry point, verifying that read-supported
+    join validation is enabled by default in the normal denovo pipeline.
+    """
+    from micall.drivers.sample import Sample
+
+    captured = {}
+
+    def fake_build_read_index(fq1, fq2):
+        return {"sentinel": "read_index"}
+
+    def tracking_stitcher(fasta, out, *, read_index=None, **kw):
+        captured["read_index"] = read_index
+        captured["kw"] = kw
+        return 0
+
+    import micall.drivers.sample as sample_mod
+    monkeypatch.setattr(sample_mod.referenceless, "build_read_index", fake_build_read_index)
+    monkeypatch.setattr(sample_mod.referenceless, "referenceless_contig_stitcher", tracking_stitcher)
+
+    paths = {
+        "trimmed1_fastq": str(tmp_path / "r1.fastq"),
+        "trimmed2_fastq": str(tmp_path / "r2.fastq"),
+        "combined_contigs_fasta": str(tmp_path / "combined.fasta"),
+        "stitched_contigs_fasta": str(tmp_path / "stitched.fasta"),
+    }
+    sample = Sample(scratch_path=str(tmp_path), **paths)
+
+    for name in paths:
+        Path(paths[name]).touch()
+
+    sample.run_referenceless_stitcher()
+
+    assert captured["read_index"] == {"sentinel": "read_index"}, (
+        "should pass a non-None read_index"
+    )
+    assert captured["kw"]["minimum_read_depth"] == 1
+    assert captured["kw"]["read_length"] == 150
+
+
+def test_cli_fastq_pair_validation(tmp_path):
+    """CLI must reject --fastq1 without --fastq2 and vice versa."""
+    from micall.core.contig_stitcher import main
+
+    fasta = tmp_path / "in.fasta"
+    fasta.write_text(">c\nAAAA\n")
+    out = tmp_path / "out.fasta"
+    fq = tmp_path / "r.fastq"
+    fq.write_text("@r\nAAAA\n+\nIIII\n")
+
+    # Only --fastq1 provided -> error with code 2.
+    with pytest.raises(SystemExit) as exc:
+        main(["without-references", str(fasta), str(out),
+              "--fastq1", str(fq)])
+    assert exc.value.code == 2, "argparse error exits with code 2"
+
+    # Only --fastq2 provided -> error with code 2.
+    with pytest.raises(SystemExit) as exc:
+        main(["without-references", str(fasta), str(out),
+              "--fastq2", str(fq)])
+    assert exc.value.code == 2
+
+
+def test_cli_negative_read_depth_rejected(tmp_path):
+    """--minimum-read-depth negative must be rejected."""
+    from micall.core.contig_stitcher import main
+
+    fasta = tmp_path / "in.fasta"
+    fasta.write_text(">c\nAAAA\n")
+    out = tmp_path / "out.fasta"
+
+    with pytest.raises(SystemExit) as exc:
+        main(["without-references", str(fasta), str(out),
+              "--minimum-read-depth", "-1"])
+    assert exc.value.code == 2
+
+
+def test_cli_zero_read_length_rejected(tmp_path):
+    """--read-length 0 must be rejected."""
+    from micall.core.contig_stitcher import main
+
+    fasta = tmp_path / "in.fasta"
+    fasta.write_text(">c\nAAAA\n")
+    out = tmp_path / "out.fasta"
+
+    with pytest.raises(SystemExit) as exc:
+        main(["without-references", str(fasta), str(out),
+              "--read-length", "0"])
+    assert exc.value.code == 2

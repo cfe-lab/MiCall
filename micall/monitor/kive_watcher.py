@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, Tuple, TypeVar
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -24,7 +24,8 @@ from kiveapi import KiveAPI, KiveClientException, KiveRunFailedException
 import urllib3
 
 from micall.drivers.run_info import parse_read_sizes
-from micall.monitor.sample_watcher import Batch, FolderWatcher, ALLOWED_GROUPS, Item, SampleWatcher, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
+from micall.monitor.types import Batch, ALLOWED_GROUPS, Item, PipelineType, PIPELINE_GROUPS, Run, RunDataset, RunCreationDataset, ConfigInterface
+from micall.monitor.sample_watcher import SampleWatcher, FolderWatcher
 from micall.monitor.find_groups import SampleGroup, find_groups
 from micall.monitor import disk_operations
 from micall.utils.check_sample_sheet import check_sample_name_consistency
@@ -38,11 +39,11 @@ FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 SLEEP_SECONDS = 60
 MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
+MAXIMUM_RETRY_TIME = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
                       'conseq_all_csv',
-                      'conseq_stitched_csv',
                       'conseq_region_csv',
                       'concordance_csv',
                       'concordance_seed_csv',
@@ -70,6 +71,7 @@ DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'unstitched_conseq_csv',
                       'unstitched_contigs_csv',
                       'contigs_csv',
+                      'stitcher_plot_svg',
                       'alignment_svg',
                       'alignment_png',
                       'assembly_fasta',
@@ -113,7 +115,6 @@ def now() -> datetime:
 def find_samples(raw_data_folder: Path,
                  pipeline_version: str,
                  sample_queue: Queue[FolderEvent],
-                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  wait: bool = True,
                  retry: bool = True) -> None:
     attempt_count = 0
@@ -125,17 +126,6 @@ def find_samples(raw_data_folder: Path,
                                        pipeline_version,
                                        sample_queue,
                                        wait)
-
-            # After scanning for new samples, enqueue QAI upload tasks for finished runs.
-            qai_next_scan = now() + FOLDER_SCAN_INTERVAL
-            for version_folder in scan_qai_done_flags(raw_data_folder, pipeline_version):
-                is_sent = send_qai_event(qai_upload_queue,
-                                         (version_folder, PipelineType.MAIN),
-                                         qai_next_scan)
-                if not is_sent:
-                    # Let the caller loop and try again later
-                    is_complete = False
-                    break
 
             attempt_count = 0  # Reset after success
             start_time = None  # Reset start time after success
@@ -149,6 +139,15 @@ def find_samples(raw_data_folder: Path,
             # Record start time on first failure
             if start_time is None:
                 start_time = datetime.now()
+
+            elapsed = datetime.now() - start_time
+            if elapsed >= MAXIMUM_RETRY_TIME:
+                logger.error(
+                    'find_samples failed after %s of retrying; giving up.',
+                    elapsed,
+                    exc_info=True,
+                )
+                raise
 
             wait_for_retry(attempt_count, start_time)
 
@@ -241,37 +240,32 @@ def scan_flag_paths(raw_data_folder: Path) -> Iterable[Path]:
     return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
-def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterable[Path]:
-    """Find version folders with done_all_processing set and not yet uploaded to QAI.
-
-    We consider a version folder eligible if:
-    - Results/version_{pipeline_version}/done_all_processing exists, and
-    - Results/version_{pipeline_version}/done_qai_upload does NOT exist.
-    """
-    pattern = f"MiSeq/runs/*/Results/version_{pipeline_version}/done_all_processing"
-    for done_flag in raw_data_folder.glob(pattern):
-        version_folder = done_flag.parent
-        if not (version_folder / 'done_qai_upload').exists():
-            yield version_folder
-
-
 def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
-    # noinspection PyBroadException
+    sample_sheet_path = run_path / "SampleSheet.csv"
+
     try:
-        file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
-        sample_sheet_path = run_path / "SampleSheet.csv"
+        start_time = datetime.now()
+        for attempt_count in count(1):
+            try:
+                file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
+                # Check sample name consistency between sample sheet and FASTQ files
+                check_sample_name_consistency(sample_sheet_path, file_names, run_path)
+                sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
+                break
+            except IOError:
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    raise
+                wait_for_retry(attempt_count, start_time)
+                continue
 
-        # Check sample name consistency between sample sheet and FASTQ files
-        check_sample_name_consistency(sample_sheet_path, file_names, run_path)
-
-        sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
-        sample_groups.sort(key=lambda group: get_sample_number(group.names[0] if group.names[0] is not None else ''),
-                           reverse=True)
     except Exception:
         logger.error("Finding sample groups in %s", run_path, exc_info=True)
         disk_operations.write_text(run_path / "errorprocessing",
                                  "Finding sample groups failed.\n")
         sample_groups = []
+    sample_groups.sort(key=lambda group: get_sample_number(group.names[0] if group.names[0] is not None else ''),
+                       reverse=True)
     return sample_groups
 
 
@@ -288,18 +282,6 @@ def send_event(sample_queue: Queue[FolderEvent], folder_event: FolderEvent, next
         try:
             sample_queue.put(folder_event,
                              timeout=SLEEP_SECONDS)
-            is_sent = True
-        except Full:
-            pass
-    return is_sent
-
-
-def send_qai_event(qai_queue: Queue[Tuple[Path, PipelineType]], qai_event: Tuple[Path, PipelineType], next_scan: datetime) -> bool:
-    """Send an event to the QAI upload queue with timeout and retry logic."""
-    is_sent = False
-    while not is_sent and now() < next_scan:
-        try:
-            qai_queue.put(qai_event, timeout=SLEEP_SECONDS)
             is_sent = True
         except Full:
             pass
@@ -385,13 +367,10 @@ def get_collated_path(results_path: Path, pipeline_group: PipelineType) -> Path:
 class KiveWatcher:
     def __init__(self,
                  config: ConfigInterface,
-                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  retry=False):
         """ Initialize.
 
         :param config: command line arguments
-        :param qai_upload_queue: notified when a run folder has collated all the
-            results into a result folder
         :param bool retry: should the main methods retry forever?
         """
         self.config = config
@@ -403,7 +382,6 @@ class KiveWatcher:
         self.app_args: dict[str | int, dict[str, str]] = {}  # {app_id: {arg_name: arg_url}}
         self.external_directory_path: Optional[Path] = None
         self.external_directory_name: Optional[str] = None
-        self.qai_upload_queue = qai_upload_queue
 
     def is_full(self) -> bool:
         if self.config is None:
@@ -608,6 +586,15 @@ class KiveWatcher:
                 if start_time is None:
                     start_time = datetime.now()
 
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    logger.error(
+                        'add_sample_group failed after %s of retrying; giving up.',
+                        elapsed,
+                        exc_info=True,
+                    )
+                    raise
+
                 wait_for_retry(attempt_count, start_time)
 
     def add_folder(self, base_calls: str) -> FolderWatcher:
@@ -645,6 +632,15 @@ class KiveWatcher:
                 if start_time is None:
                     start_time = datetime.now()
 
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    logger.error(
+                        'poll_runs failed after %s of retrying; giving up.',
+                        elapsed,
+                        exc_info=True,
+                    )
+                    raise
+
                 wait_for_retry(attempt_count, start_time)
 
     def check_completed_folders(self) -> None:
@@ -659,9 +655,6 @@ class KiveWatcher:
                                                    pipeline_group)
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
                 if results_path is not None:
-                    if (results_path / "coverage_scores.csv").exists():
-                        self.qai_upload_queue.put(
-                            (results_path, pipeline_group))
                     if not folder_watcher.active_pipeline_groups:
                         disk_operations.touch(results_path / "done_all_processing")
                         self.folder_watchers.pop(folder)
@@ -735,6 +728,12 @@ class KiveWatcher:
                 self.move_genome_coverage(folder_watcher,
                                           scratch_path,
                                           results_path)
+                continue
+            if output_name == 'stitcher_plot_svg':
+                self.move_stitcher_plot(folder_watcher,
+                                       scratch_path,
+                                       results_path)
+                continue
             source_count = 0
             filename = get_output_filename(output_name)
             target_path = results_path / filename
@@ -879,6 +878,18 @@ class KiveWatcher:
             target_concordance_path = plots_path / f"{sample_name}_genome_concordance.svg"
             if concordance_path.exists():
                 disk_operations.rename(concordance_path, target_concordance_path)
+        disk_operations.remove_empty_directory(plots_path)
+
+    @staticmethod
+    def move_stitcher_plot(folder_watcher: FolderWatcher, scratch_path: Path, results_path: Path) -> None:
+        plots_path = results_path / "stitcher_plots"
+        disk_operations.mkdir_p(plots_path, exist_ok=True)
+        for sample_name in folder_watcher.all_samples:
+            sample_name = trim_name(sample_name)
+            source_path = scratch_path / sample_name / 'stitcher_plot.svg'
+            target_path = plots_path / f"{sample_name}_stitcher_plot.svg"
+            if source_path.exists():
+                disk_operations.rename(source_path, target_path)
         disk_operations.remove_empty_directory(plots_path)
 
     def run_filter_quality_pipeline(self, folder_watcher: FolderWatcher) -> Optional[Run]:

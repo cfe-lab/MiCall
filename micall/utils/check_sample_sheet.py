@@ -151,10 +151,24 @@ def main(argv: Sequence[str]) -> int:
 
     logging.basicConfig(level=logger.level, format="%(levelname)s: %(message)s")
 
+    sample_sheet = Path(args.sample_sheet)
+
+    # Check that sample sheet exists
+    if not sample_sheet.exists():
+        logger.error("Sample sheet not found: %s", sample_sheet)
+        return 1
+
+    # Try reading sample sheet to catch parsing errors early
+    try:
+        sample_sheet.read_text()
+    except Exception as e:
+        logger.error("Error reading sample sheet: %s", e)
+        return 1
+
     # Infer run_path from sample_sheet if not provided
     run_path = args.run_path
     if run_path is None:
-        run_path = args.sample_sheet.parent
+        run_path = sample_sheet.parent
         logger.debug("Inferred run_path from sample_sheet: %s", run_path)
 
     # Infer fastq_files from run_path if not provided

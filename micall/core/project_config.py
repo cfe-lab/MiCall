@@ -1,6 +1,7 @@
 import json
-import os
 from typing import Dict, List
+
+from micall.utils.externals import ProjectsFile, ProjectsScoringFile
 
 G2P_SEED_NAME = "HIV1-CON-XX-Consensus-seed"
 
@@ -25,17 +26,15 @@ class ProjectConfig(object):
 
     @classmethod
     def loadDefault(cls):
-        file_path = os.path.dirname(__file__)
-        project_paths = [os.path.join(file_path, 'projects.json'),
-                         os.path.join(os.path.dirname(file_path), 'projects.json')]
-        return cls.search(project_paths)
+        with ProjectsFile().path() as file_path:
+            project_paths = [file_path]
+            return cls.search(project_paths)
 
     @classmethod
     def loadScoring(cls):
-        file_path = os.path.dirname(__file__)
-        project_paths = [os.path.join(file_path, 'project_scoring.json'),
-                         os.path.join(os.path.dirname(file_path), 'project_scoring.json')]
-        return cls.search(project_paths)
+        with ProjectsScoringFile().path() as file_path:
+            project_paths = [file_path]
+            return cls.search(project_paths)
 
     def load(self, json_file):
         self.config = json.load(json_file)
