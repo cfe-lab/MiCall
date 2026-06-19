@@ -100,9 +100,7 @@ def denovo(
     """
 
     start_time = datetime.now()
-    contigs_fasta_path = run_subprocess(fastq1,
-                                        fastq2,
-                                        merged_contigs_csv)
+    contigs_fasta_path = run_subprocess(fastq1, fastq2, merged_contigs_csv)
     shutil.copy(contigs_fasta_path, fasta)
 
     duration = datetime.now() - start_time
