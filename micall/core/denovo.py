@@ -16,9 +16,9 @@ HAPLOFLOW = "haploflow"
 logger = logging.getLogger(__name__)
 
 
-def count_fasta_sequences(file_path: Path):
-    with open(file_path, 'r') as file:
-        return sum(1 for line in file if line.startswith('>'))
+def count_fasta_sequences(file_path: Path) -> int:
+    with file_path.open() as file:
+        return sum(1 for line in file if line.startswith(">"))
 
 
 @cached("denovo[haploflow]")
