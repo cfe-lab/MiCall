@@ -83,34 +83,38 @@ def run_subprocess(
     return contigs_fasta_path
 
 
-def denovo(fastq1_path: Path,
-           fastq2_path: Path,
-           fasta: Path,
-           merged_contigs_csv: Optional[Path] = None,
-           ):
-    """ Use de novo assembly to build contigs from reads.
+def denovo(
+    fastq1: Path,
+    fastq2: Path,
+    fasta: Path,
+    merged_contigs_csv: Optional[Path] = None,
+):
+    """Use de novo assembly to build contigs from reads.
 
     :param fastq1: FASTQ file for read 1 reads
     :param fastq2: FASTQ file for read 2 reads
     :param fasta: file to write assembled contigs to
-    :param work_dir: path for writing temporary files
-    :param merged_contigs_csv: file to read contigs that were merged from
+    :param work_dir: path for writing temporary files (optional, uses dynamic scope if not provided)
+    :param merged_contigs_csv: open file to read contigs that were merged from
         amplicon reads
     """
 
     start_time = datetime.now()
-    contigs_fasta_path = run_subprocess(fastq1_path,
-                                        fastq2_path,
+    contigs_fasta_path = run_subprocess(fastq1,
+                                        fastq2,
                                         merged_contigs_csv)
     shutil.copy(contigs_fasta_path, fasta)
 
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
-    logger.info('Assembled %d contigs in %s (%ds) on %s.',
-                contig_count,
-                duration,
-                duration.total_seconds(),
-                fastq1_path)
+
+    logger.info(
+        "Assembled %d contigs in %s (%ds) on %s.",
+        contig_count,
+        duration,
+        duration.total_seconds(),
+        fastq1,
+    )
 
 
 if __name__ == "__main__":
