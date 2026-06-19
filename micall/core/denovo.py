@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Optional
 from csv import DictReader
 from datetime import datetime
-from shutil import rmtree, copyfileobj
+import shutil
+from shutil import rmtree
 from subprocess import PIPE, CalledProcessError, STDOUT
 import subprocess
 from tempfile import mkdtemp
@@ -102,9 +103,7 @@ def denovo(
     start_time = datetime.now()
 
     contigs_fasta_path = run_subprocess(fastq1, fastq2, merged_contigs_csv)
-    with contigs_fasta_path.open() as reader, \
-         fasta.open("w") as writer:
-        copyfileobj(reader, writer)
+    shutil.copy(contigs_fasta_path, fasta)
 
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
