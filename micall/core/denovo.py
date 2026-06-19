@@ -100,12 +100,12 @@ def denovo(
     """
 
     start_time = datetime.now()
+
     contigs_fasta_path = run_subprocess(fastq1, fastq2, merged_contigs_csv)
     shutil.copy(contigs_fasta_path, fasta)
 
     duration = datetime.now() - start_time
     contig_count = count_fasta_sequences(contigs_fasta_path)
-
     logger.info(
         "Assembled %d contigs in %s (%ds) on %s.",
         contig_count,
