@@ -301,7 +301,7 @@ def push_image_with_kivecli(
         users=users,
         groups=groups,
     )
-    print(new_container)
+    json.dump(new_container, sys.stdout, indent="\t")
     logger.info('kivecli upload completed.')
 
 
