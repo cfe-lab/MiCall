@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, Mapping
 import logging
 import subprocess
 import sys
@@ -240,7 +240,7 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
 
 def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_id: str,
                                     users: Sequence[str] | None, groups: Sequence[str] | None) \
-                                    -> int:
+                                    -> Mapping[str, object]:
     try:
         from kivecli.container import Container
         import kivecli.logger
@@ -260,7 +260,7 @@ def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_i
             tag,
             existing_id,
         )
-        return existing_container.id.value
+        return existing_container.raw
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = ' '.join(line.strip() for line in DESCRIPTION.strip().splitlines())
@@ -272,7 +272,7 @@ def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_i
         users=users,
         groups=groups,
     )
-    return new_container.id.value
+    return new_container.raw
 
 
 def push_image_with_kivecli(
@@ -294,14 +294,14 @@ def push_image_with_kivecli(
     if not users and not groups:
         raise ValueError('At least one of --users or --groups must be provided for kivecli upload.')
 
-    new_container_id = build_or_load_singularity_image(
+    new_container = build_or_load_singularity_image(
         tag=tag,
         image_path=image_path,
         family_name_or_id=family_name_or_id,
         users=users,
         groups=groups,
     )
-    print(new_container_id)
+    print(new_container)
     logger.info('kivecli upload completed.')
 
 
