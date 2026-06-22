@@ -28,7 +28,7 @@ assert load_projects is not None
 assert disable_kmer_filter is not None
 
 
-def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Iterator[object]:
+def params_generator(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Iterator[object]:
     bad = frozenset(bad)
 
     for testcase in sorted(good):
@@ -37,6 +37,9 @@ def params(good: Iterable[int], bad: Iterable[object], reason_fmt: str) -> Itera
             yield pytest.param(testcase, marks=pytest.mark.xfail(reason=reason, strict=True))
         else:
             yield testcase
+
+def params(*args, **kwargs) -> tuple[object, ...]:
+    return tuple(params_generator(*args, **kwargs))
 
 
 # TODO: ensure that every random seed can be stitched.
