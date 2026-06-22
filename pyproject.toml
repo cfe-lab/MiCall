@@ -51,7 +51,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest>=9.1.0",
+    "pytest>=9.1.1",
     "coverage>=7.14.2",
     "pandas>=3.0.3",
     "seaborn>=0.13.2",
