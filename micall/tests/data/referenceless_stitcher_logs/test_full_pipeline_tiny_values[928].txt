@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  42390.881699712074.
+  1282677.0748321435.
 END 6
 BEGIN 7
   Contig
@@ -110,7 +110,7 @@ BEGIN 9
   the
   score
   of
-  39229.84192993878.
+  892267.2249013983.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   the
   score
   of
-  42390.881699712074.
+  1282677.0748321435.
 END 14
 BEGIN 15
   Contig

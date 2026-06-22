@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  40936.14456859206.
+  1078996.7291746114.
 END 6
 BEGIN 7
   Found
@@ -120,7 +120,7 @@ BEGIN 9
   the
   score
   of
-  1.0009403897350142.
+  1.00421671479555.
 END 9
 BEGIN 10
   Found
@@ -152,11 +152,11 @@ BEGIN 11
   fittest
   has
   length
-  854
+  629
   and
   consists
   of
-  6
+  5
   parts.
 END 11
 BEGIN 12
@@ -203,7 +203,7 @@ BEGIN 14
   the
   score
   of
-  41331.92348921444.
+  1126514.4036869167.
 END 14
 BEGIN 15
   Found
@@ -235,11 +235,11 @@ BEGIN 16
   fittest
   has
   length
-  854
+  629
   and
   consists
   of
-  6
+  5
   parts.
 END 16
 BEGIN 17
@@ -286,7 +286,7 @@ BEGIN 19
   the
   score
   of
-  37278.767023837085.
+  711882.4918969544.
 END 19
 BEGIN 20
   Found
@@ -307,6 +307,44 @@ BEGIN 20
   (4).
 END 20
 BEGIN 21
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  226
+  between
+  contigs
+  (3)
+  and
+  'r721-946.2'
+  to
+  be
+  (62,
+  288).
+END 21
+BEGIN 22
+  Overlap
+  between
+  contigs
+  (3)
+  and
+  'r721-946.2'
+  has
+  aligned
+  size
+  236,
+  118
+  matches,
+  and
+  the
+  score
+  of
+  0.1341021554412493.
+END 22
+BEGIN 23
   Cycle
   3
   finished
@@ -318,22 +356,22 @@ BEGIN 21
   fittest
   has
   length
-  854
+  629
   and
   consists
   of
-  6
+  5
   parts.
-END 21
-BEGIN 22
+END 23
+BEGIN 24
   Cycle
   4
   started
   with
   1
   paths.
-END 22
-BEGIN 23
+END 24
+BEGIN 25
   Calculated
   cutoff
   for
@@ -351,8 +389,8 @@ BEGIN 23
   be
   (42,
   232).
-END 23
-BEGIN 24
+END 25
+BEGIN 26
   Overlap
   between
   contigs
@@ -369,9 +407,9 @@ BEGIN 24
   the
   score
   of
-  37721.22367228462.
-END 24
-BEGIN 25
+  749901.5104003139.
+END 26
+BEGIN 27
   Found
   a
   significant
@@ -388,8 +426,8 @@ BEGIN 25
   in
   contig
   (5).
-END 25
-BEGIN 26
+END 27
+BEGIN 28
   Cycle
   4
   finished
@@ -401,22 +439,22 @@ BEGIN 26
   fittest
   has
   length
-  854
+  629
   and
   consists
   of
-  6
+  5
   parts.
-END 26
-BEGIN 27
+END 28
+BEGIN 29
   Cycle
   5
   started
   with
   1
   paths.
-END 27
-BEGIN 28
+END 29
+BEGIN 30
   Calculated
   cutoff
   for
@@ -424,92 +462,82 @@ BEGIN 28
   overlap
   of
   size
-  1
+  226
   between
   contigs
-  'r721-946.2'
-  and
   (5)
+  and
+  'r721-946.2'
   to
   be
-  (225,
-  1).
-END 28
-BEGIN 29
+  (109,
+  335).
+END 30
+BEGIN 31
   Overlap
   between
   contigs
-  'r721-946.2'
-  and
   (5)
+  and
+  'r721-946.2'
   has
   aligned
   size
-  1,
-  1
+  237,
+  125
   matches,
   and
   the
   score
   of
-  4288.953034789552.
-END 29
-BEGIN 30
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  1
-  between
-  contigs
-  'r721-946.2'
-  and
-  (5),
-  resulting
-  in
-  contig
-  (6).
-END 30
-BEGIN 31
-  Cycle
-  5
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  854
-  and
-  consists
-  of
-  6
-  parts.
+  115736.25963190307.
 END 31
 BEGIN 32
-  Cycle
-  6
-  started
-  with
-  1
-  paths.
-END 32
-BEGIN 33
   Constructed
   a
   path
   of
   length
-  854.
+  629.
+END 32
+BEGIN 33
+  Removed
+  5
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 33
 BEGIN 34
+  Calculating
+  all
+  paths...
+END 34
+BEGIN 35
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
+END 35
+BEGIN 36
+  Constructed
+  a
+  path
+  of
+  length
+  226.
+END 36
+BEGIN 37
   Removed
-  6
+  1
   components
   from
   the
@@ -520,17 +548,71 @@ BEGIN 34
   still
   to
   process.
-END 34
-BEGIN 35
+END 37
+BEGIN 38
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 38
+BEGIN 39
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 35
-BEGIN 36
+END 39
+BEGIN 40
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  226
+  between
+  contigs
+  (5)
+  and
+  'r721-946.2'
+  to
+  be
+  (109,
+  335).
+END 40
+BEGIN 41
+  Overlap
+  between
+  contigs
+  (5)
+  and
+  'r721-946.2'
+  has
+  aligned
+  size
+  237,
+  125
+  matches,
+  and
+  the
+  score
+  of
+  115736.25963190307.
+END 41
+BEGIN 42
   Outputting
-  1
+  2
   contigs.
-END 36
+END 42

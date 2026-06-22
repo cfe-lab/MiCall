@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  41164.54792549849.
+  1106218.0779157025.
 END 6
 BEGIN 7
   Found
@@ -96,11 +96,11 @@ BEGIN 8
   fittest
   has
   length
-  891
+  587
   and
   consists
   of
-  5
+  3
   parts.
 END 8
 BEGIN 9
@@ -147,7 +147,7 @@ BEGIN 11
   the
   score
   of
-  39062.20297264769.
+  875436.0246782519.
 END 11
 BEGIN 12
   Found
@@ -168,6 +168,44 @@ BEGIN 12
   (2).
 END 12
 BEGIN 13
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  322
+  between
+  contigs
+  (1)
+  and
+  'r667-988.1'
+  to
+  be
+  (112,
+  434).
+END 13
+BEGIN 14
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r667-988.1'
+  has
+  aligned
+  size
+  339,
+  176
+  matches,
+  and
+  the
+  score
+  of
+  0.16353820783855136.
+END 14
+BEGIN 15
   Cycle
   2
   finished
@@ -179,78 +217,22 @@ BEGIN 13
   fittest
   has
   length
-  891
+  587
   and
   consists
   of
-  5
+  3
   parts.
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Cycle
   3
   started
   with
   1
   paths.
-END 14
-BEGIN 15
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  1
-  between
-  contigs
-  (2)
-  and
-  'r667-988.1'
-  to
-  be
-  (586,
-  1).
-END 15
-BEGIN 16
-  Overlap
-  between
-  contigs
-  (2)
-  and
-  'r667-988.1'
-  has
-  aligned
-  size
-  1,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  4288.953034789552.
 END 16
 BEGIN 17
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  1
-  between
-  contigs
-  (2)
-  and
-  'r667-988.1',
-  resulting
-  in
-  contig
-  (3).
-END 17
-BEGIN 18
   Calculated
   cutoff
   for
@@ -258,7 +240,45 @@ BEGIN 18
   overlap
   of
   size
-  3
+  322
+  between
+  contigs
+  (2)
+  and
+  'r667-988.1'
+  to
+  be
+  (112,
+  434).
+END 17
+BEGIN 18
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r667-988.1'
+  has
+  aligned
+  size
+  339,
+  176
+  matches,
+  and
+  the
+  score
+  of
+  143167.2385531871.
+END 18
+BEGIN 19
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  279
   between
   contigs
   (2)
@@ -266,10 +286,10 @@ BEGIN 18
   'r682-960.2'
   to
   be
-  (584,
-  3).
-END 18
-BEGIN 19
+  (214,
+  493).
+END 19
+BEGIN 20
   Overlap
   between
   contigs
@@ -279,32 +299,14 @@ BEGIN 19
   has
   aligned
   size
-  3,
-  3
+  297,
+  158
   matches,
   and
   the
   score
   of
-  2.532774817048017.
-END 19
-BEGIN 20
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  3
-  between
-  contigs
-  (2)
-  and
-  'r682-960.2',
-  resulting
-  in
-  contig
-  (4).
+  141239.85381754386.
 END 20
 BEGIN 21
   Calculated
@@ -342,7 +344,7 @@ BEGIN 22
   the
   score
   of
-  3.5392304574770574.
+  838338.9617216184.
 END 22
 BEGIN 23
   Contig
@@ -364,11 +366,11 @@ BEGIN 24
   fittest
   has
   length
-  891
+  587
   and
   consists
   of
-  5
+  3
   parts.
 END 24
 BEGIN 25
@@ -387,55 +389,37 @@ BEGIN 26
   overlap
   of
   size
-  294
+  322
   between
   contigs
-  (4)
+  (2)
   and
   'r667-988.1'
   to
   be
-  (584,
-  294).
+  (112,
+  434).
 END 26
 BEGIN 27
   Overlap
   between
   contigs
-  (4)
+  (2)
   and
   'r667-988.1'
   has
   aligned
   size
-  294,
-  279
+  339,
+  176
   matches,
   and
   the
   score
   of
-  34950.53891818119.
+  143167.2385531871.
 END 27
 BEGIN 28
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  279
-  between
-  contigs
-  (4)
-  and
-  'r667-988.1',
-  resulting
-  in
-  contig
-  (5).
-END 28
-BEGIN 29
   Calculated
   cutoff
   for
@@ -443,66 +427,66 @@ BEGIN 29
   overlap
   of
   size
-  270
+  279
   between
   contigs
-  (4)
+  (2)
   and
-  'r191-460.3'
+  'r682-960.2'
   to
   be
-  (161,
-  431).
-END 29
-BEGIN 30
+  (214,
+  493).
+END 28
+BEGIN 29
   Overlap
   between
   contigs
-  (4)
+  (2)
   and
-  'r191-460.3'
+  'r682-960.2'
   has
   aligned
   size
-  270,
-  270
+  297,
+  158
   matches,
   and
   the
   score
   of
-  1.100025710874153.
+  141239.85381754386.
+END 29
+BEGIN 30
+  Constructed
+  a
+  path
+  of
+  length
+  587.
 END 30
 BEGIN 31
-  Contig
-  (4)
-  covers
-  contig
-  'r191-460.3'
-  completely.
+  Removed
+  3
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 31
 BEGIN 32
-  Cycle
-  4
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  891
-  and
-  consists
-  of
-  5
-  parts.
+  Calculating
+  all
+  paths...
 END 32
 BEGIN 33
   Cycle
-  5
+  1
   started
   with
   1
@@ -516,47 +500,47 @@ BEGIN 34
   overlap
   of
   size
-  270
+  279
   between
   contigs
-  (5)
+  'r667-988.1'
   and
-  'r191-460.3'
+  'r682-960.2'
   to
   be
-  (161,
-  431).
+  (15,
+  294).
 END 34
 BEGIN 35
   Overlap
   between
   contigs
-  (5)
+  'r667-988.1'
   and
-  'r191-460.3'
+  'r682-960.2'
   has
   aligned
   size
-  270,
-  270
+  279,
+  279
   matches,
   and
   the
   score
   of
-  38446.49141890702.
+  860216.1744877027.
 END 35
 BEGIN 36
   Contig
-  (5)
+  'r667-988.1'
   covers
   contig
-  'r191-460.3'
+  'r682-960.2'
   completely.
 END 36
 BEGIN 37
   Cycle
-  5
+  1
   finished
   with
   1
@@ -566,16 +550,16 @@ BEGIN 37
   fittest
   has
   length
-  891
+  322
   and
   consists
   of
-  5
+  1
   parts.
 END 37
 BEGIN 38
   Cycle
-  6
+  2
   started
   with
   1
@@ -587,11 +571,11 @@ BEGIN 39
   path
   of
   length
-  891.
+  322.
 END 39
 BEGIN 40
   Removed
-  5
+  1
   components
   from
   the
@@ -608,11 +592,49 @@ BEGIN 41
   overlap
   stitching
   produced
-  1
+  2
   contigs.
 END 41
 BEGIN 42
-  Outputting
-  1
-  contigs.
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  322
+  between
+  contigs
+  (2)
+  and
+  'r667-988.1'
+  to
+  be
+  (112,
+  434).
 END 42
+BEGIN 43
+  Overlap
+  between
+  contigs
+  (2)
+  and
+  'r667-988.1'
+  has
+  aligned
+  size
+  339,
+  176
+  matches,
+  and
+  the
+  score
+  of
+  143167.2385531871.
+END 43
+BEGIN 44
+  Outputting
+  2
+  contigs.
+END 44

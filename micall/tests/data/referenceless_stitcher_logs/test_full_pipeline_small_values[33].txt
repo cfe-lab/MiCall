@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  41478.005770222655.
+  1144472.1010988383.
 END 6
 BEGIN 7
   Found
@@ -147,7 +147,7 @@ BEGIN 11
   the
   score
   of
-  40398.503840599245.
+  1017045.0228356435.
 END 11
 BEGIN 12
   Found
@@ -203,9 +203,17 @@ BEGIN 14
   the
   score
   of
-  0.9965755779592839.
+  1.0061251679388636.
 END 14
 BEGIN 15
+  Contig
+  (1)
+  covers
+  contig
+  'r455-802.5'
+  completely.
+END 15
+BEGIN 16
   Cycle
   2
   finished
@@ -223,16 +231,16 @@ BEGIN 15
   of
   3
   parts.
-END 15
-BEGIN 16
+END 16
+BEGIN 17
   Cycle
   3
   started
   with
   1
   paths.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
   Calculated
   cutoff
   for
@@ -250,8 +258,8 @@ BEGIN 17
   be
   (265,
   613).
-END 17
-BEGIN 18
+END 18
+BEGIN 19
   Overlap
   between
   contigs
@@ -268,17 +276,17 @@ BEGIN 18
   the
   score
   of
-  40260.162313635534.
-END 18
-BEGIN 19
+  1023274.594401897.
+END 19
+BEGIN 20
   Contig
   (2)
   covers
   contig
   'r455-802.5'
   completely.
-END 19
-BEGIN 20
+END 20
+BEGIN 21
   Calculated
   cutoff
   for
@@ -296,8 +304,8 @@ BEGIN 20
   be
   (457,
   780).
-END 20
-BEGIN 21
+END 21
+BEGIN 22
   Overlap
   between
   contigs
@@ -314,17 +322,17 @@ BEGIN 21
   the
   score
   of
-  39721.360519823706.
-END 21
-BEGIN 22
+  965081.5456886578.
+END 22
+BEGIN 23
   Contig
   (2)
   covers
   contig
   'r647-969.1'
   completely.
-END 22
-BEGIN 23
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -342,8 +350,8 @@ BEGIN 23
   be
   (394,
   683).
-END 23
-BEGIN 24
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -360,44 +368,44 @@ BEGIN 24
   the
   score
   of
-  38926.919836537396.
-END 24
-BEGIN 25
+  884345.5501627148.
+END 25
+BEGIN 26
   Contig
   (2)
   covers
   contig
   'r584-872.0'
   completely.
-END 25
-BEGIN 26
-  Cycle
-  3
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  800
-  and
-  consists
-  of
-  3
-  parts.
 END 26
 BEGIN 27
   Cycle
+  3
+  finished
+  with
+  1
+  new
+  paths.
+  The
+  fittest
+  has
+  length
+  800
+  and
+  consists
+  of
+  3
+  parts.
+END 27
+BEGIN 28
+  Cycle
   4
   started
   with
   1
   paths.
-END 27
-BEGIN 28
+END 28
+BEGIN 29
   Calculated
   cutoff
   for
@@ -415,8 +423,8 @@ BEGIN 28
   be
   (457,
   780).
-END 28
-BEGIN 29
+END 29
+BEGIN 30
   Overlap
   between
   contigs
@@ -433,17 +441,17 @@ BEGIN 29
   the
   score
   of
-  39721.360519823706.
-END 29
-BEGIN 30
+  965081.5456886578.
+END 30
+BEGIN 31
   Contig
   (2)
   covers
   contig
   'r647-969.1'
   completely.
-END 30
-BEGIN 31
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -461,8 +469,8 @@ BEGIN 31
   be
   (394,
   683).
-END 31
-BEGIN 32
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -479,17 +487,17 @@ BEGIN 32
   the
   score
   of
-  38926.919836537396.
-END 32
-BEGIN 33
+  884345.5501627148.
+END 33
+BEGIN 34
   Contig
   (2)
   covers
   contig
   'r584-872.0'
   completely.
-END 33
-BEGIN 34
+END 34
+BEGIN 35
   Cycle
   4
   finished
@@ -507,16 +515,16 @@ BEGIN 34
   of
   3
   parts.
-END 34
-BEGIN 35
+END 35
+BEGIN 36
   Cycle
   5
   started
   with
   1
   paths.
-END 35
-BEGIN 36
+END 36
+BEGIN 37
   Calculated
   cutoff
   for
@@ -534,8 +542,8 @@ BEGIN 36
   be
   (394,
   683).
-END 36
-BEGIN 37
+END 37
+BEGIN 38
   Overlap
   between
   contigs
@@ -552,17 +560,17 @@ BEGIN 37
   the
   score
   of
-  38926.919836537396.
-END 37
-BEGIN 38
+  884345.5501627148.
+END 38
+BEGIN 39
   Contig
   (2)
   covers
   contig
   'r584-872.0'
   completely.
-END 38
-BEGIN 39
+END 39
+BEGIN 40
   Cycle
   5
   finished
@@ -580,24 +588,24 @@ BEGIN 39
   of
   3
   parts.
-END 39
-BEGIN 40
+END 40
+BEGIN 41
   Cycle
   6
   started
   with
   1
   paths.
-END 40
-BEGIN 41
+END 41
+BEGIN 42
   Constructed
   a
   path
   of
   length
   800.
-END 41
-BEGIN 42
+END 42
+BEGIN 43
   Removed
   3
   components
@@ -610,17 +618,17 @@ BEGIN 42
   still
   to
   process.
-END 42
-BEGIN 43
+END 43
+BEGIN 44
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 43
-BEGIN 44
+END 44
+BEGIN 45
   Outputting
   1
   contigs.
-END 44
+END 45

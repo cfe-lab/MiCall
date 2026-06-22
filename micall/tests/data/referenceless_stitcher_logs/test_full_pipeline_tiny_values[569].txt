@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  41731.566667855564.
+  1197207.4782464262.
 END 6
 BEGIN 7
   Contig
@@ -82,35 +82,35 @@ BEGIN 8
   overlap
   of
   size
-  11
+  294
   between
   contigs
-  'r579-872.2'
-  and
   'r60-486.0'
+  and
+  'r579-872.2'
   to
   be
-  (293,
-  1).
+  (28,
+  322).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r579-872.2'
-  and
   'r60-486.0'
+  and
+  'r579-872.2'
   has
   aligned
   size
-  1,
-  0
+  305,
+  151
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  111410.30026989258.
 END 9
 BEGIN 10
   Cycle
@@ -147,35 +147,35 @@ BEGIN 12
   overlap
   of
   size
-  11
+  294
   between
   contigs
-  'r579-872.2'
-  and
   'r60-486.0'
+  and
+  'r579-872.2'
   to
   be
-  (293,
-  1).
+  (28,
+  322).
 END 12
 BEGIN 13
   Overlap
   between
   contigs
-  'r579-872.2'
-  and
   'r60-486.0'
+  and
+  'r579-872.2'
   has
   aligned
   size
-  1,
-  0
+  305,
+  151
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  111410.30026989258.
 END 13
 BEGIN 14
   Constructed
@@ -220,112 +220,83 @@ BEGIN 18
   overlap
   of
   size
-  9
+  294
   between
   contigs
-  'r579-872.2'
-  and
   'r61-485.1'
+  and
+  'r579-872.2'
   to
   be
-  (286,
-  4).
+  (27,
+  321).
 END 18
 BEGIN 19
   Overlap
   between
   contigs
-  'r579-872.2'
-  and
   'r61-485.1'
+  and
+  'r579-872.2'
   has
   aligned
   size
-  4,
-  2
+  305,
+  151
   matches,
   and
   the
   score
   of
-  2904.339164421828.
+  111410.30026989258.
 END 19
 BEGIN 20
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  4
-  between
-  contigs
-  'r579-872.2'
-  and
-  'r61-485.1',
-  resulting
-  in
-  contig
-  (1).
-END 20
-BEGIN 21
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  711
-  and
-  consists
-  of
-  2
-  parts.
-END 21
-BEGIN 22
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
-END 22
-BEGIN 23
   Constructed
   a
   path
   of
   length
-  711.
-END 23
-BEGIN 24
+  425.
+END 20
+BEGIN 21
   Removed
-  2
+  1
   components
   from
   the
   working
   list,
   having
-  0
+  1
   still
   to
   process.
-END 24
-BEGIN 25
+END 21
+BEGIN 22
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 22
+BEGIN 23
   Initial
   overlap
   stitching
   produced
-  2
+  3
   contigs.
-END 25
-BEGIN 26
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -333,56 +304,84 @@ BEGIN 26
   overlap
   of
   size
-  426
+  425
   between
   contigs
-  (1)
-  and
   'r60-486.0'
+  and
+  'r61-485.1'
   to
   be
-  (287,
+  (1,
   426).
-END 26
-BEGIN 27
+END 24
+BEGIN 25
   Overlap
   between
   contigs
-  (1)
-  and
   'r60-486.0'
+  and
+  'r61-485.1'
   has
   aligned
   size
-  426,
-  424
+  425,
+  425
   matches,
   and
   the
   score
   of
-  41510.187038988035.
-END 27
-BEGIN 28
-  Found
-  a
-  significant
+  1197207.4782464262.
+END 25
+BEGIN 26
+  Contig
+  'r60-486.0'
+  covers
+  contig
+  'r61-485.1'
+  completely.
+END 26
+BEGIN 27
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  424
+  294
   between
   contigs
-  (1)
+  'r60-486.0'
   and
-  'r60-486.0',
-  resulting
-  in
-  contig
-  (2).
+  'r579-872.2'
+  to
+  be
+  (28,
+  322).
+END 27
+BEGIN 28
+  Overlap
+  between
+  contigs
+  'r60-486.0'
+  and
+  'r579-872.2'
+  has
+  aligned
+  size
+  305,
+  151
+  matches,
+  and
+  the
+  score
+  of
+  111410.30026989258.
 END 28
 BEGIN 29
   Outputting
-  1
+  2
   contigs.
 END 29

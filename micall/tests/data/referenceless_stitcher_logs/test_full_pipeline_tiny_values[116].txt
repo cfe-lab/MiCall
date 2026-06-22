@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  41206.71381810467.
+  1132565.1342167114.
 END 6
 BEGIN 7
   Contig
@@ -82,55 +82,37 @@ BEGIN 8
   overlap
   of
   size
-  17
+  317
   between
   contigs
-  'r661-977.1'
-  and
   'r8-648.0'
+  and
+  'r661-977.1'
   to
   be
-  (316,
-  11).
+  (128,
+  445).
 END 8
 BEGIN 9
   Overlap
   between
   contigs
-  'r661-977.1'
-  and
   'r8-648.0'
+  and
+  'r661-977.1'
   has
   aligned
   size
-  11,
-  1
+  334,
+  176
   matches,
   and
   the
   score
   of
-  22.083458795210074.
+  149212.49421943713.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  8
-  between
-  contigs
-  'r661-977.1'
-  and
-  'r8-648.0',
-  resulting
-  in
-  contig
-  (1).
-END 10
-BEGIN 11
   Cycle
   1
   finished
@@ -142,22 +124,22 @@ BEGIN 11
   fittest
   has
   length
-  954
+  641
   and
   consists
   of
-  2
+  1
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -165,47 +147,130 @@ BEGIN 13
   overlap
   of
   size
-  396
+  317
   between
   contigs
-  (1)
+  'r8-648.0'
   and
-  'r251-646.2'
+  'r661-977.1'
   to
   be
-  (556,
-  952).
-END 13
-BEGIN 14
+  (128,
+  445).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (1)
+  'r8-648.0'
   and
-  'r251-646.2'
+  'r661-977.1'
   has
   aligned
   size
-  396,
-  396
+  334,
+  176
   matches,
   and
   the
   score
   of
-  41206.71381810467.
+  149212.49421943713.
+END 13
+BEGIN 14
+  Constructed
+  a
+  path
+  of
+  length
+  641.
 END 14
 BEGIN 15
-  Contig
-  (1)
-  covers
-  contig
-  'r251-646.2'
-  completely.
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 15
 BEGIN 16
+  Calculating
+  all
+  paths...
+END 16
+BEGIN 17
   Cycle
-  2
+  1
+  started
+  with
+  1
+  paths.
+END 17
+BEGIN 18
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  202
+  between
+  contigs
+  'r661-977.1'
+  and
+  'r251-646.2'
+  to
+  be
+  (316,
+  3).
+END 18
+BEGIN 19
+  Overlap
+  between
+  contigs
+  'r661-977.1'
+  and
+  'r251-646.2'
+  has
+  aligned
+  size
+  3,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  1000.0.
+END 19
+BEGIN 20
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  3
+  between
+  contigs
+  'r661-977.1'
+  and
+  'r251-646.2',
+  resulting
+  in
+  contig
+  (1).
+END 20
+BEGIN 21
+  Cycle
+  1
   finished
   with
   1
@@ -215,30 +280,30 @@ BEGIN 16
   fittest
   has
   length
-  954
+  712
   and
   consists
   of
   2
   parts.
-END 16
-BEGIN 17
+END 21
+BEGIN 22
   Cycle
-  3
+  2
   started
   with
   1
   paths.
-END 17
-BEGIN 18
+END 22
+BEGIN 23
   Constructed
   a
   path
   of
   length
-  954.
-END 18
-BEGIN 19
+  712.
+END 23
+BEGIN 24
   Removed
   2
   components
@@ -251,17 +316,73 @@ BEGIN 19
   still
   to
   process.
-END 19
-BEGIN 20
+END 24
+BEGIN 25
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 20
-BEGIN 21
+END 25
+BEGIN 26
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  639
+  between
+  contigs
+  (1)
+  and
+  'r8-648.0'
+  to
+  be
+  (316,
+  639).
+END 26
+BEGIN 27
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r8-648.0'
+  has
+  aligned
+  size
+  639,
+  396
+  matches,
+  and
+  the
+  score
+  of
+  422097.96304694196.
+END 27
+BEGIN 28
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  396
+  between
+  contigs
+  (1)
+  and
+  'r8-648.0',
+  resulting
+  in
+  contig
+  (2).
+END 28
+BEGIN 29
   Outputting
   1
   contigs.
-END 21
+END 29

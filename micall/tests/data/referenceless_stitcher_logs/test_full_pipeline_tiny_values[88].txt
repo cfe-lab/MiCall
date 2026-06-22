@@ -36,55 +36,17 @@ BEGIN 5
   overlap
   of
   size
-  1
+  184
   between
   contigs
-  'r194-619.0'
-  and
   'r640-902.1'
+  and
+  'r194-619.0'
   to
   be
-  (425,
-  1).
+  None.
 END 5
 BEGIN 6
-  Overlap
-  between
-  contigs
-  'r194-619.0'
-  and
-  'r640-902.1'
-  has
-  aligned
-  size
-  1,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  4288.953034789552.
-END 6
-BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  1
-  between
-  contigs
-  'r194-619.0'
-  and
-  'r640-902.1',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -92,80 +54,97 @@ BEGIN 8
   overlap
   of
   size
-  1
+  254
   between
   contigs
-  'r194-619.0'
-  and
   'r713-972.2'
+  and
+  'r194-619.0'
   to
   be
-  (425,
-  1).
+  None.
+END 6
+BEGIN 7
+  Constructed
+  a
+  path
+  of
+  length
+  426.
+END 7
+BEGIN 8
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  2
+  still
+  to
+  process.
 END 8
 BEGIN 9
-  Overlap
-  between
-  contigs
-  'r194-619.0'
-  and
-  'r713-972.2'
-  has
-  aligned
-  size
-  1,
-  1
-  matches,
-  and
-  the
-  score
-  of
-  1.0.
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
 END 9
 BEGIN 10
-  Found
-  a
-  significant
+  Initial
+  overlap
+  stitching
+  produced
+  3
+  contigs.
+END 10
+BEGIN 11
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  1
+  184
   between
   contigs
+  'r640-902.1'
+  and
   'r194-619.0'
-  and
-  'r713-972.2',
-  resulting
-  in
-  contig
-  (2).
-END 10
-BEGIN 11
-  Cycle
-  1
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  758
-  and
-  consists
-  of
-  3
-  parts.
+  to
+  be
+  None.
 END 11
 BEGIN 12
-  Cycle
-  2
-  started
-  with
-  1
-  paths.
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  254
+  between
+  contigs
+  'r713-972.2'
+  and
+  'r194-619.0'
+  to
+  be
+  None.
 END 12
 BEGIN 13
   Calculated
@@ -178,19 +157,19 @@ BEGIN 13
   190
   between
   contigs
-  (1)
+  'r640-902.1'
   and
   'r713-972.2'
   to
   be
-  (498,
+  (73,
   190).
 END 13
 BEGIN 14
   Overlap
   between
   contigs
-  (1)
+  'r640-902.1'
   and
   'r713-972.2'
   has
@@ -203,7 +182,7 @@ BEGIN 14
   the
   score
   of
-  36411.36249132256.
+  641961.7957260916.
 END 14
 BEGIN 15
   Found
@@ -215,73 +194,34 @@ BEGIN 15
   190
   between
   contigs
-  (1)
+  'r640-902.1'
   and
   'r713-972.2',
   resulting
   in
   contig
-  (3).
+  (1).
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  758
-  and
-  consists
+  Calculated
+  cutoff
+  for
+  an
+  overlap
   of
-  3
-  parts.
+  size
+  254
+  between
+  contigs
+  (1)
+  and
+  'r194-619.0'
+  to
+  be
+  None.
 END 16
 BEGIN 17
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 17
-BEGIN 18
-  Constructed
-  a
-  path
-  of
-  length
-  758.
-END 18
-BEGIN 19
-  Removed
-  3
-  components
-  from
-  the
-  working
-  list,
-  having
-  0
-  still
-  to
-  process.
-END 19
-BEGIN 20
-  Initial
-  overlap
-  stitching
-  produced
-  1
-  contigs.
-END 20
-BEGIN 21
   Outputting
-  1
+  2
   contigs.
-END 21
+END 17

@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  40357.275005773074.
+  1012415.3757876296.
 END 6
 BEGIN 7
   Found
@@ -119,7 +119,7 @@ BEGIN 10
   overlap
   of
   size
-  12
+  264
   between
   contigs
   (1)
@@ -127,8 +127,8 @@ BEGIN 10
   'r85-348.0'
   to
   be
-  (544,
-  1).
+  (143,
+  407).
 END 10
 BEGIN 11
   Overlap
@@ -140,14 +140,14 @@ BEGIN 11
   has
   aligned
   size
-  1,
-  0
+  274,
+  136
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  103851.30893301762.
 END 11
 BEGIN 12
   Constructed
@@ -238,7 +238,7 @@ BEGIN 20
   overlap
   of
   size
-  12
+  264
   between
   contigs
   (1)
@@ -246,8 +246,8 @@ BEGIN 20
   'r85-348.0'
   to
   be
-  (544,
-  1).
+  (143,
+  407).
 END 20
 BEGIN 21
   Overlap
@@ -259,14 +259,14 @@ BEGIN 21
   has
   aligned
   size
-  1,
-  0
+  274,
+  136
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  103851.30893301762.
 END 21
 BEGIN 22
   Outputting

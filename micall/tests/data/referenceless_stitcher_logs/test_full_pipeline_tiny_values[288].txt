@@ -36,35 +36,35 @@ BEGIN 5
   overlap
   of
   size
-  30
+  435
   between
   contigs
-  'r522-996.1'
-  and
   'r29-518.2'
+  and
+  'r522-996.1'
   to
   be
-  (457,
-  5).
+  (486,
+  1).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r522-996.1'
-  and
   'r29-518.2'
+  and
+  'r522-996.1'
   has
   aligned
   size
-  5,
+  1,
   0
   matches,
   and
   the
   score
   of
-  -39.46817671922188.
+  -102.98321974141325.
 END 6
 BEGIN 7
   Calculated
@@ -102,7 +102,7 @@ BEGIN 8
   the
   score
   of
-  26800.99143862082.
+  183260.3364272201.
 END 8
 BEGIN 9
   Found
@@ -185,7 +185,7 @@ BEGIN 13
   the
   score
   of
-  37919.36067910977.
+  767460.0425318509.
 END 13
 BEGIN 14
   Found

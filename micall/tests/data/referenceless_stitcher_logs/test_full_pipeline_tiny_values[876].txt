@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  9
+  299
   between
   contigs
   'r478-948.1'
@@ -44,8 +44,8 @@ BEGIN 5
   'r39-337.2'
   to
   be
-  (463,
-  9).
+  (52,
+  351).
 END 5
 BEGIN 6
   Overlap
@@ -57,34 +57,16 @@ BEGIN 6
   has
   aligned
   size
-  9,
-  7
+  311,
+  155
   matches,
   and
   the
   score
   of
-  10657.518240606978.
+  115837.83663207419.
 END 6
 BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  9
-  between
-  contigs
-  'r478-948.1'
-  and
-  'r39-337.2',
-  resulting
-  in
-  contig
-  (1).
-END 7
-BEGIN 8
   Calculated
   cutoff
   for
@@ -102,8 +84,8 @@ BEGIN 8
   be
   (256,
   215).
-END 8
-BEGIN 9
+END 7
+BEGIN 8
   Overlap
   between
   contigs
@@ -120,9 +102,9 @@ BEGIN 9
   the
   score
   of
-  3.492164104258105.
-END 9
-BEGIN 10
+  706770.8998663056.
+END 8
+BEGIN 9
   Found
   a
   significant
@@ -138,9 +120,9 @@ BEGIN 10
   resulting
   in
   contig
-  (2).
-END 10
-BEGIN 11
+  (1).
+END 9
+BEGIN 10
   Cycle
   1
   finished
@@ -152,22 +134,22 @@ BEGIN 11
   fittest
   has
   length
-  819
+  523
   and
   consists
   of
-  3
+  2
   parts.
-END 11
-BEGIN 12
+END 10
+BEGIN 11
   Cycle
   2
   started
   with
   1
   paths.
-END 12
-BEGIN 13
+END 11
+BEGIN 12
   Calculated
   cutoff
   for
@@ -175,76 +157,66 @@ BEGIN 13
   overlap
   of
   size
-  3
+  299
   between
   contigs
-  (2)
+  (1)
   and
   'r39-337.2'
   to
   be
-  (520,
-  3).
-END 13
-BEGIN 14
+  (52,
+  351).
+END 12
+BEGIN 13
   Overlap
   between
   contigs
-  (2)
+  (1)
   and
   'r39-337.2'
   has
   aligned
   size
-  3,
-  3
+  311,
+  155
   matches,
   and
   the
   score
   of
-  10862.952238016636.
+  115837.83663207419.
+END 13
+BEGIN 14
+  Constructed
+  a
+  path
+  of
+  length
+  523.
 END 14
 BEGIN 15
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  3
-  between
-  contigs
-  (2)
-  and
-  'r39-337.2',
-  resulting
-  in
-  contig
-  (3).
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
 END 15
 BEGIN 16
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  819
-  and
-  consists
-  of
-  3
-  parts.
+  Calculating
+  all
+  paths...
 END 16
 BEGIN 17
   Cycle
-  3
+  1
   started
   with
   1
@@ -256,11 +228,11 @@ BEGIN 18
   path
   of
   length
-  819.
+  299.
 END 18
 BEGIN 19
   Removed
-  3
+  1
   components
   from
   the
@@ -273,15 +245,69 @@ BEGIN 19
   process.
 END 19
 BEGIN 20
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 20
+BEGIN 21
   Initial
   overlap
   stitching
   produced
-  1
-  contigs.
-END 20
-BEGIN 21
-  Outputting
-  1
+  2
   contigs.
 END 21
+BEGIN 22
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  299
+  between
+  contigs
+  (1)
+  and
+  'r39-337.2'
+  to
+  be
+  (52,
+  351).
+END 22
+BEGIN 23
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r39-337.2'
+  has
+  aligned
+  size
+  311,
+  155
+  matches,
+  and
+  the
+  score
+  of
+  115837.83663207419.
+END 23
+BEGIN 24
+  Outputting
+  2
+  contigs.
+END 24

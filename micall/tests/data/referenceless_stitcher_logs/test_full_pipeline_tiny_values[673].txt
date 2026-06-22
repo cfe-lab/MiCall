@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  40858.62431851788.
+  1069881.2923782533.
 END 6
 BEGIN 7
   Found
@@ -96,7 +96,7 @@ BEGIN 8
   fittest
   has
   length
-  793
+  791
   and
   consists
   of
@@ -119,35 +119,35 @@ BEGIN 10
   overlap
   of
   size
-  2
+  268
   between
   contigs
-  'r188-458.2'
-  and
   (1)
+  and
+  'r188-458.2'
   to
   be
-  (269,
-  2).
+  (520,
+  1).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  'r188-458.2'
-  and
   (1)
+  and
+  'r188-458.2'
   has
   aligned
   size
-  2,
-  2
+  1,
+  1
   matches,
   and
   the
   score
   of
-  8173.593526965962.
+  5375.736831189898.
 END 11
 BEGIN 12
   Found
@@ -156,12 +156,12 @@ BEGIN 12
   overlap
   of
   size
-  2
+  1
   between
   contigs
-  'r188-458.2'
+  (1)
   and
-  (1),
+  'r188-458.2',
   resulting
   in
   contig
@@ -179,7 +179,7 @@ BEGIN 13
   fittest
   has
   length
-  793
+  791
   and
   consists
   of
@@ -200,7 +200,7 @@ BEGIN 15
   path
   of
   length
-  793.
+  791.
 END 15
 BEGIN 16
   Removed

@@ -36,35 +36,35 @@ BEGIN 5
   overlap
   of
   size
-  18
+  282
   between
   contigs
-  'r16-358.0'
-  and
   'r367-651.1'
+  and
+  'r16-358.0'
   to
   be
-  (341,
-  4).
+  (284,
+  2).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r16-358.0'
-  and
   'r367-651.1'
+  and
+  'r16-358.0'
   has
   aligned
   size
-  4,
+  2,
   0
   matches,
   and
   the
   score
   of
-  -31.461283509891626.
+  -305.22900391252284.
 END 6
 BEGIN 7
   Calculated
@@ -102,7 +102,7 @@ BEGIN 8
   the
   score
   of
-  30869.442470790982.
+  318126.6626867676.
 END 8
 BEGIN 9
   Found
@@ -185,7 +185,7 @@ BEGIN 13
   the
   score
   of
-  36133.88679444026.
+  620838.1501776449.
 END 13
 BEGIN 14
   Found

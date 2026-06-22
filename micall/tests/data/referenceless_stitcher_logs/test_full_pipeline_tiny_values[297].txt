@@ -36,35 +36,35 @@ BEGIN 5
   overlap
   of
   size
-  29
+  341
   between
   contigs
-  'r98-438.2'
-  and
   'r538-981.0'
+  and
+  'r98-438.2'
   to
   be
-  (339,
-  4).
+  (51,
+  392).
 END 5
 BEGIN 6
   Overlap
   between
   contigs
-  'r98-438.2'
-  and
   'r538-981.0'
+  and
+  'r98-438.2'
   has
   aligned
   size
-  4,
-  0
+  356,
+  178
   matches,
   and
   the
   score
   of
-  -31.461283509891626.
+  129634.8941984015.
 END 6
 BEGIN 7
   Calculated
@@ -102,7 +102,7 @@ BEGIN 8
   the
   score
   of
-  34905.60104069329.
+  534177.4727248594.
 END 8
 BEGIN 9
   Found
@@ -185,7 +185,7 @@ BEGIN 13
   the
   score
   of
-  24846.438157173674.
+  139908.25025140244.
 END 13
 BEGIN 14
   Found
