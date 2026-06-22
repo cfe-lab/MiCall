@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  40398.503840599245.
+  1017045.0228356435.
 END 6
 BEGIN 7
   Found
@@ -96,7 +96,7 @@ BEGIN 8
   fittest
   has
   length
-  823
+  821
   and
   consists
   of
@@ -119,35 +119,35 @@ BEGIN 10
   overlap
   of
   size
-  1
+  180
   between
   contigs
-  (1)
-  and
   'r647-954.1'
+  and
+  (1)
   to
   be
-  (515,
-  1).
+  (305,
+  5).
 END 10
 BEGIN 11
   Overlap
   between
   contigs
-  (1)
-  and
   'r647-954.1'
+  and
+  (1)
   has
   aligned
   size
-  1,
-  1
+  5,
+  2
   matches,
   and
   the
   score
   of
-  4288.953034789552.
+  2829.168753480632.
 END 11
 BEGIN 12
   Found
@@ -156,12 +156,12 @@ BEGIN 12
   overlap
   of
   size
-  1
+  5
   between
   contigs
-  (1)
+  'r647-954.1'
   and
-  'r647-954.1',
+  (1),
   resulting
   in
   contig
@@ -179,7 +179,7 @@ BEGIN 13
   fittest
   has
   length
-  823
+  821
   and
   consists
   of
@@ -200,7 +200,7 @@ BEGIN 15
   path
   of
   length
-  823.
+  821.
 END 15
 BEGIN 16
   Removed

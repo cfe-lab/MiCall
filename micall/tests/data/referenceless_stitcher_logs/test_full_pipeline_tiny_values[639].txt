@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  40445.91141973033.
+  1044001.2790136689.
 END 6
 BEGIN 7
   Contig
@@ -82,7 +82,7 @@ BEGIN 8
   overlap
   of
   size
-  3
+  331
   between
   contigs
   'r26-544.1'
@@ -90,8 +90,8 @@ BEGIN 8
   'r667-997.0'
   to
   be
-  (518,
-  1).
+  (116,
+  447).
 END 8
 BEGIN 9
   Overlap
@@ -103,14 +103,14 @@ BEGIN 9
   has
   aligned
   size
-  1,
-  0
+  349,
+  180
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  142918.58118784227.
 END 9
 BEGIN 10
   Cycle
@@ -147,7 +147,7 @@ BEGIN 12
   overlap
   of
   size
-  3
+  331
   between
   contigs
   'r26-544.1'
@@ -155,8 +155,8 @@ BEGIN 12
   'r667-997.0'
   to
   be
-  (518,
-  1).
+  (116,
+  447).
 END 12
 BEGIN 13
   Overlap
@@ -168,14 +168,14 @@ BEGIN 13
   has
   aligned
   size
-  1,
-  0
+  349,
+  180
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  142918.58118784227.
 END 13
 BEGIN 14
   Constructed
@@ -220,45 +220,25 @@ BEGIN 18
   overlap
   of
   size
-  5
+  316
   between
   contigs
-  'r157-513.2'
-  and
   'r667-997.0'
+  and
+  'r157-513.2'
   to
   be
-  (356,
-  1).
+  None.
 END 18
 BEGIN 19
-  Overlap
-  between
-  contigs
-  'r157-513.2'
-  and
-  'r667-997.0'
-  has
-  aligned
-  size
-  1,
-  0
-  matches,
-  and
-  the
-  score
-  of
-  -6.146278494524225.
-END 19
-BEGIN 20
   Constructed
   a
   path
   of
   length
   357.
-END 20
-BEGIN 21
+END 19
+BEGIN 20
   Removed
   1
   components
@@ -271,8 +251,8 @@ BEGIN 21
   still
   to
   process.
-END 21
-BEGIN 22
+END 20
+BEGIN 21
   Giving
   up
   on
@@ -287,16 +267,16 @@ BEGIN 22
   is
   a
   singleton.
-END 22
-BEGIN 23
+END 21
+BEGIN 22
   Initial
   overlap
   stitching
   produced
   3
   contigs.
-END 23
-BEGIN 24
+END 22
+BEGIN 23
   Calculated
   cutoff
   for
@@ -314,8 +294,8 @@ BEGIN 24
   be
   (131,
   488).
-END 24
-BEGIN 25
+END 23
+BEGIN 24
   Overlap
   between
   contigs
@@ -332,17 +312,17 @@ BEGIN 25
   the
   score
   of
-  40445.91141973033.
-END 25
-BEGIN 26
+  1044001.2790136689.
+END 24
+BEGIN 25
   Contig
   'r26-544.1'
   covers
   contig
   'r157-513.2'
   completely.
-END 26
-BEGIN 27
+END 25
+BEGIN 26
   Calculated
   cutoff
   for
@@ -350,7 +330,7 @@ BEGIN 27
   overlap
   of
   size
-  3
+  331
   between
   contigs
   'r26-544.1'
@@ -358,10 +338,10 @@ BEGIN 27
   'r667-997.0'
   to
   be
-  (518,
-  1).
-END 27
-BEGIN 28
+  (116,
+  447).
+END 26
+BEGIN 27
   Overlap
   between
   contigs
@@ -371,17 +351,17 @@ BEGIN 28
   has
   aligned
   size
-  1,
-  0
+  349,
+  180
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
-END 28
-BEGIN 29
+  142918.58118784227.
+END 27
+BEGIN 28
   Outputting
   2
   contigs.
-END 29
+END 28

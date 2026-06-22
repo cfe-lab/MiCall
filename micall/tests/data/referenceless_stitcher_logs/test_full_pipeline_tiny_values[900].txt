@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  35272.54695374855.
+  558928.717403822.
 END 6
 BEGIN 7
   Found
@@ -85,6 +85,24 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  216
+  between
+  contigs
+  'r676-973.1'
+  and
+  'r233-679.0'
+  to
+  be
+  None.
+END 8
+BEGIN 9
   Cycle
   1
   finished
@@ -96,22 +114,22 @@ BEGIN 8
   fittest
   has
   length
-  921
+  627
   and
   consists
   of
-  3
+  2
   parts.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -119,7 +137,7 @@ BEGIN 10
   overlap
   of
   size
-  4
+  298
   between
   contigs
   (1)
@@ -127,10 +145,10 @@ BEGIN 10
   'r676-973.1'
   to
   be
-  (623,
-  4).
-END 10
-BEGIN 11
+  (98,
+  396).
+END 11
+BEGIN 12
   Overlap
   between
   contigs
@@ -140,71 +158,61 @@ BEGIN 11
   has
   aligned
   size
-  4,
-  4
+  314,
+  164
   matches,
   and
   the
   score
   of
-  12834.368696148502.
-END 11
-BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  4
-  between
-  contigs
-  (1)
-  and
-  'r676-973.1',
-  resulting
-  in
-  contig
-  (2).
+  138075.5671243822.
 END 12
 BEGIN 13
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  921
-  and
-  consists
-  of
-  3
-  parts.
-END 13
-BEGIN 14
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 14
-BEGIN 15
   Constructed
   a
   path
   of
   length
-  921.
+  627.
+END 13
+BEGIN 14
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 14
+BEGIN 15
+  Calculating
+  all
+  paths...
 END 15
 BEGIN 16
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
+END 16
+BEGIN 17
+  Constructed
+  a
+  path
+  of
+  length
+  298.
+END 17
+BEGIN 18
   Removed
-  3
+  1
   components
   from
   the
@@ -215,17 +223,71 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 17
-BEGIN 18
+END 20
+BEGIN 21
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  298
+  between
+  contigs
+  (1)
+  and
+  'r676-973.1'
+  to
+  be
+  (98,
+  396).
+END 21
+BEGIN 22
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r676-973.1'
+  has
+  aligned
+  size
+  314,
+  164
+  matches,
+  and
+  the
+  score
+  of
+  138075.5671243822.
+END 22
+BEGIN 23
   Outputting
-  1
+  2
   contigs.
-END 18
+END 23

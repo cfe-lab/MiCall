@@ -36,7 +36,7 @@ BEGIN 5
   overlap
   of
   size
-  12
+  288
   between
   contigs
   'r522-886.0'
@@ -54,7 +54,7 @@ BEGIN 6
   overlap
   of
   size
-  21
+  338
   between
   contigs
   'r108-518.2'
@@ -62,8 +62,8 @@ BEGIN 6
   'r606-943.1'
   to
   be
-  (410,
-  1).
+  (7,
+  345).
 END 6
 BEGIN 7
   Overlap
@@ -75,14 +75,14 @@ BEGIN 7
   has
   aligned
   size
-  1,
-  0
+  352,
+  176
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  128546.54446774563.
 END 7
 BEGIN 8
   Constructed
@@ -138,7 +138,7 @@ BEGIN 12
   overlap
   of
   size
-  12
+  288
   between
   contigs
   'r522-886.0'
@@ -156,7 +156,7 @@ BEGIN 13
   overlap
   of
   size
-  21
+  338
   between
   contigs
   'r108-518.2'
@@ -164,8 +164,8 @@ BEGIN 13
   'r606-943.1'
   to
   be
-  (410,
-  1).
+  (7,
+  345).
 END 13
 BEGIN 14
   Overlap
@@ -177,14 +177,14 @@ BEGIN 14
   has
   aligned
   size
-  1,
-  0
+  352,
+  176
   matches,
   and
   the
   score
   of
-  -6.146278494524225.
+  128546.54446774563.
 END 14
 BEGIN 15
   Calculated
@@ -222,7 +222,7 @@ BEGIN 16
   the
   score
   of
-  39013.659451227126.
+  870610.731495658.
 END 16
 BEGIN 17
   Found
@@ -250,12 +250,12 @@ BEGIN 18
   overlap
   of
   size
-  53
+  372
   between
   contigs
-  'r108-518.2'
-  and
   (1)
+  and
+  'r108-518.2'
   to
   be
   None.

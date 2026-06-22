@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  40315.841608672636.
+  1007779.915306255.
 END 6
 BEGIN 7
   Found
@@ -119,7 +119,7 @@ BEGIN 10
   overlap
   of
   size
-  1
+  300
   between
   contigs
   'r677-977.1'
@@ -147,7 +147,7 @@ BEGIN 11
   the
   score
   of
-  4288.953034789552.
+  5375.736831189898.
 END 11
 BEGIN 12
   Found
