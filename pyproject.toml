@@ -27,7 +27,7 @@ dependencies = [
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.3",
     "sortedcontainers>=2.4.0",
     "numpy>=2.4.6",
-    "scipy>=1.16.3",
+    "scipy>=1.18.0",
     "matplotlib>=3.11.0",
     "cutadapt>=5.2",
     "python-Levenshtein>=0.27.1",
