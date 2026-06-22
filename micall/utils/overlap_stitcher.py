@@ -254,7 +254,7 @@ def calculate_overlap_score(L: int, M: int) -> Score:
         A monotonic overlap score based on z-score.
     """
 
-    alpha = -0.90
+    alpha = -0.60
     return (4 * M - L) * (L ** alpha)
 
 
