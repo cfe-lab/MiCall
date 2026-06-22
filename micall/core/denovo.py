@@ -52,7 +52,7 @@ def run_subprocess(
                   'thres': -1,
                   'strict': 5,
                   'error': 0.02,
-                  'kmer': 23,
+                  'kmer': 41,
                   'merge': False,
                   'scaffold': False,
                   'patch': False,
