@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
-from typing import Sequence, Mapping
+from typing import Sequence
 import logging
 import subprocess
 import sys
 import urllib3
-import json
 
+from kivecli.container import Container
 from micall.utils.docker_build import build, get_latest_git_tag
-
 
 logger = logging.getLogger(__name__)
 
@@ -241,15 +240,8 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
 
 def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_id: str,
                                     users: Sequence[str] | None, groups: Sequence[str] | None) \
-                                    -> Mapping[str, object]:
-    try:
-        from kivecli.container import Container
-        import kivecli.logger
-    except ImportError as ex:
-        raise ImportError(
-            'kivecli is required for upload. Install dev dependencies that include kivecli.'
-        ) from ex
-
+                                    -> Container:
+    import kivecli.logger
     kivecli.logger.logger.setLevel(logger.level)
     existing_container = next(Container.search(smart_filter=tag), None)
     if existing_container is not None:
@@ -261,7 +253,7 @@ def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_i
             tag,
             existing_id,
         )
-        return existing_container.raw
+        return existing_container
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = ' '.join(line.strip() for line in DESCRIPTION.strip().splitlines())
@@ -273,7 +265,7 @@ def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_i
         users=users,
         groups=groups,
     )
-    return new_container.raw
+    return new_container
 
 
 def push_image_with_kivecli(
@@ -302,7 +294,7 @@ def push_image_with_kivecli(
         users=users,
         groups=groups,
     )
-    json.dump(new_container, sys.stdout, indent="\t")
+    new_container.dump(sys.stdout)
     logger.info('kivecli upload completed.')
 
 
