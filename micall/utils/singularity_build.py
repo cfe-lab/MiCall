@@ -6,6 +6,7 @@ import logging
 import subprocess
 import sys
 import urllib3
+import json
 
 from micall.utils.docker_build import build, get_latest_git_tag
 
