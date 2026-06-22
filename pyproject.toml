@@ -26,8 +26,8 @@ dependencies = [
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.3",
     "sortedcontainers>=2.4.0",
-    "numpy>=2.4.6",
-    "scipy>=1.16.3",
+    "numpy>=2.5.0",
+    "scipy>=1.18.0",
     "matplotlib>=3.11.0",
     "cutadapt>=5.2",
     "python-Levenshtein>=0.27.1",
@@ -51,8 +51,8 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest>=9.1.0",
-    "coverage>=7.14.1",
+    "pytest>=9.1.1",
+    "coverage>=7.14.2",
     "pandas>=3.0.3",
     "seaborn>=0.13.2",
     # For reading HCV rules from an Excel file.
@@ -73,7 +73,7 @@ dev = [
     "kivecli @ git+https://github.com/Donaim/kivecli@62dff8cfbf3b9d10a55333414ab56d38748a0516",
     "pandas-stubs>=3.0.3.260530",
     "types-requests>=2.33.0.20260518",
-    "uv>=0.11.22",
+    "uv>=0.11.23",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
