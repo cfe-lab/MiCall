@@ -7,7 +7,6 @@ import subprocess
 import sys
 import urllib3
 
-from kivecli.container import Container
 from micall.utils.docker_build import build, get_latest_git_tag
 
 logger = logging.getLogger(__name__)
@@ -240,7 +239,8 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
 
 def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_id: str,
                                     users: Sequence[str] | None, groups: Sequence[str] | None) \
-                                    -> Container:
+                                    -> None:
+    from kivecli.container import Container
     import kivecli.logger
     kivecli.logger.logger.setLevel(logger.level)
     existing_container = next(Container.search(smart_filter=tag), None)
@@ -253,7 +253,8 @@ def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_i
             tag,
             existing_id,
         )
-        return existing_container
+        existing_container.dump(sys.stdout)
+        return
 
     logger.info('Starting kivecli makecontainer upload for %s.', image_path)
     description = ' '.join(line.strip() for line in DESCRIPTION.strip().splitlines())
@@ -265,7 +266,8 @@ def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_i
         users=users,
         groups=groups,
     )
-    return new_container
+    new_container.dump(sys.stdout)
+    return
 
 
 def push_image_with_kivecli(
@@ -287,14 +289,13 @@ def push_image_with_kivecli(
     if not users and not groups:
         raise ValueError('At least one of --users or --groups must be provided for kivecli upload.')
 
-    new_container = build_or_load_singularity_image(
+    build_or_load_singularity_image(
         tag=tag,
         image_path=image_path,
         family_name_or_id=family_name_or_id,
         users=users,
         groups=groups,
     )
-    new_container.dump(sys.stdout)
     logger.info('kivecli upload completed.')
 
 
