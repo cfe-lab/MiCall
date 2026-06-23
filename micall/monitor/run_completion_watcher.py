@@ -175,6 +175,7 @@ def check_run_completions(runs_dir: Path, monitoring: List[RunInfo], dry_run: bo
         logger.debug("Currently monitoring %d run(s)", len(monitoring))
     else:
         logger.debug("No runs currently being monitored")
+        return
 
     # Sleep before checking stability
     sleep(COMPLETION_POLL_INTERVAL)
