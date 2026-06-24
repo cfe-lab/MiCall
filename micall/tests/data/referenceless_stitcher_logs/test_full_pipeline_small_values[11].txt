@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  41905.41758920083.
+  1219276.76777316.
 END 6
 BEGIN 7
   Contig
@@ -110,7 +110,7 @@ BEGIN 9
   the
   score
   of
-  40601.656451117786.
+  1040107.5114412428.
 END 9
 BEGIN 10
   Found
@@ -193,7 +193,7 @@ BEGIN 14
   the
   score
   of
-  41905.41758920083.
+  1219276.76777316.
 END 14
 BEGIN 15
   Contig
@@ -239,7 +239,7 @@ BEGIN 17
   the
   score
   of
-  26331.68181851068.
+  171779.90710171143.
 END 17
 BEGIN 18
   Found
@@ -260,6 +260,62 @@ BEGIN 18
   (2).
 END 18
 BEGIN 19
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  238
+  between
+  contigs
+  (1)
+  and
+  'r190-441.3'
+  to
+  be
+  None.
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  250
+  between
+  contigs
+  (1)
+  and
+  'r145-394.5'
+  to
+  be
+  (179,
+  429).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r145-394.5'
+  has
+  aligned
+  size
+  260,
+  132
+  matches,
+  and
+  the
+  score
+  of
+  0.6310463952399181.
+END 21
+BEGIN 22
   Cycle
   2
   finished
@@ -277,16 +333,16 @@ BEGIN 19
   of
   5
   parts.
-END 19
-BEGIN 20
+END 22
+BEGIN 23
   Cycle
   3
   started
   with
   1
   paths.
-END 20
-BEGIN 21
+END 23
+BEGIN 24
   Calculated
   cutoff
   for
@@ -304,8 +360,8 @@ BEGIN 21
   be
   (282,
   717).
-END 21
-BEGIN 22
+END 24
+BEGIN 25
   Overlap
   between
   contigs
@@ -322,17 +378,17 @@ BEGIN 22
   the
   score
   of
-  41905.41758920083.
-END 22
-BEGIN 23
+  1219276.76777316.
+END 25
+BEGIN 26
   Contig
   (2)
   covers
   contig
   'r476-910.1'
   completely.
-END 23
-BEGIN 24
+END 26
+BEGIN 27
   Calculated
   cutoff
   for
@@ -350,8 +406,8 @@ BEGIN 24
   be
   (4,
   248).
-END 24
-BEGIN 25
+END 27
+BEGIN 28
   Overlap
   between
   contigs
@@ -368,9 +424,9 @@ BEGIN 25
   the
   score
   of
-  38166.93880822612.
-END 25
-BEGIN 26
+  789872.8168069021.
+END 28
+BEGIN 29
   Found
   a
   significant
@@ -387,8 +443,8 @@ BEGIN 26
   in
   contig
   (3).
-END 26
-BEGIN 27
+END 29
+BEGIN 30
   Cycle
   3
   finished
@@ -406,16 +462,16 @@ BEGIN 27
   of
   5
   parts.
-END 27
-BEGIN 28
+END 30
+BEGIN 31
   Cycle
   4
   started
   with
   1
   paths.
-END 28
-BEGIN 29
+END 31
+BEGIN 32
   Calculated
   cutoff
   for
@@ -433,8 +489,8 @@ BEGIN 29
   be
   (286,
   721).
-END 29
-BEGIN 30
+END 32
+BEGIN 33
   Overlap
   between
   contigs
@@ -451,17 +507,17 @@ BEGIN 30
   the
   score
   of
-  41905.41758920083.
-END 30
-BEGIN 31
+  1219276.76777316.
+END 33
+BEGIN 34
   Contig
   (3)
   covers
   contig
   'r476-910.1'
   completely.
-END 31
-BEGIN 32
+END 34
+BEGIN 35
   Calculated
   cutoff
   for
@@ -479,8 +535,8 @@ BEGIN 32
   be
   (45,
   205).
-END 32
-BEGIN 33
+END 35
+BEGIN 36
   Overlap
   between
   contigs
@@ -497,9 +553,9 @@ BEGIN 33
   the
   score
   of
-  36905.45699099984.
-END 33
-BEGIN 34
+  681055.3680593577.
+END 36
+BEGIN 37
   Found
   a
   significant
@@ -516,8 +572,8 @@ BEGIN 34
   in
   contig
   (4).
-END 34
-BEGIN 35
+END 37
+BEGIN 38
   Cycle
   4
   finished
@@ -535,16 +591,16 @@ BEGIN 35
   of
   5
   parts.
-END 35
-BEGIN 36
+END 38
+BEGIN 39
   Cycle
   5
   started
   with
   1
   paths.
-END 36
-BEGIN 37
+END 39
+BEGIN 40
   Calculated
   cutoff
   for
@@ -562,8 +618,8 @@ BEGIN 37
   be
   (331,
   766).
-END 37
-BEGIN 38
+END 40
+BEGIN 41
   Overlap
   between
   contigs
@@ -580,17 +636,17 @@ BEGIN 38
   the
   score
   of
-  41905.41758920083.
-END 38
-BEGIN 39
+  1219276.76777316.
+END 41
+BEGIN 42
   Contig
   (4)
   covers
   contig
   'r476-910.1'
   completely.
-END 39
-BEGIN 40
+END 42
+BEGIN 43
   Cycle
   5
   finished
@@ -608,24 +664,24 @@ BEGIN 40
   of
   5
   parts.
-END 40
-BEGIN 41
+END 43
+BEGIN 44
   Cycle
   6
   started
   with
   1
   paths.
-END 41
-BEGIN 42
+END 44
+BEGIN 45
   Constructed
   a
   path
   of
   length
   808.
-END 42
-BEGIN 43
+END 45
+BEGIN 46
   Removed
   5
   components
@@ -638,17 +694,17 @@ BEGIN 43
   still
   to
   process.
-END 43
-BEGIN 44
+END 46
+BEGIN 47
   Initial
   overlap
   stitching
   produced
   1
   contigs.
-END 44
-BEGIN 45
+END 47
+BEGIN 48
   Outputting
   1
   contigs.
-END 45
+END 48

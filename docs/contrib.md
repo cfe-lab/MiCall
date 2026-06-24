@@ -28,9 +28,7 @@ The easiest way to start developing MiCall is by using DevContainers.
 
 To see how all the tools should be installed, follow the steps in `Dockerfile`
 and `dev.dockerfile`. If you prefer, you can run your development environment
-under docker, as described in `dev.dockerfile`. The same installation steps are
-also listed in the `Singularity` file. The docker file runs with debian, and the
-singularity file runs with CentOS.
+under docker, as described in `dev.dockerfile`. The docker file runs with debian.
 
 If you want to see what's currently being worked on, check out the active tasks
 in our [milestones].
@@ -231,30 +229,36 @@ similar steps to setting up a development workstation. Follow these steps:
     folder. If they have changed, create a new display file in the `docs` folder
     and upgrade the version numbers in the `genreport.yaml` file and
     `asi_algorithm.py`.
-5. Check the history of the `micall.alignment` folder. If it has changed since
+6. Check the history of the `micall.alignment` folder. If it has changed since
     the last release, then update the version number in `setup.py`.
-5. Update the change notes in the Singularity file, and commit those changes.
-6. [Create a release][release] on Github. Use "vX.Y.Z" as the tag, where X.Y
+7. [Create a release][release] on Github. Use "vX.Y.Z" as the tag, where X.Y
     matches the version you used in QAI. If you have to redo
     a release, you can create additional releases with tags vX.Y.Z.1, vX.Y.Z.2, and
     so on. Mark the release as pre-release until you finish deploying it.
-7. Rebuild the Singularity image, and upload it to your local Kive server.
-    Process the microtest data.
-7. Upload the Singularity image to the Kive test server, and record the
+8. Build the Singularity image by running `micall singularity_build`. This will
+    build the Docker image, save it under `./simgs/`, write a
+    `Singularity.def` file, and run `singularity build ./simgs/micall-<sha>.sif`
+    `Singularity.def`.
+    It also uploads the `.sif` to Kive using `kivecli makecontainer`.
+    Provide `--family` and at least one of `--users` or `--groups`, for
+    example:
+    `micall singularity_build --family micall --groups cfe-lab`.
+9. Process the microtest data.
+10. Upload the Singularity image to the Kive test server, and record the
     ids of the new apps.
-8. Process all the samples from test_samples.csv on the Kive test server, and
+11. Process all the samples from test_samples.csv on the Kive test server, and
     run the `micall_watcher` service on a VirtualBox. Use the
     `micall release_test_*` scripts to compare the results of the new release with
     the previous version. Also run the internal scripts `miseq_gen_results.rb`
     and `miseq_compare_results.rb` to look for differences. Get the comparison
     signed off to begin the release process.
-8. Upload the Singularity image to the main Kive server, and
+12. Upload the Singularity image to the main Kive server, and
     record the id of the new apps.
-9. Upload the pipeline definitions to QAI, using the `micall projects_upload`
+13. Upload the pipeline definitions to QAI, using the `micall projects_upload`
     command. There is no need to create the new pipeline version in QAI beforehand,
     the command will do this for you - just remember to update the `Order by` field
     afterwards.
-10. Stop the watcher service on the main Kive server after you check that
+14. Stop the watcher service on the main Kive server after you check that
     it's not processing any important runs.
 
     ```shell
@@ -263,7 +267,7 @@ similar steps to setting up a development workstation. Follow these steps:
     sudo systemctl stop micall_watcher
     ```
 
-11. Get the code from Github into the server's environment.
+15. Get the code from Github into the server's environment.
 
     ```shell
     ssh user@server
@@ -272,19 +276,19 @@ similar steps to setting up a development workstation. Follow these steps:
     git checkout tags/vX.Y.Z
     ```
 
-12. Look for changes in [`micall/monitor/watcher.py`'s `parse_args()` function][parse_args].
+16. Look for changes in [`micall/monitor/watcher.py`'s `parse_args()` function][parse_args].
     Either look at the blame annotations at the link above, or review the
     changes in the new release. If there are new or changed settings, adjust
     the configuration in `/etc/systemd/system/micall_watcher.service` or
     `/etc/micall/micall.conf`.
-13. Update the container app ids and pipeline version number in
+17. Update the container app ids and pipeline version number in
     `/etc/systemd/system/micall_watcher.service`. If you change the configuration, reload it:
 
     ```shell
     sudo systemctl daemon-reload
     ```
 
-14. Check that the kiveapi package is the same version you tested with. If not,
+18. Check that the kiveapi package is the same version you tested with. If not,
     do a Kive release first.
 
     ```shell
@@ -293,7 +297,7 @@ similar steps to setting up a development workstation. Follow these steps:
     cat api/setup.py
     ```
 
-15. Start the watcher service, and tail the log to see that it begins
+19. Start the watcher service, and tail the log to see that it begins
     processing all the runs with the new version of the pipeline.
 
     ```shell
@@ -305,12 +309,12 @@ similar steps to setting up a development workstation. Follow these steps:
     If the log doesn't help, look in `/var/log/messages` on CentOS or
     `/var/log/syslog` on Ubuntu.
 
-16. Upload a BaseSpace app. See [basespace_upload.md](./basespace_upload.md) for instructions on how to do this.
+20. Upload a BaseSpace app. See [basespace_upload.md](./basespace_upload.md) for instructions on how to do this.
 
-17. Send an e-mail to users describing the major changes in the release.
-18. Close the milestone for this release, create one for the next release, and
+21. Send an e-mail to users describing the major changes in the release.
+22. Close the milestone for this release, create one for the next release, and
     decide which issues you will include in that milestone.
-19. When the release is stable, check that it's included on the [Zenodo] page.
+23. When the release is stable, check that it's included on the [Zenodo] page.
     If you included more than one tag in the same release, the new tags have
     not triggered Zenodo versions. Edit the release on GitHub, copy the
     description text, update the release, then click the Delete button. Then

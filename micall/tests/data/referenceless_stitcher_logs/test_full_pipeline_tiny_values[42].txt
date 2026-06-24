@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  41108.01914445635.
+  1099430.0621678731.
 END 6
 BEGIN 7
   Found
@@ -96,11 +96,11 @@ BEGIN 8
   fittest
   has
   length
-  942
+  637
   and
   consists
   of
-  3
+  2
   parts.
 END 8
 BEGIN 9
@@ -119,7 +119,7 @@ BEGIN 10
   overlap
   of
   size
-  8
+  313
   between
   contigs
   (1)
@@ -127,8 +127,8 @@ BEGIN 10
   'r654-966.0'
   to
   be
-  (629,
-  8).
+  (212,
+  525).
 END 10
 BEGIN 11
   Overlap
@@ -140,71 +140,61 @@ BEGIN 11
   has
   aligned
   size
-  8,
-  8
+  327,
+  160
   matches,
   and
   the
   score
   of
-  17485.459983758607.
+  112329.01345912117.
 END 11
 BEGIN 12
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  8
-  between
-  contigs
-  (1)
-  and
-  'r654-966.0',
-  resulting
-  in
-  contig
-  (2).
-END 12
-BEGIN 13
-  Cycle
-  2
-  finished
-  with
-  1
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  942
-  and
-  consists
-  of
-  3
-  parts.
-END 13
-BEGIN 14
-  Cycle
-  3
-  started
-  with
-  1
-  paths.
-END 14
-BEGIN 15
   Constructed
   a
   path
   of
   length
-  942.
+  637.
+END 12
+BEGIN 13
+  Removed
+  2
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 13
+BEGIN 14
+  Calculating
+  all
+  paths...
+END 14
+BEGIN 15
+  Cycle
+  1
+  started
+  with
+  1
+  paths.
 END 15
 BEGIN 16
+  Constructed
+  a
+  path
+  of
+  length
+  313.
+END 16
+BEGIN 17
   Removed
-  3
+  1
   components
   from
   the
@@ -215,17 +205,71 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 17
+BEGIN 18
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 18
+BEGIN 19
   Initial
   overlap
   stitching
   produced
-  1
+  2
   contigs.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  313
+  between
+  contigs
+  (1)
+  and
+  'r654-966.0'
+  to
+  be
+  (212,
+  525).
+END 20
+BEGIN 21
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r654-966.0'
+  has
+  aligned
+  size
+  327,
+  160
+  matches,
+  and
+  the
+  score
+  of
+  112329.01345912117.
+END 21
+BEGIN 22
   Outputting
-  1
+  2
   contigs.
-END 18
+END 22

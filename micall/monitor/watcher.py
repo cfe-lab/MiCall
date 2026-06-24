@@ -5,9 +5,7 @@ from pathlib import Path
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
-from typing import Tuple
 
-from micall.monitor.sample_watcher import PipelineType
 from micall.utils.version import get_version
 from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType, FolderEvent
 from micall.monitor import update_qai
@@ -133,8 +131,8 @@ def parse_args(argv=None):
     return args
 
 
-def main_loop(args, sample_queue, qai_upload_queue):
-    kive_watcher = KiveWatcher(args, qai_upload_queue=qai_upload_queue, retry=True)
+def main_loop(args, sample_queue):
+    kive_watcher = KiveWatcher(args, retry=True)
     while True:
         kive_watcher.poll_runs()
         if kive_watcher.is_full():
@@ -164,7 +162,6 @@ def main():
     logger.info('Logging override: %s', is_logging_override)
 
     sample_queue: Queue[FolderEvent] = Queue(maxsize=2)
-    qai_upload_queue: Queue[None | Tuple[Path, PipelineType]] = Queue()  # [Path] for results folders or [None] to quit.
     wait = True
 
     # Start the run completion watcher thread
@@ -180,7 +177,6 @@ def main():
                            args=(args.raw_data,
                                  args.pipeline_version,
                                  sample_queue,
-                                 qai_upload_queue,
                                  wait,
                                  True),  # retry
                            daemon=True)
@@ -191,15 +187,14 @@ def main():
                                      args.qai_user,
                                      args.qai_password,
                                      args.pipeline_version,
-                                     qai_upload_queue),
+                                     args.raw_data,
+                                     wait,
+                                     True),
                                daemon=True)
     qai_upload_thread.start()
 
     try:
-        main_loop(args, sample_queue, qai_upload_queue)
-
-        qai_upload_queue.put(None)
-        qai_upload_thread.join()
+        main_loop(args, sample_queue)
     except KeyboardInterrupt:
         logger.info('Shut down requested.')
 

@@ -16,7 +16,7 @@ from collections import defaultdict
 from gzip import GzipFile
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Dict, Sequence, Tuple, TextIO, Iterator, cast
+from typing import Dict, Optional, Sequence, Tuple, TextIO, Iterator, cast
 import numpy as np
 from Bio import SeqIO
 
@@ -107,6 +107,17 @@ def open_fastq(filename: Path) -> TextIO:
         return open(filename, "r")
 
 
+def _read_one_fastq_record(fastq: TextIO) -> Optional[str]:
+    """Read one FASTQ record, returning the sequence or ``None`` at EOF."""
+    header = fastq.readline()
+    if not header:
+        return None
+    seq = fastq.readline().strip()
+    fastq.readline()  # plus line
+    fastq.readline()  # quality line
+    return seq
+
+
 def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
     """
     Read paired FASTQ files and yield (read1_seq, read2_seq) tuples.
@@ -115,24 +126,46 @@ def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]
     :param fastq2: Reverse reads FASTQ file
     :yield: Tuples of (forward_sequence, reverse_sequence)
     """
-    # Read 4 lines at a time from each file (FASTQ format)
     while True:
-        # Read forward read
-        header1 = fastq1.readline()
-        if not header1:
+        seq1 = _read_one_fastq_record(fastq1)
+        if seq1 is None:
             break
-        seq1 = fastq1.readline().strip()
-        fastq1.readline()  # plus line
-        fastq1.readline()  # quality line
-
-        # Read reverse read
-        header2 = fastq2.readline()
-        if not header2:
+        seq2 = _read_one_fastq_record(fastq2)
+        if seq2 is None:
             break
-        seq2 = fastq2.readline().strip()
-        fastq2.readline()  # plus line
-        fastq2.readline()  # quality line
+        yield (seq1, seq2)
 
+
+def read_fastq_pairs_strict(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
+    """
+    Read paired FASTQ files, raising on mismatched record counts.
+
+    Unlike :func:`read_fastq_pairs`, this generator detects when one
+    file runs out of records before the other and raises ``ValueError``
+    with a descriptive message.  This is useful when exact pairing is
+    required and silent truncation could hide data corruption.
+
+    :param fastq1: Forward reads FASTQ file
+    :param fastq2: Reverse reads FASTQ file
+    :yield: Tuples of (forward_sequence, reverse_sequence)
+    :raises ValueError: If R1 and R2 have different numbers of records.
+    """
+    while True:
+        seq1 = _read_one_fastq_record(fastq1)
+        if seq1 is None:
+            # R1 exhausted; check R2 is also at EOF.
+            if _read_one_fastq_record(fastq2) is not None:
+                raise ValueError(
+                    "R1 exhausted before R2 — paired FASTQ files "
+                    "have a different number of records."
+                )
+            return
+        seq2 = _read_one_fastq_record(fastq2)
+        if seq2 is None:
+            raise ValueError(
+                "R2 exhausted before R1 — paired FASTQ files "
+                "have a different number of records."
+            )
         yield (seq1, seq2)
 
 

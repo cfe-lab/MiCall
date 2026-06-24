@@ -72,7 +72,7 @@ jobs:
           uv run ruff check
 
       - name: Test with pytest
-        run: uv run coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest
+        run: uv run coverage run --source=micall/core,micall/g2p,micall/resistance,micall/monitor -m pytest -v
 
       - name: Report code coverage
         if: "!github.event.pull_request.draft"
@@ -125,6 +125,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for git describe
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.15.6'
@@ -155,17 +157,19 @@ jobs:
           singularity --version
 
       - name: Singularity build
-        run: sudo singularity build micall.simg Singularity
+        run: |
+          sudo -E python micall singularity_build --debug
+          sudo chown -R "$USER":"$USER" simgs
 
       - name: Install python packages
         run: pip install multicsv
 
       - name: Singularity test
-        run: python micall release_test_microtest micall.simg
+        run: python micall release_test_microtest ./simgs/micall-latest.sif
 
       - name: Upload Singularity Image
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: micall.simg
-          path: micall.simg
+          path: ./simgs/micall-latest.sif

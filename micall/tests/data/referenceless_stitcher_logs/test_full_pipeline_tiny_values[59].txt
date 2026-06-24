@@ -64,7 +64,7 @@ BEGIN 6
   the
   score
   of
-  33472.6168727554.
+  446222.208391977.
 END 6
 BEGIN 7
   Found
@@ -85,6 +85,24 @@ BEGIN 7
   (1).
 END 7
 BEGIN 8
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  241
+  between
+  contigs
+  'r731-997.2'
+  and
+  'r23-347.1'
+  to
+  be
+  None.
+END 8
+BEGIN 9
   Cycle
   1
   finished
@@ -102,16 +120,16 @@ BEGIN 8
   of
   2
   parts.
-END 8
-BEGIN 9
+END 9
+BEGIN 10
   Cycle
   2
   started
   with
   1
   paths.
-END 9
-BEGIN 10
+END 10
+BEGIN 11
   Calculated
   cutoff
   for
@@ -119,25 +137,45 @@ BEGIN 10
   overlap
   of
   size
-  9
+  267
   between
   contigs
-  'r731-997.2'
-  and
   (1)
+  and
+  'r731-997.2'
   to
   be
-  None.
-END 10
-BEGIN 11
+  (183,
+  450).
+END 11
+BEGIN 12
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r731-997.2'
+  has
+  aligned
+  size
+  279,
+  145
+  matches,
+  and
+  the
+  score
+  of
+  124189.46978820256.
+END 12
+BEGIN 13
   Constructed
   a
   path
   of
   length
   505.
-END 11
-BEGIN 12
+END 13
+BEGIN 14
   Removed
   2
   components
@@ -150,29 +188,29 @@ BEGIN 12
   still
   to
   process.
-END 12
-BEGIN 13
+END 14
+BEGIN 15
   Calculating
   all
   paths...
-END 13
-BEGIN 14
+END 15
+BEGIN 16
   Cycle
   1
   started
   with
   1
   paths.
-END 14
-BEGIN 15
+END 16
+BEGIN 17
   Constructed
   a
   path
   of
   length
   267.
-END 15
-BEGIN 16
+END 17
+BEGIN 18
   Removed
   1
   components
@@ -185,8 +223,8 @@ BEGIN 16
   still
   to
   process.
-END 16
-BEGIN 17
+END 18
+BEGIN 19
   Giving
   up
   on
@@ -201,16 +239,16 @@ BEGIN 17
   is
   a
   singleton.
-END 17
-BEGIN 18
+END 19
+BEGIN 20
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 18
-BEGIN 19
+END 20
+BEGIN 21
   Calculated
   cutoff
   for
@@ -218,18 +256,38 @@ BEGIN 19
   overlap
   of
   size
-  9
+  267
   between
   contigs
-  'r731-997.2'
-  and
   (1)
+  and
+  'r731-997.2'
   to
   be
-  None.
-END 19
-BEGIN 20
+  (183,
+  450).
+END 21
+BEGIN 22
+  Overlap
+  between
+  contigs
+  (1)
+  and
+  'r731-997.2'
+  has
+  aligned
+  size
+  279,
+  145
+  matches,
+  and
+  the
+  score
+  of
+  124189.46978820256.
+END 22
+BEGIN 23
   Outputting
   2
   contigs.
-END 20
+END 23

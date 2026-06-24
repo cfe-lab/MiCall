@@ -7,7 +7,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import AbstractSet, Iterable, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_files
@@ -15,9 +15,9 @@ from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_f
 logger = logging.getLogger(__name__)
 
 
-def check_sample_name_consistency(
-    sample_sheet_path: Path, fastq_file_names: Iterable[str], run_path: Path
-) -> None:
+def load_sample_sheet(
+    sample_sheet_path: Path, run_path: Path
+) -> AbstractSet[str]:
     """
     Check FASTQ file recognition ratio against sample sheet.
 
@@ -32,8 +32,6 @@ def check_sample_name_consistency(
 
     logger.debug("Checking sample name consistency for run: %s", run_path)
     logger.debug("Sample sheet path: %s", sample_sheet_path)
-    file_list = '\n\t'.join(sorted(fastq_file_names))
-    logger.debug("FASTQ files to check:\n\t%s", file_list)
 
     # Extract sample names from the sample sheet
     logger.debug("Reading sample sheet: %s", sample_sheet_path)
@@ -61,6 +59,24 @@ def check_sample_name_consistency(
         len(sheet_filenames),
         filenames_string,
     )
+
+    return sheet_filenames
+
+
+def check_name_correspondence(
+    sheet_filenames: AbstractSet[str], fastq_file_names: Iterable[str], run_path: Path
+) -> None:
+    """
+    Check FASTQ file recognition ratio against sample sheet.
+
+    Prints warning when there are fewer or equal recognized FASTQ files
+    compared to unrecognized ones. Recognized FASTQ are those that have
+    corresponding entries in the sample sheet.
+
+    :param sheet_filenames: Set of sample prefixes from the sample sheet
+    :param fastq_file_names: List of FASTQ file names
+    :param run_path: Path to the run folder for logging
+    """
 
     # Extract trimmed names from FASTQ files (same logic as find_groups())
     fastq_trimmed_names = set()
@@ -100,6 +116,20 @@ And {len(unrecognized_fastq)} unrecognized: {unrecognized_list}."""
             len(unrecognized_fastq),
             run_path,
         )
+
+
+def check_sample_name_consistency(
+    sample_sheet: Path, fastq_file_names: Iterable[str], run_path: Path
+) -> None:
+    """
+    Check sample name consistency between sample sheet and FASTQ files.
+
+    :param sample_sheet: Path to the SampleSheet.csv file
+    :param fastq_file_names: List of FASTQ file names
+    :param run_path: Path to the run folder for logging
+    """
+    sheet_filenames = load_sample_sheet(sample_sheet, run_path)
+    check_name_correspondence(sheet_filenames, fastq_file_names, run_path)
 
 
 def main(argv: Sequence[str]) -> int:
@@ -183,10 +213,14 @@ def main(argv: Sequence[str]) -> int:
             fastq_file_names = [f.name for f in fastq_files]
             logger.debug("Found %d FASTQ files in %s", len(fastq_files), fastq_directory)
         else:
-            fastq_folder = find_fastq_source_folder(run_path)
-            logger.error(
-                "No FASTQ files found in %s or %s", fastq_folder, run_path
-            )
+            if fastq_directory:
+                logger.error(
+                    "No FASTQ files found in %s or %s", fastq_directory, run_path
+                )
+            else:
+                logger.error(
+                    "No FASTQ directory found in %s", run_path
+                )
             return 1
     else:
         fastq_file_names = [Path(f).name for f in fastq_file_names]
@@ -197,7 +231,7 @@ def main(argv: Sequence[str]) -> int:
     )
 
     try:
-        check_sample_name_consistency(args.sample_sheet, fastq_file_names, run_path)
+        check_sample_name_consistency(sample_sheet, fastq_file_names, run_path)
         logger.debug("Consistency check completed successfully")
     except Exception as e:
         logger.error("Error during consistency check: %s", e)

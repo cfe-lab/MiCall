@@ -11,7 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, Tuple, TypeVar
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -39,6 +39,7 @@ FOLDER_SCAN_INTERVAL = timedelta(hours=1)
 SLEEP_SECONDS = 60
 MINIMUM_RETRY_WAIT = timedelta(seconds=5)
 MAXIMUM_RETRY_WAIT = timedelta(days=1)
+MAXIMUM_RETRY_TIME = timedelta(days=1)
 MAX_RUN_NAME_LENGTH = 60
 DOWNLOADED_RESULTS = ['remap_counts_csv',
                       'conseq_csv',
@@ -116,7 +117,6 @@ def now() -> datetime:
 def find_samples(raw_data_folder: Path,
                  pipeline_version: str,
                  sample_queue: Queue[FolderEvent],
-                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  wait: bool = True,
                  retry: bool = True) -> None:
     attempt_count = 0
@@ -128,17 +128,6 @@ def find_samples(raw_data_folder: Path,
                                        pipeline_version,
                                        sample_queue,
                                        wait)
-
-            # After scanning for new samples, enqueue QAI upload tasks for finished runs.
-            qai_next_scan = now() + FOLDER_SCAN_INTERVAL
-            for version_folder in scan_qai_done_flags(raw_data_folder, pipeline_version):
-                is_sent = send_qai_event(qai_upload_queue,
-                                         (version_folder, PipelineType.MAIN),
-                                         qai_next_scan)
-                if not is_sent:
-                    # Let the caller loop and try again later
-                    is_complete = False
-                    break
 
             attempt_count = 0  # Reset after success
             start_time = None  # Reset start time after success
@@ -152,6 +141,15 @@ def find_samples(raw_data_folder: Path,
             # Record start time on first failure
             if start_time is None:
                 start_time = datetime.now()
+
+            elapsed = datetime.now() - start_time
+            if elapsed >= MAXIMUM_RETRY_TIME:
+                logger.error(
+                    'find_samples failed after %s of retrying; giving up.',
+                    elapsed,
+                    exc_info=True,
+                )
+                raise
 
             wait_for_retry(attempt_count, start_time)
 
@@ -244,20 +242,6 @@ def scan_flag_paths(raw_data_folder: Path) -> Iterable[Path]:
     return raw_data_folder.glob("MiSeq/runs/*/needsprocessing")
 
 
-def scan_qai_done_flags(raw_data_folder: Path, pipeline_version: str) -> Iterable[Path]:
-    """Find version folders with done_all_processing set and not yet uploaded to QAI.
-
-    We consider a version folder eligible if:
-    - Results/version_{pipeline_version}/done_all_processing exists, and
-    - Results/version_{pipeline_version}/done_qai_upload does NOT exist.
-    """
-    pattern = f"MiSeq/runs/*/Results/version_{pipeline_version}/done_all_processing"
-    for done_flag in raw_data_folder.glob(pattern):
-        version_folder = done_flag.parent
-        if not (version_folder / 'done_qai_upload').exists():
-            yield version_folder
-
-
 def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[SampleGroup]:
     sample_sheet_path = run_path / "SampleSheet.csv"
 
@@ -271,6 +255,9 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                 sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
             except IOError:
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    raise
                 wait_for_retry(attempt_count, start_time)
                 continue
 
@@ -297,18 +284,6 @@ def send_event(sample_queue: Queue[FolderEvent], folder_event: FolderEvent, next
         try:
             sample_queue.put(folder_event,
                              timeout=SLEEP_SECONDS)
-            is_sent = True
-        except Full:
-            pass
-    return is_sent
-
-
-def send_qai_event(qai_queue: Queue[Tuple[Path, PipelineType]], qai_event: Tuple[Path, PipelineType], next_scan: datetime) -> bool:
-    """Send an event to the QAI upload queue with timeout and retry logic."""
-    is_sent = False
-    while not is_sent and now() < next_scan:
-        try:
-            qai_queue.put(qai_event, timeout=SLEEP_SECONDS)
             is_sent = True
         except Full:
             pass
@@ -376,13 +351,10 @@ def get_collated_path(results_path: Path, pipeline_group: PipelineType) -> Path:
 class KiveWatcher:
     def __init__(self,
                  config: ConfigInterface,
-                 qai_upload_queue: Queue[Tuple[Path, PipelineType]],
                  retry=False):
         """ Initialize.
 
         :param config: command line arguments
-        :param qai_upload_queue: notified when a run folder has collated all the
-            results into a result folder
         :param bool retry: should the main methods retry forever?
         """
         self.config = config
@@ -395,7 +367,6 @@ class KiveWatcher:
         self.app_argument_lists: dict[str | int, list[dict[str, object]]] = {}  # {app_id: [argument_dict]}
         self.external_directory_path: Optional[Path] = None
         self.external_directory_name: Optional[str] = None
-        self.qai_upload_queue = qai_upload_queue
         self.collation_runs: dict[tuple[str, PipelineType], Run] = {}
 
     def is_full(self) -> bool:
@@ -642,6 +613,15 @@ class KiveWatcher:
                 if start_time is None:
                     start_time = datetime.now()
 
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    logger.error(
+                        'add_sample_group failed after %s of retrying; giving up.',
+                        elapsed,
+                        exc_info=True,
+                    )
+                    raise
+
                 wait_for_retry(attempt_count, start_time)
 
     def add_folder(self, base_calls: str) -> FolderWatcher:
@@ -678,6 +658,15 @@ class KiveWatcher:
                 # Record start time on first failure
                 if start_time is None:
                     start_time = datetime.now()
+
+                elapsed = datetime.now() - start_time
+                if elapsed >= MAXIMUM_RETRY_TIME:
+                    logger.error(
+                        'poll_runs failed after %s of retrying; giving up.',
+                        elapsed,
+                        exc_info=True,
+                    )
+                    raise
 
                 wait_for_retry(attempt_count, start_time)
 
@@ -760,8 +749,6 @@ class KiveWatcher:
                                       pipeline_group: PipelineType,
                                       results_path: Optional[Path]) -> None:
         if results_path is not None:
-            if (results_path / "coverage_scores.csv").exists():
-                self.qai_upload_queue.put((results_path, pipeline_group))
             if not folder_watcher.active_pipeline_groups:
                 disk_operations.touch(results_path / "done_all_processing")
                 self._remove_folder_state(folder)

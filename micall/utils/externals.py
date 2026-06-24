@@ -352,6 +352,43 @@ class Blastn(CommandWrapper):
         return stdout
 
 
+@contextlib.contextmanager
+def root_directory() -> Iterator[Path]:
+    """
+    A context manager handling the path to packaged MiCall directory.
+
+    The complexity of the function arises from the need to maintain
+    compatibility with multiple python versions due to changes in APIs
+    of the `importlib.resources` package.
+
+    It first tries to fetch the resource using `resources.files`
+    function introduced in Python 3.9. If it fails, it falls back on
+    `resources.path`.  It further ensures that the obtained resource
+    is returned as a Path instance regardless of it being a string,
+    Path, or contextlib context-manager instance.
+
+    Note: `resources.path` is set to be deprecated in future Python
+    versions, hence the intended primary method is using
+    `resources.files`.
+
+    Yields: Path: A path-like object pointing to
+                the root directory of 'micall' package.
+    """
+
+    try:
+        ret = resources.as_file(resources.files('micall'))  # type: ignore
+    except AttributeError:
+        ret = resources.path('micall')  # type: ignore
+
+    if isinstance(ret, str):
+        yield Path(ret)
+    elif isinstance(ret, Path):
+        yield ret
+    else:
+        with ret as path:
+            yield path
+
+
 class PackagedResource(ExternalResource):
     @property
     def identifier(self) -> str:
@@ -359,48 +396,11 @@ class PackagedResource(ExternalResource):
 
     @contextlib.contextmanager
     def path(self) -> Iterator[Path]:
-        with PackagedResource.root_dir() as root:
+        with root_directory() as root:
             yield root / self.relative_path
 
     @abstractproperty
     def relative_path(self) -> Path: ...
-
-    @staticmethod
-    @contextlib.contextmanager
-    def root_dir() -> Iterator[Path]:
-        """
-        A context manager handling the path to packaged MiCall directory.
-
-        The complexity of the function arises from the need to maintain
-        compatibility with multiple python versions due to changes in APIs
-        of the `importlib.resources` package.
-
-        It first tries to fetch the resource using `resources.files`
-        function introduced in Python 3.9. If it fails, it falls back on
-        `resources.path`.  It further ensures that the obtained resource
-        is returned as a Path instance regardless of it being a string,
-        Path, or contextlib context-manager instance.
-
-        Note: `resources.path` is set to be deprecated in future Python
-        versions, hence the intended primary method is using
-        `resources.files`.
-
-        Yields: Path: A path-like object pointing to
-                  the root directory of 'micall' package.
-        """
-
-        try:
-            ret = resources.as_file(resources.files('micall'))  # type: ignore
-        except AttributeError:
-            ret = resources.path('micall')  # type: ignore
-
-        if isinstance(ret, str):
-            yield Path(ret)
-        elif isinstance(ret, Path):
-            yield ret
-        else:
-            with ret as path:
-                yield path
 
 
 class DefaultBlastDatabase(PackagedResource):

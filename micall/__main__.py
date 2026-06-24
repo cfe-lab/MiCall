@@ -66,6 +66,7 @@ EXECUTABLES = [
     "micall/utils/projects_dump.py",
     "micall/utils/find_chimera.py",
     "micall/utils/docker_build.py",
+    "micall/utils/singularity_build.py",
     "micall/utils/probe_finder.py",
     "micall/utils/aln2counts_simplify.py",
     "micall/utils/release_test_setup.py",

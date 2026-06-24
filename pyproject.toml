@@ -26,16 +26,16 @@ dependencies = [
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.3",
     "sortedcontainers>=2.4.0",
-    "numpy>=2.4.0",
-    "scipy>=1.16.3",
-    "matplotlib>=3.10.9",
+    "numpy>=2.5.0",
+    "scipy>=1.18.0",
+    "matplotlib>=3.11.0",
     "cutadapt>=5.2",
     "python-Levenshtein>=0.27.1",
     "PyYAML>=6.0.2",
-    "reportlab>=4.5.0",
+    "reportlab>=5.0.0",
     "pysam>=0.24.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
-    "mappy>=2.30",
+    "mappy>=2.31",
     "drawsvg>=2.4.0",
     "cairosvg>=2.8.2",
     "aligntools>=1.2.1",
@@ -45,15 +45,16 @@ dependencies = [
     # It is needed for `test`, `watcher`, and `basespace` programs.
     # But repeating this dependency in three different places confuses Github's dependabot.
     # So we employ this hack. TODO: see if dependabot can handle this now.
-    "requests>=2.32.5",
+    "requests>=2.34.2",
 ]
 
 [project.optional-dependencies]
 test = [
     # Dependencies required for running the test suite
-    "pytest>=9.0.2",
-    "coverage>=7.13.0",
-    "pandas>=3.0.0",
+    "pytest>=9.1.1",
+    "pytest-timeout>=2.4.0",
+    "coverage>=7.14.3",
+    "pandas>=3.0.3",
     "seaborn>=0.13.2",
     # For reading HCV rules from an Excel file.
     "openpyxl>=3.1.5",
@@ -65,15 +66,15 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff>=0.15.12",
-    "mypy>=1.20.2",
+    "ruff>=0.15.19",
+    "mypy>=2.1.0",
     "mypy-extensions>=1.1.0",
     "gprof2dot>=2025.4.14",
     "codecov>=2.1.13",  # For reporting the code coverage.
-    "kivecli @ git+https://github.com/Donaim/kivecli@bb181b74c858f1ab100fdb9f65c6ab0aaa51a9b1",
-    "pandas-stubs>=2.3.3.260113",
-    "types-requests>=2.33.0.20260503",
-    "uv>=0.11.10",
+    "kivecli @ git+https://github.com/Donaim/kivecli@62dff8cfbf3b9d10a55333414ab56d38748a0516",
+    "pandas-stubs>=3.0.3.260530",
+    "types-requests>=2.33.0.20260518",
+    "uv>=0.11.24",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
@@ -118,6 +119,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.pytest.ini_options]
+timeout = 360
 markers = [
     "iva: test requires IVA (deselect with '-m \"not iva\"')"
 ]

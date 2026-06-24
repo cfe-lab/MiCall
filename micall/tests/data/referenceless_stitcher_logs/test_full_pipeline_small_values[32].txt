@@ -36,53 +36,53 @@ BEGIN 5
   overlap
   of
   size
-  2
+  301
   between
   contigs
+  'r521-893.5'
+  and
   'r102-471.4'
+  to
+  be
+  None.
+END 5
+BEGIN 6
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  298
+  between
+  contigs
+  'r148-506.1'
   and
   'r521-893.5'
   to
   be
-  (368,
-  2).
-END 5
-BEGIN 6
+  (358,
+  1).
+END 6
+BEGIN 7
   Overlap
   between
   contigs
-  'r102-471.4'
+  'r148-506.1'
   and
   'r521-893.5'
   has
   aligned
   size
-  2,
-  2
+  1,
+  0
   matches,
   and
   the
   score
   of
-  8173.593526965962.
-END 6
-BEGIN 7
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  2
-  between
-  contigs
-  'r102-471.4'
-  and
-  'r521-893.5',
-  resulting
-  in
-  contig
-  (1).
+  -102.98321974141325.
 END 7
 BEGIN 8
   Calculated
@@ -92,7 +92,7 @@ BEGIN 8
   overlap
   of
   size
-  9
+  313
   between
   contigs
   'r521-893.5'
@@ -100,8 +100,8 @@ BEGIN 8
   'r79-391.0'
   to
   be
-  (371,
-  2).
+  (49,
+  362).
 END 8
 BEGIN 9
   Overlap
@@ -113,14 +113,14 @@ BEGIN 9
   has
   aligned
   size
-  2,
-  1
+  326,
+  161
   matches,
   and
   the
   score
   of
-  0.2302064767468756.
+  116007.82126956987.
 END 9
 BEGIN 10
   Calculated
@@ -158,7 +158,7 @@ BEGIN 11
   the
   score
   of
-  4.305646523359555.
+  553455.6844401569.
 END 11
 BEGIN 12
   Found
@@ -176,7 +176,7 @@ BEGIN 12
   resulting
   in
   contig
-  (2).
+  (1).
 END 12
 BEGIN 13
   Calculated
@@ -214,7 +214,7 @@ BEGIN 14
   the
   score
   of
-  1.0468511298443344.
+  1.22119959234344.
 END 14
 BEGIN 15
   Found
@@ -232,7 +232,7 @@ BEGIN 15
   resulting
   in
   contig
-  (3).
+  (2).
 END 15
 BEGIN 16
   Cycle
@@ -246,7 +246,7 @@ BEGIN 16
   fittest
   has
   length
-  761
+  810
   and
   consists
   of
@@ -269,73 +269,17 @@ BEGIN 18
   overlap
   of
   size
-  3
+  301
   between
   contigs
+  (2)
+  and
   'r102-471.4'
-  and
-  (3)
-  to
-  be
-  (367,
-  3).
-END 18
-BEGIN 19
-  Overlap
-  between
-  contigs
-  'r102-471.4'
-  and
-  (3)
-  has
-  aligned
-  size
-  3,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  10862.952238016636.
-END 19
-BEGIN 20
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  3
-  between
-  contigs
-  'r102-471.4'
-  and
-  (3),
-  resulting
-  in
-  contig
-  (4).
-END 20
-BEGIN 21
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  8
-  between
-  contigs
-  'r148-506.1'
-  and
-  (3)
   to
   be
   None.
-END 21
-BEGIN 22
+END 18
+BEGIN 19
   Calculated
   cutoff
   for
@@ -343,55 +287,55 @@ BEGIN 22
   overlap
   of
   size
-  4
+  255
   between
   contigs
-  'r79-391.0'
+  (2)
   and
-  (3)
+  'r148-506.1'
   to
   be
-  (309,
-  4).
-END 22
-BEGIN 23
+  None.
+END 19
+BEGIN 20
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  313
+  between
+  contigs
+  (2)
+  and
+  'r79-391.0'
+  to
+  be
+  (62,
+  375).
+END 20
+BEGIN 21
   Overlap
   between
   contigs
-  'r79-391.0'
+  (2)
   and
-  (3)
+  'r79-391.0'
   has
   aligned
   size
-  4,
-  4
+  326,
+  161
   matches,
   and
   the
   score
   of
-  1.1814807259515125.
-END 23
-BEGIN 24
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  4
-  between
-  contigs
-  'r79-391.0'
-  and
-  (3),
-  resulting
-  in
-  contig
-  (5).
-END 24
-BEGIN 25
+  116007.82126956987.
+END 21
+BEGIN 22
   Calculated
   cutoff
   for
@@ -402,19 +346,19 @@ BEGIN 25
   157
   between
   contigs
-  (3)
+  (2)
   and
   'r737-959.3'
   to
   be
   (229,
   157).
-END 25
-BEGIN 26
+END 22
+BEGIN 23
   Overlap
   between
   contigs
-  (3)
+  (2)
   and
   'r737-959.3'
   has
@@ -427,9 +371,9 @@ BEGIN 26
   the
   score
   of
-  2.742059651387153.
-END 26
-BEGIN 27
+  553455.6844401569.
+END 23
+BEGIN 24
   Found
   a
   significant
@@ -439,15 +383,15 @@ BEGIN 27
   157
   between
   contigs
-  (3)
+  (2)
   and
   'r737-959.3',
   resulting
   in
   contig
-  (6).
-END 27
-BEGIN 28
+  (3).
+END 24
+BEGIN 25
   Cycle
   2
   finished
@@ -459,152 +403,154 @@ BEGIN 28
   fittest
   has
   length
-  761
+  810
   and
   consists
   of
   4
   parts.
-END 28
-BEGIN 29
+END 25
+BEGIN 26
   Cycle
   3
   started
   with
   1
   paths.
+END 26
+BEGIN 27
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  370
+  between
+  contigs
+  (3)
+  and
+  'r102-471.4'
+  to
+  be
+  (58,
+  428).
+END 27
+BEGIN 28
+  Overlap
+  between
+  contigs
+  (3)
+  and
+  'r102-471.4'
+  has
+  aligned
+  size
+  391,
+  206
+  matches,
+  and
+  the
+  score
+  of
+  167873.49767777388.
+END 28
+BEGIN 29
+  Calculated
+  cutoff
+  for
+  an
+  overlap
+  of
+  size
+  321
+  between
+  contigs
+  (3)
+  and
+  'r148-506.1'
+  to
+  be
+  (451,
+  2).
 END 29
 BEGIN 30
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  3
+  Overlap
   between
   contigs
-  'r102-471.4'
+  (3)
   and
-  (6)
-  to
-  be
-  (367,
-  3).
+  'r148-506.1'
+  has
+  aligned
+  size
+  2,
+  1
+  matches,
+  and
+  the
+  score
+  of
+  2300.8420922937867.
 END 30
 BEGIN 31
-  Overlap
+  Found
+  a
+  significant
+  overlap
+  of
+  size
+  2
   between
   contigs
-  'r102-471.4'
+  (3)
   and
-  (6)
-  has
-  aligned
-  size
-  3,
-  3
-  matches,
-  and
-  the
-  score
-  of
-  10862.952238016636.
+  'r148-506.1',
+  resulting
+  in
+  contig
+  (4).
 END 31
 BEGIN 32
-  Found
-  a
-  significant
+  Calculated
+  cutoff
+  for
+  an
   overlap
   of
   size
-  3
+  313
   between
   contigs
-  'r102-471.4'
+  (3)
   and
-  (6),
-  resulting
-  in
-  contig
-  (7).
+  'r79-391.0'
+  to
+  be
+  (62,
+  375).
 END 32
 BEGIN 33
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  8
-  between
-  contigs
-  'r148-506.1'
-  and
-  (6)
-  to
-  be
-  None.
-END 33
-BEGIN 34
-  Calculated
-  cutoff
-  for
-  an
-  overlap
-  of
-  size
-  4
-  between
-  contigs
-  'r79-391.0'
-  and
-  (6)
-  to
-  be
-  (309,
-  4).
-END 34
-BEGIN 35
   Overlap
   between
   contigs
-  'r79-391.0'
+  (3)
   and
-  (6)
+  'r79-391.0'
   has
   aligned
   size
-  4,
-  4
+  326,
+  161
   matches,
   and
   the
   score
   of
-  1.1814807259515117.
-END 35
-BEGIN 36
-  Found
-  a
-  significant
-  overlap
-  of
-  size
-  4
-  between
-  contigs
-  'r79-391.0'
-  and
-  (6),
-  resulting
-  in
-  contig
-  (8).
-END 36
-BEGIN 37
+  50.41972313446303.
+END 33
+BEGIN 34
   Cycle
   3
   finished
@@ -616,22 +562,22 @@ BEGIN 37
   fittest
   has
   length
-  761
+  810
   and
   consists
   of
   4
   parts.
-END 37
-BEGIN 38
+END 34
+BEGIN 35
   Cycle
   4
   started
   with
   1
   paths.
-END 38
-BEGIN 39
+END 35
+BEGIN 36
   Calculated
   cutoff
   for
@@ -642,34 +588,34 @@ BEGIN 39
   370
   between
   contigs
-  (8)
+  (4)
   and
   'r102-471.4'
   to
   be
-  (23,
-  313).
-END 39
-BEGIN 40
+  (451,
+  775).
+END 36
+BEGIN 37
   Overlap
   between
   contigs
-  (8)
+  (4)
   and
   'r102-471.4'
   has
   aligned
   size
   370,
-  290
+  324
   matches,
   and
   the
   score
   of
-  23292.856472945925.
-END 40
-BEGIN 41
+  755831.2101113761.
+END 37
+BEGIN 38
   Calculated
   cutoff
   for
@@ -677,45 +623,45 @@ BEGIN 41
   overlap
   of
   size
-  359
+  313
   between
   contigs
-  (8)
+  (4)
   and
-  'r148-506.1'
+  'r79-391.0'
   to
   be
-  (69,
-  313).
-END 41
-BEGIN 42
+  (451,
+  695).
+END 38
+BEGIN 39
   Overlap
   between
   contigs
-  (8)
+  (4)
   and
-  'r148-506.1'
+  'r79-391.0'
   has
   aligned
   size
-  359,
+  313,
   244
   matches,
   and
   the
   score
   of
-  16548.200337539063.
-END 42
-BEGIN 43
+  481387.4964922944.
+END 39
+BEGIN 40
   Constructed
   a
   path
   of
   length
-  761.
-END 43
-BEGIN 44
+  810.
+END 40
+BEGIN 41
   Removed
   4
   components
@@ -728,21 +674,21 @@ BEGIN 44
   still
   to
   process.
-END 44
-BEGIN 45
+END 41
+BEGIN 42
   Calculating
   all
   paths...
-END 45
-BEGIN 46
+END 42
+BEGIN 43
   Cycle
   1
   started
   with
   1
   paths.
-END 46
-BEGIN 47
+END 43
+BEGIN 44
   Calculated
   cutoff
   for
@@ -750,55 +696,55 @@ BEGIN 47
   overlap
   of
   size
-  324
+  290
   between
   contigs
-  'r102-471.4'
+  'r79-391.0'
   and
-  'r148-506.1'
+  'r102-471.4'
   to
   be
-  (46,
-  324).
-END 47
-BEGIN 48
+  (23,
+  290).
+END 44
+BEGIN 45
   Overlap
   between
   contigs
-  'r102-471.4'
+  'r79-391.0'
   and
-  'r148-506.1'
+  'r102-471.4'
   has
   aligned
   size
-  324,
-  324
+  290,
+  290
   matches,
   and
   the
   score
   of
-  39998.33478591601.
-END 48
-BEGIN 49
+  892267.2249013983.
+END 45
+BEGIN 46
   Found
   a
   significant
   overlap
   of
   size
-  324
+  290
   between
   contigs
-  'r102-471.4'
+  'r79-391.0'
   and
-  'r148-506.1',
+  'r102-471.4',
   resulting
   in
   contig
-  (9).
-END 49
-BEGIN 50
+  (5).
+END 46
+BEGIN 47
   Cycle
   1
   finished
@@ -810,30 +756,30 @@ BEGIN 50
   fittest
   has
   length
-  405
+  393
   and
   consists
   of
   2
   parts.
-END 50
-BEGIN 51
+END 47
+BEGIN 48
   Cycle
   2
   started
   with
   1
   paths.
-END 51
-BEGIN 52
+END 48
+BEGIN 49
   Constructed
   a
   path
   of
   length
-  405.
-END 52
-BEGIN 53
+  393.
+END 49
+BEGIN 50
   Removed
   2
   components
@@ -846,16 +792,16 @@ BEGIN 53
   still
   to
   process.
-END 53
-BEGIN 54
+END 50
+BEGIN 51
   Initial
   overlap
   stitching
   produced
   2
   contigs.
-END 54
-BEGIN 55
+END 51
+BEGIN 52
   Calculated
   cutoff
   for
@@ -863,38 +809,38 @@ BEGIN 55
   overlap
   of
   size
-  405
+  393
   between
   contigs
-  (8)
+  (4)
   and
-  (9)
+  (5)
   to
   be
-  (23,
-  313).
-END 55
-BEGIN 56
+  (451,
+  775).
+END 52
+BEGIN 53
   Overlap
   between
   contigs
-  (8)
+  (4)
   and
-  (9)
+  (5)
   has
   aligned
   size
-  405,
-  290
+  393,
+  324
   matches,
   and
   the
   score
   of
-  19114.757796654227.
-END 56
-BEGIN 57
+  671825.1614053124.
+END 53
+BEGIN 54
   Outputting
   2
   contigs.
-END 57
+END 54
