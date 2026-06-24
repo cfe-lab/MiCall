@@ -220,7 +220,7 @@ def main(argv: Sequence[str]) -> int:
                 )
             else:
                 logger.error(
-                    "No FASTQ directory found in %s", fastq_folder, run_path
+                    "No FASTQ directory found in %s", run_path
                 )
             return 1
     else:
