@@ -214,9 +214,14 @@ def main(argv: Sequence[str]) -> int:
             logger.debug("Found %d FASTQ files in %s", len(fastq_files), fastq_directory)
         else:
             fastq_folder = find_fastq_source_folder(run_path)
-            logger.error(
-                "No FASTQ files found in %s or %s", fastq_folder, run_path
-            )
+            if fastq_folder:
+                logger.error(
+                    "No FASTQ files found in %s or %s", fastq_folder, run_path
+                )
+            else:
+                logger.error(
+                    "No FASTQ directory found in %s", fastq_folder, run_path
+                )
             return 1
     else:
         fastq_file_names = [Path(f).name for f in fastq_file_names]
