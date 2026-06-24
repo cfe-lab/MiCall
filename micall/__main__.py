@@ -101,6 +101,7 @@ EXECUTABLES = [
     "micall/utils/check_sample_sheet.py",
     "micall/utils/cache.py",
     "micall/monitor/run_completion_watcher.py",
+    "micall/utils/kive_collate.py",
 ]
 
 
