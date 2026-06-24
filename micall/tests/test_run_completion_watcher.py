@@ -4,7 +4,6 @@ Unit tests for run_completion_watcher module.
 Migrated from build/MISEQ/tests/miseq_watch_runs_test.rb
 """
 
-from pathlib import Path
 from time import sleep
 from unittest.mock import patch
 
