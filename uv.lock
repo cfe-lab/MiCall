@@ -527,6 +527,7 @@ test = [
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "pytest" },
+    { name = "pytest-timeout" },
     { name = "seaborn" },
     { name = "tk" },
 ]
@@ -535,11 +536,6 @@ utils = [
 ]
 watcher = [
     { name = "kiveapi" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest-timeout" },
 ]
 
 [package.metadata]
@@ -570,6 +566,7 @@ requires-dist = [
     { name = "pandas-stubs", marker = "extra == 'dev'", specifier = ">=3.0.3.260530" },
     { name = "pysam", specifier = ">=0.24.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=9.1.1" },
+    { name = "pytest-timeout", marker = "extra == 'test'", specifier = ">=2.4.0" },
     { name = "python-levenshtein", specifier = ">=0.27.1" },
     { name = "pytz", specifier = ">=2026.2" },
     { name = "pyvdrm", git = "https://github.com/cfe-lab/pyvdrm.git?rev=v0.3.3" },
@@ -585,9 +582,6 @@ requires-dist = [
     { name = "uv", marker = "extra == 'dev'", specifier = ">=0.11.24" },
 ]
 provides-extras = ["basespace", "dev", "test", "utils", "watcher"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest-timeout", specifier = ">=2.4.0" }]
 
 [[package]]
 name = "miseqinteropreader"
