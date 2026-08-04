@@ -1,9 +1,11 @@
 from io import BytesIO
 from struct import pack
 from unittest import TestCase
-from miseqinteropreader.read_records import read_quality
-from miseqinteropreader.models import QualityRecord
+
 from miseqinteropreader import ReadLengths4
+from miseqinteropreader.models import QualityRecord
+from miseqinteropreader.read_records import read_quality
+
 from micall.utils.interop_wrappers import summarize_quality_records
 
 

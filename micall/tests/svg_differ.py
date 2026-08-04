@@ -5,9 +5,10 @@ from turtle import Turtle
 
 # noinspection PyPep8Naming
 import drawsvg as draw
+from drawsvg import Drawing
+
 # noinspection PyPackageRequirements
 from PIL import Image
-from drawsvg import Drawing
 
 
 def drawing_to_image(drawing: Drawing) -> Image:

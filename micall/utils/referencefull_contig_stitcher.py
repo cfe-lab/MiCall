@@ -1,25 +1,35 @@
-from typing import Iterable, Optional, Tuple, Dict, Literal, TypeVar, TextIO, Sequence, List
-from collections import defaultdict
 import csv
-import os
-from pathlib import Path
-from dataclasses import replace
-from math import ceil
-from functools import reduce
-from itertools import tee, islice, chain
-from queue import LifoQueue
-from Bio import Seq
 import logging
-from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
+import os
+from collections import defaultdict
+from collections.abc import Iterable, Sequence
+from dataclasses import replace
+from functools import reduce
+from itertools import chain, islice, tee
+from math import ceil
+from pathlib import Path
+from queue import LifoQueue
+from typing import Literal, Optional, TextIO, TypeVar
 
-from micall.core.project_config import ProjectConfig
-from micall.core.plot_contigs import plot_stitcher_coverage
-from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
-from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
-from micall.utils.consensus_aligner import align_consensus
-from micall.utils.overlap_stitcher import align_queries, calculate_concordance_norm, sort_concordance_indexes
+from aligntools import (
+    CigarActions,
+    CigarHit,
+    connect_nonoverlapping_cigar_hits,
+    drop_overlapping_cigar_hits,
+)
+from Bio import Seq
+
 import micall.utils.referencefull_contig_stitcher_events as events
-
+from micall.core.plot_contigs import plot_stitcher_coverage
+from micall.core.project_config import ProjectConfig
+from micall.utils.consensus_aligner import align_consensus
+from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
+from micall.utils.contig_stitcher_contigs import AlignedContig, GenotypedContig
+from micall.utils.overlap_stitcher import (
+    align_queries,
+    calculate_concordance_norm,
+    sort_concordance_indexes,
+)
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -33,7 +43,7 @@ def log(e: events.EventType) -> None:
         logger.debug("%s", e)
 
 
-def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig, GenotypedContig]:
+def cut_query(self: GenotypedContig, cut_point: float) -> tuple[GenotypedContig, GenotypedContig]:
     """ Cuts query sequence in two parts with cut_point between them. """
 
     cut_point = max(0.0, cut_point)
@@ -41,8 +51,8 @@ def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig,
     total_len = len(self.seq)
 
     # Distribute reads_count proportionally based on sequence length
-    left_reads_count: Optional[int] = None
-    right_reads_count: Optional[int] = None
+    left_reads_count: int | None = None
+    right_reads_count: int | None = None
     if self.reads_count is not None and total_len > 0:
         left_reads_count = round(self.reads_count * left_len / total_len)
         right_reads_count = self.reads_count - left_reads_count
@@ -52,7 +62,7 @@ def cut_query(self: GenotypedContig, cut_point: float) -> Tuple[GenotypedContig,
     return left, right
 
 
-def cut_reference(self: AlignedContig, cut_point: float) -> Tuple[AlignedContig, AlignedContig]:
+def cut_reference(self: AlignedContig, cut_point: float) -> tuple[AlignedContig, AlignedContig]:
     """ Cuts this alignment in two parts with cut_point between them. """
 
     alignment_left, alignment_right = self.alignment.cut_reference(cut_point)
@@ -128,7 +138,7 @@ def munge(self: AlignedContig, other: AlignedContig) -> AlignedContig:
     return ret
 
 
-def sliding_window(sequence: Iterable[T]) -> Iterable[Tuple[Optional[T], T, Optional[T]]]:
+def sliding_window(sequence: Iterable[T]) -> Iterable[tuple[T | None, T, T | None]]:
     """
     Generate a three-element sliding window of a sequence.
 
@@ -178,7 +188,7 @@ def align_to_reference(contig: GenotypedContig) -> Iterable[GenotypedContig]:
 
     alignments, _algo = align_consensus(contig.ref_seq, contig.seq)
     hits = [x.to_cigar_hit() for x in alignments]
-    strands: Tuple[Literal["forward", "reverse"], ...] = tuple(
+    strands: tuple[Literal["forward", "reverse"], ...] = tuple(
         "forward" if x.strand == 1 else "reverse" for x in alignments)
 
     for i, (hit, strand) in enumerate(zip(hits, strands)):
@@ -226,15 +236,15 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
     contigs = list(contigs)
     names = {contig.id: contig for contig in contigs}
 
-    def get_indexes(id: int) -> Tuple[int, int]:
+    def get_indexes(id: int) -> tuple[int, int]:
         contig = names[id]
         if isinstance(contig, AlignedContig):
             return contig.alignment.q_st, contig.alignment.r_st
         else:
             return -1, -1
 
-    reference_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[1]))
-    query_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[0]))
+    reference_sorted = sorted(names.keys(), key=lambda id: get_indexes(id)[1])
+    query_sorted = sorted(names.keys(), key=lambda id: get_indexes(id)[0])
 
     def is_out_of_order(id: int) -> bool:
         return reference_sorted.index(id) != query_sorted.index(id)
@@ -358,7 +368,7 @@ def combine_overlaps(contigs: Sequence[AlignedContig]) -> Iterable[AlignedContig
     """
 
     # Going left-to-right through aligned contigs.
-    contigs = list(sorted(contigs, key=lambda x: x.alignment.r_st))
+    contigs = sorted(contigs, key=lambda x: x.alignment.r_st)
     while contigs:
         current = contigs.pop(0)
 
@@ -376,7 +386,7 @@ def combine_overlaps(contigs: Sequence[AlignedContig]) -> Iterable[AlignedContig
         log(events.Stitch(current, overlapping_contig, new_contig))
 
 
-def merge_intervals(intervals: Sequence[Tuple[int, int]]) -> Sequence[Tuple[int, int]]:
+def merge_intervals(intervals: Sequence[tuple[int, int]]) -> Sequence[tuple[int, int]]:
     """
     Merge overlapping and adjacent intervals.
     Note that intervals are inclusive.
@@ -405,7 +415,7 @@ def merge_intervals(intervals: Sequence[Tuple[int, int]]) -> Sequence[Tuple[int,
     return merged_intervals
 
 
-def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[AlignedContig], Sequence[AlignedContig]]:
+def find_covered_contig(contigs: Sequence[AlignedContig]) -> tuple[AlignedContig | None, Sequence[AlignedContig]]:
     """
     Find and return the first contig that is completely covered by other contigs.
 
@@ -413,7 +423,7 @@ def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[Alig
     :return: An AlignedContig if there is one completely covered by others, None otherwise.
     """
 
-    def calculate_cumulative_coverage(others) -> Sequence[Tuple[int, int]]:
+    def calculate_cumulative_coverage(others) -> Sequence[tuple[int, int]]:
         intervals = [(contig.alignment.r_st, contig.alignment.r_ei) for contig in others]
         merged_intervals = merge_intervals(intervals)
         return merged_intervals
@@ -491,7 +501,7 @@ def split_contigs_with_gaps(contigs: Sequence[AlignedContig]) -> Sequence[Aligne
 
     def significant(gap):
         # noinspection PyLongLine
-        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.         # noqa: E501
+        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.
         return gap.ref_length > 21
 
     def try_split(self: AlignedContig):
@@ -552,7 +562,7 @@ GroupRef = Optional[str]
 
 def stitch_consensus(contigs: Iterable[GenotypedContig]) -> Iterable[GenotypedContig]:
     contigs = list(stitch_contigs(contigs))
-    consensus_parts: Dict[GroupRef, List[AlignedContig]] = defaultdict(list)
+    consensus_parts: dict[GroupRef, list[AlignedContig]] = defaultdict(list)
 
     for contig in contigs:
         if isinstance(contig, AlignedContig):
@@ -583,7 +593,7 @@ def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
     output_csv.flush()
 
 
-def read_remap_counts(remap_counts_csv: TextIO) -> Dict[str, int]:
+def read_remap_counts(remap_counts_csv: TextIO) -> dict[str, int]:
     """Read remap counts CSV and extract read counts per contig.
 
     Args:
@@ -628,7 +638,7 @@ def read_remap_counts(remap_counts_csv: TextIO) -> Dict[str, int]:
     return counts
 
 
-def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Iterable[GenotypedContig]:
+def read_contigs(input_csv: TextIO, contig_read_counts: dict[str, int]) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
     for i, row in enumerate(csv.DictReader(input_csv)):
@@ -659,9 +669,9 @@ def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Itera
 
 
 def referencefull_contig_stitcher(input_csv: TextIO,
-                                  output_csv: Optional[TextIO],
-                                  stitcher_plot_path: Optional[Path],
-                                  remap_counts_csv: Optional[TextIO] = None,
+                                  output_csv: TextIO | None,
+                                  stitcher_plot_path: Path | None,
+                                  remap_counts_csv: TextIO | None = None,
                                   ) -> int:
     with ReferencefullStitcherContext.fresh() as ctx:
         # Read remap counts if provided

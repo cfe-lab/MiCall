@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 
-from micall.utils.report_amino import SeedNucleotide, FIRST_CUTOFF
+from micall.utils.report_amino import FIRST_CUTOFF, SeedNucleotide
 
 
 class ConsensusBuilder:
@@ -43,7 +43,7 @@ class ConsensusBuilder:
         window_size = window_radius * 2 + 1
         window_totals = []
         max_length = max(self.length_counts)
-        for length in range(0, max_length+window_radius+1):
+        for length in range(max_length+window_radius+1):
             length_count = self.length_counts[length]
             window_totals.append(length_count)
             if len(window_totals) == window_size:

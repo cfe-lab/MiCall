@@ -2,7 +2,10 @@ import unittest
 from io import StringIO
 from pathlib import Path
 
-from micall.utils.sample_sheet_parser import _sample_sheet_parser, _read_sample_sheet_overrides
+from micall.utils.sample_sheet_parser import (
+    _read_sample_sheet_overrides,
+    _sample_sheet_parser,
+)
 
 """
 Test suite for the sample sheet parser.

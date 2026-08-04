@@ -1,14 +1,15 @@
 
 import re
-from typing import List, Dict, Any, TextIO
+from typing import Any, TextIO
 
-def sample_sheet_v1_parser(handle: TextIO) -> Dict[str, object]:
+
+def sample_sheet_v1_parser(handle: TextIO) -> dict[str, object]:
     tag = None
     get_header = False
     header = []  # store Data block column labels
     sample_number = 1  # 1-indexing
-    read_lengths: List[int] = []
-    run_info: Dict[str, Any] = {'Reads': read_lengths}  # return object
+    read_lengths: list[int] = []
+    run_info: dict[str, Any] = {'Reads': read_lengths}  # return object
     sample_sheet_version = 1
     sample_delimiter = ';'  # Between multiple samples in one well
     project_delimiter = '_'  # Between the sample and project names

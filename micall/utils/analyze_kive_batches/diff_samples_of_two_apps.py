@@ -1,8 +1,10 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Union
+
 import pandas as pd
 
 from micall.utils.user_error import UserError
+
 from .logger import logger
 
 
@@ -14,7 +16,7 @@ def _can_parse_float(val: str) -> bool:
         return False
 
 
-def _parse_float(val: str) -> Union[float, None]:
+def _parse_float(val: str) -> float | None:
     try:
         return float(val)
     except Exception:
@@ -75,7 +77,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     def concat_all(xs: pd.Series) -> str:
         return '+'.join(map(tostr, xs.tolist()))
 
-    def _format_number(n: Union[float, int, None]) -> str:
+    def _format_number(n: float | None) -> str:
         if n is None:
             return ''
         if isinstance(n, float):
@@ -104,9 +106,9 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
         avg = sum(diffs) / len(diffs)
         return _format_number(avg)
 
-    agg_map: dict[str, Union[str, Callable[[pd.Series], str]]] = {}
+    agg_map: dict[str, str | Callable[[pd.Series], str]] = {}
     # For same-app comparison, we need separate aggregation for base columns
-    base_agg_map: dict[str, Union[str, Callable[[pd.Series], str]]] = {}
+    base_agg_map: dict[str, str | Callable[[pd.Series], str]] = {}
 
     # Pre-compute which columns appear numeric based on their string values
     numeric_cols: dict[str, bool] = {

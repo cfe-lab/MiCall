@@ -2,8 +2,8 @@ import argparse
 import csv
 import itertools
 import math
-from operator import itemgetter
 import os
+from operator import itemgetter
 
 BAD_ERROR_RATE = 7.5
 

@@ -1,5 +1,6 @@
 import unittest
 from io import StringIO
+
 from micall.core.project_config import ProjectConfig
 
 

@@ -1,11 +1,11 @@
-from typing import Iterator, Optional, Sequence
-
 import random
+from collections.abc import Iterator, Sequence
+
 import numpy as np
 
 
 def stable_random_distribution(high: int,
-                               rng: Optional[random.Random] = None,
+                               rng: random.Random | None = None,
                                ) -> Iterator[int]:
 
     if high <= 0:

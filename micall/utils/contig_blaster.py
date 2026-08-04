@@ -1,10 +1,10 @@
-from argparse import ArgumentParser, FileType, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType
 from csv import DictReader
 from io import StringIO
 from itertools import groupby
 from operator import itemgetter
-from tempfile import NamedTemporaryFile
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from micall.utils.fasta_to_csv import fasta_to_csv
 

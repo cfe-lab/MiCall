@@ -1,7 +1,7 @@
 import csv
 import os
 import re
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
+from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import requests
 
@@ -72,7 +72,7 @@ def main():
             if seed_group['name'] == seed_group_name:
                 break
         else:
-            raise RuntimeError('Seed group {} not found.'.format(seed_group_name))
+            raise RuntimeError(f'Seed group {seed_group_name} not found.')
         old_regions = session.get_json("/lab_miseq_regions", retries=0)
         hiv_seeds = {region['name']: region
                      for region in old_regions
@@ -108,10 +108,9 @@ def main():
                     if old_seq != seed_seq:
                         print('expected: ' + seed_seq)
                         print('found:    ' + old_seq)
-                        raise RuntimeError('Seed sequence {} does not match.'.format(
-                            seed_name))
+                        raise RuntimeError(f'Seed sequence {seed_name} does not match.')
                 elif len(seed_name) > 30:
-                    print('Name too long: {!r}.'.format(seed_name))
+                    print(f'Name too long: {seed_name!r}.')
                 else:
                     session.post_json(
                         "/lab_miseq_regions",
@@ -133,11 +132,9 @@ def main():
                 for seed_name in seed_names:
                     print(seed_name)
                     seed_id = hiv_seeds[seed_name]['id']
-                    session.delete('{}/lab_miseq_regions/{}'.format(
-                        args.qai_server,
-                        seed_id))
+                    session.delete(f'{args.qai_server}/lab_miseq_regions/{seed_id}')
 
-        print('Done with {} clean and {} dirty.'.format(clean_count, dirty_count))
+        print(f'Done with {clean_count} clean and {dirty_count} dirty.')
 
 if __name__ == '__main__':
     main()

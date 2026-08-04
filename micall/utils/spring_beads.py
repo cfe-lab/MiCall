@@ -2,7 +2,6 @@
 
 Used when aligning sections of a contig to a reference sequence.
 """
-import typing
 
 
 class Bead:
@@ -20,8 +19,8 @@ class Bead:
         self.alignment = alignment
         self.skipped = skipped
         self.force = 0.0
-        self.left: typing.Optional['Bead'] = None
-        self.right: typing.Optional['Bead'] = None
+        self.left: Bead | None = None
+        self.right: Bead | None = None
 
     def __repr__(self):
         return f'Bead({self.start}, {self.end})'

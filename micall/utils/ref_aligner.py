@@ -1,10 +1,12 @@
-from mappy import Aligner
+import argparse
+from collections import Counter
 from enum import IntEnum
 from pathlib import Path
 from pprint import pprint
-from collections import Counter
+
 import yaml
-import argparse
+from mappy import Aligner
+
 from micall.core.project_config import ProjectConfig
 from micall.data.landmark_reader import LandmarkReader
 
@@ -103,7 +105,7 @@ class AlignmentEvaluator:
             seed_groups_counts.update([seed_group])
         for seed_group in seed_groups_counts.keys():
             print(f'Seed group {seed_group}')
-            for warning in seed_group_warnings.keys():
+            for warning in seed_group_warnings:
                 if warning == 'insertions':
                     message = f'had a large insertion (over {self.max_insertion})'
                 elif warning == 'deletions':

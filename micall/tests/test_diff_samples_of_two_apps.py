@@ -1,12 +1,14 @@
 import csv
+import logging
+from pathlib import Path
+
 import pandas as pd
 import pytest
-from pathlib import Path
-import logging
 
+from micall.utils.analyze_kive_batches.diff_samples_of_two_apps import (
+    diff_samples_of_two_apps,
+)
 from micall.utils.user_error import UserError
-from micall.utils.analyze_kive_batches.diff_samples_of_two_apps import \
-    diff_samples_of_two_apps
 
 
 def write_csv(path: Path, header, rows):

@@ -6,15 +6,15 @@ and geno2pheno (G2P), but this version only supports G2P.
 Based on work published at http://coreceptor.geno2pheno.org
 """
 
-from math import exp
 import os
+from math import exp
 
 import gotoh
 
 from micall.utils.translation import translate
 
 
-class Pssm(object):
+class Pssm:
     def __init__(self, std='g2p', path_to_lookup=None, path_to_matrix=None):
         if std == 'pssm':
             self.std_v3 = 'CTRPNNNTRKGIHIGPGRAFYATGEIIGDIRQAHC'
@@ -46,8 +46,7 @@ class Pssm(object):
                 self.g2p_fpr_data = None
 
         if not self.g2p_fpr_data:
-            raise RuntimeError('No g2p_fpr data found in {!r}'.format(
-                lookup_paths))
+            raise RuntimeError(f'No g2p_fpr data found in {lookup_paths!r}')
 
         self.g2p_fpr_data.sort()  # make sure the list is sorted
 
@@ -74,8 +73,7 @@ class Pssm(object):
                 self.g2p_matrix = None
 
         if not self.g2p_matrix:
-            raise RuntimeError('No g2p matrix data found in {!r}'.format(
-                matrix_paths))
+            raise RuntimeError(f'No g2p matrix data found in {matrix_paths!r}')
 
     def g2p(self, aa_lists):
         """

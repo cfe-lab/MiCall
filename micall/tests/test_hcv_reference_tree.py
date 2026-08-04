@@ -1,7 +1,13 @@
 from io import StringIO
+
 import pytest
 
-from micall.utils.hcv_reference_tree import filter_hcv_fasta, combine_samples, check_distances
+from micall.utils.hcv_reference_tree import (
+    check_distances,
+    combine_samples,
+    filter_hcv_fasta,
+)
+
 
 def check_tree(*args, **kwargs):
     try:

@@ -20,13 +20,13 @@ def parse_args():
 
 
 def format_percent(numerator, denominator):
-    return '{:.0f}'.format(100.0 * numerator / denominator) if denominator else ''
+    return f'{100.0 * numerator / denominator:.0f}' if denominator else ''
 
 
 def plot(prelim_percents):
     levels = sorted(prelim_percents.keys())
     levels.append(levels.pop(0))  # move None to end
-    labels = ['<= {} seqs'.format(limit) for limit in levels]
+    labels = [f'<= {limit} seqs' for limit in levels]
     labels[-1] = 'more'
     level_counts = [prelim_percents[limit] for limit in levels]
     plt.hist(level_counts, stacked=True, label=labels)
@@ -126,10 +126,7 @@ def main():
             source_sample_counts = source_counts.pop(sample)
             raw_count = source_sample_counts['raw']
             if raw_count != raw_counts[sample]:
-                raise RuntimeError('Expected {} raw, but found {} for {}.'.format(
-                    raw_count,
-                    raw_counts[sample],
-                    sample))
+                raise RuntimeError(f'Expected {raw_count} raw, but found {raw_counts[sample]} for {sample}.')
             unmapped_count = raw_count - sum(results.values())
             r5_old = source_sample_counts['R5']
             r5_new = results.pop('R5', 0)
@@ -181,7 +178,7 @@ def main():
                                  err_unmap_pct=err_unmapped_pct))
 
     if source_counts:
-        print('{} missing sources:'.format(len(source_counts)))
+        print(f'{len(source_counts)} missing sources:')
         print(', '.join(sorted(source_counts.keys())))
 
     plot(prelim_percents)

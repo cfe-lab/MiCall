@@ -1,7 +1,7 @@
 
-from typing import Iterable
-from pathlib import Path
 import json
+from collections.abc import Iterable
+from pathlib import Path
 
 
 def combine_batches_runs(batches: Iterable[Path], target: Path) -> None:

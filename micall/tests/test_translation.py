@@ -1,5 +1,6 @@
 import unittest
-from micall.utils.translation import translate, reverse_and_complement
+
+from micall.utils.translation import reverse_and_complement, translate
 
 
 class TranslateTest(unittest.TestCase):

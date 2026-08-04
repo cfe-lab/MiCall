@@ -3,8 +3,9 @@
 import argparse
 import random
 import sys
+from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import Sequence, Tuple, TextIO, Iterator
+from typing import TextIO
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -24,7 +25,7 @@ def introduce_errors(seq: str,
                      del_rate: float,
                      ins_quality: int,
                      rng: random.Random,
-                     ) -> Tuple[str, Sequence[int]]:
+                     ) -> tuple[str, Sequence[int]]:
 
     """
     Introduce substitution, insertion, and deletion errors into a sequence.
@@ -181,4 +182,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

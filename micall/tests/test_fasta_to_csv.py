@@ -1,13 +1,12 @@
 from io import StringIO
 from pathlib import Path
 
-from Bio import SeqIO
 import pytest
+from Bio import SeqIO
 
-from micall.utils.fasta_to_csv import default_database, genotype, fasta_to_csv
 from micall.blast_db.make_blast_db import make_blast_db
 from micall.utils.externals import ProjectsFile
-
+from micall.utils.fasta_to_csv import default_database, fasta_to_csv, genotype
 
 with ProjectsFile().path() as projects_file_path:
     DEFAULT_PROJECTS = str(projects_file_path)

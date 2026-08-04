@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from micall.monitor.find_groups import find_groups, SampleGroup
+from micall.monitor.find_groups import SampleGroup, find_groups
 
 BASIC_HEADER = """\
 [Header]

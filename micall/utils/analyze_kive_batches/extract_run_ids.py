@@ -1,7 +1,8 @@
 
 import json
-from typing import Iterator
+from collections.abc import Iterator
 from pathlib import Path
+
 from kivecli.kiverun import KiveRun
 
 from micall.utils.new_atomic_file import new_atomic_text_file

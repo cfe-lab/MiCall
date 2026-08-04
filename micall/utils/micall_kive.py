@@ -6,11 +6,10 @@ This file is run by Kive.
 """
 
 import logging
+import os
 import shutil
 import tarfile
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-
-import os
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 from micall.drivers.sample import Sample
 from micall.g2p.pssm_lib import Pssm
@@ -155,7 +154,7 @@ def load_sample(args):
 
 
 def main():
-    logging.basicConfig(level=logging.WARN)
+    logging.basicConfig(level=logging.WARNING)
     args = parse_args()
     sample = load_sample(args)
 

@@ -1,11 +1,21 @@
 import os
-from io import StringIO
 import unittest
+from io import StringIO
 
+from micall.g2p.fastq_g2p import (
+    FastqError,
+    FastqReader,
+    count_reads,
+    extract_target,
+    fastq_g2p,
+    get_top_counts,
+    merge_reads,
+    trim_reads,
+    write_aligned_reads,
+    write_rows,
+    write_unmapped_reads,
+)
 from micall.g2p.pssm_lib import Pssm
-from micall.g2p.fastq_g2p import fastq_g2p, FastqReader, FastqError, merge_reads, \
-    trim_reads, count_reads, write_rows, write_unmapped_reads, write_aligned_reads, \
-    extract_target, get_top_counts
 
 TEMP_PREFIX = os.path.join(os.path.dirname(__file__), 'g2p_temp')
 
@@ -15,7 +25,7 @@ class DummyFile(StringIO):
         s = self.getvalue()
         if len(s) > 50:
             s = '...' + s[-47:]
-        return 'DummyFile({!r})'.format(s)
+        return f'DummyFile({s!r})'
 
 
 def prepare_g2p(test_case):

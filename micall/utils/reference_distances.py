@@ -1,11 +1,11 @@
-from collections import defaultdict
 import json
 import logging
 import re
+from collections import defaultdict
 
-from gotoh import align_it  # @UnresolvedImport
 import Levenshtein
 import matplotlib.pyplot as plt
+from gotoh import align_it  # @UnresolvedImport
 
 from micall.utils.externals import ProjectsFile
 

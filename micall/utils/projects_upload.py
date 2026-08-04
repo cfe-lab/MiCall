@@ -1,15 +1,16 @@
 import json
-import os
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
-from operator import itemgetter
 import logging
+import os
 import sys
 import time
+from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
+from operator import itemgetter
+
 import urllib3
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.externals import ProjectsScoringFile
 from micall.monitor import qai_helper
+from micall.utils.externals import ProjectsScoringFile
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ def configure_logging(args):
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARNING)
 
     logging.basicConfig(
         level=logger.level,
@@ -199,7 +200,7 @@ def main() -> int:
         seed_group_ids = dict(map(itemgetter('name', 'id'), seed_groups))
         old_regions = session.get_json("/lab_miseq_regions")
         logger.debug('Fetched %d existing regions from QAI.', len(old_regions))
-        regions = dict(((region['name'], region) for region in old_regions))
+        regions = dict((region['name'], region) for region in old_regions)
         for region_name, region_data in project_config.config['regions'].items():
             ref_seq = ''.join(region_data['reference'])
             region = regions.get(region_name)
@@ -257,7 +258,7 @@ def main() -> int:
 
         old_projects = session.get_json("/lab_miseq_projects")
         logger.debug('Fetched %d existing projects from QAI.', len(old_projects))
-        projects = dict(((project['name'], project) for project in old_projects))
+        projects = dict((project['name'], project) for project in old_projects)
         for project_name, project_data in project_config.config['projects'].items():
             logger.debug('Uploading project %s with %d region mappings.',
                          project_name,

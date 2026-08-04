@@ -1,15 +1,15 @@
-import sys
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from collections import defaultdict
 import logging
 import os
 import re
+import sys
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from collections import defaultdict
 from csv import DictReader
 from typing import Union
 
+from micall.core.aln2counts import aln2counts
 from micall.core.trim_fastqs import trim
 from micall.utils.dd import DD
-from micall.core.aln2counts import aln2counts
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class MicallDD(DD):
                  filename,
                  simple,
                  test_name):
-        super(MicallDD, self).__init__()
+        super().__init__()
         self.filename = filename
         self.simple = simple
         self.get_result = getattr(self, 'check_' + test_name)
@@ -118,8 +118,7 @@ class MicallDD(DD):
         with open(filename, 'w') as f:
             f.write(ALIGNED_CSV_HEADER)
             f.write('\n')
-            for line in selected_reads:
-                f.write(line)
+            f.writelines(selected_reads)
 
     def coerce(self, c):
         if c is None:

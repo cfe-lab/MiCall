@@ -1,5 +1,4 @@
 import logging
-
 import os
 
 from micall.resistance.genreport import gen_report
@@ -35,7 +34,7 @@ class SampleGroup:
     def __repr__(self):
         samples = ', '.join(repr(sample)
                             for sample in self)
-        return 'SampleGroup({})'.format(samples)
+        return f'SampleGroup({samples})'
 
     def __iter__(self):
         yield self.main_sample

@@ -1,31 +1,35 @@
 """ Data needed to process a sample """
 import logging
 import os
-
 import typing
+from contextlib import contextmanager
 from csv import DictReader
 from pathlib import Path
 
+import micall.utils.referenceless_contig_stitcher as referenceless
 from micall.core.aln2counts import aln2counts
-from micall.core.amplicon_finder import write_merge_lengths_plot, merge_for_entropy
+from micall.core.amplicon_finder import merge_for_entropy, write_merge_lengths_plot
 from micall.core.cascade_report import CascadeReport
-from micall.core.coverage_plots import coverage_plot, concordance_plot
+from micall.core.coverage_plots import concordance_plot, coverage_plot
+from micall.core.denovo import denovo
 from micall.core.plot_contigs import plot_genome_coverage
 from micall.core.prelim_map import prelim_map
 from micall.core.project_config import ProjectConfig
-from micall.core.remap import remap, map_to_contigs
+from micall.core.remap import map_to_contigs, remap
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
-from micall.core.denovo import denovo
-from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
+from micall.g2p.fastq_g2p import (
+    DEFAULT_MIN_COUNT,
+    MIN_VALID,
+    MIN_VALID_PERCENT,
+    fastq_g2p,
+)
+from micall.utils.cat import cat as concatenate_files
+from micall.utils.csv_to_fasta import NoContigsInCSV, csv_to_fasta
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
-from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
-import micall.utils.referenceless_contig_stitcher as referenceless
-from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
-from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +49,7 @@ def open_files(**files):
 
     Yields: A dictionary of opened files, {keyword: file handle}
     """
-    files_opened: typing.Dict[str, typing.Optional[typing.IO]] = {}
+    files_opened: dict[str, typing.IO | None] = {}
     try:
         for name, file_info in files.items():
             if file_info is None:
@@ -64,16 +68,15 @@ def open_files(**files):
             else:
                 try:
                     file.close()
-                except (IOError, OSError):
+                except OSError:
                     filenames.append(filename)
-                    pass
         if len(filenames) > 0:
             logger.error(f"The following files could not be closed: {filenames}")
-            raise IOError
+            raise OSError
 
 
 def exclude_extra_seeds(excluded_seeds: typing.Iterable[str],
-                        project_code: typing.Optional[str] = None) -> typing.Sequence[str]:
+                        project_code: str | None = None) -> typing.Sequence[str]:
     if project_code == 'HIVGHA':
         return tuple(excluded_seeds)
     projects = ProjectConfig.loadDefault()
@@ -115,7 +118,7 @@ class Sample:
                     "fastq2 not given, and fastq1 does not contain '_R1_'.")
             paths['fastq2'] = fastq1.replace('_R1_', '_R2_')
         if fastq1:
-            self.name: typing.Optional[str] = '_'.join(os.path.basename(fastq1).split('_')[:2])
+            self.name: str | None = '_'.join(os.path.basename(fastq1).split('_')[:2])
         else:
             self.name = None
         self.basespace_id = basespace_id
@@ -131,7 +134,7 @@ class Sample:
         fastq1 = self.paths.get('fastq1')
         if fastq1 is None:
             return 'Sample()'
-        return 'Sample(fastq1={!r})'.format(fastq1)
+        return f'Sample(fastq1={fastq1!r})'
 
     def __str__(self):
         result = 'Sample'
@@ -139,7 +142,7 @@ class Sample:
             result += ' '
             result += self.name
         if self.rank is not None:
-            result += ' ({})'.format(self.rank)
+            result += f' ({self.rank})'
         return result
 
     def __getattr__(self, output_name):
@@ -153,7 +156,7 @@ class Sample:
     def get_default_path(self, output_name):
         if self.scratch_path is None:
             raise AttributeError(
-                'Unknown output {} and no scratch path.'.format(output_name))
+                f'Unknown output {output_name} and no scratch path.')
         for extension in ('csv', 'fastq', 'pdf', 'svg', 'png', 'fasta'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension

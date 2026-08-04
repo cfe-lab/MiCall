@@ -11,27 +11,25 @@
 # - Logs warnings for each retry attempt, errors after exhausting retry time
 # - Always creates done_qai_upload flag, even when coverage_scores.csv is missing
 
+import argparse
 import csv
-import typing
+import logging
+import os
 from argparse import SUPPRESS
 from collections import defaultdict
+from collections.abc import Sequence
 from datetime import datetime, timedelta
-import logging
 from functools import partial
+from operator import getitem, itemgetter
 from pathlib import Path
-from typing import Dict, Sequence, Tuple, List, Set, Optional, TextIO, TypedDict
-import argparse
 from time import sleep
+from typing import TextIO, TypedDict
 from urllib.parse import urlparse
 
+from micall.core.project_config import G2P_SEED_NAME, ProjectConfig
+from micall.monitor import disk_operations, qai_helper
 from micall.monitor.types import PipelineType
-from operator import itemgetter, getitem
-import os
-
-from micall.monitor import qai_helper
 from micall.utils import sample_sheet_parser
-from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
-from micall.monitor import disk_operations
 
 logger = logging.getLogger('update_qai')
 
@@ -130,10 +128,9 @@ def retry_find_run(session: Session, experiment_name: str) -> Run:
     rowcount: int = len(runs)
     if rowcount == 0:
         raise RuntimeError(
-            "No run found with runname {!r}.".format(experiment_name))
+            f"No run found with runname {experiment_name!r}.")
     if rowcount != 1:
-        raise RuntimeError("Found {} runs with runname {!r}.".format(
-            rowcount, experiment_name))
+        raise RuntimeError(f"Found {rowcount} runs with runname {experiment_name!r}.")
     return runs[0]
 
 
@@ -177,7 +174,7 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def build_conseqs(conseqs_file: TextIO, run_name: str, sample_sheet: Dict[str, object]) -> List[Dict[str, object]]:
+def build_conseqs(conseqs_file: TextIO, run_name: str, sample_sheet: dict[str, object]) -> list[dict[str, object]]:
     """
     Parses a Pipeline-produced conseq file and builds JSON objects to send
     to QAI.
@@ -189,7 +186,7 @@ def build_conseqs(conseqs_file: TextIO, run_name: str, sample_sheet: Dict[str, o
     @return an array of JSON hashes, one for each conseq.
     """
 
-    result: List[Dict[str, object]] = []
+    result: list[dict[str, object]] = []
     ss = sample_sheet
     conseqs_csv = csv.DictReader(conseqs_file)
     # ss["Data"] is keyed by (what should be) the FASTQ
@@ -209,7 +206,7 @@ def build_conseqs(conseqs_file: TextIO, run_name: str, sample_sheet: Dict[str, o
     #     FASTQ_lookup[sample_name] = fastq_filename
 
     projects = ProjectConfig.loadDefault()
-    sample_seeds: typing.Dict[str, typing.Set[str]] = {}
+    sample_seeds: dict[str, set[str]] = {}
 
     for row in conseqs_csv:
         # Each row of this file looks like:
@@ -277,8 +274,8 @@ def build_conseqs(conseqs_file: TextIO, run_name: str, sample_sheet: Dict[str, o
 
 
 def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, cascade_file: TextIO,
-                           sample_sheet: Dict[str, object], sequencings: Sequence[Sequencing], project_regions: Sequence[ProjectRegion],
-                           regions: List[Dict[str, object]]) -> List[Dict[str, object]]:
+                           sample_sheet: dict[str, object], sequencings: Sequence[Sequencing], project_regions: Sequence[ProjectRegion],
+                           regions: list[dict[str, object]]) -> list[dict[str, object]]:
     """ Build a list of request objects that will create the review decision
     records.
 
@@ -337,14 +334,14 @@ def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, 
         key = tags, G2P_SEED_NAME
         counts_map[key] = read_int(counts, 'v3loop') * 2
 
-    sequencing_map: Dict[str, Dict[str, Sequencing]] = defaultdict(dict)  # {tags: {project: sequencing}}
+    sequencing_map: dict[str, dict[str, Sequencing]] = defaultdict(dict)  # {tags: {project: sequencing}}
     for sequencing in sequencings:
         sequencing_map[sequencing['tag']][
             sequencing['target_project']] = sequencing
 
     targeted_projects = set(map(itemgetter('target_project'), sequencings))
 
-    decisions: Dict[Tuple[str, str], Dict[str, object]] = {}  # {(sample_name, region): decision}
+    decisions: dict[tuple[str, str], dict[str, object]] = {}  # {(sample_name, region): decision}
     # sample,project,region,q.cut,min.coverage,which.key.pos,off.score,on.score
     for coverage in csv.DictReader(coverage_file):
         tags = sample_tags[coverage['sample']]
@@ -352,7 +349,7 @@ def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, 
         if project_map is None:
             raise KeyError("No sequencing found with tags '%s' for %s. Are "
                            "tagged layouts missing?" % (tags, coverage_file.name))
-        sequencing: Optional[Dict[str, object]] = project_map.get(coverage['project'])  # type: ignore
+        sequencing: dict[str, object] | None = project_map.get(coverage['project'])  # type: ignore
         if sequencing is not None:
             score = read_int(coverage, 'on.score')
         else:
@@ -402,7 +399,7 @@ def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, 
 
 
 def upload_review_to_qai(coverage_file: TextIO, collated_counts_file: TextIO, cascade_file: TextIO,
-                         run: Run, sample_sheet: Dict[str, object], conseqs: List[Dict[str, object]], session: Session,
+                         run: Run, sample_sheet: dict[str, object], conseqs: list[dict[str, object]], session: Session,
                          pipeline_version: str) -> None:
     """ Create a review.
 
@@ -462,8 +459,8 @@ def upload_proviral_tables(session: Session, result_folder: str, run: Run) -> No
     logger.info('aligned proviral upload success!')
 
 
-def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: str) -> List[object]:
-    responses: List[object] = []
+def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: str) -> list[object]:
+    responses: list[object] = []
     with open(csv_path, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -506,17 +503,16 @@ def find_pipeline_id(session: Session, pipeline_version: str) -> object:
     :param str pipeline_version: 'X.Y' description of pipeline version to find
     @return: the pipeline id.
     """
-    pipelines: List[Dict[str, object]] = retry_operation(
+    pipelines: list[dict[str, object]] = retry_operation(
         lambda: session.get_json("/lab_miseq_pipelines?version=" + pipeline_version),
         f"Finding pipeline with version {pipeline_version}"
     )
     rowcount: int = len(pipelines)
     if rowcount == 0:
         raise RuntimeError(
-            "No pipeline found with version {!r}.".format(pipeline_version))
+            f"No pipeline found with version {pipeline_version!r}.")
     if rowcount != 1:
-        raise RuntimeError("Found {} pipelines with version {!r}.".format(
-            rowcount, pipeline_version))
+        raise RuntimeError(f"Found {rowcount} pipelines with version {pipeline_version!r}.")
     first_pipeline = pipelines[0]
     pipeline_id = first_pipeline.get('id')
     if pipeline_id is None:
@@ -524,8 +520,8 @@ def find_pipeline_id(session: Session, pipeline_version: str) -> object:
     return pipeline_id
 
 
-def load_ok_sample_regions(result_folder: str) -> Set[Tuple[str, str, str]]:
-    ok_sample_regions: Set[Tuple[str, str, str]] = set()
+def load_ok_sample_regions(result_folder: str) -> set[tuple[str, str, str]]:
+    ok_sample_regions: set[tuple[str, str, str]] = set()
     coverage_file: str = os.path.join(result_folder, 'coverage_scores.csv')
     with open(coverage_file, "r") as f:
         reader = csv.DictReader(f)
@@ -537,7 +533,7 @@ def load_ok_sample_regions(result_folder: str) -> Set[Tuple[str, str, str]]:
     return ok_sample_regions
 
 
-def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: str, qai_password: str, pipeline_version: str) -> None:
+def process_folder(item: tuple[Path, PipelineType], qai_server: str, qai_user: str, qai_password: str, pipeline_version: str) -> None:
     result_folder: Path
     pipeline_group: PipelineType
     result_folder, pipeline_group = item
@@ -547,7 +543,7 @@ def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: s
         return sample_sheet_parser.read_sample_sheet_and_overrides(run_path / 'SampleSheet.csv')
 
     # Read sample sheet with retry for disk operations
-    sample_sheet: Dict[str, object] = retry_operation(
+    sample_sheet: dict[str, object] = retry_operation(
         read_sample_sheet_with_retry,
         f"Reading sample sheet for {result_folder}"
     )
@@ -581,7 +577,7 @@ def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: s
 
 
 def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_version: str) -> None:
-    logger.info('Uploading data to Oracle from {}'.format(result_folder))
+    logger.info(f'Uploading data to Oracle from {result_folder}')
     result_folder = Path(result_folder)
     collated_conseqs: Path = result_folder / 'conseq.csv'
     collated_counts: Path = result_folder / 'remap_counts.csv'
@@ -604,13 +600,13 @@ def process_remapped(result_folder: Path, session: Session, run: Run, pipeline_v
                                  pipeline_version)
 
     # Read sample sheet with retry
-    sample_sheet: Dict[str, object] = retry_operation(
+    sample_sheet: dict[str, object] = retry_operation(
         read_sample_sheet_with_retry,
         f"Reading sample sheet for {result_folder}"
     )
 
     # Read conseqs with retry
-    conseqs: List[Dict[str, object]] = retry_operation(
+    conseqs: list[dict[str, object]] = retry_operation(
         read_conseqs_with_retry,
         f"Reading conseqs file for {result_folder}"
     )
@@ -719,7 +715,7 @@ def main() -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARNING)
 
     logging.basicConfig(level=logger.level)
 

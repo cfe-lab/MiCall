@@ -1,8 +1,9 @@
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 from micall.utils.dir_path import DirPath
+
 from .find_file import find_file
 from .logger import logger
 

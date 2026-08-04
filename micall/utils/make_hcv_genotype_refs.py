@@ -3,10 +3,11 @@ Generate gene-by-gene bowtie reference for specific HCV genotypes
 """
 
 import os
+
 import HyPhy
 import hyphyAlign
-
 from project_config import ProjectConfig
+
 
 def convert_fasta (lines):
     blocks = []
@@ -27,7 +28,7 @@ def convert_fasta (lines):
     try:
         blocks.append([h,sequence])    # handle last entry
     except RuntimeError:
-        raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))
+        raise Exception(f"convert_fasta(): Error appending to blocks [{h},{sequence}]")
     return blocks
 
 hyphy = HyPhy._THyPhy(os.getcwd(), 1)  # @UndefinedVariable
@@ -49,7 +50,7 @@ with open('HCV_REF_2012_genome.fasta', 'r') as handle:
 
 projects = ProjectConfig.loadDefault()
 genes = ['E1', 'E2', 'NS2', 'NS3', 'NS4a', 'NS4b', 'NS5a', 'NS5b', 'core', 'p7']
-h77 = dict([(gene, projects.getReference("HCV1A-H77-{}-seed".format(gene)))
+h77 = dict([(gene, projects.getReference(f"HCV1A-H77-{gene}-seed"))
             for gene in genes])
 
 with open('hcv_genes.fasta', 'w') as outfile:

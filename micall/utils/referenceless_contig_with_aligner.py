@@ -28,21 +28,22 @@ The referenceless stitcher needs two complementary capabilities:
    cutoffs_left_* / cutoffs_right_* and friends).
 """
 
-import numpy as np
-
 from abc import ABC, abstractmethod
-from typing import Iterator, Tuple, Mapping, Literal, NoReturn
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
-from mappy import Aligner as OriginalMappyAligner
 from functools import cached_property
+from typing import Literal, NoReturn
 
-from micall.utils.referenceless_score import Score
+import numpy as np
+from mappy import Aligner as OriginalMappyAligner
+
 from micall.utils.contig_stitcher_contigs import Contig
-from micall.utils.overlap_stitcher import \
-    exp_dropoff_array, find_max_overlap_length
-from micall.utils.find_maximum_overlap import \
-    get_overlap_results, choose_convolution_method
-
+from micall.utils.find_maximum_overlap import (
+    choose_convolution_method,
+    get_overlap_results,
+)
+from micall.utils.overlap_stitcher import exp_dropoff_array, find_max_overlap_length
+from micall.utils.referenceless_score import Score
 
 # Relation requested by the stitcher when probing overlap anchors.
 # - "left": anchor at the left end of this contig (we seek earliest start)
@@ -53,7 +54,7 @@ OverlapRelation = Literal["left", "right", "cover"]
 
 class LocalAligner(ABC):
     @abstractmethod
-    def map(self, query: str) -> Iterator[Tuple[int, int]]: ...
+    def map(self, query: str) -> Iterator[tuple[int, int]]: ...
 
 
 class MappyAligner(LocalAligner):
@@ -68,7 +69,7 @@ class MappyAligner(LocalAligner):
     def __init__(self, seq: str) -> None:
         self.aligner = OriginalMappyAligner(seq=seq)
 
-    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+    def map(self, query: str) -> Iterator[tuple[int, int]]:
         for x in self.aligner.map(query):
             if x.is_primary:
                 yield (x.r_st, x.r_en)
@@ -102,7 +103,7 @@ class ForwardAligner(LocalAligner):
             self.seq = 'A' * PADDING + seq
         self.aligner = OriginalMappyAligner(seq=self.seq)
 
-    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+    def map(self, query: str) -> Iterator[tuple[int, int]]:
         # Match the query padding to the chosen synthetic flank.
         if self.seq.startswith('A'):
             query = 'A' * PADDING + query
@@ -137,7 +138,7 @@ class ReversedAligner(LocalAligner):
             self.seq = seq + 'A' * PADDING
         self.aligner = OriginalMappyAligner(seq=self.seq)
 
-    def map(self, query: str) -> Iterator[Tuple[int, int]]:
+    def map(self, query: str) -> Iterator[tuple[int, int]]:
         if self.seq.endswith('A'):
             query = query + 'A' * PADDING
         else:
@@ -188,7 +189,7 @@ class ContigWithAligner(Contig):
         return ret
 
     @cached_property
-    def alphabet(self) -> Tuple[str, ...]:
+    def alphabet(self) -> tuple[str, ...]:
         return tuple(sorted(set(self.seq)))
 
     @cached_property
@@ -214,7 +215,7 @@ class ContigWithAligner(Contig):
 
 def find_maximum_overlap(
     left: ContigWithAligner, right: ContigWithAligner
-) -> Tuple[int, float]:
+) -> tuple[int, float]:
     """Estimate the best relative placement of two contigs.
 
     What: Computes a cross-signal convolution between symbol-specific softened
@@ -254,7 +255,7 @@ def map_overlap(self: ContigWithAligner,
                 minimum_score: Score,
                 relation: OverlapRelation,
                 overlap: str,
-                ) -> Iterator[Tuple[int, int]]:
+                ) -> Iterator[tuple[int, int]]:
     """Map an overlap probe against this contig under a stitching relation.
 
     What: Returns candidate (start, end) placements of the provided overlap

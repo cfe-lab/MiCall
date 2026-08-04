@@ -8,8 +8,8 @@ from time import sleep
 from unittest.mock import patch
 
 from micall.monitor.run_completion_watcher import (
-    find_unstable_runs,
     check_run_completions,
+    find_unstable_runs,
 )
 
 

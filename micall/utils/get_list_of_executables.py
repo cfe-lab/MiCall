@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
 
 import argparse
-import sys
-from typing import Sequence, Iterator
 import os
-from pathlib import Path
 import re
+import sys
+from collections.abc import Iterator, Sequence
+from pathlib import Path
 
 
 def is_executable_script(content: str) -> bool:

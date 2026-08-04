@@ -1,10 +1,10 @@
-from pathlib import Path
 import re
+from pathlib import Path
 
 from pytest import mark
 
 from micall.core.denovo import denovo
-from micall.tests.test_fasta_to_csv import check_hcv_db, DEFAULT_DATABASE
+from micall.tests.test_fasta_to_csv import DEFAULT_DATABASE, check_hcv_db
 from micall.utils.work_dir import WorkDir  # activates the fixture
 
 # make linters not complain about unused imports.

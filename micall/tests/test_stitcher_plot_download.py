@@ -3,8 +3,13 @@ Tests for downloading stitcher plot SVG files from Kive.
 """
 from unittest.mock import Mock, patch
 
-from micall.monitor.kive_watcher import KiveWatcher, FolderWatcher, trim_name
-from micall.tests.test_kive_watcher import create_kive_watcher_with_main_run, create_raw_data_with_two_samples, create_mock_open_kive, create_default_config
+from micall.monitor.kive_watcher import FolderWatcher, KiveWatcher, trim_name
+from micall.tests.test_kive_watcher import (
+    create_default_config,
+    create_kive_watcher_with_main_run,
+    create_mock_open_kive,
+    create_raw_data_with_two_samples,
+)
 
 # To avoid unused import warning
 assert create_kive_watcher_with_main_run is not None
@@ -157,8 +162,9 @@ def test_folder_completed_with_stitcher_plot(raw_data_with_two_samples, mock_ope
 
 def test_stitcher_plot_svg_argument_in_micall_kive():
     """Test that stitcher_plot_svg argument is properly defined in micall_kive.py"""
-    from micall.utils.micall_kive import parse_args
     import sys
+
+    from micall.utils.micall_kive import parse_args
 
     # Create test arguments (--denovo must come before positional arguments)
     test_args = [
@@ -208,8 +214,9 @@ def test_stitcher_plot_svg_argument_in_micall_kive():
 
 def test_stitcher_plot_passed_to_sample():
     """Test that stitcher_plot_svg is passed to Sample in load_sample"""
-    from micall.utils.micall_kive import load_sample
     from argparse import Namespace
+
+    from micall.utils.micall_kive import load_sample
 
     # Create mock args
     args = Namespace(

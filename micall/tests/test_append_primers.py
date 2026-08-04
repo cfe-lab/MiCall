@@ -1,18 +1,19 @@
 
-import pytest
 from pathlib import Path
+
+import pytest
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.utils.append_primers import (
+    DEFAULT_FORWARD_PRIMER,
+    DEFAULT_REVERSE_PRIMER,
+    UserError,
+    append_primers,
     append_primers_to_record,
     entry,
     parse_arguments,
-    append_primers,
-    UserError,
-    DEFAULT_FORWARD_PRIMER,
-    DEFAULT_REVERSE_PRIMER,
 )
 
 

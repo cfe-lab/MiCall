@@ -10,29 +10,34 @@ This assumes a consistent reading frame across the entire region.
 """
 
 import argparse
-import re
-import typing
-from collections import Counter, defaultdict
 import csv
-from csv import DictWriter
-from itertools import groupby, chain
-from operator import itemgetter
-import os
-from pathlib import Path
 import logging
+import os
+import re
+from collections import Counter, defaultdict
+from csv import DictWriter
+from itertools import chain, groupby
+from operator import itemgetter
+from pathlib import Path
 
 import gotoh
 import yaml
+from aligntools import CigarActions
 
-from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
+from micall.core.project_config import G2P_SEED_NAME, ProjectConfig
 from micall.core.remap import PARTIAL_CONTIG_SUFFIX, REVERSED_CONTIG_SUFFIX
 from micall.data.landmark_reader import LandmarkReader
 from micall.utils.big_counter import BigCounter
 from micall.utils.consensus_aligner import ConsensusAligner
-from aligntools import CigarActions
-from micall.utils.report_amino import ReportAmino, MAX_CUTOFF, SeedAmino, AMINO_ALPHABET, ReportNucleotide, \
-    SeedNucleotide
-from micall.utils.spring_beads import Wire, Bead
+from micall.utils.report_amino import (
+    AMINO_ALPHABET,
+    MAX_CUTOFF,
+    ReportAmino,
+    ReportNucleotide,
+    SeedAmino,
+    SeedNucleotide,
+)
+from micall.utils.spring_beads import Bead, Wire
 from micall.utils.translation import translate
 
 logger = logging.getLogger(__name__)
@@ -175,8 +180,7 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start, prev_
     assert region_start is not None
     mismatch = False
     overlap_midpoint = int((prev_region_end - region_start + 1) / 2)
-    if overlap_midpoint < 0:
-        overlap_midpoint = 0
+    overlap_midpoint = max(overlap_midpoint, 0)
     for nuc_index, nucleotide in enumerate(region_nucleotides):
         position = region_start + nuc_index - 1
         if position not in nuc_dict:
@@ -268,7 +272,7 @@ def aggregate_insertions(insertions_counter, coverage_nuc=0, consensus_pos=None)
     return aggregated_insertions
 
 
-class ConsensusBuilder(object):
+class ConsensusBuilder:
     """ Helper class to build the consensus for different mixture cutoffs."""
     def __init__(self,
                  mixture_cutoffs,
@@ -326,7 +330,7 @@ class ConsensusBuilder(object):
                 }
 
 
-class SequenceReport(object):
+class SequenceReport:
     """ Hold the data for several reports related to a sample's genetic sequence.
 
     To use a report object, read a group of aligned reads that mapped to a
@@ -335,7 +339,7 @@ class SequenceReport(object):
     def __init__(self,
                  insert_writer: 'InsertionWriter',
                  projects: ProjectConfig,
-                 conseq_mixture_cutoffs: typing.List[float],
+                 conseq_mixture_cutoffs: list[float],
                  clipping_counts=None,
                  conseq_insertion_counts=None,
                  landmarks_yaml=None,
@@ -358,12 +362,12 @@ class SequenceReport(object):
         self.conseq_mixture_cutoffs.insert(0, MAX_CUTOFF)
         self.callback = None
         self.seed_aminos = self.reading_frames = None
-        self.report_nucleotides: typing.Dict[
+        self.report_nucleotides: dict[
             str,  # coordinate_name
-            typing.List[ReportNucleotide]] = defaultdict(list)
-        self.reports: typing.Dict[
+            list[ReportNucleotide]] = defaultdict(list)
+        self.reports: dict[
             str,  # coordinate_name
-            typing.List[ReportAmino]] = defaultdict(list)
+            list[ReportAmino]] = defaultdict(list)
         self.inserts = self.consensus = self.seed = self.insert_nucs = self.detail_seed = None
         self.contigs = None  # [(ref, group_ref, seq)]
         self.consensus_by_reading_frame = None  # {frame: seq}
@@ -382,15 +386,15 @@ class SequenceReport(object):
         self.consensus_builder = ConsensusBuilder(self.conseq_mixture_cutoffs,
                                                   consensus_min_coverage)
 
-        self.combined_reports: typing.Dict[
+        self.combined_reports: dict[
             str,  # seed
-            typing.Dict[str,  # coord_region
-                        typing.List[ReportAmino]]] = defaultdict(
+            dict[str,  # coord_region
+                        list[ReportAmino]]] = defaultdict(
             lambda: defaultdict(list))
-        self.combined_report_nucleotides: typing.Dict[
+        self.combined_report_nucleotides: dict[
             str,  # seed
-            typing.Dict[str,  # coord_region
-                        typing.List[ReportNucleotide]]] = defaultdict(
+            dict[str,  # coord_region
+                        list[ReportNucleotide]]] = defaultdict(
             lambda: defaultdict(list))
         self.combined_insertions = defaultdict(lambda:  # reference
                                                defaultdict(lambda:  # region
@@ -541,8 +545,8 @@ class SequenceReport(object):
     def process_reads(self,
                       aligned_csv,
                       coverage_summary=None,
-                      included_regions: typing.Optional[typing.Set] = None,
-                      excluded_regions: typing.Set = frozenset()):
+                      included_regions: set | None = None,
+                      excluded_regions: set = frozenset()):
         """ Parse CSV file containing aligned reads.
 
         Grouped by reference and quality cutoff.
@@ -600,8 +604,8 @@ class SequenceReport(object):
 
     def read(self,
              aligned_reads,
-             included_regions: typing.Optional[typing.Set] = None,
-             excluded_regions: typing.Set = frozenset()):
+             included_regions: set | None = None,
+             excluded_regions: set = frozenset()):
         """
         Reset all the counters, and read a new section of aligned reads.
         A section must have the same region, and qcut on all lines.
@@ -800,7 +804,7 @@ class SequenceReport(object):
 
     def write_amino_report(self,
                            amino_writer: DictWriter,
-                           reports: typing.Dict[str, typing.List['ReportAmino']],
+                           reports: dict[str, list['ReportAmino']],
                            seed: str,
                            coverage_summary: dict = None):
         if not reports:
@@ -920,7 +924,7 @@ class SequenceReport(object):
 
     def write_sequence_coverage_counts(self,
                                        contig_name: str,
-                                       coordinate_name: typing.Optional[str],
+                                       coordinate_name: str | None,
                                        consensus: str,
                                        consensus_offset=0,
                                        seed_nucs=None):
@@ -1219,11 +1223,11 @@ class SequenceReport(object):
 
     def write_nuc_report(self,
                          nuc_writer: DictWriter,
-                         reports: typing.Dict[str, typing.List[ReportNucleotide]],
+                         reports: dict[str, list[ReportNucleotide]],
                          seed: str):
         self.merge_extra_counts()
         landmark_reader = LandmarkReader(self.landmarks)
-        report_nucleotides: typing.List[ReportNucleotide]
+        report_nucleotides: list[ReportNucleotide]
         for region, report_nucleotides in sorted(reports.items()):
             try:
                 coordinate_name = landmark_reader.get_coordinates(seed)
@@ -1623,7 +1627,7 @@ class SequenceReport(object):
         return result
 
 
-class InsertionWriter(object):
+class InsertionWriter:
     def __init__(self, insert_file):
         """ Initialize a writer object.
 
@@ -1756,7 +1760,7 @@ class InsertionWriter(object):
                     continue
                 ref_pos = insert_pos - 1
                 self.ref_insertions[region][ref_pos] =\
-                    aggregate_insertions(insert_nuc_counts[left],
+                    aggregate_insertions(counts,
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
                 count = sum(counts.values())
@@ -1821,7 +1825,7 @@ def format_cutoff(cutoff):
 
     if cutoff == MAX_CUTOFF:
         return cutoff
-    return '{:0.3f}'.format(cutoff)
+    return f'{cutoff:0.3f}'
 
 
 def aln2counts(aligned_csv,

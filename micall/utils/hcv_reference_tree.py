@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-import shutil
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 import os
 import re
+import shutil
+import sys
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from collections import Counter, defaultdict
 from csv import DictReader
 from itertools import chain
 from subprocess import run
 
-from Levenshtein import distance
 import requests
-import sys
+from Levenshtein import distance
 
 """ Retrieve HCV reference sequences for building a tree.
 

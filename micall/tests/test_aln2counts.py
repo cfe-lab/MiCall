@@ -1,10 +1,16 @@
-from io import StringIO
 import unittest
+from io import StringIO
 
 import yaml
 
-from micall.core.aln2counts import InsertionWriter, SeedAmino, \
-    ReportAmino, ConsensusBuilder, ReportNucleotide, SeedNucleotide
+from micall.core.aln2counts import (
+    ConsensusBuilder,
+    InsertionWriter,
+    ReportAmino,
+    ReportNucleotide,
+    SeedAmino,
+    SeedNucleotide,
+)
 from micall.tests.test_aln2counts_report import create_sequence_report, prepare_reads
 
 LANDMARKS_YAML = """\

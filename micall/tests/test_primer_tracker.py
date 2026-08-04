@@ -1,10 +1,10 @@
 import pytest
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.primer_tracker import PrimerTracker
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
+from micall.utils.primer_tracker import PrimerTracker
 
 
 def test_hcv1a(projects):

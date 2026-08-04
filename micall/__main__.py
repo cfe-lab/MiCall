@@ -6,13 +6,12 @@ enabling users to execute various MiCall components directly
 from the terminal.
 """
 
-import sys
 import argparse
 import os
 import runpy
-from typing import Sequence
+import sys
+from collections.abc import Sequence
 from pathlib import Path
-
 
 # Run micall/utils/get_list_of_executables.py to get the up-to-date list of these executables.
 # The consistency of this list is verified in micall/tests/test_installation.py

@@ -1,8 +1,7 @@
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from collections import defaultdict, Counter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from collections import Counter, defaultdict
 from csv import DictReader
 from pathlib import Path
-
 
 AMPLICON_REGIONS = ('HLA-B-exon2', 'HLA-B-exon3', 'V3LOOP')
 

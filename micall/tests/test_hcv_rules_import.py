@@ -1,18 +1,17 @@
 from argparse import Namespace
 from copy import copy
-from unittest import TestCase
-
 from io import StringIO
+from unittest import TestCase
 
 from openpyxl import Workbook
 
 from micall.utils.hcv_rules_import import (
-    load_references,
-    WorksheetReader,
-    MonitoredPositionsReader,
     FoldRangesReader,
-    RulesWriter,
+    MonitoredPositionsReader,
     Range,
+    RulesWriter,
+    WorksheetReader,
+    load_references,
 )
 
 REFERENCES = load_references()

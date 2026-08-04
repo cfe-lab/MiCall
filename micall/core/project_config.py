@@ -1,12 +1,11 @@
 import json
-from typing import Dict, List
 
 from micall.utils.externals import ProjectsFile, ProjectsScoringFile
 
 G2P_SEED_NAME = "HIV1-CON-XX-Consensus-seed"
 
 
-class ProjectConfig(object):
+class ProjectConfig:
     @classmethod
     def search(cls, project_paths):
         projects = None
@@ -20,8 +19,7 @@ class ProjectConfig(object):
                 projects = None
 
         if not projects:
-            raise RuntimeError('No project definitions found in {!r}'.format(
-                project_paths))
+            raise RuntimeError(f'No project definitions found in {project_paths!r}')
         return projects
 
     @classmethod
@@ -53,19 +51,16 @@ class ProjectConfig(object):
         if excluded_seeds:
             seed_region_set.difference_update(excluded_seeds)
         seed_region_list = list(seed_region_set)
-        seed_name_map: Dict[str, str] = {}  # {sequence: name}
+        seed_name_map: dict[str, str] = {}  # {sequence: name}
         seed_region_list.sort()
         for name in seed_region_list:
             region = self.config['regions'][name]
             sequence = ''.join(region['reference'])
             duplicate_name = seed_name_map.get(sequence)
             if duplicate_name is not None:
-                raise RuntimeError("Duplicate references: {} and {}.".format(
-                    duplicate_name,
-                    name))
+                raise RuntimeError(f"Duplicate references: {duplicate_name} and {name}.")
             seed_name_map[sequence] = name
-            fasta_file.write('>{name}\n{ref}\n'.format(name=name,
-                                                       ref=sequence))
+            fasta_file.write(f'>{name}\n{sequence}\n')
 
     def getReference(self, region_name):
         reference = self.config['regions'][region_name]['reference']
@@ -157,7 +152,7 @@ class ProjectConfig(object):
         project_names = set(self.config['projects'])
         if excluded_projects is not None:
             project_names.difference_update(excluded_projects)
-        project_names: List[str] = sorted(project_names) # type: ignore[no-redef]
+        project_names: list[str] = sorted(project_names) # type: ignore[no-redef]
         for project_name in project_names:
             project = self.config['projects'][project_name]
             for region in project['regions']:

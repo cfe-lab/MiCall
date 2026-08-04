@@ -3,7 +3,13 @@ from unittest import TestCase
 
 import pytest
 
-from micall.resistance.genreport import ReportTemplate, ReportPage, read_config, read_resistance, read_mutations
+from micall.resistance.genreport import (
+    ReportPage,
+    ReportTemplate,
+    read_config,
+    read_mutations,
+    read_resistance,
+)
 
 
 class GenReportTest(TestCase):
@@ -313,7 +319,9 @@ def test_algorithm_regions_processable():
     structures for algorithm regions.
     """
     from micall.resistance.resistance import (
-        load_asi, get_algorithm_regions, create_empty_aminos
+        create_empty_aminos,
+        get_algorithm_regions,
+        load_asi,
     )
 
     algorithms = load_asi()
@@ -327,7 +335,7 @@ def test_algorithm_regions_processable():
             assert empty.region == region
             assert len(empty.aminos) > 0
         except Exception as e:
-            errors.append(f"{region}: {str(e)}")
+            errors.append(f"{region}: {e!s}")
 
     assert not errors, (
         f"Cannot process algorithm regions: {errors}\n"
@@ -378,7 +386,9 @@ def test_region_name_mapping_consistency():
     Prevents: Bugs due to inconsistent region naming (IN in algorithm vs INT in code).
     """
     from micall.resistance.resistance import (
-        load_asi, get_algorithm_regions, get_reported_region
+        get_algorithm_regions,
+        get_reported_region,
+        load_asi,
     )
 
     algorithms = load_asi()

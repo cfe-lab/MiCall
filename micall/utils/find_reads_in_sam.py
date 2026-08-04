@@ -1,8 +1,8 @@
+import sys
 from argparse import ArgumentParser, FileType
 from io import StringIO
 from operator import attrgetter
 from subprocess import run
-import sys
 
 from pysam import AlignmentFile
 

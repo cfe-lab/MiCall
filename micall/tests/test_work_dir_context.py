@@ -5,6 +5,7 @@ passed through all intermediate functions.
 """
 
 from pathlib import Path
+
 from micall.utils.work_dir import WorkDir
 
 

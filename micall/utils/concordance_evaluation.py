@@ -1,9 +1,11 @@
-import os
-import csv
-from collections import defaultdict
 import argparse
-from numpy import std
+import csv
+import os
+from collections import defaultdict
+
 import matplotlib
+from numpy import std
+
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt   # noqa
 
@@ -44,9 +46,9 @@ def main():
     plt.subplots_adjust(bottom=0.2, left=0.2)
 
     # {seed: {region: [values]}}
-    all_seed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))
+    all_seed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     # {coord: {region: [values]}}
-    all_coord_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))
+    all_coord_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
     for folder in folders_to_read:
         try:

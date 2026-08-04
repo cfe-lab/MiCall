@@ -2,17 +2,16 @@
 
 It is part of the project web site.
 """
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-
 import os
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType
+from collections import defaultdict
 from itertools import groupby
 from operator import itemgetter
 
 import yaml
-from collections import defaultdict
-from pyvdrm.hcvr import HCVR, AsiScoreCond, ScoreList, ScoreExpr, BoolTrue
+from pyvdrm.hcvr import HCVR, AsiScoreCond, BoolTrue, ScoreExpr, ScoreList
 
-from micall.resistance.asi_algorithm import HCV_RULES_VERSION, HCV_RULES_DATE
+from micall.resistance.asi_algorithm import HCV_RULES_DATE, HCV_RULES_VERSION
 
 
 def parse_args():
@@ -54,7 +53,7 @@ def load_drug_names(config_file, report_prefix='Hepatitis C'):
             return {drug[0]: drug[1]
                     for drug_class in known_drugs.values()
                     for drug in drug_class}
-    raise ValueError('No report title starts with {!r}.'.format(report_prefix))
+    raise ValueError(f'No report title starts with {report_prefix!r}.')
 
 
 def write_report(report_file, rules):
@@ -179,8 +178,7 @@ def parse_rule(rule_text):
             mutation, score = children
             display = score
         else:
-            raise ValueError('Unexpected score expression: {!r}'.format(
-                children))
+            raise ValueError(f'Unexpected score expression: {children!r}')
         if isinstance(mutation, BoolTrue):
             mutation = 'TRUE'
         else:

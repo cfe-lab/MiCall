@@ -3,16 +3,20 @@ import typing
 from argparse import ArgumentParser, FileType
 from collections import namedtuple
 from csv import DictReader, DictWriter
-from itertools import groupby, chain, zip_longest
-from operator import itemgetter, attrgetter
+from itertools import chain, groupby, zip_longest
+from operator import attrgetter, itemgetter
 
 import yaml
 from pyvdrm.vcf import Mutation
 
+from micall.core.aln2counts import AMINO_ALPHABET
 from micall.core.project_config import ProjectConfig
 from micall.data.landmark_reader import LandmarkReader
-from micall.resistance.asi_algorithm import AsiAlgorithm, HcvResistanceLevels, HivResistanceLevels
-from micall.core.aln2counts import AMINO_ALPHABET
+from micall.resistance.asi_algorithm import (
+    AsiAlgorithm,
+    HcvResistanceLevels,
+    HivResistanceLevels,
+)
 
 MIN_FRACTION = 0.05  # prevalence of mutations to report
 MIN_COVERAGE = 100

@@ -1,13 +1,14 @@
 import json
+import logging
 import os
 import sys
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
-from operator import itemgetter
-import logging
-from micall.utils.externals import ProjectsFile, ProjectsScoringFile
-
+from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
 from collections import Counter
 from copy import deepcopy
+from operator import itemgetter
+
+from micall.utils.externals import ProjectsFile, ProjectsScoringFile
+
 try:
     from micall.monitor import qai_helper
 except ImportError:

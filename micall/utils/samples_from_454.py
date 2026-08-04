@@ -1,6 +1,6 @@
+import csv
 import os
 from argparse import ArgumentParser, FileType
-import csv
 from datetime import datetime
 from gzip import GzipFile
 from itertools import groupby

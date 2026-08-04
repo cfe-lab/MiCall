@@ -1,16 +1,17 @@
 
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence, TextIO
+from typing import TextIO
 
+from miseqinteropreader.error_metrics_parser import write_phix_csv
 from miseqinteropreader.interop_reader import InterOpReader
 from miseqinteropreader.models import (
-    TileMetricCodes,
     QualityRecord,
-    TileMetricRecord,
     ReadLengths4,
+    TileMetricCodes,
+    TileMetricRecord,
 )
-from miseqinteropreader.error_metrics_parser import write_phix_csv
 
 
 def summarize_quality_records(

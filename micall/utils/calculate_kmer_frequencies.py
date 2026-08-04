@@ -8,17 +8,19 @@ of occurrences in the input sequence.
 """
 
 import argparse
-import sys
-from dataclasses import dataclass
-from collections import defaultdict
-from pathlib import Path
-from typing import Sequence, Iterator, TextIO, TypedDict, MutableMapping
-import logging
-from micall.utils.contig_stitcher_contigs import Contig
-from Bio import SeqIO
-from itertools import chain
 import csv
+import logging
+import sys
+from collections import defaultdict
+from collections.abc import Iterator, MutableMapping, Sequence
+from dataclasses import dataclass
+from itertools import chain
+from pathlib import Path
+from typing import TextIO, TypedDict
 
+from Bio import SeqIO
+
+from micall.utils.contig_stitcher_contigs import Contig
 
 logging.basicConfig(
     level=logging.INFO,
@@ -309,4 +311,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

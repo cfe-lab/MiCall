@@ -1,9 +1,10 @@
 
-from dataclasses import dataclass
-from multicsv import MultiCSVFile
-from typing import Dict, Any, Sequence, Optional
 import csv
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
+from multicsv import MultiCSVFile
 
 SAMPLE_SHEET_MAGIC = 'bccfe'
 SAMPLE_SHEET_SEPARATOR = '_'
@@ -17,7 +18,7 @@ class SampleProject:
     project_codes: Sequence[str]
 
 
-def try_parse_sample_project(value: Optional[str | list[str]]) -> Optional[SampleProject]:
+def try_parse_sample_project(value: str | list[str] | None) -> SampleProject | None:
     if isinstance(value, list):
         # This is a quirk of csv parsing where empty fields are parsed as empty lists.
         assert len(value) == 1, "Cannot parse sample project from list with multiple elements."
@@ -39,13 +40,13 @@ def try_parse_sample_project(value: Optional[str | list[str]]) -> Optional[Sampl
                          )
 
 
-def parse_sample_project(sample_project: Optional[str]) -> SampleProject:
+def parse_sample_project(sample_project: str | None) -> SampleProject:
     ret = try_parse_sample_project(sample_project)
     assert ret is not None
     return ret
 
 
-def try_parse_sample_name(value: Optional[str]) -> Optional[Sequence[str]]:
+def try_parse_sample_name(value: str | None) -> Sequence[str] | None:
     if value is None:
         return None
 
@@ -56,14 +57,14 @@ def try_parse_sample_name(value: Optional[str]) -> Optional[Sequence[str]]:
     return sample_name_parts
 
 
-def parse_sample_name(sample_name: Optional[str]) -> Sequence[str]:
+def parse_sample_name(sample_name: str | None) -> Sequence[str]:
     ret = try_parse_sample_name(sample_name)
     assert ret is not None
     return ret
 
 
-def sample_sheet_v2_parser(file: MultiCSVFile) -> Dict[str, object]:
-    ret: Dict[str, Any] = {}
+def sample_sheet_v2_parser(file: MultiCSVFile) -> dict[str, object]:
+    ret: dict[str, Any] = {}
 
     sample_sheet_v2_verifier(file)
 
@@ -160,7 +161,7 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
                     data_field_errors.append(f"Line {line_number} in [Data] section: Row length {len(row)} "
                                              f"does not match header length {len(headers)}.")
 
-        reference_parsed_project: Optional[SampleProject] = None
+        reference_parsed_project: SampleProject | None = None
         for row_d in csv.DictReader(file['Data']):
             sample_project = row_d['Sample_Project']
             if reference_parsed_project is not None:

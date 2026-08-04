@@ -7,19 +7,19 @@ You'll need to upload the QC data from the InterOp folders before you can
 start MISEQ_MONITOR.py.
 """
 
+import errno
+import os
 from argparse import ArgumentParser
 from csv import DictReader
 from datetime import datetime
-import errno
 from glob import glob
 from itertools import groupby
 from operator import attrgetter
-import os
 from pathlib import Path
-from shutil import copy, rmtree, copytree
+from shutil import copy, copytree, rmtree
 
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_files
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
-from micall.utils.list_fastq_files import list_fastq_files, find_fastq_source_folder
 
 NEEDS_PROCESSING = 'needsprocessing'
 ERROR_PROCESSING = 'errorprocessing'
@@ -57,7 +57,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class Sample(object):
+class Sample:
     def __init__(self, run_name, extract_num, config):
         self.run_name = run_name
         self.extract_num = extract_num
@@ -91,9 +91,7 @@ class Sample(object):
                                    NEEDS_PROCESSING)
             matches = glob(pattern)
             if len(matches) != 1:
-                raise RuntimeError('Expected one match for {}, but found: {}'.format(
-                    pattern,
-                    matches))
+                raise RuntimeError(f'Expected one match for {pattern}, but found: {matches}')
             self.run_name = os.path.dirname(matches[0])
 
         # Use list_fastq_files to search in BaseCalls, Alignment_*/*/Fastq, or run path
@@ -103,7 +101,7 @@ class Sample(object):
             pattern = self.extract_num + '*_R1_*'
         fastq_files = list_fastq_files(self.run_name, pattern, fallback_to_run_path=False)
         if not fastq_files:
-            raise RuntimeError('No matches found for run {}'.format(self.run_name))
+            raise RuntimeError(f'No matches found for run {self.run_name}')
         matches = sorted([str(f) for f in fastq_files])
         self.fastq_paths = matches
         
@@ -293,7 +291,7 @@ def main():
     for sample in samples:
         sample.find(args.old_folder, qai_run_names)
     for qai_run_name in sorted(qai_run_names):
-        print('LabMiseqRun.import("{}")'.format(qai_run_name))
+        print(f'LabMiseqRun.import("{qai_run_name}")')
     samples.sort(key=lambda s: (s.run_name, s.extract_num))
     runs = []
     for run, run_samples in groupby(samples, key=attrgetter('run_name')):

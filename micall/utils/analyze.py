@@ -4,38 +4,43 @@
 Entry script that serves as an entry point of MiCall's Docker image.
 """
 
-from argparse import ArgumentParser
 import csv
 import errno
 import functools
-from concurrent.futures.process import ProcessPoolExecutor
-from glob import glob
 import json
 import logging
-from operator import attrgetter
 import os
 import shutil
 import socket
-from zipfile import ZipFile, ZIP_DEFLATED
 import typing
+from argparse import ArgumentParser
+from concurrent.futures.process import ProcessPoolExecutor
+from glob import glob
+from operator import attrgetter
 from pathlib import Path
+from zipfile import ZIP_DEFLATED, ZipFile
+
+from miseqinteropreader import ReadLengths4
 
 from micall.core.filter_quality import report_bad_cycles
 from micall.core.trim_fastqs import TrimSteps
-from micall.drivers.run_info import RunInfo, ReadSizes, parse_read_sizes
+from micall.drivers.run_info import ReadSizes, RunInfo, parse_read_sizes
 from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup, load_git_version
+from micall.g2p.pssm_lib import Pssm
 from micall.monitor.find_groups import find_groups
+from micall.utils.driver_utils import (
+    MiCallArgs,
+    MiCallFormatter,
+    makedirs,
+    safe_file_move,
+)
 from micall.utils.interop_wrappers import (
+    summarize_error_metrics,
     summarize_quality,
     summarize_tiles,
-    summarize_error_metrics
 )
-from micall.g2p.pssm_lib import Pssm
 from micall.utils.list_fastq_files import list_fastq_files
-from micall.utils.driver_utils import MiCallFormatter, safe_file_move, makedirs, \
-    MiCallArgs
-from miseqinteropreader import ReadLengths4
 
 EXCLUDED_SEEDS = ['HLA-B-seed']  # Not ready yet.
 EXCLUDED_PROJECTS = ['HCV-NS5a',
@@ -137,7 +142,7 @@ class BSrequest:
                                   paramdct={"Limit": limit, "Offset": offset}).json()
         err_code, err_msg = self._responsestatus(jobj)
         if err_code:
-            raise RuntimeError("runsamples API error {}: {}".format(err_code, err_msg))
+            raise RuntimeError(f"runsamples API error {err_code}: {err_msg}")
         return jobj
 
     def _get_all_sample_ids_from_run_id(self, runid):
@@ -670,7 +675,7 @@ def hcv_sample(args):
     process_run(run_info, args)
 
 
-class Args(object):
+class Args:
     pass
 
 
@@ -764,7 +769,7 @@ def load_samples(data_path):
                 run_info.read_sizes = run_info.interop_path = None
 
         create_app_result(run_info)
-    except IOError:
+    except OSError:
         if os.path.exists(json_path):
             # copy the input file to the output dir for postmortem analysis
             logger.error("Error occurred while parsing %r.", json_path)
@@ -783,7 +788,7 @@ def load_samples(data_path):
 def load_sample(sample_json,
                 data_path,
                 scratch_path,
-                project_code: typing.Optional[str]):
+                project_code: str | None):
     if sample_json is None:
         return None
     # Use list_fastq_files to find R1 files in BaseCalls, Alignment_*/*/Fastq, or sample folder
@@ -853,9 +858,7 @@ def link_samples(
         else:  # there is no sample sheet
             # Sort the FASTQ files alphabetically and run them in pairs.
             logger.info(
-                "No sample sheet found; running on all FASTQ files in folder {}".format(
-                    run_path
-                )
+                f"No sample sheet found; running on all FASTQ files in folder {run_path}"
             )
             fastq_files = (list(glob(os.path.join(run_path, "*.fastq")))
                            + list(glob(os.path.join(run_path, "*.fastq.gz"))))
@@ -866,12 +869,12 @@ def link_samples(
                 if idx == len(fastq_files) - 1:
                     # We have an odd number of FASTQ files; ignore this last one.
                     logger.info(
-                        "File {} appears extraneous; omitting.".format(forward)
+                        f"File {forward} appears extraneous; omitting."
                     )
                     break
                 reverse = fastq_files[idx + 1]
                 logger.info(
-                    "Pairing files {} and {}.".format(forward, reverse)
+                    f"Pairing files {forward} and {reverse}."
                 )
                 forward_reverse_pairs.append((forward, reverse))
 
@@ -909,7 +912,7 @@ def link_samples(
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
     for i, sample in enumerate(run_info.get_all_samples(), 1):
-        sample.rank = '{} of {}'.format(i, sample_count)
+        sample.rank = f'{i} of {sample_count}'
         sample.bad_cycles_csv = run_info.bad_cycles_csv
         sample.scratch_path = os.path.join(scratch_path, sample.name)
 
@@ -954,7 +957,7 @@ def process_sample(sample, args, pssm, use_denovo=False):
                        excluded_projects,
                        use_denovo=use_denovo)
     except Exception:
-        message = 'Failed to process {}.'.format(sample)
+        message = f'Failed to process {sample}.'
         logger.error(message, exc_info=True)
         raise RuntimeError(message)
 
@@ -968,8 +971,7 @@ def process_resistance(sample_group, run_info):
     try:
         sample_group.process_resistance(run_info)
     except Exception:
-        message = 'Failed to process resistance of {}.'.format(
-            sample_group.main_sample)
+        message = f'Failed to process resistance of {sample_group.main_sample}.'
         logger.error(message, exc_info=True)
         raise RuntimeError(message)
 
@@ -1115,7 +1117,7 @@ def collate_samples(run_info: RunInfo):
                             else:
                                 row.insert(0, sample_name)
                                 writer.writerow(row)
-                except IOError as ex:
+                except OSError as ex:
                     if ex.errno != errno.ENOENT:
                         raise
     resistance_reports_path = os.path.join(run_info.output_path,

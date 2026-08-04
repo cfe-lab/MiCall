@@ -172,7 +172,7 @@ def oc_test():
 
 
 # Main Delta Debugging algorithm.
-class DD(object):
+class DD:
     # Delta debugging base class.  To use this class for a particular
     # setting, create a subclass with an overloaded `_test()' method.
     #
@@ -363,7 +363,7 @@ class DD(object):
     def _resolve(self, csub, c, direction):
         """Stub to overload in subclasses."""
         # By default, no way to resolve
-        return None
+        return
 
     # Test with fixes
     def test_and_resolve(self, csub, r, c, direction):

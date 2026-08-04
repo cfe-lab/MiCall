@@ -1,21 +1,21 @@
 #!/usr/bin/env python3.6
 
-import os
 import argparse
-from collections import Counter
-from csv import DictReader, DictWriter
 import errno
 import itertools
-from operator import itemgetter
+import os
 import tarfile
-
-from matplotlib.ticker import FuncFormatter
-
-from micall.core import project_config, aln2counts
+from collections import Counter
+from csv import DictReader, DictWriter
+from operator import itemgetter
 
 # NOTE: this must be performed BEFORE pyplot is imported
 # http://stackoverflow.com/a/3054314/4794
 import matplotlib
+from matplotlib.ticker import FuncFormatter
+
+from micall.core import aln2counts, project_config
+
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt, patches  # noqa
 

@@ -1,12 +1,14 @@
 #! /usr/bin/env python
 
-import sys
 import argparse
 import csv
-from typing import TextIO, Sequence, Iterator
+import sys
+from collections.abc import Iterator, Sequence
 from pathlib import Path
+from typing import TextIO
+
+from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
-from Bio import SeqIO, Seq
 
 
 class NoContigsInCSV(ValueError):
@@ -56,4 +58,4 @@ def cli() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": cli()  # noqa
+if __name__ == "__main__": cli()

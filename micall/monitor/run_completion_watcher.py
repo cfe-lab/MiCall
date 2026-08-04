@@ -11,12 +11,12 @@ The monitoring runs in an independent daemon thread with a fixed 60-second polli
 
 import argparse
 import logging
-from dataclasses import dataclass
 import os
-from pathlib import Path
 import sys
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
 from time import sleep
-from typing import List, Sequence
 
 from micall.monitor import disk_operations
 
@@ -53,7 +53,7 @@ def find_unstable_runs(runs_dir: Path) -> Sequence[RunInfo]:
     Returns:
         List of RunInfo objects for runs that need monitoring
     """
-    unstable_runs: List[RunInfo] = []
+    unstable_runs: list[RunInfo] = []
 
     try:
         if not runs_dir.exists():
@@ -116,12 +116,12 @@ def find_unstable_runs(runs_dir: Path) -> Sequence[RunInfo]:
                 else:
                     logger.debug("Skipping %s (no FASTQ files found)", run_path.name)
 
-            except (OSError, IOError) as e:
+            except OSError as e:
                 # Skip individual runs that fail to read
                 logger.info("Error scanning run %s: %s", run_path.name, e)
                 continue
 
-    except (OSError, IOError) as e:
+    except OSError as e:
         # If we can't even list the directory, log and return empty
         logger.info("Error scanning runs directory %s: %s", runs_dir, e)
         return []
@@ -161,7 +161,7 @@ def monitor_run_completion(runs_dir: Path, dry_run: bool = False) -> None:
             sleep(CRASH_RECOVERY_DELAY)
 
 
-def check_run_completions(runs_dir: Path, monitoring: List[RunInfo], dry_run: bool = False) -> None:
+def check_run_completions(runs_dir: Path, monitoring: list[RunInfo], dry_run: bool = False) -> None:
     # Find new unstable runs
     unstable_runs = find_unstable_runs(runs_dir)
 
@@ -209,7 +209,7 @@ def check_run_completions(runs_dir: Path, monitoring: List[RunInfo], dry_run: bo
                     file_count=current_count,
                     glob_pattern=run_info.glob_pattern,
                 )
-        except (OSError, IOError) as e:
+        except OSError as e:
             # If we can't check a run, log and continue to next
             logger.info("Error checking run %s: %s", run_info.run_dir.name, e)
             continue
@@ -226,7 +226,7 @@ def _monitor_run_completion_inner(runs_dir: Path, dry_run: bool = False) -> None
     Separated from monitor_run_completion to allow crash recovery.
     """
     # Track runs we're currently monitoring
-    monitoring: List[RunInfo] = []
+    monitoring: list[RunInfo] = []
 
     while True:
         check_run_completions(runs_dir, monitoring, dry_run=dry_run)
@@ -257,7 +257,7 @@ def configure_logging(args: argparse.Namespace) -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARNING)
 
     logging.basicConfig(level=logger.level)
 
@@ -284,4 +284,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry() # noqa
+if __name__ == "__main__": entry()

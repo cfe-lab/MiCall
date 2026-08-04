@@ -1,8 +1,8 @@
 
 import csv
 import tomllib
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 

@@ -1,12 +1,17 @@
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-import pytest
 from unittest.mock import patch
 
-from micall.monitor.update_qai import build_conseqs, build_review_decisions, upload_review_to_qai
-from micall.utils.sample_sheet_parser import _sample_sheet_parser
+import pytest
+
 import micall.monitor.qai_helper
+from micall.monitor.update_qai import (
+    build_conseqs,
+    build_review_decisions,
+    upload_review_to_qai,
+)
+from micall.utils.sample_sheet_parser import _sample_sheet_parser
 
 
 @pytest.fixture

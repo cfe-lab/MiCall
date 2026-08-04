@@ -36,18 +36,18 @@ Example:
 """
 
 import argparse
-import sys
-from typing import Mapping, Optional, Sequence, Union, Callable, TypeVar
-from pathlib import Path
-import os
-import hashlib
-import json
-import shutil
-from functools import wraps
-import inspect
-import re
 import builtins
-
+import hashlib
+import inspect
+import json
+import os
+import re
+import shutil
+import sys
+from collections.abc import Callable, Mapping, Sequence
+from functools import wraps
+from pathlib import Path
+from typing import TypeVar
 
 CACHE_FOLDER = os.environ.get("MICALL_CACHE_FOLDER")
 HASHES: dict[Path, str] = {}
@@ -112,9 +112,9 @@ def _save_cache_data(data: dict) -> None:
 
 
 def _make_cache_key(
-    inputs: Mapping[str, Optional[Path]],
+    inputs: Mapping[str, Path | None],
     parameters: Mapping[str, object] = {},
-) -> dict[str, Optional[str] | object]:
+) -> dict[str, str | None | object]:
     """Create a structured input key from input file hashes and serializable parameters.
 
     Args:
@@ -124,7 +124,7 @@ def _make_cache_key(
     Returns:
         A dict mapping input names to their file hashes (or None) and parameter names to their values.
     """
-    input_key: dict[str, Optional[str] | object] = {}
+    input_key: dict[str, str | None | object] = {}
 
     # Add file hashes
     for key in sorted(inputs.keys()):
@@ -147,8 +147,8 @@ def _make_cache_key(
 
 
 def _find_cache_entry(
-    procedure: str, input_key: dict[str, Optional[str] | object]
-) -> Optional[dict]:
+    procedure: str, input_key: dict[str, str | None | object]
+) -> dict | None:
     """Find a cache entry matching the procedure and input key.
 
     Args:
@@ -173,8 +173,8 @@ def _find_cache_entry(
 
 def _add_cache_entry(
     procedure: str,
-    input_key: dict[str, Optional[str] | object],
-    outputs: Union[str, dict[str, Optional[str]]],
+    input_key: dict[str, str | None | object],
+    outputs: str | dict[str, str | None],
 ) -> None:
     """Add or update a cache entry.
 
@@ -201,9 +201,9 @@ def _add_cache_entry(
 
 def get(
     procedure: str,
-    inputs: Mapping[str, Optional[Path]],
+    inputs: Mapping[str, Path | None],
     parameters: Mapping[str, object] = {},
-) -> Optional[Union[Path, Mapping[str, Optional[Path]]]]:
+) -> Path | Mapping[str, Path | None] | None:
     """Retrieve cached data for the given inputs and parameters, if available.
 
     Args:
@@ -237,7 +237,7 @@ def get(
         return cached_file
     elif isinstance(outputs, dict):
         # Multiple output files
-        result: dict[str, Optional[Path]] = {}
+        result: dict[str, Path | None] = {}
         for key, file_hash in outputs.items():
             if file_hash is None:
                 result[key] = None
@@ -253,8 +253,8 @@ def get(
 
 def set(
     procedure: str,
-    inputs: Mapping[str, Optional[Path]],
-    output: Union[Path, Mapping[str, Optional[Path]]],
+    inputs: Mapping[str, Path | None],
+    output: Path | Mapping[str, Path | None],
     parameters: Mapping[str, object] = {},
 ) -> None:
     """Cache the outputs for the given inputs and parameters.
@@ -287,7 +287,7 @@ def set(
         _add_cache_entry(procedure, input_key, file_hash)
     elif isinstance(output, dict):
         # Multiple output files
-        cache_entry: dict[str, Optional[str]] = {}
+        cache_entry: dict[str, str | None] = {}
         for key, file_path in output.items():
             if file_path is None:
                 cache_entry[key] = None
@@ -309,7 +309,7 @@ def set(
 def cached(
     procedure: str,
     parameters: Sequence[str] = (),
-    outputs: Optional[Sequence[str]] = None,
+    outputs: Sequence[str] | None = None,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Decorator for caching function results based on file path inputs and parameters.
 
@@ -340,7 +340,7 @@ def cached(
             bound_args.apply_defaults()
 
             # Separate Path inputs from serializable parameters and outputs
-            path_inputs: dict[str, Optional[Path]] = {}
+            path_inputs: dict[str, Path | None] = {}
             param_values: dict[str, object] = {}
             output_paths: dict[str, Path] = {}
             parameter_set = builtins.set(parameters)
@@ -401,7 +401,7 @@ def cached(
             result = func(*args, **kwargs)
 
             # Store output file(s) in cache
-            output_to_cache: Union[Path, Mapping[str, Path]]
+            output_to_cache: Path | Mapping[str, Path]
             if len(output_paths) == 1:
                 output_to_cache = list(output_paths.values())[0]
             elif len(output_paths) > 1:
@@ -419,7 +419,7 @@ def cached(
     return decorator
 
 
-def clear_cache(pattern: Optional[str] = None) -> int:
+def clear_cache(pattern: str | None = None) -> int:
     """Clear cache entries matching the given pattern.
 
     Args:
@@ -545,4 +545,4 @@ def entry():
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

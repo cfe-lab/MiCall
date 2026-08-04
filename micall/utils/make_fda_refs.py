@@ -1,12 +1,14 @@
 """
 Use project file to punch out genes from FDA amino acid refs
 """
+import json
 import os
+
 import HyPhy
 import hyphyAlign
-import json
-from micall.utils.externals import ProjectsFile
 from seqUtils import convert_fasta
+
+from micall.utils.externals import ProjectsFile
 
 hyphy = HyPhy._THyPhy (os.getcwd(), 1) # instance of HyPhy
 hyphyAlign.change_settings(hyphy)  # default settings

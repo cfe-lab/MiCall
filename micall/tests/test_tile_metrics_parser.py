@@ -2,10 +2,10 @@ from io import BytesIO
 from struct import pack
 from unittest import TestCase
 
-from miseqinteropreader.read_records import read_tiles
 from miseqinteropreader.models import TileMetricCodes, TileMetricRecord
-from micall.utils.interop_wrappers import summarize_tile_records
+from miseqinteropreader.read_records import read_tiles
 
+from micall.utils.interop_wrappers import summarize_tile_records
 
 # Alias for compatibility with old tests
 MetricCodes = TileMetricCodes

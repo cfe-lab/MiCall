@@ -10,10 +10,10 @@ Example usage:
         denovo(fastq1, fastq2, fasta)
 """
 
-from pathlib import Path
-from contextvars import ContextVar
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass

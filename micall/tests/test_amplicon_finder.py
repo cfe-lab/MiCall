@@ -2,8 +2,14 @@ from collections import Counter
 from io import StringIO
 from pathlib import Path
 
-from micall.core.amplicon_finder import merge_reads, count_kmers, calculate_entropy_from_counts, calculate_entropy, \
-    merge_for_entropy, plot_merge_lengths
+from micall.core.amplicon_finder import (
+    calculate_entropy,
+    calculate_entropy_from_counts,
+    count_kmers,
+    merge_for_entropy,
+    merge_reads,
+    plot_merge_lengths,
+)
 
 microtest_path = Path(__file__).parent / 'microtest'
 

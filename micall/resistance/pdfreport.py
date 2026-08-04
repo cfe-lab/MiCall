@@ -1,17 +1,16 @@
 #!/usr/bin/env python3.6
 
 # The module that generates a report in PDF format
-import pytz
 import datetime
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.enums import TA_CENTER
-from reportlab.lib.units import cm, mm
-from reportlab.lib.styles import ParagraphStyle
-from reportlab import rl_config
-
+import pytz
 import reportlab.platypus as plat
+from reportlab import rl_config
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm, mm
 
 # we currently only support North American letter paper -- no A4
 from reportlab.platypus import PageBreak
@@ -87,10 +86,9 @@ def drug_class_tablst(row_offset, report_template, genotype, drug_class_code, le
     report_page = report_template.genotype_pages[genotype]
     resistance_dct = report_page.resistance_calls
     mutation_str = report_page.mutations.get(drug_class_code, 'None')
-    mutation_str = "Relevant {} Mutations: {}".format(drug_class_code,
-                                                      mutation_str)
+    mutation_str = f"Relevant {drug_class_code} Mutations: {mutation_str}"
     # 1) row 0: header column: name of drug_class
-    t_data = [["{} Drugs".format(table_header_str), ""]]
+    t_data = [[f"{table_header_str} Drugs", ""]]
     t_style = headertab_style(row_offset, 2, dospan=True)
     # 2) row 1..num_drugs: list of drugs in this drug_class
     drow_min, drow_max = row_offset + 1,  row_offset + len(drug_lst)
@@ -132,8 +130,8 @@ def top_table(sample_name, table_width, genotype):
     oth_colwidth = (table_width - mid_colwidth)/2.0
     nowstr = get_now_string()
     test_dl = [["Patient/Sample Details", "Test Details", "Physician Details"],
-               ["", test_details_para("Sample ID: {}".format(samp_name)), ""],
-               ["", test_details_para("Report Date: {}".format(nowstr)), ""],
+               ["", test_details_para(f"Sample ID: {samp_name}"), ""],
+               ["", test_details_para(f"Report Date: {nowstr}"), ""],
                ["",
                 (genotype or "") and
                 test_details_para("Genotype: " + genotype),
@@ -267,5 +265,5 @@ def append_header(doc_els,
 
 
 if __name__ == '__main__':
-    print("The local time is '{}'".format(get_now_string()))
+    print(f"The local time is '{get_now_string()}'")
     # gen_testpage("testpage.pdf")

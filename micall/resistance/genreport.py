@@ -1,16 +1,15 @@
 #! /usr/bin/env python3.6
+import csv
 import os
 
 # typing is only supported from python3.5 onwards
 # from typing import List, Dict, Tuple
-
 from argparse import ArgumentParser, FileType
-import csv
-from collections import defaultdict, Counter, namedtuple
+from collections import Counter, defaultdict, namedtuple
 
 import yaml
 
-import micall.resistance.pdfreport as pdfreport
+from micall.resistance import pdfreport
 
 REPORT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'genreport.yaml')
 
@@ -53,8 +52,8 @@ class ReportTemplate:
         self.genotype_pages = defaultdict(lambda: ReportPage({}, {}))
         err_string = "Error in configuration file"
         if not isinstance(virus_config, dict):
-            raise ValueError("""Configuration in {} must be a
-    single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(virus_config)))
+            raise ValueError(f"""Configuration in {REPORT_CONFIG_PATH} must be a
+    single dict class, but found a {type(virus_config)}""")
         # The following keys must be present in the dict
         known_keys = frozenset([
             'known_drugs', 'known_drug_classes', 'known_regions',
@@ -80,14 +79,12 @@ class ReportTemplate:
         virus_config["res_level_dct"] = res_level_dct = {}
         for level, lev_tup in coltab.items():
             if len(lev_tup) != 3:
-                raise ValueError("{}: {} must have 3 entries: {}".format(
-                    err_string, fld_name, lev_tup))
+                raise ValueError(f"{err_string}: {fld_name} must have 3 entries: {lev_tup}")
             lev_str, bg_col, fg_col = lev_tup
             types_ok = isinstance(lev_str, str) and isinstance(
                 bg_col, int) and isinstance(fg_col, int)
             if not types_ok:
-                raise ValueError("{}: {} string, int, int expected {}".format(
-                    err_string, fld_name, lev_tup))
+                raise ValueError(f"{err_string}: {fld_name} string, int, int expected {lev_tup}")
             res_level_dct[level] = lev_str.upper()
         # check known_regions and turn it into a set of strings
         fld_name = 'known_regions'
@@ -95,7 +92,7 @@ class ReportTemplate:
         if not isinstance(known_regions, list) or\
            sum([isinstance(s, str) for s in known_regions]) != len(known_regions):
             raise RuntimeError(
-                "{}: {} must be a list of strings".format(err_string, fld_name))
+                f"{err_string}: {fld_name} must be a list of strings")
         virus_config[fld_name] = frozenset(known_regions)
         # check known_drug_classes and turn it into a set of strings
         fld_name = 'known_drug_classes'
@@ -104,7 +101,7 @@ class ReportTemplate:
         if not isinstance(known_drug_classes, list) or\
            sum([isinstance(s, str) for s in dc_names]) != len(known_drug_classes):
             raise RuntimeError(
-                "{}: {} must be a list of strings".format(err_string, fld_name))
+                f"{err_string}: {fld_name} must be a list of strings")
         virus_config['drug_class_tableheaders'] = dict(known_drug_classes)
         known_drug_classes = virus_config[fld_name] = frozenset(dc_names)
         virus_config["known_dclass_list"] = dc_names
@@ -114,13 +111,11 @@ class ReportTemplate:
         drug_dct = virus_config.get(fld_name, {})
         if not isinstance(drug_dct, dict) or\
            sum([isinstance(s, str) for s in drug_dct.keys()]) != len(drug_dct):
-            raise RuntimeError("{}: {} must be a dict with strings as keys".format(
-                err_string, fld_name))
+            raise RuntimeError(f"{err_string}: {fld_name} must be a dict with strings as keys")
         # make sure each drug class is defined
         got_drug_classes = set(drug_dct.keys())
         if known_drug_classes != got_drug_classes:
-            raise ValueError("{}: {} inconsistent with drug_classes".format(
-                err_string, fld_name))
+            raise ValueError(f"{err_string}: {fld_name} inconsistent with drug_classes")
         # Drug names and codes must be unique.
         drug_code_counts = Counter(drug[0]
                                    for drug_class in drug_dct.values()
@@ -137,15 +132,9 @@ class ReportTemplate:
             for drug_name, count in drug_name_counts.items()
             if count > 1))
         if duplicate_drug_codes:
-            raise ValueError("{}: {} duplicate drug identifiers: {}.".format(
-                err_string,
-                fld_name,
-                duplicate_drug_codes))
+            raise ValueError(f"{err_string}: {fld_name} duplicate drug identifiers: {duplicate_drug_codes}.")
         if duplicate_drug_names:
-            raise ValueError("{}: {} duplicate drug names: {}.".format(
-                err_string,
-                fld_name,
-                duplicate_drug_names))
+            raise ValueError(f"{err_string}: {fld_name} duplicate drug names: {duplicate_drug_names}.")
         # now generate a helper dict: drug : (drug_class, drugname)
         virus_config["drug_dct"] = dct = {}
         for d_class, ll in drug_dct.items():
@@ -163,7 +152,7 @@ class ReportTemplate:
 
     def __repr__(self):
         report_title = self.virus_config.get('report_title')
-        return "ReportTemplate({{'report_title': {!r}}})".format(report_title)
+        return f"ReportTemplate({{'report_title': {report_title!r}}})"
 
     def get_reported_genotypes(self):
         return sorted(self.genotype_pages.keys())

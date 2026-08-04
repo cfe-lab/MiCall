@@ -1,10 +1,10 @@
 """ Original version by Will Keeling, from https://github.com/wkeeling/ratelimitingfilter """
 
-from collections import defaultdict
 import difflib
-from functools import partial
 import logging
 import os
+from collections import defaultdict
+from functools import partial
 from time import time
 
 
@@ -27,7 +27,7 @@ class RateLimitingFilter(logging.Filter):
         :param burst: The maximum number of records that can be sent before rate limiting kicks in.
         :param kwargs: Additional config options that can be passed to the filter.
         """
-        super(RateLimitingFilter, self).__init__()
+        super().__init__()
 
         self.rate = rate
         self.per = per
@@ -66,8 +66,7 @@ class RateLimitingFilter(logging.Filter):
         if bucket.consume():
             if bucket.limited > 0:
                 # Append a message to the record indicating the number of previously suppressed messages
-                record.msg += '{linesep}... {num} additional messages suppressed'.format(linesep=os.linesep,
-                                                                                         num=bucket.limited)
+                record.msg += f'{os.linesep}... {bucket.limited} additional messages suppressed'
             bucket.limited = 0
             return True
 
@@ -107,7 +106,7 @@ class RateLimitingFilter(logging.Filter):
         return self._auto_buckets[record.msg]
 
 
-class TokenBucket(object):
+class TokenBucket:
     """
     An implementation of the Token Bucket algorithm.
     """
@@ -132,8 +131,7 @@ class TokenBucket(object):
 
         self._allowance += delta * (self._rate / self._per)
 
-        if self._allowance > self._burst:
-            self._allowance = self._burst
+        self._allowance = min(self._allowance, self._burst)
 
         if self._allowance < 1:
             return False
@@ -142,4 +140,4 @@ class TokenBucket(object):
         return True
 
     def __repr__(self):
-        return 'TokenBucket(rate={0._rate}, per={0._per}, burst={0._burst})'.format(self)
+        return f'TokenBucket(rate={self._rate}, per={self._per}, burst={self._burst})'

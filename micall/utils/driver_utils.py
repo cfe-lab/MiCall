@@ -1,8 +1,8 @@
-import re
-import os
 import errno
-import shutil
 import logging
+import os
+import re
+import shutil
 from argparse import ArgumentDefaultsHelpFormatter
 
 logger = logging.getLogger(__name__)

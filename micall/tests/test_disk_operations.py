@@ -4,35 +4,35 @@ Tests for disk_operations module.
 Tests the low-level disk operation wrappers with network-style retry logic.
 """
 
-import tempfile
-from pathlib import Path
-from unittest.mock import patch, Mock, ANY
-import time
-import threading
 import errno
+import tempfile
+import threading
+import time
 from datetime import datetime, timedelta
+from pathlib import Path
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 
 from micall.monitor import disk_operations
 from micall.monitor.disk_operations import (
+    MAXIMUM_RETRY_WAIT,
+    MINIMUM_RETRY_WAIT,
     calculate_retry_wait,
-    wait_for_retry,
-    disk_retry,
-    mkdir_p,
-    rmtree,
-    move,
     copy_file,
-    write_text,
-    touch,
-    unlink,
-    rmdir,
-    rename,
     copy_fileobj,
     disk_file_operation,
+    disk_retry,
+    mkdir_p,
+    move,
     remove_empty_directory,
-    MINIMUM_RETRY_WAIT,
-    MAXIMUM_RETRY_WAIT,
+    rename,
+    rmdir,
+    rmtree,
+    touch,
+    unlink,
+    wait_for_retry,
+    write_text,
 )
 
 
@@ -113,7 +113,7 @@ class TestDiskRetryDecorator:
     @patch("micall.monitor.disk_operations.wait_for_retry")
     def test_decorator_retry_on_io_error(self, mock_wait):
         """IOError should trigger retry mechanism."""
-        mock_func = Mock(side_effect=[IOError("I/O error"), "success"])
+        mock_func = Mock(side_effect=[OSError("I/O error"), "success"])
         decorated = disk_retry("test_op")(mock_func)
 
         result = decorated()
@@ -558,8 +558,8 @@ class TestErrorScenarios:
         mock_exists.return_value = True
         mock_is_file.return_value = True
         mock_open.side_effect = [
-            IOError("Sharing violation"),
-            IOError("File locked"),
+            OSError("Sharing violation"),
+            OSError("File locked"),
             Mock(),  # Success
         ]
 
@@ -641,7 +641,7 @@ class TestAdvancedRetryLogic:
             if exception_type == "os_error":
                 raise OSError("OS Error")
             elif exception_type == "io_error":
-                raise IOError("IO Error")
+                raise OSError("IO Error")
             elif exception_type == "permission_error":
                 raise PermissionError("Permission denied")
             elif exception_type == "file_not_found":
@@ -962,7 +962,6 @@ class TestComplexIntegrationScenarios:
                     if call_count <= 2:
                         raise OSError(errno.EACCES, "Permission denied")
                     # Success on 3rd attempt
-                    return None
 
                 perm_dir = temp_path / "permission_test"
                 with patch.object(Path, "mkdir", side_effect=mock_mkdir):

@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, OPTIONAL
+from argparse import OPTIONAL, ArgumentDefaultsHelpFormatter, ArgumentParser
 from dataclasses import dataclass
 from pathlib import Path
 

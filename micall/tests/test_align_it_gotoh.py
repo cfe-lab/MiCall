@@ -1,4 +1,5 @@
 import unittest
+
 from gotoh import align_it, align_it_aa
 
 

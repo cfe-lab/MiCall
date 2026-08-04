@@ -1,17 +1,25 @@
-from pathlib import Path
 from collections import Counter
+from pathlib import Path
 
 import pytest
-from micall.utils.referenceless_contig_stitcher import \
-    stitch_consensus, ContigWithAligner, Pool, \
-    ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support
-from micall.utils.exact_coverage import reverse_complement
-from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
-from micall.utils.referenceless_score import Score
-from micall.utils.referenceless_contig_path import ContigsPath
 
- # Load autouse fixtures
-from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check, force_failing_map_overlap, disable_kmer_filter
+# Load autouse fixtures
+from micall.tests.referenceless_tests_utils import (
+    disable_acceptable_prob_check,
+    disable_kmer_filter,
+    force_failing_map_overlap,
+)
+from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
+from micall.utils.exact_coverage import reverse_complement
+from micall.utils.referenceless_contig_path import ContigsPath
+from micall.utils.referenceless_contig_stitcher import (
+    ACCEPTABLE_STITCHING_SCORE,
+    ContigWithAligner,
+    Pool,
+    check_merged_sequence_support,
+    stitch_consensus,
+)
+from micall.utils.referenceless_score import Score
 
 # prevent linter warnings
 assert disable_acceptable_prob_check is not None

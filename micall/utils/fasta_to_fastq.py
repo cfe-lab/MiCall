@@ -9,16 +9,17 @@ original FASTA.
 """
 
 import argparse
+import logging
 import random
 import sys
-from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord, Seq
-from typing import Sequence, Iterator, Tuple
-from pathlib import Path
+from collections.abc import Iterator, Sequence
 from itertools import islice
-from micall.utils.user_error import UserError
-import logging
+from pathlib import Path
 
+from Bio import SeqIO
+from Bio.SeqRecord import Seq, SeqRecord
+
+from micall.utils.user_error import UserError
 
 MAX_QUALITY = 40
 
@@ -46,7 +47,7 @@ def generate_indexes(min_length: int,
                      max_length: int,
                      ref_length: int,
                      rng: random.Random,
-                     ) -> Iterator[Tuple[int, int]]:
+                     ) -> Iterator[tuple[int, int]]:
     start = 0
     direction = 1
 
@@ -105,12 +106,12 @@ def simulate_reads(reference: Seq,
     ref_length = len(reference)
 
     if max_length > ref_length:
-        logger.warn("Max read length (%s) is bigger than reference length (%s).",
+        logger.warning("Max read length (%s) is bigger than reference length (%s).",
                     max_length, ref_length)
         max_length = ref_length
 
     if min_length > ref_length:
-        logger.warn("Min read length (%s) is bigger than reference length (%s).",
+        logger.warning("Min read length (%s) is bigger than reference length (%s).",
                     max_length, ref_length)
         min_length = ref_length
 
@@ -241,4 +242,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

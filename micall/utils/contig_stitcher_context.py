@@ -1,23 +1,28 @@
 from abc import ABC, abstractmethod
 from collections import Counter
-from typing import List, TypeVar, Generic, Iterator, Self, Dict, Tuple, Optional, AbstractSet
-from contextvars import ContextVar
+from collections.abc import Iterator
 from contextlib import contextmanager
+from contextvars import ContextVar
 from copy import deepcopy
+from typing import (
+    AbstractSet,
+    Generic,
+    Self,
+    TypeVar,
+)
 
 import micall.utils.referencefull_contig_stitcher_events as full_events
 import micall.utils.referenceless_contig_stitcher_events as less_events
-import micall.utils.registry as registry
-from micall.utils.referenceless_contig_stitcher_overlap import Overlap
+from micall.utils import registry
 from micall.utils.contig_stitcher_contigs import ContigId
-
+from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 
 T = TypeVar('T')
 
 
 class GenericStitcherContext(ABC, Generic[T]):
     def __init__(self):
-        self.events: List[T] = []
+        self.events: list[T] = []
 
     def emit(self, event: T) -> None:
         self.events.append(event)
@@ -79,18 +84,18 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         # per-context caches (moved from module-level globals)
         # overlap detection cache: key=(left_id,right_id) -> Optional[Overlap]
         # Overlap type is imported in algorithm module; use Any here to avoid circular import
-        self.get_overlap_cache: Dict[Tuple[ContigId, ContigId], Optional[Overlap]] = {}
+        self.get_overlap_cache: dict[tuple[ContigId, ContigId], Overlap | None] = {}
         # kmers cache: key=sequence -> set of kmers
-        self.kmers_cache: Dict[str, AbstractSet[str]] = {}
+        self.kmers_cache: dict[str, AbstractSet[str]] = {}
         # alignment cache for overlap windows: key=(left_overlap,right_overlap) -> (aligned_left, aligned_right)
-        self.align_cache: Dict[Tuple[str, str], Tuple[str, str]] = {}
+        self.align_cache: dict[tuple[str, str], tuple[str, str]] = {}
         # cutoffs cache: key=(left_id,right_id) -> Optional[(left_cutoff,right_cutoff)]
-        self.cutoffs_cache: Dict[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]] = {}
+        self.cutoffs_cache: dict[tuple[ContigId, ContigId], tuple[int, int] | None] = {}
         # read index for join-boundary validation.
         # Maps read_length -> Counter of canonical read sequences with multiplicity.
         # Built once from FASTQ files before stitching.
         # None = validation disabled; {} = enabled but no reads found.
-        self.read_index: Optional[Dict[int, Counter[str]]] = None
+        self.read_index: dict[int, Counter[str]] | None = None
         # coverage validation parameters
         self.minimum_read_depth: int = 1
         self.read_length: int = 150

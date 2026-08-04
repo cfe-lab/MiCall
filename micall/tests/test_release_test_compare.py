@@ -2,14 +2,20 @@ from collections import defaultdict
 from io import StringIO
 from unittest import TestCase
 
-import typing
+from micall.utils.release_test_compare import (
+    ConsensusDistance,
+    MiseqRun,
+    Sample,
+    SampleFiles,
+    Scenarios,
+    compare_consensus,
+    compare_sample,
+    group_nucs_file,
+    group_samples_file,
+)
 
-from micall.utils.release_test_compare import compare_sample, SampleFiles, Sample, \
-    MiseqRun, Scenarios, ConsensusDistance, group_samples_file, \
-    group_nucs_file, compare_consensus
 
-
-def make_nuc_rows(consensus_seq: str) -> typing.List[typing.Tuple[str, dict]]:
+def make_nuc_rows(consensus_seq: str) -> list[tuple[str, dict]]:
     """ Make a set of nuc.csv rows to represent an expected consensus. """
 
     rows = []
