@@ -230,11 +230,10 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
         contig = names[id]
         if isinstance(contig, AlignedContig):
             return contig.alignment.q_st, contig.alignment.r_st
-        else:
-            return -1, -1
+        return -1, -1
 
-    reference_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[1]))
-    query_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[0]))
+    reference_sorted = sorted(names.keys(), key=lambda id: get_indexes(id)[1])
+    query_sorted = sorted(names.keys(), key=lambda id: get_indexes(id)[0])
 
     def is_out_of_order(id: int) -> bool:
         return reference_sorted.index(id) != query_sorted.index(id)
@@ -358,7 +357,7 @@ def combine_overlaps(contigs: Sequence[AlignedContig]) -> Iterable[AlignedContig
     """
 
     # Going left-to-right through aligned contigs.
-    contigs = list(sorted(contigs, key=lambda x: x.alignment.r_st))
+    contigs = sorted(contigs, key=lambda x: x.alignment.r_st)
     while contigs:
         current = contigs.pop(0)
 
@@ -423,8 +422,7 @@ def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[Alig
         if by_reads:
             assert contig.reads_count is not None
             return contig.reads_count
-        else:
-            return contig.alignment.ref_length
+        return contig.alignment.ref_length
 
     # Iterating from the least significant contig to the most significant one.
     for current in sorted(contigs, key=order):
@@ -435,12 +433,12 @@ def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[Alig
         cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
-        if any((cover_interval[0] < current_interval[0] and cover_interval[1] >= current_interval[1]
-                or cover_interval[0] <= current_interval[0] and cover_interval[1] > current_interval[1])
+        if any(((cover_interval[0] < current_interval[0] and cover_interval[1] >= current_interval[1])
+                or (cover_interval[0] <= current_interval[0] and cover_interval[1] > current_interval[1]))
                for cover_interval in cumulative_coverage):
             # Strictly covered.
             return current, overlaping_contigs
-        elif any((cover_interval[0] == current_interval[0] and cover_interval[1] == current_interval[1])
+        if any((cover_interval[0] == current_interval[0] and cover_interval[1] == current_interval[1])
                for cover_interval in cumulative_coverage):
             if any(contig.reads_count is None for contig in overlaping_contigs + [current]):
                 log(events.IgnoreCoverage(current, overlaping_contigs))
@@ -491,7 +489,7 @@ def split_contigs_with_gaps(contigs: Sequence[AlignedContig]) -> Sequence[Aligne
 
     def significant(gap):
         # noinspection PyLongLine
-        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.         # noqa: E501
+        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.
         return gap.ref_length > 21
 
     def try_split(self: AlignedContig):

@@ -5,7 +5,7 @@ import argparse
 from numpy import std
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt   # noqa
+from matplotlib import pyplot as plt
 
 
 def plot_histo(fig, counts, xlabel, fig_path, min_number=10):

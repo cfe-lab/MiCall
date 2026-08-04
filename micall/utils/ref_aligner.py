@@ -161,8 +161,7 @@ class SeedAlignment(AlignmentEvaluator):
             self.print_seed_details()
         if self.warnings != '':
             return 1
-        else:
-            return 0
+        return 0
 
     def print_seed_details(self):
         if self.warnings != '':

@@ -235,7 +235,7 @@ def get(
         if not cached_file.exists():
             return None
         return cached_file
-    elif isinstance(outputs, dict):
+    if isinstance(outputs, dict):
         # Multiple output files
         result: dict[str, Optional[Path]] = {}
         for key, file_hash in outputs.items():
@@ -534,9 +534,8 @@ def main(argv: Sequence[str]) -> int:
     if args.command == "clear":
         clear_cache(args.pattern)
         return 0
-    else:
-        parser.print_help()
-        return 1
+    parser.print_help()
+    return 1
 
     return 0
 
@@ -545,4 +544,4 @@ def entry():
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

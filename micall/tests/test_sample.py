@@ -203,8 +203,7 @@ def test_context_manager_write(tmp_path):
 def mock_side_effect(_, mode):
     if mode == 'r':
         raise FileNotFoundError
-    else:
-        return DEFAULT
+    return DEFAULT
 
 
 @patch('builtins.open')

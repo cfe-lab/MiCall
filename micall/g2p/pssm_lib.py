@@ -125,7 +125,7 @@ class Pssm(object):
             if g2p == pivot_g2p:
                 # found an exact match
                 return pivot_fpr
-            elif g2p < pivot_g2p:
+            if g2p < pivot_g2p:
                 right = pivot
             else:
                 left = pivot
@@ -242,5 +242,4 @@ class Pssm(object):
 
         if not is_array:
             return scores[0], aa_aligned
-        else:
-            return scores, None
+        return scores, None

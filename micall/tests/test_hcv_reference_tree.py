@@ -5,11 +5,11 @@ from micall.utils.hcv_reference_tree import filter_hcv_fasta, combine_samples, c
 
 def check_tree(*args, **kwargs):
     try:
-        import ete3  # noqa: F401
+        import ete3
     except ImportError:
         # Skip test if ete3 is not installed.
         pytest.skip("ete3 not installed")
-        return
+        return None
 
     import micall.utils.hcv_reference_tree as origin
     return origin.check_tree(*args, **kwargs)

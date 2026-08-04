@@ -201,7 +201,7 @@ class Range:
             expectation_display = (f'{fold_shift_text}/{clinical_ras} '
                                    f'in {self} {expected_phenotype}')
         if phenotype != expected_phenotype:
-            prefix = self.drug and (self.drug + ' ') or ''
+            prefix = (self.drug and (self.drug + ' ')) or ''
             self.changes.append(
                 f'{prefix}{mutation} ({expectation_display}) but is {phenotype}')
 
@@ -700,7 +700,7 @@ class RulesWriter:
                     (section.sheet_name, section.drug_name)]
                 mutations.append(entry.mutation)
                 return
-        clinical_ras = clinical_ras and clinical_ras.lower() or 'no'
+        clinical_ras = (clinical_ras and clinical_ras.lower()) or 'no'
         if '-' in fold_shift_text:
             fold_range = section.range_range
         fold_range.validate_phenotype(entry.mutation,

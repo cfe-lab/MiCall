@@ -344,12 +344,11 @@ def return_json_side_effect(url):
                         'project_name': 'HIVB',
                         'seed_region_names': 'HIV1-seed',
                         'coordinate_region_name': 'HIV1B-gag'}]
-    elif url == "/lab_miseq_regions":
+    if url == "/lab_miseq_regions":
         return [{'id': 'HIV seed region id', 'name': 'HIV1-B-FR-K03455-seed'}]
-    elif url == "/lab_miseq_pipelines?version=7.15":
+    if url == "/lab_miseq_pipelines?version=7.15":
         return [{'id': 'pipelineID'}]
-    else:
-        return None
+    return None
 
 
 # noinspection DuplicatedCode

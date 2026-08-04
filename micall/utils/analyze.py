@@ -838,12 +838,12 @@ def link_samples(
                        is_denovo=is_denovo)
 
     sample_sheet_path = os.path.join(run_path, "SampleSheet.csv")
-    if (fastq1s is not None and len(fastq1s) > 0
+    if ((fastq1s is not None and len(fastq1s) > 0)
             or not os.path.exists(sample_sheet_path)):
         if fastq1s is not None and len(fastq1s) > 0:  # forward files are specified
             if fastq2s is None:
                 raise ValueError("Reverse read files must also be specified.")
-            elif len(fastq2s) != len(fastq1s):
+            if len(fastq2s) != len(fastq1s):
                 raise ValueError(
                     "The same number of forward and reverse read files must be "
                     "specified."

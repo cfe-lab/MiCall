@@ -60,10 +60,9 @@ def mock_containerapps_get(path):
     if 'argument_list' in str(path):
         # Return argument list
         return [dict(name='quality_csv', url='/args/967485', type='I', app='/apps/19374')]
-    else:
-        # Return app details with container name
-        return dict(id=int(str(path).strip('/')),
-                   container_name='micall:v7.18.1')
+    # Return app details with container name
+    return dict(id=int(str(path).strip('/')),
+               container_name='micall:v7.18.1')
 
 
 @pytest.fixture(name='mock_open_kive')
@@ -1775,9 +1774,8 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
         if path_str == str(pipelines_config.micall_filter_quality_pipeline_id):
             return dict(container_name=f'micall:{filter_quality_version}',
                        id=pipelines_config.micall_filter_quality_pipeline_id)
-        else:
-            return dict(container_name=f'micall:{main_pipeline_version}',
-                       id=int(path_str))
+        return dict(container_name=f'micall:{main_pipeline_version}',
+                   id=int(path_str))
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -2302,10 +2300,9 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
         path_str = str(path).strip('/')
         if path_str == str(pipelines_config.micall_filter_quality_pipeline_id):
             return dict(container_name=f'micall:{filter_quality_version}', id=42)
-        elif path_str == str(pipelines_config.denovo_main_pipeline_id):
+        if path_str == str(pipelines_config.denovo_main_pipeline_id):
             return dict(container_name=f'micall:{denovo_main_version}', id=43)
-        else:
-            return dict(container_name='micall:v7.19.0', id=int(path_str))
+        return dict(container_name='micall:v7.19.0', id=int(path_str))
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 

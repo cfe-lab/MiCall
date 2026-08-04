@@ -37,7 +37,7 @@ class DummySession:
 class SequencedSession:
     def __init__(self, responses_by_path):
         self._responses_by_path = responses_by_path
-        self._calls_by_path = {path: 0 for path in responses_by_path}
+        self._calls_by_path = dict.fromkeys(responses_by_path, 0)
 
     def get_json(self, path):
         responses = self._responses_by_path[path]

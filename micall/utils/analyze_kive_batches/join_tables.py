@@ -84,7 +84,7 @@ def join_tables(inputs: Iterable[Path], column: str, output: Path) -> None:
 
             # for every combination, merge into one output row
             for combo in itertools.product(*lists_of_dicts):
-                row_out = {col: "" for col in final_cols}
+                row_out = dict.fromkeys(final_cols, "")
                 row_out[column] = key
                 for part in combo:
                     row_out.update(part)

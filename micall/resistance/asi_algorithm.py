@@ -237,7 +237,7 @@ class AsiAlgorithm:
                 if genotype_config['genotype'] == genotype:
                     self.gene_def[genotype_config['reference']] = [region]
                     break
-                elif genotype_config['genotype'] == backup_genotype:
+                if genotype_config['genotype'] == backup_genotype:
                     self.gene_def.setdefault(genotype_config['reference'], [region])
                     break
             else:

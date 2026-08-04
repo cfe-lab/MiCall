@@ -144,18 +144,17 @@ def main(argv: Sequence[str]) -> int:
     if args.version:
         return execute_module_as_main('micall.utils.version', [])
 
-    elif args.help:
+    if args.help:
         parser.print_help()
         return 0
 
-    elif EXECUTABLES_MAP.get(args.program):
+    if EXECUTABLES_MAP.get(args.program):
         path = EXECUTABLES_MAP[args.program]
         mod = executable_module(path)
         return execute_module_as_main(mod, args.arguments)
 
-    else:
-        parser.print_help()
-        return 1
+    parser.print_help()
+    return 1
 
 
 def cli() -> int:

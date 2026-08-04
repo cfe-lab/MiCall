@@ -30,8 +30,7 @@ def dir_path(string: str) -> DirPath:
     path = Path(string)
     if (not path.exists()) or path.is_dir():
         return DirPath(path)
-    else:
-        raise UserError("Path %r is not a directory.", string)
+    raise UserError("Path %r is not a directory.", string)
 
 
 def cli_parser() -> argparse.ArgumentParser:
@@ -220,4 +219,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

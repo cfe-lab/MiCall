@@ -358,7 +358,7 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
             if key[0] == 'HIVGHA':
                 # ignore HIVGHA project code
                 continue
-            elif target_seed is None:
+            if target_seed is None:
                 project, region = key
                 hivgha_result = target_scores.get(('HIVGHA', region))
                 if hivgha_result is not None:
@@ -405,7 +405,7 @@ def display_consensus(sequence):
 
 def calculate_distance(region, cutoff, sequence1, sequence2):
     if sequence1 is None or sequence2 is None:
-        return
+        return None
     if len(sequence1) > len(sequence2):
         sequence2 += '-' * (len(sequence1) - len(sequence2))
     elif len(sequence2) > len(sequence1):

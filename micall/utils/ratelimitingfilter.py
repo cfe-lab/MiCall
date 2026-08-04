@@ -78,7 +78,7 @@ class RateLimitingFilter(logging.Filter):
     def _bucket_for(self, record):
         if self._substr_buckets is not None:
             return self._get_substr_bucket(record)
-        elif self._auto_buckets is not None:
+        if self._auto_buckets is not None:
             return self._get_auto_bucket(record)
 
         return self._default_bucket

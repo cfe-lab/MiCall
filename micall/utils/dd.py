@@ -92,12 +92,11 @@ class OutcomeCache:
         if start >= len(c):
             if self.result:
                 return self.result
-            elif self.tail != {}:
+            if self.tail != {}:
                 # Select some superset
                 superset = self.tail[self.tail.keys()[0]]
                 return superset.lookup_superset(c, start + 1)
-            else:
-                return None
+            return None
 
         if c[start] in self.tail:
             return self.tail[c[start]].lookup_superset(c, start + 1)
@@ -363,7 +362,7 @@ class DD(object):
     def _resolve(self, csub, c, direction):
         """Stub to overload in subclasses."""
         # By default, no way to resolve
-        return None
+        return
 
     # Test with fixes
     def test_and_resolve(self, csub, r, c, direction):
@@ -883,8 +882,7 @@ if __name__ == '__main__':
                6 in c and 8 in c:
                 if 5 in c and 7 in c:
                     return self.UNRESOLVED
-                else:
-                    return self.FAIL
+                return self.FAIL
             if 1 in c or 2 in c or 3 in c or 4 in c or \
                6 in c or 8 in c:
                 return self.UNRESOLVED

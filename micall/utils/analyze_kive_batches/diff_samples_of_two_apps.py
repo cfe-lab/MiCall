@@ -117,7 +117,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     for c in cols:
         if c == 'sample':
             continue
-        elif c == 'app':
+        if c == 'app':
             agg_map[c] = 'first'
             base_agg_map[c] = 'first'
         elif numeric_cols.get(c, False):

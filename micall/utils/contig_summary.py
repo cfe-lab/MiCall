@@ -8,7 +8,7 @@ from micall.utils.externals import Blastn
 
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt  # noqa
+from matplotlib import pyplot as plt
 
 DEFAULT_SCRATCH_PATH = (Path(__file__).parent.parent / "tests" / "working" /
                         "basespace_linked_data" / "scratch")
