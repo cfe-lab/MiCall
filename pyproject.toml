@@ -128,6 +128,7 @@ markers = [
 ignore = [
     "I001",    # Import order.
     "UP045",   # Prefer X|None to Optional[X].
+    "UP037",   # Quotes in type annotations.
 ]
 
 [tool.ruff.lint.per-file-ignores]
