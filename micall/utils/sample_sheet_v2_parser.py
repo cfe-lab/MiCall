@@ -1,7 +1,8 @@
 
 from dataclasses import dataclass
 from multicsv import MultiCSVFile
-from typing import Dict, Any, Sequence, Optional
+from typing import Any, Optional
+from collections.abc import Sequence
 import csv
 
 
@@ -62,8 +63,8 @@ def parse_sample_name(sample_name: Optional[str]) -> Sequence[str]:
     return ret
 
 
-def sample_sheet_v2_parser(file: MultiCSVFile) -> Dict[str, object]:
-    ret: Dict[str, Any] = {}
+def sample_sheet_v2_parser(file: MultiCSVFile) -> dict[str, object]:
+    ret: dict[str, Any] = {}
 
     sample_sheet_v2_verifier(file)
 

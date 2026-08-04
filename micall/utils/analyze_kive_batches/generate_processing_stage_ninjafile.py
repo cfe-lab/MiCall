@@ -1,5 +1,5 @@
 
-from typing import Iterator
+from collections.abc import Iterator
 from pathlib import Path
 
 from micall.utils.dir_path import DirPath

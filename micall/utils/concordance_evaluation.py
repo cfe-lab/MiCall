@@ -5,7 +5,7 @@ import argparse
 from numpy import std
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt   # noqa
+from matplotlib import pyplot as plt
 
 
 def plot_histo(fig, counts, xlabel, fig_path, min_number=10):
@@ -44,9 +44,9 @@ def main():
     plt.subplots_adjust(bottom=0.2, left=0.2)
 
     # {seed: {region: [values]}}
-    all_seed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))
+    all_seed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     # {coord: {region: [values]}}
-    all_coord_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))
+    all_coord_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
     for folder in folders_to_read:
         try:

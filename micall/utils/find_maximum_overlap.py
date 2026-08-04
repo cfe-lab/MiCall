@@ -4,7 +4,8 @@ import argparse
 from dataclasses import dataclass
 import sys
 import numpy as np
-from typing import Sequence, Optional, Tuple, Iterable, Any
+from typing import Optional, Any
+from collections.abc import Sequence, Iterable
 from itertools import chain
 import scipy
 from micall.utils.overlap_stitcher import calculate_overlap_score
@@ -12,7 +13,7 @@ from micall.utils.overlap_stitcher import calculate_overlap_score
 
 @dataclass(frozen=False)
 class OverlapFinder:
-    alphabet: Tuple[object, ...]
+    alphabet: tuple[object, ...]
     bit_arr1: np.ndarray[Any, np.dtype[Any]]
     bit_arr2: np.ndarray[Any, np.dtype[Any]]
     total: np.ndarray[Any, np.dtype[Any]]
@@ -42,7 +43,7 @@ def choose_convolution_method(len1: int, len2: int) -> Any:
 
 def get_overlap_results(total: np.ndarray,
                         len_1: int, len_2: int,
-                        ) -> Tuple[int, float]:
+                        ) -> tuple[int, float]:
     len_total = len(total)
 
     max_overlap = min(len_1, len_2)
@@ -82,7 +83,7 @@ def get_overlap_results(total: np.ndarray,
 def find_maximum_overlap(seq1: str,
                          seq2: str,
                          finder: Optional[OverlapFinder] = None,
-                         ) -> Tuple[int, float]:
+                         ) -> tuple[int, float]:
     """
     Calculate the offset at which two sequences (seq1 and seq2)
     overlap the most.

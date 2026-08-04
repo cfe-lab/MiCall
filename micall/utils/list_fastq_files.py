@@ -2,10 +2,10 @@
 
 import re
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import Optional
 
 
-def _get_base_calls_path(run_path: Union[str, Path]) -> Path:
+def _get_base_calls_path(run_path: str | Path) -> Path:
     """Get the standard BaseCalls directory path for a MiSeq run.
 
     Args:
@@ -20,7 +20,7 @@ def _get_base_calls_path(run_path: Union[str, Path]) -> Path:
 
 
 def find_fastq_source_folder(
-    run_path: Union[str, Path], pattern: str = "*_R1_*"
+    run_path: str | Path, pattern: str = "*_R1_*"
 ) -> Optional[Path]:
     """Find the folder containing FASTQ files in a sequencing run.
 
@@ -88,10 +88,10 @@ def find_fastq_source_folder(
 
 
 def list_fastq_files(
-    run_path: Union[str, Path],
+    run_path: str | Path,
     pattern: str = "*_R1_*.fastq*",
     fallback_to_run_path: bool = True,
-) -> List[Path]:
+) -> list[Path]:
     """List FASTQ files in a sequencing run folder.
 
     First tries the standard MiSeq structure (Data/Intensities/BaseCalls),
@@ -124,10 +124,10 @@ def list_fastq_files(
 
 
 def list_fastq_file_names(
-    run_path: Union[str, Path],
+    run_path: str | Path,
     pattern: str = "*_R1_*.fastq*",
     fallback_to_run_path: bool = True,
-) -> List[str]:
+) -> list[str]:
     """List FASTQ file names (without directory path) in a sequencing run folder.
 
     First tries the standard MiSeq structure (Data/Intensities/BaseCalls),

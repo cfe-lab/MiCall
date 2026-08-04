@@ -54,7 +54,7 @@ class MicallDD(DD):
                  simple2,
                  test_name,
                  project_code=None):
-        super(MicallDD, self).__init__()
+        super().__init__()
         self.filename1 = filename1
         self.filename2 = filename2
         self.bad_cycles_filename = bad_cycles_filename
@@ -72,7 +72,7 @@ class MicallDD(DD):
         read_fastq(self.filename2, reads)
         added_count = len(reads) - read_count
         if added_count > 0:
-            raise RuntimeError('Found {} new reads.'.format(added_count))
+            raise RuntimeError(f'Found {added_count} new reads.')
         self.reads = list(reads.values())
 
     def _test(self, read_indexes):
@@ -182,10 +182,8 @@ class MicallDD(DD):
         selected_reads = (self.reads[i] for i in read_indexes)
         with open(filename1, 'w') as f1, open(filename2, 'w') as f2:
             for lines in selected_reads:
-                for line in lines[:4]:
-                    f1.write(line)
-                for line in lines[4:]:
-                    f2.write(line)
+                f1.writelines(lines[:4])
+                f2.writelines(lines[4:])
 
     def coerce(self, c):
         if c is None:

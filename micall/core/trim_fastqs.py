@@ -113,7 +113,7 @@ def cut_all(censored_fastq1: Path,
             censored_fastq2: Path,
             trimmed_fastq1: Path,
             trimmed_fastq2: Path,
-            skip: typing.Tuple[str] = (),
+            skip: tuple[str] = (),
             project_code: str = None):
     dedapted_filenames = [Path(str(filename) + '.dedapted.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]

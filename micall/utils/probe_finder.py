@@ -1,5 +1,4 @@
 import re
-import typing
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from csv import DictReader, DictWriter
 from itertools import groupby
@@ -124,7 +123,7 @@ def find_probes(contigs_csv, probes_csv):
             writer.writerow(new_row)
 
 
-def unpack_mixtures_and_reverse(seq: str) -> typing.Set[typing.Tuple[str, bool]]:
+def unpack_mixtures_and_reverse(seq: str) -> set[tuple[str, bool]]:
     """ Unpack mixture nucleotide codes, and add reverse complements.
 
     :param seq: nucleotide sequence, possibly including mixture codes

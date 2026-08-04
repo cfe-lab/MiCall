@@ -1,9 +1,8 @@
-import typing
 
 from gotoh import align_it
 
 
-def align_nucs(seq1: str, seq2: str) -> typing.Tuple[str, str, int]:
+def align_nucs(seq1: str, seq2: str) -> tuple[str, str, int]:
     """ Align two sequences of nucleotides with default parameters.
 
     :return: the two aligned sequences, plus an alignment score

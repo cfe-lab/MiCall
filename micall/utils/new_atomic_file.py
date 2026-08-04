@@ -4,7 +4,8 @@ This module provides methods for creating files atomically.
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TextIO, Iterator
+from typing import TextIO
+from collections.abc import Iterator
 import random
 import string
 

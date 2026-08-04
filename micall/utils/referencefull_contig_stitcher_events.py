@@ -1,4 +1,5 @@
-from typing import Union, Sequence, Tuple, Literal, List
+from typing import Union, Literal
+from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
 from aligntools import CigarHit
@@ -136,7 +137,7 @@ class ReverseComplement:
 @dataclass(frozen=True)
 class HitNumber:
     contig: GenotypedContig
-    initial: Sequence[Tuple[CigarHit, Literal["reverse", "forward"]]]
+    initial: Sequence[tuple[CigarHit, Literal["reverse", "forward"]]]
     connected: Sequence[CigarHit]
 
     def __str__(self) -> str:
@@ -304,7 +305,7 @@ class FinalCombine:
 @dataclass(frozen=True)
 class IgnoreCoverage(Warning):
     current: AlignedContig
-    overlaping_contigs: List[AlignedContig]
+    overlaping_contigs: list[AlignedContig]
 
     def __str__(self) -> str:
         overlapping_names = ', '.join([c.unique_name for c in self.overlaping_contigs])

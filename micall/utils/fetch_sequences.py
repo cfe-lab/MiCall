@@ -639,7 +639,7 @@ def check_scoring_config(scoring_config: ProjectConfig,
     return error_count
 
 
-def report_missing_positions(ref_positions: typing.Set[int],
+def report_missing_positions(ref_positions: set[int],
                              seed_sequence: str,
                              genome_name: str):
     """ Print positions that were not covered by reported regions.
@@ -860,7 +860,7 @@ def compare_config(ref_names,
     return report.getvalue(), error_count
 
 
-def join_and_wrap(sections: typing.Sequence[str]) -> typing.List[str]:
+def join_and_wrap(sections: typing.Sequence[str]) -> list[str]:
     joined = ''.join(sections)
     wrapped = wrap(joined, width=65)
     return [line + '\n' for line in wrapped]

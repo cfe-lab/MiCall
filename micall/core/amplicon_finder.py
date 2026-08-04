@@ -10,7 +10,7 @@ import matplotlib
 from scipy.stats import entropy
 
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt  # noqa
+from matplotlib import pyplot as plt
 
 
 def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, use_gzip=False):
@@ -24,10 +24,8 @@ def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, 
     result = run(args, check=True, stdout=PIPE, encoding='UTF8')
     count_summary = result.stdout.strip().split(',')
     bin_counts = count_summary[2:]
-    if bin_counts[0].startswith('['):
-        bin_counts[0] = bin_counts[0][1:]
-    if bin_counts[-1].endswith(']'):
-        bin_counts[-1] = bin_counts[-1][:-1]
+    bin_counts[0] = bin_counts[0].removeprefix('[')
+    bin_counts[-1] = bin_counts[-1].removesuffix(']')
     writer = DictWriter(merge_lengths_csv,
                         ['merge_length', 'count'],
                         lineterminator=os.linesep)

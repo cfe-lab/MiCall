@@ -17,7 +17,7 @@ from micall.core import project_config, aln2counts
 # http://stackoverflow.com/a/3054314/4794
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt, patches  # noqa
+from matplotlib import pyplot as plt, patches
 
 MAX_COVERAGE = 1000000
 FONT_SIZE = 8

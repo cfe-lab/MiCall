@@ -33,7 +33,7 @@ from micall.monitor import disk_operations
 class DummyDataset:
     def __init__(self, name):
         self.name = name
-        self.lines = ['row,name'] + ['{},{}'.format(i, name) for i in range(3)]
+        self.lines = ['row,name'] + [f'{i},{name}' for i in range(3)]
 
     def __repr__(self):
         return f"DummyDataset({self.name!r})"
@@ -111,7 +111,7 @@ def mock_session_download_file(file, url):
 
 def mock_session_download_fasta(file, url):
     for i in range(2):
-        file.write(f'>{url},{i}\n'.encode('UTF8'))
+        file.write(f'>{url},{i}\n'.encode())
         for j in range(3):
             file.write('ACTGTCA'[i+j:].encode())
             file.write(b'\n')
@@ -692,7 +692,7 @@ def test_scan_error(raw_data_with_two_samples, monkeypatch):
     monkeypatch.setattr(micall.monitor.kive_watcher, 'sleep', mock_sleep)
     needs_processing = (Path(raw_data_with_two_samples) /
                         "MiSeq/runs/140101_M01234/needsprocessing")
-    mock_scan.side_effect = [IOError('unavailable'), [needs_processing]]
+    mock_scan.side_effect = [OSError('unavailable'), [needs_processing]]
     sample_queue = DummyQueueSink()
     sample_queue.expect_put(
         FolderEvent(raw_data_with_two_samples / "MiSeq/runs/140101_M01234" /
@@ -1711,7 +1711,7 @@ def test_sample_info_includes_micall_version(raw_data_with_two_samples,
     # Get the sample_info CSV that was uploaded
     # Find the sample_info file by name
     sample_info_filename = None
-    for filename in uploaded_contents.keys():
+    for filename in uploaded_contents:
         if '_info.csv' in filename:
             sample_info_filename = filename
             break
@@ -1822,7 +1822,7 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
 
     # Get the sample_info CSV that was uploaded
     sample_info_filename = None
-    for filename in uploaded_contents.keys():
+    for filename in uploaded_contents:
         if '_info.csv' in filename:
             sample_info_filename = filename
             break
@@ -2310,7 +2310,7 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
     # Mock the existing sample_info CSV with filter_quality version
-    existing_sample_info = f"sample,micall_version\n2120A,{filter_quality_version}\n".encode('utf-8')
+    existing_sample_info = f"sample,micall_version\n2120A,{filter_quality_version}\n".encode()
     mock_get_response = Mock()
     mock_get_response.content = existing_sample_info
     mock_session.get.return_value = mock_get_response

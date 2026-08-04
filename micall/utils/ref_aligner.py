@@ -103,7 +103,7 @@ class AlignmentEvaluator:
             seed_groups_counts.update([seed_group])
         for seed_group in seed_groups_counts.keys():
             print(f'Seed group {seed_group}')
-            for warning in seed_group_warnings.keys():
+            for warning in seed_group_warnings:
                 if warning == 'insertions':
                     message = f'had a large insertion (over {self.max_insertion})'
                 elif warning == 'deletions':

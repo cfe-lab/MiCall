@@ -4,7 +4,7 @@ that only materialize if they are fully initialized.
 """
 
 from contextlib import contextmanager
-from typing import Iterator
+from collections.abc import Iterator
 import random
 import string
 import shutil

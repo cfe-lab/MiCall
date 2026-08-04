@@ -3,7 +3,8 @@
 import sys
 import argparse
 import csv
-from typing import TextIO, Sequence, Iterator
+from typing import TextIO
+from collections.abc import Sequence, Iterator
 from pathlib import Path
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO, Seq
@@ -56,4 +57,4 @@ def cli() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": cli()  # noqa
+if __name__ == "__main__": cli()

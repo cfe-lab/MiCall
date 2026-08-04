@@ -1,5 +1,6 @@
 from fractions import Fraction
-from typing import Sequence, Iterator, Tuple, TypeVar
+from typing import TypeVar
+from collections.abc import Sequence, Iterator
 from operator import itemgetter
 import numpy as np
 from micall.utils.referenceless_score import Score
@@ -14,7 +15,7 @@ ALIGNER.mode = "global"
 ALIGNER.end_gap_score = -1
 
 
-def align_queries(seq1: str, seq2: str) -> Tuple[str, str]:
+def align_queries(seq1: str, seq2: str) -> tuple[str, str]:
     """
     Globally align two query sequences against each other
     and return the resulting aligned sequences in MSA format.
@@ -152,7 +153,7 @@ T = TypeVar("T")
 
 
 def disambiguate_concordance(concordance: Sequence[T],
-                             ) -> Iterator[Tuple[T, int]]:
+                             ) -> Iterator[tuple[T, int]]:
     for i, x in enumerate(concordance):
         if i < len(concordance) / 2:
             global_rank = i

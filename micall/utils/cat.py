@@ -16,7 +16,7 @@ import argparse
 import shutil
 import sys
 from pathlib import Path
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 
 def cat(inputs: Iterable[Path], output: Path) -> None:
@@ -38,7 +38,7 @@ def exceptional_cat(inputs: Iterable[Path], output: Path) -> int:
     except FileNotFoundError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
-    except IOError as e:
+    except OSError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
 
@@ -70,4 +70,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

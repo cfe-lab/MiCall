@@ -2,11 +2,10 @@ from dataclasses import dataclass
 import logging
 import os
 import pytest
-from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.utils.registry as registry
+from micall.utils import registry
 import micall.utils.referencefull_contig_stitcher as stitcher
 from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
@@ -1453,7 +1452,7 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
 
     def mock_align(
         reference_seq: str, consensus: str
-    ) -> Tuple[List[MockAlignment], str]:
+    ) -> tuple[list[MockAlignment], str]:
         alignments = [
             MockAlignment(
                 ctg="N/A",

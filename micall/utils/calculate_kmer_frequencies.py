@@ -12,7 +12,8 @@ import sys
 from dataclasses import dataclass
 from collections import defaultdict
 from pathlib import Path
-from typing import Sequence, Iterator, TextIO, TypedDict, MutableMapping
+from typing import TextIO, TypedDict
+from collections.abc import Sequence, Iterator, MutableMapping
 import logging
 from micall.utils.contig_stitcher_contigs import Contig
 from Bio import SeqIO
@@ -309,4 +310,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

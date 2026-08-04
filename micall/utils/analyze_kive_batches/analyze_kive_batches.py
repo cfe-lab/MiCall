@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from typing import Sequence
+from collections.abc import Sequence
 from pathlib import Path
 import logging
 
@@ -199,7 +199,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARNING)
 
     try:
         main_typed(subcommand, args)
@@ -220,4 +220,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

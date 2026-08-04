@@ -1,6 +1,6 @@
 
 import json
-from typing import Iterator
+from collections.abc import Iterator
 from pathlib import Path
 from kivecli.kiverun import KiveRun
 

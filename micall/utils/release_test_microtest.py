@@ -378,9 +378,8 @@ class ResultsFolder:
 
 
 def gzip_compress(source_path: Path, target_path: Path):
-    with source_path.open('rb') as source:
-        with gzip.open(target_path, 'wb') as target:
-            shutil.copyfileobj(source, target)
+    with source_path.open('rb') as source, gzip.open(target_path, 'wb') as target:
+        shutil.copyfileobj(source, target)
 
 
 def create_sample_scratch(fastq_file):
@@ -579,8 +578,8 @@ class SampleRunner:
                        'run',
                        '--rm',
                        '--read-only',
-                       '--volume', '{}:/mnt/input'.format(input_path),
-                       '--volume', '{}:/mnt/output'.format(output_path),
+                       '--volume', f'{input_path}:/mnt/input',
+                       '--volume', f'{output_path}:/mnt/output',
                        '--volume', '{}:/tmp'.format(output_path / 'tmp'),
                        '--entrypoint', 'micall',
                        '--', str(self.image_path),
@@ -601,8 +600,7 @@ class SampleRunner:
                        '--contain',
                        '--cleanenv',
                        '-B',
-                       '{}:/mnt/input,{}:/mnt/output'.format(input_path,
-                                                             output_path)]
+                       f'{input_path}:/mnt/input,{output_path}:/mnt/output']
             if app_name:
                 command.append('--app')
                 command.append(app_name)
@@ -629,7 +627,7 @@ def find_full_groups(fastq_files, sandbox_path):
     return full_groups
 
 
-def run_with_retries(command_args: typing.List[str], retries=2):
+def run_with_retries(command_args: list[str], retries=2):
     while retries:
         try:
             run(command_args, stdout=PIPE, stderr=PIPE, check=True)

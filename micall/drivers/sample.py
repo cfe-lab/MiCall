@@ -45,7 +45,7 @@ def open_files(**files):
 
     Yields: A dictionary of opened files, {keyword: file handle}
     """
-    files_opened: typing.Dict[str, typing.Optional[typing.IO]] = {}
+    files_opened: dict[str, typing.Optional[typing.IO]] = {}
     try:
         for name, file_info in files.items():
             if file_info is None:
@@ -64,12 +64,11 @@ def open_files(**files):
             else:
                 try:
                     file.close()
-                except (IOError, OSError):
+                except OSError:
                     filenames.append(filename)
-                    pass
         if len(filenames) > 0:
             logger.error(f"The following files could not be closed: {filenames}")
-            raise IOError
+            raise OSError
 
 
 def exclude_extra_seeds(excluded_seeds: typing.Iterable[str],
@@ -131,7 +130,7 @@ class Sample:
         fastq1 = self.paths.get('fastq1')
         if fastq1 is None:
             return 'Sample()'
-        return 'Sample(fastq1={!r})'.format(fastq1)
+        return f'Sample(fastq1={fastq1!r})'
 
     def __str__(self):
         result = 'Sample'
@@ -139,7 +138,7 @@ class Sample:
             result += ' '
             result += self.name
         if self.rank is not None:
-            result += ' ({})'.format(self.rank)
+            result += f' ({self.rank})'
         return result
 
     def __getattr__(self, output_name):
@@ -153,7 +152,7 @@ class Sample:
     def get_default_path(self, output_name):
         if self.scratch_path is None:
             raise AttributeError(
-                'Unknown output {} and no scratch path.'.format(output_name))
+                f'Unknown output {output_name} and no scratch path.')
         for extension in ('csv', 'fastq', 'pdf', 'svg', 'png', 'fasta'):
             if output_name.endswith('_'+extension):
                 file_name = output_name[:-(len(extension)+1)] + '.' + extension

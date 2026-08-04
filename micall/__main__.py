@@ -10,7 +10,7 @@ import sys
 import argparse
 import os
 import runpy
-from typing import Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 

@@ -2,7 +2,7 @@
 import csv
 import tomllib
 from pathlib import Path
-from typing import Iterator
+from collections.abc import Iterator
 
 from micall.utils.new_atomic_file import new_atomic_text_file
 

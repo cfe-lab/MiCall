@@ -71,20 +71,20 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
 
     raw_data_dir = Path(raw_data_path)
     if not raw_data_dir.exists():
-        raise ValueError("RAW_DATA path does not exist: {}".format(raw_data_path))
+        raise ValueError(f"RAW_DATA path does not exist: {raw_data_path}")
 
     # Find run directory
     run_dirs = list((raw_data_dir / "MiSeq" / "runs").glob(run_name + "*"))
     if not run_dirs:
-        raise ValueError("Run directory not found for run name: {}".format(run_name))
+        raise ValueError(f"Run directory not found for run name: {run_name}")
     if len(run_dirs) > 1:
         raise ValueError(
-            "Multiple run directories found for run name: {}".format(run_name)
+            f"Multiple run directories found for run name: {run_name}"
         )
 
     run_dir = run_dirs[0]
     if not run_dir.exists():
-        raise ValueError("Run directory does not exist: {}".format(run_dir))
+        raise ValueError(f"Run directory does not exist: {run_dir}")
 
     # Find FASTQ folder
     fastq_folder = find_fastq_source_folder(run_dir)

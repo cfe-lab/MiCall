@@ -1,7 +1,8 @@
 
 
 from pathlib import Path
-from typing import Sequence, TextIO
+from typing import TextIO
+from collections.abc import Sequence
 
 from miseqinteropreader.interop_reader import InterOpReader
 from miseqinteropreader.models import (

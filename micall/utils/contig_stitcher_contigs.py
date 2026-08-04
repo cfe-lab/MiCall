@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Literal
 from functools import cached_property
 from aligntools import CigarHit
-import micall.utils.registry as registry
+from micall.utils import registry
 
 
 ID_STATE = 0

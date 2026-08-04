@@ -9,7 +9,7 @@ import argparse
 import sys
 import logging
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -159,4 +159,4 @@ def entry() -> None:
     sys.exit(rc)
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

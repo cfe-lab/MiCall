@@ -1,5 +1,5 @@
 import sys
-from typing import Sequence
+from collections.abc import Sequence
 import logging
 from pathlib import Path
 
@@ -70,7 +70,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug2:
         logger.setLevel(logging.DEBUG - 1)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARNING)
 
     logging.basicConfig(level=logger.level)
 
@@ -115,4 +115,4 @@ def cli() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__': cli()  # noqa
+if __name__ == '__main__': cli()

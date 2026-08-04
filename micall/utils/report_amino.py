@@ -8,7 +8,7 @@ MAX_CUTOFF = 'MAX'
 FIRST_CUTOFF = 'FIRST'
 
 
-class SeedAmino(object):
+class SeedAmino:
     """
     Records the frequencies of amino acids at a given position of the
     aligned reads as determined by the consensus sequence.
@@ -36,9 +36,8 @@ class SeedAmino(object):
 
     def __repr__(self):
         if self.counts:
-            return 'SeedAmino({!r}, {!r})'.format(self.consensus_nuc_index,
-                                                  dict(self.counts))
-        return 'SeedAmino({})'.format(self.consensus_nuc_index)
+            return f'SeedAmino({self.consensus_nuc_index!r}, {dict(self.counts)!r})'
+        return f'SeedAmino({self.consensus_nuc_index})'
 
     def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
@@ -134,7 +133,7 @@ class SeedAmino(object):
             self.v3_overlap = max(self.v3_overlap, nuc1.v3_overlap)
 
 
-class SeedNucleotide(object):
+class SeedNucleotide:
     """
     Records the frequencies of nucleotides at a given position of the
     aligned reads as determined by the consensus sequence.
@@ -147,7 +146,7 @@ class SeedNucleotide(object):
         self.consensus_index = None
 
     def __repr__(self):
-        return 'SeedNucleotide({!r})'.format(dict(self.counts))
+        return f'SeedNucleotide({dict(self.counts)!r})'
 
     def count_nucleotides(self, nuc_seq, count=1):
         """ Record a set of reads at this position in the seed reference.
@@ -253,7 +252,7 @@ class ReportNucleotide:
         return f'ReportNucleotide({self.position!r}, {self.seed_nucleotide!r})'
 
 
-class ReportAmino(object):
+class ReportAmino:
     def __init__(self, seed_amino: SeedAmino, position: int):
         """ Create a new instance.
 
@@ -265,4 +264,4 @@ class ReportAmino(object):
         self.insertion_count = 0
 
     def __repr__(self):
-        return 'ReportAmino({!r}, {})'.format(self.seed_amino, self.position)
+        return f'ReportAmino({self.seed_amino!r}, {self.position})'

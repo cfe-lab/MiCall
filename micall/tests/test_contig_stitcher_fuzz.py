@@ -10,10 +10,9 @@ from micall.utils.referencefull_contig_stitcher import (
     ReferencefullStitcherContext,
 )
 import micall.utils.referencefull_contig_stitcher as stitcher
-import micall.utils.registry as registry
+from micall.utils import registry
 from micall.core.plot_contigs import build_stitcher_figure
 from aligntools import CigarHit, Cigar, CigarActions
-from typing import Dict, List
 from collections import defaultdict
 
 
@@ -114,8 +113,8 @@ def test_contig_number_prop2_existential():
     )
 
 
-def get_all_reference_positions(contigs: List[GenotypedContig]):
-    ret: Dict[int, int] = defaultdict(lambda: 0)
+def get_all_reference_positions(contigs: list[GenotypedContig]):
+    ret: dict[int, int] = defaultdict(lambda: 0)
     for contig in contigs:
         if isinstance(contig, AlignedContig):
             for i in contig.alignment.coordinate_mapping.ref_to_query.domain:

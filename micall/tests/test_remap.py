@@ -698,7 +698,7 @@ class MixedReferenceMemorySplitter(MixedReferenceSplitter):
 # noinspection DuplicatedCode
 class MixedReferenceSplitterTest(unittest.TestCase):
     def setUp(self):
-        super(MixedReferenceSplitterTest, self).setUp()
+        super().setUp()
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
         self.work_path = os.path.dirname(__file__)
 
