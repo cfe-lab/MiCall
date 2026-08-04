@@ -7,8 +7,7 @@ efficient insertion and removal.
 """
 
 
-from typing import TypeVar, Generic, Any
-from collections.abc import Iterator, Sequence
+from typing import TypeVar, Generic, Iterator, Sequence, Any
 from collections.abc import MutableSet
 from sortedcontainers import SortedList
 

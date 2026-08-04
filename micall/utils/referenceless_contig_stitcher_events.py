@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union, Tuple, Optional
 from dataclasses import dataclass
 
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -123,7 +123,7 @@ class CalculatedCutoffs:
     left_contig: str
     right_contig: str
     overlap_size: int
-    cutoffs: Optional[tuple[int, int]]
+    cutoffs: Optional[Tuple[int, int]]
 
     def __str__(self) -> str:
         return f"Calculated cutoff for an overlap of size {self.overlap_size}" \

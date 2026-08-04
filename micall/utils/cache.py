@@ -37,8 +37,7 @@ Example:
 
 import argparse
 import sys
-from typing import Optional, TypeVar
-from collections.abc import Mapping, Sequence, Callable
+from typing import Mapping, Optional, Sequence, Union, Callable, TypeVar
 from pathlib import Path
 import os
 import hashlib
@@ -175,7 +174,7 @@ def _find_cache_entry(
 def _add_cache_entry(
     procedure: str,
     input_key: dict[str, Optional[str] | object],
-    outputs: str | dict[str, Optional[str]],
+    outputs: Union[str, dict[str, Optional[str]]],
 ) -> None:
     """Add or update a cache entry.
 
@@ -204,7 +203,7 @@ def get(
     procedure: str,
     inputs: Mapping[str, Optional[Path]],
     parameters: Mapping[str, object] = {},
-) -> Optional[Path | Mapping[str, Optional[Path]]]:
+) -> Optional[Union[Path, Mapping[str, Optional[Path]]]]:
     """Retrieve cached data for the given inputs and parameters, if available.
 
     Args:
@@ -255,7 +254,7 @@ def get(
 def set(
     procedure: str,
     inputs: Mapping[str, Optional[Path]],
-    output: Path | Mapping[str, Optional[Path]],
+    output: Union[Path, Mapping[str, Optional[Path]]],
     parameters: Mapping[str, object] = {},
 ) -> None:
     """Cache the outputs for the given inputs and parameters.
@@ -402,7 +401,7 @@ def cached(
             result = func(*args, **kwargs)
 
             # Store output file(s) in cache
-            output_to_cache: Path | Mapping[str, Path]
+            output_to_cache: Union[Path, Mapping[str, Path]]
             if len(output_paths) == 1:
                 output_to_cache = list(output_paths.values())[0]
             elif len(output_paths) > 1:
@@ -546,4 +545,4 @@ def entry():
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()
+if __name__ == "__main__": entry()  # noqa

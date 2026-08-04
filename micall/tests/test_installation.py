@@ -17,7 +17,7 @@ It then:
 import subprocess
 import venv
 from pathlib import Path
-from collections.abc import Sequence
+from typing import Sequence
 import pytest
 import shlex
 import os

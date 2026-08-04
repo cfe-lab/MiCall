@@ -137,7 +137,7 @@ class BSrequest:
                                   paramdct={"Limit": limit, "Offset": offset}).json()
         err_code, err_msg = self._responsestatus(jobj)
         if err_code:
-            raise RuntimeError(f"runsamples API error {err_code}: {err_msg}")
+            raise RuntimeError("runsamples API error {}: {}".format(err_code, err_msg))
         return jobj
 
     def _get_all_sample_ids_from_run_id(self, runid):
@@ -670,7 +670,7 @@ def hcv_sample(args):
     process_run(run_info, args)
 
 
-class Args:
+class Args(object):
     pass
 
 
@@ -764,7 +764,7 @@ def load_samples(data_path):
                 run_info.read_sizes = run_info.interop_path = None
 
         create_app_result(run_info)
-    except OSError:
+    except IOError:
         if os.path.exists(json_path):
             # copy the input file to the output dir for postmortem analysis
             logger.error("Error occurred while parsing %r.", json_path)
@@ -853,7 +853,9 @@ def link_samples(
         else:  # there is no sample sheet
             # Sort the FASTQ files alphabetically and run them in pairs.
             logger.info(
-                f"No sample sheet found; running on all FASTQ files in folder {run_path}"
+                "No sample sheet found; running on all FASTQ files in folder {}".format(
+                    run_path
+                )
             )
             fastq_files = (list(glob(os.path.join(run_path, "*.fastq")))
                            + list(glob(os.path.join(run_path, "*.fastq.gz"))))
@@ -864,12 +866,12 @@ def link_samples(
                 if idx == len(fastq_files) - 1:
                     # We have an odd number of FASTQ files; ignore this last one.
                     logger.info(
-                        f"File {forward} appears extraneous; omitting."
+                        "File {} appears extraneous; omitting.".format(forward)
                     )
                     break
                 reverse = fastq_files[idx + 1]
                 logger.info(
-                    f"Pairing files {forward} and {reverse}."
+                    "Pairing files {} and {}.".format(forward, reverse)
                 )
                 forward_reverse_pairs.append((forward, reverse))
 
@@ -907,7 +909,7 @@ def link_samples(
 
     sample_count = sum(1 for _ in run_info.get_all_samples())
     for i, sample in enumerate(run_info.get_all_samples(), 1):
-        sample.rank = f'{i} of {sample_count}'
+        sample.rank = '{} of {}'.format(i, sample_count)
         sample.bad_cycles_csv = run_info.bad_cycles_csv
         sample.scratch_path = os.path.join(scratch_path, sample.name)
 
@@ -952,7 +954,7 @@ def process_sample(sample, args, pssm, use_denovo=False):
                        excluded_projects,
                        use_denovo=use_denovo)
     except Exception:
-        message = f'Failed to process {sample}.'
+        message = 'Failed to process {}.'.format(sample)
         logger.error(message, exc_info=True)
         raise RuntimeError(message)
 
@@ -966,7 +968,8 @@ def process_resistance(sample_group, run_info):
     try:
         sample_group.process_resistance(run_info)
     except Exception:
-        message = f'Failed to process resistance of {sample_group.main_sample}.'
+        message = 'Failed to process resistance of {}.'.format(
+            sample_group.main_sample)
         logger.error(message, exc_info=True)
         raise RuntimeError(message)
 
@@ -1112,7 +1115,7 @@ def collate_samples(run_info: RunInfo):
                             else:
                                 row.insert(0, sample_name)
                                 writer.writerow(row)
-                except OSError as ex:
+                except IOError as ex:
                     if ex.errno != errno.ENOENT:
                         raise
     resistance_reports_path = os.path.join(run_info.output_path,

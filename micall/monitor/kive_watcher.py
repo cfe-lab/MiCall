@@ -11,8 +11,7 @@ from enum import Enum
 from itertools import count
 from pathlib import Path
 from queue import Full, Queue
-from typing import IO, Optional, TextIO, TypeVar
-from collections.abc import Callable, Mapping, Sequence, Iterable
+from typing import IO, Callable, Mapping, Optional, Sequence, Iterable, TextIO, TypeVar
 
 from io import StringIO, BytesIO
 from time import sleep
@@ -253,7 +252,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                 check_sample_name_consistency(sample_sheet_path, file_names, run_path)
                 sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
-            except OSError:
+            except IOError:
                 elapsed = datetime.now() - start_time
                 if elapsed >= MAXIMUM_RETRY_TIME:
                     raise
@@ -436,7 +435,9 @@ class KiveWatcher:
             raise RuntimeError("KiveWatcher config is not set.")
 
         batch_name = folder_watcher.run_name + ' v' + self.config.pipeline_version
-        description = f'MiCall batch for folder {folder_watcher.run_name}, pipeline version {self.config.pipeline_version}.'
+        description = 'MiCall batch for folder {}, pipeline version {}.'.format(
+            folder_watcher.run_name,
+            self.config.pipeline_version)
         old_batches = self.kive_retry(
                 lambda: self.session.endpoints.batches.filter(
                     'name', batch_name))
@@ -1212,9 +1213,9 @@ class KiveWatcher:
                                      dataset=inputs[name]['url'])
                                 for name, app_arg in app_args.items()]
             except KeyError as e:
-                raise ValueError(f"Pipeline input error: {e!r}."
+                raise ValueError(f"Pipeline input error: {repr(e)}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
-                                 f" Does the run name {run_name!r} make sense for it?")
+                                 f" Does the run name {repr(run_name)} make sense for it?")
             if run_batch is None:
                 raise ValueError("Run batch is required.")
             run_params = dict(name=run_name,
@@ -1226,7 +1227,7 @@ class KiveWatcher:
                 run = self.session.endpoints.containerruns.post(json=run_params)
             except Exception as ex:
                 raise RuntimeError(
-                    f'Failed to launch run {run_name}.') from ex
+                    'Failed to launch run {}.'.format(run_name)) from ex
         return run
 
     def kive_retry(self, target: Callable[[], T]) -> T:
@@ -1352,7 +1353,7 @@ class KiveWatcher:
         folder_watcher.quality_dataset = self.find_or_upload_dataset(
             quality_csv_bytes,
             folder_watcher.run_name + '_quality.csv',
-            f'Error rates for {folder_watcher.run_name} run.')
+            'Error rates for {} run.'.format(folder_watcher.run_name))
 
     @property
     def session(self) -> KiveAPI:

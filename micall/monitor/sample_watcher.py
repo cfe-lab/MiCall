@@ -1,6 +1,5 @@
 from pathlib import Path
-from typing import Optional, Any, Protocol
-from collections.abc import Generator
+from typing import Dict, List, Set, Optional, Any, Tuple, Generator, Protocol, Union
 
 from kiveapi import KiveRunFailedException
 
@@ -21,14 +20,14 @@ class KiveWatcherInterface(Protocol):
                          run: Run,
                          folder_watcher: 'FolderWatcher',
                          pipeline_type: PipelineType,
-                         sample_watchers: list[Optional['SampleWatcher']]) -> Optional[Run]: ...
+                         sample_watchers: List[Optional['SampleWatcher']]) -> Optional[Run]: ...
 
     @property
     def config(self) -> ConfigInterface: ...
 
 
 class FolderWatcher:
-    def __init__(self, base_calls_folder: Path | str, runner: KiveWatcherInterface) -> None:
+    def __init__(self, base_calls_folder: Union[Path, str], runner: KiveWatcherInterface) -> None:
         """ Set up an instance.
 
         :param base_calls_folder: path to the BaseCalls folder under a MiSeq
@@ -39,16 +38,16 @@ class FolderWatcher:
         self.runner: KiveWatcherInterface = runner
         self.run_folder: Path = (self.base_calls_folder / '../../..').resolve()
         self.run_name: str = '_'.join(self.run_folder.name.split('_')[:2])
-        self.sample_watchers: list['SampleWatcher'] = []
+        self.sample_watchers: List['SampleWatcher'] = []
         self.is_folder_failed: bool = False
         self.batch: Optional[Batch] = None
         self.quality_dataset: Optional[RunDataset] = None
         self.filter_quality_run: Optional[Run] = None
         self.bad_cycles_dataset: Optional[RunDataset] = None
-        self.active_pipeline_groups: set[PipelineType] = set()  # {pipeline_group}
-        self.active_runs: dict[str, tuple[list[Optional['SampleWatcher']], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
-        self.new_runs: set[str] = set()  # {run_id}
-        self.completed_samples: set[str] = set()  # {fastq1_name}
+        self.active_pipeline_groups: Set[PipelineType] = set()  # {pipeline_group}
+        self.active_runs: Dict[str, Tuple[List[Optional['SampleWatcher']], PipelineType]] = {}  # {run_id: ([sample_watcher], pipeline_type)}
+        self.new_runs: Set[str] = set()  # {run_id}
+        self.completed_samples: Set[str] = set()  # {fastq1_name}
         self.poll_only_new_runs: bool = False
 
     def __repr__(self) -> str:
@@ -62,7 +61,7 @@ class FolderWatcher:
                     yield name
 
     @property
-    def active_samples(self) -> set[str]:
+    def active_samples(self) -> Set[str]:
         if self.is_folder_failed:
             return set()
         if self.filter_quality_run is None:
@@ -324,9 +323,9 @@ class FolderWatcher:
 class SampleWatcher:
     def __init__(self, sample_group: SampleGroup) -> None:
         self.sample_group = sample_group
-        self.fastq_datasets: list[Any] = []
-        self.sample_info_datasets: list[Any] = []
-        self.runs: dict[PipelineType, Run] = {}  # {pipeline_type: run}
+        self.fastq_datasets: List[Any] = []
+        self.sample_info_datasets: List[Any] = []
+        self.runs: Dict[PipelineType, Run] = {}  # {pipeline_type: run}
         self.is_failed: bool = False
 
     def __repr__(self) -> str:

@@ -13,7 +13,7 @@ the logs to their prior state with:
 
 import pytest
 from pathlib import Path
-from collections.abc import Iterator, Iterable
+from typing import Iterator, Iterable
 
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 

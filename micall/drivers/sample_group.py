@@ -35,7 +35,7 @@ class SampleGroup:
     def __repr__(self):
         samples = ', '.join(repr(sample)
                             for sample in self)
-        return f'SampleGroup({samples})'
+        return 'SampleGroup({})'.format(samples)
 
     def __iter__(self):
         yield self.main_sample

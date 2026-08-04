@@ -15,7 +15,7 @@ class DummyFile(StringIO):
         s = self.getvalue()
         if len(s) > 50:
             s = '...' + s[-47:]
-        return f'DummyFile({s!r})'
+        return 'DummyFile({!r})'.format(s)
 
 
 def prepare_g2p(test_case):

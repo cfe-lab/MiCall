@@ -197,7 +197,9 @@ def find_sample_results(samples_csv, source_folder, pipeline_version):
                                    'needsprocessing')
             matches = glob(pattern)
             if len(matches) != 1:
-                raise RuntimeError(f'Expected one match for {pattern}, but found: {matches}')
+                raise RuntimeError('Expected one match for {}, but found: {}'.format(
+                    pattern,
+                    matches))
             run_paths.append(os.path.dirname(matches[0]))
     run_paths.sort()
     results_folders = []

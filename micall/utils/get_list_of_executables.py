@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from collections.abc import Sequence, Iterator
+from typing import Sequence, Iterator
 import os
 from pathlib import Path
 import re

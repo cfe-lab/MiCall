@@ -155,7 +155,7 @@ def load_sample(args):
 
 
 def main():
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.WARN)
     args = parse_args()
     sample = load_sample(args)
 

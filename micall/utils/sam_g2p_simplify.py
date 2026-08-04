@@ -44,7 +44,7 @@ def test(remap_lines, temp_prefix, pssm, ruby_script, delete_results=True):
                 is_diff = call(['diff', '-q', ruby_out_filename, python_out_filename],
                                stdout=devnull)
             result = 'FAIL' if is_diff else 'PASS'
-            logger.info(f'{len(remap_lines)} lines: {result}')
+            logger.info('{} lines: {}'.format(len(remap_lines), result))
             return result
         finally:
             if delete_results:
@@ -95,7 +95,8 @@ def compare_conseqs(txtfilename, ruby_script, pssm):
              delete_results=False)
         if not txtfilename.endswith('.txt'):
             with open(simple_prefix + '.txt', 'w') as simplefile:
-                simplefile.writelines(simple_remap_lines)
+                for line in simple_remap_lines:
+                    simplefile.write(line)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

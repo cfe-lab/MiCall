@@ -1,7 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Literal, Optional, Protocol, TypeAlias, TypedDict
-from collections.abc import Mapping, Sequence, Iterator
+from typing import List, Literal, Optional, Mapping, Sequence, Protocol, TypeAlias, TypedDict, Iterator
 
 ALLOWED_GROUPS: Sequence[str] = ['Everyone']
 # noinspection PyArgumentList
@@ -79,7 +78,7 @@ class Run(TypedDict):
     """
     id: str
     state: State
-    datasets: list[RunDataset]
+    datasets: List[RunDataset]
 
 
 class Batch(Protocol):

@@ -2,6 +2,7 @@
 from micall.utils.stable_random_distribution import stable_random_distribution
 import numpy as np
 from itertools import islice
+from typing import Set
 import random
 
 
@@ -136,7 +137,7 @@ def test_fill_domain_speed():
         # Gather samples from our generator.
         rng = random.Random(seed)
         gen = stable_random_distribution(high, rng=rng)
-        stable_bucket: set[int] = set()
+        stable_bucket: Set[int] = set()
         stable_steps = 0
         while len(stable_bucket) < high:
             stable_bucket.add(next(gen))
@@ -144,7 +145,7 @@ def test_fill_domain_speed():
 
         # For comparison, generate num_samples indices uniformly at random.
         nprng = np.random.default_rng(seed)
-        uniform_bucket: set[int] = set()
+        uniform_bucket: Set[int] = set()
         uniform_steps = 0
         while len(uniform_bucket) < high:
             uniform_bucket.add(nprng.integers(0, high))

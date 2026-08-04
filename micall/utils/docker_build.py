@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from collections.abc import Sequence
+from typing import Sequence
 import logging
 import os
 import subprocess
@@ -42,7 +42,7 @@ def configure_logging(args) -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(
         level=logger.level,
@@ -78,7 +78,8 @@ def get_repository_name() -> str:
 
     version = get_latest_git_tag()
 
-    version = version.removeprefix('v')
+    if version.startswith('v'):
+        version = version[1:]
 
     repository_name = f'docker.illumina.com/cfe_lab/micall:{version}'
     logger.debug('Resolved docker repository name: %s', repository_name)

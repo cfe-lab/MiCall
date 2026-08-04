@@ -107,7 +107,7 @@ def test_process_all_contigs_multiple():
     pool = {}
     process_all_contigs(pool, contigs, max_kmer=1)
     # For k=1, across both contigs, pool keys should be a subset of {A, C, G, T}
-    for key in pool:
+    for key in pool.keys():
         assert key in {"A", "C", "G", "T"}
 
 

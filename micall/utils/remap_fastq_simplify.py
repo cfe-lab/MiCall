@@ -17,7 +17,7 @@ BOWTIE_THREADS = 11
 
 class MicallDD(DD):
     def __init__(self, filename1, bad_cycles_filename):
-        super().__init__()
+        super(MicallDD, self).__init__()
         if True or 'filter' in filename1:
             self.filename1 = filename1
         else:
@@ -30,7 +30,7 @@ class MicallDD(DD):
         read_fastq(get_reverse_filename(self.filename1), reads)
         added_count = len(reads) - read_count
         if added_count > 0:
-            raise RuntimeError(f'Found {added_count} new reads.')
+            raise RuntimeError('Found {} new reads.'.format(added_count))
         self.reads = reads.values()
 
     def filter_fastqs(self, filename1):
@@ -80,7 +80,8 @@ class MicallDD(DD):
             for read in zip(fin, fin, fin, fin):
                 qname = read[0].split()[0][1:]
                 if qname in qnames:
-                    fout.writelines(read)
+                    for line in read:
+                        fout.write(line)
 
     def _test(self, read_indexes, debug_file_prefix=None):
         read_indexes = reversed(read_indexes)
@@ -152,7 +153,9 @@ class MicallDD(DD):
 
     def get_result(self, censored_map_count, trimmed_map_count):
         diff = trimmed_map_count - censored_map_count
-        print(f'Result: censored {censored_map_count}, trimmed {trimmed_map_count} ({diff}).')
+        print('Result: censored {}, trimmed {} ({}).'.format(censored_map_count,
+                                                             trimmed_map_count,
+                                                             diff))
         return DD.FAIL if diff >= 20 else DD.PASS
 
     def write_simple_fastq(self, filename1, read_indexes):
@@ -160,8 +163,10 @@ class MicallDD(DD):
         filename2 = get_reverse_filename(filename1)
         with open(filename1, 'w') as f1, open(filename2, 'w') as f2:
             for lines in selected_reads:
-                f1.writelines(lines[:4])
-                f2.writelines(lines[4:])
+                for line in lines[:4]:
+                    f1.write(line)
+                for line in lines[4:]:
+                    f2.write(line)
 
     def coerce(self, c):
         if c is None:
@@ -177,7 +182,7 @@ class MicallDD(DD):
                                for block in blocks) + ']'
 
 
-class DevNullWrapper:
+class DevNullWrapper(object):
     def __init__(self, devnull):
         self.devnull = devnull
 

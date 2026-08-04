@@ -95,7 +95,7 @@ def main():
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level,
                         format='%(asctime)s[%(levelname)s]%(name)s: %(message)s')

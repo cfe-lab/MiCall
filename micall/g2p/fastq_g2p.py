@@ -152,7 +152,7 @@ def write_rows(pssm,
         counts['mapped'] += skip_count
         g2p_writer.writerow(dict(rank=counts['rank'] + 1,
                                  count=skip_count,
-                                 error=f'count < {min_count}'))
+                                 error='count < {}'.format(min_count)))
 
     if g2p_summary_csv is not None:
         if counts['valid'] == 0:
@@ -168,8 +168,8 @@ def write_rows(pssm,
                 final_call = 'X4'
             else:
                 final_call = 'R5'
-            x4_pct_display = f'{x4_pct:0.2f}'
-            valid_pct_display = f'{valid_pct:0.2f}'
+            x4_pct_display = '{:0.2f}'.format(x4_pct)
+            valid_pct_display = '{:0.2f}'.format(valid_pct)
         summary_writer = csv.writer(g2p_summary_csv, lineterminator=os.linesep)
         summary_writer.writerow(
             ['mapped', 'valid', 'X4calls', 'X4pct', 'final', 'validpct'])
@@ -242,7 +242,7 @@ def _build_row(seq, count, counts, pssm):
         call = 'X4'
         counts['x4'] += count
     counts['valid'] += count
-    row['g2p'] = f'{score:06f}'
+    row['g2p'] = '{:06f}'.format(score)
     row['fpr'] = fpr
     row['call'] = call
     row['seq'] = aligned2.replace('-', '')
@@ -274,7 +274,7 @@ class FastqReader:
                 try:
                     pair_name2, read2 = next(read2_iter)
                 except StopIteration:
-                    raise FastqError(f'No match for read {pair_name}.')
+                    raise FastqError('No match for read {}.'.format(pair_name))
                 if pair_name2 != pair_name:
                     cache[pair_name2] = read2
                     read2 = None
@@ -430,12 +430,12 @@ def write_unmapped_reads(reads, unmapped1, unmapped2):
 
 def write_fastq_read(fastq, pair_name, read):
     read_name, bases, quality = read
-    fastq.write(f"""\
-@{pair_name} {read_name}
-{bases}
+    fastq.write("""\
+@{} {}
+{}
 +
-{quality}
-""")
+{}
+""".format(pair_name, read_name, bases, quality))
 
 
 def count_reads(reads, file_prefix):

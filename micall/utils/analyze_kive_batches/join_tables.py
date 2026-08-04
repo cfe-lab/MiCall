@@ -1,6 +1,6 @@
 import csv
 import itertools
-from collections.abc import Iterable
+from typing import Iterable, List, Dict, Set
 from pathlib import Path
 from micall.utils.new_atomic_file import new_atomic_text_file
 
@@ -23,9 +23,9 @@ def join_tables(inputs: Iterable[Path], column: str, output: Path) -> None:
         raise ValueError("At least one input file must be provided.")
 
     # For each input file, build a map: index_value -> list of {non_index_col: cell}
-    per_file_maps: list[dict[str, list[dict[str, str]]]] = []
-    seen_cols: set[str] = set()      # all non-index cols seen so far
-    col_order: list[str] = []  # their global order
+    per_file_maps: List[Dict[str, List[Dict[str, str]]]] = []
+    seen_cols: Set[str] = set()      # all non-index cols seen so far
+    col_order: List[str] = []  # their global order
 
     for path in inputs:
         with path.open(newline='') as f:
@@ -48,7 +48,7 @@ def join_tables(inputs: Iterable[Path], column: str, output: Path) -> None:
                 col_order.append(c)
 
             # map key -> list of row‐dicts
-            m: dict[str, list[dict[str, str]]] = {}
+            m: Dict[str, List[Dict[str, str]]] = {}
             for row in reader:
                 key = row[column]
                 entry = {c: row[c] for c in this_cols}

@@ -1,3 +1,4 @@
+import typing
 from contextlib import contextmanager
 from csv import DictReader
 from difflib import Differ
@@ -30,7 +31,7 @@ def main():
         SeqIO.write(end_seqs, str(target_path/f'primers_hivb_{name}_end.fasta'), 'fasta')
 
 
-def load_hivb(seqs: dict[str, list[SeqRecord]]):
+def load_hivb(seqs: typing.Dict[str, typing.List[SeqRecord]]):
     left_source_path = Path(__file__).parent / 'MiCall project HIVB ForwardPrimers.txt'
     right_source_path = Path(__file__).parent / 'MiCall project HIVB ReversePrimers.txt'
     seqs['left'].extend(SeqIO.parse(left_source_path, 'fasta'))

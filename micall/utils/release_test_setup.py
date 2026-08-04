@@ -57,7 +57,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class Sample:
+class Sample(object):
     def __init__(self, run_name, extract_num, config):
         self.run_name = run_name
         self.extract_num = extract_num
@@ -91,7 +91,9 @@ class Sample:
                                    NEEDS_PROCESSING)
             matches = glob(pattern)
             if len(matches) != 1:
-                raise RuntimeError(f'Expected one match for {pattern}, but found: {matches}')
+                raise RuntimeError('Expected one match for {}, but found: {}'.format(
+                    pattern,
+                    matches))
             self.run_name = os.path.dirname(matches[0])
 
         # Use list_fastq_files to search in BaseCalls, Alignment_*/*/Fastq, or run path
@@ -101,7 +103,7 @@ class Sample:
             pattern = self.extract_num + '*_R1_*'
         fastq_files = list_fastq_files(self.run_name, pattern, fallback_to_run_path=False)
         if not fastq_files:
-            raise RuntimeError(f'No matches found for run {self.run_name}')
+            raise RuntimeError('No matches found for run {}'.format(self.run_name))
         matches = sorted([str(f) for f in fastq_files])
         self.fastq_paths = matches
         
@@ -291,7 +293,7 @@ def main():
     for sample in samples:
         sample.find(args.old_folder, qai_run_names)
     for qai_run_name in sorted(qai_run_names):
-        print(f'LabMiseqRun.import("{qai_run_name}")')
+        print('LabMiseqRun.import("{}")'.format(qai_run_name))
     samples.sort(key=lambda s: (s.run_name, s.extract_num))
     runs = []
     for run, run_samples in groupby(samples, key=attrgetter('run_name')):

@@ -4,12 +4,17 @@ from collections import Counter
 from functools import cache
 from pathlib import Path
 from typing import (
+    Dict,
+    Iterable,
+    Iterator,
     Optional,
+    Tuple,
+    Sequence,
     TextIO,
+    MutableMapping,
     AbstractSet,
     Literal,
 )
-from collections.abc import Iterable, Iterator, Sequence, MutableMapping
 
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -223,7 +228,7 @@ def does_share_kmers(
 def get_overlap(
     left: ContigWithAligner,
     right: ContigWithAligner,
-    get_overlap_cache: MutableMapping[tuple[ContigId, ContigId], Optional[Overlap]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
     kmers_cache: MutableMapping[str, AbstractSet[str]],
 ) -> Optional[Overlap]:
     """Return the best overlap placement between two contigs, if any.
@@ -277,8 +282,8 @@ def get_minimum_base_score(current: Score, minimum: Score) -> Score:
 def align_overlaps(
     left_overlap: str,
     right_overlap: str,
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
-) -> tuple[str, str]:
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
+) -> Tuple[str, str]:
     key = (left_overlap, right_overlap)
     existing = align_cache.get(key)
     if existing is not None:
@@ -290,17 +295,17 @@ def align_overlaps(
 
 
 # Cutoff cache types
-CutoffsCacheResult = Optional[tuple[int, int]]
-CutoffsCache = MutableMapping[tuple[ContigId, ContigId], CutoffsCacheResult]
+CutoffsCacheResult = Optional[Tuple[int, int]]
+CutoffsCache = MutableMapping[Tuple[ContigId, ContigId], CutoffsCacheResult]
 
 
 def precheck_and_prepare_overlap(
     a: ContigWithAligner,
     b: ContigWithAligner,
     minimum_base_score: Score,
-    get_overlap_cache: MutableMapping[tuple[ContigId, ContigId], Optional[Overlap]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
     kmers_cache: MutableMapping[str, AbstractSet[str]],
-) -> Optional[tuple[ContigWithAligner, ContigWithAligner, int, str, str, Overlap]]:
+) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, int, str, str, Overlap]]:
     """
     Run early-bound checks and prepare normalized overlap windows.
 
@@ -348,7 +353,7 @@ def calculate_covered(
     left: ContigWithAligner,
     right: ContigWithAligner,
     overlap_size: int,
-) -> Optional[tuple[ContigWithAligner, ContigWithAligner]]:
+) -> Optional[Tuple[ContigWithAligner, ContigWithAligner]]:
     """Compute coverage flags and identify covered/bigger contigs if applicable."""
     left_is_covered = len(left.seq) <= overlap_size
     right_is_covered = len(right.seq) <= overlap_size
@@ -367,8 +372,8 @@ def compute_alignment_and_score(
     right: ContigWithAligner,
     left_cutoff: int,
     right_cutoff: int,
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
-) -> tuple[str, str, str, str, int, int, Score]:
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
+) -> Tuple[str, str, str, str, int, int, Score]:
     """Align according to covered/non-covered case and compute overlap score.
 
     Returns (aligned_1, aligned_2, left_remainder, right_remainder,
@@ -409,7 +414,7 @@ def cutoffs_left_covered(
     right: ContigWithAligner,
     shift: int,
     left_initial_overlap: str,
-) -> tuple[int, int]:
+) -> Tuple[int, int]:
     overlap_alignments = tuple(
         map_overlap(right, minimum_acceptable, "cover", left_initial_overlap)
     )
@@ -429,7 +434,7 @@ def cutoffs_right_covered(
     right: ContigWithAligner,
     shift: int,
     right_initial_overlap: str,
-) -> tuple[int, int]:
+) -> Tuple[int, int]:
     overlap_alignments = tuple(
         map_overlap(left, minimum_acceptable, "cover", right_initial_overlap)
     )
@@ -449,7 +454,7 @@ def cutoffs_left_shorter(
     right: ContigWithAligner,
     left_initial_overlap: str,
     right_initial_overlap: str,
-) -> Optional[tuple[int, int]]:
+) -> Optional[Tuple[int, int]]:
     left_overlap_alignments = map_overlap(
         left, minimum_acceptable, "left", right_initial_overlap
     )
@@ -471,7 +476,7 @@ def cutoffs_right_shorter_or_equal(
     right: ContigWithAligner,
     left_initial_overlap: str,
     right_initial_overlap: str,
-) -> Optional[tuple[int, int]]:
+) -> Optional[Tuple[int, int]]:
     right_overlap_alignments = map_overlap(
         right, minimum_acceptable, "right", left_initial_overlap
     )
@@ -494,7 +499,7 @@ def compute_overlap_cutoffs(
     shift: int,
     left_initial_overlap: str,
     right_initial_overlap: str,
-) -> Optional[tuple[int, int]]:
+) -> Optional[Tuple[int, int]]:
     if len(left.seq) == len(left_initial_overlap):
         return cutoffs_left_covered(
             minimum_acceptable, left, right, shift, left_initial_overlap
@@ -519,7 +524,7 @@ def find_overlap_cutoffs(
     shift: int,
     left_initial_overlap: str,
     right_initial_overlap: str,
-    cutoffs_cache: MutableMapping[tuple[ContigId, ContigId], Optional[tuple[int, int]]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
 ) -> CutoffsCacheResult:
     """Locate cutoffs delimiting the high-confidence overlap region.
 
@@ -545,7 +550,7 @@ def find_overlap_cutoffs(
     # `minimum_acceptable` are always valid for a higher one.
     # The `minimum_acceptable` is monotonic.
     key = (left.id, right.id)
-    existing: Optional[tuple[int, int]] | Literal[-1] = cutoffs_cache.get(key, -1)
+    existing: Optional[Tuple[int, int]] | Literal[-1] = cutoffs_cache.get(key, -1)
     if existing != -1:
         ret: CutoffsCacheResult = existing
         return ret
@@ -559,7 +564,7 @@ def find_overlap_cutoffs(
 
 def normalize_orientation(
     a: ContigWithAligner, b: ContigWithAligner, overlap: Overlap
-) -> tuple[ContigWithAligner, ContigWithAligner, int]:
+) -> Tuple[ContigWithAligner, ContigWithAligner, int]:
     """Return (left, right, shift) ensuring `shift` corresponds to left->right."""
     if abs(overlap.shift) < len(a.seq):
         return a, b, overlap.shift
@@ -569,7 +574,7 @@ def normalize_orientation(
 
 def initial_overlap_windows(
     left: ContigWithAligner, right: ContigWithAligner, shift: int
-) -> tuple[str, str]:
+) -> Tuple[str, str]:
     """Extract initial overlap windows on left/right given a placement shift."""
     left_initial = left.seq[
         len(left.seq) - abs(shift) : (len(left.seq) - abs(shift) + len(right.seq))
@@ -596,7 +601,7 @@ def optimistic_overlap_score(overlap_size: int) -> Score:
     return calculate_referenceless_overlap_score(L=overlap_size + 1, M=overlap_size)
 
 
-def score_alignment(aligned_1: str, aligned_2: str, is_covered: bool) -> tuple[int, int, Score]:
+def score_alignment(aligned_1: str, aligned_2: str, is_covered: bool) -> Tuple[int, int, Score]:
     """Compute (result_length, number_of_matches, result_score) from an alignment.
 
     The statistical length L used for scoring is result_length + length_bonus.
@@ -623,8 +628,8 @@ def align_for_merge_covered(
     bigger: ContigWithAligner,
     left_cutoff: int,
     right_cutoff: int,
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
-) -> tuple[str, str]:
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
+) -> Tuple[str, str]:
     """Align sequences for the covered-contig case."""
     covered_overlap = covered.seq
     bigger_overlap = bigger.seq[left_cutoff:right_cutoff]
@@ -636,8 +641,8 @@ def align_for_merge_noncovered(
     right: ContigWithAligner,
     left_cutoff: int,
     right_cutoff: int,
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
-) -> tuple[str, str, str, str]:
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
+) -> Tuple[str, str, str, str]:
     """Align overlap windows and return alignment plus remainders for merging."""
     left_overlap = left.seq[left_cutoff : left_cutoff + right_cutoff]
     left_remainder = left.seq[:left_cutoff]
@@ -649,7 +654,7 @@ def align_for_merge_noncovered(
 
 def merge_by_concordance(
     aligned_1: str, aligned_2: str, left_remainder: str, right_remainder: str
-) -> tuple[str, int, int]:
+) -> Tuple[str, int, int]:
     """Produce merged sequence by splitting at the best concordance index.
 
     Returns tuple of (result_seq, overlap_size_for_event, join_boundary)
@@ -676,10 +681,10 @@ def merge_by_concordance(
 def check_merged_sequence_support(
     merged_seq: str,
     cut_position: int,
-    read_index: Optional[dict[int, Counter[str]]],
+    read_index: Optional[Dict[int, Counter[str]]],
     min_depth: int,
     read_length: int,
-) -> tuple[bool, int, int]:
+) -> Tuple[bool, int, int]:
     """Check that a candidate join cut in a merged sequence has read support.
 
     Counting model
@@ -763,7 +768,7 @@ def check_merged_sequence_support(
         for s in range(s_eff_min, s_eff_max + 1):
             kmer = merged_seq[s:s + L]
             rc_kmer = reverse_complement(kmer)
-            canonical = min(kmer, rc_kmer)
+            canonical = kmer if kmer <= rc_kmer else rc_kmer
 
             count = counter.get(canonical, 0)
             if count == 0:
@@ -788,7 +793,8 @@ def check_merged_sequence_support(
     min_cov = float('inf')
     for p in range(window_start, window_end):
         current += diff[p]
-        min_cov = min(min_cov, current)
+        if current < min_cov:
+            min_cov = current
     min_cov = int(min_cov)
 
     if cut_crossing_depth < min_depth:
@@ -806,11 +812,11 @@ def try_combine_contigs(
     pool: Pool,
     a: ContigWithAligner,
     b: ContigWithAligner,
-    get_overlap_cache: MutableMapping[tuple[ContigId, ContigId], Optional[Overlap]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
     kmers_cache: MutableMapping[str, AbstractSet[str]],
-    cutoffs_cache: MutableMapping[tuple[ContigId, ContigId], Optional[tuple[int, int]]],
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
-) -> Optional[tuple[ContigWithAligner, Score]]:
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
+) -> Optional[Tuple[ContigWithAligner, Score]]:
     """Attempt to combine two contigs respecting the pool's score threshold.
 
     Fast-fails using upper bounds on achievable overlap, normalizes orientation,
@@ -942,10 +948,10 @@ def extend_by_1(
     pool: Pool,
     path: ContigsPath,
     candidate: ContigWithAligner,
-    get_overlap_cache: MutableMapping[tuple[ContigId, ContigId], Optional[Overlap]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
     kmers_cache: MutableMapping[str, AbstractSet[str]],
-    cutoffs_cache: MutableMapping[tuple[ContigId, ContigId], Optional[tuple[int, int]]],
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> Optional[ContigsPath]:
     """
     Attempt to extend a contig path by one candidate contig.
@@ -980,10 +986,10 @@ def calc_extension(
     pool: Pool,
     contigs: Sequence[ContigWithAligner],
     path: ContigsPath,
-    get_overlap_cache: MutableMapping[tuple[ContigId, ContigId], Optional[Overlap]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
     kmers_cache: MutableMapping[str, AbstractSet[str]],
-    cutoffs_cache: MutableMapping[tuple[ContigId, ContigId], Optional[tuple[int, int]]],
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
     """
     Try to extend a single path with each contig in contigs.
@@ -1007,10 +1013,10 @@ def calc_multiple_extensions(
     pool: Pool,
     paths: Iterable[ContigsPath],
     contigs: Sequence[ContigWithAligner],
-    get_overlap_cache: MutableMapping[tuple[ContigId, ContigId], Optional[Overlap]],
+    get_overlap_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Overlap]],
     kmers_cache: MutableMapping[str, AbstractSet[str]],
-    cutoffs_cache: MutableMapping[tuple[ContigId, ContigId], Optional[tuple[int, int]]],
-    align_cache: MutableMapping[tuple[str, str], tuple[str, str]],
+    cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
+    align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
 ) -> bool:
     """
     Attempt to extend multiple paths with a set of contigs.
@@ -1067,7 +1073,7 @@ def calculate_all_paths(
 
 def try_combine_1(
     contigs: Iterable[ContigWithAligner],
-) -> Optional[tuple[ContigWithAligner, ContigWithAligner, ContigWithAligner]]:
+) -> Optional[Tuple[ContigWithAligner, ContigWithAligner, ContigWithAligner]]:
     is_debug2 = ReferencelessStitcherContext.get().is_debug2
     ctx = ReferencelessStitcherContext.get()
     get_overlap_cache = ctx.get_overlap_cache
@@ -1157,7 +1163,7 @@ def read_contigs(input_fasta: TextIO) -> Iterable[ContigWithAligner]:
 def build_read_index(
     fastq1_path: Path,
     fastq2_path: Path,
-) -> dict[int, Counter[str]]:
+) -> Dict[int, Counter[str]]:
     """Build a read index from paired FASTQ files.
 
     Reads both R1 and R2, canonicalizes each sequence via
@@ -1170,7 +1176,7 @@ def build_read_index(
 
     Returns an empty dict if no reads can be read.
     """
-    read_index: dict[int, Counter[str]] = {}
+    read_index: Dict[int, Counter[str]] = {}
 
     with (
         open_fastq_file(fastq1_path) as fastq1,
@@ -1220,7 +1226,7 @@ def referenceless_contig_stitcher(
     input_fasta: TextIO,
     output_fasta: Optional[TextIO],
     *,
-    read_index: Optional[dict[int, Counter[str]]] = None,
+    read_index: Optional[Dict[int, Counter[str]]] = None,
     minimum_read_depth: int = 1,
     read_length: int = 150,
 ) -> int:

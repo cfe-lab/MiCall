@@ -19,7 +19,7 @@ Design notes
 """
 
 from dataclasses import dataclass
-from collections.abc import MutableMapping
+from typing import MutableMapping, Set
 
 from micall.utils.sorted_ring import SortedRing
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -38,7 +38,7 @@ class Pool:
     """
 
     ring: SortedRing[ContigsPath]
-    set: set[str]
+    set: Set[str]
     existing: MutableMapping[str, ContigsPath]
     smallest_score: Score
 

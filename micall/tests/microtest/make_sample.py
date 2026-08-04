@@ -303,7 +303,10 @@ def main():
                 file_num = '2' if fastq_file.is_reversed else '1'
                 # noinspection PyTypeChecker
                 for cluster in range(section.count):
-                    f.write(f'@M01234:01:000000000-AAAAA:1:1101:{fastq_file.extract_num}:{cluster + next_cluster:04} {file_num}:N:0:1\n')
+                    f.write('@M01234:01:000000000-AAAAA:1:1101:{}:{:04} {}:N:0:1\n'.format(
+                        fastq_file.extract_num,
+                        cluster + next_cluster,
+                        file_num))
                     f.write(ref_nuc_section+'\n')
                     f.write('+\n')
                     f.write(phred_scores+'\n')

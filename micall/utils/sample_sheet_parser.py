@@ -4,7 +4,7 @@ import argparse
 from csv import DictReader
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, Dict
 import csv
 import multicsv
 from io import BytesIO, StringIO
@@ -27,7 +27,7 @@ def _determine_version(file: multicsv.MultiCSVFile) -> int:
     return 1
 
 
-def _sample_sheet_parser(handle: TextIO) -> dict[str, object]:
+def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     """
     Parse the contents of SampleSheet.csv, convert contents into a
     Python dictionary object.
@@ -90,4 +90,4 @@ def main():
     print(json.dumps(ss, indent='\t'))
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__": main() # noqa

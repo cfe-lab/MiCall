@@ -14,8 +14,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional
-from collections.abc import Sequence
+from typing import Optional, Sequence, Set
 
 from micall.core import project_config
 from micall.utils.cache import cached
@@ -43,7 +42,7 @@ def prelim_map(
     rdgopen: int = READ_GAP_OPEN,
     rfgopen: int = REF_GAP_OPEN,
     gzip: bool = False,
-    excluded_seeds: Optional[set[str]] = None,
+    excluded_seeds: Optional[Set[str]] = None,
     ) -> None:
 
     bowtie2 = Bowtie2()
@@ -97,8 +96,10 @@ def prelim_map(
                        '-x', reffile_template,
                        '-1', fastq1_str,
                        '-2', fastq2_str,
-                       '--rdg', f"{read_gap_open_penalty},{READ_GAP_EXTEND}",
-                       '--rfg', f"{ref_gap_open_penalty},{REF_GAP_EXTEND}",
+                       '--rdg', "{},{}".format(read_gap_open_penalty,
+                                               READ_GAP_EXTEND),
+                       '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                               REF_GAP_EXTEND),
                        '--no-hd',  # no header lines (start with @)
                        '-X', '1200',
                        '-p', str(nthreads)]
@@ -150,4 +151,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()
+if __name__ == '__main__': entry()  # noqa

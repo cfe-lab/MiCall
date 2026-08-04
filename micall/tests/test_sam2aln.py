@@ -243,7 +243,7 @@ V3LOOP,40,1
 
 class CigarTest(unittest.TestCase):
     def setUp(self):
-        super().setUp()
+        super(CigarTest, self).setUp()
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
 
     def testTrivial(self):

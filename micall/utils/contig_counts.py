@@ -29,7 +29,7 @@ def create_parser():
 
 
 class FileSet:
-    def __init__(self, file_names: list[str]):
+    def __init__(self, file_names: typing.List[str]):
         self.file_names = file_names
 
     def __call__(self, string):
@@ -49,10 +49,10 @@ class ContigCounts:
         self.reference_prefix = ''
 
         # {contig_name: {contig_pos: ref_pos}}
-        self.position_map: dict[str, dict[int, int]]
+        self.position_map: typing.Dict[str, typing.Dict[int, int]]
         self.position_map = defaultdict(dict)
 
-        self.counts: dict[str, dict[int, dict[str, int]]]
+        self.counts: typing.Dict[str, typing.Dict[int, typing.Dict[str, int]]]
         self.counts = defaultdict(lambda: defaultdict(Counter))
 
     def read_genome_coverage(self, genome_coverage_csv: typing.IO):
@@ -125,7 +125,7 @@ class ContigCounts:
         return report.getvalue()
 
 
-def main(command_args: list[str] = None):
+def main(command_args: typing.List[str] = None):
     parser = create_parser()
     args = parser.parse_args(command_args)
     scratch_files = args.scratch

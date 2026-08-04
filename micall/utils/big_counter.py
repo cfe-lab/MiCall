@@ -40,7 +40,7 @@ class BigCounter:
 
     def __setitem__(self, key, value):
         if not isinstance(key, str):
-            raise TypeError(f'Key was not a string: {key!r}')
+            raise TypeError('Key was not a string: {!r}'.format(key))
 
         self.active_counts[key] = value
         if len(self.active_counts) > self.max_size:
@@ -64,8 +64,8 @@ class BigCounter:
         readers = []
         active_keys = sorted(self.active_counts)
         if active_keys:
-            readers.append(dict(key=key, count=self.active_counts[key])
-                            for key in active_keys)
+            readers.append((dict(key=key, count=self.active_counts[key])
+                            for key in active_keys))
         for cache_file_name in self.cache_files:
             readers.append(DictReader(read_cache_lines(cache_file_name),
                                       ['key', 'count']))

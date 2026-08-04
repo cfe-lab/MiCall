@@ -225,7 +225,7 @@ class AsiAlgorithmNewRulesTest(TestCase):
 
     @staticmethod
     def create_asi(drugs=default_drugs, comments=default_comments):
-        xml = f"""\
+        xml = """\
 <ALGORITHM>
   <ALGNAME>HIVDB</ALGNAME>
   <ALGVERSION>fake</ALGVERSION>
@@ -258,7 +258,7 @@ class AsiAlgorithmNewRulesTest(TestCase):
   <MUTATION_COMMENTS>
   </MUTATION_COMMENTS>
 </ALGORITHM>
-"""
+""".format(drugs=drugs, comments=comments)
         return AsiAlgorithm(StringIO(xml))
 
     def test_interpret(self):

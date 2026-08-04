@@ -1,6 +1,6 @@
 import json
-from typing import Optional
-from collections.abc import Iterator, Sequence, Iterable, MutableMapping
+from typing import Iterator, Sequence, \
+    Iterable, Optional, Union, MutableMapping
 from pathlib import Path
 import re
 import csv
@@ -30,7 +30,7 @@ ALIGNER.end_gap_score = -1
 PROJECTS = ProjectConfig.loadDefault()
 
 
-Row = MutableMapping[str, Optional[str | int | float | Sequence['Row']]]
+Row = MutableMapping[str, Optional[Union[str, int, float, Sequence['Row']]]]
 Rows = Iterable[Row]
 
 
@@ -372,7 +372,7 @@ def count_soft_clips_from_nuc(path_to_file: Path) -> Optional[int]:
                 if key not in position_clips or clip_count > position_clips[key]:
                     position_clips[key] = clip_count
 
-    except OSError as e:
+    except (IOError, OSError) as e:
         logger.warning("Could not read nuc file %s: %s", path_to_file, e)
         return None
 
@@ -431,7 +431,8 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
             except BaseException:
                 ref_name = ref_name_raw
 
-            ref_name = ref_name.removesuffix('-partial')
+            if ref_name.endswith('-partial'):
+                ref_name = ref_name[:-len('-partial')]
 
             try:
                 # ref_name = "HIV1-B-ZA-KP109515-seed"

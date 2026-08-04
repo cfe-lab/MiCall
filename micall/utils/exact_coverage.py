@@ -16,8 +16,7 @@ from collections import defaultdict
 from gzip import GzipFile
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Optional, TextIO, cast
-from collections.abc import Sequence, Iterator
+from typing import Dict, Optional, Sequence, Tuple, TextIO, Iterator, cast
 import numpy as np
 from Bio import SeqIO
 
@@ -119,7 +118,7 @@ def _read_one_fastq_record(fastq: TextIO) -> Optional[str]:
     return seq
 
 
-def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[tuple[str, str]]:
+def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
     """
     Read paired FASTQ files and yield (read1_seq, read2_seq) tuples.
 
@@ -137,7 +136,7 @@ def read_fastq_pairs(fastq1: TextIO, fastq2: TextIO) -> Iterator[tuple[str, str]
         yield (seq1, seq2)
 
 
-def read_fastq_pairs_strict(fastq1: TextIO, fastq2: TextIO) -> Iterator[tuple[str, str]]:
+def read_fastq_pairs_strict(fastq1: TextIO, fastq2: TextIO) -> Iterator[Tuple[str, str]]:
     """
     Read paired FASTQ files, raising on mismatched record counts.
 
@@ -170,7 +169,7 @@ def read_fastq_pairs_strict(fastq1: TextIO, fastq2: TextIO) -> Iterator[tuple[st
         yield (seq1, seq2)
 
 
-def read_contigs(contigs_file: TextIO) -> dict[str, str]:
+def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
     """
     Read contigs from either FASTA or CSV format.
 
@@ -220,11 +219,11 @@ def read_contigs(contigs_file: TextIO) -> dict[str, str]:
             # Find name column: prioritize 'region', then 'ref', then 'sample'
             # Fall back to position if none are present
             contig_name = None
-            if row.get("region"):
+            if "region" in row and row["region"]:
                 contig_name = row["region"]
-            elif row.get("ref"):
+            elif "ref" in row and row["ref"]:
                 contig_name = row["ref"]
-            elif row.get("sample"):
+            elif "sample" in row and row["sample"]:
                 contig_name = row["sample"]
             else:
                 contig_name = f"contig{i}"
@@ -250,8 +249,8 @@ def reverse_complement(seq: str) -> str:
 
 
 def build_kmer_index(
-    contigs: dict[str, str], kmer_size: int
-) -> dict[str, Sequence[tuple[str, int]]]:
+    contigs: Dict[str, str], kmer_size: int
+) -> Dict[str, Sequence[Tuple[str, int]]]:
     """
     Build a k-mer index for all contigs at the specified k-mer size.
 
@@ -268,13 +267,13 @@ def build_kmer_index(
             if "N" not in kmer:  # Skip k-mers with N
                 kmer_index[kmer].append((contig_name, i))
 
-    ret = cast(dict[str, Sequence[tuple[str, int]]], kmer_index)
+    ret = cast(Dict[str, Sequence[Tuple[str, int]]], kmer_index)
     return ret
 
 
 def build_kmer_index_for_size(
-    contigs: dict[str, str], k: int
-) -> dict[str, Sequence[tuple[str, int]]]:
+    contigs: Dict[str, str], k: int
+) -> Dict[str, Sequence[Tuple[str, int]]]:
     """
     Build a k-mer index for a specific k-mer size.
     Used for lazy computation when encountering reads shorter than the default kmer_size.
@@ -292,15 +291,15 @@ def build_kmer_index_for_size(
             if "N" not in kmer:  # Skip k-mers with N
                 kmer_index[kmer].append((contig_name, i))
 
-    ret = cast(dict[str, Sequence[tuple[str, int]]], kmer_index)
+    ret = cast(Dict[str, Sequence[Tuple[str, int]]], kmer_index)
     return ret
 
 
 def find_exact_matches(
     read_seq: str,
-    kmer_index: dict[int, dict[str, Sequence[tuple[str, int]]]],
-    contigs: dict[str, str],
-) -> Iterator[tuple[str, int, int]]:
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]],
+    contigs: Dict[str, str],
+) -> Iterator[Tuple[str, int, int]]:
     """
     Find exact matches of a read in contigs using k-mer hashing.
 
@@ -336,10 +335,10 @@ def find_exact_matches(
 def process_single_read(
     read_seq: str,
     count: int,
-    kmer_index: dict[int, dict[str, Sequence[tuple[str, int]]]],
-    contigs: dict[str, str],
-    coverage0: dict[str, np.ndarray],
-    coverage: dict[str, np.ndarray],
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]],
+    contigs: Dict[str, str],
+    coverage0: Dict[str, np.ndarray],
+    coverage: Dict[str, np.ndarray],
     overlap_size: int,
 ) -> int:
     """
@@ -376,12 +375,12 @@ def process_single_read(
 
 
 def process_reads(
-    read_iterator: Iterator[tuple[str, int]],
-    contigs: dict[str, str],
-    coverage0: dict[str, np.ndarray],
-    coverage: dict[str, np.ndarray],
+    read_iterator: Iterator[Tuple[str, int]],
+    contigs: Dict[str, str],
+    coverage0: Dict[str, np.ndarray],
+    coverage: Dict[str, np.ndarray],
     overlap_size: int,
-) -> tuple[int, int]:
+) -> Tuple[int, int]:
     """
     Process reads and update coverage counts.
 
@@ -392,7 +391,7 @@ def process_reads(
     :param overlap_size: Minimum overlap size for counting coverage
     :return: Tuple of (read_count, match_count)
     """
-    kmer_index: dict[int, dict[str, Sequence[tuple[str, int]]]] = {}
+    kmer_index: Dict[int, Dict[str, Sequence[Tuple[str, int]]]] = {}
     read_count = 0
     match_count = 0
 
@@ -426,7 +425,7 @@ def calculate_exact_coverage(
     fastq2_filename: Path,
     contigs_file: TextIO,
     overlap_size: int,
-) -> tuple[dict[str, Sequence[int]], dict[str, Sequence[int]], dict[str, str]]:
+) -> Tuple[Dict[str, Sequence[int]], Dict[str, Sequence[int]], Dict[str, str]]:
     """
     Calculate exact coverage for every base in contigs.
 
@@ -510,14 +509,14 @@ def calculate_exact_coverage(
     else:
         logger.debug(f"Processed {read_count} reads, found {match_count} exact matches")
 
-    coverage0_ret = cast(dict[str, Sequence[int]], coverage0)
-    coverage_ret = cast(dict[str, Sequence[int]], coverage)
+    coverage0_ret = cast(Dict[str, Sequence[int]], coverage0)
+    coverage_ret = cast(Dict[str, Sequence[int]], coverage)
     return coverage0_ret, coverage_ret, contigs
 
 
 def write_coverage_csv(
-    coverage0: dict[str, Sequence[int]], coverage: dict[str, Sequence[int]],
-    contigs: dict[str, str], output_csv: TextIO
+    coverage0: Dict[str, Sequence[int]], coverage: Dict[str, Sequence[int]],
+    contigs: Dict[str, str], output_csv: TextIO
 ) -> None:
     """
     Write coverage data to CSV file.
@@ -574,7 +573,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(
         level=logger.level,
@@ -597,4 +596,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()
+if __name__ == "__main__": entry()  # noqa

@@ -1,7 +1,6 @@
 import math
 import typing
-from typing import Tuple
-from collections.abc import Iterable
+from typing import Iterable, Tuple
 import random
 from io import StringIO
 from pytest import approx
@@ -49,13 +48,13 @@ def assert_alignments(aligner: ConsensusAligner,
 
 
 def assert_consensus_nuc_indexes(
-        report_aminos: list[ReportAmino],
-        ref_positions_in_consensus: list[typing.Optional[int]],
+        report_aminos: typing.List[ReportAmino],
+        ref_positions_in_consensus: typing.List[typing.Optional[int]],
         start_pos: int,
         end_pos: int):
     __hide_traceback_frame__ = True
     amino_count = (end_pos - start_pos + 1) // 3
-    expected_consensus_nuc_indexes: list[typing.Optional[int]] = (
+    expected_consensus_nuc_indexes: typing.List[typing.Optional[int]] = (
             [None] * amino_count)
     ref_positions_map = {pos: i
                          for i, pos in enumerate(ref_positions_in_consensus)}
@@ -74,8 +73,8 @@ def assert_consensus_nuc_indexes(
     assert consensus_nuc_indexes == expected_consensus_nuc_indexes
 
 
-def create_reading_frames(consensus: str) -> dict[int,
-                                                         list[SeedAmino]]:
+def create_reading_frames(consensus: str) -> typing.Dict[int,
+                                                         typing.List[SeedAmino]]:
     reading_frames = {}
     for frame_offset in range(3):
         shifted_consensus = ' '*frame_offset + consensus
@@ -99,7 +98,7 @@ def make_alignment(
         q_st=0,
         q_en=0,
         mapq=0,
-        cigar: Iterable[tuple[int, CigarActions]] = tuple(),
+        cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
         cigar_str=None) -> Alignment:
 
     cigar = list(cigar)
@@ -209,15 +208,15 @@ def test_start_contig_overlapping_sections(projects):
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    rt_aminos: list[ReportAmino] = []
-    rt_nucleotides: list[ReportNucleotide] = []
+    rt_aminos: typing.List[ReportAmino] = []
+    rt_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(2550,
                           4229,
                           rt_nucleotides,
                           rt_aminos,
                           amino_ref=rt_ref)
-    int_aminos: list[ReportAmino] = []
-    int_nucleotides: list[ReportNucleotide] = []
+    int_aminos: typing.List[ReportAmino] = []
+    int_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(4230,
                           5096,
                           int_nucleotides,
@@ -248,8 +247,8 @@ def test_start_contig_big_deletion(projects):
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(790,
                           2292,
                           report_nucleotides,
@@ -282,8 +281,8 @@ def test_start_contig_insert_and_big_deletion(projects):
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(790,
                           2292,
                           report_nucleotides,
@@ -312,8 +311,8 @@ def test_start_contig_frame_change_insert(projects):
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(790,
                           2292,
                           report_nucleotides,
@@ -338,8 +337,8 @@ def test_start_contig_frame_change_delete(projects):
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(790,
                           2292,
                           report_nucleotides,
@@ -364,8 +363,8 @@ def test_start_contig_frame_change_delete_across_vpr_boundary(projects):
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(5559,
                           5850,
                           report_nucleotides,
@@ -391,8 +390,8 @@ def test_start_contig_close_frame_changes(projects):
     aligner = ConsensusAligner(projects)
 
     aligner.start_contig(seed_name, reading_frames=reading_frames)
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(790,
                           2292,
                           report_nucleotides,
@@ -673,8 +672,8 @@ def test_report_region(projects):
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(27756,
                           27887,
                           report_nucleotides,
@@ -697,7 +696,7 @@ def test_report_region_nucleotides_only(projects):
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_nucleotides: list[ReportNucleotide] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(28260, 28273, report_nucleotides)
 
     assert len(report_nucleotides) == 14  # 28273-28260+1
@@ -714,8 +713,8 @@ def test_report_region_no_overlap(projects):
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(10_001,
                           10_300,
                           report_nucleotides,
@@ -738,8 +737,8 @@ def test_report_region_after_start(projects):
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(27998,
                           28027,
                           report_nucleotides,
@@ -762,8 +761,8 @@ def test_report_region_before_end(projects):
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(28991,
                           29005,
                           report_nucleotides,
@@ -786,8 +785,8 @@ def test_report_region_with_repeated_nucleotide(projects):
     aligner = ConsensusAligner(projects)
     aligner.start_contig(seed_name, reading_frames=reading_frames)
 
-    report_aminos: list[ReportAmino] = []
-    report_nucleotides: list[ReportNucleotide] = []
+    report_aminos: typing.List[ReportAmino] = []
+    report_nucleotides: typing.List[ReportNucleotide] = []
     aligner.report_region(13442,
                           16236,
                           report_nucleotides,

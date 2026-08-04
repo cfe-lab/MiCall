@@ -96,7 +96,7 @@ def find_consensus(rows, seed_name, region_name):
 
 
 def process_file(sample_name, projects, args):
-    print(f'Starting {sample_name}.')
+    print('Starting {}.'.format(sample_name))
 
     nuc_counts = defaultdict(dict)  # {(source, dest): {pos: (agree, disagree)}}
     nucleotide_path = os.path.join(args.results, 'nuc.csv')
@@ -110,7 +110,7 @@ def process_file(sample_name, projects, args):
         combo_rows = {combo: list(group)
                       for combo, group in groupby(region_rows,
                                                   itemgetter('seed', 'region'))}
-    seed_names = {combo[0] for combo in combo_rows}
+    seed_names = {combo[0] for combo in combo_rows.keys()}
     seed_map = {seed_name: projects.getReference(seed_name)
                 for seed_name in seed_names}
     consensus_map = {combo: find_consensus(rows, *combo)

@@ -10,7 +10,7 @@ class PrimerTracker:
     def __init__(self, conseq: str, seed_name: str):
         self.conseq = conseq
         self.seed_name = seed_name
-        self.ignored_positions: typing.Optional[set[int]] = None
+        self.ignored_positions: typing.Optional[typing.Set[int]] = None
 
     def is_ignored(self, pos: int):
         """ Check if a position should be ignored because it's in a primer.

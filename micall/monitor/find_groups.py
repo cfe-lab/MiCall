@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
-from collections.abc import Iterable, Iterator, Sequence
+from typing import Iterable, Iterator, Optional, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
 @dataclass(frozen=True)
-class SampleGroup:
+class SampleGroup():
     """Protocol for SampleGroup objects used in the monitor module.
 
     SampleGroup represents a group of related samples (main and optional MIDI).

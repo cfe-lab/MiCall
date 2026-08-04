@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
-from collections.abc import Sequence
+from typing import Sequence
 import logging
 import subprocess
 import sys
@@ -155,7 +155,7 @@ def configure_logging(args) -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(
         level=logger.level,

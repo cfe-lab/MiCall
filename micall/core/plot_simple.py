@@ -1,6 +1,6 @@
 import argparse
 from genetracks import Figure, Track, Multitrack, Coverage
-from micall.core import plot_contigs
+import micall.core.plot_contigs as plot_contigs
 from pathlib import Path
 from csv import DictReader
 

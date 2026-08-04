@@ -39,7 +39,7 @@ class MicallDD(DD):
                  filename,
                  simple,
                  test_name):
-        super().__init__()
+        super(MicallDD, self).__init__()
         self.filename = filename
         self.simple = simple
         self.get_result = getattr(self, 'check_' + test_name)
@@ -118,7 +118,8 @@ class MicallDD(DD):
         with open(filename, 'w') as f:
             f.write(ALIGNED_CSV_HEADER)
             f.write('\n')
-            f.writelines(selected_reads)
+            for line in selected_reads:
+                f.write(line)
 
     def coerce(self, c):
         if c is None:

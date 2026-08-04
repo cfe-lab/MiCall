@@ -1,7 +1,6 @@
 
 import json
-from typing import Optional
-from collections.abc import Iterator, Iterable, Callable
+from typing import Iterator, Iterable, Callable, Optional
 from pathlib import Path
 import kivecli.download
 from kivecli.login import login

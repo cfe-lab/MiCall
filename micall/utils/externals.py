@@ -4,12 +4,11 @@ import re
 from subprocess import CalledProcessError
 from pathlib import Path
 import logging
-from typing import Optional, Any
-from collections.abc import Iterator
+from typing import Optional, List, Any, Iterator
 from functools import cached_property
 from abc import ABC, abstractmethod, abstractproperty
 import shutil
-from importlib import resources
+import importlib.resources as resources
 import contextlib
 
 
@@ -56,7 +55,10 @@ class CommandWrapper(ExternalResource):
         if self.expected_version is None:
             pass
         elif self.expected_version != self.version:
-            message = f'{self.identifier} version incompatibility: expected {self.expected_version}, found {self.version}'
+            message = '{} version incompatibility: expected {}, found {}'.format(
+                self.identifier,
+                self.expected_version,
+                self.version)
             raise RuntimeError(message)
 
     @abstractmethod
@@ -76,10 +78,10 @@ class CommandWrapper(ExternalResource):
     def set_logger(self, logger: logging.Logger) -> None:
         self._logger = logger
 
-    def build_args(self, args: list[str]) -> list[str]:
+    def build_args(self, args: List[str]) -> List[str]:
         return [str(self.executable_path)] + args
 
-    def check_output(self, args: list[str] = [],
+    def check_output(self, args: List[str] = [],
                      *popenargs: Any, **kwargs: Any) -> str:
         """ Run command with arguments and return its output as a byte string.
 
@@ -107,7 +109,7 @@ class CommandWrapper(ExternalResource):
             ex.strerror = f'{original_error} for command {final_args}.'
             raise
 
-    def create_process(self, args: list[str] = [],
+    def create_process(self, args: List[str] = [],
                        *popenargs: Any, **kwargs: Any) -> subprocess.Popen:
         """ Execute a child program in a new process.
 
@@ -130,7 +132,7 @@ class CommandWrapper(ExternalResource):
             kwargs.setdefault('stdin', devnull)
             return subprocess.Popen(self.build_args(args or []), *popenargs, **kwargs)
 
-    def log_call(self, args: list[str], format_string: str = '%s') -> None:
+    def log_call(self, args: List[str], format_string: str = '%s') -> None:
         """ Launch a subprocess, and log any output to the debug logger.
 
         Raise an exception if the return code is not zero. This assumes only a
@@ -145,7 +147,7 @@ class CommandWrapper(ExternalResource):
         for line in output.splitlines():
             self.logger.debug(format_string, line)
 
-    def yield_output(self, args: list[str], *popenargs: Any, **kwargs: Any
+    def yield_output(self, args: List[str], *popenargs: Any, **kwargs: Any
                      ) -> Iterator[str]:
         """ Launch a subprocess, and yield the lines of standard output.
 
@@ -169,7 +171,7 @@ class CommandWrapper(ExternalResource):
                                                 self.build_args(args))
 
     def redirect_call(self,
-                      args: list[str],
+                      args: List[str],
                       outpath: Path,
                       format_string: str = '%s',
                       ignored: Optional[re.Pattern] = None) -> None:
@@ -191,7 +193,7 @@ class CommandWrapper(ExternalResource):
             assert p.stderr is not None
             for line in p.stderr:
                 if not ignored or not re.search(ignored, line):
-                    self.logger.warning(format_string, line.rstrip())
+                    self.logger.warn(format_string, line.rstrip())
             p.wait()
             if p.returncode:
                 raise subprocess.CalledProcessError(p.returncode,

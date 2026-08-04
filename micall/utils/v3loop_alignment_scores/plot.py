@@ -74,7 +74,7 @@ def plot_file(filename1):
         start = datetime.now()
         with open(source1) as fastq1, open(source2) as fastq2:
             score_counts = align_reads(fastq1, fastq2)
-        print(f'{datetime.now() - start}: {filename1}')
+        print('{}: {}'.format(datetime.now() - start, filename1))
         score_rows = sorted(score_counts.items())
         with open(scores_filename, 'w') as scores_csv:
             writer = DictWriter(scores_csv,

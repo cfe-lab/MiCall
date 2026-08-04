@@ -1,6 +1,6 @@
 
 from importlib.metadata import version, PackageNotFoundError
-from collections.abc import Sequence
+from typing import Sequence
 from functools import cache
 
 

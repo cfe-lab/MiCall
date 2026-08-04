@@ -65,7 +65,7 @@ def disk_retry(operation_name="disk operation"):
                 attempt_count += 1
                 try:
                     return func(*args, **kwargs)
-                except OSError as ex:
+                except (OSError, IOError) as ex:
                     if start_time is None:
                         start_time = datetime.now()
 

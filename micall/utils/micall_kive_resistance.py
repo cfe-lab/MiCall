@@ -65,7 +65,7 @@ def load_sample(args):
 
 
 def main():
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.WARN)
     args = parse_args()
     sample_group = load_sample(args)
 

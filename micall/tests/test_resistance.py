@@ -16,8 +16,8 @@ def asi_algorithms():
     return load_asi()
 
 
-def assert_aminos_lists_match(actual_lists: list[AminoList],
-                              expected_lists: list[AminoList]):
+def assert_aminos_lists_match(actual_lists: typing.List[AminoList],
+                              expected_lists: typing.List[AminoList]):
     if expected_lists and actual_lists and (len(expected_lists) == len(actual_lists)):
         for i, (expected, actual) in enumerate(zip(expected_lists, actual_lists)):
             assert actual.aminos == expected.aminos, i
@@ -1167,7 +1167,7 @@ def test_read_aminos_no_midi(asi_algorithms):
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    no_counts: dict[str, float] = {}
+    no_counts: typing.Dict[str, float] = {}
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  [no_counts] * 200 +
                                  [{'A': 1.0}]*136 + [no_counts] * 256,
@@ -1280,7 +1280,7 @@ def test_read_aminos_ns5b_short(asi_algorithms):
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    no_counts: dict[str, float] = {}
+    no_counts: typing.Dict[str, float] = {}
     expected_mixtures = [{'A': 1.0}] * 400 + [no_counts] * 192
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  expected_mixtures,

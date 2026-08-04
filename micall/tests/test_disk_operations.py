@@ -113,7 +113,7 @@ class TestDiskRetryDecorator:
     @patch("micall.monitor.disk_operations.wait_for_retry")
     def test_decorator_retry_on_io_error(self, mock_wait):
         """IOError should trigger retry mechanism."""
-        mock_func = Mock(side_effect=[OSError("I/O error"), "success"])
+        mock_func = Mock(side_effect=[IOError("I/O error"), "success"])
         decorated = disk_retry("test_op")(mock_func)
 
         result = decorated()
@@ -558,8 +558,8 @@ class TestErrorScenarios:
         mock_exists.return_value = True
         mock_is_file.return_value = True
         mock_open.side_effect = [
-            OSError("Sharing violation"),
-            OSError("File locked"),
+            IOError("Sharing violation"),
+            IOError("File locked"),
             Mock(),  # Success
         ]
 
@@ -641,7 +641,7 @@ class TestAdvancedRetryLogic:
             if exception_type == "os_error":
                 raise OSError("OS Error")
             elif exception_type == "io_error":
-                raise OSError("IO Error")
+                raise IOError("IO Error")
             elif exception_type == "permission_error":
                 raise PermissionError("Permission denied")
             elif exception_type == "file_not_found":
@@ -962,6 +962,7 @@ class TestComplexIntegrationScenarios:
                     if call_count <= 2:
                         raise OSError(errno.EACCES, "Permission denied")
                     # Success on 3rd attempt
+                    return None
 
                 perm_dir = temp_path / "permission_test"
                 with patch.object(Path, "mkdir", side_effect=mock_mkdir):

@@ -327,7 +327,7 @@ def test_algorithm_regions_processable():
             assert empty.region == region
             assert len(empty.aminos) > 0
         except Exception as e:
-            errors.append(f"{region}: {e!s}")
+            errors.append(f"{region}: {str(e)}")
 
     assert not errors, (
         f"Cannot process algorithm regions: {errors}\n"

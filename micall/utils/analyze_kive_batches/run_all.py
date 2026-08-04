@@ -1,6 +1,6 @@
 
 from pathlib import Path
-from collections.abc import Iterator
+from typing import Iterator
 import subprocess
 
 from micall.utils.dir_path import DirPath

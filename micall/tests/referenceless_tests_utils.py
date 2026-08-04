@@ -1,8 +1,7 @@
 
 import pytest
 
-from typing import Literal, AbstractSet
-from collections.abc import Callable, Iterator
+from typing import Callable, Literal, Tuple, Iterator, AbstractSet
 from collections import defaultdict
 import random
 from Bio import SeqIO, Seq
@@ -12,7 +11,7 @@ from pathlib import Path
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
 from micall.utils.referenceless_score import Score
-from micall.utils import registry
+import micall.utils.registry as registry
 from micall.utils.referenceless_contig_stitcher import \
     referenceless_contig_stitcher_with_ctx, read_contigs
 from micall.core.project_config import ProjectConfig
@@ -43,7 +42,7 @@ def failing_map_overlap(
     minimum_score: Score,
     relation: Literal["left", "right", "cover"],
     initial_overlap: str,
-) -> Iterator[tuple[int, int]]:
+) -> Iterator[Tuple[int, int]]:
     if "Z" in getattr(self, "seq", ""):
         # Return an empty iterable (no alignments found)
         yield from ()
@@ -59,11 +58,11 @@ def force_failing_map_overlap(monkeypatch):
 
 
 @pytest.fixture
-def random_fasta_file(tmp_path: Path, projects) -> Callable[[int, int], tuple[Path, AbstractSet[str]]]:
+def random_fasta_file(tmp_path: Path, projects) -> Callable[[int, int], Tuple[Path, AbstractSet[str]]]:
     ref_name = "HIV1-B-ZA-KP109515-seed"
     ref_full_seq = projects.getReference(ref_name)
 
-    def ret(n_reads: int, random_seed: int) -> tuple[Path, AbstractSet[str]]:
+    def ret(n_reads: int, random_seed: int) -> Tuple[Path, AbstractSet[str]]:
         root = tmp_path / str(random_seed)
         root.mkdir(parents=True, exist_ok=True)
         converted_fasta_file = root / "converted.fasta"
@@ -76,7 +75,7 @@ def random_fasta_file(tmp_path: Path, projects) -> Callable[[int, int], tuple[Pa
 
         assert max_length <= len(ref_seq)
 
-        def generate_indexes() -> Iterator[tuple[int, int]]:
+        def generate_indexes() -> Iterator[Tuple[int, int]]:
             for i_read in range(n_reads):
                 while True:
                     start = rng.randint(0, len(ref_seq) - 1)
@@ -148,7 +147,7 @@ def log_check(request, tmp_path: Path):
     path_to_produced = logs_dir / log_name
     is_rerun = path_to_produced.exists()
 
-    def pretty_print_event(pair: tuple[int, EventType]) -> str:
+    def pretty_print_event(pair: Tuple[int, EventType]) -> str:
         (i, ev) = pair
         message = str(ev)
         name = str(i)

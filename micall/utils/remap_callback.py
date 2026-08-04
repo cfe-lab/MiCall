@@ -13,8 +13,7 @@ Example usage:
         remap(fastq1, fastq2, ...)
 """
 
-from typing import Optional
-from collections.abc import Callable
+from typing import Optional, Callable
 from contextvars import ContextVar
 from contextlib import contextmanager
 from dataclasses import dataclass

@@ -1,5 +1,5 @@
 
-from collections.abc import Iterable
+from typing import Iterable
 from pathlib import Path
 import json
 

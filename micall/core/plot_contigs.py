@@ -1,6 +1,5 @@
 import typing
-from typing import NoReturn
-from collections.abc import Iterable, Sequence
+from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence, Union
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from collections import Counter, defaultdict
 from csv import DictReader
@@ -57,12 +56,12 @@ class SmoothCoverage(Coverage):
             group_size += 1
         self.coverage_groups = groups
         ys = None
-        super().__init__(a, b, ys, height, color, opacity)
+        super(SmoothCoverage, self).__init__(a, b, ys, height, color, opacity)
 
     def draw(self, x=0, y=0, xscale=1.0):
         a = self.a * xscale
         x = x * xscale
-        d = draw.Group(transform=f"translate({x} {y})")
+        d = draw.Group(transform="translate({} {})".format(x, y))
         yscale = self.h / max(y for y, count in self.coverage_groups)
         pos = 0
         for y, count in self.coverage_groups:
@@ -103,12 +102,12 @@ class ConcordanceLine(SmoothCoverage):
         height = 10
         color = 'red'
         opacity = '1.0'
-        super().__init__(a, b, ys, height, color, opacity)
+        super(ConcordanceLine, self).__init__(a, b, ys, height, color, opacity)
 
     def draw(self, x=0, y=0, xscale=1.0):
         a = self.a * xscale
         x = x * xscale
-        d = draw.Group(transform=f"translate({x} {y})")
+        d = draw.Group(transform="translate({} {})".format(x, y))
         p = draw.Path(stroke=self.color, stroke_width=1, fill='none')
         yscale = self.h / 100
         pos = 0
@@ -172,7 +171,7 @@ class Arrow(Element):
             arrow_start = min(arrow_end+arrow_size, line_start)
         centre = (a + b)/2
         arrow_y = h/2 + self.elevation*r
-        group = draw.Group(transform=f"translate({x} {y})")
+        group = draw.Group(transform="translate({} {})".format(x, y))
         group.append(draw.Line(line_start, arrow_y,
                                arrow_start, arrow_y,
                                stroke='black'))
@@ -232,7 +231,7 @@ class ArrowGroup(Element):
         super().__init__(0, 0, w=max_x, h=h)
 
     def draw(self, x=0, y=0, xscale=1.0):
-        group = draw.Group(transform=f"translate({x} {y})")
+        group = draw.Group(transform="translate({} {})".format(x, y))
         for i, (child_y, arrow) in enumerate(zip(self.y_coordinates,
                                                  self.arrows)):
             group.append(arrow.draw(y=child_y, xscale=xscale))
@@ -409,31 +408,31 @@ def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage: Pa
 
 
 def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
-    complete_contig_map: dict[int, GenotypedContig] = {}
-    name_map: dict[int, str] = {}
-    complete_parent_graph: dict[int, list[int]] = {}
-    alive_set: set[int] = set()
-    morphism_graph: dict[int, list[int]] = {}
-    reduced_parent_graph: dict[int, list[int]] = {}
-    transitive_parent_graph: dict[int, list[int]] = {}
-    discarded: list[int] = []
-    unknown: list[int] = []
-    anomaly: list[int] = []
-    anomaly_data_map: dict[int, events.ZeroHits | events.StrandConflict] = {}
-    unaligned_map: dict[int, list[CigarHit]] = {}
-    overlaps_list: list[int] = []
-    overlap_leftparent_map: dict[int, int] = {}
-    overlap_rightparent_map: dict[int, int] = {}
-    overlap_lefttake_map: dict[int, int] = {}
-    overlap_righttake_map: dict[int, int] = {}
-    overlap_left_sibling: dict[int, int] = {}
-    overlap_right_sibling: dict[int, int] = {}
-    combine_left_edge: dict[int, int] = {}
-    combine_right_edge: dict[int, int] = {}
-    children_join_points: list[int] = []
-    query_position_map: dict[int, tuple[int, int]] = {}
-    lstrip_map: dict[int, int] = {}
-    rstrip_map: dict[int, int] = {}
+    complete_contig_map: Dict[int, GenotypedContig] = {}
+    name_map: Dict[int, str] = {}
+    complete_parent_graph: Dict[int, List[int]] = {}
+    alive_set: Set[int] = set()
+    morphism_graph: Dict[int, List[int]] = {}
+    reduced_parent_graph: Dict[int, List[int]] = {}
+    transitive_parent_graph: Dict[int, List[int]] = {}
+    discarded: List[int] = []
+    unknown: List[int] = []
+    anomaly: List[int] = []
+    anomaly_data_map: Dict[int, Union[events.ZeroHits, events.StrandConflict]] = {}
+    unaligned_map: Dict[int, List[CigarHit]] = {}
+    overlaps_list: List[int] = []
+    overlap_leftparent_map: Dict[int, int] = {}
+    overlap_rightparent_map: Dict[int, int] = {}
+    overlap_lefttake_map: Dict[int, int] = {}
+    overlap_righttake_map: Dict[int, int] = {}
+    overlap_left_sibling: Dict[int, int] = {}
+    overlap_right_sibling: Dict[int, int] = {}
+    combine_left_edge: Dict[int, int] = {}
+    combine_right_edge: Dict[int, int] = {}
+    children_join_points: List[int] = []
+    query_position_map: Dict[int, Tuple[int, int]] = {}
+    lstrip_map: Dict[int, int] = {}
+    rstrip_map: Dict[int, int] = {}
 
     def remove_intermediate_edges(graph):
         tr_cl = transitive_closure(graph)
@@ -540,7 +539,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     def record_alive(contig: Contig):
         alive_set.add(contig.id)
 
-    def record_bad_contig(contig: GenotypedContig, lst: list[int]):
+    def record_bad_contig(contig: GenotypedContig, lst: List[int]):
         complete_contig_map[contig.id] = contig
         if contig.id not in lst:
             lst.append(contig.id)
@@ -583,7 +582,11 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         elif isinstance(event, events.NoRef):
             record_bad_contig(event.contig, unknown)
             record_alive(event.contig)
-        elif isinstance(event, events.ZeroHits) or isinstance(event, events.StrandConflict):
+        elif isinstance(event, events.ZeroHits):
+            record_bad_contig(event.contig, anomaly)
+            anomaly_data_map[event.contig.id] = event
+            record_alive(event.contig)
+        elif isinstance(event, events.StrandConflict):
             record_bad_contig(event.contig, anomaly)
             anomaly_data_map[event.contig.id] = event
             record_alive(event.contig)
@@ -652,24 +655,24 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     for contig_id in alive_set.copy():
         extend_alive(contig_id)
 
-    parent_graph: dict[int, list[int]] = {}
+    parent_graph: Dict[int, List[int]] = {}
     for contig_id in nodup_parent_graph:
         if contig_id in alive_set:
             parent_graph[contig_id] = nodup_parent_graph[contig_id]
 
-    contig_map: dict[int, GenotypedContig] = {k: v for k, v in complete_contig_map.items() if k in alive_set}
+    contig_map: Dict[int, GenotypedContig] = {k: v for k, v in complete_contig_map.items() if k in alive_set}
     bad_contigs = anomaly + discarded + unknown
     group_refs = {contig.group_ref: len(contig.ref_seq) for contig in contig_map.values() if contig.ref_seq}
     children_graph = inverse_graph(parent_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
     reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
-    sorted_roots = sorted(parent_id for
+    sorted_roots = list(sorted(parent_id for
                                parent_id in contig_map
-                               if parent_id not in parent_graph)
-    sorted_sinks = sorted(child_id for
+                               if parent_id not in parent_graph))
+    sorted_sinks = list(sorted(child_id for
                                child_id in contig_map
-                               if child_id not in children_graph)
+                               if child_id not in children_graph))
 
     lstrip_set = set(lstrip_map.keys())
     rstrip_set = set(rstrip_map.keys())
@@ -747,9 +750,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                                    overlap_rightparent_map, overlap_right_sibling, lstrip_set)):
         pass
 
-    final_nodes: list[int] = []
-    final_parts: dict[int, bool] = {}
-    final_children_mapping: dict[int, list[int]] = {}
+    final_nodes: List[int] = []
+    final_parts: Dict[int, bool] = {}
+    final_children_mapping: Dict[int, List[int]] = {}
 
     def add_join_parents(join_id):
         if join_id in children_join_points:
@@ -795,8 +798,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
         final_children_mapping[parent_id] = children
 
-    aligned_size_map: dict[int, tuple[int, int]] = {}
-    full_size_map: dict[int, tuple[int, int]] = {}
+    aligned_size_map: Dict[int, Tuple[int, int]] = {}
+    full_size_map: Dict[int, Tuple[int, int]] = {}
 
     def get_neighbours(part, lookup):
         for clone in eqv_morphism_graph.get(part.id, [part.id]):
@@ -815,7 +818,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         ret = max(map(get_final_version, lst), key=lambda contig: contig.alignment.ref_length, default=None)
         return ret
 
-    def get_contig_coordinates(contig: GenotypedContig) -> tuple[int, int, int, int]:
+    def get_contig_coordinates(contig: GenotypedContig) -> Tuple[int, int, int, int]:
         if isinstance(contig, AlignedContig) and contig.alignment.ref_length > 0:
             r_st = contig.alignment.r_st
             r_ei = contig.alignment.r_ei
@@ -917,7 +920,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         if gap.query_length > 0:
             return gap
 
-    def collect_gaps(root: int, children_ids: list[int]):
+    def collect_gaps(root: int, children_ids: List[int]):
         all_children = [contig_map[name] for name in children_ids]
         children = [child for child in all_children if isinstance(child, AlignedContig)]
         for name in unaligned_map:
@@ -927,9 +930,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                     if carved is not None:
                         yield carved
 
-    carved_unaligned_parts: dict[int, list[int]] = {}
+    carved_unaligned_parts: Dict[int, List[int]] = {}
     for root in sorted_roots:
-        existing: set[tuple[int, int]] = set()
+        existing: Set[Tuple[int, int]] = set()
         children = final_children_mapping[root]
         for gap in collect_gaps(root, children):
             coords = (gap.q_st, gap.q_ei)
@@ -941,12 +944,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 carved_unaligned_parts[root].append(fake.id)
                 query_position_map[fake.id] = coords
 
-    merged_unaligned_parts: dict[int, list[int]] = {}
+    merged_unaligned_parts: Dict[int, List[int]] = {}
     for root in sorted_roots:
         children = final_children_mapping[root]
         unaligned_children = carved_unaligned_parts.get(root, [])
         todo = children + unaligned_children
-        todo = sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1)))
+        todo = list(sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1))))
         current_group = []
         for child_id in todo + [None]:
             if child_id in unaligned_children:
@@ -970,7 +973,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         name_map[root] = f"{i + 1}"
 
         todo_ids = children + unaligned_children
-        todo_ids = sorted(todo_ids, key=lambda name: query_position_map.get(name, (-1, -1)))
+        todo_ids = list(sorted(todo_ids, key=lambda name: query_position_map.get(name, (-1, -1))))
         for k, child_id in enumerate(todo_ids):
             if len(todo_ids) > 1:
                 name_map[child_id] = f"{i + 1}.{k + 1}"
@@ -1215,7 +1218,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         # Arrows #
         ##########
 
-        ref_arrows: list[Arrow] = []
+        ref_arrows: List[Arrow] = []
         for root in sorted_roots:
             parts_ids = final_children_mapping[root]
             parts_ids = [name for name in parts_ids if name not in bad_contigs]
@@ -1580,7 +1583,7 @@ def summarize_figure(figure: Figure, is_concordance=False):
                 continue
             span_text = getattr(span.label, 'text', span.label) or ''
             summary.write(span_text)
-            color = span.color
+            color = getattr(span, 'color')
             if span.a or span.b:
                 if color != 'none':
                     summary.write(f'[{span.a}-{span.b}]')

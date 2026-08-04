@@ -1,5 +1,4 @@
-from typing import Optional
-from collections.abc import Iterator, Sequence
+from typing import Iterator, Optional, Sequence
 
 import random
 import numpy as np

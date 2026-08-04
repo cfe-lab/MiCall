@@ -1460,7 +1460,7 @@ def test_consensus_insertion_translated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(28))
+    consumed_positions = set(i for i in range(0, 28))
     is_amino = True
 
     combine_region_insertions(insertions_dict,
@@ -1487,7 +1487,7 @@ def test_consensus_insertion_untranslated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(28))
+    consumed_positions = set(i for i in range(0, 28))
     is_amino = False
 
     combine_region_insertions(insertions_dict,

@@ -1,7 +1,6 @@
 
 from dataclasses import dataclass
-from typing import Union, NoReturn, Optional
-from collections.abc import Sequence
+from typing import Sequence, Union, NoReturn, Optional, Tuple
 from pathlib import Path
 import shlex
 
@@ -82,7 +81,7 @@ class Command:
       command = <head> <arg1> <arg2> …
     """
 
-    head: str | Deref
+    head: Union[str, Deref]
     arguments: Sequence[CommandArg]
 
     def compile(self) -> str:
@@ -91,7 +90,7 @@ class Command:
         return head_s + ((" " + args_s) if args_s else "")
 
     @staticmethod
-    def make(head: str | Deref, *arguments: CommandArgs) -> 'Command':
+    def make(head: Union[str, Deref], *arguments: CommandArgs) -> 'Command':
         flattened: list[CommandArg] = []
         for arg in arguments:
             if isinstance(arg, (Deref, Path, str)):
@@ -157,7 +156,7 @@ class Build:
     outputs: Sequence[Value]
     rule: str
     inputs: Sequence[Value]
-    bindings: Sequence[tuple[str, Value]] = ()
+    bindings: Sequence[Tuple[str, Value]] = ()
     implicit: Sequence[Value]             = ()
     order_only: Sequence[Value]           = ()
 
