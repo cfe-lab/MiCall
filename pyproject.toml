@@ -72,7 +72,7 @@ dev = [
     "gprof2dot>=2025.4.14",
     "codecov>=2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@62dff8cfbf3b9d10a55333414ab56d38748a0516",
-    "pandas-stubs>=3.0.3.260530",
+    "pandas-stubs>=3.0.5.260730",
     "types-requests>=2.33.0.20260712",
     "uv>=0.12.1",
 ]
