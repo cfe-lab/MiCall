@@ -129,6 +129,7 @@ ignore = [
     "I001",    # Import order.
     "UP045",   # Prefer X|None to Optional[X].
     "UP037",   # Quotes in type annotations.
+    "EXE001",  # Executable bit doesn't match shebang.
 ]
 
 [tool.ruff.lint.per-file-ignores]
