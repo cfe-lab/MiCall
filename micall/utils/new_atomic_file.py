@@ -2,12 +2,11 @@
 This module provides methods for creating files atomically.
 """
 
-import random
-import string
-from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, Iterator
+import random
+import string
 
 
 def random_string(length: int) -> str:

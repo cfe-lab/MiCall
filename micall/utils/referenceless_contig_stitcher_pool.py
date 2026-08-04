@@ -18,12 +18,12 @@ Design notes
   quality paths fill the pool, this threshold can only increase.
 """
 
-from collections.abc import MutableMapping
 from dataclasses import dataclass
+from typing import MutableMapping, Set
 
+from micall.utils.sorted_ring import SortedRing
 from micall.utils.referenceless_contig_path import ContigsPath
 from micall.utils.referenceless_score import Score
-from micall.utils.sorted_ring import SortedRing
 
 
 @dataclass
@@ -38,7 +38,7 @@ class Pool:
     """
 
     ring: SortedRing[ContigsPath]
-    set: set[str]
+    set: Set[str]
     existing: MutableMapping[str, ContigsPath]
     smallest_score: Score
 

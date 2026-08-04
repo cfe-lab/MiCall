@@ -1,13 +1,8 @@
+import pytest
 import random
 
-import pytest
-
 from micall.tests.utils import fixed_random_seed
-from micall.utils.overlap_stitcher import (
-    calculate_concordance_norm,
-    disambiguate_concordance,
-    exp_dropoff_array,
-)
+from micall.utils.overlap_stitcher import calculate_concordance_norm, disambiguate_concordance, exp_dropoff_array
 
 
 def test_concordance_same_length_inputs():

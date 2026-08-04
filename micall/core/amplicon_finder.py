@@ -1,16 +1,16 @@
 import os
 import typing
 from collections import Counter
-from csv import DictReader, DictWriter
+from csv import DictWriter, DictReader
 from pathlib import Path
-from subprocess import PIPE, run
+from subprocess import run, PIPE
 
-import matplotlib
 import numpy as np
+import matplotlib
 from scipy.stats import entropy
 
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # noqa
 
 
 def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, use_gzip=False):
@@ -24,8 +24,10 @@ def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, 
     result = run(args, check=True, stdout=PIPE, encoding='UTF8')
     count_summary = result.stdout.strip().split(',')
     bin_counts = count_summary[2:]
-    bin_counts[0] = bin_counts[0].removeprefix('[')
-    bin_counts[-1] = bin_counts[-1].removesuffix(']')
+    if bin_counts[0].startswith('['):
+        bin_counts[0] = bin_counts[0][1:]
+    if bin_counts[-1].endswith(']'):
+        bin_counts[-1] = bin_counts[-1][:-1]
     writer = DictWriter(merge_lengths_csv,
                         ['merge_length', 'count'],
                         lineterminator=os.linesep)

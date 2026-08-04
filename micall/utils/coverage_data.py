@@ -1,13 +1,13 @@
 import logging
 import os
-import sys
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from csv import DictReader, DictWriter
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
 from random import shuffle
 from statistics import median
+import sys
 
 import matplotlib.pyplot as plt
 

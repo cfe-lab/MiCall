@@ -1,9 +1,9 @@
 #!/usr/bin/env python3.6
 
-import os
 from argparse import ArgumentParser, FileType
-from csv import DictReader, DictWriter
+from csv import DictWriter, DictReader
 from operator import itemgetter
+import os
 
 
 def parse_args():

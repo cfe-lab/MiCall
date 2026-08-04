@@ -8,14 +8,14 @@ clips).
 """
 
 import argparse
-import os
-import re
 from collections import Counter, defaultdict
 from csv import DictReader, DictWriter
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
 import numpy as np
+import os
+import re
 
 SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
@@ -93,7 +93,7 @@ def apply_cigar(cigar,
     is_valid = re.match(r'^((\d+)([MIDNSHPX=]))*$', cigar)
     tokens = re.findall(r'  (\d+)([MIDNSHPX=])', cigar, re.VERBOSE)
     if not is_valid:
-        raise RuntimeError(f'Invalid CIGAR string: {cigar!r}.')
+        raise RuntimeError('Invalid CIGAR string: {!r}.'.format(cigar))
     end = None if clip_to is None else clip_to + 1
     left = 0
     for token in tokens:
@@ -137,11 +137,13 @@ def apply_cigar(cigar,
                 ''.join(token)))
         if left > len(seq):
             raise RuntimeError(
-                f'CIGAR string {cigar!r} is too long for sequence {seq!r}.')
+                'CIGAR string {!r} is too long for sequence {!r}.'.format(cigar,
+                                                                          seq))
 
     if left < len(seq):
         raise RuntimeError(
-            f'CIGAR string {cigar!r} is too short for sequence {seq!r}.')
+            'CIGAR string {!r} is too short for sequence {!r}.'.format(cigar,
+                                                                       seq))
 
     return newseq[clip_from:end], newqual[clip_from:end], insertions
 
@@ -290,7 +292,7 @@ def matchmaker(remap_csv):
         yield old_row, None
 
 
-class PairProcessor:
+class PairProcessor(object):
     """ Merges pairs of rows, and counts soft-clipped positions. """
     def __init__(self, is_clipping=False):
         # {rname: {pos: clipping_count}}

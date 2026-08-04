@@ -2,7 +2,7 @@ from io import StringIO
 from unittest import TestCase
 
 from micall.core.project_config import ProjectConfig
-from micall.utils.fetch_sequences import compare_config, parse_fasta
+from micall.utils.fetch_sequences import parse_fasta, compare_config
 
 
 class ParseFastaTest(TestCase):

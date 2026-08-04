@@ -1,4 +1,4 @@
-from micall.utils.probe_finder import ProbeFinder, unpack_mixtures_and_reverse
+from micall.utils.probe_finder import unpack_mixtures_and_reverse, ProbeFinder
 from micall.utils.translation import reverse_and_complement
 
 

@@ -6,9 +6,10 @@ This file is run by Kive.
 """
 
 import logging
-import os
 import shutil
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+import os
 
 from micall.drivers.run_info import RunInfo
 from micall.drivers.sample import Sample
@@ -64,7 +65,7 @@ def load_sample(args):
 
 
 def main():
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.WARN)
     args = parse_args()
     sample_group = load_sample(args)
 

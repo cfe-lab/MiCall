@@ -10,7 +10,4 @@ Attributes:
 
 from typing import NamedTuple
 
-
-class Overlap(NamedTuple):
-    shift: int
-    size: int
+Overlap = NamedTuple("Overlap", [("shift", int), ("size", int)])

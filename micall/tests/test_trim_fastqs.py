@@ -1,12 +1,13 @@
 import csv
 import os
+from io import BytesIO
+from io import StringIO
 import unittest
-from io import BytesIO, StringIO
 from pathlib import Path
 
 import pytest
 
-from micall.core.trim_fastqs import censor, cut_all, trim
+from micall.core.trim_fastqs import censor, trim, cut_all
 from micall.utils.translation import reverse_and_complement
 
 

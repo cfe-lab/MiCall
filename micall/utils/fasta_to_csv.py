@@ -2,14 +2,14 @@ import argparse
 import logging
 import os
 import typing
+from typing import Optional, TextIO, Iterable, Dict, cast, Sequence
 from collections import Counter
-from collections.abc import Iterable, Sequence
-from csv import DictReader, DictWriter
-from io import StringIO
+from csv import DictWriter, DictReader
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
-from typing import TextIO, cast
+
+from io import StringIO
 
 from Bio import SeqIO
 
@@ -17,11 +17,12 @@ from micall.core.project_config import ProjectConfig
 from micall.utils.contig_stitcher_contigs import GenotypedContig
 from micall.utils.externals import Blastn, DefaultBlastDatabase
 
+
 default_database = DefaultBlastDatabase().path
 
 
-def read_assembled_contigs(group_refs: dict[str, str],
-                           genotypes: dict[str, tuple[str, float]],
+def read_assembled_contigs(group_refs: Dict[str, str],
+                           genotypes: Dict[str, typing.Tuple[str, float]],
                            contigs_fasta: Path) -> Iterable[GenotypedContig]:
     """Read assembled contigs and generate GenotypedContig objects.
 
@@ -77,8 +78,8 @@ def init_contigs_refs(contigs_csv: TextIO) -> DictWriter:
 
 
 def write_contigs(writer: DictWriter,
-                  group_refs: dict[str, str],
-                  genotypes: dict[str, tuple[str, float]],
+                  group_refs: Dict[str, str],
+                  genotypes: Dict[str, typing.Tuple[str, float]],
                   contigs_fasta: Path):
     """Write contigs to a CSV file.
 
@@ -95,9 +96,9 @@ def write_contigs(writer: DictWriter,
                              contig=contig.seq))
 
 
-def genotype(contigs_fasta: Path, db: Path | None = None,
-             blast_csv: TextIO | None = None,
-             group_refs: dict[str, str] | None = None) -> dict[str, tuple[str, float]]:
+def genotype(contigs_fasta: Path, db: Optional[Path] = None,
+             blast_csv: Optional[TextIO] = None,
+             group_refs: Optional[Dict[str, str]] = None) -> Dict[str, typing.Tuple[str, float]]:
     """Use Blastn to search for the genotype of a set of reference sequences.
 
     Args:
@@ -111,7 +112,7 @@ def genotype(contigs_fasta: Path, db: Path | None = None,
         Dict[str, Tuple[str, float]]: Mapping of query name to (reference name, matched fraction).
     """
 
-    contig_nums: dict[str, int] = {}  # {contig_name: contig_num}
+    contig_nums: Dict[str, int] = {}  # {contig_name: contig_num}
 
     for record in SeqIO.parse(contigs_fasta, "fasta"):
         contig_name = record.name
@@ -191,7 +192,7 @@ def genotype(contigs_fasta: Path, db: Path | None = None,
 
 def fasta_to_csv(contigs_fasta: Path,
                  contigs_csv: TextIO,
-                 blast_csv: TextIO | None = None) -> None:
+                 blast_csv: Optional[TextIO] = None) -> None:
     """Run BLAST search to identify contig sequences and write them to CSV.
 
     Args:
@@ -202,7 +203,7 @@ def fasta_to_csv(contigs_fasta: Path,
 
     contigs_fasta.touch()
     writer = init_contigs_refs(cast(TextIO, contigs_csv))
-    group_refs: dict[str, str] = {}
+    group_refs: Dict[str, str] = {}
 
     genotypes = genotype(contigs_fasta, blast_csv=blast_csv, group_refs=group_refs)
 

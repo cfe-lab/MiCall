@@ -1,22 +1,16 @@
-import os
-import unittest
 from csv import DictWriter
 from io import StringIO
+import os
+import unittest
 from pathlib import Path
-from unittest.mock import DEFAULT, Mock, patch
+from unittest.mock import patch, Mock, DEFAULT
 
 from pytest import fixture
 
 from micall.core import remap
 from micall.core.project_config import ProjectConfig
-from micall.core.remap import (
-    MixedReferenceSplitter,
-    convert_prelim,
-    is_first_read,
-    is_short_read,
-    read_contigs,
-    write_remap_counts,
-)
+from micall.core.remap import is_first_read, is_short_read, \
+    MixedReferenceSplitter, write_remap_counts, convert_prelim, read_contigs
 from micall.utils.externals import Bowtie2, Bowtie2Build
 
 HXB2_NAME = "HIV1-B-FR-K03455-seed"
@@ -704,7 +698,7 @@ class MixedReferenceMemorySplitter(MixedReferenceSplitter):
 # noinspection DuplicatedCode
 class MixedReferenceSplitterTest(unittest.TestCase):
     def setUp(self):
-        super().setUp()
+        super(MixedReferenceSplitterTest, self).setUp()
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
         self.work_path = os.path.dirname(__file__)
 

@@ -1,19 +1,19 @@
 import random
-from io import StringIO
-from pathlib import Path
-
 import pytest
+from pathlib import Path
+from io import StringIO
+
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from micall.utils.randomize_fastq import (
-    NUCLEOTIDES,
-    entry,
     introduce_errors,
-    main,
-    process_fastq,
     process_records,
+    process_fastq,
+    main,
+    entry,
+    NUCLEOTIDES,
 )
 
 

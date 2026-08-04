@@ -5,19 +5,18 @@ These tests exercise the complete flow from amino acid counts through resistance
 calculation to PDF report generation, catching configuration and integration issues
 that unit tests miss.
 """
-from csv import DictReader
-from io import BytesIO, StringIO
-
 import pytest
+from io import StringIO, BytesIO
+from csv import DictReader
 
-from micall.resistance.genreport import gen_report, read_config
 from micall.resistance.resistance import (
-    REPORTED_REGIONS,
-    filter_aminos,
+    write_resistance,
     load_asi,
     read_aminos,
-    write_resistance,
+    filter_aminos,
+    REPORTED_REGIONS
 )
+from micall.resistance.genreport import gen_report, read_config
 
 
 @pytest.fixture
@@ -231,10 +230,7 @@ class TestConfigurationConsistency:
         Ensures get_algorithm_regions and filter_aminos handle all regions
         from the algorithm without errors.
         """
-        from micall.resistance.resistance import (
-            create_empty_aminos,
-            get_algorithm_regions,
-        )
+        from micall.resistance.resistance import get_algorithm_regions, create_empty_aminos
         
         hiv_algorithm = asi_algorithms[None]
         regions = get_algorithm_regions(hiv_algorithm)

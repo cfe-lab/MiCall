@@ -6,12 +6,11 @@ Script to check sample name consistency between sample sheet and FASTQ files.
 import argparse
 import logging
 import sys
-from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import AbstractSet
+from typing import AbstractSet, Iterable, Sequence
 
-from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_files
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
+from micall.utils.list_fastq_files import find_fastq_source_folder, list_fastq_files
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +177,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level, format="%(levelname)s: %(message)s")
 

@@ -1,23 +1,22 @@
 
 import json
-import logging
-from collections.abc import Callable, Iterable, Iterator
+from typing import Iterator, Iterable, Callable, Optional
 from pathlib import Path
-
-import kivecli.dirpath
 import kivecli.download
-import kivecli.findrun
-import kivecli.logger
-import kivecli.runfilesfilter
-from kivecli.kiverun import KiveRun
 from kivecli.login import login
+import kivecli.dirpath
+import kivecli.runfilesfilter
+import kivecli.logger
+import kivecli.findrun
+from kivecli.kiverun import KiveRun
 from kivecli.runstate import RunState
+import logging
 
 from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_directory import new_atomic_directory
 from micall.utils.new_atomic_file import new_atomic_text_file
-
 from .logger import logger
+
 
 FILEFILTER = kivecli.runfilesfilter.RunFilesFilter.parse(
     '.*((sample_info)|(coverage_score)|(genome_co)|(contigs)|(conseq)|(nuc)).*')
@@ -39,7 +38,7 @@ def is_downloaded(root: DirPath, run: KiveRun) -> bool:
     return download_path.exists()
 
 
-def skip_if_failed(root: DirPath, run: KiveRun) -> KiveRun | None:
+def skip_if_failed(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     output = root / "runs" / str(run.id)
     failed_path = output / "failed"
 
@@ -66,7 +65,7 @@ def try_load_run_info(root: DirPath, run: KiveRun) -> KiveRun:
         return run
 
 
-def try_fetch_info(root: DirPath, run: KiveRun) -> KiveRun | None:
+def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     info_path = root / "runs" / f"{run.id}.json"
     existing = info_path.exists()
 
@@ -94,7 +93,7 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> KiveRun | None:
     return run
 
 
-def skip_incomplete(root: DirPath, run: KiveRun) -> KiveRun | None:
+def skip_incomplete(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     if run.state != RunState.COMPLETE:
         logger.warning("Skipping run %s: state '%s' != '%s'.",
                        run.id, run.state.value, RunState.COMPLETE.value)
@@ -115,7 +114,7 @@ def download_run_files(root: DirPath, run: KiveRun) -> None:
         (tmpout / "downloaded").touch()
 
 
-def try_download(root: DirPath, run: KiveRun) -> KiveRun | None:
+def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     try:
         download_run_files(root, run)
         return run
@@ -127,7 +126,7 @@ def try_download(root: DirPath, run: KiveRun) -> KiveRun | None:
 
 def pipeline(root: DirPath,
              runs: Iterable[KiveRun],
-             *fns: Callable[[DirPath, KiveRun], KiveRun | None],
+             *fns: Callable[[DirPath, KiveRun], Optional[KiveRun]],
              ) -> Iterator[KiveRun]:
 
     runs = tuple(runs)

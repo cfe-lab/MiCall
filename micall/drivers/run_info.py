@@ -1,7 +1,8 @@
-import os
 from collections import namedtuple
-from pathlib import Path
 from xml.etree import ElementTree
+from pathlib import Path
+
+import os
 
 ReadSizes = namedtuple('ReadSizes', 'read1 read2 index1 index2')
 

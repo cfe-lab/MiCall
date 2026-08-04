@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from pathlib import Path
+from typing import Sequence
 import logging
 import subprocess
 import sys
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from collections.abc import Sequence
-from pathlib import Path
-
 import urllib3
 
 from micall.utils.docker_build import build, get_latest_git_tag
@@ -156,7 +155,7 @@ def configure_logging(args) -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(
         level=logger.level,
@@ -241,8 +240,8 @@ def build_singularity_image(definition_path: Path, container_sha: str) -> Path:
 def build_or_load_singularity_image(tag: str, image_path: Path, family_name_or_id: str,
                                     users: Sequence[str] | None, groups: Sequence[str] | None) \
                                     -> None:
-    import kivecli.logger
     from kivecli.container import Container
+    import kivecli.logger
     kivecli.logger.logger.setLevel(logger.level)
     existing_container = next(Container.search(smart_filter=tag), None)
     if existing_container is not None:

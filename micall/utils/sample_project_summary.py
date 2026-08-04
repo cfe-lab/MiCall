@@ -1,14 +1,11 @@
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from collections import Counter, defaultdict
+from collections import defaultdict, Counter
 from pathlib import Path
 
 from micall.utils.check_sample_sheet import check_sample_name_consistency
 from micall.utils.list_fastq_files import list_fastq_file_names
-from micall.utils.sample_sheet_parser import (
-    UnknownSamplesInOverrides,
-    read_sample_sheet_and_overrides,
-)
+from micall.utils.sample_sheet_parser import UnknownSamplesInOverrides, read_sample_sheet_and_overrides
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +95,7 @@ def main():
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     logging.basicConfig(level=logger.level,
                         format='%(asctime)s[%(levelname)s]%(name)s: %(message)s')

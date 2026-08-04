@@ -13,11 +13,11 @@ Example usage:
         remap(fastq1, fastq2, ...)
 """
 
-from collections.abc import Callable
-from contextlib import contextmanager
+from typing import Optional, Callable
 from contextvars import ContextVar
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional
+
 
 # Type for remap callback function
 RemapCallbackFunction = Optional[Callable[[str, int, int], None]]

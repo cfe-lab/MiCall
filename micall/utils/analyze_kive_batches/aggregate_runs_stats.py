@@ -1,11 +1,11 @@
 
-import tomllib
 from pathlib import Path
-
 import pandas as pd
+import tomllib
+from typing import Optional
 
 
-def aggregate_runs_stats(input: Path, output: Path, properties: Path | None = None) -> None:
+def aggregate_runs_stats(input: Path, output: Path, properties: Optional[Path] = None) -> None:
     # 1. Read the CSV
     df = pd.read_csv(input)
 

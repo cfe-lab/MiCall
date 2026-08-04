@@ -1,23 +1,23 @@
-import ast
-import csv
-import hashlib
 import json
-import math
-import re
-from collections.abc import Iterable, Iterator, MutableMapping, Sequence
-from datetime import datetime
-from fractions import Fraction
-from itertools import tee
+from typing import Iterator, Sequence, \
+    Iterable, Optional, Union, MutableMapping
 from pathlib import Path
-
+import re
+import csv
+import math
+from datetime import datetime
+from itertools import tee
+import ast
+import hashlib
 from Bio.Align import PairwiseAligner
+from fractions import Fraction
 
-from micall.core.project_config import ProjectConfig
-from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_file import new_atomic_text_file
-
-from .find_file import find_file
+from micall.utils.dir_path import DirPath
+from micall.core.project_config import ProjectConfig
 from .logger import logger
+from .find_file import find_file
+
 
 # set up the aligner
 ALIGNER = PairwiseAligner()
@@ -30,7 +30,7 @@ ALIGNER.end_gap_score = -1
 PROJECTS = ProjectConfig.loadDefault()
 
 
-Row = MutableMapping[str, str | int | float | Sequence['Row'] | None]
+Row = MutableMapping[str, Optional[Union[str, int, float, Sequence['Row']]]]
 Rows = Iterable[Row]
 
 
@@ -161,7 +161,7 @@ def read_conseqs_rows(path_to_file: Path) -> Rows:
             yield row
 
 
-def calculate_conseq_fingerprint(path_to_file: Path) -> str | None:
+def calculate_conseq_fingerprint(path_to_file: Path) -> Optional[str]:
     """Calculate a fingerprint of the largest sequence (with q-cutoff=MAX) from conseq.csv.
 
     Args:
@@ -240,7 +240,7 @@ def collect_values(column: str, rows: Rows) -> Iterator[float]:
         yield numeric_value
 
 
-def calculate_avg(column: str, rows: Rows) -> float | None:
+def calculate_avg(column: str, rows: Rows) -> Optional[float]:
     num = average(collect_values(column, rows))
     if math.isnan(num):
         return None
@@ -248,7 +248,7 @@ def calculate_avg(column: str, rows: Rows) -> float | None:
         return num
 
 
-def count_matches(rows: Rows) -> int | None:
+def count_matches(rows: Rows) -> Optional[int]:
     total = 0
     anything = False
 
@@ -264,7 +264,7 @@ def count_matches(rows: Rows) -> int | None:
         return None
 
 
-def count_distinct_matches(rows: Rows) -> int | None:
+def count_distinct_matches(rows: Rows) -> Optional[int]:
     ret = set()
     anything = False
 
@@ -317,7 +317,7 @@ def avg_contigs_lengths(rows: Rows) -> float:
         return 0
 
 
-def count_soft_clips_from_nuc(path_to_file: Path) -> int | None:
+def count_soft_clips_from_nuc(path_to_file: Path) -> Optional[int]:
     """
     Count the total number of soft-clipped reads from the nuc CSV file.
 
@@ -372,7 +372,7 @@ def count_soft_clips_from_nuc(path_to_file: Path) -> int | None:
                 if key not in position_clips or clip_count > position_clips[key]:
                     position_clips[key] = clip_count
 
-    except OSError as e:
+    except (IOError, OSError) as e:
         logger.warning("Could not read nuc file %s: %s", path_to_file, e)
         return None
 
@@ -384,7 +384,7 @@ def count_soft_clips_from_nuc(path_to_file: Path) -> int | None:
     return total_clips
 
 
-def calculate_exact_uncovered_from_csv(exact_cov_csv_path: Path) -> int | None:
+def calculate_exact_uncovered_from_csv(exact_cov_csv_path: Path) -> Optional[int]:
     """
     Calculate number of positions with zero exact coverage from CSV.
 
@@ -411,7 +411,7 @@ def calculate_exact_uncovered_from_csv(exact_cov_csv_path: Path) -> int | None:
         return None
 
 
-def calculate_alignment_scores(run_id: object, rows: Rows) -> float | None:
+def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
     def collect_scores() -> Iterator[float]:
         for row in rows:
             # This field might be called "region" by mistake.
@@ -431,7 +431,8 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> float | None:
             except BaseException:
                 ref_name = ref_name_raw
 
-            ref_name = ref_name.removesuffix('-partial')
+            if ref_name.endswith('-partial'):
+                ref_name = ref_name[:-len('-partial')]
 
             try:
                 # ref_name = "HIV1-B-ZA-KP109515-seed"
@@ -450,7 +451,7 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> float | None:
     return max(scores, default=None)
 
 
-def get_stats(info_file: Path) -> Row | None:
+def get_stats(info_file: Path) -> Optional[Row]:
     with info_file.open() as reader:
         obj = json.load(reader)
 
@@ -520,7 +521,7 @@ def get_stats(info_file: Path) -> Row | None:
 
     # Find exact_coverage.csv file
     exact_cov_csv_candidate = directory / "exact_coverage.csv"
-    exact_cov_csv_path: Path | None = exact_cov_csv_candidate if exact_cov_csv_candidate.exists() else None
+    exact_cov_csv_path: Optional[Path] = exact_cov_csv_candidate if exact_cov_csv_candidate.exists() else None
 
     rc = read_coverage_rows
     ro = read_contigs_or_conseqs_rows

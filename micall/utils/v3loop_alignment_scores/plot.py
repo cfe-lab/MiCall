@@ -1,25 +1,17 @@
-import os
 from collections import Counter
 from csv import DictReader, DictWriter
-from datetime import datetime
-from operator import itemgetter
-
 # noinspection PyUnresolvedReferences
 from gotoh import align_it
+from datetime import datetime
+
+from operator import itemgetter
+import os
+
 from matplotlib import pyplot as plt
 
 from micall.core.project_config import ProjectConfig
-from micall.g2p.fastq_g2p import (
-    COORDINATE_REF_NAME,
-    G2P_SEED_NAME,
-    GAP_EXTEND_COST,
-    GAP_OPEN_COST,
-    USE_TERMINAL_COST,
-    FastqReader,
-    extract_target,
-    merge_reads,
-    trim_reads,
-)
+from micall.g2p.fastq_g2p import G2P_SEED_NAME, COORDINATE_REF_NAME, extract_target, \
+    FastqReader, merge_reads, trim_reads, GAP_OPEN_COST, GAP_EXTEND_COST, USE_TERMINAL_COST
 
 CURRENT_MINIMUM_SCORE = 52
 NEW_MINIMUM_SCORE = 200
@@ -82,7 +74,7 @@ def plot_file(filename1):
         start = datetime.now()
         with open(source1) as fastq1, open(source2) as fastq2:
             score_counts = align_reads(fastq1, fastq2)
-        print(f'{datetime.now() - start}: {filename1}')
+        print('{}: {}'.format(datetime.now() - start, filename1))
         score_rows = sorted(score_counts.items())
         with open(scores_filename, 'w') as scores_csv:
             writer = DictWriter(scores_csv,

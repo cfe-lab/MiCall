@@ -1,6 +1,6 @@
-import logging
 import re
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+import logging
 from csv import DictReader
 from pathlib import Path
 

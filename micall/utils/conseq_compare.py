@@ -4,7 +4,6 @@ import sys
 from csv import DictReader
 from operator import attrgetter
 from pathlib import Path
-
 import yaml
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -18,10 +17,11 @@ try:
 except ImportError:
     Aligner = None
 
-import sys
-
-from micall.core.project_config import ProjectConfig
 from micall.utils.fetch_sequences import fetch_by_accession
+
+
+import sys
+from micall.core.project_config import ProjectConfig
 
 REFERENCE = ProjectConfig.loadDefault()
 REFERENCE = REFERENCE.getReference('SARS-CoV-2-seed')

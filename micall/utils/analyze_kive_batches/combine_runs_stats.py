@@ -1,12 +1,12 @@
 
-import csv
-import json
 from pathlib import Path
+import json
+import csv
 
 from micall.utils.dir_path import DirPath
 from micall.utils.new_atomic_file import new_atomic_text_file
-
 from .logger import logger
+
 
 FIELDNAMES = ("app",
               "concordance",

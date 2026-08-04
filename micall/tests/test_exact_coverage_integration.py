@@ -3,8 +3,8 @@ Integration test for exact_coverage tool.
 Creates sample data and tests the complete workflow.
 """
 
-import csv
 import tempfile
+import csv
 from pathlib import Path
 
 

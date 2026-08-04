@@ -1,11 +1,9 @@
-from pathlib import Path
-
-import yaml
-
 from micall.core.project_config import ProjectConfig
 from micall.data.landmark_reader import LandmarkReader
-from micall.utils.consensus_aligner import align_aminos
 from micall.utils.translation import translate
+from micall.utils.consensus_aligner import align_aminos
+from pathlib import Path
+import yaml
 
 # This script finds region coordinates for all seeds defined in projects.json, by aligning them
 # to their respective coordinate references. It dumps these coordinates (start and end) to a yaml

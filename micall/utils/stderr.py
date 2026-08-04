@@ -11,18 +11,18 @@ Example usage:
             prelim_map(fastq1, fastq2, output)
 """
 
-import sys
-from contextlib import contextmanager
+from typing import TextIO, Optional
 from contextvars import ContextVar
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import TextIO
+import sys
 
 
 @dataclass
 class Stderr:
     """Manages stderr with dynamic scoping."""
 
-    stderr: TextIO | None
+    stderr: Optional[TextIO]
 
     @staticmethod
     def _get() -> "Stderr":
@@ -53,7 +53,7 @@ class Stderr:
 
     @staticmethod
     @contextmanager
-    def using(stderr: TextIO | None):
+    def using(stderr: Optional[TextIO]):
         """
         Set the stderr for the duration of this context.
 

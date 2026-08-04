@@ -3,8 +3,9 @@
 They should also be processed by the report scripts.
 """
 import os
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from glob import glob
+
 from os import makedirs
 from pathlib import Path
 from subprocess import run

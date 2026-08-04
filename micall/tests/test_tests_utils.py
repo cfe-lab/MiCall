@@ -1,7 +1,6 @@
 
 from micall.tests.utils import MockAligner, MockAlignment
 
-
 def test_basic_mapping():
 
     aligner = MockAligner('acgt' + 'a' * 20 + 'acgt')

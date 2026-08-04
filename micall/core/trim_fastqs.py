@@ -4,16 +4,18 @@
 
 import argparse
 import csv
-import itertools
 import logging
+import shutil
+from gzip import GzipFile
+import itertools
 import math
 import os
-import shutil
-import typing
-from gzip import GzipFile
+
 from io import TextIOWrapper
 from itertools import chain
 from pathlib import Path
+
+import typing
 
 from Bio import SeqIO
 
@@ -58,9 +60,9 @@ def trim(original_fastq_filenames: typing.Sequence[str],
          bad_cycles_filename: str,
          trimmed_fastq_filenames: typing.Sequence[str],
          use_gzip: bool = True,
-         summary_file: typing.TextIO | None = None,
+         summary_file: typing.Optional[typing.TextIO] = None,
          skip: typing.Iterable[str] = (),
-         project_code: str | None = None):
+         project_code: typing.Optional[str] = None):
     """
 
     :param original_fastq_filenames: sequence of two filenames, containing
@@ -111,7 +113,7 @@ def cut_all(censored_fastq1: Path,
             censored_fastq2: Path,
             trimmed_fastq1: Path,
             trimmed_fastq2: Path,
-            skip: tuple[str] = (),
+            skip: typing.Tuple[str] = (),
             project_code: str = None):
     dedapted_filenames = [Path(str(filename) + '.dedapted.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]

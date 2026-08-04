@@ -5,21 +5,10 @@ from unittest import TestCase
 
 import pytest
 
-from micall.resistance.resistance import (
-    HIVDB_VERSION,
-    AminoList,
-    combine_aminos,
-    create_consensus_writer,
-    filter_aminos,
-    get_genotype,
-    load_asi,
-    read_aminos,
-    select_reported_regions,
-    write_consensus,
-    write_failures,
-    write_nuc_mutations,
-    write_resistance,
-)
+from micall.resistance.resistance import read_aminos, write_resistance, \
+    select_reported_regions, AminoList, filter_aminos, load_asi, get_genotype, \
+    combine_aminos, write_consensus, create_consensus_writer, write_failures, \
+    write_nuc_mutations, HIVDB_VERSION
 
 
 @pytest.fixture(scope="module")
@@ -27,8 +16,8 @@ def asi_algorithms():
     return load_asi()
 
 
-def assert_aminos_lists_match(actual_lists: list[AminoList],
-                              expected_lists: list[AminoList]):
+def assert_aminos_lists_match(actual_lists: typing.List[AminoList],
+                              expected_lists: typing.List[AminoList]):
     if expected_lists and actual_lists and (len(expected_lists) == len(actual_lists)):
         for i, (expected, actual) in enumerate(zip(expected_lists, actual_lists)):
             assert actual.aminos == expected.aminos, i
@@ -1178,7 +1167,7 @@ def test_read_aminos_no_midi(asi_algorithms):
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    no_counts: dict[str, float] = {}
+    no_counts: typing.Dict[str, float] = {}
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  [no_counts] * 200 +
                                  [{'A': 1.0}]*136 + [no_counts] * 256,
@@ -1291,7 +1280,7 @@ def test_read_aminos_ns5b_short(asi_algorithms):
     amino_csv = DictReader(amino_lines)
     min_fraction = 0.2
     min_coverage = 9
-    no_counts: dict[str, float] = {}
+    no_counts: typing.Dict[str, float] = {}
     expected_mixtures = [{'A': 1.0}] * 400 + [no_counts] * 192
     expected_aminos = [AminoList('HCV1B-Con1-NS5b',
                                  expected_mixtures,
@@ -1980,8 +1969,8 @@ def test_reported_regions_have_wild_types(asi_algorithms):
 
     Prevents: KeyError when trying to get reference sequence for region.
     """
-    from micall.core.project_config import ProjectConfig
     from micall.resistance.resistance import REPORTED_REGIONS
+    from micall.core.project_config import ProjectConfig
 
     projects = ProjectConfig.loadDefault()
 
@@ -2099,7 +2088,7 @@ def test_write_resistance_handles_all_regions(asi_algorithms):
 
     Prevents: Runtime errors when processing specific regions.
     """
-    from micall.resistance.resistance import get_algorithm_regions, write_resistance
+    from micall.resistance.resistance import write_resistance, get_algorithm_regions
 
     hiv_algorithm = asi_algorithms[None]
     regions = get_algorithm_regions(hiv_algorithm)

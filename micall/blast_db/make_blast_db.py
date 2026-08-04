@@ -1,10 +1,9 @@
 import json
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from pathlib import Path
 from subprocess import run
 
 from micall.utils.externals import ProjectsFile
-
 
 def parse_args():
     DEFAULT_DATABASE = str(Path(__file__).parent / 'refs.fasta')

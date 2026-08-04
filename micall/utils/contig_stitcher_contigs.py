@@ -1,10 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional, Literal
 from functools import cached_property
-from typing import Literal
-
 from aligntools import CigarHit
+import micall.utils.registry as registry
 
-from micall.utils import registry
 
 ID_STATE = 0
 ContigId = int
@@ -18,9 +17,9 @@ def generate_new_id() -> ContigId:
 
 @dataclass(frozen=True)
 class Contig:
-    name: str | None
+    name: Optional[str]
     seq: str
-    reads_count: int | None
+    reads_count: Optional[int]
 
     @cached_property
     def id(self) -> ContigId:
@@ -51,10 +50,10 @@ assert EMPTY_CONTIG.id > 0
 @dataclass(frozen=True)
 class GenotypedContig(Contig):
     ref_name: str
-    group_ref: str | None
+    group_ref: Optional[str]
 
     # The sequence of self.group_ref. None in cases where the reference organism is unknown.
-    ref_seq: str | None
+    ref_seq: Optional[str]
 
     # Approximated overall concordance between `seq` and `ref_seq`.
     # It is calculated by BLAST as qcovhsp/100, where qcovhsp means Query Coverage Per HSP.

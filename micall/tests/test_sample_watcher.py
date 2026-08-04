@@ -2,8 +2,8 @@ from pathlib import Path
 
 from kiveapi import KiveRunFailedException
 
+from micall.monitor.sample_watcher import FolderWatcher, SampleWatcher, PipelineType
 from micall.monitor.find_groups import SampleGroup
-from micall.monitor.sample_watcher import FolderWatcher, PipelineType, SampleWatcher
 
 
 class DummySession:

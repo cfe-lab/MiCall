@@ -1,22 +1,21 @@
-from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable, Iterator, Optional, Sequence
 
 from micall.utils.sample_sheet_parser import read_sample_sheet_and_overrides
 
-
 @dataclass(frozen=True)
-class SampleGroup:
+class SampleGroup():
     """Protocol for SampleGroup objects used in the monitor module.
 
     SampleGroup represents a group of related samples (main and optional MIDI).
     """
     enum: str
-    names: Sequence[str | None]
-    project_codes: Sequence[str | None]
+    names: Sequence[Optional[str]]
+    project_codes: Sequence[Optional[str]]
 
 
-def find_groups(file_names: Iterable[str], sample_sheet_path: str, included_projects: set[str] | None = None) -> Iterator[SampleGroup]:
+def find_groups(file_names: Iterable[str], sample_sheet_path: str, included_projects: Optional[set[str]] = None) -> Iterator[SampleGroup]:
     """ Group HCV samples with their MIDI partners.
 
     :param list[str] file_names: a list of FASTQ file names without paths

@@ -6,41 +6,36 @@ See docs/design/remap.md for a detailed description.
 """
 
 import argparse
+import typing
+from typing import Callable, Optional
+from collections import Counter, defaultdict
 import csv
+from csv import DictReader, DictWriter
+from functools import partial
+from logging import getLogger
 import os
 import re
 import shutil
 import sys
-import typing
-from collections import Counter, defaultdict
-from collections.abc import Callable
-from csv import DictReader, DictWriter
-from functools import partial
-from logging import getLogger
 
 # noinspection PyUnresolvedReferences
 from pathlib import Path
-from typing import Optional
 
-import Levenshtein
 from gotoh import align_it
 
+import Levenshtein
+
 from micall.core import project_config
-from micall.core.prelim_map import (
-    READ_GAP_EXTEND,
-    READ_GAP_OPEN,
-    REF_GAP_EXTEND,
-    REF_GAP_OPEN,
-    check_fastq,
-)
 from micall.core.project_config import ProjectConfig
-from micall.core.sam2aln import apply_cigar, merge_inserts, merge_pairs
-from micall.utils.cache import cached
+from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
+from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
+    REF_GAP_EXTEND, check_fastq
 from micall.utils.externals import Bowtie2, Bowtie2Build, LineCounter
-from micall.utils.remap_callback import RemapCallback
-from micall.utils.stderr import Stderr
 from micall.utils.translation import reverse_and_complement
 from micall.utils.work_dir import WorkDir
+from micall.utils.stderr import Stderr
+from micall.utils.remap_callback import RemapCallback
+from micall.utils.cache import cached
 
 CONSENSUS_Q_CUTOFF = 20         # Min Q for base to contribute to conseq (pileup2conseq)
 MIN_MAPPING_EFFICIENCY = 0.95   # Fraction of fastq reads mapped needed
@@ -247,7 +242,7 @@ def sam_to_conseqs(samfile,
                         filtered_counts[nuc] += count
                 mixture = []
                 for nuc, count in filtered_counts.items():
-                    mixture.append(f'{nuc}: {count}')
+                    mixture.append('{}: {}'.format(nuc, count))
                 mixtures.append('{}{{{}}}'.format(min_quality,
                                                   ', '.join(sorted(mixture))))
             debug_reports[key] = ', '.join(sorted(mixtures))
@@ -261,7 +256,7 @@ def sam_to_conseqs(samfile,
     for name in sorted(new_conseqs.keys()):
         conseq = new_conseqs[name]
         counts = refmap[name]
-        relevant_conseq = ''
+        relevant_conseq = u''
         for pos, c in enumerate(conseq, 1):
             pos_counts = sum(counts[pos].values())
             if pos_counts >= filter_coverage:
@@ -272,10 +267,10 @@ def sam_to_conseqs(samfile,
     return {seed_name: new_conseqs[seed_name] for seed_name in relevant_conseqs}
 
 
-def drop_drifters(relevant_conseqs: dict[str, str],
-                  original_seeds: dict[str, str],
-                  distance_report: dict[str, dict],
-                  read_counts: dict[str, int]):
+def drop_drifters(relevant_conseqs: typing.Dict[str, str],
+                  original_seeds: typing.Dict[str, str],
+                  distance_report: typing.Dict[str, dict],
+                  read_counts: typing.Dict[str, int]):
     gap_open_penalty = 15
     gap_extend_penalty = 3
     use_terminal_gap_penalty = 1
@@ -370,8 +365,8 @@ def update_counts(rname,
 def counts_to_conseqs(refmap, seeds=None):
     conseqs = {}
     for refname, pos_nucs in refmap.items():
-        if not any(any(n > 0 for n in counts.values())
-                    for counts in pos_nucs.values()):
+        if not any((any(n > 0 for n in counts.values())
+                    for counts in pos_nucs.values())):
             # Nothing mapped, so no consensus.
             continue
         conseq = ''
@@ -470,7 +465,7 @@ def remap(fastq1: Path,
           rdgopen=READ_GAP_OPEN,
           rfgopen=REF_GAP_OPEN,
           gzip=False,
-          debug_file_prefix: str | None = None,
+          debug_file_prefix: Optional[str] = None,
           ) -> None:
     """
     Iterative re-map reads from raw paired FASTQ files to a reference sequence set that
@@ -521,7 +516,7 @@ def remap(fastq1: Path,
 
         remap_counts_writer = csv.DictWriter(
             remap_counts_file,
-            ['type', 'count', 'filtered_count', 'seed_dist', 'other_dist', 'other_seed'],
+            'type count filtered_count seed_dist other_dist other_seed'.split(),
             lineterminator=os.linesep)
         remap_counts_writer.writeheader()
         remap_counts_writer.writerow(dict(type='raw', count=raw_count))
@@ -564,7 +559,8 @@ def remap(fastq1: Path,
             if debug_file_prefix is None:
                 next_debug_prefix = None
             else:
-                next_debug_prefix = f'{debug_file_prefix}_remap{n_remaps+1}'
+                next_debug_prefix = '{}_remap{}'.format(debug_file_prefix,
+                                                        n_remaps+1)
             unmapped_count = map_to_reference(fastq1_str,
                                               fastq2_str,
                                               conseqs,
@@ -599,7 +595,7 @@ def remap(fastq1: Path,
 
             write_remap_counts(remap_counts_writer,
                                new_counts,
-                               title=f'remap-{n_remaps}',
+                               title='remap-{}'.format(n_remaps),
                                distance_report=distance_report)
 
             if new_seed_names == old_seed_names:
@@ -731,7 +727,7 @@ def map_to_contigs(fastq1,
 
     remap_counts_writer = csv.DictWriter(
         remap_counts_csv,
-        ['type', 'count', 'filtered_count', 'seed_dist', 'other_dist', 'other_seed'],
+        'type count filtered_count seed_dist other_dist other_seed'.split(),
         lineterminator=os.linesep)
     remap_counts_writer.writeheader()
     remap_counts_writer.writerow(dict(type='raw', count=raw_count))
@@ -889,7 +885,7 @@ def read_contigs(contigs_csv, excluded_seeds=None):
 
 
 def get_contig_name(prefix, ref_name, is_match, is_reversed, excluded_seeds=None):
-    name = f'{prefix}-{ref_name}'
+    name = '{}-{}'.format(prefix, ref_name)
     if excluded_seeds and ref_name in excluded_seeds:
         name += '-' + EXCLUDED_CONTIG_SUFFIX
     elif is_reversed:
@@ -1005,7 +1001,8 @@ def map_to_reference(fastq1,
     """
     # generate reference file from current set of consensus sequences
     outfile = open(reffile, 'w')
-    outfile.writelines('>%s\n%s\n' % (region, conseq) for region, conseq in refseqs.items())
+    for region, conseq in refseqs.items():
+        outfile.write('>%s\n%s\n' % (region, conseq))
     outfile.close()
 
     # regenerate bowtie2 index files
@@ -1018,8 +1015,10 @@ def map_to_reference(fastq1,
     bowtie_args = ['--wrapper', 'micall-0',
                    '--quiet',
                    '-x', reffile,
-                   '--rdg', f"{read_gap_open_penalty},{READ_GAP_EXTEND}",
-                   '--rfg', f"{ref_gap_open_penalty},{REF_GAP_EXTEND}",
+                   '--rdg', "{},{}".format(read_gap_open_penalty,
+                                           READ_GAP_EXTEND),
+                   '--rfg', "{},{}".format(ref_gap_open_penalty,
+                                           REF_GAP_EXTEND),
                    '-1', fastq1,
                    '-2', fastq2,
                    '--no-hd',  # no header lines (start with @)
@@ -1033,7 +1032,8 @@ def map_to_reference(fastq1,
     with open(samfile, 'w') as f:
         # write SAM header
         f.write('@HD\tVN:1.0\tSO:unsorted\n')
-        f.writelines('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)) for rname, refseq in refseqs.items())
+        for rname, refseq in refseqs.items():
+            f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
         # capture stdout stream to count reads before writing to file
@@ -1062,7 +1062,7 @@ def map_to_reference(fastq1,
     return unmapped_count
 
 
-class MixedReferenceSplitter:
+class MixedReferenceSplitter(object):
     def __init__(self, work_path):
         self.work_path = work_path
         self.splits = {}
@@ -1144,7 +1144,7 @@ class MixedReferenceSplitter:
         if is_reversed:
             seq = reverse_and_complement(seq)
             quality = ''.join(reversed(quality))
-        fastq.write(f'@{qname}\n{seq}\n+\n{quality}\n')
+        fastq.write('@{}\n{}\n+\n{}\n'.format(qname, seq, quality))
 
 
 def matchmaker(samfile, include_singles=False):
@@ -1193,7 +1193,8 @@ def find_top_token(base_counts):
             top_count = count
         elif count < top_count:
             break
-        top_token = min(top_token, token)
+        if token < top_token:
+            top_token = token
     if top_token == 'N':
         top_token = None
     return top_token

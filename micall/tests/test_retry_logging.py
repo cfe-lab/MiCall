@@ -9,8 +9,8 @@ Tests that retry operatio                with patch('micall.monitor.kive_watcher
 """
 
 import unittest
-from datetime import datetime, timedelta
 from unittest.mock import patch
+from datetime import datetime, timedelta
 
 from micall.monitor.disk_operations import wait_for_retry as disk_wait_for_retry
 from micall.monitor.kive_watcher import wait_for_retry as network_wait_for_retry

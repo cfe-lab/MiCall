@@ -1,4 +1,4 @@
-from micall.utils.spring_beads import Bead, Wire
+from micall.utils.spring_beads import Wire, Bead
 
 
 def test_no_target():

@@ -1,7 +1,7 @@
 import unittest
 from io import StringIO
 
-from micall.core.sam2aln import apply_cigar, merge_inserts, merge_pairs, sam2aln
+from micall.core.sam2aln import sam2aln, apply_cigar, merge_pairs, merge_inserts
 
 
 class RemapReaderTest(unittest.TestCase):
@@ -243,7 +243,7 @@ V3LOOP,40,1
 
 class CigarTest(unittest.TestCase):
     def setUp(self):
-        super().setUp()
+        super(CigarTest, self).setUp()
         self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
 
     def testTrivial(self):

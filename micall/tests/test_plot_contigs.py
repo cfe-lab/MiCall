@@ -3,18 +3,11 @@ from io import StringIO
 # noinspection PyPep8Naming
 import drawsvg as draw
 import pytest
-from drawsvg import Circle, Drawing, Line, Lines, Rectangle, Text
-from genetracks import Coverage, Figure, Label, Multitrack, Track
+from drawsvg import Drawing, Line, Lines, Circle, Text, Rectangle
+from genetracks import Figure, Track, Multitrack, Label, Coverage
 
-from micall.core.plot_contigs import (
-    Arrow,
-    ArrowGroup,
-    ContigMatcher,
-    SmoothCoverage,
-    add_partial_banner,
-    build_coverage_figure,
-    summarize_figure,
-)
+from micall.core.plot_contigs import summarize_figure, build_coverage_figure, \
+    SmoothCoverage, add_partial_banner, Arrow, ArrowGroup, ContigMatcher
 from micall.tests.svg_differ import SvgDiffer
 
 

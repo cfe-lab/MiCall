@@ -1,14 +1,13 @@
 
-from collections.abc import Iterable, Iterator
+from typing import Iterable, Iterator, Tuple
 from pathlib import Path
 
 from micall.utils.dir_path import DirPath
-
 from .batch import BatchName
-from .ninjamaker import Build, Command, Deref, Description, Recipe, Rule, Statement
+from .ninjamaker import Build, Deref, Command, Statement, Rule, Description, Recipe
 
 
-def get_outputs(root: DirPath, batches: Iterable[BatchName]) -> Iterator[tuple[BatchName, Path]]:
+def get_outputs(root: DirPath, batches: Iterable[BatchName]) -> Iterator[Tuple[BatchName, Path]]:
     for batch in batches:
         filename = str(batch) + ".json"
         output = root / "batches" / filename
@@ -17,7 +16,7 @@ def get_outputs(root: DirPath, batches: Iterable[BatchName]) -> Iterator[tuple[B
 
 def generate_builds(root: DirPath,
                     runs_json: Path,
-                    pairs: Iterable[tuple[BatchName, Path]],
+                    pairs: Iterable[Tuple[BatchName, Path]],
                     ) -> Iterator[Build]:
 
     outputs = tuple(output for batch, output in pairs)
@@ -36,7 +35,7 @@ def generate_builds(root: DirPath,
 
 def generate_statements(root: DirPath,
                         runs_json: Path,
-                        pairs: Iterable[tuple[BatchName, Path]],
+                        pairs: Iterable[Tuple[BatchName, Path]],
                         ) -> Iterator[Statement]:
 
     yield Rule(name="get",

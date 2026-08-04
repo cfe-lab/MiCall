@@ -3,13 +3,12 @@ from csv import DictReader
 from io import StringIO
 from pathlib import Path
 
-import matplotlib
-
-from micall.utils.externals import Blastn
 from micall.utils.fasta_to_csv import default_database
+from micall.utils.externals import Blastn
 
+import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # noqa
 
 DEFAULT_SCRATCH_PATH = (Path(__file__).parent.parent / "tests" / "working" /
                         "basespace_linked_data" / "scratch")

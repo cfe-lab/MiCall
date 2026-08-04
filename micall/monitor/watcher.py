@@ -1,21 +1,15 @@
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 import logging.config
 import os
-from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
-from queue import Empty, Queue
+from queue import Queue, Empty
 from threading import Thread
 from time import sleep
 
-from micall.monitor import update_qai
-from micall.monitor.kive_watcher import (
-    FolderEvent,
-    FolderEventType,
-    KiveWatcher,
-    find_samples,
-)
-from micall.monitor.run_completion_watcher import monitor_run_completion
 from micall.utils.version import get_version
-
+from micall.monitor.kive_watcher import find_samples, KiveWatcher, FolderEventType, FolderEvent
+from micall.monitor import update_qai
+from micall.monitor.run_completion_watcher import monitor_run_completion
 try:
     from micall.utils.micall_logging_override import LOGGING  # type: ignore[import]
     is_logging_override = True

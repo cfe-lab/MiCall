@@ -1,13 +1,14 @@
 from collections import Counter
+from typing import Optional
 
-from micall.utils.translation import ambig_dict, translate
+from micall.utils.translation import translate, ambig_dict
 
 AMINO_ALPHABET = 'ACDEFGHIKLMNPQRSTVWY*'
 MAX_CUTOFF = 'MAX'
 FIRST_CUTOFF = 'FIRST'
 
 
-class SeedAmino:
+class SeedAmino(object):
     """
     Records the frequencies of amino acids at a given position of the
     aligned reads as determined by the consensus sequence.
@@ -35,8 +36,9 @@ class SeedAmino:
 
     def __repr__(self):
         if self.counts:
-            return f'SeedAmino({self.consensus_nuc_index!r}, {dict(self.counts)!r})'
-        return f'SeedAmino({self.consensus_nuc_index})'
+            return 'SeedAmino({!r}, {!r})'.format(self.consensus_nuc_index,
+                                                  dict(self.counts))
+        return 'SeedAmino({})'.format(self.consensus_nuc_index)
 
     def count_aminos(self, codon_seq, count):
         """ Record a set of reads at this position in the seed reference.
@@ -132,7 +134,7 @@ class SeedAmino:
             self.v3_overlap = max(self.v3_overlap, nuc1.v3_overlap)
 
 
-class SeedNucleotide:
+class SeedNucleotide(object):
     """
     Records the frequencies of nucleotides at a given position of the
     aligned reads as determined by the consensus sequence.
@@ -145,7 +147,7 @@ class SeedNucleotide:
         self.consensus_index = None
 
     def __repr__(self):
-        return f'SeedNucleotide({dict(self.counts)!r})'
+        return 'SeedNucleotide({!r})'.format(dict(self.counts))
 
     def count_nucleotides(self, nuc_seq, count=1):
         """ Record a set of reads at this position in the seed reference.
@@ -240,7 +242,7 @@ class SeedNucleotide:
 
 
 class ReportNucleotide:
-    def __init__(self, position: int, seed_nucleotide: SeedNucleotide | None = None):
+    def __init__(self, position: int, seed_nucleotide: Optional[SeedNucleotide] = None):
         self.position = position
         if seed_nucleotide is None:
             self.seed_nucleotide = SeedNucleotide()
@@ -251,7 +253,7 @@ class ReportNucleotide:
         return f'ReportNucleotide({self.position!r}, {self.seed_nucleotide!r})'
 
 
-class ReportAmino:
+class ReportAmino(object):
     def __init__(self, seed_amino: SeedAmino, position: int):
         """ Create a new instance.
 
@@ -263,4 +265,4 @@ class ReportAmino:
         self.insertion_count = 0
 
     def __repr__(self):
-        return f'ReportAmino({self.seed_amino!r}, {self.position})'
+        return 'ReportAmino({!r}, {})'.format(self.seed_amino, self.position)

@@ -2,9 +2,11 @@
 import csv
 import json
 import os
+from argparse import ArgumentParser, FileType, ArgumentDefaultsHelpFormatter
+
 import subprocess
+
 import typing
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType
 
 from micall.utils.externals import ProjectsFile
 

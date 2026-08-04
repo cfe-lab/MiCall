@@ -1,5 +1,5 @@
-import re
 from pathlib import Path
+import re
 
 from micall.utils.dir_path import DirPath
 

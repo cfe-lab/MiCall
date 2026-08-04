@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from micall.drivers.sample import Sample
 from micall.drivers.sample_group import SampleGroup
+from micall.drivers.sample import Sample
 
 
 class SampleGroupTest(TestCase):

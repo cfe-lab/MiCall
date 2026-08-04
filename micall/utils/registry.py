@@ -1,5 +1,5 @@
 
-from collections.abc import MutableMapping
+from typing import MutableMapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from copy import deepcopy

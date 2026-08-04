@@ -11,21 +11,14 @@ the logs to their prior state with:
     git checkout HEAD micall/tests/data
 """
 
-from collections.abc import Iterable, Iterator
-from pathlib import Path
-
 import pytest
+from pathlib import Path
+from typing import Iterator, Iterable
+
+from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 
 # Load autouse fixtures
-from micall.tests.referenceless_tests_utils import (
-    disable_acceptable_prob_check,
-    disable_kmer_filter,
-    load_projects,
-    log_check,
-    random_fasta_file,
-    run_full_pipeline,
-)
-from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
+from micall.tests.referenceless_tests_utils import disable_acceptable_prob_check, log_check, random_fasta_file, run_full_pipeline, load_projects, disable_kmer_filter
 
 # to avoid linter warnings
 assert disable_acceptable_prob_check is not None

@@ -1,14 +1,14 @@
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType
 from base64 import standard_b64encode
-from collections import Counter, defaultdict
-from csv import DictReader
 from math import copysign
 from turtle import Turtle
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
+from collections import defaultdict, Counter
+from csv import DictReader
 
-from drawSvg import Circle, Drawing, Line, Lines, Text
+from drawSvg import Line, Lines, Drawing, Text, Circle
 
 from micall.core.plot_contigs import build_coverage_figure
-from micall.core.remap import SAM_FLAG_IS_FIRST_SEGMENT, SAM_FLAG_IS_UNMAPPED
+from micall.core.remap import SAM_FLAG_IS_UNMAPPED, SAM_FLAG_IS_FIRST_SEGMENT
 
 
 def parse_args():

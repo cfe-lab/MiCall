@@ -7,10 +7,10 @@ efficient insertion and removal.
 """
 
 
-from collections.abc import Iterator, MutableSet, Sequence
-from typing import Any, Generic, TypeVar
-
+from typing import TypeVar, Generic, Iterator, Sequence, Any
+from collections.abc import MutableSet
 from sortedcontainers import SortedList
+
 
 T = TypeVar('T')
 

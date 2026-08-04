@@ -1,21 +1,17 @@
 #! /usr/bin/env python3
 
 import argparse
-import csv
-import json
 from csv import DictReader
 from dataclasses import dataclass
-from io import BytesIO, StringIO
 from pathlib import Path
-from typing import TextIO
-
+from typing import TextIO, Dict
+import csv
 import multicsv
+from io import BytesIO, StringIO
+import json
 
 from micall.utils.sample_sheet_v1_parser import sample_sheet_v1_parser
-from micall.utils.sample_sheet_v2_parser import (
-    sample_sheet_v2_parser,
-    try_parse_sample_project,
-)
+from micall.utils.sample_sheet_v2_parser import sample_sheet_v2_parser, try_parse_sample_project
 
 
 def _determine_version(file: multicsv.MultiCSVFile) -> int:
@@ -31,7 +27,7 @@ def _determine_version(file: multicsv.MultiCSVFile) -> int:
     return 1
 
 
-def _sample_sheet_parser(handle: TextIO) -> dict[str, object]:
+def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
     """
     Parse the contents of SampleSheet.csv, convert contents into a
     Python dictionary object.
@@ -94,4 +90,4 @@ def main():
     print(json.dumps(ss, indent='\t'))
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__": main() # noqa

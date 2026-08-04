@@ -1,8 +1,8 @@
+from typing import FrozenSet
 from dataclasses import dataclass
-
-from micall.utils.contig_stitcher_contigs import Contig
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner
-from micall.utils.referenceless_score import SCORE_NOTHING, Score
+from micall.utils.referenceless_score import Score, SCORE_NOTHING
+from micall.utils.contig_stitcher_contigs import Contig
 
 
 @dataclass(frozen=True)
@@ -12,11 +12,11 @@ class ContigsPath:
 
     # Id's of contigs that comprise this path.
     # Does not contain contigs covered
-    contigs_ids: frozenset[int]
+    contigs_ids: FrozenSet[int]
 
     # Ids of contigs that are contained within this path.
     # Different from `contigs_ids` in that it also contains ones that are covered by this path.
-    contains_contigs_ids: frozenset[int]
+    contains_contigs_ids: FrozenSet[int]
 
     # Higher is better. The lower the score is, the higher the probability
     # that all the components of `whole` came together on accident.

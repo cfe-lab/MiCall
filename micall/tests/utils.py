@@ -1,9 +1,8 @@
-import random
-from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-
+import random
 from aligntools import CigarActions
+from typing import Tuple, List, Iterator
 
 from micall.utils.alignment import Alignment
 
@@ -63,7 +62,7 @@ class MockAligner:
                             return
 
 
-def mock_align_consensus(reference_seq: str, consensus: str) -> tuple[list[Alignment], str]:
+def mock_align_consensus(reference_seq: str, consensus: str) -> Tuple[List[Alignment], str]:
     alignments = list(MockAligner(reference_seq).map(consensus))
     algorithm = 'mock'
     return (alignments, algorithm)

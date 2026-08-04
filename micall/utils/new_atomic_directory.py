@@ -3,11 +3,11 @@ This module provides methods for creating directories
 that only materialize if they are fully initialized.
 """
 
-import random
-import shutil
-import string
-from collections.abc import Iterator
 from contextlib import contextmanager
+from typing import Iterator
+import random
+import string
+import shutil
 
 from micall.utils.dir_path import DirPath
 

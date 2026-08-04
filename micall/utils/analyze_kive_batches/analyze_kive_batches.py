@@ -1,29 +1,29 @@
 #! /usr/bin/env python
 
 import argparse
-import logging
 import sys
-from collections.abc import Sequence
+from typing import Sequence
 from pathlib import Path
+import logging
 
 from micall.utils.dir_path import DirPath
 from micall.utils.user_error import UserError
-
-from .aggregate_runs_overlaps import aggregate_runs_overlaps
-from .aggregate_runs_stats import aggregate_runs_stats
-from .calculate_exact_coverage_file import calculate_exact_coverage_file
-from .combine_batches_runs import combine_batches_runs
-from .combine_runs_overlaps import combine_runs_overlaps
-from .combine_runs_stats import combine_runs_stats
-from .diff_samples_of_two_apps import diff_samples_of_two_apps
-from .extract_run_ids import extract_run_ids
-from .get_batch import get_batch
-from .join_tables import join_tables
 from .logger import logger
-from .make_properties import make_properties
+
 from .make_stats import make_stats
+from .get_batch import get_batch
 from .run_all import run_all
+from .combine_batches_runs import combine_batches_runs
+from .combine_runs_stats import combine_runs_stats
+from .combine_runs_overlaps import combine_runs_overlaps
+from .extract_run_ids import extract_run_ids
+from .aggregate_runs_stats import aggregate_runs_stats
+from .aggregate_runs_overlaps import aggregate_runs_overlaps
 from .stitch_contigs import stitch_contigs
+from .calculate_exact_coverage_file import calculate_exact_coverage_file
+from .make_properties import make_properties
+from .join_tables import join_tables
+from .diff_samples_of_two_apps import diff_samples_of_two_apps
 
 
 def dir_path(string: str) -> DirPath:
@@ -199,7 +199,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     try:
         main_typed(subcommand, args)
@@ -220,4 +220,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()
+if __name__ == '__main__': entry()  # noqa

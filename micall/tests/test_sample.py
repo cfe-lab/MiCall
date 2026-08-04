@@ -1,12 +1,12 @@
 import io
-import logging
-import os
 import pickle
-from io import StringIO
 from unittest import TestCase
-from unittest.mock import DEFAULT, patch
 
 import pytest
+import os
+from unittest.mock import patch, DEFAULT
+import logging
+from io import StringIO
 
 from micall.drivers.sample import Sample, exclude_extra_seeds, open_files
 

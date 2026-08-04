@@ -1,10 +1,10 @@
-import csv
 import os
-import tempfile
-from pathlib import Path
 from random import randrange
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
+import csv
+import tempfile
+from pathlib import Path
 
 from micall.core.prelim_map import check_fastq, prelim_map
 from micall.utils.stderr import Stderr

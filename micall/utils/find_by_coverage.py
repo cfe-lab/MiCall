@@ -1,4 +1,4 @@
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from csv import DictReader
 from pathlib import Path
 

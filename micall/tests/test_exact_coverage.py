@@ -4,13 +4,12 @@ Tests for the exact_coverage tool.
 
 import unittest
 from io import StringIO
-
 from micall.utils.exact_coverage import (
+    reverse_complement,
     build_kmer_index,
     find_exact_matches,
-    read_contigs,
     read_fastq_pairs,
-    reverse_complement,
+    read_contigs,
 )
 
 

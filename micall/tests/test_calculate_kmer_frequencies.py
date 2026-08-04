@@ -1,26 +1,26 @@
 
 import csv
 from io import StringIO
-
 import pytest
+
 
 # Import functions, classes, and types from your module.
 # Adjust the module name as necessary.
 from micall.utils.calculate_kmer_frequencies import (
+    kmers,
+    slide_kmer,
+    process_contig,
+    process_all_contigs,
+    counters_to_rows,
+    read_contigs,
+    main_typed,
+    parse_arguments,
+    configure_logging,
+    UserError,
     Contig,
     KMer,
     KMerWithCounter,
-    UserError,
-    configure_logging,
-    counters_to_rows,
-    kmers,
     logger,
-    main_typed,
-    parse_arguments,
-    process_all_contigs,
-    process_contig,
-    read_contigs,
-    slide_kmer,
 )
 
 
@@ -107,7 +107,7 @@ def test_process_all_contigs_multiple():
     pool = {}
     process_all_contigs(pool, contigs, max_kmer=1)
     # For k=1, across both contigs, pool keys should be a subset of {A, C, G, T}
-    for key in pool:
+    for key in pool.keys():
         assert key in {"A", "C", "G", "T"}
 
 

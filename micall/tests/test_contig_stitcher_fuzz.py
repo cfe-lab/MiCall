@@ -1,21 +1,20 @@
+import pytest
 import json
 import os
-from collections import defaultdict
-
-import pytest
-from aligntools import Cigar, CigarActions, CigarHit
-
-import micall.utils.referencefull_contig_stitcher as stitcher
-from micall.core.plot_contigs import build_stitcher_figure
-from micall.utils import registry
 from micall.utils.referencefull_contig_stitcher import (
-    AlignedContig,
     GenotypedContig,
-    ReferencefullStitcherContext,
-    drop_completely_covered,
+    AlignedContig,
     stitch_consensus,
     stitch_contigs,
+    drop_completely_covered,
+    ReferencefullStitcherContext,
 )
+import micall.utils.referencefull_contig_stitcher as stitcher
+import micall.utils.registry as registry
+from micall.core.plot_contigs import build_stitcher_figure
+from aligntools import CigarHit, Cigar, CigarActions
+from typing import Dict, List
+from collections import defaultdict
 
 
 @pytest.fixture
@@ -115,8 +114,8 @@ def test_contig_number_prop2_existential():
     )
 
 
-def get_all_reference_positions(contigs: list[GenotypedContig]):
-    ret: dict[int, int] = defaultdict(lambda: 0)
+def get_all_reference_positions(contigs: List[GenotypedContig]):
+    ret: Dict[int, int] = defaultdict(lambda: 0)
     for contig in contigs:
         if isinstance(contig, AlignedContig):
             for i in contig.alignment.coordinate_mapping.ref_to_query.domain:

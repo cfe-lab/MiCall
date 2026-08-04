@@ -10,17 +10,13 @@ import yaml
 from mappy import revcomp
 
 from micall.core import project_config
-from micall.core.aln2counts import (
-    InsertionWriter,
-    SequenceReport,
-    combine_region_insertions,
-    combine_region_nucleotides,
-)
+from micall.core.aln2counts import InsertionWriter, SequenceReport, combine_region_nucleotides, \
+    combine_region_insertions
 from micall.core.project_config import ProjectConfig
+from micall.utils.report_amino import SeedNucleotide, ReportNucleotide
 
 # noinspection PyUnresolvedReferences
 from micall.tests.test_remap import load_projects
-from micall.utils.report_amino import ReportNucleotide, SeedNucleotide
 
 
 def prepare_reads(aligned_reads_text):
@@ -1464,7 +1460,7 @@ def test_consensus_insertion_translated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(28))
+    consumed_positions = set(i for i in range(0, 28))
     is_amino = True
 
     combine_region_insertions(insertions_dict,
@@ -1491,7 +1487,7 @@ def test_consensus_insertion_untranslated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(28))
+    consumed_positions = set(i for i in range(0, 28))
     is_amino = False
 
     combine_region_insertions(insertions_dict,

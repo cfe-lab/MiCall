@@ -6,10 +6,10 @@ in an input file.
 """
 
 import argparse
-import logging
 import sys
-from collections.abc import Sequence
+import logging
 from pathlib import Path
+from typing import Sequence
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -159,4 +159,4 @@ def entry() -> None:
     sys.exit(rc)
 
 
-if __name__ == "__main__": entry()
+if __name__ == "__main__": entry()  # noqa

@@ -1,30 +1,32 @@
+from dataclasses import dataclass
 import logging
 import os
-from dataclasses import dataclass
-
 import pytest
-from aligntools import Cigar, CigarActions, CigarHit
+from typing import Tuple, List
 
+from aligntools import CigarActions, CigarHit, Cigar
+
+import micall.utils.registry as registry
 import micall.utils.referencefull_contig_stitcher as stitcher
+from micall.utils.referencefull_contig_stitcher import (
+    split_contigs_with_gaps,
+    stitch_contigs,
+    GenotypedContig,
+    merge_intervals,
+    find_covered_contig,
+    stitch_consensus,
+    align_all_to_reference,
+    lstrip,
+    rstrip,
+)
 from micall.core.plot_contigs import plot_stitcher_coverage
+from micall.tests.utils import mock_align_consensus, MockAlignment
 from micall.tests.test_fasta_to_csv import (
-    DEFAULT_DATABASE,
     check_hcv_db,
+    DEFAULT_DATABASE,
 )  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
-from micall.tests.utils import MockAlignment, mock_align_consensus
-from micall.utils import registry
-from micall.utils.referencefull_contig_stitcher import (
-    GenotypedContig,
-    align_all_to_reference,
-    find_covered_contig,
-    lstrip,
-    merge_intervals,
-    rstrip,
-    split_contigs_with_gaps,
-    stitch_consensus,
-    stitch_contigs,
-)
+
 
 logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
 logging.getLogger("micall.core.plot_contigs").setLevel(logging.DEBUG)
@@ -1451,7 +1453,7 @@ def test_overlaping_in_reference_space(projects, visualizer, monkeypatch):
 
     def mock_align(
         reference_seq: str, consensus: str
-    ) -> tuple[list[MockAlignment], str]:
+    ) -> Tuple[List[MockAlignment], str]:
         alignments = [
             MockAlignment(
                 ctg="N/A",

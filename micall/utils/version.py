@@ -1,7 +1,7 @@
 
-from collections.abc import Sequence
+from importlib.metadata import version, PackageNotFoundError
+from typing import Sequence
 from functools import cache
-from importlib.metadata import PackageNotFoundError, version
 
 
 @cache

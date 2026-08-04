@@ -1,27 +1,27 @@
 """ Compare result files in shared folder with previous release. """
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
-import logging
-import os
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from collections import defaultdict, namedtuple
-from concurrent.futures.process import BrokenProcessPool, ProcessPoolExecutor
+from collections import namedtuple, defaultdict
+from concurrent.futures.process import ProcessPoolExecutor, BrokenProcessPool
 from difflib import Differ
 from enum import IntEnum
 from functools import partial
+from itertools import groupby, zip_longest, chain
 from glob import glob
-from itertools import chain, groupby, zip_longest
 from operator import itemgetter
+import os
+import logging
 
-# noinspection PyPackageRequirements
-import Levenshtein
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+# noinspection PyPackageRequirements
+import Levenshtein
 
-from micall.utils.analyze import get_available_memory
 from micall.utils.primer_tracker import PrimerTracker
-from micall.utils.report_amino import MAX_CUTOFF, SeedNucleotide
+from micall.utils.report_amino import SeedNucleotide, MAX_CUTOFF
 from micall.utils.translation import translate
+from micall.utils.analyze import get_available_memory
 
 MICALL_VERSION = '7.15'
 #                ^^^^^^ Version of the MiCall release being tested.
@@ -123,7 +123,8 @@ def find_runs(source_folder, target_folder, use_denovo):
 
 def parse_version(version_name):
     version_text = version_name.split('_')[-1]
-    version_text = version_text.removesuffix('.zip')
+    if version_text.endswith('.zip'):
+        version_text = version_text[:-4]
     version_text, possible_dash, possible_modifiers = version_text.partition("-")
     version_numbers = tuple(map(int, version_text.split('.')))
     return (version_numbers, possible_modifiers)
@@ -282,7 +283,12 @@ def compare_g2p(sample, diffs):
     source_final = source_fields[0].get('final')
     target_final = target_fields[0].get('final')
     if source_final != target_final:
-        diffs.append(f'{run_name}:{sample.name} G2P: {source_final} {source_x4_pct} => {target_final} {target_x4_pct}')
+        diffs.append('{}:{} G2P: {} {} => {} {}'.format(run_name,
+                                                        sample.name,
+                                                        source_final,
+                                                        source_x4_pct,
+                                                        target_final,
+                                                        target_x4_pct))
         return
     if source_x4_pct == target_x4_pct:
         return
@@ -292,7 +298,10 @@ def compare_g2p(sample, diffs):
             return
     except ValueError:
         pass
-    diffs.append(f'{run_name}:{sample.name} G2P: {source_x4_pct} => {target_x4_pct}')
+    diffs.append('{}:{} G2P: {} => {}'.format(run_name,
+                                              sample.name,
+                                              source_x4_pct,
+                                              target_x4_pct))
 
 
 def map_coverage(coverage_scores):
@@ -360,7 +369,13 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
                         continue
         if source_compare != target_compare:
             project, region = key
-            message = f'{run_name}:{sample.name} coverage: {project} {region} {source_score} => {target_score}'
+            message = '{}:{} coverage: {} {} {} => {}'.format(
+                run_name,
+                sample.name,
+                project,
+                region,
+                source_score,
+                target_score)
             scenario = '  ' + message + '\n'
             if (source_counts != target_counts and
                     scenarios_reported & Scenarios.REMAP_COUNTS_CHANGED):
@@ -579,7 +594,11 @@ def compare_consensus(sample: Sample,
               scenarios_reported & Scenarios.OTHER_CONSENSUS_CHANGED):
             scenarios[Scenarios.OTHER_CONSENSUS_CHANGED].append('.')
         else:
-            diffs.append(f'{run_name}:{sample.name} consensus: {seed} {region} {cutoff}')
+            diffs.append('{}:{} consensus: {} {} {}'.format(run_name,
+                                                            sample.name,
+                                                            seed,
+                                                            region,
+                                                            cutoff))
             diff = list(differ.compare(display_consensus(source_seq),
                                        display_consensus(target_seq)))
             diffs.extend(line.rstrip() for line in diff)
@@ -690,7 +709,7 @@ def main():
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.WARN)
 
     with ProcessPoolExecutor() as pool:
         runs = find_runs(args.source_folder, args.target_folder, args.denovo)
@@ -726,7 +745,7 @@ def main():
             print(report, end='')
             all_consensus_distances.extend(consensus_distances)
             for key, messages in scenarios.items():
-                scenario_summaries[key] += messages
+                scenario_summaries[key] += scenarios[key]
     for key, messages in sorted(scenario_summaries.items()):
         if messages:
             sample_names = {message.split()[0] for message in messages}
@@ -738,7 +757,7 @@ def main():
             print(body, end='')
 
     report_distances(all_consensus_distances)
-    print(f'Finished {i} samples.')
+    print('Finished {} samples.'.format(i))
 
 
 def report_distances(all_consensus_distances):
@@ -751,10 +770,10 @@ def report_distances(all_consensus_distances):
     for page_num, region_group in enumerate(zip_longest(names_iter, names_iter, names_iter), 1):
         group_distances = distance_data[distance_data['region'].isin(region_group)]
         plot_distances(group_distances,
-                       f'consensus_distances_{page_num}.svg',
+                       'consensus_distances_{}.svg'.format(page_num),
                        'Consensus Distances Between Previous and v' + MICALL_VERSION)
         plot_distances(group_distances,
-                       f'consensus_diffs_{page_num}.svg',
+                       'consensus_diffs_{}.svg'.format(page_num),
                        'Consensus Differences Between Previous and v' + MICALL_VERSION,
                        'pct_diff')
 

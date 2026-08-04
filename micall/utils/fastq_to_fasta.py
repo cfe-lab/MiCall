@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 
+import sys
 import argparse
 import logging
-import sys
-from collections.abc import Sequence
 from pathlib import Path
-
+from typing import Sequence
 from Bio import SeqIO
-
 from micall.utils.user_error import UserError
+
 
 # Configure logging
 logging.basicConfig(
@@ -124,4 +123,4 @@ def cli() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": cli()
+if __name__ == "__main__": cli()  # noqa

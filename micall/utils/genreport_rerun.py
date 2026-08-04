@@ -1,15 +1,16 @@
 import csv
 import os
 import shutil
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from csv import DictReader, DictWriter
-from datetime import datetime
 from glob import glob
 from itertools import groupby
 from operator import itemgetter
 
-from micall.monitor.find_groups import find_groups
+from datetime import datetime
+
 from micall.resistance.genreport import gen_report
+from micall.monitor.find_groups import find_groups
 from micall.resistance.resistance import report_resistance
 
 
@@ -196,7 +197,9 @@ def find_sample_results(samples_csv, source_folder, pipeline_version):
                                    'needsprocessing')
             matches = glob(pattern)
             if len(matches) != 1:
-                raise RuntimeError(f'Expected one match for {pattern}, but found: {matches}')
+                raise RuntimeError('Expected one match for {}, but found: {}'.format(
+                    pattern,
+                    matches))
             run_paths.append(os.path.dirname(matches[0]))
     run_paths.sort()
     results_folders = []

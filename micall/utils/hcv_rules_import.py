@@ -1,19 +1,19 @@
-import itertools
 import operator
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
+from collections import namedtuple, defaultdict
+from copy import deepcopy
+from functools import partial
+import itertools
+from itertools import product, groupby
+from operator import itemgetter, attrgetter
 import os
 import re
 import sys
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType, Namespace
-from collections import defaultdict, namedtuple
-from copy import deepcopy
-from functools import partial
-from itertools import groupby, product
-from operator import attrgetter, itemgetter
 
 import yaml
-from openpyxl import load_workbook
 from pyvdrm.hcvr import HCVR
 from pyvdrm.vcf import MutationSet, VariantCalls
+from openpyxl import load_workbook
 
 from micall.core.project_config import ProjectConfig
 
@@ -104,7 +104,9 @@ class Range:
             lower_operator_text = lower_match.group(2)
             if lower_operator_text == '<':
                 self.lower_operator = operator.lt
-            elif lower_operator_text in ('<=', '</=') or lower_match.group(5) and lower_operator_text == '':
+            elif lower_operator_text in ('<=', '</='):
+                self.lower_operator = operator.le
+            elif lower_match.group(5) and lower_operator_text == '':
                 self.lower_operator = operator.le
             else:
                 self.lower = None
@@ -119,7 +121,9 @@ class Range:
             upper_operator_text = upper_match.group(2)
             if upper_operator_text == '>':
                 self.upper_operator = operator.gt
-            elif upper_operator_text in ('>=', '>/=') or upper_match.group(5) and upper_operator_text == '':
+            elif upper_operator_text in ('>=', '>/='):
+                self.upper_operator = operator.ge
+            elif upper_match.group(5) and upper_operator_text == '':
                 self.upper_operator = operator.ge
             else:
                 self.upper = None
@@ -216,10 +220,10 @@ class SplitDumper(yaml.SafeDumper):
             if self.column-1 + len(buffer) + len(piece) <= self.best_width:
                 buffer += piece
             else:
-                super().write_plain(buffer, split)
+                super(SplitDumper, self).write_plain(buffer, split)
                 self.write_indent()
                 buffer = piece
-        super().write_plain(buffer)
+        super(SplitDumper, self).write_plain(buffer)
 
 
 class WorksheetReader:
@@ -263,7 +267,7 @@ class WorksheetReader:
                 continue
             if section.drug_name in OBSOLETE_DRUGS:
                 self.indicated_obsolete_drugs.append(
-                    f'{section.drug_name} in {section.sheet_name}')
+                    '{} in {}'.format(section.drug_name, section.sheet_name))
             for row_num in range(wild_type_row, footer_row):
                 if ws.cell(row_num, 1).font.strike:
                     continue
@@ -341,7 +345,7 @@ class MonitoredPositionsReader:
         if monitored_positions is None:
             monitored_positions = []
             self.missing.append(
-                f'{section.drug_name} in {section.sheet_name}')
+                '{} in {}'.format(section.drug_name, section.sheet_name))
         else:
             monitored_positions = str(monitored_positions)
             if monitored_positions.lower() == 'none':
@@ -605,7 +609,10 @@ class RulesWriter:
             score = PHENOTYPE_SCORES[phenotype]
         except KeyError:
             self.invalid_phenotypes.append(
-                f'{section.sheet_name}, {section.drug_name}, {entry.mutation}: {entry.phenotype}')
+                '{}, {}, {}: {}'.format(section.sheet_name,
+                                        section.drug_name,
+                                        entry.mutation,
+                                        entry.phenotype))
             return
 
         self._check_fold_shift(entry, section, phenotype)
@@ -633,7 +640,8 @@ class RulesWriter:
                 genotype_override = None
             elif get_main_genotype(genotype_override) != genotype:
                 self.invalid_mutations.append(
-                    f'{section.sheet_name}: {mutation} (Mismatched subtype.)')
+                    '{}: {} (Mismatched subtype.)'.format(section.sheet_name,
+                                                          mutation))
                 genotype_override = None
             if genotype_override:
                 genotype_override = None  # Ignoring overrides until issue #443.
@@ -643,7 +651,10 @@ class RulesWriter:
         try:
             new_mutation_set = MutationSet(core_mutation)
         except ValueError as ex:
-            self.invalid_mutations.append(f'{section.sheet_name}: {core_mutation} ({ex})')
+            self.invalid_mutations.append('{}: {} ({})'.format(
+                section.sheet_name,
+                core_mutation,
+                ex))
             return
         max_pos = len(reference)
         if new_mutation_set.pos > max_pos:
@@ -703,12 +714,19 @@ class RulesWriter:
             try:
                 component_score = calculate_component_score(combination, positions)
             except ValueError as ex:
-                self.invalid_mutations.append(f'{section.sheet_name}: {combination} ({ex})')
+                self.invalid_mutations.append('{}: {} ({})'.format(
+                    section.sheet_name,
+                    combination,
+                    ex))
                 continue
 
             component_score = min(component_score, 8)
             if component_score != combination_score:
-                self.combination_changes.append(f'{section.sheet_name}: {combination}: {component_score} => {combination_score}')
+                self.combination_changes.append('{}: {}: {} => {}'.format(
+                    section.sheet_name,
+                    combination,
+                    component_score,
+                    combination_score))
 
     def _check_conflicts(self, positions, section):
         for pos, score_map in positions.items():
@@ -726,7 +744,12 @@ class RulesWriter:
                     phenotype1 = self.score_phenotypes[score1]
                     phenotype2 = self.score_phenotypes[score2]
                     self.phenotype_conflicts.append(
-                        f'{section.drug_name} in {section.sheet_name}: {mutation_set1} {phenotype1} => {mutation_set2} {phenotype2}')
+                        '{} in {}: {} {} => {} {}'.format(section.drug_name,
+                                                          section.sheet_name,
+                                                          mutation_set1,
+                                                          phenotype1,
+                                                          mutation_set2,
+                                                          phenotype2))
 
     def _find_drug_summary(self, drug_summaries, drug_codes, section):
         drug_name = section.drug_name
@@ -735,7 +758,9 @@ class RulesWriter:
         except KeyError:
             drug_code = drug_codes.get(drug_name)
             if drug_code is None:
-                self.unknown_drugs.append(f'{section.sheet_name}: {drug_name}')
+                self.unknown_drugs.append('{}: {}'.format(
+                    section.sheet_name,
+                    drug_name))
                 raise
             drug_summary = drug_summaries[drug_name] = dict(name=drug_name,
                                                             code=drug_code,
@@ -768,7 +793,7 @@ class RulesWriter:
         if not errors:
             return
         if len(errors) == 1:
-            self.errors_file.write(f'{header}: {errors[0]}.\n')
+            self.errors_file.write('{}: {}.\n'.format(header, errors[0]))
         else:
             self.errors_file.write('{}s:\n  {}\n'.format(header,
                                                          '\n  '.join(errors)))
@@ -873,8 +898,8 @@ def get_unsplit_genotype(subtype):
 def format_score(score):
     try:
         if '"' in score:
-            raise ValueError(f'Text score contained quotes: {score}.')
-        return f'"{score}"'
+            raise ValueError('Text score contained quotes: {}.'.format(score))
+        return '"{}"'.format(score)
     except TypeError:
         return score
 
@@ -902,7 +927,7 @@ def calculate_component_score(combination, positions):
     try:
         rule = HCVR(score_formula)
     except Exception as ex:
-        raise ValueError(f'Bad formula for {combination}.') from ex
+        raise ValueError('Bad formula for {}.'.format(combination)) from ex
     component_score = rule(variant_calls)
     return component_score
 
@@ -919,7 +944,7 @@ def build_score_formula(positions):
     if not score_terms:
         score_terms.append(('TRUE', '0'))
     score_formula = 'SCORE FROM ( {} )'.format(', '.join(
-        f'{mutation_set} => {score}'
+        '{} => {}'.format(mutation_set, score)
         for mutation_set, score in score_terms))
     return score_formula
 
@@ -936,6 +961,7 @@ def replace_wild_types(combination, reference):
                                            m.variant
                                            for m in mutation_set.mutations))
             mutations[i] = str(mutation_set)
+        pass
     return '+'.join(mutations)
 
 

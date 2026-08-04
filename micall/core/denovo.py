@@ -1,12 +1,13 @@
 import argparse
 import logging
-import shutil
-import subprocess
+from pathlib import Path
+from typing import Optional
 from csv import DictReader
 from datetime import datetime
-from pathlib import Path
+import shutil
 from shutil import rmtree
-from subprocess import PIPE, STDOUT, CalledProcessError
+from subprocess import PIPE, CalledProcessError, STDOUT
+import subprocess
 from tempfile import mkdtemp
 
 from Bio import SeqIO
@@ -15,6 +16,7 @@ from Bio.SeqRecord import SeqRecord
 
 from micall.utils.cache import cached
 from micall.utils.work_dir import WorkDir
+
 
 IVA = "iva"
 logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ def count_fasta_sequences(file_path: Path) -> int:
 def run_subprocess(
     fastq1: Path,
     fastq2: Path,
-    merged_contigs_csv: Path | None,
+    merged_contigs_csv: Optional[Path],
 ) -> Path:
     """
     Run IVA de novo assembly subprocess.
@@ -86,7 +88,7 @@ def denovo(
     fastq1: Path,
     fastq2: Path,
     fasta: Path,
-    merged_contigs_csv: Path | None = None,
+    merged_contigs_csv: Optional[Path] = None,
 ):
     """Use de novo assembly to build contigs from reads.
 

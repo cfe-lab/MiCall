@@ -1,10 +1,9 @@
 
-from collections.abc import Iterator
+from typing import Iterator
 from pathlib import Path
 
 from micall.utils.dir_path import DirPath
-
-from .ninjamaker import Build, Command, Deref, Description, Recipe, Rule, Statement
+from .ninjamaker import Build, Deref, Command, Statement, Rule, Description, Recipe
 
 
 def generate_builds(root: DirPath,

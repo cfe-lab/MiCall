@@ -14,19 +14,18 @@ It then:
 """
 
 
-import os
-import shlex
 import subprocess
 import venv
-from collections.abc import Sequence
-from itertools import groupby
 from pathlib import Path
-
+from typing import Sequence
 import pytest
-from packaging.version import InvalidVersion, Version
+import shlex
+import os
+from itertools import groupby
+from packaging.version import Version, InvalidVersion
 
-from micall.__main__ import EXECUTABLES
 from micall.utils.get_list_of_executables import iterate_executables
+from micall.__main__ import EXECUTABLES
 
 
 # Function to quote shell arguments.

@@ -1,16 +1,15 @@
 
-import subprocess
-from collections.abc import Iterator
 from pathlib import Path
+from typing import Iterator
+import subprocess
 
 from micall.utils.dir_path import DirPath
 from micall.utils.user_error import UserError
-
 from .batch import BatchName
-from .download import download
-from .extract_run_ids import extract_run_ids
-from .generate_processing_stage_ninjafile import generate_processing_stage_ninjafile
 from .generate_setup_stage_ninjafile import generate_setup_stage_ninjafile
+from .download import download
+from .generate_processing_stage_ninjafile import generate_processing_stage_ninjafile
+from .extract_run_ids import extract_run_ids
 
 
 def read_batches(batches_list: Path) -> Iterator[BatchName]:

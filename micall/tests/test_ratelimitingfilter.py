@@ -130,7 +130,7 @@ class RateLimitingFilterTest(TestCase):
 
         for i in range(20):
             mock_varying_record = Mock()
-            mock_varying_record.msg = f'a rate limited varying message: {i}'
+            mock_varying_record.msg = 'a rate limited varying message: {varying}'.format(varying=i)
 
             mock_rate_limited_record = Mock()
             mock_rate_limited_record.msg = 'a completely different message'

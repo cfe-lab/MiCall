@@ -1,12 +1,6 @@
-from collections.abc import Iterator, Mapping, Sequence
 from enum import Enum
 from pathlib import Path
-from typing import (
-    Literal,
-    Protocol,
-    TypeAlias,
-    TypedDict,
-)
+from typing import List, Literal, Optional, Mapping, Sequence, Protocol, TypeAlias, TypedDict, Iterator
 
 ALLOWED_GROUPS: Sequence[str] = ['Everyone']
 # noinspection PyArgumentList
@@ -33,12 +27,12 @@ PIPELINE_GROUP_DEPENDENCIES: Mapping[PipelineType, PipelineType] = {
 }
 
 class ConfigInterface(Protocol):
-    micall_main_pipeline_id: int | None
-    mixed_hcv_pipeline_id: int | None
-    denovo_main_pipeline_id: int | None
-    micall_filter_quality_pipeline_id: int | None
-    micall_resistance_pipeline_id: int | None
-    proviral_pipeline_id: int | None
+    micall_main_pipeline_id: Optional[int]
+    mixed_hcv_pipeline_id: Optional[int]
+    denovo_main_pipeline_id: Optional[int]
+    micall_filter_quality_pipeline_id: Optional[int]
+    micall_resistance_pipeline_id: Optional[int]
+    proviral_pipeline_id: Optional[int]
     max_active: int
     pipeline_version: str
     kive_user: str
@@ -84,12 +78,12 @@ class Run(TypedDict):
     """
     id: str
     state: State
-    datasets: list[RunDataset]
+    datasets: List[RunDataset]
 
 
 class Batch(Protocol):
     @property
     def name(self) -> str: ...
     def __getitem__(self, key: str) -> RunDataset: ...
-    def get(self, key: str, default: RunDataset | None = None) -> RunDataset | None: ...
+    def get(self, key: str, default: Optional[RunDataset] = None) -> Optional[RunDataset]: ...
     def __iter__(self) -> Iterator[str]:  ...

@@ -1,10 +1,5 @@
 import pytest
-
-from micall.utils.find_maximum_overlap import (
-    cli_main,
-    find_maximum_overlap,
-    show_maximum_overlap,
-)
+from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum_overlap, cli_main
 
 
 @pytest.mark.parametrize(

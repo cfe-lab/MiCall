@@ -1,9 +1,8 @@
-from collections.abc import Sequence
+from typing import Tuple, Sequence, Union, NoReturn
 from dataclasses import dataclass
-from typing import NoReturn, Union
 
+from aligntools import CigarActions, Cigar, CigarHit
 import mappy
-from aligntools import Cigar, CigarActions, CigarHit
 
 
 @dataclass(frozen=True)
@@ -20,7 +19,7 @@ class Alignment:
     q_st: int
     q_en: int
     mapq: int
-    cigar: Sequence[tuple[int, CigarActions]]
+    cigar: Sequence[Tuple[int, CigarActions]]
     cigar_str: str
 
     @staticmethod

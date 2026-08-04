@@ -1,8 +1,6 @@
 import sys
-from pathlib import Path
-
 import pytest
-
+from pathlib import Path
 from micall.utils.csv_to_fasta import cli, main
 
 

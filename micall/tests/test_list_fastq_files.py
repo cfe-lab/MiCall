@@ -7,8 +7,8 @@ from tempfile import TemporaryDirectory
 from micall.utils.list_fastq_files import (
     _get_base_calls_path,
     find_fastq_source_folder,
-    list_fastq_file_names,
     list_fastq_files,
+    list_fastq_file_names
 )
 
 

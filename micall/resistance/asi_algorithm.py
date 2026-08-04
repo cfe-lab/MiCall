@@ -32,11 +32,11 @@ drug.score  #score the algorithm assigned
 drug.level   #resistance level the algorithm assigned
 drug.comments  #list of comments associated with this drug
 """
-import re
 from collections import defaultdict, namedtuple
+import re
+import xml.dom.minidom as minidom
 from enum import Enum
 from pathlib import Path
-from xml.dom import minidom
 
 from pyvdrm.drm import MissingPositionError
 from pyvdrm.hcvr import HCVR
@@ -270,8 +270,8 @@ class AsiAlgorithm:
             final = []
             for mut in muts:
                 # If it matches \d+\(NOT \w+\), then we got to do something fancy
-                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.IGNORECASE)
-                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.IGNORECASE)
+                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)
+                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.I)
                 match = ''
                 loc = ''
                 if tmpa:
@@ -309,7 +309,7 @@ class AsiAlgorithm:
             muts = tmp.group(1).split(',')
             cnt = 0
             for mut in muts:
-                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.IGNORECASE)
+                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.I)
                 aas = aaseq[int(tmp.group(1)) - 1]
                 for aa in aas:
                     if aa in tmp.group(2):
@@ -319,7 +319,7 @@ class AsiAlgorithm:
             comment = re.sub(r'\$numberOfMutsIn{' + tmpmatch + '}', str(cnt), comment)
 
         comment = re.sub(' '*2, ' ', comment)  # Make spacing more like sierra
-        unicod = '\uf0b1'
+        unicod = u'\uf0b1'
         comment = re.sub(unicod, '+/-', comment)  # Fixing crazy unicode characters
 
         return comment
@@ -398,7 +398,8 @@ class AsiAlgorithm:
                                             high_score = float(high_score)
 
                                         if low_score <= drug_result.score <= high_score:
-                                            drug_result.level = max(drug_result.level, int(level))
+                                            if int(level) > drug_result.level:
+                                                drug_result.level = int(level)
                                             break
                     except MissingPositionError:
                         drug_result.level = HcvResistanceLevels.FAIL.level

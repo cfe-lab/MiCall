@@ -1,6 +1,5 @@
 from io import StringIO
 from unittest import TestCase
-
 from micall.core.filter_quality import report_bad_cycles
 
 
