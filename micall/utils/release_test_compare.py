@@ -125,7 +125,7 @@ def parse_version(version_name):
     version_text = version_name.split('_')[-1]
     if version_text.endswith('.zip'):
         version_text = version_text[:-4]
-    version_text, possible_dash, possible_modifiers = version_text.partition("-")
+    version_text, _possible_dash, possible_modifiers = version_text.partition("-")
     version_numbers = tuple(map(int, version_text.split('.')))
     return (version_numbers, possible_modifiers)
 
@@ -347,8 +347,8 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
     keys = sorted(set(source_scores.keys()) | target_scores.keys())
     for key in keys:
         (source_score,
-         source_seed,
-         source_key_pos) = source_scores.get(key, ('-', None, None))
+         _source_seed,
+         _source_key_pos) = source_scores.get(key, ('-', None, None))
         (target_score,
          target_seed,
          target_key_pos) = target_scores.get(key, ('-', None, None))
@@ -358,12 +358,12 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
             if key[0] == 'HIVGHA':
                 # ignore HIVGHA project code
                 continue
-            elif target_seed is None:
+            if target_seed is None:
                 project, region = key
                 hivgha_result = target_scores.get(('HIVGHA', region))
                 if hivgha_result is not None:
                     # retrieve HIVGHA project code results for comparison
-                    (target_score, target_seed, target_key_pos) = hivgha_result
+                    (target_score, target_seed, _target_key_pos) = hivgha_result
                     if target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
                         # ignore samples that switched to the new HIVGHA seeds
                         continue
@@ -405,7 +405,7 @@ def display_consensus(sequence):
 
 def calculate_distance(region, cutoff, sequence1, sequence2):
     if sequence1 is None or sequence2 is None:
-        return
+        return None
     if len(sequence1) > len(sequence2):
         sequence2 += '-' * (len(sequence1) - len(sequence2))
     elif len(sequence2) > len(sequence1):
@@ -668,7 +668,7 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
     distance_data = distance_data.sort_values(['region', 'cutoff'])
     sns.set()
     num_plots = len(seeds)
-    figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1, squeeze=False)
+    _figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1, squeeze=False)
     axes_sets = list(chain(*axes_sets))  # 2-dim array -> 1-dim list
     for ax, seed in zip(axes_sets, seeds):
         seed_data = distance_data[distance_data['region'] == seed]

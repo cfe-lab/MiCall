@@ -5,7 +5,7 @@ import argparse
 from numpy import std
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt   # noqa
+from matplotlib import pyplot as plt
 
 
 def plot_histo(fig, counts, xlabel, fig_path, min_number=10):
@@ -40,7 +40,7 @@ def main():
                           for result_dir in result_directories]
         folders_to_read = folders_to_read + denovo_folders
 
-    fig, ax = plt.subplots(figsize=(4, 3), dpi=100)
+    fig, _ax = plt.subplots(figsize=(4, 3), dpi=100)
     plt.subplots_adjust(bottom=0.2, left=0.2)
 
     # {seed: {region: [values]}}
@@ -96,14 +96,14 @@ def main():
                 fig_path = os.path.join(args.results_folder, f'{coord}.{region}.coord_coveredconcordant.png')
                 av_convconc, std_covconc = plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
                 if av_concordance is not None:  # then the others are not None either
-                    row = dict(reference=coord,
-                               region=region,
-                               average_concordance=av_concordance,
-                               std_concordance=std_concordance,
-                               average_covered=av_coverage,
-                               std_covered=std_coverage,
-                               average_covconc=av_convconc,
-                               std_covconc=std_covconc)
+                    row = {'reference': coord,
+                               'region': region,
+                               'average_concordance': av_concordance,
+                               'std_concordance': std_concordance,
+                               'average_covered': av_coverage,
+                               'std_covered': std_coverage,
+                               'average_covconc': av_convconc,
+                               'std_covconc': std_covconc}
                     writer.writerow(row)
 
     with open(os.path.join(args.results_folder, 'concordance_stats_seed.csv'), 'w') as stats_seed_csv:
@@ -126,14 +126,14 @@ def main():
                 fig_path = os.path.join(args.results_folder, f'{seed}.{region}.seed_coveredconcordant.png')
                 av_convconc, std_covconc = plot_histo(fig, counts, xlabel, fig_path, min_number=args.min_counts)
                 if av_concordance is not None:  # then the others are not None either
-                    row = dict(seed=seed,
-                               region=region,
-                               average_concordance=av_concordance,
-                               std_concordance=std_concordance,
-                               average_covered=av_coverage,
-                               std_covered=std_coverage,
-                               average_covconc=av_convconc,
-                               std_covconc=std_covconc)
+                    row = {'seed': seed,
+                               'region': region,
+                               'average_concordance': av_concordance,
+                               'std_concordance': std_concordance,
+                               'average_covered': av_coverage,
+                               'std_covered': std_coverage,
+                               'average_covconc': av_convconc,
+                               'std_covconc': std_covconc}
                     writer.writerow(row)
 
 

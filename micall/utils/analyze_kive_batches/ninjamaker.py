@@ -212,7 +212,7 @@ class Recipe:
 
     def compile(self) -> str:
         # join with a blank line between top‐level statements
-        chunks = list(stmt.compile() for stmt in self.statements)
+        chunks = [stmt.compile() for stmt in self.statements]
         if self.default:
             chunks.append(Default(self.default).compile())
 

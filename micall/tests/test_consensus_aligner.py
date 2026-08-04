@@ -98,7 +98,7 @@ def make_alignment(
         q_st=0,
         q_en=0,
         mapq=0,
-        cigar: Iterable[Tuple[int, CigarActions]] = tuple(),
+        cigar: Iterable[Tuple[int, CigarActions]] = (),
         cigar_str=None) -> Alignment:
 
     cigar = list(cigar)
@@ -320,9 +320,7 @@ def test_start_contig_frame_change_insert(projects):
                           amino_ref=amino_ref)
 
     assert_consensus_nuc_indexes(report_aminos,
-                                 list(range(801, 901)) +
-                                 [None] +
-                                 list(range(901, 1001)),
+                                 [*list(range(801, 901)), None, *list(range(901, 1001))],
                                  790,
                                  2292)
 

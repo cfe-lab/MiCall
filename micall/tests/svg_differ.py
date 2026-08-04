@@ -37,7 +37,7 @@ class SvgDiffer:
 
     def diff_pixel(self, actual_pixel, expected_pixel):
         ar, ag, ab, aa = actual_pixel
-        er, eg, eb, ea = expected_pixel
+        _er, eg, eb, _ea = expected_pixel
         if actual_pixel != expected_pixel:
             self.mismatch_found = True
             # Colour

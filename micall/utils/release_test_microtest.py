@@ -438,7 +438,7 @@ class SampleRunner:
             sections = sample_name.split('_')
             fields = sections[0].split('-')
             project_code = fields[-1]
-            writer.writerow(dict(sample=sample_name, project=project_code))
+            writer.writerow({'sample': sample_name, 'project': project_code})
 
         if self.is_denovo:
             output_names = [

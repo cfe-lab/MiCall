@@ -107,7 +107,7 @@ def fastq_g2p(pssm,
         for consensus in consensus_builder.get_consensus_by_lengths():
             unambiguous_consensus = consensus.replace('N', '').replace('-', '')
             if unambiguous_consensus:
-                contig_writer.writerow(dict(contig=consensus))
+                contig_writer.writerow({'contig': consensus})
 
 
 def write_rows(pssm,
@@ -150,9 +150,9 @@ def write_rows(pssm,
         g2p_writer.writerow(row)
     if skip_count:
         counts['mapped'] += skip_count
-        g2p_writer.writerow(dict(rank=counts['rank'] + 1,
-                                 count=skip_count,
-                                 error='count < {}'.format(min_count)))
+        g2p_writer.writerow({'rank': counts['rank'] + 1,
+                                 'count': skip_count,
+                                 'error': 'count < {}'.format(min_count)})
 
     if g2p_summary_csv is not None:
         if counts['valid'] == 0:
@@ -492,7 +492,7 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
         lineterminator=os.linesep)
     writer.writeheader()
 
-    seed_vs_v3, v3_vs_seed, score = align_it(hiv_seed,
+    seed_vs_v3, v3_vs_seed, _score = align_it(hiv_seed,
                                              v3loop_ref,
                                              GAP_OPEN_COST,
                                              GAP_EXTEND_COST,
@@ -527,12 +527,12 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
                     is_started = True
                     seq += read_char
         seq = seq.rstrip('-')
-        writer.writerow(dict(refname=G2P_SEED_NAME,
-                             qcut=Q_CUTOFF,
-                             rank=rank,
-                             count=count,
-                             offset=v3_offset + seq_offset,
-                             seq=seq))
+        writer.writerow({'refname': G2P_SEED_NAME,
+                             'qcut': Q_CUTOFF,
+                             'rank': rank,
+                             'count': count,
+                             'offset': v3_offset + seq_offset,
+                             'seq': seq})
 
 
 def main():

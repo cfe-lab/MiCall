@@ -201,7 +201,7 @@ class Range:
             expectation_display = (f'{fold_shift_text}/{clinical_ras} '
                                    f'in {self} {expected_phenotype}')
         if phenotype != expected_phenotype:
-            prefix = self.drug and (self.drug + ' ') or ''
+            prefix = (self.drug and (self.drug + ' ')) or ''
             self.changes.append(
                 f'{prefix}{mutation} ({expectation_display}) but is {phenotype}')
 
@@ -493,10 +493,10 @@ class RulesWriter:
                 self._check_conflicts(positions, section)
                 self._monitor_positions(section, positions, reference)
                 score_formula = build_score_formula(positions)
-                drug_summary['genotypes'].append(dict(genotype=subtype,
-                                                      region=region,
-                                                      reference=reference_name,
-                                                      rules=score_formula))
+                drug_summary['genotypes'].append({'genotype': subtype,
+                                                      'region': region,
+                                                      'reference': reference_name,
+                                                      'rules': score_formula})
         self._check_not_indicated(drug_summaries)
         self._override_sofosbuvir(drug_summaries)
         drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
@@ -590,10 +590,10 @@ class RulesWriter:
                         reference = self.references[(genotype_name[:-1], drug_region)]
                     else:
                         raise
-                drug_summary['genotypes'].append(dict(genotype=genotype_name,
-                                                      region=drug_region,
-                                                      reference=reference.name,
-                                                      rules=score_formula))
+                drug_summary['genotypes'].append({'genotype': genotype_name,
+                                                      'region': drug_region,
+                                                      'reference': reference.name,
+                                                      'rules': score_formula})
             drug_summary['genotypes'].sort(key=itemgetter('genotype'))
 
     def _score_mutation(self,
@@ -700,7 +700,7 @@ class RulesWriter:
                     (section.sheet_name, section.drug_name)]
                 mutations.append(entry.mutation)
                 return
-        clinical_ras = clinical_ras and clinical_ras.lower() or 'no'
+        clinical_ras = (clinical_ras and clinical_ras.lower()) or 'no'
         if '-' in fold_shift_text:
             fold_range = section.range_range
         fold_range.validate_phenotype(entry.mutation,
@@ -762,9 +762,9 @@ class RulesWriter:
                     section.sheet_name,
                     drug_name))
                 raise
-            drug_summary = drug_summaries[drug_name] = dict(name=drug_name,
-                                                            code=drug_code,
-                                                            genotypes=[])
+            drug_summary = drug_summaries[drug_name] = {'name': drug_name,
+                                                            'code': drug_code,
+                                                            'genotypes': []}
         return drug_summary
 
     def _monitor_positions(self, section, position_scores, reference):

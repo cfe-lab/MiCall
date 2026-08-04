@@ -143,10 +143,8 @@ class AsiAlgorithm:
         if defs.getElementsByTagName('GLOBALRANGE'):
             global_range_text = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
             global_range_items = global_range_text.strip(")( \n").split(',')
-            self.global_range = list(map(
-                lambda item: (list(re.match(r'\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
-                                            item.strip("\n \t")).groups())),
-                global_range_items))
+            self.global_range = [(list(re.match(r'\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
+                                            item.strip("\n \t")).groups())) for item in global_range_items]
         if defs.getElementsByTagName('COMMENT_DEFINITIONS'):
             comment_defs = defs.getElementsByTagName('COMMENT_DEFINITIONS')[0]
             for node in comment_defs.getElementsByTagName('COMMENT_STRING'):
@@ -237,7 +235,7 @@ class AsiAlgorithm:
                 if genotype_config['genotype'] == genotype:
                     self.gene_def[genotype_config['reference']] = [region]
                     break
-                elif genotype_config['genotype'] == backup_genotype:
+                if genotype_config['genotype'] == backup_genotype:
                     self.gene_def.setdefault(genotype_config['reference'], [region])
                     break
             else:
@@ -249,7 +247,7 @@ class AsiAlgorithm:
     def get_gene_positions(self, gene):
         if gene == 'INT':
             gene = 'IN'
-        positions = set([])
+        positions = set()
         for drug_class in self.gene_def[gene]:
             for drug_code in self.drug_class[drug_class]:
                 drug_config = self.drugs[drug_code]

@@ -67,7 +67,7 @@ def micall_installation(temp_venv: Path):
     micall_path = script_path.parent.parent.parent
 
     # Install MiCall using pip from the local path
-    stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
+    _stdout, stderr, returncode = run_command(f". {q(temp_venv)} && pip install -- {q(micall_path)}")
     assert returncode == 0, f"Failed to install MiCall:\n{stderr}"
 
     yield "micall"

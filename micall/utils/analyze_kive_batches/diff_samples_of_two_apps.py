@@ -4,6 +4,7 @@ import pandas as pd
 
 from micall.utils.user_error import UserError
 from .logger import logger
+import itertools
 
 
 def _can_parse_float(val: str) -> bool:
@@ -100,7 +101,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
         nums = [float(v) for v in vals if _can_parse_float(v)]
         if len(nums) <= 1:
             return '0'
-        diffs = [abs(a - b) for a, b in zip(nums, nums[1:])]
+        diffs = [abs(a - b) for a, b in itertools.pairwise(nums)]
         avg = sum(diffs) / len(diffs)
         return _format_number(avg)
 
@@ -117,7 +118,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     for c in cols:
         if c == 'sample':
             continue
-        elif c == 'app':
+        if c == 'app':
             agg_map[c] = 'first'
             base_agg_map[c] = 'first'
         elif numeric_cols.get(c, False):

@@ -129,6 +129,9 @@ ignore = [
     "I001",    # Import order.
     "UP",      # All pyupgrade rules.
     "EXE001",  # Executable bit doesn't match shebang.
+    "RET505",  # Superfluous else/elif after return.
+    "RET506",  # Superfluous else after raise.
+    "RET504",  # Unnecessary assignment before return (name is meaningful).
 ]
 
 [tool.ruff.lint.per-file-ignores]

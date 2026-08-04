@@ -186,7 +186,7 @@ def compare_using_gotoh(row, conseq_accession, published_seq):
     header = f'{conseq_accession} => {sample_name}'
     print(header)
     print(len(conseq), len(published_seq))
-    aln_pub_seq, aln_conseq, score = align_nucs(published_seq,
+    aln_pub_seq, aln_conseq, _score = align_nucs(published_seq,
                                                 conseq)
     screen_width = int(os.environ.get('COLUMNS', 100))
     print(aln_pub_seq[:screen_width])

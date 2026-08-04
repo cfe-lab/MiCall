@@ -363,7 +363,7 @@ class DD(object):
     def _resolve(self, csub, c, direction):
         """Stub to overload in subclasses."""
         # By default, no way to resolve
-        return None
+        return
 
     # Test with fixes
     def test_and_resolve(self, csub, r, c, direction):
@@ -547,6 +547,7 @@ class DD(object):
             r = next_r
             n = next_n
             run = run + 1
+        return None
 
     def test_mix(self, csub, c, direction):
         if self.minimize:
@@ -694,6 +695,7 @@ class DD(object):
             c = next_c
             n = next_n
             run = run + 1
+        return None
 
     def ddmin(self, c):
         return self.ddgen(c, 1, 0)
@@ -845,6 +847,7 @@ class DD(object):
             c2 = next_c2
             n = next_n
             run = run + 1
+        return None
 
     def dd(self, c):
         return self.dddiff(c)           # Backwards compatibility

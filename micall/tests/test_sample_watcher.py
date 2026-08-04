@@ -26,10 +26,10 @@ class DummySession:
     def run_pipeline(self, folder_watcher, pipeline_type, sample_watcher):
         if pipeline_type in self.skipped_types:
             return None
-        run = dict(id=self.next_id,
-                   folder_watcher=folder_watcher,
-                   sample_watcher=sample_watcher,
-                   pipeline_type=pipeline_type)
+        run = {'id': self.next_id,
+                   'folder_watcher': folder_watcher,
+                   'sample_watcher': sample_watcher,
+                   'pipeline_type': pipeline_type}
         self.next_id += 1
         self.active_runs[run['id']] = run
         return run
@@ -109,10 +109,10 @@ def test_launch_filter_quality():
 
     folder_watcher.poll_runs()  # Start filter_quality
 
-    assert {101: dict(id=101,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=None,
-                      pipeline_type=PipelineType.FILTER_QUALITY)
+    assert {101: {'id': 101,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': None,
+                      'pipeline_type': PipelineType.FILTER_QUALITY}
             } == session.active_runs
     assert {'1234A-V3LOOP_R1_001.fastq.gz'} == folder_watcher.active_samples
     assert not folder_watcher.is_complete
@@ -132,10 +132,10 @@ def test_filter_quality_running():
     folder_watcher.poll_runs()  # Start filter_quality
     folder_watcher.poll_runs()  # filter_quality still running
 
-    assert {101: dict(id=101,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=None,
-                      pipeline_type=PipelineType.FILTER_QUALITY)
+    assert {101: {'id': 101,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': None,
+                      'pipeline_type': PipelineType.FILTER_QUALITY}
             } == session.active_runs
 
 
@@ -157,10 +157,10 @@ def test_filter_quality_finished():
 
     folder_watcher.poll_runs()   # start main
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN}
             } == session.active_runs
 
 
@@ -204,10 +204,10 @@ def test_main_running():
     folder_watcher.poll_runs()   # start main
     folder_watcher.poll_runs()   # main still running
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN}
             } == session.active_runs
 
 
@@ -230,10 +230,10 @@ def test_main_finished():
     session.finish_all_runs()  # Finish main
     folder_watcher.poll_runs()   # Start resistance
 
-    assert {103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.RESISTANCE)
+    assert {103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.RESISTANCE}
             } == session.active_runs
     assert 1 == len(folder_watcher.active_runs)
 
@@ -253,7 +253,7 @@ def test_main_failed():
     session.finish_all_runs()  # Finish filter_quality
     folder_watcher.poll_runs()   # Start main
 
-    denovo_main, mapping_main = session.active_runs.values()
+    _denovo_main, mapping_main = session.active_runs.values()
     session.fail_run(mapping_main)
 
     folder_watcher.poll_runs()   # Notice run failed
@@ -288,14 +288,14 @@ def test_denovo_main_finished():
     session.finish_all_runs()  # Finish main
     folder_watcher.poll_runs()   # Start resistance
 
-    assert {104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_RESISTANCE),
-            105: dict(id=105,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.RESISTANCE)
+    assert {104: {'id': 104,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.DENOVO_RESISTANCE},
+            105: {'id': 105,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.RESISTANCE}
             } == session.active_runs
     assert 2 == len(folder_watcher.active_runs)
 
@@ -321,10 +321,10 @@ def test_resistance_running():
     folder_watcher.poll_runs()   # Start resistance
     folder_watcher.poll_runs()   # resistance still running
 
-    assert {103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.RESISTANCE)
+    assert {103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.RESISTANCE}
             } == session.active_runs
     assert {'1234A-V3LOOP_R1_001.fastq.gz'} == folder_watcher.active_samples
     assert not folder_watcher.is_complete
@@ -400,30 +400,30 @@ def test_hcv_filter_quality_finished():
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
-            103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MIDI),
-            104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_MAIN),
-            105: dict(id=105,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_MIDI),
-            106: dict(id=106,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN),
-            107: dict(id=107,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIDI)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MAIN},
+            103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MIDI},
+            104: {'id': 104,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.DENOVO_MAIN},
+            105: {'id': 105,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.DENOVO_MIDI},
+            106: {'id': 106,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN},
+            107: {'id': 107,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIDI}
             } == session.active_runs
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
@@ -447,18 +447,18 @@ def test_hcv_filter_quality_finished_on_singleton():
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
-            103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.DENOVO_MAIN),
-            104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MAIN},
+            103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.DENOVO_MAIN},
+            104: {'id': 104,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN}
             } == session.active_runs
     expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
@@ -485,22 +485,22 @@ def test_hcv_mixed_hcv_running():
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
     folder_watcher.poll_runs()   # main, midi, and mixed HCV still running
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
-            103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MIDI),
-            104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN),
-            105: dict(id=105,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIDI)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MAIN},
+            103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MIDI},
+            104: {'id': 104,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN},
+            105: {'id': 105,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIDI}
             } == session.active_runs
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
@@ -527,14 +527,14 @@ def test_hcv_mixed_hcv_running_on_singleton():
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
     folder_watcher.poll_runs()   # main, midi, and mixed HCV still running
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
-            103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MAIN},
+            103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN}
             } == session.active_runs
     expected_active_samples = {'NEG1-HCV_S15_L001_R1_001.fastq.gz'}
     assert expected_active_samples == folder_watcher.active_samples
@@ -560,18 +560,18 @@ def test_hcv_mixed_hcv_finished():
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
     # Finish mixed HCV
-    session.finish_run(dict(id=102))  # MIXED_HCV_MAIN
-    session.finish_run(dict(id=103))  # MIXED_HCV_MIDI
+    session.finish_run({'id': 102})  # MIXED_HCV_MAIN
+    session.finish_run({'id': 103})  # MIXED_HCV_MIDI
     folder_watcher.poll_runs()   # main and midi still running
 
-    assert {104: dict(id=104,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN),
-            105: dict(id=105,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIDI)
+    assert {104: {'id': 104,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN},
+            105: {'id': 105,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIDI}
             } == session.active_runs
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
@@ -597,20 +597,20 @@ def test_hcv_mixed_hcv_not_finished():
     session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main, midi, and mixed HCV
-    session.finish_run(dict(id=104))  # Finish main
-    session.finish_run(dict(id=105))  # Finish midi
+    session.finish_run({'id': 104})  # Finish main
+    session.finish_run({'id': 105})  # Finish midi
     folder_watcher.poll_runs()   # mixed HCV still running, resistance started
-    session.finish_run(dict(id=106))  # Finish res
+    session.finish_run({'id': 106})  # Finish res
     folder_watcher.poll_runs()   # mixed HCV still running, resistance finished
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MAIN),
-            103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIXED_HCV_MIDI)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MAIN},
+            103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIXED_HCV_MIDI}
             } == session.active_runs
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
@@ -640,14 +640,14 @@ def test_mixed_hcv_skipped():
 
     folder_watcher.poll_runs()   # start main and midi
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN),
-            103: dict(id=103,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MIDI)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN},
+            103: {'id': 103,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MIDI}
             } == session.active_runs
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz',
                                '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'}
@@ -675,13 +675,13 @@ def test_mid_hcv_complete():
     session.finish_all_runs()  # Finish filter_quality
 
     folder_watcher.poll_runs()   # start main and midi
-    session.finish_run(dict(id=103))  # Finish midi
+    session.finish_run({'id': 103})  # Finish midi
     folder_watcher.poll_runs()
 
-    assert {102: dict(id=102,
-                      folder_watcher=folder_watcher,
-                      sample_watcher=sample_watcher,
-                      pipeline_type=PipelineType.MAIN)
+    assert {102: {'id': 102,
+                      'folder_watcher': folder_watcher,
+                      'sample_watcher': sample_watcher,
+                      'pipeline_type': PipelineType.MAIN}
             } == session.active_runs
     assert 1 == len(folder_watcher.active_runs)
     expected_active_samples = {'2130A-HCV_S15_L001_R1_001.fastq.gz'}

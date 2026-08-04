@@ -152,7 +152,7 @@ class BSrequest:
         while needmore:
             jobj = self._runssamples(runid, DOWNLOAD_BATCH_SIZE, numgot)
             response = jobj["Response"]
-            retset |= set([s["Id"] for s in response["Items"]])
+            retset |= {s["Id"] for s in response["Items"]}
             numneed = response["TotalCount"]
             numgot += response["DisplayedCount"]
             needmore = (numgot < numneed)
@@ -807,9 +807,9 @@ def link_samples(
         run_path: str,
         output_path: str,
         is_denovo: bool,
-        fastq1s: typing.Sequence[str] = None,
-        fastq2s: typing.Sequence[str] = None,
-        project_code: str = None,
+        fastq1s: typing.Sequence[str] | None = None,
+        fastq2s: typing.Sequence[str] | None = None,
+        project_code: str | None = None,
         skip_censor=False):
     """ Load the data from a run folder. """
 
@@ -838,12 +838,12 @@ def link_samples(
                        is_denovo=is_denovo)
 
     sample_sheet_path = os.path.join(run_path, "SampleSheet.csv")
-    if (fastq1s is not None and len(fastq1s) > 0
+    if ((fastq1s is not None and len(fastq1s) > 0)
             or not os.path.exists(sample_sheet_path)):
         if fastq1s is not None and len(fastq1s) > 0:  # forward files are specified
             if fastq2s is None:
                 raise ValueError("Reverse read files must also be specified.")
-            elif len(fastq2s) != len(fastq1s):
+            if len(fastq2s) != len(fastq1s):
                 raise ValueError(
                     "The same number of forward and reverse read files must be "
                     "specified."
@@ -923,14 +923,14 @@ def create_app_result(run_info,
     :param RunInfo run_info: details of the run
     :param str description: description text for the run
     """
-    sample_properties = dict(Type='sample[]',
-                             Name='Input.Samples',
-                             Items=list(map(attrgetter('basespace_href'),
-                                            run_info.get_all_samples())))
-    metadata = dict(Name=os.path.basename(run_info.output_path),
-                    Description=description,
-                    HrefAppSession=run_info.href_app_session,
-                    Properties=sample_properties)
+    sample_properties = {'Type': 'sample[]',
+                             'Name': 'Input.Samples',
+                             'Items': list(map(attrgetter('basespace_href'),
+                                            run_info.get_all_samples()))}
+    metadata = {'Name': os.path.basename(run_info.output_path),
+                    'Description': description,
+                    'HrefAppSession': run_info.href_app_session,
+                    'Properties': sample_properties}
     metadata_path = os.path.join(run_info.output_path, '_metadata.json')
     with open(metadata_path, 'w') as json_file:
         json.dump(metadata, json_file, indent=4)

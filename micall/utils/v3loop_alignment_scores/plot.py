@@ -61,7 +61,7 @@ def plot_file(filename1):
     work_path = os.path.dirname(__file__)
     scores_filename = os.path.join(
         work_path,
-        '_'.join(name_parts[:2] + ['v3loop_scores.csv']))
+        '_'.join([*name_parts[:2], 'v3loop_scores.csv']))
     if os.path.exists(scores_filename):
         with open(scores_filename) as f:
             reader = DictReader(f)
@@ -82,7 +82,7 @@ def plot_file(filename1):
                                 lineterminator=os.linesep)
             writer.writeheader()
             for score, count in score_rows:
-                writer.writerow(dict(score=score, count=count))
+                writer.writerow({'score': score, 'count': count})
     scores = [row[0] for row in score_rows]
     counts = [row[1] for row in score_rows]
     total_count = float(sum(counts))

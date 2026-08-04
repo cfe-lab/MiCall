@@ -896,9 +896,9 @@ R4-seed,R4,15,19,4,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
         aligned_reads = prepare_reads("""\
 R1-seed,15,0,9,0,AAATTTCGA
 """)
-        expected_summary = dict(avg_coverage=9.0,
-                                coverage_region='R1',
-                                region_width=3)
+        expected_summary = {"avg_coverage": 9.0,
+                                "coverage_region": 'R1',
+                                "region_width": 3}
 
         summary = {}
         self.report.read(aligned_reads)
@@ -914,9 +914,9 @@ R1-seed,15,0,9,0,AAATTTCGA
         aligned_reads = prepare_reads("""\
 R2-seed,15,0,9,0,AAATTTCGA
 """)
-        expected_summary = dict(avg_coverage=50.0,
-                                coverage_region='R1',
-                                region_width=3)
+        expected_summary = {"avg_coverage": 50.0,
+                                "coverage_region": 'R1',
+                                "region_width": 3}
 
         summary = dict(expected_summary)
         self.report.read(aligned_reads)
@@ -2067,12 +2067,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R1-seed,15,0,10,0,AAATTTAGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
-        expected_reads = [dict(refname='R1-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAATTTAGG')]
+        expected_reads = [{"refname": 'R1-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAATTTAGG'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2082,12 +2082,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R1-seed,15,0,10,0,AAA---AGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
-        expected_reads = [dict(refname='R1-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAA---AGG')]
+        expected_reads = [{"refname": 'R1-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAA---AGG'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2097,12 +2097,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R1-seed,15,0,10,0,AAAA---GG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
-        expected_reads = [dict(refname='R1-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAA---AGG')]
+        expected_reads = [{"refname": 'R1-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAA---AGG'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2112,12 +2112,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R1-seed,15,0,10,0,AA---AAGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
-        expected_reads = [dict(refname='R1-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAA---AGG')]
+        expected_reads = [{"refname": 'R1-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAA---AGG'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2127,12 +2127,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R2-seed,15,0,10,0,AA------ACCGAGA")
         self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
-        expected_reads = [dict(refname='R2-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAA------CCGAGA')]
+        expected_reads = [{"refname": 'R2-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAA------CCGAGA'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2142,12 +2142,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R1-seed,15,0,10,1,AA---AGG")
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
-        expected_reads = [dict(refname='R1-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='1',
-                               seq='AA---AGG')]
+        expected_reads = [{"refname": 'R1-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '1',
+                               "seq": 'AA---AGG'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2182,12 +2182,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R1-seed,15,0,10,2,AAA---AGG")
         self.report.remap_conseqs = {'R1-seed': 'CCAAATTTAGG'}
-        expected_reads = [dict(refname='R1-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='2',
-                               seq='AAA---AGG')]
+        expected_reads = [{"refname": 'R1-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '2',
+                               "seq": 'AAA---AGG'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2231,12 +2231,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R-seed,15,0,10,1,AAA---CAGTTTTTTTTC---AGCAT")
         self.report.remap_conseqs = {'R-seed': 'GAAATTTCAGTTTTTTTTCGAGAGCAT'}
-        expected_reads = [dict(refname='R-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='1',
-                               seq='AAA---CAGTTTTTTTT---CAGCAT')]
+        expected_reads = [{"refname": 'R-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '1',
+                               "seq": 'AAA---CAGTTTTTTTT---CAGCAT'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2246,12 +2246,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R2-seed,15,0,10,0,AA-TCG--CCCGAGA")
         self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
-        expected_reads = [dict(refname='R2-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AATCGC---CCGAGA')]
+        expected_reads = [{"refname": 'R2-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AATCGC---CCGAGA'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2261,12 +2261,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R2-seed,15,0,10,0,AA--TC----CGAGA")
         self.report.remap_conseqs = {'R2-seed': 'AAATTTGGCCCGAGA'}
-        expected_reads = [dict(refname='R2-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAT------CCGAGA')]
+        expected_reads = [{"refname": 'R2-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAT------CCGAGA'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2276,12 +2276,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGAGAGCAT")
         self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
-        expected_reads = [dict(refname='R3-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AAT---TCAGACCCCCGAGAGCAT')]
+        expected_reads = [{"refname": 'R3-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AAT---TCAGACCCCCGAGAGCAT'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2291,12 +2291,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R3-seed,15,0,10,0,AA--TTCAGACCCCA-GAGAGCAT")
         self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
-        expected_reads = [dict(refname='R3-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AA--TTCAGACCCCA-GAGAGCAT')]
+        expected_reads = [{"refname": 'R3-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AA--TTCAGACCCCA-GAGAGCAT'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 
@@ -2310,12 +2310,12 @@ R2,GCCATTAAA
         # refname,qcut,rank,count,offset,seq
         aligned_reads = prepare_reads("R3-seed,15,0,10,0,AA--TTCAGACCCC-CGA---CAT")
         self.report.remap_conseqs = {'R3-seed': 'AAATTTCAGACCCCACGAGAGCAT'}
-        expected_reads = [dict(refname='R3-seed',
-                               qcut='15',
-                               rank='0',
-                               count='10',
-                               offset='0',
-                               seq='AA--TTCAGACCCC-CGA---CAT')]
+        expected_reads = [{"refname": 'R3-seed',
+                               "qcut": '15',
+                               "rank": '0',
+                               "count": '10',
+                               "offset": '0',
+                               "seq": 'AA--TTCAGACCCC-CGA---CAT'}]
 
         reads = list(self.report.align_deletions(aligned_reads))
 

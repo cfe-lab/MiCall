@@ -211,11 +211,11 @@ def combine_aminos(amino_csv, midi_amino_csv, failures: dict):
 def write_failure(fail_writer, seed, region, reason):
     reported_region = get_reported_region(region)
     genotype = get_genotype(seed)
-    fail_writer.writerow(dict(seed=seed,
-                              region=reported_region,
-                              coord_region=region,
-                              genotype=genotype,
-                              reason=reason))
+    fail_writer.writerow({'seed': seed,
+                              'region': reported_region,
+                              'coord_region': region,
+                              'genotype': genotype,
+                              'reason': reason})
 
 
 def combine_midi_rows(main_rows, midi_rows, seed):
@@ -223,9 +223,8 @@ def combine_midi_rows(main_rows, midi_rows, seed):
                     for row in main_rows}
     midi_row_map = {int(row['refseq.aa.pos']): row
                     for row in midi_rows}
-    positions = sorted({pos
-                        for pos in chain(main_row_map.keys(),
-                                         midi_row_map.keys())})
+    positions = sorted(set(chain(main_row_map.keys(),
+                                         midi_row_map.keys())))
 
     for midi_row in midi_row_map.values():
         midi_row['seed'] = seed  # Override MIDI seed with main seed.
@@ -249,7 +248,7 @@ def read_aminos(amino_rows,
                 reported_regions=None,
                 min_coverage=0,
                 algorithms=None):
-    coverage_columns = list(AMINO_ALPHABET) + ['del']
+    coverage_columns = [*list(AMINO_ALPHABET), 'del']
     report_names = coverage_columns[:]
     report_names[-1] = 'd'
     for (region, seed), rows in groupby(amino_rows,
@@ -364,12 +363,12 @@ def write_consensus(resistance_consensus_writer, amino_list, alg_version):
     stripped_consensus = consensus.lstrip('-')
     offset = len(consensus) - len(stripped_consensus)
     reported_region = get_reported_region(amino_list.region)
-    resistance_consensus_writer.writerow(dict(seed=amino_list.seed,
-                                              region=reported_region,
-                                              coord_region=amino_list.region,
-                                              version=alg_version,
-                                              offset=offset,
-                                              sequence=stripped_consensus))
+    resistance_consensus_writer.writerow({'seed': amino_list.seed,
+                                              'region': reported_region,
+                                              'coord_region': amino_list.region,
+                                              'version': alg_version,
+                                              'offset': offset,
+                                              'sequence': stripped_consensus})
 
 
 def write_resistance(aminos,
@@ -444,17 +443,17 @@ def write_resistance(aminos,
             amino_seq = amino_list.aminos
             reported_region = get_reported_region(region)
             for drug_result in result.drugs:
-                resistance_writer.writerow(dict(region=reported_region,
-                                                drug_class=drug_result.drug_class,
-                                                drug=drug_result.code,
-                                                drug_name=drug_result.name,
-                                                level_name=drug_result.level_name,
-                                                level=drug_result.level,
-                                                score=drug_result.score,
-                                                genotype=genotype,
-                                                seed=amino_list.seed,
-                                                coord_region=amino_list.region,
-                                                version=alg_version))
+                resistance_writer.writerow({'region': reported_region,
+                                                'drug_class': drug_result.drug_class,
+                                                'drug': drug_result.code,
+                                                'drug_name': drug_result.name,
+                                                'level_name': drug_result.level_name,
+                                                'level': drug_result.level,
+                                                'score': drug_result.score,
+                                                'genotype': genotype,
+                                                'seed': amino_list.seed,
+                                                'coord_region': amino_list.region,
+                                                'version': alg_version})
             for drug_class, class_mutations in result.mutations.items():
                 mutations = [Mutation(m) for m in class_mutations]
                 mutations.sort()
@@ -463,14 +462,14 @@ def write_resistance(aminos,
                     pos = mutation.pos
                     pos_aminos = amino_seq[pos-1]
                     prevalence = pos_aminos.get(amino, 0)
-                    mutations_writer.writerow(dict(drug_class=drug_class,
-                                                   mutation=mutation,
-                                                   prevalence=prevalence,
-                                                   genotype=genotype,
-                                                   region=reported_region,
-                                                   seed=amino_list.seed,
-                                                   coord_region=amino_list.region,
-                                                   version=alg_version))
+                    mutations_writer.writerow({'drug_class': drug_class,
+                                                   'mutation': mutation,
+                                                   'prevalence': prevalence,
+                                                   'genotype': genotype,
+                                                   'region': reported_region,
+                                                   'seed': amino_list.seed,
+                                                   'coord_region': amino_list.region,
+                                                   'version': alg_version})
 
 
 def write_nuc_mutations(nuc_csv: typing.TextIO,
@@ -507,13 +506,13 @@ def write_nuc_mutations(nuc_csv: typing.TextIO,
                     nuc_count = int(row[nuc])
                     prevalence = nuc_count / coverage
                     if prevalence >= 0.05:
-                        mutations_writer.writerow(dict(seed=seed,
-                                                       region=region_name,
-                                                       wt=wild_type,
-                                                       refseq_nuc_pos=nuc_pos,
-                                                       var=nuc,
-                                                       prevalence=prevalence,
-                                                       ref_genome_pos=row['genome.pos']))
+                        mutations_writer.writerow({'seed': seed,
+                                                       'region': region_name,
+                                                       'wt': wild_type,
+                                                       'refseq_nuc_pos': nuc_pos,
+                                                       'var': nuc,
+                                                       'prevalence': prevalence,
+                                                       'ref_genome_pos': row['genome.pos']})
 
 
 def create_consensus_writer(resistance_consensus_csv):

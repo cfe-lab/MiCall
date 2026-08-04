@@ -54,7 +54,7 @@ def report_bad_cycles(quality_csv, bad_cycles_csv, bad_tiles_csv=None):
                     writer.writerow(cycle)
                     bad_cycle_count += 1
         if tile_writer is not None:
-            tile_writer.writerow(dict(tile=tile, bad_cycles=bad_cycle_count))
+            tile_writer.writerow({'tile': tile, 'bad_cycles': bad_cycle_count})
 
 
 def main():

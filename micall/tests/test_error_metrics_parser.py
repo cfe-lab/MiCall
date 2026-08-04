@@ -79,15 +79,15 @@ class ErrorMetricsParserTest(TestCase):
         self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
 
     def test_load(self):
-        expected_records = [dict(lane=1,
-                                 tile=2,
-                                 cycle=3,
-                                 error_rate=0.5,
-                                 num_0_errors=4,
-                                 num_1_errors=5,
-                                 num_2_errors=6,
-                                 num_3_errors=7,
-                                 num_4_errors=8)]
+        expected_records = [{'lane': 1,
+                                 'tile': 2,
+                                 'cycle': 3,
+                                 'error_rate': 0.5,
+                                 'num_0_errors': 4,
+                                 'num_1_errors': 5,
+                                 'num_2_errors': 6,
+                                 'num_3_errors': 7,
+                                 'num_4_errors': 8}]
 
         records = [r.model_dump() for r in read_errors(self.sample_stream)]
 
@@ -99,15 +99,15 @@ class ErrorMetricsParserTest(TestCase):
         self.sample_data.extend(self.sample_data[2:])
         format_string = '<bbHHHfLLLLLbHHHfLLLLLb'
         self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
-        expected_records = [dict(lane=1,
-                                 tile=2,
-                                 cycle=3,
-                                 error_rate=0.5,
-                                 num_0_errors=4,
-                                 num_1_errors=5,
-                                 num_2_errors=6,
-                                 num_3_errors=7,
-                                 num_4_errors=8)] * 2
+        expected_records = [{'lane': 1,
+                                 'tile': 2,
+                                 'cycle': 3,
+                                 'error_rate': 0.5,
+                                 'num_0_errors': 4,
+                                 'num_1_errors': 5,
+                                 'num_2_errors': 6,
+                                 'num_3_errors': 7,
+                                 'num_4_errors': 8}] * 2
 
         records = [r.model_dump() for r in read_errors(self.sample_stream)]
 

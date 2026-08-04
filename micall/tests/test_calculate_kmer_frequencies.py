@@ -69,7 +69,7 @@ def test_slide_kmer_counts():
     #
     # Expected counter: {2: 2, 1: 1}
     kmer_obj = KMer(sequence="AC", left="ACA", right="ACC")
-    with_counter = KMerWithCounter(kmer=kmer_obj, counter=dict())
+    with_counter = KMerWithCounter(kmer=kmer_obj, counter={})
     # Replace the counter with a defaultdict(int) so slide_kmer can add counts.
     from collections import defaultdict
     with_counter = KMerWithCounter(kmer=kmer_obj, counter=defaultdict(int))

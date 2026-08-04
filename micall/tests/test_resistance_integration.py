@@ -35,9 +35,9 @@ def create_hiv_amino_csv(regions_data):
         StringIO with formatted CSV
     """
     lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'
+        'partial,del,ins,clip,g2p_overlap,coverage')
     ]
     
     for region, positions in regions_data.items():

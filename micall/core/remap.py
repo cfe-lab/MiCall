@@ -130,11 +130,11 @@ def merge_reads(quality_cutoff, read_pair):
          qual) = read[:11]  # ignore optional fields
         if is_unmapped_read(flag):
             continue
-        filtered_reads.append(dict(rname=rname,
-                                   cigar=cigar,
-                                   seq=seq,
-                                   qual=qual,
-                                   pos=int(refpos_str)))
+        filtered_reads.append({'rname': rname,
+                                   'cigar': cigar,
+                                   'seq': seq,
+                                   'qual': qual,
+                                   'pos': int(refpos_str)})
     if not filtered_reads:
         return None
     seq1, qual1, ins1 = apply_cigar(filtered_reads[0]['cigar'],
@@ -308,9 +308,9 @@ def drop_drifters(relevant_conseqs: typing.Dict[str, str],
                 # Consensus is farther from starting seed than another seed: drop it?
                 drifted_seeds.append((read_counts[name], name))
             if distance_report is not None:
-                distance_report[name] = dict(seed_dist=seed_dist,
-                                             other_dist=other_dist,
-                                             other_seed=other_seed)
+                distance_report[name] = {'seed_dist': seed_dist,
+                                             'other_dist': other_dist,
+                                             'other_seed': other_seed}
         distance_report = None  # Only update during first iteration.
         if drifted_seeds:
             drifted_seeds.sort()
@@ -377,7 +377,7 @@ def counts_to_conseqs(refmap, seeds=None):
             end = max(end, len(seed)+1)
         for pos in range(1, end):
             nuc_counts = pos_nucs.get(pos)
-            most_common = nuc_counts and find_top_token(nuc_counts) or None
+            most_common = (nuc_counts and find_top_token(nuc_counts)) or None
             if most_common is None:
                 if seed is None:
                     conseq += 'N'
@@ -519,7 +519,7 @@ def remap(fastq1: Path,
             'type count filtered_count seed_dist other_dist other_seed'.split(),
             lineterminator=os.linesep)
         remap_counts_writer.writeheader()
-        remap_counts_writer.writerow(dict(type='raw', count=raw_count))
+        remap_counts_writer.writerow({'type': 'raw', 'count': raw_count})
 
         # convert preliminary CSV to SAM, count reads
         with open(samfile, 'w') as sam_f, open(prelim_csv) as prelim_f:
@@ -662,8 +662,8 @@ def remap(fastq1: Path,
                            title='remap-final')
 
         # report number of unmapped reads
-        remap_counts_writer.writerow(dict(type='unmapped',
-                                          count=unmapped_count))
+        remap_counts_writer.writerow({'type': 'unmapped',
+                                          'count': unmapped_count})
 
 
 def print_debug_reports(debug_reports, title):
@@ -730,7 +730,7 @@ def map_to_contigs(fastq1,
         'type count filtered_count seed_dist other_dist other_seed'.split(),
         lineterminator=os.linesep)
     remap_counts_writer.writeheader()
-    remap_counts_writer.writerow(dict(type='raw', count=raw_count))
+    remap_counts_writer.writerow({'type': 'raw', 'count': raw_count})
 
     conseqs = read_contigs(contigs_csv, excluded_seeds)
 
@@ -796,8 +796,8 @@ def map_to_contigs(fastq1,
                        title='remap-final')
 
     # report number of unmapped reads
-    remap_counts_writer.writerow(dict(type='unmapped',
-                                      count=unmapped_count))
+    remap_counts_writer.writerow({'type': 'unmapped',
+                                      'count': unmapped_count})
 
 
 def find_bowtie2():
@@ -814,8 +814,8 @@ def write_contig_sequences(conseqs, remap_conseq_csv):
         # NOTE this is the contig sequence to which the reads were mapped, NOT the
         # current consensus!
         if is_reported_region(contig_name):
-            writer.writerow(dict(region=contig_name,
-                                 sequence=contig_seq))
+            writer.writerow({'region': contig_name,
+                                 'sequence': contig_seq})
 
 
 def write_remap_row(remap_writer, fields):
@@ -857,7 +857,7 @@ def read_contigs(contigs_csv, excluded_seeds=None):
                 contig_group.append(projects.getReference(group_ref_name))
             contig_group.append(str(i))
             group_seq = contig_group[0]
-            agroup, acontig, score = align_it(group_seq,
+            agroup, acontig, _score = align_it(group_seq,
                                               contig_seq,
                                               gap_open_penalty,
                                               gap_extend_penalty,
@@ -944,9 +944,9 @@ def convert_prelim(prelim_csv,
     for refname, (filtered_count, count) in sorted(ref_counts.items()):
         # report preliminary counts to file
         remap_counts_writer.writerow(
-            dict(type='prelim %s' % refname,
-                 count=count,
-                 filtered_count=filtered_count))
+            {'type': 'prelim %s' % refname,
+                 'count': count,
+                 'filtered_count': filtered_count})
         if refname == '*':
             continue
         refgroup = projects.getSeedGroup(refname)
@@ -955,8 +955,7 @@ def convert_prelim(prelim_csv,
         if filtered_count > best_count:
             refgroups[refgroup] = (refname, filtered_count)
 
-    seed_counts = {best_ref: best_count
-                   for best_ref, best_count in refgroups.values()}
+    seed_counts = dict(refgroups.values())
     return seed_counts
 
 
@@ -1127,6 +1126,7 @@ class MixedReferenceSplitter(object):
         for field in fields[11:]:
             if field.startswith('AS:i:'):
                 return int(field[5:])
+        return None
 
     def get_split_file_name(self, refname, direction):
         suffix = '_R1.fastq' if direction == 1 else '_R2.fastq'

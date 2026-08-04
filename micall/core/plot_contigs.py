@@ -47,7 +47,7 @@ class SmoothCoverage(Coverage):
         groups = []
         group_y = None
         group_size = 0
-        for y in ys + [-1]:
+        for y in [*ys, -1]:
             if group_size != 0 and not group_y*0.9 <= y <= group_y*1.1:
                 groups.append((group_y, group_size))
                 group_size = 0
@@ -561,7 +561,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             yield from hit_to_insertions(contig, hit)
 
     def record_initial_hit(contig: GenotypedContig, hits: Sequence[CigarHit]):
-        insertions = [gap for gap in hits_to_insertions(contig, hits)]
+        insertions = list(hits_to_insertions(contig, hits))
         unaligned_map[contig.id] = insertions
 
     for event in logs:
@@ -667,12 +667,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
     reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
-    sorted_roots = list(sorted(parent_id for
+    sorted_roots = sorted(parent_id for
                                parent_id in contig_map
-                               if parent_id not in parent_graph))
-    sorted_sinks = list(sorted(child_id for
+                               if parent_id not in parent_graph)
+    sorted_sinks = sorted(child_id for
                                child_id in contig_map
-                               if child_id not in children_graph))
+                               if child_id not in children_graph)
 
     lstrip_set = set(lstrip_map.keys())
     rstrip_set = set(rstrip_map.keys())
@@ -919,6 +919,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
 
         if gap.query_length > 0:
             return gap
+        return None
 
     def collect_gaps(root: int, children_ids: List[int]):
         all_children = [contig_map[name] for name in children_ids]
@@ -949,9 +950,9 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         children = final_children_mapping[root]
         unaligned_children = carved_unaligned_parts.get(root, [])
         todo = children + unaligned_children
-        todo = list(sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1))))
+        todo = sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1)))
         current_group = []
-        for child_id in todo + [None]:
+        for child_id in [*todo, None]:
             if child_id in unaligned_children:
                 coords = query_position_map[child_id]
                 current_group.append(coords)
@@ -973,7 +974,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         name_map[root] = f"{i + 1}"
 
         todo_ids = children + unaligned_children
-        todo_ids = list(sorted(todo_ids, key=lambda name: query_position_map.get(name, (-1, -1))))
+        todo_ids = sorted(todo_ids, key=lambda name: query_position_map.get(name, (-1, -1)))
         for k, child_id in enumerate(todo_ids):
             if len(todo_ids) > 1:
                 name_map[child_id] = f"{i + 1}.{k + 1}"
@@ -1073,7 +1074,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             name = name_map[part.id] if labels else None
             height = 20 if labels else 1
             elevation = 1 if labels else -20
-            (a_r_st, a_r_ei, f_r_st, f_r_ei) = get_contig_coordinates(part)
+            (a_r_st, a_r_ei, _f_r_st, _f_r_ei) = get_contig_coordinates(part)
 
             if isinstance(part, AlignedContig) and part.strand == "reverse":
                 tmp = a_r_st

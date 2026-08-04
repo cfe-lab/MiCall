@@ -802,7 +802,7 @@ class SequenceReport(object):
                            amino_writer: DictWriter,
                            reports: typing.Dict[str, typing.List['ReportAmino']],
                            seed: str,
-                           coverage_summary: dict = None):
+                           coverage_summary: dict | None = None):
         if not reports:
             return
         regions = sorted(reports.keys())
@@ -912,7 +912,7 @@ class SequenceReport(object):
         except ValueError:
             return
         for contig_num in contig_nums:
-            contig_ref, group_ref, contig_seq = self.contigs[contig_num-1]
+            contig_ref, _group_ref, contig_seq = self.contigs[contig_num-1]
             contig_name = f'contig-{contig_num}-{contig_ref}'
             self.write_sequence_coverage_counts(contig_name,
                                                 self.consensus_aligner.coordinate_name,
@@ -954,12 +954,12 @@ class SequenceReport(object):
                 ref_end = alignment.r_en
                 if alignment.strand < 0:
                     ref_start, ref_end = ref_end, ref_start
-                self.minimap_hits_writer.writerow(dict(contig=contig_name,
-                                                       ref_name=coordinate_name,
-                                                       start=alignment.q_st+1,
-                                                       end=alignment.q_en,
-                                                       ref_start=ref_start,
-                                                       ref_end=ref_end))
+                self.minimap_hits_writer.writerow({'contig': contig_name,
+                                                       'ref_name': coordinate_name,
+                                                       'start': alignment.q_st+1,
+                                                       'end': alignment.q_en,
+                                                       'ref_start': ref_start,
+                                                       'ref_end': ref_end})
             bead_end += bead_size
             source_end = alignment.q_en
         expected_end = len(consensus)
@@ -979,14 +979,14 @@ class SequenceReport(object):
             for length, action in cigar:
                 if action == CigarActions.DELETE:
                     for pos in range(ref_pos+1, ref_pos+length+1):
-                        row = dict(contig=contig_name,
-                                   coordinates=coordinate_name,
-                                   query_nuc_pos=None,
-                                   refseq_nuc_pos=pos,
-                                   dels=None,
-                                   coverage=None,
-                                   concordance=None,
-                                   link='D')
+                        row = {'contig': contig_name,
+                                   'coordinates': coordinate_name,
+                                   'query_nuc_pos': None,
+                                   'refseq_nuc_pos': pos,
+                                   'dels': None,
+                                   'coverage': None,
+                                   'concordance': None,
+                                   'link': 'D'}
                         self.genome_coverage_writer.writerow(row)
                     ref_pos += length
                     continue
@@ -1022,14 +1022,14 @@ class SequenceReport(object):
                                 concordance = None
                         else:
                             concordance = None
-                        row = dict(contig=contig_name,
-                                   coordinates=coordinate_name,
-                                   query_nuc_pos=offset_seq_pos,
-                                   refseq_nuc_pos=ref_pos_display,
-                                   dels=dels,
-                                   coverage=coverage,
-                                   concordance=concordance,
-                                   link=link)
+                        row = {'contig': contig_name,
+                                   'coordinates': coordinate_name,
+                                   'query_nuc_pos': offset_seq_pos,
+                                   'refseq_nuc_pos': ref_pos_display,
+                                   'dels': dels,
+                                   'coverage': coverage,
+                                   'concordance': concordance,
+                                   'link': link}
                         self.genome_coverage_writer.writerow(row)
 
     @staticmethod
@@ -1254,14 +1254,14 @@ class SequenceReport(object):
     ):
         columns = ["q-cutoff", "consensus-percent-cutoff"]
         if include_region:
-            columns = ["region"] + columns
+            columns = ["region", *columns]
         offsets = ["offset"]
         if include_seed_region_offsets:
             offsets = ["seed-offset", "region-offset"]
         columns = columns + offsets
         columns.append("sequence")
         if include_seed:
-            columns = ["seed"] + columns
+            columns = ["seed", *columns]
         return csv.DictWriter(conseq_file, columns, lineterminator=os.linesep)
 
     def _write_consensus_helper(
@@ -1468,10 +1468,10 @@ class SequenceReport(object):
                 except ZeroDivisionError:
                     region_concordance = 0.0
                 region_coverage = 100 * region_coverage / region_length
-                row = dict(region=region,
-                           reference=coordinate_name,
-                           pct_concordance=region_concordance,
-                           pct_covered=region_coverage)
+                row = {'region': region,
+                           'reference': coordinate_name,
+                           'pct_concordance': region_concordance,
+                           'pct_covered': region_coverage}
                 concordance_writer.writerow(row)
 
     @staticmethod
@@ -1494,11 +1494,11 @@ class SequenceReport(object):
             return  # Successfully aligned at least one coordinate reference.
         for region, report_aminos in sorted(self.reports.items()):
             coordinate_ref = self.projects.getReference(region)
-            fail_writer.writerow(dict(seed=self.seed,
-                                      region=region,
-                                      qcut=self.qcut,
-                                      queryseq=self.consensus[region],
-                                      refseq=coordinate_ref))
+            fail_writer.writerow({'seed': self.seed,
+                                      'region': region,
+                                      'qcut': self.qcut,
+                                      'queryseq': self.consensus[region],
+                                      'refseq': coordinate_ref})
 
     def write_insertions(self, insert_writer=None):
         insert_writer = insert_writer or self.insert_writer
@@ -1806,13 +1806,13 @@ class InsertionWriter(object):
                 for ref_pos in self.ref_insertions[region]:
                     insertions = list(self.ref_insertions[region][ref_pos].items())
                     for row in consensus_builder.get_consensus_rows(insertions, is_nucleotide=True):
-                        insertions_row = dict(insertion=row["sequence"],
-                                              seed=seed_name,
-                                              mixture_cutoff=row['consensus-percent-cutoff'],
-                                              region=region,
-                                              ref_region_pos=ref_pos + 1,
-                                              ref_genome_pos=ref_pos + region_start,
-                                              query_pos=insertions[0][1].consensus_index + 1)
+                        insertions_row = {'insertion': row["sequence"],
+                                              'seed': seed_name,
+                                              'mixture_cutoff': row['consensus-percent-cutoff'],
+                                              'region': region,
+                                              'ref_region_pos': ref_pos + 1,
+                                              'ref_genome_pos': ref_pos + region_start,
+                                              'query_pos': insertions[0][1].consensus_index + 1}
                         self.insert_writer.writerow(insertions_row)
 
 

@@ -194,7 +194,7 @@ class PrelimMapIntegrationTest(TestCase):
         self.assertEqual(first_row['qual'], 'A' * 51)
 
         # Check the variant read (0010) has the expected difference
-        variant_row = [row for row in rows if '0010' in row['qname'] and row['flag'] == '99'][0]
+        variant_row = next(row for row in rows if '0010' in row['qname'] and row['flag'] == '99')
         expected_variant_seq = 'TGCATAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA'
         self.assertEqual(variant_row['seq'], expected_variant_seq)
 

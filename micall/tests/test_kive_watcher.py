@@ -59,11 +59,11 @@ def mock_containerapps_get(path):
     """ Mock for containerapps.get that handles both app details and argument lists. """
     if 'argument_list' in str(path):
         # Return argument list
-        return [dict(name='quality_csv', url='/args/967485', type='I', app='/apps/19374')]
+        return [{'name': 'quality_csv', 'url': '/args/967485', 'type': 'I', 'app': '/apps/19374'}]
     else:
         # Return app details with container name
-        return dict(id=int(str(path).strip('/')),
-                   container_name='micall:v7.18.1')
+        return {'id': int(str(path).strip('/')),
+                   'container_name': 'micall:v7.18.1'}
 
 
 @pytest.fixture(name='mock_open_kive')
@@ -78,27 +78,27 @@ def create_mock_open_kive():
         mock_pipeline.inputs = [mock_input]
 
         # By default, all runs are still running.
-        mock_session.get_run.return_value.raw = dict(end_time=None,
-                                                     stopped_by=None)
+        mock_session.get_run.return_value.raw = {'end_time': None,
+                                                     'stopped_by': None}
 
         yield mock_open_kive
 
 
 def mock_containerruns_get(path):
     if 'dataset_list' in str(path):
-        return [dict(dataset='/datasets/111/',
-                     argument_type='I',
-                     argument_name='bad_cycles_csv'),
-                dict(dataset='/datasets/112/',
-                     argument_type='O',
-                     argument_name='amino_csv')]
-    return dict(state='C')
+        return [{'dataset': '/datasets/111/',
+                     'argument_type': 'I',
+                     'argument_name': 'bad_cycles_csv'},
+                {'dataset': '/datasets/112/',
+                     'argument_type': 'O',
+                     'argument_name': 'amino_csv'}]
+    return {'state': 'C'}
 
 
 def mock_session_get(url):
     if '/datasets/' in url:
         response = Mock()
-        response.json.return_value = dict(id=123, url='/datasets/123/')
+        response.json.return_value = {'id': 123, 'url': '/datasets/123/'}
         return response
     raise RuntimeError('Unexpected url in session.get().')
 
@@ -135,24 +135,24 @@ def create_kive_watcher_with_filter_run(config, base_calls, is_complete=False):
         config.micall_main_pipeline_id: '/containerapps/103',
         config.micall_resistance_pipeline_id: '/containerapps/104'}
     kive_watcher.app_args = {
-        config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/105'),
-        config.micall_main_pipeline_id: dict(
-            fastq1='/containerargs/106',
-            fastq2='/containerargs/107',
-            bad_cycles_csv='/containerargs/108'),
-        config.micall_resistance_pipeline_id: dict(
-            main_amino_csv='/containerargs/109',
-            midi_amino_csv='/containerargs/110',
-            main_nuc_csv='/containerargs/111')}
+        config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/105'},
+        config.micall_main_pipeline_id: {
+            'fastq1': '/containerargs/106',
+            'fastq2': '/containerargs/107',
+            'bad_cycles_csv': '/containerargs/108'},
+        config.micall_resistance_pipeline_id: {
+            'main_amino_csv': '/containerargs/109',
+            'midi_amino_csv': '/containerargs/110',
+            'main_nuc_csv': '/containerargs/111'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
-    folder_watcher.add_run(dict(id=110),
+    folder_watcher.batch = {'url': '/batches/101'}
+    folder_watcher.add_run({'id': 110},
                            PipelineType.FILTER_QUALITY,
                            is_complete=is_complete)
     if is_complete:
-        folder_watcher.bad_cycles_dataset = dict(url='/datasets/110', id=110)
+        folder_watcher.bad_cycles_dataset = {'url': '/datasets/110', 'id': 110}
     kive_watcher.check_session()
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = mock_containerruns_get
@@ -175,7 +175,7 @@ def create_kive_watcher_with_main_run(config,
         base_calls=base_calls,
         sample_group=sample_group)
     folder_watcher.add_run(
-        dict(id=107),
+        {'id': 107},
         PipelineType.MAIN,
         sample_watcher,
         is_complete=is_complete)
@@ -737,13 +737,13 @@ def test_get_kive_pipeline(mock_open_kive, pipelines_config):
     assert app_id == pipelines_config.micall_main_pipeline_id
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.containerapps.get.side_effect = lambda path: [
-        dict(name="fastq1", url="/args/101", type="I", app="/apps/99"),
-        dict(name="fastq2", url="/args/102", type="I"),
-        dict(name="bad_cycles_csv", url="/args/103", type="I"),
-        dict(name="g2p_csv", url="/args/104", type="O")]
-    expected_args = dict(fastq1="/args/101",
-                         fastq2="/args/102",
-                         bad_cycles_csv="/args/103")
+        {'name': "fastq1", 'url': "/args/101", 'type': "I", 'app': "/apps/99"},
+        {'name': "fastq2", 'url': "/args/102", 'type': "I"},
+        {'name': "bad_cycles_csv", 'url': "/args/103", 'type': "I"},
+        {'name': "g2p_csv", 'url': "/args/104", 'type': "O"}]
+    expected_args = {'fastq1': "/args/101",
+                         'fastq2': "/args/102",
+                         'bad_cycles_csv': "/args/103"}
     expected_url = "/apps/99"
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -770,10 +770,10 @@ def test_get_kive_container_name(mock_open_kive, pipelines_config):
     app_id = 43
     expected_container_name = 'micall:v7.18.1'
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
-        container_name=expected_container_name,
-        id=app_id
-    )
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: {
+        'container_name': expected_container_name,
+        'id': app_id
+    }
     kive_watcher = KiveWatcher(pipelines_config)
 
     container_name = kive_watcher.get_kive_container_name(app_id)
@@ -785,10 +785,10 @@ def test_get_kive_container_name(mock_open_kive, pipelines_config):
 def test_get_container_version(mock_open_kive, pipelines_config):
     app_id = 43
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
-        container_name='micall:v7.18.1',
-        id=app_id
-    )
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: {
+        'container_name': 'micall:v7.18.1',
+        'id': app_id
+    }
     kive_watcher = KiveWatcher(pipelines_config)
 
     version = kive_watcher.get_container_version(app_id)
@@ -801,10 +801,10 @@ def test_get_container_version_no_separator(mock_open_kive, pipelines_config):
     app_id = 43
     container_name_without_version = 'micall'
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
-        container_name=container_name_without_version,
-        id=app_id
-    )
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: {
+        'container_name': container_name_without_version,
+        'id': app_id
+    }
     kive_watcher = KiveWatcher(pipelines_config)
 
     version = kive_watcher.get_container_version(app_id)
@@ -818,10 +818,10 @@ def test_get_container_version_multiple_colons(mock_open_kive, pipelines_config)
     app_id = 43
     mock_session = mock_open_kive.return_value
     # Test with a Docker registry-style name with multiple colons
-    mock_session.endpoints.containerapps.get.side_effect = lambda path: dict(
-        container_name='registry.example.com:5000/micall:v7.18.1',
-        id=app_id
-    )
+    mock_session.endpoints.containerapps.get.side_effect = lambda path: {
+        'container_name': 'registry.example.com:5000/micall:v7.18.1',
+        'id': app_id
+    }
     kive_watcher = KiveWatcher(pipelines_config)
 
     version = kive_watcher.get_container_version(app_id)
@@ -839,13 +839,13 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     result_path.mkdir(parents=True)
     old_stuff_csv = result_path / 'old_stuff.csv'
     old_stuff_csv.write_text('out of date')
-    dataset1 = dict(name='quality_csv')
-    dataset2 = dict(name='fastq1')
-    dataset3 = dict(name='fastq2')
+    dataset1 = {'name': 'quality_csv'}
+    dataset2 = {'name': 'fastq1'}
+    dataset3 = {'name': 'fastq2'}
     mock_session.endpoints.datasets.post.side_effect = [dataset1, dataset2, dataset3]
     kive_watcher = KiveWatcher(default_config)
-    kive_watcher.apps = {default_config.micall_filter_quality_pipeline_id: dict(
-        quality_csv="/args/101")}
+    kive_watcher.apps = {default_config.micall_filter_quality_pipeline_id: {
+        'quality_csv': "/args/101"}}
 
     kive_watcher.add_sample_group(
         base_calls=base_calls,
@@ -858,10 +858,10 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
     mock_session.login.assert_called_once_with(default_config.kive_user,
                                                default_config.kive_password)
     mock_session.endpoints.batches.post.assert_called_once_with(
-        json=dict(name='140101_M01234 v0-dev',
-                  description='MiCall batch for folder 140101_M01234, '
+        json={'name': '140101_M01234 v0-dev',
+                  'description': 'MiCall batch for folder 140101_M01234, '
                               'pipeline version 0-dev.',
-                  groups_allowed=['Everyone']))
+                  'groups_allowed': ['Everyone']})
     assert [call('name', '140101_M01234_quality.csv',
                  # MD5 of header with no records.
                  'md5', '6861a4a0bfd71b62c0048ff9a4910223',
@@ -872,21 +872,21 @@ def test_add_first_sample(raw_data_with_two_samples, mock_open_kive, default_con
             call('name', '2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
                  'md5', ANY,
                  'uploaded', True)] == mock_session.endpoints.datasets.filter.call_args_list
-    assert [call(data=dict(name='140101_M01234_quality.csv',
-                           description='Error rates for 140101_M01234 run.',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']),
-                 files=dict(dataset_file=ANY)),
-            call(data=dict(name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                           description='forward read from MiSeq run 140101_M01234',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']),
-                 files=dict(dataset_file=ANY)),
-            call(data=dict(name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
-                           description='reverse read from MiSeq run 140101_M01234',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']),
-                 files=dict(dataset_file=ANY)),
+    assert [call(data={'name': '140101_M01234_quality.csv',
+                           'description': 'Error rates for 140101_M01234 run.',
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']},
+                 files={'dataset_file': ANY}),
+            call(data={'name': '2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                           'description': 'forward read from MiSeq run 140101_M01234',
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']},
+                 files={'dataset_file': ANY}),
+            call(data={'name': '2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                           'description': 'reverse read from MiSeq run 140101_M01234',
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']},
+                 files={'dataset_file': ANY}),
             ] == mock_session.endpoints.datasets.post.call_args_list
     assert 1 == len(kive_watcher.folder_watchers)
     folder_watcher = kive_watcher.folder_watchers[base_calls]
@@ -913,13 +913,13 @@ def test_add_first_sample_with_compression(raw_data_with_two_samples, mock_open_
     default_config.pipeline_version = '3.0'
     expected_version1_zip = results_path / 'version_1.0.zip'
     expected_file_names = ['version_1.0/bar.txt', 'version_1.0/foo.txt']
-    dataset1 = dict(name='quality_csv')
-    dataset2 = dict(name='fastq1')
-    dataset3 = dict(name='fastq2')
+    dataset1 = {'name': 'quality_csv'}
+    dataset2 = {'name': 'fastq1'}
+    dataset3 = {'name': 'fastq2'}
     mock_session.endpoints.datasets.post.side_effect = [dataset1, dataset2, dataset3]
     kive_watcher = KiveWatcher(default_config)
-    kive_watcher.apps = {default_config.micall_filter_quality_pipeline_id: dict(
-        quality_csv="/args/101")}
+    kive_watcher.apps = {default_config.micall_filter_quality_pipeline_id: {
+        'quality_csv': "/args/101"}}
 
     kive_watcher.add_sample_group(
         base_calls=base_calls,
@@ -1053,10 +1053,10 @@ def test_add_external_dataset(raw_data_with_two_samples, mock_open_kive, default
     default_config.raw_data = raw_data_with_two_samples
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.externalfiledirectories.get.return_value = [
-        dict(name='raw_data', path=str(raw_data_with_two_samples))]
-    dataset1 = dict(name='quality_csv')
-    dataset2 = dict(name='fastq1')
-    dataset3 = dict(name='fastq2')
+        {'name': 'raw_data', 'path': str(raw_data_with_two_samples)}]
+    dataset1 = {'name': 'quality_csv'}
+    dataset2 = {'name': 'fastq1'}
+    dataset3 = {'name': 'fastq2'}
     mock_session.endpoints.datasets.post.side_effect = [dataset1, dataset2, dataset3]
     mock_pipeline = mock_session.get_pipeline.return_value
     mock_input = Mock(dataset_name='quality_csv')
@@ -1081,27 +1081,27 @@ def test_add_external_dataset(raw_data_with_two_samples, mock_open_kive, default
             call('name', '2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
                  'md5', ANY,
                  'uploaded', True)] == mock_session.endpoints.datasets.filter.call_args_list
-    assert [call(data=dict(name='140101_M01234_quality.csv',
-                           description='Error rates for 140101_M01234 run.',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']),
-                 files=dict(dataset_file=ANY)),
-            call(json=dict(name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                           description='forward read from MiSeq run 140101_M01234',
-                           externalfiledirectory='raw_data',
-                           external_path='MiSeq/runs/140101_M01234/Data/'
+    assert [call(data={'name': '140101_M01234_quality.csv',
+                           'description': 'Error rates for 140101_M01234 run.',
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']},
+                 files={'dataset_file': ANY}),
+            call(json={'name': '2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                           'description': 'forward read from MiSeq run 140101_M01234',
+                           'externalfiledirectory': 'raw_data',
+                           'external_path': 'MiSeq/runs/140101_M01234/Data/'
                                          'Intensities/BaseCalls/'
                                          '2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                           users_allowed=[],
-                           groups_allowed=['Everyone'])),
-            call(json=dict(name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
-                           description='reverse read from MiSeq run 140101_M01234',
-                           externalfiledirectory='raw_data',
-                           external_path='MiSeq/runs/140101_M01234/Data/'
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']}),
+            call(json={'name': '2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                           'description': 'reverse read from MiSeq run 140101_M01234',
+                           'externalfiledirectory': 'raw_data',
+                           'external_path': 'MiSeq/runs/140101_M01234/Data/'
                                          'Intensities/BaseCalls/'
                                          '2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']))
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']})
             ] == mock_session.endpoints.datasets.post.call_args_list
 
 
@@ -1109,16 +1109,16 @@ def test_poll_first_sample(raw_data_with_two_samples, mock_open_kive, default_co
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.batches.post.return_value = dict(url='/batches/101')
-    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/104',
-                                                             id=104)
+    mock_session.endpoints.batches.post.return_value = {'url': '/batches/101'}
+    mock_session.endpoints.datasets.post.return_value = {'url': '/datasets/104',
+                                                             'id': 104}
 
     kive_watcher = KiveWatcher(default_config)
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
     kive_watcher.app_args = {
-        default_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/103')}
+        default_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/103'}}
 
     kive_watcher.add_sample_group(
         base_calls=base_calls,
@@ -1128,13 +1128,13 @@ def test_poll_first_sample(raw_data_with_two_samples, mock_open_kive, default_co
                                  ('V3LOOP', None)))
     kive_watcher.poll_runs()
 
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        name='MiCall filter quality on 140101_M01234',
-        batch='/batches/101',
-        app='/containerapps/102',
-        groups_allowed=['Everyone'],
-        datasets=[dict(argument='/containerargs/103',
-                       dataset='/datasets/104')]))
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json={
+        'name': 'MiCall filter quality on 140101_M01234',
+        'batch': '/batches/101',
+        'app': '/containerapps/102',
+        'groups_allowed': ['Everyone'],
+        'datasets': [{'argument': '/containerargs/103',
+                       'dataset': '/datasets/104'}]})
 
 
 def test_poll_second_folder(raw_data_with_two_runs, mock_open_kive, default_config):
@@ -1145,16 +1145,16 @@ def test_poll_second_folder(raw_data_with_two_runs, mock_open_kive, default_conf
     base_calls2 = (raw_data_with_two_runs /
                    "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.batches.post.return_value = dict(url='/batches/101')
-    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/104',
-                                                             id=104)
+    mock_session.endpoints.batches.post.return_value = {'url': '/batches/101'}
+    mock_session.endpoints.datasets.post.return_value = {'url': '/datasets/104',
+                                                             'id': 104}
 
     kive_watcher = KiveWatcher(default_config)
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
     kive_watcher.app_args = {
-        default_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/103')}
+        default_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/103'}}
 
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
@@ -1186,16 +1186,16 @@ def test_poll_all_folders(raw_data_with_two_runs, mock_open_kive, default_config
     base_calls2 = (raw_data_with_two_runs /
                    "MiSeq/runs/140201_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
-    mock_session.endpoints.batches.post.return_value = dict(url='/batches/101')
-    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/104',
-                                                             id=104)
+    mock_session.endpoints.batches.post.return_value = {'url': '/batches/101'}
+    mock_session.endpoints.datasets.post.return_value = {'url': '/datasets/104',
+                                                             'id': 104}
 
     kive_watcher = KiveWatcher(default_config)
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
     kive_watcher.app_args = {
-        default_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/103')}
+        default_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/103'}}
 
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
@@ -1245,27 +1245,27 @@ def test_poll_first_sample_already_started(raw_data_with_two_samples,
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.batches.filter.return_value = [
-        dict(url='/batches/101',
-             name='140101_M01234 v0-dev',
-             groups_allowed=['Everyone'])]
+        {'url': '/batches/101',
+             'name': '140101_M01234 v0-dev',
+             'groups_allowed': ['Everyone']}]
     mock_session.endpoints.datasets.filter.return_value = [
-        dict(url='/datasets/104',
-             id=104,
-             name='140101_M01234_quality.csv',
-             groups_allowed=['Everyone'])]
+        {'url': '/datasets/104',
+             'id': 104,
+             'name': '140101_M01234_quality.csv',
+             'groups_allowed': ['Everyone']}]
     mock_session.endpoints.containerruns.filter.return_value = [
-        dict(url='/containerruns/105',
-             id=105,
-             state='R',
-             name='MiCall filter quality on 140101_M01234',
-             groups_allowed=['Everyone'])]
+        {'url': '/containerruns/105',
+             'id': 105,
+             'state': 'R',
+             'name': 'MiCall filter quality on 140101_M01234',
+             'groups_allowed': ['Everyone']}]
 
     kive_watcher = KiveWatcher(default_config)
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
     kive_watcher.app_args = {
-        default_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/103')}
+        default_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/103'}}
     kive_watcher = KiveWatcher(default_config)
 
     kive_watcher.add_sample_group(
@@ -1299,18 +1299,18 @@ def test_poll_first_sample_completed_and_purged(raw_data_with_two_samples,
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.datasets.filter.return_value = [
-        dict(url='/datasets/104',
-             id=104,
-             name='140101_M01234_quality.csv',
-             groups_allowed=['Everyone'])]
+        {'url': '/datasets/104',
+             'id': 104,
+             'name': '140101_M01234_quality.csv',
+             'groups_allowed': ['Everyone']}]
     mock_session.endpoints.containerruns.filter.return_value = [
-        dict(url='/containerruns/105',
-             id=105,
-             state='C',
-             name='MiCall filter quality on 140101_M01234',
-             groups_allowed=['Everyone'])]
+        {'url': '/containerruns/105',
+             'id': 105,
+             'state': 'C',
+             'name': 'MiCall filter quality on 140101_M01234',
+             'groups_allowed': ['Everyone']}]
     mock_session.endpoints.containerruns.get.return_value = [
-        dict(dataset_purged=True)]
+        {'dataset_purged': True}]
     kive_watcher = KiveWatcher(default_config)
 
     kive_watcher.add_sample_group(
@@ -1344,10 +1344,10 @@ def test_second_sample(raw_data_with_two_samples, mock_open_kive, default_config
                                  ('PR', None)))
 
     mock_session.endpoints.batches.post.assert_called_once_with(
-        json=dict(name='140101_M01234 v0-dev',
-                  description='MiCall batch for folder 140101_M01234, '
+        json={'name': '140101_M01234 v0-dev',
+                  'description': 'MiCall batch for folder 140101_M01234, '
                               'pipeline version 0-dev.',
-                  groups_allowed=['Everyone']))
+                  'groups_allowed': ['Everyone']})
     expected_dataset_count = 5  # quality_csv + 2 pairs of FASTQ files
     assert expected_dataset_count == len(
         mock_session.endpoints.datasets.filter.call_args_list)
@@ -1408,7 +1408,7 @@ def test_create_batch_fails(raw_data_with_two_samples,
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.batches.post.side_effect = [
         ConnectionError('server down'),
-        dict(url='/batches/101')]
+        {'url': '/batches/101'}]
     mock_wait.side_effect = [
         None,
         RuntimeError('Should only call wait_for_retry() once.')]
@@ -1424,26 +1424,26 @@ def test_create_batch_fails(raw_data_with_two_samples,
 
     assert sample_watcher is not None
     mock_wait.assert_called_once_with(1, ANY)
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        name=ANY,
-        app=ANY,
-        batch='/batches/101',
-        datasets=ANY,
-        groups_allowed=ANY))
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json={
+        'name': ANY,
+        'app': ANY,
+        'batch': '/batches/101',
+        'datasets': ANY,
+        'groups_allowed': ANY})
 
 
 def test_sample_already_uploaded(raw_data_with_two_samples, mock_open_kive, default_config):
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
-    dataset1 = dict(id='test1',
-                    url='url1',
-                    argument_name='quality_csv',
-                    argument_type='I',
-                    dataset='someurl',
-                    name='140101_M01234_quality.csv',
-                    dataset_purged=False,
-                    groups_allowed=ALLOWED_GROUPS)
+    dataset1 = {'id': 'test1',
+                    'url': 'url1',
+                    'argument_name': 'quality_csv',
+                    'argument_type': 'I',
+                    'dataset': 'someurl',
+                    'name': '140101_M01234_quality.csv',
+                    'dataset_purged': False,
+                    'groups_allowed': ALLOWED_GROUPS}
     dataset2 = Mock(id='test2', url='url1', argument_name='fastq1', argument_type='I', dataset='someurl', name='fastq1', dataset_purged=False)
     dataset3 = Mock(id='test3', url='url2', argument_name='fastq2', argument_type='I', dataset='someurl', name='fastq2', dataset_purged=False)
     mock_session.endpoints.datasets.filter.side_effect = [[dataset1], [], []]
@@ -1468,16 +1468,16 @@ def test_sample_already_uploaded(raw_data_with_two_samples, mock_open_kive, defa
                  'md5', ANY,
                  'uploaded', True)
             ] == mock_session.endpoints.datasets.filter.call_args_list
-    assert [call(data=dict(name='2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
-                           description='forward read from MiSeq run 140101_M01234',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']),
-                 files=dict(dataset_file=ANY)),
-            call(data=dict(name='2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
-                           description='reverse read from MiSeq run 140101_M01234',
-                           users_allowed=[],
-                           groups_allowed=['Everyone']),
-                 files=dict(dataset_file=ANY))
+    assert [call(data={'name': '2110A-V3LOOP_S13_L001_R1_001.fastq.gz',
+                           'description': 'forward read from MiSeq run 140101_M01234',
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']},
+                 files={'dataset_file': ANY}),
+            call(data={'name': '2110A-V3LOOP_S13_L001_R2_001.fastq.gz',
+                           'description': 'reverse read from MiSeq run 140101_M01234',
+                           'users_allowed': [],
+                           'groups_allowed': ['Everyone']},
+                 files={'dataset_file': ANY})
             ] == mock_session.endpoints.datasets.post.call_args_list
     assert 1 == len(kive_watcher.folder_watchers)
     folder_watcher = kive_watcher.folder_watchers[base_calls]
@@ -1490,8 +1490,8 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.datasets.post.side_effect = [
-        dict(url='/datasets/104', id=104),
-        dict(url='/datasets/105', id=105)]
+        {'url': '/datasets/104', 'id': 104},
+        {'url': '/datasets/105', 'id': 105}]
 
     pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
@@ -1499,17 +1499,17 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
         pipelines_config.micall_main_pipeline_id: '/containerapps/102',
         pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.micall_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/110',
-            fastq1='/containerargs/111',
-            fastq2='/containerargs/112'),
-        pipelines_config.denovo_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/113',
-            fastq1='/containerargs/114',
-            fastq2='/containerargs/115')}
+        pipelines_config.micall_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/110',
+            'fastq1': '/containerargs/111',
+            'fastq2': '/containerargs/112'},
+        pipelines_config.denovo_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/113',
+            'fastq1': '/containerargs/114',
+            'fastq2': '/containerargs/115'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.batch = {'url': '/batches/101'}
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
@@ -1517,39 +1517,39 @@ def test_launch_main_run(raw_data_with_two_samples, mock_open_kive, pipelines_co
                                   None),
                                  ('V3LOOP', None)))
     folder_watcher.add_run(
-        dict(id=106),
+        {'id': 106},
         PipelineType.FILTER_QUALITY)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=106, state='C'),  # refresh run status
-        [dict(argument_name='bad_cycles_csv',
-              dataset='/datasets/106',
-              dataset_purged=False)]]  # get dataset list
-    mock_session.get.return_value.json.return_value = dict(url='/datasets/106',
-                                                           id=106)
+        {'id': 106, 'state': 'C'},  # refresh run status
+        [{'argument_name': 'bad_cycles_csv',
+              'dataset': '/datasets/106',
+              'dataset_purged': False}]]  # get dataset list
+    mock_session.get.return_value.json.return_value = {'url': '/datasets/106',
+                                                           'id': 106}
 
     kive_watcher.poll_runs()
 
-    assert [call(json=dict(app='/containerapps/103',
-                           datasets=[dict(argument='/containerargs/113',
-                                          dataset='/datasets/106'),
-                                     dict(argument='/containerargs/114',
-                                          dataset='/datasets/104'),
-                                     dict(argument='/containerargs/115',
-                                          dataset='/datasets/105')],
-                           name='MiCall denovo main on 2110A-V3LOOP_S13',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone'])),
-            call(json=dict(app='/containerapps/102',
-                           datasets=[dict(argument='/containerargs/110',
-                                          dataset='/datasets/106'),
-                                     dict(argument='/containerargs/111',
-                                          dataset='/datasets/104'),
-                                     dict(argument='/containerargs/112',
-                                          dataset='/datasets/105')],
-                           name='MiCall main on 2110A-V3LOOP_S13',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone']))
+    assert [call(json={'app': '/containerapps/103',
+                           'datasets': [{'argument': '/containerargs/113',
+                                          'dataset': '/datasets/106'},
+                                     {'argument': '/containerargs/114',
+                                          'dataset': '/datasets/104'},
+                                     {'argument': '/containerargs/115',
+                                          'dataset': '/datasets/105'}],
+                           'name': 'MiCall denovo main on 2110A-V3LOOP_S13',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']}),
+            call(json={'app': '/containerapps/102',
+                           'datasets': [{'argument': '/containerargs/110',
+                                          'dataset': '/datasets/106'},
+                                     {'argument': '/containerargs/111',
+                                          'dataset': '/datasets/104'},
+                                     {'argument': '/containerargs/112',
+                                          'dataset': '/datasets/105'}],
+                           'name': 'MiCall main on 2110A-V3LOOP_S13',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']})
             ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
@@ -1560,9 +1560,9 @@ def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.datasets.post.side_effect = [
-        dict(url='/datasets/104', id=104),
-        dict(url='/datasets/105', id=105),
-        dict(url='/datasets/106', id=106)]
+        {'url': '/datasets/104', 'id': 104},
+        {'url': '/datasets/105', 'id': 105},
+        {'url': '/datasets/106', 'id': 106}]
 
     pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
@@ -1570,19 +1570,19 @@ def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
         pipelines_config.micall_main_pipeline_id: '/containerapps/102',
         pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.micall_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/110',
-            fastq1='/containerargs/111',
-            fastq2='/containerargs/112',
-            sample_info_csv='/containerargs/113'),
-        pipelines_config.denovo_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/114',
-            fastq1='/containerargs/115',
-            fastq2='/containerargs/116',
-            sample_info_csv='/containerargs/117')}
+        pipelines_config.micall_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/110',
+            'fastq1': '/containerargs/111',
+            'fastq2': '/containerargs/112',
+            'sample_info_csv': '/containerargs/113'},
+        pipelines_config.denovo_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/114',
+            'fastq1': '/containerargs/115',
+            'fastq2': '/containerargs/116',
+            'sample_info_csv': '/containerargs/117'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.batch = {'url': '/batches/101'}
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
@@ -1590,43 +1590,43 @@ def test_launch_main_run_with_sample_info(raw_data_with_two_samples,
                                   None),
                                  ('V3LOOP', None)))
     folder_watcher.add_run(
-        dict(id=106),
+        {'id': 106},
         PipelineType.FILTER_QUALITY)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=106, state='C'),  # refresh run status
-        [dict(argument_name='bad_cycles_csv',
-              dataset='/datasets/107',
-              dataset_purged=False)]]  # get dataset list
-    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
-                                                           id=107)
+        {'id': 106, 'state': 'C'},  # refresh run status
+        [{'argument_name': 'bad_cycles_csv',
+              'dataset': '/datasets/107',
+              'dataset_purged': False}]]  # get dataset list
+    mock_session.get.return_value.json.return_value = {'url': '/datasets/107',
+                                                           'id': 107}
 
     kive_watcher.poll_runs()
 
-    assert [call(json=dict(app='/containerapps/103',
-                           datasets=[dict(argument='/containerargs/114',
-                                          dataset='/datasets/107'),
-                                     dict(argument='/containerargs/115',
-                                          dataset='/datasets/104'),
-                                     dict(argument='/containerargs/116',
-                                          dataset='/datasets/105'),
-                                     dict(argument='/containerargs/117',
-                                          dataset='/datasets/106')],
-                           name='MiCall denovo main on 2110A-V3LOOP_S13',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone'])),
-            call(json=dict(app='/containerapps/102',
-                           datasets=[dict(argument='/containerargs/110',
-                                          dataset='/datasets/107'),
-                                     dict(argument='/containerargs/111',
-                                          dataset='/datasets/104'),
-                                     dict(argument='/containerargs/112',
-                                          dataset='/datasets/105'),
-                                     dict(argument='/containerargs/113',
-                                          dataset='/datasets/106')],
-                           name='MiCall main on 2110A-V3LOOP_S13',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone']))
+    assert [call(json={'app': '/containerapps/103',
+                           'datasets': [{'argument': '/containerargs/114',
+                                          'dataset': '/datasets/107'},
+                                     {'argument': '/containerargs/115',
+                                          'dataset': '/datasets/104'},
+                                     {'argument': '/containerargs/116',
+                                          'dataset': '/datasets/105'},
+                                     {'argument': '/containerargs/117',
+                                          'dataset': '/datasets/106'}],
+                           'name': 'MiCall denovo main on 2110A-V3LOOP_S13',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']}),
+            call(json={'app': '/containerapps/102',
+                           'datasets': [{'argument': '/containerargs/110',
+                                          'dataset': '/datasets/107'},
+                                     {'argument': '/containerargs/111',
+                                          'dataset': '/datasets/104'},
+                                     {'argument': '/containerargs/112',
+                                          'dataset': '/datasets/105'},
+                                     {'argument': '/containerargs/113',
+                                          'dataset': '/datasets/106'}],
+                           'name': 'MiCall main on 2110A-V3LOOP_S13',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']})
             ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
@@ -1651,21 +1651,21 @@ def test_sample_info_includes_micall_version(raw_data_with_two_samples,
         dataset_file.seek(0)  # Reset for actual upload
         filename = data['name']
         uploaded_contents[filename] = content
-        return dict(url=f'/datasets/{104 + len(uploaded_contents)}',
-                   id=104 + len(uploaded_contents))
+        return {'url': f'/datasets/{104 + len(uploaded_contents)}',
+                   'id': 104 + len(uploaded_contents)}
 
     mock_session.endpoints.datasets.post.side_effect = capture_upload
 
     # The version from the filter_quality pipeline
     expected_version = 'v7.18.1'
     mock_session.endpoints.containerapps.get.side_effect = lambda path: (
-        dict(container_name=f'micall:{expected_version}', id=int(str(path).strip('/')))
+        {'container_name': f'micall:{expected_version}', 'id': int(str(path).strip('/'))}
         if 'argument_list' not in str(path)
         else [
-            dict(name='bad_cycles_csv', url='/containerargs/110', type='I', app='/apps/102'),
-            dict(name='fastq1', url='/containerargs/111', type='I'),
-            dict(name='fastq2', url='/containerargs/112', type='I'),
-            dict(name='sample_info_csv', url='/containerargs/113', type='I')
+            {'name': 'bad_cycles_csv', 'url': '/containerargs/110', 'type': 'I', 'app': '/apps/102'},
+            {'name': 'fastq1', 'url': '/containerargs/111', 'type': 'I'},
+            {'name': 'fastq2', 'url': '/containerargs/112', 'type': 'I'},
+            {'name': 'sample_info_csv', 'url': '/containerargs/113', 'type': 'I'}
         ]
     )
 
@@ -1675,19 +1675,19 @@ def test_sample_info_includes_micall_version(raw_data_with_two_samples,
         pipelines_config.micall_main_pipeline_id: '/containerapps/102',
         pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.micall_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/110',
-            fastq1='/containerargs/111',
-            fastq2='/containerargs/112',
-            sample_info_csv='/containerargs/113'),
-        pipelines_config.denovo_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/114',
-            fastq1='/containerargs/115',
-            fastq2='/containerargs/116',
-            sample_info_csv='/containerargs/117')}
+        pipelines_config.micall_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/110',
+            'fastq1': '/containerargs/111',
+            'fastq2': '/containerargs/112',
+            'sample_info_csv': '/containerargs/113'},
+        pipelines_config.denovo_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/114',
+            'fastq1': '/containerargs/115',
+            'fastq2': '/containerargs/116',
+            'sample_info_csv': '/containerargs/117'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.batch = {'url': '/batches/101'}
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
@@ -1695,16 +1695,16 @@ def test_sample_info_includes_micall_version(raw_data_with_two_samples,
                                   None),
                                  ('V3LOOP', None)))
     folder_watcher.add_run(
-        dict(id=106),
+        {'id': 106},
         PipelineType.FILTER_QUALITY)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=106, state='C'),
-        [dict(argument_name='bad_cycles_csv',
-              dataset='/datasets/107',
-              dataset_purged=False)]]
-    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
-                                                           id=107)
+        {'id': 106, 'state': 'C'},
+        [{'argument_name': 'bad_cycles_csv',
+              'dataset': '/datasets/107',
+              'dataset_purged': False}]]
+    mock_session.get.return_value.json.return_value = {'url': '/datasets/107',
+                                                           'id': 107}
 
     kive_watcher.poll_runs()
 
@@ -1753,8 +1753,8 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
         dataset_file.seek(0)  # Reset for actual upload
         filename = data['name']
         uploaded_contents[filename] = content
-        return dict(url=f'/datasets/{104 + len(uploaded_contents)}',
-                   id=104 + len(uploaded_contents))
+        return {'url': f'/datasets/{104 + len(uploaded_contents)}',
+                   'id': 104 + len(uploaded_contents)}
 
     mock_session.endpoints.datasets.post.side_effect = capture_upload
 
@@ -1765,19 +1765,19 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
     def get_container_app(path):
         if 'argument_list' in str(path):
             return [
-                dict(name='bad_cycles_csv', url='/containerargs/110', type='I', app='/apps/102'),
-                dict(name='fastq1', url='/containerargs/111', type='I'),
-                dict(name='fastq2', url='/containerargs/112', type='I'),
-                dict(name='sample_info_csv', url='/containerargs/113', type='I')
+                {'name': 'bad_cycles_csv', 'url': '/containerargs/110', 'type': 'I', 'app': '/apps/102'},
+                {'name': 'fastq1', 'url': '/containerargs/111', 'type': 'I'},
+                {'name': 'fastq2', 'url': '/containerargs/112', 'type': 'I'},
+                {'name': 'sample_info_csv', 'url': '/containerargs/113', 'type': 'I'}
             ]
         # Return different versions based on pipeline ID
         path_str = str(path).strip('/')
         if path_str == str(pipelines_config.micall_filter_quality_pipeline_id):
-            return dict(container_name=f'micall:{filter_quality_version}',
-                       id=pipelines_config.micall_filter_quality_pipeline_id)
+            return {'container_name': f'micall:{filter_quality_version}',
+                       'id': pipelines_config.micall_filter_quality_pipeline_id}
         else:
-            return dict(container_name=f'micall:{main_pipeline_version}',
-                       id=int(path_str))
+            return {'container_name': f'micall:{main_pipeline_version}',
+                       'id': int(path_str)}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -1787,19 +1787,19 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
         pipelines_config.micall_main_pipeline_id: '/containerapps/102',
         pipelines_config.denovo_main_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.micall_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/110',
-            fastq1='/containerargs/111',
-            fastq2='/containerargs/112',
-            sample_info_csv='/containerargs/113'),
-        pipelines_config.denovo_main_pipeline_id: dict(
-            bad_cycles_csv='/containerargs/114',
-            fastq1='/containerargs/115',
-            fastq2='/containerargs/116',
-            sample_info_csv='/containerargs/117')}
+        pipelines_config.micall_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/110',
+            'fastq1': '/containerargs/111',
+            'fastq2': '/containerargs/112',
+            'sample_info_csv': '/containerargs/113'},
+        pipelines_config.denovo_main_pipeline_id: {
+            'bad_cycles_csv': '/containerargs/114',
+            'fastq1': '/containerargs/115',
+            'fastq2': '/containerargs/116',
+            'sample_info_csv': '/containerargs/117'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
+    folder_watcher.batch = {'url': '/batches/101'}
     kive_watcher.add_sample_group(
         base_calls=base_calls,
         sample_group=SampleGroup('2110A',
@@ -1807,16 +1807,16 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
                                   None),
                                  ('V3LOOP', None)))
     folder_watcher.add_run(
-        dict(id=106),
+        {'id': 106},
         PipelineType.FILTER_QUALITY)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=106, state='C'),
-        [dict(argument_name='bad_cycles_csv',
-              dataset='/datasets/107',
-              dataset_purged=False)]]
-    mock_session.get.return_value.json.return_value = dict(url='/datasets/107',
-                                                           id=107)
+        {'id': 106, 'state': 'C'},
+        [{'argument_name': 'bad_cycles_csv',
+              'dataset': '/datasets/107',
+              'dataset_purged': False}]]
+    mock_session.get.return_value.json.return_value = {'url': '/datasets/107',
+                                                           'id': 107}
 
     kive_watcher.poll_runs()
 
@@ -1854,7 +1854,7 @@ def test_append_version_to_sample_info(mock_open_kive, pipelines_config):
     def get_container_app(path):
         if 'argument_list' in str(path):
             return []
-        return dict(container_name='micall:v7.18.1', id=495)
+        return {'container_name': 'micall:v7.18.1', 'id': 495}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -1865,7 +1865,7 @@ def test_append_version_to_sample_info(mock_open_kive, pipelines_config):
         dataset_file = files['dataset_file']
         uploaded_content = dataset_file.read()
         dataset_file.seek(0)
-        return dict(url='/datasets/200', id=200)
+        return {'url': '/datasets/200', 'id': 200}
 
     mock_session.endpoints.datasets.post.side_effect = capture_upload
 
@@ -1873,7 +1873,7 @@ def test_append_version_to_sample_info(mock_open_kive, pipelines_config):
     pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
 
-    original_dataset = dict(url='/datasets/150', id=150)
+    original_dataset = {'url': '/datasets/150', 'id': 150}
     new_dataset = kive_watcher.append_version_to_sample_info(
         original_dataset,
         pipelines_config.denovo_main_pipeline_id,
@@ -1908,7 +1908,7 @@ def test_append_version_deduplicates(mock_open_kive, pipelines_config):
     def get_container_app(path):
         if 'argument_list' in str(path):
             return []
-        return dict(container_name='micall:v7.15.0', id=495)
+        return {'container_name': 'micall:v7.15.0', 'id': 495}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -1919,7 +1919,7 @@ def test_append_version_deduplicates(mock_open_kive, pipelines_config):
         dataset_file = files['dataset_file']
         uploaded_content = dataset_file.read()
         dataset_file.seek(0)
-        return dict(url='/datasets/201', id=201)
+        return {'url': '/datasets/201', 'id': 201}
 
     mock_session.endpoints.datasets.post.side_effect = capture_upload
 
@@ -1927,7 +1927,7 @@ def test_append_version_deduplicates(mock_open_kive, pipelines_config):
     pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
 
-    original_dataset = dict(url='/datasets/150', id=150)
+    original_dataset = {'url': '/datasets/150', 'id': 150}
     new_dataset = kive_watcher.append_version_to_sample_info(
         original_dataset,
         pipelines_config.denovo_main_pipeline_id,
@@ -1962,7 +1962,7 @@ def test_append_version_rejects_semicolon_in_new_version(mock_open_kive, pipelin
     def get_container_app(path):
         if 'argument_list' in str(path):
             return []
-        return dict(container_name='micall:v7.18;bad', id=495)
+        return {'container_name': 'micall:v7.18;bad', 'id': 495}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -1970,7 +1970,7 @@ def test_append_version_rejects_semicolon_in_new_version(mock_open_kive, pipelin
     pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
 
-    original_dataset = dict(url='/datasets/150', id=150)
+    original_dataset = {'url': '/datasets/150', 'id': 150}
 
     # Should raise ValueError
     with pytest.raises(ValueError, match=r"Version string contains semicolon delimiter: v7\.18;bad"):
@@ -1994,7 +1994,7 @@ def test_append_version_rejects_semicolon_in_existing_version(mock_open_kive, pi
     def get_container_app(path):
         if 'argument_list' in str(path):
             return []
-        return dict(container_name='micall:v7.18.1', id=495)
+        return {'container_name': 'micall:v7.18.1', 'id': 495}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -2002,7 +2002,7 @@ def test_append_version_rejects_semicolon_in_existing_version(mock_open_kive, pi
     pipelines_config.denovo_main_pipeline_id = 495
     kive_watcher = KiveWatcher(pipelines_config)
 
-    original_dataset = dict(url='/datasets/150', id=150)
+    original_dataset = {'url': '/datasets/150', 'id': 150}
 
     # Should raise ValueError because after split, one element will be empty string
     with pytest.raises(ValueError, match=r"Version string contains empty version"):
@@ -2032,12 +2032,12 @@ def test_launch_main_run_long_name(raw_data_with_two_samples, mock_open_kive, pi
 
     kive_watcher.poll_runs()
 
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        app=ANY,
-        datasets=ANY,
-        name='MiCall main on 2110A-V3LOOP-987654321REALLYVERYLONGNA..._S13',
-        batch=ANY,
-        groups_allowed=['Everyone']))
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json={
+        'app': ANY,
+        'datasets': ANY,
+        'name': 'MiCall main on 2110A-V3LOOP-987654321REALLYVERYLONGNA..._S13',
+        'batch': ANY,
+        'groups_allowed': ['Everyone']})
 
 
 def rename_fastq_files(base_calls, old_file_prefix, new_file_prefix):
@@ -2114,16 +2114,16 @@ def test_launch_midi_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_confi
 
     kive_watcher.poll_runs()
 
-    assert [call(json=dict(name='MiCall main on 2130A-HCV_S15',
-                           batch=ANY,
-                           app=ANY,
-                           datasets=ANY,
-                           groups_allowed=['Everyone'])),
-            call(json=dict(name='MiCall main on 2130AMIDI-MidHCV_S16',
-                           batch=ANY,
-                           app=ANY,
-                           datasets=ANY,
-                           groups_allowed=['Everyone']))
+    assert [call(json={'name': 'MiCall main on 2130A-HCV_S15',
+                           'batch': ANY,
+                           'app': ANY,
+                           'datasets': ANY,
+                           'groups_allowed': ['Everyone']}),
+            call(json={'name': 'MiCall main on 2130AMIDI-MidHCV_S16',
+                           'batch': ANY,
+                           'app': ANY,
+                           'datasets': ANY,
+                           'groups_allowed': ['Everyone']})
             ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
@@ -2135,14 +2135,14 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
     kive_watcher.app_urls = {
         pipelines_config.micall_resistance_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.micall_resistance_pipeline_id: dict(
-            main_amino_csv='/containerargs/104',
-            midi_amino_csv='/containerargs/105',
-            main_nuc_csv='/containerargs/106')}
+        pipelines_config.micall_resistance_pipeline_id: {
+            'main_amino_csv': '/containerargs/104',
+            'midi_amino_csv': '/containerargs/105',
+            'main_nuc_csv': '/containerargs/106'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
-    folder_watcher.add_run(dict(id=106),
+    folder_watcher.batch = {'url': '/batches/101'}
+    folder_watcher.add_run({'id': 106},
                            PipelineType.FILTER_QUALITY,
                            is_complete=True)
     sample_watcher = kive_watcher.add_sample_group(
@@ -2152,38 +2152,38 @@ def test_launch_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeli
                                   None),
                                  ('V3LOOP', None)))
     folder_watcher.add_run(
-        dict(id=107),
+        {'id': 107},
         PipelineType.MAIN,
         sample_watcher)
 
     kive_watcher.check_session()
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state
-        [dict(dataset='/datasets/111/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/112/',
-              argument_type='O',
-              argument_name='nuc_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state
+        [{'dataset': '/datasets/111/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/112/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112)]
+        {'url': '/datasets/111/', 'id': 111},
+        {'url': '/datasets/111/', 'id': 111},
+        {'url': '/datasets/112/', 'id': 112}]
 
     kive_watcher.poll_runs()
 
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        app='/containerapps/103',
-        datasets=[dict(argument='/containerargs/104',
-                       dataset='/datasets/111/'),
-                  dict(argument='/containerargs/105',
-                       dataset='/datasets/111/'),
-                  dict(argument='/containerargs/106',
-                       dataset='/datasets/112/')],
-        name='MiCall resistance on 2110A',
-        batch='/batches/101',
-        groups_allowed=['Everyone']))
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json={
+        'app': '/containerapps/103',
+        'datasets': [{'argument': '/containerargs/104',
+                       'dataset': '/datasets/111/'},
+                  {'argument': '/containerargs/105',
+                       'dataset': '/datasets/111/'},
+                  {'argument': '/containerargs/106',
+                       'dataset': '/datasets/112/'}],
+        'name': 'MiCall resistance on 2110A',
+        'batch': '/batches/101',
+        'groups_allowed': ['Everyone']})
 
 
 def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
@@ -2197,15 +2197,15 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
     kive_watcher.app_urls = {
         pipelines_config.proviral_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.proviral_pipeline_id: dict(
-            sample_info_csv='/containerargs/103',
-            contigs_csv='/containerargs/104',
-            conseqs_csv='/containerargs/105',
-            cascade_csv='/containerargs/106')}
+        pipelines_config.proviral_pipeline_id: {
+            'sample_info_csv': '/containerargs/103',
+            'contigs_csv': '/containerargs/104',
+            'conseqs_csv': '/containerargs/105',
+            'cascade_csv': '/containerargs/106'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
-    folder_watcher.add_run(dict(id=106),
+    folder_watcher.batch = {'url': '/batches/101'}
+    folder_watcher.add_run({'id': 106},
                            PipelineType.FILTER_QUALITY,
                            is_complete=True)
     sample_watcher = kive_watcher.add_sample_group(
@@ -2215,7 +2215,7 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
                                   None),
                                  ('HIVNFLDNA', None)))
     folder_watcher.add_run(
-        dict(id=107),
+        {'id': 107},
         PipelineType.DENOVO_MAIN,
         sample_watcher)
 
@@ -2227,52 +2227,52 @@ def test_launch_proviral_run(raw_data_with_two_samples, mock_open_kive):
     mock_get_response.content = b"sample,micall_version\n2120A,v7.15.0\n"
     mock_session.get.return_value = mock_get_response
     mock_get_response.json.side_effect = [
-        dict(url='/datasets/110/', id=110),
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/113/', id=113)]
+        {'url': '/datasets/110/', 'id': 110},
+        {'url': '/datasets/111/', 'id': 111},
+        {'url': '/datasets/112/', 'id': 112},
+        {'url': '/datasets/113/', 'id': 113}]
 
     # Mock for container app version lookup
     def get_container_app(path):
         if 'argument_list' in str(path):
             return []
-        return dict(container_name='micall:v7.18.1', id=43)
+        return {'container_name': 'micall:v7.18.1', 'id': 43}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
     # Mock for uploading the updated sample_info
-    mock_session.endpoints.datasets.post.return_value = dict(url='/datasets/200/', id=200)
+    mock_session.endpoints.datasets.post.return_value = {'url': '/datasets/200/', 'id': 200}
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state
-        [dict(dataset='/datasets/110/',
-              argument_type='I',
-              argument_name='sample_info_csv'),
-         dict(dataset='/datasets/111/',
-              argument_type='O',
-              argument_name='unstitched_contigs_csv'),
-         dict(dataset='/datasets/112/',
-              argument_type='O',
-              argument_name='unstitched_conseq_csv'),
-         dict(dataset='/datasets/113/',
-              argument_type='O',
-              argument_name='unstitched_cascade_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state
+        [{'dataset': '/datasets/110/',
+              'argument_type': 'I',
+              'argument_name': 'sample_info_csv'},
+         {'dataset': '/datasets/111/',
+              'argument_type': 'O',
+              'argument_name': 'unstitched_contigs_csv'},
+         {'dataset': '/datasets/112/',
+              'argument_type': 'O',
+              'argument_name': 'unstitched_conseq_csv'},
+         {'dataset': '/datasets/113/',
+              'argument_type': 'O',
+              'argument_name': 'unstitched_cascade_csv'}]]  # run datasets
 
     kive_watcher.poll_runs()
 
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        app='/containerapps/103',
-        datasets=[dict(argument='/containerargs/103',
-                       dataset='/datasets/200/'),  # Updated sample_info with chained version
-                  dict(argument='/containerargs/104',
-                       dataset='/datasets/111/'),
-                  dict(argument='/containerargs/105',
-                       dataset='/datasets/112/'),
-                  dict(argument='/containerargs/106',
-                       dataset='/datasets/113/')],
-        name='Proviral on 2120A',
-        batch='/batches/101',
-        groups_allowed=['Everyone']))
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json={
+        'app': '/containerapps/103',
+        'datasets': [{'argument': '/containerargs/103',
+                       'dataset': '/datasets/200/'},  # Updated sample_info with chained version
+                  {'argument': '/containerargs/104',
+                       'dataset': '/datasets/111/'},
+                  {'argument': '/containerargs/105',
+                       'dataset': '/datasets/112/'},
+                  {'argument': '/containerargs/106',
+                       'dataset': '/datasets/113/'}],
+        'name': 'Proviral on 2120A',
+        'batch': '/batches/101',
+        'groups_allowed': ['Everyone']})
 
 
 def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_kive):
@@ -2294,18 +2294,18 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
     def get_container_app(path):
         if 'argument_list' in str(path):
             return [
-                dict(name='sample_info_csv', url='/containerargs/103', type='I'),
-                dict(name='contigs_csv', url='/containerargs/104', type='I'),
-                dict(name='conseqs_csv', url='/containerargs/105', type='I'),
-                dict(name='cascade_csv', url='/containerargs/106', type='I')
+                {'name': 'sample_info_csv', 'url': '/containerargs/103', 'type': 'I'},
+                {'name': 'contigs_csv', 'url': '/containerargs/104', 'type': 'I'},
+                {'name': 'conseqs_csv', 'url': '/containerargs/105', 'type': 'I'},
+                {'name': 'cascade_csv', 'url': '/containerargs/106', 'type': 'I'}
             ]
         path_str = str(path).strip('/')
         if path_str == str(pipelines_config.micall_filter_quality_pipeline_id):
-            return dict(container_name=f'micall:{filter_quality_version}', id=42)
+            return {'container_name': f'micall:{filter_quality_version}', 'id': 42}
         elif path_str == str(pipelines_config.denovo_main_pipeline_id):
-            return dict(container_name=f'micall:{denovo_main_version}', id=43)
+            return {'container_name': f'micall:{denovo_main_version}', 'id': 43}
         else:
-            return dict(container_name='micall:v7.19.0', id=int(path_str))
+            return {'container_name': 'micall:v7.19.0', 'id': int(path_str)}
 
     mock_session.endpoints.containerapps.get.side_effect = get_container_app
 
@@ -2315,10 +2315,10 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
     mock_get_response.content = existing_sample_info
     mock_session.get.return_value = mock_get_response
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/110/', id=110),
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/113/', id=113)]
+        {'url': '/datasets/110/', 'id': 110},
+        {'url': '/datasets/111/', 'id': 111},
+        {'url': '/datasets/112/', 'id': 112},
+        {'url': '/datasets/113/', 'id': 113}]
 
     # Capture the uploaded sample_info with chained version
     uploaded_sample_info = None
@@ -2328,7 +2328,7 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
             dataset_file = files['dataset_file']
             uploaded_sample_info = dataset_file.read()
             dataset_file.seek(0)
-        return dict(url='/datasets/200/', id=200)
+        return {'url': '/datasets/200/', 'id': 200}
 
     mock_session.endpoints.datasets.post.side_effect = capture_upload
 
@@ -2336,15 +2336,15 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
     kive_watcher.app_urls = {
         pipelines_config.proviral_pipeline_id: '/containerapps/103'}
     kive_watcher.app_args = {
-        pipelines_config.proviral_pipeline_id: dict(
-            sample_info_csv='/containerargs/103',
-            contigs_csv='/containerargs/104',
-            conseqs_csv='/containerargs/105',
-            cascade_csv='/containerargs/106')}
+        pipelines_config.proviral_pipeline_id: {
+            'sample_info_csv': '/containerargs/103',
+            'contigs_csv': '/containerargs/104',
+            'conseqs_csv': '/containerargs/105',
+            'cascade_csv': '/containerargs/106'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
-    folder_watcher.add_run(dict(id=106),
+    folder_watcher.batch = {'url': '/batches/101'}
+    folder_watcher.add_run({'id': 106},
                            PipelineType.FILTER_QUALITY,
                            is_complete=True)
     sample_watcher = kive_watcher.add_sample_group(
@@ -2354,24 +2354,24 @@ def test_proviral_pipeline_chains_versions(raw_data_with_two_samples, mock_open_
                                   None),
                                  ('HIVNFLDNA', None)))
     folder_watcher.add_run(
-        dict(id=107),
+        {'id': 107},
         PipelineType.DENOVO_MAIN,
         sample_watcher)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state
-        [dict(dataset='/datasets/110/',
-              argument_type='I',
-              argument_name='sample_info_csv'),
-         dict(dataset='/datasets/111/',
-              argument_type='O',
-              argument_name='unstitched_contigs_csv'),
-         dict(dataset='/datasets/112/',
-              argument_type='O',
-              argument_name='unstitched_conseq_csv'),
-         dict(dataset='/datasets/113/',
-              argument_type='O',
-              argument_name='unstitched_cascade_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state
+        [{'dataset': '/datasets/110/',
+              'argument_type': 'I',
+              'argument_name': 'sample_info_csv'},
+         {'dataset': '/datasets/111/',
+              'argument_type': 'O',
+              'argument_name': 'unstitched_contigs_csv'},
+         {'dataset': '/datasets/112/',
+              'argument_type': 'O',
+              'argument_name': 'unstitched_conseq_csv'},
+         {'dataset': '/datasets/113/',
+              'argument_type': 'O',
+              'argument_name': 'unstitched_cascade_csv'}]]  # run datasets
 
     kive_watcher.poll_runs()
 
@@ -2395,8 +2395,8 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
     kive_watcher = KiveWatcher(pipelines_config)
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
-    folder_watcher.add_run(dict(id=106),
+    folder_watcher.batch = {'url': '/batches/101'}
+    folder_watcher.add_run({'id': 106},
                            PipelineType.FILTER_QUALITY,
                            is_complete=True)
     sample_watcher = kive_watcher.add_sample_group(
@@ -2406,7 +2406,7 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
                                   None),
                                  ('V3LOOP', None)))
     folder_watcher.add_run(
-        dict(id=107),
+        {'id': 107},
         PipelineType.MAIN,
         sample_watcher)
     kive_watcher.finish_folder(base_calls)
@@ -2414,15 +2414,15 @@ def test_skip_resistance_run(raw_data_with_two_samples, mock_open_kive, pipeline
     kive_watcher.check_session()
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state
-        [dict(dataset='/datasets/111/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/112/',
-              argument_type='O',
-              argument_name='nuc_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state
+        [{'dataset': '/datasets/111/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/112/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}]]  # run datasets
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111)]
+        {'url': '/datasets/111/', 'id': 111}]
 
     kive_watcher.poll_runs()
 
@@ -2444,9 +2444,9 @@ def test_resistance_run_missing_input(raw_data_with_two_samples,
                     ('V3LOOP', None)))
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state
-        [dict(dataset='/datasets/111/',
-              argument_name='fail_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state
+        [{'dataset': '/datasets/111/',
+              'argument_name': 'fail_csv'}]]  # run datasets
 
     with pytest.raises(RuntimeError, match=r'Polling sample group 2110A failed.'):
         kive_watcher.poll_runs()
@@ -2468,7 +2468,7 @@ def test_poll_main_run_cancelled(raw_data_with_two_samples,
                     ('V3LOOP', None)))
     mock_session = kive_watcher.session
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='X')]  # refresh run state
+        {'id': 107, 'state': 'X'}]  # refresh run state
 
     kive_watcher.poll_runs()
 
@@ -2489,44 +2489,44 @@ def test_launch_hcv_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipel
     folder_watcher, = kive_watcher.folder_watchers.values()
     sample_watcher, = folder_watcher.sample_watchers
     folder_watcher.add_run(
-        dict(id=108),
+        {'id': 108},
         PipelineType.MIDI,
         sample_watcher)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state for main run
-        [dict(dataset='/datasets/111/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/112/',
-              argument_type='O',
-              argument_name='nuc_csv')],  # run datasets
-        dict(id=108, state='C'),  # refresh run state for midi run
-        [dict(dataset='/datasets/113/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/114/',
-              argument_type='O',
-              argument_name='nuc_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state for main run
+        [{'dataset': '/datasets/111/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/112/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}],  # run datasets
+        {'id': 108, 'state': 'C'},  # refresh run state for midi run
+        [{'dataset': '/datasets/113/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/114/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/113/', id=113)]
+        {'url': '/datasets/111/', 'id': 111},
+        {'url': '/datasets/112/', 'id': 112},
+        {'url': '/datasets/113/', 'id': 113}]
 
     kive_watcher.poll_runs()
 
-    mock_session.endpoints.containerruns.post.assert_called_once_with(json=dict(
-        app=ANY,
-        datasets=[dict(argument=ANY,
-                       dataset='/datasets/111/'),
-                  dict(argument=ANY,
-                       dataset='/datasets/112/'),
-                  dict(argument=ANY,
-                       dataset='/datasets/113/')],
-        name='MiCall resistance on 2130A',
-        batch=ANY,
-        groups_allowed=['Everyone']))
+    mock_session.endpoints.containerruns.post.assert_called_once_with(json={
+        'app': ANY,
+        'datasets': [{'argument': ANY,
+                       'dataset': '/datasets/111/'},
+                  {'argument': ANY,
+                       'dataset': '/datasets/112/'},
+                  {'argument': ANY,
+                       'dataset': '/datasets/113/'}],
+        'name': 'MiCall resistance on 2130A',
+        'batch': ANY,
+        'groups_allowed': ['Everyone']})
 
 
 def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_config):
@@ -2557,7 +2557,7 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
     folder_watcher, = kive_watcher.folder_watchers.values()
     sample_watcher, = folder_watcher.sample_watchers
     folder_watcher.add_run(
-        dict(id=108),
+        {'id': 108},
         PipelineType.MIDI,
         sample_watcher)
     sample_watcher2 = kive_watcher.add_sample_group(
@@ -2567,63 +2567,63 @@ def test_launch_hcv_triplet_resistance_run(raw_data_with_hcv_pair, mock_open_kiv
                                   '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
                                  ('HCV', 'MidHCV')))
     folder_watcher.add_run(
-        dict(id=109),
+        {'id': 109},
         PipelineType.MAIN,
         sample_watcher2)
     folder_watcher.add_run(
-        dict(id=108),
+        {'id': 108},
         PipelineType.MIDI,
         sample_watcher2)
 
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=107, state='C'),  # refresh run state for main run
-        [dict(dataset='/datasets/111/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/121/',
-              argument_type='O',
-              argument_name='nuc_csv')],  # run datasets
-        dict(id=108, state='C'),  # refresh run state for midi run
-        [dict(dataset='/datasets/112/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/122/',
-              argument_type='O',
-              argument_name='nuc_csv')],  # run datasets
-        dict(id=109, state='C'),  # refresh run state for other main run
-        [dict(dataset='/datasets/113/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/123/',
-              argument_type='O',
-              argument_name='nuc_csv')]]  # run datasets
+        {'id': 107, 'state': 'C'},  # refresh run state for main run
+        [{'dataset': '/datasets/111/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/121/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}],  # run datasets
+        {'id': 108, 'state': 'C'},  # refresh run state for midi run
+        [{'dataset': '/datasets/112/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/122/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}],  # run datasets
+        {'id': 109, 'state': 'C'},  # refresh run state for other main run
+        [{'dataset': '/datasets/113/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/123/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}]]  # run datasets
     mock_session.get.reset_mock(side_effect=True)
     mock_session.get.return_value.json.side_effect = [
-        dict(url='/datasets/111/', id=111),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/121/', id=121),
-        dict(url='/datasets/113/', id=113),
-        dict(url='/datasets/112/', id=112),
-        dict(url='/datasets/123/', id=123)]
-    mock_session.endpoints.containerruns.post.return_value = dict(id=None)
+        {'url': '/datasets/111/', 'id': 111},
+        {'url': '/datasets/112/', 'id': 112},
+        {'url': '/datasets/121/', 'id': 121},
+        {'url': '/datasets/113/', 'id': 113},
+        {'url': '/datasets/112/', 'id': 112},
+        {'url': '/datasets/123/', 'id': 123}]
+    mock_session.endpoints.containerruns.post.return_value = {'id': None}
 
     kive_watcher.poll_runs()
 
     expected_calls = [
-        call(json=dict(app=ANY,
-                       datasets=[dict(argument=ANY, dataset='/datasets/111/'),
-                                 dict(argument=ANY, dataset='/datasets/112/'),
-                                 dict(argument=ANY, dataset='/datasets/121/')],
-                       name='MiCall resistance on 2130A',
-                       batch=ANY,
-                       groups_allowed=['Everyone'])),
-        call(json=dict(app=ANY,
-                       datasets=[dict(argument=ANY, dataset='/datasets/113/'),
-                                 dict(argument=ANY, dataset='/datasets/112/'),
-                                 dict(argument=ANY, dataset='/datasets/123/')],
-                       name='MiCall resistance on 2130A',
-                       batch=ANY,
-                       groups_allowed=['Everyone']))]
+        call(json={'app': ANY,
+                       'datasets': [{'argument': ANY, 'dataset': '/datasets/111/'},
+                                 {'argument': ANY, 'dataset': '/datasets/112/'},
+                                 {'argument': ANY, 'dataset': '/datasets/121/'}],
+                       'name': 'MiCall resistance on 2130A',
+                       'batch': ANY,
+                       'groups_allowed': ['Everyone']}),
+        call(json={'app': ANY,
+                       'datasets': [{'argument': ANY, 'dataset': '/datasets/113/'},
+                                 {'argument': ANY, 'dataset': '/datasets/112/'},
+                                 {'argument': ANY, 'dataset': '/datasets/123/'}],
+                       'name': 'MiCall resistance on 2130A',
+                       'batch': ANY,
+                       'groups_allowed': ['Everyone']})]
     assert expected_calls == mock_session.endpoints.containerruns.post.mock_calls
 
 
@@ -2637,30 +2637,30 @@ def test_launch_mixed_hcv_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_
         pipelines_config.micall_main_pipeline_id: '/containerapps/103',
         pipelines_config.mixed_hcv_pipeline_id: '/containerapps/104'}
     kive_watcher.app_args = {
-        pipelines_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/105'),
-        pipelines_config.micall_main_pipeline_id: dict(
-            fastq1='/containerargs/106',
-            fastq2='/containerargs/107',
-            bad_cycles_csv='/containerargs/108'),
-        pipelines_config.mixed_hcv_pipeline_id: dict(
-            fastq1='/containerargs/109',
-            fastq2='/containerargs/110')}
+        pipelines_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/105'},
+        pipelines_config.micall_main_pipeline_id: {
+            'fastq1': '/containerargs/106',
+            'fastq2': '/containerargs/107',
+            'bad_cycles_csv': '/containerargs/108'},
+        pipelines_config.mixed_hcv_pipeline_id: {
+            'fastq1': '/containerargs/109',
+            'fastq2': '/containerargs/110'}}
 
     folder_watcher = kive_watcher.add_folder(base_calls)
-    folder_watcher.batch = dict(url='/batches/101')
-    folder_watcher.add_run(dict(id=120), PipelineType.FILTER_QUALITY)
+    folder_watcher.batch = {'url': '/batches/101'}
+    folder_watcher.add_run({'id': 120}, PipelineType.FILTER_QUALITY)
     mock_session = mock_open_kive.return_value
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(id=120, state='C'),  # refresh run state
-        [dict(dataset='/datasets/121/',
-              argument_name='bad_cycles_csv')]]  # run datasets
-    mock_session.get.return_value.json.side_effect = [dict(id=121, url='/datasets/121')]
+        {'id': 120, 'state': 'C'},  # refresh run state
+        [{'dataset': '/datasets/121/',
+              'argument_name': 'bad_cycles_csv'}]]  # run datasets
+    mock_session.get.return_value.json.side_effect = [{'id': 121, 'url': '/datasets/121'}]
     mock_session.endpoints.datasets.post.side_effect = [
-        dict(url='/datasets/122', id=122),
-        dict(url='/datasets/123', id=123),
-        dict(url='/datasets/124', id=124),
-        dict(url='/datasets/125', id=125)]
+        {'url': '/datasets/122', 'id': 122},
+        {'url': '/datasets/123', 'id': 123},
+        {'url': '/datasets/124', 'id': 124},
+        {'url': '/datasets/125', 'id': 125}]
 
     kive_watcher.add_sample_group(
         base_calls=base_calls,
@@ -2671,42 +2671,42 @@ def test_launch_mixed_hcv_run(raw_data_with_hcv_pair, mock_open_kive, pipelines_
 
     kive_watcher.poll_runs()
 
-    assert [call(json=dict(app='/containerapps/104',
-                           datasets=[dict(argument='/containerargs/109',
-                                          dataset='/datasets/122'),
-                                     dict(argument='/containerargs/110',
-                                          dataset='/datasets/123')],
-                           name='Mixed HCV on 2130A-HCV_S15',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone'])),
-            call(json=dict(app='/containerapps/104',
-                           datasets=[dict(argument='/containerargs/109',
-                                          dataset='/datasets/124'),
-                                     dict(argument='/containerargs/110',
-                                          dataset='/datasets/125')],
-                           name='Mixed HCV on 2130AMIDI-MidHCV_S16',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone'])),
-            call(json=dict(app='/containerapps/103',
-                           datasets=[dict(argument='/containerargs/106',
-                                          dataset='/datasets/122'),
-                                     dict(argument='/containerargs/107',
-                                          dataset='/datasets/123'),
-                                     dict(argument='/containerargs/108',
-                                          dataset='/datasets/121')],
-                           name='MiCall main on 2130A-HCV_S15',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone'])),
-            call(json=dict(app='/containerapps/103',
-                           datasets=[dict(argument='/containerargs/106',
-                                          dataset='/datasets/124'),
-                                     dict(argument='/containerargs/107',
-                                          dataset='/datasets/125'),
-                                     dict(argument='/containerargs/108',
-                                          dataset='/datasets/121')],
-                           name='MiCall main on 2130AMIDI-MidHCV_S16',
-                           batch='/batches/101',
-                           groups_allowed=['Everyone']))
+    assert [call(json={'app': '/containerapps/104',
+                           'datasets': [{'argument': '/containerargs/109',
+                                          'dataset': '/datasets/122'},
+                                     {'argument': '/containerargs/110',
+                                          'dataset': '/datasets/123'}],
+                           'name': 'Mixed HCV on 2130A-HCV_S15',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']}),
+            call(json={'app': '/containerapps/104',
+                           'datasets': [{'argument': '/containerargs/109',
+                                          'dataset': '/datasets/124'},
+                                     {'argument': '/containerargs/110',
+                                          'dataset': '/datasets/125'}],
+                           'name': 'Mixed HCV on 2130AMIDI-MidHCV_S16',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']}),
+            call(json={'app': '/containerapps/103',
+                           'datasets': [{'argument': '/containerargs/106',
+                                          'dataset': '/datasets/122'},
+                                     {'argument': '/containerargs/107',
+                                          'dataset': '/datasets/123'},
+                                     {'argument': '/containerargs/108',
+                                          'dataset': '/datasets/121'}],
+                           'name': 'MiCall main on 2130A-HCV_S15',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']}),
+            call(json={'app': '/containerapps/103',
+                           'datasets': [{'argument': '/containerargs/106',
+                                          'dataset': '/datasets/124'},
+                                     {'argument': '/containerargs/107',
+                                          'dataset': '/datasets/125'},
+                                     {'argument': '/containerargs/108',
+                                          'dataset': '/datasets/121'}],
+                           'name': 'MiCall main on 2130AMIDI-MidHCV_S16',
+                           'batch': '/batches/101',
+                           'groups_allowed': ['Everyone']})
             ] == mock_session.endpoints.containerruns.post.call_args_list
 
 
@@ -2779,7 +2779,7 @@ def test_full_with_two_runs(raw_data_with_two_runs, mock_open_kive, pipelines_co
 
 
 def test_fetch_run_status_incomplete(mock_open_kive, pipelines_config):
-    mock_run = dict(id=123)
+    mock_run = {'id': 123}
 
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -2799,9 +2799,9 @@ def test_fetch_run_status_filter_quality(raw_data_with_two_runs,
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     folder_watcher = FolderWatcher(base_calls, None)
     sample_watcher = None
-    mock_run = dict(id=123)
+    mock_run = {'id': 123}
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='C')]
+        {'state': 'C'}]
 
     kive_watcher = KiveWatcher(pipelines_config)
 
@@ -2825,15 +2825,15 @@ def test_fetch_run_status_main(raw_data_with_two_runs,
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                      None),
                     ('V3LOOP', None)))
-    mock_run = dict(id=123)
+    mock_run = {'id': 123}
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='C'),  # run state refresh
-        [dict(argument_name='insertions_csv',
-              argument_type='O',
-              dataset='/datasets/110/'),
-         dict(argument_name='nuc_csv',
-              argument_type='O',
-              dataset='/datasets/111/')]]  # run datasets
+        {'state': 'C'},  # run state refresh
+        [{'argument_name': 'insertions_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/110/'},
+         {'argument_name': 'nuc_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/111/'}]]  # run datasets
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_insertion_path = expected_scratch / "2000A-V3LOOP_S2/insertions.csv"
     expected_nuc_path = expected_scratch / "2000A-V3LOOP_S2/nuc.csv"
@@ -2865,17 +2865,17 @@ def test_fetch_run_status_main_and_resistance(raw_data_with_two_runs,
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz',
                      None),
                     ('V3LOOP', None)))
-    main_run = dict(id=123)
-    resistance_run = dict(id=124)
+    main_run = {'id': 123}
+    resistance_run = {'id': 124}
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='C'),  # main run refresh
-        [dict(argument_name='nuc_csv',
-              argument_type='O',
-              dataset='/datasets/110/')],  # main run datasets
-        dict(state='C'),  # resistance run refresh
-        [dict(argument_name='resistance_csv',
-              argument_type='O',
-              dataset='/datasets/112/')]]  # resistance run datasets
+        {'state': 'C'},  # main run refresh
+        [{'argument_name': 'nuc_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/110/'}],  # main run datasets
+        {'state': 'C'},  # resistance run refresh
+        [{'argument_name': 'resistance_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/112/'}]]  # resistance run datasets
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_nuc_path = expected_scratch / "2000A-V3LOOP_S2/nuc.csv"
     expected_resistance_path = expected_scratch / "2000A-V3LOOP_S2/resistance.csv"
@@ -2911,17 +2911,17 @@ def test_fetch_run_status_main_and_midi(raw_data_with_hcv_pair,
                     ('2130A-HCV_S15_L001_R1_001.fastq.gz',
                      '2130AMIDI-MidHCV_S16_L001_R1_001.fastq.gz'),
                     ('HCV', 'MidHCV')))
-    main_run = dict(id=123)
-    midi_run = dict(id=124)
+    main_run = {'id': 123}
+    midi_run = {'id': 124}
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='C'),  # main run refresh
-        [dict(argument_name='nuc_csv',
-              argument_type='O',
-              dataset='/datasets/110/')],  # main outputs
-        dict(state='C'),  # midi run refresh
-        [dict(argument_name='nuc_csv',
-              argument_type='O',
-              dataset='/datasets/111/')]]  # midi outputs
+        {'state': 'C'},  # main run refresh
+        [{'argument_name': 'nuc_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/110/'}],  # main outputs
+        {'state': 'C'},  # midi run refresh
+        [{'argument_name': 'nuc_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/111/'}]]  # midi outputs
     expected_scratch = base_calls / "../../../Results/version_0-dev/scratch"
     expected_main_nuc_path = expected_scratch / "2130A-HCV_S15/nuc.csv"
     expected_midi_nuc_path = expected_scratch / "2130AMIDI-MidHCV_S16/nuc.csv"
@@ -2949,10 +2949,10 @@ def test_fetch_run_status_session_expired(raw_data_with_two_runs,
     mock_session = mock_open_kive.return_value
     base_calls = (raw_data_with_two_runs /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
-    mock_run = dict(id=123)
+    mock_run = {'id': 123}
     mock_session.endpoints.containerruns.get.side_effect = [
         KiveClientException('expired'),  # Session expired
-        dict(state='C'),  # run state refresh
+        {'state': 'C'},  # run state refresh
         []]  # run outputs
 
     kive_watcher = KiveWatcher(pipelines_config)
@@ -2984,9 +2984,9 @@ def test_fetch_run_status_user_cancelled(raw_data_with_two_runs,
                     ('2000A-V3LOOP_S2_L001_R1_001.fastq.gz', None),
                     ('V3LOOP', None)))
     mock_session = kive_watcher.session
-    original_run = dict(id=123)
+    original_run = {'id': 123}
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='X')]
+        {'state': 'X'}]
     folder_watcher, = kive_watcher.folder_watchers.values()
     sample_watcher, = folder_watcher.sample_watchers
 
@@ -3017,25 +3017,25 @@ def test_folder_completed(raw_data_with_two_samples, mock_open_kive, default_con
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
                                  ('V3LOOP', None)))
     kive_watcher.finish_folder(base_calls)
-    folder_watcher.add_run(dict(id=150),
+    folder_watcher.add_run({'id': 150},
                            PipelineType.MAIN,
                            sample2_watcher,
                            is_complete=True)
-    folder_watcher.add_run(dict(id=151),
+    folder_watcher.add_run({'id': 151},
                            PipelineType.RESISTANCE,
                            sample1_watcher)
-    folder_watcher.add_run(dict(id=152),
+    folder_watcher.add_run({'id': 152},
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=151, state='C'),  # refresh run state for 2110
-        [dict(dataset='/datasets/161/',
-              argument_type='O',
-              argument_name='resistance_csv')],  # run datasets
-        dict(id=152, state='C'),  # refresh run state for 2120
-        [dict(dataset='/datasets/162/',
-              argument_type='O',
-              argument_name='resistance_csv')]]  # run datasets
+        {'id': 151, 'state': 'C'},  # refresh run state for 2110
+        [{'dataset': '/datasets/161/',
+              'argument_type': 'O',
+              'argument_name': 'resistance_csv'}],  # run datasets
+        {'id': 152, 'state': 'C'},  # refresh run state for 2120
+        [{'dataset': '/datasets/162/',
+              'argument_type': 'O',
+              'argument_name': 'resistance_csv'}]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     expected_coverage_map_content = b'This is a coverage map.'
@@ -3086,10 +3086,10 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
                     ('V3LOOP', None)),
         is_complete=True)
     kive_watcher.app_urls[default_config.denovo_main_pipeline_id] = '/containerapps/105'
-    kive_watcher.app_args[default_config.denovo_main_pipeline_id] = dict(
-            bad_cycles_csv='/containerargs/113',
-            fastq1='/containerargs/114',
-            fastq2='/containerargs/115')
+    kive_watcher.app_args[default_config.denovo_main_pipeline_id] = {
+            'bad_cycles_csv': '/containerargs/113',
+            'fastq1': '/containerargs/114',
+            'fastq2': '/containerargs/115'}
     folder_watcher = kive_watcher.folder_watchers[base_calls]
     sample1_watcher, = folder_watcher.sample_watchers
     sample2_watcher = kive_watcher.add_sample_group(
@@ -3098,35 +3098,35 @@ def test_folder_completed_except_denovo(raw_data_with_two_samples, mock_open_kiv
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
                                  ('PR', None)))
     kive_watcher.finish_folder(base_calls)
-    folder_watcher.add_run(dict(id=150),
+    folder_watcher.add_run({'id': 150},
                            PipelineType.MAIN,
                            sample2_watcher,
                            is_complete=True)
-    folder_watcher.add_run(dict(id=151),
+    folder_watcher.add_run({'id': 151},
                            PipelineType.DENOVO_MAIN,
                            sample1_watcher)
-    folder_watcher.add_run(dict(id=152),
+    folder_watcher.add_run({'id': 152},
                            PipelineType.RESISTANCE,
                            sample1_watcher)
-    folder_watcher.add_run(dict(id=153),
+    folder_watcher.add_run({'id': 153},
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=151, state='C'),  # refresh run state for denovo main
-        [dict(dataset='/datasets/161/',
-              argument_type='O',
-              argument_name='amino_csv'),
-         dict(dataset='/datasets/171/',
-              argument_type='O',
-              argument_name='nuc_csv')],  # run datasets
-        dict(id=152, state='C'),  # refresh run state for 2110
-        [dict(dataset='/datasets/162/',
-              argument_type='O',
-              argument_name='resistance_csv')],  # run datasets
-        dict(id=153, state='C'),  # refresh run state for 2120
-        [dict(dataset='/datasets/163/',
-              argument_type='O',
-              argument_name='resistance_csv')]]  # run datasets
+        {'id': 151, 'state': 'C'},  # refresh run state for denovo main
+        [{'dataset': '/datasets/161/',
+              'argument_type': 'O',
+              'argument_name': 'amino_csv'},
+         {'dataset': '/datasets/171/',
+              'argument_type': 'O',
+              'argument_name': 'nuc_csv'}],  # run datasets
+        {'id': 152, 'state': 'C'},  # refresh run state for 2110
+        [{'dataset': '/datasets/162/',
+              'argument_type': 'O',
+              'argument_name': 'resistance_csv'}],  # run datasets
+        {'id': 153, 'state': 'C'},  # refresh run state for 2120
+        [{'dataset': '/datasets/163/',
+              'argument_type': 'O',
+              'argument_name': 'resistance_csv'}]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     sample_scratch_path = scratch_path / "2110A-V3LOOP_S13"
@@ -3169,25 +3169,25 @@ def test_folder_completed_with_fasta(raw_data_with_two_samples, mock_open_kive, 
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
                                  ('PR', None)))
     kive_watcher.finish_folder(base_calls)
-    folder_watcher.add_run(dict(id=150),
+    folder_watcher.add_run({'id': 150},
                            PipelineType.MAIN,
                            sample2_watcher,
                            is_complete=True)
-    folder_watcher.add_run(dict(id=151),
+    folder_watcher.add_run({'id': 151},
                            PipelineType.RESISTANCE,
                            sample1_watcher)
-    folder_watcher.add_run(dict(id=152),
+    folder_watcher.add_run({'id': 152},
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=151, state='C'),  # refresh run state for 2110
-        [dict(dataset='/datasets/161/',
-              argument_type='O',
-              argument_name='wg_fasta')],  # run datasets
-        dict(id=152, state='C'),  # refresh run state for 2120
-        [dict(dataset='/datasets/162/',
-              argument_type='O',
-              argument_name='wg_fasta')]]  # run datasets
+        {'id': 151, 'state': 'C'},  # refresh run state for 2110
+        [{'dataset': '/datasets/161/',
+              'argument_type': 'O',
+              'argument_name': 'wg_fasta'}],  # run datasets
+        {'id': 152, 'state': 'C'},  # refresh run state for 2120
+        [{'dataset': '/datasets/162/',
+              'argument_type': 'O',
+              'argument_name': 'wg_fasta'}]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     sample_scratch_path = scratch_path / "2110A-V3LOOP_S13"
@@ -3236,25 +3236,25 @@ def test_folder_completed_with_svg(raw_data_with_two_samples, mock_open_kive, de
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
                                  ('PR', None)))
     kive_watcher.finish_folder(base_calls)
-    folder_watcher.add_run(dict(id=150),
+    folder_watcher.add_run({'id': 150},
                            PipelineType.MAIN,
                            sample2_watcher,
                            is_complete=True)
-    folder_watcher.add_run(dict(id=151),
+    folder_watcher.add_run({'id': 151},
                            PipelineType.RESISTANCE,
                            sample1_watcher)
-    folder_watcher.add_run(dict(id=152),
+    folder_watcher.add_run({'id': 152},
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=151, state='C'),  # refresh run state for 2110
-        [dict(dataset='/datasets/161/',
-              argument_type='O',
-              argument_name='alignment_svg')],  # run datasets
-        dict(id=152, state='C'),  # refresh run state for 2120
-        [dict(dataset='/datasets/162/',
-              argument_type='O',
-              argument_name='alignment_svg')]]  # run datasets
+        {'id': 151, 'state': 'C'},  # refresh run state for 2110
+        [{'dataset': '/datasets/161/',
+              'argument_type': 'O',
+              'argument_name': 'alignment_svg'}],  # run datasets
+        {'id': 152, 'state': 'C'},  # refresh run state for 2120
+        [{'dataset': '/datasets/162/',
+              'argument_type': 'O',
+              'argument_name': 'alignment_svg'}]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     expected_alignment1_path = results_path / "alignment" / "2110A-V3LOOP_S13_alignment.svg"
     expected_alignment2_path = results_path / "alignment" / "2120A-PR_S14_alignment.svg"
@@ -3283,25 +3283,25 @@ def test_folder_not_finished(raw_data_with_two_samples, mock_open_kive, default_
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
                                  ('PR', None)))
     # Did not call kive_watcher.finish_folder(), more samples could be coming.
-    folder_watcher.add_run(dict(id=150),
+    folder_watcher.add_run({'id': 150},
                            PipelineType.MAIN,
                            sample2_watcher,
                            is_complete=True)
-    folder_watcher.add_run(dict(id=151),
+    folder_watcher.add_run({'id': 151},
                            PipelineType.RESISTANCE,
                            sample1_watcher)
-    folder_watcher.add_run(dict(id=152),
+    folder_watcher.add_run({'id': 152},
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     kive_watcher.session.endpoints.containerruns.get.side_effect = [
-        dict(id=151, state='C'),  # refresh run state for 2110
-        [dict(dataset='/datasets/161/',
-              argument_type='O',
-              argument_name='resistance_csv')],  # run datasets
-        dict(id=152, state='C'),  # refresh run state for 2120
-        [dict(dataset='/datasets/162/',
-              argument_type='O',
-              argument_name='resistance_csv')]]  # run datasets
+        {'id': 151, 'state': 'C'},  # refresh run state for 2110
+        [{'dataset': '/datasets/161/',
+              'argument_type': 'O',
+              'argument_name': 'resistance_csv'}],  # run datasets
+        {'id': 152, 'state': 'C'},  # refresh run state for 2120
+        [{'dataset': '/datasets/162/',
+              'argument_type': 'O',
+              'argument_name': 'resistance_csv'}]]  # run datasets
     results_path = base_calls / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     expected_resistance_path = results_path / "resistance.csv"
@@ -3331,16 +3331,16 @@ def test_folder_not_finished_before_new_start(raw_data_with_two_runs,
 
     # Did not call kive_watcher.finish_folder(base_calls1), more samples could be coming.
     folder_watcher2 = kive_watcher.add_folder(base_calls2)
-    folder_watcher2.batch = dict(url='/batches/171/')
+    folder_watcher2.batch = {'url': '/batches/171/'}
     kive_watcher.add_sample_group(
         base_calls=base_calls2,
         sample_group=SampleGroup('2010A',
                                  ('2010A-V3LOOP_S3_L001_R1_001.fastq.gz', None),
                                  ('V3LOOP', None)))
-    folder_watcher1.add_run(dict(id=151),
+    folder_watcher1.add_run({'id': 151},
                             PipelineType.RESISTANCE,
                             sample1_watcher)
-    folder_watcher2.quality_dataset = dict(url='/datasets/127/', id=127)
+    folder_watcher2.quality_dataset = {'url': '/datasets/127/', 'id': 127}
     results_path = base_calls1 / "../../../Results/version_0-dev"
     scratch_path = results_path / "scratch"
     expected_resistance_path = results_path / "resistance.csv"
@@ -3356,8 +3356,8 @@ def test_folder_failed_quality(raw_data_with_two_samples, mock_open_kive, defaul
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     kive_watcher = create_kive_watcher_with_filter_run(default_config, base_calls)
-    mock_session.endpoints.containerruns.get.side_effect = [dict(id=110,
-                                                                 state='F')]
+    mock_session.endpoints.containerruns.get.side_effect = [{'id': 110,
+                                                                 'state': 'F'}]
 
     kive_watcher.finish_folder(base_calls)
     run_path = base_calls / "../../.."
@@ -3381,8 +3381,8 @@ def test_folder_failed_quality_incomplete(raw_data_with_two_samples,
     base_calls = (raw_data_with_two_samples /
                   "MiSeq/runs/140101_M01234/Data/Intensities/BaseCalls")
     kive_watcher = create_kive_watcher_with_filter_run(default_config, base_calls)
-    mock_session.endpoints.containerruns.get.side_effect = [dict(id=110,
-                                                                 state='F')]
+    mock_session.endpoints.containerruns.get.side_effect = [{'id': 110,
+                                                                 'state': 'F'}]
 
     kive_watcher.add_sample_group(
         base_calls=base_calls,
@@ -3421,19 +3421,19 @@ def test_folder_failed_sample(raw_data_with_two_samples, mock_open_kive, default
                                  ('2120A-PR_S14_L001_R1_001.fastq.gz', None),
                                  ('PR', None)))
     kive_watcher.finish_folder(base_calls)
-    folder_watcher.add_run(dict(id=151),
+    folder_watcher.add_run({'id': 151},
                            PipelineType.MAIN,
                            sample2_watcher,
                            is_complete=True)
-    folder_watcher.add_run(dict(id=152),
+    folder_watcher.add_run({'id': 152},
                            PipelineType.RESISTANCE,
                            sample2_watcher)
     mock_session.endpoints.containerruns.get.side_effect = [
-        dict(state='F', id=107),  # main run for 2110 fails
-        dict(state='C', id=152),  # resistance run for 2120 complete
-        [dict(argument_name='resistance_csv',
-              argument_type='O',
-              dataset='/datasets/167/')]]  # outputs for resistance run
+        {'state': 'F', 'id': 107},  # main run for 2110 fails
+        {'state': 'C', 'id': 152},  # resistance run for 2120 complete
+        [{'argument_name': 'resistance_csv',
+              'argument_type': 'O',
+              'dataset': '/datasets/167/'}]]  # outputs for resistance run
     run_path = base_calls / "../../.."
     results_path = run_path / "Results/version_0-dev"
     expected_done_path = results_path / "doneprocessing"
@@ -3766,8 +3766,8 @@ def test_launch_main_good_pipeline_id(mock_open_kive, default_config):
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
     kive_watcher.app_args = {
-        default_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/103')}
+        default_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/103'}}
 
     inputs = {'quality_csv': {'url': '/datasets/104', 'id': 104}}
     run_batch = {'url': '/batches/101'}
@@ -3782,8 +3782,8 @@ def test_launch_main_bad_pipeline_id(mock_open_kive, default_config):
     kive_watcher.app_urls = {
         default_config.micall_filter_quality_pipeline_id: '/containerapps/102'}
     kive_watcher.app_args = {
-        default_config.micall_filter_quality_pipeline_id: dict(
-            quality_csv='/containerargs/103')}
+        default_config.micall_filter_quality_pipeline_id: {
+            'quality_csv': '/containerargs/103'}}
 
     inputs = {'quality_csv': {'bad_argument': 777, 'id': 104}}
     run_batch = {'url': '/batches/101'}

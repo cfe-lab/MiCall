@@ -8,7 +8,7 @@ from micall.utils.externals import Blastn
 
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt  # noqa
+from matplotlib import pyplot as plt
 
 DEFAULT_SCRATCH_PATH = (Path(__file__).parent.parent / "tests" / "working" /
                         "basespace_linked_data" / "scratch")
@@ -77,7 +77,7 @@ def plot_contigs(sample_dir, contigs_csv):
         return
     y_contig = 0
     # noinspection PyTypeChecker
-    fig, axes_list = plt.subplots(nrows=len(contig_names), sharex=True, squeeze=False)
+    _fig, axes_list = plt.subplots(nrows=len(contig_names), sharex=True, squeeze=False)
     for i, contig_name in enumerate(contig_names):
         contig_rows = [row for row in rows if row['qaccver'] == contig_name]
         ax = axes_list[i][0]

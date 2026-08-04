@@ -622,7 +622,7 @@ class ConsensusAligner:
             if len(report_nucleotides) <= coord_index * 3 + codon_nuc_index:
                 if repeat_position is None:
                     continue
-                elif repeat_position is not None and repeat_position >= ref_nuc_pos:
+                if repeat_position is not None and repeat_position >= ref_nuc_pos:
                     continue
 
             report_nuc_index = coord_index * 3 + codon_nuc_index
@@ -951,11 +951,11 @@ class ConsensusAligner:
             concordance_covered = 100 * sum(nuc_agreements) / sum(nuc_covered)
         except ZeroDivisionError:
             concordance_covered = 0.0
-        region_row = dict(seed_name=seed_name,
-                          region=region,
-                          contig=self.contig_name,
-                          pct_concordance=concordance_covered,
-                          pct_covered=covered)
+        region_row = {'seed_name': seed_name,
+                          'region': region,
+                          'contig': self.contig_name,
+                          'pct_concordance': concordance_covered,
+                          'pct_covered': covered}
         self.seed_concordance_writer.writerow(region_row)
 
 

@@ -10,7 +10,7 @@ import matplotlib
 from scipy.stats import entropy
 
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt  # noqa
+from matplotlib import pyplot as plt
 
 
 def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, use_gzip=False):
@@ -35,7 +35,7 @@ def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, 
     for merge_length, count_text in enumerate(bin_counts):
         count = int(count_text)
         if count:
-            writer.writerow(dict(merge_length=merge_length, count=count))
+            writer.writerow({'merge_length': merge_length, 'count': count})
 
 
 def plot_merge_lengths(read_entropy_file: typing.IO) -> plt.Figure:
@@ -59,9 +59,9 @@ def plot_merge_lengths(read_entropy_file: typing.IO) -> plt.Figure:
                  fontsize=14,
                  verticalalignment='center',
                  horizontalalignment='center',
-                 bbox=dict(boxstyle='round',
-                           facecolor='wheat',
-                           alpha=0.5))
+                 bbox={'boxstyle': 'round',
+                           'facecolor': 'wheat',
+                           'alpha': 0.5})
         return fig
     plots.append(ax1.bar(merge_lengths,
                          merge_counts,
@@ -164,28 +164,28 @@ def merge_for_entropy(fastq1_path,
 
     for merge_length, entropy_level in sorted(entropy_levels.items()):
         read_count = merge_lengths[merge_length]
-        writer.writerow(dict(merge_length=merge_length,
-                             count=read_count,
-                             entropy=entropy_level))
+        writer.writerow({'merge_length': merge_length,
+                             'count': read_count,
+                             'entropy': entropy_level})
 
 
 def main():
     print('Starting.')
-    scratch_paths = dict(
-        hla=Path('/home/don/git/MiCall/micall/tests/working') /
+    scratch_paths = {
+        'hla': Path('/home/don/git/MiCall/micall/tests/working') /
         'basespace_linked_data_hla_160729_M01841/scratch/71258A-HLA-B_S16',
-        hla2=Path('/home/don/git/MiCall/micall/tests/working') /
+        'hla2': Path('/home/don/git/MiCall/micall/tests/working') /
         'basespace_linked_data/scratch/71258A-HLA-B_S16',
-        hcv=Path('/home/don/git/MiCall/micall/tests/working/') /
+        'hcv': Path('/home/don/git/MiCall/micall/tests/working/') /
         'basespace_linked_microtest/scratch/2060A-V3LOOP_S8',
-        hiv=Path('/home/don/git/MiCall/micall/tests/working/') /
+        'hiv': Path('/home/don/git/MiCall/micall/tests/working/') /
         'basespace_linked_data_v3loop_hiv_hcv_190621_M04401/scratch' /
         '2569P1Y02945-1E8-HIV_S32',
-        tcr=Path('/home/don/git/MiCall/micall/tests/working/') /
+        'tcr': Path('/home/don/git/MiCall/micall/tests/working/') /
         'basespace_linked_data_tcr_190501_M05995/scratch/15PA2-HLA-B_S2',
-        v3=Path('/home/don/git/MiCall/micall/tests/working/') /
+        'v3': Path('/home/don/git/MiCall/micall/tests/working/') /
         'basespace_linked_data/scratch' /
-        '84681A-V3-WYD-T2-1-V3LOOP_S40')
+        '84681A-V3-WYD-T2-1-V3LOOP_S40'}
     scratch_path = scratch_paths['hcv']
     read_entropy_path = scratch_path / 'read_entropy.csv'
     with read_entropy_path.open() as read_entropy:

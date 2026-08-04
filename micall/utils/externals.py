@@ -79,7 +79,7 @@ class CommandWrapper(ExternalResource):
         self._logger = logger
 
     def build_args(self, args: List[str]) -> List[str]:
-        return [str(self.executable_path)] + args
+        return [str(self.executable_path), *args]
 
     def check_output(self, args: List[str] = [],
                      *popenargs: Any, **kwargs: Any) -> str:

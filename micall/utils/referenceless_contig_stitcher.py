@@ -1099,7 +1099,7 @@ def try_combine_1(
                 align_cache=align_cache,
             )
             if result is not None:
-                combined, additional_score = result
+                combined, _additional_score = result
                 return first, second, combined
 
     return None

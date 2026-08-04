@@ -26,7 +26,7 @@ from micall.utils.find_maximum_overlap import find_maximum_overlap, show_maximum
 )
 def test_maximum_overlap_cases(left, right, expected):
     if isinstance(expected, int):
-        (shift, value) = find_maximum_overlap(left, right)
+        (shift, _value) = find_maximum_overlap(left, right)
         assert shift == expected
     else:
         with pytest.raises(expected):
@@ -93,7 +93,7 @@ aaaa----
 
 @pytest.mark.parametrize("left, right, expected", print_cases)
 def test_print(left, right, expected):
-    (shift, value) = find_maximum_overlap(left, right)
+    (shift, _value) = find_maximum_overlap(left, right)
     ret = show_maximum_overlap(left, right, shift)
     assert ret == expected
 

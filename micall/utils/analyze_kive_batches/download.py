@@ -157,7 +157,7 @@ def download(root: DirPath, runs_json: Path, downloaded_runs_json: Path) -> None
 
     runs: Iterable[KiveRun] = tuple(KiveRun.from_json(run) for run in runs_raw)
     new_runs = tuple(collect_run_ids(root, runs))
-    new_content = json.dumps(list(run.raw for run in new_runs), indent='\t')
+    new_content = json.dumps([run.raw for run in new_runs], indent='\t')
 
     if downloaded_runs_json.exists():
         previous_content = downloaded_runs_json.read_text()

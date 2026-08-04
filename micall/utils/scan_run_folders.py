@@ -92,11 +92,11 @@ def scan_run_folders(runs_folder: Path, run_sizes_csv, group_size: int):
             version_zip.close()  # Writes index.
             zip_size = raw_file.tell()
             raw_file.close()
-            writer.writerow(dict(run=run_folder.name,
-                                 version=version,
-                                 fastqs=format_size(data_size),
-                                 outputs=format_size(size),
-                                 zipped=format_size(zip_size)))
+            writer.writerow({'run': run_folder.name,
+                                 'version': version,
+                                 'fastqs': format_size(data_size),
+                                 'outputs': format_size(size),
+                                 'zipped': format_size(zip_size)})
         run_sizes_csv.flush()
 
 

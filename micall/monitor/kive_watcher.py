@@ -423,7 +423,7 @@ class KiveWatcher:
     def get_container_version(self, app_id: str | int) -> str:
         """ Get the container version for a container app. """
         full_name = self.get_kive_container_name(app_id)
-        container_name, separator, version = full_name.rpartition(':')
+        _container_name, separator, version = full_name.rpartition(':')
         if not separator:
             # Weird case: no version found. Let's just return the full name.
             logger.warning('No version found in container name %r (id %r)', full_name, app_id)
@@ -446,10 +446,10 @@ class KiveWatcher:
                                                      'batch')
         if batch is None:
             batch = self.kive_retry(
-                lambda: self.session.endpoints.batches.post(json=dict(
-                    name=batch_name,
-                    description=description,
-                    groups_allowed=ALLOWED_GROUPS)))
+                lambda: self.session.endpoints.batches.post(json={
+                    'name': batch_name,
+                    'description': description,
+                    'groups_allowed': ALLOWED_GROUPS}))
 
         ret: Batch = batch  # type: ignore
         folder_watcher.batch = ret
@@ -503,21 +503,21 @@ class KiveWatcher:
         if (self.external_directory_name is None or
                 self.external_directory_path not in filepath.parents):
             dataset = self.session.endpoints.datasets.post(
-                files=dict(dataset_file=source_file),
-                data=dict(name=dataset_name,
-                          description=description,
-                          users_allowed=[],
-                          groups_allowed=ALLOWED_GROUPS))
+                files={'dataset_file': source_file},
+                data={'name': dataset_name,
+                          'description': description,
+                          'users_allowed': [],
+                          'groups_allowed': ALLOWED_GROUPS})
         else:
             external_path = os.path.relpath(filepath,
                                             self.external_directory_path)
             dataset = self.session.endpoints.datasets.post(
-                json=dict(name=dataset_name,
-                          description=description,
-                          externalfiledirectory=self.external_directory_name,
-                          external_path=external_path,
-                          users_allowed=[],
-                          groups_allowed=ALLOWED_GROUPS))
+                json={'name': dataset_name,
+                          'description': description,
+                          'externalfiledirectory': self.external_directory_name,
+                          'external_path': external_path,
+                          'users_allowed': [],
+                          'groups_allowed': ALLOWED_GROUPS})
         return dataset
 
     def add_sample_group(self, base_calls, sample_group):
@@ -596,6 +596,7 @@ class KiveWatcher:
                     raise
 
                 wait_for_retry(attempt_count, start_time)
+        return None
 
     def add_folder(self, base_calls: str) -> FolderWatcher:
         folder_watcher = FolderWatcher(base_calls, self)
@@ -900,7 +901,7 @@ class KiveWatcher:
 
         return self.find_or_launch_run(
             self.config.micall_filter_quality_pipeline_id,
-            dict(quality_csv=folder_watcher.quality_dataset),
+            {'quality_csv': folder_watcher.quality_dataset},
             'MiCall filter quality on ' + folder_watcher.run_name,
             folder_watcher.batch)
 
@@ -936,12 +937,12 @@ class KiveWatcher:
             if self.config.mixed_hcv_pipeline_id is None:
                 return None
             if pipeline_type == PipelineType.MIXED_HCV_MAIN:
-                input_datasets = dict(fastq1=sample_watcher.fastq_datasets[0],
-                                      fastq2=sample_watcher.fastq_datasets[1])
+                input_datasets = {'fastq1': sample_watcher.fastq_datasets[0],
+                                      'fastq2': sample_watcher.fastq_datasets[1]}
                 sample_name = sample_watcher.sample_group.names[0]
             else:
-                input_datasets = dict(fastq1=sample_watcher.fastq_datasets[2],
-                                      fastq2=sample_watcher.fastq_datasets[3])
+                input_datasets = {'fastq1': sample_watcher.fastq_datasets[2],
+                                      'fastq2': sample_watcher.fastq_datasets[3]}
                 sample_name = sample_watcher.sample_group.names[1]
             return self.find_or_launch_run(
                 self.config.mixed_hcv_pipeline_id,
@@ -989,9 +990,9 @@ class KiveWatcher:
             folder_watcher.bad_cycles_dataset = self.kive_retry(
                 lambda: self.session.get(bad_cycles_run_dataset['dataset']).json())
 
-        inputs = dict(fastq1=fastq1,
-                      fastq2=fastq2,
-                      bad_cycles_csv=folder_watcher.bad_cycles_dataset)
+        inputs = {'fastq1': fastq1,
+                      'fastq2': fastq2,
+                      'bad_cycles_csv': folder_watcher.bad_cycles_dataset}
         if sample_info is not None:
             inputs['sample_info_csv'] = sample_info
         return self.find_or_launch_run(
@@ -1028,10 +1029,10 @@ class KiveWatcher:
         info_file = StringIO()
         writer = DictWriter(info_file, ['sample', 'project', 'run_name', 'micall_version'])
         writer.writeheader()
-        writer.writerow(dict(sample=sample_name,
-                             project=project_code,
-                             run_name=folder_watcher.run_name,
-                             micall_version=micall_version))
+        writer.writerow({'sample': sample_name,
+                             'project': project_code,
+                             'run_name': folder_watcher.run_name,
+                             'micall_version': micall_version})
         bytes_file = BytesIO(info_file.getvalue().encode('utf8'))
         info_dataset = self.find_or_upload_dataset(
             bytes_file,
@@ -1209,20 +1210,20 @@ class KiveWatcher:
                     run = None
         if run is None:
             try:
-                run_datasets = [dict(argument=app_arg,
-                                     dataset=inputs[name]['url'])
+                run_datasets = [{'argument': app_arg,
+                                     'dataset': inputs[name]['url']}
                                 for name, app_arg in app_args.items()]
             except KeyError as e:
-                raise ValueError(f"Pipeline input error: {repr(e)}."
+                raise ValueError(f"Pipeline input error: {e!r}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
-                                 f" Does the run name {repr(run_name)} make sense for it?")
+                                 f" Does the run name {run_name!r} make sense for it?")
             if run_batch is None:
                 raise ValueError("Run batch is required.")
-            run_params = dict(name=run_name,
-                              batch=run_batch['url'],
-                              groups_allowed=ALLOWED_GROUPS,
-                              app=app_url,
-                              datasets=run_datasets)
+            run_params = {'name': run_name,
+                              'batch': run_batch['url'],
+                              'groups_allowed': ALLOWED_GROUPS,
+                              'app': app_url,
+                              'datasets': run_datasets}
             try:
                 run = self.session.endpoints.containerruns.post(json=run_params)
             except Exception as ex:

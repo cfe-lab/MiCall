@@ -9,8 +9,8 @@ class Bead:
     def __init__(self,
                  start: int,
                  end: int,
-                 target_start: int = None,
-                 target_end: int = None,
+                 target_start: int | None = None,
+                 target_end: int | None = None,
                  alignment=None,
                  skipped=0):
         self.start = self.display_start = start

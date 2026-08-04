@@ -302,10 +302,10 @@ def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, 
     else:
         raise RuntimeError('Sample sheet "DataSplit" section is not iterable')
 
-    project_region_map = dict([((entry['project_name'],
-                                 entry['coordinate_region_name']), entry['id'])
-                               for entry in project_regions])
-    region_map = dict([(entry['name'], entry['id']) for entry in regions])
+    project_region_map = {(entry['project_name'],
+                                 entry['coordinate_region_name']): entry['id']
+                               for entry in project_regions}
+    region_map = {entry['name']: entry['id'] for entry in regions}
     # noinspection PyTypeChecker
     sample_tags = dict(map(itemgetter('filename', 'tags'), data_split))
     # noinspection PyTypeChecker

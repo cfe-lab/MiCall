@@ -640,13 +640,13 @@ class TestAdvancedRetryLogic:
         def test_function(exception_type):
             if exception_type == "os_error":
                 raise OSError("OS Error")
-            elif exception_type == "io_error":
+            if exception_type == "io_error":
                 raise IOError("IO Error")
-            elif exception_type == "permission_error":
+            if exception_type == "permission_error":
                 raise PermissionError("Permission denied")
-            elif exception_type == "file_not_found":
+            if exception_type == "file_not_found":
                 raise FileNotFoundError("File not found")
-            elif exception_type == "value_error":
+            if exception_type == "value_error":
                 raise ValueError("Value error")
             return "success"
 
@@ -962,7 +962,7 @@ class TestComplexIntegrationScenarios:
                     if call_count <= 2:
                         raise OSError(errno.EACCES, "Permission denied")
                     # Success on 3rd attempt
-                    return None
+                    return
 
                 perm_dir = temp_path / "permission_test"
                 with patch.object(Path, "mkdir", side_effect=mock_mkdir):

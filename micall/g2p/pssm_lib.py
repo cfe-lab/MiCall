@@ -62,7 +62,7 @@ class Pssm(object):
             try:
                 with open(path) as handle:
                     # load g2p score matrix
-                    self.g2p_matrix = dict([(i, {}) for i in range(len(self.std_v3))])
+                    self.g2p_matrix = {i: {} for i in range(len(self.std_v3))}
                     for line in handle:
                         items = line.split('\t')
                         residue = items[0]
@@ -176,7 +176,7 @@ class Pssm(object):
         aa_seq = ''.join(aa_list[0] for aa_list in aa_lists)  # aa_seq_s in pssm_lib.rb
 
         if qachecks:
-            if any(['*' in aa_list for aa_list in aa_lists]):
+            if any('*' in aa_list for aa_list in aa_lists):
                 return -1, None
 
         std = std.replace('-', 'X')  # fix gaps in reference

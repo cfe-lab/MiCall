@@ -139,7 +139,7 @@ def _make_cache_key(
         param_value = parameters[key]
         # Convert sets to sorted lists for consistent serialization
         if isinstance(param_value, builtins.set):
-            input_key[key] = sorted(list(param_value))
+            input_key[key] = sorted(param_value)
         else:
             input_key[key] = param_value
 
@@ -380,7 +380,7 @@ def cached(
                 # Copy cached result to output location(s)
                 if len(output_paths) == 1:
                     # Single output
-                    output_path = list(output_paths.values())[0]
+                    output_path = next(iter(output_paths.values()))
                     if isinstance(cached_result, Path):
                         shutil.copy2(cached_result, output_path)
                     else:
@@ -403,7 +403,7 @@ def cached(
             # Store output file(s) in cache
             output_to_cache: Union[Path, Mapping[str, Path]]
             if len(output_paths) == 1:
-                output_to_cache = list(output_paths.values())[0]
+                output_to_cache = next(iter(output_paths.values()))
             elif len(output_paths) > 1:
                 output_to_cache = output_paths
             else:
@@ -545,4 +545,4 @@ def entry():
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

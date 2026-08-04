@@ -74,15 +74,15 @@ def load_coverage(report_file, runs_folder):
                 coverage = median(int(row['coverage'])
                                   for row in sample_rows
                                   if row['coverage'] != '0')
-                writer.writerow(dict(sample=sample,
-                                     reads=read_count,
-                                     coverage=coverage,
-                                     is_good=is_good))
+                writer.writerow({'sample': sample,
+                                     'reads': read_count,
+                                     'coverage': coverage,
+                                     'is_good': is_good})
         for sample in sorted(unseen_samples):
-            writer.writerow(dict(sample=sample,
-                                 reads=read_counts[sample],
-                                 coverage=0,
-                                 is_good=False))
+            writer.writerow({'sample': sample,
+                                 'reads': read_counts[sample],
+                                 'coverage': 0,
+                                 'is_good': False})
 
 
 def display_coverage(report_file):
