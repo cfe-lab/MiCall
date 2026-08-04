@@ -163,4 +163,4 @@ def cli() -> int:
 
 
 if __name__ == '__main__':
-    exit(cli())  # noqa: PLR1722
+    sys.exit(cli())
