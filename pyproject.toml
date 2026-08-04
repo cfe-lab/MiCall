@@ -124,6 +124,11 @@ markers = [
     "iva: test requires IVA (deselect with '-m \"not iva\"')"
 ]
 
+[tool.ruff.lint]
+ignore = [
+    "I001",    # Import order.
+]
+
 [tool.ruff.lint.per-file-ignores]
 # TODO: resolve these warnings insteads of ignoring them.
 
