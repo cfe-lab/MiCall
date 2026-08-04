@@ -127,8 +127,7 @@ markers = [
 [tool.ruff.lint]
 ignore = [
     "I001",    # Import order.
-    "UP045",   # Prefer X|None to Optional[X].
-    "UP037",   # Quotes in type annotations.
+    "UP",      # All pyupgrade rules.
     "EXE001",  # Executable bit doesn't match shebang.
 ]
 
