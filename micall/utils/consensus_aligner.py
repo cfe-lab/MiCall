@@ -61,7 +61,8 @@ def align_gotoh(coordinate_seq: str, consensus: str) -> Optional[Alignment]:
             ctg_len=len(coordinate_seq),
             strand=1,
             mapq=0)
-    return None
+    else:
+        return None
 
 
 def connect_alignments(alignments: Iterable[Alignment]) -> Iterator[Alignment]:
@@ -621,7 +622,7 @@ class ConsensusAligner:
             if len(report_nucleotides) <= coord_index * 3 + codon_nuc_index:
                 if repeat_position is None:
                     continue
-                if repeat_position is not None and repeat_position >= ref_nuc_pos:
+                elif repeat_position is not None and repeat_position >= ref_nuc_pos:
                     continue
 
             report_nuc_index = coord_index * 3 + codon_nuc_index

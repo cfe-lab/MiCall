@@ -21,13 +21,14 @@ CommandArgs = Union[CommandArg, Sequence[CommandArg]]
 def compile_value(v: Value) -> str:
     if isinstance(v, Deref):
         return v.compile()
-    if isinstance(v, Path):
+    elif isinstance(v, Path):
         return escape(str(v))
-    if isinstance(v, str):
+    elif isinstance(v, str):
         return escape(v)
-    # Should never happen
-    _: NoReturn = v
-    raise RuntimeError(f"Unknown value type: {v!r}")
+    else:
+        # Should never happen
+        _: NoReturn = v
+        raise RuntimeError(f"Unknown value type: {v!r}")
 
 
 def compile_command_arg(a: CommandArg) -> str:
@@ -36,12 +37,13 @@ def compile_command_arg(a: CommandArg) -> str:
     """
     if isinstance(a, Deref):
         return a.compile()
-    if isinstance(a, Path):
+    elif isinstance(a, Path):
         return shlex.quote(escape(str(a)))
-    if isinstance(a, str):
+    elif isinstance(a, str):
         return shlex.quote(escape(a))
-    _: NoReturn = a
-    raise RuntimeError(f"Unexpected CommandArg type: {type(a)}.")
+    else:
+        _: NoReturn = a
+        raise RuntimeError(f"Unexpected CommandArg type: {type(a)}.")
 
 
 @dataclass(frozen=True)

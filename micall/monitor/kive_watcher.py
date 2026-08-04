@@ -1213,9 +1213,9 @@ class KiveWatcher:
                                      dataset=inputs[name]['url'])
                                 for name, app_arg in app_args.items()]
             except KeyError as e:
-                raise ValueError(f"Pipeline input error: {e!r}."
+                raise ValueError(f"Pipeline input error: {repr(e)}."
                                  f" The specified app with id {pipeline_id} appears to expect a different set of inputs."
-                                 f" Does the run name {run_name!r} make sense for it?")
+                                 f" Does the run name {repr(run_name)} make sense for it?")
             if run_batch is None:
                 raise ValueError("Run batch is required.")
             run_params = dict(name=run_name,

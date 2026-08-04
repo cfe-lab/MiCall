@@ -7,7 +7,7 @@ import micall.utils.referencefull_contig_stitcher as referencefull
 import micall.utils.referenceless_contig_stitcher as referenceless
 
 # Re-export for backward compatibility with tests
-from micall.utils.referencefull_contig_stitcher import read_remap_counts, read_contigs
+from micall.utils.referencefull_contig_stitcher import read_remap_counts, read_contigs  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -115,4 +115,4 @@ def cli() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__': cli()
+if __name__ == '__main__': cli()  # noqa

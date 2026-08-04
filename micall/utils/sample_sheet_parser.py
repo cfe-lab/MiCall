@@ -41,7 +41,8 @@ def _sample_sheet_parser(handle: TextIO) -> Dict[str, object]:
         if _determine_version(csvfile) == 1:
             handle = StringIO(content)
             return sample_sheet_v1_parser(handle)
-        return sample_sheet_v2_parser(csvfile)
+        else:
+            return sample_sheet_v2_parser(csvfile)
 
 
 @dataclass(frozen=True)
@@ -89,4 +90,4 @@ def main():
     print(json.dumps(ss, indent='\t'))
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__": main() # noqa

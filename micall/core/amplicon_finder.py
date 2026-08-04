@@ -10,7 +10,7 @@ import matplotlib
 from scipy.stats import entropy
 
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # noqa
 
 
 def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, use_gzip=False):

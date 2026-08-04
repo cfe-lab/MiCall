@@ -31,7 +31,8 @@ class Contig:
         unqualified = repr(self.name) if self.name is not None else ""
         if index == 1 and self.name:
             return unqualified
-        return unqualified + f'({index})'
+        else:
+            return unqualified + f'({index})'
 
     def register(self) -> int:
         ctx = registry.get()

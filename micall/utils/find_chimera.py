@@ -90,7 +90,7 @@ def find_consensus(rows, seed_name, region_name):
             if nuc_count > max_count:
                 max_nucs[pos] = nuc
                 max_count = nuc_count
-    max_pos = (max_nucs and max(max_nucs.keys())) or 0
+    max_pos = max_nucs and max(max_nucs.keys()) or 0
     consensus = ''.join(max_nucs.get(i+1, 'N') for i in range(max_pos))
     return consensus
 

@@ -102,8 +102,9 @@ def open_fastq(filename: Path) -> TextIO:
         binary_file = open(filename, "rb")
         gzip_file = GzipFile(fileobj=binary_file)
         return TextIOWrapper(gzip_file)
-    # Regular text file
-    return open(filename, "r")
+    else:
+        # Regular text file
+        return open(filename, "r")
 
 
 def _read_one_fastq_record(fastq: TextIO) -> Optional[str]:
@@ -218,11 +219,11 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
             # Find name column: prioritize 'region', then 'ref', then 'sample'
             # Fall back to position if none are present
             contig_name = None
-            if row.get("region"):
+            if "region" in row and row["region"]:
                 contig_name = row["region"]
-            elif row.get("ref"):
+            elif "ref" in row and row["ref"]:
                 contig_name = row["ref"]
-            elif row.get("sample"):
+            elif "sample" in row and row["sample"]:
                 contig_name = row["sample"]
             else:
                 contig_name = f"contig{i}"
@@ -595,4 +596,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()
+if __name__ == "__main__": entry()  # noqa

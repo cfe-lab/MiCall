@@ -123,4 +123,4 @@ def cli() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": cli()
+if __name__ == "__main__": cli()  # noqa

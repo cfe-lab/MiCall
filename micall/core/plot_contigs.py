@@ -667,12 +667,12 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
     reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
-    sorted_roots = sorted(parent_id for
+    sorted_roots = list(sorted(parent_id for
                                parent_id in contig_map
-                               if parent_id not in parent_graph)
-    sorted_sinks = sorted(child_id for
+                               if parent_id not in parent_graph))
+    sorted_sinks = list(sorted(child_id for
                                child_id in contig_map
-                               if child_id not in children_graph)
+                               if child_id not in children_graph))
 
     lstrip_set = set(lstrip_map.keys())
     rstrip_set = set(rstrip_map.keys())
@@ -949,7 +949,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         children = final_children_mapping[root]
         unaligned_children = carved_unaligned_parts.get(root, [])
         todo = children + unaligned_children
-        todo = sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1)))
+        todo = list(sorted(todo, key=lambda name: query_position_map.get(name, (-1, -1))))
         current_group = []
         for child_id in todo + [None]:
             if child_id in unaligned_children:
@@ -973,7 +973,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         name_map[root] = f"{i + 1}"
 
         todo_ids = children + unaligned_children
-        todo_ids = sorted(todo_ids, key=lambda name: query_position_map.get(name, (-1, -1)))
+        todo_ids = list(sorted(todo_ids, key=lambda name: query_position_map.get(name, (-1, -1))))
         for k, child_id in enumerate(todo_ids):
             if len(todo_ids) > 1:
                 name_map[child_id] = f"{i + 1}.{k + 1}"

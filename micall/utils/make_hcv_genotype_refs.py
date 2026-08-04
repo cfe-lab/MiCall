@@ -15,7 +15,7 @@ def convert_fasta (lines):
     for i in lines:
         if i[0] == '$': # skip h info
             continue
-        if i[0] == '>' or i[0] == '#':
+        elif i[0] == '>' or i[0] == '#':
             if len(sequence) > 0:
                 blocks.append([h, sequence])
                 sequence = ''    # reset containers

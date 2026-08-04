@@ -901,8 +901,9 @@ def try_combine_contigs(
                 log(events.Covered(left.unique_name, right.unique_name))
             assert bigger is not None
             return (bigger, SCORE_EPSILON)
-        # Partial coverage with mismatches: cannot merge reliably.
-        return None
+        else:
+            # Partial coverage with mismatches: cannot merge reliably.
+            return None
 
     result_seq, overlap_size, join_boundary = merge_by_concordance(
         aligned_1, aligned_2, left_remainder, right_remainder

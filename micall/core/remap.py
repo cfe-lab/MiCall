@@ -377,7 +377,7 @@ def counts_to_conseqs(refmap, seeds=None):
             end = max(end, len(seed)+1)
         for pos in range(1, end):
             nuc_counts = pos_nucs.get(pos)
-            most_common = (nuc_counts and find_top_token(nuc_counts)) or None
+            most_common = nuc_counts and find_top_token(nuc_counts) or None
             if most_common is None:
                 if seed is None:
                     conseq += 'N'

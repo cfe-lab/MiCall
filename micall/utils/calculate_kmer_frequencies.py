@@ -309,4 +309,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()
+if __name__ == "__main__": entry()  # noqa

@@ -66,7 +66,7 @@ class FolderWatcher:
             return set()
         if self.filter_quality_run is None:
             raise RuntimeError("Filter quality run has not been started yet.")    
-        if self.filter_quality_run['id'] in self.active_runs:
+        elif self.filter_quality_run['id'] in self.active_runs:
             # Individual runs are waiting for filter quality. Return all.
             all_samples = set(self.all_samples)
             return all_samples - self.completed_samples
@@ -95,7 +95,7 @@ class FolderWatcher:
             return 0
         if self.filter_quality_run is None:
             raise RuntimeError("Filter quality run has not been started yet.")
-        if self.filter_quality_run['id'] in self.active_runs:
+        elif self.filter_quality_run['id'] in self.active_runs:
             # Individual runs are waiting for filter quality.
             # Return n * number of samples, because each can launch n runs.
             n = sum(
@@ -129,7 +129,7 @@ class FolderWatcher:
             return
         if self.filter_quality_run is None:
             raise RuntimeError("Filter quality run has not been started yet.")
-        if self.filter_quality_run['id'] in self.active_runs:
+        elif self.filter_quality_run['id'] in self.active_runs:
             if not self.fetch_run_status(self.filter_quality_run):
                 # Still running, nothing more to check.
                 return

@@ -244,7 +244,8 @@ def calculate_avg(column: str, rows: Rows) -> Optional[float]:
     num = average(collect_values(column, rows))
     if math.isnan(num):
         return None
-    return num
+    else:
+        return num
 
 
 def count_matches(rows: Rows) -> Optional[int]:
@@ -259,7 +260,8 @@ def count_matches(rows: Rows) -> Optional[int]:
 
     if anything:
         return total
-    return None
+    else:
+        return None
 
 
 def count_distinct_matches(rows: Rows) -> Optional[int]:
@@ -274,7 +276,8 @@ def count_distinct_matches(rows: Rows) -> Optional[int]:
 
     if anything:
         return len(ret)
-    return None
+    else:
+        return None
 
 
 def count_duplicate_matches(rows: Rows) -> int:
@@ -310,7 +313,8 @@ def avg_contigs_lengths(rows: Rows) -> float:
     lengths = list(collect_contigs_lengths(rows))
     if lengths:
         return sum(lengths) / len(lengths)
-    return 0
+    else:
+        return 0
 
 
 def count_soft_clips_from_nuc(path_to_file: Path) -> Optional[int]:

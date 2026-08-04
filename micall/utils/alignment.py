@@ -26,7 +26,7 @@ class Alignment:
     def coerce(obj: Union['Alignment', mappy.Alignment]) -> 'Alignment':
         if isinstance(obj, Alignment):
             return obj
-        if isinstance(obj, mappy.Alignment):
+        elif isinstance(obj, mappy.Alignment):
             cigar = [(size, CigarActions(action))
                      for (size, action) in obj.cigar]
             return Alignment(ctg=obj.ctg,
@@ -38,8 +38,9 @@ class Alignment:
                              cigar=cigar,
                              cigar_str=obj.cigar_str,
                              )
-        _: NoReturn = obj
-        raise TypeError(f"Cannot coerce from {obj!r}.")
+        else:
+            _: NoReturn = obj
+            raise TypeError(f"Cannot coerce from {obj!r}.")
 
     def to_cigar_hit(self) -> CigarHit:
         return CigarHit(Cigar(self.cigar),
