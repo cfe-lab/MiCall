@@ -13,7 +13,7 @@ from micall.utils.work_dir import WorkDir
 
 class CheckFastqTest(TestCase):
     def create_temp_file(self, suffix, cleanup=True):
-        f = NamedTemporaryFile(mode='w', dir='.', suffix=suffix, delete=False)
+        f = NamedTemporaryFile(mode='w', dir='.', suffix=suffix, delete=False)  # noqa: SIM115
         if cleanup:
             self.addCleanup(os.unlink, f.name)
         return f
@@ -95,7 +95,7 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
         stderr_file = os.path.join(self.work_dir, 'stderr.txt')
 
-        with WorkDir.using(Path(self.work_dir)):
+        with WorkDir.using(Path(self.work_dir)):  # noqa: SIM117
             with open(stderr_file, 'w') as stderr_f:
                 with Stderr.using(stderr_f):
                     prelim_map(

@@ -10,7 +10,7 @@ from collections import defaultdict, Counter, namedtuple
 
 import yaml
 
-import micall.resistance.pdfreport as pdfreport
+import micall.resistance.pdfreport as pdfreport  # noqa: PLR0402
 
 REPORT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'genreport.yaml')
 
@@ -54,7 +54,7 @@ class ReportTemplate:
         err_string = "Error in configuration file"
         if not isinstance(virus_config, dict):
             raise ValueError("""Configuration in {} must be a
-    single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(virus_config)))
+    single dict class, but found a {}""".format(REPORT_CONFIG_PATH, type(virus_config)))  # noqa: TRY004
         # The following keys must be present in the dict
         known_keys = frozenset([
             'known_drugs', 'known_drug_classes', 'known_regions',
@@ -113,7 +113,7 @@ class ReportTemplate:
         fld_name = "known_drugs"
         drug_dct = virus_config.get(fld_name, {})
         if not isinstance(drug_dct, dict) or\
-           sum([isinstance(s, str) for s in drug_dct.keys()]) != len(drug_dct):
+           sum([isinstance(s, str) for s in drug_dct.keys()]) != len(drug_dct):  # noqa: SIM118
             raise RuntimeError("{}: {} must be a dict with strings as keys".format(
                 err_string, fld_name))
         # make sure each drug class is defined

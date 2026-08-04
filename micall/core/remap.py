@@ -201,7 +201,7 @@ def sam_to_conseqs(samfile,
     """
 
     if debug_reports:
-        for key in debug_reports.keys():
+        for key in debug_reports.keys():  # noqa: SIM118
             debug_reports[key] = Counter()
 
     # refmap structure: {refname: {pos: Counter({nuc: count})}}
@@ -231,7 +231,7 @@ def sam_to_conseqs(samfile,
             mixtures = []
             nucs = set()
             qualities = set()
-            for nuc, quality in counts.keys():
+            for nuc, quality in counts.keys():  # noqa: SIM118
                 nucs.add(nuc)
                 qualities.add(quality)
             qualities = sorted(qualities)
@@ -516,7 +516,7 @@ def remap(fastq1: Path,
 
         remap_counts_writer = csv.DictWriter(
             remap_counts_file,
-            'type count filtered_count seed_dist other_dist other_seed'.split(),
+            'type count filtered_count seed_dist other_dist other_seed'.split(),  # noqa: SIM905
             lineterminator=os.linesep)
         remap_counts_writer.writeheader()
         remap_counts_writer.writerow({'type': 'raw', 'count': raw_count})
@@ -652,7 +652,7 @@ def remap(fastq1: Path,
         # write consensus sequences and counts
         with open(remap_conseq_csv, 'w') as remap_conseq_file:
             remap_conseq_file.write('region,sequence\n')  # record consensus sequences for later use
-            for refname in new_counts.keys():
+            for refname in new_counts.keys():  # noqa: SIM118
                 # NOTE this is the consensus sequence to which the reads were mapped, NOT the
                 # current consensus!
                 conseq = conseqs.get(refname) or projects.getReference(refname)
@@ -727,7 +727,7 @@ def map_to_contigs(fastq1,
 
     remap_counts_writer = csv.DictWriter(
         remap_counts_csv,
-        'type count filtered_count seed_dist other_dist other_seed'.split(),
+        'type count filtered_count seed_dist other_dist other_seed'.split(),  # noqa: SIM905
         lineterminator=os.linesep)
     remap_counts_writer.writeheader()
     remap_counts_writer.writerow({'type': 'raw', 'count': raw_count})
@@ -999,8 +999,8 @@ def map_to_reference(fastq1,
         file and the output SAM file.
     """
     # generate reference file from current set of consensus sequences
-    outfile = open(reffile, 'w')
-    for region, conseq in refseqs.items():
+    outfile = open(reffile, 'w')  # noqa: SIM115
+    for region, conseq in refseqs.items():  # noqa: FURB122
         outfile.write('>%s\n%s\n' % (region, conseq))
     outfile.close()
 
@@ -1031,7 +1031,7 @@ def map_to_reference(fastq1,
     with open(samfile, 'w') as f:
         # write SAM header
         f.write('@HD\tVN:1.0\tSO:unsorted\n')
-        for rname, refseq in refseqs.items():
+        for rname, refseq in refseqs.items():  # noqa: FURB122
             f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
@@ -1193,7 +1193,7 @@ def find_top_token(base_counts):
             top_count = count
         elif count < top_count:
             break
-        if token < top_token:
+        if token < top_token:  # noqa: PLR1730
             top_token = token
     if top_token == 'N':
         top_token = None

@@ -62,7 +62,7 @@ class TestRetryLogic:
     @patch("micall.monitor.disk_operations.logger")
     def test_wait_for_retry_logs_error(self, mock_logger, mock_sleep):
         """wait_for_retry should log error and sleep."""
-        start_time = datetime.now() - timedelta(
+        start_time = datetime.now() - timedelta(  # noqa: DTZ005
             hours=2
         )  # Old enough to trigger logging
         wait_for_retry(3, "test operation", start_time)
@@ -78,7 +78,7 @@ class TestRetryLogic:
     @patch("micall.monitor.disk_operations.logger")
     def test_wait_for_retry_within_hour(self, mock_logger, mock_sleep):
         """wait_for_retry within first hour should not log."""
-        start_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not trigger logging
+        start_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not trigger logging  # noqa: DTZ005
         wait_for_retry(2, "test operation", start_time)
 
         mock_logger.error.assert_not_called()
@@ -129,7 +129,7 @@ class TestDiskRetryDecorator:
         mock_func = Mock(side_effect=error)
         decorated = disk_retry("test_op")(mock_func)
 
-        start_time = datetime(2024, 1, 1, 0, 0, 0)
+        start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
         with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
             mock_datetime.now.side_effect = [
                 start_time,
@@ -355,7 +355,7 @@ class TestRemoveEmptyDirectory:
         mock_rmdir.side_effect = OSError(errno.EACCES, "Permission denied")
         path = Path("/test/no_access_dir")
 
-        start_time = datetime(2024, 1, 1, 0, 0, 0)
+        start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
         with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
             mock_datetime.now.side_effect = [
                 start_time,
@@ -563,7 +563,7 @@ class TestErrorScenarios:
             Mock(),  # Success
         ]
 
-        with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
+        with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:  # noqa: SIM117
             with disk_file_operation(path, "r"):
                 pass
 
@@ -612,7 +612,7 @@ class TestAdvancedRetryLogic:
             try:
                 result = thread_test_function(thread_id)
                 results[thread_id] = result
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 results[thread_id] = str(e)
 
         threads = []
@@ -652,7 +652,7 @@ class TestAdvancedRetryLogic:
 
         # Should retry these errors
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
-            start_time = datetime(2024, 1, 1, 0, 0, 0)
+            start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
             with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
                 mock_datetime.now.side_effect = [
                     start_time,
@@ -664,7 +664,7 @@ class TestAdvancedRetryLogic:
             assert mock_wait.call_count == 1
 
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
-            start_time = datetime(2024, 1, 1, 0, 0, 0)
+            start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
             with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
                 mock_datetime.now.side_effect = [
                     start_time,
@@ -906,7 +906,7 @@ class TestComplexIntegrationScenarios:
                         "backup": len(backup_files),
                     }
 
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     errors[thread_id] = str(e)
 
             # Run multiple worker threads
@@ -924,7 +924,7 @@ class TestComplexIntegrationScenarios:
             assert len(errors) == 0, f"Errors occurred: {errors}"
             assert len(results) == 4  # Updated from 8 to 4
 
-            for thread_id, result in results.items():
+            for thread_id, result in results.items():  # noqa: PERF102
                 assert result["remaining"] == 5  # 5 files left after deleting 5
                 assert result["backup"] == 10  # All 10 files backed up
 
@@ -945,7 +945,7 @@ class TestComplexIntegrationScenarios:
                     return content
 
                 error_file = temp_path / "network_error.txt"
-                with patch.object(Path, "write_text", side_effect=mock_write_text):
+                with patch.object(Path, "write_text", side_effect=mock_write_text):  # noqa: SIM117
                     with patch("micall.monitor.disk_operations.wait_for_retry"):
                         disk_operations.write_text(error_file, "test content")
                         assert call_count == 4  # Should succeed on 4th attempt
@@ -962,10 +962,10 @@ class TestComplexIntegrationScenarios:
                     if call_count <= 2:
                         raise OSError(errno.EACCES, "Permission denied")
                     # Success on 3rd attempt
-                    return
+                    return  # noqa: PLR1711
 
                 perm_dir = temp_path / "permission_test"
-                with patch.object(Path, "mkdir", side_effect=mock_mkdir):
+                with patch.object(Path, "mkdir", side_effect=mock_mkdir):  # noqa: SIM117
                     with patch("micall.monitor.disk_operations.wait_for_retry"):
                         disk_operations.mkdir_p(perm_dir, exist_ok=True)
                         assert call_count == 3
@@ -1021,9 +1021,9 @@ class TestErrorMessageVerification:
         def failing_operation():
             raise OSError("Simulated failure")
 
-        with patch("micall.monitor.disk_operations.logger.error") as mock_logger:
+        with patch("micall.monitor.disk_operations.logger.error") as mock_logger:  # noqa: SIM117
             with patch("micall.monitor.disk_operations.sleep"):
-                start_time = datetime(2024, 1, 1, 0, 0, 0)
+                start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
                 with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
                     mock_datetime.now.side_effect = [
                         start_time,
@@ -1047,9 +1047,9 @@ class TestErrorMessageVerification:
         """Test wait_for_retry logging behavior."""
 
         # Test with logging enabled
-        with patch("micall.monitor.disk_operations.logger.error") as mock_logger:
+        with patch("micall.monitor.disk_operations.logger.error") as mock_logger:  # noqa: SIM117
             with patch("micall.monitor.disk_operations.sleep"):
-                old_time = datetime.now() - timedelta(hours=2)
+                old_time = datetime.now() - timedelta(hours=2)  # noqa: DTZ005
                 disk_operations.wait_for_retry(3, "test_op", old_time)
 
                 mock_logger.assert_called_once()
@@ -1059,9 +1059,9 @@ class TestErrorMessageVerification:
                 assert hasattr(mock_logger.call_args[0][2], "total_seconds")
 
         # Test with logging disabled
-        with patch("micall.monitor.disk_operations.logger.error") as mock_logger:
+        with patch("micall.monitor.disk_operations.logger.error") as mock_logger:  # noqa: SIM117
             with patch("micall.monitor.disk_operations.sleep"):
-                recent_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not log
+                recent_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not log  # noqa: DTZ005
                 disk_operations.wait_for_retry(3, "test_op", recent_time)
 
                 mock_logger.assert_not_called()
@@ -1076,7 +1076,7 @@ class TestDiskFileOperationContextManager:
             temp_path = Path(temp_dir)
             test_file = temp_path / "test.txt"
 
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError):  # noqa: SIM117
                 with disk_operations.disk_file_operation(test_file, "w") as f:
                     f.write("some content")
                     raise ValueError("Test exception")
@@ -1120,7 +1120,7 @@ class TestDiskFileOperationContextManager:
                     raise OSError("Simulated open failure")
                 return original_open(self, mode, buffering, encoding, errors, newline)
 
-            with patch.object(Path, "open", mock_open):
+            with patch.object(Path, "open", mock_open):  # noqa: SIM117
                 with patch("micall.monitor.disk_operations.wait_for_retry"):
                     with disk_operations.disk_file_operation(test_file, "w") as f:
                         f.write("success after retry")

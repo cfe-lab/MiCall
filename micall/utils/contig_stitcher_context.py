@@ -7,7 +7,7 @@ from copy import deepcopy
 
 import micall.utils.referencefull_contig_stitcher_events as full_events
 import micall.utils.referenceless_contig_stitcher_events as less_events
-import micall.utils.registry as registry
+import micall.utils.registry as registry  # noqa: PLR0402
 from micall.utils.referenceless_contig_stitcher_overlap import Overlap
 from micall.utils.contig_stitcher_contigs import ContigId
 
@@ -52,7 +52,7 @@ class GenericStitcherContext(ABC, Generic[T]):
         class_context = cls._context()
         try:
             existing = class_context.get()
-        except BaseException:
+        except BaseException:  # noqa: BLE001
             with cls.fresh() as ret:
                 yield ret
                 return

@@ -72,7 +72,7 @@ class FolderWatcher:
             return all_samples - self.completed_samples
 
         active_samples = set()
-        for run, (sample_watches, pipeline_type) in self.active_runs.items():
+        for run, (sample_watches, pipeline_type) in self.active_runs.items():  # noqa: PERF102
             sample_watcher = sample_watches[0]
             if sample_watcher is None:
                 raise RuntimeError("Sample group is not set for an active run.")
@@ -129,7 +129,7 @@ class FolderWatcher:
             return
         if self.filter_quality_run is None:
             raise RuntimeError("Filter quality run has not been started yet.")
-        if self.filter_quality_run['id'] in self.active_runs:
+        if self.filter_quality_run['id'] in self.active_runs:  # noqa: SIM102
             if not self.fetch_run_status(self.filter_quality_run):
                 # Still running, nothing more to check.
                 return
@@ -243,7 +243,7 @@ class FolderWatcher:
             self.run_pipeline(PipelineType.RESISTANCE, sample_watcher)
             # Launched resistance run, nothing more to check on sample.
             return sample_watcher.is_failed
-        if resistance_run['id'] in self.active_runs:
+        if resistance_run['id'] in self.active_runs:  # noqa: SIM102
             if not self.fetch_run_status(resistance_run):
                 # Still running, nothing more to check on sample.
                 return sample_watcher.is_failed

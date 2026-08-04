@@ -294,7 +294,7 @@ def combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file
 
 def align_samples(combined_hcv_path, aligned_hcv_path):
     with open(aligned_hcv_path, 'wb') as aligned_hcv:
-        run(['mafft', '--quiet', combined_hcv_path], stdout=aligned_hcv)
+        run(['mafft', '--quiet', combined_hcv_path], stdout=aligned_hcv)  # noqa: PLW1510
 
 
 def check_sample_trees(filtered_hcv_path, consensus_files):

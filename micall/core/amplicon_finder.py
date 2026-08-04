@@ -24,9 +24,9 @@ def merge_reads(fastq1_path, fastq2_path, joined_fastq_path, merge_lengths_csv, 
     result = run(args, check=True, stdout=PIPE, encoding='UTF8')
     count_summary = result.stdout.strip().split(',')
     bin_counts = count_summary[2:]
-    if bin_counts[0].startswith('['):
+    if bin_counts[0].startswith('['):  # noqa: FURB188
         bin_counts[0] = bin_counts[0][1:]
-    if bin_counts[-1].endswith(']'):
+    if bin_counts[-1].endswith(']'):  # noqa: FURB188
         bin_counts[-1] = bin_counts[-1][:-1]
     writer = DictWriter(merge_lengths_csv,
                         ['merge_length', 'count'],

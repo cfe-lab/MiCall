@@ -53,7 +53,7 @@ def open_files(**files):
             else:
                 file = file_info[0]
                 mode = file_info[1]
-                files_opened[name] = open(file, mode)
+                files_opened[name] = open(file, mode)  # noqa: SIM115
             # Could add support for open file handles in the future by checking if file_info is an instance of TextIO
         yield files_opened
     finally:
@@ -66,7 +66,7 @@ def open_files(**files):
                     file.close()
                 except (IOError, OSError):
                     filenames.append(filename)
-                    pass
+                    pass  # noqa: PIE790
         if len(filenames) > 0:
             logger.error(f"The following files could not be closed: {filenames}")
             raise IOError

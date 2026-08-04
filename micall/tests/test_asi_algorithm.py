@@ -569,7 +569,7 @@ class AsiAlgorithmNewRulesTest(TestCase):
 
 
 class AsiAlgorithmJsonRulesTest(TestCase):
-    default_drugs = [{"name": "madeupivir",
+    default_drugs = [{"name": "madeupivir",  # noqa: RUF012
                       "genotypes": [{"rules": "SCORE FROM(41L => 4)",
                                      "genotype": "1A",
                                      "region": "NS5a",
@@ -603,7 +603,7 @@ class AsiAlgorithmJsonRulesTest(TestCase):
                                      "region": "NS5a",
                                      "reference": "HCV3-S52-NS5a"}],
                       "code": "SIL"}]
-    references = {'HCV1A-H77-NS5a': 'A'*100,
+    references = {'HCV1A-H77-NS5a': 'A'*100,  # noqa: RUF012
                   'HCV1B-Con1-NS5a': 'A'*100,
                   'HCV2-JFH-1-NS5a': 'A'*100,
                   'HCV3-S52-NS5a': 'A'*100}

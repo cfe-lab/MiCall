@@ -303,7 +303,7 @@ def set(
 
         _add_cache_entry(procedure, input_key, cache_entry)
     else:
-        raise ValueError(f"Unsupported output type: {type(output)}")
+        raise ValueError(f"Unsupported output type: {type(output)}")  # noqa: TRY004
 
 
 def cached(
@@ -465,7 +465,7 @@ def clear_cache(pattern: Optional[str] = None) -> int:
     cleared_count = 0
     procedures_to_remove = []
 
-    for procedure in cache_data.keys():
+    for procedure in cache_data.keys():  # noqa: SIM118
         # Try exact match first
         if procedure == pattern:
             cleared_count += len(cache_data[procedure])
@@ -502,7 +502,7 @@ def clear_cache(pattern: Optional[str] = None) -> int:
 
         # Remove unreferenced files
         for item in cache_folder.iterdir():
-            if item.is_file() and item.name != "data.json":
+            if item.is_file() and item.name != "data.json":  # noqa: SIM102
                 if item.name not in referenced_hashes:
                     item.unlink()
 

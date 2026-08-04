@@ -23,7 +23,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    fasta_file = NamedTemporaryFile(mode='w', prefix='contigs', suffix='.fasta')
+    fasta_file = NamedTemporaryFile(mode='w', prefix='contigs', suffix='.fasta')  # noqa: SIM115
     contig_sources = []  # [(sample_name, contig_num, ref_name, contig_size)]
     ref_name = None
     for sample_name, sample_rows in groupby(DictReader(args.contigs_csv),

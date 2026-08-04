@@ -7,7 +7,7 @@ import micall.utils.referencefull_contig_stitcher as referencefull
 import micall.utils.referenceless_contig_stitcher as referenceless
 
 # Re-export for backward compatibility with tests
-from micall.utils.referencefull_contig_stitcher import read_remap_counts, read_contigs
+from micall.utils.referencefull_contig_stitcher import read_remap_counts, read_contigs  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def main(argv: Sequence[str]) -> int:
                             help='Read length used for the centred coverage window around '
                                  'the join cut. (default: 150)')
 
-    parser.prog = ' '.join([Path(__file__).stem, head_args.mode])
+    parser.prog = ' '.join([Path(__file__).stem, head_args.mode])  # noqa: FLY002
 
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
@@ -70,7 +70,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug2:
         logger.setLevel(logging.DEBUG - 1)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(level=logger.level)
 

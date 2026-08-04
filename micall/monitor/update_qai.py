@@ -76,11 +76,11 @@ def retry_operation(operation, operation_name: str):
 
             # Record start time on first failure
             if start_time is None:
-                start_time = datetime.now()
+                start_time = datetime.now()  # noqa: DTZ005
 
-            elapsed = datetime.now() - start_time
+            elapsed = datetime.now() - start_time  # noqa: DTZ005
             if elapsed >= MAXIMUM_RETRY_TIME:
-                logger.error(f'{operation_name} failed after {elapsed} of retrying', exc_info=True)
+                logger.error(f'{operation_name} failed after {elapsed} of retrying', exc_info=True)  # noqa: G201
                 break
 
             logger.warning(f'{operation_name} failed (attempt {attempt_count})', exc_info=True)
@@ -357,7 +357,7 @@ def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, 
             score = read_int(coverage, 'on.score')
         else:
             score = read_int(coverage, 'off.score')
-            sequencing = project_map[sorted(project_map.keys())[0]]
+            sequencing = project_map[sorted(project_map.keys())[0]]  # noqa: FURB192
         project_region_id = project_region_map[(coverage['project'],
                                                 coverage['region'])]
         raw_count = counts_map[tags]
@@ -389,7 +389,7 @@ def build_review_decisions(coverage_file: TextIO, collated_counts_file: TextIO, 
         project_map = sequencing_map.get(tags)
         if project_map is None:
             raise KeyError("No sequencing found with tags '%s'." % tags)
-        first_project = sorted(project_map.keys())[0]
+        first_project = sorted(project_map.keys())[0]  # noqa: FURB192
         sequencing = project_map[first_project]
         decision_key = sample_name
         decisions[decision_key] = {
@@ -469,7 +469,7 @@ def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: 
         for row in reader:
             row['lab_miseq_run_id'] = run_id
             response = retry_operation(
-                lambda: session.post_json(endpoint, row),
+                lambda: session.post_json(endpoint, row),  # noqa: B023
                 f"Posting proviral data to {endpoint}"
             )
             responses.append(response)
@@ -478,7 +478,7 @@ def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: 
 
 def clean_runname(runname: str) -> str:
     try:
-        rundate = datetime.strptime(runname, '%d-%b-%y')
+        rundate = datetime.strptime(runname, '%d-%b-%y')  # noqa: DTZ007
         cleaned_runname = datetime.strftime(rundate, '%d-%b-%Y')
     except ValueError:
         cleaned_runname = runname
@@ -556,7 +556,7 @@ def process_folder(item: Tuple[Path, PipelineType], qai_server: str, qai_user: s
     if experiment_name is None:
         raise RuntimeError("Sample sheet is missing 'Experiment Name' field.")
     if not isinstance(experiment_name, str):
-        raise RuntimeError("'Experiment Name' field is not a string.")
+        raise RuntimeError("'Experiment Name' field is not a string.")  # noqa: TRY004
 
     with qai_helper.Session() as session:
         retry_qai_login(session, qai_server, qai_user, qai_password, f"{result_folder}")
@@ -647,7 +647,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
     start_time = None
     while True:
         try:
-            next_scan = datetime.now() + FOLDER_SCAN_INTERVAL
+            next_scan = datetime.now() + FOLDER_SCAN_INTERVAL  # noqa: DTZ005
             results_paths = scan_qai_done_flags(raw_data_folder, pipeline_version)
             if not results_paths:
                 logger.info('No runs pending QAI upload.')
@@ -657,7 +657,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
                 coverage_scores = results_path / 'coverage_scores.csv'
 
                 def check_coverage_file():
-                    return coverage_scores.exists()
+                    return coverage_scores.exists()  # noqa: B023
 
                 has_coverage_file = retry_operation(
                     check_coverage_file,
@@ -671,14 +671,14 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
                                        pipeline_version)
                         status = 'succeeded'
                     except Exception:
-                        logger.error("QAI upload failed for %s", results_path, exc_info=True)
+                        logger.error("QAI upload failed for %s", results_path, exc_info=True)  # noqa: G201
                         status = 'failed'
                 else:
                     logger.debug("Skipping QAI upload for %s (coverage_scores.csv missing)", results_path)
                     status = 'skipped'
 
                 def write_done_flag():
-                    disk_operations.write_text(done_qai_flag, status)
+                    disk_operations.write_text(done_qai_flag, status)  # noqa: B023
 
                 retry_operation(write_done_flag, f"Writing done_qai_upload flag for {results_path}")
 
@@ -686,7 +686,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
             start_time = None
             if not wait:
                 break
-            while wait and datetime.now() < next_scan:
+            while wait and datetime.now() < next_scan:  # noqa: DTZ005
                 sleep(SLEEP_SECONDS)
         except Exception:
             if not retry:
@@ -695,11 +695,11 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
 
             attempt_count += 1
             if start_time is None:
-                start_time = datetime.now()
+                start_time = datetime.now()  # noqa: DTZ005
 
-            elapsed = datetime.now() - start_time
+            elapsed = datetime.now() - start_time  # noqa: DTZ005
             if elapsed >= MAXIMUM_RETRY_TIME:
-                logger.error(
+                logger.error(  # noqa: G201
                     'upload_loop failed after %s of retrying; giving up.',
                     elapsed,
                     exc_info=True,
@@ -719,7 +719,7 @@ def main() -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(level=logger.level)
 

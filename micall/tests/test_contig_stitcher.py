@@ -6,7 +6,7 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.utils.registry as registry
+import micall.utils.registry as registry  # noqa: PLR0402
 import micall.utils.referencefull_contig_stitcher as stitcher
 from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,

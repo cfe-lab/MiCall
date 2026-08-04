@@ -16,7 +16,7 @@ class LandmarkReader:
         :param f: The file to load from, or None to load from the default.
         """
         if f is None:
-            with DEFAULT_PATH.open() as f:
+            with DEFAULT_PATH.open() as f:  # noqa: PLR1704
                 return LandmarkReader.load(f)
         return LandmarkReader(safe_load(f))
 

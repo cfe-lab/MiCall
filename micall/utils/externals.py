@@ -8,7 +8,7 @@ from typing import Optional, List, Any, Iterator
 from functools import cached_property
 from abc import ABC, abstractmethod, abstractproperty
 import shutil
-import importlib.resources as resources
+import importlib.resources as resources  # noqa: PLR0402
 import contextlib
 
 
@@ -81,7 +81,7 @@ class CommandWrapper(ExternalResource):
     def build_args(self, args: List[str]) -> List[str]:
         return [str(self.executable_path), *args]
 
-    def check_output(self, args: List[str] = [],
+    def check_output(self, args: List[str] = [],  # noqa: B006
                      *popenargs: Any, **kwargs: Any) -> str:
         """ Run command with arguments and return its output as a byte string.
 
@@ -109,7 +109,7 @@ class CommandWrapper(ExternalResource):
             ex.strerror = f'{original_error} for command {final_args}.'
             raise
 
-    def create_process(self, args: List[str] = [],
+    def create_process(self, args: List[str] = [],  # noqa: B006
                        *popenargs: Any, **kwargs: Any) -> subprocess.Popen:
         """ Execute a child program in a new process.
 
@@ -160,7 +160,7 @@ class CommandWrapper(ExternalResource):
         """
         p = self.create_process(args,
                                 stdout=subprocess.PIPE,
-                                *popenargs,
+                                *popenargs,  # noqa: B026
                                 **kwargs)
         assert p.stdout is not None
         for line in p.stdout:
@@ -193,7 +193,7 @@ class CommandWrapper(ExternalResource):
             assert p.stderr is not None
             for line in p.stderr:
                 if not ignored or not re.search(ignored, line):
-                    self.logger.warn(format_string, line.rstrip())
+                    self.logger.warn(format_string, line.rstrip())  # noqa: G010
             p.wait()
             if p.returncode:
                 raise subprocess.CalledProcessError(p.returncode,
@@ -312,7 +312,7 @@ class LineCounter:
 
 
 class Blastn(CommandWrapper):
-    BLAST_COLUMNS = ['qaccver',
+    BLAST_COLUMNS = ['qaccver',  # noqa: RUF012
                      'saccver',
                      'qlen',
                      'pident',

@@ -175,7 +175,7 @@ def combine_region_nucleotides(nuc_dict, region_nucleotides, region_start, prev_
     assert region_start is not None
     mismatch = False
     overlap_midpoint = int((prev_region_end - region_start + 1) / 2)
-    if overlap_midpoint < 0:
+    if overlap_midpoint < 0:  # noqa: PLR1730
         overlap_midpoint = 0
     for nuc_index, nucleotide in enumerate(region_nucleotides):
         position = region_start + nuc_index - 1
@@ -1756,14 +1756,14 @@ class InsertionWriter(object):
                     continue
                 ref_pos = insert_pos - 1
                 self.ref_insertions[region][ref_pos] =\
-                    aggregate_insertions(insert_nuc_counts[left],
+                    aggregate_insertions(insert_nuc_counts[left],  # noqa: PLR1733
                                          consensus_pos=left-1,
                                          coverage_nuc=insertion_coverage[left])
                 count = sum(counts.values())
                 # Only care about insertions in the middle of the sequence,
                 # so ignore any that come before or after the reference.
                 # Also report if we're in test mode (no report_aminos).
-                if not report_aminos or insert_pos not in (0, None):
+                if not report_aminos or insert_pos not in (0, None):  # noqa: SIM102
                     if insert_pos is not None:
                         region_insert_pos_counts[insert_pos] += count
 
@@ -1969,7 +1969,7 @@ def aln2counts(aligned_csv,
                                  coverage_summary,
                                  included_regions={'V3LOOP'})
 
-        if coverage_summary_csv is not None:
+        if coverage_summary_csv is not None:  # noqa: SIM102
             if coverage_summary:
                 coverage_writer.writerow(coverage_summary)
 

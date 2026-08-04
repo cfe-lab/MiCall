@@ -448,7 +448,7 @@ def count_reads(reads, file_prefix):
     """
     if file_prefix is None:
         all_counts = Counter()
-        counts_context = contextlib.suppress()  # Dummy value.
+        counts_context = contextlib.suppress()  # Dummy value.  # noqa: B022
     else:
         all_counts = counts_context = BigCounter(file_prefix)
     with counts_context:

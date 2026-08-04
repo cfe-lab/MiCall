@@ -59,7 +59,7 @@ def micall_installation(temp_venv: Path):
     q = quote
 
     # Check that MiCall is not installed.
-    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")
+    stdout, stderr, returncode = run_command(f"export PATH= ; . {q(temp_venv)} && command -v micall")  # noqa: RUF059
     assert returncode != 0, "Unexpected MiCall installation."
 
     # Path to MiCall directory (3 levels up from the current script file)
@@ -76,7 +76,7 @@ def micall_installation(temp_venv: Path):
 def run_command(command: Sequence[str]):
     """Executes a shell command within a provided environment and returns output, error, and return code."""
 
-    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # noqa: PLW1510
     return result.stdout.decode('utf-8').strip(), result.stderr.decode('utf-8').strip(), result.returncode
 
 
@@ -155,4 +155,4 @@ def test_executables_duplicates():
 
     for key, group in groupby(executables, key=get_name):
         paths = list(map(str, group))
-        assert len(paths) == 1, f"Scripts {group!r} share the same executable name."
+        assert len(paths) == 1, f"Scripts {group!r} share the same executable name."  # noqa: B031

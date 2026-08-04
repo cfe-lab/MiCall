@@ -10,7 +10,7 @@ from micall.utils.referencefull_contig_stitcher import (
     ReferencefullStitcherContext,
 )
 import micall.utils.referencefull_contig_stitcher as stitcher
-import micall.utils.registry as registry
+import micall.utils.registry as registry  # noqa: PLR0402
 from micall.core.plot_contigs import build_stitcher_figure
 from aligntools import CigarHit, Cigar, CigarActions
 from typing import Dict, List

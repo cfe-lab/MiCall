@@ -125,7 +125,7 @@ def genotype(contigs_fasta: Path, db: Optional[Path] = None,
         )
 
     if db is None:
-        with default_database() as db:
+        with default_database() as db:  # noqa: PLR1704
             stdout = invoke_blast(db)
     else:
         stdout = invoke_blast(db)

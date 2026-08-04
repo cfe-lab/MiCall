@@ -27,7 +27,7 @@ def parse_args():
 def plot(counts, filename, window_size=31):
     window_counts = defaultdict(dict)  # {(seed, consensus): {mid_pos: (agree, disagree)}}
     for names, agreement_counts in counts.items():
-        for mid_pos in agreement_counts.keys():
+        for mid_pos in agreement_counts.keys():  # noqa: SIM118
             hit_count = 0
             window_start = mid_pos - window_size/2
             window_end = window_start + window_size
@@ -110,7 +110,7 @@ def process_file(sample_name, projects, args):
         combo_rows = {combo: list(group)
                       for combo, group in groupby(region_rows,
                                                   itemgetter('seed', 'region'))}
-    seed_names = {combo[0] for combo in combo_rows.keys()}
+    seed_names = {combo[0] for combo in combo_rows.keys()}  # noqa: SIM118
     seed_map = {seed_name: projects.getReference(seed_name)
                 for seed_name in seed_names}
     consensus_map = {combo: find_consensus(rows, *combo)

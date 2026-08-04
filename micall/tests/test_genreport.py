@@ -326,7 +326,7 @@ def test_algorithm_regions_processable():
             empty = create_empty_aminos(region, None, 'HIV1B-seed', algorithms)
             assert empty.region == region
             assert len(empty.aminos) > 0
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             errors.append(f"{region}: {e!s}")
 
     assert not errors, (

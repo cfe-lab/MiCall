@@ -45,7 +45,7 @@ CFE_SomeId_10-Jul-2014_N501-N702_Sample2_Proj2,Sample2_Proj2,10-Jul-2014_testing
 10-Jul-2014_testing,Research:Sample2_Proj2:FALSE Comments:Sample2_Proj2:thisiscommenttwo \
 Chemistry:Sample2_Proj2:BreakingBad Disablecontamcheck:Sample2_Proj2:TRUE,
 """
-    clean_filenames = ["Sample1-Proj1_S1", "Sample2-Proj2_S2"]
+    clean_filenames = ["Sample1-Proj1_S1", "Sample2-Proj2_S2"]  # noqa: RUF012
 
     def setUp(self):
         self.maxDiff = None
@@ -187,7 +187,7 @@ Comments:Sample3_Proj3:thisiscommentthree;Sample4_Proj4:thisiscommentfour \
 Chemistry:Sample3_Proj3:BreakingBad;Sample4_Proj4:MrWizard \
 Disablecontamcheck:Sample3_Proj3:TRUE;Sample4_Proj4:TRUE,
 """
-    clean_filenames = ["Sample1-Proj1-Sample2-Proj2_S1", "Sample3-Proj3-Sample4-Proj4_S2"]
+    clean_filenames = ["Sample1-Proj1-Sample2-Proj2_S1", "Sample3-Proj3-Sample4-Proj4_S2"]  # noqa: RUF012
 
     def setUp(self):
         self.ss = _sample_sheet_parser(StringIO(self.stub_sample_sheet))
@@ -547,7 +547,7 @@ Sample_ID,Sample_Name,Sample_Plate,Sample_Well,index,index2,GenomeFolder,Sample_
 2,4321,20-Jul-2017.M04401,N/A,GTGTTGCA,CATTGTCA,"",bccfe_2_N501-N702_DRT
 """
 
-    clean_filenames = ["1234_1234_S1", "4321_S2"]
+    clean_filenames = ["1234_1234_S1", "4321_S2"]  # noqa: RUF012
 
     def setUp(self):
         self.maxDiff = None

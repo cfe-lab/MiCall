@@ -104,7 +104,7 @@ class OutcomeCache:
 
         # Let K0 be the largest element in TAIL such that K0 <= C[START]
         k0 = None
-        for k in self.tail.keys():
+        for k in self.tail.keys():  # noqa: SIM118
             if (k0 is None or k > k0) and k <= c[start]:
                 k0 = k
 
@@ -422,7 +422,7 @@ class DD(object):
             self.__last_reported_length = len(c)
 
     # Delta Debugging (old ESEC/FSE version)
-    def old_dd(self, c, r=[], n=2):
+    def old_dd(self, c, r=[], n=2):  # noqa: B006
         """Return the failure-inducing subset of C"""
 
         assert self.test([]) == DD.PASS

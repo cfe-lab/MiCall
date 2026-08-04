@@ -27,7 +27,7 @@ def convert_fasta (lines):
     try:
         blocks.append([h,sequence])    # handle last entry
     except RuntimeError:
-        raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))
+        raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))  # noqa: TRY002
     return blocks
 
 hyphy = HyPhy._THyPhy(os.getcwd(), 1)  # @UndefinedVariable

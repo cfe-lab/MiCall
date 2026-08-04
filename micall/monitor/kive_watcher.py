@@ -109,7 +109,7 @@ def now() -> datetime:
 
     Wrapped in a local function so it can be mocked during testing.
     """
-    return datetime.now()
+    return datetime.now()  # noqa: DTZ005
 
 
 def find_samples(raw_data_folder: Path,
@@ -138,11 +138,11 @@ def find_samples(raw_data_folder: Path,
 
             # Record start time on first failure
             if start_time is None:
-                start_time = datetime.now()
+                start_time = datetime.now()  # noqa: DTZ005
 
-            elapsed = datetime.now() - start_time
+            elapsed = datetime.now() - start_time  # noqa: DTZ005
             if elapsed >= MAXIMUM_RETRY_TIME:
-                logger.error(
+                logger.error(  # noqa: G201
                     'find_samples failed after %s of retrying; giving up.',
                     elapsed,
                     exc_info=True,
@@ -181,7 +181,7 @@ def compress_old_versions(version_path: Path) -> None:
         # noinspection PyUnresolvedReferences
         zip_name = version_folder.name + '.zip'
         # noinspection PyTypeChecker
-        with open(results_path / zip_name, 'wb') as f:
+        with open(results_path / zip_name, 'wb') as f:  # noqa: SIM117
             with ZipFile(f, 'w', ZIP_DEFLATED) as z:
                 # noinspection PyTypeChecker
                 for folder_path_str, folders, files in os.walk(version_folder):
@@ -244,7 +244,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
     sample_sheet_path = run_path / "SampleSheet.csv"
 
     try:
-        start_time = datetime.now()
+        start_time = datetime.now()  # noqa: DTZ005
         for attempt_count in count(1):
             try:
                 file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
@@ -253,14 +253,14 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                 sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
             except IOError:
-                elapsed = datetime.now() - start_time
+                elapsed = datetime.now() - start_time  # noqa: DTZ005
                 if elapsed >= MAXIMUM_RETRY_TIME:
                     raise
                 wait_for_retry(attempt_count, start_time)
                 continue
 
     except Exception:
-        logger.error("Finding sample groups in %s", run_path, exc_info=True)
+        logger.error("Finding sample groups in %s", run_path, exc_info=True)  # noqa: G201
         disk_operations.write_text(run_path / "errorprocessing",
                                  "Finding sample groups failed.\n")
         sample_groups = []
@@ -320,13 +320,13 @@ def wait_for_retry(attempt_count: int, start_time: datetime) -> None:
                                  attempt_count)
 
     # Determine if we should log based on elapsed time
-    elapsed = datetime.now() - start_time
+    elapsed = datetime.now() - start_time  # noqa: DTZ005
     should_log_warning = elapsed >= timedelta(hours=1)
 
     if should_log_warning:
-        logger.warning('Waiting %s before retrying.', delay, exc_info=True)
+        logger.warning('Waiting %s before retrying.', delay, exc_info=True)  # noqa: LOG014
     else:
-        logger.info('Waiting %s before retrying.', delay, exc_info=True)
+        logger.info('Waiting %s before retrying.', delay, exc_info=True)  # noqa: LOG014
     sleep(delay.total_seconds())
 
 
@@ -584,11 +584,11 @@ class KiveWatcher:
 
                 # Record start time on first failure
                 if start_time is None:
-                    start_time = datetime.now()
+                    start_time = datetime.now()  # noqa: DTZ005
 
-                elapsed = datetime.now() - start_time
+                elapsed = datetime.now() - start_time  # noqa: DTZ005
                 if elapsed >= MAXIMUM_RETRY_TIME:
-                    logger.error(
+                    logger.error(  # noqa: G201
                         'add_sample_group failed after %s of retrying; giving up.',
                         elapsed,
                         exc_info=True,
@@ -619,7 +619,7 @@ class KiveWatcher:
                 poll_only_new_runs = any(
                     folder_watcher.has_new_runs
                     for folder_watcher in self.folder_watchers.values())
-                for folder, folder_watcher in self.folder_watchers.items():
+                for folder, folder_watcher in self.folder_watchers.items():  # noqa: PERF102
                     folder_watcher.poll_only_new_runs = poll_only_new_runs
                     folder_watcher.poll_runs()
 
@@ -631,11 +631,11 @@ class KiveWatcher:
 
                 # Record start time on first failure
                 if start_time is None:
-                    start_time = datetime.now()
+                    start_time = datetime.now()  # noqa: DTZ005
 
-                elapsed = datetime.now() - start_time
+                elapsed = datetime.now() - start_time  # noqa: DTZ005
                 if elapsed >= MAXIMUM_RETRY_TIME:
-                    logger.error(
+                    logger.error(  # noqa: G201
                         'poll_runs failed after %s of retrying; giving up.',
                         elapsed,
                         exc_info=True,
@@ -655,7 +655,7 @@ class KiveWatcher:
                 results_path = self.collate_folder(folder_watcher,
                                                    pipeline_group)
                 folder_watcher.active_pipeline_groups.remove(pipeline_group)
-                if results_path is not None:
+                if results_path is not None:  # noqa: SIM102
                     if not folder_watcher.active_pipeline_groups:
                         disk_operations.touch(results_path / "done_all_processing")
                         self.folder_watchers.pop(folder)
@@ -1132,7 +1132,7 @@ class KiveWatcher:
             input_types[1] = input_types[0]
         selected_urls = [input_dataset_urls[input_type]
                          for input_type in input_types]
-        input_datasets = [self.kive_retry(lambda: self.session.get(url).json())
+        input_datasets = [self.kive_retry(lambda: self.session.get(url).json())  # noqa: B023
                           for url in selected_urls]
         inputs_dict = dict(zip(('main_amino_csv', 'midi_amino_csv', 'main_nuc_csv'),
                                input_datasets))
@@ -1158,7 +1158,7 @@ class KiveWatcher:
                                                 'unstitched_conseq_csv',
                                                 'unstitched_contigs_csv')}
         input_datasets = {
-            argument_name: self.kive_retry(lambda: self.session.get(url).json())
+            argument_name: self.kive_retry(lambda: self.session.get(url).json())  # noqa: B023
             for argument_name, url in input_dataset_urls.items()}
 
         # Update sample_info to append the denovo pipeline version
@@ -1200,7 +1200,7 @@ class KiveWatcher:
         untyped_run = self.find_name_and_permissions_match(old_runs, run_name, 'container run')
         run: Optional[Run] = untyped_run  # type: ignore
 
-        if run:
+        if run:  # noqa: SIM102
             if run['state'] == 'C':
                 run_id = run['id']
                 run_datasets: Sequence[RunCreationDataset] = self.session.endpoints.containerruns.get(
@@ -1293,8 +1293,8 @@ class KiveWatcher:
                     filename = get_output_filename(output_name)
                     dataset_url, = [match['dataset'] for match in matches]
                     self.kive_retry(
-                        lambda: self.download_file(dataset_url + 'download/',
-                                                   scratch_path / filename))
+                        lambda: self.download_file(dataset_url + 'download/',  # noqa: B023
+                                                   scratch_path / filename))  # noqa: B023
 
         if is_complete:
             return None
@@ -1338,10 +1338,10 @@ class KiveWatcher:
                 logger.info(f"Caught error while trying to read the phix data: {ex}")
 
                 if start_time is None:
-                    start_time = datetime.now()
+                    start_time = datetime.now()  # noqa: DTZ005
                 wait_for_retry(attempt_count, start_time)
             except Exception:
-                logger.error("Finding error metrics in %s",
+                logger.error("Finding error metrics in %s",  # noqa: G201
                          folder_watcher.run_folder,
                          exc_info=True)
                 disk_operations.write_text(folder_watcher.run_folder / "errorprocessing",

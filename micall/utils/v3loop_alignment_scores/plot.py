@@ -71,10 +71,10 @@ def plot_file(filename1):
         source1 = os.path.join('micall/tests/working/v3loop_alignment_scores/',
                                filename1)
         source2 = source1.replace('_R1_', '_R2_')
-        start = datetime.now()
+        start = datetime.now()  # noqa: DTZ005
         with open(source1) as fastq1, open(source2) as fastq2:
             score_counts = align_reads(fastq1, fastq2)
-        print('{}: {}'.format(datetime.now() - start, filename1))
+        print('{}: {}'.format(datetime.now() - start, filename1))  # noqa: DTZ005
         score_rows = sorted(score_counts.items())
         with open(scores_filename, 'w') as scores_csv:
             writer = DictWriter(scores_csv,

@@ -2115,7 +2115,7 @@ def test_write_resistance_handles_all_regions(asi_algorithms):
     try:
         write_resistance(amino_lists, resistance_csv, mutations_csv,
                         algorithms=asi_algorithms)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         pytest.fail(f"write_resistance failed for algorithm regions: {e}")
 
     # Verify output was generated

@@ -120,7 +120,7 @@ class BSrequest:
             pdct = paramdct.copy()
         assert "access_token" not in pdct, " access_token may not be in paramdct"
         pdct["access_token"] = self._access_token
-        reqstr = "/".join([self._burl, locstr])
+        reqstr = "/".join([self._burl, locstr])  # noqa: FLY002
         logger.info("API: %r" % reqstr)
         return requests.get(reqstr, params=pdct)
 
@@ -133,7 +133,7 @@ class BSrequest:
         Limit: limit the number of responses to Limit number of items.
         Offset: the offset of the first file to read in the whole collection
         """
-        jobj = self._raw_get_file("/".join(["runs", runid, "samples"]),
+        jobj = self._raw_get_file("/".join(["runs", runid, "samples"]),  # noqa: FLY002
                                   paramdct={"Limit": limit, "Offset": offset}).json()
         err_code, err_msg = self._responsestatus(jobj)
         if err_code:
@@ -955,7 +955,7 @@ def process_sample(sample, args, pssm, use_denovo=False):
                        use_denovo=use_denovo)
     except Exception:
         message = 'Failed to process {}.'.format(sample)
-        logger.error(message, exc_info=True)
+        logger.error(message, exc_info=True)  # noqa: G201
         raise RuntimeError(message)
 
 
@@ -970,7 +970,7 @@ def process_resistance(sample_group, run_info):
     except Exception:
         message = 'Failed to process resistance of {}.'.format(
             sample_group.main_sample)
-        logger.error(message, exc_info=True)
+        logger.error(message, exc_info=True)  # noqa: G201
         raise RuntimeError(message)
 
 

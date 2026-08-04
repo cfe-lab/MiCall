@@ -42,7 +42,7 @@ def load_coverage(report_file, runs_folder):
         if version_name is None:
             version_names = sorted(result_folder.iterdir())
             version_name = version_names[-1].name
-            logging.info('Loading version %s.', version_name)
+            logging.info('Loading version %s.', version_name)  # noqa: LOG015
         cascade_path = result_folder / version_name / 'cascade.csv'
         amino_path = result_folder / version_name / 'amino.csv'
         coverage_path = result_folder / version_name / 'coverage_scores.csv'
@@ -50,11 +50,11 @@ def load_coverage(report_file, runs_folder):
                          for path in (amino_path, cascade_path, coverage_path)
                          if not path.exists()]
         if missing_paths:
-            logging.warning('Folder %s is missing files: %s.',
+            logging.warning('Folder %s is missing files: %s.',  # noqa: LOG015
                             result_folder.parent.name,
                             missing_paths)
             continue
-        logging.debug('Loading folder %s.', result_folder.parent.name)
+        logging.debug('Loading folder %s.', result_folder.parent.name)  # noqa: LOG015
         with coverage_path.open() as coverage_file:
             reader = DictReader(coverage_file)
             good_coverages = {row['sample']
@@ -154,7 +154,7 @@ def main():
         if report_path == '-':
             report_file = sys.stdout
         else:
-            report_file = open(report_path, 'w')
+            report_file = open(report_path, 'w')  # noqa: SIM115
         with report_file:
             load_coverage(report_file, runs_folder)
     if os.path.exists(report_path):

@@ -11,14 +11,14 @@ def _can_parse_float(val: str) -> bool:
     try:
         float(val)
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
 def _parse_float(val: str) -> Union[float, None]:
     try:
         return float(val)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return None
 
 
@@ -64,7 +64,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
             try:
                 if x.is_integer():
                     return str(int(x))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
             # Use default string conversion for floats
             return str(x)
@@ -76,14 +76,14 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     def concat_all(xs: pd.Series) -> str:
         return '+'.join(map(tostr, xs.tolist()))
 
-    def _format_number(n: Union[float, int, None]) -> str:
+    def _format_number(n: Union[float, int, None]) -> str:  # noqa: PYI041
         if n is None:
             return ''
         if isinstance(n, float):
             try:
                 if n.is_integer():
                     return str(int(n))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
         return str(n)
 

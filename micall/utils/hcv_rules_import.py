@@ -75,7 +75,7 @@ class Range:
         r'(([</=]*) *([\d.]+)(-([\d.]+))?)[x ]*FS( range)?, likely susceptibi?le$'
     upper_pattern = \
         r'(([>/=]*) *([\d.]+)(-([\d.]+))?)[x ]*FS( range)?, resistance likely$'
-    score_phenotypes = {
+    score_phenotypes = {  # noqa: RUF012
         score: phenotype
         for phenotype, score in PHENOTYPE_SCORES.items()}
 
@@ -104,7 +104,7 @@ class Range:
             lower_operator_text = lower_match.group(2)
             if lower_operator_text == '<':
                 self.lower_operator = operator.lt
-            elif lower_operator_text in ('<=', '</='):
+            elif lower_operator_text in ('<=', '</='):  # noqa: SIM114
                 self.lower_operator = operator.le
             elif lower_match.group(5) and lower_operator_text == '':
                 self.lower_operator = operator.le
@@ -121,7 +121,7 @@ class Range:
             upper_operator_text = upper_match.group(2)
             if upper_operator_text == '>':
                 self.upper_operator = operator.gt
-            elif upper_operator_text in ('>=', '>/='):
+            elif upper_operator_text in ('>=', '>/='):  # noqa: SIM114
                 self.upper_operator = operator.ge
             elif upper_match.group(5) and upper_operator_text == '':
                 self.upper_operator = operator.ge
@@ -273,7 +273,7 @@ class WorksheetReader:
                     continue
                 fields = {heading: ws.cell(row_num, col).value
                           for col, heading in column_headings.items()}
-                for field in fields:
+                for field in fields:  # noqa: PLC0206
                     value = fields[field]
                     if value is not None:
                         fields[field] = str(value).strip()
@@ -729,7 +729,7 @@ class RulesWriter:
                     combination_score))
 
     def _check_conflicts(self, positions, section):
-        for pos, score_map in positions.items():
+        for pos, score_map in positions.items():  # noqa: PERF102
             for item1, item2 in itertools.combinations(
                     sorted(score_map.items()), 2):
                 score1, mutation_set1 = item1
@@ -961,7 +961,7 @@ def replace_wild_types(combination, reference):
                                            m.variant
                                            for m in mutation_set.mutations))
             mutations[i] = str(mutation_set)
-        pass
+        pass  # noqa: PIE790
     return '+'.join(mutations)
 
 

@@ -44,9 +44,9 @@ def main():
     plt.subplots_adjust(bottom=0.2, left=0.2)
 
     # {seed: {region: [values]}}
-    all_seed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))
+    all_seed_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))  # noqa: PIE807
     # {coord: {region: [values]}}
-    all_coord_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))
+    all_coord_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [])))  # noqa: PIE807
 
     for folder in folders_to_read:
         try:

@@ -18,7 +18,7 @@ BOWTIE_THREADS = 11
 class MicallDD(DD):
     def __init__(self, filename1, bad_cycles_filename):
         super(MicallDD, self).__init__()
-        if True or 'filter' in filename1:
+        if True or 'filter' in filename1:  # noqa: SIM222
             self.filename1 = filename1
         else:
             self.filename1 = self.filter_fastqs(filename1)
@@ -36,7 +36,7 @@ class MicallDD(DD):
     def filter_fastqs(self, filename1):
         filter_name1 = filename1 + '_filter.fastq'
         if os.path.exists(filter_name1):
-            logging.info('Already filtered.')
+            logging.info('Already filtered.')  # noqa: LOG015
             return filter_name1
         filename2 = get_reverse_filename(filename1)
         filter_name2 = filename2 + '_filter.fastq'
@@ -72,7 +72,7 @@ class MicallDD(DD):
                              if row['rname'].startswith('HCV-1') and 2500 < int(row['pos']) < 3500}
         self.filter_reads(filename1, filter_name1, mapped_qnames)
         self.filter_reads(filename2, filter_name2, mapped_qnames)
-        logging.info('Finished filtering with %d reads.', len(mapped_qnames))
+        logging.info('Finished filtering with %d reads.', len(mapped_qnames))  # noqa: LOG015
         return filter_name1
 
     def filter_reads(self, filename, filter_name, qnames):
@@ -80,7 +80,7 @@ class MicallDD(DD):
             for read in zip(fin, fin, fin, fin):
                 qname = read[0].split()[0][1:]
                 if qname in qnames:
-                    for line in read:
+                    for line in read:  # noqa: FURB122
                         fout.write(line)
 
     def _test(self, read_indexes, debug_file_prefix=None):
@@ -163,7 +163,7 @@ class MicallDD(DD):
         filename2 = get_reverse_filename(filename1)
         with open(filename1, 'w') as f1, open(filename2, 'w') as f2:
             for lines in selected_reads:
-                for line in lines[:4]:
+                for line in lines[:4]:  # noqa: FURB122
                     f1.write(line)
                 for line in lines[4:]:
                     f2.write(line)

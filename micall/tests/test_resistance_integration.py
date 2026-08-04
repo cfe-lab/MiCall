@@ -241,7 +241,7 @@ class TestConfigurationConsistency:
                 empty = create_empty_aminos(region, None, 'HIV1B-seed', asi_algorithms)
                 assert empty.region == region
                 assert len(empty.aminos) > 0
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 pytest.fail(f"Failed to create empty aminos for region {region}: {e}")
 
 

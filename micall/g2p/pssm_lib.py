@@ -175,7 +175,7 @@ class Pssm(object):
         # resolve into string
         aa_seq = ''.join(aa_list[0] for aa_list in aa_lists)  # aa_seq_s in pssm_lib.rb
 
-        if qachecks:
+        if qachecks:  # noqa: SIM102
             if any('*' in aa_list for aa_list in aa_lists):
                 return -1, None
 

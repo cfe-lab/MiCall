@@ -124,7 +124,7 @@ def genreport_rerun(source, working):
             for i, group in enumerate(groups):
                 working_path = os.path.join(working, group.names[0])
                 sample_name = os.path.basename(working_path)
-                with open(os.path.join(working_path, file_name), 'r') as source:
+                with open(os.path.join(working_path, file_name), 'r') as source:  # noqa: PLR1704
                     source_reader = csv.reader(source)
                     for j, row in enumerate(source_reader):
                         if j != 0:
@@ -188,7 +188,7 @@ def find_sample_results(samples_csv, source_folder, pipeline_version):
             if len(run_parts) < 2:
                 run_parts.append('M01841')
             format_string = '%d-%b-%y' if len(run_parts[0]) == 9 else '%d-%b-%Y'
-            run_date = datetime.strptime(run_parts[0], format_string)
+            run_date = datetime.strptime(run_parts[0], format_string)  # noqa: DTZ007
             base_run_name = run_date.strftime('%y%m%d') + '_' + run_parts[1]
             pattern = os.path.join(source_folder,
                                    'MiSeq',

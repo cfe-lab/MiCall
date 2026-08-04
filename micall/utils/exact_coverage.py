@@ -99,7 +99,7 @@ def open_fastq(filename: Path) -> TextIO:
 
     if is_gzipped:
         # Open in binary mode, wrap with GzipFile, then TextIOWrapper for text mode
-        binary_file = open(filename, "rb")
+        binary_file = open(filename, "rb")  # noqa: SIM115
         gzip_file = GzipFile(fileobj=binary_file)
         return TextIOWrapper(gzip_file)
     else:
@@ -573,7 +573,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(
         level=logger.level,

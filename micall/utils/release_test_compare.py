@@ -123,7 +123,7 @@ def find_runs(source_folder, target_folder, use_denovo):
 
 def parse_version(version_name):
     version_text = version_name.split('_')[-1]
-    if version_text.endswith('.zip'):
+    if version_text.endswith('.zip'):  # noqa: FURB188
         version_text = version_text[:-4]
     version_text, _possible_dash, possible_modifiers = version_text.partition("-")
     version_numbers = tuple(map(int, version_text.split('.')))
@@ -187,7 +187,7 @@ def read_samples(runs):
         except FileNotFoundError as ex:
             missing_files.append(str(ex))
             continue
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             bad_files.append((ex, run.target_path))
             continue
 
@@ -351,7 +351,7 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
          _source_key_pos) = source_scores.get(key, ('-', None, None))
         (target_score,
          target_seed,
-         target_key_pos) = target_scores.get(key, ('-', None, None))
+         target_key_pos) = target_scores.get(key, ('-', None, None))  # noqa: RUF059
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
         if MICALL_VERSION == '7.15':
@@ -497,7 +497,7 @@ def compare_consensus(sample: Sample,
             has_big_change = False
             dummy_row = {'refseq.nuc.pos': '-1',
                          'coverage': '0'}
-            if MICALL_VERSION == '7.15':
+            if MICALL_VERSION == '7.15':  # noqa: SIM102
                 if region.split('-')[-1] == 'NS5b':
                     NS5b_nucs = [nuc for nuc, row in target_details]
                     new_positions = [int(row['refseq.nuc.pos']) for nuc, row in target_details]
@@ -548,7 +548,7 @@ def compare_consensus(sample: Sample,
                                                 cutoff,
                                                 source_seq,
                                                 target_seq)
-        if False and consensus_distance.pct_diff > 5:
+        if False and consensus_distance.pct_diff > 5:  # noqa: SIM223
             print(sample.run.source_path, sample.name, consensus_distance)
             print(source_seq)
             print(target_seq)
@@ -572,7 +572,7 @@ def compare_consensus(sample: Sample,
             if stripped_source_seq in stripped_target_seq:
                 scenarios[Scenarios.CONSENSUS_EXTENDED].append('.')
                 continue
-        if (use_denovo and
+        if (use_denovo and  # noqa: SIM102
                 is_main and
                 seed == 'HIV1-B' and
                 region == 'HIV1B-vpr' and
@@ -709,7 +709,7 @@ def main():
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     with ProcessPoolExecutor() as pool:
         runs = find_runs(args.source_folder, args.target_folder, args.denovo)
@@ -745,7 +745,7 @@ def main():
             print(report, end='')
             all_consensus_distances.extend(consensus_distances)
             for key, messages in scenarios.items():
-                scenario_summaries[key] += scenarios[key]
+                scenario_summaries[key] += scenarios[key]  # noqa: PLR1733
     for key, messages in sorted(scenario_summaries.items()):
         if messages:
             sample_names = {message.split()[0] for message in messages}

@@ -34,7 +34,7 @@ drug.comments  #list of comments associated with this drug
 """
 from collections import defaultdict, namedtuple
 import re
-import xml.dom.minidom as minidom
+import xml.dom.minidom as minidom  # noqa: PLR0402
 from enum import Enum
 from pathlib import Path
 
@@ -268,8 +268,8 @@ class AsiAlgorithm:
             final = []
             for mut in muts:
                 # If it matches \d+\(NOT \w+\), then we got to do something fancy
-                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)
-                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.I)
+                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)  # noqa: FURB167
+                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.I)  # noqa: FURB167
                 match = ''
                 loc = ''
                 if tmpa:
@@ -307,7 +307,7 @@ class AsiAlgorithm:
             muts = tmp.group(1).split(',')
             cnt = 0
             for mut in muts:
-                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.I)
+                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.I)  # noqa: FURB167
                 aas = aaseq[int(tmp.group(1)) - 1]
                 for aa in aas:
                     if aa in tmp.group(2):
@@ -396,7 +396,7 @@ class AsiAlgorithm:
                                             high_score = float(high_score)
 
                                         if low_score <= drug_result.score <= high_score:
-                                            if int(level) > drug_result.level:
+                                            if int(level) > drug_result.level:  # noqa: PLR1730
                                                 drug_result.level = int(level)
                                             break
                     except MissingPositionError:

@@ -51,7 +51,7 @@ def create_datasets(names):
 @pytest.fixture(name='mock_clock')
 def create_mock_clock():
     with patch('micall.monitor.kive_watcher.now') as mock_clock:
-        mock_clock.return_value = datetime(2000, 1, 1)
+        mock_clock.return_value = datetime(2000, 1, 1)  # noqa: DTZ001
         yield mock_clock
 
 
@@ -1711,7 +1711,7 @@ def test_sample_info_includes_micall_version(raw_data_with_two_samples,
     # Get the sample_info CSV that was uploaded
     # Find the sample_info file by name
     sample_info_filename = None
-    for filename in uploaded_contents.keys():
+    for filename in uploaded_contents.keys():  # noqa: SIM118
         if '_info.csv' in filename:
             sample_info_filename = filename
             break
@@ -1822,7 +1822,7 @@ def test_sample_info_version_from_filter_quality(raw_data_with_two_samples,
 
     # Get the sample_info CSV that was uploaded
     sample_info_filename = None
-    for filename in uploaded_contents.keys():
+    for filename in uploaded_contents.keys():  # noqa: SIM118
         if '_info.csv' in filename:
             sample_info_filename = filename
             break

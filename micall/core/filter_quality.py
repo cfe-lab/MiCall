@@ -1,4 +1,4 @@
-import argparse
+import argparse  # noqa: EXE002
 import csv
 import itertools
 import math
