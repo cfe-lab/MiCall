@@ -42,7 +42,7 @@ def configure_logging(args) -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(
         level=logger.level,
@@ -78,7 +78,7 @@ def get_repository_name() -> str:
 
     version = get_latest_git_tag()
 
-    if version.startswith('v'):
+    if version.startswith('v'):  # noqa: FURB188
         version = version[1:]
 
     repository_name = f'docker.illumina.com/cfe_lab/micall:{version}'

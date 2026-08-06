@@ -6,11 +6,11 @@ Source: https://github.com/ArtPoon/bioinfo/blob/master/seqUtils.py#L143
 """
 from micall.utils.translation import reverse_and_complement
 
-nuc_seq = ''.join([
+nuc_seq = ''.join([  # noqa: FLY002
         "TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATATAGGACCAGGGAGAGCATTTTATGC",
         "AACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"
       ])
-reverse_compare = ''.join([
+reverse_compare = ''.join([  # noqa: FLY002
         "ACAATGTGCTTGTCTTATATCTCCTATTATTTCTCCTGTTGCATAAAATGCTCTCCCTGGTCCTA",
         "TATGTATACTTTTTCTTGTATTGTTGTTGGGTCTTGTACA"
       ])

@@ -45,7 +45,7 @@ class Scanner:
             samples = '\n\t'.join(e.samples)
             logger.error('Run %s has unknown samples in overrides:\n\t%s', folder_name, samples)
             return True
-        except Exception:
+        except Exception:  # noqa: BLE001
             raise RuntimeError(f'Failed to process run {folder_name}.')
         file_names = list_fastq_file_names(run_folder, "*_R1_*.fastq.gz", fallback_to_run_path=False)
         check_sample_name_consistency(sample_sheet_path, file_names, run_folder)
@@ -95,7 +95,7 @@ def main():
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(level=logger.level,
                         format='%(asctime)s[%(levelname)s]%(name)s: %(message)s')

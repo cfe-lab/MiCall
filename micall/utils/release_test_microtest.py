@@ -378,7 +378,7 @@ class ResultsFolder:
 
 
 def gzip_compress(source_path: Path, target_path: Path):
-    with source_path.open('rb') as source:
+    with source_path.open('rb') as source:  # noqa: SIM117
         with gzip.open(target_path, 'wb') as target:
             shutil.copyfileobj(source, target)
 
@@ -438,7 +438,7 @@ class SampleRunner:
             sections = sample_name.split('_')
             fields = sections[0].split('-')
             project_code = fields[-1]
-            writer.writerow(dict(sample=sample_name, project=project_code))
+            writer.writerow({'sample': sample_name, 'project': project_code})
 
         if self.is_denovo:
             output_names = [

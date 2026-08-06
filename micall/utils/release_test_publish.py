@@ -59,7 +59,7 @@ def main():
         rsync_args = ['rsync', '-a', results_path, target_path]
         if args.delete:
             rsync_args.append('--delete')
-        run(rsync_args)
+        run(rsync_args)  # noqa: PLW1510
         print('Done: ' + run_name)
     print('Done.')
 

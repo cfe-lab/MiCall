@@ -90,4 +90,4 @@ def main():
     print(json.dumps(ss, indent='\t'))
 
 
-if __name__ == "__main__": main() # noqa
+if __name__ == "__main__": main()

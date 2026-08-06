@@ -24,9 +24,9 @@ mixture_regex = re.compile('[WRKYSMBDHVN-]')
 mixture_dict = {'W': 'AT', 'R': 'AG', 'K': 'GT', 'Y': 'CT', 'S': 'CG',
                 'M': 'AC', 'V': 'AGC', 'H': 'ATC', 'D': 'ATG',
                 'B': 'TGC', 'N': 'ATGC', '-': 'ATGC'}
-ambig_dict = dict(("".join(sorted(v)), k)
+ambig_dict = {"".join(sorted(v)): k
                   for k, v in mixture_dict.items()
-                  if k != '-')
+                  if k != '-'}
 complement_dict = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
                    'W': 'S', 'R': 'Y', 'K': 'M', 'Y': 'R', 'S': 'W', 'M': 'K',
                    'B': 'V', 'D': 'H', 'H': 'D', 'V': 'B',
@@ -122,7 +122,7 @@ def translate(seq,
                     break
                 codons = next_codons
 
-            aminos = list(set([codon_dict[codon] for codon in codons]))
+            aminos = list({codon_dict[codon] for codon in codons})
             aa_list.append(aminos)
 
             if len(aminos) > 1:

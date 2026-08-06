@@ -82,7 +82,7 @@ class Sample(object):
             if len(run_parts) < 2:
                 run_parts.append('M01841')
             format_string = '%d-%b-%y' if len(run_parts[0]) == 9 else '%d-%b-%Y'
-            run_date = datetime.strptime(run_parts[0], format_string)
+            run_date = datetime.strptime(run_parts[0], format_string)  # noqa: DTZ007
             base_run_name = run_date.strftime('%y%m%d') + '_' + run_parts[1]
             pattern = os.path.join(source_folder,
                                    'MiSeq',

@@ -35,7 +35,7 @@ def parse_args():
 
 
 def find_primer(seq: str, name: str, ref: str) -> PrimerLocation:
-    aref, aseq, score = align_nucs(ref, seq)
+    aref, aseq, _score = align_nucs(ref, seq)
     ltrimmed = aseq.lstrip('-')
     start_index = len(aseq) - len(ltrimmed)
     rtrimmed = ltrimmed.rstrip('-')

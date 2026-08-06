@@ -4,20 +4,21 @@ import pandas as pd
 
 from micall.utils.user_error import UserError
 from .logger import logger
+import itertools
 
 
 def _can_parse_float(val: str) -> bool:
     try:
         float(val)
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
 def _parse_float(val: str) -> Union[float, None]:
     try:
         return float(val)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return None
 
 
@@ -63,7 +64,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
             try:
                 if x.is_integer():
                     return str(int(x))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
             # Use default string conversion for floats
             return str(x)
@@ -75,14 +76,14 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     def concat_all(xs: pd.Series) -> str:
         return '+'.join(map(tostr, xs.tolist()))
 
-    def _format_number(n: Union[float, int, None]) -> str:
+    def _format_number(n: Union[float, int, None]) -> str:  # noqa: PYI041
         if n is None:
             return ''
         if isinstance(n, float):
             try:
                 if n.is_integer():
                     return str(int(n))
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
         return str(n)
 
@@ -100,7 +101,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
         nums = [float(v) for v in vals if _can_parse_float(v)]
         if len(nums) <= 1:
             return '0'
-        diffs = [abs(a - b) for a, b in zip(nums, nums[1:])]
+        diffs = [abs(a - b) for a, b in itertools.pairwise(nums)]
         avg = sum(diffs) / len(diffs)
         return _format_number(avg)
 
@@ -117,7 +118,7 @@ def diff_samples_of_two_apps(input: Path, app1: str, app2: str, output: Path) ->
     for c in cols:
         if c == 'sample':
             continue
-        elif c == 'app':
+        if c == 'app':
             agg_map[c] = 'first'
             base_agg_map[c] = 'first'
         elif numeric_cols.get(c, False):

@@ -17,7 +17,7 @@ from micall.core import project_config, aln2counts
 # http://stackoverflow.com/a/3054314/4794
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt, patches  # noqa
+from matplotlib import pyplot as plt, patches
 
 MAX_COVERAGE = 1000000
 FONT_SIZE = 8
@@ -110,8 +110,8 @@ def coverage_plot(amino_csv,
             key_positions = project_region['key_positions']
             has_labeled_key_pos = False
             if not key_positions:
-                key_positions.append(dict(start_pos=1,
-                                          end_pos=region_length))
+                key_positions.append({'start_pos': 1,
+                                          'end_pos': region_length})
             for key_pos in key_positions:
                 start = key_pos['start_pos']
                 end = key_pos['end_pos']
@@ -223,7 +223,7 @@ def concordance_plot(concordance_csv, plot_path=None, filetype='png', concordanc
     if plot_path is None:
         plot_path, _ = os.path.split(concordance_csv.name)
     reader = DictReader(concordance_csv)
-    fig, ax = plt.subplots(figsize=(4, 3), dpi=100, layout='tight')
+    fig, _ax = plt.subplots(figsize=(4, 3), dpi=100, layout='tight')
     paths = []
     for (reference, region), group in itertools.groupby(reader,
                                                         itemgetter('reference', 'region')):

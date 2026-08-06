@@ -37,8 +37,8 @@ class CompareSampleTest(TestCase):
     def test_x4_big_change(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(g2p_summary=[dict(X4pct='50.00')]),
-                        SampleFiles(g2p_summary=[dict(X4pct='60.00')]))
+                        SampleFiles(g2p_summary=[{'X4pct': '50.00'}]),
+                        SampleFiles(g2p_summary=[{'X4pct': '60.00'}]))
         expected_report = 'run1:sample42 G2P: 50.00 => 60.00\n'
 
         report, _, _ = compare_sample(sample)
@@ -48,8 +48,8 @@ class CompareSampleTest(TestCase):
     def test_x4_small_change(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(g2p_summary=[dict(X4pct='50.00')]),
-                        SampleFiles(g2p_summary=[dict(X4pct='51.00')]))
+                        SampleFiles(g2p_summary=[{'X4pct': '50.00'}]),
+                        SampleFiles(g2p_summary=[{'X4pct': '51.00'}]))
         expected_report = ''
 
         report, _, _ = compare_sample(sample)
@@ -59,8 +59,8 @@ class CompareSampleTest(TestCase):
     def test_blank(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(g2p_summary=[dict(X4pct='50.00')]),
-                        SampleFiles(g2p_summary=[dict(X4pct='')]))
+                        SampleFiles(g2p_summary=[{'X4pct': '50.00'}]),
+                        SampleFiles(g2p_summary=[{'X4pct': ''}]))
         expected_report = 'run1:sample42 G2P: 50.00 => \n'
 
         report, _, _ = compare_sample(sample)
@@ -70,8 +70,8 @@ class CompareSampleTest(TestCase):
     def test_other_difference_with_blanks(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(g2p_summary=[dict(X4pct='', other='x')]),
-                        SampleFiles(g2p_summary=[dict(X4pct='', other='y')]))
+                        SampleFiles(g2p_summary=[{'X4pct': '', 'other': 'x'}]),
+                        SampleFiles(g2p_summary=[{'X4pct': '', 'other': 'y'}]))
         expected_report = ''
 
         report, _, _ = compare_sample(sample)
@@ -81,8 +81,8 @@ class CompareSampleTest(TestCase):
     def test_same_final(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(g2p_summary=[dict(X4pct='2.99', final='X4')]),
-                        SampleFiles(g2p_summary=[dict(X4pct='3.01', final='X4')]))
+                        SampleFiles(g2p_summary=[{'X4pct': '2.99', 'final': 'X4'}]),
+                        SampleFiles(g2p_summary=[{'X4pct': '3.01', 'final': 'X4'}]))
         expected_report = ''
 
         report, _, _ = compare_sample(sample)
@@ -92,8 +92,8 @@ class CompareSampleTest(TestCase):
     def test_different_final(self):
         sample = Sample(MiseqRun(target_path='run1/Results/versionX'),
                         'sample42',
-                        SampleFiles(g2p_summary=[dict(X4pct='1.99', final='R5')]),
-                        SampleFiles(g2p_summary=[dict(X4pct='2.01', final='X4')]))
+                        SampleFiles(g2p_summary=[{'X4pct': '1.99', 'final': 'R5'}]),
+                        SampleFiles(g2p_summary=[{'X4pct': '2.01', 'final': 'X4'}]))
         expected_report = 'run1:sample42 G2P: R5 1.99 => X4 2.01\n'
 
         report, _, _ = compare_sample(sample)
@@ -633,9 +633,9 @@ s1,a11,b11
 s1,a12,b12
 s2,a2,b2
 """)
-        expected_groups = dict(s1=[dict(sample='s1', a='a11', b='b11'),
-                                   dict(sample='s1', a='a12', b='b12')],
-                               s2=[dict(sample='s2', a='a2', b='b2')])
+        expected_groups = {'s1': [{'sample': 's1', 'a': 'a11', 'b': 'b11'},
+                                   {'sample': 's1', 'a': 'a12', 'b': 'b12'}],
+                               's2': [{'sample': 's2', 'a': 'a2', 'b': 'b2'}]}
 
         groups = group_samples_file(output_file)
 
@@ -648,7 +648,7 @@ sample,seed,region,query.nuc.pos,coverage
 s1,R1-seed,R1,100,10
 s1,R1-seed,R1,110,10
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): [
+        expected_groups = {'s1': {('R1-seed', 'R1'): [
             ('x', {'coverage': '10',
                    'query.nuc.pos': '100',
                    'region': 'R1',
@@ -658,7 +658,7 @@ s1,R1-seed,R1,110,10
                    'query.nuc.pos': '110',
                    'region': 'R1',
                    'sample': 's1',
-                   'seed': 'R1-seed'})]})
+                   'seed': 'R1-seed'})]}}
 
         groups = group_nucs_file(output_file)
 
@@ -672,7 +672,7 @@ s1,R1-seed,R1,101,99,1,0,0,0,0,100
 s1,R1-seed,R1,102,1,99,0,0,0,0,100
 s1,R1-seed,R1,103,0,99,0,0,0,0,99
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): [
+        expected_groups = {'s1': {('R1-seed', 'R1'): [
             ('A', {'A': '100',
                    'C': '0',
                    'G': '0',
@@ -716,7 +716,7 @@ s1,R1-seed,R1,103,0,99,0,0,0,0,99
                    'query.nuc.pos': '103',
                    'region': 'R1',
                    'sample': 's1',
-                   'seed': 'R1-seed'})]})
+                   'seed': 'R1-seed'})]}}
 
         groups = group_nucs_file(output_file)
 
@@ -731,8 +731,8 @@ s1,R1-seed,R1,110,10
 s2,R1-seed,R1,101,10
 s2,R1-seed,R1,111,10
 """)
-        expected_groups = dict(
-            s1={('R1-seed', 'R1'): [('x', {'coverage': '10',
+        expected_groups = {
+            's1': {('R1-seed', 'R1'): [('x', {'coverage': '10',
                                            'query.nuc.pos': '100',
                                            'region': 'R1',
                                            'sample': 's1',
@@ -742,7 +742,7 @@ s2,R1-seed,R1,111,10
                                            'region': 'R1',
                                            'sample': 's1',
                                            'seed': 'R1-seed'})]},
-            s2={('R1-seed', 'R1'): [('x', {'coverage': '10',
+            's2': {('R1-seed', 'R1'): [('x', {'coverage': '10',
                                            'query.nuc.pos': '101',
                                            'region': 'R1',
                                            'sample': 's2',
@@ -751,7 +751,7 @@ s2,R1-seed,R1,111,10
                                            'query.nuc.pos': '111',
                                            'region': 'R1',
                                            'sample': 's2',
-                                           'seed': 'R1-seed'})]})
+                                           'seed': 'R1-seed'})]}}
 
         groups = group_nucs_file(output_file)
 
@@ -765,8 +765,8 @@ s1,R1-seed,R1a,110,10
 s1,R1-seed,R1b,201,10
 s1,R1-seed,R1b,211,10
 """)
-        expected_groups = dict(
-            s1={('R1-seed', 'R1a'): [('x', {'coverage': '10',
+        expected_groups = {
+            's1': {('R1-seed', 'R1a'): [('x', {'coverage': '10',
                                             'query.nuc.pos': '100',
                                             'region': 'R1a',
                                             'sample': 's1',
@@ -785,7 +785,7 @@ s1,R1-seed,R1b,211,10
                                             'query.nuc.pos': '211',
                                             'region': 'R1b',
                                             'sample': 's1',
-                                            'seed': 'R1-seed'})]})
+                                            'seed': 'R1-seed'})]}}
 
         groups = group_nucs_file(output_file)
 
@@ -798,7 +798,7 @@ s1,R1-seed,R1,100,10
 s1,R1-seed,R1,110,10
 s1,R1-seed,R1,,0
 """)
-        expected_groups = dict(s1={('R1-seed', 'R1'): [
+        expected_groups = {'s1': {('R1-seed', 'R1'): [
             ('x', {'coverage': '10',
                    'query.nuc.pos': '100',
                    'region': 'R1',
@@ -813,7 +813,7 @@ s1,R1-seed,R1,,0
                    'query.nuc.pos': '',
                    'region': 'R1',
                    'sample': 's1',
-                   'seed': 'R1-seed'})]})
+                   'seed': 'R1-seed'})]}}
 
         groups = group_nucs_file(output_file)
 

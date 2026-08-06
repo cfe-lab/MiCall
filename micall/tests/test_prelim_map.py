@@ -13,7 +13,7 @@ from micall.utils.work_dir import WorkDir
 
 class CheckFastqTest(TestCase):
     def create_temp_file(self, suffix, cleanup=True):
-        f = NamedTemporaryFile(mode='w', dir='.', suffix=suffix, delete=False)
+        f = NamedTemporaryFile(mode='w', dir='.', suffix=suffix, delete=False)  # noqa: SIM115
         if cleanup:
             self.addCleanup(os.unlink, f.name)
         return f
@@ -95,7 +95,7 @@ class PrelimMapIntegrationTest(TestCase):
         output_file = os.path.join(self.work_dir, 'output.csv')
         stderr_file = os.path.join(self.work_dir, 'stderr.txt')
 
-        with WorkDir.using(Path(self.work_dir)):
+        with WorkDir.using(Path(self.work_dir)):  # noqa: SIM117
             with open(stderr_file, 'w') as stderr_f:
                 with Stderr.using(stderr_f):
                     prelim_map(
@@ -194,7 +194,7 @@ class PrelimMapIntegrationTest(TestCase):
         self.assertEqual(first_row['qual'], 'A' * 51)
 
         # Check the variant read (0010) has the expected difference
-        variant_row = [row for row in rows if '0010' in row['qname'] and row['flag'] == '99'][0]
+        variant_row = next(row for row in rows if '0010' in row['qname'] and row['flag'] == '99')
         expected_variant_seq = 'TGCATAAGACCCAACAACAATACAAGAAAAAGTATAAGGATAGGACCAGGA'
         self.assertEqual(variant_row['seq'], expected_variant_seq)
 

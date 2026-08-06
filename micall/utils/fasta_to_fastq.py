@@ -105,12 +105,12 @@ def simulate_reads(reference: Seq,
     ref_length = len(reference)
 
     if max_length > ref_length:
-        logger.warn("Max read length (%s) is bigger than reference length (%s).",
+        logger.warn("Max read length (%s) is bigger than reference length (%s).",  # noqa: G010
                     max_length, ref_length)
         max_length = ref_length
 
     if min_length > ref_length:
-        logger.warn("Min read length (%s) is bigger than reference length (%s).",
+        logger.warn("Min read length (%s) is bigger than reference length (%s).",  # noqa: G010
                     max_length, ref_length)
         min_length = ref_length
 
@@ -241,4 +241,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

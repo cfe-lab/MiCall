@@ -139,7 +139,7 @@ def _make_cache_key(
         param_value = parameters[key]
         # Convert sets to sorted lists for consistent serialization
         if isinstance(param_value, builtins.set):
-            input_key[key] = sorted(list(param_value))
+            input_key[key] = sorted(param_value)
         else:
             input_key[key] = param_value
 
@@ -303,7 +303,7 @@ def set(
 
         _add_cache_entry(procedure, input_key, cache_entry)
     else:
-        raise ValueError(f"Unsupported output type: {type(output)}")
+        raise ValueError(f"Unsupported output type: {type(output)}")  # noqa: TRY004
 
 
 def cached(
@@ -380,7 +380,7 @@ def cached(
                 # Copy cached result to output location(s)
                 if len(output_paths) == 1:
                     # Single output
-                    output_path = list(output_paths.values())[0]
+                    output_path = next(iter(output_paths.values()))
                     if isinstance(cached_result, Path):
                         shutil.copy2(cached_result, output_path)
                     else:
@@ -403,7 +403,7 @@ def cached(
             # Store output file(s) in cache
             output_to_cache: Union[Path, Mapping[str, Path]]
             if len(output_paths) == 1:
-                output_to_cache = list(output_paths.values())[0]
+                output_to_cache = next(iter(output_paths.values()))
             elif len(output_paths) > 1:
                 output_to_cache = output_paths
             else:
@@ -465,7 +465,7 @@ def clear_cache(pattern: Optional[str] = None) -> int:
     cleared_count = 0
     procedures_to_remove = []
 
-    for procedure in cache_data.keys():
+    for procedure in cache_data.keys():  # noqa: SIM118
         # Try exact match first
         if procedure == pattern:
             cleared_count += len(cache_data[procedure])
@@ -502,7 +502,7 @@ def clear_cache(pattern: Optional[str] = None) -> int:
 
         # Remove unreferenced files
         for item in cache_folder.iterdir():
-            if item.is_file() and item.name != "data.json":
+            if item.is_file() and item.name != "data.json":  # noqa: SIM102
                 if item.name not in referenced_hashes:
                     item.unlink()
 
@@ -545,4 +545,4 @@ def entry():
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry()  # noqa
+if __name__ == "__main__": entry()

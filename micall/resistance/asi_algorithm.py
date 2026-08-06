@@ -34,7 +34,7 @@ drug.comments  #list of comments associated with this drug
 """
 from collections import defaultdict, namedtuple
 import re
-import xml.dom.minidom as minidom
+import xml.dom.minidom as minidom  # noqa: PLR0402
 from enum import Enum
 from pathlib import Path
 
@@ -143,10 +143,8 @@ class AsiAlgorithm:
         if defs.getElementsByTagName('GLOBALRANGE'):
             global_range_text = defs.getElementsByTagName('GLOBALRANGE')[0].childNodes[0].nodeValue
             global_range_items = global_range_text.strip(")( \n").split(',')
-            self.global_range = list(map(
-                lambda item: (list(re.match(r'\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
-                                            item.strip("\n \t")).groups())),
-                global_range_items))
+            self.global_range = [(list(re.match(r'\s*(\S+)\s*TO\s*(\S+)\s*=>\s*(\S+)\s*',
+                                            item.strip("\n \t")).groups())) for item in global_range_items]
         if defs.getElementsByTagName('COMMENT_DEFINITIONS'):
             comment_defs = defs.getElementsByTagName('COMMENT_DEFINITIONS')[0]
             for node in comment_defs.getElementsByTagName('COMMENT_STRING'):
@@ -237,7 +235,7 @@ class AsiAlgorithm:
                 if genotype_config['genotype'] == genotype:
                     self.gene_def[genotype_config['reference']] = [region]
                     break
-                elif genotype_config['genotype'] == backup_genotype:
+                if genotype_config['genotype'] == backup_genotype:
                     self.gene_def.setdefault(genotype_config['reference'], [region])
                     break
             else:
@@ -249,7 +247,7 @@ class AsiAlgorithm:
     def get_gene_positions(self, gene):
         if gene == 'INT':
             gene = 'IN'
-        positions = set([])
+        positions = set()
         for drug_class in self.gene_def[gene]:
             for drug_code in self.drug_class[drug_class]:
                 drug_config = self.drugs[drug_code]
@@ -270,8 +268,8 @@ class AsiAlgorithm:
             final = []
             for mut in muts:
                 # If it matches \d+\(NOT \w+\), then we got to do something fancy
-                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)
-                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.I)
+                tmpa = re.match(r'[a-z]?(\d+)\(NOT\s+([a-z]+)\)', mut, flags=re.I)  # noqa: FURB167
+                tmpb = re.match(r'[a-z]?(\d+)([a-z]+)', mut, flags=re.I)  # noqa: FURB167
                 match = ''
                 loc = ''
                 if tmpa:
@@ -309,7 +307,7 @@ class AsiAlgorithm:
             muts = tmp.group(1).split(',')
             cnt = 0
             for mut in muts:
-                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.I)
+                tmp = re.match(r'^(\d+)([a-z]+)$', mut, flags=re.I)  # noqa: FURB167
                 aas = aaseq[int(tmp.group(1)) - 1]
                 for aa in aas:
                     if aa in tmp.group(2):
@@ -398,7 +396,7 @@ class AsiAlgorithm:
                                             high_score = float(high_score)
 
                                         if low_score <= drug_result.score <= high_score:
-                                            if int(level) > drug_result.level:
+                                            if int(level) > drug_result.level:  # noqa: PLR1730
                                                 drug_result.level = int(level)
                                             break
                     except MissingPositionError:

@@ -34,7 +34,7 @@ AAA = 40 * 'A'
         (('AAAAA' + TTT + 'CCCCCCCCCCCCCCCCCCCC', TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'), ('AAAAA' + TTT + 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG',)),
         (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),
         (('GGGGG' + TTT, 'CCCCCAAAAA' + TTT), ('CCCCCAAAAA' + TTT, 'GGGGG' + TTT,)),
-        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),
+        (('AAAAA' + TTT, 'GGGGG' + TTT), ('AAAAA' + TTT, 'GGGGG' + TTT,)),  # noqa: PT014
         ((TTT + 'AAAAA', TTT + 'GGGGG'), (TTT + 'AAAAA', TTT + 'GGGGG',)),
         (('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT), ('AAAAAAAAAAAAAA' + TTT, 'GGGGG' + TTT,)),
         (('GGGGGGGGGGGGGG' + TTT, 'AAAAA' + TTT), ('AAAAA' + TTT, 'GGGGGGGGGGGGGG' + TTT,)),
@@ -1334,7 +1334,7 @@ def test_run_referenceless_stitcher_enabled_by_default(tmp_path, monkeypatch):
     }
     sample = Sample(scratch_path=str(tmp_path), **paths)
 
-    for name in paths:
+    for name in paths:  # noqa: PLC0206
         Path(paths[name]).touch()
 
     sample.run_referenceless_stitcher()

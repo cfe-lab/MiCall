@@ -107,7 +107,7 @@ class CheckKeyPositionsTest(unittest.TestCase):
 }
 """)
         expected_warnings = (
-            "WARNING: project R1 has multiple sets of key positions for " +
+            "WARNING: project R1 has multiple sets of key positions for "
             "coordinate region R1.\n")
 
         check_key_positions(projects, self.warningIO)
@@ -161,7 +161,7 @@ class CheckKeyPositionsTest(unittest.TestCase):
 }
 """)
         expected_warnings = (
-            "WARNING: project R1 has multiple sets of key positions for " +
+            "WARNING: project R1 has multiple sets of key positions for "
             "coordinate region R1.\n")
 
         check_key_positions(projects, self.warningIO)

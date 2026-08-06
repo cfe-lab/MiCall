@@ -28,7 +28,7 @@ def compile_value(v: Value) -> str:
     else:
         # Should never happen
         _: NoReturn = v
-        raise RuntimeError(f"Unknown value type: {v!r}")
+        raise RuntimeError(f"Unknown value type: {v!r}")  # noqa: TRY004
 
 
 def compile_command_arg(a: CommandArg) -> str:
@@ -43,7 +43,7 @@ def compile_command_arg(a: CommandArg) -> str:
         return shlex.quote(escape(a))
     else:
         _: NoReturn = a
-        raise RuntimeError(f"Unexpected CommandArg type: {type(a)}.")
+        raise RuntimeError(f"Unexpected CommandArg type: {type(a)}.")  # noqa: TRY004
 
 
 @dataclass(frozen=True)
@@ -212,7 +212,7 @@ class Recipe:
 
     def compile(self) -> str:
         # join with a blank line between top‐level statements
-        chunks = list(stmt.compile() for stmt in self.statements)
+        chunks = [stmt.compile() for stmt in self.statements]
         if self.default:
             chunks.append(Default(self.default).compile())
 

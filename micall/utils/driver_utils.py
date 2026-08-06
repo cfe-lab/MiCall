@@ -54,7 +54,7 @@ class MiCallArgs:
     because the HCV sample processing mode has two of every input argument; one
     for the main sample and one for the MIDI sample.
     """
-    PREFIX_WITH_RUN_FOLDER = [
+    PREFIX_WITH_RUN_FOLDER = [  # noqa: RUF012
         "fastq1",
         "fastq2",
         "bad_cycles_csv",

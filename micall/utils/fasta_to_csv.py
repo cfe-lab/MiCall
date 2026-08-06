@@ -90,10 +90,10 @@ def write_contigs(writer: DictWriter,
         contigs_fasta (Path): Path to the FASTA file containing contig sequences.
     """
     for contig in read_assembled_contigs(group_refs, genotypes, contigs_fasta):
-        writer.writerow(dict(ref=contig.ref_name,
-                             match=contig.match_fraction,
-                             group_ref=contig.group_ref,
-                             contig=contig.seq))
+        writer.writerow({"ref": contig.ref_name,
+                             "match": contig.match_fraction,
+                             "group_ref": contig.group_ref,
+                             "contig": contig.seq})
 
 
 def genotype(contigs_fasta: Path, db: Optional[Path] = None,
@@ -125,7 +125,7 @@ def genotype(contigs_fasta: Path, db: Optional[Path] = None,
         )
 
     if db is None:
-        with default_database() as db:
+        with default_database() as db:  # noqa: PLR1704
             stdout = invoke_blast(db)
     else:
         stdout = invoke_blast(db)
@@ -178,15 +178,15 @@ def genotype(contigs_fasta: Path, db: Optional[Path] = None,
         contig_name = match['qaccver']
         samples[contig_name] = (match['saccver'], matched_fraction)
         if blast_writer:
-            blast_writer.writerow(dict(contig_num=contig_nums[contig_name],
-                                       ref_name=match['saccver'],
-                                       score=match['score'],
-                                       match=matched_fraction,
-                                       pident=pident,
-                                       start=match['qstart'],
-                                       end=match['qend'],
-                                       ref_start=match['sstart'],
-                                       ref_end=match['send']))
+            blast_writer.writerow({"contig_num": contig_nums[contig_name],
+                                       "ref_name": match['saccver'],
+                                       "score": match['score'],
+                                       "match": matched_fraction,
+                                       "pident": pident,
+                                       "start": match['qstart'],
+                                       "end": match['qend'],
+                                       "ref_start": match['sstart'],
+                                       "ref_end": match['send']})
     return samples
 
 

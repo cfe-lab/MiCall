@@ -11,7 +11,7 @@ from pathlib import Path
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
 from micall.utils.referenceless_score import Score
-import micall.utils.registry as registry
+import micall.utils.registry as registry  # noqa: PLR0402
 from micall.utils.referenceless_contig_stitcher import \
     referenceless_contig_stitcher_with_ctx, read_contigs
 from micall.core.project_config import ProjectConfig

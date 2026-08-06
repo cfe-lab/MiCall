@@ -220,7 +220,7 @@ def does_share_kmers(
     left_kmers = get_kmers(kmers_cache, left.seq)
     right_kmers = get_kmers(kmers_cache, right.seq)
     # We only filter if both have kmers AND they don't share any
-    if left_kmers and right_kmers and left_kmers.isdisjoint(right_kmers):
+    if left_kmers and right_kmers and left_kmers.isdisjoint(right_kmers):  # noqa: SIM103
         return False
     return True
 
@@ -251,7 +251,7 @@ def get_overlap(
     # Only apply the filter if both contigs are long enough (at least kmer_size)
     # This prevents false negatives when the overlap region is smaller than kmer_size
     min_length_for_filter = KMER_SIZE
-    if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
+    if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:  # noqa: SIM102
         if not does_share_kmers(kmers_cache, left, right):
             get_overlap_cache[key] = None
             return None
@@ -768,7 +768,7 @@ def check_merged_sequence_support(
         for s in range(s_eff_min, s_eff_max + 1):
             kmer = merged_seq[s:s + L]
             rc_kmer = reverse_complement(kmer)
-            canonical = kmer if kmer <= rc_kmer else rc_kmer
+            canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
 
             count = counter.get(canonical, 0)
             if count == 0:
@@ -793,7 +793,7 @@ def check_merged_sequence_support(
     min_cov = float('inf')
     for p in range(window_start, window_end):
         current += diff[p]
-        if current < min_cov:
+        if current < min_cov:  # noqa: PLR1730
             min_cov = current
     min_cov = int(min_cov)
 
@@ -1099,7 +1099,7 @@ def try_combine_1(
                 align_cache=align_cache,
             )
             if result is not None:
-                combined, additional_score = result
+                combined, _additional_score = result
                 return first, second, combined
 
     return None

@@ -15,7 +15,7 @@ def convert_fasta (lines):
     for i in lines:
         if i[0] == '$': # skip h info
             continue
-        elif i[0] == '>' or i[0] == '#':
+        if i[0] == '>' or i[0] == '#':
             if len(sequence) > 0:
                 blocks.append([h, sequence])
                 sequence = ''    # reset containers
@@ -27,7 +27,7 @@ def convert_fasta (lines):
     try:
         blocks.append([h,sequence])    # handle last entry
     except RuntimeError:
-        raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))
+        raise Exception("convert_fasta(): Error appending to blocks [{},{}]".format(h, sequence))  # noqa: TRY002
     return blocks
 
 hyphy = HyPhy._THyPhy(os.getcwd(), 1)  # @UndefinedVariable
@@ -49,8 +49,8 @@ with open('HCV_REF_2012_genome.fasta', 'r') as handle:
 
 projects = ProjectConfig.loadDefault()
 genes = ['E1', 'E2', 'NS2', 'NS3', 'NS4a', 'NS4b', 'NS5a', 'NS5b', 'core', 'p7']
-h77 = dict([(gene, projects.getReference("HCV1A-H77-{}-seed".format(gene)))
-            for gene in genes])
+h77 = {gene: projects.getReference("HCV1A-H77-{}-seed".format(gene))
+            for gene in genes}
 
 with open('hcv_genes.fasta', 'w') as outfile:
     processed_subtypes = set()

@@ -186,9 +186,9 @@ def compare_using_gotoh(row, conseq_accession, published_seq):
     header = f'{conseq_accession} => {sample_name}'
     print(header)
     print(len(conseq), len(published_seq))
-    aln_pub_seq, aln_conseq, score = align_nucs(published_seq,
+    aln_pub_seq, aln_conseq, _score = align_nucs(published_seq,
                                                 conseq)
-    screen_width = int(os.environ.get('COLUMNS', 100))
+    screen_width = int(os.environ.get('COLUMNS', 100))  # noqa: PLW1508
     print(aln_pub_seq[:screen_width])
     print(aln_conseq[:screen_width])
     print('...', aln_pub_seq[-screen_width+4:])
@@ -200,14 +200,14 @@ def compare_using_gotoh(row, conseq_accession, published_seq):
     offset = None
     with open(conseq_csv) as csvfile:
         reader = DictReader(csvfile)
-        for row in reader:
+        for row in reader:  # noqa: PLR1704
             offset = int(row['seed-offset'])
             break
     coverages = load_coverage(mycsv)
     # matchfile = open(ROOT / sample_name / 'mymatches.txt', 'w')
     # mismatchfile = open(ROOT / sample_name / 'mymismatches.txt', 'w')
     # addedfile = open(ROOT / sample_name / 'myadded.txt', 'w')
-    datafile = open(ROOT / sample_name / 'data.csv', 'w')
+    datafile = open(ROOT / sample_name / 'data.csv', 'w')  # noqa: SIM115
     header = [
         'sample',
         'type',

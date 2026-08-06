@@ -208,7 +208,7 @@ class Overlap:
 
     def __str__(self) -> str:
         cut_point_location_scaled = round(self.cut_point_scaled * 100)
-        concordance_str = ', '.join(str(int(round(x * 100)) / 100) for x in self.concordance)
+        concordance_str = ', '.join(str(round(x * 100) / 100) for x in self.concordance)
         return (
             f"Created overlap contigs {self.left_take.unique_name} at {self.left_overlap.alignment} and "
             f"{self.right_take.unique_name} at {self.right_take.alignment} based on parts of "

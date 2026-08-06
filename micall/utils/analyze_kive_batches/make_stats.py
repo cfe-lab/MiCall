@@ -235,7 +235,7 @@ def collect_values(column: str, rows: Rows) -> Iterator[float]:
             assert isinstance(value, str)
             assert len(value) > 0
             numeric_value = float(value)
-        except BaseException:
+        except BaseException:  # noqa: BLE001, S112
             continue
         yield numeric_value
 
@@ -406,7 +406,7 @@ def calculate_exact_uncovered_from_csv(exact_cov_csv_path: Path) -> Optional[int
 
         return zero_count
 
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
         logger.error("Failed to read exact coverage from %s: %s", exact_cov_csv_path, ex)
         return None
 
@@ -428,17 +428,17 @@ def calculate_alignment_scores(run_id: object, rows: Rows) -> Optional[float]:
                 #
                 index, _dash, ref_name = ref_name_raw.partition('-')
                 int(index, 10)
-            except BaseException:
+            except BaseException:  # noqa: BLE001
                 ref_name = ref_name_raw
 
-            if ref_name.endswith('-partial'):
+            if ref_name.endswith('-partial'):  # noqa: FURB188
                 ref_name = ref_name[:-len('-partial')]
 
             try:
                 # ref_name = "HIV1-B-ZA-KP109515-seed"
                 reference = PROJECTS.getReference(ref_name)
                 assert reference is not None
-            except BaseException:
+            except BaseException:  # noqa: BLE001
                 logger.warning("Invalid reference name %r in run %s.", ref_name, run_id)
                 continue
 

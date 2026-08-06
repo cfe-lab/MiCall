@@ -56,13 +56,13 @@ def main():
     diagram_path = args.compare_mapping_svg
     f = build_coverage_figure(args.genome_coverage1_csv)
     del f.elements[6:]
-    ref_y, ref = f.elements[5]
+    ref_y, _ref = f.elements[5]
     f2 = build_coverage_figure(args.genome_coverage2_csv)
-    coverage3_y, coverage3 = f2.elements[4]
+    _coverage3_y, coverage3 = f2.elements[4]
     contig3_y, contig3 = f2.elements[5]
-    coverage1_y, coverage1 = f2.elements[6]
+    _coverage1_y, coverage1 = f2.elements[6]
     contig1_y, contig1 = f2.elements[7]
-    dashes_y, dashes = f2.elements[10]
+    _dashes_y, _dashes = f2.elements[10]
     del f2.elements[4:]
     # contig_y, contig = f2.elements[6]
 

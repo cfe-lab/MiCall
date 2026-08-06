@@ -11,11 +11,11 @@ from gotoh import align_it
 from micall.core.project_config import ProjectConfig
 from micall.utils.translation import mixture_dict, reverse_and_complement
 
-TARGET_SEQUENCES = dict(
-    gag_probe='ACTGGTGAGTACGCCAAAA',
-    env_probe='CCTTGGGTTGTTGGGA',
-    round2_fwd_primer='GCGCCCGAACAGGGACYTGAAARCGAAAG',
-    round2_rev_primer='TAAGCCTCAATAAAGCTTGCCTTGAGTGC')
+TARGET_SEQUENCES = {
+    'gag_probe': 'ACTGGTGAGTACGCCAAAA',
+    'env_probe': 'CCTTGGGTTGTTGGGA',
+    'round2_fwd_primer': 'GCGCCCGAACAGGGACYTGAAARCGAAAG',
+    'round2_rev_primer': 'TAAGCCTCAATAAAGCTTGCCTTGAGTGC'}
 
 
 def parse_args():
@@ -74,7 +74,7 @@ def find_probes(contigs_csv, probes_csv):
                 gap_open_penalty,
                 gap_extend_penalty,
                 use_terminal_gap_penalty)
-            new_row = dict(sample=sample_name, contig=contig_name)
+            new_row = {'sample': sample_name, 'contig': contig_name}
             for target_name, target_seq in TARGET_SEQUENCES.items():
                 finder = ProbeFinder(contig_seq, target_seq)
 

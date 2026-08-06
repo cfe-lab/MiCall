@@ -14,8 +14,8 @@ def make_properties(input: Path, output: Path) -> None:
     def collect_properties() -> Iterator[str]:
         seen = set()
         yield "app"  # The index key.
-        for app, props in obj.items():
-            for key in props.keys():
+        for app, props in obj.items():  # noqa: PERF102
+            for key in props.keys():  # noqa: SIM118
                 if key not in seen:
                     seen.add(key)
                     yield key

@@ -71,7 +71,7 @@ def test_introduce_errors_full_insertion():
     seq = "ACGT"
     qualities = [30] * len(seq)
     rng = random.Random(42)
-    new_seq, new_quals = introduce_errors(seq, qualities,
+    new_seq, _new_quals = introduce_errors(seq, qualities,
                                           subst_rate=0.0,
                                           ins_rate=0.99,
                                           del_rate=0.0,

@@ -177,7 +177,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(level=logger.level, format="%(levelname)s: %(message)s")
 
@@ -191,7 +191,7 @@ def main(argv: Sequence[str]) -> int:
     # Try reading sample sheet to catch parsing errors early
     try:
         sample_sheet.read_text()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error("Error reading sample sheet: %s", e)
         return 1
 
@@ -233,7 +233,7 @@ def main(argv: Sequence[str]) -> int:
     try:
         check_sample_name_consistency(sample_sheet, fastq_file_names, run_path)
         logger.debug("Consistency check completed successfully")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error("Error during consistency check: %s", e)
         return 1
 

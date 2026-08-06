@@ -580,7 +580,7 @@ class ConsensusAligner:
                     reading_frame1 = alignment.reading_frame
                 elif alignment.ref_start == skip_position:
                     reading_frame2 = alignment.reading_frame
-            if reading_frame1 is not None and reading_frame2 is not None:
+            if reading_frame1 is not None and reading_frame2 is not None:  # noqa: SIM102
                 if reading_frame1 != reading_frame2:
                     has_skipped_nucleotide = True
         for amino_alignment in self.amino_alignments:
@@ -622,7 +622,7 @@ class ConsensusAligner:
             if len(report_nucleotides) <= coord_index * 3 + codon_nuc_index:
                 if repeat_position is None:
                     continue
-                elif repeat_position is not None and repeat_position >= ref_nuc_pos:
+                if repeat_position is not None and repeat_position >= ref_nuc_pos:
                     continue
 
             report_nuc_index = coord_index * 3 + codon_nuc_index
@@ -890,7 +890,7 @@ class ConsensusAligner:
                     ref_progress += size
                 else:
                     assert action == CigarActions.MATCH
-                    for pos in range(0, size):
+                    for pos in range(0, size):  # noqa: PIE808
                         ref_pos = ref_progress + pos
                         query_pos = query_progress + pos
                         if self.consensus[query_pos] == coord_ref[ref_pos]:
@@ -900,7 +900,7 @@ class ConsensusAligner:
                     ref_progress += size
                     query_progress += size
 
-        for pos in range(0, len(self.consensus)):
+        for pos in range(0, len(self.consensus)):  # noqa: PIE808
             start = max(0, pos - half_window_size)
             end = min(len(self.consensus), pos + half_window_size)
             concordance = sum(query_matches[start:end])
@@ -939,7 +939,7 @@ class ConsensusAligner:
                         amino_alignment.query_start += start_shift
                         amino_alignment.query_end -= end_shift
                         match_size = amino_alignment.ref_end - amino_alignment.ref_start
-                        for pos in range(0, match_size):
+                        for pos in range(0, match_size):  # noqa: PIE808
                             query_nuc = self.consensus[amino_alignment.query_start - self.consensus_offset + pos]
                             seed_nuc = seed_ref[amino_alignment.ref_start + pos]
                             offset_pos = pos + amino_alignment.ref_start - start_pos
@@ -951,11 +951,11 @@ class ConsensusAligner:
             concordance_covered = 100 * sum(nuc_agreements) / sum(nuc_covered)
         except ZeroDivisionError:
             concordance_covered = 0.0
-        region_row = dict(seed_name=seed_name,
-                          region=region,
-                          contig=self.contig_name,
-                          pct_concordance=concordance_covered,
-                          pct_covered=covered)
+        region_row = {'seed_name': seed_name,
+                          'region': region,
+                          'contig': self.contig_name,
+                          'pct_concordance': concordance_covered,
+                          'pct_covered': covered}
         self.seed_concordance_writer.writerow(region_row)
 
 

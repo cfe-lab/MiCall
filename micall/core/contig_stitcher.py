@@ -50,7 +50,7 @@ def main(argv: Sequence[str]) -> int:
                             help='Read length used for the centred coverage window around '
                                  'the join cut. (default: 150)')
 
-    parser.prog = ' '.join([Path(__file__).stem, head_args.mode])
+    parser.prog = ' '.join([Path(__file__).stem, head_args.mode])  # noqa: FLY002
 
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument('--verbose', action='store_true', help='Increase output verbosity.')
@@ -70,7 +70,7 @@ def main(argv: Sequence[str]) -> int:
     elif args.debug2:
         logger.setLevel(logging.DEBUG - 1)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(level=logger.level)
 
@@ -115,4 +115,4 @@ def cli() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__': cli()  # noqa
+if __name__ == '__main__': cli()

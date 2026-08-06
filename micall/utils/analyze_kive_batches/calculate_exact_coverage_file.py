@@ -42,7 +42,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
                 info_row = next(info_reader, None)
                 if info_row:
                     run_name = info_row.get("run_name")
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             logger.warning("Failed to read run_name from %s: %s", sample_info_path, ex)
 
     if not run_name:
@@ -124,7 +124,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
     # Calculate exact coverage
     try:
         with open(conseqs_csv_path, "r") as conseq_file:
-            coverage_dict, coverage_ov_dict, contigs = calculate_exact_coverage(
+            coverage_dict, _coverage_ov_dict, _contigs = calculate_exact_coverage(
                 fastq1_path, fastq2_path, conseq_file, overlap_size=70
             )
 
@@ -153,7 +153,7 @@ def calculate_exact_coverage_file(info_file: Path, output: Path) -> None:
             "No contigs found in conseq file for run %r", info_file.name
         )
         output.touch()
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
         logger.error(
             "Failed to calculate exact coverage for run %r: %s", info_file.name, ex
         )

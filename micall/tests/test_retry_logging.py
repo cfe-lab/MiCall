@@ -32,7 +32,7 @@ class TestRetryLogging(unittest.TestCase):
         self.disk_sleep_patcher.start()
 
         # Use a fixed time for testing
-        self.start_time = datetime(2024, 1, 1, 12, 0, 0)
+        self.start_time = datetime(2024, 1, 1, 12, 0, 0)  # noqa: DTZ001
 
     def tearDown(self):
         """Clean up test fixtures."""

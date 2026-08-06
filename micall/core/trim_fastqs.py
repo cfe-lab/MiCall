@@ -114,7 +114,7 @@ def cut_all(censored_fastq1: Path,
             trimmed_fastq1: Path,
             trimmed_fastq2: Path,
             skip: typing.Tuple[str] = (),
-            project_code: str = None):
+            project_code: str | None = None):
     dedapted_filenames = [Path(str(filename) + '.dedapted.fastq')
                           for filename in (censored_fastq1, censored_fastq2)]
     ltrimmed_filenames = [Path(str(filename) + '.ltrimmed.fastq')
@@ -327,7 +327,7 @@ def censor(original_file,
             dest.write(seq)
             tile = None
         else:
-            ident_fields, read_fields = map(str.split, ident.split(' '), '::')
+            ident_fields, _read_fields = map(str.split, ident.split(' '), '::')
             tile = ident_fields[4]
             bad_count = 0
             for cycle, base in enumerate(seq.rstrip(), start=1):
@@ -357,8 +357,8 @@ def censor(original_file,
         dest.write('\n')
     if summary_writer is not None:
         avg_quality = score_sum/base_count if base_count > 0 else None
-        summary = dict(base_count=base_count,
-                       avg_quality=avg_quality)
+        summary = {'base_count': base_count,
+                       'avg_quality': avg_quality}
         summary_writer.writerow(summary)
 
 

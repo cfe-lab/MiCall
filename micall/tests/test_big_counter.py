@@ -35,7 +35,7 @@ class BigCounterTest(TestCase):
         self.assertEqual(1, final_size)
 
     def test_key_not_string(self):
-        with BigCounter(FILE_PREFIX) as counter:
+        with BigCounter(FILE_PREFIX) as counter:  # noqa: SIM117
             with self.assertRaisesRegex(TypeError, 'Key was not a string: 23'):
                 counter[23] = 5
 

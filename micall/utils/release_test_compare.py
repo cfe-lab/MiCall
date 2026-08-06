@@ -123,9 +123,9 @@ def find_runs(source_folder, target_folder, use_denovo):
 
 def parse_version(version_name):
     version_text = version_name.split('_')[-1]
-    if version_text.endswith('.zip'):
+    if version_text.endswith('.zip'):  # noqa: FURB188
         version_text = version_text[:-4]
-    version_text, possible_dash, possible_modifiers = version_text.partition("-")
+    version_text, _possible_dash, possible_modifiers = version_text.partition("-")
     version_numbers = tuple(map(int, version_text.split('.')))
     return (version_numbers, possible_modifiers)
 
@@ -187,7 +187,7 @@ def read_samples(runs):
         except FileNotFoundError as ex:
             missing_files.append(str(ex))
             continue
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             bad_files.append((ex, run.target_path))
             continue
 
@@ -347,23 +347,23 @@ def compare_coverage(sample, diffs, scenarios_reported, scenarios):
     keys = sorted(set(source_scores.keys()) | target_scores.keys())
     for key in keys:
         (source_score,
-         source_seed,
-         source_key_pos) = source_scores.get(key, ('-', None, None))
+         _source_seed,
+         _source_key_pos) = source_scores.get(key, ('-', None, None))
         (target_score,
          target_seed,
-         target_key_pos) = target_scores.get(key, ('-', None, None))
+         target_key_pos) = target_scores.get(key, ('-', None, None))  # noqa: RUF059
         source_compare = '-' if source_score == '1' else source_score
         target_compare = '-' if target_score == '1' else target_score
         if MICALL_VERSION == '7.15':
             if key[0] == 'HIVGHA':
                 # ignore HIVGHA project code
                 continue
-            elif target_seed is None:
+            if target_seed is None:
                 project, region = key
                 hivgha_result = target_scores.get(('HIVGHA', region))
                 if hivgha_result is not None:
                     # retrieve HIVGHA project code results for comparison
-                    (target_score, target_seed, target_key_pos) = hivgha_result
+                    (target_score, target_seed, _target_key_pos) = hivgha_result
                     if target_seed in ('HIV1-CRF02_AG-GH-AB286855-seed', 'HIV1-CRF06_CPX-GH-AB286851-seed'):
                         # ignore samples that switched to the new HIVGHA seeds
                         continue
@@ -405,7 +405,7 @@ def display_consensus(sequence):
 
 def calculate_distance(region, cutoff, sequence1, sequence2):
     if sequence1 is None or sequence2 is None:
-        return
+        return None
     if len(sequence1) > len(sequence2):
         sequence2 += '-' * (len(sequence1) - len(sequence2))
     elif len(sequence2) > len(sequence1):
@@ -497,7 +497,7 @@ def compare_consensus(sample: Sample,
             has_big_change = False
             dummy_row = {'refseq.nuc.pos': '-1',
                          'coverage': '0'}
-            if MICALL_VERSION == '7.15':
+            if MICALL_VERSION == '7.15':  # noqa: SIM102
                 if region.split('-')[-1] == 'NS5b':
                     NS5b_nucs = [nuc for nuc, row in target_details]
                     new_positions = [int(row['refseq.nuc.pos']) for nuc, row in target_details]
@@ -548,7 +548,7 @@ def compare_consensus(sample: Sample,
                                                 cutoff,
                                                 source_seq,
                                                 target_seq)
-        if False and consensus_distance.pct_diff > 5:
+        if False and consensus_distance.pct_diff > 5:  # noqa: SIM223
             print(sample.run.source_path, sample.name, consensus_distance)
             print(source_seq)
             print(target_seq)
@@ -572,7 +572,7 @@ def compare_consensus(sample: Sample,
             if stripped_source_seq in stripped_target_seq:
                 scenarios[Scenarios.CONSENSUS_EXTENDED].append('.')
                 continue
-        if (use_denovo and
+        if (use_denovo and  # noqa: SIM102
                 is_main and
                 seed == 'HIV1-B' and
                 region == 'HIV1B-vpr' and
@@ -668,7 +668,7 @@ def plot_distances(distance_data, filename, title, plot_variable='distance'):
     distance_data = distance_data.sort_values(['region', 'cutoff'])
     sns.set()
     num_plots = len(seeds)
-    figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1, squeeze=False)
+    _figure, axes_sets = plt.subplots(nrows=num_plots, ncols=1, squeeze=False)
     axes_sets = list(chain(*axes_sets))  # 2-dim array -> 1-dim list
     for ax, seed in zip(axes_sets, seeds):
         seed_data = distance_data[distance_data['region'] == seed]
@@ -709,7 +709,7 @@ def main():
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     with ProcessPoolExecutor() as pool:
         runs = find_runs(args.source_folder, args.target_folder, args.denovo)
@@ -745,7 +745,7 @@ def main():
             print(report, end='')
             all_consensus_distances.extend(consensus_distances)
             for key, messages in scenarios.items():
-                scenario_summaries[key] += scenarios[key]
+                scenario_summaries[key] += scenarios[key]  # noqa: PLR1733
     for key, messages in sorted(scenario_summaries.items()):
         if messages:
             sample_names = {message.split()[0] for message in messages}

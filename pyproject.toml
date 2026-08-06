@@ -66,7 +66,7 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff>=0.15.22",
+    "ruff>=0.16.1",
     "mypy>=2.3.0",
     "mypy-extensions>=1.1.0",
     "gprof2dot>=2025.4.14",
@@ -122,6 +122,16 @@ allow-direct-references = true
 timeout = 360
 markers = [
     "iva: test requires IVA (deselect with '-m \"not iva\"')"
+]
+
+[tool.ruff.lint]
+ignore = [
+    "I001",    # Import order.
+    "UP",      # All pyupgrade rules.
+    "EXE001",  # Executable bit doesn't match shebang.
+    "RET505",  # Superfluous else/elif after return.
+    "RET506",  # Superfluous else after raise.
+    "RET504",  # Unnecessary assignment before return (name is meaningful).
 ]
 
 [tool.ruff.lint.per-file-ignores]

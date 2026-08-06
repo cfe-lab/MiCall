@@ -69,7 +69,7 @@ def test_slide_kmer_counts():
     #
     # Expected counter: {2: 2, 1: 1}
     kmer_obj = KMer(sequence="AC", left="ACA", right="ACC")
-    with_counter = KMerWithCounter(kmer=kmer_obj, counter=dict())
+    with_counter = KMerWithCounter(kmer=kmer_obj, counter={})
     # Replace the counter with a defaultdict(int) so slide_kmer can add counts.
     from collections import defaultdict
     with_counter = KMerWithCounter(kmer=kmer_obj, counter=defaultdict(int))
@@ -107,7 +107,7 @@ def test_process_all_contigs_multiple():
     pool = {}
     process_all_contigs(pool, contigs, max_kmer=1)
     # For k=1, across both contigs, pool keys should be a subset of {A, C, G, T}
-    for key in pool.keys():
+    for key in pool.keys():  # noqa: SIM118
         assert key in {"A", "C", "G", "T"}
 
 

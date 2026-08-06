@@ -100,12 +100,12 @@ def denovo(
         amplicon reads
     """
 
-    start_time = datetime.now()
+    start_time = datetime.now()  # noqa: DTZ005
 
     contigs_fasta_path = run_subprocess(fastq1, fastq2, merged_contigs_csv)
     shutil.copy(contigs_fasta_path, fasta)
 
-    duration = datetime.now() - start_time
+    duration = datetime.now() - start_time  # noqa: DTZ005
     contig_count = count_fasta_sequences(contigs_fasta_path)
     logger.info(
         "Assembled %d contigs in %s (%ds) on %s.",
