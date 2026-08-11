@@ -1,5 +1,9 @@
 name: Build and Test MiCall
-on: push
+on:
+  push:
+  create:
+    tags:
+      - 'v*'
 jobs:
   main:
     runs-on: ubuntu-22.04
@@ -92,13 +96,28 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Derive version from latest git tag
-        id: gitver
+      - name: Derive image tags from git tags on this commit
+        id: metadata
         shell: bash
         run: |
-          VERSION="$(git describe | sed 's/^v//')"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Using version: $VERSION"
+          image_tags="$(git tag --points-at HEAD | sed -n 's/^v\([0-9]\)/\1/p')"
+          if [ -z "$image_tags" ]; then
+            image_tags="$(git describe | sed 's/^v//')"
+          fi
+          primary="ghcr.io/cfe-lab/micall:$(echo "$image_tags" | head -n1)"
+          {
+            echo "primary=$primary"
+            echo "tags<<EOF"
+            for tag in $image_tags; do
+              echo "ghcr.io/cfe-lab/micall:$tag"
+            done
+            if [ "$GITHUB_REF" = "refs/heads/master" ]; then
+              echo "ghcr.io/cfe-lab/micall:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Publishing image tags:"
+          echo "$image_tags"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build docker image
@@ -106,20 +125,19 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: ${{ github.ref == 'refs/heads/master' }}
-          tags: |
-            ghcr.io/cfe-lab/micall:${{ steps.gitver.outputs.version }}
-            ghcr.io/cfe-lab/micall:latest
+          push: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') }}
+          load: true
+          tags: ${{ steps.metadata.outputs.tags }}
           cache-from: type=gha,scope=docker-micall
           cache-to: type=gha,mode=max,scope=docker-micall
       - name: Run docker image entrypoint
-        run: docker run ghcr.io/cfe-lab/micall:latest --help
+        run: docker run ${{ steps.metadata.outputs.primary }} --help
       - name: Check docker image entrypoint
-        run: docker run ghcr.io/cfe-lab/micall:latest --help | grep -i -e 'docker'
+        run: docker run ${{ steps.metadata.outputs.primary }} --help | grep -i -e 'docker'
       - name: Install python packages
         run: pip install multicsv
       - name: Check docker image microtest
-        run: python micall release_test_microtest ghcr.io/cfe-lab/micall:latest --docker
+        run: python micall release_test_microtest ${{ steps.metadata.outputs.primary }} --docker
 
   singularity-test:
     runs-on: ubuntu-22.04
