@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           git fetch --tags origin --quiet
-          image_tags="$(git tag --points-at HEAD | sed -n 's/^v\([0-9]\)/\1/p' | grep -E '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$')"
+          image_tags="$(git tag --points-at HEAD | sed -n 's/^v\([0-9]\)/\1/p' | grep -E '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || true)"
           if [ -z "$image_tags" ]; then
             image_tags="$(git describe | sed 's/^v//' | grep -E '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || true)"
           fi
