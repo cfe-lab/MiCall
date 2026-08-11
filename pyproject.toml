@@ -74,7 +74,7 @@ dev = [
     "kivecli @ git+https://github.com/Donaim/kivecli@62dff8cfbf3b9d10a55333414ab56d38748a0516",
     "pandas-stubs>=3.0.5.260730",
     "types-requests>=2.33.0.20260712",
-    "uv>=0.12.2",
+    "uv>=0.12.3",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
