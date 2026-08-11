@@ -107,6 +107,30 @@ def fetch_pipeline_by_version(session, pipeline_version, max_attempts=5, wait_se
         f"Pipeline {pipeline_version!r} was not returned by QAI after create.")
 
 
+def find_pipeline_by_version(pipelines, pipeline_version):
+    return next((pipeline for pipeline in pipelines
+                 if pipeline.get('version') == pipeline_version),
+                None)
+
+
+def derive_order_by(pipelines, override=None):
+    if override is not None:
+        return override
+    order_bys = [pipeline.get('order_by') or 0 for pipeline in pipelines]
+    return max(order_bys, default=0) + 100
+
+
+def create_pipeline(session, pipeline_version, order_by):
+    pipeline = session.post_json("/lab_miseq_pipelines",
+                                 {'version': pipeline_version,
+                                  'order_by': order_by})
+    if not pipeline:
+        logger.debug('Pipeline create for %s returned empty payload; fetching by version.',
+                     pipeline_version)
+        pipeline = fetch_pipeline_by_version(session, pipeline_version)
+    return pipeline
+
+
 def parse_args():
     # noinspection PyTypeChecker
     parser = ArgumentParser(description='Upload project definitions to QAI.',
@@ -127,6 +151,12 @@ def parse_args():
         '--pipeline_version',
         default='0-dev',
         help='version number')
+    parser.add_argument(
+        '--order_by',
+        type=int,
+        default=None,
+        help='sort order for the new pipeline; defaults to the highest existing '
+             'order_by value plus 100')
     parser.add_argument(
         '--update_sequences',
         action='store_true',
@@ -150,10 +180,12 @@ def main() -> int:
     configure_logging(args)
     logger.info('Starting project upload.')
     logger.debug(
-        'Command options: qai_server=%s qai_user=%s pipeline_version=%s update_sequences=%s',
+        'Command options: qai_server=%s qai_user=%s pipeline_version=%s order_by=%s '
+        'update_sequences=%s',
         args.qai_server,
         args.qai_user,
         args.pipeline_version,
+        args.order_by,
         args.update_sequences)
 
     project_config = ProjectConfig.loadDefault()
@@ -184,14 +216,17 @@ def main() -> int:
                       args.qai_password)
         logger.debug('Login successful.')
 
-        pipelines = session.get_json(
-            "/lab_miseq_pipelines?version=" + args.pipeline_version)
-        logger.debug('Pipeline lookup for %s returned %d entries.',
-                     args.pipeline_version,
-                     len(pipelines))
-        if pipelines:
+        all_pipelines = session.get_json("/lab_miseq_pipelines")
+        logger.debug('Fetched %d existing pipelines from QAI.', len(all_pipelines))
+        existing_pipeline = find_pipeline_by_version(all_pipelines,
+                                                     args.pipeline_version)
+        if existing_pipeline:
             logger.error('Pipeline %s already exists.', args.pipeline_version)
             return 1
+        order_by = derive_order_by(all_pipelines, args.order_by)
+        logger.debug('Pipeline %s will be created with order_by %d.',
+                     args.pipeline_version,
+                     order_by)
 
         seed_groups = session.get_json("/lab_miseq_seed_groups")
         logger.debug('Fetched %d seed groups.', len(seed_groups))
@@ -246,12 +281,7 @@ def main() -> int:
                                  region_name)
 
         logger.info("Uploading project definitions to QAI server %s", args.qai_server)
-        pipeline = session.post_json("/lab_miseq_pipelines",
-                                     {'version': args.pipeline_version})
-        if not pipeline:
-            logger.debug('Pipeline create for %s returned empty payload; fetching by version.',
-                         args.pipeline_version)
-            pipeline = fetch_pipeline_by_version(session, args.pipeline_version)
+        pipeline = create_pipeline(session, args.pipeline_version, order_by)
         logger.info("Created pipeline version %s with id %d", args.pipeline_version, pipeline['id'])
         pipeline_id = pipeline['id']
 
