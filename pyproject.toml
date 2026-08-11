@@ -254,7 +254,6 @@ module = [
     "micall.utils.probe_finder",
     "micall.utils.project_seeds_from_compendium",
     "micall.utils.projects_dump",
-    "micall.utils.projects_upload",
     "micall.utils.ref_aligner",
     "micall.utils.reference_distances",
     "micall.utils.release_test_compare",
