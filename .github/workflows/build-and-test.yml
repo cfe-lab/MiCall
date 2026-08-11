@@ -101,9 +101,10 @@ jobs:
         id: metadata
         shell: bash
         run: |
-          image_tags="$(git tag --points-at HEAD | sed -n 's/^v\([0-9]\)/\1/p')"
+          git fetch --tags origin --quiet
+          image_tags="$(git tag --points-at HEAD | sed -n 's/^v\([0-9]\)/\1/p' | grep -E '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$')"
           if [ -z "$image_tags" ]; then
-            image_tags="$(git describe | sed 's/^v//')"
+            image_tags="$(git describe | sed 's/^v//' | grep -E '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || true)"
           fi
           primary="ghcr.io/cfe-lab/micall:$(echo "$image_tags" | head -n1)"
           {
