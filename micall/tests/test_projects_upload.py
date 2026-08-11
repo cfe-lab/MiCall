@@ -1,4 +1,6 @@
 import argparse
+import contextlib
+
 import pytest
 
 from micall.utils import projects_upload
@@ -108,8 +110,9 @@ class ScoringFileStub:
     def __init__(self, path):
         self._path = path
 
+    @contextlib.contextmanager
     def path(self):
-        return self._path
+        yield self._path
 
 
 def make_args(pipeline_version='7.18', order_by=None):

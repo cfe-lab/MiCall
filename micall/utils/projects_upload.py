@@ -189,10 +189,10 @@ def main() -> int:
         args.update_sequences)
 
     project_config = ProjectConfig.loadDefault()
-    scoring_path = ProjectsScoringFile().path()
-    logger.debug('Loading scoring config from %s', scoring_path)
-    with scoring_path.open() as scoring_file:
-        scoring_config = json.load(scoring_file)
+    with ProjectsScoringFile().path() as scoring_path:
+        logger.debug('Loading scoring config from %s', scoring_path)
+        with scoring_path.open() as scoring_file:
+            scoring_config = json.load(scoring_file)
     logger.debug(
         'Loaded %d projects and %d regions from projects.json, %d scoring projects from project_scoring.json.',
         len(project_config.config['projects']),
