@@ -96,14 +96,14 @@ RUN apt-get install -q -y libcairo2-dev
 
 ## Install just the dependencies of MiCall (for faster build times in development).
 COPY pyproject.toml README.md uv.lock /opt/micall/
-RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --extra watcher --no-editable
+RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --extra watcher --extra utils --no-editable
 
 ## Trigger matplotlib to build its font cache
 RUN python -c 'import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot'
 
 COPY . /opt/micall/
 
-RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --extra watcher --no-editable
+RUN uv sync --frozen --managed-python --project /opt/micall --extra basespace --extra watcher --extra utils --no-editable
 RUN micall make_blast_db
 
 ## Sometimes BaseSpace will crash if python tries to create threads. We prevent thread creation here:
