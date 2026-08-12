@@ -63,7 +63,7 @@ class Session(requests.Session):
                 f"QAI returned a non-JSON response{user_hint} for {full_path}: "
                 f"{response.status_code} {response.reason}."
                 + (f" Redirected: {redirects}." if redirects else "")
-                + " The response body was printed above.") from None
+            ) from None
 
     def post_json(self, path, data):
         """ Post a JSON object to the web server, and return a JSON object.
