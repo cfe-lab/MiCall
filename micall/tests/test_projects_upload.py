@@ -56,8 +56,9 @@ class SequencedSession:
 
 
 class RecordingSession:
-    def __init__(self, pipelines):
+    def __init__(self, pipelines, project_versions=()):
         self._pipelines = pipelines
+        self._project_versions = list(project_versions)
         self.posted = []
 
     def __enter__(self):
@@ -72,6 +73,8 @@ class RecordingSession:
     def get_json(self, path):
         if path == '/lab_miseq_pipelines':
             return self._pipelines
+        if path == '/lab_miseq_project_versions':
+            return self._project_versions
         if path in ('/lab_miseq_seed_groups', '/lab_miseq_regions', '/lab_miseq_projects'):
             return []
         raise AssertionError('Unexpected get_json path: ' + path)
@@ -82,6 +85,9 @@ class RecordingSession:
 
 
 class WrappedProjectsSession(RecordingSession):
+    def __init__(self, pipelines, project_versions=()):
+        super().__init__(pipelines, project_versions)
+
     def get_json(self, path):
         if path == '/lab_miseq_projects':
             return {'content': [{'name': 'DemoProject', 'id': 7}]}
@@ -146,7 +152,7 @@ class ScoringFileStub:
         yield self._path
 
 
-def make_args(pipeline_version='7.18', order_by=None):
+def make_args(pipeline_version='7.18', order_by=None, reuse_existing_pipeline=False):
     return argparse.Namespace(
         quiet=False,
         verbose=False,
@@ -156,6 +162,7 @@ def make_args(pipeline_version='7.18', order_by=None):
         qai_password='testing',
         pipeline_version=pipeline_version,
         order_by=order_by,
+        reuse_existing_pipeline=reuse_existing_pipeline,
         update_sequences=False)
 
 
@@ -345,3 +352,26 @@ def test_main_unwraps_wrapped_projects_response(monkeypatch, tmp_path):
     assert session.posted[1] == ('/lab_miseq_project_versions',
                                  {'pipeline_id': 1, 'project_id': 7})
     assert not any(path == '/lab_miseq_projects' for path, _ in session.posted)
+
+
+def test_main_reuses_existing_pipeline(monkeypatch, tmp_path):
+    session = WrappedProjectsSession([{'version': '7.18', 'order_by': 700, 'id': 42}])
+    stub_main(monkeypatch, tmp_path, session, make_args('7.18', reuse_existing_pipeline=True),
+              project_config_class=NucleotideOnlyProjectConfig)
+
+    assert projects_upload.main() == 0
+
+    assert session.posted == [('/lab_miseq_project_versions',
+                               {'pipeline_id': 42, 'project_id': 7})]
+
+
+def test_main_reuse_skips_existing_project_versions(monkeypatch, tmp_path):
+    session = WrappedProjectsSession(
+        [{'version': '7.18', 'order_by': 700, 'id': 42}],
+        project_versions=[{'id': 9, 'pipeline_id': 42, 'project_id': 7}])
+    stub_main(monkeypatch, tmp_path, session, make_args('7.18', reuse_existing_pipeline=True),
+              project_config_class=NucleotideOnlyProjectConfig)
+
+    assert projects_upload.main() == 0
+
+    assert session.posted == []

@@ -158,6 +158,11 @@ def parse_args():
         help='sort order for the new pipeline; defaults to the highest existing '
              'order_by value plus 100')
     parser.add_argument(
+        '--reuse_existing_pipeline',
+        action='store_true',
+        help='attach projects to an already-created pipeline version instead of '
+             'failing; creates the pipeline if it does not exist yet')
+    parser.add_argument(
         '--update_sequences',
         action='store_true',
         help="Update region sequences if they don't match.")
@@ -220,7 +225,7 @@ def main() -> int:
         logger.debug('Fetched %d existing pipelines from QAI.', len(all_pipelines))
         existing_pipeline = find_pipeline_by_version(all_pipelines,
                                                      args.pipeline_version)
-        if existing_pipeline:
+        if existing_pipeline and not args.reuse_existing_pipeline:
             logger.error('Pipeline %s already exists.', args.pipeline_version)
             return 1
         order_by = derive_order_by(all_pipelines, args.order_by)
@@ -281,8 +286,16 @@ def main() -> int:
                                  region_name)
 
         logger.info("Uploading project definitions to QAI server %s", args.qai_server)
-        pipeline = create_pipeline(session, args.pipeline_version, order_by)
-        logger.info("Created pipeline version %s with id %d", args.pipeline_version, pipeline['id'])
+        if existing_pipeline:
+            pipeline = existing_pipeline
+            logger.info("Attaching projects to existing pipeline %s with id %d.",
+                        args.pipeline_version,
+                        pipeline['id'])
+        else:
+            pipeline = create_pipeline(session, args.pipeline_version, order_by)
+            logger.info("Created pipeline version %s with id %d",
+                        args.pipeline_version,
+                        pipeline['id'])
         pipeline_id = pipeline['id']
 
         old_projects = session.get_json("/lab_miseq_projects")
@@ -290,6 +303,17 @@ def main() -> int:
             old_projects = old_projects['content']
         logger.debug('Fetched %d existing projects from QAI.', len(old_projects))
         projects = {project['name']: project for project in old_projects}
+        if args.reuse_existing_pipeline:
+            project_versions = session.get_json("/lab_miseq_project_versions")
+            existing_project_versions = {
+                project_version['project_id']: project_version
+                for project_version in project_versions
+                if project_version['pipeline_id'] == pipeline_id}
+            logger.debug('Pipeline %s already has %d project versions.',
+                         args.pipeline_version,
+                         len(existing_project_versions))
+        else:
+            existing_project_versions = {}
         for project_name, project_data in project_config.config['projects'].items():
             logger.debug('Uploading project %s with %d region mappings.',
                          project_name,
@@ -303,6 +327,12 @@ def main() -> int:
                      'max_variants': project_data['max_variants']})
             else:
                 logger.debug('Project %s already exists with id %s.', project_name, project.get('id'))
+            project_version = existing_project_versions.get(project['id'])
+            if project_version is not None:
+                logger.debug('Project version %s already exists for project %s; skipping.',
+                             project_version.get('id'),
+                             project_name)
+                continue
             project_version = session.post_json("/lab_miseq_project_versions",
                                                 {'pipeline_id': pipeline_id,
                                                  'project_id': project['id']})
