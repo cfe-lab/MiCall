@@ -1,5 +1,8 @@
 import json
 import logging
+import sys
+import textwrap
+
 import requests
 
 logger = logging.getLogger('qai_helper')
@@ -54,13 +57,13 @@ class Session(requests.Session):
                 for redirect in response.history)
             user = getattr(self, 'qai_user', None)
             user_hint = f' for user {user!r}' if user else ''
+            print(f'QAI response body for {full_path}:', file=sys.stderr)
+            print(textwrap.indent(response.text, '    '), file=sys.stderr)
             raise RuntimeError(
                 f"QAI returned a non-JSON response{user_hint} for {full_path}: "
                 f"{response.status_code} {response.reason}."
                 + (f" Redirected: {redirects}." if redirects else "")
-                + " The QAI user may be missing the group required for this operation, "
-                  "or the QAI server is not behaving as expected. "
-                  "Grant the user the required group on QAI and retry.")
+                + " The response body was printed above.")
 
     def post_json(self, path, data):
         """ Post a JSON object to the web server, and return a JSON object.

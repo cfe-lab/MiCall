@@ -1,3 +1,5 @@
+import contextlib
+import io
 import unittest
 
 from micall.monitor.qai_helper import Session
@@ -48,6 +50,7 @@ class QaiHelperSessionTest(unittest.TestCase):
         session = Session()
         session.qai_path = 'http://example.invalid'
         session.qai_user = 'bob'
+        html = '<html><body>Start Page</body></html>'
         history = [
             DummyResponse('', status_code=303, headers={'Location': 'http://example.invalid/'}),
             DummyResponse(
@@ -57,16 +60,17 @@ class QaiHelperSessionTest(unittest.TestCase):
         ]
 
         def fake_method(url, data, headers):
-            return DummyResponse('<html>Start Page</html>', status_code=200, history=history)
+            return DummyResponse(html, status_code=200, history=history)
 
-        with self.assertRaisesRegex(
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr), self.assertRaisesRegex(
                 RuntimeError,
                 r"non-JSON response for user 'bob' for "
                 r'http://example\.invalid/lab_miseq_pipelines: 200 OK\.'
                 r' Redirected: 303 http://example\.invalid/ -> '
                 r'302 http://example\.invalid/qcs_start/labtech\.'
-                r' The QAI user may be missing the group required for this operation') as cm:
+                r' The response body was printed above\.') as cm:
             session._execute_json(fake_method, '/lab_miseq_pipelines', {'version': '0-dev'})
 
         self.assertIn("user 'bob'", str(cm.exception))
-        self.assertIn('/qcs_start/labtech', str(cm.exception))
+        self.assertIn('<html><body>Start Page</body></html>', stderr.getvalue())
