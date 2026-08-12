@@ -81,6 +81,37 @@ class RecordingSession:
         return {'id': 1, **data}
 
 
+class WrappedProjectsSession(RecordingSession):
+    def get_json(self, path):
+        if path == '/lab_miseq_projects':
+            return {'content': [{'name': 'DemoProject', 'id': 7}]}
+        if path == '/lab_miseq_regions':
+            return [{'name': 'NUC1', 'is_nucleotide': True, 'reference': '',
+                     'seed_group_id': None, 'id': 5}]
+        return super().get_json(path)
+
+
+class NucleotideOnlyProjectConfig:
+    def __init__(self):
+        self.config = {
+            'projects': {
+                'DemoProject': {
+                    'regions': [
+                        {'coordinate_region': 'NUC1',
+                         'seed_region_names': ['NUC1-seed']},
+                    ]
+                }
+            },
+            'regions': {
+                'NUC1': {'is_nucleotide': True, 'reference': [], 'seed_group': None},
+            },
+        }
+
+    @classmethod
+    def loadDefault(cls):
+        return cls()
+
+
 class PostingSession:
     def __init__(self, empty_response=False):
         self.empty_response = empty_response
@@ -128,9 +159,10 @@ def make_args(pipeline_version='7.18', order_by=None):
         update_sequences=False)
 
 
-def stub_main(monkeypatch, tmp_path, session, args):
+def stub_main(monkeypatch, tmp_path, session, args,
+              project_config_class=EmptyProjectConfig):
     monkeypatch.setattr(projects_upload, 'parse_args', lambda: args)
-    monkeypatch.setattr(projects_upload, 'ProjectConfig', EmptyProjectConfig)
+    monkeypatch.setattr(projects_upload, 'ProjectConfig', project_config_class)
     scoring_path = tmp_path / 'project_scoring.json'
     scoring_path.write_text('{"projects": {}}')
     monkeypatch.setattr(projects_upload, 'ProjectsScoringFile',
@@ -299,3 +331,17 @@ def test_main_pipeline_already_exists_returns_1(monkeypatch, tmp_path):
     assert projects_upload.main() == 1
 
     assert session.posted == []
+
+
+def test_main_unwraps_wrapped_projects_response(monkeypatch, tmp_path):
+    session = WrappedProjectsSession([])
+    stub_main(monkeypatch, tmp_path, session, make_args('7.18'),
+              project_config_class=NucleotideOnlyProjectConfig)
+
+    assert projects_upload.main() == 0
+
+    assert session.posted[0] == ('/lab_miseq_pipelines',
+                                 {'version': '7.18', 'order_by': 100})
+    assert session.posted[1] == ('/lab_miseq_project_versions',
+                                 {'pipeline_id': 1, 'project_id': 7})
+    assert not any(path == '/lab_miseq_projects' for path, _ in session.posted)

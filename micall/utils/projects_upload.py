@@ -286,6 +286,8 @@ def main() -> int:
         pipeline_id = pipeline['id']
 
         old_projects = session.get_json("/lab_miseq_projects")
+        if isinstance(old_projects, dict) and 'content' in old_projects:
+            old_projects = old_projects['content']
         logger.debug('Fetched %d existing projects from QAI.', len(old_projects))
         projects = {project['name']: project for project in old_projects}
         for project_name, project_data in project_config.config['projects'].items():
