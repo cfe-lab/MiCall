@@ -65,8 +65,7 @@ class QaiHelperSessionTest(unittest.TestCase):
                 r"non-JSON response for user 'bob' for "
                 r'http://example\.invalid/lab_miseq_pipelines: 200 OK\.'
                 r' Redirected: 303 http://example\.invalid/ -> '
-                r'302 http://example\.invalid/qcs_start/labtech\.'
-                r' The response body was printed above\.') as cm:
+                r'302 http://example\.invalid/qcs_start/labtech\.') as cm:
             session._execute_json(fake_method, '/lab_miseq_pipelines', {'version': '0-dev'})
 
         self.assertIn("user 'bob'", str(cm.exception))
