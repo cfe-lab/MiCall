@@ -1,5 +1,3 @@
-import contextlib
-import io
 import unittest
 
 from micall.monitor.qai_helper import Session
@@ -62,8 +60,7 @@ class QaiHelperSessionTest(unittest.TestCase):
         def fake_method(url, data, headers):
             return DummyResponse(html, status_code=200, history=history)
 
-        stderr = io.StringIO()
-        with contextlib.redirect_stderr(stderr), self.assertRaisesRegex(
+        with self.assertLogs('qai_helper', level='ERROR') as logs, self.assertRaisesRegex(
                 RuntimeError,
                 r"non-JSON response for user 'bob' for "
                 r'http://example\.invalid/lab_miseq_pipelines: 200 OK\.'
@@ -73,4 +70,4 @@ class QaiHelperSessionTest(unittest.TestCase):
             session._execute_json(fake_method, '/lab_miseq_pipelines', {'version': '0-dev'})
 
         self.assertIn("user 'bob'", str(cm.exception))
-        self.assertIn('<html><body>Start Page</body></html>', stderr.getvalue())
+        self.assertIn('<html><body>Start Page</body></html>', ' '.join(logs.output))

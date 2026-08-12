@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 import textwrap
 
 import requests
@@ -57,8 +56,9 @@ class Session(requests.Session):
                 for redirect in response.history)
             user = getattr(self, 'qai_user', None)
             user_hint = f' for user {user!r}' if user else ''
-            print(f'QAI response body for {full_path}:', file=sys.stderr)
-            print(textwrap.indent(response.text, '    '), file=sys.stderr)
+            logger.error('QAI response body for %s:\n%s',
+                         full_path,
+                         textwrap.indent(response.text, '    '))
             raise RuntimeError(
                 f"QAI returned a non-JSON response{user_hint} for {full_path}: "
                 f"{response.status_code} {response.reason}."
