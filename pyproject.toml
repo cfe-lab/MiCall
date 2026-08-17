@@ -36,7 +36,7 @@ dependencies = [
     "pysam>=0.24.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy>=2.31",
-    "drawsvg>=2.4.0",
+    "drawsvg>=2.4.2",
     "cairosvg>=2.8.2",
     "aligntools>=1.2.1",
     "multicsv>=1.0.5",

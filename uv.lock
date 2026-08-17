@@ -281,10 +281,11 @@ wheels = [
 
 [[package]]
 name = "drawsvg"
-version = "2.4.1"
+version = "2.4.2"
 source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/ec/a88a29dc4e380c6283fa6922a21c715ec40bf40f7b53859f8a104a7cbe26/drawsvg-2.4.2.tar.gz", hash = "sha256:5efd8bcdc2c2400425e7fb71b4b80d8fdd83b1dc810f790f58a165df33ddd303", size = 733210, upload-time = "2026-08-12T03:24:43.679Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bf/07/a2c3db84e6af6fa761de905b39109fe24eff2c8d52653c1bff968b6b965d/drawsvg-2.4.1-py3-none-any.whl", hash = "sha256:241ff024968e03542bc8685b41a285427303c17f81eae1933229d26bb65b7fda", size = 44067, upload-time = "2026-01-04T00:06:09.817Z" },
+    { url = "https://files.pythonhosted.org/packages/15/5a/c47c10de42c49a3a9957123d77e5692b56b4fbc342b55285b52c41a8f1c1/drawsvg-2.4.2-py3-none-any.whl", hash = "sha256:b1c101e187aa395cb13c039549e4f26fb7b7ee03974f53dc9798436463781bf1", size = 44175, upload-time = "2026-08-12T03:24:42.531Z" },
 ]
 
 [[package]]
@@ -548,7 +549,7 @@ requires-dist = [
     { name = "codecov", marker = "extra == 'dev'", specifier = ">=2.1.13" },
     { name = "coverage", marker = "extra == 'test'", specifier = ">=7.15.4" },
     { name = "cutadapt", specifier = ">=5.2" },
-    { name = "drawsvg", specifier = ">=2.4.0" },
+    { name = "drawsvg", specifier = ">=2.4.2" },
     { name = "ete3", marker = "extra == 'utils'", specifier = ">=3.1.3" },
     { name = "genetracks", git = "https://github.com/cfe-lab/genetracks.git?rev=v0.4" },
     { name = "gotoh", git = "https://github.com/cfe-lab/gotoh.git?subdirectory=alignment%2Fgotoh&rev=v0.3.0" },
