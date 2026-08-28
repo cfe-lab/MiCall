@@ -62,7 +62,7 @@ def test_full_pipeline_tiny_values(log_check, tmp_path: Path, random_fasta_file,
     run_full_pipeline(log_check, tmp_path, converted_fasta_file, ref_seqs)
 
 
-@pytest.mark.parametrize("random_seed", params(range(10), [5], "Seed {testcase} is a known hard case: the corrected referenceless stitcher does not reconstruct it at MIN_MATCHES=70. It reproduces in isolation (no MIN_MATCHES cache contamination) and fails identically on the original base module, so it is not caused by the MIN_MATCHES cache bug."))
+@pytest.mark.parametrize("random_seed", params(range(10), [5], "Seed {testcase} is a known hard case."))
 def test_full_pipeline(log_check, tmp_path: Path, random_fasta_file, random_seed: int, monkeypatch, disable_kmer_filter):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 70)
     assert not ReferencelessStitcherContext.get().is_debug2
