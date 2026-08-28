@@ -52,9 +52,11 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
     """
     Extract all k-mers from a contig sequence.
 
-    This is used as a fast filter to quickly reject contig pairs that
-    cannot possibly overlap. If two contigs don't share any k-mers,
-    they are considered to not overlap.
+    This is the exact shared-k-mer half of the merge rule. A valid merge
+    requires BOTH an acceptable statistical overlap score AND a shared
+    k-mer (when the k-mer requirement applies). Failing to share a k-mer
+    rejects a candidate merge; it does NOT by itself prove that the contigs
+    cannot overlap statistically.
 
     Args:
         cache: A mutable mapping used to cache previously computed k-mer sets.
@@ -83,6 +85,30 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
 
 
 @cache
+def _calculate_referenceless_overlap_score(
+    L: int,
+    M: int,
+    min_matches: int,
+) -> Score:
+    """
+    Transform overlap scores for optimal contig path selection in referenceless stitching.
+
+    This private variant takes ``min_matches`` explicitly so that every value
+    affecting the cached result is part of the cache key. ``MIN_MATCHES`` is
+    module-level and mutable (tests monkeypatch it), so it must not be read from
+    the closure of a cached function.
+
+    See ``calculate_referenceless_overlap_score`` for the behavioral description.
+    """
+    if L == 0:
+        return SCORE_NOTHING
+
+    base = calculate_overlap_score(L=L, M=M) - _acceptable_base_stitching_score(min_matches)
+    sign = 1 if base >= 0 else -1
+    magnitude = 999 + (999 * base) ** 2
+    return sign * magnitude
+
+
 def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     """
     Transform overlap scores for optimal contig path selection in referenceless stitching.
@@ -129,27 +155,35 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
         - Zero only when L=0 (no overlap)
         - Guaranteed to be far from SCORE_EPSILON
     """
-
-    if L == 0:
-        return SCORE_NOTHING
-
-    base = calculate_overlap_score(L=L, M=M) - ACCEPTABLE_BASE_STITCHING_SCORE()
-    sign = 1 if base >= 0 else -1
-    magnitude = 999 + (999 * base) ** 2
-    return sign * magnitude
+    return _calculate_referenceless_overlap_score(L, M, MIN_MATCHES)
 
 
 @cache
-def ACCEPTABLE_BASE_STITCHING_SCORE():
-    return calculate_overlap_score(L=MIN_MATCHES + 1, M=MIN_MATCHES)
+def _acceptable_base_stitching_score(min_matches: int) -> Score:
+    return calculate_overlap_score(L=min_matches + 1, M=min_matches)
+
+
+def ACCEPTABLE_BASE_STITCHING_SCORE() -> Score:
+    return _acceptable_base_stitching_score(MIN_MATCHES)
 
 
 @cache
-def ACCEPTABLE_STITCHING_SCORE():
-    return calculate_referenceless_overlap_score(L=MIN_MATCHES + 1, M=MIN_MATCHES)
+def _acceptable_stitching_score(min_matches: int) -> Score:
+    return _calculate_referenceless_overlap_score(
+        min_matches + 1, min_matches, min_matches
+    )
+
+
+def ACCEPTABLE_STITCHING_SCORE() -> Score:
+    return _acceptable_stitching_score(MIN_MATCHES)
 
 
 MAX_ALTERNATIVES = 999
+
+# Which side was covered when a perfect-coverage (SCORE_EPSILON) operation happened.
+# None means a normal stitch; "a" means the existing path (a) was covered by the
+# candidate (b); "b" means the candidate (b) was covered by the existing path (a).
+CoveredInput = Optional[Literal["a", "b"]]
 
 
 def intrapolate_number_of_alternatives(n_candidates: int) -> int:
@@ -216,7 +250,13 @@ def does_share_kmers(
     left: ContigWithAligner,
     right: ContigWithAligner,
 ) -> bool:
-    """Return True if two contigs share any k-mers, False otherwise."""
+    """Return True if two contigs share any k-mers, False otherwise.
+
+    This implements the exact shared-k-mer requirement of the merge rule. It is
+    an independent specificity check: even a statistically acceptable overlap is
+    rejected when the two contigs do not share a k-mer (and both are long enough
+    for the k-mer window to apply).
+    """
     left_kmers = get_kmers(kmers_cache, left.seq)
     right_kmers = get_kmers(kmers_cache, right.seq)
     # We only filter if both have kmers AND they don't share any
@@ -247,9 +287,12 @@ def get_overlap(
         ret: Optional[Overlap] = existing
         return ret
 
-    # Fast k-mer filter: if two contigs don't share any k-mers, they cannot overlap
-    # Only apply the filter if both contigs are long enough (at least kmer_size)
-    # This prevents false negatives when the overlap region is smaller than kmer_size
+    # Exact shared-k-mer requirement (independent specificity check), not a lossless
+    # optimization: if two contigs don't share any k-mer (and both are long enough
+    # for the k-mer window to apply), the merge is rejected even if a statistical
+    # overlap score would be acceptable. The requirement only applies when both
+    # contigs are at least KMER_SIZE long; shorter contigs are exempt because they
+    # cannot contain a full k-mer to share.
     min_length_for_filter = KMER_SIZE
     if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:  # noqa: SIM102
         if not does_share_kmers(kmers_cache, left, right):
@@ -816,7 +859,7 @@ def try_combine_contigs(
     kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
-) -> Optional[Tuple[ContigWithAligner, Score]]:
+) -> Optional[Tuple[ContigWithAligner, Score, CoveredInput]]:
     """Attempt to combine two contigs respecting the pool's score threshold.
 
     Fast-fails using upper bounds on achievable overlap, normalizes orientation,
@@ -860,8 +903,13 @@ def try_combine_contigs(
     coverage = calculate_covered(left, right, overlap.size)
     if coverage is None:
         covered = bigger = None
+        covered_input: CoveredInput = None
     else:
         covered, bigger = coverage
+        # `a` is the existing path and `b` is the candidate. `covered` is one of
+        # them (regardless of orientation normalization), so compare against the
+        # original arguments to record which side was covered.
+        covered_input = "a" if covered is a else "b"
 
     (
         aligned_1,
@@ -900,7 +948,7 @@ def try_combine_contigs(
             if is_debug2:
                 log(events.Covered(left.unique_name, right.unique_name))
             assert bigger is not None
-            return (bigger, SCORE_EPSILON)
+            return (bigger, SCORE_EPSILON, covered_input)
         else:
             # Partial coverage with mismatches: cannot merge reliably.
             return None
@@ -940,7 +988,7 @@ def try_combine_contigs(
                 overlap_size=overlap_size,
             )
         )
-    return (result_contig, result_score)
+    return (result_contig, result_score, None)
 
 
 def extend_by_1(
@@ -969,11 +1017,20 @@ def extend_by_1(
     if combination is None:
         return None
 
-    combined, additional_score = combination
+    combined, additional_score, covered_input = combination
     score = combine_scores(path.score, additional_score)
+    # Coverage metadata and epsilon scoring must never diverge.
+    assert (additional_score == SCORE_EPSILON) == (covered_input is not None)
     is_covered = additional_score == SCORE_EPSILON
     if is_covered:
-        new_elements = path.contigs_ids
+        if covered_input == "b":
+            # The candidate was covered by the existing path: keep the path's
+            # component ids and only add the candidate to the containment set.
+            new_elements = path.contigs_ids
+        else:
+            # The existing path was covered by the candidate: the candidate
+            # replaces the path's components.
+            new_elements = frozenset([candidate.id])
     else:
         new_elements = path.contigs_ids.union([candidate.id])
     new_contained_elements = path.contains_contigs_ids.union([candidate.id])
@@ -1099,7 +1156,7 @@ def try_combine_1(
                 align_cache=align_cache,
             )
             if result is not None:
-                combined, _additional_score = result
+                combined, _additional_score, _covered_input = result
                 return first, second, combined
 
     return None
