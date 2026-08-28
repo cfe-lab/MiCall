@@ -52,9 +52,11 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
     """
     Extract all k-mers from a contig sequence.
 
-    This is used as a fast filter to quickly reject contig pairs that
-    cannot possibly overlap. If two contigs don't share any k-mers,
-    they are considered to not overlap.
+    This is the exact shared-k-mer half of the merge rule. A valid merge
+    requires BOTH an acceptable statistical overlap score AND a shared
+    k-mer (when the k-mer requirement applies). Failing to share a k-mer
+    rejects a candidate merge; it does NOT by itself prove that the contigs
+    cannot overlap statistically.
 
     Args:
         cache: A mutable mapping used to cache previously computed k-mer sets.
@@ -248,7 +250,13 @@ def does_share_kmers(
     left: ContigWithAligner,
     right: ContigWithAligner,
 ) -> bool:
-    """Return True if two contigs share any k-mers, False otherwise."""
+    """Return True if two contigs share any k-mers, False otherwise.
+
+    This implements the exact shared-k-mer requirement of the merge rule. It is
+    an independent specificity check: even a statistically acceptable overlap is
+    rejected when the two contigs do not share a k-mer (and both are long enough
+    for the k-mer window to apply).
+    """
     left_kmers = get_kmers(kmers_cache, left.seq)
     right_kmers = get_kmers(kmers_cache, right.seq)
     # We only filter if both have kmers AND they don't share any
@@ -279,9 +287,12 @@ def get_overlap(
         ret: Optional[Overlap] = existing
         return ret
 
-    # Fast k-mer filter: if two contigs don't share any k-mers, they cannot overlap
-    # Only apply the filter if both contigs are long enough (at least kmer_size)
-    # This prevents false negatives when the overlap region is smaller than kmer_size
+    # Exact shared-k-mer requirement (independent specificity check), not a lossless
+    # optimization: if two contigs don't share any k-mer (and both are long enough
+    # for the k-mer window to apply), the merge is rejected even if a statistical
+    # overlap score would be acceptable. The requirement only applies when both
+    # contigs are at least KMER_SIZE long; shorter contigs are exempt because they
+    # cannot contain a full k-mer to share.
     min_length_for_filter = KMER_SIZE
     if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:  # noqa: SIM102
         if not does_share_kmers(kmers_cache, left, right):

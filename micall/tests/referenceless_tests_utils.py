@@ -23,9 +23,15 @@ def load_projects():
 
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def disable_kmer_filter(monkeypatch):
-    """Set KMER_SIZE=1 to disable kmer filtering for all tests."""
+    """Set KMER_SIZE=1 to disable the kmer filtering requirement.
+
+    This is intentionally NOT autouse: the production k-mer requirement
+    (KMER_SIZE=30) must be exercised by the suite. Tests that specifically
+    want to isolate another part of the stitcher may request this fixture
+    explicitly and narrowly.
+    """
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 1)
 
 
