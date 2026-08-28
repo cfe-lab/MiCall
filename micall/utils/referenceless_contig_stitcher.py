@@ -859,7 +859,7 @@ def try_combine_contigs(
     kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
-) -> Optional[Tuple[ContigWithAligner, Score]]:
+) -> Optional[Tuple[ContigWithAligner, Score, CoveredInput]]:
     """Attempt to combine two contigs respecting the pool's score threshold.
 
     Fast-fails using upper bounds on achievable overlap, normalizes orientation,
@@ -903,8 +903,13 @@ def try_combine_contigs(
     coverage = calculate_covered(left, right, overlap.size)
     if coverage is None:
         covered = bigger = None
+        covered_input: CoveredInput = None
     else:
         covered, bigger = coverage
+        # `a` is the existing path and `b` is the candidate. `covered` is one of
+        # them (regardless of orientation normalization), so compare against the
+        # original arguments to record which side was covered.
+        covered_input = "a" if covered is a else "b"
 
     (
         aligned_1,
@@ -943,7 +948,7 @@ def try_combine_contigs(
             if is_debug2:
                 log(events.Covered(left.unique_name, right.unique_name))
             assert bigger is not None
-            return (bigger, SCORE_EPSILON)
+            return (bigger, SCORE_EPSILON, covered_input)
         else:
             # Partial coverage with mismatches: cannot merge reliably.
             return None
@@ -983,7 +988,7 @@ def try_combine_contigs(
                 overlap_size=overlap_size,
             )
         )
-    return (result_contig, result_score)
+    return (result_contig, result_score, None)
 
 
 def extend_by_1(
@@ -1012,11 +1017,20 @@ def extend_by_1(
     if combination is None:
         return None
 
-    combined, additional_score = combination
+    combined, additional_score, covered_input = combination
     score = combine_scores(path.score, additional_score)
+    # Coverage metadata and epsilon scoring must never diverge.
+    assert (additional_score == SCORE_EPSILON) == (covered_input is not None)
     is_covered = additional_score == SCORE_EPSILON
     if is_covered:
-        new_elements = path.contigs_ids
+        if covered_input == "b":
+            # The candidate was covered by the existing path: keep the path's
+            # component ids and only add the candidate to the containment set.
+            new_elements = path.contigs_ids
+        else:
+            # The existing path was covered by the candidate: the candidate
+            # replaces the path's components.
+            new_elements = frozenset([candidate.id])
     else:
         new_elements = path.contigs_ids.union([candidate.id])
     new_contained_elements = path.contains_contigs_ids.union([candidate.id])
@@ -1142,7 +1156,7 @@ def try_combine_1(
                 align_cache=align_cache,
             )
             if result is not None:
-                combined, _additional_score = result
+                combined, _additional_score, _covered_input = result
                 return first, second, combined
 
     return None

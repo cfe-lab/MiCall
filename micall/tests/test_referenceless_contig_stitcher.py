@@ -3,8 +3,9 @@ from collections import Counter
 
 import pytest
 from micall.utils.referenceless_contig_stitcher import \
-    stitch_consensus, ContigWithAligner, Pool, \
-    ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support
+    stitch_consensus, ContigWithAligner, Pool, extend_by_1, get_overlap, \
+    ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support, \
+    calculate_referenceless_overlap_score
 from micall.utils.exact_coverage import reverse_complement
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
@@ -874,6 +875,125 @@ def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
     with ReferencelessStitcherContext.fresh():
         consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
     assert consenses == (bigger,)
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for the shared-k-mer requirement (Issue 1)
+# ---------------------------------------------------------------------------
+
+def test_get_overlap_kmer_requirement_independent(monkeypatch):
+    """The shared-k-mer check is an independent specificity gate.
+
+    Two contigs that both exceed KMER_SIZE and share a shorter run (but no
+    full 30-mer) are rejected by get_overlap under production k-mers, yet yield
+    an overlap as soon as the k-mer requirement is relaxed. This proves the
+    k-mer rule is evaluated on its own, not folded into the statistical score.
+    """
+    a = ContigWithAligner(None, "G" * 30 + "A" * 20, reads_count=None)
+    b = ContigWithAligner(None, "A" * 20 + "C" * 30, reads_count=None)
+
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 30)
+    assert get_overlap(a, b, {}, {}) is None
+
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 1)
+    assert get_overlap(a, b, {}, {}) is not None
+
+
+def test_shared_30mer_allows_merge(disable_acceptable_prob_check, monkeypatch):
+    """A genuine shared 30-mer satisfies the production k-mer requirement."""
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 30)
+    # 40 shared T's carry many 30-mers and more than MIN_MATCHES matches.
+    a = "G" * 30 + TTT
+    b = TTT + "C" * 30
+    contigs = [ContigWithAligner(None, a, reads_count=None), ContigWithAligner(None, b, reads_count=None)]
+    with ReferencelessStitcherContext.fresh():
+        consenses = tuple(sorted(c.seq for c in stitch_consensus(contigs)))
+    assert consenses == (a + "C" * 30,)
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for MIN_MATCHES-aware caching (Issue 2)
+# ---------------------------------------------------------------------------
+
+def test_min_matches_cache_keyed(monkeypatch):
+    """Overlap scores must follow MIN_MATCHES without any cache_clear."""
+    L, M = 100, 80
+
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 40)
+    score40 = calculate_referenceless_overlap_score(L, M)
+    assert ACCEPTABLE_STITCHING_SCORE() == 999
+
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)
+    score0 = calculate_referenceless_overlap_score(L, M)
+    # With a looser MIN_MATCHES the relative overlap score changes.
+    assert score40 != score0
+    assert ACCEPTABLE_STITCHING_SCORE() == 999
+
+    # Restoring MIN_MATCHES must reproduce the earlier (cached) value: the cache
+    # is keyed on min_matches, so no stale value leaks across the change.
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 40)
+    assert calculate_referenceless_overlap_score(L, M) == score40
+    assert ACCEPTABLE_STITCHING_SCORE() == 999
+
+    monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 0)
+    assert calculate_referenceless_overlap_score(L, M) == score0
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for preserving which side was covered (Issue 3)
+# ---------------------------------------------------------------------------
+
+def _make_path(whole_seq, component_seqs, score):
+    components = [ContigWithAligner(None, s, reads_count=None) for s in component_seqs]
+    whole = ContigWithAligner(None, whole_seq, reads_count=None)
+    return ContigsPath(
+        whole=whole,
+        contigs_ids=frozenset(c.id for c in components),
+        contains_contigs_ids=frozenset(c.id for c in components),
+        score=Score(score),
+    ), components
+
+
+def test_coverage_direction_path_covered_by_candidate(disable_acceptable_prob_check):
+    """A multi-contig path entirely covered by a larger candidate must report
+    the covering contig as its only component, not the original smaller contigs.
+    """
+    path, _ = _make_path("A" * 100, ["A" * 50, "A" * 50], 1000.0)
+    candidate = ContigWithAligner(None, "A" * 150, reads_count=None)
+    pool = Pool.empty(5, ACCEPTABLE_STITCHING_SCORE())
+    result = extend_by_1(False, pool, path, candidate, {}, {}, {}, {})
+    assert result is not None
+    assert result.contigs_ids == frozenset([candidate.id])
+    assert candidate.id in result.contains_contigs_ids
+    assert result.whole.seq == "A" * 150
+
+
+def test_coverage_direction_candidate_covered_by_path(disable_acceptable_prob_check):
+    """When the candidate is covered by the existing path, the path's components
+    are preserved (only the candidate is added to the containment set).
+    """
+    path, _ = _make_path("A" * 150, ["A" * 75, "A" * 75], 1000.0)
+    candidate = ContigWithAligner(None, "A" * 100, reads_count=None)
+    pool = Pool.empty(5, ACCEPTABLE_STITCHING_SCORE())
+    result = extend_by_1(False, pool, path, candidate, {}, {}, {}, {})
+    assert result is not None
+    assert result.contigs_ids == path.contigs_ids
+    assert candidate.id in result.contains_contigs_ids
+    assert result.whole.seq == "A" * 150
+
+
+def test_normal_stitch_keeps_union_of_components(disable_acceptable_prob_check):
+    """A genuine stitch (no coverage) keeps both sides' components and reports
+    no coverage direction (covered_input is None).
+    """
+    path, _ = _make_path("A" * 60 + "G" * 60, ["A" * 60], 1000.0)
+    candidate = ContigWithAligner(None, "G" * 60 + "T" * 60, reads_count=None)
+    pool = Pool.empty(5, ACCEPTABLE_STITCHING_SCORE())
+    with ReferencelessStitcherContext.fresh():
+        result = extend_by_1(False, pool, path, candidate, {}, {}, {}, {})
+    assert result is not None
+    assert result.contigs_ids == path.contigs_ids.union([candidate.id])
+    assert result.contains_contigs_ids == path.contains_contigs_ids.union([candidate.id])
 
 
 # ---------------------------------------------------------------------------
