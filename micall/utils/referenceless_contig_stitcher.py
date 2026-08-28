@@ -83,6 +83,30 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
 
 
 @cache
+def _calculate_referenceless_overlap_score(
+    L: int,
+    M: int,
+    min_matches: int,
+) -> Score:
+    """
+    Transform overlap scores for optimal contig path selection in referenceless stitching.
+
+    This private variant takes ``min_matches`` explicitly so that every value
+    affecting the cached result is part of the cache key. ``MIN_MATCHES`` is
+    module-level and mutable (tests monkeypatch it), so it must not be read from
+    the closure of a cached function.
+
+    See ``calculate_referenceless_overlap_score`` for the behavioral description.
+    """
+    if L == 0:
+        return SCORE_NOTHING
+
+    base = calculate_overlap_score(L=L, M=M) - _acceptable_base_stitching_score(min_matches)
+    sign = 1 if base >= 0 else -1
+    magnitude = 999 + (999 * base) ** 2
+    return sign * magnitude
+
+
 def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     """
     Transform overlap scores for optimal contig path selection in referenceless stitching.
@@ -129,27 +153,35 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
         - Zero only when L=0 (no overlap)
         - Guaranteed to be far from SCORE_EPSILON
     """
-
-    if L == 0:
-        return SCORE_NOTHING
-
-    base = calculate_overlap_score(L=L, M=M) - ACCEPTABLE_BASE_STITCHING_SCORE()
-    sign = 1 if base >= 0 else -1
-    magnitude = 999 + (999 * base) ** 2
-    return sign * magnitude
+    return _calculate_referenceless_overlap_score(L, M, MIN_MATCHES)
 
 
 @cache
-def ACCEPTABLE_BASE_STITCHING_SCORE():
-    return calculate_overlap_score(L=MIN_MATCHES + 1, M=MIN_MATCHES)
+def _acceptable_base_stitching_score(min_matches: int) -> Score:
+    return calculate_overlap_score(L=min_matches + 1, M=min_matches)
+
+
+def ACCEPTABLE_BASE_STITCHING_SCORE() -> Score:
+    return _acceptable_base_stitching_score(MIN_MATCHES)
 
 
 @cache
-def ACCEPTABLE_STITCHING_SCORE():
-    return calculate_referenceless_overlap_score(L=MIN_MATCHES + 1, M=MIN_MATCHES)
+def _acceptable_stitching_score(min_matches: int) -> Score:
+    return _calculate_referenceless_overlap_score(
+        min_matches + 1, min_matches, min_matches
+    )
+
+
+def ACCEPTABLE_STITCHING_SCORE() -> Score:
+    return _acceptable_stitching_score(MIN_MATCHES)
 
 
 MAX_ALTERNATIVES = 999
+
+# Which side was covered when a perfect-coverage (SCORE_EPSILON) operation happened.
+# None means a normal stitch; "a" means the existing path (a) was covered by the
+# candidate (b); "b" means the candidate (b) was covered by the existing path (a).
+CoveredInput = Optional[Literal["a", "b"]]
 
 
 def intrapolate_number_of_alternatives(n_candidates: int) -> int:
