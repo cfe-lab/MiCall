@@ -884,17 +884,18 @@ def test_stitch_covered_contig_is_ignored(disable_acceptable_prob_check):
 def test_get_overlap_kmer_requirement_independent(monkeypatch):
     """The shared-k-mer check is an independent specificity gate.
 
-    Two contigs whose overlap region is ~43 bp but contains a single mismatch
+    Two contigs whose overlap region is 44 bp but contains a single mismatch
     positioned so that every 30-mer window of the overlap crosses it share no
     full 30-mer. Under production k-mers the k-mer gate rejects the merge even
-    though the overlap is statistically acceptable (L=43, M=42). Once the k-mer
-    requirement is relaxed the merge is accepted purely on the statistical score,
-    proving the k-mer rule is evaluated on its own and not folded into the score.
+    though the overlap is statistically acceptable. Once the k-mer requirement is
+    relaxed the merge is accepted purely on the statistical score, proving the
+    k-mer rule is evaluated on its own and not folded into the score.
     """
-    # 43 bp overlap with a single central mismatch: any 30-mer window of the
+    # 44 aligned bases (43 matches, 1 central mismatch): any 30-mer window of the
     # overlap necessarily includes the mismatch, so no full 30-mer is shared.
-    left = "G" * 21 + "A" + "C" * 21
-    right = "G" * 21 + "T" + "C" * 21
+    # A non-covering stitch scores this with a +1 length bonus, i.e. L = 44 + 1 = 45.
+    left = "G" * 21 + "A" + "C" * 22
+    right = "G" * 21 + "T" + "C" * 22
     a = ContigWithAligner(None, "A" * 40 + left, reads_count=None)
     b = ContigWithAligner(None, right + "T" * 40, reads_count=None)
 
@@ -906,8 +907,8 @@ def test_get_overlap_kmer_requirement_independent(monkeypatch):
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 1)
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.MIN_MATCHES", 40)
     assert get_overlap(a, b, {}, {}) is not None
-    # Statistical premise: the overlap is genuinely acceptable, not merely "not None".
-    assert calculate_referenceless_overlap_score(43, 42) >= ACCEPTABLE_STITCHING_SCORE()
+    # 44 aligned bases, 43 matches. Non-covering score uses L = 44 + 1.
+    assert calculate_referenceless_overlap_score(45, 43) >= ACCEPTABLE_STITCHING_SCORE()
 
 
 def test_shared_30mer_allows_merge(disable_acceptable_prob_check, monkeypatch):
