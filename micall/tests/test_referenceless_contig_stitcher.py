@@ -975,7 +975,7 @@ def test_coverage_direction_path_covered_by_candidate(disable_acceptable_prob_ch
     result = extend_by_1(False, pool, path, candidate, {}, {}, {}, {})
     assert result is not None
     assert result.contigs_ids == frozenset([candidate.id])
-    assert candidate.id in result.contains_contigs_ids
+    assert result.contains_contigs_ids == path.contains_contigs_ids | {candidate.id}
     assert result.whole.seq == "A" * 150
 
 
@@ -989,7 +989,7 @@ def test_coverage_direction_candidate_covered_by_path(disable_acceptable_prob_ch
     result = extend_by_1(False, pool, path, candidate, {}, {}, {}, {})
     assert result is not None
     assert result.contigs_ids == path.contigs_ids
-    assert candidate.id in result.contains_contigs_ids
+    assert result.contains_contigs_ids == path.contains_contigs_ids | {candidate.id}
     assert result.whole.seq == "A" * 150
 
 
