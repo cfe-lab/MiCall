@@ -1585,6 +1585,35 @@ def test_stitch_with_reads_from_fastq_split_side_rejected(tmp_path, disable_acce
     )
 
 
+def test_stitch_window_coverage_rejected_despite_spanning(disable_acceptable_prob_check):
+    """Window coverage can reject a merge that has spanning support."""
+    # Direct check: spanning 1 but window min 0 for cut5 window [3,7) with only AACC
+    merged = "AAAACCCCGGGG"
+    cut = 5
+    rd = {4: Counter({"AACC": 1})}
+    assert check_merged_sequence_support(merged, cut, rd, 1, 4) == (False, 1, 0)
+    # Stitch-level: same read_index should prevent the AAAACCCC+CCCCGGGG merge
+    left = ContigWithAligner(None, "AAAACCCC", None)
+    right = ContigWithAligner(None, "CCCCGGGG", None)
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = rd
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 2  # rejected due to window, despite spanning depth 1
+
+    # With full window coverage the same merge is accepted
+    full_rd = {4: Counter({"AACC": 1, "ACCC": 1, "CCCC": 1, "CCCG": 1})}
+    assert check_merged_sequence_support(merged, cut, full_rd, 1, 4) == (True, 3, 2)
+    with ReferencelessStitcherContext.fresh() as ctx:
+        ctx.read_index = full_rd
+        ctx.minimum_read_depth = 1
+        ctx.read_length = 4
+        result = tuple(stitch_consensus([left, right]))
+    assert len(result) == 1
+    assert result[0].seq == merged
+
+
 # ---------------------------------------------------------------------------
 # Tests for build_read_index
 # ---------------------------------------------------------------------------
