@@ -1544,8 +1544,7 @@ def test_merged_check_with_split_side_reads(disable_acceptable_prob_check):
     cut = 5
     # Note: these must be canonicalized. min("AAAA","TTTT")="AAAA", min("CCCG","CGGG")="CCCG".
     rd = {4: Counter({"AAAA": 1, "CCCG": 1})}
-    assert not check_merged_sequence_support(merged, cut, rd, 1, 4)[0], \
-        "AAAA (ends before cut) and CCCG (starts at cut, rc CGGG not on left) should not support the merge"
+    assert check_merged_sequence_support(merged, cut, rd, 1, 4) == (False, 0, 0)
 
 
 def test_stitch_with_reads_from_fastq_split_side_rejected(tmp_path, disable_acceptable_prob_check):
