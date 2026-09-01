@@ -1671,6 +1671,63 @@ def test_build_read_index_mismatched_pairs_r1_short(tmp_path):
         build_read_index(fq1, fq2)
 
 
+def test_build_read_index_several_lengths(tmp_path):
+    """Several distinct read lengths are indexed separately with exact counts."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    # Pair1: 4-mer, Pair2: 5-mer, Pair3: 6-mer and 4-mer
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("a", "ACGT"),      # 4
+        ("b", "ACGTA"),     # 5
+        ("c", "ACGTAC"),    # 6
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("d", "TTTT"),      # 4, canonical AAAA
+        ("e", "TACGT"),     # 5, rc of ACGTA → same canonical ACGTA
+        ("f", "ATATAT"),    # 6, palindromic
+    ])
+    index = build_read_index(fq1, fq2)
+    # canonical of TTTT is AAAA, of TACGT is ACGTA
+    assert set(index.keys()) == {4, 5, 6}
+    assert index[4] == Counter({"ACGT": 1, "AAAA": 1})
+    assert index[5] == Counter({"ACGTA": 2})  # ACGTA + TACGT RC
+    assert index[6] == Counter({"ACGTAC": 1, "ATATAT": 1})
+
+
+def test_build_read_index_empty_sequences_skipped(tmp_path):
+    """Empty read sequences via FASTQ are skipped, not indexed."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("a", "ACGT"),
+        ("b", ""),  # empty – should be skipped
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("c", "TGCA"),
+        ("d", ""),  # empty
+    ])
+    index = build_read_index(fq1, fq2)
+    # Only the two non-empty 4-mers are indexed; empties contribute nothing.
+    # TGCA canonical is TGCA (rc TGCA is TGCA? actually TGCA rc TGCA is TGCA)
+    assert index == {4: Counter({"ACGT": 1, "TGCA": 1})}
+
+
+def test_build_read_index_duplicates_distributed(tmp_path):
+    """A read and its RC distributed across R1/R2 accumulate under one canonical."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("r1", "ACGTAC"),  # canonical min(ACGTAC, GTACGT)=ACGTAC
+        ("r2", "ACGTAC"),  # duplicate in R1
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("r3", "GTACGT"),  # RC of ACGTAC, same canonical
+        ("r4", "ACGTAC"),  # duplicate in R2
+    ])
+    index = build_read_index(fq1, fq2)
+    assert index[6] == Counter({"ACGTAC": 4})
+
+
 # ---------------------------------------------------------------------------
 # Pipeline integration tests
 # ---------------------------------------------------------------------------
