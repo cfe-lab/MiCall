@@ -1767,6 +1767,34 @@ def test_build_read_index_duplicates_distributed(tmp_path):
     assert index[6] == Counter({"ACGTAC": 4})
 
 
+def test_oracle_reverse_complement_with_N():
+    """Oracle RC must handle N (production supports it) — protects translate optimization."""
+    assert _oracle_reverse_complement("ACNGT") == "ACNGT"
+    assert _oracle_reverse_complement("N") == "N"
+    assert _oracle_reverse_complement("ACGTN") == "NACGT"
+    assert _oracle_reverse_complement("NNNN") == "NNNN"
+
+
+def test_build_read_index_with_N(tmp_path):
+    """Reads containing N are canonicalized with N preserved."""
+    from micall.utils.referenceless_contig_stitcher import build_read_index
+
+    fq1 = _make_fastq(tmp_path, "r1.fastq", [
+        ("a", "ACNGT"),  # contains N, canonical ACNGT (palindromic)
+        ("b", "ACNGT"),  # duplicate
+    ])
+    fq2 = _make_fastq(tmp_path, "r2.fastq", [
+        ("c", "ACNGT"),  # duplicate across R2
+        ("d", "NACGT"),  # different raw read but same canonical ACGTN? Actually ACNGT vs NACGT distinct
+    ])
+    index = build_read_index(fq1, fq2)
+    # ACNGT canonical is ACNGT (self), count 3
+    assert index[5]["ACNGT"] == 3
+    # NACGT raw read canonicalizes to ACGTN (min(NACGT, ACGTN)=ACGTN)
+    # The fourth read NACGT -> canonical ACGTN, distinct key
+    assert index[5]["ACGTN"] == 1
+
+
 # ---------------------------------------------------------------------------
 # Pipeline integration tests
 # ---------------------------------------------------------------------------
