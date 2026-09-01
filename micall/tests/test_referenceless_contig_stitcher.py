@@ -23,6 +23,17 @@ TTT = 40 * 'T'
 AAA = 40 * 'A'
 
 
+def _oracle_reverse_complement(seq: str) -> str:
+    complement = {
+        "A": "T",
+        "T": "A",
+        "C": "G",
+        "G": "C",
+        "N": "N",
+    }
+    return "".join(complement.get(base, base) for base in reversed(seq))
+
+
 # ---------------------------------------------------------------------------
 # Slow oracle for check_merged_sequence_support — obviously correct reference
 # ---------------------------------------------------------------------------
@@ -53,7 +64,7 @@ def _oracle_check_merged_sequence_support(merged_seq, cut_position, read_index, 
             continue
         for s in range(seq_len - L + 1):
             kmer = merged_seq[s: s + L]
-            canonical = min(kmer, reverse_complement(kmer))
+            canonical = min(kmer, _oracle_reverse_complement(kmer))
             cnt = counter.get(canonical, 0)
             if cnt == 0:
                 continue
@@ -111,13 +122,13 @@ class TestOracleDifferential:
                         s = rng.randint(0, len(merged_seq) - L)
                         frag = merged_seq[s: s + L]
                         if rng.random() < 0.3:
-                            frag = reverse_complement(frag)
-                        canonical = min(frag, reverse_complement(frag))
+                            frag = _oracle_reverse_complement(frag)
+                        canonical = min(frag, _oracle_reverse_complement(frag))
                         cnt = rng.randint(1, 3)
                         counter[canonical] += cnt
                     elif rng.random() < 0.5:
                         frag = "".join(rng.choice("ACGT") for _ in range(L))
-                        canonical = min(frag, reverse_complement(frag))
+                        canonical = min(frag, _oracle_reverse_complement(frag))
                         cnt = rng.randint(1, 3)
                         counter[canonical] += cnt
                 if counter:
@@ -1160,7 +1171,7 @@ class TestCheckMergedSequenceSupport:
         rd = {}
         for s, L in starts_with_lens:
             frag = seq[s:s + L]
-            canonical = min(frag, reverse_complement(frag))
+            canonical = min(frag, _oracle_reverse_complement(frag))
             rd.setdefault(L, Counter())[canonical] += count
         return rd
 
@@ -1473,7 +1484,7 @@ def test_stitch_with_read_index_matching_accepted(disable_acceptable_prob_check)
     rd = {4: Counter()}
     for i in range(len(merged)-3):
         frag = merged[i:i+4]
-        canonical = min(frag, reverse_complement(frag))
+        canonical = min(frag, _oracle_reverse_complement(frag))
         rd[4][canonical] += 1
     with ReferencelessStitcherContext.fresh() as ctx:
         ctx.read_index = rd
