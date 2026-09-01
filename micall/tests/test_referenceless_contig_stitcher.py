@@ -74,6 +74,86 @@ def _oracle_check_merged_sequence_support(merged_seq, cut_position, read_index, 
     return True, cut_crossing_depth, min_window_coverage
 
 
+class TestOracleDifferential:
+    """Differential characterization: oracle vs production over deterministic small cases."""
+
+    def test_differential_against_oracle(self):
+        import random
+
+        rng = random.Random(12345)
+        cases = []
+        # generate 70 deterministic cases covering varied dimensions
+        for _ in range(70):
+            merged_len = rng.randint(3, 28)
+            # repetitive vs ordinary
+            r = rng.random()
+            if r < 0.15:
+                base = rng.choice(["A", "C", "G", "T"])
+                merged_seq = base * merged_len
+            elif r < 0.35:
+                # low complexity repeat
+                pat = rng.choice(["AC", "GT", "ACGT", "AAT", "CGCG"])
+                merged_seq = (pat * ((merged_len // len(pat)) + 1))[:merged_len]
+            else:
+                merged_seq = "".join(rng.choice("ACGT") for _ in range(merged_len))
+            cut = rng.randint(0, merged_len)
+            read_length_cfg = rng.choice([4, 5, 6, 7, 150])  # odd/even and default 150 (clipping)
+            # choose indexed read lengths (1-3) possibly shorter/equal/longer than cfg
+            num_lengths = rng.randint(1, 3)
+            possible_lengths = [3, 4, 5, 6, 7, 10, 15, 20]
+            indexed_lengths = rng.sample(possible_lengths, num_lengths)
+            read_index = {}
+            for L in indexed_lengths:
+                counter = Counter()
+                num_reads = rng.randint(0, 3)
+                for _ in range(num_reads):
+                    if L <= len(merged_seq) and rng.random() < 0.55:
+                        s = rng.randint(0, len(merged_seq) - L)
+                        frag = merged_seq[s: s + L]
+                        if rng.random() < 0.3:
+                            frag = reverse_complement(frag)
+                        canonical = min(frag, reverse_complement(frag))
+                        cnt = rng.randint(1, 3)
+                        counter[canonical] += cnt
+                    elif rng.random() < 0.5:
+                        frag = "".join(rng.choice("ACGT") for _ in range(L))
+                        canonical = min(frag, reverse_complement(frag))
+                        cnt = rng.randint(1, 3)
+                        counter[canonical] += cnt
+                if counter:
+                    read_index[L] = counter
+            # occasionally force disabled / empty states
+            p = rng.random()
+            if p < 0.05:
+                read_index = None
+            elif p < 0.10:
+                read_index = {}
+            min_depth = rng.randint(0, 5)
+            cases.append((merged_seq, cut, read_index, min_depth, read_length_cfg))
+
+        # also add explicit boundary-clipped cases
+        for cut, rl in [(0, 5), (1, 5), (2, 6), (28, 5), (27, 4)]:
+            merged_seq = "A" * 30
+            read_index = {5: Counter({"AAAAA": 1})}
+            cases.append((merged_seq, cut, read_index, 1, rl))
+        # reads longer than merged
+        cases.append(("AAA", 1, {5: Counter({"AAAAA": 1})}, 1, 5))
+        cases.append(("ACGTACGT", 4, {10: Counter({"ACGTACGTAC": 1})}, 1, 5))
+
+        for idx, (merged_seq, cut, read_index, min_depth, read_length_cfg) in enumerate(cases):
+            expected = _oracle_check_merged_sequence_support(
+                merged_seq, cut, read_index, min_depth, read_length_cfg
+            )
+            actual = check_merged_sequence_support(
+                merged_seq, cut, read_index, min_depth, read_length_cfg
+            )
+            assert actual == expected, (
+                f"case {idx}: merged={merged_seq!r} cut={cut} "
+                f"read_index={read_index} min_depth={min_depth} read_length={read_length_cfg} "
+                f"expected={expected} actual={actual}"
+            )
+
+
 @pytest.mark.parametrize(
     "seqs, expected",
     [
