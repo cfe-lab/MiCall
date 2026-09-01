@@ -797,8 +797,9 @@ def check_merged_sequence_support(
     if window_end <= window_start:
         return True, 0, 0
 
-    # -- difference array for per-position coverage --
-    diff = [0] * (seq_len + 1)
+    # -- window-local difference array for per-position coverage --
+    window_size = window_end - window_start
+    diff = [0] * (window_size + 1)
     cut_crossing_depth = 0
     any_match = False
 
@@ -825,8 +826,8 @@ def check_merged_sequence_support(
             cov_start = max(window_start, s)
             cov_end = min(window_end, s + L)
             if cov_start < cov_end:
-                diff[cov_start] += count
-                diff[cov_end] -= count
+                diff[cov_start - window_start] += count
+                diff[cov_end - window_start] -= count
 
     if not any_match:
         return False, 0, 0
@@ -834,7 +835,7 @@ def check_merged_sequence_support(
     # Compute window coverage unconditionally for diagnostic purposes.
     current = 0
     min_cov = float('inf')
-    for p in range(window_start, window_end):
+    for p in range(window_size):
         current += diff[p]
         if current < min_cov:  # noqa: PLR1730
             min_cov = current
