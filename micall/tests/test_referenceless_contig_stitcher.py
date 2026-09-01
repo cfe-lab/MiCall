@@ -1340,6 +1340,104 @@ class TestCheckMergedSequenceSupport:
         assert check_merged_sequence_support(merged, cut, rd, 9, 5) == (False, 8, 10)
 
 
+class TestExplicitSemantics:
+    """Additional explicit edge-case coverage required by the read-support spec."""
+
+    def test_strict_cut_spanning_exact_depths(self):
+        # ending exactly at cut (S=10, L=5 covers [10,15)) does NOT span cut=15
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, {5: Counter({"TTAAA": 1})}, 1, 5) == (False, 0, 0)
+        # starting exactly at cut (S=15) does NOT span
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, {5: Counter({"CCCGG": 1})}, 1, 5) == (False, 0, 0)
+        # strictly crossing (S=12) does span with depth 1, window min 0 → fails due window
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, {5: Counter({"AAACC": 1})}, 1, 5) == (False, 1, 0)
+
+    def test_placement_multiplicity_homopolymer(self):
+        merged = "A" * 30
+        cut = 15
+        # 4 spanning placements ×1 =4, window coverage 5
+        assert check_merged_sequence_support(merged, cut, {5: Counter({"AAAAA": 1})}, 4, 5) == (True, 4, 5)
+        # multiplicity 2 → spanning 8, window 10
+        assert check_merged_sequence_support(merged, cut, {5: Counter({"AAAAA": 2})}, 8, 5) == (True, 8, 10)
+
+    def test_palindromic_read_canonical(self):
+        # ATAT is self-canonical (rc == itself)
+        merged = "ATAT" * 8  # 32
+        cut = 16
+        rd = {4: Counter({"ATAT": 2})}  # palindromic, RC is itself
+        # ATAT occurs at even positions; only S=14 spans cut 16 (14<16<18) with count2 → spanning 2, window [14,18) min 4
+        assert check_merged_sequence_support(merged, cut, rd, 1, 4) == (True, 2, 4)
+        # also verify non-palindromic RC equivalence still holds
+        merged2 = "ACGT" * 8
+        cut2 = 16
+        # Raw read GTACG canonicalizes to CGTAC; store canonical
+        rd2 = {5: Counter({"CGTAC": 1})}
+        # CGTAC occurs at S=13,14 in ACGT repeat → 2 placements
+        assert check_merged_sequence_support(merged2, cut2, rd2, 2, 5) == (True, 2, 2)
+
+    def test_multiple_lengths_combined(self):
+        merged = "ACGT" * 8
+        cut = 16
+        # Mix of shorter (3), equal (5), longer (10) than window read_length 5
+        rd = {3: Counter({"ACG": 1}), 5: Counter({"CGTAC": 1}), 10: Counter({"ACGTACGTAC": 1})}
+        # production vs oracle already tested in differential; here pin exact tuple for one depth
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5) == (True, 6, 8)
+
+    def test_boundary_window_odd_and_even(self):
+        merged = "A" * 30
+        # odd read_length 5: left2 right3 → window [13,18) for cut15
+        assert check_merged_sequence_support(merged, 15, {5: Counter({"AAAAA": 1})}, 1, 5) == (True, 4, 5)
+        # even read_length 4: left2 right2 → window [13,17) for cut15
+        assert check_merged_sequence_support(merged, 15, {4: Counter({"AAAA": 1})}, 1, 4) == (True, 3, 4)
+        # even read_length 6: left3 right3 → window [12,18) for cut15
+        assert check_merged_sequence_support(merged, 15, {6: Counter({"AAAAAA": 1})}, 1, 6) == (True, 5, 6)
+
+    def test_boundary_window_clipped_left_and_right(self):
+        merged = "A" * 30
+        # odd 5, cut near left edge (clipped)
+        assert check_merged_sequence_support(merged, 1, {5: Counter({"AAAAA": 1})}, 1, 5) == (True, 1, 1)
+        assert check_merged_sequence_support(merged, 2, {5: Counter({"AAAAA": 1})}, 1, 5) == (True, 2, 1)
+        # clipped at 0 (no spanning because cut at very start)
+        assert check_merged_sequence_support(merged, 0, {5: Counter({"AAAAA": 1})}, 1, 5) == (False, 0, 1)
+        # odd 5, cut near right edge (clipped)
+        assert check_merged_sequence_support(merged, 28, {5: Counter({"AAAAA": 1})}, 1, 5) == (True, 2, 1)
+        # even 4, clipped left
+        assert check_merged_sequence_support(merged, 1, {4: Counter({"AAAA": 1})}, 1, 4) == (True, 1, 1)
+        # even 4, clipped right
+        assert check_merged_sequence_support(merged, 28, {4: Counter({"AAAA": 1})}, 1, 4) == (True, 2, 1)
+
+    def test_disabled_states_exact_tuples(self):
+        merged = "ACGT" * 8
+        cut = 16
+        # read_index None → disabled
+        assert check_merged_sequence_support(merged, cut, None, 5, 5) == (True, 0, 0)
+        # min_depth 0 → disabled even with empty index
+        assert check_merged_sequence_support(merged, cut, {}, 0, 5) == (True, 0, 0)
+        # enabled but empty → rejected
+        assert check_merged_sequence_support(merged, cut, {}, 1, 5) == (False, 0, 0)
+        # enabled but no matching reads → also (False,0,0) not (True)
+        assert check_merged_sequence_support(merged, cut, {5: Counter({"TTTTT": 1})}, 1, 5) == (False, 0, 0)
+
+    def test_read_longer_than_merged(self):
+        merged = "AAA"  # len 3
+        cut = 1
+        rd = {5: Counter({"AAAAA": 1})}  # L=5 > len 3 → no placements
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5) == (False, 0, 0)
+        merged2 = "ACGTACGT"  # len 8
+        cut2 = 4
+        rd2 = {10: Counter({"ACGTACGTAC": 1})}  # L=10 >8
+        assert check_merged_sequence_support(merged2, cut2, rd2, 1, 5) == (False, 0, 0)
+
+    def test_window_zero_size(self):
+        # When window is clipped to zero size (cut at edge with tiny seq), should be considered passed if otherwise disabled? Actually window_end <= window_start → True
+        merged = "A"  # len1
+        cut = 0
+        rd = {1: Counter({"A": 1})}
+        # read_length 1 → left0 right1 → window [0,1) for cut0 → not zero
+        assert check_merged_sequence_support(merged, cut, rd, 1, 1) == (False, 0, 1)
+        # empty window: merged len1 cut1 read_length1 → window [1,1) size0 → early True
+        assert check_merged_sequence_support(merged, 1, rd, 1, 1) == (True, 0, 0)
+
+
 # ---------------------------------------------------------------------------
 # End-to-end tests with read index
 # ---------------------------------------------------------------------------
