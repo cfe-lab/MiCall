@@ -757,8 +757,7 @@ def _local_junction_key(
         local_start = max(0, s_min - max_L + 1)
         local_end = min(seq_len, s_max + max_L)
         # clamp when s_max <0 (cut at 0 with tiny window) -> local_end may be < local_start
-        if local_end < local_start:
-            local_end = local_start
+        local_end = max(local_end, local_start)
     else:
         # No reads indexed; local sequence not needed but keep cut/window for completeness
         local_start = 0
