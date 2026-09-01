@@ -149,6 +149,9 @@ class TestOracleDifferential:
         # reads longer than merged
         base_cases.append(("AAA", 1, {5: Counter({"AAAAA": 1})}, 5))
         base_cases.append(("ACGTACGT", 4, {10: Counter({"ACGTACGTAC": 1})}, 5))
+        # reads containing N (canonicalization must preserve N)
+        base_cases.append(("ACNGTACNGT", 5, {5: Counter({"ACNGT": 1})}, 5))
+        base_cases.append(("NNNNNACGT", 3, {5: Counter({"NNNNN": 1, "ACGTN": 1})}, 5))
 
         for idx, (merged_seq, cut, read_index, read_length_cfg) in enumerate(base_cases):
             # obtain raw diagnostics to probe around thresholds
