@@ -6,7 +6,6 @@ from micall.utils.referenceless_contig_stitcher import \
     stitch_consensus, ContigWithAligner, Pool, extend_by_1, get_overlap, \
     ACCEPTABLE_STITCHING_SCORE, check_merged_sequence_support, \
     calculate_referenceless_overlap_score
-from micall.utils.exact_coverage import reverse_complement
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_score import Score
 from micall.utils.referenceless_contig_path import ContigsPath
@@ -1178,7 +1177,7 @@ class TestCheckMergedSequenceSupport:
     # ---- helper: build a read index from placements -------------------
     @staticmethod
     def _make_rd(seq: str, starts_with_lens, count=1):
-        rd = {}
+        rd: dict[int, Counter[str]] = {}
         for s, L in starts_with_lens:
             frag = seq[s:s + L]
             canonical = min(frag, _oracle_reverse_complement(frag))
@@ -1471,7 +1470,7 @@ class TestReadEvidenceCache:
         cut = 5
         read_index = {4: Counter({"AACC": 1})}
         rl = 4
-        with ReferencelessStitcherContext.fresh() as ctx:
+        with ReferencelessStitcherContext.fresh():
             calls = []
             orig = rcs._compute_raw_read_evidence
 
@@ -1537,7 +1536,7 @@ class TestReadEvidenceCache:
         cut2 = len(left_flank2) + 5
         read_index = {4: Counter({"AACC": 1})}
         rl = 4
-        with ReferencelessStitcherContext.fresh() as ctx:
+        with ReferencelessStitcherContext.fresh():
             calls = []
             orig = rcs._compute_raw_read_evidence
 
@@ -1566,7 +1565,7 @@ class TestReadEvidenceCache:
         cut = 5
         read_index = {4: Counter({"AACC": 1})}
         rl = 4
-        with ReferencelessStitcherContext.fresh() as ctx:
+        with ReferencelessStitcherContext.fresh():
             calls = []
             orig = rcs._compute_raw_read_evidence
 
@@ -1588,7 +1587,6 @@ class TestReadEvidenceCache:
         import micall.utils.referenceless_contig_stitcher as rcs
 
         # Configured window 5 but indexed read length 10 requires larger local flank
-        merged = "A" * 30
         cut = 15
         rl_cfg = 5  # window [13,18)
         # read_index with max 10: need local flank 10, not just 5
@@ -1599,7 +1597,7 @@ class TestReadEvidenceCache:
         lst = list(merged1)
         lst[9] = "C"  # change at pos 9, affects a 10-mer starting at 9 that spans cut
         merged2 = "".join(lst)
-        with ReferencelessStitcherContext.fresh() as ctx:
+        with ReferencelessStitcherContext.fresh():
             # verify oracle and production agree and keys differ
             k1 = rcs._local_junction_key(merged1, cut, read_index, rl_cfg)
             k2 = rcs._local_junction_key(merged2, cut, read_index, rl_cfg)
@@ -1613,7 +1611,7 @@ class TestReadEvidenceCache:
             far2 = "T" * 80 + "A" * 30 + "A" * 80
             cut_far1 = 50 + 15
             cut_far2 = 80 + 15
-            with ReferencelessStitcherContext.fresh() as ctx2:
+            with ReferencelessStitcherContext.fresh():
                 calls = []
                 orig2 = rcs._compute_raw_read_evidence
 
