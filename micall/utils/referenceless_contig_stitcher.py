@@ -721,6 +721,104 @@ def merge_by_concordance(
     return result_seq, overlap_size, join_boundary
 
 
+def _boundary_window(seq_len: int, cut_position: int, read_length: int) -> Tuple[int, int]:
+    left_radius = read_length // 2
+    right_radius = read_length - left_radius
+    window_start = max(0, cut_position - left_radius)
+    window_end = min(seq_len, cut_position + right_radius)
+    return window_start, window_end
+
+
+def _local_junction_key(
+    merged_seq: str,
+    cut_position: int,
+    read_index: Optional[Dict[int, Counter[str]]],
+    read_length: int,
+) -> Tuple:
+    """Cache key for raw read evidence, derived from the effective local junction.
+
+    The key contains only sequence and geometry that can affect read placements:
+    * local sequence around the cut/window, extended by the longest indexed read
+    * cut and window offsets within that local sequence
+    * read_length (window geometry) and read_index identity (stable per context)
+
+    Two merged contigs with different distant flanks but identical local junction
+    share the same key and thus reuse evidence. Changing any base within the
+    region that can contribute a placement changes the local sequence and thus
+    the key. Using the longest indexed read length ensures the local window is
+    large enough for every length bucket.
+    """
+    seq_len = len(merged_seq)
+    window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
+    if read_index:
+        max_L = max(read_index)
+        s_min = min(window_start, cut_position)
+        s_max = max(window_end - 1, cut_position - 1)
+        local_start = max(0, s_min - max_L + 1)
+        local_end = min(seq_len, s_max + max_L)
+        # clamp when s_max <0 (cut at 0 with tiny window) -> local_end may be < local_start
+        if local_end < local_start:
+            local_end = local_start
+    else:
+        # No reads indexed; local sequence not needed but keep cut/window for completeness
+        local_start = 0
+        local_end = 0
+    local_seq = merged_seq[local_start:local_end]
+    return (
+        local_seq,
+        cut_position - local_start,
+        window_start - local_start,
+        window_end - local_start,
+        read_length,
+        id(read_index),
+    )
+
+
+def _compute_raw_read_evidence(
+    merged_seq: str,
+    cut_position: int,
+    read_index: Dict[int, Counter[str]],
+    read_length: int,
+) -> Tuple[int, int]:
+    """Expensive raw evidence: (cut_crossing_depth, min_window_coverage) without threshold."""
+    seq_len = len(merged_seq)
+    window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
+    window_size = window_end - window_start
+    # window_size >0 guaranteed by caller (zero window handled earlier)
+    diff = [0] * (window_size + 1)
+    cut_crossing_depth = 0
+    any_match = False
+    for L, counter in read_index.items():
+        s_eff_min = max(0, min(window_start, cut_position) - L + 1)
+        s_eff_max = min(max(window_end - 1, cut_position - 1), seq_len - L)
+        if s_eff_min > s_eff_max:
+            continue
+        for s in range(s_eff_min, s_eff_max + 1):
+            kmer = merged_seq[s: s + L]
+            rc_kmer = reverse_complement(kmer)
+            canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
+            count = counter.get(canonical, 0)
+            if count == 0:
+                continue
+            any_match = True
+            if s < cut_position < s + L:
+                cut_crossing_depth += count
+            cov_start = max(window_start, s)
+            cov_end = min(window_end, s + L)
+            if cov_start < cov_end:
+                diff[cov_start - window_start] += count
+                diff[cov_end - window_start] -= count
+    if not any_match:
+        return 0, 0
+    current = 0
+    min_cov = float("inf")
+    for p in range(window_size):
+        current += diff[p]
+        if current < min_cov:  # noqa: PLR1730
+            min_cov = current
+    return cut_crossing_depth, int(min_cov)
+
+
 def check_merged_sequence_support(
     merged_seq: str,
     cut_position: int,
@@ -789,57 +887,33 @@ def check_merged_sequence_support(
         return False, 0, 0
 
     seq_len = len(merged_seq)
-
-    left_radius = read_length // 2
-    right_radius = read_length - left_radius
-    window_start = max(0, cut_position - left_radius)
-    window_end = min(seq_len, cut_position + right_radius)
+    window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
     if window_end <= window_start:
         return True, 0, 0
 
-    # -- window-local difference array for per-position coverage --
-    window_size = window_end - window_start
-    diff = [0] * (window_size + 1)
-    cut_crossing_depth = 0
-    any_match = False
-
-    for L, counter in read_index.items():
-        s_eff_min = max(0, min(window_start, cut_position) - L + 1)
-        s_eff_max = min(max(window_end - 1, cut_position - 1), seq_len - L)
-        if s_eff_min > s_eff_max:
-            continue
-
-        for s in range(s_eff_min, s_eff_max + 1):
-            kmer = merged_seq[s:s + L]
-            rc_kmer = reverse_complement(kmer)
-            canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
-
-            count = counter.get(canonical, 0)
-            if count == 0:
-                continue
-
-            any_match = True
-
-            if s < cut_position < s + L:
-                cut_crossing_depth += count
-
-            cov_start = max(window_start, s)
-            cov_end = min(window_end, s + L)
-            if cov_start < cov_end:
-                diff[cov_start - window_start] += count
-                diff[cov_end - window_start] -= count
-
-    if not any_match:
-        return False, 0, 0
-
-    # Compute window coverage unconditionally for diagnostic purposes.
-    current = 0
-    min_cov = float('inf')
-    for p in range(window_size):
-        current += diff[p]
-        if current < min_cov:  # noqa: PLR1730
-            min_cov = current
-    min_cov = int(min_cov)
+    # -- per-context cache for raw evidence (threshold-independent) --
+    cache = None
+    key = None
+    try:
+        ctx = ReferencelessStitcherContext.get()
+        cache = getattr(ctx, "read_evidence_cache", None)
+        if cache is not None:
+            key = _local_junction_key(merged_seq, cut_position, read_index, read_length)
+            if key in cache:
+                cut_crossing_depth, min_cov = cache[key]
+            else:
+                cut_crossing_depth, min_cov = _compute_raw_read_evidence(
+                    merged_seq, cut_position, read_index, read_length
+                )
+                cache[key] = (cut_crossing_depth, min_cov)
+        else:
+            cut_crossing_depth, min_cov = _compute_raw_read_evidence(
+                merged_seq, cut_position, read_index, read_length
+            )
+    except LookupError:
+        cut_crossing_depth, min_cov = _compute_raw_read_evidence(
+            merged_seq, cut_position, read_index, read_length
+        )
 
     if cut_crossing_depth < min_depth:
         return False, cut_crossing_depth, min_cov
