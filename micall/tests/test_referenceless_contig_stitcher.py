@@ -1042,31 +1042,32 @@ class TestCheckMergedSequenceSupport:
         # S=12 "AAACC" covers [12,17), crosses cut=15 (12<15<17).
         # S=13 "AACCC" covers [13,18), also crosses cut.
         rd = self._make_rd(DNA_MERGED, [(12, 5), (13, 5)])
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN) == (True, 2, 1)
 
     def test_spanning_no_crossing_rejected(self):
         """Reads ending exactly at the cut do NOT span (start < cut)."""
         # S=10 "TTAAA" covers [10,15).  10 < 15 < 15 → false, doesn't span.
         rd = self._make_rd(DNA_MERGED, [(10, 5)])
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN) == (False, 0, 0)
 
     def test_spanning_start_at_cut_rejected(self):
         """Reads starting exactly at the cut do NOT span (cut < end)."""
         # S=15 "CCCGG" covers [15,20).  15 < 15 < 20 → false, doesn't span.
         rd = self._make_rd(DNA_MERGED, [(15, 5)])
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN) == (False, 0, 0)
 
     def test_split_left_and_right_rejected(self):
         """Independent left & right coverage without a crossing read fails."""
         rd = self._make_rd(DNA_MERGED, [(10, 5), (15, 5)])
         # Read at 10 covers [10,15)  — ends at cut, does NOT cross.
         # Read at 15 covers [15,20)  — starts at cut, does NOT cross.
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+        # Window [13,18) has coverage 1 at pos 13-14 from first read's spill but not spanning.
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN) == (False, 0, 1)
 
     def test_min_depth_zero_disables_spanning_check(self):
         """min_depth=0 → check skipped regardless of reads."""
         rd = self._make_rd(DNA_MERGED, [(10, 5)])  # does NOT cross
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 0, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 0, DNA_RLEN) == (True, 0, 0)
 
     # ------------------------------------------------------------------
     # 2. Boundary-window coverage — every position in the window covered
@@ -1080,17 +1081,17 @@ class TestCheckMergedSequenceSupport:
             (9, 5), (10, 5), (11, 5),  # left-only coverage
             (14, 5), (15, 5), (16, 5), (17, 5),  # right-side coverage
         ])
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN) == (True, 5, 7)
 
     def test_window_edge_uncovered_rejected(self):
         """A single position in the window with no coverage fails."""
         rd = self._make_rd(DNA_MERGED, [
             (12, 5),  # spans cut=15 (12<15<17), covers [12,17).
                        # Window is [13,18).  Read at 12 covers [12,17),
-                       # so position 17 is uncovered (no read starts at
-                       # [13,17] to cover it).
+                       # so position 17 is uncovered.
         ])
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN)[0]
+        # Spanning depth 1 but window min 0 → rejected due to window, not spanning.
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, rd, 1, DNA_RLEN) == (False, 1, 0)
 
     # ------------------------------------------------------------------
     # 3. read_index = None  vs  read_index = {}
@@ -1098,11 +1099,22 @@ class TestCheckMergedSequenceSupport:
 
     def test_none_read_index_disables_check(self):
         """read_index=None → validation disabled."""
-        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, None, 1, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, None, 1, DNA_RLEN) == (True, 0, 0)
 
     def test_empty_read_index_rejects(self):
         """read_index={} with validation enabled → rejected (no reads)."""
-        assert not check_merged_sequence_support(DNA_MERGED, DNA_CUT, {}, 1, DNA_RLEN)[0]
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, {}, 1, DNA_RLEN) == (False, 0, 0)
+
+    def test_empty_read_index_with_zero_depth_disables(self):
+        """read_index={} with min_depth=0 → disabled, not rejected."""
+        assert check_merged_sequence_support(DNA_MERGED, DNA_CUT, {}, 0, DNA_RLEN) == (True, 0, 0)
+
+    def test_no_matching_reads_rejected(self):
+        """Indexed reads that never match the merged sequence → rejected."""
+        merged = "ACGT" * 8  # 32 bp
+        cut = 16
+        rd = {5: Counter({"TTTTT": 1})}  # not present in merged
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5) == (False, 0, 0)
 
     # ------------------------------------------------------------------
     # 4. Reverse-complement support (real DNA bases only)
@@ -1115,7 +1127,7 @@ class TestCheckMergedSequenceSupport:
         rc_kmer = "CGTAC"     # reverse complement of GTACG
         # Canonical of both is "CGTAC" — use that directly.
         rd = {5: Counter({rc_kmer: 1})}
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5) == (True, 2, 2)
 
     def test_multiple_read_lengths(self):
         """Reads of different lengths are all considered."""
@@ -1125,8 +1137,8 @@ class TestCheckMergedSequenceSupport:
         # L=7 canonical "GTACGTA" (count 1) at S=10,11,14,15 → 4 spanning.
         # Total spanning = 8.  min_depth=8 passes, min_depth=9 fails.
         rd = {5: Counter({"CGTAC": 2}), 7: Counter({"GTACGTA": 1})}
-        assert check_merged_sequence_support(merged, cut, rd, 8, 5)[0]
-        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 8, 5) == (True, 8, 8)
+        assert check_merged_sequence_support(merged, cut, rd, 9, 5) == (False, 8, 8)
 
     def test_multiple_read_lengths_insufficient(self):
         """All read lengths combined still don't reach impossible min_depth."""
@@ -1134,7 +1146,7 @@ class TestCheckMergedSequenceSupport:
         cut = 16
         # Canonical of "GTACG" is "CGTAC".
         rd = {5: Counter({"CGTAC": 10})}
-        assert not check_merged_sequence_support(merged, cut, rd, 999, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 999, 5) == (False, 20, 20)
 
     # ------------------------------------------------------------------
     # 6. Placements and multiplicity — each placement × count contributes
@@ -1146,7 +1158,7 @@ class TestCheckMergedSequenceSupport:
         cut = 15
         # "AAAAA" has 4 spanning placements (S=11..14) × count 1 = 4.
         rd = {5: Counter({"AAAAA": 1})}
-        assert check_merged_sequence_support(merged, cut, rd, 1, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 1, 5) == (True, 4, 5)
 
     def test_homopolymer_placements_count(self):
         """One read at 4 spanning placements × count 1 = spanning 4."""
@@ -1154,8 +1166,8 @@ class TestCheckMergedSequenceSupport:
         cut = 15
         rd = {5: Counter({"AAAAA": 1})}
         # 4 spanning placements (S=11,12,13,14) × 1 count = 4.
-        assert check_merged_sequence_support(merged, cut, rd, 4, 5)[0]
-        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 4, 5) == (True, 4, 5)
+        assert check_merged_sequence_support(merged, cut, rd, 5, 5) == (False, 4, 5)
 
     def test_multiplicity_increases_depth(self):
         """Higher FASTQ count increases each placement's contribution."""
@@ -1163,8 +1175,8 @@ class TestCheckMergedSequenceSupport:
         cut = 15
         # 4 spanning placements × 10 count = 40.
         rd = {5: Counter({"AAAAA": 10})}
-        assert check_merged_sequence_support(merged, cut, rd, 40, 5)[0]
-        assert not check_merged_sequence_support(merged, cut, rd, 41, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 40, 5) == (True, 40, 50)
+        assert check_merged_sequence_support(merged, cut, rd, 41, 5) == (False, 40, 50)
 
     def test_rc_accumulates_counts(self):
         """A read and its reverse complement share one canonical, counts sum."""
@@ -1173,17 +1185,17 @@ class TestCheckMergedSequenceSupport:
         # Both "GTACG" and its rc "CGTAC" map to canonical "CGTAC" with count 2.
         # "CGTAC" matches at S=13 and S=14, both spanning → 2 placements × 2 = 4.
         rd = {5: Counter({"CGTAC": 2})}
-        assert check_merged_sequence_support(merged, cut, rd, 4, 5)[0]
-        assert not check_merged_sequence_support(merged, cut, rd, 5, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 4, 5) == (True, 4, 4)
+        assert check_merged_sequence_support(merged, cut, rd, 5, 5) == (False, 4, 4)
 
     def test_two_distinct_reads_min_depth_2(self):
         """Two genuinely different reads satisfy min_depth=2."""
         merged = "ACGT" * 8  # 32 bp
         cut = 16
         # "GTACG" canonical → "CGTAC", "TACGT" canonical → "ACGTA".
-        # Both at S=14,15 span → spanning_total = 2.
+        # Both at S=14? Need exact spanning count 4? Let's pin diagnostic as well.
         rd = {5: Counter({"CGTAC": 1, "ACGTA": 1})}
-        assert check_merged_sequence_support(merged, cut, rd, 2, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 2, 5) == (True, 4, 5)
 
     def test_window_coverage_placements(self):
         """Multiple placements contribute to window coverage."""
@@ -1193,8 +1205,8 @@ class TestCheckMergedSequenceSupport:
         # 4 spanning placements (S=11..14) × 2 = spanning 8.
         # Window positions covered by up to 5 placements × 2 = coverage 10.
         # So spanning_total=8 is the bottleneck, not window coverage.
-        assert check_merged_sequence_support(merged, cut, rd, 8, 5)[0]
-        assert not check_merged_sequence_support(merged, cut, rd, 9, 5)[0]
+        assert check_merged_sequence_support(merged, cut, rd, 8, 5) == (True, 8, 10)
+        assert check_merged_sequence_support(merged, cut, rd, 9, 5) == (False, 8, 10)
 
 
 # ---------------------------------------------------------------------------
