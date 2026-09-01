@@ -92,7 +92,7 @@ class TestOracleDifferential:
         import random
 
         rng = random.Random(12345)
-        cases = []
+        base_cases = []
         # generate 70 deterministic cases covering varied dimensions
         for _ in range(70):
             merged_len = rng.randint(3, 28)
@@ -139,30 +139,37 @@ class TestOracleDifferential:
                 read_index = None
             elif p < 0.10:
                 read_index = {}
-            min_depth = rng.randint(0, 5)
-            cases.append((merged_seq, cut, read_index, min_depth, read_length_cfg))
+            base_cases.append((merged_seq, cut, read_index, read_length_cfg))
 
         # also add explicit boundary-clipped cases
         for cut, rl in [(0, 5), (1, 5), (2, 6), (28, 5), (27, 4)]:
             merged_seq = "A" * 30
             read_index = {5: Counter({"AAAAA": 1})}
-            cases.append((merged_seq, cut, read_index, 1, rl))
+            base_cases.append((merged_seq, cut, read_index, rl))
         # reads longer than merged
-        cases.append(("AAA", 1, {5: Counter({"AAAAA": 1})}, 1, 5))
-        cases.append(("ACGTACGT", 4, {10: Counter({"ACGTACGTAC": 1})}, 1, 5))
+        base_cases.append(("AAA", 1, {5: Counter({"AAAAA": 1})}, 5))
+        base_cases.append(("ACGTACGT", 4, {10: Counter({"ACGTACGTAC": 1})}, 5))
 
-        for idx, (merged_seq, cut, read_index, min_depth, read_length_cfg) in enumerate(cases):
-            expected = _oracle_check_merged_sequence_support(
-                merged_seq, cut, read_index, min_depth, read_length_cfg
+        for idx, (merged_seq, cut, read_index, read_length_cfg) in enumerate(base_cases):
+            # obtain raw diagnostics to probe around thresholds
+            _, cut_depth, min_cov = _oracle_check_merged_sequence_support(
+                merged_seq, cut, read_index, 1, read_length_cfg
             )
-            actual = check_merged_sequence_support(
-                merged_seq, cut, read_index, min_depth, read_length_cfg
-            )
-            assert actual == expected, (
-                f"case {idx}: merged={merged_seq!r} cut={cut} "
-                f"read_index={read_index} min_depth={min_depth} read_length={read_length_cfg} "
-                f"expected={expected} actual={actual}"
-            )
+            # For disabled states diagnostics are 0,0; probe still covers 0-5 range
+            depths = {0, 1, 2, 3, 4, 5, cut_depth - 1, cut_depth, cut_depth + 1, min_cov - 1, min_cov, min_cov + 1}
+            depths = {d for d in depths if 0 <= d <= 10}
+            for min_depth in sorted(depths):
+                expected = _oracle_check_merged_sequence_support(
+                    merged_seq, cut, read_index, min_depth, read_length_cfg
+                )
+                actual = check_merged_sequence_support(
+                    merged_seq, cut, read_index, min_depth, read_length_cfg
+                )
+                assert actual == expected, (
+                    f"case {idx} depth {min_depth}: merged={merged_seq!r} cut={cut} "
+                    f"read_index={read_index} read_length={read_length_cfg} "
+                    f"expected={expected} actual={actual}"
+                )
 
 
 @pytest.mark.parametrize(
