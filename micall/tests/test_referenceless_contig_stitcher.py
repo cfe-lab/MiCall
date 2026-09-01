@@ -1460,6 +1460,175 @@ class TestExplicitSemantics:
 
 
 # ---------------------------------------------------------------------------
+# Per-context read-evidence cache — threshold independence & locality
+# ---------------------------------------------------------------------------
+
+class TestReadEvidenceCache:
+    def test_evidence_threshold_independent(self, monkeypatch):
+        import micall.utils.referenceless_contig_stitcher as rcs
+
+        merged = "AAAACCCCGGGG"
+        cut = 5
+        read_index = {4: Counter({"AACC": 1})}
+        rl = 4
+        with ReferencelessStitcherContext.fresh() as ctx:
+            calls = []
+            orig = rcs._compute_raw_read_evidence
+
+            def counting(*a, **kw):
+                calls.append(1)
+                return orig(*a, **kw)
+
+            monkeypatch.setattr(rcs, "_compute_raw_read_evidence", counting)
+            r1 = rcs.check_merged_sequence_support(merged, cut, read_index, 1, rl)
+            r2 = rcs.check_merged_sequence_support(merged, cut, read_index, 2, rl)
+            # raw evidence same, only `passed` differs
+            assert r1[1] == r2[1] and r1[2] == r2[2]
+            assert r1 == (False, 1, 0)
+            assert r2 == (False, 1, 0)  # both rejected, but raw same
+            assert len(calls) == 1  # second threshold reused cached raw evidence
+
+            # different threshold where one passes, one fails but raw still same
+            read_index2 = {4: Counter({"AACC": 1, "ACCC": 1, "CCCC": 1, "CCCG": 1})}
+            calls.clear()
+            # clear cache for new read_index (different id, so new key)
+            r3 = rcs.check_merged_sequence_support(merged, cut, read_index2, 2, rl)
+            r4 = rcs.check_merged_sequence_support(merged, cut, read_index2, 4, rl)
+            assert r3[1] == r4[1] == 3
+            assert r3[2] == r4[2] == 2
+            assert r3[0] is True  # 3>=2 and 2>=2
+            assert r4[0] is False  # 3<4
+            assert len(calls) == 1
+
+    def test_repeated_identical_junction_cached(self, monkeypatch):
+        import micall.utils.referenceless_contig_stitcher as rcs
+
+        merged = "AAAACCCCGGGG"
+        cut = 5
+        read_index = {4: Counter({"AACC": 1})}
+        rl = 4
+        with ReferencelessStitcherContext.fresh() as ctx:
+            calls = []
+            orig = rcs._compute_raw_read_evidence
+
+            def counting(*a, **kw):
+                calls.append(1)
+                return orig(*a, **kw)
+
+            monkeypatch.setattr(rcs, "_compute_raw_read_evidence", counting)
+            r1 = rcs.check_merged_sequence_support(merged, cut, read_index, 1, rl)
+            r2 = rcs.check_merged_sequence_support(merged, cut, read_index, 1, rl)
+            assert r1 == r2 == (False, 1, 0)
+            assert len(calls) == 1
+            assert len(ctx.read_evidence_cache) == 1
+
+    def test_distant_sequence_does_not_matter(self, monkeypatch):
+        import micall.utils.referenceless_contig_stitcher as rcs
+
+        # Two merges with identical local junction but different distant flanks
+        central = "AAAACCCCGGGG"
+        left_flank1 = "A" * 100
+        left_flank2 = "C" * 50
+        right_flank1 = "T" * 100
+        right_flank2 = "G" * 80
+        merged1 = left_flank1 + central + right_flank1
+        merged2 = left_flank2 + central + right_flank2
+        cut1 = len(left_flank1) + 5
+        cut2 = len(left_flank2) + 5
+        read_index = {4: Counter({"AACC": 1})}
+        rl = 4
+        with ReferencelessStitcherContext.fresh() as ctx:
+            calls = []
+            orig = rcs._compute_raw_read_evidence
+
+            def counting(*a, **kw):
+                calls.append(1)
+                return orig(*a, **kw)
+
+            monkeypatch.setattr(rcs, "_compute_raw_read_evidence", counting)
+            r1 = rcs.check_merged_sequence_support(merged1, cut1, read_index, 1, rl)
+            r2 = rcs.check_merged_sequence_support(merged2, cut2, read_index, 1, rl)
+            assert r1 == r2
+            # second was cached despite different distant flanks (local_seq same)
+            assert len(calls) == 1
+            # also verify local keys are equal
+            k1 = rcs._local_junction_key(merged1, cut1, read_index, rl)
+            k2 = rcs._local_junction_key(merged2, cut2, read_index, rl)
+            assert k1[0] == k2[0]  # local_seq identical
+            assert k1[1] == k2[1]  # cut offset identical
+
+    def test_relevant_local_change_matters(self, monkeypatch):
+        import micall.utils.referenceless_contig_stitcher as rcs
+
+        merged1 = "AAAACCCCGGGG"
+        # Change one base within the effective window/read region (position 4, within local)
+        merged2 = "AAAATCCCGGGG"  # C at pos4 -> T
+        cut = 5
+        read_index = {4: Counter({"AACC": 1})}
+        rl = 4
+        with ReferencelessStitcherContext.fresh() as ctx:
+            calls = []
+            orig = rcs._compute_raw_read_evidence
+
+            def counting(*a, **kw):
+                calls.append(1)
+                return orig(*a, **kw)
+
+            monkeypatch.setattr(rcs, "_compute_raw_read_evidence", counting)
+            r1 = rcs.check_merged_sequence_support(merged1, cut, read_index, 1, rl)
+            r2 = rcs.check_merged_sequence_support(merged2, cut, read_index, 1, rl)
+            # AACC at [2,6) in merged1 matches, but in merged2 the base at 4 changed so no match
+            assert r1 != r2
+            assert len(calls) == 2
+            k1 = rcs._local_junction_key(merged1, cut, read_index, rl)
+            k2 = rcs._local_junction_key(merged2, cut, read_index, rl)
+            assert k1 != k2
+
+    def test_longest_read_bucket_matters(self, monkeypatch):
+        import micall.utils.referenceless_contig_stitcher as rcs
+
+        # Configured window 5 but indexed read length 10 requires larger local flank
+        merged = "A" * 30
+        cut = 15
+        rl_cfg = 5  # window [13,18)
+        # read_index with max 10: need local flank 10, not just 5
+        read_index = {10: Counter({"AAAAAAAAAA": 1})}
+        # Two merges differing far from cut but within 10
+        # Position 9 is 6 away from cut (outside 5-window but inside 10-read)
+        merged1 = "A" * 30
+        lst = list(merged1)
+        lst[9] = "C"  # change at pos 9, affects a 10-mer starting at 9 that spans cut
+        merged2 = "".join(lst)
+        with ReferencelessStitcherContext.fresh() as ctx:
+            # verify oracle and production agree and keys differ
+            k1 = rcs._local_junction_key(merged1, cut, read_index, rl_cfg)
+            k2 = rcs._local_junction_key(merged2, cut, read_index, rl_cfg)
+            assert k1 != k2  # local_seq must include enough flank for longest read
+            # Also verify evidence differs (or at least not incorrectly shared)
+            r1 = rcs.check_merged_sequence_support(merged1, cut, read_index, 1, rl_cfg)
+            r2 = rcs.check_merged_sequence_support(merged2, cut, read_index, 1, rl_cfg)
+            assert r1 != r2  # local change within max_L must not be shared
+            # Now test that distant flank beyond max_L does share
+            far1 = "C" * 50 + "A" * 30 + "G" * 50
+            far2 = "T" * 80 + "A" * 30 + "A" * 80
+            cut_far1 = 50 + 15
+            cut_far2 = 80 + 15
+            with ReferencelessStitcherContext.fresh() as ctx2:
+                calls = []
+                orig2 = rcs._compute_raw_read_evidence
+
+                def counting2(*a, **kw):
+                    calls.append(1)
+                    return orig2(*a, **kw)
+
+                monkeypatch.setattr(rcs, "_compute_raw_read_evidence", counting2)
+                rf1 = rcs.check_merged_sequence_support(far1, cut_far1, read_index, 1, rl_cfg)
+                rf2 = rcs.check_merged_sequence_support(far2, cut_far2, read_index, 1, rl_cfg)
+                assert rf1 == rf2
+                assert len(calls) == 1
+
+
+# ---------------------------------------------------------------------------
 # End-to-end tests with read index
 # ---------------------------------------------------------------------------
 def test_stitch_with_read_index_none_disabled(disable_acceptable_prob_check):
