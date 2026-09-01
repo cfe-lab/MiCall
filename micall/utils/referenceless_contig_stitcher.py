@@ -740,13 +740,15 @@ def _local_junction_key(
     The key contains only sequence and geometry that can affect read placements:
     * local sequence around the cut/window, extended by the longest indexed read
     * cut and window offsets within that local sequence
-    * read_length (window geometry) and read_index identity (stable per context)
+    * read_length (window geometry)
 
     Two merged contigs with different distant flanks but identical local junction
     share the same key and thus reuse evidence. Changing any base within the
     region that can contribute a placement changes the local sequence and thus
     the key. Using the longest indexed read length ensures the local window is
-    large enough for every length bucket.
+    large enough for every length bucket. The key does not contain the read
+    index itself — the cache belongs to a single stitching context whose read
+    index is stable, so the cache implicitly belongs to that read index.
     """
     seq_len = len(merged_seq)
     window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
@@ -769,7 +771,6 @@ def _local_junction_key(
         window_start - local_start,
         window_end - local_start,
         read_length,
-        id(read_index),
     )
 
 
@@ -816,6 +817,22 @@ def _compute_raw_read_evidence(
         if current < min_cov:  # noqa: PLR1730
             min_cov = current
     return cut_crossing_depth, int(min_cov)
+
+
+def _get_cached_read_evidence(
+    merged_seq: str,
+    cut_position: int,
+    read_index: Dict[int, Counter[str]],
+    read_length: int,
+    cache: Dict[Tuple, Tuple[int, int]],
+) -> Tuple[int, int]:
+    """Return raw (cut_depth, min_cov) using per-context cache keyed by local junction."""
+    key = _local_junction_key(merged_seq, cut_position, read_index, read_length)
+    if key in cache:
+        return cache[key]
+    cut_depth, min_cov = _compute_raw_read_evidence(merged_seq, cut_position, read_index, read_length)
+    cache[key] = (cut_depth, min_cov)
+    return cut_depth, min_cov
 
 
 def check_merged_sequence_support(
@@ -890,29 +907,9 @@ def check_merged_sequence_support(
     if window_end <= window_start:
         return True, 0, 0
 
-    # -- per-context cache for raw evidence (threshold-independent) --
-    cache = None
-    key = None
-    try:
-        ctx = ReferencelessStitcherContext.get()
-        cache = getattr(ctx, "read_evidence_cache", None)
-        if cache is not None:
-            key = _local_junction_key(merged_seq, cut_position, read_index, read_length)
-            if key in cache:
-                cut_crossing_depth, min_cov = cache[key]
-            else:
-                cut_crossing_depth, min_cov = _compute_raw_read_evidence(
-                    merged_seq, cut_position, read_index, read_length
-                )
-                cache[key] = (cut_crossing_depth, min_cov)
-        else:
-            cut_crossing_depth, min_cov = _compute_raw_read_evidence(
-                merged_seq, cut_position, read_index, read_length
-            )
-    except LookupError:
-        cut_crossing_depth, min_cov = _compute_raw_read_evidence(
-            merged_seq, cut_position, read_index, read_length
-        )
+    cut_crossing_depth, min_cov = _compute_raw_read_evidence(
+        merged_seq, cut_position, read_index, read_length
+    )
 
     if cut_crossing_depth < min_depth:
         return False, cut_crossing_depth, min_cov
@@ -1032,13 +1029,28 @@ def try_combine_contigs(
     )
 
     # Validate the merged sequence around the join boundary against reads.
-    ctx = ReferencelessStitcherContext.get()
-    passed, cut_depth, min_win_cov = check_merged_sequence_support(
-        result_seq, join_boundary,
-        ctx.read_index, ctx.minimum_read_depth, ctx.read_length,
-    )
+    # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
+    try:
+        ctx = ReferencelessStitcherContext.get()
+    except LookupError:
+        ctx = None
+    if ctx is None:  # noqa: SIM114
+        passed, cut_depth, min_win_cov = True, 0, 0
+    elif ctx.read_index is None or ctx.minimum_read_depth == 0:
+        passed, cut_depth, min_win_cov = True, 0, 0
+    elif not ctx.read_index:
+        passed, cut_depth, min_win_cov = False, 0, 0
+    else:
+        window_start, window_end = _boundary_window(len(result_seq), join_boundary, ctx.read_length)
+        if window_end <= window_start:
+            passed, cut_depth, min_win_cov = True, 0, 0
+        else:
+            cut_depth, min_win_cov = _get_cached_read_evidence(
+                result_seq, join_boundary, ctx.read_index, ctx.read_length, ctx.read_evidence_cache
+            )
+            passed = cut_depth >= ctx.minimum_read_depth and min_win_cov >= ctx.minimum_read_depth
     if not passed:
-        if is_debug2:
+        if is_debug2 and ctx is not None:
             log(events.ReadSupportRejected(
                 left.unique_name, right.unique_name,
                 join_boundary, ctx.minimum_read_depth,
