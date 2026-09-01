@@ -1030,13 +1030,8 @@ def try_combine_contigs(
 
     # Validate the merged sequence around the join boundary against reads.
     # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
-    try:
-        ctx = ReferencelessStitcherContext.get()
-    except LookupError:
-        ctx = None
-    if ctx is None:  # noqa: SIM114
-        passed, cut_depth, min_win_cov = True, 0, 0
-    elif ctx.read_index is None or ctx.minimum_read_depth == 0:
+    ctx = ReferencelessStitcherContext.get()
+    if ctx.read_index is None or ctx.minimum_read_depth == 0:
         passed, cut_depth, min_win_cov = True, 0, 0
     elif not ctx.read_index:
         passed, cut_depth, min_win_cov = False, 0, 0
@@ -1050,7 +1045,7 @@ def try_combine_contigs(
             )
             passed = cut_depth >= ctx.minimum_read_depth and min_win_cov >= ctx.minimum_read_depth
     if not passed:
-        if is_debug2 and ctx is not None:
+        if is_debug2:
             log(events.ReadSupportRejected(
                 left.unique_name, right.unique_name,
                 join_boundary, ctx.minimum_read_depth,
