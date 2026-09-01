@@ -23,6 +23,57 @@ TTT = 40 * 'T'
 AAA = 40 * 'A'
 
 
+# ---------------------------------------------------------------------------
+# Slow oracle for check_merged_sequence_support — obviously correct reference
+# ---------------------------------------------------------------------------
+
+def _oracle_check_merged_sequence_support(merged_seq, cut_position, read_index, min_depth, read_length):
+    """Deliberately simple reference implementation for differential testing.
+
+    Prioritizes obvious correctness over speed: per-base coverage list and
+    exhaustive placement enumeration.  Does NOT call the production function.
+    """
+    if read_index is None or min_depth == 0:
+        return True, 0, 0
+    if not read_index:
+        return False, 0, 0
+    seq_len = len(merged_seq)
+    left_radius = read_length // 2
+    right_radius = read_length - left_radius
+    window_start = max(0, cut_position - left_radius)
+    window_end = min(seq_len, cut_position + right_radius)
+    if window_end <= window_start:
+        return True, 0, 0
+    # per-base coverage for the whole sequence (simple, not a difference array)
+    coverage = [0] * seq_len
+    cut_crossing_depth = 0
+    any_match = False
+    for L, counter in read_index.items():
+        if L <= 0 or L > seq_len:
+            continue
+        for s in range(seq_len - L + 1):
+            kmer = merged_seq[s: s + L]
+            canonical = min(kmer, reverse_complement(kmer))
+            cnt = counter.get(canonical, 0)
+            if cnt == 0:
+                continue
+            any_match = True
+            if s < cut_position < s + L:
+                cut_crossing_depth += cnt
+            cov_start = max(window_start, s)
+            cov_end = min(window_end, s + L)
+            for p in range(cov_start, cov_end):
+                coverage[p] += cnt
+    if not any_match:
+        return False, 0, 0
+    min_window_coverage = min(coverage[p] for p in range(window_start, window_end))
+    if cut_crossing_depth < min_depth:
+        return False, cut_crossing_depth, min_window_coverage
+    if min_window_coverage < min_depth:
+        return False, cut_crossing_depth, min_window_coverage
+    return True, cut_crossing_depth, min_window_coverage
+
+
 @pytest.mark.parametrize(
     "seqs, expected",
     [
