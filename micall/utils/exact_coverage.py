@@ -237,6 +237,9 @@ def read_contigs(contigs_file: TextIO) -> Dict[str, str]:
     return contigs
 
 
+_COMPLEMENT_TABLE = str.maketrans("ACGTN", "TGCAN")
+
+
 def reverse_complement(seq: str) -> str:
     """
     Return the reverse complement of a DNA sequence.
@@ -244,8 +247,7 @@ def reverse_complement(seq: str) -> str:
     :param seq: DNA sequence
     :return: Reverse complement
     """
-    complement = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N"}
-    return "".join(complement.get(base, base) for base in reversed(seq))
+    return seq.translate(_COMPLEMENT_TABLE)[::-1]
 
 
 def build_kmer_index(
