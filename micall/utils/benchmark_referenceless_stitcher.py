@@ -133,6 +133,14 @@ def _fingerprint_contigs(contigs) -> str:
     return h.hexdigest()
 
 
+def _fingerprint_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def _convert_unstitched_csv_to_fasta(csv_path: Path, fasta_path: Path) -> int:
     count = 0
     with open(csv_path) as csvfile, open(fasta_path, "w") as out:
@@ -257,6 +265,9 @@ def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = Fal
             trimmed_count = sum(1 for _ in tf) // 4
     except OSError:
         pass
+    # Fingerprints for trimmed FASTQs (outside timed section, hash once)
+    trimmed1_fp = _fingerprint_file(trimmed1) if trimmed1.exists() else None
+    trimmed2_fp = _fingerprint_file(trimmed2) if trimmed2.exists() else None
     return {
         "fasta": fasta_path,
         "trimmed1": trimmed1,
@@ -267,6 +278,8 @@ def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = Fal
         "input_fp": input_fp,
         "prep_wall": prep_wall,
         "trimmed_count": trimmed_count,
+        "trimmed1_fp": trimmed1_fp,
+        "trimmed2_fp": trimmed2_fp,
     }
 
 
@@ -508,6 +521,8 @@ def main():
             "prep_wall": prep_wall,
             "prep_detail_wall": prep["prep_wall"],
             "trimmed_count": prep.get("trimmed_count"),
+            "trimmed1_fp": prep.get("trimmed1_fp"),
+            "trimmed2_fp": prep.get("trimmed2_fp"),
         },
         "params": {"repeats": args.repeats, "min_depth": args.min_depth, "read_length": args.read_length},
         "per_repetition": results,
