@@ -252,6 +252,13 @@ def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = Fal
         if seq:
             contigs.append(seq)
     input_fp = _fingerprint_contigs(contigs)
+    # Trimmed read count (cheap, but outside timed section)
+    trimmed_count = None
+    try:
+        with open(trimmed1) as tf:
+            trimmed_count = sum(1 for _ in tf) // 4
+    except OSError:
+        pass
     return {
         "fasta": fasta_path,
         "trimmed1": trimmed1,
@@ -261,6 +268,7 @@ def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = Fal
         "max_len": max_len,
         "input_fp": input_fp,
         "prep_wall": prep_wall,
+        "trimmed_count": trimmed_count,
     }
 
 
@@ -346,14 +354,6 @@ def run_benchmark_worker(
     out_n = len(out_contigs)
     out_total = sum(len(s) for s in out_contigs)
     out_max = max((len(s) for s in out_contigs), default=0)
-    # Trimmed read count if cheap: count lines in trimmed FASTQs /4
-    trimmed_count = None
-    try:
-        # trimmed files are uncompressed FASTQ (from trim)
-        with open(trimmed1) as tf:
-            trimmed_count = sum(1 for _ in tf) // 4
-    except OSError:
-        pass
     return {
         "read_index_wall": idx_wall if min_depth != 0 else 0.0,
         "read_index_cpu": idx_cpu if min_depth != 0 else 0.0,
@@ -366,7 +366,6 @@ def run_benchmark_worker(
         "output_total": out_total,
         "output_max": out_max,
         "output_fp": out_fp,
-        "trimmed_count": trimmed_count,
     }
 
 
@@ -510,6 +509,7 @@ def main():
             "input_fp": input_fp,
             "prep_wall": prep_wall,
             "prep_detail_wall": prep["prep_wall"],
+            "trimmed_count": prep.get("trimmed_count"),
         },
         "params": {"repeats": args.repeats, "min_depth": args.min_depth, "read_length": args.read_length},
         "per_repetition": results,
@@ -530,7 +530,7 @@ def main():
     print(f"Params: min_depth={args.min_depth} read_length={args.read_length} repeats={args.repeats}", file=out_stream)
     if results and results[0].get("read_index_meta"):
         meta = results[0]["read_index_meta"]
-        print(f"Read index: buckets {meta['buckets']} min {meta['min_L']} max {meta['max_L']} distinct {meta['distinct']} total {meta['total_mult']} trimmed_count {results[0].get('trimmed_count')}", file=out_stream)
+        print(f"Read index: buckets {meta['buckets']} min {meta['min_L']} max {meta['max_L']} distinct {meta['distinct']} total {meta['total_mult']} trimmed_count {prep.get('trimmed_count')}", file=out_stream)
     for idx, r in enumerate(results):
         print(f"Rep {idx}: idx wall {r['read_index_wall']:.3f}s cpu {r['read_index_cpu']:.3f}s | stitcher wall {r['stitcher_wall']:.3f}s cpu {r['stitcher_cpu']:.3f}s | combined {r['combined_wall']:.3f}s RSS {r['peak_rss_kb']/1024:.1f} MB | out {r['output_n']} contigs total {r['output_total']} max {r['output_max']} fp {r['output_fp'][:12]}", file=out_stream)
     if agg:
