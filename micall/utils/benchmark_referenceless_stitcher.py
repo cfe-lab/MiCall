@@ -224,27 +224,14 @@ def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = Fal
         # If not found, use non-existent path so trim skips censor (as in historical runs)
         if not bad_csv:
             bad_csv = str(work_dir / "bad_cycles_missing.csv")
-        try:
-            trim(
-                (str(resolved["raw1"]), str(resolved["raw2"])),
-                bad_csv,
-                (str(trimmed1), str(trimmed2)),
-                use_gzip=True,
-                skip=(),
-                project_code=resolved["project"],
-            )
-        except Exception as e:  # noqa: BLE001  # fallback when cutadapt/docker unavailable (e.g. test env)
-            import gzip
-            import shutil
-
-            if verbose:
-                print(f"Trim failed ({e}), falling back to copying raw FASTQs", file=sys.stderr)
-            for src, dst in [(resolved["raw1"], trimmed1), (resolved["raw2"], trimmed2)]:
-                if str(src).endswith(".gz"):
-                    with gzip.open(src, "rt") as fin, open(dst, "w") as fout:
-                        fout.write(fin.read())
-                else:
-                    shutil.copy(str(src), str(dst))
+        trim(
+            (str(resolved["raw1"]), str(resolved["raw2"])),
+            bad_csv,
+            (str(trimmed1), str(trimmed2)),
+            use_gzip=True,
+            skip=(),
+            project_code=resolved["project"],
+        )
         if verbose:
             print(f"Trimmed {resolved['raw1']} -> {trimmed1}", file=sys.stderr)
     else:
