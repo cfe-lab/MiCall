@@ -190,3 +190,38 @@ def test_json_result_shape(tmp_path):
     assert "per_repetition" in json_out
     assert "output_fp" in json_out
     assert isinstance(res["output_fp"], str) and len(res["output_fp"]) == 64
+
+
+def test_prepared_cache_not_reused_after_failed_trim(tmp_path):
+    run_dir, _, _ = _make_fake_megacompare_run(tmp_path, "12345", "SAMPLE1", "HCV", "160101_M01234")
+    raw_root, _, _ = _make_fake_raw_data(tmp_path, "160101_M01234", "SAMPLE1")
+    resolved = resolve_megacompare_run(run_dir, raw_root)
+    work_dir = tmp_path / "work"
+
+    def fake_trim_fail(orig_files, bad_csv, trimmed_files, **kw):
+        for dst in trimmed_files:
+            Path(dst).write_text("partial")
+        raise RuntimeError("trim failed")
+
+    with mock.patch("micall.utils.benchmark_referenceless_stitcher.trim", side_effect=fake_trim_fail):
+        with pytest.raises(RuntimeError, match="trim failed"):
+            prepare_benchmark_inputs(resolved, work_dir)
+        # Manifest must not exist after failure
+        assert not (work_dir / "prepared.json").exists()
+        # Stale trimmed files exist but should be ignored
+        assert (work_dir / "trimmed_R1.fastq").exists()
+
+    # Second call must not reuse the failed outputs; it must call trim again
+    call_count: list[int] = []
+
+    def fake_trim_ok(orig_files, bad_csv, trimmed_files, **kw):
+        call_count.append(1)
+        for src, dst in zip(orig_files, trimmed_files):
+            with gzip.open(src, "rt") as fin, open(dst, "w") as fout:
+                fout.write(fin.read())
+
+    with mock.patch("micall.utils.benchmark_referenceless_stitcher.trim", side_effect=fake_trim_ok):
+        prep = prepare_benchmark_inputs(resolved, work_dir)
+        assert len(call_count) == 1
+        assert (work_dir / "prepared.json").exists()
+        assert prep["trimmed1"].exists()
