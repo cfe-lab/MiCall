@@ -178,71 +178,131 @@ def _get_input_contig_stats(fasta_path: Path) -> Tuple[int, int, int]:
     return n, total, mx
 
 
+def _manifest_path(work_dir: Path) -> Path:
+    return work_dir / "prepared.json"
+
+
+def _raw_file_fingerprint(path: Path) -> str:
+    # Use size + mtime for quick check, but also fingerprint for exactness if needed
+    # For manifest, store both fingerprint and mtime/size for robustness
+    try:
+        stat = path.stat()
+        return f"{stat.st_size}:{stat.st_mtime_ns}:{_fingerprint_file(path)}"
+    except OSError:
+        return ""
+
+
 def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = False) -> Dict:
     """Prepare work dir outside timed section: FASTA + trimmed FASTQs.
 
     Returns dict with prepared paths and metadata, and records preparation wall time.
-    Keeps trimmed FASTQs so repeated runs do not retrim.
+    Keeps trimmed FASTQs so repeated runs do not retrim, but only when a
+    `prepared.json` manifest exists and matches the current sources/configuration.
+    The manifest is written only after all preparation succeeds, so interrupted
+    or failed trimming never leaves a valid cache.
     """
     start = time.perf_counter()
     work_dir = Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    # 1. Convert unstitched CSV to FASTA
+    manifest_path = _manifest_path(work_dir)
     fasta_path = work_dir / "input_contigs.fasta"
-    # Only convert if not exists or source newer
-    need_convert = True
-    if fasta_path.exists() and fasta_path.stat().st_mtime >= resolved["unstitched_csv"].stat().st_mtime:
-        need_convert = False
-    if need_convert:
-        n = _convert_unstitched_csv_to_fasta(resolved["unstitched_csv"], fasta_path)
-        if verbose:
-            print(f"Converted {n} contigs to {fasta_path}", file=sys.stderr)
-    else:
-        if verbose:
-            print(f"Reusing existing {fasta_path}", file=sys.stderr)
-    n_contigs, total_len, max_len = _get_input_contig_stats(fasta_path)
-    # 2. Trim raw FASTQs (nearest-recoverable: bad_cycles=[] if missing, skip=(), project_code)
     trimmed1 = work_dir / "trimmed_R1.fastq"
     trimmed2 = work_dir / "trimmed_R2.fastq"
-    # Keep trimmed so repeated runs do not retrim: only trim if not exists or raw newer
-    need_trim = True
-    if (
-        trimmed1.exists()
-        and trimmed2.exists()
-        and trimmed1.stat().st_mtime >= Path(resolved["raw1"]).stat().st_mtime
-        and trimmed2.stat().st_mtime >= Path(resolved["raw2"]).stat().st_mtime
-    ):
-        need_trim = False
-    if need_trim:
-        # Find bad_cycles file: try raw_data_root/Data/Intensities/BaseCalls/bad_cycles.csv or similar
-        # For historical runs, it likely does not exist, so trim will skip censor.
-        # Try common locations
-        bad_candidates = [
-            Path(resolved["full_run"]) / "Data" / "Intensities" / "BaseCalls" / "bad_cycles.csv",
-            Path(resolved["full_run"]) / "bad_cycles.csv",
-            work_dir / "bad_cycles.csv",
-        ]
-        bad_csv = ""
-        for cand in bad_candidates:
-            if cand.exists():
-                bad_csv = str(cand)
-                break
-        # If not found, use non-existent path so trim skips censor (as in historical runs)
-        if not bad_csv:
-            bad_csv = str(work_dir / "bad_cycles_missing.csv")
-        trim(
-            (str(resolved["raw1"]), str(resolved["raw2"])),
-            bad_csv,
-            (str(trimmed1), str(trimmed2)),
-            use_gzip=True,
-            skip=(),
-            project_code=resolved["project"],
-        )
-        if verbose:
-            print(f"Trimmed {resolved['raw1']} -> {trimmed1}", file=sys.stderr)
-    else:
-        if verbose:
-            print(f"Reusing trimmed {trimmed1}", file=sys.stderr)
+    # Try to reuse via manifest
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text())
+            # Check all relevant source/configuration
+            # Use raw file fingerprints (size+mtime+fingerprint) to detect changes
+            # For unstitched CSV, also check its fingerprint
+            expected_bad = ""
+            for cand in [
+                Path(resolved["full_run"]) / "Data" / "Intensities" / "BaseCalls" / "bad_cycles.csv",
+                Path(resolved["full_run"]) / "bad_cycles.csv",
+                work_dir / "bad_cycles.csv",
+            ]:
+                if cand.exists():
+                    expected_bad = str(cand)
+                    break
+            if not expected_bad:
+                expected_bad = str(work_dir / "bad_cycles_missing.csv")
+            # Compare manifest
+            if (
+                manifest.get("raw1") == str(resolved["raw1"])
+                and manifest.get("raw2") == str(resolved["raw2"])
+                and manifest.get("raw1_fp") == _raw_file_fingerprint(Path(resolved["raw1"]))
+                and manifest.get("raw2_fp") == _raw_file_fingerprint(Path(resolved["raw2"]))
+                and manifest.get("unstitched_csv") == str(resolved["unstitched_csv"])
+                and manifest.get("unstitched_fp") == _fingerprint_file(Path(resolved["unstitched_csv"]))
+                and manifest.get("project") == resolved["project"]
+                and manifest.get("bad_csv") == expected_bad
+                and manifest.get("bad_fp") == (_fingerprint_file(Path(expected_bad)) if Path(expected_bad).exists() else "")
+                and Path(manifest.get("trimmed1", "")).exists()
+                and Path(manifest.get("trimmed2", "")).exists()
+                and _fingerprint_file(Path(manifest["trimmed1"])) == manifest.get("trimmed1_fp")
+                and _fingerprint_file(Path(manifest["trimmed2"])) == manifest.get("trimmed2_fp")
+                and Path(manifest.get("fasta", "")).exists()
+                and _fingerprint_file(Path(manifest["fasta"])) == manifest.get("fasta_fp")
+            ):
+                if verbose:
+                    print(f"Reusing prepared inputs via {manifest_path}", file=sys.stderr)
+                # Recompute stats for return (cheap, not trimmed)
+                n_contigs, total_len, max_len = _get_input_contig_stats(fasta_path)
+                # Also need trimmed_count and fingerprints (already in manifest, but recompute for return)
+                trimmed_count = manifest.get("trimmed_count")
+                if trimmed_count is None:
+                    try:
+                        with open(trimmed1) as tf:
+                            trimmed_count = sum(1 for _ in tf) // 4
+                    except OSError:
+                        trimmed_count = None
+                prep_wall = time.perf_counter() - start
+                return {
+                    "fasta": fasta_path,
+                    "trimmed1": trimmed1,
+                    "trimmed2": trimmed2,
+                    "n_contigs": n_contigs,
+                    "total_len": total_len,
+                    "max_len": max_len,
+                    "input_fp": manifest.get("input_fp"),
+                    "prep_wall": prep_wall,
+                    "trimmed_count": trimmed_count,
+                    "trimmed1_fp": manifest.get("trimmed1_fp"),
+                    "trimmed2_fp": manifest.get("trimmed2_fp"),
+                }
+        except Exception:  # noqa: BLE001, S110
+            # Any manifest read/parse error -> treat as stale and re-prepare
+            pass
+    # Need to (re)prepare: convert and trim
+    # 1. Convert unstitched CSV to FASTA (always, but will be overwritten)
+    n = _convert_unstitched_csv_to_fasta(resolved["unstitched_csv"], fasta_path)
+    if verbose:
+        print(f"Converted {n} contigs to {fasta_path}", file=sys.stderr)
+    n_contigs, total_len, max_len = _get_input_contig_stats(fasta_path)
+    # 2. Trim raw FASTQs (nearest-recoverable: bad_cycles=[] if missing, skip=(), project_code)
+    # Find bad_cycles file
+    bad_candidates = [
+        Path(resolved["full_run"]) / "Data" / "Intensities" / "BaseCalls" / "bad_cycles.csv",
+        Path(resolved["full_run"]) / "bad_cycles.csv",
+        work_dir / "bad_cycles.csv",
+    ]
+    bad_csv = ""
+    for cand in bad_candidates:
+        if cand.exists():
+            bad_csv = str(cand)
+            break
+    if not bad_csv:
+        bad_csv = str(work_dir / "bad_cycles_missing.csv")
+    trim(
+        (str(resolved["raw1"]), str(resolved["raw2"])),
+        bad_csv,
+        (str(trimmed1), str(trimmed2)),
+        use_gzip=True,
+        skip=(),
+        project_code=resolved["project"],
+    )
+    if verbose:
+        print(f"Trimmed {resolved['raw1']} -> {trimmed1}", file=sys.stderr)
     prep_wall = time.perf_counter() - start
     # Input fingerprints
     with open(fasta_path) as f:
@@ -268,6 +328,45 @@ def prepare_benchmark_inputs(resolved: Dict, work_dir: Path, verbose: bool = Fal
     # Fingerprints for trimmed FASTQs (outside timed section, hash once)
     trimmed1_fp = _fingerprint_file(trimmed1) if trimmed1.exists() else None
     trimmed2_fp = _fingerprint_file(trimmed2) if trimmed2.exists() else None
+    # Write manifest only after all preparation succeeds (atomic)
+    # Recompute expected bad_csv for manifest
+    expected_bad = ""
+    for cand in [
+        Path(resolved["full_run"]) / "Data" / "Intensities" / "BaseCalls" / "bad_cycles.csv",
+        Path(resolved["full_run"]) / "bad_cycles.csv",
+        work_dir / "bad_cycles.csv",
+    ]:
+        if cand.exists():
+            expected_bad = str(cand)
+            break
+    if not expected_bad:
+        expected_bad = str(work_dir / "bad_cycles_missing.csv")
+    manifest = {
+        "raw1": str(resolved["raw1"]),
+        "raw2": str(resolved["raw2"]),
+        "raw1_fp": _raw_file_fingerprint(Path(resolved["raw1"])),
+        "raw2_fp": _raw_file_fingerprint(Path(resolved["raw2"])),
+        "unstitched_csv": str(resolved["unstitched_csv"]),
+        "unstitched_fp": _fingerprint_file(Path(resolved["unstitched_csv"])),
+        "project": resolved["project"],
+        "bad_csv": expected_bad,
+        "bad_fp": _fingerprint_file(Path(expected_bad)) if Path(expected_bad).exists() else "",
+        "fasta": str(fasta_path),
+        "fasta_fp": _fingerprint_file(fasta_path),
+        "trimmed1": str(trimmed1),
+        "trimmed2": str(trimmed2),
+        "trimmed1_fp": trimmed1_fp,
+        "trimmed2_fp": trimmed2_fp,
+        "input_fp": input_fp,
+        "trimmed_count": trimmed_count,
+        "n_contigs": n_contigs,
+        "total_len": total_len,
+        "max_len": max_len,
+    }
+    # Write atomically via temp file + rename
+    tmp_manifest = manifest_path.with_suffix(".tmp")
+    tmp_manifest.write_text(json.dumps(manifest, indent=2))
+    tmp_manifest.rename(manifest_path)
     return {
         "fasta": fasta_path,
         "trimmed1": trimmed1,
