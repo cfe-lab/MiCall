@@ -90,9 +90,6 @@ def resolve_megacompare_run(input_path: Path, raw_data_root: Path = Path("/media
         candidates = list(raw_data_root.glob(f"{run_name}*"))
     else:
         candidates = list(Path(raw_data_root).glob(f"{run_name}*"))
-    if not candidates:
-        # Try alternative: raw_data_root is /media/raw_data/MiSeq/runs, so glob as above
-        candidates = list(Path("/media/raw_data/MiSeq/runs").glob(f"{run_name}*"))
     if len(candidates) != 1:
         raise FileNotFoundError(f"Expected exactly one MiSeq run directory for {run_name} in {raw_data_root}, found {candidates}")
     full_run = candidates[0]
