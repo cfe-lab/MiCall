@@ -318,24 +318,9 @@ def run_benchmark_worker(
             distinct = 0
             total_mult = 0
         read_index_meta = {"buckets": buckets, "min_L": min_L, "max_L": max_L, "distinct": distinct, "total_mult": total_mult}
-        t0_wall = time.perf_counter()
-        t0_cpu = time.process_time()
-        # Stitcher timing will be measured separately below
     # Stitcher
     t1_wall = time.perf_counter()
     t1_cpu = time.process_time()
-    # Need to handle min_depth==0 case where read_index is None: stitcher still runs
-    if min_depth == 0:
-        # For min_depth 0, read_index is None, but we still need to time stitcher
-        # read_index already None
-        pass
-    else:
-        # read_index already built
-        pass
-    # Now run stitcher
-    # We need to re-measure stitcher wall/cpu from t1
-    # If we already did idx timing, t1 is start of stitcher
-    # For min_depth==0, idx_wall was 0, t1 is still correct
     with open(fasta_path) as fin, open(output_fasta, "w") as fout:
         referenceless_contig_stitcher(
             fin,
@@ -438,6 +423,12 @@ def main():
         return
     if not args.path:
         parser.error("path is required unless --worker is used")
+    if args.repeats < 1:
+        parser.error("--repeats must be >=1")
+    if args.min_depth < 0:
+        parser.error("--minimum-read-depth must be >=0")
+    if args.read_length < 1:
+        parser.error("--read-length must be >=1")
     # Resolve
     try:
         resolved = resolve_megacompare_run(Path(args.path), Path(args.raw_data_root))
@@ -480,13 +471,7 @@ def main():
     results: List[Dict] = []
     for i in range(args.repeats):
         out_fasta = work_dir / f"output_{i}.fasta"
-        # Each repetition in fresh subprocess
-        if args.repeats == 1:
-            # Still use subprocess for isolation as required, but we can also run directly for simplicity?
-            # Use subprocess to ensure cache isolation
-            res = _run_worker_subprocess(prep["fasta"], prep["trimmed1"], prep["trimmed2"], args.min_depth, args.read_length, out_fasta)
-        else:
-            res = _run_worker_subprocess(prep["fasta"], prep["trimmed1"], prep["trimmed2"], args.min_depth, args.read_length, out_fasta)
+        res = _run_worker_subprocess(prep["fasta"], prep["trimmed1"], prep["trimmed2"], args.min_depth, args.read_length, out_fasta)
         results.append(res)
     # Aggregate if N>1
     def _agg(key):
