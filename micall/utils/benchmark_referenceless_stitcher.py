@@ -4,6 +4,7 @@ import argparse
 import csv
 import hashlib
 import json
+import statistics
 import subprocess
 import sys
 import time
@@ -480,7 +481,7 @@ def main():
     # Aggregate if N>1
     def _agg(key):
         vals = [r[key] for r in results]
-        return {"min": min(vals), "median": sorted(vals)[len(vals)//2], "mean": sum(vals)/len(vals), "max": max(vals)} if vals else None
+        return {"min": min(vals), "median": statistics.median(vals), "mean": sum(vals)/len(vals), "max": max(vals)} if vals else None
     agg = {}
     if len(results) > 1:
         for k in ["read_index_wall", "read_index_cpu", "stitcher_wall", "stitcher_cpu", "combined_wall", "peak_rss_kb"]:
