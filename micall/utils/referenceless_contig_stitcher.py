@@ -782,6 +782,7 @@ def _compute_raw_read_evidence(
 ) -> Tuple[int, int]:
     """Expensive raw evidence: (cut_crossing_depth, min_window_coverage) without threshold."""
     seq_len = len(merged_seq)
+    rc_merged_seq = reverse_complement(merged_seq)
     window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
     window_size = window_end - window_start
     # window_size >0 guaranteed by caller (zero window handled earlier)
@@ -795,7 +796,7 @@ def _compute_raw_read_evidence(
             continue
         for s in range(s_eff_min, s_eff_max + 1):
             kmer = merged_seq[s: s + L]
-            rc_kmer = reverse_complement(kmer)
+            rc_kmer = rc_merged_seq[seq_len - s - L : seq_len - s]
             canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
             count = counter.get(canonical, 0)
             if count == 0:
