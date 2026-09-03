@@ -97,6 +97,7 @@ EXECUTABLES = [
     "micall/utils/calculate_kmer_frequencies.py",
     "micall/utils/fastq_to_fasta.py",
     "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
+    "micall/utils/benchmark_referenceless_stitcher.py",
     "micall/utils/version.py",
     "micall/utils/check_sample_sheet.py",
     "micall/utils/cache.py",
