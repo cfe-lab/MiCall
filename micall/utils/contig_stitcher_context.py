@@ -96,6 +96,9 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         self.read_length: int = 150
         # per-context cache for raw read-support evidence, keyed by effective local junction
         self.read_evidence_cache: Dict[Tuple, Tuple[int, int]] = {}
+        # prefix index for fast rejection before full canonicalization
+        # Maps read_length -> set of prefixes (orientation-aware)
+        self.read_prefix_index: Optional[Dict[int, AbstractSet[str]]] = None
         super().__init__()
 
     @staticmethod

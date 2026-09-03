@@ -47,6 +47,61 @@ KMER_SIZE = 30
 
 logger = logging.getLogger(__name__)
 
+# Prefix length for fast rejection before full canonicalization
+PREFIX_SIZE = 10
+
+# Benchmark-only instrumentation for prefix gate (reset per run, not production logging)
+PREFIX_STATS = {"considered": 0, "rejected": 0, "canonicalized": 0, "hits": 0}
+ENABLE_PREFIX_STATS = False
+
+
+def build_read_prefix_index(read_index: Dict[int, Counter[str]]) -> Dict[int, AbstractSet[str]]:
+    """Build orientation-aware prefix index for fast rejection.
+
+    For each length bucket, contains prefixes of each canonical read and its
+    reverse complement. No false negatives: any candidate that could match via
+    canonical lookup will have its prefix in the set.
+    """
+    prefix_index: Dict[int, AbstractSet[str]] = {}
+    for length, counter in read_index.items():
+        if not counter:
+            prefix_index[length] = set()
+            continue
+        effective_len = min(PREFIX_SIZE, length)
+        prefixes: set[str] = set()
+        for read in counter:
+            # read is canonical; include both orientations
+            prefixes.add(read[:effective_len])
+            rc = reverse_complement(read)
+            prefixes.add(rc[:effective_len])
+        prefix_index[length] = prefixes
+    return prefix_index
+
+
+def get_prefix_index(read_index: Optional[Dict[int, Counter[str]]]) -> Optional[Dict[int, AbstractSet[str]]]:
+    """Return prefix index for read_index, building once per context if needed."""
+    if read_index is None or not read_index:
+        return None
+    try:
+        ctx = ReferencelessStitcherContext.get()
+        # Rebuild if read_index changed or prefix index missing
+        if ctx.read_prefix_index is None or getattr(ctx, "_prefix_index_source_id", None) != id(read_index):
+            ctx.read_prefix_index = build_read_prefix_index(read_index)
+            ctx._prefix_index_source_id = id(read_index)  # type: ignore[attr-defined]
+        return ctx.read_prefix_index
+    except Exception:  # noqa: BLE001
+        # Fallback: build without context (e.g., in tests without fresh())
+        return build_read_prefix_index(read_index)
+
+
+def reset_prefix_stats() -> None:
+    for k in PREFIX_STATS:
+        PREFIX_STATS[k] = 0
+
+
+def get_prefix_stats() -> Dict[str, int]:
+    return dict(PREFIX_STATS)
+
 
 def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str) -> AbstractSet[str]:
     """
@@ -788,18 +843,32 @@ def _compute_raw_read_evidence(
     diff = [0] * (window_size + 1)
     cut_crossing_depth = 0
     any_match = False
+    prefix_index = get_prefix_index(read_index)
     for L, counter in read_index.items():
         s_eff_min = max(0, min(window_start, cut_position) - L + 1)
         s_eff_max = min(max(window_end - 1, cut_position - 1), seq_len - L)
         if s_eff_min > s_eff_max:
             continue
+        effective_prefix_len = min(PREFIX_SIZE, L)
+        prefix_set = prefix_index.get(L) if prefix_index else None
         for s in range(s_eff_min, s_eff_max + 1):
+            if ENABLE_PREFIX_STATS:
+                PREFIX_STATS["considered"] += 1
+            # Prefix rejection gate (lossless, no false negatives)
+            if prefix_set is not None and merged_seq[s: s + effective_prefix_len] not in prefix_set:
+                if ENABLE_PREFIX_STATS:
+                    PREFIX_STATS["rejected"] += 1
+                continue
             kmer = merged_seq[s: s + L]
+            if ENABLE_PREFIX_STATS:
+                PREFIX_STATS["canonicalized"] += 1
             rc_kmer = reverse_complement(kmer)
             canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
             count = counter.get(canonical, 0)
             if count == 0:
                 continue
+            if ENABLE_PREFIX_STATS:
+                PREFIX_STATS["hits"] += 1
             any_match = True
             if s < cut_position < s + L:
                 cut_crossing_depth += count
@@ -1386,6 +1455,12 @@ def referenceless_contig_stitcher(
         ctx.minimum_read_depth = minimum_read_depth
         ctx.read_length = read_length
         ctx.read_index = read_index
+        # Build prefix index once per read index for fast rejection
+        if read_index:
+            ctx.read_prefix_index = build_read_prefix_index(read_index)
+            ctx._prefix_index_source_id = id(read_index)  # type: ignore[attr-defined]
+        else:
+            ctx.read_prefix_index = None
         return referenceless_contig_stitcher_with_ctx(input_fasta, output_fasta)
 
 
