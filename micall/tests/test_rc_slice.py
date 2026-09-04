@@ -3,7 +3,6 @@
 import random
 from collections import Counter
 
-import pytest
 
 from micall.utils.exact_coverage import reverse_complement
 from micall.utils.referenceless_contig_stitcher import _compute_raw_read_evidence
@@ -64,7 +63,6 @@ def test_multiple_L_values():
 
 
 def test_palindromic_sequence():
-    seq = "ACGTACGT"  # not palindromic, but test RC vs RC
     # Palindromic: ACGT -> ACGT RC is ACGT? Actually "ATAT" is palindromic
     pal = "ATATATAT"
     rc_pal = reverse_complement(pal)
@@ -122,7 +120,7 @@ def _reference_compute(merged_seq, cut_position, read_index, read_length):
         for s in range(s_eff_min, s_eff_max + 1):
             kmer = merged_seq[s : s + L]
             rc_kmer = reverse_complement(kmer)
-            canonical = kmer if kmer <= rc_kmer else rc_kmer
+            canonical = min(kmer, rc_kmer)
             count = counter.get(canonical, 0)
             if count == 0:
                 continue
@@ -140,14 +138,13 @@ def _reference_compute(merged_seq, cut_position, read_index, read_length):
     min_cov = float("inf")
     for p in range(window_size):
         current += diff[p]
-        if current < min_cov:
-            min_cov = current
+        min_cov = min(min_cov, current)
     return cut_crossing_depth, int(min_cov)
 
 
 def _canon(s):
     rc = reverse_complement(s)
-    return s if s <= rc else rc
+    return min(s, rc)
 
 
 def test_differential_with_matches():
