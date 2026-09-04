@@ -189,26 +189,31 @@ def test_differential_with_matches():
 
 
 def test_differential_multiple_buckets_multiplicity():
-    # Explicit multiplicity and repeated placements
-    read = "ACGTACGT"
-    canon = _canon(read)
-    read_index = {8: Counter({canon: 3})}
-    merged = read + "TTTT" + read  # two placements
-    cut = 8  # between
+    # Multiple buckets, multiplicity, repeated placements with meaningful check
+    read8 = "ACGTACGT"
+    read12 = "AAAACCCCGGGG"
+    canon8 = _canon(read8)
+    canon12 = _canon(read12)
+    read_index = {8: Counter({canon8: 3}), 12: Counter({canon12: 2})}
+    # Place reads so they cross the cut
+    merged = "TTTT" + read8 + "GGGG" + read12 + "CCCC"
+    cut = 6  # inside read8 (read8 at 4, cut 6 crosses it)
     with ReferencelessStitcherContext.fresh() as ctx:
         ctx.read_index = read_index
-        opt = _compute_raw_read_evidence(merged, cut, read_index, 8)
-    ref = _reference_compute(merged, cut, read_index, 8)
+        opt = _compute_raw_read_evidence(merged, cut, read_index, 12)
+    ref = _reference_compute(merged, cut, read_index, 12)
     assert opt == ref
-    # repeated placements should be counted
-    assert opt[0] >= 3 or opt[1] >= 0
+    assert opt[0] > 0 or opt[1] > 0
 
 
 def test_differential_reverse_orientation_matches():
-    read = "ACGTACGTACGT"
+    # Genuinely non-palindromic: read and its RC are distinct
+    read = "AAAACCCCGGGG"  # 12, RC is CCCCGGGGTTTT distinct
     canon = _canon(read)
     rc = reverse_complement(read)
-    # Index contains canonical, but merged contains RC orientation
+    assert rc != read
+    assert canon == min(read, rc)
+    # Index contains canonical, but merged contains RC orientation (distinct)
     read_index = {12: Counter({canon: 1})}
     merged = "TTTT" + rc + "GGGG"
     cut = 7  # inside rc
@@ -217,7 +222,7 @@ def test_differential_reverse_orientation_matches():
         opt = _compute_raw_read_evidence(merged, cut, read_index, 12)
     ref = _reference_compute(merged, cut, read_index, 12)
     assert opt == ref
-    assert opt[0] > 0  # should have cut crossing
+    assert opt[0] > 0  # should have cut crossing via reverse orientation
 
 
 def test_differential_no_matches():
