@@ -47,6 +47,19 @@ KMER_SIZE = 30
 
 logger = logging.getLogger(__name__)
 
+# Lightweight instrumentation for RC optimization (per raw-evidence computation)
+RC_STATS = {"raw_computations": 0, "placements": 0, "bases_rc": 0}
+ENABLE_RC_STATS = False
+
+
+def reset_rc_stats() -> None:
+    for k in RC_STATS:
+        RC_STATS[k] = 0
+
+
+def get_rc_stats() -> dict:
+    return dict(RC_STATS)
+
 
 def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str) -> AbstractSet[str]:
     """
@@ -783,6 +796,8 @@ def _compute_raw_read_evidence(
     """Expensive raw evidence: (cut_crossing_depth, min_window_coverage) without threshold."""
     seq_len = len(merged_seq)
     rc_merged_seq = reverse_complement(merged_seq)
+    if ENABLE_RC_STATS:
+        RC_STATS["raw_computations"] += 1
     window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
     window_size = window_end - window_start
     # window_size >0 guaranteed by caller (zero window handled earlier)
@@ -795,6 +810,9 @@ def _compute_raw_read_evidence(
         if s_eff_min > s_eff_max:
             continue
         for s in range(s_eff_min, s_eff_max + 1):
+            if ENABLE_RC_STATS:
+                RC_STATS["placements"] += 1
+                RC_STATS["bases_rc"] += L
             kmer = merged_seq[s: s + L]
             rc_kmer = rc_merged_seq[seq_len - s - L : seq_len - s]
             canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
