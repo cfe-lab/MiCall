@@ -2,6 +2,8 @@
 bin
 docs
 *cache*
+# Needed by install-cached-iva.sh (adopted from 15a2b99)
+!install-cached-iva.sh
 .github
 Dockerfile
 micall/tests/working
