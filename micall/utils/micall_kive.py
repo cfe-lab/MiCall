@@ -17,6 +17,54 @@ from micall.g2p.pssm_lib import Pssm
 
 logger = logging.getLogger(__name__)
 
+#: Fixed mtime so identical inputs produce byte-identical archives.
+DETERMINISTIC_MTIME = 0
+
+
+def normalize_tarinfo(tarinfo):
+    """Normalize host-dependent metadata for reproducible archives."""
+    tarinfo.mtime = DETERMINISTIC_MTIME
+    tarinfo.uid = 0
+    tarinfo.gid = 0
+    tarinfo.uname = ''
+    tarinfo.gname = ''
+    if tarinfo.isdir():
+        tarinfo.mode = 0o755
+    elif not tarinfo.issym() and not tarinfo.islnk():
+        tarinfo.mode = 0o644
+    return tarinfo
+
+
+def add_to_archive(tar, file_path, archive_path):
+    """Add a file (or directory tree) with deterministic member order."""
+    tarinfo = tar.gettarinfo(file_path, archive_path)
+    normalize_tarinfo(tarinfo)
+    if tarinfo.isdir():
+        tar.addfile(tarinfo)
+        for name in sorted(os.listdir(file_path)):
+            add_to_archive(tar,
+                           os.path.join(file_path, name),
+                           os.path.join(archive_path, name))
+    elif tarinfo.issym() or tarinfo.islnk():
+        tar.addfile(tarinfo)
+    else:
+        with open(file_path, 'rb') as f:
+            tar.addfile(tarinfo, f)
+
+
+def create_coverage_maps_tar(tar_path, maps_dir):
+    """Archive coverage maps deterministically.
+
+    Member order is sorted and host-dependent metadata (mtime, uid, gid,
+    uname, gname, permission bits) is normalized, so identical file names
+    and contents always produce byte-identical archives.
+    """
+    with tarfile.open(tar_path, mode='w') as tar:
+        for image_name in sorted(os.listdir(maps_dir)):
+            add_to_archive(tar,
+                           os.path.join(maps_dir, image_name),
+                           os.path.join('coverage_maps', image_name))
+
 
 def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.',
@@ -164,11 +212,7 @@ def main():
                    force_gzip=True,  # dataset files change .gz to .raw
                    use_denovo=args.denovo)
 
-    with tarfile.open(args.coverage_maps_tar, mode='w') as tar:
-        for image_name in os.listdir(sample.coverage_maps):
-            image_path = os.path.join(sample.coverage_maps, image_name)
-            archive_path = os.path.join('coverage_maps', image_name)
-            tar.add(image_path, archive_path)
+    create_coverage_maps_tar(args.coverage_maps_tar, sample.coverage_maps)
 
 
 if __name__ == '__main__':
