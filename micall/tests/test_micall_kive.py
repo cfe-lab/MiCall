@@ -48,10 +48,10 @@ def test_coverage_maps_tar_contents(tmp_path):
 
     create_coverage_maps_tar(str(tar_path), str(maps_dir))
 
-    expected_names = {os.path.join("coverage_maps", name) for name in CONTENTS}
+    expected_names = [f"coverage_maps/{name}" for name in sorted(CONTENTS)]
     with tarfile.open(str(tar_path), mode="r") as tar:
         members = tar.getmembers()
-        assert {m.name for m in members} == expected_names
+        assert [m.name for m in members] == expected_names
         for member in members:
             assert member.isfile()
             assert member.mtime == 0
@@ -62,5 +62,28 @@ def test_coverage_maps_tar_contents(tmp_path):
             assert member.mode & 0o777 == 0o644
             with tar.extractfile(member) as f:
                 assert f is not None
-                base = os.path.basename(member.name)
+                base = member.name.split("/")[-1]
                 assert f.read() == CONTENTS[base]
+
+
+def test_coverage_maps_tar_hardlinks(tmp_path):
+    payload = b"shared-bytes"
+    maps1 = tmp_path / "run1" / "maps"
+    maps1.mkdir(parents=True)
+    for name in ("a.png", "b.png"):
+        (maps1 / name).write_bytes(payload)
+        os.utime(maps1 / name, (1000000000, 1000000000))
+        os.chmod(maps1 / name, 0o644)
+    maps2 = tmp_path / "run2" / "maps"
+    maps2.mkdir(parents=True)
+    (maps2 / "a.png").write_bytes(payload)
+    os.link(maps2 / "a.png", maps2 / "b.png")
+    os.utime(maps2 / "a.png", (1700000000, 1700000000))
+    os.chmod(maps2 / "a.png", 0o600)
+    tar1 = tmp_path / "maps1.tar"
+    tar2 = tmp_path / "maps2.tar"
+
+    create_coverage_maps_tar(str(tar1), str(maps1))
+    create_coverage_maps_tar(str(tar2), str(maps2))
+
+    assert tar1.read_bytes() == tar2.read_bytes()

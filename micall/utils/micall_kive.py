@@ -35,35 +35,19 @@ def normalize_tarinfo(tarinfo):
     return tarinfo
 
 
-def add_to_archive(tar, file_path, archive_path):
-    """Add a file (or directory tree) with deterministic member order."""
-    tarinfo = tar.gettarinfo(file_path, archive_path)
-    normalize_tarinfo(tarinfo)
-    if tarinfo.isdir():
-        tar.addfile(tarinfo)
-        for name in sorted(os.listdir(file_path)):
-            add_to_archive(tar,
-                           os.path.join(file_path, name),
-                           os.path.join(archive_path, name))
-    elif tarinfo.issym() or tarinfo.islnk():
-        tar.addfile(tarinfo)
-    else:
-        with open(file_path, 'rb') as f:
-            tar.addfile(tarinfo, f)
-
-
 def create_coverage_maps_tar(tar_path, maps_dir):
     """Archive coverage maps deterministically.
 
     Member order is sorted and host-dependent metadata (mtime, uid, gid,
     uname, gname, permission bits) is normalized, so identical file names
-    and contents always produce byte-identical archives.
+    and contents always produce byte-identical archives. Links are
+    dereferenced so link topology cannot affect the output either.
     """
-    with tarfile.open(tar_path, mode='w') as tar:
+    with tarfile.open(tar_path, mode='w', dereference=True) as tar:
         for image_name in sorted(os.listdir(maps_dir)):
-            add_to_archive(tar,
-                           os.path.join(maps_dir, image_name),
-                           os.path.join('coverage_maps', image_name))
+            image_path = os.path.join(maps_dir, image_name)
+            archive_path = os.path.join('coverage_maps', image_name)
+            tar.add(image_path, archive_path, filter=normalize_tarinfo)
 
 
 def parse_args():
