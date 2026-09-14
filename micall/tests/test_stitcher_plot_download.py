@@ -19,6 +19,12 @@ def test_stitcher_plot_svg_in_downloaded_results():
     assert 'stitcher_plot_svg' in DOWNLOADED_RESULTS
 
 
+def test_conseq_ins_csv_in_downloaded_results():
+    """Test that conseq_ins_csv is in the list of DOWNLOADED_RESULTS"""
+    from micall.monitor.kive_watcher import DOWNLOADED_RESULTS
+    assert 'conseq_ins_csv' in DOWNLOADED_RESULTS
+
+
 def test_move_stitcher_plot_single_sample(tmp_path):
     """Test moving stitcher plot for a single sample"""
     # Setup
