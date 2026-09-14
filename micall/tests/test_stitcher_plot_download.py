@@ -261,3 +261,4 @@ def test_stitcher_plot_passed_to_sample():
 
     # Verify that stitcher_plot_svg is accessible via the sample object
     assert sample.stitcher_plot_svg == 'stitcher_plot.svg'
+    assert sample.conseq_ins_csv == 'conseq_ins.csv'
