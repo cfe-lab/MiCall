@@ -141,6 +141,13 @@ Individual files are described after the list of steps.
   * offset - offset of the read within the consensus, or number of dashes to
     add at the start
   * seq - the mapped sequence of the read, aligned to the consensus
+  * inserts - (g2p_aligned.csv only) insertions in the read relative to
+    V3LOOP, preserved for insertions.csv reporting. Semicolon-separated
+    `pos:seq` pairs, where pos is the seed coordinate of the first
+    consensus nucleotide after the insertion (same convention as
+    conseq_ins.csv pos) and seq is the inserted nucleotide sequence.
+    Empty when the read has no insertions. aln2counts snaps each pos to
+    the codon boundary with the same rule as codon deletions.
 * amino.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
