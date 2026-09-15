@@ -767,6 +767,16 @@ class SequenceReport(object):
                 self.insert_writer.conseq_insertions[ref_name][ref_position] = \
                     aggregate_insertions(insertions, consensus_pos=ref_position - 1)
 
+    def clear_conseq_insertions(self, seed_name):
+        """ Drop consensus-relative insertion evidence for one seed.
+
+        Used before the G2P pass: G2P is authoritative for V3LOOP, so
+        normal remap insertion evidence under the G2P seed must not leak
+        into the V3LOOP result. Other seeds are untouched.
+        """
+        self.conseq_insertion_counts.pop(seed_name, None)
+        self.insert_writer.conseq_insertions.pop(seed_name, None)
+
     @staticmethod
     def _create_amino_writer(amino_file):
         columns = ['seed',
@@ -1853,7 +1863,16 @@ class InsertionWriter(object):
                     get_insertion_info(insertion_position, report_aminos, report_nucleotides)
                 if current_insert_behind is not None:
                     for position in insertions:
-                        insertions[position].counts['-'] = current_insert_coverage
+                        # Same prevalence model as aggregate_insertions:
+                        # reads supporting the insertion are part of the
+                        # local coverage, so the no-insertion count is the
+                        # local coverage minus the insertion support.
+                        insertion_support = insertions[position].get_coverage()
+                        no_insertion_coverage = (current_insert_coverage -
+                                                insertion_support)
+                        if no_insertion_coverage > 0:
+                            insertions[position].counts['-'] = \
+                                no_insertion_coverage
                     if len(self.ref_insertions[region][current_insert_behind - 1]) == 0:
                         self.ref_insertions[region][current_insert_behind - 1] = insertions
                     else:
@@ -2039,6 +2058,9 @@ def aln2counts(aligned_csv,
             if report.remap_conseqs is not None:
                 report.remap_conseqs[G2P_SEED_NAME] = projects.getReference(
                     G2P_SEED_NAME)
+            # G2P is authoritative for V3LOOP: drop any normal-path
+            # insertion evidence under the G2P seed before its own pass.
+            report.clear_conseq_insertions(G2P_SEED_NAME)
             report.process_reads(g2p_aligned_csv,
                                  coverage_summary,
                                  included_regions={'V3LOOP'})
