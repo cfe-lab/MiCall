@@ -1664,6 +1664,78 @@ R3-seed,0.100,R3a,12,12,12,GGG
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
 
+    def testCoordinateInsertionCensoredBasesNotReported(self):
+        """ Censored (low-quality) bases cannot fabricate an insertion row.
+
+        Coordinate-relative insertions are inferred from aligned.csv reads,
+        which carry no per-base quality: sam2aln already censored bases at
+        or below Q15 to N. Those N bases must not produce an insertions.csv
+        row on their own.
+        """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "R3": {
+      "max_variants": 0,
+      "regions": [
+        {
+          "coordinate_region": "R3a",
+          "seed_region_names": ["R3-seed"]
+        },
+        {
+          "coordinate_region": "R3b",
+          "seed_region_names": ["R3-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "R3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCAGACCGGGCCACGAGAGCAT"
+      ]
+    },
+    "R3a": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFQTPREH"
+      ]
+    },
+    "R3b": {
+      "is_nucleotide": false,
+      "reference": [
+        "KFQTGPREH"
+      ]
+    }
+  }
+}
+"""))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: R3-seed
+  coordinates: R3-seed
+  landmarks:
+    # Extra 3 nucleotides at end, because stop codons will get dropped.
+    - {name: R3a, start: 1, end: 27, frame: 0}
+    - {name: R3b, start: 1, end: 27, frame: 0}
+""")
+        # refname,qcut,rank,count,offset,seq
+        # Same insertion position as testMultipleCoordinateInsertionReport,
+        # but the inserted triplet is N-censored upstream (Q<=15).
+        aligned_reads = prepare_reads("""\
+R3-seed,15,0,9,0,AAATTTCAGACTNNNCCCCGAGAGCAT
+""")
+
+        expected_insertions = """\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+"""
+
+        self.report.read(aligned_reads)
+        self.report.write_insertions()
+
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
     def testInsertionsRelativeToConsensus(self):
         """ Test that insertions relative to the consensus are handled correctly """
         aligned_reads = prepare_reads("""\
