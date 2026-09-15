@@ -1695,6 +1695,102 @@ R1-seed,0.100,R1,3,3,3,aac
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
 
+    def testConseqInsertionHighQualityIsCounted(self):
+        """ A high-quality insertion (Q32) is retained. """
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,AAA
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.assertIn('R1-seed',
+                      self.report.insert_writer.conseq_insertions)
+        self.assertIn(3,
+                      self.report.insert_writer.conseq_insertions['R1-seed'])
+
+    def testConseqInsertionLowQualityIsIgnored(self):
+        """ An insertion with a Q29 base is ignored entirely. """
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,10,0,AAATTTAGG
+""")
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,A>A
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.assertEqual({}, dict(self.report.conseq_insertion_counts))
+        self.assertEqual({},
+                         dict(self.report.insert_writer.conseq_insertions))
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testConseqInsertionBoundaryQ30IsRetained(self):
+        """ An insertion with minimum quality exactly Q30 is retained. """
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,???
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.assertIn(3,
+                      self.report.insert_writer.conseq_insertions['R1-seed'])
+
+    def testConseqInsertionLowQualityForwardHighQualityReverse(self):
+        """ A rejected forward observation must not block its good mate.
+
+        Same qname and position: low-quality forward followed by high-quality
+        reverse still counts the high-quality observation exactly once.
+        """
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,2,0,AAATTTAGG
+""")
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,A>A
+Example_read_1,R,R1-seed,3,AAC,AAA
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
     def testGapBetweenForwardAndReverse(self):
         """ Lower-case n represents a gap between forward and reverse reads.
 
