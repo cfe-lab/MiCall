@@ -143,6 +143,26 @@ def trim_contig_name(contig_name):
     return seed_name
 
 
+def parse_g2p_inserts(inserts_str):
+    """ Parse the inserts column of g2p_aligned.csv.
+
+    fastq_g2p preserves read insertions relative to V3LOOP as
+    ``pos:seq`` pairs separated by ``;``, where pos is the seed
+    coordinate that follows the insertion.
+
+    :param inserts_str: the raw column value, None or '' if the read has
+        no insertions
+    :return: a list of (pos, insert_seq) tuples
+    """
+    if not inserts_str:
+        return []
+    inserts = []
+    for item in inserts_str.split(';'):
+        pos, insert_seq = item.split(':')
+        inserts.append((int(pos), insert_seq))
+    return inserts
+
+
 def get_insertion_info(left, report_aminos, report_nucleotides):
     insert_behind = None
     insertion_coverage = 0
@@ -470,6 +490,15 @@ class SequenceReport(object):
 
             # record this read to calculate insertions later
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
+
+            # record G2P insertion evidence, already grouped with its count
+            for ins_pos, ins_seq in parse_g2p_inserts(row.get('inserts')):
+                ref_name = row['refname']
+                self.insert_writer.add_insertion(ref_name,
+                                                ins_pos,
+                                                ins_seq,
+                                                count)
+                self.conseq_insertion_counts[ref_name][ins_pos] += count
 
             # cycle through reading frames
             for reading_frame, frame_seed_aminos in self.seed_aminos.items():
@@ -1695,6 +1724,21 @@ class InsertionWriter(object):
         """
         self.nuc_seqs[offset_sequence] += count
 
+    def add_insertion(self, seed_name, pos, seq, count):
+        """ Record insertion evidence with an explicit support count.
+
+        Used for G2P insertions from g2p_aligned.csv, which arrive already
+        grouped: count is the number of reads in the alignment group, and
+        pos is the seed coordinate that follows the insertion, matching
+        the conseq_insertions model.
+        """
+        insertions = self.conseq_insertions[seed_name][pos]
+        for i, nuc in enumerate(seq):
+            seed_nuc = insertions.setdefault(i, SeedNucleotide())
+            if seed_nuc.consensus_index is None:
+                seed_nuc.consensus_index = pos - 1
+            seed_nuc.count_nucleotides(nuc, count)
+
     def write(self, insertions, seed_name, report_aminos_all, report_nucleotides_all, landmarks, consensus_builder):
         """ Write any insert ranges to the file.
 
@@ -1709,9 +1753,6 @@ class InsertionWriter(object):
         @param landmarks: landmarks for the seed
         @param consensus_builder: helper function to write insertion consensus
         """
-        if len(insertions) == 0:
-            return
-
         for region, inserts in insertions.items():
             self.ref_insertions[region] = defaultdict(lambda: defaultdict(SeedNucleotide))
 
