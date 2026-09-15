@@ -963,6 +963,24 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
+    def test_read_insertion_low_quality(self):
+        # Insertion quality below Q30 must survive conversion so that
+        # aln2counts can apply the Q30 insertion rule downstream.
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
+        counts = [(("TGTACA---AGACCCAAC",
+                     "TGTACAGGGAGACCCAAC",
+                     "BBBBBB>>>BBBBBBBBB"), 2)]
+        hiv_seed = "ATGTACAAGACCCAACAAC"
+        aligned_csv = DummyFile()
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,"7:GGG:29,29,29"
+"""
+
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
+
+        self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
+
     def test_ref_insertion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 2)]
