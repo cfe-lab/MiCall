@@ -41,6 +41,7 @@ CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
+MIN_INSERTION_QUALITY = 30
 
 
 def parse_args():
@@ -696,6 +697,11 @@ class SequenceReport(object):
         insertion_nucs = defaultdict(lambda: defaultdict(Counter))
 
         for row in reader:
+            qual = row['qual']
+            if any(ord(c) - 33 < MIN_INSERTION_QUALITY for c in qual):
+                # Skip low-quality insertions before de-duplication, so a
+                # low-quality observation does not block its high-quality mate.
+                continue
             ref_name = row['refname']
             pos = int(row['pos'])
             pos_insertions = insertion_nucs[ref_name][pos]
