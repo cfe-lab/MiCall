@@ -1,4 +1,5 @@
 from io import StringIO
+import csv
 import unittest
 
 import yaml
@@ -1860,6 +1861,157 @@ R1-seed,0.100,R1,3,3,3,aac
                                         self.report.report_nucleotides,
                                         self.report.landmarks,
                                         self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionReported(self):
+        """ Insertions preserved from G2P alignments reach insertions.csv. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,3,3,3,aac
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionCountsRespected(self):
+        """ A repeated G2P alignment contributes its actual support count. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,17,0,AAATTTAGG,3:AAC
+R1-seed,15,1,83,0,AAATTTAGG,
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(17, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionBelowPrevalenceIgnored(self):
+        """ A rare G2P insertion stays below the mixture cutoff. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,1,0,AAATTTAGG,3:AAC
+R1-seed,15,1,199,0,AAATTTAGG,
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionNotDoubleCountedWithBowtieOverlap(self):
+        """ Bowtie V3LOOP overlap stays excluded when G2P reports V3LOOP. """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "V3": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "V3LOOP",
+          "seed_region_names": ["V3-seed", "HIV1-CON-XX-Consensus-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "V3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCC"
+      ]
+    },
+    "HIV1-CON-XX-Consensus-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCC"
+      ]
+    },
+    "V3LOOP": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCC"
+      ]
+    }
+  }
+}
+"""))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: V3-seed
+  coordinates: V3-seed
+  landmarks:
+    - {name: V3LOOP, start: 1, end: 9}
+- seed_pattern: HIV1-CON-XX-Consensus-seed
+  coordinates: HIV1-CON-XX-Consensus-seed
+  landmarks:
+    - {name: V3LOOP, start: 1, end: 9}
+""")
+        bowtie_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+V3-seed,15,0,10,0,AAATTTCCC,3:AAC
+""")
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,10,0,AAATTTCCC,3:AAC
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+HIV1-CON-XX-Consensus-seed,MAX,V3LOOP,3,3,3,aac
+HIV1-CON-XX-Consensus-seed,0.100,V3LOOP,3,3,3,aac
+""")
+
+        self.report.process_reads(bowtie_csv, excluded_regions={'V3LOOP'})
+        self.report.process_reads(g2p_csv, included_regions={'V3LOOP'})
+
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
 
