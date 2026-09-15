@@ -147,19 +147,25 @@ def parse_g2p_inserts(inserts_str):
     """ Parse the inserts column of g2p_aligned.csv.
 
     fastq_g2p preserves read insertions relative to V3LOOP as
-    ``pos:seq`` pairs separated by ``;``, where pos is the seed
-    coordinate that follows the insertion.
+    ``pos:seq:quals`` groups separated by ``;``, where pos is the seed
+    coordinate that follows the insertion and quals is the comma-separated
+    minimum Phred quality of each inserted base. Older rows without quals
+    yield quals of None for backward compatibility.
 
     :param inserts_str: the raw column value, None or '' if the read has
         no insertions
-    :return: a list of (pos, insert_seq) tuples
+    :return: a list of (pos, insert_seq, quals) tuples, where quals is a
+        list of ints or None
     """
     if not inserts_str:
         return []
     inserts = []
     for item in inserts_str.split(';'):
-        pos, insert_seq = item.split(':')
-        inserts.append((int(pos), insert_seq))
+        parts = item.split(':')
+        pos, insert_seq = int(parts[0]), parts[1]
+        quals = ([int(q) for q in parts[2].split(',')]
+                 if len(parts) > 2 else None)
+        inserts.append((pos, insert_seq, quals))
     return inserts
 
 
@@ -513,7 +519,13 @@ class SequenceReport(object):
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
 
             # record G2P insertion evidence, already grouped with its count
-            for ins_pos, ins_seq in parse_g2p_inserts(row.get('inserts')):
+            for ins_pos, ins_seq, ins_quals in parse_g2p_inserts(
+                    row.get('inserts')):
+                if (ins_quals is not None and
+                        min(ins_quals) < MIN_INSERTION_QUALITY):
+                    # Same Q30 rule as read_insertions: every inserted
+                    # base must reach Q30.
+                    continue
                 ref_name = row['refname']
                 self.insert_writer.add_insertion(ref_name,
                                                 ins_pos,
@@ -1649,13 +1661,19 @@ class SequenceReport(object):
                 row['seq'] = seq
             if row.get('inserts'):
                 snapped = []
-                for pos, insert_seq in parse_g2p_inserts(row['inserts']):
+                for pos, insert_seq, quals in parse_g2p_inserts(row['inserts']):
                     # Like group_deletions, only codon-multiple insertions
                     # follow the codon-boundary rule. Frameshifting
                     # insertions keep their nucleotide anchor.
                     if len(insert_seq) % 3 == 0:
                         pos = align_insertion_position(pos, reading_frames)
-                    snapped.append('{}:{}'.format(pos, insert_seq))
+                    if quals is None:
+                        snapped.append('{}:{}'.format(pos, insert_seq))
+                    else:
+                        snapped.append('{}:{}:{}'.format(
+                            pos,
+                            insert_seq,
+                            ','.join(map(str, quals))))
                 row['inserts'] = ';'.join(snapped)
             yield row
 
