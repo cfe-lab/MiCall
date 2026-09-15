@@ -887,9 +887,9 @@ class WriteAlignedTest(unittest.TestCase):
         seed = "AAAAATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,5,TGTACAAGACCCAAC
-HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,5,TGTACAAGACCCAAC,
+HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC,
 """
 
         counts2 = list(write_aligned_reads(counts, aligned_csv, seed, v3loop_ref))
@@ -903,8 +903,8 @@ HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -917,8 +917,8 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -931,8 +931,8 @@ HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -945,8 +945,8 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -959,8 +959,8 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC
         hiv_seed = "ATGTACAGGGAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,10:GGG
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -974,8 +974,8 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
         hiv_seed = "ATGTACAGGGAGACCCAACAACAATAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -989,8 +989,23 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
         hiv_seed = "ATGTACACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACACCCAAC,
+"""
+
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
+
+        self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
+
+    def test_read_insertion(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
+        # gaps in the V3 reference: GGG inserted in the read relative to V3LOOP.
+        counts = [(("TGTACA---AGACCCAAC", "TGTACAGGGAGACCCAAC"), 2)]
+        hiv_seed = "ATGTACAAGACCCAACAAC"
+        aligned_csv = DummyFile()
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,7:GGG
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
