@@ -163,6 +163,27 @@ def parse_g2p_inserts(inserts_str):
     return inserts
 
 
+def align_insertion_position(pos, reading_frames):
+    """ Snap a G2P insertion anchor to the codon boundary.
+
+    Uses the same rule as SequenceReport.align_deletions: gotoh places
+    indel gaps to maximize nucleotide score with no codon awareness, so
+    in a repeat the anchor can land one base off codon phase (for
+    example, splitting the codon that the insertion follows). Snapping
+    keeps insertion evidence consistent with codon-based reporting.
+
+    :param pos: seed coordinate that follows the insertion
+    :param reading_frames: {pos: frame} from load_reading_frames
+    :return: the snapped seed coordinate
+    """
+    offset = (pos + reading_frames[pos]) % 3
+    if offset == 1:
+        return pos - 1
+    if offset == 2:
+        return pos + 1
+    return pos
+
+
 def get_insertion_info(left, report_aminos, report_nucleotides):
     insert_behind = None
     insertion_coverage = 0
@@ -1616,6 +1637,12 @@ class SequenceReport(object):
                     chars.insert(pos, '-')
                 seq = ''.join(chars)
                 row['seq'] = seq
+            if row.get('inserts'):
+                snapped = []
+                for pos, insert_seq in parse_g2p_inserts(row['inserts']):
+                    new_pos = align_insertion_position(pos, reading_frames)
+                    snapped.append('{}:{}'.format(new_pos, insert_seq))
+                row['inserts'] = ';'.join(snapped)
             yield row
 
     def load_reading_frames(self, seed_name):
