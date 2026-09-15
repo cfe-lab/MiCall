@@ -1650,8 +1650,12 @@ class SequenceReport(object):
             if row.get('inserts'):
                 snapped = []
                 for pos, insert_seq in parse_g2p_inserts(row['inserts']):
-                    new_pos = align_insertion_position(pos, reading_frames)
-                    snapped.append('{}:{}'.format(new_pos, insert_seq))
+                    # Like group_deletions, only codon-multiple insertions
+                    # follow the codon-boundary rule. Frameshifting
+                    # insertions keep their nucleotide anchor.
+                    if len(insert_seq) % 3 == 0:
+                        pos = align_insertion_position(pos, reading_frames)
+                    snapped.append('{}:{}'.format(pos, insert_seq))
                 row['inserts'] = ';'.join(snapped)
             yield row
 
