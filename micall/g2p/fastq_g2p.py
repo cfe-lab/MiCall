@@ -488,7 +488,7 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
     """
     writer = csv.DictWriter(
         aligned_csv,
-        ['refname', 'qcut', 'rank', 'count', 'offset', 'seq'],
+        ['refname', 'qcut', 'rank', 'count', 'offset', 'seq', 'inserts'],
         lineterminator=os.linesep)
     writer.writeheader()
 
@@ -508,6 +508,12 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
         is_started = False
         seq_offset = 0
         seq = ''
+        # [(seq_index, insert_seq)]: bases inserted in the read relative to
+        # V3LOOP. seq_index counts characters appended to seq so far, so the
+        # seed coordinate of the insertion is offset + seq_index. These are
+        # preserved for aln2counts, which reports them in insertions.csv.
+        read_inserts = []
+        pending_insert = ''
         read_positions = iter(zip(v3_vs_read, read_vs_v3))
         for seed_char, v3_vs_seed_char in seed_positions:
             if v3_vs_seed_char == '-':
@@ -516,10 +522,18 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
             try:
                 while True:
                     v3_vs_read_char, read_char = next(read_positions)
-                    if v3_vs_read_char != '-':
+                    if v3_vs_read_char == '-':
+                        if read_char != '-':
+                            pending_insert += read_char
+                    else:
                         break
             except StopIteration:
+                if pending_insert:
+                    read_inserts.append((len(seq), pending_insert))
                 break
+            if pending_insert:
+                read_inserts.append((len(seq), pending_insert))
+                pending_insert = ''
             if seed_char != '-':
                 if read_char == '-' and not is_started:
                     seq_offset += 1
@@ -527,12 +541,16 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
                     is_started = True
                     seq += read_char
         seq = seq.rstrip('-')
+        offset = v3_offset + seq_offset
+        inserts = ';'.join('{}:{}'.format(offset + seq_index, insert_seq)
+                           for seq_index, insert_seq in read_inserts)
         writer.writerow({'refname': G2P_SEED_NAME,
                              'qcut': Q_CUTOFF,
                              'rank': rank,
                              'count': count,
-                             'offset': v3_offset + seq_offset,
-                             'seq': seq})
+                             'offset': offset,
+                             'seq': seq,
+                             'inserts': inserts})
 
 
 def main():
