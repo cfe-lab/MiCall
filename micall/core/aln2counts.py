@@ -41,6 +41,7 @@ CONSEQ_MIXTURE_CUTOFFS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25]
 GAP_OPEN_COORD = 40
 GAP_EXTEND_COORD = 10
 CONSENSUS_MIN_COVERAGE = 100
+MIN_INSERTION_QUALITY = 30
 
 
 def parse_args():
@@ -140,6 +141,56 @@ def trim_contig_name(contig_name):
     else:
         _, seed_name = contig_name.split('-', 1)
     return seed_name
+
+
+def parse_g2p_inserts(inserts_str):
+    """ Parse the inserts column of g2p_aligned.csv.
+
+    fastq_g2p preserves read insertions relative to V3LOOP as
+    ``pos:seq:support`` groups separated by ``;``, where pos is the seed
+    coordinate that follows the insertion and support counts the grouped
+    copies whose every inserted base reaches Q30. Entries without support
+    information are ignored, so insertion evidence of unknown quality can
+    never bypass the Q30 rule.
+
+    :param inserts_str: the raw column value, None or '' if the read has
+        no insertions
+    :return: a list of (pos, insert_seq, support) tuples
+    """
+    if not inserts_str:
+        return []
+    inserts = []
+    for item in inserts_str.split(';'):
+        parts = item.split(':')
+        if len(parts) != 3:
+            continue
+        try:
+            pos, support = int(parts[0]), int(parts[2])
+        except ValueError:
+            continue
+        inserts.append((pos, parts[1], support))
+    return inserts
+
+
+def align_insertion_position(pos, reading_frames):
+    """ Snap a G2P insertion anchor to the codon boundary.
+
+    Uses the same rule as SequenceReport.align_deletions: gotoh places
+    indel gaps to maximize nucleotide score with no codon awareness, so
+    in a repeat the anchor can land one base off codon phase (for
+    example, splitting the codon that the insertion follows). Snapping
+    keeps insertion evidence consistent with codon-based reporting.
+
+    :param pos: seed coordinate that follows the insertion
+    :param reading_frames: {pos: frame} from load_reading_frames
+    :return: the snapped seed coordinate
+    """
+    offset = (pos + reading_frames[pos]) % 3
+    if offset == 1:
+        return pos - 1
+    if offset == 2:
+        return pos + 1
+    return pos
 
 
 def get_insertion_info(left, report_aminos, report_nucleotides):
@@ -470,6 +521,16 @@ class SequenceReport(object):
             # record this read to calculate insertions later
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
 
+            # record G2P insertion evidence with its qualified support
+            for ins_pos, ins_seq, ins_support in parse_g2p_inserts(
+                    row.get('inserts')):
+                ref_name = row['refname']
+                self.insert_writer.add_insertion(ref_name,
+                                                ins_pos,
+                                                ins_seq,
+                                                ins_support)
+                self.conseq_insertion_counts[ref_name][ins_pos] += ins_support
+
             # cycle through reading frames
             for reading_frame, frame_seed_aminos in self.seed_aminos.items():
                 offset_nuc_seq = ' ' * (reading_frame + offset) + nuc_seq
@@ -696,6 +757,11 @@ class SequenceReport(object):
         insertion_nucs = defaultdict(lambda: defaultdict(Counter))
 
         for row in reader:
+            qual = row['qual']
+            if any(ord(c) - 33 < MIN_INSERTION_QUALITY for c in qual):
+                # Skip low-quality insertions before de-duplication, so a
+                # low-quality observation does not block its high-quality mate.
+                continue
             ref_name = row['refname']
             pos = int(row['pos'])
             pos_insertions = insertion_nucs[ref_name][pos]
@@ -710,6 +776,16 @@ class SequenceReport(object):
             for ref_position, insertions in insertion_nucs[ref_name].items():
                 self.insert_writer.conseq_insertions[ref_name][ref_position] = \
                     aggregate_insertions(insertions, consensus_pos=ref_position - 1)
+
+    def clear_conseq_insertions(self, seed_name):
+        """ Drop consensus-relative insertion evidence for one seed.
+
+        Used before the G2P pass: G2P is authoritative for V3LOOP, so
+        normal remap insertion evidence under the G2P seed must not leak
+        into the V3LOOP result. Other seeds are untouched.
+        """
+        self.conseq_insertion_counts.pop(seed_name, None)
+        self.insert_writer.conseq_insertions.pop(seed_name, None)
 
     @staticmethod
     def _create_amino_writer(amino_file):
@@ -1581,6 +1657,17 @@ class SequenceReport(object):
                     chars.insert(pos, '-')
                 seq = ''.join(chars)
                 row['seq'] = seq
+            if row.get('inserts'):
+                snapped = []
+                for pos, insert_seq, support in parse_g2p_inserts(
+                        row['inserts']):
+                    # Like group_deletions, only codon-multiple insertions
+                    # follow the codon-boundary rule. Frameshifting
+                    # insertions keep their nucleotide anchor.
+                    if len(insert_seq) % 3 == 0:
+                        pos = align_insertion_position(pos, reading_frames)
+                    snapped.append('{}:{}:{}'.format(pos, insert_seq, support))
+                row['inserts'] = ';'.join(snapped)
             yield row
 
     def load_reading_frames(self, seed_name):
@@ -1689,6 +1776,21 @@ class InsertionWriter(object):
         """
         self.nuc_seqs[offset_sequence] += count
 
+    def add_insertion(self, seed_name, pos, seq, count):
+        """ Record insertion evidence with an explicit support count.
+
+        Used for G2P insertions from g2p_aligned.csv, which arrive already
+        grouped: count is the number of reads in the alignment group, and
+        pos is the seed coordinate that follows the insertion, matching
+        the conseq_insertions model.
+        """
+        insertions = self.conseq_insertions[seed_name][pos]
+        for i, nuc in enumerate(seq):
+            seed_nuc = insertions.setdefault(i, SeedNucleotide())
+            if seed_nuc.consensus_index is None:
+                seed_nuc.consensus_index = pos - 1
+            seed_nuc.count_nucleotides(nuc, count)
+
     def write(self, insertions, seed_name, report_aminos_all, report_nucleotides_all, landmarks, consensus_builder):
         """ Write any insert ranges to the file.
 
@@ -1703,9 +1805,6 @@ class InsertionWriter(object):
         @param landmarks: landmarks for the seed
         @param consensus_builder: helper function to write insertion consensus
         """
-        if len(insertions) == 0:
-            return
-
         for region, inserts in insertions.items():
             self.ref_insertions[region] = defaultdict(lambda: defaultdict(SeedNucleotide))
 
@@ -1779,7 +1878,16 @@ class InsertionWriter(object):
                     get_insertion_info(insertion_position, report_aminos, report_nucleotides)
                 if current_insert_behind is not None:
                     for position in insertions:
-                        insertions[position].counts['-'] = current_insert_coverage
+                        # Same prevalence model as aggregate_insertions:
+                        # reads supporting the insertion are part of the
+                        # local coverage, so the no-insertion count is the
+                        # local coverage minus the insertion support.
+                        insertion_support = insertions[position].get_coverage()
+                        no_insertion_coverage = (current_insert_coverage -
+                                                insertion_support)
+                        if no_insertion_coverage > 0:
+                            insertions[position].counts['-'] = \
+                                no_insertion_coverage
                     if len(self.ref_insertions[region][current_insert_behind - 1]) == 0:
                         self.ref_insertions[region][current_insert_behind - 1] = insertions
                     else:
@@ -1965,6 +2073,9 @@ def aln2counts(aligned_csv,
             if report.remap_conseqs is not None:
                 report.remap_conseqs[G2P_SEED_NAME] = projects.getReference(
                     G2P_SEED_NAME)
+            # G2P is authoritative for V3LOOP: drop any normal-path
+            # insertion evidence under the G2P seed before its own pass.
+            report.clear_conseq_insertions(G2P_SEED_NAME)
             report.process_reads(g2p_aligned_csv,
                                  coverage_summary,
                                  included_regions={'V3LOOP'})

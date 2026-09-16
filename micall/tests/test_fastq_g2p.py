@@ -38,10 +38,8 @@ class WriteRowsTest(unittest.TestCase):
 
     def testSimple(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CTR,,cysteines,
@@ -53,10 +51,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testSummarySuccess(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   1)]
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -73,10 +69,8 @@ mapped,valid,X4calls,X4pct,final,validpct
 
     def testSummaryFailed(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CTR,,cysteines,
@@ -93,15 +87,11 @@ mapped,valid,X4calls,X4pct,final,validpct
 
     def testSummaryX4(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTATGAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACGAGCACATTGT")),
-                   2),
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTATGAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACGAGCACATTGT"), ''), 2),
                   ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   1)]
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,2,0.454349,2.6,X4,CMRPNNNTRKSIHIGPGRAFYATGEIIGDIRRAHC,CMRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RRAHC,,
@@ -119,15 +109,11 @@ mapped,valid,X4calls,X4pct,final,validpct
 
     def testSummaryThresholdsPassed(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   300),
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 300),
                   ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   100)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -150,15 +136,11 @@ mapped,valid,X4calls,X4pct,final,validpct
 
     def testSummaryValidCountThresholdFailed(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   300),
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 300),
                   ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   100)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -181,15 +163,11 @@ mapped,valid,X4calls,X4pct,final,validpct
 
     def testSummaryValidPercentageThresholdFailed(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   300),
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 300),
                   ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   100)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,300,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -212,20 +190,14 @@ mapped,valid,X4calls,X4pct,final,validpct
 
     def testMinCount(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   3),
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 3),
                   ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAGGG-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   2),
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAGGG-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 2),
                   ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAGAA-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   2)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAGAA-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 2)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,3,,,,CTR,,cysteines,
@@ -245,10 +217,8 @@ mapped,valid,X4calls,X4pct,final,validpct
         """ Marking position 12 as low quality means codon 4 has to be P.
         """
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCNAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   1)]
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCNAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,0.067754,42.3,R5,CTRPNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CTRPN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,
@@ -262,10 +232,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         """ Marking position 9 as low quality means codon 3 could be S or R.
         """
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGNCCCAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   1)]
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGNCCCAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,0.066305,43.0,R5,CT[RS]PNNNTRKSIHIGPGRAFYATGEIIGDIRQAHC,CT[RS]PN-NNT--RKSIHI---GPGR---AFYAT----GEIIGDI--RQAHC,,ambiguous
@@ -278,10 +246,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
     def testAmbiguousAtTwoPositions(self):
         """ Same thing with codons 9 and 18 - rejected. """
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCAACAACAATACAAGNAAAAG------TATACATATAGGACCAGGGA"
-                    "GNGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
-                   1)]
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCAACAACAATACAAGNAAAAG------TATACATATAGGACCAGGGA"
+                    "GNGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CTRPNNNTXKSIHIGPGXAFYATGEIIGDIRQAHC,,> 2 ambiguous,
@@ -295,10 +261,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         """ Marking position 14 as low quality means codon 5 could be L, S, or *.
         """
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAAGACCCTNAAACTGT-------------------------------------"
-                    "--------------------------------------------------")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAAGACCCTNAAACTGT-------------------------------------"
+                    "--------------------------------------------------"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CTRPXNC,,> 2 ambiguous,
@@ -310,10 +274,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testLowQuality(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TNTNNNGGN-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TNTNNNGGN-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,,,low quality,
@@ -325,10 +287,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testPartialCodon(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTACAGG--------------------------------------------------"
-                    "--------------------------------------------------")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTACAGG--------------------------------------------------"
+                    "--------------------------------------------------"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CT,,notdiv3,
@@ -340,10 +300,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testStopCodon(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTTAGTGT-------------------------------------------------"
-                    "--------------------------------------------------")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTTAGTGT-------------------------------------------------"
+                    "--------------------------------------------------"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,C*C,,stop codons,
@@ -355,10 +313,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testLengthMinimum(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
-                    "-----GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
+                    "-----GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,0.806327,1.5,X4,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGGC,---CG-GGG--GGGGGG---GGGG---GKGGG----GGGGGGG--GGGGC,,
@@ -370,10 +326,8 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testLengthTooShort(self):
         counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
-                    ("TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
-                    "--------GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT")),
-                   1)]
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"), ("TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
+                    "--------GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT"), ''), 1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
 1,1,,,,CGGGGGGGGGGGGGGGKGGGGGGGGGGGGGC,,length,
@@ -590,7 +544,8 @@ class MergeReadsTest(unittest.TestCase):
         expected_merged_reads = [("A:B:C",
                                   ("X:Y", "AAACCCTTTGGGAAA", "BBBBBBBBBBBBBBB"),
                                   ("Q:R", "GGGTTTCCCAAA", "BBBBBBBBBBBB"),
-                                  "AAACCCTTTGGGAAACCC")]
+                                  "AAACCCTTTGGGAAACCC",
+                                  "BBBBBBBBBBBBBBBBBB")]
 
         merged_reads = list(merge_reads(reads))
 
@@ -606,11 +561,13 @@ class MergeReadsTest(unittest.TestCase):
         expected_merged_reads = [("A:B:C",
                                   ("X:Y", "AAACCCTTTGGGAAA", "BBBBBBBBBBBBBBB"),
                                   ("Q:R", "GGGTTTCCCAAA", "BBBBBBBBBBBB"),
-                                  "AAACCCTTTGGGAAACCC"),
+                                  "AAACCCTTTGGGAAACCC",
+                                  "BBBBBBBBBBBBBBBBBB"),
                                  ("A:B:E",
                                   ("X:Y", "TTTCCCTTTGGGAAA", "BBBBBBBBBBBBBBB"),
                                   ("Q:R", "GGGTTTCCCAAA", "BBBBBBBBBBBB"),
-                                  "TTTCCCTTTGGGAAACCC")]
+                                  "TTTCCCTTTGGGAAACCC",
+                                  "BBBBBBBBBBBBBBBBBB")]
 
         merged_reads = list(merge_reads(reads))
 
@@ -623,7 +580,8 @@ class MergeReadsTest(unittest.TestCase):
         expected_merged_reads = [("A:B:C",
                                   ("X:Y", "AAACCCTTTGGGAAA", "BBBBBBBBBBBBBBB"),
                                   ("Q:R", "GGGTTTCACAAA", "@@@@@@@Y@@@@"),
-                                  "AAACCCTTTGTGAAACCC")]
+                                  "AAACCCTTTGTGAAACCC",
+                                  "BBBBBBBBBBYBBBB@@@")]
 
         merged_reads = list(merge_reads(reads))
 
@@ -636,7 +594,8 @@ class MergeReadsTest(unittest.TestCase):
         expected_merged_reads = [("A:B:C",
                                   ("X:Y", "AAACCCTTTGGGAAA", "B!BBBBBBBBBBBBB"),
                                   ("Q:R", "GGGTTTCCCAAA", "BBBBBBBBBBBB"),
-                                  "ANACCCTTTGGGAAACCC")]
+                                  "ANACCCTTTGGGAAACCC",
+                                  "B!BBBBBBBBBBBBBBBB")]
 
         merged_reads = list(merge_reads(reads))
 
@@ -649,6 +608,7 @@ class MergeReadsTest(unittest.TestCase):
         expected_merged_reads = [("A:B:C",
                                   ("X:Y", "AAACCCTTTGGGAAA", "BBBBBBBBBBBBBBB"),
                                   ("Q:R", "ACACACACACAC", "BBBBBBBBBBBB"),
+                                  None,
                                   None)]
 
         merged_reads = list(merge_reads(reads))
@@ -663,6 +623,7 @@ class MergeReadsTest(unittest.TestCase):
         expected_merged_reads = [("A:B:C",
                                   ("Q:R", "TTTGGGAAACCC", "BBBBBBBBBBBB"),
                                   ("X:Y", "TTTCCCAAAGGGTTT", "BBBBBBBBBBBBBBB"),
+                                  None,
                                   None)]
 
         merged_reads = list(merge_reads(reads))
@@ -676,13 +637,15 @@ class TrimReadsTest(unittest.TestCase):
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  "TGTACAAGACC")]
+                  "TGTACAAGACC",
+                  "BBBBBBBBBBB")]
         expected_reads = [
             ("A:B:C",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
              ('TGTACAAGACCCAACAAC',
-              'TGTACAAGACC-------'))]
+              'TGTACAAGACC-------',
+              'BBBBBBBBBBB       '))]
 
         trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
@@ -693,13 +656,15 @@ class TrimReadsTest(unittest.TestCase):
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  "AAGTGTACAAGACC")]
+                  "AAGTGTACAAGACC",
+                  "BBBBBBBBBBBBBB")]
         expected_reads = [
             ("A:B:C",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
              ('TGTACAAGACCCAACAAC',
-              'TGTACAAGACC-------'))]
+              'TGTACAAGACC-------',
+              'BBBBBBBBBBB       '))]
 
         trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
@@ -710,22 +675,26 @@ class TrimReadsTest(unittest.TestCase):
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  "TGTACAAGACC"),
+                  "TGTACAAGACC",
+                  "BBBBBBBBBBB"),
                  ("A:B:E",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  "AAGTGTACAAGACC")]
+                  "AAGTGTACAAGACC",
+                  "BBBBBBBBBBBBBB")]
         expected_reads = [
             ("A:B:C",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
              ('TGTACAAGACCCAACAAC',
-              'TGTACAAGACC-------')),
+              'TGTACAAGACC-------',
+              'BBBBBBBBBBB       ')),
             ("A:B:E",
              ("name1", "bases1", "qual1"),
              ("name2", "bases2", "qual2"),
              ('TGTACAAGACCCAACAAC',
-              'TGTACAAGACC-------'))]
+              'TGTACAAGACC-------',
+              'BBBBBBBBBBB       '))]
 
         trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
@@ -736,11 +705,12 @@ class TrimReadsTest(unittest.TestCase):
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  "ATATATATATAT")]
+                  "ATATATATATAT",
+                  "BBBBBBBBBBBB")]
         expected_reads = [("A:B:C",
                            ("name1", "bases1", "qual1"),
                            ("name2", "bases2", "qual2"),
-                           (None, None))]
+                           (None, None, None))]
 
         trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
@@ -751,11 +721,12 @@ class TrimReadsTest(unittest.TestCase):
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
+                  None,
                   None)]
         expected_reads = [("A:B:C",
                            ("name1", "bases1", "qual1"),
                            ("name2", "bases2", "qual2"),
-                           (None, None))]
+                           (None, None, None))]
 
         trimmed_reads = list(trim_reads(reads, v3loop_ref))
 
@@ -768,7 +739,7 @@ class WriteUnmappedTest(unittest.TestCase):
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  (None, None))]
+                  (None, None, None))]
         expected_reads = []
         expected_unmapped1 = """\
 @A:B:C name1
@@ -795,8 +766,8 @@ qual2
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  ("ref", "seq"))]
-        expected_reads = [("ref", "seq")]
+                  ("ref", "seq", "qual"))]
+        expected_reads = [("ref", "seq", "qual")]
         expected_unmapped1 = ""
         expected_unmapped2 = ""
         unmapped1 = StringIO()
@@ -813,12 +784,12 @@ qual2
         reads = [("A:B:C",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  ("ref", "seq")),
+                  ("ref", "seq", "qual")),
                  ("A:B:D",
                   ("name1", "bases1", "qual1"),
                   ("name2", "bases2", "qual2"),
-                  (None, None))]
-        expected_reads = [("ref", "seq")]
+                  (None, None, None))]
+        expected_reads = [("ref", "seq", "qual")]
         unmapped1 = None
         unmapped2 = None
 
@@ -829,27 +800,56 @@ qual2
 
 class CountReadsTest(unittest.TestCase):
     def test_counts(self):
-        reads = [("TGTACAAGACACACA", "TGTACAAGA------"),
-                 ("TGTACAAGACACACA", "AGAACAAGA------"),
-                 ("TGTACAAGACACACA", "TGTACAAGA------")]
-        expected_counts = [(("TGTACAAGACACACA", "AGAACAAGA------"), 1),
-                           (("TGTACAAGACACACA", "TGTACAAGA------"), 2)]
+        reads = [("TGTACAAGACACACA", "TGTACAAGA------", "BBBBBBBBBBBBBBB"),
+                 ("TGTACAAGACACACA", "AGAACAAGA------", "BBBBBBBBBBBBBBB"),
+                 ("TGTACAAGACACACA", "TGTACAAGA------", "BBBBBBBBBBBBBBB")]
+        expected_counts = [(("TGTACAAGACACACA",
+                             "AGAACAAGA------",
+                             ()), 1),
+                           (("TGTACAAGACACACA",
+                             "TGTACAAGA------",
+                             ()), 2)]
 
         counts = list(count_reads(reads, file_prefix=TEMP_PREFIX))
 
         self.assertEqual(expected_counts, counts)
 
     def test_without_temp_files(self):
-        reads = [("TGTACAAGACACACA", "TGTACAAGA------"),
-                 ("TGTACAAGACACACA", "AGAACAAGA------"),
-                 ("TGTACAAGACACACA", "TGTACAAGA------")]
-        expected_counts = [(("TGTACAAGACACACA", "AGAACAAGA------"), 1),
-                           (("TGTACAAGACACACA", "TGTACAAGA------"), 2)]
+        reads = [("TGTACAAGACACACA", "TGTACAAGA------", "BBBBBBBBBBBBBBB"),
+                 ("TGTACAAGACACACA", "AGAACAAGA------", "BBBBBBBBBBBBBBB"),
+                 ("TGTACAAGACACACA", "TGTACAAGA------", "BBBBBBBBBBBBBBB")]
+        expected_counts = [(("TGTACAAGACACACA",
+                             "AGAACAAGA------",
+                             ()), 1),
+                           (("TGTACAAGACACACA",
+                             "TGTACAAGA------",
+                             ()), 2)]
 
         counts = sorted(count_reads(reads, file_prefix=None))
 
         self.assertEqual(expected_counts, counts)
 
+
+    def test_insertion_support_counts(self):
+        """ One low-quality copy does not erase high-quality copies.
+
+        Two identical alignments carry the same GGG insertion, but only
+        one copy reaches Q30 on every inserted base. Total count stays 2
+        while qualified insertion support is 1.
+        """
+        reads = [("TGTACA---AGACCCAAC",
+                  "TGTACAGGGAGACCCAAC",
+                  "BBBBBBBBBBBBBBBBBB"),
+                 ("TGTACA---AGACCCAAC",
+                  "TGTACAGGGAGACCCAAC",
+                  "BBBBBB>>>BBBBBBBBB")]
+        expected_counts = [(("TGTACA---AGACCCAAC",
+                             "TGTACAGGGAGACCCAAC",
+                             ((6, "GGG", 1),)), 2)]
+
+        counts = list(count_reads(reads, file_prefix=None))
+
+        self.assertEqual(expected_counts, counts)
 
 class TopReadsTest(unittest.TestCase):
     def test_top(self):
@@ -882,14 +882,14 @@ class TopReadsTest(unittest.TestCase):
 class WriteAlignedTest(unittest.TestCase):
     def test_counts(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2),
-                  (("TGTACAAGACCCAAC", "AGAACAAGACCCAAC"), 1)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2),
+                  (("TGTACAAGACCCAAC", "AGAACAAGACCCAAC", ()), 1)]
         seed = "AAAAATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,5,TGTACAAGACCCAAC
-HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,5,TGTACAAGACCCAAC,
+HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC,
 """
 
         counts2 = list(write_aligned_reads(counts, aligned_csv, seed, v3loop_ref))
@@ -899,12 +899,12 @@ HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC
 
     def test_seed_offset(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2)]
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -913,12 +913,12 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC
 
     def test_seq_offset(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "---ACAAGACCCAAC"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "---ACAAGACCCAAC", ()), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -927,12 +927,12 @@ HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC
 
     def test_short_seq(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCC---"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCC---", ()), 2)]
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -941,12 +941,12 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC
 
     def test_seq_deletion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGT---AGACCCAAC"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGT---AGACCCAAC", ()), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -955,12 +955,14 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC
 
     def test_ref_deletion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACA---AGACCCAAC", "TGTACAGGGAGACCCAAC"), 2)]
+        counts = [(("TGTACA---AGACCCAAC",
+                     "TGTACAGGGAGACCCAAC",
+                     ((6, "GGG", 2),)), 2)]
         hiv_seed = "ATGTACAGGGAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,10:GGG:2
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -969,13 +971,13 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
 
     def test_ref_and_read_deletion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2)]
         # deleted codon    vvv should be reported as dashes
         hiv_seed = "ATGTACAGGGAGACCCAACAACAATAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -984,13 +986,74 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC
 
     def test_ref_insertion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2)]
         # inserted codon   ^^^ shouldn't be included in aligned seq.
         hiv_seed = "ATGTACACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACACCCAAC
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACACCCAAC,
+"""
+
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
+
+        self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
+
+    def test_mixed_quality_insertion_support(self):
+        """ Identical reads of mixed quality keep full count, split support.
+
+        Two pairs merge to the same V3LOOP alignment, but only the first
+        copy reaches Q30 on every inserted base. The group count stays 2
+        while qualified insertion support is 1.
+        """
+        fastq1 = StringIO("""\
+@p1 pair1
+AAACCCTTTGGGAAA
++
+BBBBBBBBBBBBBBB
+@p2 pair1
+AAACCCTTTGGGAAA
++
+BBBBBB>>>BBBBBB
+""")
+        fastq2 = StringIO("""\
+@p1 pair2
+GGGTTTCCCAAA
++
+BBBBBBBBBBBB
+@p2 pair2
+GGGTTTCCCAAA
++
+BBBBBBBBB>>>
+""")
+        v3loop_ref = 'AAACCCTGGGAAACCC'
+        hiv_seed = 'AAAA' + v3loop_ref + 'AAAA'
+        aligned_csv = DummyFile()
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,4,AAACCCTGGGAAACCC,11:TT:1
+"""
+
+        reader = FastqReader(fastq1, fastq2)
+        merged_reads = merge_reads(reader)
+        trimmed_reads = trim_reads(merged_reads, v3loop_ref)
+        mapped_reads = write_unmapped_reads(trimmed_reads, None, None)
+        read_counts = count_reads(mapped_reads, None)
+        list(write_aligned_reads(read_counts, aligned_csv, hiv_seed, v3loop_ref))
+
+        self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
+
+    def test_read_insertion(self):
+        v3loop_ref = 'TGTACAAGACCCAACAAC'
+        # gaps in the V3 reference: GGG inserted in the read relative to V3LOOP.
+        counts = [(("TGTACA---AGACCCAAC",
+                     "TGTACAGGGAGACCCAAC",
+                     ((6, "GGG", 2),)), 2)]
+        hiv_seed = "ATGTACAAGACCCAACAAC"
+        aligned_csv = DummyFile()
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,7:GGG:2
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))

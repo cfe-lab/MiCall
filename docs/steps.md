@@ -141,6 +141,20 @@ Individual files are described after the list of steps.
   * offset - offset of the read within the consensus, or number of dashes to
     add at the start
   * seq - the mapped sequence of the read, aligned to the consensus
+  * inserts - (g2p_aligned.csv only) insertions in the read relative to
+    V3LOOP, preserved for insertions.csv reporting. Semicolon-separated
+    `pos:seq:support` groups, where pos is the seed coordinate of the
+    first consensus nucleotide after the insertion (the 1-based seed/query
+    nucleotide immediately before the insertion, same convention as
+    conseq_ins.csv pos; equivalently the zero-based index of the
+    following nucleotide), seq is the inserted nucleotide sequence, and
+    support counts the grouped copies whose every inserted base reaches
+    Q30. Empty when the read group has no Q30-qualified insertion.
+    Insertions without support information are ignored, so insertion
+    evidence of unknown quality can never bypass Q30. aln2counts snaps
+    the pos of codon-multiple insertions to the codon boundary with the
+    same rule as codon deletions; 1- and 2-base insertions keep their
+    nucleotide anchor.
 * amino.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
