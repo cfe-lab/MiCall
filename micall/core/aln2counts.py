@@ -147,25 +147,28 @@ def parse_g2p_inserts(inserts_str):
     """ Parse the inserts column of g2p_aligned.csv.
 
     fastq_g2p preserves read insertions relative to V3LOOP as
-    ``pos:seq:quals`` groups separated by ``;``, where pos is the seed
-    coordinate that follows the insertion and quals is the comma-separated
-    minimum Phred quality of each inserted base. Older rows without quals
-    yield quals of None for backward compatibility.
+    ``pos:seq:support`` groups separated by ``;``, where pos is the seed
+    coordinate that follows the insertion and support counts the grouped
+    copies whose every inserted base reaches Q30. Entries without support
+    information are ignored, so insertion evidence of unknown quality can
+    never bypass the Q30 rule.
 
     :param inserts_str: the raw column value, None or '' if the read has
         no insertions
-    :return: a list of (pos, insert_seq, quals) tuples, where quals is a
-        list of ints or None
+    :return: a list of (pos, insert_seq, support) tuples
     """
     if not inserts_str:
         return []
     inserts = []
     for item in inserts_str.split(';'):
         parts = item.split(':')
-        pos, insert_seq = int(parts[0]), parts[1]
-        quals = ([int(q) for q in parts[2].split(',')]
-                 if len(parts) > 2 else None)
-        inserts.append((pos, insert_seq, quals))
+        if len(parts) != 3:
+            continue
+        try:
+            pos, support = int(parts[0]), int(parts[2])
+        except ValueError:
+            continue
+        inserts.append((pos, parts[1], support))
     return inserts
 
 
@@ -518,20 +521,15 @@ class SequenceReport(object):
             # record this read to calculate insertions later
             self.insert_writer.add_nuc_read('-'*offset + nuc_seq, count)
 
-            # record G2P insertion evidence, already grouped with its count
-            for ins_pos, ins_seq, ins_quals in parse_g2p_inserts(
+            # record G2P insertion evidence with its qualified support
+            for ins_pos, ins_seq, ins_support in parse_g2p_inserts(
                     row.get('inserts')):
-                if (ins_quals is not None and
-                        min(ins_quals) < MIN_INSERTION_QUALITY):
-                    # Same Q30 rule as read_insertions: every inserted
-                    # base must reach Q30.
-                    continue
                 ref_name = row['refname']
                 self.insert_writer.add_insertion(ref_name,
                                                 ins_pos,
                                                 ins_seq,
-                                                count)
-                self.conseq_insertion_counts[ref_name][ins_pos] += count
+                                                ins_support)
+                self.conseq_insertion_counts[ref_name][ins_pos] += ins_support
 
             # cycle through reading frames
             for reading_frame, frame_seed_aminos in self.seed_aminos.items():
@@ -1661,19 +1659,14 @@ class SequenceReport(object):
                 row['seq'] = seq
             if row.get('inserts'):
                 snapped = []
-                for pos, insert_seq, quals in parse_g2p_inserts(row['inserts']):
+                for pos, insert_seq, support in parse_g2p_inserts(
+                        row['inserts']):
                     # Like group_deletions, only codon-multiple insertions
                     # follow the codon-boundary rule. Frameshifting
                     # insertions keep their nucleotide anchor.
                     if len(insert_seq) % 3 == 0:
                         pos = align_insertion_position(pos, reading_frames)
-                    if quals is None:
-                        snapped.append('{}:{}'.format(pos, insert_seq))
-                    else:
-                        snapped.append('{}:{}:{}'.format(
-                            pos,
-                            insert_seq,
-                            ','.join(map(str, quals))))
+                    snapped.append('{}:{}:{}'.format(pos, insert_seq, support))
                 row['inserts'] = ';'.join(snapped)
             yield row
 
