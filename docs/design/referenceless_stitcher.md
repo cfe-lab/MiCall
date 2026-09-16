@@ -94,7 +94,12 @@ two contigs that should remain separate are fused
 ```
 
 That can destroy or obscure biological structure. The fused sequence
-asserts a junction the sample did not support.
+asserts that both sides came from the same biological molecule — a
+claim that local evidence alone cannot always establish. Two
+distinct molecules can share a long, highly similar region, so a
+proposed junction may be locally supported by sample reads yet still
+join sequences that were never adjacent in any single molecule.
+Local evidence is necessary but not sufficient for phasing.
 
 Therefore the algorithm is intentionally conservative. Several
 safeguards below — the minimum-agreement score, the independent
