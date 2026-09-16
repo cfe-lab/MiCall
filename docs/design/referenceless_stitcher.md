@@ -236,10 +236,15 @@ From the alignment the stitcher derives two things:
   (`merge_by_concordance`; see section 11).
 * an **overlap score** (`calculate_overlap_score` with
   `score_alignment`): a z-like rarity score over a four-letter
-  alphabet, generalized for correlated genomic sequence with an
-  exponent (`alpha = -0.60`, i.e. standard deviation growing as
-  `L^0.8` rather than `sqrt(L)`). Higher means more unexpected under
-  the null model and therefore stronger evidence. The scored length
+  alphabet. The centered match excess `(4*M - L)` is scaled by
+  `L^-0.60` — that is, the implementation divides by `L^0.60`
+  rather than by the independent-match `sqrt(L)`, penalizing long
+  overlaps more strongly. (The function's own comments motivate
+  this with a correlated-match model whose standard deviation grows
+  as `L^a` with an empirical `a ≈ 0.8`, but the constant the code
+  actually uses is `0.60`; this document describes the computation,
+  not the comment.) Higher means more unexpected under the null
+  model and therefore stronger evidence. The scored length
   includes a small bonus (`+1` for ordinary overlaps, `+2` for
   covering overlaps) expressing that the overlap is flanked by
   non-matching context.
