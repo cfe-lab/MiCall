@@ -34,7 +34,9 @@ reference.
 That gives it valuable information unavailable from the contigs
 alone. In particular, it can reason about ordering and adjacency
 using the reference coordinate system and can often produce
-substantially more complete assemblies.
+substantially more complete assemblies. Its additional inputs are
+the reference sequence and, optionally, remap read counts — not the
+raw-read junction validation used on the referenceless path.
 
 This is useful and intentional.
 
@@ -90,22 +92,31 @@ referenceless:
 
 The referencefull result can be more complete. The referenceless
 result has stronger reference-independence semantics. These are
-complementary products.
+complementary algorithms — different assembly interpretations of
+the same contigs.
 
-Conceptually:
+Conceptually — not the literal pipeline dataflow — MiCall has two
+refinement semantics:
 
 ```text
 de novo contigs (e.g. IVA, Haploflow)
         |
         +-- referencefull refinement -------> more complete,
-        |    (reference + contigs + reads)     reference-guided assembly
+        |    (reference + contigs               reference-guided assembly
+        |     [+ optional remap counts])
         |
         +-- referenceless refinement --------> improved assembly with
              (contigs + reads,                 reference-independent
               no reference structure)         structure preserved
 ```
 
-See the detailed designs for the algorithm behind each product:
+In the current denovo pipeline (`micall/drivers/sample.py`), the
+referencefull stitcher in fact runs on the referenceless stitcher's
+output, so the two branches above describe the refinement semantics
+rather than two independent pipeline paths.
+
+See the detailed designs for the algorithm behind each
+interpretation:
 
 * [Referencefull stitcher](referencefull_stitcher.md)
 * [Referenceless stitcher](referenceless_stitcher.md)
