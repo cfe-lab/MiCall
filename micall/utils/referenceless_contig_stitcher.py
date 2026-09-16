@@ -1,3 +1,16 @@
+"""Reference-independent refinement of de novo assemblies.
+
+Joins contigs using only sample-intrinsic evidence (contig overlaps,
+shared k-mers, raw-read support). Never consults a reference sequence:
+see the design contract in
+``docs/specs/referenceless-stitcher-read-information-handling.md`` (section 0).
+Intentionally conservative: a missed join keeps both pieces visible,
+while a wrong join destroys structural information.
+
+Contrast with ``referencefull_contig_stitcher``, which may use
+reference coordinates and ordering.
+"""
+
 import itertools
 import logging
 from collections import Counter
