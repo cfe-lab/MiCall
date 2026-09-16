@@ -805,10 +805,10 @@ class CountReadsTest(unittest.TestCase):
                  ("TGTACAAGACACACA", "TGTACAAGA------", "BBBBBBBBBBBBBBB")]
         expected_counts = [(("TGTACAAGACACACA",
                              "AGAACAAGA------",
-                             "BBBBBBBBBBBBBBB"), 1),
+                             ()), 1),
                            (("TGTACAAGACACACA",
                              "TGTACAAGA------",
-                             "BBBBBBBBBBBBBBB"), 2)]
+                             ()), 2)]
 
         counts = list(count_reads(reads, file_prefix=TEMP_PREFIX))
 
@@ -820,15 +820,36 @@ class CountReadsTest(unittest.TestCase):
                  ("TGTACAAGACACACA", "TGTACAAGA------", "BBBBBBBBBBBBBBB")]
         expected_counts = [(("TGTACAAGACACACA",
                              "AGAACAAGA------",
-                             "BBBBBBBBBBBBBBB"), 1),
+                             ()), 1),
                            (("TGTACAAGACACACA",
                              "TGTACAAGA------",
-                             "BBBBBBBBBBBBBBB"), 2)]
+                             ()), 2)]
 
         counts = sorted(count_reads(reads, file_prefix=None))
 
         self.assertEqual(expected_counts, counts)
 
+
+    def test_insertion_support_counts(self):
+        """ One low-quality copy does not erase high-quality copies.
+
+        Two identical alignments carry the same GGG insertion, but only
+        one copy reaches Q30 on every inserted base. Total count stays 2
+        while qualified insertion support is 1.
+        """
+        reads = [("TGTACA---AGACCCAAC",
+                  "TGTACAGGGAGACCCAAC",
+                  "BBBBBBBBBBBBBBBBBB"),
+                 ("TGTACA---AGACCCAAC",
+                  "TGTACAGGGAGACCCAAC",
+                  "BBBBBB>>>BBBBBBBBB")]
+        expected_counts = [(("TGTACA---AGACCCAAC",
+                             "TGTACAGGGAGACCCAAC",
+                             ((6, "GGG", 1),)), 2)]
+
+        counts = list(count_reads(reads, file_prefix=None))
+
+        self.assertEqual(expected_counts, counts)
 
 class TopReadsTest(unittest.TestCase):
     def test_top(self):
@@ -861,8 +882,8 @@ class TopReadsTest(unittest.TestCase):
 class WriteAlignedTest(unittest.TestCase):
     def test_counts(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 2),
-                  (("TGTACAAGACCCAAC", "AGAACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 1)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2),
+                  (("TGTACAAGACCCAAC", "AGAACAAGACCCAAC", ()), 1)]
         seed = "AAAAATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
@@ -878,7 +899,7 @@ HIV1-CON-XX-Consensus-seed,15,1,1,5,AGAACAAGACCCAAC,
 
     def test_seed_offset(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2)]
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
@@ -892,7 +913,7 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,
 
     def test_seq_offset(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "---ACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "---ACAAGACCCAAC", ()), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
@@ -906,7 +927,7 @@ HIV1-CON-XX-Consensus-seed,15,0,2,4,ACAAGACCCAAC,
 
     def test_short_seq(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCC---", "BBBBBBBBBBBBBBB"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCC---", ()), 2)]
         hiv_seed = "ATGTACAAGACACAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
@@ -920,7 +941,7 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCC,
 
     def test_seq_deletion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGT---AGACCCAAC", "BBBBBBBBBBBBBBB"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGT---AGACCCAAC", ()), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
@@ -936,12 +957,12 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGT---AGACCCAAC,
         v3loop_ref = 'TGTACAAGACCCAACAAC'
         counts = [(("TGTACA---AGACCCAAC",
                      "TGTACAGGGAGACCCAAC",
-                     "BBBBBBBBBBBBBBBBBB"), 2)]
+                     ((6, "GGG", 2),)), 2)]
         hiv_seed = "ATGTACAGGGAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq,inserts
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,"10:GGG:33,33,33"
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,10:GGG:2
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
@@ -950,7 +971,7 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,"10:GGG:33,33,33"
 
     def test_ref_and_read_deletion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2)]
         # deleted codon    vvv should be reported as dashes
         hiv_seed = "ATGTACAGGGAGACCCAACAACAATAC"
         aligned_csv = DummyFile()
@@ -963,27 +984,9 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACA---AGACCCAAC,
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
-    def test_read_insertion_low_quality(self):
-        # Insertion quality below Q30 must survive conversion so that
-        # aln2counts can apply the Q30 insertion rule downstream.
-        v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACA---AGACCCAAC",
-                     "TGTACAGGGAGACCCAAC",
-                     "BBBBBB>>>BBBBBBBBB"), 2)]
-        hiv_seed = "ATGTACAAGACCCAACAAC"
-        aligned_csv = DummyFile()
-        expected_aligned_csv = """\
-refname,qcut,rank,count,offset,seq,inserts
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,"7:GGG:29,29,29"
-"""
-
-        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
-
-        self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
-
     def test_ref_insertion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
-        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", "BBBBBBBBBBBBBBB"), 2)]
+        counts = [(("TGTACAAGACCCAAC", "TGTACAAGACCCAAC", ()), 2)]
         # inserted codon   ^^^ shouldn't be included in aligned seq.
         hiv_seed = "ATGTACACCCAACAAC"
         aligned_csv = DummyFile()
@@ -996,17 +999,61 @@ HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACACCCAAC,
 
         self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
 
+    def test_mixed_quality_insertion_support(self):
+        """ Identical reads of mixed quality keep full count, split support.
+
+        Two pairs merge to the same V3LOOP alignment, but only the first
+        copy reaches Q30 on every inserted base. The group count stays 2
+        while qualified insertion support is 1.
+        """
+        fastq1 = StringIO("""\
+@p1 pair1
+AAACCCTTTGGGAAA
++
+BBBBBBBBBBBBBBB
+@p2 pair1
+AAACCCTTTGGGAAA
++
+BBBBBB>>>BBBBBB
+""")
+        fastq2 = StringIO("""\
+@p1 pair2
+GGGTTTCCCAAA
++
+BBBBBBBBBBBB
+@p2 pair2
+GGGTTTCCCAAA
++
+BBBBBBBBB>>>
+""")
+        v3loop_ref = 'AAACCCTGGGAAACCC'
+        hiv_seed = 'AAAA' + v3loop_ref + 'AAAA'
+        aligned_csv = DummyFile()
+        expected_aligned_csv = """\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,2,4,AAACCCTGGGAAACCC,11:TT:1
+"""
+
+        reader = FastqReader(fastq1, fastq2)
+        merged_reads = merge_reads(reader)
+        trimmed_reads = trim_reads(merged_reads, v3loop_ref)
+        mapped_reads = write_unmapped_reads(trimmed_reads, None, None)
+        read_counts = count_reads(mapped_reads, None)
+        list(write_aligned_reads(read_counts, aligned_csv, hiv_seed, v3loop_ref))
+
+        self.assertEqual(expected_aligned_csv, aligned_csv.getvalue())
+
     def test_read_insertion(self):
         v3loop_ref = 'TGTACAAGACCCAACAAC'
         # gaps in the V3 reference: GGG inserted in the read relative to V3LOOP.
         counts = [(("TGTACA---AGACCCAAC",
                      "TGTACAGGGAGACCCAAC",
-                     "BBBBBBBBBBBBBBBBBB"), 2)]
+                     ((6, "GGG", 2),)), 2)]
         hiv_seed = "ATGTACAAGACCCAACAAC"
         aligned_csv = DummyFile()
         expected_aligned_csv = """\
 refname,qcut,rank,count,offset,seq,inserts
-HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,"7:GGG:33,33,33"
+HIV1-CON-XX-Consensus-seed,15,0,2,1,TGTACAAGACCCAAC,7:GGG:2
 """
 
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
