@@ -1800,7 +1800,7 @@ R1-seed,0.100,R1,3,3,3,aac
         """ Insertions preserved from G2P alignments reach insertions.csv. """
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,3:AAC
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC:10
 """)
 
         expected_insertions = ("""\
@@ -1828,7 +1828,7 @@ R1-seed,0.100,R1,3,3,3,AAC
         """ A repeated G2P alignment contributes its actual support count. """
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,17,0,AAATTTAGG,3:AAC
+R1-seed,15,0,17,0,AAATTTAGG,3:AAC:17
 R1-seed,15,1,83,0,AAATTTAGG,
 """)
 
@@ -1858,7 +1858,7 @@ R1-seed,0.100,R1,3,3,3,aac
         self.report.conseq_mixture_cutoffs.append(0.01)
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,1,0,AAATTTAGG,3:AAC
+R1-seed,15,0,1,0,AAATTTAGG,3:AAC:1
 R1-seed,15,1,199,0,AAATTTAGG,
 """)
 
@@ -1886,7 +1886,7 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
         self.report.conseq_mixture_cutoffs.append(0.01)
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,1,0,AAATTTAGG,3:AAC
+R1-seed,15,0,1,0,AAATTTAGG,3:AAC:1
 R1-seed,15,1,99,0,AAATTTAGG,
 """)
 
@@ -1914,7 +1914,7 @@ R1-seed,0.010,R1,3,3,3,aac
         """ 10 insertion reads out of 100 survive the 10% cutoff. """
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,3:AAC
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC:10
 R1-seed,15,1,90,0,AAATTTAGG,
 """)
 
@@ -1949,7 +1949,7 @@ R1-seed,0.100,R1,3,3,3,aac
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,4:AAC
+R1-seed,15,0,10,0,AAATTTAGG,4:AAC:10
 """)
 
         expected_insertions = ("""\
@@ -1984,7 +1984,7 @@ R1-seed,0.100,R1,3,3,3,AAC
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,4:A
+R1-seed,15,0,10,0,AAATTTAGG,4:A:10
 """)
 
         expected_insertions = ("""\
@@ -2013,7 +2013,7 @@ R1-seed,0.100,R1,4,4,4,A
         self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,4:AA
+R1-seed,15,0,10,0,AAATTTAGG,4:AA:10
 """)
 
         expected_insertions = ("""\
@@ -2051,8 +2051,8 @@ R1-seed,0.100,R1,4,4,4,AA
         v3loop_ref = extract_target(hiv_seed, defaults.getReference('V3LOOP'))
         ins_ref = v3loop_ref[:28] + '---' + v3loop_ref[28:]
         ins_seq = v3loop_ref[:28] + 'TAA' + v3loop_ref[28:]
-        counts = [((ins_ref, ins_seq, 'A' * len(ins_seq)), 4),
-                  ((v3loop_ref, v3loop_ref, 'A' * len(v3loop_ref)), 19)]
+        counts = [((ins_ref, ins_seq, ((28, 'TAA', 4),)), 4),
+                  ((v3loop_ref, v3loop_ref, ()), 19)]
         aligned_csv = StringIO()
         list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
 
@@ -2088,11 +2088,11 @@ HIV1-CON-XX-Consensus-seed,0.100,V3LOOP,27,7136,882,taa
         self.assertEqual('23', v3loop_9[0]['coverage'])
         self.assertEqual('4', v3loop_9[0]['ins'])
 
-    def testG2pInsertionLowQualityIgnored(self):
-        """ G2P insertion with minimum quality Q29 is not reported. """
+    def testG2pInsertionUnknownQualityIgnored(self):
+        """ G2P insertion without support information is not reported. """
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,"3:AAC:29,29,29"
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC
 """)
 
         expected_insertions = ("""\
@@ -2116,11 +2116,16 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
 
-    def testG2pInsertionBoundaryQ30Retained(self):
-        """ G2P insertion with minimum quality exactly Q30 is reported. """
+    def testG2pInsertionMixedSupportCountsRespected(self):
+        """ One low-quality copy does not erase high-quality copies.
+
+        Of 100 identical reads, 99 provide Q30 insertion support while one
+        does not. The insertion is reported with support 99, and the
+        no-insertion count is 1.
+        """
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,"3:AAC:30,30,30"
+R1-seed,15,0,100,0,AAATTTAGG,3:AAC:99
 """)
 
         expected_insertions = ("""\
@@ -2130,7 +2135,7 @@ R1-seed,0.100,R1,3,3,3,AAC
 """)
 
         self.report.read(csv.DictReader(g2p_csv))
-        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.assertEqual(99, self.report.conseq_insertion_counts['R1-seed'][3])
         self.report.write_amino_header(self.report_file)
         self.report.write_nuc_header(StringIO())
         self.report.write_nuc_counts()  # calculates ins counts
@@ -2144,11 +2149,16 @@ R1-seed,0.100,R1,3,3,3,AAC
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
 
-    def testG2pInsertionMixedQualityIgnored(self):
-        """ G2P insertion with one Q29 base is rejected entirely. """
+    def testG2pInsertionSupportBelowCutoffIgnored(self):
+        """ Qualified support below the cutoff is not reported.
+
+        9 of 100 reads provide Q30 insertion support. That is below the
+        10% cutoff, so filtering the low-quality copies moves the
+        insertion across the reporting boundary.
+        """
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-R1-seed,15,0,10,0,AAATTTAGG,"3:AAC:32,29,32"
+R1-seed,15,0,100,0,AAATTTAGG,3:AAC:9
 """)
 
         expected_insertions = ("""\
@@ -2156,7 +2166,7 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 """)
 
         self.report.read(csv.DictReader(g2p_csv))
-        self.assertEqual({}, dict(self.report.conseq_insertion_counts))
+        self.assertEqual(9, self.report.conseq_insertion_counts['R1-seed'][3])
         self.report.write_amino_header(self.report_file)
         self.report.write_nuc_header(StringIO())
         self.report.write_nuc_counts()  # calculates ins counts
@@ -2219,11 +2229,11 @@ seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
 """)
         bowtie_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-V3-seed,15,0,10,0,AAATTTCCC,3:AAC
+V3-seed,15,0,10,0,AAATTTCCC,3:AAC:10
 """)
         g2p_csv = StringIO("""\
 refname,qcut,rank,count,offset,seq,inserts
-HIV1-CON-XX-Consensus-seed,15,0,10,0,AAATTTCCC,3:AAC
+HIV1-CON-XX-Consensus-seed,15,0,10,0,AAATTTCCC,3:AAC:10
 """)
         # Normal remap insertion evidence under the real G2P seed name:
         # without isolation it would leak into the V3LOOP result.
