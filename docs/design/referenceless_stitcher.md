@@ -146,7 +146,7 @@ relatedness:
   `MIN_MATCHES = 40` (section 6).
 * **Shared k-mers** — an independent exact-match requirement
   (`KMER_SIZE = 30`) that rejects statistically plausible overlaps
-  with no shared exact sequence (section 7).
+  with no shared exact 30-mer (section 7).
 * **Containment handling** — a separate perfect-match rule when one
   contig is fully covered by another (section 8).
 * **Raw-read support** — an independent check that the proposed
