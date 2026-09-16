@@ -12,6 +12,7 @@ import re
 # noinspection PyUnresolvedReferences
 from gotoh import align_it, align_it_aa
 
+from micall.core.aln2counts import MIN_INSERTION_QUALITY
 from micall.core.consensus_builder import ConsensusBuilder
 from micall.core.sam2aln import merge_pairs, SAM2ALN_Q_CUTOFFS
 from micall.utils.big_counter import BigCounter
@@ -143,7 +144,7 @@ def write_rows(pssm,
     g2p_writer.writeheader()
     top_reads, skip_count = get_top_counts(read_counts, min_count)
     counts = Counter()
-    for (ref, s, _aligned_qual), count in top_reads:
+    for (ref, s, _insert_support), count in top_reads:
         seq = s.replace('-', '')
 
         row = _build_row(seq, count, counts, pssm)
@@ -459,31 +460,39 @@ def count_reads(reads, file_prefix):
     :param reads: a generator with items:
     (aligned_ref, aligned_seq, aligned_qual)
     :param file_prefix: used to store temp files for counting sequences
-    :return: generator of ((aligned_ref, aligned_seq, min_qual), count)
-    where min_qual carries the minimum mate quality seen at each aligned
-    position, so insertion quality survives grouping. Unique V3LOOP
-    alignments are few enough to track minima in memory.
+    :return: generator of ((aligned_ref, aligned_seq, inserts), count)
+    where inserts lists (gap_pos, insert_seq, support) for each insertion
+    relative to V3LOOP. support counts the copies in the group whose every
+    inserted base reaches Q30, so one low-quality copy cannot erase
+    high-quality copies. Unique V3LOOP alignments are few enough to track
+    support in memory.
     """
     if file_prefix is None:
         all_counts = Counter()
         counts_context = contextlib.suppress()  # Dummy value.  # noqa: B022
     else:
         all_counts = counts_context = BigCounter(file_prefix)
-    min_quals = {}
+    insert_support = {}
     with counts_context:
         for aligned_ref, aligned_seq, aligned_qual in reads:
             key = aligned_ref + '\t' + aligned_seq
             all_counts[key] += 1
-            prev_qual = min_quals.get(key)
-            if prev_qual is None:
-                min_quals[key] = aligned_qual
-            else:
-                min_quals[key] = ''.join(
-                    chr(min(ord(prev_char), ord(qual_char)))
-                    for prev_char, qual_char in zip(prev_qual, aligned_qual))
+            group_inserts = insert_support.setdefault(key, Counter())
+            for match in re.finditer('-+', aligned_ref):
+                gap_start = match.start()
+                insert_seq = aligned_seq[gap_start:match.end()]
+                insert_qual = aligned_qual[gap_start:match.end()]
+                min_qual = min(ord(qual_char) - 33
+                               for qual_char in insert_qual)
+                if min_qual >= MIN_INSERTION_QUALITY:
+                    group_inserts[(gap_start, insert_seq)] += 1
         for key, count in all_counts.items():
             ref_name, seq = key.split('\t')
-            yield (ref_name, seq, min_quals[key]), count
+            inserts = tuple(sorted(
+                (gap_start, insert_seq, support)
+                for (gap_start, insert_seq), support
+                in insert_support[key].items()))
+            yield (ref_name, seq, inserts), count
 
 
 def get_top_counts(read_counts, min_count=1):
@@ -531,43 +540,51 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
 
     for rank, read_count in enumerate(counts):
         yield read_count
-        (v3_vs_read, read_vs_v3, min_qual), count = read_count
+        (v3_vs_read, read_vs_v3, insert_support), count = read_count
+        # {(ref_pos, insert_seq): support} qualified insertion support for
+        # this group, keyed by V3 alignment position.
+        support_by_pos = {(ref_pos, insert_seq): support
+                          for ref_pos, insert_seq, support in insert_support}
         is_started = False
         seq_offset = 0
         seq = ''
-        # [(seq_index, insert_seq, insert_qual)]: bases inserted in the read
+        # [(seq_index, insert_seq, support)]: bases inserted in the read
         # relative to V3LOOP. seq_index counts characters appended to seq so
         # far, so the seed coordinate of the insertion is offset + seq_index.
-        # insert_qual carries the minimum mate quality of each inserted base
-        # for the Q30 insertion rule. These are preserved for aln2counts,
-        # which reports them in insertions.csv.
+        # support counts the Q30-qualified copies in the group. These are
+        # preserved for aln2counts, which reports them in insertions.csv.
         read_inserts = []
         pending_insert = ''
-        pending_qual = ''
-        read_positions = iter(zip(v3_vs_read, read_vs_v3, min_qual))
+        pending_start = 0
+        ref_pos = 0
+        read_positions = iter(zip(v3_vs_read, read_vs_v3))
         for seed_char, v3_vs_seed_char in seed_positions:
             if v3_vs_seed_char == '-':
                 seq += '-'
                 continue
             try:
                 while True:
-                    v3_vs_read_char, read_char, qual_char = next(read_positions)
+                    v3_vs_read_char, read_char = next(read_positions)
                     if v3_vs_read_char == '-':
+                        if not pending_insert:
+                            pending_start = ref_pos
                         if read_char != '-':
                             pending_insert += read_char
-                            pending_qual += qual_char
                     else:
                         break
+                    ref_pos += 1
+                ref_pos += 1
             except StopIteration:
                 if pending_insert:
                     read_inserts.append((len(seq),
                                          pending_insert,
-                                         pending_qual))
+                                         pending_start))
                 break
             if pending_insert:
-                read_inserts.append((len(seq), pending_insert, pending_qual))
+                read_inserts.append((len(seq),
+                                     pending_insert,
+                                     pending_start))
                 pending_insert = ''
-                pending_qual = ''
             if seed_char != '-':
                 if read_char == '-' and not is_started:
                     seq_offset += 1
@@ -577,11 +594,12 @@ def write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref):
         seq = seq.rstrip('-')
         offset = v3_offset + seq_offset
         inserts = ';'.join(
-            '{}:{}:{}'.format(offset + seq_index,
-                              insert_seq,
-                              ','.join(str(ord(qual_char) - 33)
-                                       for qual_char in insert_qual))
-            for seq_index, insert_seq, insert_qual in read_inserts)
+            '{}:{}:{}'.format(offset + seq_index, insert_seq, support)
+            for seq_index, insert_seq, support in (
+                (seq_index, insert_seq, support_by_pos.get(
+                    (ref_pos, insert_seq), 0))
+                for seq_index, insert_seq, ref_pos in read_inserts)
+            if support > 0)
         writer.writerow({'refname': G2P_SEED_NAME,
                              'qcut': Q_CUTOFF,
                              'rank': rank,
