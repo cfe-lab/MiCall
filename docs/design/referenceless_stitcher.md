@@ -436,15 +436,28 @@ extension rounds as an ordinary contig.
 ## 12. Limitations
 
 Reference independence does not mean that the algorithm can always
-recover biological truth.
+recover biological truth — in either direction.
 
-If two distinct molecules contain a long, highly similar region and
-the sample-intrinsic evidence available to the algorithm does not
-phase that region to distinguishing sequence — no conclusive overlap
-placement, no shared k-mer that anchors the true junction, no
-cut-spanning reads — the relationship may be fundamentally ambiguous
-to the stitcher. It will leave the contigs separate, even if a
-reference would have suggested an order.
+**False separation.** If two truly related contigs leave too little
+distinguishing evidence — no conclusive overlap placement, no shared
+k-mer anchoring the true junction, no cut-spanning reads — the
+relationship is ambiguous to the stitcher and it leaves the contigs
+separate, even if a reference would have suggested an order.
+
+**False joining is the more important ceiling.** Two biologically
+distinct molecules (different haplotypes, repeat copies, or
+recombinant forms) can share a long, highly similar region. In that
+case every *local* check the stitcher performs — overlap alignment
+score, a shared 30-mer, exact read placements crossing the chosen
+cut plus local window coverage — can look convincing while still
+failing to establish that the two sides came from the same molecule.
+The read check validates a local junction hypothesis: it asks
+whether sample reads exactly match the sequence around the proposed
+cut. It does not phase the flanking sequence to a single haplotype.
+Short reads falling entirely inside the shared region are consistent
+with either origin; only linkage reaching into distinguishing
+sequence (or longer reads) could resolve which molecule each side
+belongs to — without any reference.
 
 That restriction is about the evidence the implementation is allowed
 to use, not an absolute claim about all reference-independent or all
