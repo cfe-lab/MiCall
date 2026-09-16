@@ -58,20 +58,6 @@ such as the inferred reference genome's name.
 
 <!-- TODO(2): it would be nice to have the pipeline dataflow diagram to link to here. -->
 
-## Two stitchers
-
-MiCall has two contig stitchers with different contracts. The
-**referencefull** stitcher described in most of this document may use
-reference coordinates and ordering. The **referenceless** stitcher
-(`micall/utils/referenceless_contig_stitcher.py`) refines a de novo
-assembly using only sample-intrinsic evidence and deliberately never
-consults a reference, so that noncanonical structures (inversions,
-rearrangements, large deletions) are preserved rather than normalized
-toward the reference. Its contract, including its intentional
-conservatism and limits, is documented in
-`docs/specs/referenceless-stitcher-read-information-handling.md`
-(section 0).
-
 # Operational procedure
 
 To clarify operations of the Stitcher, the subsequent section
