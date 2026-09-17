@@ -143,10 +143,9 @@ Individual files are described after the list of steps.
   * seq - the mapped sequence of the read, aligned to the consensus
   * inserts - (g2p_aligned.csv only) insertions in the read relative to
     V3LOOP, preserved for insertions.csv reporting. Semicolon-separated
-    `pos:seq:support` groups, where pos is the seed coordinate of the
-    first consensus nucleotide after the insertion (the 1-based seed/query
-    nucleotide immediately before the insertion, same convention as
-    conseq_ins.csv pos; equivalently the zero-based index of the
+    `pos:seq:support` groups, where pos is the 1-based seed/query
+    nucleotide position that the insertion follows (same convention as
+    conseq_ins.csv pos; equivalently, the zero-based index of the
     following nucleotide), seq is the inserted nucleotide sequence, and
     support counts the grouped copies whose every inserted base reaches
     Q30. Empty when the read group has no Q30-qualified insertion.
