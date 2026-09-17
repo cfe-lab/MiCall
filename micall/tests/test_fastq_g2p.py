@@ -587,6 +587,27 @@ class MergeReadsTest(unittest.TestCase):
 
         self.assertEqual(expected_merged_reads, merged_reads)
 
+    def test_disagreement_ambiguous_quality(self):
+        """ Mates disagree with high quality: merged N carries no quality.
+
+        Mate 1 calls A and mate 2 calls G at the same position, both Q40,
+        so merge_pairs resolves the base to N. The merged quality must not
+        report Q40, otherwise the ambiguous base could later count as
+        Q30-qualified insertion support.
+        """
+        reads = [("A:B:C",
+                  ("X:Y", "AAACCCTTTGGGAAA", "IIIIIIIIIIIIIII"),
+                  ("Q:R", "GGGTTTCTCAAA", "IIIIIIIIIIII"))]
+        expected_merged_reads = [("A:B:C",
+                                  ("X:Y", "AAACCCTTTGGGAAA", "IIIIIIIIIIIIIII"),
+                                  ("Q:R", "GGGTTTCTCAAA", "IIIIIIIIIIII"),
+                                  "AAACCCTTTGNGAAACCC",
+                                  "IIIIIIIIII!IIIIIII")]
+
+        merged_reads = list(merge_reads(reads))
+
+        self.assertEqual(expected_merged_reads, merged_reads)
+
     def test_low_quality(self):
         reads = [("A:B:C",
                   ("X:Y", "AAACCCTTTGGGAAA", "B!BBBBBBBBBBBBB"),
@@ -846,6 +867,24 @@ class CountReadsTest(unittest.TestCase):
         expected_counts = [(("TGTACA---AGACCCAAC",
                              "TGTACAGGGAGACCCAAC",
                              ((6, "GGG", 1),)), 2)]
+
+        counts = list(count_reads(reads, file_prefix=None))
+
+        self.assertEqual(expected_counts, counts)
+
+    def test_ambiguous_insertion_no_support(self):
+        """ An ambiguous merged base never counts as insertion support.
+
+        The mates disagreed, so the inserted base became N with '!'
+        quality. The alignment still counts, but the insertion gets no
+        qualified support.
+        """
+        reads = [("TGTACA---AGACCCAAC",
+                  "TGTACAGGNAGACCCAAC",
+                  "BBBBBBBB!BBBBBBBBB")]
+        expected_counts = [(("TGTACA---AGACCCAAC",
+                             "TGTACAGGNAGACCCAAC",
+                             ()), 1)]
 
         counts = list(count_reads(reads, file_prefix=None))
 
