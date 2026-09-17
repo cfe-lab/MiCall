@@ -333,7 +333,10 @@ def merge_reads(reads):
      merged_bases,
      merged_qual)
     merged_qual carries the best mate quality for each merged base, so
-    that insertion quality survives for the Q30 insertion rule.
+    that insertion quality survives for the Q30 insertion rule. Where the
+    mates disagree and the merged base is N, the quality is '!' (no
+    confidence), so an ambiguous base can never count as Q30-qualified
+    insertion support.
     """
     for pair_name, (r1_name, seq1, qual1), (r2_name, seq2, qual2) in reads:
         if not (seq1 and seq2):
@@ -354,9 +357,11 @@ def merge_reads(reads):
                                  aligned_qual1,
                                  aligned_qual2,
                                  q_cutoff=Q_CUTOFF)
-            merged_qual = ''.join(chr(max(ord(q1_char), ord(q2_char)))
-                                  for q1_char, q2_char in zip(aligned_qual1,
-                                                             aligned_qual2))
+            merged_qual = ''.join(
+                '!' if merged_base == 'N' and base1 != base2
+                else chr(max(ord(q1_char), ord(q2_char)))
+                for merged_base, base1, base2, q1_char, q2_char in zip(
+                    merged, aligned1, aligned2, aligned_qual1, aligned_qual2))
         else:
             merged = merged_qual = None
         yield (pair_name,
