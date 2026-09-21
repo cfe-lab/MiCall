@@ -1,10 +1,14 @@
 from io import StringIO
+import csv
 import unittest
 
 import yaml
 
 from micall.core.aln2counts import InsertionWriter, SeedAmino, \
     ReportAmino, ConsensusBuilder, ReportNucleotide, SeedNucleotide
+from micall.core.project_config import ProjectConfig, G2P_SEED_NAME
+from micall.data.landmark_reader import LandmarkReader
+from micall.g2p.fastq_g2p import write_aligned_reads, extract_target
 from micall.tests.test_aln2counts_report import create_sequence_report, prepare_reads
 
 LANDMARKS_YAML = """\
@@ -1694,6 +1698,567 @@ R1-seed,0.100,R1,3,3,3,aac
                                         self.report.consensus_builder)
         self.assertEqual(expected_insertions,
                          self.report.insert_writer.insert_file.getvalue())
+
+    def testConseqInsertionHighQualityIsCounted(self):
+        """ A high-quality insertion (Q32) is retained. """
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,AAA
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.assertIn('R1-seed',
+                      self.report.insert_writer.conseq_insertions)
+        self.assertIn(3,
+                      self.report.insert_writer.conseq_insertions['R1-seed'])
+
+    def testConseqInsertionLowQualityIsIgnored(self):
+        """ An insertion with a Q29 base is ignored entirely. """
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,10,0,AAATTTAGG
+""")
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,A>A
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.assertEqual({}, dict(self.report.conseq_insertion_counts))
+        self.assertEqual({},
+                         dict(self.report.insert_writer.conseq_insertions))
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testConseqInsertionBoundaryQ30IsRetained(self):
+        """ An insertion with minimum quality exactly Q30 is retained. """
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,???
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.assertIn(3,
+                      self.report.insert_writer.conseq_insertions['R1-seed'])
+
+    def testConseqInsertionLowQualityForwardHighQualityReverse(self):
+        """ A rejected forward observation must not block its good mate.
+
+        Same qname and position: low-quality forward followed by high-quality
+        reverse still counts the high-quality observation exactly once.
+        """
+        aligned_reads = prepare_reads("""\
+R1-seed,15,0,2,0,AAATTTAGG
+""")
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_1,F,R1-seed,3,AAC,A>A
+Example_read_1,R,R1-seed,3,AAC,AAA
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,3,3,3,aac
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.read(aligned_reads)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionReported(self):
+        """ Insertions preserved from G2P alignments reach insertions.csv. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC:10
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,3,3,3,AAC
+R1-seed,0.100,R1,3,3,3,AAC
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionCountsRespected(self):
+        """ A repeated G2P alignment contributes its actual support count. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,17,0,AAATTTAGG,3:AAC:17
+R1-seed,15,1,83,0,AAATTTAGG,
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(17, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionBelowPrevalenceIgnored(self):
+        """ A rare G2P insertion stays below the mixture cutoff. """
+        # Also exercise the 1% cutoff: 1 read out of 200 is below it.
+        self.report.conseq_mixture_cutoffs.append(0.01)
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,1,0,AAATTTAGG,3:AAC:1
+R1-seed,15,1,199,0,AAATTTAGG,
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionAtOnePercentCutoff(self):
+        """ 1 insertion read out of 100 survives the 1% cutoff. """
+        self.report.conseq_mixture_cutoffs.append(0.01)
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,1,0,AAATTTAGG,3:AAC:1
+R1-seed,15,1,99,0,AAATTTAGG,
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,0.010,R1,3,3,3,aac
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(1, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionAtTenPercentCutoff(self):
+        """ 10 insertion reads out of 100 survive the 10% cutoff. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC:10
+R1-seed,15,1,90,0,AAATTTAGG,
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,0.100,R1,3,3,3,aac
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionSnappedToCodonBoundary(self):
+        """ G2P insertion anchors follow the codon-boundary rule.
+
+        gotoh places indel gaps with no codon awareness, so in a repeat
+        the anchor can land one base off codon phase. Like align_deletions,
+        the anchor snaps to the codon boundary: (4 + frame 0) % 3 == 1
+        snaps 4 back to 3, the nucleotide before the insertion.
+        """
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,4:AAC:10
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,3,3,3,AAC
+R1-seed,0.100,R1,3,3,3,AAC
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionSingleBaseNotSnapped(self):
+        """ 1-base G2P insertions keep their nucleotide anchor.
+
+        Only codon-multiple insertions follow the codon-boundary rule
+        (like align_deletions, which only normalizes deletion runs with
+        length divisible by three). Frameshifting insertions must not
+        move.
+        """
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,4:A:10
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,4,4,4,A
+R1-seed,0.100,R1,4,4,4,A
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][4])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionTwoBaseNotSnapped(self):
+        """ 2-base G2P insertions keep their nucleotide anchor. """
+        self.report.remap_conseqs = {'R1-seed': 'AAATTTAGG'}
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,4:AA:10
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,4,4,4,AA
+R1-seed,0.100,R1,4,4,4,AA
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(10, self.report.conseq_insertion_counts['R1-seed'][4])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionV3LoopEndToEnd(self):
+        """ write_aligned_reads() output for V3LOOP reaches insertions.csv.
+
+        Uses the real G2P seed and V3LOOP references: four reads carry a
+        TAA insertion that gotoh places after V3LOOP nucleotide 28, and
+        nineteen reads have no insertion. The anchor snaps to the codon
+        boundary, so the insertion is reported after nucleotide 27, in
+        amino position 9.
+        """
+        defaults = ProjectConfig.loadDefault()
+        hiv_seed = defaults.getReference(G2P_SEED_NAME)
+        v3loop_ref = extract_target(hiv_seed, defaults.getReference('V3LOOP'))
+        ins_ref = v3loop_ref[:28] + '---' + v3loop_ref[28:]
+        ins_seq = v3loop_ref[:28] + 'TAA' + v3loop_ref[28:]
+        counts = [((ins_ref, ins_seq, ((28, 'TAA', 4),)), 4),
+                  ((v3loop_ref, v3loop_ref, ()), 19)]
+        aligned_csv = StringIO()
+        list(write_aligned_reads(counts, aligned_csv, hiv_seed, v3loop_ref))
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+HIV1-CON-XX-Consensus-seed,0.100,V3LOOP,27,7136,882,taa
+""")
+
+        self.report.projects = defaults
+        self.report.landmarks = LandmarkReader.load().landmarks
+        self.report.remap_conseqs = {G2P_SEED_NAME: hiv_seed}
+        self.report.read(csv.DictReader(StringIO(aligned_csv.getvalue())),
+                         included_regions={'V3LOOP'})
+        self.assertEqual(
+            4, self.report.conseq_insertion_counts[G2P_SEED_NAME][882])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+        amino_rows = list(csv.DictReader(StringIO(self.report_file.getvalue())))
+        v3loop_9 = [row for row in amino_rows
+                    if row['region'] == 'V3LOOP'
+                    and row['refseq.aa.pos'] == '9']
+        self.assertEqual(1, len(v3loop_9))
+        self.assertEqual('23', v3loop_9[0]['coverage'])
+        self.assertEqual('4', v3loop_9[0]['ins'])
+
+    def testG2pInsertionUnknownQualityIgnored(self):
+        """ G2P insertion without support information is not reported. """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,10,0,AAATTTAGG,3:AAC
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual({}, dict(self.report.conseq_insertion_counts))
+        self.assertEqual({},
+                         dict(self.report.insert_writer.conseq_insertions))
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionMixedSupportCountsRespected(self):
+        """ One low-quality copy does not erase high-quality copies.
+
+        Of 100 identical reads, 99 provide Q30 insertion support while one
+        does not. The insertion is reported with support 99, and the
+        no-insertion count is 1.
+        """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,100,0,AAATTTAGG,3:AAC:99
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+R1-seed,MAX,R1,3,3,3,AAC
+R1-seed,0.100,R1,3,3,3,AAC
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(99, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionSupportBelowCutoffIgnored(self):
+        """ Qualified support below the cutoff is not reported.
+
+        9 of 100 reads provide Q30 insertion support. That is below the
+        10% cutoff, so filtering the low-quality copies moves the
+        insertion across the reporting boundary.
+        """
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+R1-seed,15,0,100,0,AAATTTAGG,3:AAC:9
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+""")
+
+        self.report.read(csv.DictReader(g2p_csv))
+        self.assertEqual(9, self.report.conseq_insertion_counts['R1-seed'][3])
+        self.report.write_amino_header(self.report_file)
+        self.report.write_nuc_header(StringIO())
+        self.report.write_nuc_counts()  # calculates ins counts
+        self.report.write_amino_counts()
+        self.report.insert_writer.write(self.report.inserts,
+                                        self.report.detail_seed,
+                                        self.report.reports,
+                                        self.report.report_nucleotides,
+                                        self.report.landmarks,
+                                        self.report.consensus_builder)
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+
+    def testG2pInsertionNotDoubleCountedWithBowtieOverlap(self):
+        """ Bowtie V3LOOP overlap stays excluded when G2P reports V3LOOP. """
+        self.report.projects.load(StringIO("""\
+{
+  "projects": {
+    "V3": {
+      "max_variants": 10,
+      "regions": [
+        {
+          "coordinate_region": "V3LOOP",
+          "seed_region_names": ["V3-seed", "HIV1-CON-XX-Consensus-seed"]
+        }
+      ]
+    }
+  },
+  "regions": {
+    "V3-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCC"
+      ]
+    },
+    "HIV1-CON-XX-Consensus-seed": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCC"
+      ]
+    },
+    "V3LOOP": {
+      "is_nucleotide": true,
+      "reference": [
+        "AAATTTCCC"
+      ]
+    }
+  }
+}
+"""))
+        self.report.landmarks = yaml.safe_load("""\
+- seed_pattern: V3-seed
+  coordinates: V3-seed
+  landmarks:
+    - {name: V3LOOP, start: 1, end: 9}
+- seed_pattern: HIV1-CON-XX-Consensus-seed
+  coordinates: HIV1-CON-XX-Consensus-seed
+  landmarks:
+    - {name: V3LOOP, start: 1, end: 9}
+""")
+        bowtie_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+V3-seed,15,0,10,0,AAATTTCCC,3:AAC:10
+""")
+        g2p_csv = StringIO("""\
+refname,qcut,rank,count,offset,seq,inserts
+HIV1-CON-XX-Consensus-seed,15,0,10,0,AAATTTCCC,3:AAC:10
+""")
+        # Normal remap insertion evidence under the real G2P seed name:
+        # without isolation it would leak into the V3LOOP result.
+        conseq_ins_csv = StringIO("""\
+qname,fwd_rev,refname,pos,insert,qual
+Example_read_9,F,HIV1-CON-XX-Consensus-seed,5,GGG,AAA
+""")
+
+        expected_insertions = ("""\
+seed,mixture_cutoff,region,ref_region_pos,ref_genome_pos,query_pos,insertion
+HIV1-CON-XX-Consensus-seed,MAX,V3LOOP,3,3,3,AAC
+HIV1-CON-XX-Consensus-seed,0.100,V3LOOP,3,3,3,AAC
+""")
+
+        self.report.read_insertions(conseq_ins_csv)
+        self.report.process_reads(bowtie_csv, excluded_regions={'V3LOOP'})
+        # Same call aln2counts() makes before the G2P pass.
+        self.report.clear_conseq_insertions(G2P_SEED_NAME)
+        self.report.process_reads(g2p_csv, included_regions={'V3LOOP'})
+
+        self.assertEqual(expected_insertions,
+                         self.report.insert_writer.insert_file.getvalue())
+        self.assertEqual(
+            {3: 10},
+            dict(self.report.conseq_insertion_counts[G2P_SEED_NAME]))
 
     def testGapBetweenForwardAndReverse(self):
         """ Lower-case n represents a gap between forward and reverse reads.

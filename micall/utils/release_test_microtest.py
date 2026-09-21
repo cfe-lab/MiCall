@@ -203,7 +203,7 @@ class ResultsFolder:
             elif pos == 8:
                 check_amino_row(row, coverage=20, partial=3)
             elif pos == 9:
-                check_amino_row(row, coverage=23)
+                check_amino_row(row, coverage=23, ins=4)
             elif pos == 10:
                 check_amino_row(row, coverage=23, dels=4)
             elif pos < 18:
