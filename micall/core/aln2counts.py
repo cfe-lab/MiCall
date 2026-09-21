@@ -147,8 +147,10 @@ def parse_g2p_inserts(inserts_str):
     """ Parse the inserts column of g2p_aligned.csv.
 
     fastq_g2p preserves read insertions relative to V3LOOP as
-    ``pos:seq:support`` groups separated by ``;``, where pos is the seed
-    coordinate that follows the insertion and support counts the grouped
+    ``pos:seq:support`` groups separated by ``;``, where pos is the 1-based
+    seed/query nucleotide position that the insertion follows (same
+    convention as conseq_ins.csv pos; equivalently, the zero-based index
+    of the following nucleotide) and support counts the grouped
     copies whose every inserted base reaches Q30. Entries without support
     information are ignored, so insertion evidence of unknown quality can
     never bypass the Q30 rule.
@@ -181,7 +183,8 @@ def align_insertion_position(pos, reading_frames):
     example, splitting the codon that the insertion follows). Snapping
     keeps insertion evidence consistent with codon-based reporting.
 
-    :param pos: seed coordinate that follows the insertion
+    :param pos: 1-based seed/query nucleotide position that the
+        insertion follows
     :param reading_frames: {pos: frame} from load_reading_frames
     :return: the snapped seed coordinate
     """
@@ -1781,8 +1784,8 @@ class InsertionWriter(object):
 
         Used for G2P insertions from g2p_aligned.csv, which arrive already
         grouped: count is the number of reads in the alignment group, and
-        pos is the seed coordinate that follows the insertion, matching
-        the conseq_insertions model.
+        pos is the 1-based seed/query nucleotide position that the
+        insertion follows, matching the conseq_insertions model.
         """
         insertions = self.conseq_insertions[seed_name][pos]
         for i, nuc in enumerate(seq):
