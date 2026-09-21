@@ -106,7 +106,7 @@ class TestSampleDirectoryReplication(unittest.TestCase):
     def test_alignment_structure_replicated(self):
         """Test that Alignment_X/*/Fastq structure is replicated in target."""
         run_name = '230101_M01234_0002_000000000-ABCDE'
-        _, alignment_path = self._create_source_run_with_alignment(run_name, alignment_num=15)
+        _, _alignment_path = self._create_source_run_with_alignment(run_name, alignment_num=15)
         
         sample = Sample(run_name, 'Sample1', self.config)
         sample.find(str(self.source_folder))

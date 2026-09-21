@@ -37,7 +37,7 @@ pol_ref = ('TTTTTTAGGGAAGATCTGGCCTTCCTACAAGGGAAGGCCAGGGAATTTTCTTCAGAGCAGACCAG'
 contigs_path = Path('iva_out/contigs.fasta')
 for _ in range(20):
     rmtree('iva_out', ignore_errors=True)
-    run(['iva',
+    run(['iva',  # noqa: PLW1510
          '-f2180A-HIV_S22_L001_R1_001.fastq',
          '-r2180A-HIV_S22_L001_R2_001.fastq',
          'iva_out'])

@@ -12,7 +12,7 @@ def is_executable_script(content: str) -> bool:
     if content.startswith("#!"):
         return True
 
-    if re.findall(r'__name__.+__main__', content):
+    if re.findall(r'__name__.+__main__', content):  # noqa: SIM103
         return True
 
     return False
@@ -66,4 +66,4 @@ def main(argv: Sequence[str]) -> int:
 
 
 if __name__ == "__main__":
-    exit(main(sys.argv[1:]))
+    exit(main(sys.argv[1:]))  # noqa: PLR1722

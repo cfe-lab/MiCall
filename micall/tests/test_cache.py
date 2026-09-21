@@ -399,7 +399,7 @@ class TestCacheSet:
         assert "output2" in cache_entry
 
         # Verify cached files exist
-        for key, file_hash in cache_entry.items():
+        for key, file_hash in cache_entry.items():  # noqa: PERF102
             cached_file = temp_cache_dir / file_hash
             assert cached_file.exists()
 

@@ -61,7 +61,7 @@ def plot_file(filename1):
     work_path = os.path.dirname(__file__)
     scores_filename = os.path.join(
         work_path,
-        '_'.join(name_parts[:2] + ['v3loop_scores.csv']))
+        '_'.join([*name_parts[:2], 'v3loop_scores.csv']))
     if os.path.exists(scores_filename):
         with open(scores_filename) as f:
             reader = DictReader(f)
@@ -71,10 +71,10 @@ def plot_file(filename1):
         source1 = os.path.join('micall/tests/working/v3loop_alignment_scores/',
                                filename1)
         source2 = source1.replace('_R1_', '_R2_')
-        start = datetime.now()
+        start = datetime.now()  # noqa: DTZ005
         with open(source1) as fastq1, open(source2) as fastq2:
             score_counts = align_reads(fastq1, fastq2)
-        print('{}: {}'.format(datetime.now() - start, filename1))
+        print('{}: {}'.format(datetime.now() - start, filename1))  # noqa: DTZ005
         score_rows = sorted(score_counts.items())
         with open(scores_filename, 'w') as scores_csv:
             writer = DictWriter(scores_csv,
@@ -82,7 +82,7 @@ def plot_file(filename1):
                                 lineterminator=os.linesep)
             writer.writeheader()
             for score, count in score_rows:
-                writer.writerow(dict(score=score, count=count))
+                writer.writerow({'score': score, 'count': count})
     scores = [row[0] for row in score_rows]
     counts = [row[1] for row in score_rows]
     total_count = float(sum(counts))

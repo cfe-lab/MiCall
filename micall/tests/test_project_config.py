@@ -472,7 +472,7 @@ ACTGAAAGGG
         self.assertSequenceEqual("GACCTA", self.config.getReference("R2-seed"))
 
     def testProjectSeeds(self):
-        expected_seeds = set(['R1-seed'])
+        expected_seeds = {'R1-seed'}
 
         self.config.load(self.defaultJsonIO)
         seeds = self.config.getProjectSeeds('R1')

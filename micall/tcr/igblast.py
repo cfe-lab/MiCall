@@ -14,7 +14,7 @@ default_db = '/opt/micall/micall/data/'
 
 def igblast_seq(seq, db=default_db, path=default_path):
     with NamedTemporaryFile() as fasta_in:
-        fasta_fd = open(fasta_in.name, 'w')
+        fasta_fd = open(fasta_in.name, 'w')  # noqa: SIM115
         print(">micall_tempsample\n{}".format(seq), file=fasta_fd)
         fasta_fd.close()
         return igblast(fasta_in.name, db=db, path=path)

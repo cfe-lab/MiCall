@@ -23,7 +23,7 @@ class OverlapFinder:
         total = np.zeros(100_000)
         bit_arr1 = np.zeros(100_000)
         bit_arr2 = np.zeros(100_000)
-        alphabet_keys = {x: True for x in alphabet}.keys()
+        alphabet_keys = dict.fromkeys(alphabet, True).keys()
         alphabet_init = tuple(x.encode('utf-8') for x in alphabet_keys)
         return OverlapFinder(alphabet=alphabet_init,
                              total=total,
@@ -160,7 +160,7 @@ def show_maximum_overlap(arr1: Sequence[object],
 
 
 def main(seq1: str, seq2: str) -> int:
-    (shift, value) = find_maximum_overlap(seq1, seq2)
+    (shift, _value) = find_maximum_overlap(seq1, seq2)
     ret = show_maximum_overlap(seq1, seq2, shift)
     print(ret, end='')
     return 0

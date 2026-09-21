@@ -21,14 +21,14 @@ classifiers = [
 
 dependencies = [
     # Requirements for running the bare pipeline under Kive.
-    "pytz>=2026.2",
-    "biopython>=1.86",
+    "pytz>=2026.3.post1",
+    "biopython>=1.88",
     "gotoh @ git+https://github.com/cfe-lab/gotoh.git@v0.3.0#egg=gotoh&subdirectory=alignment/gotoh",
     "pyvdrm @ git+https://github.com/cfe-lab/pyvdrm.git@v0.3.3",
     "sortedcontainers>=2.4.0",
-    "numpy>=2.5.0",
+    "numpy>=2.5.2",
     "scipy>=1.18.0",
-    "matplotlib>=3.11.0",
+    "matplotlib>=3.11.1",
     "cutadapt>=5.2",
     "python-Levenshtein>=0.27.1",
     "PyYAML>=6.0.2",
@@ -36,7 +36,7 @@ dependencies = [
     "pysam>=0.24.0",
     "genetracks @ git+https://github.com/cfe-lab/genetracks.git@v0.4",
     "mappy>=2.31",
-    "drawsvg>=2.4.0",
+    "drawsvg>=2.4.2",
     "cairosvg>=2.8.2",
     "aligntools>=1.2.1",
     "multicsv>=1.0.5",
@@ -52,8 +52,9 @@ dependencies = [
 test = [
     # Dependencies required for running the test suite
     "pytest>=9.1.1",
-    "coverage>=7.14.3",
-    "pandas>=3.0.3",
+    "pytest-timeout>=2.4.0",
+    "coverage>=7.15.4",
+    "pandas>=3.0.5",
     "seaborn>=0.13.2",
     # For reading HCV rules from an Excel file.
     "openpyxl>=3.1.5",
@@ -65,15 +66,15 @@ test = [
 ]
 dev = [
     # Dependencies required for development (linting, type checking, etc.)
-    "ruff>=0.15.18",
-    "mypy>=2.1.0",
+    "ruff>=0.16.3",
+    "mypy>=2.3.1",
     "mypy-extensions>=1.1.0",
     "gprof2dot>=2025.4.14",
     "codecov>=2.1.13",  # For reporting the code coverage.
     "kivecli @ git+https://github.com/Donaim/kivecli@62dff8cfbf3b9d10a55333414ab56d38748a0516",
-    "pandas-stubs>=3.0.3.260530",
-    "types-requests>=2.33.0.20260518",
-    "uv>=0.11.23",
+    "pandas-stubs>=3.0.5.260730",
+    "types-requests>=2.33.0.20260712",
+    "uv>=0.12.5",
 ]
 watcher = [
     # Requirements for running the MISEQ_MONITOR.py script
@@ -116,6 +117,19 @@ build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.pytest.ini_options]
+timeout = 360
+
+[tool.ruff.lint]
+ignore = [
+    "I001",    # Import order.
+    "UP",      # All pyupgrade rules.
+    "EXE001",  # Executable bit doesn't match shebang.
+    "RET505",  # Superfluous else/elif after return.
+    "RET506",  # Superfluous else after raise.
+    "RET504",  # Unnecessary assignment before return (name is meaningful).
+]
 
 [tool.ruff.lint.per-file-ignores]
 # TODO: resolve these warnings insteads of ignoring them.
@@ -237,7 +251,6 @@ module = [
     "micall.utils.probe_finder",
     "micall.utils.project_seeds_from_compendium",
     "micall.utils.projects_dump",
-    "micall.utils.projects_upload",
     "micall.utils.ref_aligner",
     "micall.utils.reference_distances",
     "micall.utils.release_test_compare",

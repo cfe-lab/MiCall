@@ -273,7 +273,7 @@ def extract_region(landmark_reader: LandmarkReader,
                    coordinate_name: str,
                    coordinate_seq: str,
                    region_name: str,
-                   ref_positions: set = None) -> str:
+                   ref_positions: set | None = None) -> str:
     """ Extract a section of reference sequence, based on a gene landmark.
 
     :param landmark_reader: source of landmark definitions

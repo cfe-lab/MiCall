@@ -40,7 +40,7 @@ def main():
         confirmation = input(f'Are you sure you want to delete '
                              f'{len(duplicate_folders)} folders? Y/[N] ')
         if confirmation.upper() != 'Y':
-            exit('Aborted.')
+            exit('Aborted.')  # noqa: PLR1722
     duplicate_folders.sort()
     for original_folder in duplicate_folders:
         rel_path = original_folder.relative_to(runs_path)

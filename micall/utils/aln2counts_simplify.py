@@ -33,7 +33,7 @@ def parse_args(argv):
 
 
 class MicallDD(DD):
-    test_names = ['subseq']
+    test_names = ['subseq']  # noqa: RUF012
 
     def __init__(self,
                  filename,
@@ -118,7 +118,7 @@ class MicallDD(DD):
         with open(filename, 'w') as f:
             f.write(ALIGNED_CSV_HEADER)
             f.write('\n')
-            for line in selected_reads:
+            for line in selected_reads:  # noqa: FURB122
                 f.write(line)
 
     def coerce(self, c):

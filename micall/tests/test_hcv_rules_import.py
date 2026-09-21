@@ -33,7 +33,7 @@ def create_worksheet(title, row_data):
         row = [None if cell == "" else cell for cell in row]
         ws.append(row)
         start_column = None
-        for j, cell in enumerate(row + [None], 1):
+        for j, cell in enumerate([*row, None], 1):
             if cell == "<":
                 if start_column is None:
                     start_column = j - 1
@@ -61,12 +61,12 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir Y43M "
+            ("GTX Drugisvir Y43M "
             "(2.5x/no in < 2.5, > 100 resistance possible) "
-            "but is likely susceptible",
-            "GTX Drugisvir P44I "
+            "but is likely susceptible"),
+            ("GTX Drugisvir P44I "
             "(2.6x/no in < 2.5, > 100 resistance possible) "
-            "but is likely susceptible",
+            "but is likely susceptible"),
         ]
         expected_invalid_fold_shifts = []
 
@@ -88,9 +88,9 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir P44I "
+            ("GTX Drugisvir P44I "
             "(2.6x/no in <= 2.5, > 100 resistance possible) "
-            "but is likely susceptible"
+            "but is likely susceptible")
         ]
         expected_invalid_fold_shifts = []
 
@@ -112,12 +112,12 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir L42R "
+            ("GTX Drugisvir L42R "
             "(99.9x/no in < 2.5, > 100 resistance possible) "
-            "but is resistance likely",
-            "GTX Drugisvir Y43M "
+            "but is resistance likely"),
+            ("GTX Drugisvir Y43M "
             "(100.0x/no in < 2.5, > 100 resistance possible) "
-            "but is resistance likely",
+            "but is resistance likely"),
         ]
         expected_invalid_fold_shifts = []
 
@@ -139,9 +139,9 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir L42R "
+            ("GTX Drugisvir L42R "
             "(99.9x/no in < 2.5, >= 100 resistance possible) "
-            "but is resistance likely"
+            "but is resistance likely")
         ]
         expected_invalid_fold_shifts = []
 
@@ -310,9 +310,9 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir Y43M "
+            ("GTX Drugisvir Y43M "
             "(10-15x/no in < 20, >= 100 likely susceptible) "
-            "but is resistance possible"
+            "but is resistance possible")
         ]
         expected_invalid_fold_shifts = []
 
@@ -333,9 +333,9 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir Y43M "
+            ("GTX Drugisvir Y43M "
             "(100-9000x/no in < 20, >= 100 resistance likely) "
-            "but is resistance possible"
+            "but is resistance possible")
         ]
         expected_invalid_fold_shifts = []
 
@@ -356,9 +356,9 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir L42R "
+            ("GTX Drugisvir L42R "
             "(20-99.9x/no in < 20, >= 100 resistance possible) "
-            "but is resistance likely"
+            "but is resistance likely")
         ]
         expected_invalid_fold_shifts = []
 
@@ -399,12 +399,12 @@ class RangeTest(TestCase):
             invalid_fold_shifts,
         )
         expected_changes = [
-            "GTX Drugisvir L42R "
+            ("GTX Drugisvir L42R "
             "(20-120x/no in < 20, >= 100 ambiguous) "
-            "but is resistance likely",
-            "GTX Drugisvir Y43M "
+            "but is resistance likely"),
+            ("GTX Drugisvir Y43M "
             "(5-90x/no in < 20, >= 100 ambiguous) "
-            "but is resistance possible",
+            "but is resistance possible"),
         ]
         expected_invalid_fold_shifts = []
 

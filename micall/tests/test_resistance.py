@@ -1105,9 +1105,9 @@ R1-seed,R1,15,7,3,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9
 
 def test_read_aminos_pos_55_resistant(asi_algorithms):
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1a,HCV1A-H77-NS3,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
         for i in range(1, 632)]
     amino_lines[55] = \
@@ -1131,9 +1131,9 @@ def test_read_aminos_pos_55_resistant(asi_algorithms):
 
 def test_read_aminos_pos_55_not_resistant(asi_algorithms):
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1b,HCV1B-Con1-NS3,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
         for i in range(1, 632)]
     amino_lines[55] = \
@@ -1157,9 +1157,9 @@ def test_read_aminos_pos_55_not_resistant(asi_algorithms):
 
 def test_read_aminos_no_midi(asi_algorithms):
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8'
         for i in range(1, 201)] + [
         f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
@@ -1186,9 +1186,9 @@ def test_read_aminos_no_midi(asi_algorithms):
 def test_read_aminos_ns5b_missing_142(asi_algorithms):
     """ NS5b still reports if it has coverage on all the MIDI positions. """
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
         for i in range(1, 593)]
     amino_lines[142] = \
@@ -1213,9 +1213,9 @@ def test_read_aminos_ns5b_missing_142(asi_algorithms):
 def test_read_aminos_ns5b_missing_355(asi_algorithms):
     """ NS5b still reports if it has coverage on all the whole genome positions. """
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
         for i in range(1, 593)]
     amino_lines[355] = \
@@ -1240,9 +1240,9 @@ def test_read_aminos_ns5b_missing_355(asi_algorithms):
 def test_read_aminos_ns5b_missing_142_and_355(asi_algorithms):
     """ NS5b does not report if it is missing MIDI and whole genome positions. """
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
         for i in range(1, 593)]
     amino_lines[142] = \
@@ -1272,9 +1272,9 @@ def test_read_aminos_ns5b_missing_142_and_355(asi_algorithms):
 def test_read_aminos_ns5b_short(asi_algorithms):
     """ Low coverage at the end is no longer reported in amino.csv. """
     amino_lines = [
-        'seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
+        ('seed,region,q-cutoff,query.nuc.pos,refseq.aa.pos,'
         'A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y,*,X,'
-        'partial,del,ins,clip,g2p_overlap,coverage'] + [
+        'partial,del,ins,clip,g2p_overlap,coverage')] + [
         f'HCV-1b,HCV1B-Con1-NS5b,15,{i},{i},20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20'
         for i in range(1, 401)]
     amino_csv = DictReader(amino_lines)
@@ -2115,7 +2115,7 @@ def test_write_resistance_handles_all_regions(asi_algorithms):
     try:
         write_resistance(amino_lists, resistance_csv, mutations_csv,
                         algorithms=asi_algorithms)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         pytest.fail(f"write_resistance failed for algorithm regions: {e}")
 
     # Verify output was generated

@@ -104,7 +104,7 @@ class OutcomeCache:
 
         # Let K0 be the largest element in TAIL such that K0 <= C[START]
         k0 = None
-        for k in self.tail.keys():
+        for k in self.tail.keys():  # noqa: SIM118
             if (k0 is None or k > k0) and k <= c[start]:
                 k0 = k
 
@@ -363,7 +363,7 @@ class DD(object):
     def _resolve(self, csub, c, direction):
         """Stub to overload in subclasses."""
         # By default, no way to resolve
-        return None
+        return
 
     # Test with fixes
     def test_and_resolve(self, csub, r, c, direction):
@@ -422,7 +422,7 @@ class DD(object):
             self.__last_reported_length = len(c)
 
     # Delta Debugging (old ESEC/FSE version)
-    def old_dd(self, c, r=[], n=2):
+    def old_dd(self, c, r=[], n=2):  # noqa: B006
         """Return the failure-inducing subset of C"""
 
         assert self.test([]) == DD.PASS
@@ -547,6 +547,7 @@ class DD(object):
             r = next_r
             n = next_n
             run = run + 1
+        return None
 
     def test_mix(self, csub, c, direction):
         if self.minimize:
@@ -694,6 +695,7 @@ class DD(object):
             c = next_c
             n = next_n
             run = run + 1
+        return None
 
     def ddmin(self, c):
         return self.ddgen(c, 1, 0)
@@ -845,6 +847,7 @@ class DD(object):
             c2 = next_c2
             n = next_n
             run = run + 1
+        return None
 
     def dd(self, c):
         return self.dddiff(c)           # Backwards compatibility

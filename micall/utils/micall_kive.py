@@ -17,6 +17,38 @@ from micall.g2p.pssm_lib import Pssm
 
 logger = logging.getLogger(__name__)
 
+#: Fixed mtime so identical inputs produce byte-identical archives.
+DETERMINISTIC_MTIME = 0
+
+
+def normalize_tarinfo(tarinfo):
+    """Normalize host-dependent metadata for reproducible archives."""
+    tarinfo.mtime = DETERMINISTIC_MTIME
+    tarinfo.uid = 0
+    tarinfo.gid = 0
+    tarinfo.uname = ''
+    tarinfo.gname = ''
+    if tarinfo.isdir():
+        tarinfo.mode = 0o755
+    elif not tarinfo.issym() and not tarinfo.islnk():
+        tarinfo.mode = 0o644
+    return tarinfo
+
+
+def create_coverage_maps_tar(tar_path, maps_dir):
+    """Archive coverage maps deterministically.
+
+    Member order is sorted and host-dependent metadata (mtime, uid, gid,
+    uname, gname, permission bits) is normalized, so identical file names
+    and contents always produce byte-identical archives. Links are
+    dereferenced so link topology cannot affect the output either.
+    """
+    with tarfile.open(tar_path, mode='w', dereference=True) as tar:
+        for image_name in sorted(os.listdir(maps_dir)):
+            image_path = os.path.join(maps_dir, image_name)
+            archive_path = os.path.join('coverage_maps', image_name)
+            tar.add(image_path, archive_path, filter=normalize_tarinfo)
+
 
 def parse_args():
     parser = ArgumentParser(description='Map FASTQ files to references.',
@@ -127,6 +159,7 @@ def load_sample(args):
                     remap_conseq_csv=args.remap_conseq_csv,
                     unmapped1_fastq=args.unmapped1_fastq,
                     unmapped2_fastq=args.unmapped2_fastq,
+                    conseq_ins_csv=args.conseq_ins_csv,
                     insertions_csv=args.insertions_csv,
                     failed_csv=args.failed_csv,
                     cascade_csv=args.cascade_csv,
@@ -155,7 +188,7 @@ def load_sample(args):
 
 
 def main():
-    logging.basicConfig(level=logging.WARN)
+    logging.basicConfig(level=logging.WARN)  # noqa: LOG009
     args = parse_args()
     sample = load_sample(args)
 
@@ -164,11 +197,7 @@ def main():
                    force_gzip=True,  # dataset files change .gz to .raw
                    use_denovo=args.denovo)
 
-    with tarfile.open(args.coverage_maps_tar, mode='w') as tar:
-        for image_name in os.listdir(sample.coverage_maps):
-            image_path = os.path.join(sample.coverage_maps, image_name)
-            archive_path = os.path.join('coverage_maps', image_name)
-            tar.add(image_path, archive_path)
+    create_coverage_maps_tar(args.coverage_maps_tar, sample.coverage_maps)
 
 
 if __name__ == '__main__':

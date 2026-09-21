@@ -84,7 +84,7 @@ def try_fetch_info(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
         logger.debug("Fetching run info for %s - it has not finished last time.", run.id)
         run = run.update()
 
-    except BaseException as ex:
+    except BaseException as ex:  # noqa: BLE001
         logger.warning("Could not fetch run info %s: %s", run.id, ex)
         mark_run_as_failed(root, run)
         return None
@@ -118,7 +118,7 @@ def try_download(root: DirPath, run: KiveRun) -> Optional[KiveRun]:
     try:
         download_run_files(root, run)
         return run
-    except BaseException as ex:
+    except BaseException as ex:  # noqa: BLE001
         logger.warning("Could not download run %s: %s", run.id, ex)
         mark_run_as_failed(root, run)
         return None
@@ -157,7 +157,7 @@ def download(root: DirPath, runs_json: Path, downloaded_runs_json: Path) -> None
 
     runs: Iterable[KiveRun] = tuple(KiveRun.from_json(run) for run in runs_raw)
     new_runs = tuple(collect_run_ids(root, runs))
-    new_content = json.dumps(list(run.raw for run in new_runs), indent='\t')
+    new_content = json.dumps([run.raw for run in new_runs], indent='\t')
 
     if downloaded_runs_json.exists():
         previous_content = downloaded_runs_json.read_text()

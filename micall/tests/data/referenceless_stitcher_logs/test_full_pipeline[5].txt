@@ -40,11 +40,11 @@ BEGIN 5
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 5
 BEGIN 6
@@ -67,11 +67,11 @@ BEGIN 7
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 7
 BEGIN 8
@@ -94,11 +94,11 @@ BEGIN 9
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 9
 BEGIN 10
@@ -121,11 +121,11 @@ BEGIN 11
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 11
 BEGIN 12
@@ -148,11 +148,11 @@ BEGIN 13
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 13
 BEGIN 14
@@ -175,11 +175,11 @@ BEGIN 15
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 15
 BEGIN 16
@@ -202,11 +202,11 @@ BEGIN 17
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 17
 BEGIN 18
@@ -229,11 +229,11 @@ BEGIN 19
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 19
 BEGIN 20
@@ -256,11 +256,11 @@ BEGIN 21
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 21
 BEGIN 22
@@ -283,11 +283,11 @@ BEGIN 23
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 23
 BEGIN 24
@@ -310,11 +310,11 @@ BEGIN 25
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 25
 BEGIN 26
@@ -337,11 +337,11 @@ BEGIN 27
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 27
 BEGIN 28
@@ -364,11 +364,11 @@ BEGIN 29
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 29
 BEGIN 30
@@ -391,11 +391,11 @@ BEGIN 31
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 31
 BEGIN 32
@@ -418,11 +418,11 @@ BEGIN 33
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 33
 BEGIN 34
@@ -445,11 +445,11 @@ BEGIN 35
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 35
 BEGIN 36
@@ -472,11 +472,11 @@ BEGIN 37
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 37
 BEGIN 38
@@ -499,11 +499,11 @@ BEGIN 39
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 39
 BEGIN 40
@@ -526,11 +526,11 @@ BEGIN 41
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 41
 BEGIN 42
@@ -553,11 +553,11 @@ BEGIN 43
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 43
 BEGIN 44
@@ -580,11 +580,11 @@ BEGIN 45
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 45
 BEGIN 46
@@ -607,11 +607,11 @@ BEGIN 47
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 47
 BEGIN 48
@@ -634,11 +634,11 @@ BEGIN 49
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 49
 BEGIN 50
@@ -661,11 +661,11 @@ BEGIN 51
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 51
 BEGIN 52
@@ -688,11 +688,11 @@ BEGIN 53
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 53
 BEGIN 54
@@ -715,11 +715,11 @@ BEGIN 55
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 55
 BEGIN 56
@@ -742,11 +742,11 @@ BEGIN 57
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 57
 BEGIN 58
@@ -769,11 +769,11 @@ BEGIN 59
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 59
 BEGIN 60
@@ -796,11 +796,11 @@ BEGIN 61
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 61
 BEGIN 62
@@ -823,11 +823,11 @@ BEGIN 63
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 63
 BEGIN 64
@@ -850,11 +850,11 @@ BEGIN 65
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 65
 BEGIN 66
@@ -877,11 +877,11 @@ BEGIN 67
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 67
 BEGIN 68
@@ -904,11 +904,11 @@ BEGIN 69
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 69
 BEGIN 70
@@ -931,11 +931,11 @@ BEGIN 71
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 71
 BEGIN 72
@@ -958,11 +958,11 @@ BEGIN 73
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 73
 BEGIN 74
@@ -985,11 +985,11 @@ BEGIN 75
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 75
 BEGIN 76
@@ -1012,11 +1012,11 @@ BEGIN 77
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 77
 BEGIN 78
@@ -1039,11 +1039,11 @@ BEGIN 79
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 79
 BEGIN 80
@@ -1066,11 +1066,11 @@ BEGIN 81
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 81
 BEGIN 82
@@ -1093,11 +1093,11 @@ BEGIN 83
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 83
 BEGIN 84
@@ -1120,11 +1120,11 @@ BEGIN 85
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 85
 BEGIN 86
@@ -1147,11 +1147,11 @@ BEGIN 87
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 87
 BEGIN 88
@@ -1174,11 +1174,11 @@ BEGIN 89
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 89
 BEGIN 90
@@ -1201,11 +1201,11 @@ BEGIN 91
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 91
 BEGIN 92
@@ -1228,11 +1228,11 @@ BEGIN 93
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 93
 BEGIN 94
@@ -1255,11 +1255,11 @@ BEGIN 95
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 95
 BEGIN 96
@@ -1282,11 +1282,11 @@ BEGIN 97
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 97
 BEGIN 98
@@ -1309,11 +1309,11 @@ BEGIN 99
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 99
 BEGIN 100
@@ -1336,11 +1336,11 @@ BEGIN 101
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 101
 BEGIN 102
@@ -1363,11 +1363,11 @@ BEGIN 103
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 103
 BEGIN 104
@@ -1390,11 +1390,11 @@ BEGIN 105
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 105
 BEGIN 106
@@ -1417,11 +1417,11 @@ BEGIN 107
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 107
 BEGIN 108
@@ -1444,11 +1444,11 @@ BEGIN 109
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 109
 BEGIN 110
@@ -1471,11 +1471,11 @@ BEGIN 111
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 111
 BEGIN 112
@@ -1498,11 +1498,11 @@ BEGIN 113
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 113
 BEGIN 114
@@ -1525,11 +1525,11 @@ BEGIN 115
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 115
 BEGIN 116
@@ -1552,11 +1552,11 @@ BEGIN 117
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 117
 BEGIN 118
@@ -1579,11 +1579,11 @@ BEGIN 119
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 119
 BEGIN 120
@@ -1606,11 +1606,11 @@ BEGIN 121
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 121
 BEGIN 122
@@ -1633,11 +1633,11 @@ BEGIN 123
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 123
 BEGIN 124
@@ -1660,11 +1660,11 @@ BEGIN 125
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 125
 BEGIN 126
@@ -1687,11 +1687,11 @@ BEGIN 127
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 127
 BEGIN 128
@@ -1714,11 +1714,11 @@ BEGIN 129
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 129
 BEGIN 130
@@ -1741,11 +1741,11 @@ BEGIN 131
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 131
 BEGIN 132
@@ -1768,11 +1768,11 @@ BEGIN 133
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 133
 BEGIN 134
@@ -1795,11 +1795,11 @@ BEGIN 135
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 135
 BEGIN 136
@@ -1822,11 +1822,11 @@ BEGIN 137
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 137
 BEGIN 138
@@ -1849,11 +1849,11 @@ BEGIN 139
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 139
 BEGIN 140
@@ -1876,11 +1876,11 @@ BEGIN 141
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 141
 BEGIN 142
@@ -1903,11 +1903,11 @@ BEGIN 143
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 143
 BEGIN 144
@@ -1930,11 +1930,11 @@ BEGIN 145
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 145
 BEGIN 146
@@ -1957,11 +1957,11 @@ BEGIN 147
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 147
 BEGIN 148
@@ -1984,11 +1984,11 @@ BEGIN 149
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 149
 BEGIN 150
@@ -2011,11 +2011,11 @@ BEGIN 151
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 151
 BEGIN 152
@@ -2038,11 +2038,11 @@ BEGIN 153
   fittest
   has
   length
-  995
+  978
   and
   consists
   of
-  26
+  28
   parts.
 END 153
 BEGIN 154
@@ -2054,172 +2054,88 @@ BEGIN 154
   paths.
 END 154
 BEGIN 155
-  Cycle
-  76
-  finished
-  with
-  10
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  995
-  and
-  consists
-  of
-  26
-  parts.
-END 155
-BEGIN 156
-  Cycle
-  77
-  started
-  with
-  10
-  paths.
-END 156
-BEGIN 157
-  Cycle
-  77
-  finished
-  with
-  10
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  995
-  and
-  consists
-  of
-  26
-  parts.
-END 157
-BEGIN 158
-  Cycle
-  78
-  started
-  with
-  10
-  paths.
-END 158
-BEGIN 159
-  Cycle
-  78
-  finished
-  with
-  10
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  995
-  and
-  consists
-  of
-  26
-  parts.
-END 159
-BEGIN 160
-  Cycle
-  79
-  started
-  with
-  10
-  paths.
-END 160
-BEGIN 161
-  Cycle
-  79
-  finished
-  with
-  10
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  995
-  and
-  consists
-  of
-  26
-  parts.
-END 161
-BEGIN 162
-  Cycle
-  80
-  started
-  with
-  10
-  paths.
-END 162
-BEGIN 163
-  Cycle
-  80
-  finished
-  with
-  10
-  new
-  paths.
-  The
-  fittest
-  has
-  length
-  995
-  and
-  consists
-  of
-  26
-  parts.
-END 163
-BEGIN 164
-  Cycle
-  81
-  started
-  with
-  10
-  paths.
-END 164
-BEGIN 165
   Constructed
   a
   path
   of
   length
-  995.
-END 165
-BEGIN 166
+  978.
+END 155
+BEGIN 156
   Removed
-  26
+  28
   components
   from
   the
   working
   list,
   having
-  0
+  1
   still
   to
   process.
-END 166
-BEGIN 167
+END 156
+BEGIN 157
+  Calculating
+  all
+  paths...
+END 157
+BEGIN 158
+  Cycle
+  1
+  started
+  with
+  71
+  paths.
+END 158
+BEGIN 159
+  Constructed
+  a
+  path
+  of
+  length
+  237.
+END 159
+BEGIN 160
+  Removed
+  1
+  components
+  from
+  the
+  working
+  list,
+  having
+  1
+  still
+  to
+  process.
+END 160
+BEGIN 161
+  Giving
+  up
+  on
+  attempts
+  to
+  stitch
+  more
+  overlaps
+  since
+  most
+  probable
+  is
+  a
+  singleton.
+END 161
+BEGIN 162
   Initial
   overlap
   stitching
   produced
-  1
+  3
   contigs.
-END 167
-BEGIN 168
+END 162
+BEGIN 163
   Outputting
-  1
+  2
   contigs.
-END 168
+END 163

@@ -125,7 +125,7 @@ class ContigCounts:
         return report.getvalue()
 
 
-def main(command_args: typing.List[str] = None):
+def main(command_args: typing.List[str] | None = None):
     parser = create_parser()
     args = parser.parse_args(command_args)
     scratch_files = args.scratch

@@ -52,9 +52,11 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
     """
     Extract all k-mers from a contig sequence.
 
-    This is used as a fast filter to quickly reject contig pairs that
-    cannot possibly overlap. If two contigs don't share any k-mers,
-    they are considered to not overlap.
+    This is the exact shared-k-mer half of the merge rule. A valid merge
+    requires BOTH an acceptable statistical overlap score AND a shared
+    k-mer (when the k-mer requirement applies). Failing to share a k-mer
+    rejects a candidate merge; it does NOT by itself prove that the contigs
+    cannot overlap statistically.
 
     Args:
         cache: A mutable mapping used to cache previously computed k-mer sets.
@@ -83,6 +85,30 @@ def get_kmers(cache: MutableMapping[str, AbstractSet[str]], contig_sequence: str
 
 
 @cache
+def _calculate_referenceless_overlap_score(
+    L: int,
+    M: int,
+    min_matches: int,
+) -> Score:
+    """
+    Transform overlap scores for optimal contig path selection in referenceless stitching.
+
+    This private variant takes ``min_matches`` explicitly so that every value
+    affecting the cached result is part of the cache key. ``MIN_MATCHES`` is
+    module-level and mutable (tests monkeypatch it), so it must not be read from
+    the closure of a cached function.
+
+    See ``calculate_referenceless_overlap_score`` for the behavioral description.
+    """
+    if L == 0:
+        return SCORE_NOTHING
+
+    base = calculate_overlap_score(L=L, M=M) - _acceptable_base_stitching_score(min_matches)
+    sign = 1 if base >= 0 else -1
+    magnitude = 999 + (999 * base) ** 2
+    return sign * magnitude
+
+
 def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
     """
     Transform overlap scores for optimal contig path selection in referenceless stitching.
@@ -129,27 +155,35 @@ def calculate_referenceless_overlap_score(L: int, M: int) -> Score:
         - Zero only when L=0 (no overlap)
         - Guaranteed to be far from SCORE_EPSILON
     """
-
-    if L == 0:
-        return SCORE_NOTHING
-
-    base = calculate_overlap_score(L=L, M=M) - ACCEPTABLE_BASE_STITCHING_SCORE()
-    sign = 1 if base >= 0 else -1
-    magnitude = 999 + (999 * base) ** 2
-    return sign * magnitude
+    return _calculate_referenceless_overlap_score(L, M, MIN_MATCHES)
 
 
 @cache
-def ACCEPTABLE_BASE_STITCHING_SCORE():
-    return calculate_overlap_score(L=MIN_MATCHES + 1, M=MIN_MATCHES)
+def _acceptable_base_stitching_score(min_matches: int) -> Score:
+    return calculate_overlap_score(L=min_matches + 1, M=min_matches)
+
+
+def ACCEPTABLE_BASE_STITCHING_SCORE() -> Score:
+    return _acceptable_base_stitching_score(MIN_MATCHES)
 
 
 @cache
-def ACCEPTABLE_STITCHING_SCORE():
-    return calculate_referenceless_overlap_score(L=MIN_MATCHES + 1, M=MIN_MATCHES)
+def _acceptable_stitching_score(min_matches: int) -> Score:
+    return _calculate_referenceless_overlap_score(
+        min_matches + 1, min_matches, min_matches
+    )
+
+
+def ACCEPTABLE_STITCHING_SCORE() -> Score:
+    return _acceptable_stitching_score(MIN_MATCHES)
 
 
 MAX_ALTERNATIVES = 999
+
+# Which side was covered when a perfect-coverage (SCORE_EPSILON) operation happened.
+# None means a normal stitch; "a" means the existing path (a) was covered by the
+# candidate (b); "b" means the candidate (b) was covered by the existing path (a).
+CoveredInput = Optional[Literal["a", "b"]]
 
 
 def intrapolate_number_of_alternatives(n_candidates: int) -> int:
@@ -216,11 +250,17 @@ def does_share_kmers(
     left: ContigWithAligner,
     right: ContigWithAligner,
 ) -> bool:
-    """Return True if two contigs share any k-mers, False otherwise."""
+    """Return True if two contigs share any k-mers, False otherwise.
+
+    This implements the exact shared-k-mer requirement of the merge rule. It is
+    an independent specificity check: even a statistically acceptable overlap is
+    rejected when the two contigs do not share a k-mer (and both are long enough
+    for the k-mer window to apply).
+    """
     left_kmers = get_kmers(kmers_cache, left.seq)
     right_kmers = get_kmers(kmers_cache, right.seq)
     # We only filter if both have kmers AND they don't share any
-    if left_kmers and right_kmers and left_kmers.isdisjoint(right_kmers):
+    if left_kmers and right_kmers and left_kmers.isdisjoint(right_kmers):  # noqa: SIM103
         return False
     return True
 
@@ -247,11 +287,14 @@ def get_overlap(
         ret: Optional[Overlap] = existing
         return ret
 
-    # Fast k-mer filter: if two contigs don't share any k-mers, they cannot overlap
-    # Only apply the filter if both contigs are long enough (at least kmer_size)
-    # This prevents false negatives when the overlap region is smaller than kmer_size
+    # Exact shared-k-mer requirement (independent specificity check), not a lossless
+    # optimization: if two contigs don't share any k-mer (and both are long enough
+    # for the k-mer window to apply), the merge is rejected even if a statistical
+    # overlap score would be acceptable. The requirement only applies when both
+    # contigs are at least KMER_SIZE long; shorter contigs are exempt because they
+    # cannot contain a full k-mer to share.
     min_length_for_filter = KMER_SIZE
-    if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:
+    if len(left.seq) >= min_length_for_filter and len(right.seq) >= min_length_for_filter:  # noqa: SIM102
         if not does_share_kmers(kmers_cache, left, right):
             get_overlap_cache[key] = None
             return None
@@ -678,6 +721,121 @@ def merge_by_concordance(
     return result_seq, overlap_size, join_boundary
 
 
+def _boundary_window(seq_len: int, cut_position: int, read_length: int) -> Tuple[int, int]:
+    left_radius = read_length // 2
+    right_radius = read_length - left_radius
+    window_start = max(0, cut_position - left_radius)
+    window_end = min(seq_len, cut_position + right_radius)
+    return window_start, window_end
+
+
+def _local_junction_key(
+    merged_seq: str,
+    cut_position: int,
+    read_index: Optional[Dict[int, Counter[str]]],
+    read_length: int,
+) -> Tuple:
+    """Cache key for raw read evidence, derived from the effective local junction.
+
+    The key contains only sequence and geometry that can affect read placements:
+    * local sequence around the cut/window, extended by the longest indexed read
+    * cut and window offsets within that local sequence
+    * read_length (window geometry)
+
+    Two merged contigs with different distant flanks but identical local junction
+    share the same key and thus reuse evidence. Changing any base within the
+    region that can contribute a placement changes the local sequence and thus
+    the key. Using the longest indexed read length ensures the local window is
+    large enough for every length bucket. The key does not contain the read
+    index itself — the cache belongs to a single stitching context whose read
+    index is stable, so the cache implicitly belongs to that read index.
+    """
+    seq_len = len(merged_seq)
+    window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
+    if read_index:
+        max_L = max(read_index)
+        s_min = min(window_start, cut_position)
+        s_max = max(window_end - 1, cut_position - 1)
+        local_start = max(0, s_min - max_L + 1)
+        local_end = min(seq_len, s_max + max_L)
+        # clamp when s_max <0 (cut at 0 with tiny window) -> local_end may be < local_start
+        local_end = max(local_end, local_start)
+    else:
+        # No reads indexed; local sequence not needed but keep cut/window for completeness
+        local_start = 0
+        local_end = 0
+    local_seq = merged_seq[local_start:local_end]
+    return (
+        local_seq,
+        cut_position - local_start,
+        window_start - local_start,
+        window_end - local_start,
+        read_length,
+    )
+
+
+def _compute_raw_read_evidence(
+    merged_seq: str,
+    cut_position: int,
+    read_index: Dict[int, Counter[str]],
+    read_length: int,
+) -> Tuple[int, int]:
+    """Expensive raw evidence: (cut_crossing_depth, min_window_coverage) without threshold."""
+    seq_len = len(merged_seq)
+    rc_merged_seq = reverse_complement(merged_seq)
+    window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
+    window_size = window_end - window_start
+    # window_size >0 guaranteed by caller (zero window handled earlier)
+    diff = [0] * (window_size + 1)
+    cut_crossing_depth = 0
+    any_match = False
+    for L, counter in read_index.items():
+        s_eff_min = max(0, min(window_start, cut_position) - L + 1)
+        s_eff_max = min(max(window_end - 1, cut_position - 1), seq_len - L)
+        if s_eff_min > s_eff_max:
+            continue
+        for s in range(s_eff_min, s_eff_max + 1):
+            kmer = merged_seq[s: s + L]
+            rc_kmer = rc_merged_seq[seq_len - s - L : seq_len - s]
+            canonical = kmer if kmer <= rc_kmer else rc_kmer  # noqa: FURB136
+            count = counter.get(canonical, 0)
+            if count == 0:
+                continue
+            any_match = True
+            if s < cut_position < s + L:
+                cut_crossing_depth += count
+            cov_start = max(window_start, s)
+            cov_end = min(window_end, s + L)
+            if cov_start < cov_end:
+                diff[cov_start - window_start] += count
+                diff[cov_end - window_start] -= count
+    if not any_match:
+        return 0, 0
+    current = 0
+    min_cov = float("inf")
+    for p in range(window_size):
+        current += diff[p]
+        if current < min_cov:  # noqa: PLR1730
+            min_cov = current
+    return cut_crossing_depth, int(min_cov)
+
+
+def _get_cached_read_evidence(
+    merged_seq: str,
+    cut_position: int,
+    read_index: Dict[int, Counter[str]],
+    read_length: int,
+    cache: Dict[Tuple, Tuple[int, int]],
+) -> Tuple[int, int]:
+    """Return raw (cut_depth, min_cov) using per-context cache keyed by local junction."""
+    key = _local_junction_key(merged_seq, cut_position, read_index, read_length)
+    if key in cache:
+        return cache[key]
+    cut_depth, min_cov = _compute_raw_read_evidence(merged_seq, cut_position, read_index, read_length)
+    cache[key] = (cut_depth, min_cov)
+    return cut_depth, min_cov
+
+
 def check_merged_sequence_support(
     merged_seq: str,
     cut_position: int,
@@ -746,56 +904,13 @@ def check_merged_sequence_support(
         return False, 0, 0
 
     seq_len = len(merged_seq)
-
-    left_radius = read_length // 2
-    right_radius = read_length - left_radius
-    window_start = max(0, cut_position - left_radius)
-    window_end = min(seq_len, cut_position + right_radius)
+    window_start, window_end = _boundary_window(seq_len, cut_position, read_length)
     if window_end <= window_start:
         return True, 0, 0
 
-    # -- difference array for per-position coverage --
-    diff = [0] * (seq_len + 1)
-    cut_crossing_depth = 0
-    any_match = False
-
-    for L, counter in read_index.items():
-        s_eff_min = max(0, min(window_start, cut_position) - L + 1)
-        s_eff_max = min(max(window_end - 1, cut_position - 1), seq_len - L)
-        if s_eff_min > s_eff_max:
-            continue
-
-        for s in range(s_eff_min, s_eff_max + 1):
-            kmer = merged_seq[s:s + L]
-            rc_kmer = reverse_complement(kmer)
-            canonical = kmer if kmer <= rc_kmer else rc_kmer
-
-            count = counter.get(canonical, 0)
-            if count == 0:
-                continue
-
-            any_match = True
-
-            if s < cut_position < s + L:
-                cut_crossing_depth += count
-
-            cov_start = max(window_start, s)
-            cov_end = min(window_end, s + L)
-            if cov_start < cov_end:
-                diff[cov_start] += count
-                diff[cov_end] -= count
-
-    if not any_match:
-        return False, 0, 0
-
-    # Compute window coverage unconditionally for diagnostic purposes.
-    current = 0
-    min_cov = float('inf')
-    for p in range(window_start, window_end):
-        current += diff[p]
-        if current < min_cov:
-            min_cov = current
-    min_cov = int(min_cov)
+    cut_crossing_depth, min_cov = _compute_raw_read_evidence(
+        merged_seq, cut_position, read_index, read_length
+    )
 
     if cut_crossing_depth < min_depth:
         return False, cut_crossing_depth, min_cov
@@ -816,7 +931,7 @@ def try_combine_contigs(
     kmers_cache: MutableMapping[str, AbstractSet[str]],
     cutoffs_cache: MutableMapping[Tuple[ContigId, ContigId], Optional[Tuple[int, int]]],
     align_cache: MutableMapping[Tuple[str, str], Tuple[str, str]],
-) -> Optional[Tuple[ContigWithAligner, Score]]:
+) -> Optional[Tuple[ContigWithAligner, Score, CoveredInput]]:
     """Attempt to combine two contigs respecting the pool's score threshold.
 
     Fast-fails using upper bounds on achievable overlap, normalizes orientation,
@@ -860,8 +975,13 @@ def try_combine_contigs(
     coverage = calculate_covered(left, right, overlap.size)
     if coverage is None:
         covered = bigger = None
+        covered_input: CoveredInput = None
     else:
         covered, bigger = coverage
+        # `a` is the existing path and `b` is the candidate. `covered` is one of
+        # them (regardless of orientation normalization), so compare against the
+        # original arguments to record which side was covered.
+        covered_input = "a" if covered is a else "b"
 
     (
         aligned_1,
@@ -900,7 +1020,7 @@ def try_combine_contigs(
             if is_debug2:
                 log(events.Covered(left.unique_name, right.unique_name))
             assert bigger is not None
-            return (bigger, SCORE_EPSILON)
+            return (bigger, SCORE_EPSILON, covered_input)
         else:
             # Partial coverage with mismatches: cannot merge reliably.
             return None
@@ -910,11 +1030,21 @@ def try_combine_contigs(
     )
 
     # Validate the merged sequence around the join boundary against reads.
+    # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
     ctx = ReferencelessStitcherContext.get()
-    passed, cut_depth, min_win_cov = check_merged_sequence_support(
-        result_seq, join_boundary,
-        ctx.read_index, ctx.minimum_read_depth, ctx.read_length,
-    )
+    if ctx.read_index is None or ctx.minimum_read_depth == 0:
+        passed, cut_depth, min_win_cov = True, 0, 0
+    elif not ctx.read_index:
+        passed, cut_depth, min_win_cov = False, 0, 0
+    else:
+        window_start, window_end = _boundary_window(len(result_seq), join_boundary, ctx.read_length)
+        if window_end <= window_start:
+            passed, cut_depth, min_win_cov = True, 0, 0
+        else:
+            cut_depth, min_win_cov = _get_cached_read_evidence(
+                result_seq, join_boundary, ctx.read_index, ctx.read_length, ctx.read_evidence_cache
+            )
+            passed = cut_depth >= ctx.minimum_read_depth and min_win_cov >= ctx.minimum_read_depth
     if not passed:
         if is_debug2:
             log(events.ReadSupportRejected(
@@ -940,7 +1070,7 @@ def try_combine_contigs(
                 overlap_size=overlap_size,
             )
         )
-    return (result_contig, result_score)
+    return (result_contig, result_score, None)
 
 
 def extend_by_1(
@@ -969,11 +1099,20 @@ def extend_by_1(
     if combination is None:
         return None
 
-    combined, additional_score = combination
+    combined, additional_score, covered_input = combination
     score = combine_scores(path.score, additional_score)
+    # Coverage metadata and epsilon scoring must never diverge.
+    assert (additional_score == SCORE_EPSILON) == (covered_input is not None)
     is_covered = additional_score == SCORE_EPSILON
     if is_covered:
-        new_elements = path.contigs_ids
+        if covered_input == "b":
+            # The candidate was covered by the existing path: keep the path's
+            # component ids and only add the candidate to the containment set.
+            new_elements = path.contigs_ids
+        else:
+            # The existing path was covered by the candidate: the candidate
+            # replaces the path's components.
+            new_elements = frozenset([candidate.id])
     else:
         new_elements = path.contigs_ids.union([candidate.id])
     new_contained_elements = path.contains_contigs_ids.union([candidate.id])
@@ -1099,7 +1238,7 @@ def try_combine_1(
                 align_cache=align_cache,
             )
             if result is not None:
-                combined, additional_score = result
+                combined, _additional_score, _covered_input = result
                 return first, second, combined
 
     return None

@@ -41,7 +41,7 @@ class PrimerTracker:
                     if 'dA20' in primer_name or 'TIM' in primer_name:
                         continue
                     primer_seq = str(primer.seq).replace('X', '')
-                    aligned_primer, aligned_conseq, score = align_nucs(
+                    aligned_primer, aligned_conseq, _score = align_nucs(
                         primer_seq,
                         cleaned_conseq)
                     primer_start = aligned_primer.lstrip('-')

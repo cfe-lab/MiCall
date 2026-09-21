@@ -215,7 +215,7 @@ def test_context_manager_fail_to_open(mock_open, tmp_path):
     file_info1 = (file_path1, 'w')
     file_info2 = (file_path2, 'r')
     mock_open.side_effect = mock_side_effect
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError):  # noqa: SIM117
         with open_files(testfile1=file_info1, testfile2=file_info2) as _:
             pass
     assert mock_open.return_value.close.call_count == 1
@@ -233,7 +233,7 @@ def test_context_manager_fail_to_close(mock_open, tmp_path, caplog):
          logging.ERROR,
          "The following files could not be closed: ['testfile1', 'testfile2']")]
     mock_open.return_value.close.side_effect = OSError
-    with pytest.raises(OSError):
+    with pytest.raises(OSError):  # noqa: SIM117
         with open_files(testfile1=file_info1, testfile2=file_info2) as _:
             pass
     assert mock_open.return_value.close.call_count == 2

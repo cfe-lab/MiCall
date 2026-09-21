@@ -464,25 +464,25 @@ class SamToConseqsTest(unittest.TestCase):
 
 
 def test_drop_drifters_seeds_converged():
-    relevant_conseqs = dict(test='ATGAGGAGTA',
-                            other='ATGACCAGTA',
-                            wayoff='ATGAGGGTAC')
-    original_seeds = dict(test='ATGAAGTA',
-                          other='AAGCCGAA',
-                          wayoff='TCATGTAC')
-    read_counts = dict(test=1, other=1, wayoff=1)
+    relevant_conseqs = {"test": 'ATGAGGAGTA',
+                            "other": 'ATGACCAGTA',
+                            "wayoff": 'ATGAGGGTAC'}
+    original_seeds = {"test": 'ATGAAGTA',
+                          "other": 'AAGCCGAA',
+                          "wayoff": 'TCATGTAC'}
+    read_counts = {"test": 1, "other": 1, "wayoff": 1}
     distance_report = {}
 
     expected_seed_names = {'test'}
-    expected_distances = dict(test=dict(seed_dist=2,
-                                        other_dist=5,
-                                        other_seed='other'),
-                              other=dict(seed_dist=4,
-                                         other_dist=2,
-                                         other_seed='test'),
-                              wayoff=dict(seed_dist=4,
-                                          other_dist=3,
-                                          other_seed='test'))
+    expected_distances = {"test": {"seed_dist": 2,
+                                        "other_dist": 5,
+                                        "other_seed": 'other'},
+                              "other": {"seed_dist": 4,
+                                         "other_dist": 2,
+                                         "other_seed": 'test'},
+                              "wayoff": {"seed_dist": 4,
+                                          "other_dist": 3,
+                                          "other_seed": 'test'}}
 
     remap.drop_drifters(relevant_conseqs,
                         original_seeds,
@@ -496,11 +496,11 @@ def test_drop_drifters_seeds_converged():
 def test_drop_drifters_seeds_converged_with_different_alignment():
     """ Seeds have similar regions, but at different positions.
     """
-    relevant_conseqs = dict(test='ATGAGGAGTA',
-                            other='ATGACCAGTA')
-    original_seeds = dict(test='ATGAAGTA',
-                          other='TCTCTCTCTCAAGCCGAA')
-    read_counts = dict(test=1, other=1)
+    relevant_conseqs = {"test": 'ATGAGGAGTA',
+                            "other": 'ATGACCAGTA'}
+    original_seeds = {"test": 'ATGAAGTA',
+                          "other": 'TCTCTCTCTCAAGCCGAA'}
+    read_counts = {"test": 1, "other": 1}
     distance_report = {}
     expected_seed_names = {'test'}
 
@@ -537,15 +537,15 @@ def test_drop_drifters_seeds_converged_with_confusing_gap():
     """ Reads match other seed well, but with a big gap.
     """
     #                             vvvvvvvv
-    relevant_conseqs = dict(test='ATGTCGTA',
+    relevant_conseqs = {"test": 'ATGTCGTA',
                             #      |||||||||
-                            other='AAGCTATAT')
-    original_seeds = dict(
+                            "other": 'AAGCTATAT'}
+    original_seeds = {
         #     vvv??vvv
-        test='ATGAAGTA',
+        "test": 'ATGAAGTA',
         #      vvvvv        |||||||||         vvv
-        other='ATGTCTCTCTCTCAAGCTATATATATACGAAGTA')
-    read_counts = dict(test=1, other=1)
+        "other": 'ATGTCTCTCTCTCAAGCTATATATATACGAAGTA'}
+    read_counts = {"test": 1, "other": 1}
     distance_report = {}
     expected_seed_names = {'test', 'other'}
 
@@ -560,9 +560,9 @@ def test_drop_drifters_seeds_converged_with_confusing_gap():
 def test_drop_drifters_seeds_converged_plus_other_low_coverage():
     """ Portion with decent coverage has converged, other hasn't.
     """
-    relevant_conseqs = dict(test='ATGAGGAGTA', other='ATGACCAGTA')
-    original_seeds = dict(test='ATGAAGTACTCTCT', other='AAGCCGAAGTGTGT')
-    read_counts = dict(test=2, other=3)
+    relevant_conseqs = {"test": 'ATGAGGAGTA', "other": 'ATGACCAGTA'}
+    original_seeds = {"test": 'ATGAAGTACTCTCT', "other": 'AAGCCGAAGTGTGT'}
+    read_counts = {"test": 2, "other": 3}
     distance_report = {}
 
     expected_seed_names = {'test'}
@@ -581,27 +581,27 @@ def test_drop_drifters_seeds_both_converged(projects):
     Don't drop both. Keep test because it has more reads.
     """
     hxb2_end = projects.getReference(HXB2_NAME)[-200:]
-    relevant_conseqs = dict(test='AAGCCGTA' + hxb2_end,
+    relevant_conseqs = {"test": 'AAGCCGTA' + hxb2_end,
                             #      ^ ^^
-                            other='ATGAAGTA' + hxb2_end,
+                            "other": 'ATGAAGTA' + hxb2_end,
                             #       ^ ^^ ^
-                            unrelated='GGGTTTGGG' + hxb2_end)
-    original_seeds = dict(test='ATGAAGTA' + hxb2_end,
-                          other='AAGCCGAA' + hxb2_end,
-                          unrelated='GGGTTTGGG' + hxb2_end)
-    read_counts = dict(test=2, other=1, unrelated=1)
+                            "unrelated": 'GGGTTTGGG' + hxb2_end}
+    original_seeds = {"test": 'ATGAAGTA' + hxb2_end,
+                          "other": 'AAGCCGAA' + hxb2_end,
+                          "unrelated": 'GGGTTTGGG' + hxb2_end}
+    read_counts = {"test": 2, "other": 1, "unrelated": 1}
     distance_report = {}
 
     expected_seed_names = {'test', 'unrelated'}
-    expected_distances = dict(test=dict(seed_dist=3,
-                                        other_dist=1,
-                                        other_seed='other'),
-                              other=dict(seed_dist=4,
-                                         other_dist=0,
-                                         other_seed='test'),
-                              unrelated=dict(seed_dist=0,
-                                             other_dist=7,
-                                             other_seed='other'))
+    expected_distances = {"test": {"seed_dist": 3,
+                                        "other_dist": 1,
+                                        "other_seed": 'other'},
+                              "other": {"seed_dist": 4,
+                                         "other_dist": 0,
+                                         "other_seed": 'test'},
+                              "unrelated": {"seed_dist": 0,
+                                             "other_dist": 7,
+                                             "other_seed": 'other'}}
 
     remap.drop_drifters(relevant_conseqs,
                         original_seeds,

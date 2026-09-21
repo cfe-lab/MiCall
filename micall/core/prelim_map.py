@@ -111,7 +111,7 @@ def prelim_map(
 def check_fastq(filename: str, gzip: bool = False) -> str:
     if not os.path.exists(filename):
         sys.exit('No FASTQ found at ' + filename)
-    if gzip:
+    if gzip:  # noqa: SIM102
         if not filename.endswith('.gz'):
             new_filename = filename + '.gz'
             try:
@@ -151,4 +151,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == '__main__': entry()  # noqa
+if __name__ == '__main__': entry()

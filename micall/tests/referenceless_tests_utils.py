@@ -11,7 +11,7 @@ from pathlib import Path
 from micall.utils.contig_stitcher_context import ReferencelessStitcherContext
 from micall.utils.referenceless_contig_with_aligner import ContigWithAligner, map_overlap
 from micall.utils.referenceless_score import Score
-import micall.utils.registry as registry
+import micall.utils.registry as registry  # noqa: PLR0402
 from micall.utils.referenceless_contig_stitcher import \
     referenceless_contig_stitcher_with_ctx, read_contigs
 from micall.core.project_config import ProjectConfig
@@ -23,9 +23,15 @@ def load_projects():
 
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def disable_kmer_filter(monkeypatch):
-    """Set KMER_SIZE=1 to disable kmer filtering for all tests."""
+    """Set KMER_SIZE=1 to disable the kmer filtering requirement.
+
+    This is intentionally NOT autouse: the production k-mer requirement
+    (KMER_SIZE=30) must be exercised by the suite. Tests that specifically
+    want to isolate another part of the stitcher may request this fixture
+    explicitly and narrowly.
+    """
     monkeypatch.setattr("micall.utils.referenceless_contig_stitcher.KMER_SIZE", 1)
 
 

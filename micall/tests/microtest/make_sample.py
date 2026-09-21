@@ -55,10 +55,10 @@ def main():
         7757)
     hxb2_ref = projects.getReference('HIV1-B-FR-K03455-seed')
 
-    projects.config['regions']['HXB2-with-deletion'] = dict(
-        reference=hxb2_ref[617:928] + hxb2_ref[9358:9652],
-        is_nucleotide=True,
-        seed_group=None)
+    projects.config['regions']['HXB2-with-deletion'] = {
+        'reference': hxb2_ref[617:928] + hxb2_ref[9358:9652],
+        'is_nucleotide': True,
+        'seed_group': None}
     sections_2210_1, sections_2210_2 = make_random_sections(
         'HXB2-with-deletion',
         projects=projects)
@@ -314,8 +314,8 @@ def main():
 
 
 def make_random_sections(coord_name,
-                         min_start: int = None,
-                         max_end: int = None,
+                         min_start: int | None = None,
+                         max_end: int | None = None,
                          projects=None,
                          read_count=10000,
                          mutations=()):
@@ -346,8 +346,8 @@ def make_random_sections(coord_name,
 
 def find_coord_pos(projects: ProjectConfig,
                    coord_name: str,
-                   start_pos: int = None,
-                   end_pos: int = None):
+                   start_pos: int | None = None,
+                   end_pos: int | None = None):
     coord_seq = projects.getReference(coord_name)
     if start_pos is None:
         start_pos = 1

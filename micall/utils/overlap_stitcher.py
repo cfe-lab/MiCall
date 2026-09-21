@@ -107,6 +107,7 @@ def consecutive_true_counts(arr: np.ndarray) -> np.ndarray:
     c - m = [0, 1, 2, 3, 0, 1, 2, 0]
 
     """
+    return None
 
 
 def exp_accumulate_array_positive(array: np.ndarray) -> np.ndarray:

@@ -65,7 +65,7 @@ def load_sample(args):
 
 
 def main():
-    logging.basicConfig(level=logging.WARN)
+    logging.basicConfig(level=logging.WARN)  # noqa: LOG009
     args = parse_args()
     sample_group = load_sample(args)
 

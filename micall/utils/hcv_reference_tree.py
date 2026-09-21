@@ -76,7 +76,7 @@ def fetch_raw_hcv(folder):
     return raw_hcv_path
 
 
-def filter_hcv(raw_hcv_path, excluded=tuple()):
+def filter_hcv(raw_hcv_path, excluded=()):
     filtered_hcv_path = os.path.join(os.path.dirname(raw_hcv_path),
                                      'filtered_hcv.fasta')
     if os.path.exists(filtered_hcv_path):
@@ -101,7 +101,7 @@ def get_subtype(header):
     return match and match.group(2)
 
 
-def filter_hcv_fasta(raw_hcv, filtered_hcv, excluded=tuple()):
+def filter_hcv_fasta(raw_hcv, filtered_hcv, excluded=()):
     seen_headers = set()
     invalid_headers = []
     is_skipping = False
@@ -132,7 +132,7 @@ def filter_hcv_fasta(raw_hcv, filtered_hcv, excluded=tuple()):
 
 
 def build_tree(fasta_path, check_cache=False):
-    root, ext = os.path.splitext(fasta_path)
+    root, _ext = os.path.splitext(fasta_path)
     tree_path = root + '.tree'
     if check_cache and os.path.exists(tree_path):
         return tree_path
@@ -294,7 +294,7 @@ def combine_samples(filtered_hcv, consensus_file, coverage_scores, combined_file
 
 def align_samples(combined_hcv_path, aligned_hcv_path):
     with open(aligned_hcv_path, 'wb') as aligned_hcv:
-        run(['mafft', '--quiet', combined_hcv_path], stdout=aligned_hcv)
+        run(['mafft', '--quiet', combined_hcv_path], stdout=aligned_hcv)  # noqa: PLW1510
 
 
 def check_sample_trees(filtered_hcv_path, consensus_files):

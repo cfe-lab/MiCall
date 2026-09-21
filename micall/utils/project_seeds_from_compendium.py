@@ -92,7 +92,7 @@ def main():
                 if subtype[0].isdigit():
                     recombinant_names.append(description)
                     continue
-                seed_name = '-'.join(('HIV1', subtype, country, accession, 'seed'))
+                seed_name = '-'.join(('HIV1', subtype, country, accession, 'seed'))  # noqa: FLY002
 
                 groups = re.findall(r'([^ACGT]+)', seed_seq)
                 if groups:

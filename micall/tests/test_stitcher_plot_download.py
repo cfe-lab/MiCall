@@ -19,6 +19,12 @@ def test_stitcher_plot_svg_in_downloaded_results():
     assert 'stitcher_plot_svg' in DOWNLOADED_RESULTS
 
 
+def test_conseq_ins_csv_in_downloaded_results():
+    """Test that conseq_ins_csv is in the list of DOWNLOADED_RESULTS"""
+    from micall.monitor.kive_watcher import DOWNLOADED_RESULTS
+    assert 'conseq_ins_csv' in DOWNLOADED_RESULTS
+
+
 def test_move_stitcher_plot_single_sample(tmp_path):
     """Test moving stitcher plot for a single sample"""
     # Setup
@@ -200,7 +206,7 @@ def test_stitcher_plot_svg_argument_in_micall_kive():
         'conseq_region.csv',
     ]
 
-    with patch.object(sys, 'argv', ['micall_kive'] + test_args):
+    with patch.object(sys, 'argv', ['micall_kive', *test_args]):
         args = parse_args()
         assert hasattr(args, 'stitcher_plot_svg')
         assert args.stitcher_plot_svg == 'stitcher_plot.svg'
@@ -255,3 +261,4 @@ def test_stitcher_plot_passed_to_sample():
 
     # Verify that stitcher_plot_svg is accessible via the sample object
     assert sample.stitcher_plot_svg == 'stitcher_plot.svg'
+    assert sample.conseq_ins_csv == 'conseq_ins.csv'

@@ -132,7 +132,7 @@ class TokenBucket(object):
 
         self._allowance += delta * (self._rate / self._per)
 
-        if self._allowance > self._burst:
+        if self._allowance > self._burst:  # noqa: PLR1730
             self._allowance = self._burst
 
         if self._allowance < 1:

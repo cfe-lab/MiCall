@@ -97,6 +97,7 @@ EXECUTABLES = [
     "micall/utils/calculate_kmer_frequencies.py",
     "micall/utils/fastq_to_fasta.py",
     "micall/utils/analyze_kive_batches/analyze_kive_batches.py",
+    "micall/utils/benchmark_referenceless_stitcher.py",
     "micall/utils/version.py",
     "micall/utils/check_sample_sheet.py",
     "micall/utils/cache.py",
@@ -106,12 +107,12 @@ EXECUTABLES = [
 
 def executable_name(path: str) -> str:
     file_name = Path(path).name
-    name, extension = os.path.splitext(file_name)
+    name, _extension = os.path.splitext(file_name)
     return name
 
 
 def executable_module(path: str) -> str:
-    noext, extension = os.path.splitext(path)
+    noext, _extension = os.path.splitext(path)
     pythized = noext.replace(os.path.sep, '.')
     return pythized
 
@@ -120,7 +121,7 @@ EXECUTABLES_MAP = {executable_name(path): path for path in EXECUTABLES}
 
 
 def execute_module_as_main(module_name: str, arguments: Sequence[str]) -> int:
-    sys.argv = [module_name] + list(arguments)
+    sys.argv = [module_name, *list(arguments)]
     micall_directory = str(Path(__file__).parent.parent)
     if micall_directory not in sys.path:
         sys.path.append(micall_directory)
@@ -163,4 +164,4 @@ def cli() -> int:
 
 
 if __name__ == '__main__':
-    exit(cli())
+    sys.exit(cli())

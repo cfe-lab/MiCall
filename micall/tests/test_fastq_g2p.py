@@ -37,10 +37,10 @@ class WriteRowsTest(unittest.TestCase):
         prepare_g2p(self)
 
     def testSimple(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -52,10 +52,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testSummarySuccess(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -72,10 +72,10 @@ mapped,valid,X4calls,X4pct,final,validpct
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
     def testSummaryFailed(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -92,15 +92,15 @@ mapped,valid,X4calls,X4pct,final,validpct
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
     def testSummaryX4(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTATGAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACGAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTATGAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACGAGCACATTGT")),
                    2),
-                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+                  ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCAACAACAATACAAGAAAAAGTATACATAT------AGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -118,15 +118,15 @@ mapped,valid,X4calls,X4pct,final,validpct
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
     def testSummaryThresholdsPassed(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    300),
-                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------"),
+                  ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -149,15 +149,15 @@ mapped,valid,X4calls,X4pct,final,validpct
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
     def testSummaryValidCountThresholdFailed(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    300),
-                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------"),
+                  ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -180,15 +180,15 @@ mapped,valid,X4calls,X4pct,final,validpct
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
     def testSummaryValidPercentageThresholdFailed(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCAACAACAATACAAGAAAAA------GTATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    300),
-                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------"),
+                  ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    100)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -211,20 +211,20 @@ mapped,valid,X4calls,X4pct,final,validpct
         self.assertEqual(expected_summary_csv, self.g2p_summary_csv.getvalue())
 
     def testMinCount(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGA-------------------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    3),
-                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAGGG-------------------------------------------------"
-                    "--------------------------------------------------"),
+                  ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAGGG-------------------------------------------------"
+                    "--------------------------------------------------")),
                    2),
-                  (("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAGAA-------------------------------------------------"
-                    "--------------------------------------------------"),
+                  ((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAGAA-------------------------------------------------"
+                    "--------------------------------------------------")),
                    2)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -244,10 +244,10 @@ mapped,valid,X4calls,X4pct,final,validpct
     def testSynonymMixture(self):
         """ Marking position 12 as low quality means codon 4 has to be P.
         """
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCNAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCNAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -261,10 +261,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
     def testAmbiguousMixture(self):
         """ Marking position 9 as low quality means codon 3 could be S or R.
         """
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGNCCCAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
-                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGNCCCAACAACAATACAAGAAAAAG------TATACATATAGGACCAGGGA"
+                    "GAGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -277,10 +277,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
 
     def testAmbiguousAtTwoPositions(self):
         """ Same thing with codons 9 and 18 - rejected. """
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCAACAACAATACAAGNAAAAG------TATACATATAGGACCAGGGA"
-                    "GNGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTT---GTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCAACAACAATACAAGNAAAAG------TATACATATAGGACCAGGGA"
+                    "GNGCATTTTATGCAACAGGAGAAATAATAGGAGATATAAGACAAGCACATTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -294,10 +294,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
     def testAmbiguousMixtureThreeChoices(self):
         """ Marking position 14 as low quality means codon 5 could be L, S, or *.
         """
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAAGACCCTNAAACTGT-------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAAGACCCTNAAACTGT-------------------------------------"
+                    "--------------------------------------------------")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -309,10 +309,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testLowQuality(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TNTNNNGGN-------------------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TNTNNNGGN-------------------------------------------------"
+                    "--------------------------------------------------")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -324,10 +324,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testPartialCodon(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTACAGG--------------------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTACAGG--------------------------------------------------"
+                    "--------------------------------------------------")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -339,10 +339,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testStopCodon(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTTAGTGT-------------------------------------------------"
-                    "--------------------------------------------------"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTTAGTGT-------------------------------------------------"
+                    "--------------------------------------------------")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -354,10 +354,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testLengthMinimum(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
-                    "-----GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
+                    "-----GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment
@@ -369,10 +369,10 @@ rank,count,g2p,fpr,call,seq,aligned,error,comment
         self.assertEqual(expected_g2p_csv, self.g2p_csv.getvalue())
 
     def testLengthTooShort(self):
-        counts = [(("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
-                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT",
-                    "TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
-                    "--------GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT"),
+        counts = [((("TGTACAAGACCCAACAACAATACAAGAAAAAGAATCCGTATCCAGAGAGGACCAGGGA"
+                    "GAGCATTTGTTACAATAGGAAAAATAGGAAATATGAGACAAGCACATTGT"),
+                    ("TGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGAAA-------"
+                    "--------GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGT")),
                    1)]
         expected_g2p_csv = """\
 rank,count,g2p,fpr,call,seq,aligned,error,comment

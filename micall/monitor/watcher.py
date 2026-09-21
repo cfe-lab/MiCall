@@ -92,7 +92,7 @@ def parse_args(argv=None):
     parser.add_argument(
         '--max_active',
         type=int,
-        default=os.environ.get('MICALL_MAX_ACTIVE', 5),
+        default=os.environ.get('MICALL_MAX_ACTIVE', 5),  # noqa: PLW1508
         help='maximum number of active jobs in Kive')
     parser.add_argument(
         '--quit',

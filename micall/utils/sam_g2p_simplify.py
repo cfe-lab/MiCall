@@ -95,7 +95,7 @@ def compare_conseqs(txtfilename, ruby_script, pssm):
              delete_results=False)
         if not txtfilename.endswith('.txt'):
             with open(simple_prefix + '.txt', 'w') as simplefile:
-                for line in simple_remap_lines:
+                for line in simple_remap_lines:  # noqa: FURB122
                     simplefile.write(line)
 
 if __name__ == '__main__':

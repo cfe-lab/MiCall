@@ -30,10 +30,10 @@ class QualityMetricsParserTest(TestCase):
         self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
 
     def test_load(self):
-        expected_records = [dict(lane=1,
-                                 tile=2,
-                                 cycle=3,
-                                 quality_bins=tuple(range(101, 151)))]
+        expected_records = [{'lane': 1,
+                                 'tile': 2,
+                                 'cycle': 3,
+                                 'quality_bins': tuple(range(101, 151))}]
 
         records = [quality_record_to_dict(r) for r in read_quality(self.sample_stream)]
 
@@ -45,10 +45,10 @@ class QualityMetricsParserTest(TestCase):
         self.sample_data.extend(self.sample_data[2:])
         format_string = '<BB' + 2*('HHH' + 50*'L' + 'B')
         self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
-        expected_records = [dict(lane=1,
-                                 tile=2,
-                                 cycle=3,
-                                 quality_bins=tuple(range(101, 151)))] * 2
+        expected_records = [{'lane': 1,
+                                 'tile': 2,
+                                 'cycle': 3,
+                                 'quality_bins': tuple(range(101, 151))}] * 2
 
         records = [quality_record_to_dict(r) for r in read_quality(self.sample_stream)]
 
@@ -61,7 +61,7 @@ class QualityMetricsParserTest(TestCase):
         records[0].quality_bins[28] = 1
         records[0].quality_bins[29] = 1
         records[1].quality_bins[29] = 1
-        expected_summary = dict(q30_fwd=2/3.0)
+        expected_summary = {'q30_fwd': 2/3.0}
 
         summary = {}
         # Use ReadLengths4 for single combined read
@@ -78,7 +78,7 @@ class QualityMetricsParserTest(TestCase):
         records[0].quality_bins[28] = 1
         records[0].quality_bins[29] = 1
         records[1].quality_bins[29] = 1
-        expected_summary = dict(q30_fwd=0.5, q30_rev=1.0)
+        expected_summary = {'q30_fwd': 0.5, 'q30_rev': 1.0}
 
         summary = {}
         summarize_quality_records(records, summary, read_lengths)
@@ -123,7 +123,7 @@ class QualityMetricsParserTest(TestCase):
         records[0].quality_bins[28] = 1
         records[0].quality_bins[29] = 1
         records[1].quality_bins[29] = 1
-        expected_summary = dict(q30_fwd=0.5, q30_rev=1.0)
+        expected_summary = {'q30_fwd': 0.5, 'q30_rev': 1.0}
 
         summary = {}
         summarize_quality_records(records, summary, read_lengths)

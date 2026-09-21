@@ -146,7 +146,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTATTCTTTTTA'
         expected_aminos = 'LFFL'
         stats = {}
-        expected_stats = dict(length=4, ambiguous=0, max_aminos=1)
+        expected_stats = {'length': 4, 'ambiguous': 0, 'max_aminos': 1}
 
         aminos = translate(nucs, stats=stats, list_ambiguous=True)
 
@@ -157,7 +157,7 @@ class TranslateTest(unittest.TestCase):
         nucs = ''
         expected_aminos = ''
         stats = {}
-        expected_stats = dict(length=0, ambiguous=0, max_aminos=0)
+        expected_stats = {'length': 0, 'ambiguous': 0, 'max_aminos': 0}
 
         aminos = translate(nucs, stats=stats, list_ambiguous=True)
 
@@ -168,7 +168,7 @@ class TranslateTest(unittest.TestCase):
         nucs = 'TTMTTCNTTTTA'
         expected_aminos = '[FL]F[FILV]L'
         stats = {}
-        expected_stats = dict(length=4, ambiguous=2, max_aminos=4)
+        expected_stats = {'length': 4, 'ambiguous': 2, 'max_aminos': 4}
 
         aminos = translate(nucs, stats=stats, list_ambiguous=True)
 

@@ -11,12 +11,12 @@ from seqUtils import convert_fasta
 hyphy = HyPhy._THyPhy (os.getcwd(), 1) # instance of HyPhy
 hyphyAlign.change_settings(hyphy)  # default settings
 
-handle = open('fda_hcv_polyprotein.fa', 'r')
+handle = open('fda_hcv_polyprotein.fa', 'r')  # noqa: SIM115
 fasta = convert_fasta(handle)
 handle.close()
 
 with ProjectsFile().path() as projects_file_path:
-     handle = open(projects_file_path, 'r')
+     handle = open(projects_file_path, 'r')  # noqa: SIM115
      proj = json.load(handle)
      handle.close()
 
@@ -26,7 +26,7 @@ for key in proj['regions'].iterkeys():
         aa = ''.join(proj['regions'][key]['reference'])
         h77.update({str(key): str(aa)})
         
-outfile = open('fda_hcv_coords.fa', 'w')
+outfile = open('fda_hcv_coords.fa', 'w')  # noqa: SIM115
 
 for h, s in fasta:
     for gene, refseq in h77.iteritems():

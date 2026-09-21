@@ -32,7 +32,7 @@ def process_run(run_folder: Path, skip_mid_hcv: bool):
     sample_sheet_path = run_folder / 'SampleSheet.csv'
     try:
         run_info = read_sample_sheet_and_overrides(sample_sheet_path)
-    except Exception:
+    except Exception:  # noqa: BLE001
         raise RuntimeError(f'Failed to process run {run_folder.name}.')
     sample_names = set(run_info['Data'])
     if skip_mid_hcv:

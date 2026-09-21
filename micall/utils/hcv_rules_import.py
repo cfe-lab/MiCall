@@ -75,7 +75,7 @@ class Range:
         r'(([</=]*) *([\d.]+)(-([\d.]+))?)[x ]*FS( range)?, likely susceptibi?le$'
     upper_pattern = \
         r'(([>/=]*) *([\d.]+)(-([\d.]+))?)[x ]*FS( range)?, resistance likely$'
-    score_phenotypes = {
+    score_phenotypes = {  # noqa: RUF012
         score: phenotype
         for phenotype, score in PHENOTYPE_SCORES.items()}
 
@@ -104,7 +104,7 @@ class Range:
             lower_operator_text = lower_match.group(2)
             if lower_operator_text == '<':
                 self.lower_operator = operator.lt
-            elif lower_operator_text in ('<=', '</='):
+            elif lower_operator_text in ('<=', '</='):  # noqa: SIM114
                 self.lower_operator = operator.le
             elif lower_match.group(5) and lower_operator_text == '':
                 self.lower_operator = operator.le
@@ -121,7 +121,7 @@ class Range:
             upper_operator_text = upper_match.group(2)
             if upper_operator_text == '>':
                 self.upper_operator = operator.gt
-            elif upper_operator_text in ('>=', '>/='):
+            elif upper_operator_text in ('>=', '>/='):  # noqa: SIM114
                 self.upper_operator = operator.ge
             elif upper_match.group(5) and upper_operator_text == '':
                 self.upper_operator = operator.ge
@@ -201,7 +201,7 @@ class Range:
             expectation_display = (f'{fold_shift_text}/{clinical_ras} '
                                    f'in {self} {expected_phenotype}')
         if phenotype != expected_phenotype:
-            prefix = self.drug and (self.drug + ' ') or ''
+            prefix = (self.drug and (self.drug + ' ')) or ''
             self.changes.append(
                 f'{prefix}{mutation} ({expectation_display}) but is {phenotype}')
 
@@ -273,7 +273,7 @@ class WorksheetReader:
                     continue
                 fields = {heading: ws.cell(row_num, col).value
                           for col, heading in column_headings.items()}
-                for field in fields:
+                for field in fields:  # noqa: PLC0206
                     value = fields[field]
                     if value is not None:
                         fields[field] = str(value).strip()
@@ -493,10 +493,10 @@ class RulesWriter:
                 self._check_conflicts(positions, section)
                 self._monitor_positions(section, positions, reference)
                 score_formula = build_score_formula(positions)
-                drug_summary['genotypes'].append(dict(genotype=subtype,
-                                                      region=region,
-                                                      reference=reference_name,
-                                                      rules=score_formula))
+                drug_summary['genotypes'].append({'genotype': subtype,
+                                                      'region': region,
+                                                      'reference': reference_name,
+                                                      'rules': score_formula})
         self._check_not_indicated(drug_summaries)
         self._override_sofosbuvir(drug_summaries)
         drugs = sorted(drug_summaries.values(), key=itemgetter('code'))
@@ -590,10 +590,10 @@ class RulesWriter:
                         reference = self.references[(genotype_name[:-1], drug_region)]
                     else:
                         raise
-                drug_summary['genotypes'].append(dict(genotype=genotype_name,
-                                                      region=drug_region,
-                                                      reference=reference.name,
-                                                      rules=score_formula))
+                drug_summary['genotypes'].append({'genotype': genotype_name,
+                                                      'region': drug_region,
+                                                      'reference': reference.name,
+                                                      'rules': score_formula})
             drug_summary['genotypes'].sort(key=itemgetter('genotype'))
 
     def _score_mutation(self,
@@ -700,7 +700,7 @@ class RulesWriter:
                     (section.sheet_name, section.drug_name)]
                 mutations.append(entry.mutation)
                 return
-        clinical_ras = clinical_ras and clinical_ras.lower() or 'no'
+        clinical_ras = (clinical_ras and clinical_ras.lower()) or 'no'
         if '-' in fold_shift_text:
             fold_range = section.range_range
         fold_range.validate_phenotype(entry.mutation,
@@ -729,7 +729,7 @@ class RulesWriter:
                     combination_score))
 
     def _check_conflicts(self, positions, section):
-        for pos, score_map in positions.items():
+        for pos, score_map in positions.items():  # noqa: PERF102
             for item1, item2 in itertools.combinations(
                     sorted(score_map.items()), 2):
                 score1, mutation_set1 = item1
@@ -762,9 +762,9 @@ class RulesWriter:
                     section.sheet_name,
                     drug_name))
                 raise
-            drug_summary = drug_summaries[drug_name] = dict(name=drug_name,
-                                                            code=drug_code,
-                                                            genotypes=[])
+            drug_summary = drug_summaries[drug_name] = {'name': drug_name,
+                                                            'code': drug_code,
+                                                            'genotypes': []}
         return drug_summary
 
     def _monitor_positions(self, section, position_scores, reference):
@@ -961,7 +961,7 @@ def replace_wild_types(combination, reference):
                                            m.variant
                                            for m in mutation_set.mutations))
             mutations[i] = str(mutation_set)
-        pass
+        pass  # noqa: PIE790
     return '+'.join(mutations)
 
 

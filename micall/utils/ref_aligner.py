@@ -91,8 +91,8 @@ class AlignmentEvaluator:
 
     def seed_group_summary(self):
         seed_groups_counts = Counter()
-        seed_group_warnings = {key: Counter() for key in self.warning_seeds.keys()}
-        for warning in self.warning_seeds.keys():
+        seed_group_warnings = {key: Counter() for key in self.warning_seeds.keys()}  # noqa: SIM118
+        for warning in self.warning_seeds.keys():  # noqa: SIM118
             for seed in self.warning_seeds[warning]:
                 split_name = seed.split('-')
                 seed_group = '-'.join(split_name[0:2])
@@ -101,9 +101,9 @@ class AlignmentEvaluator:
             split_name = seed.split('-')
             seed_group = '-'.join(split_name[0:2])
             seed_groups_counts.update([seed_group])
-        for seed_group in seed_groups_counts.keys():
+        for seed_group in seed_groups_counts.keys():  # noqa: SIM118
             print(f'Seed group {seed_group}')
-            for warning in seed_group_warnings.keys():
+            for warning in seed_group_warnings.keys():  # noqa: PLC0206, SIM118
                 if warning == 'insertions':
                     message = f'had a large insertion (over {self.max_insertion})'
                 elif warning == 'deletions':
@@ -133,7 +133,7 @@ class SeedAlignment(AlignmentEvaluator):
         self.seed_ref = self.projects.getReference(seed_name)
         self.alignments = list(self.aligner.map(self.seed_ref))
         self.seed_coverage = 0
-        self.warning_dict = {key: [] for key in self.warning_seeds.keys()}
+        self.warning_dict = {key: [] for key in self.warning_seeds.keys()}  # noqa: SIM118
         self.warnings = ''
 
     def evaluate_seed_alignment(self):
@@ -197,7 +197,7 @@ class SeedAlignment(AlignmentEvaluator):
                     if action == CigarActions.MATCH:
                         coverage += cigar_end-region_start
                 continue
-            if region_start <= cigar_start:
+            if region_start <= cigar_start:  # noqa: SIM102
                 if cigar_end >= region_end:
                     # last cigar, write partial to region cigar
                     if action != CigarActions.INSERT:

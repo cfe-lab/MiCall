@@ -11,9 +11,9 @@ class GenReportTest(TestCase):
         with self.assertRaisesRegex(
                 ValueError,
                 r"Unknown configuration: bogus_key, weird_key."):
-            ReportTemplate(dict(weird_key="Hello",
-                                known_regions=['R1', 'R2'],
-                                bogus_key=42))
+            ReportTemplate({"weird_key": "Hello",
+                                "known_regions": ['R1', 'R2'],
+                                "bogus_key": 42})
 
     def test_missing_keys(self):
         with self.assertRaisesRegex(
@@ -21,13 +21,13 @@ class GenReportTest(TestCase):
                 r"Missing configuration: failure_message, generated_by_text, "
                 r"known_drug_classes, known_drugs, report_title, "
                 r"resistance_level_colours."):
-            ReportTemplate(dict(known_regions=['R1', 'R2'],
-                                disclaimer_text="Hello."),
+            ReportTemplate({"known_regions": ['R1', 'R2'],
+                                "disclaimer_text": "Hello."},
                            raise_missing=True)
 
     def test_register_regions(self):
-        page1 = ReportTemplate(dict(known_regions=['R1', 'R2']))
-        page2 = ReportTemplate(dict(known_regions=['R3']))
+        page1 = ReportTemplate({"known_regions": ['R1', 'R2']})
+        page2 = ReportTemplate({"known_regions": ['R3']})
         expected_regions = {'R1': page1,
                             'R2': page1,
                             'R3': page2}
@@ -39,12 +39,12 @@ class GenReportTest(TestCase):
         self.assertEqual(expected_regions, regions)
 
     def test_register_drug_classes(self):
-        page1 = ReportTemplate(dict(known_drug_classes=[('C1', 'Class 1'),
+        page1 = ReportTemplate({"known_drug_classes": [('C1', 'Class 1'),
                                                         ('C2', 'Class 2')],
-                                    known_drugs={'C1': [('D1', 'Drug 1')],
-                                                 'C2': [('D2', 'Drug 2')]}))
-        page2 = ReportTemplate(dict(known_drug_classes=[('C3', 'Class 3')],
-                                    known_drugs={'C3': [('D3', 'Drug 3')]}))
+                                    "known_drugs": {'C1': [('D1', 'Drug 1')],
+                                                 'C2': [('D2', 'Drug 2')]}})
+        page2 = ReportTemplate({"known_drug_classes": [('C3', 'Class 3')],
+                                    "known_drugs": {'C3': [('D3', 'Drug 3')]}})
         expected_drug_classes = {'C1': page1,
                                  'C2': page1,
                                  'C3': page2}
@@ -65,10 +65,10 @@ class GenReportTest(TestCase):
         self.assertEqual(expected_repr, r)
 
     def test_get_reported_drug_classes(self):
-        template = ReportTemplate(dict(known_drug_classes=[('C1', 'Class 1'),
+        template = ReportTemplate({"known_drug_classes": [('C1', 'Class 1'),
                                                            ('C2', 'Class 2')],
-                                       known_drugs={'C1': [('D1', 'Drug 1')],
-                                                    'C2': [('D2', 'Drug 2')]}))
+                                       "known_drugs": {'C1': [('D1', 'Drug 1')],
+                                                    'C2': [('D2', 'Drug 2')]}})
         genotype = 'g1'
         template.genotype_pages[genotype] = ReportPage(
             resistance_calls={'D1': 'Some resistance data'},
@@ -102,9 +102,9 @@ def test_bad_config_type():
 
 
 def test_bad_colour_config():
-    config = dict(resistance_level_colours={
+    config = {"resistance_level_colours": {
         1: ['Susceptible', 0xDEFBDE]
-    })
+    }}
 
     match = (r"Error in configuration file: resistance_level_colours must have "
              r"3 entries: \['Susceptible', 14613470]")
@@ -113,9 +113,9 @@ def test_bad_colour_config():
 
 
 def test_bad_colour_type():
-    config = dict(resistance_level_colours={
+    config = {"resistance_level_colours": {
         1: ['Susceptible', 0xDEFBDE, 'blue']
-    })
+    }}
 
     match = (r"Error in configuration file: resistance_level_colours "
              r"string, int, int expected \['Susceptible', 14613470, 'blue']")
@@ -124,10 +124,10 @@ def test_bad_colour_type():
 
 
 def test_inconsistent_drug_classes():
-    config = dict(known_drugs=dict(class_a=[('code1', 'name 1a')],
-                                   class_b=[('code3', 'name 3b')]),
-                  known_drug_classes=[('class_a', 'name a'),
-                                      ('class_c', 'name c')])
+    config = {"known_drugs": {"class_a": [('code1', 'name 1a')],
+                                   "class_b": [('code3', 'name 3b')]},
+                  "known_drug_classes": [('class_a', 'name a'),
+                                      ('class_c', 'name c')]}
 
     match = (r"Error in configuration file: known_drugs inconsistent with "
              r"drug_classes")
@@ -136,14 +136,14 @@ def test_inconsistent_drug_classes():
 
 
 def test_duplicate_drug_codes():
-    config = dict(known_drugs=dict(class_a=[('code1', 'name 1a'),
+    config = {"known_drugs": {"class_a": [('code1', 'name 1a'),
                                             ('code2a', 'name 2a'),
                                             ('code3', 'name 3a')],
-                                   class_b=[('code1', 'name 1b'),
+                                   "class_b": [('code1', 'name 1b'),
                                             ('code2b', 'name 2b'),
-                                            ('code3', 'name 3b')]),
-                  known_drug_classes=[('class_a', 'name a'),
-                                      ('class_b', 'name b')])
+                                            ('code3', 'name 3b')]},
+                  "known_drug_classes": [('class_a', 'name a'),
+                                      ('class_b', 'name b')]}
 
     match = (r"Error in configuration file: known_drugs duplicate drug "
              r"identifiers: code1, code3.")
@@ -152,14 +152,14 @@ def test_duplicate_drug_codes():
 
 
 def test_duplicate_drug_names():
-    config = dict(known_drugs=dict(class_a=[('code1a', 'name 1a'),
+    config = {"known_drugs": {"class_a": [('code1a', 'name 1a'),
                                             ('code2a', 'name 2'),
                                             ('code3a', 'name 3')],
-                                   class_b=[('code1b', 'name 1b'),
+                                   "class_b": [('code1b', 'name 1b'),
                                             ('code2b', 'name 2'),
-                                            ('code3b', 'name 3')]),
-                  known_drug_classes=[('class_a', 'name a'),
-                                      ('class_b', 'name b')])
+                                            ('code3b', 'name 3')]},
+                  "known_drug_classes": [('class_a', 'name a'),
+                                      ('class_b', 'name b')]}
 
     match = (r"Error in configuration file: known_drugs duplicate drug names: "
              r"name 2, name 3.")
@@ -326,8 +326,8 @@ def test_algorithm_regions_processable():
             empty = create_empty_aminos(region, None, 'HIV1B-seed', algorithms)
             assert empty.region == region
             assert len(empty.aminos) > 0
-        except Exception as e:
-            errors.append(f"{region}: {str(e)}")
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"{region}: {e!s}")
 
     assert not errors, (
         f"Cannot process algorithm regions: {errors}\n"

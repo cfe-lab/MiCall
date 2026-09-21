@@ -1460,7 +1460,7 @@ def test_consensus_insertion_translated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(0, 28))
+    consumed_positions = set(range(0, 28))  # noqa: PIE808
     is_amino = True
 
     combine_region_insertions(insertions_dict,
@@ -1487,7 +1487,7 @@ def test_consensus_insertion_untranslated_differences():
     region_insertions = {1: {1: insertion3}, 7: {1: insertion3}, 12: {1: insertion4}}
     region_start = 20
     prev_region_end = 29
-    consumed_positions = set(i for i in range(0, 28))
+    consumed_positions = set(range(0, 28))  # noqa: PIE808
     is_amino = False
 
     combine_region_insertions(insertions_dict,
@@ -1641,7 +1641,7 @@ HIV1-B-FR-K03455-seed,HIV1B-gag,15,494,1073,1862,9,0,0,0,0,0,0,0,0,9"""
     if len(report_lines) != expected_size:
         assert (len(report_lines), report) == (expected_size, '')
 
-    key_lines = report_lines[661:663] + ['...'] + report_lines[1240:1242]
+    key_lines = [*report_lines[661:663], '...', *report_lines[1240:1242]]
     key_report = '\n'.join(key_lines)
     assert key_report == expected_text
 

@@ -6,7 +6,7 @@ from typing import Tuple, List
 
 from aligntools import CigarActions, CigarHit, Cigar
 
-import micall.utils.registry as registry
+import micall.utils.registry as registry  # noqa: PLR0402
 import micall.utils.referencefull_contig_stitcher as stitcher
 from micall.utils.referencefull_contig_stitcher import (
     split_contigs_with_gaps,
@@ -26,6 +26,8 @@ from micall.tests.test_fasta_to_csv import (
     DEFAULT_DATABASE,
 )  # activates the fixture
 from micall.tests.test_remap import load_projects  # activates the "projects" fixture
+import functools
+import operator
 
 
 logging.getLogger("micall.utils.referencefull_contig_stitcher").setLevel(logging.DEBUG)
@@ -686,7 +688,7 @@ def test_correct_processing_complex_nogaps(exact_aligner, visualizer):
         for ref_name in ["testref-1", "testref-2"]
     ]
 
-    contigs = sum(contigs, start=[])
+    contigs = functools.reduce(operator.iadd, contigs, [])
 
     results = list(stitch_contigs(contigs))
     assert len(results) == 4
@@ -1876,7 +1878,7 @@ def test_find_covered(contigs, expected_covered_name):
         create_mock_aligned_contig(ref_name, r_st, r_ei, f"contig{i + 1}")
         for i, (ref_name, r_st, r_ei) in enumerate(contigs)
     ]
-    covered, covering = find_covered_contig(mock_contigs)
+    covered, _covering = find_covered_contig(mock_contigs)
     if expected_covered_name is None:
         assert covered is None
     else:
@@ -1902,7 +1904,7 @@ def test_find_covered_prioritizes_by_reads_count():
 
     # With reads_count available, should remove contig3 first (lowest reads_count=10)
     # even though contig2 has larger ref_length
-    covered, covering = find_covered_contig(mock_contigs)
+    covered, _covering = find_covered_contig(mock_contigs)
     assert covered is not None
     assert covered.name == "contig3"
 
@@ -1923,7 +1925,7 @@ def test_find_covered_prioritizes_by_ref_length_when_no_reads():
     ]
 
     # Without reads_count, should remove contig3 first (smallest ref_length=40)
-    covered, covering = find_covered_contig(mock_contigs)
+    covered, _covering = find_covered_contig(mock_contigs)
     assert covered is not None
     assert covered.name == "contig3"
 
@@ -1945,6 +1947,6 @@ def test_find_covered_mixed_reads_count_uses_ref_length():
 
     # Mixed reads_count means fall back to ref_length ordering
     # Should remove contig3 first (smallest ref_length=40)
-    covered, covering = find_covered_contig(mock_contigs)
+    covered, _covering = find_covered_contig(mock_contigs)
     assert covered is not None
     assert covered.name == "contig3"

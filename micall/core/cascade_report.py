@@ -42,7 +42,7 @@ class CascadeReport:
                        'prelim_map',
                        'remap',
                        'aligned']
-        self.counts = {name: 0 for name in field_names}
+        self.counts = dict.fromkeys(field_names, 0)
 
         self.read_g2p()
         self.read_remap()

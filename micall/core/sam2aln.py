@@ -394,9 +394,9 @@ class PairProcessor(object):
         for rname, counts in self.clipping_counts.items():
             positions = sorted(counts.keys())
             for pos in positions:
-                row = dict(refname=rname,
-                           pos=pos,
-                           count=counts[pos])
+                row = {'refname': rname,
+                           'pos': pos,
+                           'count': counts[pos]}
                 clipping_writer.writerow(row)
 
 
@@ -466,12 +466,12 @@ def sam2aln(remap_csv,
 
         for qcut, mseq in mseqs.items():
             temp_writer = region[qcut]
-            temp_writer.writerow(dict(refname=rname,
-                                      qcut=qcut,
-                                      rank=temp_writer.line_count,
-                                      count=1,
-                                      offset=len_gap_prefix(mseq),
-                                      seq=mseq.strip('-')))
+            temp_writer.writerow({'refname': rname,
+                                      'qcut': qcut,
+                                      'rank': temp_writer.line_count,
+                                      'count': 1,
+                                      'offset': len_gap_prefix(mseq),
+                                      'seq': mseq.strip('-')})
             temp_writer.line_count += 1
 
         if insert_writer is not None:

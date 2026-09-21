@@ -113,7 +113,7 @@ def sample_sheet_v2_parser(file: MultiCSVFile) -> Dict[str, object]:
 
 
 def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
-    if 'Header' not in file.keys():
+    if 'Header' not in file.keys():  # noqa: SIM118
         raise ValueError("Missing 'Header' section in the sample sheet.")
 
     # Verify Header section
@@ -128,7 +128,7 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
             )
 
     # Verify Reads section
-    if 'Reads' in file.keys():
+    if 'Reads' in file.keys():  # noqa: SIM118
         for line_number, row in enumerate(csv.reader(file['Reads']), start=1):
             if len(row) == 0:
                 continue
@@ -138,7 +138,7 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
                                  f"but got {len(row)}: {row!r}.")
             try:
                 int(row[0])
-            except BaseException:
+            except BaseException:  # noqa: BLE001
                 raise ValueError(f"Line {line_number} in [Reads] section:"
                                  " Expected an integer, "
                                  f"but got {row[0]}: {row!r}.")
@@ -147,7 +147,7 @@ def sample_sheet_v2_verifier(file: MultiCSVFile) -> None:
 
     required_data_fields = ['Sample_ID', 'Sample_Name', 'index', 'index2', 'Sample_Project']
     data_field_errors = []
-    if 'Data' in file.keys():
+    if 'Data' in file.keys():  # noqa: SIM118
         for line_number, row in enumerate(csv.reader(file['Data']), start=1):
             if line_number == 1:
                 headers = row

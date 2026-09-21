@@ -55,7 +55,7 @@ class BigCounter:
             keys = sorted(self.active_counts)
             writer = DictWriter(cache, ['key', 'count'])
             for key in keys:
-                writer.writerow(dict(key=key, count=self.active_counts[key]))
+                writer.writerow({'key': key, 'count': self.active_counts[key]})
             self.active_counts.clear()
             self.cache_files.append(cache.name)
 
@@ -64,7 +64,7 @@ class BigCounter:
         readers = []
         active_keys = sorted(self.active_counts)
         if active_keys:
-            readers.append((dict(key=key, count=self.active_counts[key])
+            readers.append(({'key': key, 'count': self.active_counts[key]}
                             for key in active_keys))
         for cache_file_name in self.cache_files:
             readers.append(DictReader(read_cache_lines(cache_file_name),

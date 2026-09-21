@@ -35,7 +35,7 @@ def fresh():
 def stage():
     try:
         existing = get()
-    except BaseException:
+    except BaseException:  # noqa: BLE001
         with fresh() as ret:
             yield ret
             return

@@ -175,6 +175,7 @@ def check_run_completions(runs_dir: Path, monitoring: List[RunInfo], dry_run: bo
         logger.debug("Currently monitoring %d run(s)", len(monitoring))
     else:
         logger.debug("No runs currently being monitored")
+        return
 
     # Sleep before checking stability
     sleep(COMPLETION_POLL_INTERVAL)
@@ -256,7 +257,7 @@ def configure_logging(args: argparse.Namespace) -> None:
     elif args.debug:
         logger.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
+        logger.setLevel(logging.WARN)  # noqa: LOG009
 
     logging.basicConfig(level=logger.level)
 
@@ -283,4 +284,4 @@ def entry() -> None:
     sys.exit(main(sys.argv[1:]))
 
 
-if __name__ == "__main__": entry() # noqa
+if __name__ == "__main__": entry()

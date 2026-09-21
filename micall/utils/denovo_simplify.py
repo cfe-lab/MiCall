@@ -182,7 +182,7 @@ class MicallDD(DD):
         selected_reads = (self.reads[i] for i in read_indexes)
         with open(filename1, 'w') as f1, open(filename2, 'w') as f2:
             for lines in selected_reads:
-                for line in lines[:4]:
+                for line in lines[:4]:  # noqa: FURB122
                     f1.write(line)
                 for line in lines[4:]:
                     f2.write(line)

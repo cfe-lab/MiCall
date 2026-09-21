@@ -185,7 +185,7 @@ def test_coerce_and_nan(tmp_path):
     assert df.loc[0, "size"] == "10/foo"
     assert str(df.loc[0, "size_base"]) == "10"
     # still has the correct header
-    expected_cols = header + ["size_base"]
+    expected_cols = [*header, "size_base"]
     assert list(df.columns) == expected_cols
 
 
@@ -287,7 +287,7 @@ def test_column_order_is_preserved(tmp_path):
     diff_samples_of_two_apps(inp, app1="alice", app2="bob", output=out)
     # read only header line - should include base columns
     actual_header = out.read_text().splitlines()[0].split(',')
-    expected_header = header + ["type_base", "foo_base", "size_base"]
+    expected_header = [*header, "type_base", "foo_base", "size_base"]
     assert actual_header == expected_header
 
     # check the single data row

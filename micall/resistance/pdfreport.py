@@ -193,8 +193,8 @@ def write_report_one_column(report_templates, fname, sample_name=None):
                 raise ValueError(
                     f'Unknown drug codes: {", ".join(unknown_drug_codes)}')
             col_tab = cfg_dct["resistance_level_colours"]
-            level_coltab = dict([(k, (colors.HexColor(v[1]), colors.HexColor(v[2])))
-                                 for k, v in col_tab.items()])
+            level_coltab = {k: (colors.HexColor(v[1]), colors.HexColor(v[2]))
+                                 for k, v in col_tab.items()}
             append_header(doc_els,
                           cfg_dct,
                           table_width,

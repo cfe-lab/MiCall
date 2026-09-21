@@ -9,7 +9,7 @@ def check_tree(*args, **kwargs):
     except ImportError:
         # Skip test if ete3 is not installed.
         pytest.skip("ete3 not installed")
-        return
+        return None
 
     import micall.utils.hcv_reference_tree as origin
     return origin.check_tree(*args, **kwargs)

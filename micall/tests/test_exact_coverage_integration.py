@@ -92,7 +92,7 @@ def test_exact_coverage_integration():
         assert "base" not in rows[0], "Should NOT have base column"
 
         # Check that we got coverage for both contigs
-        contigs_in_output = set(row["contig"] for row in rows)
+        contigs_in_output = {row["contig"] for row in rows}
         assert "contig1" in contigs_in_output, "Should have contig1 in output"
         assert "contig2" in contigs_in_output, "Should have contig2 in output"
 

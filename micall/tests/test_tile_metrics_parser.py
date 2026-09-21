@@ -24,10 +24,10 @@ class TileMetricsParserTest(TestCase):
         self.sample_stream = BytesIO(pack(format_string, *self.sample_data))
 
     def test_load(self):
-        expected_records = [dict(lane=1,
-                                 tile=2,
-                                 metric_code=100,
-                                 metric_value=4.0)]
+        expected_records = [{'lane': 1,
+                                 'tile': 2,
+                                 'metric_code': 100,
+                                 'metric_value': 4.0}]
 
         records = [r.model_dump() for r in read_tiles(self.sample_stream)]
 
@@ -37,7 +37,7 @@ class TileMetricsParserTest(TestCase):
         records = [TileMetricRecord(lane=1, tile=1,
                                      metric_code=MetricCodes.CLUSTER_DENSITY,
                                      metric_value=3.0)]
-        expected_summary = dict(cluster_density=3.0)
+        expected_summary = {'cluster_density': 3.0}
 
         summary = {}
         summarize_tile_records(records, summary)
@@ -60,7 +60,7 @@ class TileMetricsParserTest(TestCase):
                    TileMetricRecord(lane=1, tile=2,
                                     metric_code=MetricCodes.CLUSTER_DENSITY,
                                     metric_value=4.0)]
-        expected_summary = dict(cluster_density=3.5)
+        expected_summary = {'cluster_density': 3.5}
 
         summary = {}
         summarize_tile_records(records, summary)
@@ -74,7 +74,7 @@ class TileMetricsParserTest(TestCase):
                    TileMetricRecord(lane=1, tile=1,
                                     metric_code=MetricCodes.CLUSTER_DENSITY_PASSING_FILTERS,
                                     metric_value=4.0)]
-        expected_summary = dict(cluster_density=3.0)
+        expected_summary = {'cluster_density': 3.0}
 
         summary = {}
         summarize_tile_records(records, summary)
@@ -88,7 +88,7 @@ class TileMetricsParserTest(TestCase):
                    TileMetricRecord(lane=1, tile=1,
                                     metric_code=MetricCodes.CLUSTER_COUNT_PASSING_FILTERS,
                                     metric_value=50.0)]
-        expected_summary = dict(pass_rate=0.5)
+        expected_summary = {'pass_rate': 0.5}
 
         summary = {}
         summarize_tile_records(records, summary)

@@ -1,5 +1,7 @@
 import json
 import logging
+import textwrap
+
 import requests
 
 logger = logging.getLogger('qai_helper')
@@ -16,6 +18,7 @@ class Session(requests.Session):
         @raise RuntimeError: when the QAI server rejects the user and password.
         """
         self.qai_path = qai_path
+        self.qai_user = qai_user
 
         response = self.post(qai_path + "/account/login",
                              data={'user_login': qai_user,
@@ -45,7 +48,22 @@ class Session(requests.Session):
         response.raise_for_status()
         if not response.text.strip():
             return None
-        return response.json()
+        try:
+            return response.json()
+        except ValueError:
+            redirects = ' -> '.join(
+                f'{redirect.status_code} {redirect.headers.get("Location", "")}'
+                for redirect in response.history)
+            user = getattr(self, 'qai_user', None)
+            user_hint = f' for user {user!r}' if user else ''
+            logger.error('QAI response body for %s:\n%s',
+                         full_path,
+                         textwrap.indent(response.text, '    '))
+            raise RuntimeError(
+                f"QAI returned a non-JSON response{user_hint} for {full_path}: "
+                f"{response.status_code} {response.reason}."
+                + (f" Redirected: {redirects}." if redirects else "")
+            ) from None
 
     def post_json(self, path, data):
         """ Post a JSON object to the web server, and return a JSON object.

@@ -69,7 +69,7 @@ def lstrip(self: AlignedContig) -> AlignedContig:
     """
 
     alignment = self.alignment.lstrip_reference().lstrip_query()
-    q_remainder, query = cut_query(self, alignment.q_st - 0.5)
+    _q_remainder, query = cut_query(self, alignment.q_st - 0.5)
     alignment = alignment.translate(0, -1 * alignment.q_st)
     result = AlignedContig.make(query, alignment, self.strand)
     log(events.LStrip(self, result))
@@ -83,7 +83,7 @@ def rstrip(self: AlignedContig) -> AlignedContig:
     """
 
     alignment = self.alignment.rstrip_reference().rstrip_query()
-    query, q_remainder = cut_query(self, alignment.q_ei + 0.5)
+    query, _q_remainder = cut_query(self, alignment.q_ei + 0.5)
     result = AlignedContig.make(query, alignment, self.strand)
     log(events.RStrip(self, result))
     return result
@@ -233,8 +233,8 @@ def strip_conflicting_mappings(contigs: Iterable[GenotypedContig]) -> Iterable[G
         else:
             return -1, -1
 
-    reference_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[1]))
-    query_sorted = list(sorted(names.keys(), key=lambda id: get_indexes(id)[0]))
+    reference_sorted = sorted(names.keys(), key=lambda id: get_indexes(id)[1])
+    query_sorted = sorted(names.keys(), key=lambda id: get_indexes(id)[0])
 
     def is_out_of_order(id: int) -> bool:
         return reference_sorted.index(id) != query_sorted.index(id)
@@ -338,8 +338,8 @@ def stitch_2_contigs(left, right):
     concordance = calculate_concordance_norm(aligned_left, aligned_right)
     aligned_left_cutpoint, aligned_right_cutpoint, max_concordance_index = \
         concordance_to_cut_points(left_overlap, right_overlap, aligned_left, aligned_right, concordance)
-    left_overlap_take, left_overlap_drop = cut_reference(left_overlap, aligned_left_cutpoint)
-    right_overlap_drop, right_overlap_take = cut_reference(right_overlap, aligned_right_cutpoint)
+    left_overlap_take, _left_overlap_drop = cut_reference(left_overlap, aligned_left_cutpoint)
+    _right_overlap_drop, right_overlap_take = cut_reference(right_overlap, aligned_right_cutpoint)
 
     # Log it.
     cut_point_location_scaled = max_concordance_index / (((len(concordance) or 1) - 1) or 1)
@@ -358,7 +358,7 @@ def combine_overlaps(contigs: Sequence[AlignedContig]) -> Iterable[AlignedContig
     """
 
     # Going left-to-right through aligned contigs.
-    contigs = list(sorted(contigs, key=lambda x: x.alignment.r_st))
+    contigs = sorted(contigs, key=lambda x: x.alignment.r_st)
     while contigs:
         current = contigs.pop(0)
 
@@ -435,14 +435,14 @@ def find_covered_contig(contigs: Sequence[AlignedContig]) -> Tuple[Optional[Alig
         cumulative_coverage = calculate_cumulative_coverage(overlaping_contigs)
 
         # Check if the current contig is covered by the cumulative coverage intervals
-        if any((cover_interval[0] < current_interval[0] and cover_interval[1] >= current_interval[1]
-                or cover_interval[0] <= current_interval[0] and cover_interval[1] > current_interval[1])
+        if any(((cover_interval[0] < current_interval[0] and cover_interval[1] >= current_interval[1])
+                or (cover_interval[0] <= current_interval[0] and cover_interval[1] > current_interval[1]))
                for cover_interval in cumulative_coverage):
             # Strictly covered.
             return current, overlaping_contigs
         elif any((cover_interval[0] == current_interval[0] and cover_interval[1] == current_interval[1])
                for cover_interval in cumulative_coverage):
-            if any(contig.reads_count is None for contig in overlaping_contigs + [current]):
+            if any(contig.reads_count is None for contig in [*overlaping_contigs, current]):
                 log(events.IgnoreCoverage(current, overlaping_contigs))
                 continue
 
@@ -491,7 +491,7 @@ def split_contigs_with_gaps(contigs: Sequence[AlignedContig]) -> Sequence[Aligne
 
     def significant(gap):
         # noinspection PyLongLine
-        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.         # noqa: E501
+        # The size of the gap is unavoidably, to some point, arbitrary. Here we tried to adjust it to common gaps in HIV, as HIV is the primary test subject in MiCall. A notable feature of HIV-1 reverse transcription is the appearance of periodic deletions of approximately 21 nucleotides. These deletions have been reported to occur in the HIV-1 genome and are thought to be influenced by the structure of the viral RNA. Specifically, the secondary structures and foldings of the RNA can lead to pause sites for the reverse transcriptase, resulting in staggered alignment when the enzyme slips. This misalignment can cause the reverse transcriptase to "jump," leading to deletions in the newly synthesized DNA. The unusually high frequency of about 21-nucleotide deletions is believed to correspond to the pitch of the RNA helix, which reflects the spatial arrangement of the RNA strands. The 21 nucleotide cycle is an average measure and is thought to be associated with the length of one turn of the RNA helix, meaning that when reverse transcriptase slips and reattaches, it often does so one helical turn away from the original site.
         return gap.ref_length > 21
 
     def try_split(self: AlignedContig):
@@ -575,10 +575,10 @@ def write_contigs(output_csv: TextIO, contigs: Iterable[GenotypedContig]):
                             lineterminator=os.linesep)
     writer.writeheader()
     for contig in contigs:
-        writer.writerow(dict(ref=contig.ref_name,
-                             match=contig.match_fraction,
-                             group_ref=contig.group_ref,
-                             contig=contig.seq))
+        writer.writerow({"ref": contig.ref_name,
+                             "match": contig.match_fraction,
+                             "group_ref": contig.group_ref,
+                             "contig": contig.seq})
 
     output_csv.flush()
 
