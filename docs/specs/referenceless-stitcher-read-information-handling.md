@@ -1,49 +1,5 @@
 # Read-Supported Join Validation for the Referenceless Contig Stitcher
 
-## 0. Design contract (read first)
-
-### What "referenceless" means
-
-The referenceless stitcher refines an initial de novo assembly (IVA,
-Haploflow) using only evidence intrinsic to the sample: assembled
-contig sequences, overlaps between contigs, raw short-read evidence
-where available, and anything else derived directly from the sample
-that does not depend on positioning sequence against an external
-biological reference. It must NOT use a reference sequence to decide
-which contigs ought to be adjacent, their expected ordering or
-orientation, whether a rearrangement is biologically plausible, or
-whether the result looks like a canonical genome.
-
-### Why reference independence is intentional
-
-Reference-guided stitching (the referencefull stitcher) is valuable
-and exists separately, but it can arrange assembly pieces according
-to the reference instead of the true molecule. For analyses where
-target-specific structure matters — e.g. proviral intactness, where
-inversions, rearrangements, and large deletions are biologically
-meaningful rather than artifacts — a more contiguous
-reference-guided result can be less faithful than the fragmented de
-novo result. The referenceless output exists to avoid that class of
-reference bias.
-
-### Conservative by design
-
-A referenceless false negative (truly adjacent contigs left separate)
-is conservative: both pieces stay visible for downstream inspection.
-A false positive (fusing biologically nonadjacent contigs) destroys
-structural information. The overlap, shared-k-mer, covered-contig,
-and read-support rules below are therefore safeguards against
-unsupported joining first, and sensitivity features only second.
-
-### Fundamental limit
-
-Sample-intrinsic short-read evidence cannot always separate distinct
-molecules. If two lineages share a long high-identity region that
-reads do not phase to distinguishing flanks, no reference-independent
-short-read stitcher can know they must stay apart. Such cases are a
-ceiling of the approach, not a defect to fix by smuggling in
-reference/subtype evidence — that would violate this contract.
-
 ## 1. Purpose
 
 Reduce false joins in referenceless contig stitching by requiring exact
