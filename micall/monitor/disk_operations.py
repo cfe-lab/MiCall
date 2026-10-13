@@ -33,7 +33,7 @@ def wait_for_retry(attempt_count, operation_name, start_time):
     delay = calculate_retry_wait(MINIMUM_RETRY_WAIT, MAXIMUM_RETRY_WAIT, attempt_count)
 
     # Determine if we should log based on elapsed time
-    elapsed = datetime.now() - start_time  # noqa: DTZ005
+    elapsed = datetime.now() - start_time
     should_log_error = elapsed >= timedelta(hours=1)
 
     if should_log_error:
@@ -67,9 +67,9 @@ def disk_retry(operation_name="disk operation"):
                     return func(*args, **kwargs)
                 except (OSError, IOError) as ex:
                     if start_time is None:
-                        start_time = datetime.now()  # noqa: DTZ005
+                        start_time = datetime.now()
 
-                    elapsed = datetime.now() - start_time  # noqa: DTZ005
+                    elapsed = datetime.now() - start_time
                     if elapsed >= MAXIMUM_RETRY_TIME:
                         logger.error(
                             f"Disk operation {operation_name} failed after {elapsed} of retrying: {ex}"
