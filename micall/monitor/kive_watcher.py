@@ -110,7 +110,7 @@ def now() -> datetime:
 
     Wrapped in a local function so it can be mocked during testing.
     """
-    return datetime.now()  # noqa: DTZ005
+    return datetime.now()
 
 
 def find_samples(raw_data_folder: Path,
@@ -139,9 +139,9 @@ def find_samples(raw_data_folder: Path,
 
             # Record start time on first failure
             if start_time is None:
-                start_time = datetime.now()  # noqa: DTZ005
+                start_time = datetime.now()
 
-            elapsed = datetime.now() - start_time  # noqa: DTZ005
+            elapsed = datetime.now() - start_time
             if elapsed >= MAXIMUM_RETRY_TIME:
                 logger.error(  # noqa: G201
                     'find_samples failed after %s of retrying; giving up.',
@@ -245,7 +245,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
     sample_sheet_path = run_path / "SampleSheet.csv"
 
     try:
-        start_time = datetime.now()  # noqa: DTZ005
+        start_time = datetime.now()
         for attempt_count in count(1):
             try:
                 file_names = list_fastq_file_names(run_path, "*_R1_*.fastq.gz", fallback_to_run_path=False)
@@ -254,7 +254,7 @@ def find_sample_groups(run_path: Path, base_calls_path: Path) -> Sequence[Sample
                 sample_groups = list(find_groups(file_names, str(sample_sheet_path)))
                 break
             except IOError:
-                elapsed = datetime.now() - start_time  # noqa: DTZ005
+                elapsed = datetime.now() - start_time
                 if elapsed >= MAXIMUM_RETRY_TIME:
                     raise
                 wait_for_retry(attempt_count, start_time)
@@ -321,7 +321,7 @@ def wait_for_retry(attempt_count: int, start_time: datetime) -> None:
                                  attempt_count)
 
     # Determine if we should log based on elapsed time
-    elapsed = datetime.now() - start_time  # noqa: DTZ005
+    elapsed = datetime.now() - start_time
     should_log_warning = elapsed >= timedelta(hours=1)
 
     if should_log_warning:
@@ -585,9 +585,9 @@ class KiveWatcher:
 
                 # Record start time on first failure
                 if start_time is None:
-                    start_time = datetime.now()  # noqa: DTZ005
+                    start_time = datetime.now()
 
-                elapsed = datetime.now() - start_time  # noqa: DTZ005
+                elapsed = datetime.now() - start_time
                 if elapsed >= MAXIMUM_RETRY_TIME:
                     logger.error(  # noqa: G201
                         'add_sample_group failed after %s of retrying; giving up.',
@@ -632,9 +632,9 @@ class KiveWatcher:
 
                 # Record start time on first failure
                 if start_time is None:
-                    start_time = datetime.now()  # noqa: DTZ005
+                    start_time = datetime.now()
 
-                elapsed = datetime.now() - start_time  # noqa: DTZ005
+                elapsed = datetime.now() - start_time
                 if elapsed >= MAXIMUM_RETRY_TIME:
                     logger.error(  # noqa: G201
                         'poll_runs failed after %s of retrying; giving up.',
@@ -1339,7 +1339,7 @@ class KiveWatcher:
                 logger.info(f"Caught error while trying to read the phix data: {ex}")
 
                 if start_time is None:
-                    start_time = datetime.now()  # noqa: DTZ005
+                    start_time = datetime.now()
                 wait_for_retry(attempt_count, start_time)
             except Exception:
                 logger.error("Finding error metrics in %s",  # noqa: G201

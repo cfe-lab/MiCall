@@ -51,7 +51,7 @@ def create_datasets(names):
 @pytest.fixture(name='mock_clock')
 def create_mock_clock():
     with patch('micall.monitor.kive_watcher.now') as mock_clock:
-        mock_clock.return_value = datetime(2000, 1, 1)  # noqa: DTZ001
+        mock_clock.return_value = datetime(2000, 1, 1)
         yield mock_clock
 
 

@@ -54,7 +54,7 @@ def main():
 
 def format_sample_name(run, sample):
     run_fields = run.split('.')
-    run_date = datetime.strptime(run_fields[0], '%d-%b-%Y')  # noqa: DTZ007
+    run_date = datetime.strptime(run_fields[0], '%d-%b-%Y')
     if len(run_fields) == 1:
         run_suffix = ''
     else:

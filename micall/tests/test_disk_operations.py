@@ -62,7 +62,7 @@ class TestRetryLogic:
     @patch("micall.monitor.disk_operations.logger")
     def test_wait_for_retry_logs_error(self, mock_logger, mock_sleep):
         """wait_for_retry should log error and sleep."""
-        start_time = datetime.now() - timedelta(  # noqa: DTZ005
+        start_time = datetime.now() - timedelta(
             hours=2
         )  # Old enough to trigger logging
         wait_for_retry(3, "test operation", start_time)
@@ -78,7 +78,7 @@ class TestRetryLogic:
     @patch("micall.monitor.disk_operations.logger")
     def test_wait_for_retry_within_hour(self, mock_logger, mock_sleep):
         """wait_for_retry within first hour should not log."""
-        start_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not trigger logging  # noqa: DTZ005
+        start_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not trigger logging
         wait_for_retry(2, "test operation", start_time)
 
         mock_logger.error.assert_not_called()
@@ -129,7 +129,7 @@ class TestDiskRetryDecorator:
         mock_func = Mock(side_effect=error)
         decorated = disk_retry("test_op")(mock_func)
 
-        start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
+        start_time = datetime(2024, 1, 1, 0, 0, 0)
         with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
             mock_datetime.now.side_effect = [
                 start_time,
@@ -355,7 +355,7 @@ class TestRemoveEmptyDirectory:
         mock_rmdir.side_effect = OSError(errno.EACCES, "Permission denied")
         path = Path("/test/no_access_dir")
 
-        start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
+        start_time = datetime(2024, 1, 1, 0, 0, 0)
         with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
             mock_datetime.now.side_effect = [
                 start_time,
@@ -652,7 +652,7 @@ class TestAdvancedRetryLogic:
 
         # Should retry these errors
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
-            start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
+            start_time = datetime(2024, 1, 1, 0, 0, 0)
             with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
                 mock_datetime.now.side_effect = [
                     start_time,
@@ -664,7 +664,7 @@ class TestAdvancedRetryLogic:
             assert mock_wait.call_count == 1
 
         with patch("micall.monitor.disk_operations.wait_for_retry") as mock_wait:
-            start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
+            start_time = datetime(2024, 1, 1, 0, 0, 0)
             with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
                 mock_datetime.now.side_effect = [
                     start_time,
@@ -1023,7 +1023,7 @@ class TestErrorMessageVerification:
 
         with patch("micall.monitor.disk_operations.logger.error") as mock_logger:  # noqa: SIM117
             with patch("micall.monitor.disk_operations.sleep"):
-                start_time = datetime(2024, 1, 1, 0, 0, 0)  # noqa: DTZ001
+                start_time = datetime(2024, 1, 1, 0, 0, 0)
                 with patch("micall.monitor.disk_operations.datetime") as mock_datetime:
                     mock_datetime.now.side_effect = [
                         start_time,
@@ -1049,7 +1049,7 @@ class TestErrorMessageVerification:
         # Test with logging enabled
         with patch("micall.monitor.disk_operations.logger.error") as mock_logger:  # noqa: SIM117
             with patch("micall.monitor.disk_operations.sleep"):
-                old_time = datetime.now() - timedelta(hours=2)  # noqa: DTZ005
+                old_time = datetime.now() - timedelta(hours=2)
                 disk_operations.wait_for_retry(3, "test_op", old_time)
 
                 mock_logger.assert_called_once()
@@ -1061,7 +1061,7 @@ class TestErrorMessageVerification:
         # Test with logging disabled
         with patch("micall.monitor.disk_operations.logger.error") as mock_logger:  # noqa: SIM117
             with patch("micall.monitor.disk_operations.sleep"):
-                recent_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not log  # noqa: DTZ005
+                recent_time = datetime.now() - timedelta(minutes=30)  # Recent enough to not log
                 disk_operations.wait_for_retry(3, "test_op", recent_time)
 
                 mock_logger.assert_not_called()

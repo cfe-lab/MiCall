@@ -76,9 +76,9 @@ def retry_operation(operation, operation_name: str):
 
             # Record start time on first failure
             if start_time is None:
-                start_time = datetime.now()  # noqa: DTZ005
+                start_time = datetime.now()
 
-            elapsed = datetime.now() - start_time  # noqa: DTZ005
+            elapsed = datetime.now() - start_time
             if elapsed >= MAXIMUM_RETRY_TIME:
                 logger.error(f'{operation_name} failed after {elapsed} of retrying', exc_info=True)  # noqa: G201
                 break
@@ -478,7 +478,7 @@ def upload_proviral_csv(session: Session, run_id: str, csv_path: str, endpoint: 
 
 def clean_runname(runname: str) -> str:
     try:
-        rundate = datetime.strptime(runname, '%d-%b-%y')  # noqa: DTZ007
+        rundate = datetime.strptime(runname, '%d-%b-%y')
         cleaned_runname = datetime.strftime(rundate, '%d-%b-%Y')
     except ValueError:
         cleaned_runname = runname
@@ -647,7 +647,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
     start_time = None
     while True:
         try:
-            next_scan = datetime.now() + FOLDER_SCAN_INTERVAL  # noqa: DTZ005
+            next_scan = datetime.now() + FOLDER_SCAN_INTERVAL
             results_paths = scan_qai_done_flags(raw_data_folder, pipeline_version)
             if not results_paths:
                 logger.info('No runs pending QAI upload.')
@@ -686,7 +686,7 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
             start_time = None
             if not wait:
                 break
-            while wait and datetime.now() < next_scan:  # noqa: DTZ005
+            while wait and datetime.now() < next_scan:
                 sleep(SLEEP_SECONDS)
         except Exception:
             if not retry:
@@ -695,9 +695,9 @@ def upload_loop(qai_server: str, qai_user: str, qai_password: str, pipeline_vers
 
             attempt_count += 1
             if start_time is None:
-                start_time = datetime.now()  # noqa: DTZ005
+                start_time = datetime.now()
 
-            elapsed = datetime.now() - start_time  # noqa: DTZ005
+            elapsed = datetime.now() - start_time
             if elapsed >= MAXIMUM_RETRY_TIME:
                 logger.error(  # noqa: G201
                     'upload_loop failed after %s of retrying; giving up.',
