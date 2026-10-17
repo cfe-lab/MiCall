@@ -120,9 +120,6 @@ allow-direct-references = true
 
 [tool.pytest.ini_options]
 timeout = 360
-markers = [
-    "iva: test requires IVA (deselect with '-m \"not iva\"')"
-]
 
 [tool.ruff.lint]
 ignore = [
