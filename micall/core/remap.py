@@ -12,6 +12,7 @@ from collections import Counter, defaultdict
 import csv
 from csv import DictReader, DictWriter
 from functools import partial
+from itertools import groupby
 from logging import getLogger
 import os
 import re
@@ -775,6 +776,11 @@ def map_to_contigs(fastq1,
                 "Excluded %d mapped pairs with no usable or safe "
                 "paired alignment from de novo remapping.",
                 diagnostics['discarded_mapped_pairs'])
+        if diagnostics['incomplete_pair_groups']:
+            logger.warning(
+                "%d Bowtie2 QNAME groups contained an odd number of "
+                "SAM records; unpaired trailing records were discarded.",
+                diagnostics['incomplete_pair_groups'])
         new_counts.clear()
         new_counts.update(accepted_counts)
         write_remap_counts(remap_counts_writer, new_counts, title='remap')
@@ -782,16 +788,14 @@ def map_to_contigs(fastq1,
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
-    final_pair_rows = Counter()
+    unique_pair_count = 0
     if new_counts:
         splitter = MixedReferenceSplitter(work_path)
         split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile) as f:
-            for fields in splitter.split(f):
-                if is_reported_region(fields[2]):
-                    final_pair_rows[fields[0]] += 1
-                write_remap_row(remap_writer, fields)
+            unique_pair_count += write_reported_pairs(
+                splitter.split(f), remap_writer)
         for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
             unmapped_count += map_to_reference(split_file1.name,
@@ -811,19 +815,17 @@ def map_to_contigs(fastq1,
                                                callback)
             new_counts.update(split_counts)
             with open(samfile, 'r') as f:
-                for fields in splitter.walk(f):
-                    if is_reported_region(fields[2]):
-                        final_pair_rows[fields[0]] += 1
-                    write_remap_row(remap_writer, fields)
+                unique_pair_count += write_reported_pairs(
+                    splitter.walk(f), remap_writer)
 
     write_contig_sequences(conseqs, remap_conseq_csv)
     write_remap_counts(remap_counts_writer,
                        new_counts,
                        title='remap-final')
-    unique_pair_count = sum(count >= 2 for count in final_pair_rows.values())
     if unique_pair_count * 2 != sum(new_counts.values()):
         # Per-contig counts intentionally repeat multi-mapped fragments. This
-        # physical-molecule count is for cascade accounting, not consensus.
+        # sequenced-pair count is for cascade accounting, not consensus.
+        # This does not deduplicate PCR or optical duplicates.
         remap_counts_writer.writerow({
             'type': 'remap-unique', 'count': unique_pair_count * 2})
 
@@ -848,6 +850,31 @@ def write_contig_sequences(conseqs, remap_conseq_csv):
         if is_reported_region(contig_name):
             writer.writerow({'region': contig_name,
                                  'sequence': contig_seq})
+
+
+def write_reported_pairs(rows, remap_writer):
+    """Write remap rows and count sequenced pairs with O(1) extra memory.
+
+    The SAM stream from Bowtie2 (and each restricted rescue run) is grouped
+    by QNAME, with mate records adjacent. The initial and rescue streams
+    contain disjoint original pairs: the rescue is only attempted when no
+    proper paired placement was accepted. Each QNAME is therefore counted
+    once within its stream, regardless of the number of contig hypotheses.
+    """
+    unique_pairs = 0
+    for _, group in groupby(rows, key=lambda fields: fields[0]):
+        mapped_mates = 0
+        for fields in group:
+            if is_reported_region(fields[2]):
+                if not is_unmapped_read(fields[1]):
+                    flags = int(fields[1])
+                    if flags & SAM_FLAG_IS_FIRST_SEGMENT:
+                        mapped_mates |= 1
+                    if flags & 0x80:  # second segment in the pair
+                        mapped_mates |= 2
+                write_remap_row(remap_writer, fields)
+        unique_pairs += mapped_mates == 3
+    return unique_pairs
 
 
 def write_remap_row(remap_writer, fields):

@@ -1495,3 +1495,73 @@ unmapped,0,,,,
                     count_threshold=1)
 
     assert remap_counts_csv.read_text() == expected_remap_counts
+
+
+
+def test_write_reported_pairs_counts_unique_fragments_without_collecting_names():
+    import tracemalloc
+    from micall.core.remap import write_reported_pairs
+
+    class CountingWriter:
+        def __init__(self):
+            self.count = 0
+
+        def writerow(self, _):
+            self.count += 1
+
+    # Compare memory for small and large streams; unlike a platform-specific
+    # fixed byte threshold, the growth ratio remains stable across versions
+    # of Python and coverage-enabled CI.
+    def sam_rows(count):
+        for i in range(count):
+            references = ('A', 'B', 'C', 'D') if i % 2 else ('A',)
+            for reference in references:
+                for flag in ('99', '147'):
+                    yield [f'fragment-{i}', flag, reference, '1', '0',
+                           '4M', '=', '1', '0', 'ACGT', 'IIII']
+
+    def run(count):
+        writer = CountingWriter()
+        tracemalloc.start()
+        try:
+            pairs = write_reported_pairs(sam_rows(count), writer)
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+        assert pairs == count
+        assert writer.count == count * 5
+        return peak
+
+    small_peak = run(400)
+    large_peak = run(12000)
+    assert large_peak < small_peak * 4 + 200_000
+
+
+def test_write_reported_pairs_excludes_unmapped_and_filtered_references():
+    from unittest.mock import Mock
+    from micall.core.remap import write_reported_pairs
+
+    rows = [
+        ['a', '99', 'A'], ['a', '147', 'A'],
+        ['a', '355', 'B'], ['a', '403', 'B'],
+        ['b', '99', 'A-excluded'], ['b', '147', 'A-excluded'],
+        ['c', '77', '*'], ['c', '141', '*'],
+        ['d', '99', 'A'], ['d', '141', '*'],
+    ]
+    writer = Mock()
+    assert write_reported_pairs(iter(rows), writer) == 1
+    # Keep the existing remap CSV behavior for rows marked unmapped, but
+    # never treat them as independent mapped molecules.
+    assert writer.writerow.call_count == 8
+
+
+
+def test_write_reported_pairs_requires_both_mates_not_duplicate_first_mate():
+    from unittest.mock import Mock
+    from micall.core.remap import write_reported_pairs
+
+    rows = [
+        ['dup', '99', 'A'], ['dup', '99', 'B'],
+        ['valid', '99', 'A'], ['valid', '147', 'B'],
+    ]
+    assert write_reported_pairs(iter(rows), Mock()) == 1
