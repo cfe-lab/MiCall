@@ -101,10 +101,22 @@ pairs, not the sum of hypotheses. The `aligned` cascade column and per-contig
 coverage remain placement-based for consensus and are not estimates of
 independent molecules across contigs.
 
+The unique-pair count is calculated as SAM records are written, using
+**constant additional memory with respect to the number of input read pairs**.
+Within each QNAME group, at least one mapped R1 and one mapped R2 must be
+present to count a sequenced pair; secondary placement copies never add
+to this count. Distinct main and single-reference rescue streams contain
+disjoint read pairs. This assumes the standard MiCall input invariant of
+unique QNAMEs for independent input pairs and contiguous Bowtie2 QNAME groups
+(use of one Bowtie2 thread preserves the ordering).
+
+This count is **not PCR/optical duplicate removal** and should not be
+interpreted as a count of distinct original biological molecules.
+
 The GUI remapping progress callback uses original read-pair counts rather
 than the larger number of SAM alignment records from `-k`. Warnings identify
-both reporting-limit saturation and mapped pairs rejected because no safe
-paired placement was found.
+reporting-limit saturation, mapped pairs rejected because no safe paired
+placement was found, and odd-length QNAME groups with orphaned SAM records.
 
 ## Validation
 
@@ -127,6 +139,20 @@ The alignment stage emits one record pair per retained placement, so runtime
 and intermediate I/O can grow approximately linearly with the number of
 alternatives even when Bowtie2 itself is fast. The two depth CSVs include
 zero-coverage positions and therefore also grow with total contig length.
+
+Depth accumulation uses a hybrid sparse/packed representation: isolated
+positions do not allocate large zero-filled prefixes, while densely covered
+regions use contiguous 64-bit integer and floating-point arrays instead of
+two Python dictionaries per base. Sparse outliers are reconciled if later
+reads extend the packed region over them. In an illustrative Python 3.12
+memory probe involving 500 contigs and 1,500 covered positions each, this
+reduced peak depth-accumulator memory from approximately 104 MiB to 12 MiB.
+The tradeoff is additional Python bookkeeping per base; both runtime and
+peak memory still depend on alternative alignments and dataset structure.
 These costs must be measured on authentic datasets before deployment.
+
+Integration tests explicitly cover nine otherwise identical contigs, which
+saturate the eight-placement cap and emit a warning. It is not legitimate
+to treat all nine contigs as confirmed equally supported in that case.
 
 Related history: #141, #200, #264, #290, #719.
