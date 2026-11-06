@@ -9,6 +9,7 @@ clips).
 
 import argparse
 from collections import Counter, defaultdict
+from itertools import groupby
 from csv import DictReader, DictWriter
 from io import StringIO
 from tempfile import NamedTemporaryFile
@@ -421,11 +422,75 @@ class TempFileFactory:
         return writer
 
 
+
+class AlternativeDepths:
+    """Per-reference position coverage for de novo alternative placements.
+
+    Max counts every compatible original pair on each reference. Avg assigns
+    each original pair total weight one, split across accepted placements.
+    These are hypotheses, *not* independent molecules across references.
+    """
+    def __init__(self):
+        self.maximum = defaultdict(Counter)
+        self.average = defaultdict(Counter)
+
+    def add(self, pair, fraction):
+        first, second = pair
+        ref = first['rname']
+        aligned = []
+        qualities = []
+        for row in (first, second):
+            sequence, quality, _ = apply_cigar(
+                row['cigar'], row['seq'], row['qual'], int(row['pos']) - 1)
+            aligned.append(sequence)
+            qualities.append(quality)
+        # Insertions do not occupy reference positions. Merge overlapping
+        # mates at Q15, as in the existing sam2aln alignment pipeline.
+        merged = merge_pairs(*aligned, *qualities, q_cutoff=15)
+        for index, base in enumerate(merged, start=1):
+            if base in 'ACGT':
+                self.maximum[ref][index] += 1
+                self.average[ref][index] += fraction
+
+    def write(self, output, reference_csv=None):
+        writer = DictWriter(output, ['refname', 'position', 'max_depth',
+                                     'avg_depth'])
+        writer.writeheader()
+        lengths = {}
+        if reference_csv is not None:
+            lengths = {row['region']: len(row['sequence'])
+                       for row in DictReader(reference_csv)}
+        for reference in sorted(set(self.maximum) | set(lengths)):
+            positions = (range(1, lengths[reference] + 1)
+                         if reference in lengths
+                         else sorted(self.maximum[reference]))
+            for position in positions:
+                writer.writerow({
+                    'refname': reference, 'position': position,
+                    'max_depth': self.maximum[reference][position],
+                    'avg_depth': format(
+                        self.average[reference][position], '.12g')})
+
+
+def multi_mapping_regions(pairs, processor, depths):
+    # Input pairs must be consecutive within each original QNAME. The de novo
+    # best-pair selector guarantees this even for secondary placements.
+    for _, group in groupby(pairs, key=lambda pair: pair[0]['qname']):
+        processed = [(pair, processor.process(pair)) for pair in group]
+        accepted = sum(bool(result[1]) for _, result in processed)
+        for pair, result in processed:
+            if result[1] and accepted:
+                depths.add(pair, 1 / accepted)
+            yield result
+
+
 def sam2aln(remap_csv,
             aligned_csv,
             insert_csv=None,
             failed_csv=None,
-            clipping_csv=None):
+            clipping_csv=None,
+            depth_csv=None,
+            depth_reference_csv=None):
     if insert_csv is None:
         insert_writer = None
     else:
@@ -458,7 +523,12 @@ def sam2aln(remap_csv,
     empty_region = defaultdict(temp_files.create_writer)
     aligned = defaultdict(empty_region.copy)  # {rname: {qcut: aligned_file}}
     # noinspection PyTypeChecker
-    regions = map(pair_processor.process, matchmaker(remap_csv))
+    pairs = matchmaker(remap_csv)
+    depths = AlternativeDepths() if depth_csv is not None else None
+    if depths is None:
+        regions = map(pair_processor.process, pairs)
+    else:
+        regions = multi_mapping_regions(pairs, pair_processor, depths)
 
     for rname, mseqs, insert_list, failed_list in regions:
         # noinspection PyTypeChecker
@@ -484,6 +554,8 @@ def sam2aln(remap_csv,
 
     if clipping_writer is not None:
         pair_processor.write_clipping(clipping_writer)
+    if depths is not None:
+        depths.write(depth_csv, depth_reference_csv)
 
     # write out merged sequences to file
     aligned_writer = create_aligned_writer(aligned_csv)

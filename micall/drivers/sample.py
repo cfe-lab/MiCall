@@ -25,7 +25,7 @@ from micall.utils.referencefull_contig_stitcher import referencefull_contig_stit
 import micall.utils.referenceless_contig_stitcher as referenceless
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 logger = logging.getLogger(__name__)
 
@@ -261,17 +261,29 @@ class Sample:
             return prepend_prefix_to_basename(prefix, path)
 
         logger.info('Running sam2aln on %s.', self)
+        depth_path = (self.paths.get('multimap_depth_csv')
+                      or os.path.join(self.get_scratch_path(),
+                                      'multimap_depth.csv'))
         with open(with_prefix(self.remap_csv)) as remap_csv, \
                 open(with_prefix(self.aligned_csv), 'w') as aligned_csv, \
                 open(with_prefix(self.conseq_ins_csv), 'w') as conseq_ins_csv, \
                 open(with_prefix(self.failed_csv), 'w') as failed_csv, \
-                open(with_prefix(self.clipping_csv), 'w') as clipping_csv:
+                open(with_prefix(self.clipping_csv), 'w') as clipping_csv, \
+                (open(with_prefix(depth_path), 'w')
+                 if use_denovo else nullcontext()) as depth_csv, \
+                (open(with_prefix(self.remap_conseq_csv))
+                 if use_denovo else nullcontext()) as depth_reference_csv:
 
+            optional_depths = (
+                {'depth_csv': depth_csv,
+                 'depth_reference_csv': depth_reference_csv}
+                if use_denovo else {})
             sam2aln(remap_csv,
                     aligned_csv,
                     conseq_ins_csv,
                     failed_csv,
-                    clipping_csv=clipping_csv)
+                    clipping_csv=clipping_csv,
+                    **optional_depths)
 
         logger.info('Running aln2counts on %s.', self)
         with open_files(aligned_csv=(with_prefix(self.aligned_csv), 'r'),
