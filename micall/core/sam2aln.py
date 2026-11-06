@@ -434,28 +434,16 @@ class AlternativeDepths:
         self.maximum = defaultdict(Counter)
         self.average = defaultdict(Counter)
 
-    def add(self, pair, fraction):
-        first, second = pair
-        ref = first['rname']
-        aligned = []
-        qualities = []
-        # Only the distance *between* mates needs padding. Using absolute
-        # contig offsets here would repeatedly allocate long prefixes for
-        # every read near the end of a long viral genome.
-        offset = min(int(first['pos']), int(second['pos'])) - 1
-        for row in (first, second):
-            sequence, quality, _ = apply_cigar(
-                row['cigar'], row['seq'], row['qual'],
-                int(row['pos']) - 1 - offset)
-            aligned.append(sequence)
-            qualities.append(quality)
-        # Insertions do not occupy reference positions. Merge overlapping
-        # mates at Q15, as in the existing sam2aln alignment pipeline.
-        merged = merge_pairs(*aligned, *qualities, q_cutoff=15)
-        for index, base in enumerate(merged, start=offset + 1):
+    def add(self, reference, merged_sequence, fraction):
+        # Consume precisely the accepted Q15 sequence that sam2aln writes
+        # to aligned.csv. Re-merging the SAM records here is redundant and
+        # risks making the depth report disagree with actual consensus input.
+        sequence = merged_sequence.lstrip('-')
+        first_position = len(merged_sequence) - len(sequence) + 1
+        for position, base in enumerate(sequence, start=first_position):
             if base in 'ACGT':
-                self.maximum[ref][index] += 1
-                self.average[ref][index] += fraction
+                self.maximum[reference][position] += 1
+                self.average[reference][position] += fraction
 
     def write(self, output, reference_csv=None):
         writer = DictWriter(output, ['refname', 'position', 'max_depth',
@@ -485,7 +473,7 @@ def multi_mapping_regions(pairs, processor, depths):
         accepted = sum(bool(result[1]) for _, result in processed)
         for pair, result in processed:
             if result[1] and accepted:
-                depths.add(pair, 1 / accepted)
+                depths.add(result[0], result[1][15], 1 / accepted)
             yield result
 
 

@@ -24,8 +24,7 @@ def _score(row):
                 return int(field[5:])
             except ValueError:
                 return None
-    # Older MiCall test fixtures omit the optional Bowtie2 score.
-    return 0
+    return None
 
 
 def _interval(row):
@@ -86,9 +85,19 @@ def _select(rows, limit):
     # Bowtie2 -k emits the two mates of each reported paired placement
     # together. Fail closed for malformed ordering instead of cross-pairing.
     pairs = [(rows[i], rows[i + 1]) for i in range(0, len(rows) - 1, 2)]
-    candidates = [p for p in pairs if _valid_pair(*p)
-                  and _score(p[0]) is not None
-                  and _score(p[1]) is not None]
+    candidates = [p for p in pairs if _valid_pair(*p)]
+    # Bowtie2 normally emits an AS tag on both mates. If scores exist,
+    # require both mates to have parseable scores; otherwise an omitted
+    # score (implicitly treated as zero) could defeat a real negative score.
+    # Older MiCall test fixtures contain no AS tags, so allow wholly
+    # unscored fixtures while still rejecting malformed mixed-score pairs.
+    scored = [p for p in candidates
+              if all(_score(row) is not None for row in p)]
+    if scored:
+        candidates = scored
+    elif any(any(field.startswith('AS:i:') for field in row[11:])
+             for pair in candidates for row in pair):
+        candidates = []
     if not candidates:
         # Preserve MiCall's existing fallback for discordant *primary*
         # alignments. MixedReferenceSplitter can retry these against one
@@ -107,12 +116,17 @@ def _select(rows, limit):
                     or not (a & 0x2 and b & 0x2)):
                 return primary
         return []
-    best_score = max(_score(a) + _score(b) for a, b in candidates)
+    best_score = max((_score(a) or 0) + (_score(b) or 0)
+                     for a, b in candidates)
     winners = []
     used = set()
     intervals: dict[str, list[tuple[tuple[int, int], tuple[int, int]]]] = {}
+    candidates.sort(key=lambda pair: (
+        pair[0][2], int(pair[0][3]), int(pair[1][3]),
+        pair[0][5], pair[1][5], int(pair[0][1]) & 0x10,
+        int(pair[1][1]) & 0x10, bool(int(pair[0][1]) & 0x100)))
     for a, b in candidates:
-        if _score(a) + _score(b) != best_score:
+        if (_score(a) or 0) + (_score(b) or 0) != best_score:
             continue
         key = (a[2], a[3], a[5], b[3], b[5], int(a[1]) & 0x10,
                int(b[1]) & 0x10)

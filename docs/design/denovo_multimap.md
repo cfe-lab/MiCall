@@ -32,10 +32,12 @@ The de novo remapping stage:
    two mates have the same QNAME, reference and reciprocal mate positions.
 3. Keeps placements tied for the best **combined R1+R2 alignment score**.
    Suboptimal hits are excluded, even if Bowtie2 reported them.
-4. Removes identical placements and overlapping alternative placements **on
-   the same reference**. This prevents one molecule being counted twice
-   at one position of a single contig. Distinct non-overlapping sites remain
-   separate possible placements.
+4. Selects best-scoring placements in a deterministic reference/position
+   order. Removes identical placements and overlapping alternative placements
+   **on the same reference**. This prevents one molecule being counted twice
+   at one position of a single contig; it also conservatively discards the
+   non-overlapping tail of a rejected overlapping placement. Distinct
+   non-overlapping sites remain separate possible placements.
 5. Retains the original QNAME for every placement and writes each R1/R2 pair
    *adjacently*, including SAM secondary flags. This matters because
    `sam2aln.matchmaker()` pairs successive rows by QNAME.
@@ -62,10 +64,11 @@ position (1-based), including positions with zero coverage:
 | `max_depth` | Number of accepted original read pairs with a compatible placement covering this position, each given weight 1 on each compatible contig |
 | `avg_depth` | Sum of fractional contributions `1/N`, where `N` is the number of accepted placements **for that original read pair** |
 
-Both are calculated after the existing Q15 read-pair merge: overlapping R1
-and R2 bases count once per placement; low-quality `N` bases and deleted
-reference positions do not contribute; inserted bases have no reference
-coordinate and do not appear in this depth table.
+Both are calculated from the **same accepted Q15 merged sequence** that
+MiCall writes to `aligned.csv`, without a second independent CIGAR merge.
+Overlapping R1 and R2 bases count once per placement; low-quality `N`
+bases and deleted reference positions do not contribute; inserted bases
+have no reference coordinate and do not appear in this depth table.
 
 For example, if one read pair maps to A and B, and another maps only to A:
 
@@ -85,6 +88,23 @@ depth as a measure of independent evidence or haplotype abundance.
 Fractional depth is likewise conditional on the limited set of reported,
 accepted alignments and is not a calibrated posterior probability.
 No phasing information is inferred from shared reads.
+
+## Pipeline statistics and progress
+
+The `remap-final <contig>` rows in `remap_counts.csv` intentionally count
+alternative placements; their sum can exceed the number of original reads.
+When that happens (including when excluded contigs are filtered out), a
+`remap-unique` row records the number of original read pairs represented in
+the final remap CSV, in the file's existing **read-count** units (two per
+pair). `cascade.csv` uses this row to report the distinct physically mapped
+pairs, not the sum of hypotheses. The `aligned` cascade column and per-contig
+coverage remain placement-based for consensus and are not estimates of
+independent molecules across contigs.
+
+The GUI remapping progress callback uses original read-pair counts rather
+than the larger number of SAM alignment records from `-k`. Warnings identify
+both reporting-limit saturation and mapped pairs rejected because no safe
+paired placement was found.
 
 ## Validation
 
