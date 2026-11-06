@@ -782,12 +782,15 @@ def map_to_contigs(fastq1,
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
+    final_pair_rows = Counter()
     if new_counts:
         splitter = MixedReferenceSplitter(work_path)
         split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile) as f:
             for fields in splitter.split(f):
+                if is_reported_region(fields[2]):
+                    final_pair_rows[fields[0]] += 1
                 write_remap_row(remap_writer, fields)
         for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
@@ -809,12 +812,20 @@ def map_to_contigs(fastq1,
             new_counts.update(split_counts)
             with open(samfile, 'r') as f:
                 for fields in splitter.walk(f):
+                    if is_reported_region(fields[2]):
+                        final_pair_rows[fields[0]] += 1
                     write_remap_row(remap_writer, fields)
 
     write_contig_sequences(conseqs, remap_conseq_csv)
     write_remap_counts(remap_counts_writer,
                        new_counts,
                        title='remap-final')
+    unique_pair_count = sum(count >= 2 for count in final_pair_rows.values())
+    if unique_pair_count * 2 != sum(new_counts.values()):
+        # Per-contig counts intentionally repeat multi-mapped fragments. This
+        # physical-molecule count is for cascade accounting, not consensus.
+        remap_counts_writer.writerow({
+            'type': 'remap-unique', 'count': unique_pair_count * 2})
 
     # report number of unmapped reads
     remap_counts_writer.writerow({'type': 'unmapped',
@@ -1059,15 +1070,21 @@ def map_to_reference(fastq1,
             f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
-        # capture stdout stream to count reads before writing to file
+        # -k may produce several alignments for one original pair. Progress
+        # must count original reads, not multiplied placement records.
+        original_reads_processed = 0
+        previous_qname = None
         for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-            if callback and i % 1000 == 0:
-                callback(progress=i)  # progress monitoring in GUI
-
-            f.write(line)
-
             items = line.split('\t')
             qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
+            if max_alignments > 1 and qname != previous_qname:
+                original_reads_processed += 2
+                previous_qname = qname
+            if callback and i % 1000 == 0:
+                progress = (original_reads_processed if max_alignments > 1
+                            else i)
+                callback(progress=min(progress, raw_count))
+            f.write(line)
 
             if is_unmapped_read(bitflag):
                 # did not map to any reference
