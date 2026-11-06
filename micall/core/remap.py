@@ -26,7 +26,8 @@ from gotoh import align_it
 import Levenshtein
 
 from micall.core import project_config
-from micall.core.denovo_multimap import select_best_pairs
+from micall.core.denovo_multimap import (
+    MAX_DENOVO_ALIGNMENTS, select_best_pairs)
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -757,11 +758,23 @@ def map_to_contigs(fastq1,
                                           stderr,
                                           callback,
                                           debug_file_prefix=debug_file_prefix,
-                                          max_alignments=8)
+                                          max_alignments=MAX_DENOVO_ALIGNMENTS)
         best_samfile = samfile + '.best'
+        diagnostics = Counter()
         with open(samfile) as source, open(best_samfile, 'w') as target:
-            accepted_counts = select_best_pairs(source, target)
+            accepted_counts = select_best_pairs(
+                source, target, diagnostics=diagnostics)
         os.replace(best_samfile, samfile)
+        if diagnostics['at_report_limit']:
+            logger.warning(
+                "%d pairs reached the Bowtie2 -k %d reporting limit; "
+                "additional equivalent placements may be missing.",
+                diagnostics['at_report_limit'], MAX_DENOVO_ALIGNMENTS)
+        if diagnostics['discarded_mapped_pairs']:
+            logger.warning(
+                "Excluded %d mapped pairs with no usable or safe "
+                "paired alignment from de novo remapping.",
+                diagnostics['discarded_mapped_pairs'])
         new_counts.clear()
         new_counts.update(accepted_counts)
         write_remap_counts(remap_counts_writer, new_counts, title='remap')
