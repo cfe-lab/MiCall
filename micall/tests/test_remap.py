@@ -1528,7 +1528,7 @@ def test_write_reported_pairs_counts_unique_fragments_without_collecting_names()
             _, peak = tracemalloc.get_traced_memory()
         finally:
             tracemalloc.stop()
-        assert pairs == count
+        assert pairs == count * 2
         assert writer.count == count * 5
         return peak
 
@@ -1549,7 +1549,7 @@ def test_write_reported_pairs_excludes_unmapped_and_filtered_references():
         ['d', '99', 'A'], ['d', '141', '*'],
     ]
     writer = Mock()
-    assert write_reported_pairs(iter(rows), writer) == 1
+    assert write_reported_pairs(iter(rows), writer) == 3
     # Keep the existing remap CSV behavior for rows marked unmapped, but
     # never treat them as independent mapped molecules.
     assert writer.writerow.call_count == 8
@@ -1564,4 +1564,4 @@ def test_write_reported_pairs_requires_both_mates_not_duplicate_first_mate():
         ['dup', '99', 'A'], ['dup', '99', 'B'],
         ['valid', '99', 'A'], ['valid', '147', 'B'],
     ]
-    assert write_reported_pairs(iter(rows), Mock()) == 1
+    assert write_reported_pairs(iter(rows), Mock()) == 3

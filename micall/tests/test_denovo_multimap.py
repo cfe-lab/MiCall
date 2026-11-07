@@ -120,6 +120,49 @@ def test_discordant_same_reference_primary_preserves_legacy_alignment():
     assert len(csv_rows(text)) == 2
 
 
+def test_primary_singleton_survives_without_claiming_a_complete_pair():
+    primary = placement('orphan', 'A', flag1=73, flag2=133)
+    primary[1][5] = '*'  # R2 is unmapped; R1 is valid mapped evidence.
+    normalized, counts = normalize(primary)
+    assert counts == {'A': 1}
+    rows = csv_rows(normalized)
+    assert [int(r['flag']) for r in rows] == [73, 133]
+    aligned = StringIO()
+    depth = StringIO()
+    failures = StringIO()
+    sam2aln(remap_csv(normalized), aligned, failed_csv=failures,
+            depth_csv=depth)
+    # Existing MiCall requires both CIGARs to merge; keeping singleton
+    # records maintains remap/cascade parity, not false Q15 depth.
+    assert list(csv.DictReader(StringIO(aligned.getvalue()))) == []
+    assert list(csv.DictReader(StringIO(depth.getvalue()))) == []
+    assert list(csv.DictReader(StringIO(failures.getvalue()))) == [
+        {'qname': 'orphan', 'cause': 'badCigar'}]
+
+
+def test_unmapped_first_mate_primary_is_sorted_before_mapped_second():
+    # This ordering occurred in real MiCall HIV/HCV source reads.
+    primary = placement('reverse-orphan', 'A', flag1=69, flag2=153)
+    primary[0][5] = '*'
+    normalized, counts = normalize(list(reversed(primary)))
+    assert counts == {'A': 1}
+    assert [int(r['flag']) for r in csv_rows(normalized)] == [69, 153]
+
+
+def test_primary_singleton_rejects_malformed_evidence():
+    primary = placement('orphan', 'A', flag1=73, flag2=133)
+    primary[1][5] = '*'
+    invalid = [list(r) for r in primary]
+    invalid[0][5] = '2M1S'  # Claims only three bases consumed; read has five.
+    assert normalize(invalid)[1] == {}
+    invalid = [list(r) for r in primary]
+    invalid[0][1] = str(73 | 0x800)  # Supplementary is not primary evidence.
+    assert normalize(invalid)[1] == {}
+    invalid = [list(r) for r in primary]
+    invalid[1][5] = '5M'  # An unmapped mate cannot have an aligned CIGAR.
+    assert normalize(invalid)[1] == {}
+
+
 def test_bad_supplementary_mate_never_resurrected_by_fallback():
     suspect = placement('read1', 'A', flag1=97, flag2=145 + 2048)
     text, counts = normalize(suspect)

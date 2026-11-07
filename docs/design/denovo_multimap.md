@@ -42,7 +42,13 @@ The de novo remapping stage:
    *adjacently*, including SAM secondary flags. This matters because
    `sam2aln.matchmaker()` pairs successive rows by QNAME.
 6. Preserves the existing mixed-reference and discordant-primary rescue
-   paths when no valid proper pair is available. It does not resurrect
+   paths when no valid proper pair is available. It also retains a properly
+   represented **primary singleton** (one mapped mate, one unmapped mate)
+   instead of dropping that original read pair. The singleton remains
+   in the remap records and cascade accounting but does **not** become
+   Q15 consensus support: MiCall's \`sam2aln\` requires two valid mate
+   CIGARs to construct a merged read. Supplementary, secondary, malformed,
+   or contradictory singleton records are rejected. It does not resurrect
    structurally contradictory pairs simply because they were primary.
 
 Malformed alignments must not be recombined across placements. A warning
@@ -101,17 +107,18 @@ pairs, not the sum of hypotheses. The `aligned` cascade column and per-contig
 coverage remain placement-based for consensus and are not estimates of
 independent molecules across contigs.
 
-The unique-pair count is calculated as SAM records are written, using
-**constant additional memory with respect to the number of input read pairs**.
-Within each QNAME group, at least one mapped R1 and one mapped R2 must be
-present to count a sequenced pair; secondary placement copies never add
-to this count. Distinct main and single-reference rescue streams contain
-disjoint read pairs. This assumes the standard MiCall input invariant of
-unique QNAMEs for independent input pairs and contiguous Bowtie2 QNAME groups
-(use of one Bowtie2 thread preserves the ordering).
+Unique mapped read-end accounting is calculated as SAM records are written,
+using **constant additional memory with respect to the number of input
+read pairs**. Within each QNAME group, the mapped R1 bit and mapped R2 bit
+are each counted at most once; a fully mapped fragment counts as two read
+ends while a properly represented singleton counts as one. Secondary
+placement copies never add to the total. Distinct main and single-reference
+rescue streams contain disjoint original read pairs. This assumes the MiCall
+input invariant of unique QNAMEs for independent pairs and contiguous
+Bowtie2 QNAME groups (one Bowtie2 thread preserves the ordering).
 
-This count is **not PCR/optical duplicate removal** and should not be
-interpreted as a count of distinct original biological molecules.
+This is **not PCR/optical duplicate removal** and should not be interpreted
+as a count of distinct original biological molecules.
 
 The GUI remapping progress callback uses original read-pair counts rather
 than the larger number of SAM alignment records from `-k`. Warnings identify
@@ -156,3 +163,16 @@ saturate the eight-placement cap and emit a warning. It is not legitimate
 to treat all nine contigs as confirmed equally supported in that case.
 
 Related history: #141, #200, #264, #290, #719.
+
+## Independent genotype and minority-haplotype controls
+
+Real HIV reference controls from separately resequenced virus strains
+and Sanger-confirmed clone mixtures are evaluated alongside these
+algorithmic tests. See \`docs/validation/independent_truth_20261107_scientific.md\`
+for actual scientific outcomes and release blockers.
+
+A critical limitation of \`-k 8\` is now experimentally observed on real
+nine-plasmid HIV read pairs: it omits some equally best-scoring placements
+that \`-a\` enumerates, including in a panel with nine known biological
+clone references. Mapping cap saturation must never be treated as
+confirmation that all genotype hypotheses were covered.

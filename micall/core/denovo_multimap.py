@@ -61,6 +61,49 @@ def _valid_mates(first, second):
             and all("M" in row[5] for row in (first, second)))
 
 
+def _valid_orphan(first, second):
+    """Preserve an unambiguously mapped read when its mate was unmapped.
+
+    This is a legacy MiCall behavior distinct from a second mapping
+    hypothesis. Only the primary pair may provide singleton evidence.
+    """
+    if len(first) < 11 or len(second) < 11 or first[0] != second[0]:
+        return False
+    try:
+        a, b = int(first[1]), int(second[1])
+        mapped = [row for row in (first, second)
+                  if not int(row[1]) & 0x4]
+        unmapped = [row for row in (first, second)
+                    if int(row[1]) & 0x4]
+    except ValueError:
+        return False
+    if (len(mapped) != 1 or len(unmapped) != 1
+            or (a | b) & (0x400 | 0x800 | 0x100)
+            or not (a & b & 0x1)
+            or not (a & 0x40) or not (b & 0x80)
+            or (a & 0x80) or (b & 0x40)):
+        return False
+    good, missing = mapped[0], unmapped[0]
+    try:
+        flag = int(good[1])
+        mate_flag = int(missing[1])
+        start = int(good[3])
+    except ValueError:
+        return False
+    return (
+        bool(flag & 0x8) and not (flag & 0x2)
+        and not (mate_flag & 0x8 or mate_flag & 0x2)
+        and good[2] != '*' and start > 0
+        and bool(VALID_CIGAR.fullmatch(good[5]))
+        and 'M' in good[5]
+        and sum(int(n) for n, op in REFERENCE_CIGAR.findall(good[5])
+                if op in 'MIS') == len(good[9])
+        and good[9] != '*' and len(good[9]) == len(good[10])
+        and missing[5] == '*' and missing[9] != '*'
+        and len(missing[9]) == len(missing[10])
+        and missing[2] in ('*',good[2]))
+
+
 def _valid_pair(first, second):
     if not _valid_mates(first, second):
         return False
@@ -110,11 +153,19 @@ def _select(rows, limit):
                     primary.append(row)
             except (ValueError, IndexError):
                 continue
-        if len(primary) == 2 and _valid_mates(*primary):
-            a, b = int(primary[0][1]), int(primary[1][1])
-            if (primary[0][2] != primary[1][2]
-                    or not (a & 0x2 and b & 0x2)):
-                return primary
+        if len(primary) == 2:
+            # Bowtie2 can report singleton mates in either record order.
+            # Do not discard genuine single-mate coverage or pretend it is
+            # an additional complete paired placement.
+            ordered = sorted(primary,
+                             key=lambda row: bool(int(row[1]) & 0x80))
+            if _valid_orphan(*ordered):
+                return ordered
+            if _valid_mates(*ordered):
+                a, b = int(ordered[0][1]), int(ordered[1][1])
+                if (ordered[0][2] != ordered[1][2]
+                        or not (a & 0x2 and b & 0x2)):
+                    return ordered
         return []
     best_score = max((_score(a) or 0) + (_score(b) or 0)
                      for a, b in candidates)
