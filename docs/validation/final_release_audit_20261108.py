@@ -132,11 +132,17 @@ def main():
         large_panel = json.load(f)
     with (OUTPUT / 'real_hcv_dilution_20261108_metrics.json').open() as f:
         dilution = json.load(f)
+    with (OUTPUT / 'known_hiv9_mixture_20261108_metrics.json').open() as f:
+        simulated_truth = json.load(f)
+    with (OUTPUT / 'real17_postpolicy_20261108_metrics.json').open() as f:
+        expanded_panel = json.load(f)
     aggregate = {
         'truth_cases': groups,
         'hcv_source_origin': hcv,
         'known_origin_dilution': dilution,
         '17_real_reference_panel': large_panel,
+        '17_real_reference_resource_aware_followup': expanded_panel,
+        'synthetic_rare_hiv9_known_sources': simulated_truth,
         'hiv9_raw_exact_linked_motifs': linked,
         'note': ('Allele correctness is measured against independently sequenced'
                  ' HIV references. HCV read origins, not biological genotype,'
@@ -235,7 +241,7 @@ def main():
         '',
         '## Large-panel bounded-alignment completeness: real-read stress',
         '',
-        (f'The final >16-contig fallback was challenged with'
+        (f'The earlier fixed >16-contig fallback was challenged with'
          f' {large_panel["original_real_hiv9_pairs"]:,} real paired HIV9'
          f' reads and a constructed panel of {large_panel["references"]}'
          ' authentic reference sequences (nine Sanger-confirmed HIV9'
@@ -276,6 +282,81 @@ def main():
 
     header.extend([
         '',
+        '## New resource-aware 17-reference full MiCall validation',
+        '',
+        ('The former candidate had 1,167 capped read-pair groups in the'
+         ' engineered 17-contig panel with 1,200 genuine HIV9 pairs. The'
+         ' revised candidate extends Bowtie2 full-search reporting to'
+         ' 17–32 contigs when total reference size is at most 65,536 bases.'
+         ' This 61,951-base panel has no fixed-k saturation.'),
+        '',
+        '| Metric | Previous candidate | Resource-aware candidate |',
+        '|:--|--:|--:|',
+    ])
+    for name, field in [
+            ('Correct Sanger HIV9 bases', 'correct'),
+            ('Incorrect Sanger HIV9 bases', 'wrong')]:
+        first = sum(v[field] for v in
+                    expanded_panel['previous_candidate']['clone_calls'].values())
+        second = sum(v[field] for v in
+                     expanded_panel['resource_aware_candidate']['clone_calls'].values())
+        header.append(f'| {name} | {first:,} | {second:,} |')
+    for label,field in [('Accepted mate-placement records',
+                        'reported_final_placements'),
+                        ('Capped original-pair groups',
+                         'capped_original_pair_groups')]:
+        first=expanded_panel['previous_candidate'][field]
+        second=expanded_panel['resource_aware_candidate'][field]
+        header.append(f'| {label} | {first:,} | {second:,} |')
+    header.extend([
+        '',
+        ('The aggregate gain is not monotonic across clones; one clone'
+         ' lost 67 callable bases while other clones gained support.'
+         ' Exact-commit-pinned clinical benchmarks are not available,'
+         ' and larger panels still use a finite fallback.'
+         ' See real17_postpolicy_20261108.md.'),
+        '',
+        '## Known-source synthetic HIV9 haplotype mixture',
+        '',
+        ('Twenty thousand error-free paired fragments were generated'
+         ' from independently Sanger-confirmed HIV9 clones. Clone9 had'
+         ' 0, 40, or 200 exactly originating read pairs, with all other'
+         ' clone counts controlled. This is not a measured biological'
+         ' mixture and matching seeds create a favorable scenario.'),
+        '',
+        ('| True minority source | Mapper | Source pairs |'
+        ' Correctly assigned pairs | Callable rare-clone bases |'),
+        '|:--|:--|--:|--:|--:|',
+    ])
+    for fraction,name in [('0', '0%'), ('0p2', '0.2%'), ('1', '1%')]:
+        item=simulated_truth[fraction]
+        for arm,result in item['arms'].items():
+            header.append(
+                f'| {name} | {arm} |'
+                f' {item["source_pairs"]["clone9"]} |'
+                f' {result["source_assignment"]["clone9"].get("paired_to_correct",0)} |'
+                f' {result["truth_calls"]["clone9"]["callable"]} |')
+    header.extend([
+        '',
+        ('At true 0.2% origin, all 40 clone9 pairs were correctly'
+         ' mapped by both algorithms but none produced a callable'
+         ' Q15 MAX rare-clone base. At 1%, the candidate mapped all'
+         ' 200 pairs and produced 453 callable clone9 bases versus'
+         ' upstream 196 and 450. With zero clone9 input, both'
+         ' produced zero clone9 calls. Another clone with only'
+         ' 80 true originating pairs had 550+ callable bases because'
+         ' shared reads create conditional coverage. Clinical'
+         ' minority-haplotype specificity and phasing remain unproven.'
+         ' The independent original-read private-marker audit found'
+         ' 16 clone9 source read pairs linking two or more private'
+         ' markers at the exact 0.2% fraction, despite zero'
+         ' callable clone9 consensus positions. This is local'
+         ' evidence only, not a full-length phased genotype.'
+         ' See known_hiv9_mixture_20261108.md.'),
+        '',
+    ])
+    header.extend([
+        '',
         ('The clone named **J_0.2** has 96,433 pairs matching at least one'
         ' private motif and 35,122 with two or more linked motifs in'
         ' 239,006 sampled paired reads. It is therefore scientifically'
@@ -286,7 +367,7 @@ def main():
         '',
         '## Production gate and correctness limitations',
         '',
-        ('- **PASS in tested configuration:** 4,373 broader MiCall tests passed,'
+        ('- **PASS in tested configuration:** 4,383 broader MiCall tests passed,'
         ' with five skips, one deselection, and 54 expected failures.'
         ' Installation/IVA tests depend on unavailable prerequisites.'),
         ('- **PASS on reference subsets:** the revised candidate recovers'
@@ -296,7 +377,8 @@ def main():
         ('- **NOT ESTABLISHED:** known negative-control genotype-absence'
         ' specificity, minority mixture abundance and full haplotype phase.'),
         ('- **NOT ESTABLISHED:** complete detection of competing alignments'
-        ' on Bowtie2 heuristic search; panels over 16 still use a k=8 cap.'),
+        ' on Bowtie2 heuristic search; panels over 32 or exceeding'
+         ' the expanded reference-base budget still use a k=8 cap.'),
         ('- **NOT ESTABLISHED:** end-to-end production MiCall clinical outputs'
         ' (assembly, stitcher, trimming, G2P, HIV resistance reports),'
         ' real 198-sample throughput and peak memory budgets.'),
@@ -319,6 +401,9 @@ def main():
         ' used the working tree implementing the same alignment mode as'
         ' local commit 379e80e9; exact commit-pinned reruns and independent'
         ' review remain mandatory before final release.'
+        ' Resource-aware 17-reference follow-up and exact-source HIV9'
+        ' synthetic challenges used mapping code subsequently committed'
+        ' unchanged as fad064abb503774103b9ac16f810c762285de97f.'
         ' Original reads, haplotype sequences and private run artifacts'
         ' remain in git-ignored local storage.'),
         '',

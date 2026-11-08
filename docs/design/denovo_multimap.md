@@ -2,9 +2,8 @@
 
 MiCall's de novo pipeline aligns original trimmed read pairs against
 assembled contigs before and after stitching. For panels of up to
-16 contigs, Bowtie2 now uses `-a` to return **all alignments found**
-rather than imposing an arbitrary eight-placement cutoff. For larger
-contig panels it retains bounded `-k 8` output as a resource-safety
+16 contigs, and also for 17–32 contigs whose combined reference size is at most 65,536 bases, Bowtie2 uses `-a` to return **all alignments found**
+rather than imposing an arbitrary eight-placement cutoff. When those resource ceilings are exceeded it retains bounded `-k 8` output as a resource-safety
 fallback. The selector retains equally best-scoring complete concordant
 paired placements. De novo mapping uses four Bowtie2 alignment threads
 and `--reorder` to keep QNAMEs grouped for MiCall read-pair processing.
@@ -31,7 +30,7 @@ rather than silently passing them off as equivalent.
 
 The de novo remapping stage:
 
-1. Uses `-a` for 1–16 input contigs; larger panels retain bounded
+1. Uses `-a` for 1–16 input contigs, or 17–32 contigs within the 65,536-base reference budget; larger panels retain bounded
    `-k 8`. A warning identifies reads reaching the finite bound.
    The four-thread mapper uses `--reorder` to guarantee contiguous
    original read-pair QNAME groups. If a QNAME group becomes pathologically
@@ -222,3 +221,33 @@ is deliberately constructed from existing real sequences: it is not an
 actual 17-contig patient assembly. The reproducible study script is
 docs/validation/real17_panel_audit_20261108.py, and the release verdict
 is in docs/validation/final_release_audit_20261108.md.
+
+## Resource-aware 17-contig follow-up and controlled minority truth
+
+The new search policy permits Bowtie2 all-hit reporting on the real
+61,951-base, 17-contig competition panel and eliminates the arbitrary
+8-hit cutoff in that condition. In real HIV9 A/B testing this produced
+1,521 -> 1,537 Sanger-correct callable Q15 MAX bases, zero wrong calls
+in either arm, and 1,167 -> 0 capped pair groups. However, the result
+is not monotone per clone: A_50 lost 67 callable bases, while H_0.4
+and J_0.2 gained 75 and eight. Processing time rose from 10.5 to
+16.2 seconds on the shared host. The reference panel is constructed
+from authentic biological sequences, not one patient assembly.
+See docs/validation/real17_postpolicy_20261108.md.
+
+The resource ceilings are operational, not a mathematical guarantee
+about Bowtie2 search completeness or production runtime. Some larger
+panels remain bounded by eight hits and can omit genuine alternative
+references. Clinical genotype use requires resolving that limitation.
+
+An independently controlled but synthetic mixture of nine Sanger-verified
+HIV clones was also tested with 20,000 error-free paired fragments.
+With exactly 40 original clone9 pairs (0.2%), both the upstream and
+candidate mappers recovered all 40 correct clone assignments but neither
+produced any callable clone9 Q15 MAX bases. At 1% (200 original pairs),
+upstream produced 450 callable bases and mapped 196 true source pairs;
+the candidate produced 453 callable bases and mapped all 200. A 0%
+clone9 control gave no callable clone9 bases in either algorithm.
+These are favorable synthetic results, NOT independently measured
+biological minority frequencies or full-length haplotype phase.
+See docs/validation/known_hiv9_mixture_20261108.md.

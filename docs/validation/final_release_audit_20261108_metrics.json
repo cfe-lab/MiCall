@@ -1324,6 +1324,1293 @@
     "missing_reference_alternatives": 290,
     "warning": "All-hit Bowtie2 is still heuristic and not a truth oracle."
   },
+  "17_real_reference_resource_aware_followup": {
+    "references": 17,
+    "authentic_hiv_pair_inputs": 1200,
+    "status": "Controlled fixed-contig mapping experiment; no clinical genotype-presence truth",
+    "previous_candidate": {
+      "timings": {
+        "remap_s": 5.90265740128234,
+        "sam2aln_s": 0.30039573181420565,
+        "aln2counts_s": 4.338776011019945,
+        "total_s": 10.541829144116491
+      },
+      "reported_final_placements": 3828,
+      "capped_original_pair_groups": 1167,
+      "clone_calls": {
+        "A_50": {
+          "correct": 69,
+          "wrong": 0,
+          "uncallable": 1005
+        },
+        "B_25": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "C_12.5": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "D_6.3": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "E_3.2": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "F_1.6": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "G_0.8": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "H_0.4": {
+          "correct": 558,
+          "wrong": 0,
+          "uncallable": 516
+        },
+        "J_0.2": {
+          "correct": 894,
+          "wrong": 0,
+          "uncallable": 180
+        }
+      }
+    },
+    "resource_aware_candidate": {
+      "timings": {
+        "remap_s": 11.90561854466796,
+        "sam2aln_s": 0.3018503626808524,
+        "aln2counts_s": 3.9792672842741013,
+        "total_s": 16.186736191622913
+      },
+      "reported_final_placements": 4210,
+      "capped_original_pair_groups": 0,
+      "clone_calls": {
+        "A_50": {
+          "correct": 2,
+          "wrong": 0,
+          "uncallable": 1072
+        },
+        "B_25": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "C_12.5": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "D_6.3": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "E_3.2": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "F_1.6": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "G_0.8": {
+          "correct": 0,
+          "wrong": 0,
+          "uncallable": 1074
+        },
+        "H_0.4": {
+          "correct": 633,
+          "wrong": 0,
+          "uncallable": 441
+        },
+        "J_0.2": {
+          "correct": 902,
+          "wrong": 0,
+          "uncallable": 172
+        }
+      }
+    }
+  },
+  "synthetic_rare_hiv9_known_sources": {
+    "0": {
+      "source_pairs": {
+        "clone1": 10040,
+        "clone2": 5000,
+        "clone4": 1260,
+        "clone3": 2500,
+        "clone5": 640,
+        "clone7": 160,
+        "clone6": 320,
+        "clone8": 80,
+        "clone9": 0
+      },
+      "generator_seed": 4500,
+      "read_length": 250,
+      "insert_length": 450,
+      "independent_local_phase": {
+        "one_or_more": 0,
+        "linked_two_or_more": 0,
+        "linked_three": 0,
+        "marker_positions": [
+          658,
+          741,
+          879
+        ]
+      },
+      "arms": {
+        "upstream": {
+          "mixture": "0",
+          "input_pairs": 20000,
+          "source_labels": {
+            "clone1": 10040,
+            "clone2": 5000,
+            "clone4": 1260,
+            "clone3": 2500,
+            "clone5": 640,
+            "clone7": 160,
+            "clone6": 320,
+            "clone8": 80,
+            "clone9": 0
+          },
+          "truth_calls": {
+            "clone1": {
+              "correct": 1063,
+              "wrong": 0,
+              "uncallable": 11,
+              "callable": 1063
+            },
+            "clone2": {
+              "correct": 1049,
+              "wrong": 0,
+              "uncallable": 25,
+              "callable": 1049
+            },
+            "clone3": {
+              "correct": 1027,
+              "wrong": 0,
+              "uncallable": 47,
+              "callable": 1027
+            },
+            "clone4": {
+              "correct": 987,
+              "wrong": 0,
+              "uncallable": 87,
+              "callable": 987
+            },
+            "clone5": {
+              "correct": 898,
+              "wrong": 0,
+              "uncallable": 176,
+              "callable": 898
+            },
+            "clone6": {
+              "correct": 700,
+              "wrong": 0,
+              "uncallable": 374,
+              "callable": 700
+            },
+            "clone7": {
+              "correct": 586,
+              "wrong": 0,
+              "uncallable": 488,
+              "callable": 586
+            },
+            "clone8": {
+              "correct": 556,
+              "wrong": 0,
+              "uncallable": 518,
+              "callable": 556
+            },
+            "clone9": {
+              "correct": 0,
+              "wrong": 0,
+              "uncallable": 1074,
+              "callable": 0
+            }
+          },
+          "source_assignment": {
+            "clone1": {
+              "mapped_with_any_end": 10040,
+              "full_paired": 10040,
+              "paired_to_correct": 7954,
+              "paired_exclusively_correct": 7954,
+              "paired_to_other": 2086,
+              "paired_exclusively_wrong": 2086,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 10040,
+              "not_fully_mapped": 0
+            },
+            "clone2": {
+              "mapped_with_any_end": 5000,
+              "full_paired": 5000,
+              "paired_to_correct": 4870,
+              "paired_exclusively_correct": 4870,
+              "paired_to_other": 130,
+              "paired_exclusively_wrong": 130,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 5000,
+              "not_fully_mapped": 0
+            },
+            "clone4": {
+              "mapped_with_any_end": 1260,
+              "full_paired": 1260,
+              "paired_to_correct": 1260,
+              "paired_exclusively_correct": 1260,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 1260,
+              "not_fully_mapped": 0
+            },
+            "clone3": {
+              "mapped_with_any_end": 2500,
+              "full_paired": 2500,
+              "paired_to_correct": 2231,
+              "paired_exclusively_correct": 2231,
+              "paired_to_other": 269,
+              "paired_exclusively_wrong": 269,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 2500,
+              "not_fully_mapped": 0
+            },
+            "clone5": {
+              "mapped_with_any_end": 640,
+              "full_paired": 640,
+              "paired_to_correct": 544,
+              "paired_exclusively_correct": 544,
+              "paired_to_other": 96,
+              "paired_exclusively_wrong": 96,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 640,
+              "not_fully_mapped": 0
+            },
+            "clone7": {
+              "mapped_with_any_end": 160,
+              "full_paired": 160,
+              "paired_to_correct": 152,
+              "paired_exclusively_correct": 152,
+              "paired_to_other": 8,
+              "paired_exclusively_wrong": 8,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 160,
+              "not_fully_mapped": 0
+            },
+            "clone6": {
+              "mapped_with_any_end": 320,
+              "full_paired": 320,
+              "paired_to_correct": 320,
+              "paired_exclusively_correct": 320,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 320,
+              "not_fully_mapped": 0
+            },
+            "clone8": {
+              "mapped_with_any_end": 80,
+              "full_paired": 80,
+              "paired_to_correct": 69,
+              "paired_exclusively_correct": 69,
+              "paired_to_other": 11,
+              "paired_exclusively_wrong": 11,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 80,
+              "not_fully_mapped": 0
+            },
+            "clone9": {
+              "source_pairs_input": 0,
+              "not_fully_mapped": 0
+            }
+          },
+          "run_seconds": 62.397,
+          "note": "Exact-source and Q15 MAX scoring; sequences simulated error-free from Sanger-verified clone references."
+        },
+        "nonstealing": {
+          "mixture": "0",
+          "input_pairs": 20000,
+          "source_labels": {
+            "clone1": 10040,
+            "clone2": 5000,
+            "clone4": 1260,
+            "clone3": 2500,
+            "clone5": 640,
+            "clone7": 160,
+            "clone6": 320,
+            "clone8": 80,
+            "clone9": 0
+          },
+          "truth_calls": {
+            "clone1": {
+              "correct": 1063,
+              "wrong": 0,
+              "uncallable": 11,
+              "callable": 1063
+            },
+            "clone2": {
+              "correct": 1049,
+              "wrong": 0,
+              "uncallable": 25,
+              "callable": 1049
+            },
+            "clone3": {
+              "correct": 1027,
+              "wrong": 0,
+              "uncallable": 47,
+              "callable": 1027
+            },
+            "clone4": {
+              "correct": 987,
+              "wrong": 0,
+              "uncallable": 87,
+              "callable": 987
+            },
+            "clone5": {
+              "correct": 898,
+              "wrong": 0,
+              "uncallable": 176,
+              "callable": 898
+            },
+            "clone6": {
+              "correct": 700,
+              "wrong": 0,
+              "uncallable": 374,
+              "callable": 700
+            },
+            "clone7": {
+              "correct": 594,
+              "wrong": 0,
+              "uncallable": 480,
+              "callable": 594
+            },
+            "clone8": {
+              "correct": 567,
+              "wrong": 0,
+              "uncallable": 507,
+              "callable": 567
+            },
+            "clone9": {
+              "correct": 0,
+              "wrong": 0,
+              "uncallable": 1074,
+              "callable": 0
+            }
+          },
+          "source_assignment": {
+            "clone1": {
+              "mapped_with_any_end": 10040,
+              "full_paired": 10040,
+              "paired_to_correct": 10040,
+              "paired_exclusively_correct": 6259,
+              "paired_to_other": 3781,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 3781,
+              "source_pairs_input": 10040,
+              "not_fully_mapped": 0
+            },
+            "clone2": {
+              "mapped_with_any_end": 5000,
+              "full_paired": 5000,
+              "paired_to_correct": 5000,
+              "paired_exclusively_correct": 4790,
+              "paired_to_other": 210,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 210,
+              "source_pairs_input": 5000,
+              "not_fully_mapped": 0
+            },
+            "clone4": {
+              "mapped_with_any_end": 1260,
+              "full_paired": 1260,
+              "paired_to_correct": 1260,
+              "paired_exclusively_correct": 1260,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 1260,
+              "not_fully_mapped": 0
+            },
+            "clone3": {
+              "mapped_with_any_end": 2500,
+              "full_paired": 2500,
+              "paired_to_correct": 2500,
+              "paired_exclusively_correct": 2021,
+              "paired_to_other": 479,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 479,
+              "source_pairs_input": 2500,
+              "not_fully_mapped": 0
+            },
+            "clone5": {
+              "mapped_with_any_end": 640,
+              "full_paired": 640,
+              "paired_to_correct": 640,
+              "paired_exclusively_correct": 485,
+              "paired_to_other": 155,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 155,
+              "source_pairs_input": 640,
+              "not_fully_mapped": 0
+            },
+            "clone7": {
+              "mapped_with_any_end": 160,
+              "full_paired": 160,
+              "paired_to_correct": 160,
+              "paired_exclusively_correct": 140,
+              "paired_to_other": 20,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 20,
+              "source_pairs_input": 160,
+              "not_fully_mapped": 0
+            },
+            "clone6": {
+              "mapped_with_any_end": 320,
+              "full_paired": 320,
+              "paired_to_correct": 320,
+              "paired_exclusively_correct": 320,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 320,
+              "not_fully_mapped": 0
+            },
+            "clone8": {
+              "mapped_with_any_end": 80,
+              "full_paired": 80,
+              "paired_to_correct": 80,
+              "paired_exclusively_correct": 60,
+              "paired_to_other": 20,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 20,
+              "source_pairs_input": 80,
+              "not_fully_mapped": 0
+            },
+            "clone9": {
+              "source_pairs_input": 0,
+              "not_fully_mapped": 0
+            }
+          },
+          "run_seconds": 116.292,
+          "note": "Exact-source and Q15 MAX scoring; sequences simulated error-free from Sanger-verified clone references."
+        }
+      }
+    },
+    "0p2": {
+      "source_pairs": {
+        "clone3": 2500,
+        "clone2": 5000,
+        "clone6": 320,
+        "clone1": 10000,
+        "clone4": 1260,
+        "clone5": 640,
+        "clone7": 160,
+        "clone8": 80,
+        "clone9": 40
+      },
+      "generator_seed": 4501,
+      "read_length": 250,
+      "insert_length": 450,
+      "independent_local_phase": {
+        "one_or_more": 23,
+        "linked_two_or_more": 16,
+        "linked_three": 8,
+        "marker_positions": [
+          658,
+          741,
+          879
+        ]
+      },
+      "arms": {
+        "upstream": {
+          "mixture": "0p2",
+          "input_pairs": 20000,
+          "source_labels": {
+            "clone3": 2500,
+            "clone2": 5000,
+            "clone6": 320,
+            "clone1": 10000,
+            "clone4": 1260,
+            "clone5": 640,
+            "clone7": 160,
+            "clone8": 80,
+            "clone9": 40
+          },
+          "truth_calls": {
+            "clone1": {
+              "correct": 1061,
+              "wrong": 0,
+              "uncallable": 13,
+              "callable": 1061
+            },
+            "clone2": {
+              "correct": 1052,
+              "wrong": 0,
+              "uncallable": 22,
+              "callable": 1052
+            },
+            "clone3": {
+              "correct": 1020,
+              "wrong": 0,
+              "uncallable": 54,
+              "callable": 1020
+            },
+            "clone4": {
+              "correct": 964,
+              "wrong": 0,
+              "uncallable": 110,
+              "callable": 964
+            },
+            "clone5": {
+              "correct": 871,
+              "wrong": 0,
+              "uncallable": 203,
+              "callable": 871
+            },
+            "clone6": {
+              "correct": 686,
+              "wrong": 0,
+              "uncallable": 388,
+              "callable": 686
+            },
+            "clone7": {
+              "correct": 533,
+              "wrong": 0,
+              "uncallable": 541,
+              "callable": 533
+            },
+            "clone8": {
+              "correct": 555,
+              "wrong": 0,
+              "uncallable": 519,
+              "callable": 555
+            },
+            "clone9": {
+              "correct": 0,
+              "wrong": 0,
+              "uncallable": 1074,
+              "callable": 0
+            }
+          },
+          "source_assignment": {
+            "clone3": {
+              "mapped_with_any_end": 2500,
+              "full_paired": 2500,
+              "paired_to_correct": 2262,
+              "paired_exclusively_correct": 2262,
+              "paired_to_other": 238,
+              "paired_exclusively_wrong": 238,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 2500,
+              "not_fully_mapped": 0
+            },
+            "clone2": {
+              "mapped_with_any_end": 5000,
+              "full_paired": 5000,
+              "paired_to_correct": 4867,
+              "paired_exclusively_correct": 4867,
+              "paired_to_other": 133,
+              "paired_exclusively_wrong": 133,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 5000,
+              "not_fully_mapped": 0
+            },
+            "clone6": {
+              "mapped_with_any_end": 320,
+              "full_paired": 320,
+              "paired_to_correct": 320,
+              "paired_exclusively_correct": 320,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 320,
+              "not_fully_mapped": 0
+            },
+            "clone1": {
+              "mapped_with_any_end": 10000,
+              "full_paired": 10000,
+              "paired_to_correct": 7929,
+              "paired_exclusively_correct": 7929,
+              "paired_to_other": 2071,
+              "paired_exclusively_wrong": 2071,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 10000,
+              "not_fully_mapped": 0
+            },
+            "clone4": {
+              "mapped_with_any_end": 1260,
+              "full_paired": 1260,
+              "paired_to_correct": 1260,
+              "paired_exclusively_correct": 1260,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 1260,
+              "not_fully_mapped": 0
+            },
+            "clone5": {
+              "mapped_with_any_end": 640,
+              "full_paired": 640,
+              "paired_to_correct": 561,
+              "paired_exclusively_correct": 561,
+              "paired_to_other": 79,
+              "paired_exclusively_wrong": 79,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 640,
+              "not_fully_mapped": 0
+            },
+            "clone7": {
+              "mapped_with_any_end": 160,
+              "full_paired": 160,
+              "paired_to_correct": 152,
+              "paired_exclusively_correct": 152,
+              "paired_to_other": 8,
+              "paired_exclusively_wrong": 8,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 160,
+              "not_fully_mapped": 0
+            },
+            "clone8": {
+              "mapped_with_any_end": 80,
+              "full_paired": 80,
+              "paired_to_correct": 69,
+              "paired_exclusively_correct": 69,
+              "paired_to_other": 11,
+              "paired_exclusively_wrong": 11,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 80,
+              "not_fully_mapped": 0
+            },
+            "clone9": {
+              "mapped_with_any_end": 40,
+              "full_paired": 40,
+              "paired_to_correct": 40,
+              "paired_exclusively_correct": 40,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 40,
+              "not_fully_mapped": 0
+            }
+          },
+          "run_seconds": 61.967,
+          "note": "Exact-source and Q15 MAX scoring; sequences simulated error-free from Sanger-verified clone references."
+        },
+        "nonstealing": {
+          "mixture": "0p2",
+          "input_pairs": 20000,
+          "source_labels": {
+            "clone3": 2500,
+            "clone2": 5000,
+            "clone6": 320,
+            "clone1": 10000,
+            "clone4": 1260,
+            "clone5": 640,
+            "clone7": 160,
+            "clone8": 80,
+            "clone9": 40
+          },
+          "truth_calls": {
+            "clone1": {
+              "correct": 1061,
+              "wrong": 0,
+              "uncallable": 13,
+              "callable": 1061
+            },
+            "clone2": {
+              "correct": 1052,
+              "wrong": 0,
+              "uncallable": 22,
+              "callable": 1052
+            },
+            "clone3": {
+              "correct": 1020,
+              "wrong": 0,
+              "uncallable": 54,
+              "callable": 1020
+            },
+            "clone4": {
+              "correct": 964,
+              "wrong": 0,
+              "uncallable": 110,
+              "callable": 964
+            },
+            "clone5": {
+              "correct": 871,
+              "wrong": 0,
+              "uncallable": 203,
+              "callable": 871
+            },
+            "clone6": {
+              "correct": 686,
+              "wrong": 0,
+              "uncallable": 388,
+              "callable": 686
+            },
+            "clone7": {
+              "correct": 541,
+              "wrong": 0,
+              "uncallable": 533,
+              "callable": 541
+            },
+            "clone8": {
+              "correct": 570,
+              "wrong": 0,
+              "uncallable": 504,
+              "callable": 570
+            },
+            "clone9": {
+              "correct": 0,
+              "wrong": 0,
+              "uncallable": 1074,
+              "callable": 0
+            }
+          },
+          "source_assignment": {
+            "clone3": {
+              "mapped_with_any_end": 2500,
+              "full_paired": 2500,
+              "paired_to_correct": 2500,
+              "paired_exclusively_correct": 2027,
+              "paired_to_other": 473,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 473,
+              "source_pairs_input": 2500,
+              "not_fully_mapped": 0
+            },
+            "clone2": {
+              "mapped_with_any_end": 5000,
+              "full_paired": 5000,
+              "paired_to_correct": 5000,
+              "paired_exclusively_correct": 4798,
+              "paired_to_other": 202,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 202,
+              "source_pairs_input": 5000,
+              "not_fully_mapped": 0
+            },
+            "clone6": {
+              "mapped_with_any_end": 320,
+              "full_paired": 320,
+              "paired_to_correct": 320,
+              "paired_exclusively_correct": 320,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 320,
+              "not_fully_mapped": 0
+            },
+            "clone1": {
+              "mapped_with_any_end": 10000,
+              "full_paired": 10000,
+              "paired_to_correct": 10000,
+              "paired_exclusively_correct": 6204,
+              "paired_to_other": 3796,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 3796,
+              "source_pairs_input": 10000,
+              "not_fully_mapped": 0
+            },
+            "clone4": {
+              "mapped_with_any_end": 1260,
+              "full_paired": 1260,
+              "paired_to_correct": 1260,
+              "paired_exclusively_correct": 1260,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 1260,
+              "not_fully_mapped": 0
+            },
+            "clone5": {
+              "mapped_with_any_end": 640,
+              "full_paired": 640,
+              "paired_to_correct": 640,
+              "paired_exclusively_correct": 478,
+              "paired_to_other": 162,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 162,
+              "source_pairs_input": 640,
+              "not_fully_mapped": 0
+            },
+            "clone7": {
+              "mapped_with_any_end": 160,
+              "full_paired": 160,
+              "paired_to_correct": 160,
+              "paired_exclusively_correct": 135,
+              "paired_to_other": 25,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 25,
+              "source_pairs_input": 160,
+              "not_fully_mapped": 0
+            },
+            "clone8": {
+              "mapped_with_any_end": 80,
+              "full_paired": 80,
+              "paired_to_correct": 80,
+              "paired_exclusively_correct": 58,
+              "paired_to_other": 22,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 22,
+              "source_pairs_input": 80,
+              "not_fully_mapped": 0
+            },
+            "clone9": {
+              "mapped_with_any_end": 40,
+              "full_paired": 40,
+              "paired_to_correct": 40,
+              "paired_exclusively_correct": 38,
+              "paired_to_other": 2,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 2,
+              "source_pairs_input": 40,
+              "not_fully_mapped": 0
+            }
+          },
+          "run_seconds": 133.018,
+          "note": "Exact-source and Q15 MAX scoring; sequences simulated error-free from Sanger-verified clone references."
+        }
+      }
+    },
+    "1": {
+      "source_pairs": {
+        "clone4": 1260,
+        "clone1": 9840,
+        "clone2": 5000,
+        "clone3": 2500,
+        "clone5": 640,
+        "clone7": 160,
+        "clone9": 200,
+        "clone8": 80,
+        "clone6": 320
+      },
+      "generator_seed": 4502,
+      "read_length": 250,
+      "insert_length": 450,
+      "independent_local_phase": {
+        "one_or_more": 124,
+        "linked_two_or_more": 91,
+        "linked_three": 53,
+        "marker_positions": [
+          658,
+          741,
+          879
+        ]
+      },
+      "arms": {
+        "upstream": {
+          "mixture": "1",
+          "input_pairs": 20000,
+          "source_labels": {
+            "clone4": 1260,
+            "clone1": 9840,
+            "clone2": 5000,
+            "clone3": 2500,
+            "clone5": 640,
+            "clone7": 160,
+            "clone9": 200,
+            "clone8": 80,
+            "clone6": 320
+          },
+          "truth_calls": {
+            "clone1": {
+              "correct": 1062,
+              "wrong": 0,
+              "uncallable": 12,
+              "callable": 1062
+            },
+            "clone2": {
+              "correct": 1050,
+              "wrong": 0,
+              "uncallable": 24,
+              "callable": 1050
+            },
+            "clone3": {
+              "correct": 1022,
+              "wrong": 0,
+              "uncallable": 52,
+              "callable": 1022
+            },
+            "clone4": {
+              "correct": 980,
+              "wrong": 0,
+              "uncallable": 94,
+              "callable": 980
+            },
+            "clone5": {
+              "correct": 903,
+              "wrong": 0,
+              "uncallable": 171,
+              "callable": 903
+            },
+            "clone6": {
+              "correct": 692,
+              "wrong": 0,
+              "uncallable": 382,
+              "callable": 692
+            },
+            "clone7": {
+              "correct": 571,
+              "wrong": 0,
+              "uncallable": 503,
+              "callable": 571
+            },
+            "clone8": {
+              "correct": 559,
+              "wrong": 0,
+              "uncallable": 515,
+              "callable": 559
+            },
+            "clone9": {
+              "correct": 450,
+              "wrong": 0,
+              "uncallable": 624,
+              "callable": 450
+            }
+          },
+          "source_assignment": {
+            "clone4": {
+              "mapped_with_any_end": 1260,
+              "full_paired": 1260,
+              "paired_to_correct": 1260,
+              "paired_exclusively_correct": 1260,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 1260,
+              "not_fully_mapped": 0
+            },
+            "clone1": {
+              "mapped_with_any_end": 9840,
+              "full_paired": 9840,
+              "paired_to_correct": 7810,
+              "paired_exclusively_correct": 7810,
+              "paired_to_other": 2030,
+              "paired_exclusively_wrong": 2030,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 9840,
+              "not_fully_mapped": 0
+            },
+            "clone2": {
+              "mapped_with_any_end": 5000,
+              "full_paired": 5000,
+              "paired_to_correct": 4868,
+              "paired_exclusively_correct": 4868,
+              "paired_to_other": 132,
+              "paired_exclusively_wrong": 132,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 5000,
+              "not_fully_mapped": 0
+            },
+            "clone3": {
+              "mapped_with_any_end": 2500,
+              "full_paired": 2500,
+              "paired_to_correct": 2298,
+              "paired_exclusively_correct": 2298,
+              "paired_to_other": 202,
+              "paired_exclusively_wrong": 202,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 2500,
+              "not_fully_mapped": 0
+            },
+            "clone5": {
+              "mapped_with_any_end": 640,
+              "full_paired": 640,
+              "paired_to_correct": 557,
+              "paired_exclusively_correct": 557,
+              "paired_to_other": 83,
+              "paired_exclusively_wrong": 83,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 640,
+              "not_fully_mapped": 0
+            },
+            "clone7": {
+              "mapped_with_any_end": 160,
+              "full_paired": 160,
+              "paired_to_correct": 156,
+              "paired_exclusively_correct": 156,
+              "paired_to_other": 4,
+              "paired_exclusively_wrong": 4,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 160,
+              "not_fully_mapped": 0
+            },
+            "clone9": {
+              "mapped_with_any_end": 200,
+              "full_paired": 200,
+              "paired_to_correct": 196,
+              "paired_exclusively_correct": 196,
+              "paired_to_other": 4,
+              "paired_exclusively_wrong": 4,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 200,
+              "not_fully_mapped": 0
+            },
+            "clone8": {
+              "mapped_with_any_end": 80,
+              "full_paired": 80,
+              "paired_to_correct": 70,
+              "paired_exclusively_correct": 70,
+              "paired_to_other": 10,
+              "paired_exclusively_wrong": 10,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 80,
+              "not_fully_mapped": 0
+            },
+            "clone6": {
+              "mapped_with_any_end": 320,
+              "full_paired": 320,
+              "paired_to_correct": 320,
+              "paired_exclusively_correct": 320,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 320,
+              "not_fully_mapped": 0
+            }
+          },
+          "run_seconds": 77.896,
+          "note": "Exact-source and Q15 MAX scoring; sequences simulated error-free from Sanger-verified clone references."
+        },
+        "nonstealing": {
+          "mixture": "1",
+          "input_pairs": 20000,
+          "source_labels": {
+            "clone4": 1260,
+            "clone1": 9840,
+            "clone2": 5000,
+            "clone3": 2500,
+            "clone5": 640,
+            "clone7": 160,
+            "clone9": 200,
+            "clone8": 80,
+            "clone6": 320
+          },
+          "truth_calls": {
+            "clone1": {
+              "correct": 1062,
+              "wrong": 0,
+              "uncallable": 12,
+              "callable": 1062
+            },
+            "clone2": {
+              "correct": 1050,
+              "wrong": 0,
+              "uncallable": 24,
+              "callable": 1050
+            },
+            "clone3": {
+              "correct": 1022,
+              "wrong": 0,
+              "uncallable": 52,
+              "callable": 1022
+            },
+            "clone4": {
+              "correct": 980,
+              "wrong": 0,
+              "uncallable": 94,
+              "callable": 980
+            },
+            "clone5": {
+              "correct": 903,
+              "wrong": 0,
+              "uncallable": 171,
+              "callable": 903
+            },
+            "clone6": {
+              "correct": 692,
+              "wrong": 0,
+              "uncallable": 382,
+              "callable": 692
+            },
+            "clone7": {
+              "correct": 587,
+              "wrong": 0,
+              "uncallable": 487,
+              "callable": 587
+            },
+            "clone8": {
+              "correct": 571,
+              "wrong": 0,
+              "uncallable": 503,
+              "callable": 571
+            },
+            "clone9": {
+              "correct": 453,
+              "wrong": 0,
+              "uncallable": 621,
+              "callable": 453
+            }
+          },
+          "source_assignment": {
+            "clone4": {
+              "mapped_with_any_end": 1260,
+              "full_paired": 1260,
+              "paired_to_correct": 1260,
+              "paired_exclusively_correct": 1260,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 1260,
+              "not_fully_mapped": 0
+            },
+            "clone1": {
+              "mapped_with_any_end": 9840,
+              "full_paired": 9840,
+              "paired_to_correct": 9840,
+              "paired_exclusively_correct": 6119,
+              "paired_to_other": 3721,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 3721,
+              "source_pairs_input": 9840,
+              "not_fully_mapped": 0
+            },
+            "clone2": {
+              "mapped_with_any_end": 5000,
+              "full_paired": 5000,
+              "paired_to_correct": 5000,
+              "paired_exclusively_correct": 4797,
+              "paired_to_other": 203,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 203,
+              "source_pairs_input": 5000,
+              "not_fully_mapped": 0
+            },
+            "clone3": {
+              "mapped_with_any_end": 2500,
+              "full_paired": 2500,
+              "paired_to_correct": 2500,
+              "paired_exclusively_correct": 2053,
+              "paired_to_other": 447,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 447,
+              "source_pairs_input": 2500,
+              "not_fully_mapped": 0
+            },
+            "clone5": {
+              "mapped_with_any_end": 640,
+              "full_paired": 640,
+              "paired_to_correct": 640,
+              "paired_exclusively_correct": 486,
+              "paired_to_other": 154,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 154,
+              "source_pairs_input": 640,
+              "not_fully_mapped": 0
+            },
+            "clone7": {
+              "mapped_with_any_end": 160,
+              "full_paired": 160,
+              "paired_to_correct": 160,
+              "paired_exclusively_correct": 151,
+              "paired_to_other": 9,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 9,
+              "source_pairs_input": 160,
+              "not_fully_mapped": 0
+            },
+            "clone9": {
+              "mapped_with_any_end": 200,
+              "full_paired": 200,
+              "paired_to_correct": 200,
+              "paired_exclusively_correct": 191,
+              "paired_to_other": 9,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 9,
+              "source_pairs_input": 200,
+              "not_fully_mapped": 0
+            },
+            "clone8": {
+              "mapped_with_any_end": 80,
+              "full_paired": 80,
+              "paired_to_correct": 80,
+              "paired_exclusively_correct": 63,
+              "paired_to_other": 17,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 17,
+              "source_pairs_input": 80,
+              "not_fully_mapped": 0
+            },
+            "clone6": {
+              "mapped_with_any_end": 320,
+              "full_paired": 320,
+              "paired_to_correct": 320,
+              "paired_exclusively_correct": 320,
+              "paired_to_other": 0,
+              "paired_exclusively_wrong": 0,
+              "unpaired_only": 0,
+              "multi_reference": 0,
+              "source_pairs_input": 320,
+              "not_fully_mapped": 0
+            }
+          },
+          "run_seconds": 120.587,
+          "note": "Exact-source and Q15 MAX scoring; sequences simulated error-free from Sanger-verified clone references."
+        }
+      }
+    }
+  },
   "hiv9_raw_exact_linked_motifs": {
     "original_pairs": 239006,
     "motif_width": 21,

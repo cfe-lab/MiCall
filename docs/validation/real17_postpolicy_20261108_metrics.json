@@ -1,0 +1,119 @@
+{
+  "references": 17,
+  "authentic_hiv_pair_inputs": 1200,
+  "status": "Controlled fixed-contig mapping experiment; no clinical genotype-presence truth",
+  "previous_candidate": {
+    "timings": {
+      "remap_s": 5.90265740128234,
+      "sam2aln_s": 0.30039573181420565,
+      "aln2counts_s": 4.338776011019945,
+      "total_s": 10.541829144116491
+    },
+    "reported_final_placements": 3828,
+    "capped_original_pair_groups": 1167,
+    "clone_calls": {
+      "A_50": {
+        "correct": 69,
+        "wrong": 0,
+        "uncallable": 1005
+      },
+      "B_25": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "C_12.5": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "D_6.3": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "E_3.2": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "F_1.6": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "G_0.8": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "H_0.4": {
+        "correct": 558,
+        "wrong": 0,
+        "uncallable": 516
+      },
+      "J_0.2": {
+        "correct": 894,
+        "wrong": 0,
+        "uncallable": 180
+      }
+    }
+  },
+  "resource_aware_candidate": {
+    "timings": {
+      "remap_s": 11.90561854466796,
+      "sam2aln_s": 0.3018503626808524,
+      "aln2counts_s": 3.9792672842741013,
+      "total_s": 16.186736191622913
+    },
+    "reported_final_placements": 4210,
+    "capped_original_pair_groups": 0,
+    "clone_calls": {
+      "A_50": {
+        "correct": 2,
+        "wrong": 0,
+        "uncallable": 1072
+      },
+      "B_25": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "C_12.5": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "D_6.3": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "E_3.2": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "F_1.6": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "G_0.8": {
+        "correct": 0,
+        "wrong": 0,
+        "uncallable": 1074
+      },
+      "H_0.4": {
+        "correct": 633,
+        "wrong": 0,
+        "uncallable": 441
+      },
+      "J_0.2": {
+        "correct": 902,
+        "wrong": 0,
+        "uncallable": 172
+      }
+    }
+  }
+}

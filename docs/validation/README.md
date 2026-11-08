@@ -11,16 +11,16 @@ for the tested clinical and engineering blockers. The
 is retained as a historical snapshot.
 
 The additional validation against independently sequenced HIV clones
-uses the [independent genotype and linked-haplotype report]
-(independent_truth_20261107_scientific.md),
+uses the [independent genotype and linked-haplotype report](independent_truth_20261107_scientific.md),
 the [short release verdict](independent_truth_20261107_executive.md),
 and an alignment-independent exact private-21mer phase audit
 (phased_hiv9_motifs.py). These supplement, rather than replace,
 the fixed-contig archived HIV/HCV A/B results below.
 
 The revised mapper now uses all Bowtie2-reported alignments for panels
-with at most 16 contigs and a bounded eight-hit fallback for larger
-panels. Both have explicit limitations. Known clinical genotype/mixture
+with at most 16 contigs, and for 17–32 contigs with at most 65,536
+combined reference bases. All larger/longer panels retain the capped
+search. Both have explicit limitations. Known clinical genotype/mixture
 truth and full diagnostic pipeline sign-off are still outstanding.
 
 ## Read the results
@@ -31,6 +31,16 @@ and its [aggregate machine-readable evidence](final_release_audit_20261108_metri
 It covers separately verified HIV5/HIV9 reference truth, a deliberately
 corrupted-reference challenge, alignment-independent paired-marker linkage,
 and source-tracked HCV minority/absent-decoy controls.
+
+A separate [known-source, Sanger-reference HIV9 minority challenge](known_hiv9_mixture_20261108.md)
+tests zero, 0.2% and 1% clone9 abundance with exactly controlled
+error-free paired fragments. Its
+[aggregate truth measurements](known_hiv9_mixture_20261108_metrics.json)
+are independent of the mapper's read assignment, but do not establish
+clinical sensitivity. The
+[post-policy 17-reference A/B report](real17_postpolicy_20261108.md)
+documents recovered HIV9 callable bases and clone-level regressions
+using genuine HIV reads.
 
 Further original-read tests are documented in the
 [0.2%, 0.4% and 0.99% source dilution study](real_hcv_dilution_20261108.md),
