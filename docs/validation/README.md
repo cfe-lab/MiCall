@@ -2,6 +2,25 @@
 
 This folder contains the technical evidence accompanying the proposed MiCall de novo mapper change. **The observed coverage recovery is not a claim of improved clinical accuracy.**
 
+## Production readiness and independent truth
+
+**Current release decision: NO-GO.** See the
+[production release-gate assessment](production_gate_20261107.md) for
+explicit unmet requirements rather than inferring safety from test count.
+
+The additional validation against independently sequenced HIV clones
+uses the [independent genotype and linked-haplotype report]
+(independent_truth_20261107_scientific.md),
+the [short release verdict](independent_truth_20261107_executive.md),
+and an alignment-independent exact private-21mer phase audit
+(phased_hiv9_motifs.py). These supplement, rather than replace,
+the fixed-contig archived HIV/HCV A/B results below.
+
+The revised mapper now uses all Bowtie2-reported alignments for panels
+with at most 16 contigs and a bounded eight-hit fallback for larger
+panels. Both have explicit limitations. Known clinical genotype/mixture
+truth and full diagnostic pipeline sign-off are still outstanding.
+
 ## Read the results
 
 - [Executive report](real_hiv_hcv_20261106_executive.md): concise interpretation, major changes, and review recommendation
@@ -46,7 +65,7 @@ git archive 2bc94b59366b0ff22a8a673bdb961c28ba75487a \
   | tar -x -C .validation-work/candidate-2bc94b59
 ```
 
-Create `.validation-work/candidate-2bc94b59` before extracting (or use `git worktree add --detach` with that commit). Install the project's Python dependencies and put the tested Bowtie2, Bowtie2-build and downstream aligner executables on `PATH`.
+Alternatively, use a detached Git worktree pinned to that commit. Install the project's Python dependencies and put the tested Bowtie2, Bowtie2-build and downstream aligner executables on `PATH`.
 
 Use privately supplied values for `SOURCE_ROOT` and `SAMPLE_ID`; use aliases that do not disclose specimen identities.
 

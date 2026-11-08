@@ -1,10 +1,19 @@
 # De novo non-stealing remapping and alternative depth
 
-MiCall's de novo pipeline aligns the original trimmed read pairs against
-assembled contigs twice: before and after stitching. These stages now ask
-Bowtie2 for up to eight placements per read pair (`-k 8`) and retain all
-**equally best-scoring, complete, concordant paired** placements. Mapped
-(non-denovo) analyses retain their previous Bowtie2 parameters.
+MiCall's de novo pipeline aligns original trimmed read pairs against
+assembled contigs before and after stitching. For panels of up to
+16 contigs, Bowtie2 now uses `-a` to return **all alignments found**
+rather than imposing an arbitrary eight-placement cutoff. For larger
+contig panels it retains bounded `-k 8` output as a resource-safety
+fallback. The selector retains equally best-scoring complete concordant
+paired placements. De novo mapping uses four Bowtie2 alignment threads
+and `--reorder` to keep QNAMEs grouped for MiCall read-pair processing.
+Ordinary mapped-mode analyses retain their earlier mapping parameters.
+
+**Neither path certifies complete biological alignment discovery.** The
+finite fallback can silently miss alternative contigs if its cap is
+saturated; Bowtie2 itself uses a heuristic search even with `-a`.
+These are explicit remaining production-release limitations.
 
 ## Why
 
@@ -22,12 +31,12 @@ rather than silently passing them off as equivalent.
 
 The de novo remapping stage:
 
-1. Obtains at most eight candidate paired placements from Bowtie2. This cap
-   bounds runtime; it does *not* prove all possible placements were found.
-   Logs a warning when read pairs reach that reporting limit. Adding more
-   competing contigs can still displace a previously reported placement
-   if the limit is saturated; the non-stealing behavior is only guaranteed
-   among the actual equally best reported placements.
+1. Uses `-a` for 1–16 input contigs; larger panels retain bounded
+   `-k 8`. A warning identifies reads reaching the finite bound.
+   The four-thread mapper uses `--reorder` to guarantee contiguous
+   original read-pair QNAME groups. If a QNAME group becomes pathologically
+   large (over 8,192 SAM records), it is discarded with a warning rather
+   than partially counted or buffered indefinitely.
 2. Requires proper, mapped, non-supplementary, non-duplicate alignments whose
    two mates have the same QNAME, reference and reciprocal mate positions.
 3. Keeps placements tied for the best **combined R1+R2 alignment score**.
@@ -46,7 +55,7 @@ The de novo remapping stage:
    represented **primary singleton** (one mapped mate, one unmapped mate)
    instead of dropping that original read pair. The singleton remains
    in the remap records and cascade accounting but does **not** become
-   Q15 consensus support: MiCall's \`sam2aln\` requires two valid mate
+   Q15 consensus support: MiCall's `sam2aln` requires two valid mate
    CIGARs to construct a merged read. Supplementary, secondary, malformed,
    or contradictory singleton records are rejected. It does not resurrect
    structurally contradictory pairs simply because they were primary.
@@ -115,13 +124,13 @@ ends while a properly represented singleton counts as one. Secondary
 placement copies never add to the total. Distinct main and single-reference
 rescue streams contain disjoint original read pairs. This assumes the MiCall
 input invariant of unique QNAMEs for independent pairs and contiguous
-Bowtie2 QNAME groups (one Bowtie2 thread preserves the ordering).
+Bowtie2 QNAME groups (the four-thread mode uses `--reorder`).
 
 This is **not PCR/optical duplicate removal** and should not be interpreted
 as a count of distinct original biological molecules.
 
 The GUI remapping progress callback uses original read-pair counts rather
-than the larger number of SAM alignment records from `-k`. Warnings identify
+than the larger number of SAM alignment records from `-a` or `-k`. Warnings identify
 reporting-limit saturation, mapped pairs rejected because no safe paired
 placement was found, and odd-length QNAME groups with orphaned SAM records.
 
@@ -139,7 +148,7 @@ placement was found, and odd-length QNAME groups with orphaned SAM records.
 - In review, validate authentic clinical research controls for false
   genotype calls, minority alleles, raw-read identity, contig masks, runtime,
   and non-denovo invariance; do not treat successful unit tests as biological
-  validation. Assess the impact of the eight-placement reporting cap
+  validation. Assess exhaustive-search heuristics and finite-cap behavior
   on repetitive references before a production release.
 
 The alignment stage emits one record pair per retained placement, so runtime
@@ -158,9 +167,18 @@ The tradeoff is additional Python bookkeeping per base; both runtime and
 peak memory still depend on alternative alignments and dataset structure.
 These costs must be measured on authentic datasets before deployment.
 
-Integration tests explicitly cover nine otherwise identical contigs, which
-saturate the eight-placement cap and emit a warning. It is not legitimate
-to treat all nine contigs as confirmed equally supported in that case.
+Integration tests cover all nine identical contigs under the
+small-panel `-a` path and the resource-capped fallback using
+seventeen contigs. Multi-threaded read-pair order is verified with fifty
+original pairs across nine equivalently matching references.
+
+The revised all-alignment candidate gained 30 additional truth-correct
+callable bases relative to the earlier eight-hit candidate on the
+five-strain independently verified HIV control, with zero incorrect calls.
+On 59,770 real paired reads, wall time decreased from about 448 to
+200 seconds; upstream MiCall was about 174 seconds on that comparison.
+The tradeoff remains dataset-dependent and must be validated on
+large, repetitive panels without giving up read accounting integrity.
 
 Related history: #141, #200, #264, #290, #719.
 
@@ -168,11 +186,13 @@ Related history: #141, #200, #264, #290, #719.
 
 Real HIV reference controls from separately resequenced virus strains
 and Sanger-confirmed clone mixtures are evaluated alongside these
-algorithmic tests. See \`docs/validation/independent_truth_20261107_scientific.md\`
+algorithmic tests. See `docs/validation/independent_truth_20261107_scientific.md`
 for actual scientific outcomes and release blockers.
 
-A critical limitation of \`-k 8\` is now experimentally observed on real
-nine-plasmid HIV read pairs: it omits some equally best-scoring placements
-that \`-a\` enumerates, including in a panel with nine known biological
-clone references. Mapping cap saturation must never be treated as
-confirmation that all genotype hypotheses were covered.
+A hard `-k 8` cutoff was experimentally shown to omit
+equally best-scoring alternatives present in an independently verified
+nine-haplotype HIV panel. The small-panel `-a` path resolves this
+specific avoidable truncation, but does not provide a mathematical
+guarantee of exhaustive mapping. Even when all reported alignments
+are retained, per-base maximum depth remains conditional and cannot
+establish genotype presence or true minority-haplotype abundance.

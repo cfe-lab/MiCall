@@ -103,31 +103,110 @@ def test_denovo_does_not_admit_a_strictly_worse_snv_alignment(
 @pytest.mark.skipif(not (shutil.which('bowtie2-align-s') and
                          shutil.which('bowtie2-build-s')),
                     reason='Requires Bowtie2 executables')
-def test_denovo_warns_on_more_equivalent_contigs_than_the_reporting_cap(
-        monkeypatch, tmp_path, caplog):
+@pytest.mark.parametrize('extra_contigs,expect_cap', [(1, False), (9, True)])
+def test_denovo_reports_all_small_panel_contigs_and_warns_on_large_cap(
+        monkeypatch, tmp_path, caplog, extra_contigs, expect_cap):
     from micall.core import remap
     from micall.core.denovo_multimap import MAX_DENOVO_ALIGNMENTS
 
     rng = random.Random(1456)
     dna = ''.join(rng.choices('ACGT', k=330))
     references = {f'contig{i}': dna
-                  for i in range(MAX_DENOVO_ALIGNMENTS + 1)}
+                  for i in range(MAX_DENOVO_ALIGNMENTS + extra_contigs)}
     first = dna[25:125]
     second = reverse_and_complement(dna[170:270])
     for name, read in (('R1', first), ('R2', second)):
         (tmp_path / f'{name}.fastq').write_text(
             '@one\n{}\n+\n{}\n'.format(read, 'I' * len(read)))
     monkeypatch.setattr(remap, 'read_contigs', lambda *_: references)
+    output, count_csv = StringIO(), StringIO()
+    map_to_contigs(str(tmp_path / 'R1.fastq'),
+                   str(tmp_path / 'R2.fastq'),
+                   StringIO(''), output, count_csv, StringIO(),
+                   StringIO(), StringIO(), str(tmp_path))
+
+    count_rows = {r['type']: int(r['count']) for r in
+                  csv.DictReader(StringIO(count_csv.getvalue()))}
+    assert count_rows.get('multimap-capped-pairs', 0) == int(expect_cap)
+    rows = list(csv.DictReader(StringIO(output.getvalue())))
+    expected = MAX_DENOVO_ALIGNMENTS if expect_cap else len(references)
+    assert len(rows) == expected * 2
+    assert len({row['rname'] for row in rows}) == expected
+    assert ('reporting limit' in caplog.text) is expect_cap
+    # The limitation must be machine-readable as well as logged.
+    # For a small all-placement panel no artificial saturation is recorded.
+
+
+
+@pytest.mark.skipif(not (shutil.which('bowtie2-align-s') and
+                         shutil.which('bowtie2-build-s')),
+                    reason='Requires Bowtie2 executables')
+def test_multithreaded_all_alignments_keep_qname_groups_together(
+        monkeypatch, tmp_path):
+    from collections import defaultdict
+    from micall.core import remap
+
+    rng = random.Random(867)
+    dna = ''.join(rng.choices('ACGT', k=350))
+    monkeypatch.setattr(remap, 'read_contigs',
+                        lambda *_: {f'R{i}': dna for i in range(9)})
+    first = dna[25:145]
+    second = reverse_and_complement(dna[175:295])
+    for name, read in (('R1', first), ('R2', second)):
+        fastq = tmp_path / f'{name}.fastq'
+        fastq.write_text(''.join(
+            f'@pair{i}\n{read}\n+\n{"I" * len(read)}\n'
+            for i in range(50)))
     output = StringIO()
     map_to_contigs(str(tmp_path / 'R1.fastq'),
                    str(tmp_path / 'R2.fastq'),
                    StringIO(''), output, StringIO(), StringIO(),
                    StringIO(), StringIO(), str(tmp_path))
+    counts = defaultdict(lambda: defaultdict(int))
+    for row in csv.DictReader(StringIO(output.getvalue())):
+        counts[row['qname']][row['rname']] += 1
+    assert len(counts) == 50
+    assert all(len(regions) == 9 for regions in counts.values())
+    assert all(all(mates == 2 for mates in regions.values())
+               for regions in counts.values())
 
-    rows = list(csv.DictReader(StringIO(output.getvalue())))
-    assert len(rows) == MAX_DENOVO_ALIGNMENTS * 2
-    assert len({row['rname'] for row in rows}) == MAX_DENOVO_ALIGNMENTS
-    assert 'reporting limit' in caplog.text
+
+@pytest.mark.skipif(not (shutil.which('bowtie2-align-s') and
+                         shutil.which('bowtie2-build-s')),
+                    reason='Requires Bowtie2 executables')
+def test_rejected_mapped_pair_counts_as_unmapped_original_ends(
+        monkeypatch, tmp_path):
+    from collections import Counter
+    from micall.core import remap
+
+    rng = random.Random(901)
+    dna = ''.join(rng.choices('ACGT', k=350))
+    monkeypatch.setattr(remap, 'read_contigs',
+                        lambda *_: {'A': dna})
+    for name, read in (('R1', dna[25:125]),
+                       ('R2', reverse_and_complement(dna[170:270]))):
+        (tmp_path / f'{name}.fastq').write_text(
+            f'@one\n{read}\n+\n{"I" * len(read)}\n')
+
+    def reject_all(source, destination, limit=None, diagnostics=None):
+        for line in source:
+            if line.startswith('@'):
+                destination.write(line)
+        return Counter()
+
+    monkeypatch.setattr(remap, 'select_best_pairs', reject_all)
+    counts = StringIO()
+    remapped = StringIO()
+    map_to_contigs(str(tmp_path / 'R1.fastq'),
+                   str(tmp_path / 'R2.fastq'), StringIO(''),
+                   remapped, counts, StringIO(), StringIO(),
+                   StringIO(), str(tmp_path))
+    summary = {row['type']: int(row['count'])
+               for row in csv.DictReader(StringIO(counts.getvalue()))}
+    assert summary['raw'] == 2
+    assert summary['unmapped'] == 0  # legacy Bowtie2 classification
+    assert summary['unmapped-after-selection'] == 2
+    assert len(list(csv.DictReader(StringIO(remapped.getvalue())))) == 0
 
 
 @pytest.mark.parametrize('use_denovo,prefix', [
