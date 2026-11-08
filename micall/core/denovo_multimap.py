@@ -9,11 +9,32 @@ from collections import Counter
 from itertools import groupby
 import re
 
-# Large contig panels still need bounded Bowtie2 output. For smaller
-# panels, use all reported alignments and eliminate an arbitrary -k cutoff.
+# Full Bowtie2 reporting is used for small panels or modest reference
+# collections. Limit the contig count AND total reference bases for the
+# expanded tier: output can grow dramatically for repetitive inputs.
 MAX_DENOVO_ALIGNMENTS = 8
 ALL_ALIGNMENT_MAX_CONTIGS = 16
+ALL_ALIGNMENT_EXPANDED_MAX_CONTIGS = 32
+ALL_ALIGNMENT_EXPANDED_MAX_BASES = 65536
 DENOVO_BOWTIE_THREADS = 4
+
+
+def denovo_alignment_limit(contigs):
+    """Return None for all reported hits, else a bounded search limit.
+
+    Preserve the existing full-search path for <=16 contigs of any length.
+    Also use it on moderate 17–32-contig panels with a small overall
+    reference footprint. The expanded tier has a deliberate resource
+    ceiling, not a claim of exhaustive Bowtie2 heuristic search.
+    """
+    count = len(contigs)
+    if count <= ALL_ALIGNMENT_MAX_CONTIGS:
+        return None
+    if (count <= ALL_ALIGNMENT_EXPANDED_MAX_CONTIGS
+            and sum(map(len, contigs.values())) <=
+            ALL_ALIGNMENT_EXPANDED_MAX_BASES):
+        return None
+    return MAX_DENOVO_ALIGNMENTS
 # Never buffer more than this many SAM records for a single read pair.
 # Pathologically repetitive reads are excluded, not partially miscounted.
 MAX_DENOVO_RECORDS_PER_PAIR = 8192
