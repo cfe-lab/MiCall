@@ -128,9 +128,15 @@ def main():
             raise ValueError(f'HCV real-origin controls incomplete: {name}')
 
     linked = json.loads((PRIVATE / 'hiv9-exact-phased-motifs.json').read_text())
+    with (PRIVATE / 'hiv9-large-panel-audit/aggregate.json').open() as f:
+        large_panel = json.load(f)
+    with (OUTPUT / 'real_hcv_dilution_20261108_metrics.json').open() as f:
+        dilution = json.load(f)
     aggregate = {
         'truth_cases': groups,
         'hcv_source_origin': hcv,
+        'known_origin_dilution': dilution,
+        '17_real_reference_panel': large_panel,
         'hiv9_raw_exact_linked_motifs': linked,
         'note': ('Allele correctness is measured against independently sequenced'
                  ' HIV references. HCV read origins, not biological genotype,'
@@ -215,6 +221,40 @@ def main():
         ' reportable false-positive result. These apparent calls already'
         ' occurred with upstream MiCall.'),
         '',
+        '## Real-read source dilutions below one percent',
+        '',
+        ('Additional same-input A/B controls resampled authentic archived'
+         ' HCV reads at verified source-library fractions 0%, 0.2%, 0.4%'
+         ' and 0.99%. Both independently seeded 0.2% resamples yielded'
+         ' 88/100 correctly assigned source pairs but no callable'
+         ' minority-contig bases. Two 0.4% resamples produced 1 and'
+         ' 22 callable bases despite 176/200 and 178/200 correct source'
+         ' assignments. The absent-source decoy retained 26 callable'
+         ' bases. These are not certified clinical genotype fractions.'
+         ' See the dilution report real_hcv_dilution_20261108.md.'),
+        '',
+        '## Large-panel bounded-alignment completeness: real-read stress',
+        '',
+        (f'The final >16-contig fallback was challenged with'
+         f' {large_panel["original_real_hiv9_pairs"]:,} real paired HIV9'
+         f' reads and a constructed panel of {large_panel["references"]}'
+         ' authentic reference sequences (nine Sanger-confirmed HIV9'
+         ' plasmids, five HIV5 isolates and three archived HCV contigs).'
+         f' {large_panel["bounded_diagnostics"]["at_report_limit"]:,}'
+         ' paired-read groups reached the -k 8 reporting limit.'
+         f' {large_panel["pairs_losing_references_at_k8"]:,}'
+         ' read pairs omitted at least one reference found by Bowtie2'
+         ' all-alignment mode, with'
+         f' {large_panel["missing_reference_alternatives"]:,} missing'
+         ' alternatives in total. This is a deeper heuristic'
+         ' search, not a completeness oracle. The reference panel is'
+         ' an engineered validation panel of real contigs, not an actual'
+         ' 17-contig patient assembly. Runtime was'
+         f' {large_panel["bounded_seconds"]:.1f}s capped versus'
+         f' {large_panel["all_seconds"]:.1f}s deeper. This prevents'
+         ' endorsing the large-panel fallback for clinical use without'
+         ' an adaptive, bounded correctness strategy.'),
+        '',
         '## Alignment-independent phased-minority signals',
         '',
         ('Private 21-mers around each Sanger-confirmed, clone-private SNP'
@@ -246,7 +286,7 @@ def main():
         '',
         '## Production gate and correctness limitations',
         '',
-        ('- **PASS in tested configuration:** 4,362 broader MiCall tests passed,'
+        ('- **PASS in tested configuration:** 4,373 broader MiCall tests passed,'
         ' with five skips, one deselection, and 54 expected failures.'
         ' Installation/IVA tests depend on unavailable prerequisites.'),
         ('- **PASS on reference subsets:** the revised candidate recovers'

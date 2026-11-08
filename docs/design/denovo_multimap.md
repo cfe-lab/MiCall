@@ -203,3 +203,22 @@ specific avoidable truncation, but does not provide a mathematical
 guarantee of exhaustive mapping. Even when all reported alignments
 are retained, per-base maximum depth remains conditional and cannot
 establish genotype presence or true minority-haplotype abundance.
+
+## Extended real-reference large-panel stress
+
+An additional constructed reference-panel stress used 1,200 authentic HIV9
+paired reads and 17 authentic reference contigs (nine Sanger-verified HIV
+clone sequences, five independently sequenced HIV strains and three
+archived HCV contigs). The greater-than-16 fallback reached the eight-hit
+limit on **1,167** pairs. Relative to a deeper Bowtie2 all-hit search,
+**188** pairs lost at least one reference alternative (**290** missing
+alternatives in total). Bowtie2 all-hit search took 10.0 seconds versus
+4.1 seconds for the bounded run on this 1,200-pair subset.
+
+This is concrete evidence that the bounded large-panel fallback is **not
+yet fit for clinical genotype inference**. Merely increasing a fixed hit
+limit is not proven safe or fast at production scale. The reference panel
+is deliberately constructed from existing real sequences: it is not an
+actual 17-contig patient assembly. The reproducible study script is
+docs/validation/real17_panel_audit_20261108.py, and the release verdict
+is in docs/validation/final_release_audit_20261108.md.

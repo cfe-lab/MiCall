@@ -43,6 +43,14 @@ Fractional-depth specificity check: in the final candidate, all 26 Q15 MAX calla
 
 These controls mix real reads from identified source *libraries*. The identity of the original read library is known, but the biological genotype of each library was not independently adjudicated. Apparent calls on an intentionally absent contig are a warning about specificity, not proof of a clinically reportable false-positive result. These apparent calls already occurred with upstream MiCall.
 
+## Real-read source dilutions below one percent
+
+Additional same-input A/B controls resampled authentic archived HCV reads at verified source-library fractions 0%, 0.2%, 0.4% and 0.99%. Both independently seeded 0.2% resamples yielded 88/100 correctly assigned source pairs but no callable minority-contig bases. Two 0.4% resamples produced 1 and 22 callable bases despite 176/200 and 178/200 correct source assignments. The absent-source decoy retained 26 callable bases. These are not certified clinical genotype fractions. See the dilution report real_hcv_dilution_20261108.md.
+
+## Large-panel bounded-alignment completeness: real-read stress
+
+The final >16-contig fallback was challenged with 1,200 real paired HIV9 reads and a constructed panel of 17 authentic reference sequences (nine Sanger-confirmed HIV9 plasmids, five HIV5 isolates and three archived HCV contigs). 1,167 paired-read groups reached the -k 8 reporting limit. 188 read pairs omitted at least one reference found by Bowtie2 all-alignment mode, with 290 missing alternatives in total. This is a deeper heuristic search, not a completeness oracle. The reference panel is an engineered validation panel of real contigs, not an actual 17-contig patient assembly. Runtime was 4.1s capped versus 10.0s deeper. This prevents endorsing the large-panel fallback for clinical use without an adaptive, bounded correctness strategy.
+
 ## Alignment-independent phased-minority signals
 
 Private 21-mers around each Sanger-confirmed, clone-private SNP were searched against the **unaligned** original paired FASTQ reads, including reverse-complement matches. Two private motifs occurring in one pair demonstrate local linkage, not a full-length phased haplotype or calibrated clone abundance.
@@ -63,7 +71,7 @@ The clone named **J_0.2** has 96,433 pairs matching at least one private motif a
 
 ## Production gate and correctness limitations
 
-- **PASS in tested configuration:** 4,362 broader MiCall tests passed, with five skips, one deselection, and 54 expected failures. Installation/IVA tests depend on unavailable prerequisites.
+- **PASS in tested configuration:** 4,373 broader MiCall tests passed, with five skips, one deselection, and 54 expected failures. Installation/IVA tests depend on unavailable prerequisites.
 - **PASS on reference subsets:** the revised candidate recovers more correct callable HIV bases with no overall increase in wrong calls against upstream on the fixed-known-truth panels; some clones and positions still have incorrect calls.
 - **NOT ESTABLISHED:** known negative-control genotype-absence specificity, minority mixture abundance and full haplotype phase.
 - **NOT ESTABLISHED:** complete detection of competing alignments on Bowtie2 heuristic search; panels over 16 still use a k=8 cap.
@@ -77,4 +85,4 @@ The clinical production release remains blocked. An increase in per-contig maxim
 
 Upstream source: cba1898a. Bounded candidate controls were run on earlier revisions. All-placement, four-thread controls used the working tree implementing the same alignment mode as local commit 379e80e9; exact commit-pinned reruns and independent review remain mandatory before final release. Original reads, haplotype sequences and private run artifacts remain in git-ignored local storage.
 
-Generated 2026-11-08 05:49 UTC
+Generated 2026-11-08 06:32 UTC

@@ -27,17 +27,28 @@ def measure(sample,arm):
     obj=json.loads(status.read_text())
     if not obj['ok']:
         return {'complete':False,'error':obj.get('error')}
-    assignments=defaultdict(set)
+    # Preserve the distinction between a sequenced input read-pair name
+    # having ANY mapped end and both mate ends mapping to the SAME contig.
+    # Bowtie2 may report a real singleton; it is not paired support for
+    # downstream MiCall consensus and must not inflate validated pairs.
+    assignments=defaultdict(lambda: defaultdict(int))
     for row in read_csv(folder/'remap.csv'):
-        qname=row['qname']
-        if row['rname'] and row['rname']!='*' and not int(row['flag'])&0x4:
-            assignments[qname].add(row['rname'])
+        flag=int(row['flag'])
+        ref=row['rname']
+        if not ref or ref=='*' or flag&0x4:
+            continue
+        if flag&0x40:
+            assignments[row['qname']][ref]|=1
+        if flag&0x80:
+            assignments[row['qname']][ref]|=2
     counts=defaultdict(Counter)
-    for name,refs in assignments.items():
+    for name,mates_by_ref in assignments.items():
         source=name.split('|',1)[0]
         if source not in ('HCV1a','HCV2b'):
             raise AssertionError('Read lost its source-of-origin label')
         expected={'HCV1a':'HCV-1a','HCV2b':'HCV-2b'}[source]
+        refs=set(mates_by_ref)
+        paired_refs={ref for ref,mask in mates_by_ref.items() if mask==3}
         correctly=any(ref.endswith(expected) for ref in refs)
         decoy=any(ref.endswith('HCV-1b') for ref in refs)
         wrong=any(not ref.endswith(expected) for ref in refs)
@@ -48,6 +59,12 @@ def measure(sample,arm):
         counts[source]['correct_only']+=correctly and not wrong
         counts[source]['wrong_only']+=not correctly and wrong
         counts[source]['multiple_contigs']+=len(refs)>1
+        counts[source]['paired_mapped']+=bool(paired_refs)
+        counts[source]['paired_correct']+=any(
+            ref.endswith(expected) for ref in paired_refs)
+        counts[source]['paired_decoy']+=any(
+            ref.endswith('HCV-1b') for ref in paired_refs)
+        counts[source]['single_end_only']+=not paired_refs
     count_regions=Counter()
     callable_bases={}
     for row in read_csv(folder/'conseq.csv'):

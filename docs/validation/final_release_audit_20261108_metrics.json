@@ -421,7 +421,11 @@
             "other_reference": 296,
             "correct_only": 10331,
             "wrong_only": 296,
-            "multiple_contigs": 0
+            "multiple_contigs": 0,
+            "paired_mapped": 10528,
+            "paired_correct": 10235,
+            "paired_decoy": 223,
+            "single_end_only": 99
           }
         },
         "per_reference": {
@@ -451,7 +455,11 @@
             "other_reference": 301,
             "correct_only": 10326,
             "wrong_only": 293,
-            "multiple_contigs": 8
+            "multiple_contigs": 8,
+            "paired_mapped": 10528,
+            "paired_correct": 10238,
+            "paired_decoy": 228,
+            "single_end_only": 99
           }
         },
         "per_reference": {
@@ -481,7 +489,11 @@
             "other_reference": 301,
             "correct_only": 10326,
             "wrong_only": 293,
-            "multiple_contigs": 8
+            "multiple_contigs": 8,
+            "paired_mapped": 10528,
+            "paired_correct": 10238,
+            "paired_decoy": 228,
+            "single_end_only": 99
           }
         },
         "per_reference": {
@@ -513,7 +525,11 @@
             "other_reference": 4,
             "correct_only": 428,
             "wrong_only": 4,
-            "multiple_contigs": 0
+            "multiple_contigs": 0,
+            "paired_mapped": 432,
+            "paired_correct": 428,
+            "paired_decoy": 1,
+            "single_end_only": 0
           },
           "HCV1a": {
             "mapped": 10627,
@@ -522,7 +538,11 @@
             "other_reference": 296,
             "correct_only": 10331,
             "wrong_only": 296,
-            "multiple_contigs": 0
+            "multiple_contigs": 0,
+            "paired_mapped": 10528,
+            "paired_correct": 10235,
+            "paired_decoy": 223,
+            "single_end_only": 99
           }
         },
         "per_reference": {
@@ -556,7 +576,11 @@
             "other_reference": 4,
             "correct_only": 428,
             "wrong_only": 4,
-            "multiple_contigs": 0
+            "multiple_contigs": 0,
+            "paired_mapped": 432,
+            "paired_correct": 428,
+            "paired_decoy": 1,
+            "single_end_only": 0
           },
           "HCV1a": {
             "mapped": 10627,
@@ -565,7 +589,11 @@
             "other_reference": 301,
             "correct_only": 10326,
             "wrong_only": 293,
-            "multiple_contigs": 8
+            "multiple_contigs": 8,
+            "paired_mapped": 10528,
+            "paired_correct": 10238,
+            "paired_decoy": 228,
+            "single_end_only": 99
           }
         },
         "per_reference": {
@@ -599,7 +627,11 @@
             "other_reference": 4,
             "correct_only": 428,
             "wrong_only": 4,
-            "multiple_contigs": 0
+            "multiple_contigs": 0,
+            "paired_mapped": 432,
+            "paired_correct": 428,
+            "paired_decoy": 1,
+            "single_end_only": 0
           },
           "HCV1a": {
             "mapped": 10627,
@@ -608,7 +640,11 @@
             "other_reference": 301,
             "correct_only": 10326,
             "wrong_only": 293,
-            "multiple_contigs": 8
+            "multiple_contigs": 8,
+            "paired_mapped": 10528,
+            "paired_correct": 10238,
+            "paired_decoy": 228,
+            "single_end_only": 99
           }
         },
         "per_reference": {
@@ -633,6 +669,660 @@
         }
       }
     }
+  },
+  "known_origin_dilution": {
+    "HCV-origin-zero": {
+      "input_source_pairs": {
+        "HCV1a": 50000
+      },
+      "source_minor_fraction": 0.0,
+      "arms": {
+        "upstream": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10331,
+              "decoy": 225,
+              "other_reference": 296,
+              "correct_only": 10331,
+              "wrong_only": 296,
+              "multiple_contigs": 0,
+              "paired_mapped": 10528,
+              "paired_correct": 10235,
+              "paired_decoy": 223,
+              "single_end_only": 99
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1535,
+              "span_bases": 1548
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 13.241043094079942,
+            "sam2aln_s": 0.6913879411295056,
+            "aln2counts_s": 2.548792300745845,
+            "total_s": 16.481223335955292
+          }
+        },
+        "nonstealing-all-p4": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10334,
+              "decoy": 230,
+              "other_reference": 301,
+              "correct_only": 10326,
+              "wrong_only": 293,
+              "multiple_contigs": 8,
+              "paired_mapped": 10528,
+              "paired_correct": 10238,
+              "paired_decoy": 228,
+              "single_end_only": 99
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1538,
+              "span_bases": 1548
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 7.225180615205318,
+            "sam2aln_s": 1.3933231639675796,
+            "aln2counts_s": 3.70206426596269,
+            "total_s": 12.320568045135587
+          },
+          "decoy_fractional_evidence": {
+            "fractional_depth_at_least_100": 26,
+            "fractional_depth_below_100": 0
+          }
+        }
+      }
+    },
+    "HCV-origin-0p2-A": {
+      "input_source_pairs": {
+        "HCV1a": 50000,
+        "HCV2b": 100
+      },
+      "source_minor_fraction": 0.001996007984031936,
+      "arms": {
+        "upstream": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10331,
+              "decoy": 225,
+              "other_reference": 296,
+              "correct_only": 10331,
+              "wrong_only": 296,
+              "multiple_contigs": 0,
+              "paired_mapped": 10528,
+              "paired_correct": 10235,
+              "paired_decoy": 223,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 88,
+              "correct": 88,
+              "decoy": 0,
+              "other_reference": 0,
+              "correct_only": 88,
+              "wrong_only": 0,
+              "multiple_contigs": 0,
+              "paired_mapped": 88,
+              "paired_correct": 88,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1535,
+              "span_bases": 1548
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 14.276569760404527,
+            "sam2aln_s": 0.7300584660843015,
+            "aln2counts_s": 2.710073088761419,
+            "total_s": 17.716701315250248
+          }
+        },
+        "nonstealing": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10334,
+              "decoy": 230,
+              "other_reference": 301,
+              "correct_only": 10326,
+              "wrong_only": 293,
+              "multiple_contigs": 8,
+              "paired_mapped": 10528,
+              "paired_correct": 10238,
+              "paired_decoy": 228,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 88,
+              "correct": 88,
+              "decoy": 0,
+              "other_reference": 0,
+              "correct_only": 88,
+              "wrong_only": 0,
+              "multiple_contigs": 0,
+              "paired_mapped": 88,
+              "paired_correct": 88,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1538,
+              "span_bases": 1548
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 4.843126367777586,
+            "sam2aln_s": 1.0674693500623107,
+            "aln2counts_s": 2.633188160136342,
+            "total_s": 8.543783877976239
+          },
+          "decoy_fractional_evidence": {
+            "fractional_depth_at_least_100": 26,
+            "fractional_depth_below_100": 0
+          }
+        }
+      }
+    },
+    "HCV-origin-0p2-B": {
+      "input_source_pairs": {
+        "HCV1a": 50000,
+        "HCV2b": 100
+      },
+      "source_minor_fraction": 0.001996007984031936,
+      "arms": {
+        "upstream": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10331,
+              "decoy": 225,
+              "other_reference": 296,
+              "correct_only": 10331,
+              "wrong_only": 296,
+              "multiple_contigs": 0,
+              "paired_mapped": 10528,
+              "paired_correct": 10235,
+              "paired_decoy": 223,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 88,
+              "correct": 88,
+              "decoy": 0,
+              "other_reference": 0,
+              "correct_only": 88,
+              "wrong_only": 0,
+              "multiple_contigs": 0,
+              "paired_mapped": 88,
+              "paired_correct": 88,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1535,
+              "span_bases": 1548
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 14.16095527401194,
+            "sam2aln_s": 0.7172540468163788,
+            "aln2counts_s": 2.7039025500416756,
+            "total_s": 17.582111870869994
+          }
+        },
+        "nonstealing": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10334,
+              "decoy": 230,
+              "other_reference": 301,
+              "correct_only": 10326,
+              "wrong_only": 293,
+              "multiple_contigs": 8,
+              "paired_mapped": 10528,
+              "paired_correct": 10238,
+              "paired_decoy": 228,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 88,
+              "correct": 88,
+              "decoy": 0,
+              "other_reference": 0,
+              "correct_only": 88,
+              "wrong_only": 0,
+              "multiple_contigs": 0,
+              "paired_mapped": 88,
+              "paired_correct": 88,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1538,
+              "span_bases": 1548
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 5.154741789214313,
+            "sam2aln_s": 1.042061932850629,
+            "aln2counts_s": 2.663711595814675,
+            "total_s": 8.860515317879617
+          },
+          "decoy_fractional_evidence": {
+            "fractional_depth_at_least_100": 26,
+            "fractional_depth_below_100": 0
+          }
+        }
+      }
+    },
+    "HCV-origin-0p4-A": {
+      "input_source_pairs": {
+        "HCV1a": 50000,
+        "HCV2b": 200
+      },
+      "source_minor_fraction": 0.00398406374501992,
+      "arms": {
+        "upstream": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10331,
+              "decoy": 225,
+              "other_reference": 296,
+              "correct_only": 10331,
+              "wrong_only": 296,
+              "multiple_contigs": 0,
+              "paired_mapped": 10528,
+              "paired_correct": 10235,
+              "paired_decoy": 223,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 177,
+              "correct": 176,
+              "decoy": 0,
+              "other_reference": 1,
+              "correct_only": 176,
+              "wrong_only": 1,
+              "multiple_contigs": 0,
+              "paired_mapped": 177,
+              "paired_correct": 176,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1535,
+              "span_bases": 1548
+            },
+            "2-HCV-2b": {
+              "callable_q15_max": 1,
+              "span_bases": 1
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 13.958953753113747,
+            "sam2aln_s": 0.7079091011546552,
+            "aln2counts_s": 2.7059978810139,
+            "total_s": 17.372860735282302
+          }
+        },
+        "nonstealing": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10334,
+              "decoy": 230,
+              "other_reference": 301,
+              "correct_only": 10326,
+              "wrong_only": 293,
+              "multiple_contigs": 8,
+              "paired_mapped": 10528,
+              "paired_correct": 10238,
+              "paired_decoy": 228,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 177,
+              "correct": 176,
+              "decoy": 0,
+              "other_reference": 1,
+              "correct_only": 176,
+              "wrong_only": 1,
+              "multiple_contigs": 0,
+              "paired_mapped": 177,
+              "paired_correct": 176,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1538,
+              "span_bases": 1548
+            },
+            "2-HCV-2b": {
+              "callable_q15_max": 1,
+              "span_bases": 1
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 4.453455001115799,
+            "sam2aln_s": 1.0628998312167823,
+            "aln2counts_s": 2.651073434855789,
+            "total_s": 8.16742826718837
+          },
+          "decoy_fractional_evidence": {
+            "fractional_depth_at_least_100": 26,
+            "fractional_depth_below_100": 0
+          }
+        }
+      }
+    },
+    "HCV-origin-0p4-B": {
+      "input_source_pairs": {
+        "HCV1a": 50000,
+        "HCV2b": 200
+      },
+      "source_minor_fraction": 0.00398406374501992,
+      "arms": {
+        "upstream": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10331,
+              "decoy": 225,
+              "other_reference": 296,
+              "correct_only": 10331,
+              "wrong_only": 296,
+              "multiple_contigs": 0,
+              "paired_mapped": 10528,
+              "paired_correct": 10235,
+              "paired_decoy": 223,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 180,
+              "correct": 178,
+              "decoy": 0,
+              "other_reference": 2,
+              "correct_only": 178,
+              "wrong_only": 2,
+              "multiple_contigs": 0,
+              "paired_mapped": 180,
+              "paired_correct": 178,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1535,
+              "span_bases": 1548
+            },
+            "2-HCV-2b": {
+              "callable_q15_max": 22,
+              "span_bases": 22
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 13.322348934132606,
+            "sam2aln_s": 0.6950567541643977,
+            "aln2counts_s": 2.487352169584483,
+            "total_s": 16.504757857881486
+          }
+        },
+        "nonstealing": {
+          "complete": true,
+          "counts": {
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10334,
+              "decoy": 230,
+              "other_reference": 301,
+              "correct_only": 10326,
+              "wrong_only": 293,
+              "multiple_contigs": 8,
+              "paired_mapped": 10528,
+              "paired_correct": 10238,
+              "paired_decoy": 228,
+              "single_end_only": 99
+            },
+            "HCV2b": {
+              "mapped": 180,
+              "correct": 178,
+              "decoy": 0,
+              "other_reference": 2,
+              "correct_only": 178,
+              "wrong_only": 2,
+              "multiple_contigs": 0,
+              "paired_mapped": 180,
+              "paired_correct": 178,
+              "paired_decoy": 0,
+              "single_end_only": 0
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1538,
+              "span_bases": 1548
+            },
+            "2-HCV-2b": {
+              "callable_q15_max": 22,
+              "span_bases": 22
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 26,
+              "span_bases": 26
+            }
+          },
+          "timings": {
+            "remap_s": 4.375845823902637,
+            "sam2aln_s": 1.0872335196472704,
+            "aln2counts_s": 2.6143252793699503,
+            "total_s": 8.077404622919858
+          },
+          "decoy_fractional_evidence": {
+            "fractional_depth_at_least_100": 26,
+            "fractional_depth_below_100": 0
+          }
+        }
+      }
+    },
+    "HCV-origin-1pct": {
+      "input_source_pairs": {
+        "HCV2b": 500,
+        "HCV1a": 50000
+      },
+      "source_minor_fraction": 0.009900990099009901,
+      "arms": {
+        "upstream": {
+          "complete": true,
+          "counts": {
+            "HCV2b": {
+              "mapped": 432,
+              "correct": 428,
+              "decoy": 1,
+              "other_reference": 4,
+              "correct_only": 428,
+              "wrong_only": 4,
+              "multiple_contigs": 0,
+              "paired_mapped": 432,
+              "paired_correct": 428,
+              "paired_decoy": 1,
+              "single_end_only": 0
+            },
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10331,
+              "decoy": 225,
+              "other_reference": 296,
+              "correct_only": 10331,
+              "wrong_only": 296,
+              "multiple_contigs": 0,
+              "paired_mapped": 10528,
+              "paired_correct": 10235,
+              "paired_decoy": 223,
+              "single_end_only": 99
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1535,
+              "span_bases": 1548
+            },
+            "2-HCV-2b": {
+              "callable_q15_max": 173,
+              "span_bases": 173
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 32,
+              "span_bases": 32
+            }
+          },
+          "timings": {
+            "remap_s": 13.52166225714609,
+            "sam2aln_s": 0.7184208920225501,
+            "aln2counts_s": 2.5841136956587434,
+            "total_s": 16.824196844827384
+          }
+        },
+        "nonstealing-all-p4": {
+          "complete": true,
+          "counts": {
+            "HCV2b": {
+              "mapped": 432,
+              "correct": 428,
+              "decoy": 1,
+              "other_reference": 4,
+              "correct_only": 428,
+              "wrong_only": 4,
+              "multiple_contigs": 0,
+              "paired_mapped": 432,
+              "paired_correct": 428,
+              "paired_decoy": 1,
+              "single_end_only": 0
+            },
+            "HCV1a": {
+              "mapped": 10627,
+              "correct": 10334,
+              "decoy": 230,
+              "other_reference": 301,
+              "correct_only": 10326,
+              "wrong_only": 293,
+              "multiple_contigs": 8,
+              "paired_mapped": 10528,
+              "paired_correct": 10238,
+              "paired_decoy": 228,
+              "single_end_only": 99
+            }
+          },
+          "per_reference": {
+            "1-HCV-1a": {
+              "callable_q15_max": 1538,
+              "span_bases": 1548
+            },
+            "2-HCV-2b": {
+              "callable_q15_max": 173,
+              "span_bases": 173
+            },
+            "3-HCV-1b": {
+              "callable_q15_max": 32,
+              "span_bases": 32
+            }
+          },
+          "timings": {
+            "remap_s": 7.090815752279013,
+            "sam2aln_s": 1.4551292629912496,
+            "aln2counts_s": 3.775829270016402,
+            "total_s": 12.321774285286665
+          },
+          "decoy_fractional_evidence": {
+            "fractional_depth_at_least_100": 32,
+            "fractional_depth_below_100": 0
+          }
+        }
+      }
+    }
+  },
+  "17_real_reference_panel": {
+    "references": 17,
+    "original_real_hiv9_pairs": 1200,
+    "bounded_seconds": 4.137,
+    "all_seconds": 9.969,
+    "bounded_diagnostics": {
+      "at_report_limit": 1167
+    },
+    "all_diagnostics": {},
+    "pairs_losing_references_at_k8": 188,
+    "missing_reference_alternatives": 290,
+    "warning": "All-hit Bowtie2 is still heuristic and not a truth oracle."
   },
   "hiv9_raw_exact_linked_motifs": {
     "original_pairs": 239006,

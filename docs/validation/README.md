@@ -5,8 +5,10 @@ This folder contains the technical evidence accompanying the proposed MiCall de 
 ## Production readiness and independent truth
 
 **Current release decision: NO-GO.** See the
-[production release-gate assessment](production_gate_20261107.md) for
-explicit unmet requirements rather than inferring safety from test count.
+[latest independent release audit](final_release_audit_20261108.md)
+for the tested clinical and engineering blockers. The
+[7 November production release-gate assessment](production_gate_20261107.md)
+is retained as a historical snapshot.
 
 The additional validation against independently sequenced HIV clones
 uses the [independent genotype and linked-haplotype report]
@@ -29,6 +31,20 @@ and its [aggregate machine-readable evidence](final_release_audit_20261108_metri
 It covers separately verified HIV5/HIV9 reference truth, a deliberately
 corrupted-reference challenge, alignment-independent paired-marker linkage,
 and source-tracked HCV minority/absent-decoy controls.
+
+Further original-read tests are documented in the
+[0.2%, 0.4% and 0.99% source dilution study](real_hcv_dilution_20261108.md),
+its [aggregate evidence](real_hcv_dilution_20261108_metrics.json), and the
+[17-authentic-reference large-panel stress script](real17_panel_audit_20261108.py).
+The new dilution studies use only observed read pairs, not generated viral
+sequences; the 17-panel experiment combines already sequenced viral contigs
+to test the alignment cap. In this engineered 17-panel challenge, 188 of
+1,200 original read pairs missed at least one compatible reference under
+the capped eight-placement search compared with Bowtie2 all-hit reporting.
+
+The source-dilution and reference-stress scripts require private inputs
+and emit original reads, names, reference sequences and SAM only inside an
+ignored local directory. Do not commit those experimental intermediates.
 
 **Current clinical production decision: NO-GO.** This is an intentionally
 strict assessment. Correct genotype presence/absence, independently calibrated
