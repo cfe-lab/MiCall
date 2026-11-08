@@ -23,6 +23,18 @@ truth and full diagnostic pipeline sign-off are still outstanding.
 
 ## Read the results
 
+The most recent independent-release evidence is in
+[the final-candidate genotype and minority-haplotype audit](final_release_audit_20261108.md)
+and its [aggregate machine-readable evidence](final_release_audit_20261108_metrics.json).
+It covers separately verified HIV5/HIV9 reference truth, a deliberately
+corrupted-reference challenge, alignment-independent paired-marker linkage,
+and source-tracked HCV minority/absent-decoy controls.
+
+**Current clinical production decision: NO-GO.** This is an intentionally
+strict assessment. Correct genotype presence/absence, independently calibrated
+minority fractions, full MiCall downstream reporting and large-panel resource
+behavior have not all been validated.
+
 - [Executive report](real_hiv_hcv_20261106_executive.md): concise interpretation, major changes, and review recommendation
 - [Scientific report](real_hiv_hcv_20261106_scientific.md): study design, per-case results, coverage and allele accounting, performance caveats, limitations
 - [Standalone dashboard](real_hiv_hcv_20261106_dashboard.html): self-contained HTML with embedded charts and per-case comparison

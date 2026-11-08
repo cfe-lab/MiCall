@@ -1,5 +1,10 @@
 # Production readiness assessment — MiCall de novo non-stealing mapper
 
+**Historical assessment (7 November).** Superseded for final-candidate
+HIV5/HIV9 and HCV real-data numbers by
+[the 8 November independent truth audit](final_release_audit_20261108.md).
+The clinical NO-GO verdict remains unchanged.
+
 **Decision: NO-GO for clinical production as of 7 November 2026.**
 
 This decision is based on executed control experiments, not the presence or absence of unit tests alone. The proposed mapper is a promising research implementation, and it performs better against several independently verified HIV reference panels. It is not yet demonstrated safe for clinical genotype-presence and rare-haplotype reporting.

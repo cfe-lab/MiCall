@@ -60,6 +60,13 @@ The de novo remapping stage:
    or contradictory singleton records are rejected. It does not resurrect
    structurally contradictory pairs simply because they were primary.
 
+Bowtie2 `-a` may emit unequal numbers of R1/R2 alternatives on a
+*discordant* pair, so the QNAME group can legitimately have an odd
+number of SAM records. The selector preserves the valid primary
+discordant/singleton pair for legacy rescue and does not falsely report
+that case as a malformed SAM group. Odd groups with unresolved or
+extraneous alignment records still produce diagnostics.
+
 Malformed alignments must not be recombined across placements. A warning
 summarizes mapped read pairs with no usable or safe placement; genuinely
 unmapped pairs are not reported as malformed. Only the

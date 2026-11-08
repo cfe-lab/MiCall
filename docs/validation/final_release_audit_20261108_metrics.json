@@ -1,0 +1,775 @@
+{
+  "truth_cases": {
+    "HIV5-truth": {
+      "upstream": {
+        "totals": {
+          "correct": 39944,
+          "wrong": 0,
+          "uncallable": 8437
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 8904,
+            "wrong": 0,
+            "uncallable": 808
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 6328,
+            "wrong": 0,
+            "uncallable": 3391
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 8877,
+            "wrong": 0,
+            "uncallable": 658
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 8852,
+            "wrong": 0,
+            "uncallable": 857
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 6983,
+            "wrong": 0,
+            "uncallable": 2723
+          }
+        },
+        "timing_seconds": 173.95,
+        "remap_seconds": 136.85
+      },
+      "bounded_candidate": {
+        "totals": {
+          "correct": 40742,
+          "wrong": 0,
+          "uncallable": 7639
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 8921,
+            "wrong": 0,
+            "uncallable": 791
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 6979,
+            "wrong": 0,
+            "uncallable": 2740
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 8885,
+            "wrong": 0,
+            "uncallable": 650
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 8869,
+            "wrong": 0,
+            "uncallable": 840
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 7088,
+            "wrong": 0,
+            "uncallable": 2618
+          }
+        },
+        "timing_seconds": 447.71,
+        "remap_seconds": 405.24
+      },
+      "final_candidate": {
+        "totals": {
+          "correct": 40772,
+          "wrong": 0,
+          "uncallable": 7609
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 8924,
+            "wrong": 0,
+            "uncallable": 788
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 7006,
+            "wrong": 0,
+            "uncallable": 2713
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 8885,
+            "wrong": 0,
+            "uncallable": 650
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 8869,
+            "wrong": 0,
+            "uncallable": 840
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 7088,
+            "wrong": 0,
+            "uncallable": 2618
+          }
+        },
+        "timing_seconds": 199.84,
+        "remap_seconds": 150.55
+      }
+    },
+    "HIV9-truth": {
+      "upstream": {
+        "totals": {
+          "correct": 7751,
+          "wrong": 15,
+          "uncallable": 1900
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 1000,
+            "wrong": 2,
+            "uncallable": 72
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 866,
+            "wrong": 3,
+            "uncallable": 205
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 987,
+            "wrong": 4,
+            "uncallable": 83
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 875,
+            "wrong": 2,
+            "uncallable": 197
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 893,
+            "wrong": 2,
+            "uncallable": 179
+          },
+          "6-HIV1-B-FR-K03455-seed": {
+            "correct": 459,
+            "wrong": 1,
+            "uncallable": 614
+          },
+          "7-HIV1-B-FR-K03455-seed": {
+            "correct": 555,
+            "wrong": 1,
+            "uncallable": 518
+          },
+          "8-HIV1-B-FR-K03455-seed": {
+            "correct": 1058,
+            "wrong": 0,
+            "uncallable": 16
+          },
+          "9-HIV1-B-FR-K03455-seed": {
+            "correct": 1058,
+            "wrong": 0,
+            "uncallable": 16
+          }
+        },
+        "timing_seconds": 1808.75,
+        "remap_seconds": 1697.62
+      },
+      "bounded_candidate": {
+        "totals": {
+          "correct": 8647,
+          "wrong": 14,
+          "uncallable": 1005
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 1054,
+            "wrong": 1,
+            "uncallable": 19
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 961,
+            "wrong": 4,
+            "uncallable": 109
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 995,
+            "wrong": 4,
+            "uncallable": 75
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 1027,
+            "wrong": 1,
+            "uncallable": 46
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 961,
+            "wrong": 2,
+            "uncallable": 111
+          },
+          "6-HIV1-B-FR-K03455-seed": {
+            "correct": 745,
+            "wrong": 1,
+            "uncallable": 328
+          },
+          "7-HIV1-B-FR-K03455-seed": {
+            "correct": 780,
+            "wrong": 1,
+            "uncallable": 293
+          },
+          "8-HIV1-B-FR-K03455-seed": {
+            "correct": 1060,
+            "wrong": 0,
+            "uncallable": 14
+          },
+          "9-HIV1-B-FR-K03455-seed": {
+            "correct": 1064,
+            "wrong": 0,
+            "uncallable": 10
+          }
+        },
+        "timing_seconds": 3243.12,
+        "remap_seconds": 3069.76
+      },
+      "final_candidate": {
+        "totals": {
+          "correct": 8674,
+          "wrong": 15,
+          "uncallable": 977
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 1054,
+            "wrong": 2,
+            "uncallable": 18
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 984,
+            "wrong": 4,
+            "uncallable": 86
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 995,
+            "wrong": 4,
+            "uncallable": 75
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 1024,
+            "wrong": 1,
+            "uncallable": 49
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 961,
+            "wrong": 2,
+            "uncallable": 111
+          },
+          "6-HIV1-B-FR-K03455-seed": {
+            "correct": 747,
+            "wrong": 1,
+            "uncallable": 326
+          },
+          "7-HIV1-B-FR-K03455-seed": {
+            "correct": 785,
+            "wrong": 1,
+            "uncallable": 288
+          },
+          "8-HIV1-B-FR-K03455-seed": {
+            "correct": 1060,
+            "wrong": 0,
+            "uncallable": 14
+          },
+          "9-HIV1-B-FR-K03455-seed": {
+            "correct": 1064,
+            "wrong": 0,
+            "uncallable": 10
+          }
+        },
+        "timing_seconds": 1776.85,
+        "remap_seconds": 1605.88
+      }
+    },
+    "HIV5-perturbed": {
+      "upstream": {
+        "totals": {
+          "correct": 39929,
+          "wrong": 0,
+          "uncallable": 8452
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 8904,
+            "wrong": 0,
+            "uncallable": 808
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 6297,
+            "wrong": 0,
+            "uncallable": 3422
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 8877,
+            "wrong": 0,
+            "uncallable": 658
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 8852,
+            "wrong": 0,
+            "uncallable": 857
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 6999,
+            "wrong": 0,
+            "uncallable": 2707
+          }
+        },
+        "timing_seconds": 176.13,
+        "remap_seconds": 141.89,
+        "planted_error_correction": {
+          "reverted": 46,
+          "wrong_seed_retained": 0,
+          "other_wrong": 0,
+          "uncallable": 4
+        }
+      },
+      "bounded_candidate": {
+        "totals": {
+          "correct": 40829,
+          "wrong": 0,
+          "uncallable": 7552
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 8921,
+            "wrong": 0,
+            "uncallable": 791
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 7067,
+            "wrong": 0,
+            "uncallable": 2652
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 8885,
+            "wrong": 0,
+            "uncallable": 650
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 8869,
+            "wrong": 0,
+            "uncallable": 840
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 7087,
+            "wrong": 0,
+            "uncallable": 2619
+          }
+        },
+        "timing_seconds": 464.21,
+        "remap_seconds": 421.43,
+        "planted_error_correction": {
+          "reverted": 47,
+          "wrong_seed_retained": 0,
+          "other_wrong": 0,
+          "uncallable": 3
+        }
+      },
+      "final_candidate": {
+        "totals": {
+          "correct": 40816,
+          "wrong": 0,
+          "uncallable": 7565
+        },
+        "per_clone": {
+          "1-HIV1-B-FR-K03455-seed": {
+            "correct": 8924,
+            "wrong": 0,
+            "uncallable": 788
+          },
+          "2-HIV1-B-FR-K03455-seed": {
+            "correct": 7051,
+            "wrong": 0,
+            "uncallable": 2668
+          },
+          "3-HIV1-B-FR-K03455-seed": {
+            "correct": 8885,
+            "wrong": 0,
+            "uncallable": 650
+          },
+          "4-HIV1-B-FR-K03455-seed": {
+            "correct": 8869,
+            "wrong": 0,
+            "uncallable": 840
+          },
+          "5-HIV1-B-FR-K03455-seed": {
+            "correct": 7087,
+            "wrong": 0,
+            "uncallable": 2619
+          }
+        },
+        "timing_seconds": 162.83,
+        "remap_seconds": 120.82,
+        "planted_error_correction": {
+          "reverted": 47,
+          "wrong_seed_retained": 0,
+          "other_wrong": 0,
+          "uncallable": 3
+        }
+      }
+    }
+  },
+  "hcv_source_origin": {
+    "HCV-origin-zero": {
+      "upstream": {
+        "complete": true,
+        "counts": {
+          "HCV1a": {
+            "mapped": 10627,
+            "correct": 10331,
+            "decoy": 225,
+            "other_reference": 296,
+            "correct_only": 10331,
+            "wrong_only": 296,
+            "multiple_contigs": 0
+          }
+        },
+        "per_reference": {
+          "1-HCV-1a": {
+            "callable_q15_max": 1535,
+            "span_bases": 1548
+          },
+          "3-HCV-1b": {
+            "callable_q15_max": 26,
+            "span_bases": 26
+          }
+        },
+        "timings": {
+          "remap_s": 13.241043094079942,
+          "sam2aln_s": 0.6913879411295056,
+          "aln2counts_s": 2.548792300745845,
+          "total_s": 16.481223335955292
+        }
+      },
+      "nonstealing": {
+        "complete": true,
+        "counts": {
+          "HCV1a": {
+            "mapped": 10627,
+            "correct": 10334,
+            "decoy": 230,
+            "other_reference": 301,
+            "correct_only": 10326,
+            "wrong_only": 293,
+            "multiple_contigs": 8
+          }
+        },
+        "per_reference": {
+          "1-HCV-1a": {
+            "callable_q15_max": 1538,
+            "span_bases": 1548
+          },
+          "3-HCV-1b": {
+            "callable_q15_max": 26,
+            "span_bases": 26
+          }
+        },
+        "timings": {
+          "remap_s": 14.02722024731338,
+          "sam2aln_s": 1.0028102723881602,
+          "aln2counts_s": 2.5048746140673757,
+          "total_s": 17.534905133768916
+        }
+      },
+      "nonstealing-all-p4": {
+        "complete": true,
+        "counts": {
+          "HCV1a": {
+            "mapped": 10627,
+            "correct": 10334,
+            "decoy": 230,
+            "other_reference": 301,
+            "correct_only": 10326,
+            "wrong_only": 293,
+            "multiple_contigs": 8
+          }
+        },
+        "per_reference": {
+          "1-HCV-1a": {
+            "callable_q15_max": 1538,
+            "span_bases": 1548
+          },
+          "3-HCV-1b": {
+            "callable_q15_max": 26,
+            "span_bases": 26
+          }
+        },
+        "timings": {
+          "remap_s": 7.225180615205318,
+          "sam2aln_s": 1.3933231639675796,
+          "aln2counts_s": 3.70206426596269,
+          "total_s": 12.320568045135587
+        }
+      }
+    },
+    "HCV-origin-1pct": {
+      "upstream": {
+        "complete": true,
+        "counts": {
+          "HCV2b": {
+            "mapped": 432,
+            "correct": 428,
+            "decoy": 1,
+            "other_reference": 4,
+            "correct_only": 428,
+            "wrong_only": 4,
+            "multiple_contigs": 0
+          },
+          "HCV1a": {
+            "mapped": 10627,
+            "correct": 10331,
+            "decoy": 225,
+            "other_reference": 296,
+            "correct_only": 10331,
+            "wrong_only": 296,
+            "multiple_contigs": 0
+          }
+        },
+        "per_reference": {
+          "1-HCV-1a": {
+            "callable_q15_max": 1535,
+            "span_bases": 1548
+          },
+          "2-HCV-2b": {
+            "callable_q15_max": 173,
+            "span_bases": 173
+          },
+          "3-HCV-1b": {
+            "callable_q15_max": 32,
+            "span_bases": 32
+          }
+        },
+        "timings": {
+          "remap_s": 13.52166225714609,
+          "sam2aln_s": 0.7184208920225501,
+          "aln2counts_s": 2.5841136956587434,
+          "total_s": 16.824196844827384
+        }
+      },
+      "nonstealing": {
+        "complete": true,
+        "counts": {
+          "HCV2b": {
+            "mapped": 432,
+            "correct": 428,
+            "decoy": 1,
+            "other_reference": 4,
+            "correct_only": 428,
+            "wrong_only": 4,
+            "multiple_contigs": 0
+          },
+          "HCV1a": {
+            "mapped": 10627,
+            "correct": 10334,
+            "decoy": 230,
+            "other_reference": 301,
+            "correct_only": 10326,
+            "wrong_only": 293,
+            "multiple_contigs": 8
+          }
+        },
+        "per_reference": {
+          "1-HCV-1a": {
+            "callable_q15_max": 1538,
+            "span_bases": 1548
+          },
+          "2-HCV-2b": {
+            "callable_q15_max": 173,
+            "span_bases": 173
+          },
+          "3-HCV-1b": {
+            "callable_q15_max": 32,
+            "span_bases": 32
+          }
+        },
+        "timings": {
+          "remap_s": 14.116224264726043,
+          "sam2aln_s": 1.0489562642760575,
+          "aln2counts_s": 2.745824484154582,
+          "total_s": 17.911005013156682
+        }
+      },
+      "nonstealing-all-p4": {
+        "complete": true,
+        "counts": {
+          "HCV2b": {
+            "mapped": 432,
+            "correct": 428,
+            "decoy": 1,
+            "other_reference": 4,
+            "correct_only": 428,
+            "wrong_only": 4,
+            "multiple_contigs": 0
+          },
+          "HCV1a": {
+            "mapped": 10627,
+            "correct": 10334,
+            "decoy": 230,
+            "other_reference": 301,
+            "correct_only": 10326,
+            "wrong_only": 293,
+            "multiple_contigs": 8
+          }
+        },
+        "per_reference": {
+          "1-HCV-1a": {
+            "callable_q15_max": 1538,
+            "span_bases": 1548
+          },
+          "2-HCV-2b": {
+            "callable_q15_max": 173,
+            "span_bases": 173
+          },
+          "3-HCV-1b": {
+            "callable_q15_max": 32,
+            "span_bases": 32
+          }
+        },
+        "timings": {
+          "remap_s": 7.090815752279013,
+          "sam2aln_s": 1.4551292629912496,
+          "aln2counts_s": 3.775829270016402,
+          "total_s": 12.321774285286665
+        }
+      }
+    }
+  },
+  "hiv9_raw_exact_linked_motifs": {
+    "original_pairs": 239006,
+    "motif_width": 21,
+    "per_clone": {
+      "1-HIV1-B-FR-K03455-seed": {
+        "private_positions": [],
+        "at_least_one": 0,
+        "at_least_two": 0,
+        "at_least_three": 0,
+        "all_marker_motifs": 0,
+        "per_position_pairs": {}
+      },
+      "2-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          537,
+          675
+        ],
+        "at_least_one": 274,
+        "at_least_two": 0,
+        "at_least_three": 0,
+        "all_marker_motifs": 0,
+        "per_position_pairs": {
+          "537": 248,
+          "675": 26
+        }
+      },
+      "3-HIV1-B-FR-K03455-seed": {
+        "private_positions": [],
+        "at_least_one": 0,
+        "at_least_two": 0,
+        "at_least_three": 0,
+        "all_marker_motifs": 0,
+        "per_position_pairs": {}
+      },
+      "4-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          429,
+          633
+        ],
+        "at_least_one": 342,
+        "at_least_two": 0,
+        "at_least_three": 0,
+        "all_marker_motifs": 0,
+        "per_position_pairs": {
+          "429": 179,
+          "633": 163
+        }
+      },
+      "5-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          204,
+          814
+        ],
+        "at_least_one": 117,
+        "at_least_two": 0,
+        "at_least_three": 0,
+        "all_marker_motifs": 0,
+        "per_position_pairs": {
+          "204": 59,
+          "814": 58
+        }
+      },
+      "6-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          174,
+          387,
+          537,
+          666,
+          906,
+          910
+        ],
+        "at_least_one": 189,
+        "at_least_two": 1,
+        "at_least_three": 0,
+        "all_marker_motifs": 0,
+        "per_position_pairs": {
+          "174": 35,
+          "387": 2,
+          "537": 152,
+          "666": 1,
+          "906": 0,
+          "910": 0
+        }
+      },
+      "7-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          666,
+          702,
+          882,
+          936
+        ],
+        "at_least_one": 142,
+        "at_least_two": 3,
+        "at_least_three": 1,
+        "all_marker_motifs": 1,
+        "per_position_pairs": {
+          "666": 19,
+          "702": 53,
+          "882": 19,
+          "936": 56
+        }
+      },
+      "8-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          705,
+          819,
+          858
+        ],
+        "at_least_one": 39057,
+        "at_least_two": 16180,
+        "at_least_three": 4461,
+        "all_marker_motifs": 4461,
+        "per_position_pairs": {
+          "705": 21284,
+          "819": 22756,
+          "858": 15658
+        }
+      },
+      "9-HIV1-B-FR-K03455-seed": {
+        "private_positions": [
+          658,
+          741,
+          879
+        ],
+        "at_least_one": 96433,
+        "at_least_two": 35122,
+        "at_least_three": 6536,
+        "all_marker_motifs": 6536,
+        "per_position_pairs": {
+          "658": 62523,
+          "741": 47855,
+          "879": 27713
+        }
+      }
+    },
+    "interpretation": "Exact private-marker cooccurrence in original read pairs; not calibrated clone abundance."
+  },
+  "note": "Allele correctness is measured against independently sequenced HIV references. HCV read origins, not biological genotype, are independently established. Clone 0.2% nominal labels are not validated abundance measurements."
+}
