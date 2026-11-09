@@ -239,9 +239,12 @@ def test_sample_process_post_assembly_writes_only_denovo_depth_sidecars(
     (tmp_path / f'{prefix}remap.csv').write_text(remap_csv(text).getvalue())
     (tmp_path / f'{prefix}remap_conseq.csv').write_text(
         'region,sequence\nA,ACGTA\nB,ACGTA\n')
-    for filename in ['g2p_aligned.csv', 'g2p_summary.csv',
-                     f'{prefix}remap_counts.csv']:
+    for filename in ['g2p_aligned.csv', 'g2p_summary.csv']:
         (tmp_path / filename).write_text('')
+    # Clinical de novo reporting must have valid remap QC metadata even
+    # when other reporting integrations are stubbed for this focused test.
+    (tmp_path / f'{prefix}remap_counts.csv').write_text(
+        'type,count\nraw,2\nremap-final A,2\n')
     if use_denovo:
         (tmp_path / f'{prefix}contigs.csv').write_text('')
 
