@@ -10,13 +10,14 @@ from csv import DictReader
 from itertools import groupby
 import re
 
-# Full Bowtie2 reporting is used for small panels or modest reference
-# collections. Limit the contig count AND total reference bases for the
-# expanded tier: output can grow dramatically for repetitive inputs.
+# Every search is bounded at Bowtie2, not merely at our downstream parser:
+# -a can otherwise produce huge SAM files for repetitive reads, even when
+# there is just one contig.
 MAX_DENOVO_ALIGNMENTS = 8
-ALL_ALIGNMENT_MAX_CONTIGS = 16
-ALL_ALIGNMENT_EXPANDED_MAX_CONTIGS = 32
-ALL_ALIGNMENT_EXPANDED_MAX_BASES = 65536
+SMALL_PANEL_MAX_ALIGNMENTS = 64
+SMALL_PANEL_MAX_CONTIGS = 16
+EXPANDED_PANEL_MAX_CONTIGS = 32
+EXPANDED_PANEL_MAX_BASES = 65536
 DENOVO_BOWTIE_THREADS = 4
 
 
@@ -54,21 +55,23 @@ def require_complete_denovo_mapping_for_clinical_report(counts_file):
 
 
 def denovo_alignment_limit(contigs):
-    """Return None for all reported hits, else a bounded search limit.
+    """Return a finite Bowtie2 -k bound for all de novo panels.
 
-    Preserve the existing full-search path for <=16 contigs of any length.
-    Also use it on moderate 17–32-contig panels with a small overall
-    reference footprint. The expanded tier has a deliberate resource
-    ceiling, not a claim of exhaustive Bowtie2 heuristic search.
+    Retain at least one placement per contig for panels up to 32 references,
+    while bounding the number of generated SAM records for repetitive reads.
+    A saturated search is explicitly marked incomplete and clinical reporting
+    is withheld rather than silently treating -k results as exhaustive.
     """
     count = len(contigs)
-    if count <= ALL_ALIGNMENT_MAX_CONTIGS:
-        return None
-    if (count <= ALL_ALIGNMENT_EXPANDED_MAX_CONTIGS
+    if count <= SMALL_PANEL_MAX_CONTIGS:
+        return SMALL_PANEL_MAX_ALIGNMENTS
+    if (count <= EXPANDED_PANEL_MAX_CONTIGS
             and sum(map(len, contigs.values())) <=
-            ALL_ALIGNMENT_EXPANDED_MAX_BASES):
-        return None
+            EXPANDED_PANEL_MAX_BASES):
+        return SMALL_PANEL_MAX_ALIGNMENTS
     return MAX_DENOVO_ALIGNMENTS
+
+
 # Never buffer more than this many SAM records for a single read pair.
 # Pathologically repetitive reads are excluded, not partially miscounted.
 MAX_DENOVO_RECORDS_PER_PAIR = 8192
@@ -85,13 +88,6 @@ def _score(row):
             except ValueError:
                 return None
     return None
-
-
-def _interval(row):
-    start = int(row[3])
-    consumed = sum(int(n) for n, op in REFERENCE_CIGAR.findall(row[5])
-                   if op in "MD")
-    return start, start + consumed - 1
 
 
 def _valid_mates(first, second):
@@ -180,10 +176,6 @@ def _valid_pair(first, second):
             and mate_right == int(first[3]))
 
 
-def _overlaps(a, b):
-    return a[0] <= b[1] and b[0] <= a[1]
-
-
 def _select(rows, limit):
     # Bowtie2 -k emits the two mates of each reported paired placement
     # together. Fail closed for malformed ordering instead of cross-pairing.
@@ -231,7 +223,6 @@ def _select(rows, limit):
                      for a, b in candidates)
     winners = []
     used = set()
-    intervals: dict[str, list[tuple[tuple[int, int], tuple[int, int]]]] = {}
     candidates.sort(key=lambda pair: (
         pair[0][2], int(pair[0][3]), int(pair[1][3]),
         pair[0][5], pair[1][5], int(pair[0][1]) & 0x10,
@@ -243,15 +234,10 @@ def _select(rows, limit):
                int(b[1]) & 0x10)
         if key in used:
             continue
-        region = a[2]
-        positions = (_interval(a), _interval(b))
-        prev = intervals.setdefault(region, [])
-        if any(any(_overlaps(x, y) for x in positions for y in prior)
-               for prior in prev):
-            # Never count one molecule twice at the same contig locus.
-            continue
+        # Distinct placements can overlap partially yet supply coverage at
+        # different reference positions. Keep them here; sam2aln merges
+        # per-fragment coverage without double counting overlapping bases.
         used.add(key)
-        prev.append(positions)
         winners.append((a, b))
         if limit is not None and len(winners) == limit:
             break

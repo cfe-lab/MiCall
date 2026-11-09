@@ -426,19 +426,41 @@ class TempFileFactory:
 
 
 def multi_mapping_regions(pairs, processor, depths, fragment_counts=None):
-    # Input pairs must be consecutive within each original QNAME. The de novo
-    # best-pair selector guarantees this even for secondary placements.
+    # All placements for an original fragment must be adjacent. Keep
+    # fractional-depth accounting separate from maximum-depth consensus:
+    # a base present in multiple alternatives is counted once in the latter.
     for _, group in groupby(pairs, key=lambda pair: pair[0]['qname']):
-        processed = [(pair, processor.process(pair)) for pair in group]
-        accepted = sum(bool(result[1]) for _, result in processed)
+        processed = [processor.process(pair) for pair in group]
+        accepted = [result for result in processed if result[1]]
         if fragment_counts is not None and accepted:
-            # This original fragment is aligned ONE time even when its
-            # equally good placements span several contigs or loci.
             fragment_counts['unique_aligned_fragments'] += 1
-        for pair, result in processed:
-            if result[1] and accepted and depths is not None:
-                depths.add(result[0], result[1][15], 1 / accepted)
-            yield result
+        if depths is not None:
+            depths.add_fragment(
+                (result[0], result[1][15]) for result in accepted)
+        covered = {}
+        for rname, mseqs, insert_list, failed_list in processed:
+            unique_seqs = {}
+            for qcut, mseq in mseqs.items():
+                seen = covered.setdefault((rname, qcut), set())
+                chars = list(mseq)
+                any_bases = False
+                any_new_bases = False
+                for offset, base in enumerate(chars):
+                    if base in 'ACGT':
+                        any_bases = True
+                        if offset in seen:
+                            # MiCall interprets '-' as a real deletion.
+                            # Lowercase 'n' means absent coverage instead.
+                            chars[offset] = 'n'
+                        else:
+                            seen.add(offset)
+                            any_new_bases = True
+                # Do not emit an entirely redundant consensus placement.
+                # Preserve the historical behavior for a sequence containing
+                # no high-quality ACGT bases in the first place.
+                if any_new_bases or not any_bases:
+                    unique_seqs[qcut] = ''.join(chars)
+            yield rname, unique_seqs, insert_list, failed_list
 
 
 def sam2aln(remap_csv,

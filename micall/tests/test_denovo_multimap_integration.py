@@ -11,6 +11,64 @@ from micall.core.sam2aln import sam2aln
 from micall.utils.translation import reverse_and_complement
 
 
+def test_final_unmapped_fastqs_include_rejected_and_singleton_mates(
+        monkeypatch, tmp_path):
+    """Unmapped FASTQs represent the *final* mapping, not initial Bowtie2."""
+    from micall.core import remap
+    from micall.tests.test_denovo_multimap import placement
+
+    input_names = ('accepted', 'rejected', 'singleton')
+    originals = {}
+    for mate in (1, 2):
+        lines = []
+        for name in input_names:
+            record = (f'@{name}/{mate} description\n'
+                      f'ACGTA\n+\n{mate * 5}\n')
+            lines.append(record)
+            originals[name, mate] = record
+        (tmp_path / f'R{mate}.fastq').write_text(''.join(lines))
+
+    accepted = placement('accepted', 'A')
+    rejected = placement('rejected', 'A')
+    rejected[1][7] = '999'  # Inconsistent mate coordinates: reject pair.
+    singleton = placement('singleton', 'A', flag1=73, flag2=133)
+    singleton[1][2] = '*'
+    singleton[1][5] = '*'
+    pairs = (accepted, rejected, singleton)
+
+    def fake_mapping(*args, **kwargs):
+        samfile = args[4]
+        new_counts = args[12]
+        new_counts.update({'A': 5})
+        with open(samfile, 'w') as output:
+            output.write('@SQ\tSN:A\tLN:50\n')
+            for pair in pairs:
+                output.writelines('\t'.join(row) + '\n' for row in pair)
+        return 0
+
+    monkeypatch.setattr(remap, 'read_contigs', lambda *_: {'A': 'ACGTA' * 10})
+    monkeypatch.setattr(remap, 'find_bowtie2',
+                        lambda: (object(), object()))
+    monkeypatch.setattr(remap, 'map_to_reference', fake_mapping)
+    remapped, counts, unmapped1, unmapped2 = (
+        StringIO(), StringIO(), StringIO(), StringIO())
+    remap.map_to_contigs(
+        str(tmp_path / 'R1.fastq'), str(tmp_path / 'R2.fastq'),
+        StringIO(''), remapped, counts, StringIO(),
+        unmapped1, unmapped2, str(tmp_path))
+
+    assert unmapped1.getvalue() == originals['rejected', 1]
+    assert unmapped2.getvalue() == (
+        originals['rejected', 2] + originals['singleton', 2])
+    summary = {row['type']: int(row['count'])
+               for row in csv.DictReader(StringIO(counts.getvalue()))}
+    assert summary['unmapped-after-selection'] == 3
+    assert summary['remap-unique-fragments'] == 2
+    assert {r['qname'] for r in
+            csv.DictReader(StringIO(remapped.getvalue()))} == {
+                'accepted', 'singleton'}
+
+
 @pytest.mark.skipif(not (shutil.which('bowtie2-align-s') and
                          shutil.which('bowtie2-build-s')),
                     reason='Requires Bowtie2 executables')
