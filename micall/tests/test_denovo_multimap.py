@@ -561,7 +561,7 @@ def test_unequal_bowtie2_discordant_mate_alternatives_are_not_malformed():
     assert diagnostics.get('incomplete_pair_groups', 0) == 0
 
 
-def test_denovo_resource_aware_search_limit_handles_17_authentic_contigs():
+def test_denovo_reporting_limit_is_12_for_every_contig_panel():
     # Nine HIV9 clones, five HIV5 isolates and three archived HCV contigs.
     # Their genuine reference lengths add to exactly 61,951 nucleotides.
     lengths = ([1074]*9 + [9712, 9719, 9535, 9709, 9706] +
@@ -570,16 +570,15 @@ def test_denovo_resource_aware_search_limit_handles_17_authentic_contigs():
     assert sum(lengths) == 61951
     sequences = {f'contig{i}': 'A' * length
                  for i, length in enumerate(lengths)}
-    assert denovo_alignment_limit(sequences) == 64
-    # Even a single repetitive long contig must have a finite Bowtie2 cap.
-    assert denovo_alignment_limit({'long': 'C' * 100000}) == 64
-    # Expand to 32 moderate contigs only within the reference-base budget.
+    assert denovo_alignment_limit(sequences) == 12
+    assert denovo_alignment_limit({'long': 'C' * 100000}) == 12
     assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 2048 for i in range(32)}) == 64
+        'r' + str(i): 'A' * 2048 for i in range(32)}) == 12
     assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 2049 for i in range(32)}) == 8
+        'r' + str(i): 'A' * 2049 for i in range(32)}) == 12
     assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 100 for i in range(33)}) == 8
+        'r' + str(i): 'A' * 100 for i in range(33)}) == 12
+    assert denovo_alignment_limit({}) == 12
 
 
 def test_partially_overlapping_alternatives_keep_distant_mate_coverage():
@@ -633,7 +632,7 @@ def test_every_denovo_search_uses_finite_bowtie_reporting_limit(tmp_path):
         '\t'.join(row) + '\n' for pair in records for row in pair]
     build = Mock()
     limit = denovo_alignment_limit({'A': 'A' * 500000})
-    assert limit == 64
+    assert limit == 12
     map_to_reference('R1.fastq', 'R2.fastq', {'A': 'ACGTA'},
                      str(tmp_path / 'ref.fa'), str(tmp_path / 'reads.sam'),
                      StringIO(), StringIO(), mapper, build, 2,
@@ -641,9 +640,9 @@ def test_every_denovo_search_uses_finite_bowtie_reporting_limit(tmp_path):
                      max_alignments=limit)
     args = mapper.yield_output.call_args.args[0]
     assert '-a' not in args
-    assert args[args.index('-k') + 1] == '64'
+    assert args[args.index('-k') + 1] == '12'
 
 
 def test_denovo_17_reference_large_base_footprint_remains_bounded():
     assert denovo_alignment_limit({
-        'r' + str(i): 'ACGT' * 1000 for i in range(17)}) == 8
+        'r' + str(i): 'ACGT' * 1000 for i in range(17)}) == 12

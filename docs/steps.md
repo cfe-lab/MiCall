@@ -212,15 +212,13 @@ Individual files are described after the list of steps.
     classification.
   * `multimap-capped-pairs` - original read pairs for which Bowtie2 reached
     its per-pair reporting limit; further equal-scoring alignments could be
-    missing. The de novo clinical-reporting guard refuses incomplete results
-    when this count is nonzero.
+    missing. This is diagnostic only and does not stop reporting.
   * `multimap-oversized-pairs` - original read pairs with too many SAM
-    records for safe selection. Their alignments are discarded, and the de novo
-    clinical-reporting guard refuses incomplete results when nonzero.
-  * For de novo mapping, Bowtie2 reports at most 64 placements per read pair
-    for panels of up to 16 contigs, or up to 32 contigs totaling at most
-    65,536 reference bases. Larger panels use a limit of 8. These limits
-    bound SAM output; reaching one triggers the incomplete-search safeguard.
+    records for safe selection. Their alignments are discarded; this
+    diagnostic does not stop subsequent processing.
+  * De novo mapping requests up to 12 Bowtie2 paired placements per original
+    read pair (`-k 12`), regardless of contig count or reference length.
+    Reaching this limit is recorded as a diagnostic; reporting continues.
 * multimap_depth.csv (de novo only)
   * refname - contig/reference identifier from the final de novo remap.
   * position - one-based reference nucleotide position. When the reference

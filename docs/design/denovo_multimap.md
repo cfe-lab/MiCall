@@ -29,11 +29,10 @@ contig stitching. The reference-based iterative remap path is unchanged.
 
 1. `micall/core/remap.py:map_to_contigs` maps trimmed paired FASTQs against
    the de novo contigs using Bowtie2 local paired-end alignment. Unlike the
-   older single-placement remap, it requests up to **64** placements per
-   fragment for panels of at most 16 contigs (or up to 32 contigs totaling
-   at most 65,536 reference bases); otherwise it requests up to **8**.
+   older single-placement remap, it requests up to **12** paired
+   placements per fragment (`-k 12`), for every contig panel.
    Bowtie2 uses four threads with `--reorder`, keeping each fragment's
-   records adjacent.
+   records adjacent. Reaching the limit is a diagnostic, not a failure.
 2. `micall/core/denovo_multimap.py:select_best_pairs` examines each
    consecutive query-name group. It requires correctly paired R1/R2 SAM
    records, consistent mate coordinates, valid alignment flags and CIGARs,
@@ -55,11 +54,13 @@ contig stitching. The reference-based iterative remap path is unchanged.
 
 The selector caps buffering at 8,192 SAM records per original fragment.
 Excessively large groups are discarded rather than partially treated as
-complete. Reaching Bowtie2's reporting limit can also mean some equally
-good alignments have not been reported. Either condition is recorded in
-`remap_counts.csv` and stops downstream **clinical de novo reporting**.
-The absence of a warning does *not* prove Bowtie2 searched every possible
-alignment: it is a heuristic aligner.
+complete. Reaching Bowtie2's reporting limit can also mean some alignments
+have not been reported, although these may all be worse than the selected
+best placement. Both conditions are recorded in `remap_counts.csv` as
+**diagnostics**, not reasons to abort clinical reporting. Like MiCall's
+earlier single-placement mapping (`-k 1`), this workflow does not require
+exhaustive Bowtie2 search. Bowtie2 is a heuristic aligner, so the absence
+of a warning does not establish that every possible alignment was found.
 
 ## How depth is counted
 
@@ -126,22 +127,22 @@ output with the input FASTQs. The longstanding `unmapped` row retains
 Bowtie2's earlier accounting; `unmapped-after-selection` is emitted when
 that differs from the final number of unmapped read ends.
 
-Two specific QC rows prevent clinical reports from treating incomplete
-evidence as definitive:
+Two QC rows describe limited alignment reporting or discarded evidence:
 
 - `multimap-capped-pairs`: reporting limit reached for one or more
   original fragments; further placements could be missing.
 - `multimap-oversized-pairs`: too many SAM records for a fragment;
   its mapping group was discarded.
 
-The clinical guard runs for the **unstitched remap before
-reference-guided stitching**, and again for subsequent de novo reports.
-It refuses reports if either count is positive.
+These are **informational diagnostics**: neither value prevents
+reference-guided stitching, the second remap, or clinical consensus
+generation. A report can proceed despite a saturated Bowtie2 search,
+as it could with the preceding single-placement implementation.
 
 ## Where to look in the code
 
 - `micall/core/denovo_multimap.py` — SAM validation, pair scoring,
-  alternative selection, and completeness guard.
+  alternative selection, alignment limits, and QC diagnostics.
 - `micall/core/remap.py` — Bowtie2 invocation, selected `remap.csv`,
   mapped-fragment counting, and final unmapped FASTQs.
 - `micall/core/sam2aln.py` — merging, per-fragment grouping, and overlap
