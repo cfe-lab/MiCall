@@ -5,6 +5,7 @@ once coverage is sufficiently dense. This avoids storing two Python dicts
 per covered base across hundreds of contigs.
 """
 from array import array
+from collections import Counter
 from csv import DictReader, DictWriter
 import os
 
@@ -79,6 +80,26 @@ class AlternativeDepths:
                 merged_sequence[first_position - 1:], start=first_position):
             if base in 'ACGT':
                 bins.add(position, fraction)
+
+    def add_fragment(self, placements):
+        """Add one physical fragment across its alternative Q15 placements.
+
+        Each reference position gets at most one maximum-depth contribution
+        per fragment; fractional depth is the fraction of alternatives
+        covering that position. Partially overlapping placements therefore
+        retain their unique coverage without doubling their shared span.
+        """
+        placements = list(placements)
+        if not placements:
+            return
+        hits = Counter()
+        for reference, merged_sequence in placements:
+            for position, base in enumerate(merged_sequence, start=1):
+                if base in 'ACGT':
+                    hits[reference, position] += 1
+        for (reference, position), count in hits.items():
+            self.references.setdefault(reference, _DepthPositions()).add(
+                position, count / len(placements))
 
     def write(self, output, reference_csv=None):
         writer = DictWriter(output, ['refname', 'position', 'max_depth',

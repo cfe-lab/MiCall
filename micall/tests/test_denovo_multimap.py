@@ -73,8 +73,17 @@ def test_duplicates_and_same_locus_alternatives_cannot_double_count():
         placement('read1', 'A', secondary=True),
         placement('read1', 'A', pos=2, secondary=True),
         placement('read1', 'B', secondary=True))
-    assert counts == {'A': 2, 'B': 2}
-    assert len(csv_rows(text)) == 4
+    # Identical duplicate placements are removed, but a shifted placement
+    # must retain its previously uncovered final reference position.
+    assert counts == {'A': 4, 'B': 2}
+    assert len(csv_rows(text)) == 6
+    aligned, depth = StringIO(), StringIO()
+    sam2aln(remap_csv(text), aligned, depth_csv=depth)
+    by_position = {(r['refname'], int(r['position'])): r
+                   for r in csv.DictReader(StringIO(depth.getvalue()))}
+    assert {pos for ref, pos in by_position if ref == 'A'} == set(range(1, 7))
+    assert all(r['max_depth'] == '1' for r in by_position.values())
+    assert float(by_position['A', 2]['avg_depth']) == pytest.approx(2/3)
 
 
 def test_distinct_loci_on_same_contig_are_distinct_hypotheses():
@@ -374,8 +383,8 @@ def test_overlap_choice_does_not_depend_on_bowtie_reporting_order():
     right = placement('read1', 'A', pos=3, secondary=True)
     first, _ = normalize(left, right)
     second, _ = normalize(right, left)
-    assert [row['pos'] for row in csv_rows(first)] == ['1', '1']
-    assert [row['pos'] for row in csv_rows(second)] == ['1', '1']
+    assert [row['pos'] for row in csv_rows(first)] == ['1', '1', '3', '3']
+    assert [row['pos'] for row in csv_rows(second)] == ['1', '1', '3', '3']
 
 
 def test_callback_counts_unique_pairs_not_bowtie_multi_alignment_rows(tmp_path):
@@ -561,16 +570,78 @@ def test_denovo_resource_aware_search_limit_handles_17_authentic_contigs():
     assert sum(lengths) == 61951
     sequences = {f'contig{i}': 'A' * length
                  for i, length in enumerate(lengths)}
-    assert denovo_alignment_limit(sequences) is None
-    # Preserve the old behavior for a large single contig of any length.
-    assert denovo_alignment_limit({'long': 'C' * 100000}) is None
+    assert denovo_alignment_limit(sequences) == 64
+    # Even a single repetitive long contig must have a finite Bowtie2 cap.
+    assert denovo_alignment_limit({'long': 'C' * 100000}) == 64
     # Expand to 32 moderate contigs only within the reference-base budget.
     assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 2048 for i in range(32)}) is None
+        'r' + str(i): 'A' * 2048 for i in range(32)}) == 64
     assert denovo_alignment_limit({
         'r' + str(i): 'A' * 2049 for i in range(32)}) == 8
     assert denovo_alignment_limit({
         'r' + str(i): 'A' * 100 for i in range(33)}) == 8
+
+
+def test_partially_overlapping_alternatives_keep_distant_mate_coverage():
+    # R1 overlaps between alternatives, but R2 is moved to a distant locus.
+    # The molecule supports the shared R1 reference positions only once and
+    # still contributes to the distant R2 locus in the second hypothesis.
+    near = placement('fragment', 'A', pos=100)
+    distant = placement('fragment', 'A', pos=101, secondary=True)
+    distant[0][7] = '800'
+    distant[1][3] = '800'
+    distant[1][7] = '101'
+    text, counts = normalize(near, distant)
+    assert counts == {'A': 4}
+    aligned, depth = StringIO(), StringIO()
+    sam2aln(remap_csv(text), aligned, depth_csv=depth)
+    coverage = {(int(r['position'])):
+                (int(r['max_depth']), float(r['avg_depth']))
+                for r in csv.DictReader(StringIO(depth.getvalue()))}
+    assert coverage[101] == (1, 1.0)
+    assert coverage[800] == (1, 0.5)
+    assert coverage[804] == (1, 0.5)
+    assert set(coverage) == set(range(100, 106)) | set(range(800, 805))
+    from_aligned = {}
+    for row in csv.DictReader(StringIO(aligned.getvalue())):
+        for pos, base in enumerate(row['seq'], start=int(row['offset']) + 1):
+            if base in 'ACGT':
+                from_aligned[pos] = from_aligned.get(pos, 0) + 1
+    assert from_aligned == {pos: max_depth
+                            for pos, (max_depth, _) in coverage.items()}
+    # Internal masked overlaps are absent coverage, NOT deletion calls.
+    # SeedNucleotide counts '-' as deletion, but ignores lowercase 'n'.
+    from micall.utils.report_amino import SeedNucleotide
+    nuc = SeedNucleotide()
+    seqs = [r['seq'] for r in
+            csv.DictReader(StringIO(aligned.getvalue()))]
+    assert any('n' in seq for seq in seqs)
+    for seq in seqs:
+        for base in seq:
+            nuc.count_nucleotides(base)
+    assert nuc.counts['-'] == 0
+
+
+def test_every_denovo_search_uses_finite_bowtie_reporting_limit(tmp_path):
+    from collections import Counter
+    from unittest.mock import Mock
+    from micall.core.remap import map_to_reference
+
+    records = [placement('one', 'A')]
+    mapper = Mock()
+    mapper.yield_output.return_value = [
+        '\t'.join(row) + '\n' for pair in records for row in pair]
+    build = Mock()
+    limit = denovo_alignment_limit({'A': 'A' * 500000})
+    assert limit == 64
+    map_to_reference('R1.fastq', 'R2.fastq', {'A': 'ACGTA'},
+                     str(tmp_path / 'ref.fa'), str(tmp_path / 'reads.sam'),
+                     StringIO(), StringIO(), mapper, build, 2,
+                     15, 15, Counter(), StringIO(), None,
+                     max_alignments=limit)
+    args = mapper.yield_output.call_args.args[0]
+    assert '-a' not in args
+    assert args[args.index('-k') + 1] == '64'
 
 
 def test_denovo_17_reference_large_base_footprint_remains_bounded():
