@@ -1,6 +1,8 @@
 """Regression tests for non-stealing denovo remapping and depth accounting."""
 import csv
+import random
 from io import StringIO
+from itertools import pairwise
 
 import pytest
 
@@ -321,3 +323,120 @@ def test_unmapped_pair_does_not_trigger_malformed_mapped_warning():
     out = StringIO()
     select_best_pairs(sam(unmapped), out, diagnostics=diagnostics)
     assert 'discarded_mapped_pairs' not in diagnostics
+
+
+def test_overlap_choice_does_not_depend_on_bowtie_reporting_order():
+    left = placement('read1', 'A', pos=1)
+    right = placement('read1', 'A', pos=3, secondary=True)
+    first, _ = normalize(left, right)
+    second, _ = normalize(right, left)
+    assert [row['pos'] for row in csv_rows(first)] == ['1', '1']
+    assert [row['pos'] for row in csv_rows(second)] == ['1', '1']
+
+
+def test_callback_counts_unique_pairs_not_bowtie_multi_alignment_rows(tmp_path):
+    from collections import Counter
+    from unittest.mock import Mock
+    from micall.core.remap import map_to_reference
+
+    records = [placement(f'read{i}', f'contig{j}', secondary=j > 0)
+               for i in range(80) for j in range(8)]
+    lines = ['\t'.join(row) + '\n' for pair in records for row in pair]
+    mapper = Mock()
+    mapper.yield_output.return_value = lines
+    build = Mock()
+    progress = Mock()
+    raw_reads = 160
+    map_to_reference('R1.fastq', 'R2.fastq', {'contig0': 'ACGTA'},
+                     str(tmp_path / 'ref.fa'), str(tmp_path / 'reads.sam'),
+                     StringIO(), StringIO(), mapper, build, raw_reads,
+                     15, 15, Counter(), StringIO(), progress,
+                     max_alignments=8)
+    values = [call.kwargs['progress'] for call in progress.call_args_list]
+    assert values[-1] == raw_reads
+    assert max(values) <= raw_reads
+    assert all(a <= b for a, b in pairwise(values))
+    assert values[1] < raw_reads
+
+
+def test_missing_as_tag_does_not_beat_negative_scored_alignment():
+    scored = placement('read1', 'A', score=-10)
+    unscored = placement('read1', 'B', secondary=True)
+    for row in unscored:
+        row.pop()  # no AS tag: must not silently outrank -10
+    text, counts = normalize(scored, unscored)
+    assert counts == {'A': 2}
+    assert len(csv_rows(text)) == 2
+
+
+def test_old_fixtures_with_no_alignment_scores_remain_supported():
+    first = placement('read1', 'A')
+    second = placement('read1', 'B', secondary=True)
+    for row in (*first, *second):
+        row.pop()
+    text, counts = normalize(first, second)
+    assert counts == {'A': 2, 'B': 2}
+    assert len(csv_rows(text)) == 4
+
+
+def test_maximum_depth_exactly_matches_accepted_q15_consensus_input():
+    """No independent rematching logic may diverge from the aligned CSV."""
+    pairs = [
+        placement('read1', 'A'),
+        placement('read1', 'B', pos=4, secondary=True),
+        placement('read2', 'A', pos=3, quality='II!II'),
+        placement('read3', 'A', pos=8, cigar='3M1D2M'),
+        placement('read4', 'B', pos=14, cigar='1S4M'),
+    ]
+    text, _ = normalize(*pairs)
+    aligned, depths = StringIO(), StringIO()
+    sam2aln(remap_csv(text), aligned, depth_csv=depths)
+
+    expected = {}
+    for row in csv.DictReader(StringIO(aligned.getvalue())):
+        if row['qcut'] != '15':
+            continue
+        reference, offset = row['refname'], int(row['offset'])
+        for i, base in enumerate(row['seq'], start=offset + 1):
+            if base in 'ACGT':
+                key = (reference, i)
+                expected[key] = expected.get(key, 0) + int(row['count'])
+    actual = {(row['refname'], int(row['position'])): int(row['max_depth'])
+              for row in csv.DictReader(StringIO(depths.getvalue()))}
+    assert actual == expected
+
+
+@pytest.mark.parametrize('seed', range(24))
+def test_deterministic_fuzzed_placements_match_q15_depth(seed):
+    rng = random.Random(seed)
+    candidates = []
+    for i in range(rng.randint(1, 8)):
+        region = rng.choice(['A', 'B', 'C'])
+        position = rng.randint(1, 35)
+        score = rng.choice([20, 20, 20, 19])
+        candidates.append(placement(
+            'fragment', region, pos=position, score=score,
+            secondary=i > 0))
+    original = tuple(candidates)
+    shuffled = list(candidates)
+    rng.shuffle(shuffled)
+
+    def analyze(pairs):
+        text, counts = normalize(*pairs)
+        aligned, depths = StringIO(), StringIO()
+        sam2aln(remap_csv(text), aligned, depth_csv=depths)
+        physical = {}
+        for row in csv.DictReader(StringIO(aligned.getvalue())):
+            for pos, base in enumerate(row['seq'],
+                                       start=int(row['offset']) + 1):
+                if base in 'ACGT':
+                    key = (row['refname'], pos)
+                    physical[key] = physical.get(key, 0) + 1
+        max_depths = {(r['refname'], int(r['position'])):
+                      int(r['max_depth'])
+                      for r in csv.DictReader(StringIO(depths.getvalue()))}
+        return counts, physical, max_depths
+
+    expected = analyze(original)
+    assert expected == analyze(shuffled)
+    assert expected[1] == expected[2]
