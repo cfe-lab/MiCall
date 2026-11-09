@@ -17,6 +17,8 @@ from micall.core.remap import remap, map_to_contigs
 from micall.core.sam2aln import sam2aln
 from micall.core.trim_fastqs import trim
 from micall.core.denovo import denovo
+from micall.core.denovo_multimap import (
+    require_complete_denovo_mapping_for_clinical_report)
 from micall.g2p.fastq_g2p import fastq_g2p, DEFAULT_MIN_COUNT, MIN_VALID, MIN_VALID_PERCENT
 from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
@@ -259,6 +261,13 @@ class Sample:
 
         def with_prefix(path):
             return prepend_prefix_to_basename(prefix, path)
+
+        if use_denovo:
+            # Never report de novo consensus from a demonstrably incomplete
+            # alternative-placement search.
+            with open(with_prefix(self.remap_counts_csv)) as counts_file:
+                require_complete_denovo_mapping_for_clinical_report(
+                    counts_file)
 
         logger.info('Running sam2aln on %s.', self)
         depth_path = (self.paths.get('multimap_depth_csv')
@@ -515,6 +524,11 @@ class Sample:
                            scratch_path,
                            debug_file_prefix=with_prefix(debug_file_prefix),
                            excluded_seeds=excluded_seeds)
+
+        # Stitching inherits the initial search's missing evidence, even
+        # if the later stitched-contig search appears complete.
+        with open(with_prefix(self.remap_counts_csv)) as counts_file:
+            require_complete_denovo_mapping_for_clinical_report(counts_file)
 
         # Referencefull stitcher uses the output of referenceless stitcher
         with open(self.stitched_contigs_csv, 'r') as stitched_contigs_csv, \

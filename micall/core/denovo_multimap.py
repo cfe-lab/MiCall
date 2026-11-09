@@ -6,6 +6,7 @@ molecule.  The downstream max-depth consensus intentionally includes each
 compatible *placement* as an alternative hypothesis.
 """
 from collections import Counter
+from csv import DictReader
 from itertools import groupby
 import re
 
@@ -17,6 +18,39 @@ ALL_ALIGNMENT_MAX_CONTIGS = 16
 ALL_ALIGNMENT_EXPANDED_MAX_CONTIGS = 32
 ALL_ALIGNMENT_EXPANDED_MAX_BASES = 65536
 DENOVO_BOWTIE_THREADS = 4
+
+
+def require_complete_denovo_mapping_for_clinical_report(counts_file):
+    """Refuse clinical reporting when alternatives are known incomplete.
+
+    At a finite -k reporting limit, additional equally good placements
+    may be absent. Oversized QNAME groups are similarly discarded. Such
+    unknown depth may not become an unqualified clinical consensus.
+    Capping does not prove omissions, and passing does not guarantee
+    exhaustive Bowtie2 heuristic search.
+    """
+    reader = DictReader(counts_file)
+    if not reader.fieldnames or not {'type', 'count'} <= set(reader.fieldnames):
+        raise ValueError('Missing de novo remap QC type/count headers')
+    failures: Counter[str] = Counter()
+    raw_present = False
+    for row in reader:
+        kind = row['type']
+        if kind == 'raw':
+            raw_present = True
+        if kind in ('multimap-capped-pairs', 'multimap-oversized-pairs'):
+            n = int(row['count'])
+            if n < 0:
+                raise ValueError('Negative de novo remap QC count')
+            failures[kind] += n
+    if not raw_present:
+        raise ValueError('De novo remap QC has no raw input count')
+    if any(failures.values()):
+        details = ', '.join(f'{kind}={n}' for kind, n in failures.items() if n)
+        raise RuntimeError(
+            'Clinical de novo consensus withheld: incomplete alignment '
+            'search or discarded large read-pair groups (' + details
+            + '). Do not interpret partial max depth as genotype evidence.')
 
 
 def denovo_alignment_limit(contigs):
