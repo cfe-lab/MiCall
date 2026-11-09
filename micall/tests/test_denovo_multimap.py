@@ -440,3 +440,20 @@ def test_deterministic_fuzzed_placements_match_q15_depth(seed):
     expected = analyze(original)
     assert expected == analyze(shuffled)
     assert expected[1] == expected[2]
+
+
+
+def test_orphaned_secondary_sam_record_is_reported():
+    from micall.core.denovo_multimap import select_best_pairs
+
+    valid = placement('read1', 'A')
+    orphan = placement('read1', 'B', secondary=True)[0]
+    content = sam(valid)
+    content.seek(0, 2)
+    content.write('\t'.join(orphan) + '\n')
+    content.seek(0)
+    output = StringIO()
+    diagnostics = {}
+    select_best_pairs(content, output, diagnostics=diagnostics)
+    assert diagnostics['incomplete_pair_groups'] == 1
+    assert len(csv_rows(output.getvalue())) == 2

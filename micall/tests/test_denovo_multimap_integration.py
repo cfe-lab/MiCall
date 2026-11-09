@@ -100,6 +100,36 @@ def test_denovo_does_not_admit_a_strictly_worse_snv_alignment(
             csv.DictReader(StringIO(depths.getvalue()))} == {'A'}
 
 
+@pytest.mark.skipif(not (shutil.which('bowtie2-align-s') and
+                         shutil.which('bowtie2-build-s')),
+                    reason='Requires Bowtie2 executables')
+def test_denovo_warns_on_more_equivalent_contigs_than_the_reporting_cap(
+        monkeypatch, tmp_path, caplog):
+    from micall.core import remap
+    from micall.core.denovo_multimap import MAX_DENOVO_ALIGNMENTS
+
+    rng = random.Random(1456)
+    dna = ''.join(rng.choices('ACGT', k=330))
+    references = {f'contig{i}': dna
+                  for i in range(MAX_DENOVO_ALIGNMENTS + 1)}
+    first = dna[25:125]
+    second = reverse_and_complement(dna[170:270])
+    for name, read in (('R1', first), ('R2', second)):
+        (tmp_path / f'{name}.fastq').write_text(
+            '@one\n{}\n+\n{}\n'.format(read, 'I' * len(read)))
+    monkeypatch.setattr(remap, 'read_contigs', lambda *_: references)
+    output = StringIO()
+    map_to_contigs(str(tmp_path / 'R1.fastq'),
+                   str(tmp_path / 'R2.fastq'),
+                   StringIO(''), output, StringIO(), StringIO(),
+                   StringIO(), StringIO(), str(tmp_path))
+
+    rows = list(csv.DictReader(StringIO(output.getvalue())))
+    assert len(rows) == MAX_DENOVO_ALIGNMENTS * 2
+    assert len({row['rname'] for row in rows}) == MAX_DENOVO_ALIGNMENTS
+    assert 'reporting limit' in caplog.text
+
+
 @pytest.mark.parametrize('use_denovo,prefix', [
     (True, ''), (True, 'unstitched_'), (False, ''),
 ])
