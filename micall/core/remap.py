@@ -26,6 +26,7 @@ from gotoh import align_it
 import Levenshtein
 
 from micall.core import project_config
+from micall.core.denovo_multimap import select_best_pairs
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -755,7 +756,14 @@ def map_to_contigs(fastq1,
                                           new_counts,
                                           stderr,
                                           callback,
-                                          debug_file_prefix=debug_file_prefix)
+                                          debug_file_prefix=debug_file_prefix,
+                                          max_alignments=8)
+        best_samfile = samfile + '.best'
+        with open(samfile) as source, open(best_samfile, 'w') as target:
+            accepted_counts = select_best_pairs(source, target)
+        os.replace(best_samfile, samfile)
+        new_counts.clear()
+        new_counts.update(accepted_counts)
         write_remap_counts(remap_counts_writer, new_counts, title='remap')
 
     # generate SAM CSV output
@@ -974,7 +982,8 @@ def map_to_reference(fastq1,
                      new_counts,
                      stderr,
                      callback,
-                     debug_file_prefix=None):
+                     debug_file_prefix=None,
+                     max_alignments=1):
     """ Map a pair of FASTQ files to a set of reference sequences.
 
     @param fastq1: FASTQ file with the forward reads
@@ -1024,6 +1033,8 @@ def map_to_reference(fastq1,
                    '--local',
                    '-X', '1200',
                    '-p', '1']
+    if max_alignments > 1:
+        bowtie_args.extend(['-k', str(max_alignments)])
 
     new_counts.clear()
     unmapped_count = 0
