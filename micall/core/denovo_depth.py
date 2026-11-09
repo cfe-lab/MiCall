@@ -92,7 +92,7 @@ class AlternativeDepths:
         placements = list(placements)
         if not placements:
             return
-        hits = Counter()
+        hits: Counter[tuple[str, int]] = Counter()
         for reference, merged_sequence in placements:
             for position, base in enumerate(merged_sequence, start=1):
                 if base in 'ACGT':
