@@ -55,20 +55,32 @@ Individual files are described after the list of steps.
   * in - fastq1
   * in - fastq2
   * in - prelim.csv
-  * remap.csv - SAM file format with commas instead of tabs.
-  * remap_counts.csv - downloaded - how many reads mapped to each reference at
-    each stage.
-  * remap_conseq.csv - downloaded - consensus sequence that reads were mapped to
-    on the final iteration
-  * unstitched_conseq.csv - downloaded - consensus sequence that reads were
-    mapped to the unstitched contigs.
-  * unmapped1.fastq - FASTQ format (unstructured text) reads that didn't map to
-    any of the final references.
-  * unmapped2.fastq - FASTQ 
+  * remap.csv - SAM records in CSV format. In de novo mode, each original read
+    pair can have several equally best-scoring placements, with its original
+    query name retained.
+  * remap_counts.csv - downloaded - mapping and quality-control counts. See
+    the field descriptions below, especially the distinction between read ends
+    and original read pairs in de novo mode.
+  * remap_conseq.csv - downloaded - reference sequences used for the final
+    mapping, not newly calculated read consensuses.
+  * unstitched_conseq.csv - downloaded - reference sequences used for mapping
+    to the unstitched contigs.
+  * unmapped1.fastq - read 1 FASTQ records not accepted in the final mapping.
+    In de novo mode, this includes reads rejected during alignment selection.
+  * unmapped2.fastq - the corresponding unmapped read 2 FASTQ records. A pair
+    can have only one mate in these files when the other mate mapped.
 * `sam2aln`: extract the aligned portion of each read from a CSV SAM file. Also
     combines duplicates.
   * in - remap.csv
-  * aligned.csv - reads aligned to consensus sequence
+  * aligned.csv - merged read-pair sequences aligned to their mapping
+    references. In de novo mode, alternative placements are included, but
+    bases covered by another placement of the same physical fragment on the
+    same reference are not counted again.
+  * multimap_depth.csv - de novo only - maximum and fractional Q15 depth by
+    reference position (internal output, normally in the sample scratch folder).
+  * unique_aligned_fragments.csv - de novo only - count of distinct original
+    fragments having at least one accepted Q15 merged alignment (internal output
+    used by the cascade report).
   * conseq_ins.csv - insertions relative to consensus sequence
   * failed_read.csv - downloaded - reads that fail to merge
   * clipping.csv - count of soft-clipped reads at each position
@@ -136,11 +148,15 @@ Individual files are described after the list of steps.
   * refname - seed reference the reads mapped to
   * qcut - minimum Phred quality score to include a nucleotide
   * rank - sequences are sorted by count, with the most common at rank 0
-  * count - how many times exact copies of this sequence and soft clip counts
-    were found
-  * offset - offset of the read within the consensus, or number of dashes to
-    add at the start
-  * seq - the mapped sequence of the read, aligned to the consensus
+  * count - number of grouped occurrences of this aligned sequence. In de novo
+    mode, different placements of one original read pair can contribute
+    separate rows, so this is not necessarily a count of distinct fragments.
+  * offset - zero-based offset of the read within the mapping reference
+  * seq - the mapped sequence of the read, aligned to the reference. In de novo
+    mode, lowercase `n` marks coverage already provided by another placement
+    of the same fragment at that reference position; it is ignored as
+    noncoverage, **not** interpreted as a deletion (`-`). Ordinary quality
+    filtering also applies.
   * inserts - (g2p_aligned.csv only) insertions in the read relative to
     V3LOOP, preserved for insertions.csv reporting. Semicolon-separated
     `pos:seq:support` groups, where pos is the 1-based seed/query
@@ -154,6 +170,75 @@ Individual files are described after the list of steps.
     the pos of codon-multiple insertions to the codon boundary with the
     same rule as codon deletions; 1- and 2-base insertions keep their
     nucleotide anchor.
+* remap.csv
+  * qname - original read-pair identifier. In de novo mode, multiple rows can
+    share this name because equally best-scoring placements are retained.
+  * flag, rname, pos, mapq, cigar, rnext, pnext, tlen, seq, qual - the standard
+    SAM alignment fields, with comma-separated columns rather than tabs. Each
+    paired placement normally occupies two consecutive rows (one per mate).
+    The `pos` field is one-based.
+  * The de novo selector retains valid best-scoring paired placements, removes
+    exact duplicates, and permits overlapping alternatives where they cover
+    distinct reference positions. It can also retain a primary mapped
+    singleton or discordant pair for the existing rescue path.
+* remap_counts.csv
+  * type - the accounting stage or quality-control measure, described below.
+    Rows for individual contigs have their contig name appended to the stage,
+    for example `remap-final 1-HIV1...`.
+  * count - a nonnegative integer. The unit depends on `type`: most mapping
+    counts describe **read ends**, while the explicitly named fragment and
+    pair counters describe **original read pairs**.
+  * filtered_count, seed_dist, other_dist, other_seed - additional fields used
+    by earlier mapping stages; usually blank for de novo remapping.
+  * `raw` - total input read ends (two per original read pair).
+  * `prelim <reference>` - preliminary mapping read-end count (reference-based
+    pipeline, not the de novo remapping stage).
+  * `remap <contig>`, `remap-final <contig>` - mapped read-end counts on each
+    contig, including repeated counts for equally best-scoring alternative
+    placements. These are **not** distinct-fragment counts.
+  * `remap-unique` - distinct accepted mapped read ends, across all contigs.
+    Written when it differs from the summed `remap-final` counts.
+  * `remap-unique-fragments` - distinct accepted mapped original read pairs,
+    including pairs with only one mapped mate. Written when mapped singleton
+    pairs are present.
+  * `unmapped` - count of read ends classified as unmapped by the existing
+    Bowtie2 mapping accounting. This can differ from the final selection.
+  * `unmapped-after-selection` - read ends with no accepted mapping after
+    de novo selection and rescue; written only if different from `unmapped`.
+    The de novo `unmapped1.fastq` and `unmapped2.fastq` reflect this final
+    classification.
+  * `multimap-capped-pairs` - original read pairs for which Bowtie2 reached
+    its per-pair reporting limit; further equal-scoring alignments could be
+    missing. The de novo clinical-reporting guard refuses incomplete results
+    when this count is nonzero.
+  * `multimap-oversized-pairs` - original read pairs with too many SAM
+    records for safe selection. Their alignments are discarded, and the de novo
+    clinical-reporting guard refuses incomplete results when nonzero.
+  * For de novo mapping, Bowtie2 reports at most 64 placements per read pair
+    for panels of up to 16 contigs, or up to 32 contigs totaling at most
+    65,536 reference bases. Larger panels use a limit of 8. These limits
+    bound SAM output; reaching one triggers the incomplete-search safeguard.
+* multimap_depth.csv (de novo only)
+  * refname - contig/reference identifier from the final de novo remap.
+  * position - one-based reference nucleotide position. When the reference
+    sequence is available, positions with no coverage are also emitted.
+  * max_depth - count of **distinct original fragments** with at least one
+    accepted Q15 merged alignment covering this position. Each fragment
+    contributes at most 1, even if several placements overlap here.
+  * avg_depth - sum of fractional coverage contributed by the fragments.
+    For each fragment with `N` accepted merged alternatives, each alternative
+    covering this position contributes `1/N`. Two alternatives on different
+    contigs therefore contribute 0.5 to their respective positions; two
+    overlapping alternatives on the same contig contribute a combined 1 to a
+    shared position. Values may be non-integers.
+  * Only merged Q15 A/C/G/T bases count as coverage. Thus these depths differ
+    from raw SAM/read-end mapping counts and should not be equated with the
+    ordinary `nuc.csv` coverage.
+* unique_aligned_fragments.csv (de novo only)
+  * unique_aligned_fragments - one integer data row counting original read
+    pairs having at least one accepted Q15 merged alignment. This is used for
+    `cascade.csv`'s `aligned` field instead of counting alternative
+    placements separately.
 * amino.csv
   * seed - seed reference the reads mapped to
   * region - coordinate reference for reporting against, usually a gene
@@ -187,13 +272,16 @@ Individual files are described after the list of steps.
   * end - end position of the matching part in the contig sequence
   * ref_start - start position of the matching part in the reference sequence
   * ref_end - end position of the matching part in the reference sequence  
-* cascade.csv - number of read pairs that flow through the pipeline steps
-  * demultiplexed - count from the raw FASTQ
-  * v3loop - aligned with V3LOOP
-  * g2p - valid reads to count in G2P
-  * prelim_map - mapped to other references on first pass
-  * remap - mapped to other references after remapping
-  * aligned - aligned with a reference and merged with mate
+* cascade.csv - counts of original read pairs/fragments reaching each stage
+  * demultiplexed - input original read pairs (half the raw read-end count)
+  * v3loop - fragments mapped to V3LOOP
+  * g2p - fragments valid for G2P
+  * prelim_map - fragments mapped to other references on first pass
+  * remap - fragments mapped to other references after remapping. De novo
+    multi-mapping counts each original pair once, including mapped singleton
+    pairs, rather than counting every reported contig placement.
+  * aligned - original fragments with at least one merged Q15 alignment in
+    de novo mode, counted once regardless of the number of placements.
 * conseq.csv
   * region - the name of the contig. Includes the name of the reference seed, plus an optional prefix, which is a number that makes the name unique.
   * q-cutoff - minimum quality score
@@ -360,13 +448,8 @@ Individual files are described after the list of steps.
 * unstitched_conseq.csv
   * region - the region mapped to
   * sequence - the consensus sequence used
-* unstitched_cascade.csv - number of read pairs that flow through the pipeline steps
-  * demultiplexed - count from the raw FASTQ
-  * v3loop - aligned with V3LOOP
-  * g2p - valid reads to count in G2P
-  * prelim_map - mapped to other references on first pass
-  * remap - mapped to other references after remapping
-  * aligned - aligned with a reference and merged with mate
+* unstitched_cascade.csv - the same fields and fragment-counting rules as
+  `cascade.csv`, calculated before de novo contig stitching.
 * resistance.csv
   * region - the region code, like PR or RT
   * drug_class - the drug class code from the HIVdb rules, like NRTI
