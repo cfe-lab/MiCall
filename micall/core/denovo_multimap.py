@@ -235,14 +235,22 @@ def select_best_pairs(source, destination, limit=MAX_DENOVO_ALIGNMENTS,
                 diagnostics['oversized_pair_groups'] = (
                     diagnostics.get('oversized_pair_groups', 0) + 1)
             continue
-        if diagnostics is not None and len(rows) % 2:
-            diagnostics['incomplete_pair_groups'] = (
-                diagnostics.get('incomplete_pair_groups', 0) + 1)
         if (diagnostics is not None and limit is not None
                 and len(rows) // 2 >= limit):
             diagnostics['at_report_limit'] = (
                 diagnostics.get('at_report_limit', 0) + 1)
         selected = _select(rows, limit)
+        # Bowtie2 -a legitimately reports a different number of alternative
+        # alignments for R1 and R2 when no concordant pair is found. Such a
+        # group can have an odd number of rows yet still contain exactly one
+        # safe primary discordant/singleton pair for legacy rescue. Do not
+        # misclassify those legitimate outputs as malformed SAM streams.
+        primary_rescue = (len(selected) == 2
+                          and not _valid_pair(selected[0], selected[1]))
+        if (diagnostics is not None and len(rows) % 2
+                and not primary_rescue):
+            diagnostics['incomplete_pair_groups'] = (
+                diagnostics.get('incomplete_pair_groups', 0) + 1)
         # Distinguish intentionally unmapped pairs from mapped records
         # rejected by SAM integrity or quality constraints.
         if (diagnostics is not None and not selected

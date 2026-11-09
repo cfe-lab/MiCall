@@ -526,3 +526,26 @@ def test_unbounded_sam_reader_rejects_pathologically_repetitive_pair():
     assert not counts
     assert not csv_rows(out.getvalue())
     assert diagnostics['oversized_pair_groups'] == 1
+
+
+def test_unequal_bowtie2_discordant_mate_alternatives_are_not_malformed():
+    # In Bowtie2 -a mode, a discordant read may have three R1 placements
+    # and only one R2 placement; adjacent record pairing is not meaningful.
+    primary = placement('discordant', 'A', flag1=97, flag2=145)
+    primary[1][2] = 'B'
+    primary[0][6] = 'B'
+    primary[1][6] = 'A'
+    secondary_a = primary[0].copy()
+    secondary_b = primary[0].copy()
+    secondary_a[1] = str(int(secondary_a[1]) + 256)
+    secondary_a[2] = 'C'
+    secondary_b[1] = str(int(secondary_b[1]) + 256)
+    secondary_b[2] = 'D'
+    raw = sam([primary[0], secondary_a, secondary_b, primary[1]])
+    out = StringIO()
+    diagnostics = {}
+    select_best_pairs(raw, out, limit=None, diagnostics=diagnostics)
+    observed = csv_rows(out.getvalue())
+    assert [(r['rname'], r['flag']) for r in observed] == [
+        ('A', '97'), ('B', '145')]
+    assert diagnostics.get('incomplete_pair_groups', 0) == 0
