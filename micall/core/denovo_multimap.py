@@ -9,9 +9,14 @@ from collections import Counter
 from itertools import groupby
 import re
 
-# Bound Bowtie2 output and downstream hypothesis fan-out per original pair.
-# This is not an exhaustive search when a read has more than eight placements.
+# Large contig panels still need bounded Bowtie2 output. For smaller
+# panels, use all reported alignments and eliminate an arbitrary -k cutoff.
 MAX_DENOVO_ALIGNMENTS = 8
+ALL_ALIGNMENT_MAX_CONTIGS = 16
+DENOVO_BOWTIE_THREADS = 4
+# Never buffer more than this many SAM records for a single read pair.
+# Pathologically repetitive reads are excluded, not partially miscounted.
+MAX_DENOVO_RECORDS_PER_PAIR = 8192
 BAD_FLAGS = 0x4 | 0x8 | 0x400 | 0x800
 REFERENCE_CIGAR = re.compile(r"(\d+)([MIDS])")
 VALID_CIGAR = re.compile(r"(?:[1-9][0-9]*[MIDS])+\Z")
@@ -193,7 +198,7 @@ def _select(rows, limit):
         used.add(key)
         prev.append(positions)
         winners.append((a, b))
-        if len(winners) == limit:
+        if limit is not None and len(winners) == limit:
             break
     return [row for pair in winners for row in pair]
 
@@ -205,7 +210,7 @@ def select_best_pairs(source, destination, limit=MAX_DENOVO_ALIGNMENTS,
     Input is Bowtie2's QNAME-grouped SAM stream. The output can be consumed
     by MiCall's existing two-at-a-time sam2aln matcher unchanged.
     """
-    if limit < 1:
+    if limit is not None and limit < 1:
         raise ValueError("limit must be positive")
     counts: Counter[str] = Counter()
 
@@ -217,11 +222,24 @@ def select_best_pairs(source, destination, limit=MAX_DENOVO_ALIGNMENTS,
                 yield line.rstrip("\n").split("\t")
 
     for _, group in groupby(records(), key=lambda row: row[0]):
-        rows = list(group)
+        rows: list[list[str]] = []
+        oversized = False
+        for row in group:
+            if len(rows) < MAX_DENOVO_RECORDS_PER_PAIR:
+                rows.append(row)
+            else:
+                oversized = True
+        if oversized:
+            # Never emit a truncated, falsely exhaustive read-pair group.
+            if diagnostics is not None:
+                diagnostics['oversized_pair_groups'] = (
+                    diagnostics.get('oversized_pair_groups', 0) + 1)
+            continue
         if diagnostics is not None and len(rows) % 2:
             diagnostics['incomplete_pair_groups'] = (
                 diagnostics.get('incomplete_pair_groups', 0) + 1)
-        if diagnostics is not None and len(rows) // 2 >= limit:
+        if (diagnostics is not None and limit is not None
+                and len(rows) // 2 >= limit):
             diagnostics['at_report_limit'] = (
                 diagnostics.get('at_report_limit', 0) + 1)
         selected = _select(rows, limit)

@@ -1183,6 +1183,7 @@ type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,8,,,,
 remap-final 1-R1,8,,,,
+unmapped-after-selection,12,,,,
 unmapped,2,,,,
 """
         expected_remap_csv = """\
@@ -1244,6 +1245,7 @@ remap 1-R1,6,,,,
 remap 2-R2-partial,2,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-partial,2,,,,
+unmapped-after-selection,12,,,,
 unmapped,2,,,,
 """
         expected_remap_csv = """\
@@ -1286,6 +1288,7 @@ remap 2-R2-excluded,2,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-excluded,2,,,,
 remap-unique,6,,,,
+unmapped-after-selection,14,,,,
 unmapped,2,,,,
 """
         expected_remap_csv = """\

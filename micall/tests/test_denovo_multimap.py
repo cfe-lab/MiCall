@@ -500,3 +500,29 @@ def test_orphaned_secondary_sam_record_is_reported():
     select_best_pairs(content, output, diagnostics=diagnostics)
     assert diagnostics['incomplete_pair_groups'] == 1
     assert len(csv_rows(output.getvalue())) == 2
+
+
+def test_unbounded_selector_retains_all_nine_equivalent_contigs():
+    pairs = [placement('read1', f'R{i}', secondary=i > 0)
+             for i in range(9)]
+    output = StringIO()
+    diagnostics = {}
+    counts = select_best_pairs(sam(*pairs), output,
+                               limit=None, diagnostics=diagnostics)
+    assert len(csv_rows(output.getvalue())) == 18
+    assert len(counts) == 9
+    assert diagnostics.get('at_report_limit', 0) == 0
+
+
+def test_unbounded_sam_reader_rejects_pathologically_repetitive_pair():
+    from micall.core.denovo_multimap import MAX_DENOVO_RECORDS_PER_PAIR
+
+    source = sam(*(placement('huge', f'R{i}', secondary=i != 0)
+                   for i in range(MAX_DENOVO_RECORDS_PER_PAIR // 2 + 1)))
+    out = StringIO()
+    diagnostics = {}
+    counts = select_best_pairs(source, out, limit=None,
+                               diagnostics=diagnostics)
+    assert not counts
+    assert not csv_rows(out.getvalue())
+    assert diagnostics['oversized_pair_groups'] == 1
