@@ -142,3 +142,20 @@ demultiplexed,v3loop,g2p,prelim_map,remap,aligned
         report.generate()
 
         self.assertEqual(expected_report, report.cascade_csv.getvalue())
+
+
+    def test_denovo_multimapping_reports_physical_pair_count(self):
+        report = CascadeReport(StringIO())
+        report.remap_counts_csv = StringIO("""\
+type,count
+raw,4
+remap-final A,2
+remap-final B,2
+remap-unique,2
+unmapped,2
+""")
+        report.generate()
+        self.assertEqual(
+            'demultiplexed,v3loop,g2p,prelim_map,remap,aligned\n'
+            '2,0,0,0,1,0\n',
+            report.cascade_csv.getvalue())
