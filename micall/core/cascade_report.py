@@ -70,6 +70,7 @@ class CascadeReport:
             return
 
         reader = DictReader(self.remap_counts_csv)
+        fragment_count = None
         for row in reader:
             row_type = row['type']
             count = int(row['count']) // 2
@@ -80,17 +81,14 @@ class CascadeReport:
             elif row_type.startswith('prelim '):
                 self.counts['prelim_map'] += count
             elif row_type.startswith('remap-final '):
+                # Reference-based remaps report read-end counts per seed.
+                # De novo remaps also include an explicit fragment total.
                 self.counts['remap'] += count
-            elif row_type == 'remap-unique':
-                # This counts unique mapped READ ENDS, not necessarily
-                # complete paired fragments. The legacy integer-halving
-                # estimate is retained only for older reports.
-                self.counts['remap'] = count
-            elif row_type == 'remap-unique-fragments':
-                # The new de novo writer reports unique physical original
-                # fragments (including a fragment with just one mapped
-                # mate). Never divide this already-paired quantity by two.
-                self.counts['remap'] = int(row['count'])
+            elif row_type == 'remap-fragments':
+                fragment_count = int(row['count'])
+        if fragment_count is not None:
+            # Prefer the exact fragment count regardless of row order.
+            self.counts['remap'] = fragment_count
 
     def read_aligned(self):
         if self.unique_aligned_csv is not None:

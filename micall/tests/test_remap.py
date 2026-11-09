@@ -1168,14 +1168,14 @@ ref,match,group_ref,contig
 R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
             "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
             "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         expected_remap_counts_csv = """\
@@ -1183,8 +1183,8 @@ type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,8,,,,
 remap-final 1-R1,8,,,,
-unmapped-after-selection,12,,,,
-unmapped,2,,,,
+remap-fragments,4,,,,
+unmapped,12,,,,
 """
         expected_remap_csv = """\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -1228,14 +1228,14 @@ R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 R2,0.2,R2,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t99\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t147\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t99\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t147\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
             "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
             "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         expected_remap_counts_csv = """\
@@ -1245,8 +1245,8 @@ remap 1-R1,6,,,,
 remap 2-R2-partial,2,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-partial,2,,,,
-unmapped-after-selection,12,,,,
-unmapped,2,,,,
+remap-fragments,4,,,,
+unmapped,12,,,,
 """
         expected_remap_csv = """\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -1269,14 +1269,14 @@ R1,1.0,R1,GTGGG
 R2,1.0,R2,ACAAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t99\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t147\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t99\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t147\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
             "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
             "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         excluded_seeds = ['R2']
@@ -1287,9 +1287,8 @@ remap 1-R1,6,,,,
 remap 2-R2-excluded,2,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-excluded,2,,,,
-remap-unique,6,,,,
-unmapped-after-selection,14,,,,
-unmapped,2,,,,
+remap-fragments,4,,,,
+unmapped,12,,,,
 """
         expected_remap_csv = """\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -1552,7 +1551,7 @@ def test_write_reported_pairs_excludes_unmapped_and_filtered_references():
         ['d', '99', 'A'], ['d', '141', '*'],
     ]
     writer = Mock()
-    assert write_reported_pairs(iter(rows), writer) == 3
+    assert write_reported_pairs(iter(rows), writer) == 5
     # Keep the existing remap CSV behavior for rows marked unmapped, but
     # never treat them as independent mapped molecules.
     assert writer.writerow.call_count == 8
@@ -1589,8 +1588,8 @@ def test_reported_denovo_fragments_count_singletons_as_whole_physical_pairs():
     emitted = Mock()
     mapped_mates = write_reported_pairs(
         placements, emitted, fragment_counts=fragments)
-    assert mapped_mates == 4
-    assert fragments['two_mates'] == 1
+    assert mapped_mates == 6
+    assert fragments['two_mates'] == 2
     assert fragments['one_mate'] == 2
-    assert fragments['two_mates'] + fragments['one_mate'] == 3
+    assert fragments['two_mates'] + fragments['one_mate'] == 4
     assert emitted.writerow.call_count == 8

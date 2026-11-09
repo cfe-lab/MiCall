@@ -9,15 +9,10 @@ from collections import Counter
 from itertools import groupby
 import re
 
-# Limit Bowtie2 SAM output per original fragment. Saturation is diagnostic:
-# earlier de novo remapping used -k 1 without requiring exhaustive search.
+# Maximum number of Bowtie2 placements per original fragment.
+# Saturation is diagnostic; it does not prevent clinical reporting.
 MAX_DENOVO_ALIGNMENTS = 12
 DENOVO_BOWTIE_THREADS = 4
-
-
-def denovo_alignment_limit(contigs):
-    """Return the fixed de novo Bowtie2 reporting limit for any contig panel."""
-    return MAX_DENOVO_ALIGNMENTS
 
 
 # Never buffer more than this many SAM records for a single read pair.
@@ -128,19 +123,15 @@ def _select(rows, limit):
     # Bowtie2 -k emits the two mates of each reported paired placement
     # together. Fail closed for malformed ordering instead of cross-pairing.
     pairs = [(rows[i], rows[i + 1]) for i in range(0, len(rows) - 1, 2)]
-    candidates = [p for p in pairs if _valid_pair(*p)]
-    # Bowtie2 normally emits an AS tag on both mates. If scores exist,
-    # require both mates to have parseable scores; otherwise an omitted
-    # score (implicitly treated as zero) could defeat a real negative score.
-    # Older MiCall test fixtures contain no AS tags, so allow wholly
-    # unscored fixtures while still rejecting malformed mixed-score pairs.
-    scored = [p for p in candidates
-              if all(_score(row) is not None for row in p)]
-    if scored:
-        candidates = scored
-    elif any(any(field.startswith('AS:i:') for field in row[11:])
-             for pair in candidates for row in pair):
-        candidates = []
+    # Each best-placement comparison needs two real Bowtie2 alignment
+    # scores. Discard candidates with missing or malformed scores.
+    candidates = []
+    for first, second in pairs:
+        if not _valid_pair(first, second):
+            continue
+        first_score, second_score = _score(first), _score(second)
+        if first_score is not None and second_score is not None:
+            candidates.append((first, second, first_score + second_score))
     if not candidates:
         # Preserve MiCall's existing fallback for discordant *primary*
         # alignments. MixedReferenceSplitter can retry these against one
@@ -167,16 +158,15 @@ def _select(rows, limit):
                         or not (a & 0x2 and b & 0x2)):
                     return ordered
         return []
-    best_score = max((_score(a) or 0) + (_score(b) or 0)
-                     for a, b in candidates)
+    best_score = max(score for _, _, score in candidates)
     winners = []
     used = set()
-    candidates.sort(key=lambda pair: (
-        pair[0][2], int(pair[0][3]), int(pair[1][3]),
-        pair[0][5], pair[1][5], int(pair[0][1]) & 0x10,
-        int(pair[1][1]) & 0x10, bool(int(pair[0][1]) & 0x100)))
-    for a, b in candidates:
-        if (_score(a) or 0) + (_score(b) or 0) != best_score:
+    candidates.sort(key=lambda item: (
+        item[0][2], int(item[0][3]), int(item[1][3]),
+        item[0][5], item[1][5], int(item[0][1]) & 0x10,
+        int(item[1][1]) & 0x10, bool(int(item[0][1]) & 0x100)))
+    for a, b, score in candidates:
+        if score != best_score:
             continue
         key = (a[2], a[3], a[5], b[3], b[5], int(a[1]) & 0x10,
                int(b[1]) & 0x10)

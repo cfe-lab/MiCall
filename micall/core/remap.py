@@ -32,7 +32,7 @@ import Levenshtein
 
 from micall.core import project_config
 from micall.core.denovo_multimap import (
-    DENOVO_BOWTIE_THREADS, denovo_alignment_limit, select_best_pairs)
+    DENOVO_BOWTIE_THREADS, MAX_DENOVO_ALIGNMENTS, select_best_pairs)
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -753,13 +753,11 @@ def map_to_contigs(fastq1,
         # start remapping loop
         new_counts = Counter()
 
-        if not conseqs:
-            unmapped_count = raw_count
-        else:
+        if conseqs:
             # Request up to 12 paired placements on every de novo panel.
             # Saturation is diagnostic and never blocks downstream reporting.
-            denovo_limit = denovo_alignment_limit(conseqs)
-            unmapped_count = map_to_reference(fastq1,
+            denovo_limit = MAX_DENOVO_ALIGNMENTS
+            map_to_reference(fastq1,
                                               fastq2,
                                               conseqs,
                                               reffile,
@@ -831,7 +829,7 @@ def map_to_contigs(fastq1,
                     mapped_mates_db=mapped_mates_db)
             for rname, (split_file1, split_file2) in splitter.splits.items():
                 refseqs = {rname: conseqs[rname]}
-                unmapped_count += map_to_reference(split_file1.name,
+                map_to_reference(split_file1.name,
                                                    split_file2.name,
                                                    refseqs,
                                                    reffile,
@@ -857,38 +855,19 @@ def map_to_contigs(fastq1,
         write_remap_counts(remap_counts_writer,
                            new_counts,
                            title='remap-final')
-        if unique_mapped_mates != sum(new_counts.values()):
-            # Count each sequenced mapped read end once, whether the fragment is
-            # fully paired (2) or has only one mapped mate (1). This is for
-            # cascade accounting, not consensus or PCR duplicate removal.
-            remap_counts_writer.writerow({
-                'type': 'remap-unique', 'count': unique_mapped_mates})
-        if mapped_fragment_counts['one_mate']:
-            # A mapped singleton is ONE original read pair, not half a fragment.
-            # Keep mapped read-END accounting separately for historical cascade
-            # consumers, while providing the exact physical fragment count.
-            remap_counts_writer.writerow({
-                'type': 'remap-unique-fragments',
-                'count': (mapped_fragment_counts['two_mates'] +
-                          mapped_fragment_counts['one_mate'])})
+        # A reported alignment is a placement; a fragment is an original
+        # read pair, even if it has multiple equally best placements.
+        # Count mapped ends on excluded contigs too: they were mapped,
+        # though they are intentionally absent from remap.csv.
+        remap_counts_writer.writerow({
+            'type': 'remap-fragments',
+            'count': (mapped_fragment_counts['two_mates'] +
+                      mapped_fragment_counts['one_mate'])})
 
-        # The Bowtie2 stream's original unmapped count does not include
-        # fragments rejected by the de novo integrity selector, missing
-        # candidates at a saturated search bound, or mapped ends excluded
-        # from the final contig-specific remap output. Use distinct accepted
-        # read ends to reconcile final mapping counts with raw input.
         if unique_mapped_mates > raw_count:
             raise ValueError('Distinct mapped read-end count exceeds raw input')
-        final_unmapped_count = raw_count - unique_mapped_mates
-        if final_unmapped_count != unmapped_count:
-            # Keep the longstanding Bowtie2-unmapped field stable for MiCall
-            # consumers. Explicitly expose the newly correct end-to-end
-            # unmapped count after candidate selection and rescue.
-            remap_counts_writer.writerow({
-                'type': 'unmapped-after-selection',
-                'count': final_unmapped_count})
-        remap_counts_writer.writerow({'type': 'unmapped',
-                                      'count': unmapped_count})
+        remap_counts_writer.writerow({
+            'type': 'unmapped', 'count': raw_count - unique_mapped_mates})
 
 
         write_final_unmapped_fastqs(
@@ -916,11 +895,11 @@ def write_contig_sequences(conseqs, remap_conseq_csv):
 
 def write_final_unmapped_fastqs(fastq1, fastq2, unmapped1, unmapped2,
                                 mapped_mates_db, gzipped=False):
-    """Write original read ends missing from the final accepted remap.
+    """Write original read ends without a mapped placement.
 
-    The database is populated from the final reported SAM stream, including
-    reference-restricted rescue. Stream both original FASTQs without loading
-    read names or sequences into memory; preserve original bases/qualities.
+    The database includes mapped ends on excluded contigs, which are
+    excluded from reports but still mapped. Stream original FASTQs without
+    loading read names or sequences into memory; preserve bases/qualities.
     """
     opener = gzip_lib.open if gzipped else open
 
@@ -973,13 +952,15 @@ def write_reported_pairs(rows, remap_writer, fragment_counts=None,
     for _, group in groupby(rows, key=lambda fields: fields[0]):
         mapped_mates = 0
         for fields in group:
+            if not is_unmapped_read(fields[1]):
+                flags = int(fields[1])
+                if flags & SAM_FLAG_IS_FIRST_SEGMENT:
+                    mapped_mates |= 1
+                if flags & 0x80:  # second segment in the pair
+                    mapped_mates |= 2
+            # The output filter is independent of the mapped-end accounting.
+            # Excluded contigs supply mapping evidence but no report rows.
             if is_reported_region(fields[2]):
-                if not is_unmapped_read(fields[1]):
-                    flags = int(fields[1])
-                    if flags & SAM_FLAG_IS_FIRST_SEGMENT:
-                        mapped_mates |= 1
-                    if flags & 0x80:  # second segment in the pair
-                        mapped_mates |= 2
                 write_remap_row(remap_writer, fields)
         unique_mapped_mates += bool(mapped_mates & 1) + bool(mapped_mates & 2)
         if mapped_mates_db is not None and mapped_mates:
