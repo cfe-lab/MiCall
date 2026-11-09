@@ -1,154 +1,175 @@
 ---
 title: De novo multi-mapping
-description: How MiCall selects contig placements and counts depth without stealing reads
+description: Paired-read placement selection and depth accounting on assembled contigs
 ---
 
-## What problem does this solve?
+MiCall maps paired-end reads to the contigs produced by de novo assembly.
+A read pair can have several equally well-scoring placements, either on
+different contigs or at different positions of the same contig. The de novo
+remapper keeps those placements together as possible locations of a **single
+sequenced fragment**.
 
-An assembled sample can contain overlapping contigs, similar haplotypes, or
-repeated sequence. A sequenced fragment may align equally well to more than
-one contig or position. Choosing **one** of those alignments arbitrarily
-transfers its support away from other equally plausible locations.
+This document describes placement selection and the resulting coverage
+accounting. For output file fields and their place in the wider workflow,
+see [Steps and input/output files](../steps.md).
 
-In the de novo pipeline, MiCall retains the best-scoring valid **paired
-placements**, rather than forcing each physical read pair onto one contig.
-It then distinguishes two useful depth questions:
+## Terminology
 
-- **Maximum depth**: how many different original fragments *could* support
-  this base, considering all of their accepted mappings?
-- **Fractional depth**: how much of those fragments' support is allocated to
-  this base when their accepted mapping alternatives share the evidence?
+- **Fragment**: one original sequenced read pair (R1 and R2), identified by
+  its query name. A fragment remains one observation regardless of its number
+  of alignments.
+- **Placement**: an alignment of that fragment's two mates to a particular
+  reference location. Its two SAM records belong to the same placement.
+- **Alternative placements**: distinct locations at which the same fragment
+  has the highest accepted paired-alignment score.
+- **Reference position**: a one-based nucleotide position on a contig used
+  for a particular remapping pass.
 
-Both measurements use Q15 merged reads, not raw Bowtie2 read-end counts.
-They are separate from the usual nucleotide and amino-acid counts.
+Placement alternatives describe uncertainty about *location*, not additional
+reads or independent evidence.
 
-This behavior applies only to **de novo** remapping, both before and after
-contig stitching. The reference-based iterative remap path is unchanged.
+## Mapping and placement selection
 
-## From FASTQs to selected alignments
+The de novo pipeline remaps trimmed paired FASTQs twice: first against the
+assembled/unstitched contigs, then against the contigs produced by stitching.
+Each pass selects alignments and calculates its own outputs.
 
-1. `micall/core/remap.py:map_to_contigs` maps trimmed paired FASTQs against
-   the de novo contigs using Bowtie2 local paired-end alignment. Unlike the
-   older single-placement remap, it requests up to **12** paired
-   placements per fragment (`-k 12`), for every contig panel.
-   Bowtie2 uses four threads with `--reorder`, keeping each fragment's
-   records adjacent. Reaching the limit is a diagnostic, not a failure.
-2. `micall/core/denovo_multimap.py:select_best_pairs` examines each
-   consecutive query-name group. It requires correctly paired R1/R2 SAM
-   records, consistent mate coordinates, valid alignment flags and CIGARs,
-   and usable alignment scores. The pair score is the sum of both mates'
-   `AS:i:` values.
-3. Only placements with the **highest pair score** are retained. Identical
-   placements are deduplicated. Distinct placements can overlap on the
-   same contig: a shifted alignment can cover bases that another
-   alignment does not. Original query names are preserved.
-4. If no valid proper pair is selected, a valid primary singleton or
-   discordant pair may be retained for the pre-existing
-   `MixedReferenceSplitter` rescue path. Fully scoreless records are also
-   supported for older SAM inputs; mixed scored/unscored candidates are
-   not silently treated as equivalent.
-5. The selected alignments are written to `remap.csv` in SAM-column CSV
-   format, with two rows per retained paired placement. Multiple
-   placements are different hypotheses for **one fragment**, not
-   additional sequenced molecules.
+1. `micall/core/remap.py:map_to_contigs` runs Bowtie2 in local paired-end
+   mode, with four threads, `--reorder`, and `-k 12`. Bowtie2 can report up
+   to 12 paired placements per fragment. Records for each query name are
+   processed together.
+2. `micall/core/denovo_multimap.py:select_best_pairs` checks that each
+   candidate comprises the correct R1 and R2 records of a concordant pair:
+   consistent reference and mate positions, alignment flags, CIGAR strings,
+   and read/quality lengths. Unusable candidate pairs are excluded.
+3. The score of a candidate pair is the sum of the two SAM `AS:i:` alignment
+   scores. The selector retains every **distinct valid placement tied for the
+   highest pair score** among the reported candidates. Repeated records for
+   the same placement are deduplicated; distinct placements can overlap.
+4. When there is no valid concordant placement, the primary alignment may
+   still provide a mapped singleton or a discordant pair for the
+   `MixedReferenceSplitter` remapping path. These cases do not constitute
+   additional paired-placement alternatives.
+5. The retained SAM records are written to `remap.csv` (SAM fields in CSV
+   form), using the original query name for every placement.
 
-The selector caps buffering at 8,192 SAM records per original fragment.
-Excessively large groups are discarded rather than partially treated as
-complete. Reaching Bowtie2's reporting limit can also mean some alignments
-have not been reported, although these may all be worse than the selected
-best placement. Both conditions are recorded in `remap_counts.csv` as
-**diagnostics**, not reasons to abort clinical reporting. Like MiCall's
-earlier single-placement mapping (`-k 1`), this workflow does not require
-exhaustive Bowtie2 search. Bowtie2 is a heuristic aligner, so the absence
-of a warning does not establish that every possible alignment was found.
+Selection operates on the placements Bowtie2 reports. Bowtie2 uses a
+heuristic search and the `-k 12` limit bounds reported placements; the
+selected set is not a claim that every possible alignment was enumerated.
 
-## How depth is counted
+## One fragment's contribution to depth
 
-`micall/core/sam2aln.py` merges both mates of every selected placement
-and evaluates Q15 bases. `micall/core/denovo_depth.py` accumulates coverage
-per **original read pair**, grouping alternatives by their original query
-name. At reference position `p`, suppose a fragment has `N` successfully
-merged placements and `k` of them contain a Q15 A/C/G/T at `p`:
+`micall/core/sam2aln.py` merges the mates of each selected paired
+placement and evaluates bases at quality cutoff Q15.
+`micall/core/denovo_depth.py:AlternativeDepths` groups the accepted Q15
+merged placements by original fragment before accumulating per-position
+depth.
 
-- Its contribution to **`avg_depth`** is `k / N`.
-- Its contribution to **`max_depth`** is **1 if `k > 0`, otherwise 0**.
+For a given fragment, let:
 
-Contributions are summed over distinct input fragments. For example:
+- `N` be its number of successfully merged Q15 placements;
+- `k` be the number of those placements containing a Q15 `A`, `C`, `G`,
+  or `T` at a particular reference position.
 
-| One fragment's accepted placements | max depth at A:101 | avg depth at A:101 | avg depth at B:101 |
-| --- | ---: | ---: | ---: |
-| One placement on A | 1 | 1 | 0 |
-| One placement on A, one on B | 1 | 0.5 | 0.5 |
-| Two placements on A both cover 101 | 1 | 1 | 0 |
-| Two placements on A; only one covers 101 | 1 | 0.5 | 0 |
+That fragment contributes **1** to `max_depth` if `k > 0` (otherwise
+**0**), and contributes **`k / N`** to `avg_depth`.
 
-Thus **max depth never counts an original fragment twice at the same
-reference position**, even when its alternative placements overlap.
-`avg_depth` expresses ambiguity but need not be an integer.
+The values in `multimap_depth.csv` sum these contributions over original
+fragments. Maximum depth therefore counts at most one contribution from
+a fragment at any given position. Average depth distributes that fragment's
+contribution across its accepted placement alternatives. Both depths are
+computed separately for each contig position; average depth can be
+fractional.
 
-For the ordinary `aligned.csv` path, bases already represented by another
-placement of that fragment at the same contig position and quality cutoff
-are masked with lowercase `n`, denoting **no extra coverage**. They must
-not be represented as `-`, because a dash is actual deletion evidence.
-Nonoverlapping parts of each alternative remain available for downstream
-consensus reporting. The original, unmasked accepted merged placements
-are used to calculate the separate depth table.
+For example, consider one fragment and positions 101 on contigs A and B:
 
-The depth sidecar `multimap_depth.csv` has:
+| Its accepted Q15 placements | A:101 max | A:101 avg | B:101 max | B:101 avg |
+| --- | ---: | ---: | ---: | ---: |
+| One placement covering A:101 | 1 | 1 | 0 | 0 |
+| One covering A:101, one covering B:101 | 1 | 0.5 | 1 | 0.5 |
+| Two both covering A:101 | 1 | 1 | 0 | 0 |
+| Two on A, only one covering A:101 | 1 | 0.5 | 0 | 0 |
 
-| Column | Meaning |
+These are contributions from **one fragment**, not the total depth of a
+sample. A fragment with no accepted Q15 placement contributes nothing.
+
+### Coverage in `aligned.csv`
+
+The nucleotide and amino-acid reporting path consumes `aligned.csv`.
+For each fragment and quality cutoff, `sam2aln` records which contig
+positions have already received A/C/G/T coverage. If another placement
+covers one of those positions, that base is written as lowercase `n` in
+`aligned.csv`. This represents *no additional coverage*, not a
+deletion (`-`). Bases at positions not yet covered by that fragment remain
+available to the reporting path.
+
+The separate `multimap_depth.csv` calculation uses the accepted merged
+Q15 placements **before** this overlap masking. Thus its maximum and
+fractional depths describe the full set of accepted placement hypotheses,
+while the aligned-read output avoids counting the same fragment's
+overlapping bases repeatedly.
+
+## Output files and counts
+
+| Output | Interpretation |
 | --- | --- |
-| `refname` | Contig/reference name |
-| `position` | One-based reference nucleotide position |
-| `max_depth` | Number of distinct fragments with at least one merged Q15 base here |
-| `avg_depth` | Sum of fractional Q15 contributions of those fragments |
+| `remap.csv` | Retained alignments, potentially multiple paired placements per original fragment, with original query names |
+| `aligned.csv` | Merged read placements used for consensus and other downstream reporting; repeated coverage of a fragment is masked with lowercase `n` |
+| `multimap_depth.csv` | Q15 per-position `refname,position,max_depth,avg_depth` |
+| `unique_aligned_fragments.csv` | One row containing the number of original fragments with at least one accepted Q15 merged placement |
+| `remap_counts.csv` | Mapping counts and diagnostics, with the distinctions below |
+| `unmapped1.fastq`, `unmapped2.fastq` | Original read ends without an accepted mapping in the final remap |
+| `cascade.csv` | Sample-level counts of distinct fragments through remapping and alignment |
 
-When a reference sequence is supplied, uncovered positions are included
-with zero depths. The depth sidecar is usually written in the sample's
-scratch directory; it is not a substitute for `nuc.csv`.
+In `multimap_depth.csv`, `position` is one-based. When reference
+sequences are available, the file also includes positions with zero
+coverage. The file is a depth sidecar, not a replacement for `nuc.csv`.
 
-## Fragment counts, unmapped reads, and safeguards
+The rows of `remap_counts.csv` have different counting units:
 
-A fragment with multiple mappings must count **once** in the pipeline
-cascade. `remap_counts.csv` therefore distinguishes per-contig read-end
-counts (`remap <contig>`, `remap-final <contig>`) from
-`remap-unique` (distinct mapped read ends) and
-`remap-unique-fragments` (distinct mapped fragments, including mapped
-singletons). These additional rows appear when the extra information is
-needed. `sam2aln` also writes `unique_aligned_fragments.csv` (one integer
-field), which counts original fragments with at least one accepted Q15
-merged placement. The de novo `cascade.csv` uses these distinct fragment
-counts rather than the number of alternative placements.
+- `raw`: number of input **read ends**.
+- `remap <contig>` and `remap-final <contig>`: mapped **read ends per
+  contig**. Alternatives can appear against multiple contigs, so these
+  counts are not distinct-fragment totals.
+- `remap-unique`: distinct mapped **read ends**, emitted when needed
+  to distinguish them from the summed per-contig counts.
+- `remap-unique-fragments`: distinct mapped **fragments**, including
+  those with only one mapped mate; emitted when mapped singletons exist.
+- `unmapped`: Bowtie2's unmapped-read-end accounting.
+- `unmapped-after-selection`: read ends without an accepted mapping
+  after placement selection and mate rescue, emitted when it differs
+  from `unmapped`.
 
-The `unmapped1.fastq` and `unmapped2.fastq` files contain original
-read ends **not accepted in the final remap**, including those rejected by
-placement selection. A disk-backed mapped-mate index reconciles the final
-output with the input FASTQs. The longstanding `unmapped` row retains
-Bowtie2's earlier accounting; `unmapped-after-selection` is emitted when
-that differs from the final number of unmapped read ends.
+MiCall tracks mapped mates by original query name when producing the
+final unmapped FASTQs. The de novo cascade uses distinct-fragment
+accounting: one fragment with multiple placements still counts once as
+mapped, and once as aligned if at least one merged Q15 placement was
+accepted.
 
-Two QC rows describe limited alignment reporting or discarded evidence:
+## Alignment limits and diagnostics
 
-- `multimap-capped-pairs`: reporting limit reached for one or more
-  original fragments; further placements could be missing.
-- `multimap-oversized-pairs`: too many SAM records for a fragment;
-  its mapping group was discarded.
+`remap_counts.csv` may contain two additional diagnostic rows:
 
-These are **informational diagnostics**: neither value prevents
-reference-guided stitching, the second remap, or clinical consensus
-generation. A report can proceed despite a saturated Bowtie2 search,
-as it could with the preceding single-placement implementation.
+- `multimap-capped-pairs`: number of original fragments for which Bowtie2
+  reached the `-k 12` reporting limit. Other placements may exist; this
+  does not establish that any omitted placement ties for the best score.
+- `multimap-oversized-pairs`: number of query-name groups containing more
+  than 8,192 SAM records. The entire group is excluded from selection.
 
-## Where to look in the code
+These diagnostics are informational: neither one blocks contig stitching
+or clinical reporting. The mapping limit bounds alignment output; it
+does not establish exhaustive enumeration.
 
-- `micall/core/denovo_multimap.py` — SAM validation, pair scoring,
-  alternative selection, alignment limits, and QC diagnostics.
-- `micall/core/remap.py` — Bowtie2 invocation, selected `remap.csv`,
-  mapped-fragment counting, and final unmapped FASTQs.
-- `micall/core/sam2aln.py` — merging, per-fragment grouping, and overlap
-  masking for the ordinary aligned read output.
-- `micall/core/denovo_depth.py` — maximum and fractional Q15 depths.
-- `micall/core/cascade_report.py` and `micall/drivers/sample.py` —
-  fragment-based cascade reporting and de novo pipeline integration.
+## Implementation map
 
-For exact output column definitions, see [Steps and input/output files](../steps.md).
+- `micall/core/remap.py` — Bowtie2 invocation, candidate selection
+  integration, remap counts, mate rescue, and unmapped FASTQs.
+- `micall/core/denovo_multimap.py` — validation, scoring, and selection
+  of paired placements.
+- `micall/core/sam2aln.py` — merged reads, grouping by original query
+  name, and per-fragment overlap masking.
+- `micall/core/denovo_depth.py` — Q15 maximum and fractional depth.
+- `micall/core/cascade_report.py` — distinct mapped/aligned fragment
+  accounting.
+- `micall/drivers/sample.py` — both de novo remapping passes and
+  downstream reporting.
