@@ -439,22 +439,27 @@ class AlternativeDepths:
         ref = first['rname']
         aligned = []
         qualities = []
+        # Only the distance *between* mates needs padding. Using absolute
+        # contig offsets here would repeatedly allocate long prefixes for
+        # every read near the end of a long viral genome.
+        offset = min(int(first['pos']), int(second['pos'])) - 1
         for row in (first, second):
             sequence, quality, _ = apply_cigar(
-                row['cigar'], row['seq'], row['qual'], int(row['pos']) - 1)
+                row['cigar'], row['seq'], row['qual'],
+                int(row['pos']) - 1 - offset)
             aligned.append(sequence)
             qualities.append(quality)
         # Insertions do not occupy reference positions. Merge overlapping
         # mates at Q15, as in the existing sam2aln alignment pipeline.
         merged = merge_pairs(*aligned, *qualities, q_cutoff=15)
-        for index, base in enumerate(merged, start=1):
+        for index, base in enumerate(merged, start=offset + 1):
             if base in 'ACGT':
                 self.maximum[ref][index] += 1
                 self.average[ref][index] += fraction
 
     def write(self, output, reference_csv=None):
         writer = DictWriter(output, ['refname', 'position', 'max_depth',
-                                     'avg_depth'])
+                                     'avg_depth'], lineterminator=os.linesep)
         writer.writeheader()
         lengths = {}
         if reference_csv is not None:

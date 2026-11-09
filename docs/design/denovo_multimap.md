@@ -24,6 +24,10 @@ The de novo remapping stage:
 
 1. Obtains at most eight candidate paired placements from Bowtie2. This cap
    bounds runtime; it does *not* prove all possible placements were found.
+   Logs a warning when read pairs reach that reporting limit. Adding more
+   competing contigs can still displace a previously reported placement
+   if the limit is saturated; the non-stealing behavior is only guaranteed
+   among the actual equally best reported placements.
 2. Requires proper, mapped, non-supplementary, non-duplicate alignments whose
    two mates have the same QNAME, reference and reciprocal mate positions.
 3. Keeps placements tied for the best **combined R1+R2 alignment score**.
@@ -35,10 +39,13 @@ The de novo remapping stage:
 5. Retains the original QNAME for every placement and writes each R1/R2 pair
    *adjacently*, including SAM secondary flags. This matters because
    `sam2aln.matchmaker()` pairs successive rows by QNAME.
-6. Retains the existing mixed-reference rescue path for read pairs without
-   any valid same-reference placement.
+6. Preserves the existing mixed-reference and discordant-primary rescue
+   paths when no valid proper pair is available. It does not resurrect
+   structurally contradictory pairs simply because they were primary.
 
-Malformed alignments must not be recombined across placements. Only the
+Malformed alignments must not be recombined across placements. A warning
+summarizes mapped read pairs with no usable or safe placement; genuinely
+unmapped pairs are not reported as malformed. Only the
 de novo `map_to_contigs` calls use this selection logic. Existing
 single-placement mapped-mode behaviour remains unchanged.
 
@@ -84,13 +91,22 @@ No phasing information is inferred from shared reads.
 - Pure-Python tests cover equal and unequal Bowtie2 scores, exact and
   overlapping alternatives, repeat locations, pairing and secondary flags,
   per-read denominators, quality filtering, and CIGAR insertions/soft clips.
-- A Bowtie2 integration test runs paired FASTQ -> de novo remapping ->
-  `sam2aln` and compares one and two near-identical contigs.
+- Bowtie2 integration tests run paired FASTQ -> de novo remapping ->
+  `sam2aln`, compare one and two near-identical contigs, and check that a
+  strictly worse SNV-containing alternative is **not** multi-counted.
+- MiCall `Sample.process_post_assembly()` integration tests check both the
+  stitched and unstitched de novo outputs, alongside the unchanged mapped mode.
 - Existing MiCall remap and `sam2aln` tests remain regression controls.
 - In review, validate authentic clinical research controls for false
   genotype calls, minority alleles, raw-read identity, contig masks, runtime,
   and non-denovo invariance; do not treat successful unit tests as biological
   validation. Assess the impact of the eight-placement reporting cap
   on repetitive references before a production release.
+
+The alignment stage emits one record pair per retained placement, so runtime
+and intermediate I/O can grow approximately linearly with the number of
+alternatives even when Bowtie2 itself is fast. The two depth CSVs include
+zero-coverage positions and therefore also grow with total contig length.
+These costs must be measured on authentic datasets before deployment.
 
 Related history: #141, #200, #264, #290, #719.
