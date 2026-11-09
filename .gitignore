@@ -33,6 +33,3 @@
 .vscode
 /docs/_site
 version.txt
-
-# Confidential original sequencing data, per-read/variant artifacts, and run logs.
-/.validation-work/
