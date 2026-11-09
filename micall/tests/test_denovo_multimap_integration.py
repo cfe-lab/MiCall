@@ -44,10 +44,14 @@ def test_denovo_retains_equal_bowtie2_pair_placements(monkeypatch, tmp_path):
                         f'{ref},{seq}\n' for ref, seq in contigs.items())))
         return (list(csv.DictReader(StringIO(remap_csv))),
                 list(csv.DictReader(StringIO(depth.getvalue()))),
-                aligned.getvalue())
+                aligned.getvalue(),
+                list(csv.DictReader(StringIO(counts.getvalue()))))
 
-    old_rows, old_depth, _ = perform({'A': dna})
-    new_rows, new_depth, aligned = perform(references)
+    old_rows, old_depth, _, old_counts = perform({'A': dna})
+    new_rows, new_depth, aligned, new_counts = perform(references)
+    assert not any(row['type'] == 'remap-unique' for row in old_counts)
+    assert next(row['count'] for row in new_counts
+                if row['type'] == 'remap-unique') == '2'
     assert len(old_rows) == 2
     assert len(new_rows) == 4
     assert [row['rname'] for row in new_rows] == ['A', 'A', 'B', 'B']
