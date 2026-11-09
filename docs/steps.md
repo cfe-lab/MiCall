@@ -67,8 +67,10 @@ Individual files are described after the list of steps.
     mapping, not newly calculated read consensuses.
   * unstitched_conseq.csv - downloaded - reference sequences used for mapping
     to the unstitched contigs.
-  * unmapped1.fastq - read 1 FASTQ records not accepted in the final mapping.
-    In de novo mode, this includes reads rejected during alignment selection.
+  * unmapped1.fastq - read 1 FASTQ records without a mapped placement.
+    In de novo mode, this includes reads rejected during placement selection.
+    Mappings to excluded-seed contigs still count as mapped, even though
+    these contigs are omitted from the reported alignments.
   * unmapped2.fastq - the corresponding unmapped read 2 FASTQ records. A pair
     can have only one mate in these files when the other mate mapped.
 * `sam2aln`: extract the aligned portion of each read from a CSV SAM file. Also
@@ -199,17 +201,15 @@ Individual files are described after the list of steps.
   * `remap <contig>`, `remap-final <contig>` - mapped read-end counts on each
     contig, including repeated counts for equally best-scoring alternative
     placements. These are **not** distinct-fragment counts.
-  * `remap-unique` - distinct accepted mapped read ends, across all contigs.
-    Written when it differs from the summed `remap-final` counts.
-  * `remap-unique-fragments` - distinct accepted mapped original read pairs,
-    including pairs with only one mapped mate. Written when mapped singleton
-    pairs are present.
-  * `unmapped` - count of read ends classified as unmapped by the existing
-    Bowtie2 mapping accounting. This can differ from the final selection.
-  * `unmapped-after-selection` - read ends with no accepted mapping after
-    de novo selection and rescue; written only if different from `unmapped`.
-    The de novo `unmapped1.fastq` and `unmapped2.fastq` reflect this final
-    classification.
+  * `remap-fragments` - number of distinct original fragments with at
+    least one mapped mate. Always emitted for de novo remapping, including
+    zero. Includes mappings to excluded-seed contigs; those alignments are
+    not written to `remap.csv`.
+  * `unmapped` - number of unmapped read ends. In de novo mode this is
+    calculated after placement selection and mate rescue, matching the
+    final unmapped FASTQs. Mappings to excluded-seed contigs are mapped.
+    In reference-based remapping this retains the remapper's unmapped
+    read-end count.
   * `multimap-capped-pairs` - original read pairs for which Bowtie2 reached
     its per-pair reporting limit; further equal-scoring alignments could be
     missing. This is diagnostic only and does not stop reporting.

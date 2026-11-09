@@ -53,9 +53,9 @@ def test_compact_counters_match_reference_for_random_sparse_dense_positions():
 
 def test_alternative_depths_preserve_fractional_and_zero_reference_positions():
     depths = AlternativeDepths()
-    depths.add('A', '---ACGT', 0.5)
-    depths.add('A', '---A-GT', 0.5)
-    depths.add('B', '-' * 15 + 'AC', 1.0)
+    depths.add_fragment([('A', '---ACGT'), ('A', 'A------')])
+    depths.add_fragment([('A', '---A-GT'), ('A', 'A------')])
+    depths.add_fragment([('B', '-' * 15 + 'AC')])
     output = StringIO()
     depths.write(output, StringIO('region,sequence\nA,ACGTACGTAC\n'
                                   'B,ACGTACGTACGTACGTAC\nC,ACGT\n'))

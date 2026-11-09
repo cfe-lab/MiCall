@@ -20,7 +20,8 @@ import re
 
 from micall.core.denovo_depth import AlternativeDepths
 
-SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
+DEPTH_QCUT = 15  # Q-cutoff used for per-fragment depth and aligned counts
+SAM2ALN_Q_CUTOFFS = [DEPTH_QCUT]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
 SAM_FLAG_IS_FIRST_SEGMENT = 0x40
 
@@ -431,12 +432,13 @@ def multi_mapping_regions(pairs, processor, depths, fragment_counts=None):
     # a base present in multiple alternatives is counted once in the latter.
     for _, group in groupby(pairs, key=lambda pair: pair[0]['qname']):
         processed = [processor.process(pair) for pair in group]
-        accepted = [result for result in processed if result[1]]
+        accepted = [result for result in processed
+                    if DEPTH_QCUT in result[1]]
         if fragment_counts is not None and accepted:
             fragment_counts['unique_aligned_fragments'] += 1
         if depths is not None:
             depths.add_fragment(
-                (result[0], result[1][15]) for result in accepted)
+                (result[0], result[1][DEPTH_QCUT]) for result in accepted)
         covered = {}
         for rname, mseqs, insert_list, failed_list in processed:
             unique_seqs = {}
@@ -506,12 +508,9 @@ def sam2aln(remap_csv,
     pairs = matchmaker(remap_csv)
     depths = AlternativeDepths() if depth_csv is not None else None
     aligned_fragment_counts = Counter() if unique_aligned_csv is not None else None
-    if depths is None and aligned_fragment_counts is None:
-        regions = map(pair_processor.process, pairs)
-    else:
-        regions = multi_mapping_regions(
-            pairs, pair_processor, depths,
-            fragment_counts=aligned_fragment_counts)
+    regions = multi_mapping_regions(
+        pairs, pair_processor, depths,
+        fragment_counts=aligned_fragment_counts)
 
     for rname, mseqs, insert_list, failed_list in regions:
         # noinspection PyTypeChecker

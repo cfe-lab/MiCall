@@ -17,7 +17,7 @@ def test_final_unmapped_fastqs_include_rejected_and_singleton_mates(
     from micall.core import remap
     from micall.tests.test_denovo_multimap import placement
 
-    input_names = ('accepted', 'rejected', 'singleton')
+    input_names = ('accepted', 'excluded', 'rejected', 'singleton')
     originals = {}
     for mate in (1, 2):
         lines = []
@@ -29,24 +29,27 @@ def test_final_unmapped_fastqs_include_rejected_and_singleton_mates(
         (tmp_path / f'R{mate}.fastq').write_text(''.join(lines))
 
     accepted = placement('accepted', 'A')
+    excluded = placement('excluded', 'B-excluded')
     rejected = placement('rejected', 'A')
     rejected[1][7] = '999'  # Inconsistent mate coordinates: reject pair.
     singleton = placement('singleton', 'A', flag1=73, flag2=133)
     singleton[1][2] = '*'
     singleton[1][5] = '*'
-    pairs = (accepted, rejected, singleton)
+    pairs = (accepted, excluded, rejected, singleton)
 
     def fake_mapping(*args, **kwargs):
         samfile = args[4]
         new_counts = args[12]
-        new_counts.update({'A': 5})
+        new_counts.update({'A': 5, 'B-excluded': 2})
         with open(samfile, 'w') as output:
             output.write('@SQ\tSN:A\tLN:50\n')
             for pair in pairs:
                 output.writelines('\t'.join(row) + '\n' for row in pair)
         return 0
 
-    monkeypatch.setattr(remap, 'read_contigs', lambda *_: {'A': 'ACGTA' * 10})
+    monkeypatch.setattr(remap, 'read_contigs',
+                        lambda *_: {'A': 'ACGTA' * 10,
+                                    'B-excluded': 'ACGTA' * 10})
     monkeypatch.setattr(remap, 'find_bowtie2',
                         lambda: (object(), object()))
     monkeypatch.setattr(remap, 'map_to_reference', fake_mapping)
@@ -62,8 +65,8 @@ def test_final_unmapped_fastqs_include_rejected_and_singleton_mates(
         originals['rejected', 2] + originals['singleton', 2])
     summary = {row['type']: int(row['count'])
                for row in csv.DictReader(StringIO(counts.getvalue()))}
-    assert summary['unmapped-after-selection'] == 3
-    assert summary['remap-unique-fragments'] == 2
+    assert summary['unmapped'] == 3
+    assert summary['remap-fragments'] == 3
     assert {r['qname'] for r in
             csv.DictReader(StringIO(remapped.getvalue()))} == {
                 'accepted', 'singleton'}
@@ -107,9 +110,10 @@ def test_denovo_retains_equal_bowtie2_pair_placements(monkeypatch, tmp_path):
 
     old_rows, old_depth, _, old_counts = perform({'A': dna})
     new_rows, new_depth, aligned, new_counts = perform(references)
-    assert not any(row['type'] == 'remap-unique' for row in old_counts)
+    assert next(row['count'] for row in old_counts
+                if row['type'] == 'remap-fragments') == '1'
     assert next(row['count'] for row in new_counts
-                if row['type'] == 'remap-unique') == '2'
+                if row['type'] == 'remap-fragments') == '1'
     assert len(old_rows) == 2
     assert len(new_rows) == 4
     assert [row['rname'] for row in new_rows] == ['A', 'A', 'B', 'B']
@@ -264,8 +268,8 @@ def test_rejected_mapped_pair_counts_as_unmapped_original_ends(
     summary = {row['type']: int(row['count'])
                for row in csv.DictReader(StringIO(counts.getvalue()))}
     assert summary['raw'] == 2
-    assert summary['unmapped'] == 0  # legacy Bowtie2 classification
-    assert summary['unmapped-after-selection'] == 2
+    assert summary['unmapped'] == 2
+    assert summary['remap-fragments'] == 0
     assert len(list(csv.DictReader(StringIO(remapped.getvalue())))) == 0
 
 

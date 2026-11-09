@@ -7,7 +7,7 @@ from itertools import pairwise
 import pytest
 
 from micall.core.denovo_multimap import (
-    denovo_alignment_limit, select_best_pairs)
+    select_best_pairs)
 from micall.core.sam2aln import sam2aln
 
 CSV_HEADER = 'qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n'
@@ -422,14 +422,14 @@ def test_missing_as_tag_does_not_beat_negative_scored_alignment():
     assert len(csv_rows(text)) == 2
 
 
-def test_old_fixtures_with_no_alignment_scores_remain_supported():
+def test_concordant_pairs_without_alignment_scores_are_not_selected():
     first = placement('read1', 'A')
     second = placement('read1', 'B', secondary=True)
     for row in (*first, *second):
         row.pop()
     text, counts = normalize(first, second)
-    assert counts == {'A': 2, 'B': 2}
-    assert len(csv_rows(text)) == 4
+    assert not counts
+    assert not csv_rows(text)
 
 
 def test_maximum_depth_exactly_matches_accepted_q15_consensus_input():
@@ -561,26 +561,6 @@ def test_unequal_bowtie2_discordant_mate_alternatives_are_not_malformed():
     assert diagnostics.get('incomplete_pair_groups', 0) == 0
 
 
-def test_denovo_reporting_limit_is_12_for_every_contig_panel():
-    # Nine HIV9 clones, five HIV5 isolates and three archived HCV contigs.
-    # Their genuine reference lengths add to exactly 61,951 nucleotides.
-    lengths = ([1074]*9 + [9712, 9719, 9535, 9709, 9706] +
-               [1562, 1160, 1182])
-    assert len(lengths) == 17
-    assert sum(lengths) == 61951
-    sequences = {f'contig{i}': 'A' * length
-                 for i, length in enumerate(lengths)}
-    assert denovo_alignment_limit(sequences) == 12
-    assert denovo_alignment_limit({'long': 'C' * 100000}) == 12
-    assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 2048 for i in range(32)}) == 12
-    assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 2049 for i in range(32)}) == 12
-    assert denovo_alignment_limit({
-        'r' + str(i): 'A' * 100 for i in range(33)}) == 12
-    assert denovo_alignment_limit({}) == 12
-
-
 def test_partially_overlapping_alternatives_keep_distant_mate_coverage():
     # R1 overlaps between alternatives, but R2 is moved to a distant locus.
     # The molecule supports the shared R1 reference positions only once and
@@ -631,8 +611,8 @@ def test_every_denovo_search_uses_finite_bowtie_reporting_limit(tmp_path):
     mapper.yield_output.return_value = [
         '\t'.join(row) + '\n' for pair in records for row in pair]
     build = Mock()
-    limit = denovo_alignment_limit({'A': 'A' * 500000})
-    assert limit == 12
+    from micall.core.denovo_multimap import MAX_DENOVO_ALIGNMENTS
+    limit = MAX_DENOVO_ALIGNMENTS
     map_to_reference('R1.fastq', 'R2.fastq', {'A': 'ACGTA'},
                      str(tmp_path / 'ref.fa'), str(tmp_path / 'reads.sam'),
                      StringIO(), StringIO(), mapper, build, 2,
@@ -641,8 +621,3 @@ def test_every_denovo_search_uses_finite_bowtie_reporting_limit(tmp_path):
     args = mapper.yield_output.call_args.args[0]
     assert '-a' not in args
     assert args[args.index('-k') + 1] == '12'
-
-
-def test_denovo_17_reference_large_base_footprint_remains_bounded():
-    assert denovo_alignment_limit({
-        'r' + str(i): 'ACGT' * 1000 for i in range(17)}) == 12

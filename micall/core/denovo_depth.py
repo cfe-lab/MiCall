@@ -72,15 +72,6 @@ class AlternativeDepths:
     def __init__(self):
         self.references = {}
 
-    def add(self, reference, merged_sequence, fraction):
-        bins = self.references.setdefault(reference, _DepthPositions())
-        first_position = len(merged_sequence) - len(
-            merged_sequence.lstrip('-')) + 1
-        for position, base in enumerate(
-                merged_sequence[first_position - 1:], start=first_position):
-            if base in 'ACGT':
-                bins.add(position, fraction)
-
     def add_fragment(self, placements):
         """Add one physical fragment across its alternative Q15 placements.
 

@@ -43,8 +43,9 @@ Each pass selects alignments and calculates its own outputs.
    consistent reference and mate positions, alignment flags, CIGAR strings,
    and read/quality lengths. Unusable candidate pairs are excluded.
 3. The score of a candidate pair is the sum of the two SAM `AS:i:` alignment
-   scores. The selector retains every **distinct valid placement tied for the
-   highest pair score** among the reported candidates. Repeated records for
+   scores. Both mates must have parseable scores for the placement to be
+   considered. The selector retains every **distinct valid placement tied for
+   the highest pair score** among the reported candidates. Repeated records for
    the same placement are deduplicated; distinct placements can overlap.
 4. When there is no valid concordant placement, the primary alignment may
    still provide a mapped singleton or a discordant pair for the
@@ -118,7 +119,7 @@ overlapping bases repeatedly.
 | `multimap_depth.csv` | Q15 per-position `refname,position,max_depth,avg_depth` |
 | `unique_aligned_fragments.csv` | One row containing the number of original fragments with at least one accepted Q15 merged placement |
 | `remap_counts.csv` | Mapping counts and diagnostics, with the distinctions below |
-| `unmapped1.fastq`, `unmapped2.fastq` | Original read ends without an accepted mapping in the final remap |
+| `unmapped1.fastq`, `unmapped2.fastq` | Original read ends without a selected mapped placement, including rejected pairs and unmapped mates |
 | `cascade.csv` | Sample-level counts of distinct fragments through remapping and alignment |
 
 In `multimap_depth.csv`, `position` is one-based. When reference
@@ -131,20 +132,20 @@ The rows of `remap_counts.csv` have different counting units:
 - `remap <contig>` and `remap-final <contig>`: mapped **read ends per
   contig**. Alternatives can appear against multiple contigs, so these
   counts are not distinct-fragment totals.
-- `remap-unique`: distinct mapped **read ends**, emitted when needed
-  to distinguish them from the summed per-contig counts.
-- `remap-unique-fragments`: distinct mapped **fragments**, including
-  those with only one mapped mate; emitted when mapped singletons exist.
-- `unmapped`: Bowtie2's unmapped-read-end accounting.
-- `unmapped-after-selection`: read ends without an accepted mapping
-  after placement selection and mate rescue, emitted when it differs
-  from `unmapped`.
+- `remap-fragments`: **distinct mapped fragments**, including those with
+  only one mapped mate and those mapped solely to an excluded-seed contig.
+  This row is emitted in every de novo remap, including when its count is
+  zero. The cascade uses it directly.
+- `unmapped`: read ends without a mapped placement **after** placement
+  selection and mate rescue. The count matches the two final unmapped
+  FASTQs; mapped ends on excluded-seed contigs are not included.
 
 MiCall tracks mapped mates by original query name when producing the
-final unmapped FASTQs. The de novo cascade uses distinct-fragment
-accounting: one fragment with multiple placements still counts once as
-mapped, and once as aligned if at least one merged Q15 placement was
-accepted.
+final unmapped FASTQs. Alignments on excluded-seed contigs are omitted
+from `remap.csv` and downstream consensus reporting but retain their
+mapped classification for fragment counts and unmapped FASTQs.
+One fragment with multiple placements still counts once as mapped, and
+once as aligned if at least one reported merged Q15 placement was accepted.
 
 ## Alignment limits and diagnostics
 
