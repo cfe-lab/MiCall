@@ -103,7 +103,9 @@ def test_denovo_does_not_admit_a_strictly_worse_snv_alignment(
 @pytest.mark.skipif(not (shutil.which('bowtie2-align-s') and
                          shutil.which('bowtie2-build-s')),
                     reason='Requires Bowtie2 executables')
-@pytest.mark.parametrize('extra_contigs,expect_cap', [(1, False), (9, True)])
+@pytest.mark.parametrize('extra_contigs,expect_cap', [
+    (1, False), (9, False), (25, True),
+])
 def test_denovo_reports_all_small_panel_contigs_and_warns_on_large_cap(
         monkeypatch, tmp_path, caplog, extra_contigs, expect_cap):
     from micall.core import remap

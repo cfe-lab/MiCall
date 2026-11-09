@@ -28,8 +28,7 @@ import Levenshtein
 
 from micall.core import project_config
 from micall.core.denovo_multimap import (
-    ALL_ALIGNMENT_MAX_CONTIGS, DENOVO_BOWTIE_THREADS,
-    MAX_DENOVO_ALIGNMENTS, select_best_pairs)
+    DENOVO_BOWTIE_THREADS, denovo_alignment_limit, select_best_pairs)
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -744,11 +743,10 @@ def map_to_contigs(fastq1,
     if not conseqs:
         unmapped_count = raw_count
     else:
-        # For compact panels use all reported Bowtie2 placements, avoiding
-        # a hard eight-reference cutoff. Large contig panels retain a
-        # bounded search to prevent explosive intermediate SAM files.
-        denovo_limit = (None if len(conseqs) <= ALL_ALIGNMENT_MAX_CONTIGS
-                        else MAX_DENOVO_ALIGNMENTS)
+        # Also allow full reporting for modest >16-reference panels;
+        # the expanded tier has both contig-count and reference-base
+        # resource ceilings. Very large panels remain explicitly capped.
+        denovo_limit = denovo_alignment_limit(conseqs)
         unmapped_count = map_to_reference(fastq1,
                                           fastq2,
                                           conseqs,

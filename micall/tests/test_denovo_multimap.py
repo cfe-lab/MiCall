@@ -6,7 +6,8 @@ from itertools import pairwise
 
 import pytest
 
-from micall.core.denovo_multimap import select_best_pairs
+from micall.core.denovo_multimap import (
+    denovo_alignment_limit, select_best_pairs)
 from micall.core.sam2aln import sam2aln
 
 CSV_HEADER = 'qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\n'
@@ -549,3 +550,29 @@ def test_unequal_bowtie2_discordant_mate_alternatives_are_not_malformed():
     assert [(r['rname'], r['flag']) for r in observed] == [
         ('A', '97'), ('B', '145')]
     assert diagnostics.get('incomplete_pair_groups', 0) == 0
+
+
+def test_denovo_resource_aware_search_limit_handles_17_authentic_contigs():
+    # Nine HIV9 clones, five HIV5 isolates and three archived HCV contigs.
+    # Their genuine reference lengths add to exactly 61,951 nucleotides.
+    lengths = ([1074]*9 + [9712, 9719, 9535, 9709, 9706] +
+               [1562, 1160, 1182])
+    assert len(lengths) == 17
+    assert sum(lengths) == 61951
+    sequences = {f'contig{i}': 'A' * length
+                 for i, length in enumerate(lengths)}
+    assert denovo_alignment_limit(sequences) is None
+    # Preserve the old behavior for a large single contig of any length.
+    assert denovo_alignment_limit({'long': 'C' * 100000}) is None
+    # Expand to 32 moderate contigs only within the reference-base budget.
+    assert denovo_alignment_limit({
+        'r' + str(i): 'A' * 2048 for i in range(32)}) is None
+    assert denovo_alignment_limit({
+        'r' + str(i): 'A' * 2049 for i in range(32)}) == 8
+    assert denovo_alignment_limit({
+        'r' + str(i): 'A' * 100 for i in range(33)}) == 8
+
+
+def test_denovo_17_reference_large_base_footprint_remains_bounded():
+    assert denovo_alignment_limit({
+        'r' + str(i): 'ACGT' * 1000 for i in range(17)}) == 8
