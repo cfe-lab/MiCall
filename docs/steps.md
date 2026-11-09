@@ -50,8 +50,10 @@ Individual files are described after the list of steps.
   * contigs.csv - stitched version of `unstitched_contigs`
   * blast.csv - multiple blast results for each contig
 * `remap`: iteratively use consensus from previous mapping as reference to try
-    and map more reads. See [remap design] for more details. (The denovo version
-    of MiCall just maps once onto the assembled contigs.)
+    and map more reads. See [remap design] for the reference-based pipeline.
+    De novo MiCall maps once against assembled contigs at each of the
+    unstitched and stitched stages; see [de novo multi-mapping] for how
+    ambiguous placements are selected and counted.
   * in - fastq1
   * in - fastq2
   * in - prelim.csv
@@ -139,6 +141,7 @@ Individual files are described after the list of steps.
 
 [fastq_g2p_design]: http://cfe-lab.github.io/MiCall/design/fastq_g2p
 [remap design]: http://cfe-lab.github.io/MiCall/design/remap
+[de novo multi-mapping]: design/denovo_multimap.md
 [resistance design]: http://cfe-lab.github.io/MiCall/design/resistance
 [genome coverage]: genome_coverage.md
 
