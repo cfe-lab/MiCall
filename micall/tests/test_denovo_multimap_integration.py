@@ -223,8 +223,11 @@ def test_sample_process_post_assembly_writes_only_denovo_depth_sidecars(
 
     # Run MiCall's actual process_post_assembly entry point and real
     # sam2aln, while stubbing unrelated graphical and scoring pipelines.
-    for name in ('aln2counts', 'coverage_plot', 'plot_genome_coverage',
-                 'concordance_plot'):
+    coverage_destinations = []
+    monkeypatch.setattr(sample_module, 'coverage_plot',
+                        lambda *args, **kwargs: coverage_destinations.append(
+                            kwargs['coverage_maps_path']))
+    for name in ('aln2counts', 'plot_genome_coverage', 'concordance_plot'):
         monkeypatch.setattr(sample_module, name, lambda *args, **kwargs: None)
     monkeypatch.setattr(sample_module.CascadeReport, 'generate',
                         lambda self: None)
@@ -247,7 +250,13 @@ def test_sample_process_post_assembly_writes_only_denovo_depth_sidecars(
     assert len(aligned.splitlines()) == 3
     expected_depth = tmp_path / f'{prefix}multimap_depth.csv'
     assert expected_depth.exists() is use_denovo
+    expected_originals = tmp_path / f'{prefix}unique_aligned_fragments.csv'
+    assert expected_originals.exists() is use_denovo
+    assert coverage_destinations == [str(tmp_path / f'{prefix}coverage_maps')]
     if use_denovo:
         rows = list(csv.DictReader(StringIO(expected_depth.read_text())))
         assert len(rows) == 10
         assert {r['avg_depth'] for r in rows} == {'0.5'}
+        fragment_rows = list(csv.DictReader(
+            StringIO(expected_originals.read_text())))
+        assert fragment_rows == [{'unique_aligned_fragments': '1'}]

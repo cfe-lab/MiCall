@@ -425,14 +425,18 @@ class TempFileFactory:
 
 
 
-def multi_mapping_regions(pairs, processor, depths):
+def multi_mapping_regions(pairs, processor, depths, fragment_counts=None):
     # Input pairs must be consecutive within each original QNAME. The de novo
     # best-pair selector guarantees this even for secondary placements.
     for _, group in groupby(pairs, key=lambda pair: pair[0]['qname']):
         processed = [(pair, processor.process(pair)) for pair in group]
         accepted = sum(bool(result[1]) for _, result in processed)
+        if fragment_counts is not None and accepted:
+            # This original fragment is aligned ONE time even when its
+            # equally good placements span several contigs or loci.
+            fragment_counts['unique_aligned_fragments'] += 1
         for pair, result in processed:
-            if result[1] and accepted:
+            if result[1] and accepted and depths is not None:
                 depths.add(result[0], result[1][15], 1 / accepted)
             yield result
 
@@ -443,7 +447,8 @@ def sam2aln(remap_csv,
             failed_csv=None,
             clipping_csv=None,
             depth_csv=None,
-            depth_reference_csv=None):
+            depth_reference_csv=None,
+            unique_aligned_csv=None):
     if insert_csv is None:
         insert_writer = None
     else:
@@ -478,10 +483,13 @@ def sam2aln(remap_csv,
     # noinspection PyTypeChecker
     pairs = matchmaker(remap_csv)
     depths = AlternativeDepths() if depth_csv is not None else None
-    if depths is None:
+    aligned_fragment_counts = Counter() if unique_aligned_csv is not None else None
+    if depths is None and aligned_fragment_counts is None:
         regions = map(pair_processor.process, pairs)
     else:
-        regions = multi_mapping_regions(pairs, pair_processor, depths)
+        regions = multi_mapping_regions(
+            pairs, pair_processor, depths,
+            fragment_counts=aligned_fragment_counts)
 
     for rname, mseqs, insert_list, failed_list in regions:
         # noinspection PyTypeChecker
@@ -509,6 +517,15 @@ def sam2aln(remap_csv,
         pair_processor.write_clipping(clipping_writer)
     if depths is not None:
         depths.write(depth_csv, depth_reference_csv)
+    if unique_aligned_csv is not None:
+        writer = DictWriter(
+            unique_aligned_csv, ['unique_aligned_fragments'],
+            lineterminator=os.linesep)
+        writer.writeheader()
+        assert aligned_fragment_counts is not None
+        writer.writerow({
+            'unique_aligned_fragments':
+                aligned_fragment_counts['unique_aligned_fragments']})
 
     # write out merged sequences to file
     aligned_writer = create_aligned_writer(aligned_csv)

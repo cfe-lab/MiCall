@@ -241,6 +241,42 @@ V3LOOP,40,1
                                   actual_clipping_csv.getvalue())
 
 
+class DenovoUniqueAlignedFragmentsTest(unittest.TestCase):
+    def test_alternative_placements_only_count_original_fragment_once(self):
+        # A physically distinct read pair is counted once regardless of
+        # compatible contig alternatives, and a failed pair counts zero.
+        lines = [
+            'qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual',
+        ]
+        sequence = 'ACGT' * 8
+        quality = 'I' * len(sequence)
+        for qname, refs in (('a', ('A', 'B', 'C')),
+                            ('b', ('B',)),
+                            ('c', ('A',))):
+            for ref in refs:
+                for flag in (99, 147):
+                    q = '!' * len(sequence) if qname == 'c' else quality
+                    lines.append(
+                        f'{qname},{flag},{ref},1,30,32M,=,1,0,'
+                        f'{sequence},{q}')
+        remap = StringIO('\n'.join(lines)+'\n')
+        aligned = StringIO()
+        unique = StringIO()
+        sam2aln(remap, aligned, unique_aligned_csv=unique)
+        self.assertEqual('unique_aligned_fragments\n2\n',
+                         unique.getvalue())
+        self.assertEqual(5, len(aligned.getvalue().splitlines()))
+
+    def test_no_original_pairs_still_emits_explicit_zero(self):
+        remap = StringIO(
+            'qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual\\n')
+        aligned = StringIO()
+        unique = StringIO()
+        sam2aln(remap, aligned, unique_aligned_csv=unique)
+        self.assertEqual('unique_aligned_fragments\n0\n',
+                         unique.getvalue())
+
+
 class CigarTest(unittest.TestCase):
     def setUp(self):
         super(CigarTest, self).setUp()

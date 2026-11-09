@@ -159,3 +159,64 @@ unmapped,2
             'demultiplexed,v3loop,g2p,prelim_map,remap,aligned\n'
             '2,0,0,0,1,0\n',
             report.cascade_csv.getvalue())
+
+
+
+def test_denovo_cascade_uses_explicit_unique_fragments_with_mapped_singletons():
+    from io import StringIO
+    from micall.core.cascade_report import CascadeReport
+
+    report = CascadeReport(StringIO())
+    report.remap_counts_csv = StringIO(
+        'type,count\n'
+        'raw,8\n'
+        'remap-final A,5\n'
+        'remap-final B,2\n'
+        'remap-unique,4\n'
+        'remap-unique-fragments,3\n'
+        'unmapped,4\n')
+    report.generate()
+    assert report.counts['demultiplexed'] == 4
+    assert report.counts['remap'] == 3
+
+def test_unique_aligned_fragment_sidecar_prevents_alt_placement_inflation():
+    from io import StringIO
+    report = CascadeReport(StringIO())
+    report.remap_counts_csv = StringIO(
+        'type,count\n'
+        'raw,8\n'
+        'remap-final A,10\n'
+        'remap-unique,6\n'
+        'remap-unique-fragments,4\n')
+    report.aligned_csv = StringIO('count\n1\n4\n7\n')
+    report.unique_aligned_csv = StringIO(
+        'unique_aligned_fragments\n3\n')
+    report.generate()
+    assert report.counts['demultiplexed'] == 4
+    assert report.counts['remap'] == 4
+    assert report.counts['aligned'] == 3
+
+def test_unique_aligned_sidecar_rejects_impossible_clinical_qc_counts():
+    from io import StringIO
+    import pytest
+
+    report = CascadeReport(StringIO())
+    report.remap_counts_csv = StringIO(
+        'type,count\nraw,8\nremap-unique-fragments,3\n')
+    report.unique_aligned_csv = StringIO(
+        'unique_aligned_fragments\n4\n')
+    with pytest.raises(ValueError, match='exceed mapped'):
+        report.generate()
+
+
+def test_unique_aligned_sidecar_rejects_duplicate_clinical_report_rows():
+    from io import StringIO
+    import pytest
+
+    report = CascadeReport(StringIO())
+    report.remap_counts_csv = StringIO(
+        'type,count\nraw,8\nremap-unique-fragments,3\n')
+    report.unique_aligned_csv = StringIO(
+        'unique_aligned_fragments\n2\n2\n')
+    with pytest.raises(ValueError, match='one data row'):
+        report.generate()

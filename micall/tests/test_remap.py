@@ -1568,3 +1568,29 @@ def test_write_reported_pairs_requires_both_mates_not_duplicate_first_mate():
         ['valid', '99', 'A'], ['valid', '147', 'B'],
     ]
     assert write_reported_pairs(iter(rows), Mock()) == 3
+
+
+
+def test_reported_denovo_fragments_count_singletons_as_whole_physical_pairs():
+    from collections import Counter
+    from unittest.mock import Mock
+    from micall.core.remap import write_reported_pairs
+
+    # One fully paired fragment has alternatives on two references.
+    # Two others have only one mapped mate each. None are extra molecules.
+    placements = [
+        ['paired', '99', 'A'], ['paired', '147', 'A'],
+        ['paired', '355', 'B'], ['paired', '403', 'B'],
+        ['singleton_R1', '73', 'A'], ['singleton_R1', '133', '*'],
+        ['singleton_R2', '69', '*'], ['singleton_R2', '137', 'A'],
+        ['excluded', '99', 'A-excluded'], ['excluded', '147', 'A-excluded'],
+    ]
+    fragments = Counter()
+    emitted = Mock()
+    mapped_mates = write_reported_pairs(
+        placements, emitted, fragment_counts=fragments)
+    assert mapped_mates == 4
+    assert fragments['two_mates'] == 1
+    assert fragments['one_mate'] == 2
+    assert fragments['two_mates'] + fragments['one_mate'] == 3
+    assert emitted.writerow.call_count == 8

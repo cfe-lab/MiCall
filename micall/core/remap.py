@@ -807,13 +807,15 @@ def map_to_contigs(fastq1,
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
     unique_mapped_mates = 0
+    mapped_fragment_counts = Counter()
     if new_counts:
         splitter = MixedReferenceSplitter(work_path)
         split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile) as f:
             unique_mapped_mates += write_reported_pairs(
-                splitter.split(f), remap_writer)
+                splitter.split(f), remap_writer,
+                fragment_counts=mapped_fragment_counts)
         for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
             unmapped_count += map_to_reference(split_file1.name,
@@ -834,7 +836,8 @@ def map_to_contigs(fastq1,
             new_counts.update(split_counts)
             with open(samfile, 'r') as f:
                 unique_mapped_mates += write_reported_pairs(
-                    splitter.walk(f), remap_writer)
+                    splitter.walk(f), remap_writer,
+                    fragment_counts=mapped_fragment_counts)
 
     write_contig_sequences(conseqs, remap_conseq_csv)
     write_remap_counts(remap_counts_writer,
@@ -846,6 +849,14 @@ def map_to_contigs(fastq1,
         # cascade accounting, not consensus or PCR duplicate removal.
         remap_counts_writer.writerow({
             'type': 'remap-unique', 'count': unique_mapped_mates})
+    if mapped_fragment_counts['one_mate']:
+        # A mapped singleton is ONE original read pair, not half a fragment.
+        # Keep mapped read-END accounting separately for historical cascade
+        # consumers, while providing the exact physical fragment count.
+        remap_counts_writer.writerow({
+            'type': 'remap-unique-fragments',
+            'count': (mapped_fragment_counts['two_mates'] +
+                      mapped_fragment_counts['one_mate'])})
 
     # The Bowtie2 stream's original unmapped count does not include
     # fragments rejected by the de novo integrity selector, missing
@@ -884,8 +895,8 @@ def write_contig_sequences(conseqs, remap_conseq_csv):
                                  'sequence': contig_seq})
 
 
-def write_reported_pairs(rows, remap_writer):
-    """Write remap rows and count unique mapped read ends in O(1) memory.
+def write_reported_pairs(rows, remap_writer, fragment_counts=None):
+    """Write remap rows and count mapped read ends and fragments in O(1) memory.
 
     The SAM stream from Bowtie2 (and each restricted rescue run) is grouped
     by QNAME, with mate records adjacent. The initial and rescue streams
@@ -906,6 +917,11 @@ def write_reported_pairs(rows, remap_writer):
                         mapped_mates |= 2
                 write_remap_row(remap_writer, fields)
         unique_mapped_mates += bool(mapped_mates & 1) + bool(mapped_mates & 2)
+        if fragment_counts is not None:
+            if mapped_mates == 3:
+                fragment_counts['two_mates'] += 1
+            elif mapped_mates:
+                fragment_counts['one_mate'] += 1
     return unique_mapped_mates
 
 
