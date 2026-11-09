@@ -32,6 +32,7 @@ class CascadeReport:
         :param cascade_csv: an open CSV file to write to
         """
         self.g2p_summary_csv = self.remap_counts_csv = self.aligned_csv = None
+        self.unique_aligned_csv = None
         self.counts = None
         self.cascade_csv = cascade_csv
 
@@ -81,11 +82,32 @@ class CascadeReport:
             elif row_type.startswith('remap-final '):
                 self.counts['remap'] += count
             elif row_type == 'remap-unique':
-                # In denovo multi-mapping the per-contig remap counts are
-                # hypotheses; only unique original pairs belong in cascade.
+                # This counts unique mapped READ ENDS, not necessarily
+                # complete paired fragments. The legacy integer-halving
+                # estimate is retained only for older reports.
                 self.counts['remap'] = count
+            elif row_type == 'remap-unique-fragments':
+                # The new de novo writer reports unique physical original
+                # fragments (including a fragment with just one mapped
+                # mate). Never divide this already-paired quantity by two.
+                self.counts['remap'] = int(row['count'])
 
     def read_aligned(self):
+        if self.unique_aligned_csv is not None:
+            # Each accepted alternative placement appears separately in
+            # aligned.csv. Do not count one original physical read pair
+            # multiple times in MiCall's clinical cascade QC.
+            reader = DictReader(self.unique_aligned_csv)
+            record = next(reader, None)
+            if record is None or next(reader, None) is not None:
+                raise ValueError(
+                    'Unique aligned fragment report must have one data row')
+            count = int(record['unique_aligned_fragments'])
+            if not 0 <= count <= self.counts['remap']:
+                raise ValueError(
+                    'Aligned original fragments cannot exceed mapped fragments')
+            self.counts['aligned'] = count
+            return
         if self.aligned_csv is None:
             return
 

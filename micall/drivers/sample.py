@@ -264,6 +264,10 @@ class Sample:
         depth_path = (self.paths.get('multimap_depth_csv')
                       or os.path.join(self.get_scratch_path(),
                                       'multimap_depth.csv'))
+        unique_aligned_path = (
+            self.paths.get('unique_aligned_fragments_csv')
+            or os.path.join(self.get_scratch_path(),
+                            'unique_aligned_fragments.csv'))
         with open(with_prefix(self.remap_csv)) as remap_csv, \
                 open(with_prefix(self.aligned_csv), 'w') as aligned_csv, \
                 open(with_prefix(self.conseq_ins_csv), 'w') as conseq_ins_csv, \
@@ -272,11 +276,14 @@ class Sample:
                 (open(with_prefix(depth_path), 'w')
                  if use_denovo else nullcontext()) as depth_csv, \
                 (open(with_prefix(self.remap_conseq_csv))
-                 if use_denovo else nullcontext()) as depth_reference_csv:
+                 if use_denovo else nullcontext()) as depth_reference_csv, \
+                (open(with_prefix(unique_aligned_path), 'w')
+                 if use_denovo else nullcontext()) as unique_aligned_csv:
 
             optional_depths = (
                 {'depth_csv': depth_csv,
-                 'depth_reference_csv': depth_reference_csv}
+                 'depth_reference_csv': depth_reference_csv,
+                 'unique_aligned_csv': unique_aligned_csv}
                 if use_denovo else {})
             sam2aln(remap_csv,
                     aligned_csv,
@@ -342,12 +349,12 @@ class Sample:
                        concordance_seed_csv=opened_files['concordance_seed_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
-        os.makedirs(with_prefix(self.coverage_maps))
+        os.makedirs(with_prefix(self.coverage_maps), exist_ok=True)
         with open(with_prefix(self.amino_csv)) as amino_csv, \
              open(with_prefix(self.coverage_scores_csv), 'w') as coverage_scores_csv:
             coverage_plot(amino_csv,
                           coverage_scores_csv,
-                          coverage_maps_path=self.coverage_maps,
+                          coverage_maps_path=with_prefix(self.coverage_maps),
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
@@ -373,11 +380,14 @@ class Sample:
         with open(self.g2p_summary_csv) as g2p_summary_csv, \
              open(with_prefix(self.remap_counts_csv)) as remap_counts_csv, \
              open(with_prefix(self.aligned_csv)) as aligned_csv, \
+             (open(with_prefix(unique_aligned_path))
+              if use_denovo else nullcontext()) as unique_aligned_csv, \
              open(with_prefix(self.cascade_csv), 'w') as cascade_csv:
             cascade_report = CascadeReport(cascade_csv)
             cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv
+            cascade_report.unique_aligned_csv = unique_aligned_csv
             cascade_report.generate()
 
     def load_sample_info(self) -> dict[str, str]:
