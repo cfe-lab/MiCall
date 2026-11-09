@@ -788,13 +788,13 @@ def map_to_contigs(fastq1,
     # generate SAM CSV output
     remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
     remap_writer.writeheader()
-    unique_pair_count = 0
+    unique_mapped_mates = 0
     if new_counts:
         splitter = MixedReferenceSplitter(work_path)
         split_counts = Counter()
         # At least one read was mapped, so samfile has relevant data
         with open(samfile) as f:
-            unique_pair_count += write_reported_pairs(
+            unique_mapped_mates += write_reported_pairs(
                 splitter.split(f), remap_writer)
         for rname, (split_file1, split_file2) in splitter.splits.items():
             refseqs = {rname: conseqs[rname]}
@@ -815,19 +815,19 @@ def map_to_contigs(fastq1,
                                                callback)
             new_counts.update(split_counts)
             with open(samfile, 'r') as f:
-                unique_pair_count += write_reported_pairs(
+                unique_mapped_mates += write_reported_pairs(
                     splitter.walk(f), remap_writer)
 
     write_contig_sequences(conseqs, remap_conseq_csv)
     write_remap_counts(remap_counts_writer,
                        new_counts,
                        title='remap-final')
-    if unique_pair_count * 2 != sum(new_counts.values()):
-        # Per-contig counts intentionally repeat multi-mapped fragments. This
-        # sequenced-pair count is for cascade accounting, not consensus.
-        # This does not deduplicate PCR or optical duplicates.
+    if unique_mapped_mates != sum(new_counts.values()):
+        # Count each sequenced mapped read end once, whether the fragment is
+        # fully paired (2) or has only one mapped mate (1). This is for
+        # cascade accounting, not consensus or PCR duplicate removal.
         remap_counts_writer.writerow({
-            'type': 'remap-unique', 'count': unique_pair_count * 2})
+            'type': 'remap-unique', 'count': unique_mapped_mates})
 
     # report number of unmapped reads
     remap_counts_writer.writerow({'type': 'unmapped',
@@ -853,7 +853,7 @@ def write_contig_sequences(conseqs, remap_conseq_csv):
 
 
 def write_reported_pairs(rows, remap_writer):
-    """Write remap rows and count sequenced pairs with O(1) extra memory.
+    """Write remap rows and count unique mapped read ends in O(1) memory.
 
     The SAM stream from Bowtie2 (and each restricted rescue run) is grouped
     by QNAME, with mate records adjacent. The initial and rescue streams
@@ -861,7 +861,7 @@ def write_reported_pairs(rows, remap_writer):
     proper paired placement was accepted. Each QNAME is therefore counted
     once within its stream, regardless of the number of contig hypotheses.
     """
-    unique_pairs = 0
+    unique_mapped_mates = 0
     for _, group in groupby(rows, key=lambda fields: fields[0]):
         mapped_mates = 0
         for fields in group:
@@ -873,8 +873,8 @@ def write_reported_pairs(rows, remap_writer):
                     if flags & 0x80:  # second segment in the pair
                         mapped_mates |= 2
                 write_remap_row(remap_writer, fields)
-        unique_pairs += mapped_mates == 3
-    return unique_pairs
+        unique_mapped_mates += bool(mapped_mates & 1) + bool(mapped_mates & 2)
+    return unique_mapped_mates
 
 
 def write_remap_row(remap_writer, fields):
