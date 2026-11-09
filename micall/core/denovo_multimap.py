@@ -167,6 +167,9 @@ def select_best_pairs(source, destination, limit=MAX_DENOVO_ALIGNMENTS,
 
     for _, group in groupby(records(), key=lambda row: row[0]):
         rows = list(group)
+        if diagnostics is not None and len(rows) % 2:
+            diagnostics['incomplete_pair_groups'] = (
+                diagnostics.get('incomplete_pair_groups', 0) + 1)
         if diagnostics is not None and len(rows) // 2 >= limit:
             diagnostics['at_report_limit'] = (
                 diagnostics.get('at_report_limit', 0) + 1)

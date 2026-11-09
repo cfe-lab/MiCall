@@ -18,6 +18,8 @@ import numpy as np
 import os
 import re
 
+from micall.core.denovo_depth import AlternativeDepths
+
 SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
 SAM_FLAG_IS_FIRST_SEGMENT = 0x40
@@ -421,48 +423,6 @@ class TempFileFactory:
         writer.line_count = 0
         return writer
 
-
-
-class AlternativeDepths:
-    """Per-reference position coverage for de novo alternative placements.
-
-    Max counts every compatible original pair on each reference. Avg assigns
-    each original pair total weight one, split across accepted placements.
-    These are hypotheses, *not* independent molecules across references.
-    """
-    def __init__(self):
-        self.maximum = defaultdict(Counter)
-        self.average = defaultdict(Counter)
-
-    def add(self, reference, merged_sequence, fraction):
-        # Consume precisely the accepted Q15 sequence that sam2aln writes
-        # to aligned.csv. Re-merging the SAM records here is redundant and
-        # risks making the depth report disagree with actual consensus input.
-        sequence = merged_sequence.lstrip('-')
-        first_position = len(merged_sequence) - len(sequence) + 1
-        for position, base in enumerate(sequence, start=first_position):
-            if base in 'ACGT':
-                self.maximum[reference][position] += 1
-                self.average[reference][position] += fraction
-
-    def write(self, output, reference_csv=None):
-        writer = DictWriter(output, ['refname', 'position', 'max_depth',
-                                     'avg_depth'], lineterminator=os.linesep)
-        writer.writeheader()
-        lengths = {}
-        if reference_csv is not None:
-            lengths = {row['region']: len(row['sequence'])
-                       for row in DictReader(reference_csv)}
-        for reference in sorted(set(self.maximum) | set(lengths)):
-            positions = (range(1, lengths[reference] + 1)
-                         if reference in lengths
-                         else sorted(self.maximum[reference]))
-            for position in positions:
-                writer.writerow({
-                    'refname': reference, 'position': position,
-                    'max_depth': self.maximum[reference][position],
-                    'avg_depth': format(
-                        self.average[reference][position], '.12g')})
 
 
 def multi_mapping_regions(pairs, processor, depths):
