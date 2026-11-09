@@ -80,6 +80,10 @@ class CascadeReport:
                 self.counts['prelim_map'] += count
             elif row_type.startswith('remap-final '):
                 self.counts['remap'] += count
+            elif row_type == 'remap-unique':
+                # In denovo multi-mapping the per-contig remap counts are
+                # hypotheses; only unique original pairs belong in cascade.
+                self.counts['remap'] = count
 
     def read_aligned(self):
         if self.aligned_csv is None:

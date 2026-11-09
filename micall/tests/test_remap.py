@@ -1285,6 +1285,7 @@ remap 1-R1,6,,,,
 remap 2-R2-excluded,2,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-excluded,2,,,,
+remap-unique,6,,,,
 unmapped,2,,,,
 """
         expected_remap_csv = """\
