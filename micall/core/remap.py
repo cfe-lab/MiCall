@@ -28,6 +28,7 @@ import Levenshtein
 
 from micall.core import project_config
 from micall.core.denovo_multimap import (
+    ALL_ALIGNMENT_MAX_CONTIGS, DENOVO_BOWTIE_THREADS,
     MAX_DENOVO_ALIGNMENTS, select_best_pairs)
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
@@ -743,6 +744,11 @@ def map_to_contigs(fastq1,
     if not conseqs:
         unmapped_count = raw_count
     else:
+        # For compact panels use all reported Bowtie2 placements, avoiding
+        # a hard eight-reference cutoff. Large contig panels retain a
+        # bounded search to prevent explosive intermediate SAM files.
+        denovo_limit = (None if len(conseqs) <= ALL_ALIGNMENT_MAX_CONTIGS
+                        else MAX_DENOVO_ALIGNMENTS)
         unmapped_count = map_to_reference(fastq1,
                                           fastq2,
                                           conseqs,
@@ -759,18 +765,23 @@ def map_to_contigs(fastq1,
                                           stderr,
                                           callback,
                                           debug_file_prefix=debug_file_prefix,
-                                          max_alignments=MAX_DENOVO_ALIGNMENTS)
+                                          max_alignments=denovo_limit,
+                                          threads=DENOVO_BOWTIE_THREADS)
         best_samfile = samfile + '.best'
         diagnostics = Counter()
         with open(samfile) as source, open(best_samfile, 'w') as target:
             accepted_counts = select_best_pairs(
-                source, target, diagnostics=diagnostics)
+                source, target, limit=denovo_limit,
+                diagnostics=diagnostics)
         os.replace(best_samfile, samfile)
         if diagnostics['at_report_limit']:
             logger.warning(
                 "%d pairs reached the Bowtie2 -k %d reporting limit; "
                 "additional equivalent placements may be missing.",
-                diagnostics['at_report_limit'], MAX_DENOVO_ALIGNMENTS)
+                diagnostics['at_report_limit'], denovo_limit)
+            remap_counts_writer.writerow({
+                'type': 'multimap-capped-pairs',
+                'count': diagnostics['at_report_limit']})
         if diagnostics['discarded_mapped_pairs']:
             logger.warning(
                 "Excluded %d mapped pairs with no usable or safe "
@@ -781,6 +792,15 @@ def map_to_contigs(fastq1,
                 "%d Bowtie2 QNAME groups contained an odd number of "
                 "SAM records; unpaired trailing records were discarded.",
                 diagnostics['incomplete_pair_groups'])
+        if diagnostics['oversized_pair_groups']:
+            logger.warning(
+                "%d read pairs exceeded the de novo per-pair SAM record "
+                "memory limit; their alignments were discarded rather than "
+                "truncated into misleading mapping support.",
+                diagnostics['oversized_pair_groups'])
+            remap_counts_writer.writerow({
+                'type': 'multimap-oversized-pairs',
+                'count': diagnostics['oversized_pair_groups']})
         new_counts.clear()
         new_counts.update(accepted_counts)
         write_remap_counts(remap_counts_writer, new_counts, title='remap')
@@ -829,9 +849,23 @@ def map_to_contigs(fastq1,
         remap_counts_writer.writerow({
             'type': 'remap-unique', 'count': unique_mapped_mates})
 
-    # report number of unmapped reads
+    # The Bowtie2 stream's original unmapped count does not include
+    # fragments rejected by the de novo integrity selector, missing
+    # candidates at a saturated search bound, or mapped ends excluded
+    # from the final contig-specific remap output. Use distinct accepted
+    # read ends to reconcile final mapping counts with raw input.
+    if unique_mapped_mates > raw_count:
+        raise ValueError('Distinct mapped read-end count exceeds raw input')
+    final_unmapped_count = raw_count - unique_mapped_mates
+    if final_unmapped_count != unmapped_count:
+        # Keep the longstanding Bowtie2-unmapped field stable for MiCall
+        # consumers. Explicitly expose the newly correct end-to-end
+        # unmapped count after candidate selection and rescue.
+        remap_counts_writer.writerow({
+            'type': 'unmapped-after-selection',
+            'count': final_unmapped_count})
     remap_counts_writer.writerow({'type': 'unmapped',
-                                      'count': unmapped_count})
+                                  'count': unmapped_count})
 
 
 def find_bowtie2():
@@ -1034,7 +1068,8 @@ def map_to_reference(fastq1,
                      stderr,
                      callback,
                      debug_file_prefix=None,
-                     max_alignments=1):
+                     max_alignments=1,
+                     threads=1):
     """ Map a pair of FASTQ files to a set of reference sequences.
 
     @param fastq1: FASTQ file with the forward reads
@@ -1083,8 +1118,14 @@ def map_to_reference(fastq1,
                    '--no-hd',  # no header lines (start with @)
                    '--local',
                    '-X', '1200',
-                   '-p', '1']
-    if max_alignments > 1:
+                   '-p', str(threads)]
+    if threads > 1:
+        # Preserve consecutive QNAME groups required by both SAM pairing
+        # and per-fragment fractional-depth accounting.
+        bowtie_args.append('--reorder')
+    if max_alignments is None:
+        bowtie_args.append('-a')
+    elif max_alignments > 1:
         bowtie_args.extend(['-k', str(max_alignments)])
 
     new_counts.clear()
@@ -1104,11 +1145,11 @@ def map_to_reference(fastq1,
         for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
             items = line.split('\t')
             qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
-            if max_alignments > 1 and qname != previous_qname:
+            if max_alignments != 1 and qname != previous_qname:
                 original_reads_processed += 2
                 previous_qname = qname
             if callback and i % 1000 == 0:
-                progress = (original_reads_processed if max_alignments > 1
+                progress = (original_reads_processed if max_alignments != 1
                             else i)
                 callback(progress=min(progress, raw_count))
             f.write(line)
