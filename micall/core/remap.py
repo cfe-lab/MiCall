@@ -756,9 +756,8 @@ def map_to_contigs(fastq1,
         if not conseqs:
             unmapped_count = raw_count
         else:
-            # Allow up to 64 reported placements for small/moderate panels,
-            # but always cap Bowtie2 generation before writing SAM records.
-            # Large panels use a tighter limit and fail closed if saturated.
+            # Request up to 12 paired placements on every de novo panel.
+            # Saturation is diagnostic and never blocks downstream reporting.
             denovo_limit = denovo_alignment_limit(conseqs)
             unmapped_count = map_to_reference(fastq1,
                                               fastq2,
@@ -788,7 +787,7 @@ def map_to_contigs(fastq1,
             if diagnostics['at_report_limit']:
                 logger.warning(
                     "%d pairs reached the Bowtie2 -k %d reporting limit; "
-                    "additional equivalent placements may be missing.",
+                    "additional placements may have been omitted.",
                     diagnostics['at_report_limit'], denovo_limit)
                 remap_counts_writer.writerow({
                     'type': 'multimap-capped-pairs',

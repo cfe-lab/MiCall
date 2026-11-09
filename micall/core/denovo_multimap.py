@@ -6,69 +6,17 @@ molecule.  The downstream max-depth consensus intentionally includes each
 compatible *placement* as an alternative hypothesis.
 """
 from collections import Counter
-from csv import DictReader
 from itertools import groupby
 import re
 
-# Every search is bounded at Bowtie2, not merely at our downstream parser:
-# -a can otherwise produce huge SAM files for repetitive reads, even when
-# there is just one contig.
-MAX_DENOVO_ALIGNMENTS = 8
-SMALL_PANEL_MAX_ALIGNMENTS = 64
-SMALL_PANEL_MAX_CONTIGS = 16
-EXPANDED_PANEL_MAX_CONTIGS = 32
-EXPANDED_PANEL_MAX_BASES = 65536
+# Limit Bowtie2 SAM output per original fragment. Saturation is diagnostic:
+# earlier de novo remapping used -k 1 without requiring exhaustive search.
+MAX_DENOVO_ALIGNMENTS = 12
 DENOVO_BOWTIE_THREADS = 4
 
 
-def require_complete_denovo_mapping_for_clinical_report(counts_file):
-    """Refuse clinical reporting when alternatives are known incomplete.
-
-    At a finite -k reporting limit, additional equally good placements
-    may be absent. Oversized QNAME groups are similarly discarded. Such
-    unknown depth may not become an unqualified clinical consensus.
-    Capping does not prove omissions, and passing does not guarantee
-    exhaustive Bowtie2 heuristic search.
-    """
-    reader = DictReader(counts_file)
-    if not reader.fieldnames or not {'type', 'count'} <= set(reader.fieldnames):
-        raise ValueError('Missing de novo remap QC type/count headers')
-    failures: Counter[str] = Counter()
-    raw_present = False
-    for row in reader:
-        kind = row['type']
-        if kind == 'raw':
-            raw_present = True
-        if kind in ('multimap-capped-pairs', 'multimap-oversized-pairs'):
-            n = int(row['count'])
-            if n < 0:
-                raise ValueError('Negative de novo remap QC count')
-            failures[kind] += n
-    if not raw_present:
-        raise ValueError('De novo remap QC has no raw input count')
-    if any(failures.values()):
-        details = ', '.join(f'{kind}={n}' for kind, n in failures.items() if n)
-        raise RuntimeError(
-            'Clinical de novo consensus withheld: incomplete alignment '
-            'search or discarded large read-pair groups (' + details
-            + '). Do not interpret partial max depth as genotype evidence.')
-
-
 def denovo_alignment_limit(contigs):
-    """Return a finite Bowtie2 -k bound for all de novo panels.
-
-    Retain at least one placement per contig for panels up to 32 references,
-    while bounding the number of generated SAM records for repetitive reads.
-    A saturated search is explicitly marked incomplete and clinical reporting
-    is withheld rather than silently treating -k results as exhaustive.
-    """
-    count = len(contigs)
-    if count <= SMALL_PANEL_MAX_CONTIGS:
-        return SMALL_PANEL_MAX_ALIGNMENTS
-    if (count <= EXPANDED_PANEL_MAX_CONTIGS
-            and sum(map(len, contigs.values())) <=
-            EXPANDED_PANEL_MAX_BASES):
-        return SMALL_PANEL_MAX_ALIGNMENTS
+    """Return the fixed de novo Bowtie2 reporting limit for any contig panel."""
     return MAX_DENOVO_ALIGNMENTS
 
 

@@ -162,9 +162,9 @@ def test_denovo_does_not_admit_a_strictly_worse_snv_alignment(
                          shutil.which('bowtie2-build-s')),
                     reason='Requires Bowtie2 executables')
 @pytest.mark.parametrize('extra_contigs,expect_cap', [
-    (1, False), (9, False), (25, True),
+    (3, False), (4, True), (5, True), (25, True),
 ])
-def test_denovo_reports_all_small_panel_contigs_and_warns_on_large_cap(
+def test_denovo_reports_up_to_12_contigs_and_warns_on_saturation(
         monkeypatch, tmp_path, caplog, extra_contigs, expect_cap):
     from micall.core import remap
     from micall.core.denovo_multimap import MAX_DENOVO_ALIGNMENTS
@@ -172,7 +172,7 @@ def test_denovo_reports_all_small_panel_contigs_and_warns_on_large_cap(
     rng = random.Random(1456)
     dna = ''.join(rng.choices('ACGT', k=330))
     references = {f'contig{i}': dna
-                  for i in range(MAX_DENOVO_ALIGNMENTS + extra_contigs)}
+                  for i in range(MAX_DENOVO_ALIGNMENTS - 4 + extra_contigs)}
     first = dna[25:125]
     second = reverse_and_complement(dna[170:270])
     for name, read in (('R1', first), ('R2', second)):
