@@ -11,12 +11,17 @@ from typing import Callable, Optional
 from collections import Counter, defaultdict
 import csv
 from csv import DictReader, DictWriter
+from contextlib import ExitStack, closing
 from functools import partial
+import gzip as gzip_lib
+from itertools import groupby, islice
 from logging import getLogger
 import os
 import re
 import shutil
+import sqlite3
 import sys
+from tempfile import TemporaryDirectory
 
 # noinspection PyUnresolvedReferences
 from pathlib import Path
@@ -26,6 +31,8 @@ from gotoh import align_it
 import Levenshtein
 
 from micall.core import project_config
+from micall.core.denovo_multimap import (
+    DENOVO_BOWTIE_THREADS, MAX_DENOVO_ALIGNMENTS, select_best_pairs)
 from micall.core.project_config import ProjectConfig
 from micall.core.sam2aln import apply_cigar, merge_pairs, merge_inserts
 from micall.core.prelim_map import READ_GAP_OPEN, READ_GAP_EXTEND, REF_GAP_OPEN, \
@@ -734,70 +741,141 @@ def map_to_contigs(fastq1,
 
     conseqs = read_contigs(contigs_csv, excluded_seeds)
 
-    # start remapping loop
-    new_counts = Counter()
+    # Track mapped ends on disk so final unmapped FASTQs can be reconciled
+    # after both candidate selection and the discordant-mate rescue.
+    with ExitStack() as stack:
+        tempdir = stack.enter_context(TemporaryDirectory(dir=work_path or None))
+        mapped_mates_db = stack.enter_context(closing(sqlite3.connect(
+            os.path.join(tempdir, 'mapped_mates.sqlite3'))))
+        mapped_mates_db.execute(
+            'CREATE TABLE mapped_mates (qname TEXT PRIMARY KEY, mask INTEGER)')
+        bowtie_discard = stack.enter_context(open(os.devnull, 'w'))
+        # start remapping loop
+        new_counts = Counter()
+        diagnostics = Counter()
 
-    if not conseqs:
-        unmapped_count = raw_count
-    else:
-        unmapped_count = map_to_reference(fastq1,
-                                          fastq2,
-                                          conseqs,
-                                          reffile,
-                                          samfile,
-                                          unmapped1,
-                                          unmapped2,
-                                          bowtie2,
-                                          bowtie2_build,
-                                          raw_count,
-                                          rdgopen,
-                                          rfgopen,
-                                          new_counts,
-                                          stderr,
-                                          callback,
-                                          debug_file_prefix=debug_file_prefix)
-        write_remap_counts(remap_counts_writer, new_counts, title='remap')
+        if conseqs:
+            # Request up to 12 paired placements on every de novo panel.
+            # Saturation is diagnostic and never blocks downstream reporting.
+            denovo_limit = MAX_DENOVO_ALIGNMENTS
+            map_to_reference(fastq1,
+                                              fastq2,
+                                              conseqs,
+                                              reffile,
+                                              samfile,
+                                              bowtie_discard,
+                                              bowtie_discard,
+                                              bowtie2,
+                                              bowtie2_build,
+                                              raw_count,
+                                              rdgopen,
+                                              rfgopen,
+                                              new_counts,
+                                              stderr,
+                                              callback,
+                                              debug_file_prefix=debug_file_prefix,
+                                              max_alignments=denovo_limit,
+                                              threads=DENOVO_BOWTIE_THREADS)
+            best_samfile = samfile + '.best'
+            with open(samfile) as source, open(best_samfile, 'w') as target:
+                accepted_counts = select_best_pairs(
+                    source, target, limit=denovo_limit,
+                    diagnostics=diagnostics)
+            os.replace(best_samfile, samfile)
+            if diagnostics['at_report_limit']:
+                logger.warning(
+                    "%d pairs reached the Bowtie2 -k %d reporting limit; "
+                    "additional placements may have been omitted.",
+                    diagnostics['at_report_limit'], denovo_limit)
+            if diagnostics['discarded_mapped_pairs']:
+                logger.warning(
+                    "Excluded %d mapped pairs with no usable or safe "
+                    "paired alignment from de novo remapping.",
+                    diagnostics['discarded_mapped_pairs'])
+            if diagnostics['incomplete_pair_groups']:
+                logger.warning(
+                    "%d Bowtie2 QNAME groups contained an odd number of "
+                    "SAM records; unpaired trailing records were discarded.",
+                    diagnostics['incomplete_pair_groups'])
+            if diagnostics['oversized_pair_groups']:
+                logger.warning(
+                    "%d read pairs exceeded the de novo per-pair SAM record "
+                    "memory limit; their alignments were discarded rather than "
+                    "truncated into misleading mapping support.",
+                    diagnostics['oversized_pair_groups'])
+                remap_counts_writer.writerow({
+                    'type': 'multimap-oversized-pairs',
+                    'count': diagnostics['oversized_pair_groups']})
+            new_counts.clear()
+            new_counts.update(accepted_counts)
+            write_remap_counts(remap_counts_writer, new_counts, title='remap')
 
-    # generate SAM CSV output
-    remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
-    remap_writer.writeheader()
-    if new_counts:
-        splitter = MixedReferenceSplitter(work_path)
-        split_counts = Counter()
-        # At least one read was mapped, so samfile has relevant data
-        with open(samfile) as f:
-            for fields in splitter.split(f):
-                write_remap_row(remap_writer, fields)
-        for rname, (split_file1, split_file2) in splitter.splits.items():
-            refseqs = {rname: conseqs[rname]}
-            unmapped_count += map_to_reference(split_file1.name,
-                                               split_file2.name,
-                                               refseqs,
-                                               reffile,
-                                               samfile,
-                                               unmapped1,
-                                               unmapped2,
-                                               bowtie2,
-                                               bowtie2_build,
-                                               raw_count,
-                                               rdgopen,
-                                               rfgopen,
-                                               split_counts,
-                                               stderr,
-                                               callback)
-            new_counts.update(split_counts)
-            with open(samfile, 'r') as f:
-                for fields in splitter.walk(f):
-                    write_remap_row(remap_writer, fields)
+        # Always expose the saturation count as sample-level output metadata,
+        # including zero. Saturation is not proof of a missed best alignment.
+        remap_counts_writer.writerow({
+            'type': 'multimap-capped-pairs',
+            'count': diagnostics['at_report_limit']})
 
-    write_contig_sequences(conseqs, remap_conseq_csv)
-    write_remap_counts(remap_counts_writer,
-                       new_counts,
-                       title='remap-final')
+        # generate SAM CSV output
+        remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)
+        remap_writer.writeheader()
+        unique_mapped_mates = 0
+        mapped_fragment_counts = Counter()
+        if new_counts:
+            splitter = MixedReferenceSplitter(work_path)
+            split_counts = Counter()
+            # At least one read was mapped, so samfile has relevant data
+            with open(samfile) as f:
+                unique_mapped_mates += write_reported_pairs(
+                    splitter.split(f), remap_writer,
+                    fragment_counts=mapped_fragment_counts,
+                    mapped_mates_db=mapped_mates_db)
+            for rname, (split_file1, split_file2) in splitter.splits.items():
+                refseqs = {rname: conseqs[rname]}
+                map_to_reference(split_file1.name,
+                                                   split_file2.name,
+                                                   refseqs,
+                                                   reffile,
+                                                   samfile,
+                                                   bowtie_discard,
+                                                   bowtie_discard,
+                                                   bowtie2,
+                                                   bowtie2_build,
+                                                   raw_count,
+                                                   rdgopen,
+                                                   rfgopen,
+                                                   split_counts,
+                                                   stderr,
+                                                   callback)
+                new_counts.update(split_counts)
+                with open(samfile, 'r') as f:
+                    unique_mapped_mates += write_reported_pairs(
+                        splitter.walk(f), remap_writer,
+                        fragment_counts=mapped_fragment_counts,
+                        mapped_mates_db=mapped_mates_db)
 
-    # report number of unmapped reads
-    remap_counts_writer.writerow({'type': 'unmapped',
-                                      'count': unmapped_count})
+        write_contig_sequences(conseqs, remap_conseq_csv)
+        write_remap_counts(remap_counts_writer,
+                           new_counts,
+                           title='remap-final')
+        # A reported alignment is a placement; a fragment is an original
+        # read pair, even if it has multiple equally best placements.
+        # Count mapped ends on excluded contigs too: they were mapped,
+        # though they are intentionally absent from remap.csv.
+        remap_counts_writer.writerow({
+            'type': 'remap-fragments',
+            'count': (mapped_fragment_counts['two_mates'] +
+                      mapped_fragment_counts['one_mate'])})
+
+        if unique_mapped_mates > raw_count:
+            raise ValueError('Distinct mapped read-end count exceeds raw input')
+        remap_counts_writer.writerow({
+            'type': 'unmapped', 'count': raw_count - unique_mapped_mates})
+
+
+        write_final_unmapped_fastqs(
+            fastq1, fastq2, unmapped1, unmapped2, mapped_mates_db,
+            gzipped=gzip)
 
 
 def find_bowtie2():
@@ -816,6 +894,89 @@ def write_contig_sequences(conseqs, remap_conseq_csv):
         if is_reported_region(contig_name):
             writer.writerow({'region': contig_name,
                                  'sequence': contig_seq})
+
+
+def write_final_unmapped_fastqs(fastq1, fastq2, unmapped1, unmapped2,
+                                mapped_mates_db, gzipped=False):
+    """Write original read ends without a mapped placement.
+
+    The database includes mapped ends on excluded contigs, which are
+    excluded from reports but still mapped. Stream original FASTQs without
+    loading read names or sequences into memory; preserve bases/qualities.
+    """
+    opener = gzip_lib.open if gzipped else open
+
+    def record(fastq):
+        lines = list(islice(fastq, 4))
+        if lines and len(lines) != 4:
+            raise ValueError('Truncated original FASTQ record')
+        return lines
+
+    def name(lines):
+        header = lines[0].split()[0]
+        if not header.startswith('@'):
+            raise ValueError('Invalid original FASTQ read name')
+        qname = header[1:]
+        if qname.endswith(('/1', '/2')):
+            qname = qname[:-2]
+        return qname
+
+    with opener(fastq1, 'rt') as input1, opener(fastq2, 'rt') as input2:
+        while True:
+            first, second = record(input1), record(input2)
+            if not first and not second:
+                return
+            if not first or not second:
+                raise ValueError('Original paired FASTQs have unequal lengths')
+            qname = name(first)
+            if name(second) != qname:
+                raise ValueError('Original paired FASTQs have mismatched names')
+            result = mapped_mates_db.execute(
+                'SELECT mask FROM mapped_mates WHERE qname = ?', (qname,)
+            ).fetchone()
+            mapped = result[0] if result is not None else 0
+            if not mapped & 1:
+                unmapped1.writelines(first)
+            if not mapped & 2:
+                unmapped2.writelines(second)
+
+
+def write_reported_pairs(rows, remap_writer, fragment_counts=None,
+                         mapped_mates_db=None):
+    """Write remap rows and count mapped read ends and fragments in O(1) memory.
+
+    The SAM stream from Bowtie2 (and each restricted rescue run) is grouped
+    by QNAME, with mate records adjacent. The initial and rescue streams
+    contain disjoint original pairs: the rescue is only attempted when no
+    proper paired placement was accepted. Each QNAME is therefore counted
+    once within its stream, regardless of the number of contig hypotheses.
+    """
+    unique_mapped_mates = 0
+    for _, group in groupby(rows, key=lambda fields: fields[0]):
+        mapped_mates = 0
+        for fields in group:
+            if not is_unmapped_read(fields[1]):
+                flags = int(fields[1])
+                if flags & SAM_FLAG_IS_FIRST_SEGMENT:
+                    mapped_mates |= 1
+                if flags & 0x80:  # second segment in the pair
+                    mapped_mates |= 2
+            # The output filter is independent of the mapped-end accounting.
+            # Excluded contigs supply mapping evidence but no report rows.
+            if is_reported_region(fields[2]):
+                write_remap_row(remap_writer, fields)
+        unique_mapped_mates += bool(mapped_mates & 1) + bool(mapped_mates & 2)
+        if mapped_mates_db is not None and mapped_mates:
+            mapped_mates_db.execute(
+                'INSERT INTO mapped_mates(qname, mask) VALUES (?, ?) '
+                'ON CONFLICT(qname) DO UPDATE SET mask = mask | excluded.mask',
+                (_, mapped_mates))
+        if fragment_counts is not None:
+            if mapped_mates == 3:
+                fragment_counts['two_mates'] += 1
+            elif mapped_mates:
+                fragment_counts['one_mate'] += 1
+    return unique_mapped_mates
 
 
 def write_remap_row(remap_writer, fields):
@@ -974,7 +1135,9 @@ def map_to_reference(fastq1,
                      new_counts,
                      stderr,
                      callback,
-                     debug_file_prefix=None):
+                     debug_file_prefix=None,
+                     max_alignments=1,
+                     threads=1):
     """ Map a pair of FASTQ files to a set of reference sequences.
 
     @param fastq1: FASTQ file with the forward reads
@@ -1023,7 +1186,15 @@ def map_to_reference(fastq1,
                    '--no-hd',  # no header lines (start with @)
                    '--local',
                    '-X', '1200',
-                   '-p', '1']
+                   '-p', str(threads)]
+    if threads > 1:
+        # Preserve consecutive QNAME groups required by both SAM pairing
+        # and per-fragment fractional-depth accounting.
+        bowtie_args.append('--reorder')
+    if max_alignments is None:
+        bowtie_args.append('-a')
+    elif max_alignments > 1:
+        bowtie_args.extend(['-k', str(max_alignments)])
 
     new_counts.clear()
     unmapped_count = 0
@@ -1035,15 +1206,21 @@ def map_to_reference(fastq1,
             f.write('@SQ\tSN:%s\tLN:%d\n' % (rname, len(refseq)))
         f.write('@PG\tID:bowtie2\tPN:bowtie2\tVN:2.2.3\tCL:""\n')
 
-        # capture stdout stream to count reads before writing to file
+        # -k may produce several alignments for one original pair. Progress
+        # must count original reads, not multiplied placement records.
+        original_reads_processed = 0
+        previous_qname = None
         for i, line in enumerate(bowtie2.yield_output(bowtie_args, stderr=stderr)):
-            if callback and i % 1000 == 0:
-                callback(progress=i)  # progress monitoring in GUI
-
-            f.write(line)
-
             items = line.split('\t')
             qname, bitflag, rname, _, _, _, _, _, _, seq, qual = items[:11]
+            if max_alignments != 1 and qname != previous_qname:
+                original_reads_processed += 2
+                previous_qname = qname
+            if callback and i % 1000 == 0:
+                progress = (original_reads_processed if max_alignments != 1
+                            else i)
+                callback(progress=min(progress, raw_count))
+            f.write(line)
 
             if is_unmapped_read(bitflag):
                 # did not map to any reference

@@ -9,6 +9,7 @@ clips).
 
 import argparse
 from collections import Counter, defaultdict
+from itertools import groupby
 from csv import DictReader, DictWriter
 from io import StringIO
 from tempfile import NamedTemporaryFile
@@ -17,7 +18,10 @@ import numpy as np
 import os
 import re
 
-SAM2ALN_Q_CUTOFFS = [15]  # Q-cutoff for base censoring
+from micall.core.denovo_depth import AlternativeDepths
+
+DEPTH_QCUT = 15  # Q-cutoff used for per-fragment depth and aligned counts
+SAM2ALN_Q_CUTOFFS = [DEPTH_QCUT]  # Q-cutoff for base censoring
 MAX_PROP_N = 0.5                 # Drop reads with more censored bases than this proportion
 SAM_FLAG_IS_FIRST_SEGMENT = 0x40
 
@@ -298,7 +302,7 @@ class PairProcessor(object):
         # {rname: {pos: clipping_count}}
         self.clipping_counts = defaultdict(Counter) if is_clipping else None
 
-    def process(self, rows):
+    def process(self, rows, clipped_positions=None):
         """ Merge two matched reads into a single aligned read.
 
         Also report insertions and failed merges.
@@ -372,7 +376,10 @@ class PairProcessor(object):
                                     'qual': iqual})
             if self.clipping_counts is not None:
                 for i in soft_clipped - mapped:
-                    self.clipping_counts[rname][i+1] += 1
+                    if clipped_positions is None:
+                        self.clipping_counts[rname][i+1] += 1
+                    else:
+                        clipped_positions.add((rname, i+1))
 
             # merge reads
             for qcut in SAM2ALN_Q_CUTOFFS:
@@ -421,11 +428,78 @@ class TempFileFactory:
         return writer
 
 
+
+def multi_mapping_regions(pairs, processor, depths, fragment_counts=None):
+    # All placements for an original fragment must be adjacent. Keep
+    # fractional-depth accounting separate from maximum-depth consensus:
+    # a base present in multiple alternatives is counted once in the latter.
+    for _, group in groupby(pairs, key=lambda pair: pair[0]['qname']):
+        clipped_positions = (
+            set() if processor.clipping_counts is not None else None)
+        processed = [processor.process(pair, clipped_positions) for pair in group]
+        if clipped_positions is not None:
+            # The same fragment can have several placements with identical
+            # soft-clipped positions. Each reference position counts once.
+            for rname, position in sorted(clipped_positions):
+                processor.clipping_counts[rname][position] += 1
+        accepted = [result for result in processed
+                    if DEPTH_QCUT in result[1]]
+        if fragment_counts is not None and accepted:
+            fragment_counts['unique_aligned_fragments'] += 1
+        if depths is not None:
+            depths.add_fragment(
+                (result[0], result[1][DEPTH_QCUT]) for result in accepted)
+        # A nucleotide on any accepted placement takes precedence over a
+        # deletion at that position from another placement of the same
+        # fragment. Decide this across the group so placement order cannot
+        # change whether a deletion is reported.
+        nucleotide_positions = defaultdict(set)
+        for rname, mseqs, _, _ in processed:
+            for qcut, mseq in mseqs.items():
+                positions = nucleotide_positions[rname, qcut]
+                positions.update(i for i, base in enumerate(mseq)
+                                 if base in 'ACGT')
+        covered = {}
+        for rname, mseqs, insert_list, failed_list in processed:
+            unique_seqs = {}
+            for qcut, mseq in mseqs.items():
+                key = (rname, qcut)
+                seen = covered.setdefault(key, set())
+                chars = list(mseq)
+                # Leading/trailing '-' are alignment padding, not deletions
+                # represented in the emitted aligned.csv sequence.
+                start = len(mseq) - len(mseq.lstrip('-'))
+                end = len(mseq.rstrip('-'))
+                has_evidence = False
+                has_new_evidence = False
+                for offset, base in enumerate(chars):
+                    is_deletion = base == '-' and start <= offset < end
+                    if base not in 'ACGT' and not is_deletion:
+                        continue
+                    has_evidence = True
+                    if (offset in seen or
+                            (is_deletion and
+                             offset in nucleotide_positions[key])):
+                        # 'n' carries no coverage or deletion evidence.
+                        chars[offset] = 'n'
+                    else:
+                        seen.add(offset)
+                        has_new_evidence = True
+                # Retain placements providing distinct nucleotide or deletion
+                # observations. Preserve empty/uncertain sequences as before.
+                if has_new_evidence or not has_evidence:
+                    unique_seqs[qcut] = ''.join(chars)
+            yield rname, unique_seqs, insert_list, failed_list
+
+
 def sam2aln(remap_csv,
             aligned_csv,
             insert_csv=None,
             failed_csv=None,
-            clipping_csv=None):
+            clipping_csv=None,
+            depth_csv=None,
+            depth_reference_csv=None,
+            unique_aligned_csv=None):
     if insert_csv is None:
         insert_writer = None
     else:
@@ -458,7 +532,12 @@ def sam2aln(remap_csv,
     empty_region = defaultdict(temp_files.create_writer)
     aligned = defaultdict(empty_region.copy)  # {rname: {qcut: aligned_file}}
     # noinspection PyTypeChecker
-    regions = map(pair_processor.process, matchmaker(remap_csv))
+    pairs = matchmaker(remap_csv)
+    depths = AlternativeDepths() if depth_csv is not None else None
+    aligned_fragment_counts = Counter() if unique_aligned_csv is not None else None
+    regions = multi_mapping_regions(
+        pairs, pair_processor, depths,
+        fragment_counts=aligned_fragment_counts)
 
     for rname, mseqs, insert_list, failed_list in regions:
         # noinspection PyTypeChecker
@@ -484,6 +563,17 @@ def sam2aln(remap_csv,
 
     if clipping_writer is not None:
         pair_processor.write_clipping(clipping_writer)
+    if depths is not None:
+        depths.write(depth_csv, depth_reference_csv)
+    if unique_aligned_csv is not None:
+        writer = DictWriter(
+            unique_aligned_csv, ['unique_aligned_fragments'],
+            lineterminator=os.linesep)
+        writer.writeheader()
+        assert aligned_fragment_counts is not None
+        writer.writerow({
+            'unique_aligned_fragments':
+                aligned_fragment_counts['unique_aligned_fragments']})
 
     # write out merged sequences to file
     aligned_writer = create_aligned_writer(aligned_csv)

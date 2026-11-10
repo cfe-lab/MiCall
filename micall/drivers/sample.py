@@ -25,7 +25,7 @@ from micall.utils.referencefull_contig_stitcher import referencefull_contig_stit
 import micall.utils.referenceless_contig_stitcher as referenceless
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 logger = logging.getLogger(__name__)
 
@@ -261,17 +261,36 @@ class Sample:
             return prepend_prefix_to_basename(prefix, path)
 
         logger.info('Running sam2aln on %s.', self)
+        depth_path = (self.paths.get('multimap_depth_csv')
+                      or os.path.join(self.get_scratch_path(),
+                                      'multimap_depth.csv'))
+        unique_aligned_path = (
+            self.paths.get('unique_aligned_fragments_csv')
+            or os.path.join(self.get_scratch_path(),
+                            'unique_aligned_fragments.csv'))
         with open(with_prefix(self.remap_csv)) as remap_csv, \
                 open(with_prefix(self.aligned_csv), 'w') as aligned_csv, \
                 open(with_prefix(self.conseq_ins_csv), 'w') as conseq_ins_csv, \
                 open(with_prefix(self.failed_csv), 'w') as failed_csv, \
-                open(with_prefix(self.clipping_csv), 'w') as clipping_csv:
+                open(with_prefix(self.clipping_csv), 'w') as clipping_csv, \
+                (open(with_prefix(depth_path), 'w')
+                 if use_denovo else nullcontext()) as depth_csv, \
+                (open(with_prefix(self.remap_conseq_csv))
+                 if use_denovo else nullcontext()) as depth_reference_csv, \
+                (open(with_prefix(unique_aligned_path), 'w')
+                 if use_denovo else nullcontext()) as unique_aligned_csv:
 
+            optional_depths = (
+                {'depth_csv': depth_csv,
+                 'depth_reference_csv': depth_reference_csv,
+                 'unique_aligned_csv': unique_aligned_csv}
+                if use_denovo else {})
             sam2aln(remap_csv,
                     aligned_csv,
                     conseq_ins_csv,
                     failed_csv,
-                    clipping_csv=clipping_csv)
+                    clipping_csv=clipping_csv,
+                    **optional_depths)
 
         logger.info('Running aln2counts on %s.', self)
         with open_files(aligned_csv=(with_prefix(self.aligned_csv), 'r'),
@@ -330,12 +349,12 @@ class Sample:
                        concordance_seed_csv=opened_files['concordance_seed_csv'])
 
         logger.info('Running coverage_plots on %s.', self)
-        os.makedirs(with_prefix(self.coverage_maps))
+        os.makedirs(with_prefix(self.coverage_maps), exist_ok=True)
         with open(with_prefix(self.amino_csv)) as amino_csv, \
              open(with_prefix(self.coverage_scores_csv), 'w') as coverage_scores_csv:
             coverage_plot(amino_csv,
                           coverage_scores_csv,
-                          coverage_maps_path=self.coverage_maps,
+                          coverage_maps_path=with_prefix(self.coverage_maps),
                           coverage_maps_prefix=self.name,
                           excluded_projects=excluded_projects)
 
@@ -361,11 +380,14 @@ class Sample:
         with open(self.g2p_summary_csv) as g2p_summary_csv, \
              open(with_prefix(self.remap_counts_csv)) as remap_counts_csv, \
              open(with_prefix(self.aligned_csv)) as aligned_csv, \
+             (open(with_prefix(unique_aligned_path))
+              if use_denovo else nullcontext()) as unique_aligned_csv, \
              open(with_prefix(self.cascade_csv), 'w') as cascade_csv:
             cascade_report = CascadeReport(cascade_csv)
             cascade_report.g2p_summary_csv = g2p_summary_csv
             cascade_report.remap_counts_csv = remap_counts_csv
             cascade_report.aligned_csv = aligned_csv
+            cascade_report.unique_aligned_csv = unique_aligned_csv
             cascade_report.generate()
 
     def load_sample_info(self) -> dict[str, str]:

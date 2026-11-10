@@ -96,7 +96,10 @@ HIV1-B-FR-K03455-seed,0.90,HIV1-B-FR-K03455-seed,ATTTGCATGGAATAGGACCAGCACACCACCA
         assert len(raw_rows) == 1, "Should have exactly one raw count"
 
         # Check for remap counts (should have format "remap N-REF" or "remap-final N-REF")
-        remap_rows = [r for r in rows if r["type"].startswith("remap")]
+        remap_rows = [r for r in rows if r["type"].startswith(("remap ", "remap-final "))]
+        fragments = [r for r in rows if r["type"] == "remap-fragments"]
+        assert len(fragments) == 1
+        assert 0 <= int(fragments[0]["count"]) <= int(raw_rows[0]["count"]) // 2
         assert len(remap_rows) > 0, "Should have at least one remap count"
 
         # Verify remap rows have the expected format

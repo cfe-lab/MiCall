@@ -1,0 +1,243 @@
+"""Select equally best paired placements for de novo contig remapping.
+
+Only the de novo pipeline uses this module.  A placement is one complete,
+concordant R1/R2 Bowtie2 alignment; a secondary placement is not an extra
+molecule.  The downstream max-depth consensus intentionally includes each
+compatible *placement* as an alternative hypothesis.
+"""
+from collections import Counter
+from itertools import groupby
+import re
+
+# Maximum number of Bowtie2 placements per original fragment.
+# Saturation is diagnostic; it does not prevent clinical reporting.
+MAX_DENOVO_ALIGNMENTS = 12
+DENOVO_BOWTIE_THREADS = 4
+
+
+# Never buffer more than this many SAM records for a single read pair.
+# Pathologically repetitive reads are excluded, not partially miscounted.
+MAX_DENOVO_RECORDS_PER_PAIR = 8192
+BAD_FLAGS = 0x4 | 0x8 | 0x400 | 0x800
+REFERENCE_CIGAR = re.compile(r"(\d+)([MIDS])")
+VALID_CIGAR = re.compile(r"(?:[1-9][0-9]*[MIDS])+\Z")
+
+
+def _score(row):
+    for field in row[11:]:
+        if field.startswith("AS:i:"):
+            try:
+                return int(field[5:])
+            except ValueError:
+                return None
+    return None
+
+
+def _valid_mates(first, second):
+    """Only pair genuine R1 and R2 SAM records from the same molecule."""
+    if len(first) < 11 or len(second) < 11:
+        return False
+    try:
+        a, b = int(first[1]), int(second[1])
+        left, right = int(first[3]), int(second[3])
+    except ValueError:
+        return False
+    return (first[0] == second[0]
+            and not ((a | b) & BAD_FLAGS)
+            and (a & 0x41) == 0x41 and (b & 0x81) == 0x81
+            and not (a & 0x80 or b & 0x40)
+            and bool(a & 0x100) == bool(b & 0x100)
+            and bool(a & 0x20) == bool(b & 0x10)
+            and bool(b & 0x20) == bool(a & 0x10)
+            and first[2] != "*" and second[2] != "*"
+            and left > 0 and right > 0
+            and all(VALID_CIGAR.fullmatch(row[5]) for row in (first, second))
+            and all(row[9] != "*" and len(row[9]) == len(row[10])
+                    for row in (first, second))
+            and all(sum(int(n) for n, op in REFERENCE_CIGAR.findall(row[5])
+                        if op in "MIS") == len(row[9])
+                    for row in (first, second))
+            and all("M" in row[5] for row in (first, second)))
+
+
+def _valid_orphan(first, second):
+    """Preserve an unambiguously mapped read when its mate was unmapped.
+
+    This is a legacy MiCall behavior distinct from a second mapping
+    hypothesis. Only the primary pair may provide singleton evidence.
+    """
+    if len(first) < 11 or len(second) < 11 or first[0] != second[0]:
+        return False
+    try:
+        a, b = int(first[1]), int(second[1])
+        mapped = [row for row in (first, second)
+                  if not int(row[1]) & 0x4]
+        unmapped = [row for row in (first, second)
+                    if int(row[1]) & 0x4]
+    except ValueError:
+        return False
+    if (len(mapped) != 1 or len(unmapped) != 1
+            or (a | b) & (0x400 | 0x800 | 0x100)
+            or not (a & b & 0x1)
+            or not (a & 0x40) or not (b & 0x80)
+            or (a & 0x80) or (b & 0x40)):
+        return False
+    good, missing = mapped[0], unmapped[0]
+    try:
+        flag = int(good[1])
+        mate_flag = int(missing[1])
+        start = int(good[3])
+    except ValueError:
+        return False
+    return (
+        bool(flag & 0x8) and not (flag & 0x2)
+        and not (mate_flag & 0x8 or mate_flag & 0x2)
+        and good[2] != '*' and start > 0
+        and bool(VALID_CIGAR.fullmatch(good[5]))
+        and 'M' in good[5]
+        and sum(int(n) for n, op in REFERENCE_CIGAR.findall(good[5])
+                if op in 'MIS') == len(good[9])
+        and good[9] != '*' and len(good[9]) == len(good[10])
+        and missing[5] == '*' and missing[9] != '*'
+        and len(missing[9]) == len(missing[10])
+        and missing[2] in ('*',good[2]))
+
+
+def _valid_pair(first, second):
+    if not _valid_mates(first, second):
+        return False
+    try:
+        a, b = int(first[1]), int(second[1])
+        mate_left, mate_right = int(first[7]), int(second[7])
+    except ValueError:
+        return False
+    return (bool(a & 0x2) and bool(b & 0x2)
+            and first[2] == second[2]
+            and first[6] in ("=", first[2])
+            and second[6] in ("=", second[2])
+            and mate_left == int(second[3])
+            and mate_right == int(first[3]))
+
+
+def _select(rows, limit):
+    # Bowtie2 -k emits the two mates of each reported paired placement
+    # together. Fail closed for malformed ordering instead of cross-pairing.
+    pairs = [(rows[i], rows[i + 1]) for i in range(0, len(rows) - 1, 2)]
+    # Each best-placement comparison needs two real Bowtie2 alignment
+    # scores. Discard candidates with missing or malformed scores.
+    candidates = []
+    for first, second in pairs:
+        if not _valid_pair(first, second):
+            continue
+        first_score, second_score = _score(first), _score(second)
+        if first_score is not None and second_score is not None:
+            candidates.append((first, second, first_score + second_score))
+    if not candidates:
+        # Preserve MiCall's existing fallback for discordant *primary*
+        # alignments. MixedReferenceSplitter can retry these against one
+        # reference; properly paired but internally inconsistent rows must
+        # never be silently resurrected by the fallback.
+        primary = []
+        for row in rows:
+            try:
+                if not int(row[1]) & 0x100:
+                    primary.append(row)
+            except (ValueError, IndexError):
+                continue
+        if len(primary) == 2:
+            # Bowtie2 can report singleton mates in either record order.
+            # Do not discard genuine single-mate coverage or pretend it is
+            # an additional complete paired placement.
+            ordered = sorted(primary,
+                             key=lambda row: bool(int(row[1]) & 0x80))
+            if _valid_orphan(*ordered):
+                return ordered
+            if _valid_mates(*ordered):
+                a, b = int(ordered[0][1]), int(ordered[1][1])
+                if (ordered[0][2] != ordered[1][2]
+                        or not (a & 0x2 and b & 0x2)):
+                    return ordered
+        return []
+    best_score = max(score for _, _, score in candidates)
+    winners = []
+    used = set()
+    candidates.sort(key=lambda item: (
+        item[0][2], int(item[0][3]), int(item[1][3]),
+        item[0][5], item[1][5], int(item[0][1]) & 0x10,
+        int(item[1][1]) & 0x10, bool(int(item[0][1]) & 0x100)))
+    for a, b, score in candidates:
+        if score != best_score:
+            continue
+        key = (a[2], a[3], a[5], b[3], b[5], int(a[1]) & 0x10,
+               int(b[1]) & 0x10)
+        if key in used:
+            continue
+        # Distinct placements can overlap partially yet supply coverage at
+        # different reference positions. Keep them here; sam2aln merges
+        # per-fragment coverage without double counting overlapping bases.
+        used.add(key)
+        winners.append((a, b))
+        if limit is not None and len(winners) == limit:
+            break
+    return [row for pair in winners for row in pair]
+
+
+def select_best_pairs(source, destination, limit=MAX_DENOVO_ALIGNMENTS,
+                      diagnostics=None):
+    """Write complete best-scoring alternatives, retain original QNAMEs.
+
+    Input is Bowtie2's QNAME-grouped SAM stream. The output can be consumed
+    by MiCall's existing two-at-a-time sam2aln matcher unchanged.
+    """
+    if limit is not None and limit < 1:
+        raise ValueError("limit must be positive")
+    counts: Counter[str] = Counter()
+
+    def records():
+        for line in source:
+            if line.startswith("@"):
+                destination.write(line)
+            elif line.strip():
+                yield line.rstrip("\n").split("\t")
+
+    for _, group in groupby(records(), key=lambda row: row[0]):
+        rows: list[list[str]] = []
+        oversized = False
+        for row in group:
+            if len(rows) < MAX_DENOVO_RECORDS_PER_PAIR:
+                rows.append(row)
+            else:
+                oversized = True
+        if oversized:
+            # Never emit a truncated, falsely exhaustive read-pair group.
+            if diagnostics is not None:
+                diagnostics['oversized_pair_groups'] = (
+                    diagnostics.get('oversized_pair_groups', 0) + 1)
+            continue
+        if (diagnostics is not None and limit is not None
+                and len(rows) // 2 >= limit):
+            diagnostics['at_report_limit'] = (
+                diagnostics.get('at_report_limit', 0) + 1)
+        selected = _select(rows, limit)
+        # Bowtie2 -a legitimately reports a different number of alternative
+        # alignments for R1 and R2 when no concordant pair is found. Such a
+        # group can have an odd number of rows yet still contain exactly one
+        # safe primary discordant/singleton pair for legacy rescue. Do not
+        # misclassify those legitimate outputs as malformed SAM streams.
+        primary_rescue = (len(selected) == 2
+                          and not _valid_pair(selected[0], selected[1]))
+        if (diagnostics is not None and len(rows) % 2
+                and not primary_rescue):
+            diagnostics['incomplete_pair_groups'] = (
+                diagnostics.get('incomplete_pair_groups', 0) + 1)
+        # Distinguish intentionally unmapped pairs from mapped records
+        # rejected by SAM integrity or quality constraints.
+        if (diagnostics is not None and not selected
+                and any(len(row) > 2 and row[2] != '*' for row in rows)):
+            diagnostics['discarded_mapped_pairs'] = (
+                diagnostics.get('discarded_mapped_pairs', 0) + 1)
+        for row in selected:
+            destination.write("\t".join(row) + "\n")
+            if not int(row[1]) & 0x4 and row[2] != "*":
+                counts[row[2]] += 1
+    return counts

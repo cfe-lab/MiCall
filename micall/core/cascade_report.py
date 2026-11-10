@@ -32,6 +32,7 @@ class CascadeReport:
         :param cascade_csv: an open CSV file to write to
         """
         self.g2p_summary_csv = self.remap_counts_csv = self.aligned_csv = None
+        self.unique_aligned_csv = None
         self.counts = None
         self.cascade_csv = cascade_csv
 
@@ -69,6 +70,7 @@ class CascadeReport:
             return
 
         reader = DictReader(self.remap_counts_csv)
+        fragment_count = None
         for row in reader:
             row_type = row['type']
             count = int(row['count']) // 2
@@ -79,9 +81,31 @@ class CascadeReport:
             elif row_type.startswith('prelim '):
                 self.counts['prelim_map'] += count
             elif row_type.startswith('remap-final '):
+                # Reference-based remaps report read-end counts per seed.
+                # De novo remaps also include an explicit fragment total.
                 self.counts['remap'] += count
+            elif row_type == 'remap-fragments':
+                fragment_count = int(row['count'])
+        if fragment_count is not None:
+            # Prefer the exact fragment count regardless of row order.
+            self.counts['remap'] = fragment_count
 
     def read_aligned(self):
+        if self.unique_aligned_csv is not None:
+            # Each accepted alternative placement appears separately in
+            # aligned.csv. Do not count one original physical read pair
+            # multiple times in MiCall's clinical cascade QC.
+            reader = DictReader(self.unique_aligned_csv)
+            record = next(reader, None)
+            if record is None or next(reader, None) is not None:
+                raise ValueError(
+                    'Unique aligned fragment report must have one data row')
+            count = int(record['unique_aligned_fragments'])
+            if not 0 <= count <= self.counts['remap']:
+                raise ValueError(
+                    'Aligned original fragments cannot exceed mapped fragments')
+            self.counts['aligned'] = count
+            return
         if self.aligned_csv is None:
             return
 

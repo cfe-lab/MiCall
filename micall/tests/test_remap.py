@@ -1168,22 +1168,24 @@ ref,match,group_ref,contig
 R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
             "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
             "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         expected_remap_counts_csv = """\
 type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,8,,,,
+multimap-capped-pairs,0,,,,
 remap-final 1-R1,8,,,,
-unmapped,2,,,,
+remap-fragments,4,,,,
+unmapped,12,,,,
 """
         expected_remap_csv = """\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -1227,14 +1229,14 @@ R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 R2,0.2,R2,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t99\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t147\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t99\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t147\t2-R2-partial\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
             "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
             "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         expected_remap_counts_csv = """\
@@ -1242,9 +1244,11 @@ type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,6,,,,
 remap 2-R2-partial,2,,,,
+multimap-capped-pairs,0,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-partial,2,,,,
-unmapped,2,,,,
+remap-fragments,4,,,,
+unmapped,12,,,,
 """
         expected_remap_csv = """\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -1267,14 +1271,14 @@ R1,1.0,R1,GTGGG
 R2,1.0,R2,ACAAA
 """)
         self.bowtie2_output.extend([
-            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t99\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
-            "read4\t147\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\n",
+            "read1\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read1\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read2\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t99\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read3\t147\t1-R1\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t99\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
+            "read4\t147\t2-R2-excluded\t1\t44\t5M\t=\t1\t-81\tGTGGG\tAAAAA\tAS:i:20\n",
             "read5\t77\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n",
             "read5\t141\t*\t0\t0\t*\t*\t0\t0\tGTAAA\tAAAAA\n"])
         excluded_seeds = ['R2']
@@ -1283,9 +1287,11 @@ type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,6,,,,
 remap 2-R2-excluded,2,,,,
+multimap-capped-pairs,0,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-excluded,2,,,,
-unmapped,2,,,,
+remap-fragments,4,,,,
+unmapped,12,,,,
 """
         expected_remap_csv = """\
 qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual
@@ -1494,3 +1500,99 @@ unmapped,0,,,,
                     count_threshold=1)
 
     assert remap_counts_csv.read_text() == expected_remap_counts
+
+
+
+def test_write_reported_pairs_counts_unique_fragments_without_collecting_names():
+    import tracemalloc
+    from micall.core.remap import write_reported_pairs
+
+    class CountingWriter:
+        def __init__(self):
+            self.count = 0
+
+        def writerow(self, _):
+            self.count += 1
+
+    # Compare memory for small and large streams; unlike a platform-specific
+    # fixed byte threshold, the growth ratio remains stable across versions
+    # of Python and coverage-enabled CI.
+    def sam_rows(count):
+        for i in range(count):
+            references = ('A', 'B', 'C', 'D') if i % 2 else ('A',)
+            for reference in references:
+                for flag in ('99', '147'):
+                    yield [f'fragment-{i}', flag, reference, '1', '0',
+                           '4M', '=', '1', '0', 'ACGT', 'IIII']
+
+    def run(count):
+        writer = CountingWriter()
+        tracemalloc.start()
+        try:
+            pairs = write_reported_pairs(sam_rows(count), writer)
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+        assert pairs == count * 2
+        assert writer.count == count * 5
+        return peak
+
+    small_peak = run(400)
+    large_peak = run(12000)
+    assert large_peak < small_peak * 4 + 200_000
+
+
+def test_write_reported_pairs_excludes_unmapped_and_filtered_references():
+    from unittest.mock import Mock
+    from micall.core.remap import write_reported_pairs
+
+    rows = [
+        ['a', '99', 'A'], ['a', '147', 'A'],
+        ['a', '355', 'B'], ['a', '403', 'B'],
+        ['b', '99', 'A-excluded'], ['b', '147', 'A-excluded'],
+        ['c', '77', '*'], ['c', '141', '*'],
+        ['d', '99', 'A'], ['d', '141', '*'],
+    ]
+    writer = Mock()
+    assert write_reported_pairs(iter(rows), writer) == 5
+    # Keep the existing remap CSV behavior for rows marked unmapped, but
+    # never treat them as independent mapped molecules.
+    assert writer.writerow.call_count == 8
+
+
+
+def test_write_reported_pairs_requires_both_mates_not_duplicate_first_mate():
+    from unittest.mock import Mock
+    from micall.core.remap import write_reported_pairs
+
+    rows = [
+        ['dup', '99', 'A'], ['dup', '99', 'B'],
+        ['valid', '99', 'A'], ['valid', '147', 'B'],
+    ]
+    assert write_reported_pairs(iter(rows), Mock()) == 3
+
+
+
+def test_reported_denovo_fragments_count_singletons_as_whole_physical_pairs():
+    from collections import Counter
+    from unittest.mock import Mock
+    from micall.core.remap import write_reported_pairs
+
+    # One fully paired fragment has alternatives on two references.
+    # Two others have only one mapped mate each. None are extra molecules.
+    placements = [
+        ['paired', '99', 'A'], ['paired', '147', 'A'],
+        ['paired', '355', 'B'], ['paired', '403', 'B'],
+        ['singleton_R1', '73', 'A'], ['singleton_R1', '133', '*'],
+        ['singleton_R2', '69', '*'], ['singleton_R2', '137', 'A'],
+        ['excluded', '99', 'A-excluded'], ['excluded', '147', 'A-excluded'],
+    ]
+    fragments = Counter()
+    emitted = Mock()
+    mapped_mates = write_reported_pairs(
+        placements, emitted, fragment_counts=fragments)
+    assert mapped_mates == 6
+    assert fragments['two_mates'] == 2
+    assert fragments['one_mate'] == 2
+    assert fragments['two_mates'] + fragments['one_mate'] == 4
+    assert emitted.writerow.call_count == 8
