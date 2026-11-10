@@ -28,6 +28,15 @@ see [Steps and input/output files](../steps.md).
 Placement alternatives describe uncertainty about *location*, not additional
 reads or independent evidence.
 
+Maximum depth (`max_depth`) is a counterfactual upper bound, not independent
+molecular observations and not observed unique-molecule depth: one sequenced
+fragment contributes one unit of `max_depth` to *each* compatible placement,
+so summing `max_depth` across alternative contigs (or positions) overcounts
+molecules. Downstream reports must not misstate `max_depth` as observed
+unique-molecule depth; use `avg_depth` (fractional `1/N` attribution per
+fragment) when a molecule-conserving summary is needed, and seek
+biological/human review before clinical use.
+
 ## Mapping and placement selection
 
 The de novo pipeline remaps trimmed paired FASTQs twice: first against the
@@ -183,6 +192,35 @@ or label specific variant calls as incomplete. For coverage interpretation,
 inspect the relevant remapping pass's diagnostic count alongside the
 reported alignments and depth; do not infer that omitted best-scoring
 placements either exist or do not exist solely from saturation.
+
+## Validation status and risks (follow-up note)
+
+Docs-only clarification on top of `e0073cb5` (PR #1734, merged 2026-11-10;
+6/6 check-runs success at the merge head: build, main, docker-test,
+singularity-test, deploy, report-build-status). No code, mapped (non-denovo)
+behavior, or reference/threshold change in this follow-up, so no runtime
+impact beyond the base commit.
+
+- Cheap focused re-runs in this follow-up clone: `test_denovo_depth.py`
+  4 passed; `test_denovo_multimap.py` 80 passed with 2 failures at collection
+  from missing `gotoh` (`test_callback_counts_unique_pairs...`,
+  `test_every_denovo_search...`) — environment gap, not a code regression.
+  `test_denovo_reporting_diagnostics.py` was not runnable here for the same
+  missing-`gotoh` reason.
+- Board-reported (not re-run here) merged-line evidence: full regression
+  ~4415 passed / 5 skipped / 54 xfailed with Ruff and mypy clean; 198/198
+  archived fixed-contig remaps passing the fail-closed guard; real HIV/HCV
+  A/B comparisons showing recovered shared-depth positions but with
+  allele-retention caveats (reported single-allele flip and mixture-symbol
+  changes at clinical cutoffs; gains are nonmonotone across contigs).
+- Risk: `max_depth` consensus is a counterfactual upper bound (see above);
+  false-positive coverage/allele risk remains where alternatives are
+  correlated. Clinical production remains NO-GO pending independent typed
+  controls, calibrated minority-fraction work, and human/scientific review.
+- Coordination: Ivanka `ottojung/ivanka#147` (Beta gate: validate molecular
+  accounting in conditional HCV remapping) is still open with no comments at
+  time of writing; related MiCall history (#141, #264, #290, #200, #719,
+  #1428) is tracked in the Antonina issue, not re-litigated here.
 
 ## Implementation map
 
