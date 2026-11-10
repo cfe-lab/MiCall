@@ -158,10 +158,11 @@ Individual files are described after the list of steps.
     separate rows, so this is not necessarily a count of distinct fragments.
   * offset - zero-based offset of the read within the mapping reference
   * seq - the mapped sequence of the read, aligned to the reference. In de novo
-    mode, lowercase `n` marks coverage already provided by another placement
-    of the same fragment at that reference position; it is ignored as
-    noncoverage, **not** interpreted as a deletion (`-`). Ordinary quality
-    filtering also applies.
+    mode, lowercase `n` marks nucleotide or deletion evidence already
+    represented by another placement of the same fragment, or deletion
+    evidence at a position with nucleotide support from that fragment.
+    It is ignored as noncoverage, **not** interpreted as a deletion (`-`).
+    Ordinary quality filtering also applies.
   * inserts - (g2p_aligned.csv only) insertions in the read relative to
     V3LOOP, preserved for insertions.csv reporting. Semicolon-separated
     `pos:seq:support` groups, where pos is the 1-based seed/query
@@ -211,8 +212,13 @@ Individual files are described after the list of steps.
     In reference-based remapping this retains the remapper's unmapped
     read-end count.
   * `multimap-capped-pairs` - original read pairs for which Bowtie2 reached
-    its per-pair reporting limit; further equal-scoring alignments could be
-    missing. This is diagnostic only and does not stop reporting.
+    its per-pair reporting limit. Always emitted in de novo remap counts,
+    including zero, for both unstitched and stitched passes. Additional
+    placements may be absent, potentially including equally best-scoring
+    alignments; the count does not tell whether any were missed. If equally
+    best-scoring alignments were omitted, coverage and variant support on
+    their contigs can be understated. This is diagnostic and does not stop
+    reporting or automatically invalidate specific variant calls.
   * `multimap-oversized-pairs` - original read pairs with too many SAM
     records for safe selection. Their alignments are discarded; this
     diagnostic does not stop subsequent processing.
@@ -335,8 +341,9 @@ Individual files are described after the list of steps.
 * clipping.csv
   * refname - seed reference the reads mapped to
   * pos - one-based nucleotide position within the consensus sequence
-  * count - number of read pairs that soft clipped instead of mapping to this
-    position
+  * count - number of distinct read pairs with soft-clipped evidence
+    at this reference position. In de novo mode, alternative placements
+    of the same fragment contribute at most once per contig position.
 * failed.csv
   * qname - query name from the read
   * cause - reason the reads failed to merge

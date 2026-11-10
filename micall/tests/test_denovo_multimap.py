@@ -621,3 +621,41 @@ def test_every_denovo_search_uses_finite_bowtie_reporting_limit(tmp_path):
     args = mapper.yield_output.call_args.args[0]
     assert '-a' not in args
     assert args[args.index('-k') + 1] == '12'
+
+
+@pytest.mark.parametrize('deletion_first', [True, False])
+def test_alternative_deletion_does_not_override_nucleotide_support(
+        deletion_first):
+    # The second placement reaches new positions, so the overlap must be
+    # retained without introducing a deletion at position 104.
+    nucleotide = placement('fragment', 'A', pos=100)
+    deletion = placement('fragment', 'A', pos=101, secondary=True,
+                         cigar='3M1D2M')
+    pairs = (deletion, nucleotide) if deletion_first else (nucleotide, deletion)
+    aligned, depth = StringIO(), StringIO()
+    sam2aln(remap_csv(sam(*pairs).getvalue()), aligned, depth_csv=depth)
+
+    rows = list(csv.DictReader(StringIO(aligned.getvalue())))
+    assert len(rows) == 2
+    assert all('-' not in row['seq'] for row in rows)
+    covered = set()
+    for row in rows:
+        for pos, base in enumerate(row['seq'], int(row['offset']) + 1):
+            if base in 'ACGT':
+                assert pos not in covered
+                covered.add(pos)
+    assert covered == set(range(100, 107))
+    depths = {(row['refname'], int(row['position'])): row
+              for row in csv.DictReader(StringIO(depth.getvalue()))}
+    assert depths['A', 104]['max_depth'] == '1'
+
+
+def test_shared_deletion_position_is_counted_once_across_placements():
+    first = placement('fragment', 'A', pos=100, cigar='3M1D2M')
+    second = placement('fragment', 'A', pos=101, cigar='2M1D3M',
+                       secondary=True)
+    aligned = StringIO()
+    sam2aln(remap_csv(sam(first, second).getvalue()), aligned)
+    rows = list(csv.DictReader(StringIO(aligned.getvalue())))
+    assert len(rows) == 2
+    assert sum(row['seq'].count('-') for row in rows) == 1

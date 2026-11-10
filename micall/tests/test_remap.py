@@ -1182,6 +1182,7 @@ R1,1.0,R1,TCACCAGGACAGCGGGTTGAATTCCTCGTGCAAGCGTGGAA
 type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,8,,,,
+multimap-capped-pairs,0,,,,
 remap-final 1-R1,8,,,,
 remap-fragments,4,,,,
 unmapped,12,,,,
@@ -1243,6 +1244,7 @@ type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,6,,,,
 remap 2-R2-partial,2,,,,
+multimap-capped-pairs,0,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-partial,2,,,,
 remap-fragments,4,,,,
@@ -1285,6 +1287,7 @@ type,count,filtered_count,seed_dist,other_dist,other_seed
 raw,20,,,,
 remap 1-R1,6,,,,
 remap 2-R2-excluded,2,,,,
+multimap-capped-pairs,0,,,,
 remap-final 1-R1,6,,,,
 remap-final 2-R2-excluded,2,,,,
 remap-fragments,4,,,,

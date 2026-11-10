@@ -752,6 +752,7 @@ def map_to_contigs(fastq1,
         bowtie_discard = stack.enter_context(open(os.devnull, 'w'))
         # start remapping loop
         new_counts = Counter()
+        diagnostics = Counter()
 
         if conseqs:
             # Request up to 12 paired placements on every de novo panel.
@@ -776,7 +777,6 @@ def map_to_contigs(fastq1,
                                               max_alignments=denovo_limit,
                                               threads=DENOVO_BOWTIE_THREADS)
             best_samfile = samfile + '.best'
-            diagnostics = Counter()
             with open(samfile) as source, open(best_samfile, 'w') as target:
                 accepted_counts = select_best_pairs(
                     source, target, limit=denovo_limit,
@@ -787,9 +787,6 @@ def map_to_contigs(fastq1,
                     "%d pairs reached the Bowtie2 -k %d reporting limit; "
                     "additional placements may have been omitted.",
                     diagnostics['at_report_limit'], denovo_limit)
-                remap_counts_writer.writerow({
-                    'type': 'multimap-capped-pairs',
-                    'count': diagnostics['at_report_limit']})
             if diagnostics['discarded_mapped_pairs']:
                 logger.warning(
                     "Excluded %d mapped pairs with no usable or safe "
@@ -812,6 +809,12 @@ def map_to_contigs(fastq1,
             new_counts.clear()
             new_counts.update(accepted_counts)
             write_remap_counts(remap_counts_writer, new_counts, title='remap')
+
+        # Always expose the saturation count as sample-level output metadata,
+        # including zero. Saturation is not proof of a missed best alignment.
+        remap_counts_writer.writerow({
+            'type': 'multimap-capped-pairs',
+            'count': diagnostics['at_report_limit']})
 
         # generate SAM CSV output
         remap_writer = csv.DictWriter(remap_csv, SAM_FIELDS, lineterminator=os.linesep)

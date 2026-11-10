@@ -97,18 +97,26 @@ sample. A fragment with no accepted Q15 placement contributes nothing.
 ### Coverage in `aligned.csv`
 
 The nucleotide and amino-acid reporting path consumes `aligned.csv`.
-For each fragment and quality cutoff, `sam2aln` records which contig
-positions have already received A/C/G/T coverage. If another placement
-covers one of those positions, that base is written as lowercase `n` in
-`aligned.csv`. This represents *no additional coverage*, not a
-deletion (`-`). Bases at positions not yet covered by that fragment remain
-available to the reporting path.
+For each original fragment, contig, and quality cutoff, `sam2aln`
+counts each reference position's nucleotide or deletion observation at
+most once. When one accepted placement has a Q-qualified nucleotide and
+another has a deletion at the same position, the nucleotide takes
+precedence, independently of placement order. Repeated observations
+are masked with lowercase `n`, meaning *no additional coverage or
+deletion evidence*. Leading and trailing alignment padding (`-`) is not
+treated as a deletion. Positions uniquely supported by an alternative
+placement remain available for reporting.
 
 The separate `multimap_depth.csv` calculation uses the accepted merged
 Q15 placements **before** this overlap masking. Thus its maximum and
 fractional depths describe the full set of accepted placement hypotheses,
 while the aligned-read output avoids counting the same fragment's
 overlapping bases repeatedly.
+
+The `clipping.csv` diagnostic also uses fragment-level accounting:
+soft-clipped positions from all placements of one fragment are combined
+by contig and reference position, giving at most one clipping observation
+per fragment at each position.
 
 ## Output files and counts
 
@@ -139,6 +147,9 @@ The rows of `remap_counts.csv` have different counting units:
 - `unmapped`: read ends without a mapped placement **after** placement
   selection and mate rescue. The count matches the two final unmapped
   FASTQs; mapped ends on excluded-seed contigs are not included.
+- `multimap-capped-pairs`: original fragments reaching Bowtie2's reporting
+  limit. Written for every de novo remap, including a zero value, so the
+  saturation status is machine-readable without inspecting logs.
 
 MiCall tracks mapped mates by original query name when producing the
 final unmapped FASTQs. Alignments on excluded-seed contigs are omitted
@@ -157,9 +168,21 @@ once as aligned if at least one reported merged Q15 placement was accepted.
 - `multimap-oversized-pairs`: number of query-name groups containing more
   than 8,192 SAM records. The entire group is excluded from selection.
 
-These diagnostics are informational: neither one blocks contig stitching
-or clinical reporting. The mapping limit bounds alignment output; it
-does not establish exhaustive enumeration.
+Both remapping passes record this diagnostic in their own
+`remap_counts.csv` (the unstitched pass uses the `unstitched_` prefix).
+When the capped-pair count is nonzero, some placements may be absent from
+the retained alignments. If omitted placements tie for best score, support
+for their reference positions may be understated, including in downstream
+coverage and variant reporting. The count alone cannot determine whether
+that happened: a saturated search can also report a unique best alignment
+with additional lower-scoring candidates. A zero count does not prove
+exhaustive mapping either, because Bowtie2's search is heuristic.
+
+These diagnostics are informational and do not suppress clinical reporting
+or label specific variant calls as incomplete. For coverage interpretation,
+inspect the relevant remapping pass's diagnostic count alongside the
+reported alignments and depth; do not infer that omitted best-scoring
+placements either exist or do not exist solely from saturation.
 
 ## Implementation map
 

@@ -191,7 +191,7 @@ def test_denovo_reports_up_to_12_contigs_and_warns_on_saturation(
 
     count_rows = {r['type']: int(r['count']) for r in
                   csv.DictReader(StringIO(count_csv.getvalue()))}
-    assert count_rows.get('multimap-capped-pairs', 0) == int(expect_cap)
+    assert count_rows['multimap-capped-pairs'] == int(expect_cap)
     rows = list(csv.DictReader(StringIO(output.getvalue())))
     expected = MAX_DENOVO_ALIGNMENTS if expect_cap else len(references)
     assert len(rows) == expected * 2

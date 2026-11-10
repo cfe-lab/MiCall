@@ -939,3 +939,26 @@ class MergeInsertionsTest(unittest.TestCase):
         merged = merge_inserts(ins1, ins2)
 
         self.assertEqual(expected_merged, merged)
+
+
+def test_soft_clipping_counts_once_per_fragment_with_alternative_placements():
+    from csv import DictReader
+
+    # Fragment a has overlapping alternatives on A and one on B.
+    # Fragment b is another physical fragment on A.
+    lines = ['qname,flag,rname,pos,mapq,cigar,rnext,pnext,tlen,seq,qual']
+    for qname, placements in (
+            ('a', (('A', 18), ('A', 19), ('B', 18))),
+            ('b', (('A', 18),))):
+        for reference, mate2_pos in placements:
+            lines.extend([
+                f'{qname},99,{reference},15,30,3S5M,=,{mate2_pos},0,TTTACGTA,IIIIIIII',
+                f'{qname},147,{reference},{mate2_pos},30,5M,=,15,0,ACGTA,IIIII',
+            ])
+    clipping = StringIO()
+    sam2aln(StringIO('\n'.join(lines) + '\n'), StringIO(),
+            clipping_csv=clipping)
+    assert list(DictReader(StringIO(clipping.getvalue()))) == [
+        {'refname': reference, 'pos': str(pos), 'count': str(count)}
+        for reference, count in (('A', 2), ('B', 1))
+        for pos in (12, 13, 14)]

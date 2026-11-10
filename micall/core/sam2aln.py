@@ -302,7 +302,7 @@ class PairProcessor(object):
         # {rname: {pos: clipping_count}}
         self.clipping_counts = defaultdict(Counter) if is_clipping else None
 
-    def process(self, rows):
+    def process(self, rows, clipped_positions=None):
         """ Merge two matched reads into a single aligned read.
 
         Also report insertions and failed merges.
@@ -376,7 +376,10 @@ class PairProcessor(object):
                                     'qual': iqual})
             if self.clipping_counts is not None:
                 for i in soft_clipped - mapped:
-                    self.clipping_counts[rname][i+1] += 1
+                    if clipped_positions is None:
+                        self.clipping_counts[rname][i+1] += 1
+                    else:
+                        clipped_positions.add((rname, i+1))
 
             # merge reads
             for qcut in SAM2ALN_Q_CUTOFFS:
@@ -431,7 +434,14 @@ def multi_mapping_regions(pairs, processor, depths, fragment_counts=None):
     # fractional-depth accounting separate from maximum-depth consensus:
     # a base present in multiple alternatives is counted once in the latter.
     for _, group in groupby(pairs, key=lambda pair: pair[0]['qname']):
-        processed = [processor.process(pair) for pair in group]
+        clipped_positions = (
+            set() if processor.clipping_counts is not None else None)
+        processed = [processor.process(pair, clipped_positions) for pair in group]
+        if clipped_positions is not None:
+            # The same fragment can have several placements with identical
+            # soft-clipped positions. Each reference position counts once.
+            for rname, position in sorted(clipped_positions):
+                processor.clipping_counts[rname][position] += 1
         accepted = [result for result in processed
                     if DEPTH_QCUT in result[1]]
         if fragment_counts is not None and accepted:
@@ -439,28 +449,45 @@ def multi_mapping_regions(pairs, processor, depths, fragment_counts=None):
         if depths is not None:
             depths.add_fragment(
                 (result[0], result[1][DEPTH_QCUT]) for result in accepted)
+        # A nucleotide on any accepted placement takes precedence over a
+        # deletion at that position from another placement of the same
+        # fragment. Decide this across the group so placement order cannot
+        # change whether a deletion is reported.
+        nucleotide_positions = defaultdict(set)
+        for rname, mseqs, _, _ in processed:
+            for qcut, mseq in mseqs.items():
+                positions = nucleotide_positions[rname, qcut]
+                positions.update(i for i, base in enumerate(mseq)
+                                 if base in 'ACGT')
         covered = {}
         for rname, mseqs, insert_list, failed_list in processed:
             unique_seqs = {}
             for qcut, mseq in mseqs.items():
-                seen = covered.setdefault((rname, qcut), set())
+                key = (rname, qcut)
+                seen = covered.setdefault(key, set())
                 chars = list(mseq)
-                any_bases = False
-                any_new_bases = False
+                # Leading/trailing '-' are alignment padding, not deletions
+                # represented in the emitted aligned.csv sequence.
+                start = len(mseq) - len(mseq.lstrip('-'))
+                end = len(mseq.rstrip('-'))
+                has_evidence = False
+                has_new_evidence = False
                 for offset, base in enumerate(chars):
-                    if base in 'ACGT':
-                        any_bases = True
-                        if offset in seen:
-                            # MiCall interprets '-' as a real deletion.
-                            # Lowercase 'n' means absent coverage instead.
-                            chars[offset] = 'n'
-                        else:
-                            seen.add(offset)
-                            any_new_bases = True
-                # Do not emit an entirely redundant consensus placement.
-                # Preserve the historical behavior for a sequence containing
-                # no high-quality ACGT bases in the first place.
-                if any_new_bases or not any_bases:
+                    is_deletion = base == '-' and start <= offset < end
+                    if base not in 'ACGT' and not is_deletion:
+                        continue
+                    has_evidence = True
+                    if (offset in seen or
+                            (is_deletion and
+                             offset in nucleotide_positions[key])):
+                        # 'n' carries no coverage or deletion evidence.
+                        chars[offset] = 'n'
+                    else:
+                        seen.add(offset)
+                        has_new_evidence = True
+                # Retain placements providing distinct nucleotide or deletion
+                # observations. Preserve empty/uncertain sequences as before.
+                if has_new_evidence or not has_evidence:
                     unique_seqs[qcut] = ''.join(chars)
             yield rname, unique_seqs, insert_list, failed_list
 
