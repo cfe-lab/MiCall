@@ -921,6 +921,18 @@ def check_merged_sequence_support(
     return True, cut_crossing_depth, min_cov
 
 
+def _cannot_phase_long_overlap(left_len: int, right_len: int,
+                              merged_len: int, read_length: int,
+                              validate_reads: bool) -> bool:
+    """Do not infer long-repeat phase from single-read placement counts.
+
+    Until actual paired-molecule linkage is tested, an overlap beyond the
+    combined two-mate sequence length has no demonstrated unique phase.
+    """
+    collapsed_bases = max(0, left_len + right_len - merged_len)
+    return validate_reads and collapsed_bases > 2 * read_length
+
+
 def try_combine_contigs(
     is_debug2: bool,
     current_score: Score,
@@ -1032,6 +1044,13 @@ def try_combine_contigs(
     # Validate the merged sequence around the join boundary against reads.
     # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
     ctx = ReferencelessStitcherContext.get()
+    if _cannot_phase_long_overlap(len(left.seq), len(right.seq),
+                                 len(result_seq), ctx.read_length,
+                                 ctx.read_index is not None and ctx.minimum_read_depth > 0):
+        # Independent reads in a repeat this long cannot establish which
+        # original molecules connect its two unique flanks. The existing
+        # placement-based depth check deliberately multi-counts repeat hits.
+        return None
     if ctx.read_index is None or ctx.minimum_read_depth == 0:
         passed, cut_depth, min_win_cov = True, 0, 0
     elif not ctx.read_index:

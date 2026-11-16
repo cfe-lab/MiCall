@@ -2084,3 +2084,47 @@ def test_cli_zero_read_length_rejected(tmp_path):
         main(["without-references", str(fasta), str(out),
               "--read-length", "0"])
     assert exc.value.code == 2
+
+
+@pytest.mark.parametrize(
+    "collapsed,read_length,validate,expected",
+    [(0, 150, True, False), (150, 150, True, False),
+     (300, 150, True, False), (301, 150, True, True),
+     (540, 150, True, True), (540, 150, False, False),
+     (0, 0, False, False), (10, 4, True, True)],
+)
+def test_long_repeat_without_original_pair_phase_is_rejected(
+    collapsed, read_length, validate, expected,
+):
+    from micall.utils.referenceless_contig_stitcher import _cannot_phase_long_overlap
+    assert _cannot_phase_long_overlap(1000, 1000, 2000 - collapsed,
+                                      read_length, validate) is expected
+
+
+def test_long_repeat_read_placements_do_not_establish_molecular_phase():
+    """Two 150nt reads cannot phase a 540nt repeat, even at high depth."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    source = random.Random(472)
+    molecule = ''.join(source.choices('ACGT', k=1800))
+    left, right = molecule[:1050], molecule[510:]
+    assert left[-540:] == right[:540]
+    assembled = f'>left\n{left}\n>right\n{right}\n'
+    reads = {150: Counter(molecule[i:i+150] for i in range(1651))}
+
+    def lengths(read_index):
+        output = StringIO()
+        referenceless_contig_stitcher(StringIO(assembled), output,
+                                      read_index=read_index,
+                                      minimum_read_depth=1, read_length=150)
+        return sorted(len(record.seq) for record in SeqIO.parse(
+            StringIO(output.getvalue()), 'fasta'))
+
+    assert lengths(None) == [1800]  # The existing unvalidated compatibility mode.
+    assert lengths(reads) == [1050, 1290]  # Fail closed without paired phase.
