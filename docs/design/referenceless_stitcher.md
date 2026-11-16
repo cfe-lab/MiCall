@@ -157,16 +157,21 @@ relatedness:
 * **Raw-read support** — an independent check that the proposed
   junction is crossed by sample reads (section 9 and
   [Read-Supported Join Validation](../specs/referenceless-stitcher-read-information-handling.md)).
-* **Competing overlap placements** — when raw-read checking is enabled,
-  a proposed overlap longer than the longest indexed individual read
-  is rejected if a distinct suffix/prefix offset also clears the
-  stitcher's alignment score threshold. Candidate alternatives are
-  found from exact k-mer anchors, then checked by the same gapped
-  alignment/scoring code used for accepted joins. One long but unique
-  overlap is not rejected merely because it is long. Exact anchors
-  make this a sufficient ambiguity detection, not proof that a join
-  is phased: a distant alternative with no intact anchor is missed,
-  and the current index discards mate linkage (section 9).
+* **Competing overlap placements** — independently of whether FASTQ
+  reads were supplied, the stitcher rejects a second overlap placement
+  that is distinct from *every diagonal* in the accepted gapped
+  alignment. An alternative must span more than the configured
+  single-read length and at least 80% of the accepted alignment, with
+  nucleotide identity at least max(80%, accepted identity minus two
+  percentage points). Exact k-mer anchors propose candidate offsets;
+  normalized direct or gapped identity across the proposed overlap,
+  rather than an absolute score inflated by length, checks whether
+  each competes. For gapped alternatives, most matching positions must
+  remain on diagonals absent from the accepted alignment. Indels
+  within the accepted alignment and local slipped repeats are not
+  automatically second placements. This is a conservative
+  heuristic, not a proof of correct haplotype phase: unanchored
+  alternatives and short repeats can still be missed (section 9).
 * **Path competition** — individually plausible edges compete for
   membership in a bounded set of candidate paths; only winners
   survive (section 10).
@@ -371,8 +376,10 @@ caller in `try_combine_contigs`):
 
 Full contracts — cut-spanning definitions, window geometry,
 counting model including the accepted placement-times-multiplicity
-overcounting tradeoff, disabled states (`read_index is None` or
-`minimum_read_depth == 0` accepts; enabled-but-empty `{}` rejects),
+overcounting tradeoff, raw-read-check disabled states
+(`read_index is None` or `minimum_read_depth == 0` skip that
+check but not competing-placement rejection; enabled-but-empty
+`{}` rejects),
 CLI flags (`--fastq1` / `--fastq2`, `--minimum-read-depth`,
 `--read-length`), and pipeline defaults (enabled with trimmed FASTQs
 at depth 1 in `micall/drivers/sample.py`) — belong to the
