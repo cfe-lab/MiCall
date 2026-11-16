@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 from collections import defaultdict, Counter

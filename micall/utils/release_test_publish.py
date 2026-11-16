@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """ Copy result files to shared folder so they can be compared.
 
 They should also be processed by the report scripts.

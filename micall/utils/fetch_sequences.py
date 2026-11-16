@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """ Report where references come from, and validate that they match the source.
 
 Running this script reports a source for each group of references, downloads

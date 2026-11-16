@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # Script to update QAI with information from the
 # conseq.csv files produced by the MiSeq pipeline.
 # To execute as a script, run python -m micall.monitor.update_qai

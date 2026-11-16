@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import json
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
 from pathlib import Path

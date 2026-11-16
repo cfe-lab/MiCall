@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """
 Takes preliminary SAM as CSV input.  Iterative re-mapping of reads from
 original FASTQ files.

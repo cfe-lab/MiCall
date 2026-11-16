@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """ This script converts the HCV rules into a markdown file.
 
 It is part of the project web site.

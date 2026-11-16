@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import argparse  # noqa: EXE002
 import csv
 import itertools

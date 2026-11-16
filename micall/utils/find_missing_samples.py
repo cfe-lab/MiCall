@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import re
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging

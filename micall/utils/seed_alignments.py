@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from micall.core.project_config import ProjectConfig
 from micall.data.landmark_reader import LandmarkReader
 from micall.utils.translation import translate

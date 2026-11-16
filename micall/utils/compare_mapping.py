@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from base64 import standard_b64encode
 from math import copysign
 from turtle import Turtle

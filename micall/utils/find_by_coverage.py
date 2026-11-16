@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from csv import DictReader
 from pathlib import Path

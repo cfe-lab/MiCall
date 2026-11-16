@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """Benchmark tool for the referenceless contig stitcher with real megacompare inputs."""
 
 import argparse

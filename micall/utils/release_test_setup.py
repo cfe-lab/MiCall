@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """ Set up raw data for the release test.
 
 Copies a set of run folders and selected FASTQ files from the main raw data

@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import operator
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType, Namespace
 from collections import namedtuple, defaultdict

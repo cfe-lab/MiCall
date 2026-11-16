@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import typing
 from argparse import ArgumentParser, OPTIONAL, FileType, ArgumentDefaultsHelpFormatter
 from collections import defaultdict, Counter

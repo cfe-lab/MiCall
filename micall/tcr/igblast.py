@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """wrapper for igBlast
 """
 import sys

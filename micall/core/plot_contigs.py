@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import typing
 from typing import Dict, Tuple, List, Set, Iterable, NoReturn, Sequence, Union
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType

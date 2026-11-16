@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from mappy import Aligner
 from enum import IntEnum
 from pathlib import Path

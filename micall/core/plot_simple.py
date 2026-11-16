@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import argparse
 from genetracks import Figure, Track, Multitrack, Coverage
 import micall.core.plot_contigs as plot_contigs  # noqa: PLR0402

@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """ Compare result files in shared folder with previous release. """
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv

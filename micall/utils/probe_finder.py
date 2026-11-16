@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import re
 import typing
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType

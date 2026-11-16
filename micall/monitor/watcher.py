@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 import logging.config
 import os

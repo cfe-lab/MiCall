@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from argparse import ArgumentParser, FileType
 from io import StringIO
 from operator import attrgetter
