@@ -9,10 +9,7 @@ import re
 
 
 def is_executable_script(content: str) -> bool:
-    if content.startswith("#!"):
-        return True
-
-    return False
+    return content.startswith("#!")
 
 
 def iterate_executables() -> Iterator[Path]:
