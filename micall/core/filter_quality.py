@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import argparse  # noqa: EXE002
+import argparse
 import csv
 import itertools
 import math
