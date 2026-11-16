@@ -12,9 +12,6 @@ def is_executable_script(content: str) -> bool:
     if content.startswith("#!"):
         return True
 
-    if re.findall(r'__name__.+__main__', content):  # noqa: SIM103
-        return True
-
     return False
 
 
