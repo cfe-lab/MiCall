@@ -445,7 +445,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     lstrip_map: Dict[int, int] = {}
     rstrip_map: Dict[int, int] = {}
 
-    def remove_intermediate_edges(graph):
+    def remove_intermediate_edges_from_transitive_closure(graph):
         # This input is already a transitive closure; recomputing it
         # repeatedly traverses every path for no additional information.
         reachable = {node: set(descendants) for node, descendants in graph.items()}
@@ -683,7 +683,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     children_graph = inverse_graph(parent_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
-    reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
+    reduced_parent_graph = remove_intermediate_edges_from_transitive_closure(transitive_parent_graph)
     sorted_roots = sorted(parent_id for
                                parent_id in contig_map
                                if parent_id not in parent_graph)
@@ -699,7 +699,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             morphism_graph[parents[0]] = [contig_id]
 
     transitive_morphism_graph = transitive_closure(morphism_graph)
-    reduced_morphism_graph = remove_intermediate_edges(transitive_morphism_graph)
+    reduced_morphism_graph = remove_intermediate_edges_from_transitive_closure(transitive_morphism_graph)
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_morphism_graph))
 
     for contig_id, parents in parent_graph.items():
@@ -709,8 +709,6 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     positioned = set()
 
     def set_query_position(contig_id: int) -> None:
-        if contig_id in positioned:
-            return
         positioned.add(contig_id)
         contig = contig_map[contig_id]
         def copy_from_parent(contig: AlignedContig, parent_id: int) -> None:
