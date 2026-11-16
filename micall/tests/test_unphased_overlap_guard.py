@@ -6,19 +6,21 @@ from io import StringIO
 
 from Bio import SeqIO
 from micall.utils.referenceless_contig_stitcher import (
-    _cannot_phase_long_overlap, referenceless_contig_stitcher,
+    _has_ambiguous_long_overlap, referenceless_contig_stitcher,
 )
 
 
 class LongUnphasedOverlapTests(unittest.TestCase):
-    def test_boundary_and_disabled_behavior(self):
-        for merged, rejected in ((2000, False), (1700, False),
-                                 (1699, True), (1460, True)):
-            with self.subTest(merged=merged):
-                self.assertEqual(
-                    _cannot_phase_long_overlap(1000, 1000, merged, 150, True),
-                    rejected)
-        self.assertFalse(_cannot_phase_long_overlap(1000, 1000, 1460, 150, False))
+    def test_only_multiple_long_exact_offsets_are_blocked(self):
+        left = "G" * 200 + "ACGT" * 200
+        right = "ACGT" * 200 + "T" * 200
+        merged = len(left) + len(right) - 800
+        self.assertTrue(_has_ambiguous_long_overlap(
+            left, right, merged, 150, True))
+        self.assertFalse(_has_ambiguous_long_overlap(
+            left, right, merged, 150, False))
+        self.assertFalse(_has_ambiguous_long_overlap(
+            left, right, merged, 500, True))
 
     def test_raw_reads_cannot_phase_a_540_base_overlap(self):
         rng = random.Random(472)
@@ -35,7 +37,7 @@ class LongUnphasedOverlapTests(unittest.TestCase):
             return sorted(len(row.seq) for row in SeqIO.parse(
                 StringIO(out.getvalue()), 'fasta'))
         self.assertEqual(assembled_lengths(None), [1800])
-        self.assertEqual(assembled_lengths(reads), [1050, 1290])
+        self.assertEqual(assembled_lengths(reads), [1800])
 
 
 if __name__ == '__main__':

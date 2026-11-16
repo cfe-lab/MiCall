@@ -921,16 +921,54 @@ def check_merged_sequence_support(
     return True, cut_crossing_depth, min_cov
 
 
-def _cannot_phase_long_overlap(left_len: int, right_len: int,
-                              merged_len: int, read_length: int,
-                              validate_reads: bool) -> bool:
-    """Do not infer long-repeat phase from single-read placement counts.
+def _has_ambiguous_long_overlap(
+    left_seq: str,
+    right_seq: str,
+    merged_len: int,
+    read_length: int,
+    validate_reads: bool,
+) -> bool:
+    """Reject demonstrably ambiguous long suffix/prefix placements.
 
-    Until actual paired-molecule linkage is tested, an overlap beyond the
-    combined two-mate sequence length has no demonstrated unique phase.
+    Read counts discarded mate identity, so a repeated overlap longer
+    than two mates cannot be phased from independent read placements.
+    A *unique* long overlap is not itself evidence of a repeat.
+
+    The prefix-function scan finds alternative exact overlap offsets in
+    linear time. It does not prove phase across different templates with
+    the same unique overlap; that needs an original paired-read index.
     """
-    collapsed_bases = max(0, left_len + right_len - merged_len)
-    return validate_reads and collapsed_bases > 2 * read_length
+    if not validate_reads or read_length <= 0:
+        return False
+    threshold = 2 * read_length
+    if len(left_seq) + len(right_seq) - merged_len <= threshold:
+        return False
+    if not right_seq:
+        return False
+
+    # KMP: compute all possible suffix(left)/prefix(right) placements
+    # without quadratic repeated substring searches.
+    failure = [0] * len(right_seq)
+    matched = 0
+    for index in range(1, len(right_seq)):
+        while matched and right_seq[index] != right_seq[matched]:
+            matched = failure[matched - 1]
+        if right_seq[index] == right_seq[matched]:
+            matched += 1
+        failure[index] = matched
+
+    matched = 0
+    for base in left_seq:
+        while matched and (
+            matched == len(right_seq) or right_seq[matched] != base
+        ):
+            matched = failure[matched - 1]
+        if right_seq[matched] == base:
+            matched += 1
+
+    # All shorter valid placements are borders of the longest match.
+    # Two independently possible long offsets make the join ambiguous.
+    return matched > threshold and failure[matched - 1] > threshold
 
 
 def try_combine_contigs(
@@ -1044,12 +1082,12 @@ def try_combine_contigs(
     # Validate the merged sequence around the join boundary against reads.
     # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
     ctx = ReferencelessStitcherContext.get()
-    if _cannot_phase_long_overlap(len(left.seq), len(right.seq),
-                                 len(result_seq), ctx.read_length,
-                                 ctx.read_index is not None and ctx.minimum_read_depth > 0):
-        # Independent reads in a repeat this long cannot establish which
-        # original molecules connect its two unique flanks. The existing
-        # placement-based depth check deliberately multi-counts repeat hits.
+    if _has_ambiguous_long_overlap(
+        left.seq, right.seq, len(result_seq), ctx.read_length,
+        ctx.read_index is not None and ctx.minimum_read_depth > 0,
+    ):
+        # Multiple consistent repeat offsets cannot be distinguished
+        # by the placement-multiplied unpaired read coverage.
         return None
     if ctx.read_index is None or ctx.minimum_read_depth == 0:
         passed, cut_depth, min_win_cov = True, 0, 0
