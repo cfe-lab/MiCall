@@ -5,7 +5,6 @@ import sys
 from typing import Sequence, Iterator
 import os
 from pathlib import Path
-import re
 
 
 def is_executable_script(content: str) -> bool:
