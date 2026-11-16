@@ -924,51 +924,53 @@ def check_merged_sequence_support(
 def _has_ambiguous_long_overlap(
     left_seq: str,
     right_seq: str,
-    merged_len: int,
+    overlap_size: int,
     read_length: int,
     validate_reads: bool,
+    minimum_score: Optional[Score] = None,
 ) -> bool:
-    """Reject demonstrably ambiguous long suffix/prefix placements.
+    """Reject a second score-acceptable long overlap placement.
 
-    Read counts discarded mate identity, so a repeated overlap longer
-    than two mates cannot be phased from independent read placements.
-    A *unique* long overlap is not itself evidence of a repeat.
+    The read index stores individual sequences, not mate linkage.
+    A single read cannot link two alternative overlaps longer than
+    its full length, even if multiplied placements inflate coverage.
+    The same alignment and score threshold as the candidate stitch
+    determine whether an alternative is viable; a long unique
+    placement by itself is not ambiguous.
 
-    The prefix-function scan finds alternative exact overlap offsets in
-    linear time. It does not prove phase across different templates with
-    the same unique overlap; that needs an original paired-read index.
+    Exact k-mer anchors propose alternative shifts, and the regular
+    global aligner checks each alternative (including substitutions
+    and indels). This is a sufficient ambiguity test, not proof of
+    uniqueness if an alternative contains no intact anchor.
     """
-    if not validate_reads or read_length <= 0:
+    if not validate_reads or read_length <= 0 or overlap_size <= read_length:
         return False
-    threshold = 2 * read_length
-    if len(left_seq) + len(right_seq) - merged_len <= threshold:
+    if not left_seq or not right_seq:
         return False
-    if not right_seq:
-        return False
-
-    # KMP: compute all possible suffix(left)/prefix(right) placements
-    # without quadratic repeated substring searches.
-    failure = [0] * len(right_seq)
-    matched = 0
-    for index in range(1, len(right_seq)):
-        while matched and right_seq[index] != right_seq[matched]:
-            matched = failure[matched - 1]
-        if right_seq[index] == right_seq[matched]:
-            matched += 1
-        failure[index] = matched
-
-    matched = 0
-    for base in left_seq:
-        while matched and (
-            matched == len(right_seq) or right_seq[matched] != base
-        ):
-            matched = failure[matched - 1]
-        if right_seq[matched] == base:
-            matched += 1
-
-    # All shorter valid placements are borders of the longest match.
-    # Two independently possible long offsets make the join ambiguous.
-    return matched > threshold and failure[matched - 1] > threshold
+    if minimum_score is None:
+        minimum_score = ACCEPTABLE_STITCHING_SCORE()
+    # Only inspect placements containing an exact anchor in the first
+    # read-length bases; no quadratic all-vs-all approximate alignment.
+    k = min(KMER_SIZE, read_length, len(left_seq), len(right_seq))
+    max_offset = min(read_length, len(right_seq) - k + 1)
+    candidates = set()
+    for right_at in range(0, max_offset, max(1, k // 2)):
+        anchor = right_seq[right_at:right_at + k]
+        left_at = left_seq.find(anchor)
+        while left_at >= 0:
+            size = len(left_seq) - left_at + right_at
+            if (read_length < size <= min(len(left_seq), len(right_seq))
+                    and size != overlap_size):
+                candidates.add(size)
+            left_at = left_seq.find(anchor, left_at + 1)
+    for size in sorted(candidates, reverse=True):
+        aligned_left, aligned_right = align_queries(
+            left_seq[-size:], right_seq[:size]
+        )
+        _, _, score = score_alignment(aligned_left, aligned_right, False)
+        if score >= minimum_score:
+            return True
+    return False
 
 
 def try_combine_contigs(
@@ -1082,12 +1084,18 @@ def try_combine_contigs(
     # Validate the merged sequence around the join boundary against reads.
     # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
     ctx = ReferencelessStitcherContext.get()
+    max_read_length = (max(ctx.read_index, default=ctx.read_length)
+                       if ctx.read_index is not None else ctx.read_length)
     if _has_ambiguous_long_overlap(
-        left.seq, right.seq, len(result_seq), ctx.read_length,
+        left.seq, right.seq, overlap_size, max_read_length,
         ctx.read_index is not None and ctx.minimum_read_depth > 0,
+        minimum_base_score,
     ):
-        # Multiple consistent repeat offsets cannot be distinguished
-        # by the placement-multiplied unpaired read coverage.
+        if is_debug2:
+            log(events.AmbiguousOverlapRejected(
+                left.unique_name, right.unique_name,
+                overlap_size, max_read_length,
+            ))
         return None
     if ctx.read_index is None or ctx.minimum_read_depth == 0:
         passed, cut_depth, min_win_cov = True, 0, 0

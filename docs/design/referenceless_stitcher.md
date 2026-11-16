@@ -157,6 +157,16 @@ relatedness:
 * **Raw-read support** — an independent check that the proposed
   junction is crossed by sample reads (section 9 and
   [Read-Supported Join Validation](../specs/referenceless-stitcher-read-information-handling.md)).
+* **Competing overlap placements** — when raw-read checking is enabled,
+  a proposed overlap longer than the longest indexed individual read
+  is rejected if a distinct suffix/prefix offset also clears the
+  stitcher's alignment score threshold. Candidate alternatives are
+  found from exact k-mer anchors, then checked by the same gapped
+  alignment/scoring code used for accepted joins. One long but unique
+  overlap is not rejected merely because it is long. Exact anchors
+  make this a sufficient ambiguity detection, not proof that a join
+  is phased: a distant alternative with no intact anchor is missed,
+  and the current index discards mate linkage (section 9).
 * **Path competition** — individually plausible edges compete for
   membership in a bounded set of candidate paths; only winners
   survive (section 10).

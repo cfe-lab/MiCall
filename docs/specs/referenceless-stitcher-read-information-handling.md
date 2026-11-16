@@ -184,14 +184,31 @@ the merged sequence perfectly.  Reads with sequencing errors or
 biological variation relative to the contig are not counted.  This
 undercounts true support in diverse samples.
 
-### Placement × multiplicity overcounting
+### Placement × multiplicity overcounting and ambiguity rejection
 
 In repetitive or low-complexity sequence, one canonical read may have
 multiple equally valid exact-match placements in the merged sequence.
 Each placement contributes its multiplicity, so total support can be
-inflated.  This is an accepted tradeoff: the algorithm is efficient,
-deterministic, and does not attempt to disambiguate multi-mapping
-reads.
+inflated. The read index deliberately does not retain mate linkage.
+
+For this reason, when validation is enabled, the stitcher also rejects
+a candidate overlap longer than the longest indexed individual read
+if it finds a *second* suffix/prefix offset that clears the **same**
+gapped-alignment score threshold used for the proposed join. The
+length bound is **one read**, not two read lengths: the index retains
+single reads, not paired-molecule phase. Alternatives are proposed
+from shared exact k-mer anchors and verified with the stitcher's
+normal global aligner and score. A unique 540-base overlap may still
+join; repeated 240-base overlaps supported only by 150-base reads
+cannot be phased by independent placements.
+
+This is not exhaustive repeat detection. An alternative without a
+shared intact anchor may be missed, and a unique sequence overlap
+does not prove two variable viral flanks belong to the same molecule.
+With validation disabled (missing FASTQs or depth zero) this extra
+guard is also disabled for backwards compatibility. Even when enabled,
+the rule does not recover paired-read linkage or justify declaring
+unmatched sequences biologically connected.
 
 The check is still effective because completely unsupported joins
 (chimeric, contamination-driven) should have **zero** exact

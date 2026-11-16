@@ -2089,7 +2089,7 @@ def test_cli_zero_read_length_rejected(tmp_path):
 @pytest.mark.parametrize(
     "read_length,validate,expected",
     [(150, True, True), (150, False, False),
-     (500, True, False), (0, True, False)],
+     (500, True, True), (800, True, False), (0, True, False)],
 )
 def test_only_repeated_long_overlap_offsets_are_ambiguous(
     read_length, validate, expected,
@@ -2099,9 +2099,26 @@ def test_only_repeated_long_overlap_offsets_are_ambiguous(
     )
     left = "G" * 200 + "ACGT" * 200
     right = "ACGT" * 200 + "T" * 200
-    merged_len = len(left) + len(right) - 800
     assert _has_ambiguous_long_overlap(
-        left, right, merged_len, read_length, validate,
+        left, right, 800, read_length, validate,
+    ) is expected
+
+
+@pytest.mark.parametrize(
+    "read_length,expected",
+    [(43, True), (44, False)],
+)
+def test_competing_overlap_one_base_either_side_of_single_read_limit(
+    read_length, expected,
+):
+    from micall.utils.referenceless_contig_stitcher import (
+        _has_ambiguous_long_overlap,
+    )
+
+    overlap = "ACGT" * 12
+    assert _has_ambiguous_long_overlap(
+        "G" * 12 + overlap, overlap + "T" * 12,
+        48, read_length, True,
     ) is expected
 
 
@@ -2114,31 +2131,118 @@ def test_unique_long_overlap_is_not_rejected_for_length_alone():
     molecule = ''.join(random.Random(472).choices('ACGT', k=1800))
     left, right = molecule[:1050], molecule[510:]
     assert not _has_ambiguous_long_overlap(
-        left, right, len(molecule), 150, True,
+        left, right, 540, 150, True,
     )
 
 
-def test_long_overlap_detection_agrees_with_brute_force():
+@pytest.mark.parametrize("mutated_position", [50, 150, 290])
+def test_near_identical_long_repeat_stays_unphased(mutated_position):
+    """One mismatch in a long repeat must not identify its copy."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
     from micall.utils.referenceless_contig_stitcher import (
-        _has_ambiguous_long_overlap,
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    repeat = 'ACGT' * 200
+    differing = list(repeat)
+    differing[mutated_position] = 'T' if differing[mutated_position] != 'T' else 'A'
+    molecule = prefix + repeat + suffix
+    left, right = prefix + repeat, ''.join(differing) + suffix
+    counter = Counter()
+    for pos in range(len(molecule) - 149):
+        kmer = molecule[pos:pos + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    fasta = f'>left\n{left}\n>right\n{right}\n'
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [1150, 1150]
+
+
+def test_shorter_repeat_can_still_have_unphaseable_offsets():
+    """240-base observed repeats can misjoin a 400-base repeat."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    observed = 'ACGT' * 60
+    molecule = prefix + 'ACGT' * 100 + suffix
+    fasta = f'>left\n{prefix + observed}\n>right\n{observed + suffix}\n'
+    counter = Counter()
+    for pos in range(len(molecule) - 149):
+        kmer = molecule[pos:pos + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [590, 590]
+
+
+def test_long_overlap_detection_agrees_with_brute_force():
+    """Plant true alternatives and random negatives, including boundaries."""
+    from micall.utils.referenceless_contig_stitcher import (
+        _has_ambiguous_long_overlap, ACCEPTABLE_STITCHING_SCORE,
+        align_queries, score_alignment,
     )
     import random
 
     rng = random.Random(731)
-    for _ in range(600):
-        left = ''.join(rng.choices('ACGT', k=rng.randint(1, 70)))
-        right = ''.join(rng.choices('ACGT', k=rng.randint(1, 70)))
-        length = rng.randint(1, 35)
-        all_offsets = [
-            n for n in range(length * 2 + 1, min(len(left), len(right)) + 1)
-            if left[-n:] == right[:n]
-        ]
-        candidate_overlap = min(len(left), len(right), 2 * length + 1)
+    positives = negatives = 0
+    for case in range(600):
+        read_length = 5 + case % 4
+        if case % 3 == 0:
+            overlap = "ACGT" * (10 + case % 4)
+            left = "T" * 12 + overlap
+            right = overlap + "C" * 12
+            chosen = len(overlap)
+        elif case % 3 == 1:
+            left = ''.join(rng.choices("ACGT", k=45))
+            right = ''.join(rng.choices("ACGT", k=45))
+            chosen = 25
+        else:
+            # Off-by-one: the only possible alternative overlap ends
+            # precisely on the read-length boundary or one beyond it.
+            overlap = "ACGT" * (3 + case % 3)
+            left = "G" * 12 + overlap
+            right = overlap + "T" * 12
+            chosen = len(overlap)
+        expected = False
+        for size in range(read_length + 1, min(len(left), len(right)) + 1):
+            if size == chosen:
+                continue
+            a, b = align_queries(left[-size:], right[:size])
+            if score_alignment(a, b, False)[2] >= ACCEPTABLE_STITCHING_SCORE():
+                expected = True
+                break
         actual = _has_ambiguous_long_overlap(
-            left, right, len(left) + len(right) - candidate_overlap,
-            length, True,
+            left, right, chosen, read_length, True,
         )
-        assert actual == (len(all_offsets) > 1)
+        assert actual == expected, (case, actual, expected)
+        positives += expected
+        negatives += not expected
+    assert positives >= 100
+    assert negatives >= 100
 
 
 def test_long_unique_overlap_can_reconstruct_original_molecule():
