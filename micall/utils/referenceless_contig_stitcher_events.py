@@ -154,7 +154,7 @@ class AmbiguousOverlapRejected:
 
     def __str__(self) -> str:
         return (
-            f"Alternative score-acceptable placements reject overlap of "
+            f"Competing high-identity placement rejects overlap of "
             f"{self.overlap_size} bases between {self.left_contig} "
             f"and {self.right_contig}: no paired linkage beyond "
             f"{self.max_read_length} read bases."

@@ -924,51 +924,96 @@ def check_merged_sequence_support(
 def _has_ambiguous_long_overlap(
     left_seq: str,
     right_seq: str,
-    overlap_size: int,
+    accepted_left: str,
+    accepted_right: str,
+    accepted_left_start: int,
     read_length: int,
-    validate_reads: bool,
-    minimum_score: Optional[Score] = None,
 ) -> bool:
-    """Reject a second score-acceptable long overlap placement.
+    """Detect a competing, well-supported alignment *placement*.
 
-    The read index stores individual sequences, not mate linkage.
-    A single read cannot link two alternative overlaps longer than
-    its full length, even if multiplied placements inflate coverage.
-    The same alignment and score threshold as the candidate stitch
-    determine whether an alternative is viable; a long unique
-    placement by itself is not ambiguous.
+    The accepted gapped alignment can use multiple diagonals (an indel
+    changes the offset). A candidate on any of these diagonals is not
+    a second placement. A separate candidate must explain roughly as
+    much sequence, and at roughly the same identity, as the accepted
+    overlap. Unlike an absolute score, identity does not increase with
+    the length of unrelated flanking sequence.
 
-    Exact k-mer anchors propose alternative shifts, and the regular
-    global aligner checks each alternative (including substitutions
-    and indels). This is a sufficient ambiguity test, not proof of
-    uniqueness if an alternative contains no intact anchor.
+    Exact k-mers discover alternatives, including those containing an
+    indel; this cannot rule out alternatives with no intact seed.
+    Individual-read counts do not establish phase
+    across a repeat and are therefore not used to disable this check.
     """
-    if not validate_reads or read_length <= 0 or overlap_size <= read_length:
+    if read_length <= 0 or not left_seq or not right_seq:
         return False
-    if not left_seq or not right_seq:
+
+    accepted_diagonals = set()
+    left_index = accepted_left_start
+    right_index = 0
+    matches = 0
+    for a, b in zip(accepted_left, accepted_right):
+        if a != "-" and b != "-":
+            accepted_diagonals.add(left_index - right_index)
+            matches += a == b
+        left_index += a != "-"
+        right_index += b != "-"
+    if not accepted_diagonals:
         return False
-    if minimum_score is None:
-        minimum_score = ACCEPTABLE_STITCHING_SCORE()
-    # Only inspect placements containing an exact anchor in the first
-    # read-length bases; no quadratic all-vs-all approximate alignment.
+    alignment_length = len(accepted_left)
+    if alignment_length <= read_length:
+        return False
+    accepted_identity = matches / alignment_length
+    threshold = max(0.8, accepted_identity - 0.02)
+    minimum_span = max(read_length + 1, int(alignment_length * 0.8))
+
+    # Seed at several positions near the start of the right contig.
+    # A distant repeat that shares one seed but not the rest of the
+    # overlap must not be treated as an equally plausible placement.
     k = min(KMER_SIZE, read_length, len(left_seq), len(right_seq))
-    max_offset = min(read_length, len(right_seq) - k + 1)
+    limit = min(read_length, len(right_seq) - k + 1)
     candidates = set()
-    for right_at in range(0, max_offset, max(1, k // 2)):
-        anchor = right_seq[right_at:right_at + k]
-        left_at = left_seq.find(anchor)
-        while left_at >= 0:
-            size = len(left_seq) - left_at + right_at
-            if (read_length < size <= min(len(left_seq), len(right_seq))
-                    and size != overlap_size):
-                candidates.add(size)
-            left_at = left_seq.find(anchor, left_at + 1)
-    for size in sorted(candidates, reverse=True):
-        aligned_left, aligned_right = align_queries(
-            left_seq[-size:], right_seq[:size]
+    for right_index in range(0, limit, max(1, k // 2)):
+        anchor = right_seq[right_index:right_index + k]
+        left_index = left_seq.find(anchor)
+        while left_index >= 0:
+            diagonal = left_index - right_index
+            if diagonal > 0 and diagonal not in accepted_diagonals:
+                candidates.add(diagonal)
+            left_index = left_seq.find(anchor, left_index + 1)
+
+    for diagonal in sorted(candidates):
+        span = min(len(left_seq) - diagonal, len(right_seq))
+        if span < minimum_span:
+            continue
+        left_window = left_seq[diagonal:diagonal + span]
+        right_window = right_seq[:span]
+        matched = sum(a == b for a, b in zip(left_window, right_window))
+        if matched / span >= threshold:
+            return True
+
+        # A genuinely distinct repeated copy can contain an insertion
+        # or deletion. Normalize its identity after a gapped alignment,
+        # but require that most matching bases remain on diagonals
+        # absent from the already accepted alignment. This avoids
+        # interpreting an indel or a local slip as a second placement.
+        alternative_left, alternative_right = align_queries(
+            left_window, right_window,
         )
-        _, _, score = score_alignment(aligned_left, aligned_right, False)
-        if score >= minimum_score:
+        alternative_matches = sum(
+            a == b and a != "-"
+            for a, b in zip(alternative_left, alternative_right)
+        )
+        if alternative_matches / len(alternative_left) < threshold:
+            continue
+        left_at = diagonal
+        right_at = 0
+        distinct_matches = 0
+        for a, b in zip(alternative_left, alternative_right):
+            if (a == b and a != "-"
+                    and left_at - right_at not in accepted_diagonals):
+                distinct_matches += 1
+            left_at += a != "-"
+            right_at += b != "-"
+        if distinct_matches >= minimum_span * 0.8:
             return True
     return False
 
@@ -1087,9 +1132,8 @@ def try_combine_contigs(
     max_read_length = (max(ctx.read_index, default=ctx.read_length)
                        if ctx.read_index is not None else ctx.read_length)
     if _has_ambiguous_long_overlap(
-        left.seq, right.seq, overlap_size, max_read_length,
-        ctx.read_index is not None and ctx.minimum_read_depth > 0,
-        minimum_base_score,
+        left.seq, right.seq, aligned_1, aligned_2,
+        left_cutoff, max_read_length,
     ):
         if is_debug2:
             log(events.AmbiguousOverlapRejected(
