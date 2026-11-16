@@ -521,13 +521,14 @@ class Sample:
         # must follow their original sequences, not their former CSV indexes.
         with open(self.stitched_contigs_csv) as stitched_contigs_csv, \
              open(self.unstitched_contigs_csv) as unstitched_contigs_csv, \
-             open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv, \
-             open(self.contigs_csv, 'w') as contigs_csv:
-            stitched_counts = project_stitched_counts(
+             open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv:
+            stitched_row_counts = project_stitched_counts(
                 unstitched_contigs_csv, stitched_contigs_csv, unstitched_counts_csv)
-            stitched_contigs_csv.seek(0)
+        with open(self.stitched_contigs_csv) as stitched_contigs_csv, \
+             open(self.contigs_csv, 'w') as contigs_csv:
             referencefull_contig_stitcher(
-                stitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, stitched_counts)
+                stitched_contigs_csv, contigs_csv, self.stitcher_plot_svg,
+                row_counts=stitched_row_counts)
 
         with open(self.contigs_csv) as contigs_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \

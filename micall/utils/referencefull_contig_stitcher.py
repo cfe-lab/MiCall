@@ -13,6 +13,7 @@ import logging
 from aligntools import CigarHit, connect_nonoverlapping_cigar_hits, drop_overlapping_cigar_hits, CigarActions
 
 from micall.core.project_config import ProjectConfig
+from micall.core.remap import get_contig_read_count
 from micall.core.plot_contigs import plot_stitcher_coverage
 from micall.utils.contig_stitcher_context import ReferencefullStitcherContext
 from micall.utils.contig_stitcher_contigs import GenotypedContig, AlignedContig
@@ -628,7 +629,8 @@ def read_remap_counts(remap_counts_csv: TextIO) -> Dict[str, int]:
     return counts
 
 
-def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Iterable[GenotypedContig]:
+def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int],
+                 row_counts: Optional[Dict[int, int]] = None) -> Iterable[GenotypedContig]:
     projects = ProjectConfig.loadDefault()
 
     for i, row in enumerate(csv.DictReader(input_csv)):
@@ -645,9 +647,12 @@ def read_contigs(input_csv: TextIO, contig_read_counts: Dict[str, int]) -> Itera
             except KeyError:
                 ref_seq = None
 
-        # Generate contig name to look up read count (format: "1-HCV-1a")
-        contig_name = f"{i+1}-{ref_name}"
-        reads_count = contig_read_counts.get(contig_name)
+        # CLI counts use the remapper's naming convention; in-process
+        # stitched counts are tied directly to the surviving row.
+        reads_count = (row_counts.get(i + 1) if row_counts is not None
+                       else get_contig_read_count(
+                           i + 1, ref_name, match_fraction,
+                           contig_read_counts))
 
         yield GenotypedContig(name=None,
                               seq=seq,
@@ -662,7 +667,11 @@ def referencefull_contig_stitcher(input_csv: TextIO,
                                   output_csv: Optional[TextIO],
                                   stitcher_plot_path: Optional[Path],
                                   remap_counts_csv: Optional[TextIO] = None,
+                                  *,
+                                  row_counts: Optional[Dict[int, int]] = None,
                                   ) -> int:
+    if row_counts is not None and remap_counts_csv is not None:
+        raise ValueError("Specify either remap_counts_csv or row_counts")
     with ReferencefullStitcherContext.fresh() as ctx:
         # Read remap counts if provided
         if remap_counts_csv is not None:
@@ -671,7 +680,7 @@ def referencefull_contig_stitcher(input_csv: TextIO,
             contig_read_counts = {}
 
         # Read contigs with read counts
-        contigs = list(read_contigs(input_csv, contig_read_counts))
+        contigs = list(read_contigs(input_csv, contig_read_counts, row_counts))
 
         if output_csv is not None or stitcher_plot_path is not None:
             contigs = list(stitch_consensus(contigs))

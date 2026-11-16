@@ -1057,6 +1057,23 @@ def get_contig_name(prefix, ref_name, is_match, is_reversed, excluded_seeds=None
     return name
 
 
+def get_contig_read_count(prefix, ref_name, match_fraction, counts):
+    """Find remap support using the remapper's own exact contig names.
+
+    The stitched CSV does not retain which seeds were excluded. Match
+    both naming variants, but do not choose between conflicting keys.
+    Unknown counts are None; zero is a genuine recorded count.
+    """
+    is_match = match_fraction >= 0.25
+    is_reversed = match_fraction < 0
+    names = {
+        get_contig_name(prefix, ref_name, is_match, is_reversed),
+        get_contig_name(prefix, ref_name, is_match, is_reversed, {ref_name}),
+    }
+    present = [name for name in names if name in counts]
+    return counts[present[0]] if len(present) == 1 else None
+
+
 def convert_prelim(prelim_csv,
                    target,
                    remap_counts_writer,

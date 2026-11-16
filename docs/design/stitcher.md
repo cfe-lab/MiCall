@@ -115,6 +115,16 @@ referencefull stitcher in fact runs on the referenceless stitcher's
 output, so the two branches above describe the refinement semantics
 rather than two independent pipeline paths.
 
+
+MiCall remaps reads to the **original** unstitched contigs before
+referenceless refinement. Only contigs whose complete nucleotide
+sequence survives that refinement unchanged (or as an exact reverse
+complement), uniquely on both sides, carry their original read count
+into the referencefull stitcher. Merged, changed or repeated contigs
+have **unknown**, not zero or added, original remap support. Counts
+are projected to stitched row identities in memory; the published
+remap-count CSV still describes the original pre-stitch mapping.
+
 See the detailed designs for the algorithm behind each
 interpretation:
 
