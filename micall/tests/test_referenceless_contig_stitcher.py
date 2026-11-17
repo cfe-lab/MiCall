@@ -2491,3 +2491,36 @@ def test_repeated_low_complexity_runs_do_not_trigger_gapped_alignment_storm(
     assert result == [source]
     assert count <= 2, count
     assert guard_calls == 1, guard_calls
+
+
+
+def test_disabling_join_kmer_filter_does_not_expand_ambiguity_scan(monkeypatch):
+    """Exact-pipeline KMER_SIZE=1 must not turn repeat detection quadratic."""
+    import random
+    import sys
+    import micall.utils.referenceless_contig_stitcher as stitcher
+
+    source = ''.join(random.Random(1001).choices("ACGT", k=3000))
+    left, right = source[:1900], source[1600:]
+    monkeypatch.setattr(stitcher, "KMER_SIZE", 1)
+    find_calls = 0
+    previous_profile = sys.getprofile()
+
+    def record_find(frame, event, called):
+        nonlocal find_calls
+        if (event == "c_call" and getattr(called, "__name__", None) == "find"
+                and isinstance(getattr(called, "__self__", None), str)):
+            find_calls += 1
+
+    try:
+        sys.setprofile(record_find)
+        ambiguous = stitcher._has_ambiguous_long_overlap(
+            left, right, source[1600:1900], source[1600:1900],
+            1600, 150,
+        )
+    finally:
+        sys.setprofile(previous_profile)
+    assert not ambiguous
+    # Fixed-size ambiguity seeds need just a handful of .find calls;
+    # one-base join-filter seeds enumerate thousands of false matches.
+    assert find_calls <= 100, find_calls

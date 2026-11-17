@@ -44,6 +44,11 @@ MIN_MATCHES = 40
 # Kmer size used for filtering unlikely overlaps
 KMER_SIZE = 30
 
+# Repeat-placement evidence is independent of the join's candidate filter.
+# Some exact-pipeline tests deliberately set KMER_SIZE=1 to disable only
+# that filter; a one-base seed here enumerates O(length^2) false offsets.
+AMBIGUITY_ANCHOR_SIZE = 30
+
 
 logger = logging.getLogger(__name__)
 
@@ -970,7 +975,8 @@ def _has_ambiguous_long_overlap(
     # Seed at several positions near the start of the right contig.
     # A distant repeat that shares one seed but not the rest of the
     # overlap must not be treated as an equally plausible placement.
-    k = min(KMER_SIZE, read_length, len(left_seq), len(right_seq))
+    k = min(AMBIGUITY_ANCHOR_SIZE, read_length,
+            len(left_seq), len(right_seq))
     limit = min(read_length, len(right_seq) - k + 1)
     candidates = set()
     for right_index in range(0, limit, max(1, k // 2)):
