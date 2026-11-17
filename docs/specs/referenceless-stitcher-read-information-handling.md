@@ -204,8 +204,12 @@ their accepted overlap is 800 bases. An alternative must have
 normalized identity of at least max(80%, accepted identity minus two
 percentage points).
 
-Candidate offsets come from exact k-mer anchors near the right
-contig start. Direct identity confirms exact alternatives cheaply.
+Candidate offsets come from exact anchors of up to 30 bases near
+the right contig start. This length is independent of the general
+join filter's `KMER_SIZE` (which exact-pipeline tests set to one
+base); otherwise every one-base occurrence would become a candidate
+and repeat searches could take quadratic work. Direct identity
+confirms exact alternatives cheaply.
 Before attempting an expensive gapped alignment, a short-word
 similarity filter requires at least 12% of the overlapping 10-mers
 to be shared, discarding isolated anchors (such as a single shared

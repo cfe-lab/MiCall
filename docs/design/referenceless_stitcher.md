@@ -163,7 +163,10 @@ relatedness:
   need only span **more than one individual read length**; it need not
   span a fraction of the accepted overlap. Normalized nucleotide
   identity must reach max(80%, accepted identity minus two percentage
-  points). Exact 30-mer anchors propose candidate offsets. A cheap
+  points). The ambiguity guard proposes offsets with independent
+  30-mer anchors (shorter only if reads or contigs require it), even
+  if the ordinary join k-mer filter is disabled. This prevents one-base
+  test filters from multiplying the repeat-search work. A cheap
   direct identity test finds exact long repeats; before any costly
   gapped alternative alignment, a 10-mer screen requires at least
   12% shared words to discard isolated anchors; adjacent offsets
