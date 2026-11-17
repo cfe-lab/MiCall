@@ -158,20 +158,21 @@ relatedness:
   junction is crossed by sample reads (section 9 and
   [Read-Supported Join Validation](../specs/referenceless-stitcher-read-information-handling.md)).
 * **Competing overlap placements** — independently of whether FASTQ
-  reads were supplied, the stitcher rejects a second overlap placement
-  that is distinct from *every diagonal* in the accepted gapped
-  alignment. An alternative must span more than the configured
-  single-read length and at least 80% of the accepted alignment, with
-  nucleotide identity at least max(80%, accepted identity minus two
-  percentage points). Exact k-mer anchors propose candidate offsets;
-  normalized direct or gapped identity across the proposed overlap,
-  rather than an absolute score inflated by length, checks whether
-  each competes. For gapped alternatives, most matching positions must
-  remain on diagonals absent from the accepted alignment. Indels
-  within the accepted alignment and local slipped repeats are not
-  automatically second placements. This is a conservative
-  heuristic, not a proof of correct haplotype phase: unanchored
-  alternatives and short repeats can still be missed (section 9).
+  reads were supplied, the stitcher rejects another placement distinct
+  from every diagonal of the accepted gapped alignment. An alternative
+  need only span **more than one individual read length**; it need not
+  span a fraction of the accepted overlap. Normalized nucleotide
+  identity must reach max(80%, accepted identity minus two percentage
+  points). Exact 30-mer anchors propose candidate offsets. A cheap
+  direct identity test finds exact long repeats; before any costly
+  gapped alternative alignment, a 10-mer screen requires at least
+  12% shared words to discard isolated anchors; adjacent offsets
+  within two bases are grouped.
+  Gapped alternatives must have most matching bases on diagonals absent
+  from the accepted alignment. Per-context, per-pair caching avoids
+  repeating this check in path exploration. This is a heuristic, not a
+  proof of haplotype phase: alternatives without intact anchors, and
+  even some repeats shorter than a read, can still escape (section 9).
 * **Path competition** — individually plausible edges compete for
   membership in a bounded set of candidate paths; only winners
   survive (section 10).

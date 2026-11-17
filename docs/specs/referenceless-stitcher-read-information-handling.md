@@ -196,18 +196,26 @@ The competing-placement check therefore runs **with or without read
 validation**. It compares proposed offsets against every diagonal
 used by the accepted *gapped* alignment; a one-base indel or a local
 slip within that alignment is not another molecule placement. A
-distinct placement must span more than the configured read length
-(or the longest indexed read, if available), cover at least 80% of
-the accepted alignment, and have normalized nucleotide identity of at
-least max(80%, accepted identity minus two percentage points).
+distinct placement only has to span **more than the longest indexed
+individual read** (or the configured read length without an index):
+there is **no fraction-of-accepted-overlap minimum**. This detects
+long-unit tandem repeats with alternative 600-base overlaps even when
+their accepted overlap is 800 bases. An alternative must have
+normalized identity of at least max(80%, accepted identity minus two
+percentage points).
+
 Candidate offsets come from exact k-mer anchors near the right
-contig start. Direct identity can confirm matching repeat copies;
-when an alternative repeat has an indel, its normalized *gapped*
-identity is also checked. In that case most matching bases must
-remain on diagonals not already used by the accepted alignment.
-This avoids treating a local slip in the same alignment as a second
-placement, and avoids an absolute score inflated by unrelated
-sequence length.
+contig start. Direct identity confirms exact alternatives cheaply.
+Before attempting an expensive gapped alignment, a short-word
+similarity filter requires at least 12% of the overlapping 10-mers
+to be shared, discarding isolated anchors (such as a single shared
+30-mer or short low-complexity run). Alternative offsets within two
+bases share one representative; a context-local contig-pair
+cache prevents repeated decisions during path exploration. Gapped
+alternatives still require most matching bases on diagonals absent
+from the accepted alignment. These checks avoid an absolute score
+inflated by unrelated sequence length without excluding valid long
+overlaps simply because of their length.
 
 These percentages are **heuristic**, not calibrated clinical
 confidence levels. The one-read bound is where competing-placement
