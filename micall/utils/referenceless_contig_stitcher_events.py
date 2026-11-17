@@ -146,6 +146,22 @@ class DeterminedOverlap:
 
 
 @dataclass(frozen=True)
+class AmbiguousOverlapRejected:
+    left_contig: str
+    right_contig: str
+    overlap_size: int
+    max_read_length: int
+
+    def __str__(self) -> str:
+        return (
+            f"Competing high-identity placement rejects overlap of "
+            f"{self.overlap_size} bases between {self.left_contig} "
+            f"and {self.right_contig}: no paired linkage beyond "
+            f"{self.max_read_length} read bases."
+        )
+
+
+@dataclass(frozen=True)
 class ReadSupportRejected:
     left_contig: str
     right_contig: str
@@ -168,4 +184,4 @@ EventType = Union[GiveUp, Remove, CalculatingAll, CycleStart,
                   CycleEnd, InitializingSeeds, Starting, Constructed,
                   Loaded, Outputting, InitiallyProduced, Covered,
                   CombinedContigs, CalculatedCutoffs, DeterminedOverlap,
-                  ReadSupportRejected]
+                  ReadSupportRejected, AmbiguousOverlapRejected]

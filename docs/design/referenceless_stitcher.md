@@ -157,6 +157,25 @@ relatedness:
 * **Raw-read support** — an independent check that the proposed
   junction is crossed by sample reads (section 9 and
   [Read-Supported Join Validation](../specs/referenceless-stitcher-read-information-handling.md)).
+* **Competing overlap placements** — independently of whether FASTQ
+  reads were supplied, the stitcher rejects another placement distinct
+  from every diagonal of the accepted gapped alignment. An alternative
+  need only span **more than one individual read length**; it need not
+  span a fraction of the accepted overlap. Normalized nucleotide
+  identity must reach max(80%, accepted identity minus two percentage
+  points). The ambiguity guard proposes offsets with independent
+  30-mer anchors (shorter only if reads or contigs require it), even
+  if the ordinary join k-mer filter is disabled. This prevents one-base
+  test filters from multiplying the repeat-search work. A cheap
+  direct identity test finds exact long repeats; before any costly
+  gapped alternative alignment, a 10-mer screen requires at least
+  12% shared words to discard isolated anchors; adjacent offsets
+  within two bases are grouped.
+  Gapped alternatives must have most matching bases on diagonals absent
+  from the accepted alignment. Per-context, per-pair caching avoids
+  repeating this check in path exploration. This is a heuristic, not a
+  proof of haplotype phase: alternatives without intact anchors, and
+  even some repeats shorter than a read, can still escape (section 9).
 * **Path competition** — individually plausible edges compete for
   membership in a bounded set of candidate paths; only winners
   survive (section 10).
@@ -361,8 +380,10 @@ caller in `try_combine_contigs`):
 
 Full contracts — cut-spanning definitions, window geometry,
 counting model including the accepted placement-times-multiplicity
-overcounting tradeoff, disabled states (`read_index is None` or
-`minimum_read_depth == 0` accepts; enabled-but-empty `{}` rejects),
+overcounting tradeoff, raw-read-check disabled states
+(`read_index is None` or `minimum_read_depth == 0` skip that
+check but not competing-placement rejection; enabled-but-empty
+`{}` rejects),
 CLI flags (`--fastq1` / `--fastq2`, `--minimum-read-depth`,
 `--read-length`), and pipeline defaults (enabled with trimmed FASTQs
 at depth 1 in `micall/drivers/sample.py`) — belong to the

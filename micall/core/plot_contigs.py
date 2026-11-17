@@ -401,6 +401,16 @@ def build_coverage_figure(genome_coverage_csv, blast_csv=None, use_concordance=F
     return f
 
 
+def close_alive_set(alive_set: Set[int], parent_graph: Dict[int, List[int]]) -> None:
+    """Include all ancestors, even through cycles, without revisiting nodes."""
+    frontier = list(alive_set)
+    while frontier:
+        for parent in parent_graph.get(frontier.pop(), ()):
+            if parent not in alive_set:
+                alive_set.add(parent)
+                frontier.append(parent)
+
+
 def plot_stitcher_coverage(logs: Iterable[events.EventType], genome_coverage: Path):
     with ReferencefullStitcherContext.stage():
         f = build_stitcher_figure(logs)
@@ -435,26 +445,32 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     lstrip_map: Dict[int, int] = {}
     rstrip_map: Dict[int, int] = {}
 
-    def remove_intermediate_edges(graph):
-        tr_cl = transitive_closure(graph)
+    def remove_intermediate_edges_from_transitive_closure(graph):
+        # This input is already a transitive closure; recomputing it
+        # repeatedly traverses every path for no additional information.
+        reachable = {node: set(descendants) for node, descendants in graph.items()}
         ret = {}
         for parent, children in graph.items():
-            lst = []
-            for child in children:
-                if all(other not in tr_cl.get(child, []) for other in children):
-                    lst.append(child)
-            ret[parent] = lst
+            siblings = set(children)
+            ret[parent] = [
+                child for child in children
+                if siblings.isdisjoint(reachable.get(child, set()))
+            ]
         return ret
 
     def remove_transitive_edges(graph):
-        tr_cl = transitive_closure(graph)
+        reachable = {
+            node: set(descendants)
+            for node, descendants in transitive_closure(graph).items()
+        }
         ret = {}
         for parent, children in graph.items():
             lst = []
             for child in children:
-                is_transitive = any(child in tr_cl.get(other_node, [])
-                                    for other_node in children
-                                    if other_node != child)
+                is_transitive = any(
+                    child in reachable.get(other, set())
+                    for other in children if other != child
+                )
                 if not is_transitive:
                     lst.append(child)
             ret[parent] = lst
@@ -471,11 +487,17 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
         return ret
 
     def get_transitive_children(recur, lst, graph, current):
-        for child in graph.get(current, []):
-            if child not in recur:
+        # Explicit depth-first traversal preserves child order without
+        # recursion depth or the cost of revisiting shared ancestors.
+        stack = [iter(graph.get(current, ()))]
+        while stack:
+            child = next(stack[-1], None)
+            if child is None:
+                stack.pop()
+            elif child not in recur:
                 recur.add(child)
                 lst.append(child)
-                get_transitive_children(recur, lst, graph, child)
+                stack.append(iter(graph.get(child, ())))
 
     def transitive_closure(graph):
         ret = {}
@@ -647,14 +669,8 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     notransitive_parent_graph = remove_transitive_edges(complete_parent_graph)
     nodup_parent_graph = remove_duplicate_edges(notransitive_parent_graph)
 
-    # Close alive set by parents
-    def extend_alive(contig_id):
-        alive_set.add(contig_id)
-        for parent_id in nodup_parent_graph.get(contig_id, []):
-            extend_alive(parent_id)
-
-    for contig_id in alive_set.copy():
-        extend_alive(contig_id)
+    # Include the ancestry of every retained contig exactly once.
+    close_alive_set(alive_set, nodup_parent_graph)
 
     parent_graph: Dict[int, List[int]] = {}
     for contig_id in nodup_parent_graph:
@@ -667,7 +683,7 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
     children_graph = inverse_graph(parent_graph)
     transitive_parent_graph = transitive_closure(parent_graph)
     transitive_children_graph = transitive_closure(children_graph)
-    reduced_parent_graph = remove_intermediate_edges(transitive_parent_graph)
+    reduced_parent_graph = remove_intermediate_edges_from_transitive_closure(transitive_parent_graph)
     sorted_roots = sorted(parent_id for
                                parent_id in contig_map
                                if parent_id not in parent_graph)
@@ -683,17 +699,18 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
             morphism_graph[parents[0]] = [contig_id]
 
     transitive_morphism_graph = transitive_closure(morphism_graph)
-    reduced_morphism_graph = remove_intermediate_edges(transitive_morphism_graph)
+    reduced_morphism_graph = remove_intermediate_edges_from_transitive_closure(transitive_morphism_graph)
     eqv_morphism_graph = reflexive_closure(symmetric_closure(transitive_morphism_graph))
 
     for contig_id, parents in parent_graph.items():
         if len(parents) > 1:
             children_join_points.append(contig_id)
 
-    def set_query_position(contig_id: int) -> None:
-        contig = contig_map[contig_id]
-        children_ids = children_graph.get(contig.id, [])
+    positioned = set()
 
+    def set_query_position(contig_id: int) -> None:
+        positioned.add(contig_id)
+        contig = contig_map[contig_id]
         def copy_from_parent(contig: AlignedContig, parent_id: int) -> None:
             if parent_id in query_position_map:
                 (original_q_st, original_q_ei) = query_position_map[parent_id]
@@ -719,11 +736,15 @@ def build_stitcher_figure(logs: Iterable[events.EventType]) -> Figure:
                 else:
                     query_position_map[contig_id] = (contig.alignment.q_st, contig.alignment.q_ei)
 
-        for child_id in children_ids:
-            set_query_position(child_id)
-
-    for contig_id in sorted_roots:
-        set_query_position(contig_id)
+    # Children are handled once in depth-first order, even with shared
+    # ancestry or cyclic graph edges.
+    visit = list(reversed(sorted_roots))
+    while visit:
+        current_id = visit.pop()
+        if current_id in positioned:
+            continue
+        set_query_position(current_id)
+        visit.extend(reversed(children_graph.get(current_id, [])))
 
     def copy_takes_one_side(edge_table, overlap_xtake_map, overlap_xparent_map, overlap_xsibling, xstrip_set):
         for parent in edge_table:

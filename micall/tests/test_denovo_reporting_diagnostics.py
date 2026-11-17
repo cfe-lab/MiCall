@@ -66,10 +66,15 @@ def test_unstitched_mapping_diagnostics_allow_referencefull_stitching(
     def fake_mapper(read1, read2, contigs, remap, counts, references,
                     unmapped1, unmapped2, path, **kwargs):
         reached.append('remap')
-        counts.write(f'type,count\nraw,4\n{diagnostic},2\n')
+        counts.write(
+            f'type,count\nraw,4\n{diagnostic},2\n'
+            'remap 1-HCV-1a,3\n')
         remap.write('qname,flag,rname\n')
 
-    def fake_referencefull(stitched, output, plot, original_counts):
+    def fake_referencefull(stitched, output, plot, *, row_counts):
+        # This is the stitched-row API, not the former remap-count CSV.
+        # The original remap diagnostic rows must remain unaffected.
+        assert row_counts == {1: 3}
         reached.append('referencefull')
         output.write(
             'ref,match,group_ref,contig\n'

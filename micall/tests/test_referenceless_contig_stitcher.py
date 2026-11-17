@@ -2084,3 +2084,443 @@ def test_cli_zero_read_length_rejected(tmp_path):
         main(["without-references", str(fasta), str(out),
               "--read-length", "0"])
     assert exc.value.code == 2
+
+
+def _check_overlap_offsets(left, right, overlap, read_length):
+    """Supply an independently specified accepted overlap alignment."""
+    from micall.utils.referenceless_contig_stitcher import (
+        _has_ambiguous_long_overlap, align_queries,
+    )
+
+    aligned_left, aligned_right = align_queries(
+        left[-overlap:], right[:overlap],
+    )
+    return _has_ambiguous_long_overlap(
+        left, right, aligned_left, aligned_right,
+        len(left) - overlap, read_length,
+    )
+
+
+@pytest.mark.parametrize(
+    "read_length,expected",
+    [(150, True), (500, True), (800, False), (0, False)],
+)
+def test_only_repeated_long_overlap_offsets_are_ambiguous(
+    read_length, expected,
+):
+    left = "G" * 200 + "ACGT" * 200
+    right = "ACGT" * 200 + "T" * 200
+    assert _check_overlap_offsets(left, right, 800, read_length) is expected
+
+
+@pytest.mark.parametrize(
+    "read_length,expected",
+    [(43, True), (44, False)],
+)
+def test_competing_overlap_one_base_either_side_of_single_read_limit(
+    read_length, expected,
+):
+    overlap = "ACGT" * 12
+    assert _check_overlap_offsets(
+        "G" * 12 + overlap, overlap + "T" * 12,
+        48, read_length,
+    ) is expected
+
+
+def test_unique_long_overlap_is_not_rejected_for_length_alone():
+    import random
+
+    molecule = ''.join(random.Random(472).choices('ACGT', k=1800))
+    left, right = molecule[:1050], molecule[510:]
+    assert not _check_overlap_offsets(left, right, 540, 150)
+
+
+def test_planted_repeat_placements_and_unique_negative_controls():
+    """Independent planted truth: 200 repeated vs 400 unique placements.
+
+    The expected answer is fixed by construction, rather than using
+    align_queries or a duplicate of the production score predicate.
+    Controls include single indels and short low-complexity segments.
+    """
+    import random
+
+    rng = random.Random(731)
+    positives = negatives = 0
+    for case in range(600):
+        if case % 3 == 0:
+            overlap = "ACGT" * (25 + case % 5)
+            left, right = "T" * 40 + overlap, overlap + "C" * 40
+            expected = True
+            overlap_length = len(overlap)
+        elif case % 3 == 1:
+            molecule = ''.join(rng.choices("ACGT", k=240))
+            left, right = molecule[:160], molecule[60:]
+            expected = False
+            overlap_length = 100
+        elif case % 6 == 2:
+            molecule = ''.join(rng.choices("ACGT", k=240))
+            left = molecule[:160]
+            right = molecule[60:80] + "C" + molecule[80:]
+            expected = False
+            overlap_length = 100
+        else:
+            molecule = ''.join(rng.choices("ACGT", k=240))
+            molecule = molecule[:80] + "CA" * 20 + molecule[80:]
+            left, right = molecule[:200], molecule[100:]
+            expected = False
+            overlap_length = 100
+        actual = _check_overlap_offsets(left, right, overlap_length, 40)
+        assert actual is expected, (case, actual, expected)
+        positives += expected
+        negatives += not expected
+    assert positives >= 100
+    assert negatives >= 100
+
+
+def test_long_unique_overlap_can_reconstruct_original_molecule():
+    """A 540-base *unique* exact overlap can be biologically correct."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(472)
+    molecule = ''.join(rng.choices('ACGT', k=1800))
+    left, right = molecule[:1050], molecule[510:]
+    assert left[-540:] == right[:540]
+    fasta = f'>left\n{left}\n>right\n{right}\n'
+    counter = Counter()
+    for index in range(len(molecule) - 149):
+        kmer = molecule[index:index + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert [str(row.seq) for row in assembled] == [molecule]
+
+
+@pytest.mark.parametrize("mutated_position", [50, 150, 290])
+def test_near_identical_long_repeat_stays_unphased(mutated_position):
+    """One mismatch in a long repeat must not identify its copy."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    repeat = 'ACGT' * 200
+    differing = list(repeat)
+    differing[mutated_position] = 'T' if differing[mutated_position] != 'T' else 'A'
+    molecule = prefix + repeat + suffix
+    left, right = prefix + repeat, ''.join(differing) + suffix
+    counter = Counter()
+    for pos in range(len(molecule) - 149):
+        kmer = molecule[pos:pos + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    fasta = f'>left\n{left}\n>right\n{right}\n'
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [1150, 1150]
+
+
+def test_shorter_repeat_can_still_have_unphaseable_offsets():
+    """240-base observed repeats can misjoin a 400-base repeat."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    observed = 'ACGT' * 60
+    molecule = prefix + 'ACGT' * 100 + suffix
+    fasta = f'>left\n{prefix + observed}\n>right\n{observed + suffix}\n'
+    counter = Counter()
+    for pos in range(len(molecule) - 149):
+        kmer = molecule[pos:pos + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [590, 590]
+
+
+
+def test_long_repeat_multiple_offsets_are_rejected():
+    """Identical alternative placements over a repeat are unphased."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    repeat = 'ACGT' * 200
+    molecule = prefix + repeat + suffix
+    left, right = prefix + repeat, repeat + suffix
+    fasta = f'>left\n{left}\n>right\n{right}\n'
+    counter = Counter()
+    for index in range(len(molecule) - 149):
+        kmer = molecule[index:index + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [1150, 1150]
+
+
+def _reads_for_molecules(*molecules):
+    """Source-attested canonical 150-mers, including indel alternatives."""
+    from collections import Counter
+    from micall.utils.exact_coverage import reverse_complement
+
+    reads = Counter()
+    for molecule in molecules:
+        for i in range(len(molecule) - 149):
+            read = molecule[i:i + 150]
+            reads[min(read, reverse_complement(read))] += 1
+    return {150: reads}
+
+
+def _assemble_two_with_reads(
+    left, right, *molecules, no_reads=False, minimum_read_depth=1,
+):
+    from io import StringIO
+    from Bio import SeqIO
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    source = StringIO(f">left\n{left}\n>right\n{right}\n")
+    output = StringIO()
+    referenceless_contig_stitcher(
+        source, output,
+        read_index=None if no_reads else _reads_for_molecules(*molecules),
+        minimum_read_depth=minimum_read_depth, read_length=150,
+    )
+    return [str(c.seq) for c in SeqIO.parse(StringIO(output.getvalue()), "fasta")]
+
+
+@pytest.mark.parametrize("position", [60, 100, 300, 400])
+def test_unique_540_overlap_with_single_deletion_still_merges(position):
+    """A single-base indel is not another repeat-copy placement."""
+    import random
+
+    original = ''.join(random.Random(472).choices("ACGT", k=1800))
+    index = 510 + position
+    edited = original[:index] + original[index + 1:]
+    contigs = _assemble_two_with_reads(
+        original[:1050], edited[510:], original, edited,
+    )
+    assert len(contigs) == 1
+
+
+@pytest.mark.parametrize("position", [60, 100])
+def test_unique_540_overlap_with_single_insertion_still_merges(position):
+    import random
+
+    original = ''.join(random.Random(472).choices("ACGT", k=1800))
+    index = 510 + position
+    edited = original[:index] + "A" + original[index:]
+    contigs = _assemble_two_with_reads(
+        original[:1050], edited[510:], original, edited,
+    )
+    assert len(contigs) == 1
+
+
+@pytest.mark.parametrize("insertion", ["A" * 40, "CA" * 20])
+def test_unique_overlap_containing_short_low_complexity_run_merges(insertion):
+    import random
+
+    original = ''.join(random.Random(472).choices("ACGT", k=1800))
+    edited = original[:560] + insertion + original[560:]
+    contigs = _assemble_two_with_reads(
+        edited[:1050], edited[510:], edited,
+    )
+    assert contigs == [edited]
+
+
+def test_unique_long_overlap_with_distant_repeated_kmer_merges():
+    import random
+
+    original = ''.join(random.Random(11).choices("ACGT", k=4000))
+    original = original[:1000] + original[2060:2090] + original[1030:]
+    contigs = _assemble_two_with_reads(
+        original[:2500], original[2000:], original,
+    )
+    assert contigs == [original]
+
+
+@pytest.mark.parametrize("minimum_read_depth", [0, 1])
+def test_unphased_tandem_repeat_rejected_even_without_read_index(
+    minimum_read_depth,
+):
+    """Missing or disabled read evidence cannot certify a repeat placement."""
+    import random
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices("ACGT", k=350))
+    suffix = ''.join(rng.choices("ACGT", k=350))
+    repeat = "ACGT" * 200
+    contigs = _assemble_two_with_reads(
+        prefix + repeat, repeat + suffix, no_reads=True,
+        minimum_read_depth=minimum_read_depth,
+    )
+    assert sorted(map(len, contigs)) == [1150, 1150]
+
+
+def test_unique_long_overlap_without_read_index_still_joins():
+    """No-read mode must not reject nonrepetitive overlaps by length."""
+    import random
+
+    original = ''.join(random.Random(472).choices("ACGT", k=1800))
+    contigs = _assemble_two_with_reads(
+        original[:1050], original[510:], no_reads=True,
+    )
+    assert contigs == [original]
+
+
+@pytest.mark.parametrize("position", [50, 150, 290, 500])
+def test_indel_in_unphaseable_long_repeat_does_not_allow_chimera(position):
+    """Alternative repeated placements may themselves contain an indel."""
+    import random
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices("ACGT", k=350))
+    suffix = ''.join(rng.choices("ACGT", k=350))
+    repeat = "ACGT" * 200
+    original = prefix + repeat + suffix
+    edited = prefix + repeat[:position] + "A" + repeat[position:] + suffix
+    output = _assemble_two_with_reads(
+        prefix + repeat, edited[len(prefix):], original, edited,
+    )
+    assert sorted(map(len, output)) == [1150, 1151]
+
+
+@pytest.mark.parametrize("unit_length,copies", [(200, 4), (300, 3)])
+@pytest.mark.parametrize("no_reads", [False, True])
+def test_long_unit_tandem_repeat_has_competing_placements(
+    unit_length, copies, no_reads,
+):
+    """Six vs four, or five vs three units must not collapse the repeat."""
+    import random
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices("ACGT", k=350))
+    suffix = ''.join(rng.choices("ACGT", k=350))
+    unit = ''.join(rng.choices("ACGT", k=unit_length))
+    source = prefix + unit * (copies + 2) + suffix
+    output = _assemble_two_with_reads(
+        prefix + unit * copies, unit * copies + suffix,
+        source, no_reads=no_reads,
+    )
+    assert sorted(map(len, output)) == [
+        350 + copies * unit_length, 350 + copies * unit_length,
+    ]
+
+
+def test_repeated_low_complexity_runs_do_not_trigger_gapped_alignment_storm(
+    monkeypatch,
+):
+    """Count only DP calls made by the ambiguity guard itself."""
+    import random
+    import micall.utils.referenceless_contig_stitcher as stitcher
+
+    source = ''.join(random.Random(9).choices("ACGT", k=12000))
+    source = source[:500] + "A" * 35 + source[535:8100] + "A" * 35 + source[8135:]
+    count = 0
+    guard_calls = 0
+    in_guard = False
+    original_guard = stitcher._has_ambiguous_long_overlap
+    original_align = stitcher.align_queries
+
+    def observe_guard(*args, **kwargs):
+        nonlocal in_guard, guard_calls
+        assert not in_guard
+        guard_calls += 1
+        in_guard = True
+        try:
+            return original_guard(*args, **kwargs)
+        finally:
+            in_guard = False
+
+    def observe_align(*args, **kwargs):
+        nonlocal count
+        if in_guard:
+            count += 1
+        return original_align(*args, **kwargs)
+
+    monkeypatch.setattr(stitcher, "_has_ambiguous_long_overlap", observe_guard)
+    monkeypatch.setattr(stitcher, "align_queries", observe_align)
+    result = _assemble_two_with_reads(
+        source[:8600], source[8000:], source,
+    )
+    assert result == [source]
+    assert count <= 2, count
+    assert guard_calls == 1, guard_calls
+
+
+
+def test_disabling_join_kmer_filter_does_not_expand_ambiguity_scan(monkeypatch):
+    """Exact-pipeline KMER_SIZE=1 must not turn repeat detection quadratic."""
+    import random
+    import sys
+    import micall.utils.referenceless_contig_stitcher as stitcher
+
+    source = ''.join(random.Random(1001).choices("ACGT", k=3000))
+    left, right = source[:1900], source[1600:]
+    monkeypatch.setattr(stitcher, "KMER_SIZE", 1)
+    find_calls = 0
+    previous_profile = sys.getprofile()
+
+    def record_find(frame, event, called):
+        nonlocal find_calls
+        if (event == "c_call" and getattr(called, "__name__", None) == "find"
+                and isinstance(getattr(called, "__self__", None), str)):
+            find_calls += 1
+
+    try:
+        sys.setprofile(record_find)
+        ambiguous = stitcher._has_ambiguous_long_overlap(
+            left, right, source[1600:1900], source[1600:1900],
+            1600, 150,
+        )
+    finally:
+        sys.setprofile(previous_profile)
+    assert not ambiguous
+    # Fixed-size ambiguity seeds need just a handful of .find calls;
+    # one-base join-filter seeds enumerate thousands of false matches.
+    assert find_calls <= 100, find_calls

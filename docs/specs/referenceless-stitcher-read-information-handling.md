@@ -58,11 +58,11 @@ Built once by `build_read_index()` before stitching.
 its reverse complement share one canonical key.  FASTQ multiplicity is
 preserved under that key.
 
-**validation disabled** — when `read_index is None` (no FASTQs
-provided) or `minimum_read_depth == 0`, all candidate merges are
-accepted without read checking.  When `read_index` is a non-`None`
-empty dict `{}`, validation is enabled but no reads were indexed, so
-all merges are rejected.
+**raw-read validation disabled** — when `read_index is None` (no
+FASTQs supplied) or `minimum_read_depth == 0`, the read-depth check
+is skipped. The independent competing-placement check still applies.
+When `read_index` is a non-`None` empty dict `{}`, read-depth checking
+is enabled but no reads were indexed, so all merges are rejected.
 
 ## 4. Configuration and API
 
@@ -119,11 +119,12 @@ enabled, no reads, merges rejected.
    counter.  R1/R2 record counts must match; mismatched files raise
    `ValueError`.  Reads with empty sequences are skipped.
 
-5. **Validation disabled states.**
-   - `read_index is None` → all merges accepted (backward compatible).
-   - `minimum_read_depth == 0` → all merges accepted.
+5. **Raw-read validation disabled states.**
+   - `read_index is None` → skip the raw-read check only.
+   - `minimum_read_depth == 0` → skip the raw-read check only.
    - `read_index == {}` and `minimum_read_depth > 0` → all merges
      rejected (validation enabled but no reads found).
+   The sequence-based competing-placement rule runs in all three modes.
 
 ## 6. Algorithm
 
@@ -184,14 +185,53 @@ the merged sequence perfectly.  Reads with sequencing errors or
 biological variation relative to the contig are not counted.  This
 undercounts true support in diverse samples.
 
-### Placement × multiplicity overcounting
+### Placement × multiplicity overcounting and ambiguity rejection
 
 In repetitive or low-complexity sequence, one canonical read may have
 multiple equally valid exact-match placements in the merged sequence.
 Each placement contributes its multiplicity, so total support can be
-inflated.  This is an accepted tradeoff: the algorithm is efficient,
-deterministic, and does not attempt to disambiguate multi-mapping
-reads.
+inflated. The read index deliberately does not retain mate linkage.
+
+The competing-placement check therefore runs **with or without read
+validation**. It compares proposed offsets against every diagonal
+used by the accepted *gapped* alignment; a one-base indel or a local
+slip within that alignment is not another molecule placement. A
+distinct placement only has to span **more than the longest indexed
+individual read** (or the configured read length without an index):
+there is **no fraction-of-accepted-overlap minimum**. This detects
+long-unit tandem repeats with alternative 600-base overlaps even when
+their accepted overlap is 800 bases. An alternative must have
+normalized identity of at least max(80%, accepted identity minus two
+percentage points).
+
+Candidate offsets come from exact anchors of up to 30 bases near
+the right contig start. This length is independent of the general
+join filter's `KMER_SIZE` (which exact-pipeline tests set to one
+base); otherwise every one-base occurrence would become a candidate
+and repeat searches could take quadratic work. Direct identity
+confirms exact alternatives cheaply.
+Before attempting an expensive gapped alignment, a short-word
+similarity filter requires at least 12% of the overlapping 10-mers
+to be shared, discarding isolated anchors (such as a single shared
+30-mer or short low-complexity run). Alternative offsets within two
+bases share one representative; a context-local contig-pair
+cache prevents repeated decisions during path exploration. Gapped
+alternatives still require most matching bases on diagonals absent
+from the accepted alignment. These checks avoid an absolute score
+inflated by unrelated sequence length without excluding valid long
+overlaps simply because of their length.
+
+These percentages are **heuristic**, not calibrated clinical
+confidence levels. The one-read bound is where competing-placement
+detection starts, **not** proof that shorter repeats are resolved:
+for example, a 120-base repeat can still be collapsed even when reads
+supply local coverage but none spans both unique flanks. A distinct
+alternative with no intact k-mer anchor, or with a short matching
+segment outside the minimum span, can also be missed. Conversely,
+multiple long, similar templates can share a unique overlap; without
+retained paired-read linkage the algorithm cannot prove their phase.
+Disabling raw-read depth checks never disables the independent
+competing-placement check.
 
 The check is still effective because completely unsupported joins
 (chimeric, contamination-driven) should have **zero** exact
@@ -208,9 +248,9 @@ assemblies.
 
 | Test | Expected behavior |
 |---|---|
-| `read_index=None` and `min_depth>0` | Validation disabled, merge proceeds |
-| `read_index={}` and `min_depth>0` | Validation enabled, no reads, merge rejected |
-| `read_index` with reads and `min_depth=0` | Validation disabled, merge proceeds |
+| `read_index=None` and `min_depth>0` | Raw-read checking skipped, ambiguous placements still rejected |
+| `read_index={}` and `min_depth>0` | Raw-read checking enabled, no reads, merge rejected |
+| `read_index` with reads and `min_depth=0` | Raw-read checking skipped, ambiguous placements still rejected |
 | Split-side reads covering left and right independently | Merge rejected (no read crosses cut) |
 | At least one read crossing the cut, window covered | Merge accepted |
 | One read at 4 spanning placements × count 1 = spanning 4 | `min_depth=4` passes, `5` fails |

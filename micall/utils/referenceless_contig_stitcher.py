@@ -44,6 +44,11 @@ MIN_MATCHES = 40
 # Kmer size used for filtering unlikely overlaps
 KMER_SIZE = 30
 
+# Repeat-placement evidence is independent of the join's candidate filter.
+# Some exact-pipeline tests deliberately set KMER_SIZE=1 to disable only
+# that filter; a one-base seed here enumerates O(length^2) false offsets.
+AMBIGUITY_ANCHOR_SIZE = 30
+
 
 logger = logging.getLogger(__name__)
 
@@ -921,6 +926,140 @@ def check_merged_sequence_support(
     return True, cut_crossing_depth, min_cov
 
 
+def _has_ambiguous_long_overlap(
+    left_seq: str,
+    right_seq: str,
+    accepted_left: str,
+    accepted_right: str,
+    accepted_left_start: int,
+    read_length: int,
+) -> bool:
+    """Detect a competing, well-supported alignment *placement*.
+
+    The accepted gapped alignment can use multiple diagonals (an indel
+    changes the offset). A candidate on any of these diagonals is not
+    a second placement. A separate candidate must explain roughly as
+    much sequence, and at roughly the same identity, as the accepted
+    overlap. Unlike an absolute score, identity does not increase with
+    the length of unrelated flanking sequence.
+
+    Exact k-mers discover alternatives, including those containing an
+    indel; this cannot rule out alternatives with no intact seed.
+    Individual-read counts do not establish phase
+    across a repeat and are therefore not used to disable this check.
+    """
+    if read_length <= 0 or not left_seq or not right_seq:
+        return False
+
+    accepted_diagonals = set()
+    left_index = accepted_left_start
+    right_index = 0
+    matches = 0
+    for a, b in zip(accepted_left, accepted_right):
+        if a != "-" and b != "-":
+            accepted_diagonals.add(left_index - right_index)
+            matches += a == b
+        left_index += a != "-"
+        right_index += b != "-"
+    if not accepted_diagonals:
+        return False
+    alignment_length = len(accepted_left)
+    if alignment_length <= read_length:
+        return False
+    accepted_identity = matches / alignment_length
+    threshold = max(0.8, accepted_identity - 0.02)
+    # Even a shorter alternative is unphased when it spans an entire read.
+    # Relative span excludes real repeats with units >20% of the overlap.
+    minimum_span = read_length + 1
+
+    # Seed at several positions near the start of the right contig.
+    # A distant repeat that shares one seed but not the rest of the
+    # overlap must not be treated as an equally plausible placement.
+    k = min(AMBIGUITY_ANCHOR_SIZE, read_length,
+            len(left_seq), len(right_seq))
+    limit = min(read_length, len(right_seq) - k + 1)
+    candidates = set()
+    for right_index in range(0, limit, max(1, k // 2)):
+        anchor = right_seq[right_index:right_index + k]
+        left_index = left_seq.find(anchor)
+        while left_index >= 0:
+            diagonal = left_index - right_index
+            if diagonal > 0 and diagonal not in accepted_diagonals:
+                candidates.add(diagonal)
+            left_index = left_seq.find(anchor, left_index + 1)
+
+    # First inspect every candidate using cheap direct identity; never
+    # skip a fully matching alternative just because it is shorter
+    # than the accepted overlap.
+    to_align = []
+    for diagonal in sorted(candidates):
+        span = min(len(left_seq) - diagonal, len(right_seq))
+        if span < minimum_span:
+            continue
+        left_window = left_seq[diagonal:diagonal + span]
+        right_window = right_seq[:span]
+        matched = sum(a == b for a, b in zip(left_window, right_window))
+        if matched / span >= threshold:
+            return True
+
+        # A single mismatch or indel in a repeated copy still leaves
+        # many shared short words. In contrast, an isolated 30-mer or
+        # a short poly-A run shared by unrelated long windows does not.
+        # This O(span) filter avoids quadratic DP on those false seeds.
+        word_length = min(10, span)
+        words = {
+            right_window[i:i + word_length]
+            for i in range(span - word_length + 1)
+        }
+        shared = sum(
+            left_window[i:i + word_length] in words
+            for i in range(span - word_length + 1)
+        )
+        fraction = shared / (span - word_length + 1)
+        if fraction >= 0.12:
+            to_align.append((diagonal, fraction))
+
+    # Slipped anchors in a low-complexity run yield adjacent offsets
+    # representing one candidate. Keep the strongest seed evidence.
+    clusters: list[list[tuple[int, float]]] = []
+    for diagonal, fraction in to_align:
+        if not clusters or diagonal > clusters[-1][-1][0] + 2:
+            clusters.append([])
+        clusters[-1].append((diagonal, fraction))
+
+    for cluster in clusters:
+        diagonal, _ = max(cluster, key=lambda item: item[1])
+        span = min(len(left_seq) - diagonal, len(right_seq))
+        left_window = left_seq[diagonal:diagonal + span]
+        right_window = right_seq[:span]
+
+        # Only a seed-rich alternative reaches gapped alignment.
+        # Most matches must use diagonals absent from the accepted
+        # alignment so an indel *within* that alignment is not a
+        # second placement.
+        alternative_left, alternative_right = align_queries(
+            left_window, right_window,
+        )
+        alternative_matches = sum(
+            a == b and a != "-"
+            for a, b in zip(alternative_left, alternative_right)
+        )
+        if alternative_matches / len(alternative_left) < threshold:
+            continue
+        left_at = diagonal
+        right_at = 0
+        distinct_matches = 0
+        for a, b in zip(alternative_left, alternative_right):
+            if (a == b and a != "-"
+                    and left_at - right_at not in accepted_diagonals):
+                distinct_matches += 1
+            left_at += a != "-"
+            right_at += b != "-"
+        if distinct_matches >= minimum_span * 0.8:
+            return True
+    return False
+
+
 def try_combine_contigs(
     is_debug2: bool,
     current_score: Score,
@@ -1032,6 +1171,23 @@ def try_combine_contigs(
     # Validate the merged sequence around the join boundary against reads.
     # Use per-context cached raw evidence; keep check_merged_sequence_support pure.
     ctx = ReferencelessStitcherContext.get()
+    max_read_length = (max(ctx.read_index, default=ctx.read_length)
+                       if ctx.read_index is not None else ctx.read_length)
+    ambiguity_key = (
+        left.id, right.id, left_cutoff, right_cutoff, max_read_length,
+    )
+    if ambiguity_key not in ctx.ambiguous_overlap_cache:
+        ctx.ambiguous_overlap_cache[ambiguity_key] = _has_ambiguous_long_overlap(
+            left.seq, right.seq, aligned_1, aligned_2,
+            left_cutoff, max_read_length,
+        )
+    if ctx.ambiguous_overlap_cache[ambiguity_key]:
+        if is_debug2:
+            log(events.AmbiguousOverlapRejected(
+                left.unique_name, right.unique_name,
+                overlap_size, max_read_length,
+            ))
+        return None
     if ctx.read_index is None or ctx.minimum_read_depth == 0:
         passed, cut_depth, min_win_cov = True, 0, 0
     elif not ctx.read_index:

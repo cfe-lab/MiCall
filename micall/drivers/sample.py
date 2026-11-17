@@ -22,6 +22,7 @@ from micall.utils.driver_utils import makedirs
 from micall.utils.fasta_to_csv import fasta_to_csv
 from micall.utils.csv_to_fasta import csv_to_fasta, NoContigsInCSV
 from micall.utils.referencefull_contig_stitcher import referencefull_contig_stitcher
+from micall.utils.stitched_read_counts import project_stitched_counts
 import micall.utils.referenceless_contig_stitcher as referenceless
 from micall.utils.cat import cat as concatenate_files
 from micall.utils.work_dir import WorkDir
@@ -516,11 +517,18 @@ class Sample:
                            debug_file_prefix=with_prefix(debug_file_prefix),
                            excluded_seeds=excluded_seeds)
 
-        # Referencefull stitcher uses the output of referenceless stitcher
-        with open(self.stitched_contigs_csv, 'r') as stitched_contigs_csv, \
-             open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv, \
+        # Referenceless stitching changes contig positions; remap counts
+        # must follow their original sequences, not their former CSV indexes.
+        with open(self.stitched_contigs_csv) as stitched_contigs_csv, \
+             open(self.unstitched_contigs_csv) as unstitched_contigs_csv, \
+             open(with_prefix(self.remap_counts_csv)) as unstitched_counts_csv:
+            stitched_row_counts = project_stitched_counts(
+                unstitched_contigs_csv, stitched_contigs_csv, unstitched_counts_csv)
+        with open(self.stitched_contigs_csv) as stitched_contigs_csv, \
              open(self.contigs_csv, 'w') as contigs_csv:
-            referencefull_contig_stitcher(stitched_contigs_csv, contigs_csv, self.stitcher_plot_svg, unstitched_counts_csv)
+            referencefull_contig_stitcher(
+                stitched_contigs_csv, contigs_csv, self.stitcher_plot_svg,
+                row_counts=stitched_row_counts)
 
         with open(self.contigs_csv) as contigs_csv, \
                 open(self.remap_csv, 'w') as remap_csv, \
