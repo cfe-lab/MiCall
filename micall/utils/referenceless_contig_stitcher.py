@@ -963,7 +963,9 @@ def _has_ambiguous_long_overlap(
         return False
     accepted_identity = matches / alignment_length
     threshold = max(0.8, accepted_identity - 0.02)
-    minimum_span = max(read_length + 1, int(alignment_length * 0.8))
+    # Even a shorter alternative is unphased when it spans an entire read.
+    # Relative span excludes real repeats with units >20% of the overlap.
+    minimum_span = read_length + 1
 
     # Seed at several positions near the start of the right contig.
     # A distant repeat that shares one seed but not the rest of the
@@ -980,6 +982,10 @@ def _has_ambiguous_long_overlap(
                 candidates.add(diagonal)
             left_index = left_seq.find(anchor, left_index + 1)
 
+    # First inspect every candidate using cheap direct identity; never
+    # skip a fully matching alternative just because it is shorter
+    # than the accepted overlap.
+    to_align = []
     for diagonal in sorted(candidates):
         span = min(len(left_seq) - diagonal, len(right_seq))
         if span < minimum_span:
@@ -990,11 +996,41 @@ def _has_ambiguous_long_overlap(
         if matched / span >= threshold:
             return True
 
-        # A genuinely distinct repeated copy can contain an insertion
-        # or deletion. Normalize its identity after a gapped alignment,
-        # but require that most matching bases remain on diagonals
-        # absent from the already accepted alignment. This avoids
-        # interpreting an indel or a local slip as a second placement.
+        # A single mismatch or indel in a repeated copy still leaves
+        # many shared short words. In contrast, an isolated 30-mer or
+        # a short poly-A run shared by unrelated long windows does not.
+        # This O(span) filter avoids quadratic DP on those false seeds.
+        word_length = min(10, span)
+        words = {
+            right_window[i:i + word_length]
+            for i in range(span - word_length + 1)
+        }
+        shared = sum(
+            left_window[i:i + word_length] in words
+            for i in range(span - word_length + 1)
+        )
+        fraction = shared / (span - word_length + 1)
+        if fraction >= 0.12:
+            to_align.append((diagonal, fraction))
+
+    # Slipped anchors in a low-complexity run yield adjacent offsets
+    # representing one candidate. Keep the strongest seed evidence.
+    clusters: list[list[tuple[int, float]]] = []
+    for diagonal, fraction in to_align:
+        if not clusters or diagonal > clusters[-1][-1][0] + 2:
+            clusters.append([])
+        clusters[-1].append((diagonal, fraction))
+
+    for cluster in clusters:
+        diagonal, _ = max(cluster, key=lambda item: item[1])
+        span = min(len(left_seq) - diagonal, len(right_seq))
+        left_window = left_seq[diagonal:diagonal + span]
+        right_window = right_seq[:span]
+
+        # Only a seed-rich alternative reaches gapped alignment.
+        # Most matches must use diagonals absent from the accepted
+        # alignment so an indel *within* that alignment is not a
+        # second placement.
         alternative_left, alternative_right = align_queries(
             left_window, right_window,
         )
@@ -1131,10 +1167,15 @@ def try_combine_contigs(
     ctx = ReferencelessStitcherContext.get()
     max_read_length = (max(ctx.read_index, default=ctx.read_length)
                        if ctx.read_index is not None else ctx.read_length)
-    if _has_ambiguous_long_overlap(
-        left.seq, right.seq, aligned_1, aligned_2,
-        left_cutoff, max_read_length,
-    ):
+    ambiguity_key = (
+        left.id, right.id, left_cutoff, right_cutoff, max_read_length,
+    )
+    if ambiguity_key not in ctx.ambiguous_overlap_cache:
+        ctx.ambiguous_overlap_cache[ambiguity_key] = _has_ambiguous_long_overlap(
+            left.seq, right.seq, aligned_1, aligned_2,
+            left_cutoff, max_read_length,
+        )
+    if ctx.ambiguous_overlap_cache[ambiguity_key]:
         if is_debug2:
             log(events.AmbiguousOverlapRejected(
                 left.unique_name, right.unique_name,

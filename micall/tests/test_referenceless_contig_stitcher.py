@@ -2135,7 +2135,7 @@ def test_unique_long_overlap_is_not_rejected_for_length_alone():
     assert not _check_overlap_offsets(left, right, 540, 150)
 
 
-def test_long_overlap_detection_agrees_with_brute_force():
+def test_planted_repeat_placements_and_unique_negative_controls():
     """Independent planted truth: 200 repeated vs 400 unique placements.
 
     The expected answer is fixed by construction, rather than using
@@ -2204,6 +2204,71 @@ def test_long_unique_overlap_can_reconstruct_original_molecule():
     )
     assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
     assert [str(row.seq) for row in assembled] == [molecule]
+
+
+@pytest.mark.parametrize("mutated_position", [50, 150, 290])
+def test_near_identical_long_repeat_stays_unphased(mutated_position):
+    """One mismatch in a long repeat must not identify its copy."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    repeat = 'ACGT' * 200
+    differing = list(repeat)
+    differing[mutated_position] = 'T' if differing[mutated_position] != 'T' else 'A'
+    molecule = prefix + repeat + suffix
+    left, right = prefix + repeat, ''.join(differing) + suffix
+    counter = Counter()
+    for pos in range(len(molecule) - 149):
+        kmer = molecule[pos:pos + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    fasta = f'>left\n{left}\n>right\n{right}\n'
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [1150, 1150]
+
+
+def test_shorter_repeat_can_still_have_unphaseable_offsets():
+    """240-base observed repeats can misjoin a 400-base repeat."""
+    from collections import Counter
+    from io import StringIO
+    import random
+    from Bio import SeqIO
+    from micall.utils.exact_coverage import reverse_complement
+    from micall.utils.referenceless_contig_stitcher import (
+        referenceless_contig_stitcher,
+    )
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices('ACGT', k=350))
+    suffix = ''.join(rng.choices('ACGT', k=350))
+    observed = 'ACGT' * 60
+    molecule = prefix + 'ACGT' * 100 + suffix
+    fasta = f'>left\n{prefix + observed}\n>right\n{observed + suffix}\n'
+    counter = Counter()
+    for pos in range(len(molecule) - 149):
+        kmer = molecule[pos:pos + 150]
+        counter[min(kmer, reverse_complement(kmer))] += 1
+    output = StringIO()
+    referenceless_contig_stitcher(
+        StringIO(fasta), output, read_index={150: counter},
+        minimum_read_depth=1, read_length=150,
+    )
+    assembled = list(SeqIO.parse(StringIO(output.getvalue()), 'fasta'))
+    assert sorted(len(row.seq) for row in assembled) == [590, 590]
+
 
 
 def test_long_repeat_multiple_offsets_are_rejected():
@@ -2363,3 +2428,66 @@ def test_indel_in_unphaseable_long_repeat_does_not_allow_chimera(position):
         prefix + repeat, edited[len(prefix):], original, edited,
     )
     assert sorted(map(len, output)) == [1150, 1151]
+
+
+@pytest.mark.parametrize("unit_length,copies", [(200, 4), (300, 3)])
+@pytest.mark.parametrize("no_reads", [False, True])
+def test_long_unit_tandem_repeat_has_competing_placements(
+    unit_length, copies, no_reads,
+):
+    """Six vs four, or five vs three units must not collapse the repeat."""
+    import random
+
+    rng = random.Random(971)
+    prefix = ''.join(rng.choices("ACGT", k=350))
+    suffix = ''.join(rng.choices("ACGT", k=350))
+    unit = ''.join(rng.choices("ACGT", k=unit_length))
+    source = prefix + unit * (copies + 2) + suffix
+    output = _assemble_two_with_reads(
+        prefix + unit * copies, unit * copies + suffix,
+        source, no_reads=no_reads,
+    )
+    assert sorted(map(len, output)) == [
+        350 + copies * unit_length, 350 + copies * unit_length,
+    ]
+
+
+def test_repeated_low_complexity_runs_do_not_trigger_gapped_alignment_storm(
+    monkeypatch,
+):
+    """Count only DP calls made by the ambiguity guard itself."""
+    import random
+    import micall.utils.referenceless_contig_stitcher as stitcher
+
+    source = ''.join(random.Random(9).choices("ACGT", k=12000))
+    source = source[:500] + "A" * 35 + source[535:8100] + "A" * 35 + source[8135:]
+    count = 0
+    guard_calls = 0
+    in_guard = False
+    original_guard = stitcher._has_ambiguous_long_overlap
+    original_align = stitcher.align_queries
+
+    def observe_guard(*args, **kwargs):
+        nonlocal in_guard, guard_calls
+        assert not in_guard
+        guard_calls += 1
+        in_guard = True
+        try:
+            return original_guard(*args, **kwargs)
+        finally:
+            in_guard = False
+
+    def observe_align(*args, **kwargs):
+        nonlocal count
+        if in_guard:
+            count += 1
+        return original_align(*args, **kwargs)
+
+    monkeypatch.setattr(stitcher, "_has_ambiguous_long_overlap", observe_guard)
+    monkeypatch.setattr(stitcher, "align_queries", observe_align)
+    result = _assemble_two_with_reads(
+        source[:8600], source[8000:], source,
+    )
+    assert result == [source]
+    assert count <= 2, count
+    assert guard_calls == 1, guard_calls

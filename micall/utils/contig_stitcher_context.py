@@ -96,6 +96,11 @@ class ReferencelessStitcherContext(GenericStitcherContext[less_events.EventType]
         self.read_length: int = 150
         # per-context cache for raw read-support evidence, keyed by effective local junction
         self.read_evidence_cache: Dict[Tuple, Tuple[int, int]] = {}
+        # Sequence-ambiguity decisions do not depend on path scores.
+        # Key by oriented contig IDs, accepted cutoffs and read length.
+        self.ambiguous_overlap_cache: Dict[
+            Tuple[ContigId, ContigId, int, int, int], bool
+        ] = {}
         super().__init__()
 
     @staticmethod
