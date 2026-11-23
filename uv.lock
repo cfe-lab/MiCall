@@ -300,11 +300,10 @@ wheels = [
 
 [[package]]
 name = "drawsvg"
-version = "2.4.2"
+version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/86/ec/a88a29dc4e380c6283fa6922a21c715ec40bf40f7b53859f8a104a7cbe26/drawsvg-2.4.2.tar.gz", hash = "sha256:5efd8bcdc2c2400425e7fb71b4b80d8fdd83b1dc810f790f58a165df33ddd303", size = 733210, upload-time = "2026-08-12T03:24:43.679Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/5a/c47c10de42c49a3a9957123d77e5692b56b4fbc342b55285b52c41a8f1c1/drawsvg-2.4.2-py3-none-any.whl", hash = "sha256:b1c101e187aa395cb13c039549e4f26fb7b7ee03974f53dc9798436463781bf1", size = 44175, upload-time = "2026-08-12T03:24:42.531Z" },
+    { url = "https://files.pythonhosted.org/packages/76/b2/cc3c8f9edb007a380eeab5c5a886837e6a0575cdda1c59487cd880695285/drawsvg-2.5.1-py3-none-any.whl", hash = "sha256:0792ffe1946e6f0d5aba1c2c90ac51cbc1a4a352a9a46b3fc56751197e6fc4e9", size = 44855, upload-time = "2026-11-19T01:16:20.937Z" },
 ]
 
 [[package]]
